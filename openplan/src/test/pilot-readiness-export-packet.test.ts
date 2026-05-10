@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { buildPilotReadinessPacket } from "@/app/(app)/admin/pilot-readiness/ExportButton";
+import {
+  buildAdminPilotReadinessProofPacketMarkdown,
+  buildFinalPilotReadinessSyncMarkdown,
+  buildPilotReadinessPacket,
+  buildReleaseProofAlignmentMarkdown,
+} from "@/lib/operations/pilot-readiness-packet";
 import { finalPilotReadinessChecklistSync, releaseProofPosture } from "@/lib/operations/release-proof-packet";
 
 const repoRoot = path.resolve(process.cwd(), "..");
@@ -90,5 +95,22 @@ describe("pilot readiness export packet", () => {
     for (const filename of syncedFiles) {
       expect(existsSync(path.join(repoRoot, filename)), `${filename} should exist`).toBe(true);
     }
+  });
+
+  it("aligns the static sales proof packet with the reusable admin export helpers", () => {
+    const staticMarkdownPath = path.join(repoRoot, "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md");
+    const staticHtmlPath = path.join(repoRoot, "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html");
+    const staticPdfPath = path.join(repoRoot, "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf");
+    const staticMarkdown = readFileSync(staticMarkdownPath, "utf8");
+    const staticHtml = readFileSync(staticHtmlPath, "utf8");
+    const staticPdf = readFileSync(staticPdfPath);
+
+    expect(staticMarkdown).toContain(buildFinalPilotReadinessSyncMarkdown());
+    expect(staticMarkdown).toContain(buildReleaseProofAlignmentMarkdown());
+    expect(staticMarkdown).toBe(`${buildAdminPilotReadinessProofPacketMarkdown()}\n`);
+    expect(staticHtml).toContain("This generated static packet uses the same final checklist sync");
+    expect(staticHtml).toContain("No broad self-serve SaaS claim");
+    expect(staticHtml).toContain("docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md");
+    expect(staticPdf.subarray(0, 4).toString()).toBe("%PDF");
   });
 });

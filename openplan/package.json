@@ -25,7 +25,8 @@
     "qa:gate:log": "mkdir -p ../docs/ops/2026-03-01-test-output && (npm run qa:gate) | tee ../docs/ops/2026-03-01-test-output/2026-03-01-clean-gate.log",
     "ops:check-local-supabase-status": "node scripts/ops/check-local-supabase-status.mjs",
     "ops:check-migration-inventory": "node scripts/ops/check-migration-inventory.mjs",
-    "ops:check-pilot-preflight": "node scripts/ops/check-pilot-preflight.mjs"
+    "ops:check-pilot-preflight": "node scripts/ops/check-pilot-preflight.mjs",
+    "ops:generate-admin-pilot-readiness-proof-packet": "tsx scripts/ops/generate-admin-pilot-readiness-proof-packet.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",

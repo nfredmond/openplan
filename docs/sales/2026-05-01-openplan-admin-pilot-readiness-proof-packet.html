@@ -1,868 +1,449 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>OpenPlan Admin Pilot Readiness Proof Packet</title>
-    <style>
-      :root {
-        color-scheme: light;
-        --ink: #17231f;
-        --muted: #5c6861;
-        --line: #cfd8d1;
-        --panel: #f6f8f5;
-        --panel-strong: #e6eee6;
-        --field: #fbfcfa;
-        --green: #285f4b;
-        --blue: #315d7e;
-        --gold: #8b6b2f;
-        --red: #8a3d3d;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        margin: 0;
-        padding: 0;
-      }
-
-      body {
-        background: #eef2ee;
-        color: var(--ink);
-        font-family:
-          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-          "Segoe UI", sans-serif;
-        font-size: 12px;
-        line-height: 1.42;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      h1,
-      h2,
-      h3,
-      p {
-        margin: 0;
-      }
-
-      .sheet {
-        width: 8.5in;
-        min-height: 11in;
-        margin: 0 auto 0.2in;
-        background: #fff;
-        border: 1px solid var(--line);
-        box-shadow: 0 18px 50px rgba(28, 40, 34, 0.18);
-        padding: 0.42in 0.46in;
-      }
-
-      .sheet + .sheet {
-        margin-top: 0.2in;
-      }
-
-      .masthead {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 0.26in;
-        align-items: start;
-        padding-bottom: 0.2in;
-        border-bottom: 2px solid var(--ink);
-      }
-
-      h1 {
-        max-width: 5.8in;
-        font-size: 27px;
-        line-height: 1.02;
-        letter-spacing: 0;
-      }
-
-      .subtitle {
-        max-width: 5.9in;
-        margin-top: 0.08in;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .date-block {
-        min-width: 1.6in;
-        padding-left: 0.18in;
-        border-left: 1px solid var(--line);
-        color: var(--muted);
-        font-size: 10.5px;
-        text-align: right;
-      }
-
-      .date-block strong {
-        display: block;
-        color: var(--ink);
-        font-size: 12px;
-        font-weight: 700;
-      }
-
-      .status-strip {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 0.1in;
-        margin-top: 0.18in;
-      }
-
-      .status-item {
-        min-height: 0.7in;
-        padding: 0.11in 0.12in;
-        border: 1px solid var(--line);
-        background: var(--field);
-      }
-
-      .status-item strong {
-        display: block;
-        color: var(--green);
-        font-size: 10.5px;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-      }
-
-      .status-item span {
-        display: block;
-        margin-top: 0.04in;
-        color: var(--muted);
-        font-size: 10.7px;
-      }
-
-      .lead {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.18in;
-        margin-top: 0.2in;
-      }
-
-      .callout,
-      .boundary {
-        padding: 0.16in 0.18in;
-        border: 1px solid var(--line);
-      }
-
-      .callout {
-        background: var(--panel);
-        border-left: 4px solid var(--green);
-      }
-
-      .boundary {
-        background: #fff;
-        border-left: 4px solid var(--red);
-      }
-
-      .callout h2,
-      .boundary h2,
-      .section-kicker {
-        font-size: 11px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-
-      .callout h2 {
-        color: var(--green);
-      }
-
-      .boundary h2 {
-        color: var(--red);
-      }
-
-      .callout p,
-      .boundary p {
-        margin-top: 0.07in;
-        font-size: 12.2px;
-      }
-
-      .proof-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 0.1in;
-        margin-top: 0.18in;
-      }
-
-      .proof-tile {
-        min-height: 0.78in;
-        padding: 0.1in 0.12in;
-        border-top: 2px solid var(--green);
-        background: var(--panel);
-      }
-
-      .proof-tile:nth-child(2),
-      .proof-tile:nth-child(5) {
-        border-top-color: var(--blue);
-      }
-
-      .proof-tile:nth-child(3),
-      .proof-tile:nth-child(6) {
-        border-top-color: var(--gold);
-      }
-
-      .proof-tile strong {
-        display: block;
-        font-size: 11.5px;
-      }
-
-      .proof-tile span {
-        display: block;
-        margin-top: 0.04in;
-        color: var(--muted);
-        font-size: 10.6px;
-      }
-
-      .section {
-        margin-top: 0.22in;
-      }
-
-      .section-header {
-        display: flex;
-        justify-content: space-between;
-        gap: 0.2in;
-        align-items: end;
-        padding-bottom: 0.08in;
-        border-bottom: 1px solid var(--line);
-      }
-
-      .section h2 {
-        font-size: 17px;
-        line-height: 1.12;
-      }
-
-      .section-kicker {
-        color: var(--muted);
-      }
-
-      .small-note {
-        max-width: 2.4in;
-        color: var(--muted);
-        font-size: 10.2px;
-        text-align: right;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 0.12in;
-        table-layout: fixed;
-      }
-
-      th,
-      td {
-        padding: 0.07in 0.08in;
-        border: 1px solid var(--line);
-        vertical-align: top;
-        text-align: left;
-      }
-
-      th {
-        background: var(--panel-strong);
-        color: var(--ink);
-        font-size: 10.5px;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-      }
-
-      td {
-        background: #fff;
-        font-size: 10.7px;
-      }
-
-      .status-pass {
-        color: var(--green);
-        font-weight: 700;
-      }
-
-      .status-boundary {
-        color: var(--gold);
-        font-weight: 700;
-      }
-
-      .source {
-        color: var(--muted);
-        font-size: 9.4px;
-        overflow-wrap: anywhere;
-      }
-
-      .two-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.18in;
-        margin-top: 0.14in;
-      }
-
-      .text-block {
-        padding-top: 0.12in;
-        border-top: 1px solid var(--line);
-      }
-
-      .text-block h3 {
-        color: var(--ink);
-        font-size: 13px;
-      }
-
-      ul {
-        margin: 0.07in 0 0;
-        padding-left: 0.18in;
-      }
-
-      li {
-        margin: 0.035in 0;
-        color: var(--muted);
-        font-size: 11px;
-      }
-
-      .quote-pair {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.16in;
-        margin-top: 0.13in;
-      }
-
-      .quote-box {
-        padding: 0.14in 0.16in;
-        border: 1px solid var(--line);
-        background: var(--field);
-      }
-
-      .quote-box.avoid {
-        border-left: 4px solid var(--red);
-      }
-
-      .quote-box.use {
-        border-left: 4px solid var(--green);
-      }
-
-      .quote-box h3 {
-        font-size: 11px;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-      }
-
-      .quote-box p {
-        margin-top: 0.07in;
-        color: var(--muted);
-        font-size: 11.4px;
-      }
-
-      .footer {
-        display: flex;
-        justify-content: space-between;
-        gap: 0.2in;
-        margin-top: 0.22in;
-        padding-top: 0.1in;
-        border-top: 1px solid var(--line);
-        color: var(--muted);
-        font-size: 9.5px;
-      }
-
-      @media print {
-        @page {
-          size: Letter;
-          margin: 0.3in;
-        }
-
-        body {
-          background: #fff;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
-
-        .sheet {
-          width: auto;
-          min-height: 0;
-          margin: 0;
-          padding: 0;
-          border: 0;
-          box-shadow: none;
-          break-after: page;
-          page-break-after: always;
-        }
-
-        .sheet:last-child {
-          break-after: auto;
-          page-break-after: auto;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="packet">
-      <div class="sheet" aria-label="OpenPlan Admin Pilot Readiness Proof Packet summary">
-        <div class="masthead">
-          <div>
-            <h1>OpenPlan Admin Pilot Readiness Proof Packet</h1>
-            <p class="subtitle">
-              Buyer-safe proof export for rural RTPA, county, tribe, transportation commission,
-              and consultant diligence around a supervised OpenPlan pilot or managed-service engagement.
-            </p>
-          </div>
-          <div class="date-block">
-            <strong>2026-05-01</strong>
-            Release-to-sale slice<br />
-            Buyer-safe export<br />
-            Apache-2.0 core
-          </div>
-        </div>
-
-        <div class="status-strip" aria-label="Packet posture">
-          <div class="status-item">
-            <strong>Packet status</strong>
-            <span>PASS for buyer-safe packaging.</span>
-          </div>
-          <div class="status-item">
-            <strong>Near-term sale</strong>
-            <span>Supervised planning workbench plus managed services.</span>
-          </div>
-          <div class="status-item">
-            <strong>Billing posture</strong>
-            <span>Historical live payment plus current non-money-moving proof.</span>
-          </div>
-          <div class="status-item">
-            <strong>Boundary</strong>
-            <span>No self-serve SaaS, SLA, legal, or forecasting overclaim.</span>
-          </div>
-        </div>
-
-        <div class="lead">
-          <div class="callout">
-            <h2>Buyer-safe summary</h2>
-            <p>
-              OpenPlan is ready to discuss as a supervised planning workbench with an
-              Apache-2.0 open-source core and optional Nat Ford managed hosting,
-              onboarding, implementation, support, and planning services.
-            </p>
-          </div>
-          <div class="boundary">
-            <h2>Explicit proof boundary</h2>
-            <p>
-              This packet does not claim fully self-serve SaaS, validated behavioral
-              forecasting, complete legal/compliance automation, autonomous AI planning,
-              or a fresh same-cycle paid checkout canary.
-            </p>
-          </div>
-        </div>
-
-        <div class="proof-grid" aria-label="What has been proven">
-          <div class="proof-tile">
-            <strong>RC gate</strong>
-            <span>Tests, lint, build, audit, prod health, and demo preflight passed.</span>
-          </div>
-          <div class="proof-tile">
-            <strong>Workspace isolation</strong>
-            <span>Synthetic cross-workspace access was denied with session continuity.</span>
-          </div>
-          <div class="proof-tile">
-            <strong>Planning workflows</strong>
-            <span>RTP, grants, engagement, analysis, reports, and shared project-spine reuse have current smoke proof.</span>
-          </div>
-          <div class="proof-tile">
-            <strong>Admin support</strong>
-            <span>Request-access, reviewer triage, provisioning, owner invite flow, and production reviewer access are proof-backed.</span>
-          </div>
-          <div class="proof-tile">
-            <strong>Managed hosting</strong>
-            <span>Buyer-reviewable service schedule names support, backup, and scope fields.</span>
-          </div>
-          <div class="proof-tile">
-            <strong>Operator recovery</strong>
-            <span>Backup/restore procedure exists; first staging Supabase restore drill passed.</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Operating evidence</p>
-              <h2>Proof Snapshot</h2>
-            </div>
-            <p class="small-note">All entries are evidence links, not production guarantees.</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 22%">Area</th>
-                <th style="width: 16%">Status</th>
-                <th style="width: 37%">What the evidence proves</th>
-                <th style="width: 25%">Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Release candidate baseline</td>
-                <td class="status-pass">PASS</td>
-                <td>Tests, lint, build, production health, production audit, and public demo preflight passed for the May 1 RC gate.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-rc-proof-log.md</td>
-              </tr>
-              <tr>
-                <td>Public demo preflight</td>
-                <td class="status-pass">PASS</td>
-                <td>No-auth checks cover health, request-access, protected billing-readiness access, Mapbox/CSP posture, and no token printing.</td>
-                <td class="source">openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md</td>
-              </tr>
-              <tr>
-                <td>Admin Pilot Readiness</td>
-                <td class="status-pass">PASS</td>
-                <td>Parser reads line-item PASS evidence; readiness page was recaptured on desktop and mobile with local proof state.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-phase0-proof-repair.md</td>
-              </tr>
-              <tr>
-                <td>Workspace isolation</td>
-                <td class="status-pass">PASS</td>
-                <td>Synthetic users accessed their own workspaces and were blocked from the other workspace, with session continuity.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-local-workspace-url-isolation-smoke.md</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="footer">
-          <span>OpenPlan Admin Pilot Readiness Proof Packet</span>
-          <span>Static proof export</span>
-        </div>
-      </div>
-
-      <div class="sheet" aria-label="OpenPlan workflow evidence">
-        <div class="section" style="margin-top: 0">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Workflow proof</p>
-              <h2>Current Product Evidence</h2>
-            </div>
-            <p class="small-note">The proof is release/platform evidence. A buyer pilot still needs scoped onboarding validation.</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 22%">Area</th>
-                <th style="width: 16%">Status</th>
-                <th style="width: 38%">What the evidence proves</th>
-                <th style="width: 24%">Source</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>RTP/report workflow</td>
-                <td class="status-pass">PASS</td>
-                <td>RTP cycle creation, board-packet creation, artifact generation, registry packet navigation, and release-review anchor landing.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-local-rtp-release-review-smoke.md</td>
-              </tr>
-              <tr>
-                <td>Grants/funding workflow</td>
-                <td class="status-pass">PASS</td>
-                <td>Funding need, awarded opportunity, committed award, RTP posture write-back, obligation milestone, reimbursement invoice, closeout, and funded/reimbursed posture.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md</td>
-              </tr>
-              <tr>
-                <td>Engagement handoff</td>
-                <td class="status-pass">PASS</td>
-                <td>Public feedback intake, staff moderation, public publication, handoff report provenance, HTML artifact generation, and source-context traceability.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-local-engagement-report-handoff-smoke.md</td>
-              </tr>
-              <tr>
-                <td>Analysis/report linkage</td>
-                <td class="status-pass">PASS</td>
-                <td>Corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, report linkage, HTML artifact, and source-context traceability.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-local-analysis-report-linkage-smoke.md</td>
-              </tr>
-              <tr>
-                <td>Phase 1 shared spine</td>
-                <td class="status-pass">PASS</td>
-                <td>One NCTC project ID is reused across RTP, grants, engagement, modeling evidence, report runs, Data Hub, map corridors, aerial missions, and evidence packages.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-local-spine-smoke.md</td>
-              </tr>
-              <tr>
-                <td>Admin/support onboarding</td>
-                <td class="status-pass">PASS</td>
-                <td>Public intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, owner invitation, review-event audit trail, and invited-owner acceptance.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md</td>
-              </tr>
-              <tr>
-                <td>Production Admin Operations access</td>
-                <td class="status-pass">PASS</td>
-                <td>Configured reviewer loaded /admin/operations with service-lane intake unlocked; no triage/provision controls were clicked and no prospect rows were captured.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md</td>
-              </tr>
-              <tr>
-                <td>Billing posture</td>
-                <td class="status-boundary">PASS with waiver</td>
-                <td>Billing is positioned as historical live payment evidence plus current non-money-moving proof. No fresh same-cycle paid checkout canary is claimed.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md</td>
-              </tr>
-              <tr>
-                <td>Managed hosting posture</td>
-                <td class="status-boundary">Buyer-reviewable</td>
-                <td>Service schedule defines scoped hosting responsibilities, support targets, backup/restore fields, out-of-scope items, and billing proof boundary.</td>
-                <td class="source">docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md</td>
-              </tr>
-              <tr>
-                <td>Backup/restore posture</td>
-                <td class="status-pass">PASS</td>
-                <td>Operator procedure exists, and a dedicated staging Supabase project was migrated, restored from private production schema/public-data dumps, validated, and retired.</td>
-                <td class="source">docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Onboarding discipline</p>
-              <h2>What Nat Ford Should Validate</h2>
-            </div>
-            <p class="small-note">These are buyer-specific gates before relying on a pilot workspace.</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 38%">Validation</th>
-                <th>Why it matters</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Name one workspace owner and support contact(s).</td>
-                <td>Keeps access, triage, and issue escalation accountable.</td>
-              </tr>
-              <tr>
-                <td>Select one first workflow.</td>
-                <td>Prevents the engagement from expanding into unsupported full-suite claims.</td>
-              </tr>
-              <tr>
-                <td>Classify data sensitivity.</td>
-                <td>Determines what belongs in OpenPlan and whether enhanced terms are needed.</td>
-              </tr>
-              <tr>
-                <td>Confirm service schedule fields.</td>
-                <td>Support targets, backup/restore posture, billing posture, and enhanced SLA needs must be filled before signature.</td>
-              </tr>
-              <tr>
-                <td>Re-run the relevant workspace-specific smoke after setup.</td>
-                <td>The May 1 proof is release evidence; each pilot still needs scoped acceptance.</td>
-              </tr>
-              <tr>
-                <td>Decide whether procurement needs a fresh paid checkout canary.</td>
-                <td>The May 1 packet explicitly waived same-cycle money-moving proof.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="footer">
-          <span>OpenPlan Admin Pilot Readiness Proof Packet</span>
-          <span>Static proof export</span>
-        </div>
-      </div>
-
-      <div class="sheet" aria-label="OpenPlan scope boundaries">
-        <div class="section" style="margin-top: 0">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Still scoped by engagement</p>
-              <h2>Implementation-Specific Items</h2>
-            </div>
-            <p class="small-note">These are not release-wide guarantees.</p>
-          </div>
-          <div class="two-col">
-            <div class="text-block">
-              <h3>Operational items to fill before signature</h3>
-              <ul>
-                <li>Buyer-specific data loading, cleanup, geocoding, GIS integration, and source-document review.</li>
-                <li>SSO, private cloud, agency-cloud deployment, custom security review, or enhanced support/SLA terms.</li>
-                <li>Formal RPO/RTO commitments beyond the signed managed-hosting schedule.</li>
-                <li>Fresh same-cycle paid checkout proof if a buyer or procurement reviewer requires it.</li>
-                <li>Future quarterly restore drills for later production milestones.</li>
-              </ul>
-            </div>
-            <div class="text-block">
-              <h3>Product claims to keep bounded</h3>
-              <ul>
-                <li>Calibrated or certified behavioral-demand modeling and broader ActivitySim/MATSim readiness.</li>
-                <li>Complete LAPM/legal/compliance automation, grant scoring, or official legal sign-off.</li>
-                <li>Custom reports, integrations, migrations, or planning services beyond the scoped SOW.</li>
-                <li>Aerial/field evidence workflows beyond the selected implementation scope.</li>
-                <li>Autonomous AI planning decisions or replacement of human agency review.</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Buyer language</p>
-              <h2>Use And Avoid</h2>
-            </div>
-            <p class="small-note">These statements preserve the current proof boundary.</p>
-          </div>
-          <div class="quote-pair">
-            <div class="quote-box use">
-              <h3>Use</h3>
-              <p>OpenPlan supports supervised planning workflows with evidence traceability and human review.</p>
-              <p>OpenPlan is ready for scoped pilots and managed-service engagements where the first workflow, data posture, support path, and proof boundary are agreed up front.</p>
-              <p>Managed hosting and implementation are service wrappers around the Apache-2.0 open-source core.</p>
-            </div>
-            <div class="quote-box avoid">
-              <h3>Avoid</h3>
-              <p>OpenPlan is fully self-serve municipal SaaS.</p>
-              <p>OpenPlan replaces planners, engineers, attorneys, grant writers, or agency review.</p>
-              <p>Billing was freshly re-proven with a paid checkout in this release cycle.</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Operational evidence</p>
-              <h2>Source Packet Links</h2>
-            </div>
-            <p class="small-note">Use the source documents for line-item diligence and screenshots.</p>
-          </div>
-          <div class="two-col">
-            <div class="text-block">
-              <h3>Sales and scope</h3>
-              <ul>
-                <li>docs/ops/2026-05-01-openplan-release-to-sale-plan.md</li>
-                <li>docs/sales/2026-05-01-openplan-buyer-one-pager.md</li>
-                <li>docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md</li>
-                <li>docs/sales/2026-05-01-openplan-managed-hosting-service-description.md</li>
-                <li>docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md</li>
-              </ul>
-            </div>
-            <div class="text-block">
-              <h3>Proof and operations</h3>
-              <ul>
-                <li>docs/ops/2026-05-01-openplan-rc-proof-log.md</li>
-                <li>docs/ops/2026-05-01-openplan-local-spine-smoke.md</li>
-                <li>docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md</li>
-                <li>docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md</li>
-                <li>docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md</li>
-                <li>docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md</li>
-                <li>openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md</li>
-                <li>docs/ops/2026-05-01-test-output/ui-ux-watch-recapture/local-ui-ux-settle-capture-ledger.md</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="footer">
-          <span>OpenPlan Admin Pilot Readiness Proof Packet</span>
-          <span>Static proof export</span>
-        </div>
-      </div>
-
-      <div class="sheet" aria-label="OpenPlan packet verdict">
-        <div class="section" style="margin-top: 0">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Decision support</p>
-              <h2>Packet Verdict</h2>
-            </div>
-            <p class="small-note">For buyer diligence, not legal or procurement sign-off.</p>
-          </div>
-          <div class="lead">
-            <div class="callout">
-              <h2>PASS for buyer-safe packaging</h2>
-              <p>
-                This packet makes the current proof posture readable for a supervised pilot
-                or managed-service sale while preserving explicit limits around production
-                guarantees, billing proof, modeling, compliance, AI, backup/restore, and
-                buyer-specific onboarding.
-              </p>
-            </div>
-            <div class="boundary">
-              <h2>Do not over-read this packet</h2>
-              <p>
-                It is not a signed SLA, data-processing agreement, procurement response,
-                legal opinion, production recovery guarantee, or certification of modeling
-                or grant outcomes.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">First buyer conversation</p>
-              <h2>Recommended Close</h2>
-            </div>
-            <p class="small-note">Keep the next step narrow and evidence-backed.</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 30%">Question</th>
-                <th>Buyer-safe answer path</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>What workflow should we prove first?</td>
-                <td>Choose one: RTP/report packet, grants/funding, engagement handoff, analysis/report linkage, or managed-hosting setup.</td>
-              </tr>
-              <tr>
-                <td>Who reviews outputs?</td>
-                <td>Name the buyer owner, Nat Ford operator, and any planning, legal, engineering, or grants reviewer before external reliance.</td>
-              </tr>
-              <tr>
-                <td>What data can be used?</td>
-                <td>Classify public/internal/confidential data and define what stays outside OpenPlan for records, legal hold, or security reasons.</td>
-              </tr>
-              <tr>
-                <td>What proof closes the first 30-90 days?</td>
-                <td>Define a pilot deliverable: board packet, grant/readiness packet, public-comment summary, analysis report, or hosting acceptance memo.</td>
-              </tr>
-              <tr>
-                <td>Does procurement need stronger billing or recovery proof?</td>
-                <td>Decide before signature whether to run a fresh paid canary or attach enhanced backup/SLA terms.</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section">
-          <div class="section-header">
-            <div>
-              <p class="section-kicker">Artifacts</p>
-              <h2>Static Export Files</h2>
-            </div>
-            <p class="small-note">Generated and validated in the repository.</p>
-          </div>
-          <table>
-            <thead>
-              <tr>
-                <th style="width: 28%">Format</th>
-                <th>Path</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Markdown source</td>
-                <td class="source">docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md</td>
-              </tr>
-              <tr>
-                <td>HTML export</td>
-                <td class="source">docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html</td>
-              </tr>
-              <tr>
-                <td>PDF export</td>
-                <td class="source">docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="footer">
-          <span>OpenPlan Admin Pilot Readiness Proof Packet</span>
-          <span>Static proof export</span>
-        </div>
-      </div>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenPlan Admin Pilot Readiness Proof Packet</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #5f6b7a;
+      --rule: #d8dee8;
+      --paper: #f6f3ed;
+      --surface: #fffdf8;
+      --accent: #22543d;
+      --accent-soft: #e7f2ea;
+      --warn: #8a5a13;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #eee8dc 0%, var(--paper) 36%, #f8f6f0 100%);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+    .sheet {
+      width: min(1120px, calc(100% - 40px));
+      margin: 28px auto;
+      padding: 46px;
+      background: var(--surface);
+      border: 1px solid rgba(23, 32, 51, 0.12);
+      box-shadow: 0 24px 80px rgba(23, 32, 51, 0.12);
+    }
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    h1 {
+      max-width: 900px;
+      margin: 0 0 10px;
+      font-size: clamp(2.2rem, 5vw, 4.4rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+    }
+    h2 {
+      margin: 42px 0 14px;
+      padding-top: 22px;
+      border-top: 1px solid var(--rule);
+      font-size: 1.55rem;
+      letter-spacing: -0.03em;
+    }
+    h3 { margin: 28px 0 8px; font-size: 1.05rem; }
+    p { max-width: 890px; margin: 0 0 12px; }
+    ul { margin: 0 0 18px 1.15rem; padding: 0; }
+    li { margin: 0 0 8px; }
+    blockquote {
+      margin: 12px 0 22px;
+      padding: 12px 16px;
+      border-left: 4px solid var(--accent);
+      background: var(--accent-soft);
+      color: #153528;
+      font-weight: 650;
+    }
+    blockquote p { margin: 0; }
+    code {
+      padding: 0.1rem 0.28rem;
+      border-radius: 0.25rem;
+      background: rgba(34, 84, 61, 0.08);
+      color: #163c2c;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 0.88em;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0 28px;
+    }
+    .pill {
+      border: 1px solid rgba(34, 84, 61, 0.22);
+      background: rgba(231, 242, 234, 0.8);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      font-weight: 750;
+    }
+    .callout {
+      margin: 24px 0 34px;
+      padding: 18px 20px;
+      border: 1px solid rgba(138, 90, 19, 0.24);
+      background: #fff7e6;
+      color: #513306;
+    }
+    .table-wrap { width: 100%; overflow-x: auto; margin: 14px 0 24px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--rule);
+      background: white;
+      font-size: 0.88rem;
+    }
+    th, td {
+      vertical-align: top;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--rule);
+      border-right: 1px solid var(--rule);
+      text-align: left;
+    }
+    th {
+      background: #edf3ef;
+      color: #173c2d;
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    tr:last-child td { border-bottom: 0; }
+    td:last-child, th:last-child { border-right: 0; }
+    footer {
+      margin-top: 46px;
+      padding-top: 18px;
+      border-top: 1px solid var(--rule);
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    @media print {
+      body { background: white; }
+      .sheet { width: auto; margin: 0; border: 0; box-shadow: none; padding: 28px; }
+      h2 { break-after: avoid; }
+      table, blockquote { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet" aria-label="OpenPlan Admin Pilot Readiness Proof Packet summary">
+    <p class="eyebrow">Buyer-safe supervised pilot proof</p>
+    <h1>OpenPlan Admin Pilot Readiness Proof Packet</h1>
+    <div class="meta">
+      <span class="pill">Original packet: 2026-05-01</span>
+      <span class="pill">Refreshed: 2026-05-10</span>
+      <span class="pill">Human review before external reliance</span>
+      <span class="pill">No broad self-serve SaaS claim</span>
     </div>
-  </body>
+    <div class="callout">This generated static packet uses the same final checklist sync, proof filenames, release-proof artifacts, and caveats that the Admin Pilot Readiness markdown export uses.</div>
+    <p>_Date: 2026-05-01_ _Last refreshed: 2026-05-10_ _Status: Buyer-safe proof export for supervised pilot and managed-service review_ _Audience: rural RTPA, county, tribe, transportation commission, or consultant buyer diligence_</p>
+<h2>Buyer-Safe Summary</h2>
+<p>OpenPlan is ready to discuss as a supervised planning workbench with an Apache-2.0 open-source core and optional Nat Ford managed hosting, onboarding, implementation, support, and planning services.</p>
+<p>This packet does not claim that OpenPlan is a fully self-serve municipal SaaS, a validated behavioral forecasting platform, a complete legal/compliance automation system, or an autonomous AI planning product.</p>
+<p>The static sales packet and the Admin Pilot Readiness export now reuse the same final-checklist sync, release-proof artifacts, and caveat list so buyer-facing diligence does not drift from the operator surface.</p>
+<p>What has been proven for this release-to-sale posture:</p>
+<ul>
+<li>release-candidate checks across tests, lint, build, production health, audit, and public demo preflight;</li>
+<li>authenticated workspace and cross-workspace isolation behavior in local synthetic smoke;</li>
+<li>RTP/report packet creation, artifact generation, and release-review navigation;</li>
+<li>grants, funding awards, reimbursement, closeout, and RTP posture write-back;</li>
+<li>engagement public intake, moderation, public feedback publication, and report handoff;</li>
+<li>analysis/model-run output linked into scenarios and generated report artifacts;</li>
+<li>one seeded project record reused across RTP, grants, engagement, modeling evidence, reports, map, Data Hub, and aerial evidence;</li>
+<li>supervised request-access, reviewer triage, pilot workspace provisioning, owner invitation, and invited-owner acceptance;</li>
+<li>production Admin Operations access for the configured reviewer, with the service-lane intake unlocked and no prospect row capture;</li>
+<li>current billing posture with an explicit no-fresh-paid-canary waiver; and</li>
+<li>operator backup/restore procedure, completed staging restore drill, and managed-hosting service schedule language.</li>
+</ul>
+<h2>Proof Snapshot</h2>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Area</th>
+<th>Status</th>
+<th>What the evidence proves</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Release candidate baseline</td>
+<td>PASS</td>
+<td><code>pnpm test</code>, <code>pnpm lint</code>, <code>pnpm build</code>, production health, production audit, and public demo preflight all passed for the May 1 RC gate.</td>
+<td><code>docs/ops/2026-05-01-openplan-rc-proof-log.md</code></td>
+</tr>
+<tr>
+<td>Public demo preflight</td>
+<td>PASS</td>
+<td>No-auth checks cover health, request-access page availability, protected billing-readiness access, Mapbox/CSP posture, and no token printing.</td>
+<td><code>openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md</code>; <code>docs/ops/2026-05-01-openplan-phase0-proof-repair.md</code></td>
+</tr>
+<tr>
+<td>Admin Pilot Readiness surface</td>
+<td>PASS</td>
+<td>The readiness parser reads line-item <code>PASS:</code> evidence, <code>/admin/pilot-readiness</code> was recaptured on desktop/mobile, and the export now shares final-checklist/release-proof sections with this static packet.</td>
+<td><code>docs/ops/2026-05-01-openplan-phase0-proof-repair.md</code>; <code>docs/ops/2026-05-01-openplan-ui-ux-watch-recapture.md</code>; <code>openplan/src/lib/operations/pilot-readiness-packet.ts</code></td>
+</tr>
+<tr>
+<td>Workspace isolation</td>
+<td>PASS</td>
+<td>Two synthetic users could access their own workspace project URLs and were blocked from the other workspace, with session continuity after denial.</td>
+<td><code>docs/ops/2026-05-01-openplan-local-workspace-url-isolation-smoke.md</code></td>
+</tr>
+<tr>
+<td>RTP/report workflow</td>
+<td>PASS</td>
+<td>Local rendered smoke confirms RTP cycle creation, board-packet creation, artifact generation, registry packet navigation, and release-review anchor landing.</td>
+<td><code>docs/ops/2026-05-01-openplan-local-rtp-release-review-smoke.md</code></td>
+</tr>
+<tr>
+<td>Grants/funding workflow</td>
+<td>PASS</td>
+<td>Local rendered/API smoke confirms funding need, awarded opportunity, committed award, project RTP posture write-back, obligation milestone, paid reimbursement invoice, closeout, and funded/reimbursed posture.</td>
+<td><code>docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md</code></td>
+</tr>
+<tr>
+<td>Engagement handoff</td>
+<td>PASS</td>
+<td>Local rendered/API smoke confirms public feedback intake, staff moderation, public publication, handoff report provenance, HTML artifact generation, and source-context traceability.</td>
+<td><code>docs/ops/2026-05-01-openplan-local-engagement-report-handoff-smoke.md</code></td>
+</tr>
+<tr>
+<td>Analysis/report linkage</td>
+<td>PASS</td>
+<td>Local rendered/API smoke confirms corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, report linkage, HTML artifact, and source-context traceability.</td>
+<td><code>docs/ops/2026-05-01-openplan-local-analysis-report-linkage-smoke.md</code></td>
+</tr>
+<tr>
+<td>Phase 1 shared spine</td>
+<td>PASS</td>
+<td>Local API/rendered smoke confirms one seeded NCTC project ID is reused across RTP, grants, engagement, scenario/analysis runs, county-run modeling evidence, reports, map, Data Hub, and aerial evidence packages without duplicate project creation.</td>
+<td><code>docs/ops/2026-05-01-openplan-local-spine-smoke.md</code></td>
+</tr>
+<tr>
+<td>Admin/support onboarding flow</td>
+<td>PASS</td>
+<td>Local rendered/API smoke confirms public intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, owner invitation, review-event audit trail, and invited-owner acceptance.</td>
+<td><code>docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md</code></td>
+</tr>
+<tr>
+<td>Production Admin Operations access</td>
+<td>PASS</td>
+<td>Production authenticated browser smoke confirms the configured reviewer can load <code>/admin/operations</code>, see the service-lane intake surface unlocked, and avoid triage/provision actions or prospect row capture during proof.</td>
+<td><code>docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md</code></td>
+</tr>
+<tr>
+<td>Billing posture</td>
+<td>PASS with explicit waiver</td>
+<td>Billing is positioned as historical live payment evidence plus current non-money-moving proof. No fresh same-cycle paid checkout canary is claimed.</td>
+<td><code>docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md</code></td>
+</tr>
+<tr>
+<td>Managed hosting posture</td>
+<td>Buyer-reviewable template</td>
+<td>The service schedule defines scoped managed-hosting responsibilities, support targets, backup/restore fields to fill, and out-of-scope items before signature.</td>
+<td><code>docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md</code></td>
+</tr>
+<tr>
+<td>Backup/restore posture</td>
+<td>PASS</td>
+<td>The operator procedure names durable state, backup cadence, restore decision gates, staging-first posture, validation, and customer communication boundaries. A dedicated staging Supabase project was created, migrated, restored from private production schema/public-data dumps, validated, and retired.</td>
+<td><code>openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md</code>; <code>docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md</code></td>
+</tr>
+<tr>
+<td>Final checklist / managed support synchronization</td>
+<td>PASS</td>
+<td>The final pilot-readiness checklist, managed-support proof map, county-run manifest proof, and modeling evidence export proof now travel with both the Admin export and static sales packet.</td>
+<td><code>docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md</code>; <code>docs/sales/2026-05-10-openplan-managed-support-proof-map.md</code>; <code>docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md</code>; <code>openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md</code>; <code>openplan/src/test/pilot-readiness-export-packet.test.ts</code></td>
+</tr>
+</tbody></table></div>
+<h2>Final Pilot-Readiness Checklist Sync</h2>
+<ul>
+<li>Checklist: docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md</li>
+<li>Verdict: PASS for a supervised pilot-readiness conversation; not a launch certificate for a finished planning suite.</li>
+<li>Operator instruction: Use this sync block before buyer reliance: confirm the final checklist, exported Admin Pilot Readiness packet filenames, and latest proof-lane artifacts still match the current caveats.</li>
+<li>Supervised-onboarding caveat: Onboarding is a supervised implementation step: no instant public workspace activation, no broad self-serve municipal SaaS claim, and no outbound reliance without human review.</li>
+</ul>
+<h3>Exported proof packet filenames</h3>
+<ul>
+<li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md</li>
+<li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html</li>
+<li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf</li>
+</ul>
+<h3>Latest proof lanes synchronized from the final checklist</h3>
+<ul>
+<li><strong>Managed support diligence</strong>: docs/sales/2026-05-10-openplan-managed-support-proof-map.md</li>
+<li>Role: Connects managed hosting, onboarding, support, backup/restore, billing, and pilot closeout claims to proof.</li>
+<li>Caveat: Buyer-specific reliance checks and per-engagement operations terms still need operator completion before contracting.</li>
+<li><strong>County-run manifest proof</strong>: docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md</li>
+<li>Role: Keeps county-run evidence, source context, and caveats visible for pilot diligence.</li>
+<li>Caveat: County-run output is evidence packaging, not validated forecasting or autonomous decision support.</li>
+<li><strong>Modeling evidence exports</strong>: openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md</li>
+<li>Role: Carries modeling caveats and source context into report and RTP export paths.</li>
+<li>Caveat: Behavioral-onramp KPIs remain behind the proven SQL/RPC caveat gate; no validated behavioral forecasting claim is made.</li>
+<li><strong>Release proof synchronization</strong>: openplan/src/test/pilot-readiness-export-packet.test.ts</li>
+<li>Role: Guards the Admin Pilot Readiness export against drift from Command Center release-proof copy and the final smoke checklist.</li>
+<li>Caveat: Internal packet synchronization does not replace fresh smoke reruns after behavior changes.</li>
+</ul>
+<h2>Release Proof Packet Alignment</h2>
+<p>OpenPlan is inspectable as an Apache-2.0 planning workbench plus Nat Ford managed hosting, onboarding, implementation, support, and planning services. Sell the current wedge as supervised planning workbench support for rural RTPA/county workflows, not broad self-serve municipal SaaS.</p>
+<h3>Required caveats</h3>
+<ul>
+<li>No fresh same-cycle paid canary is claimed; current billing proof is waiver/non-money-moving posture.</li>
+<li>Onboarding remains a supervised implementation step, not instant self-serve activation; buyer use requires operator review before reliance.</li>
+<li>RPO/RTO commitments are filled per managed-hosting engagement, not promised globally here.</li>
+<li>Modeling outputs support planning review only inside the current proof boundary; no validated behavioral forecasting claim is made.</li>
+<li>OpenPlan is not sold as legal-grade LAPM/compliance automation or autonomous AI planning.</li>
+</ul>
+<h3>Proof artifacts synchronized with Command Center</h3>
+<ul>
+<li><strong>Gates</strong>: Release gates are collected and traceable. Source: docs/ops/2026-05-01-openplan-release-to-sale-plan.md</li>
+<li>Supports: Sale readiness: names the current gate evidence operators may cite for the supervised offer.</li>
+<li>Operator check: Use it to confirm a buyer or pilot claim maps to a PASS gate before it appears in demo copy, SOW language, or a readiness packet.</li>
+<li>Caveats carried: Supervised onboarding (docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md); Modeling proof boundary (docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md); No legal/autonomous AI claim (docs/ops/2026-05-01-openplan-known-issues-register.md)</li>
+<li><strong>Packet</strong>: Admin Pilot Readiness is the operator-facing packet check. Source: docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md</li>
+<li>Supports: Pilot readiness: turns smoke status and source documents into a reviewable operator packet.</li>
+<li>Operator check: Use it immediately before a pilot demo to verify PASS lanes have named source docs and every pending/failing lane has a follow-up owner.</li>
+<li>Caveats carried: Billing proof waiver (docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md); Supervised onboarding (docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md); Per-engagement hosting terms (docs/ops/2026-05-01-openplan-known-issues-register.md)</li>
+<li><strong>Caveats</strong>: Sales language must stay inside named caveats. Source: docs/ops/2026-05-01-openplan-known-issues-register.md</li>
+<li>Supports: Sale readiness: keeps public, pricing, and buyer-facing language inside the current proof boundary.</li>
+<li>Operator check: Use it as the stop-list before sharing examples, pricing language, implementation scopes, or managed-hosting commitments.</li>
+<li>Caveats carried: Billing proof waiver (docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md); Supervised onboarding (docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md); Per-engagement hosting terms (docs/ops/2026-05-01-openplan-known-issues-register.md); Modeling proof boundary (docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md); No legal/autonomous AI claim (docs/ops/2026-05-01-openplan-known-issues-register.md)</li>
+<li><strong>Next action</strong>: Inspect readiness, then review intake positioning. Source: docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md</li>
+<li>Supports: Sale and pilot readiness: gives the operator sequence after proof review, before external use.</li>
+<li>Operator check: Use it as the final supervised-readiness walk-through: readiness packet, request-access language, examples, then buyer-safe caveat sheet.</li>
+<li>Caveats carried: Billing proof waiver (docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md); Supervised onboarding (docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md); Modeling proof boundary (docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md); No legal/autonomous AI claim (docs/ops/2026-05-01-openplan-known-issues-register.md)</li>
+</ul>
+<h2>What Nat Ford Should Validate During Buyer Onboarding</h2>
+<p>Before a rural RTPA/county buyer relies on the pilot workspace, Nat Ford should validate the buyer-specific operating facts below.</p>
+<div class="table-wrap"><table>
+<thead><tr>
+<th>Onboarding validation</th>
+<th>Why it matters</th>
+</tr></thead>
+<tbody>
+<tr>
+<td>Name one workspace owner and support contact(s).</td>
+<td>Keeps access, triage, and issue escalation accountable.</td>
+</tr>
+<tr>
+<td>Select the first workflow: RTP/report, grants/funding, engagement handoff, analysis/report linkage, county-run evidence packaging, or managed-hosting setup.</td>
+<td>Prevents a buyer conversation from expanding into unsupported full-suite claims.</td>
+</tr>
+<tr>
+<td>Classify data sensitivity: public, internal, confidential, or mixed.</td>
+<td>Determines what data belongs in OpenPlan, what should remain outside, and whether enhanced terms are needed.</td>
+</tr>
+<tr>
+<td>Confirm the managed-hosting service schedule fields.</td>
+<td>Support targets, backup/restore posture, billing posture, and any enhanced SLA terms must be filled before signature.</td>
+</tr>
+<tr>
+<td>Re-run the relevant workspace-specific smoke after setup.</td>
+<td>The May 1/May 10 proof is platform/release evidence; each pilot still needs its own scoped acceptance check.</td>
+</tr>
+<tr>
+<td>Confirm Mapbox, Supabase, Vercel, Stripe, and model-provider posture for the chosen workflow.</td>
+<td>Third-party dependencies are part of the hosted operating path and may affect procurement or availability expectations.</td>
+</tr>
+<tr>
+<td>Decide whether procurement needs a fresh paid checkout canary.</td>
+<td>The current packet explicitly waives same-cycle money-moving proof.</td>
+</tr>
+<tr>
+<td>Review AI/modeling output caveats before external reliance.</td>
+<td>AI-assisted and modeling outputs are planning-support materials, not autonomous or certified decisions.</td>
+</tr>
+<tr>
+<td>Confirm client official-record retention outside OpenPlan.</td>
+<td>OpenPlan exports and records do not replace public-records, legal-hold, or official archive duties.</td>
+</tr>
+</tbody></table></div>
+<h2>Implementation-Specific Items Still To Scope</h2>
+<p>These items remain real work or engagement-specific decisions, not release-wide guarantees:</p>
+<ul>
+<li>buyer-specific data loading, cleanup, geocoding, GIS integration, and source-document review;</li>
+<li>SSO, private cloud, agency-cloud deployment, custom security review, or enhanced support/SLA terms;</li>
+<li>formal RPO/RTO commitments beyond the signed managed-hosting schedule;</li>
+<li>future quarterly restore drills for later production milestones;</li>
+<li>fresh same-cycle paid checkout proof if the buyer or procurement reviewer requires it;</li>
+<li>calibrated or certified behavioral-demand modeling and broader ActivitySim/MATSim readiness;</li>
+<li>complete LAPM/legal/compliance automation, grant scoring, or official legal sign-off;</li>
+<li>custom reports, integrations, migrations, or planning services beyond the scoped SOW; and</li>
+<li>aerial/field evidence workflows beyond the selected implementation scope.</li>
+</ul>
+<h2>Buyer-Safe Language</h2>
+<p>Use:</p>
+<blockquote>
+<p>OpenPlan supports supervised planning workflows with evidence traceability and human review.</p>
+</blockquote>
+<p>Use:</p>
+<blockquote>
+<p>OpenPlan is ready for scoped pilots and managed-service engagements where the first workflow, data posture, support path, and proof boundary are agreed up front.</p>
+</blockquote>
+<p>Use:</p>
+<blockquote>
+<p>Managed hosting and implementation are service wrappers around the Apache-2.0 open-source core.</p>
+</blockquote>
+<p>Avoid:</p>
+<blockquote>
+<p>OpenPlan is fully self-serve municipal SaaS.</p>
+</blockquote>
+<p>Avoid:</p>
+<blockquote>
+<p>OpenPlan replaces planners, engineers, attorneys, grant writers, or agency review.</p>
+</blockquote>
+<p>Avoid:</p>
+<blockquote>
+<p>Billing was freshly re-proven with a paid checkout in this release cycle.</p>
+</blockquote>
+<h2>Source Packet Links</h2>
+<ul>
+<li>docs/ops/2026-05-01-openplan-rc-proof-log.md</li>
+<li>openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md</li>
+<li>docs/ops/2026-05-01-openplan-phase0-proof-repair.md</li>
+<li>docs/ops/2026-05-01-openplan-ui-ux-watch-recapture.md</li>
+<li>openplan/src/lib/operations/pilot-readiness-packet.ts</li>
+<li>docs/ops/2026-05-01-openplan-local-workspace-url-isolation-smoke.md</li>
+<li>docs/ops/2026-05-01-openplan-local-rtp-release-review-smoke.md</li>
+<li>docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md</li>
+<li>docs/ops/2026-05-01-openplan-local-engagement-report-handoff-smoke.md</li>
+<li>docs/ops/2026-05-01-openplan-local-analysis-report-linkage-smoke.md</li>
+<li>docs/ops/2026-05-01-openplan-local-spine-smoke.md</li>
+<li>docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md</li>
+<li>docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md</li>
+<li>docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md</li>
+<li>docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md</li>
+<li>openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md</li>
+<li>docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md</li>
+<li>docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md</li>
+<li>docs/sales/2026-05-10-openplan-managed-support-proof-map.md</li>
+<li>docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md</li>
+<li>openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md</li>
+<li>openplan/src/test/pilot-readiness-export-packet.test.ts</li>
+<li>docs/ops/2026-05-01-openplan-release-to-sale-plan.md</li>
+<li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md</li>
+<li>docs/ops/2026-05-01-openplan-known-issues-register.md</li>
+<li>docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md</li>
+<li>docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md</li>
+<li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html</li>
+<li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf</li>
+<li>docs/sales/2026-05-01-openplan-buyer-one-pager.md</li>
+<li>docs/sales/2026-05-01-openplan-managed-hosting-service-description.md</li>
+<li>docs/sales/2026-05-01-openplan-pilot-sow-template.md</li>
+</ul>
+<h2>Packet Verdict</h2>
+<p>PASS for buyer-safe packaging: this packet makes the current proof posture readable for a supervised pilot or managed-service sale while preserving the explicit limits around production guarantees, billing proof, modeling, compliance, AI, backup/restore, and buyer-specific onboarding.</p>
+    <footer>Generated from <code>openplan/src/lib/operations/pilot-readiness-packet.ts</code> via <code>openplan/scripts/ops/generate-admin-pilot-readiness-proof-packet.ts</code>.</footer>
+  </main>
+</body>
 </html>
