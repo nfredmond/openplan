@@ -1546,6 +1546,17 @@ describe("POST /api/reports/[reportId]/generate", () => {
       attentionProjectScanCount: 1,
       operatorReviewCaveat: expect.stringContaining("not legal compliance automation, award prediction, or autonomous approval"),
     });
+
+    const htmlContent = String(generatedArtifact?.metadata_json?.htmlContent ?? "");
+    expect(htmlContent).toContain("Funding source context");
+    expect(htmlContent).toContain("Captured during packet generation");
+    expect(htmlContent).toContain("Nevada County Safety Action Program");
+    expect(htmlContent).toContain("Funding profile needs operator review");
+    expect(htmlContent).toContain("Operator-review caveat");
+    expect(htmlContent).toContain("not legal compliance automation, award prediction, or autonomous approval");
+    expect(htmlContent).not.toMatch(/grant-award/i);
+    expect(htmlContent).not.toMatch(/legal (?:sign-off|approval|determination) (?:is|was) (?:ready|complete|granted)/i);
+    expect(htmlContent).not.toMatch(/autonomous (?:approval|planning|decision) (?:is|was) (?:ready|complete|granted)/i);
   });
 
   it("persists a compact stage-gate snapshot in artifact metadata and html", async () => {

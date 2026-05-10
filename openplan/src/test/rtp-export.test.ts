@@ -136,6 +136,111 @@ describe("buildRtpExportHtml", () => {
     expect(html).toContain("1 cycle targets · 0 chapter targets · 5 ready comments · 0 pending comments");
   });
 
+  it("exports captured RTP funding source context with explicit operator-review caveats", () => {
+    const html = buildRtpExportHtml({
+      cycle: {
+        id: "cycle-funding",
+        workspace_id: "workspace-funding",
+        title: "2027 RTP",
+        status: "draft",
+        geography_label: "Nevada County",
+        horizon_start_year: 2027,
+        horizon_end_year: 2050,
+        adoption_target_date: "2026-06-01T00:00:00.000Z",
+        public_review_open_at: "2026-04-20T00:00:00.000Z",
+        public_review_close_at: "2026-05-20T00:00:00.000Z",
+        summary: "Cycle summary",
+        updated_at: "2026-05-10T00:00:00.000Z",
+      },
+      chapters: [],
+      linkedProjects: normalizeRtpLinkedProjects([
+        {
+          id: "link-funding",
+          project_id: "project-funding",
+          portfolio_role: "constrained",
+          priority_rationale: "Primary implementation package.",
+          projects: {
+            id: "project-funding",
+            name: "SR-49 safety package",
+            status: "active",
+            delivery_phase: "programming",
+            summary: "Safety implementation package.",
+            updated_at: "2026-05-09T10:00:00.000Z",
+          },
+        },
+      ]),
+      campaigns: [],
+      options: {
+        sectionKeys: ["portfolio_posture"],
+        fundingSnapshot: {
+          capturedAt: "2026-05-10T12:00:00.000Z",
+          latestSourceUpdatedAt: "2026-05-10T12:00:00.000Z",
+          linkedProjectCount: 1,
+          trackedProjectCount: 1,
+          fundedProjectCount: 0,
+          likelyCoveredProjectCount: 1,
+          gapProjectCount: 1,
+          committedFundingAmount: 500000,
+          likelyFundingAmount: 750000,
+          totalPotentialFundingAmount: 1250000,
+          unfundedAfterLikelyAmount: 250000,
+          paidReimbursementAmount: 0,
+          outstandingReimbursementAmount: 500000,
+          uninvoicedAwardAmount: 500000,
+          awardRiskCount: 0,
+          label: "Partially funded",
+          reason: "Likely dollars do not yet cover the full RTP implementation need.",
+          reimbursementLabel: "Reimbursement not complete",
+          reimbursementReason: "A paid reimbursement record is not yet complete.",
+        },
+        fundingProfileScans: [
+          {
+            projectId: "project-funding",
+            projectName: "SR-49 safety package",
+            portfolioRole: "constrained",
+            priorityRationale: "Primary implementation package.",
+            latestFundingSourceUpdatedAt: "2026-05-10T12:00:00.000Z",
+            scan: {
+              generatedAt: "2026-05-10T12:00:00.000Z",
+              status: "attention",
+              label: "Funding profile needs operator review",
+              nextAction: "Review source context and funding-source criteria before reusing the evidence in a grant package.",
+              lanes: [],
+            },
+          },
+        ],
+        fundingSourceContextReadiness: {
+          capturedAt: "2026-05-10T12:00:00.000Z",
+          status: "attention",
+          label: "RTP funding source context needs operator review",
+          detail: "1 linked project funding scan needs operator review before strong RTP funding language is reused.",
+          linkedProjectScanCount: 1,
+          readyProjectScanCount: 0,
+          attentionProjectScanCount: 1,
+          blockedProjectScanCount: 0,
+          modelingEvidenceCount: 0,
+          engagementReadyForHandoffCount: 0,
+          enabledSectionCount: 1,
+          operatorReviewCaveat:
+            "Operator review required. This funding/source-context scan supports planning packet review only; it is not legal compliance automation, award prediction, or autonomous approval.",
+        },
+      },
+    });
+
+    expect(html).toContain("Funding source context");
+    expect(html).toContain("Captured during packet generation");
+    expect(html).toContain("Partially funded");
+    expect(html).toContain("$500,000");
+    expect(html).toContain("$250,000");
+    expect(html).toContain("SR-49 safety package");
+    expect(html).toContain("Funding profile needs operator review");
+    expect(html).toContain("Operator-review caveat");
+    expect(html).toContain("not legal compliance automation, award prediction, or autonomous approval");
+    expect(html).not.toMatch(/grant-award/i);
+    expect(html).not.toMatch(/legal (?:sign-off|approval|determination) (?:is|was) (?:ready|complete|granted)/i);
+    expect(html).not.toMatch(/autonomous (?:approval|planning|decision) (?:is|was) (?:ready|complete|granted)/i);
+  });
+
   it("embeds .chapter-markdown styles and wraps tables in standalone exports", () => {
     const chapterMarkdown = [
       "## Existing conditions",

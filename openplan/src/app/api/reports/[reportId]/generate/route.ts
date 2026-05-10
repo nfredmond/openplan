@@ -813,6 +813,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
             readyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
           },
           modelingEvidence,
+          fundingSnapshot: portfolioFundingSnapshot,
+          fundingProfileScans: rtpFundingProfileScans,
+          fundingSourceContextReadiness: rtpFundingSourceContextReadiness,
         },
       });
       const generatedAt = new Date().toISOString();

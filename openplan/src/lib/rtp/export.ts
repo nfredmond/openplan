@@ -14,6 +14,7 @@ import {
   titleizeRtpValue,
   type RtpPublicReviewSummary,
 } from "@/lib/rtp/catalog";
+import type { PortfolioFundingSnapshot, ProjectFundingProfileScan } from "@/lib/projects/funding";
 
 export type RtpExportCycle = {
   id: string;
@@ -77,6 +78,30 @@ export type RtpExportCampaign = {
 
 export type RtpExportModelingEvidence = ReportModelingEvidence;
 
+export type RtpExportFundingProfileScan = {
+  projectId: string;
+  projectName: string | null;
+  portfolioRole: string | null;
+  priorityRationale: string | null;
+  latestFundingSourceUpdatedAt: string | null;
+  scan: ProjectFundingProfileScan;
+};
+
+export type RtpExportFundingSourceContextReadiness = {
+  capturedAt: string;
+  status: "ready" | "attention" | "blocked";
+  label: string;
+  detail: string;
+  linkedProjectScanCount: number;
+  readyProjectScanCount: number;
+  attentionProjectScanCount: number;
+  blockedProjectScanCount: number;
+  modelingEvidenceCount: number;
+  engagementReadyForHandoffCount: number;
+  enabledSectionCount: number;
+  operatorReviewCaveat: string;
+};
+
 export type RtpExportNormalizedLinkedProject = RtpExportLinkedProject & {
   project: {
     id: string;
@@ -133,6 +158,15 @@ function formatRtpExportDateTime(value: string | null | undefined): string {
   if (!value) return "Not set";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+function formatRtpExportCurrency(value: number | null | undefined): string {
+  const amount = typeof value === "number" && Number.isFinite(value) ? value : 0;
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(amount);
 }
 
 function resolveEnabledSectionKeys(sectionKeys?: string[]): RtpExportSectionKey[] {
@@ -338,6 +372,61 @@ function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): 
   </section>`;
 }
 
+function fundingSourceContextMarkup(input: {
+  fundingSnapshot?: PortfolioFundingSnapshot | null;
+  fundingProfileScans?: RtpExportFundingProfileScan[] | null;
+  fundingSourceContextReadiness?: RtpExportFundingSourceContextReadiness | null;
+}): string {
+  const fundingSnapshot = input.fundingSnapshot ?? null;
+  const fundingProfileScans = input.fundingProfileScans ?? [];
+  const readiness = input.fundingSourceContextReadiness ?? null;
+
+  if (!fundingSnapshot && fundingProfileScans.length === 0 && !readiness) return "";
+
+  const caveat =
+    readiness?.operatorReviewCaveat ??
+    "Operator review required. This funding/source-context scan supports planning packet review only; it is not legal compliance automation, award prediction, or autonomous approval.";
+
+  return `
+    <div class="card funding-source-context" style="margin-top:12px;">
+      <h3>Funding source context</h3>
+      <p class="muted">Captured during packet generation so RTP funding language can be reviewed against the project funding basis used for this artifact.</p>
+      ${
+        fundingSnapshot
+          ? `<div class="grid">
+              <div class="card"><strong>${esc(fundingSnapshot.label)}</strong><br/><span class="muted">${esc(fundingSnapshot.reason)}</span></div>
+              <div class="card"><strong>${esc(formatRtpExportCurrency(fundingSnapshot.committedFundingAmount))}</strong><br/><span class="muted">committed funding captured</span></div>
+              <div class="card"><strong>${esc(formatRtpExportCurrency(fundingSnapshot.unfundedAfterLikelyAmount))}</strong><br/><span class="muted">uncovered after likely dollars</span></div>
+              <div class="card"><strong>${esc(fundingSnapshot.reimbursementLabel)}</strong><br/><span class="muted">${esc(fundingSnapshot.reimbursementReason)}</span></div>
+            </div>`
+          : '<p class="muted">No portfolio funding snapshot was captured.</p>'
+      }
+      ${
+        readiness
+          ? `<p><strong>${esc(readiness.label)}:</strong> ${esc(readiness.detail)}</p>
+             <p class="muted">${esc(
+               `${readiness.readyProjectScanCount} ready · ${readiness.attentionProjectScanCount} attention · ${readiness.blockedProjectScanCount} blocked project scans; ${readiness.modelingEvidenceCount} modeling evidence item(s); ${readiness.engagementReadyForHandoffCount} engagement item(s) ready for handoff.`
+             )}</p>`
+          : ""
+      }
+      ${
+        fundingProfileScans.length > 0
+          ? `<ul class="compact-list">${fundingProfileScans
+              .map(
+                (item) =>
+                  `<li><strong>${esc(item.projectName ?? "Linked project")}</strong> · ${esc(
+                    formatRtpPortfolioRoleLabel(item.portfolioRole ?? "candidate")
+                  )} · ${esc(item.scan.label)}<br/><span class="muted">${esc(item.scan.nextAction)}</span><br/><span class="muted">Latest funding source update: ${esc(
+                    formatRtpExportDateTime(item.latestFundingSourceUpdatedAt)
+                  )}</span></li>`
+              )
+              .join("")}</ul>`
+          : '<p class="muted">No linked-project funding scans were captured.</p>'
+      }
+      <p class="muted"><strong>Operator-review caveat:</strong> ${esc(caveat)}</p>
+    </div>`;
+}
+
 export function buildRtpExportHtml(input: {
   cycle: RtpExportCycle;
   chapters: RtpExportChapter[];
@@ -353,6 +442,9 @@ export function buildRtpExportHtml(input: {
       readyCommentCount?: number;
     }) | null;
     modelingEvidence?: RtpExportModelingEvidence[];
+    fundingSnapshot?: PortfolioFundingSnapshot | null;
+    fundingProfileScans?: RtpExportFundingProfileScan[] | null;
+    fundingSourceContextReadiness?: RtpExportFundingSourceContextReadiness | null;
   };
 }): string {
   const { cycle, chapters, linkedProjects, campaigns, options } = input;
@@ -374,6 +466,11 @@ export function buildRtpExportHtml(input: {
   const titleSuffix = options?.titleSuffix ?? "OpenPlan RTP Export";
   const publicReviewSummary = options?.publicReviewSummary ?? null;
   const modelingEvidence = options?.modelingEvidence ?? [];
+  const fundingSourceContext = fundingSourceContextMarkup({
+    fundingSnapshot: options?.fundingSnapshot ?? null,
+    fundingProfileScans: options?.fundingProfileScans ?? null,
+    fundingSourceContextReadiness: options?.fundingSourceContextReadiness ?? null,
+  });
 
   const sections: string[] = [];
 
@@ -445,6 +542,7 @@ export function buildRtpExportHtml(input: {
         </div>`
       )
       .join("")}
+    ${fundingSourceContext}
   </section>`);
   }
 
