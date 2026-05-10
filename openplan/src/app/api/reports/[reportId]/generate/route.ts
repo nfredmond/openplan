@@ -22,7 +22,12 @@ import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
-import { buildPortfolioFundingSnapshot } from "@/lib/projects/funding";
+import {
+  buildPortfolioFundingSnapshot,
+  buildProjectFundingProfileScan,
+  buildProjectFundingSnapshot,
+  buildProjectFundingStackSummary,
+} from "@/lib/projects/funding";
 import { getRtpPacketPresetAlignment } from "@/lib/reports/catalog";
 import {
   buildProjectStageGateSnapshot,
@@ -36,7 +41,6 @@ import {
 import { buildReportHtml } from "@/lib/reports/html";
 import { renderHtmlToPdf } from "@/lib/reports/pdf";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
-import { buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   loadReportScenarioSetLinks,
@@ -96,6 +100,11 @@ type ProjectRecordSnapshotEntry = {
   latestTitle: string | null;
   latestAt: string | null;
 };
+
+type FundingSourceContextReadinessStatus = "ready" | "attention" | "blocked";
+
+const FUNDING_SOURCE_CONTEXT_OPERATOR_CAVEAT =
+  "Operator review required. This funding/source-context scan supports planning packet review only; it is not legal compliance automation, award prediction, or autonomous approval.";
 
 type ReportCountyRunEvidenceRow = {
   id: string;
@@ -201,6 +210,123 @@ function buildProjectRecordSnapshot(entries: {
     issues: buildEntry(entries.issues, (item) => item.created_at),
     decisions: buildEntry(entries.decisions, (item) => item.decided_at ?? item.created_at),
     meetings: buildEntry(entries.meetings, (item) => item.meeting_at ?? item.created_at),
+  };
+}
+
+function hasReadyScenarioComparisonEvidence(
+  scenarioSetLinks: Array<{
+    comparisonSummary?: { readyAlternatives?: number } | null;
+    matchedEntries?: Array<{ comparisonReady?: boolean }> | null;
+    comparisonSnapshots?: Array<{ status?: string; sourceContext?: { exportReady?: boolean } | null }> | null;
+  }>
+) {
+  return scenarioSetLinks.some((link) => {
+    if ((link.comparisonSummary?.readyAlternatives ?? 0) > 0) {
+      return true;
+    }
+
+    if ((link.matchedEntries ?? []).some((entry) => entry.comparisonReady === true)) {
+      return true;
+    }
+
+    return (link.comparisonSnapshots ?? []).some(
+      (snapshot) => snapshot.status === "ready" || snapshot.sourceContext?.exportReady === true
+    );
+  });
+}
+
+function buildFundingSourceContextReadiness(input: {
+  hasComparisonEvidence: boolean;
+  linkedRunCount: number;
+  modelingEvidenceCount: number;
+  engagementReadyForHandoffCount: number;
+  stageGateHoldCount?: number;
+  fundingScanStatus?: string | null;
+}) {
+  const stageGateHoldCount = input.stageGateHoldCount ?? 0;
+  const sourceEvidenceCount =
+    (input.hasComparisonEvidence ? 1 : 0) +
+    input.linkedRunCount +
+    input.modelingEvidenceCount +
+    input.engagementReadyForHandoffCount;
+  const fundingBlocked = input.fundingScanStatus === "blocked" || input.fundingScanStatus === "not_started";
+
+  let status: FundingSourceContextReadinessStatus = "ready";
+  let label = "Funding source context ready for operator review";
+  let detail =
+    "Generation captured funding posture together with linked analysis, scenario, engagement, and governance context for a supervised review packet.";
+
+  if (fundingBlocked || stageGateHoldCount > 0) {
+    status = "blocked";
+    label = "Funding source context has review blockers";
+    detail =
+      "Generation captured the funding scan, but unresolved funding setup or governance holds must be reviewed before relying on the packet outside OpenPlan.";
+  } else if (sourceEvidenceCount === 0 || input.fundingScanStatus === "attention") {
+    status = "attention";
+    label = "Funding source context needs operator review";
+    detail =
+      "Generation captured the funding scan, but source context is incomplete or mixed; keep grant and RTP language provisional until an operator reviews the basis.";
+  }
+
+  return {
+    capturedAt: new Date().toISOString(),
+    status,
+    label,
+    detail,
+    hasComparisonEvidence: input.hasComparisonEvidence,
+    linkedRunCount: input.linkedRunCount,
+    modelingEvidenceCount: input.modelingEvidenceCount,
+    engagementReadyForHandoffCount: input.engagementReadyForHandoffCount,
+    stageGateHoldCount,
+    fundingScanStatus: input.fundingScanStatus ?? null,
+    operatorReviewCaveat: FUNDING_SOURCE_CONTEXT_OPERATOR_CAVEAT,
+  };
+}
+
+function summarizeRtpFundingProfileScanReadiness(
+  scans: Array<{ scan: { status: string; label: string; nextAction: string } }>,
+  input: {
+    modelingEvidenceCount: number;
+    engagementReadyForHandoffCount: number;
+    enabledSectionCount: number;
+  }
+) {
+  const blockedCount = scans.filter(
+    (item) => item.scan.status === "blocked" || item.scan.status === "not_started"
+  ).length;
+  const attentionCount = scans.filter((item) => item.scan.status === "attention").length;
+  const readyCount = scans.filter((item) => item.scan.status === "ready").length;
+
+  let status: FundingSourceContextReadinessStatus = "ready";
+  let label = "RTP funding source context ready for operator review";
+  let detail =
+    "Generation captured linked-project funding scans, cycle readiness, public-review posture, and packet source context for supervised RTP review.";
+
+  if (blockedCount > 0) {
+    status = "blocked";
+    label = "RTP funding source context has project blockers";
+    detail = `${blockedCount} linked project funding scan${blockedCount === 1 ? "" : "s"} need setup or blocker resolution before the RTP funding basis is used outside OpenPlan.`;
+  } else if (attentionCount > 0 || scans.length === 0) {
+    status = "attention";
+    label = "RTP funding source context needs operator review";
+    detail = scans.length === 0
+      ? "No linked project funding scans were available when this RTP artifact was generated."
+      : `${attentionCount} linked project funding scan${attentionCount === 1 ? "" : "s"} need operator review before strong RTP funding language is reused.`;
+  }
+
+  return {
+    capturedAt: new Date().toISOString(),
+    status,
+    label,
+    detail,
+    linkedProjectScanCount: scans.length,
+    readyProjectScanCount: readyCount,
+    attentionProjectScanCount: attentionCount,
+    blockedProjectScanCount: blockedCount,
+    modelingEvidenceCount: input.modelingEvidenceCount,
+    engagementReadyForHandoffCount: input.engagementReadyForHandoffCount,
+    enabledSectionCount: input.enabledSectionCount,
+    operatorReviewCaveat: FUNDING_SOURCE_CONTEXT_OPERATOR_CAVEAT,
   };
 }
 
@@ -478,7 +604,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .order("sort_order", { ascending: true }),
         supabase
           .from("project_rtp_cycle_links")
-          .select("id, project_id, portfolio_role, priority_rationale, projects(id, name, status, delivery_phase, summary)")
+          .select("id, project_id, portfolio_role, priority_rationale, projects(id, name, status, delivery_phase, summary, updated_at)")
           .eq("rtp_cycle_id", report.rtp_cycle_id)
           .order("created_at", { ascending: false }),
         supabase
@@ -567,12 +693,42 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
       const portfolioFundingSnapshot = buildPortfolioFundingSnapshot({
         projects: linkedProjectIds.map((projectId) => ({
+          projectUpdatedAt: linkedProjects.find((link) => link.project?.id === projectId)?.project?.updated_at ?? null,
           profile: fundingProfileByProjectId.get(projectId) ?? null,
           awards: fundingAwardsByProjectId.get(projectId) ?? [],
           opportunities: fundingOpportunitiesByProjectId.get(projectId) ?? [],
           invoices: fundingInvoicesByProjectId.get(projectId) ?? [],
         })),
         capturedAt: report.generated_at ?? new Date().toISOString(),
+      });
+      const rtpFundingProfileScans = linkedProjects.map((link) => {
+        const projectId = link.project?.id ?? link.project_id;
+        const summary = buildProjectFundingStackSummary(
+          fundingProfileByProjectId.get(projectId) ?? null,
+          fundingAwardsByProjectId.get(projectId) ?? [],
+          fundingOpportunitiesByProjectId.get(projectId) ?? [],
+          fundingInvoicesByProjectId.get(projectId) ?? []
+        );
+        const scan = buildProjectFundingProfileScan({
+          summary,
+          hasComparisonEvidence: false,
+        });
+
+        return {
+          projectId,
+          projectName: link.project?.name ?? null,
+          portfolioRole: link.portfolio_role,
+          priorityRationale: link.priority_rationale,
+          latestFundingSourceUpdatedAt: buildProjectFundingSnapshot({
+            profile: fundingProfileByProjectId.get(projectId) ?? null,
+            awards: fundingAwardsByProjectId.get(projectId) ?? [],
+            opportunities: fundingOpportunitiesByProjectId.get(projectId) ?? [],
+            invoices: fundingInvoicesByProjectId.get(projectId) ?? [],
+            capturedAt: report.generated_at ?? null,
+            projectUpdatedAt: link.project?.updated_at ?? null,
+          }).latestSourceUpdatedAt,
+          scan,
+        };
       });
       const campaignIds = campaigns.map((campaign) => campaign.id);
       const engagementItemsResult = campaignIds.length
@@ -630,6 +786,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
         approvedCommentCount: engagementCounts.moderationQueue.approvedCount,
         readyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
       });
+      const rtpFundingSourceContextReadiness = summarizeRtpFundingProfileScanReadiness(
+        rtpFundingProfileScans,
+        {
+          modelingEvidenceCount: modelingEvidenceMetadata.length,
+          engagementReadyForHandoffCount: engagementCounts.moderationQueue.readyForHandoffCount,
+          enabledSectionCount: sections.filter((section) => section.enabled).length,
+        }
+      );
       const format = parsed.data.format;
       const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
       const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
@@ -703,6 +867,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
           engagementReadyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
           publicReviewSummary,
           rtpFundingSnapshot: portfolioFundingSnapshot,
+          rtpFundingProfileScans,
+          rtpFundingSourceContextReadiness,
           readiness,
           workflow,
           modelingEvidence: modelingEvidenceMetadata,
@@ -1101,6 +1267,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
       capturedAt: new Date().toISOString(),
       projectUpdatedAt: projectResult.data.updated_at,
     });
+    const projectFundingStackSummary = buildProjectFundingStackSummary(
+      fundingProfileResult.data,
+      fundingAwardsResult.data ?? [],
+      fundingOpportunitiesResult.data ?? [],
+      billingInvoicesResult.data ?? []
+    );
+    const billingInvoices = (billingInvoicesResult.data ?? []) as Array<{
+      funding_award_id?: string | null;
+      amount?: number | string | null;
+      net_amount?: number | string | null;
+    }>;
+    const unlinkedFundingInvoices = billingInvoices.filter((invoice) => !invoice.funding_award_id);
+    const unlinkedInvoiceAmount = unlinkedFundingInvoices.reduce((sum, invoice) => {
+      const value = invoice.net_amount ?? invoice.amount ?? 0;
+      const parsed = typeof value === "number" ? value : Number.parseFloat(String(value));
+      return sum + (Number.isFinite(parsed) ? parsed : 0);
+    }, 0);
+    const hasComparisonEvidence = hasReadyScenarioComparisonEvidence(scenarioSetLinks);
+    const projectFundingProfileScan = buildProjectFundingProfileScan({
+      summary: projectFundingStackSummary,
+      hasComparisonEvidence,
+      unlinkedInvoiceCount: unlinkedFundingInvoices.length,
+      unlinkedInvoiceAmount,
+    });
     const stageGateSnapshot = buildProjectStageGateSnapshot(
       buildProjectStageGateSummary(
         (stageGateDecisionsResult.data ?? []) as Array<{
@@ -1154,6 +1344,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
         scenarioSetLinks.map((link) => link.sharedSpine?.latestIndicatorSnapshotAt ?? null)
       ),
     };
+    const fundingSourceContextReadiness = buildFundingSourceContextReadiness({
+      hasComparisonEvidence,
+      linkedRunCount: linkedRuns.length,
+      modelingEvidenceCount: modelingEvidenceMetadata.length,
+      engagementReadyForHandoffCount:
+        engagement?.counts.moderationQueue.readyForHandoffCount ?? 0,
+      stageGateHoldCount: stageGateSnapshot.holdCount,
+      fundingScanStatus: projectFundingProfileScan.status,
+    });
 
     const html = buildReportHtml({
       report,
@@ -1255,6 +1454,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         stageGateSnapshot,
         projectRecordsSnapshot,
         projectFundingSnapshot,
+        projectFundingProfileScan,
+        fundingSourceContextReadiness,
         evidenceChainSummary,
         modelingEvidence: modelingEvidenceMetadata,
         modelingEvidenceCount: modelingEvidenceMetadata.length,

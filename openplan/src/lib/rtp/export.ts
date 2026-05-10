@@ -43,6 +43,7 @@ export type RtpExportChapter = {
 
 export type RtpExportLinkedProject = {
   id: string;
+  project_id: string;
   portfolio_role: string;
   priority_rationale: string | null;
   projects:
@@ -52,6 +53,7 @@ export type RtpExportLinkedProject = {
         status: string | null;
         delivery_phase: string | null;
         summary: string | null;
+        updated_at?: string | null;
       }
     | Array<{
         id: string;
@@ -59,6 +61,7 @@ export type RtpExportLinkedProject = {
         status: string | null;
         delivery_phase: string | null;
         summary: string | null;
+        updated_at?: string | null;
       }>
     | null;
 };
@@ -81,6 +84,7 @@ export type RtpExportNormalizedLinkedProject = RtpExportLinkedProject & {
     status: string | null;
     delivery_phase: string | null;
     summary: string | null;
+    updated_at?: string | null;
   } | null;
 };
 

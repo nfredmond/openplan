@@ -66,6 +66,26 @@ const meetingsOrderMock = vi.fn(() => ({ limit: meetingsLimitMock }));
 const meetingsEqMock = vi.fn(() => ({ order: meetingsOrderMock }));
 const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqMock }));
 
+const fundingProfilesMaybeSingleMock = vi.fn();
+const fundingProfilesInMock = vi.fn();
+const fundingProfilesEqMock = vi.fn(() => ({ maybeSingle: fundingProfilesMaybeSingleMock }));
+const fundingProfilesSelectMock = vi.fn(() => ({ eq: fundingProfilesEqMock, in: fundingProfilesInMock }));
+
+const fundingAwardsOrderMock = vi.fn();
+const fundingAwardsInMock = vi.fn();
+const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
+const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock, in: fundingAwardsInMock }));
+
+const fundingOpportunitiesOrderMock = vi.fn();
+const fundingOpportunitiesInMock = vi.fn();
+const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock, in: fundingOpportunitiesInMock }));
+
+const billingInvoicesOrderMock = vi.fn();
+const billingInvoicesInMock = vi.fn();
+const billingInvoicesEqMock = vi.fn(() => ({ order: billingInvoicesOrderMock }));
+const billingInvoicesSelectMock = vi.fn(() => ({ eq: billingInvoicesEqMock, in: billingInvoicesInMock }));
+
 const scenarioEntriesInMock = vi.fn();
 const scenarioEntriesSelectMock = vi.fn(() => ({ in: scenarioEntriesInMock }));
 
@@ -233,6 +253,30 @@ const fromMock = vi.fn((table: string) => {
   if (table === "project_meetings") {
     return {
       select: meetingsSelectMock,
+    };
+  }
+
+  if (table === "project_funding_profiles") {
+    return {
+      select: fundingProfilesSelectMock,
+    };
+  }
+
+  if (table === "funding_awards") {
+    return {
+      select: fundingAwardsSelectMock,
+    };
+  }
+
+  if (table === "funding_opportunities") {
+    return {
+      select: fundingOpportunitiesSelectMock,
+    };
+  }
+
+  if (table === "billing_invoice_records") {
+    return {
+      select: billingInvoicesSelectMock,
     };
   }
 
@@ -454,6 +498,14 @@ describe("POST /api/reports/[reportId]/generate", () => {
     issuesLimitMock.mockResolvedValue({ data: [], error: null });
     decisionsLimitMock.mockResolvedValue({ data: [], error: null });
     meetingsLimitMock.mockResolvedValue({ data: [], error: null });
+    fundingProfilesMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    fundingProfilesInMock.mockResolvedValue({ data: [], error: null });
+    fundingAwardsOrderMock.mockResolvedValue({ data: [], error: null });
+    fundingAwardsInMock.mockResolvedValue({ data: [], error: null });
+    fundingOpportunitiesOrderMock.mockResolvedValue({ data: [], error: null });
+    fundingOpportunitiesInMock.mockResolvedValue({ data: [], error: null });
+    billingInvoicesOrderMock.mockResolvedValue({ data: [], error: null });
+    billingInvoicesInMock.mockResolvedValue({ data: [], error: null });
 
     const runRowsById = new Map([
       [
@@ -819,6 +871,103 @@ describe("POST /api/reports/[reportId]/generate", () => {
         rtp_basis_stale_marked_at: null,
       })
     );
+  });
+
+  it("persists project funding profile scan and source-context readiness in artifact metadata", async () => {
+    fundingProfilesMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "funding-profile-1",
+        funding_need_amount: 2_000_000,
+        local_match_need_amount: 400_000,
+        updated_at: "2026-05-09T12:00:00.000Z",
+      },
+      error: null,
+    });
+    fundingAwardsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "award-1",
+          awarded_amount: 900_000,
+          match_amount: 150_000,
+          risk_flag: "none",
+          obligation_due_at: "2099-06-01T00:00:00.000Z",
+          updated_at: "2026-05-09T13:00:00.000Z",
+          created_at: "2026-05-08T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    fundingOpportunitiesOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "opportunity-1",
+          expected_award_amount: 500_000,
+          decision_state: "pursue",
+          opportunity_status: "open",
+          closes_at: "2099-06-15T00:00:00.000Z",
+          updated_at: "2026-05-09T14:00:00.000Z",
+          created_at: "2026-05-08T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    billingInvoicesOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "invoice-1",
+          funding_award_id: "award-1",
+          status: "submitted",
+          amount: 250_000,
+          retention_percent: 0,
+          retention_amount: 0,
+          net_amount: 250_000,
+          due_date: null,
+          invoice_date: "2026-05-09T15:00:00.000Z",
+          created_at: "2026-05-09T15:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const sourceContext = generatedArtifact?.metadata_json?.sourceContext as Record<string, unknown>;
+
+    expect(sourceContext.projectFundingSnapshot).toMatchObject({
+      fundingNeedAmount: 2_000_000,
+      committedFundingAmount: 900_000,
+      likelyFundingAmount: 500_000,
+      unfundedAfterLikelyAmount: 600_000,
+      latestSourceUpdatedAt: "2026-05-09T15:00:00.000Z",
+    });
+    expect(sourceContext.projectFundingProfileScan).toMatchObject({
+      status: "attention",
+      label: "Funding profile needs operator review",
+      lanes: expect.arrayContaining([
+        expect.objectContaining({ id: "funding_target", status: "attention", amount: 600_000 }),
+        expect.objectContaining({ id: "local_match", status: "attention", amount: 250_000 }),
+        expect.objectContaining({ id: "evidence_support", status: "ready" }),
+      ]),
+    });
+    expect(JSON.stringify(sourceContext.projectFundingProfileScan)).toContain("not an award prediction");
+    expect(sourceContext.fundingSourceContextReadiness).toMatchObject({
+      status: "attention",
+      hasComparisonEvidence: true,
+      linkedRunCount: 1,
+      fundingScanStatus: "attention",
+      operatorReviewCaveat: expect.stringContaining("not legal compliance automation, award prediction, or autonomous approval"),
+    });
   });
 
   it("adds modeling evidence claim posture to project report artifacts", async () => {
@@ -1269,6 +1418,134 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
     expect(metadata?.htmlContent).toContain("Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.");
     expect(metadata?.htmlContent).toContain("Observed count validation");
+  });
+
+  it("persists RTP linked-project funding scans and funding source-context readiness", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+        title: "RTP Packet",
+        summary: "Packet summary",
+        report_type: "rtp_packet",
+        status: "draft",
+        created_at: "2026-04-24T00:00:00.000Z",
+        generated_at: null,
+        metadata_json: {},
+      },
+      error: null,
+    });
+    projectRtpLinksOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "link-1",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          portfolio_role: "constrained",
+          priority_rationale: "Core safety project for the constrained RTP list.",
+          projects: {
+            id: "44444444-4444-4444-8444-444444444444",
+            name: "Nevada County Safety Action Program",
+            status: "active",
+            delivery_phase: "analysis",
+            summary: "Project summary",
+            updated_at: "2026-05-09T10:00:00.000Z",
+          },
+        },
+      ],
+      error: null,
+    });
+    fundingProfilesInMock.mockResolvedValueOnce({
+      data: [
+        {
+          project_id: "44444444-4444-4444-8444-444444444444",
+          funding_need_amount: 1_000_000,
+          local_match_need_amount: 100_000,
+          updated_at: "2026-05-09T11:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    fundingAwardsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          project_id: "44444444-4444-4444-8444-444444444444",
+          awarded_amount: 1_000_000,
+          match_amount: 100_000,
+          risk_flag: "none",
+          obligation_due_at: "2099-01-01T00:00:00.000Z",
+          updated_at: "2026-05-09T12:00:00.000Z",
+          created_at: "2026-05-09T12:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    fundingOpportunitiesInMock.mockResolvedValueOnce({ data: [], error: null });
+    billingInvoicesInMock.mockResolvedValueOnce({
+      data: [
+        {
+          project_id: "44444444-4444-4444-8444-444444444444",
+          status: "paid",
+          amount: 1_000_000,
+          retention_percent: 0,
+          retention_amount: 0,
+          net_amount: 1_000_000,
+          due_date: null,
+          invoice_date: "2026-05-09T13:00:00.000Z",
+          created_at: "2026-05-09T13:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(fundingProfilesInMock).toHaveBeenCalledWith("project_id", [
+      "44444444-4444-4444-8444-444444444444",
+    ]);
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const sourceContext = generatedArtifact?.metadata_json?.sourceContext as Record<string, unknown>;
+
+    expect(sourceContext.rtpFundingSnapshot).toMatchObject({
+      linkedProjectCount: 1,
+      trackedProjectCount: 1,
+      fundedProjectCount: 1,
+      committedFundingAmount: 1_000_000,
+      latestSourceUpdatedAt: "2026-05-09T13:00:00.000Z",
+    });
+    expect(sourceContext.rtpFundingProfileScans).toEqual([
+      expect.objectContaining({
+        projectId: "44444444-4444-4444-8444-444444444444",
+        projectName: "Nevada County Safety Action Program",
+        portfolioRole: "constrained",
+        latestFundingSourceUpdatedAt: "2026-05-09T13:00:00.000Z",
+        scan: expect.objectContaining({
+          status: "attention",
+          lanes: expect.arrayContaining([
+            expect.objectContaining({ id: "funding_target", status: "ready" }),
+            expect.objectContaining({ id: "closeout", status: "ready" }),
+            expect.objectContaining({ id: "evidence_support", status: "attention" }),
+          ]),
+        }),
+      }),
+    ]);
+    expect(sourceContext.rtpFundingSourceContextReadiness).toMatchObject({
+      status: "attention",
+      linkedProjectScanCount: 1,
+      attentionProjectScanCount: 1,
+      operatorReviewCaveat: expect.stringContaining("not legal compliance automation, award prediction, or autonomous approval"),
+    });
   });
 
   it("persists a compact stage-gate snapshot in artifact metadata and html", async () => {
