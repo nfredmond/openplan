@@ -180,32 +180,59 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to update funding award" }, { status: 500 });
     }
 
-    const { error: milestoneError } = await supabase.from("project_milestones").insert({
-      project_id: award.project_id,
-      funding_award_id: award.id,
-      title: `Closeout: ${award.title}`,
-      summary: notes ?? "Auto-generated compliance sign-off on 100% invoice coverage.",
-      milestone_type: "closeout",
-      phase_code: "closeout",
-      status: "complete",
-      target_date: closedAtDate,
-      actual_date: closedAtDate,
-      created_by: user.id,
-    });
+    const { data: existingCloseoutMilestones, error: milestoneLookupError } = await supabase
+      .from("project_milestones")
+      .select("id")
+      .eq("project_id", award.project_id)
+      .eq("funding_award_id", award.id)
+      .eq("milestone_type", "closeout")
+      .limit(1);
 
-    if (milestoneError) {
-      audit.warn("funding_award_closeout_milestone_failed", {
+    if (milestoneLookupError) {
+      audit.warn("funding_award_closeout_milestone_lookup_failed", {
         awardId: award.id,
         projectId: award.project_id,
-        message: milestoneError.message,
-        code: milestoneError.code ?? null,
+        message: milestoneLookupError.message,
+        code: milestoneLookupError.code ?? null,
       });
-    } else {
-      audit.info("funding_award_closeout_milestone_created", {
+    }
+
+    const hasExistingCloseoutMilestone = (existingCloseoutMilestones?.length ?? 0) > 0;
+
+    if (hasExistingCloseoutMilestone) {
+      audit.info("funding_award_closeout_milestone_already_exists", {
         awardId: award.id,
         projectId: award.project_id,
         closedAt: closedAtIso,
       });
+    } else {
+      const { error: milestoneError } = await supabase.from("project_milestones").insert({
+        project_id: award.project_id,
+        funding_award_id: award.id,
+        title: `Closeout: ${award.title}`,
+        summary: notes ?? "Auto-generated compliance sign-off on 100% invoice coverage.",
+        milestone_type: "closeout",
+        phase_code: "closeout",
+        status: "complete",
+        target_date: closedAtDate,
+        actual_date: closedAtDate,
+        created_by: user.id,
+      });
+
+      if (milestoneError) {
+        audit.warn("funding_award_closeout_milestone_failed", {
+          awardId: award.id,
+          projectId: award.project_id,
+          message: milestoneError.message,
+          code: milestoneError.code ?? null,
+        });
+      } else {
+        audit.info("funding_award_closeout_milestone_created", {
+          awardId: award.id,
+          projectId: award.project_id,
+          closedAt: closedAtIso,
+        });
+      }
     }
 
     const postureResult = await rebuildProjectRtpPosture({

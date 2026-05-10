@@ -18,6 +18,11 @@ const awardUpdateMock = vi.fn(() => ({ eq: awardUpdateEqFirstMock }));
 const invoicesEqSecondMock = vi.fn();
 const invoicesEqFirstMock = vi.fn(() => ({ eq: invoicesEqSecondMock }));
 const invoicesSelectMock = vi.fn(() => ({ eq: invoicesEqFirstMock }));
+const milestonesLimitMock = vi.fn();
+const milestonesEqThirdMock = vi.fn(() => ({ limit: milestonesLimitMock }));
+const milestonesEqSecondMock = vi.fn(() => ({ eq: milestonesEqThirdMock }));
+const milestonesEqFirstMock = vi.fn(() => ({ eq: milestonesEqSecondMock }));
+const milestonesSelectMock = vi.fn(() => ({ eq: milestonesEqFirstMock }));
 const milestonesInsertMock = vi.fn();
 
 const mockAudit = {
@@ -100,6 +105,7 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     });
 
     awardUpdateEqSecondMock.mockResolvedValue({ error: null });
+    milestonesLimitMock.mockResolvedValue({ data: [], error: null });
     milestonesInsertMock.mockResolvedValue({ error: null });
     rebuildProjectRtpPostureMock.mockResolvedValue({
       posture: { status: "funded", pipelineStatus: "funded" },
@@ -125,6 +131,7 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         }
         if (table === "project_milestones") {
           return {
+            select: milestonesSelectMock,
             insert: (...args: unknown[]) => milestonesInsertMock(...args),
           };
         }
@@ -147,6 +154,10 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
       })
     );
     expect(awardUpdateMock).toHaveBeenCalledWith({ spending_status: "fully_spent" });
+    expect(milestonesSelectMock).toHaveBeenCalledWith("id");
+    expect(milestonesEqFirstMock).toHaveBeenCalledWith("project_id", PROJECT_ID);
+    expect(milestonesEqSecondMock).toHaveBeenCalledWith("funding_award_id", AWARD_ID);
+    expect(milestonesEqThirdMock).toHaveBeenCalledWith("milestone_type", "closeout");
     expect(milestonesInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         project_id: PROJECT_ID,
@@ -165,6 +176,22 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         paidAmount: 1_000_000,
       })
     );
+  });
+
+  it("does not duplicate a closeout milestone when one already exists", async () => {
+    milestonesLimitMock.mockResolvedValue({ data: [{ id: "99999999-9999-4999-8999-999999999999" }], error: null });
+
+    const response = await postCloseout(closeoutRequest({ notes: "Final invoice package signed" }), context());
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.awardId).toBe(AWARD_ID);
+    expect(awardUpdateMock).toHaveBeenCalledWith({ spending_status: "fully_spent" });
+    expect(milestonesInsertMock).not.toHaveBeenCalled();
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "funding_award_closeout_milestone_already_exists",
+      expect.objectContaining({ awardId: AWARD_ID, projectId: PROJECT_ID })
+    );
+    expect(rebuildProjectRtpPostureMock).toHaveBeenCalledTimes(1);
   });
 
   it("treats repeated closeout on a fully spent award as an idempotent no-op", async () => {
