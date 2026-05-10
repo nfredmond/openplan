@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
+import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 
@@ -147,6 +148,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const exportCategories = (categories ?? []) as ExportCategoryRow[];
     const categoryMap = new Map(exportCategories.map((c) => [c.id, c.label]));
     const counts = summarizeEngagementItems(exportCategories, items);
+    const commentMatrixPreview = buildEngagementCommentMatrixPreview(exportCategories, items);
     const publicPortal = getPublicPortalState(access.campaign);
 
     audit.info("export_completed", {
@@ -192,6 +194,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
             publicApprovedCategorizedCount: counts.appendixReadiness.publicApprovedCategorizedCount,
             nonPublicApprovedCategorizedCount: counts.appendixReadiness.nonPublicApprovedCategorizedCount,
           },
+          commentMatrixPreview,
         },
       };
 

@@ -177,6 +177,25 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
       publicApprovedCategorizedCount: 1,
       nonPublicApprovedCategorizedCount: 0,
     });
+    expect(json.meta.commentMatrixPreview).toMatchObject({
+      caveat: expect.stringMatching(/staff cue only/i),
+      counts: {
+        includedCount: 1,
+        heldDuplicateReviewCount: 0,
+        excludedInternalPrivateCount: 0,
+        excludedNotReadyCount: 0,
+        previewedRowCount: 1,
+        totalItemCount: 1,
+      },
+      rows: [
+        expect.objectContaining({
+          itemId: "66666666-6666-4666-8666-666666666666",
+          posture: "included",
+          postureLabel: "Included in matrix preview",
+          categoryLabel: "Safety",
+        }),
+      ],
+    });
   });
 
   it("rejects unsupported format", async () => {

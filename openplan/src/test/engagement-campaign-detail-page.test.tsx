@@ -292,6 +292,9 @@ describe("EngagementCampaignDetailPage", () => {
     expect(screen.getByText(/Report appendix readiness/i)).toBeInTheDocument();
     expect(screen.getByText(/1 approved public comment ready for appendix review/i)).toBeInTheDocument();
     expect(screen.getByText(/not a representativeness or legal sufficiency finding/i)).toBeInTheDocument();
+    expect(screen.getByText(/Comment matrix export preview/i)).toBeInTheDocument();
+    expect(screen.getByText(/1 included · 0 held · 0 internal\/private excluded/i)).toBeInTheDocument();
+    expect(screen.getByText(/Included in matrix preview/i)).toBeInTheDocument();
     expect(screen.getByText(/Downtown Safety Packet needs packet attention/i)).toBeInTheDocument();
     expect(screen.getByText(/Refresh recommended/i)).toBeInTheDocument();
     expect(screen.getAllByText(/1 packet issue/i)).toHaveLength(2);
@@ -334,6 +337,69 @@ describe("EngagementCampaignDetailPage", () => {
       /Downtown Safety Packet/i
     );
     expect(screen.getAllByText(/run release review on the current packet/i).length).toBeGreaterThan(0);
+  });
+
+  it("shows comment matrix inclusion, duplicate hold, and internal/private exclusion posture", async () => {
+    itemsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "item-1",
+          campaign_id: "campaign-1",
+          category_id: "category-1",
+          title: "Safer crossings",
+          body: "Add a protected crossing.",
+          submitted_by: "Resident",
+          status: "approved",
+          source_type: "public",
+          moderation_notes: "Duplicate reviewed - canonical public comment.",
+          latitude: 34.1,
+          longitude: -118.2,
+          metadata_json: { body_fingerprint: "crossing" },
+          created_at: "2026-03-28T20:00:00.000Z",
+          updated_at: "2026-03-28T21:30:00.000Z",
+        },
+        {
+          id: "item-2",
+          campaign_id: "campaign-1",
+          category_id: "category-1",
+          title: "Safer crossings",
+          body: "Add a protected crossing.",
+          submitted_by: "Resident 2",
+          status: "approved",
+          source_type: "public",
+          moderation_notes: null,
+          latitude: null,
+          longitude: null,
+          metadata_json: { body_fingerprint: "crossing" },
+          created_at: "2026-03-28T20:05:00.000Z",
+          updated_at: "2026-03-28T21:35:00.000Z",
+        },
+        {
+          id: "item-3",
+          campaign_id: "campaign-1",
+          category_id: "category-1",
+          title: "Staff assignment note",
+          body: "Follow up internally before the board packet.",
+          submitted_by: "Planner",
+          status: "approved",
+          source_type: "internal",
+          moderation_notes: null,
+          latitude: null,
+          longitude: null,
+          metadata_json: { visibility: "private" },
+          created_at: "2026-03-28T20:10:00.000Z",
+          updated_at: "2026-03-28T21:40:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/1 included · 1 held · 1 internal\/private excluded/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Held for duplicate review/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Excluded — internal\/private note/i)).toBeInTheDocument();
+    expect(screen.getByText(/does not establish representativeness, legal sufficiency/i)).toBeInTheDocument();
   });
 
   it("shows the empty report state when no reports exist for the linked project", async () => {

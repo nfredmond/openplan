@@ -13,6 +13,7 @@ import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
+import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
 import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
@@ -145,6 +146,7 @@ export default async function EngagementCampaignDetailPage({
     appendixReadyCount: appendixReadiness.appendixReadyCount,
     actionableCount: counts.moderationQueue.actionableCount,
   });
+  const commentMatrixPreview = buildEngagementCommentMatrixPreview(categories ?? [], items ?? [], { rowLimit: 8 });
   const categorySummaries = counts.categoryCounts.filter((category) => category.categoryId !== null);
   const uncategorizedSummary = counts.categoryCounts.find((category) => category.categoryId === null) ?? null;
   const reportRecords = (reports ?? []) as ReportRow[];
@@ -421,6 +423,61 @@ export default async function EngagementCampaignDetailPage({
                   <MetaItem>{appendixReadiness.duplicateReviewCount} duplicate-review item{appendixReadiness.duplicateReviewCount === 1 ? "" : "s"}</MetaItem>
                   <MetaItem>{appendixReadiness.duplicateExcludedCount} appendix candidate{appendixReadiness.duplicateExcludedCount === 1 ? "" : "s"} held for duplicate review</MetaItem>
                 </MetaList>
+              </div>
+              <div className="mt-5 rounded-[0.5rem] border border-amber-200/70 bg-background/75 p-4 dark:border-amber-900/70">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Comment matrix export preview</p>
+                    <h4 className="mt-1 text-sm font-semibold text-foreground">
+                      {commentMatrixPreview.counts.includedCount} included · {commentMatrixPreview.counts.heldDuplicateReviewCount} held · {commentMatrixPreview.counts.excludedInternalPrivateCount} internal/private excluded
+                    </h4>
+                  </div>
+                  <StatusBadge tone="warning">Staff cue only</StatusBadge>
+                </div>
+                <p className="mt-2 text-sm text-muted-foreground">{commentMatrixPreview.caveat}</p>
+                <div className="mt-3 space-y-2">
+                  {commentMatrixPreview.rows.map((row) => {
+                    const postureTone =
+                      row.posture === "included"
+                        ? "success"
+                        : row.posture === "held_duplicate_review"
+                          ? "warning"
+                          : row.posture === "excluded_internal_private"
+                            ? "neutral"
+                            : "info";
+
+                    return (
+                      <div key={row.itemId} className="module-record-row bg-background/80">
+                        <div className="module-record-head">
+                          <div className="module-record-main">
+                            <div className="module-record-kicker">
+                              <StatusBadge tone={postureTone}>{row.postureLabel}</StatusBadge>
+                              <StatusBadge tone="neutral">{titleizeEngagementValue(row.sourceType)}</StatusBadge>
+                              {row.categoryLabel ? <StatusBadge tone="info">{row.categoryLabel}</StatusBadge> : null}
+                            </div>
+                            <h5 className="module-record-title text-[0.95rem]">{row.title}</h5>
+                            <p className="module-record-summary">{row.reason}</p>
+                            <p className="module-record-summary">{row.bodyExcerpt}</p>
+                          </div>
+                        </div>
+                        <MetaList>
+                          <MetaItem>{row.submittedBy ? `Submitted by ${row.submittedBy}` : "Submitter not recorded"}</MetaItem>
+                          <MetaItem>Updated {fmtDateTime(row.updatedAt)}</MetaItem>
+                        </MetaList>
+                      </div>
+                    );
+                  })}
+                  {commentMatrixPreview.rows.length === 0 ? (
+                    <div className="rounded-[0.5rem] border border-dashed border-border/80 bg-background/70 px-5 py-6 text-sm text-muted-foreground">
+                      No comments are available for matrix preview yet.
+                    </div>
+                  ) : null}
+                </div>
+                {commentMatrixPreview.counts.previewedRowCount < commentMatrixPreview.counts.totalItemCount ? (
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Showing {commentMatrixPreview.counts.previewedRowCount} of {commentMatrixPreview.counts.totalItemCount} comments in handoff order.
+                  </p>
+                ) : null}
               </div>
             </div>
 
