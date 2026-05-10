@@ -304,6 +304,9 @@ describe("ReportsPage", () => {
 
     expect(screen.getAllByText(/Artifact-backed report/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Evidence \/ regeneration posture/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/1 source area needs review/i)).toBeInTheDocument();
+    expect(screen.getByText(/Changed sources: Report metadata\./i)).toBeInTheDocument();
     expect(
       screen.getAllByText(/Action Next action: open this report and regenerate the packet\./i).length
     ).toBeGreaterThan(0);
@@ -424,6 +427,89 @@ describe("ReportsPage", () => {
     await renderPage();
 
     expect(document.querySelectorAll('a[href="/grants#grants-gap-resolution-lane"]').length).toBeGreaterThan(0);
+  });
+
+  it("summarizes missing and current regeneration posture directly in report rows", async () => {
+    reportsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "report-current",
+          workspace_id: "workspace-1",
+          project_id: "project-1",
+          rtp_cycle_id: null,
+          title: "Current evidence packet",
+          report_type: "project_status",
+          status: "generated",
+          summary: "Current report with captured evidence.",
+          generated_at: "2026-03-28T20:00:00.000Z",
+          latest_artifact_kind: "html",
+          created_at: "2026-03-28T18:00:00.000Z",
+          updated_at: "2026-03-28T19:40:00.000Z",
+          projects: {
+            id: "project-1",
+            name: "Downtown Mobility Plan",
+          },
+          rtp_cycles: null,
+        },
+        {
+          id: "report-missing",
+          workspace_id: "workspace-1",
+          project_id: "project-1",
+          rtp_cycle_id: null,
+          title: "Draft packet without artifact",
+          report_type: "project_status",
+          status: "draft",
+          summary: "Needs first generation.",
+          generated_at: null,
+          latest_artifact_kind: null,
+          created_at: "2026-03-28T18:00:00.000Z",
+          updated_at: "2026-03-28T18:30:00.000Z",
+          projects: {
+            id: "project-1",
+            name: "Downtown Mobility Plan",
+          },
+          rtp_cycles: null,
+        },
+      ],
+      error: null,
+    });
+
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          report_id: "report-current",
+          generated_at: "2026-03-28T20:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              evidenceChainSummary: {
+                linkedRunCount: 1,
+                scenarioSetLinkCount: 0,
+                projectRecordGroupCount: 1,
+                totalProjectRecordCount: 2,
+                engagementLabel: "No engagement snapshot",
+                engagementItemCount: 0,
+                engagementReadyForHandoffCount: 0,
+                stageGateLabel: "Complete",
+                stageGatePassCount: 1,
+                stageGateHoldCount: 0,
+                stageGateBlockedGateLabel: null,
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getAllByText(/Draft packet without artifact/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/No generated packet yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/Generate the first packet before treating this report as release-review evidence/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Current evidence packet/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Current \/ ready/i)).toBeInTheDocument();
+    expect(screen.getByText(/Evidence chain current/i)).toBeInTheDocument();
+    expect(screen.getByText(/Evidence summary: 1 linked run · 0 scenario sets · 2 project records/i)).toBeInTheDocument();
   });
 
   it("surfaces RTP review-loop posture in the reports registry when a current packet is not yet settled", async () => {

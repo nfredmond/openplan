@@ -60,6 +60,10 @@ import {
 import {
   PACKET_FRESHNESS_LABELS,
 } from "@/lib/reports/packet-labels";
+import {
+  describeReportSourceReviewPosture,
+  type ReportDriftSummary,
+} from "@/lib/reports/source-review-posture";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
@@ -152,6 +156,53 @@ function hasMaterialReportWritebackAfterGeneration(
 
   return updatedMs - generatedMs > REPORT_WRITEBACK_GRACE_MS;
 }
+function isTimestampAfter(
+  value: string | null | undefined,
+  baseline: string | null | undefined
+) {
+  if (!value || !baseline) {
+    return false;
+  }
+
+  const valueMs = new Date(value).getTime();
+  const baselineMs = new Date(baseline).getTime();
+  return Number.isFinite(valueMs) && Number.isFinite(baselineMs) && valueMs > baselineMs;
+}
+
+function buildReportRegistryDriftSummary(input: {
+  packetFreshnessLabel: string;
+  generatedAt: string | null | undefined;
+  reportUpdatedAt: string | null | undefined;
+  rtpCycleUpdatedAt: string | null | undefined;
+}): ReportDriftSummary {
+  if (input.packetFreshnessLabel !== PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED) {
+    return { changedCount: 0, totalCount: 0, labels: [] };
+  }
+
+  const labels: string[] = [];
+  if (isTimestampAfter(input.rtpCycleUpdatedAt, input.generatedAt)) {
+    labels.push("RTP cycle");
+  }
+  if (
+    hasMaterialReportWritebackAfterGeneration(
+      input.generatedAt,
+      input.reportUpdatedAt
+    )
+  ) {
+    labels.push("Report metadata");
+  }
+
+  if (labels.length === 0) {
+    labels.push("Tracked source context");
+  }
+
+  return {
+    changedCount: labels.length,
+    totalCount: labels.length,
+    labels,
+  };
+}
+
 
 function resolveTrackedReportSourceUpdatedAt(input: {
   generatedAt: string | null;
@@ -348,6 +399,18 @@ export default async function ReportsPage({
         }),
       });
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
+      const sourceReviewDriftSummary = buildReportRegistryDriftSummary({
+        packetFreshnessLabel: packetFreshness.label,
+        generatedAt: packetGeneratedAt,
+        reportUpdatedAt: report.updated_at,
+        rtpCycleUpdatedAt: rtpCycle?.updated_at ?? null,
+      });
+      const evidenceChainDigest = describeEvidenceChainSummary(evidenceChainSummary);
+      const sourceReviewPosture = describeReportSourceReviewPosture({
+        hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
+        evidenceSummary: evidenceChainDigest,
+        driftSummary: sourceReviewDriftSummary,
+      });
       const rtpReleaseReviewSummary = storedRtpPublicReviewSummary
         ? buildRtpReleaseReviewSummary({
             packetFreshnessLabel: packetFreshness.label,
@@ -397,7 +460,9 @@ export default async function ReportsPage({
         storedRtpFundingReview,
         storedRtpPublicReviewSummary,
         rtpReleaseReviewSummary,
-        evidenceChainDigest: describeEvidenceChainSummary(evidenceChainSummary),
+        evidenceChainDigest,
+        sourceReviewDriftSummary,
+        sourceReviewPosture,
         fundingDigest: describeFundingSnapshot(fundingSnapshot),
         grantsFollowThrough,
         grantModelingEvidence,
@@ -1059,6 +1124,27 @@ export default async function ReportsPage({
                         Generated {formatDateTime(report.latestArtifact?.generated_at ?? report.generated_at)}
                       </span>
                     ) : null}
+                  </div>
+
+                  <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3 text-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                        Evidence / regeneration posture
+                      </p>
+                      <StatusBadge tone={report.sourceReviewPosture.state === "ready" ? "success" : "warning"}>
+                        {report.sourceReviewPosture.label}
+                      </StatusBadge>
+                    </div>
+                    <p className="mt-2 font-medium text-foreground/90">{report.sourceReviewPosture.headline}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{report.sourceReviewPosture.detail}</p>
+                    {report.sourceReviewPosture.changedSourceText ? (
+                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                        Changed sources: {report.sourceReviewPosture.changedSourceText}.
+                      </p>
+                    ) : null}
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      Evidence summary: {report.evidenceChainDigest?.headline ?? "No evidence-chain summary attached to the latest artifact yet."}
+                    </p>
                   </div>
 
                   <div className="module-record-detail-grid cols-2 mt-4">

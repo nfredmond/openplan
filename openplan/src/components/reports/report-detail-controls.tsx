@@ -6,98 +6,15 @@ import { AlertTriangle, FileCog, Loader2, Save, WandSparkles } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  describeReportSourceReviewPosture,
+  formatDriftLabelList,
+  type ReportSourceReviewPosture,
+} from "@/lib/reports/source-review-posture";
 
-function formatDriftLabelList(labels: string[]) {
-  if (labels.length <= 1) {
-    return labels[0] ?? "";
-  }
+export { describeReportSourceReviewPosture } from "@/lib/reports/source-review-posture";
 
-  if (labels.length === 2) {
-    return `${labels[0]} and ${labels[1]}`;
-  }
-
-  return `${labels.slice(0, -1).join(", ")}, and ${labels.at(-1)}`;
-}
-
-type DriftSummary = {
-  changedCount: number;
-  totalCount: number;
-  labels: string[];
-};
-
-type EvidenceSummary = {
-  headline: string;
-  detail: string;
-  blockedGateDetail?: string | null;
-} | null;
-
-type SourceReviewPosture = {
-  state: "ready" | "needs-review" | "missing";
-  label: string;
-  headline: string;
-  detail: string;
-  changedSourceText: string | null;
-};
-
-export function describeReportSourceReviewPosture({
-  hasGeneratedArtifact,
-  evidenceSummary,
-  driftSummary,
-}: {
-  hasGeneratedArtifact: boolean;
-  evidenceSummary?: EvidenceSummary;
-  driftSummary?: DriftSummary;
-}): SourceReviewPosture {
-  const changedCount = driftSummary?.changedCount ?? 0;
-  const changedSourceText =
-    driftSummary && driftSummary.labels.length > 0
-      ? formatDriftLabelList(driftSummary.labels)
-      : null;
-
-  if (!hasGeneratedArtifact) {
-    return {
-      state: "missing",
-      label: "Missing evidence",
-      headline: "No generated packet yet",
-      detail:
-        "Generate the first packet before treating this report as release-review evidence. The generation step captures the compact source context that reviewers need.",
-      changedSourceText,
-    };
-  }
-
-  if (!evidenceSummary) {
-    return {
-      state: "missing",
-      label: "Missing evidence",
-      headline: "No evidence chain captured",
-      detail:
-        "This packet does not expose a structured evidence-chain snapshot yet. Regenerate it before citing the packet externally or using it for grant triage.",
-      changedSourceText,
-    };
-  }
-
-  if (changedCount > 0) {
-    return {
-      state: "needs-review",
-      label: "Changed source context",
-      headline: `${changedCount} source ${changedCount === 1 ? "area needs" : "areas need"} review`,
-      detail:
-        "The packet still has linked evidence, but live source context has changed since generation. Review the changed source areas and regenerate before relying on this packet outside supervised draft review.",
-      changedSourceText,
-    };
-  }
-
-  return {
-    state: "ready",
-    label: "Current / ready",
-    headline: "Evidence chain current",
-    detail:
-      "A structured evidence-chain snapshot is linked and no live source drift is currently visible. Keep normal human review and caveat checks in place before external use.",
-    changedSourceText: null,
-  };
-}
-
-function sourceReviewPostureClassName(state: SourceReviewPosture["state"]) {
+function sourceReviewPostureClassName(state: ReportSourceReviewPosture["state"]) {
   if (state === "ready") {
     return "border-emerald-300/70 bg-emerald-50 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100";
   }
