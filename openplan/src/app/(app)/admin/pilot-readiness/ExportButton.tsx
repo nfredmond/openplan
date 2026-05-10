@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { releaseProofPosture } from '@/lib/operations/release-proof-packet'
 
 interface ExportButtonProps {
   statusList: {
@@ -22,6 +23,16 @@ export function buildPilotReadinessPacket(statusList: ExportButtonProps['statusL
     '## Operator follow-up',
     '- Treat PASS lanes as citeable only when the named source document is available in `docs/ops`.',
     '- Re-run or refresh any FAIL, PENDING, or UNKNOWN lane before using this packet for pilot diligence.',
+    '',
+    '## Release Proof Packet Alignment',
+    releaseProofPosture.summary,
+    releaseProofPosture.wedge,
+    '',
+    '### Required caveats',
+    ...releaseProofPosture.caveats.map((caveat) => `- ${caveat}`),
+    '',
+    '### Proof artifacts synchronized with Command Center',
+    ...releaseProofPosture.proofItems.map((item) => `- **${item.label}**: ${item.headline} Source: ${item.artifact}`),
     '',
     '## About OpenPlan Readiness',
     'OpenPlan is actively tested against production infrastructure. These smoke tests reflect the latest validation runs.',
