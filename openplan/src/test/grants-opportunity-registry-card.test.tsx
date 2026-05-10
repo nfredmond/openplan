@@ -17,6 +17,7 @@ vi.mock("@/components/programs/funding-opportunity-decision-controls", () => ({
 }));
 
 import { GrantsOpportunityRegistryCard } from "@/components/grants/grants-opportunity-registry-card";
+import type { ProjectGrantModelingEvidence } from "@/lib/grants/modeling-evidence";
 import type { FundingOpportunityRow } from "@/lib/grants/page-helpers";
 
 type Opportunity = Parameters<typeof GrantsOpportunityRegistryCard>[0]["opportunity"];
@@ -48,6 +49,31 @@ const baseOpportunity = {
   program: null,
   project: { id: "project-1", name: "Main St Bridge" },
 } as unknown as Opportunity;
+
+const decisionReadyEvidence: ProjectGrantModelingEvidence = {
+  projectId: "project-1",
+  comparisonBackedCount: 1,
+  leadComparisonReport: {
+    id: "report-1",
+    title: "Main St Bridge Grant Evidence Packet",
+    href: "/reports/report-1#packet-release-review",
+    packetFreshness: {
+      label: "Packet current",
+      tone: "success",
+      detail: "Packet is current.",
+    },
+    comparisonAggregate: {
+      comparisonSnapshotCount: 1,
+      readyComparisonSnapshotCount: 1,
+      indicatorDeltaCount: 2,
+      latestComparisonSnapshotUpdatedAt: "2026-04-14T17:30:00.000Z",
+    },
+    comparisonDigest: {
+      headline: "1 saved comparison · 1 ready",
+      detail: "2 indicator deltas are already summarized.",
+    },
+  },
+};
 
 describe("GrantsOpportunityRegistryCard", () => {
   it("renders the opportunity title, status badges, and chips", () => {
@@ -135,5 +161,32 @@ describe("GrantsOpportunityRegistryCard", () => {
       />
     );
     expect(screen.getByText(/Project Not linked/)).toBeInTheDocument();
+  });
+
+  it("renders evidence readiness guardrails without claiming application automation", () => {
+    const readyOpportunity = {
+      ...baseOpportunity,
+      program: { id: "prog-1", title: "HBP", funding_classification: null },
+      readiness_notes:
+        "Source memo saved; local match and reimbursement timing require finance review.",
+      decision_rationale: "Monitor until board confirms local match posture.",
+    } as Opportunity;
+
+    render(
+      <GrantsOpportunityRegistryCard
+        opportunity={readyOpportunity}
+        activeFocusedOpportunityId={null}
+        projectGrantModelingEvidence={decisionReadyEvidence}
+      />
+    );
+
+    expect(screen.getByText("Evidence readiness guardrails")).toBeInTheDocument();
+    expect(screen.getByText("Fit notes documented")).toBeInTheDocument();
+    expect(screen.getByText("Source anchors documented")).toBeInTheDocument();
+    expect(screen.getByText("Fiscal posture mentioned")).toBeInTheDocument();
+    expect(screen.getByText("Final review required")).toBeInTheDocument();
+    expect(screen.getAllByText(/planning support only, not proof of award likelihood/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/submit/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/approved automatically/i)).not.toBeInTheDocument();
   });
 });

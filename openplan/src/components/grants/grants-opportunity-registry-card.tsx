@@ -14,6 +14,10 @@ import {
   type ProjectGrantModelingEvidence,
 } from "@/lib/grants/modeling-evidence";
 import {
+  buildGrantEvidenceReadinessCues,
+  summarizeGrantEvidenceReadiness,
+} from "@/lib/grants/evidence-readiness";
+import {
   type FundingOpportunityRow,
   formatCurrency,
   formatDateTime,
@@ -25,6 +29,20 @@ type NormalizedOpportunity = FundingOpportunityRow & {
   program: { id: string; title: string; funding_classification: string | null } | null;
   project: { id: string; name: string } | null;
 };
+
+function formatEvidenceCueStatusLabel(tone: "neutral" | "info" | "success" | "warning" | "danger") {
+  switch (tone) {
+    case "success":
+      return "Documented";
+    case "info":
+      return "Mentioned";
+    case "warning":
+    case "danger":
+      return "Needs review";
+    default:
+      return "Boundary";
+  }
+}
 
 export function GrantsOpportunityRegistryCard({
   opportunity,
@@ -48,6 +66,11 @@ export function GrantsOpportunityRegistryCard({
     projectGrantModelingEvidence,
     opportunity.project?.name ?? null
   );
+  const evidenceReadinessCues = buildGrantEvidenceReadinessCues(
+    opportunity,
+    projectGrantModelingEvidence
+  );
+  const evidenceReadinessSummary = summarizeGrantEvidenceReadiness(evidenceReadinessCues);
   const isFocused =
     activeFocusedOpportunityId === opportunity.id && opportunity.opportunity_status !== "awarded";
 
@@ -152,6 +175,34 @@ export function GrantsOpportunityRegistryCard({
             </div>
           </div>
         ) : null}
+
+        <div className="module-note mt-4 text-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-foreground">Evidence readiness guardrails</p>
+              <p className="mt-1 text-muted-foreground">{evidenceReadinessSummary}</p>
+            </div>
+            <StatusBadge
+              tone={evidenceReadinessCues.some((cue) => cue.tone === "warning" || cue.tone === "danger") ? "warning" : "success"}
+            >
+              Final review required
+            </StatusBadge>
+          </div>
+          <div className="mt-3 grid gap-2 md:grid-cols-2">
+            {evidenceReadinessCues.map((cue) => (
+              <div key={cue.key} className="rounded-xl border border-border/60 bg-background/70 px-3 py-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="font-semibold text-foreground">{cue.label}</p>
+                  <StatusBadge tone={cue.tone}>{formatEvidenceCueStatusLabel(cue.tone)}</StatusBadge>
+                </div>
+                <p className="mt-1 text-muted-foreground">{cue.detail}</p>
+                <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-[0.14em] text-foreground/70">
+                  Next: <span className="normal-case tracking-normal text-muted-foreground">{cue.nextAction}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {projectHref || programHref || projectGrantModelingEvidence ? (
           <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
