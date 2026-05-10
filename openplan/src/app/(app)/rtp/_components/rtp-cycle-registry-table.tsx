@@ -504,6 +504,17 @@ export function RtpCycleRegistryTable({
                 <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
+                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Packet scan cue</p>
+                      <p className="mt-2 text-sm font-medium">{cycle.packetScanCue.label}</p>
+                      <p className="mt-1 text-sm text-muted-foreground">{cycle.packetScanCue.detail}</p>
+                    </div>
+                    <StatusBadge tone={cycle.packetScanCue.tone}>{cycle.packetScanCue.label}</StatusBadge>
+                  </div>
+                </div>
+
+                <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
                       <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                         Operator status
                       </p>

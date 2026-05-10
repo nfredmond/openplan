@@ -252,6 +252,35 @@ export function buildPacketOperatorStatus(input: {
   };
 }
 
+export function buildPacketScanCue(input: {
+  packetAttention: PacketAttention;
+  packetQueueTraceState: { state: QueueTraceStateFilter };
+  packetFundingReview: { needsAttention: boolean; label: string };
+}) {
+  if (input.packetAttention === "reset") {
+    return { label: "Reset before review", tone: "warning" as const, detail: "Layout drift and stale source state are both present. Reset the phase preset before regenerating." };
+  }
+  if (input.packetQueueTraceState.state === "outpaced") {
+    return { label: "Queue trace outpaced", tone: "warning" as const, detail: "Source edits landed after the last recorded queue action. Re-check the packet trail before treating this row as done." };
+  }
+  if (input.packetAttention === "missing") {
+    return { label: "Create packet record", tone: "warning" as const, detail: "No RTP board packet record exists yet. Start here before generation or release review can be tracked." };
+  }
+  if (input.packetAttention === "generate") {
+    return { label: "Generate first artifact", tone: "warning" as const, detail: "The packet record exists, but reviewers still need the first rendered artifact." };
+  }
+  if (input.packetAttention === "refresh") {
+    return { label: "Refresh from source", tone: "info" as const, detail: "A rendered artifact exists, but the RTP source changed after generation. Refresh before external use." };
+  }
+  if (input.packetFundingReview.needsAttention) {
+    return { label: input.packetFundingReview.label, tone: "info" as const, detail: "Packet freshness is current; scan funding follow-through next before marking release review settled." };
+  }
+  if (input.packetQueueTraceState.state === "unrecorded") {
+    return { label: "Record queue trace", tone: "neutral" as const, detail: "Packet posture is visible, but the durable queue action trail is incomplete." };
+  }
+  return { label: "Ready to review", tone: "success" as const, detail: "Packet artifact, source timing, funding posture, and queue trace are aligned for release-review scanning." };
+}
+
 export function buildPacketActivityTrace(input: {
   packetReport: RtpPacketReportRow | null;
   packetFreshness: { label: string };

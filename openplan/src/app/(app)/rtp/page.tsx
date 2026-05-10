@@ -30,6 +30,7 @@ import { buildRtpRegistryHref } from "./_components/_helpers";
 import {
   buildPacketActivityTrace,
   buildPacketFundingReview,
+  buildPacketScanCue,
   buildPacketOperatorStatus,
   buildPacketQueueTrace,
   buildPacketQueueTraceState,
@@ -503,6 +504,11 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           packetReport,
           packetFreshness,
           packetAttention,
+        }),
+        packetScanCue: buildPacketScanCue({
+          packetAttention,
+          packetQueueTraceState,
+          packetFundingReview,
         }),
         packetNavigationHref,
         grantsFollowThrough,

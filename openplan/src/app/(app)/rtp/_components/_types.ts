@@ -52,6 +52,12 @@ export type PacketActivityTrace = {
   detail: string;
 };
 
+export type PacketScanCue = {
+  label: string;
+  tone: StatusBadgeTone;
+  detail: string;
+};
+
 export type PacketQueueTrace = {
   action: string | null;
   actedAt: string | null;
@@ -120,6 +126,7 @@ export type RtpRegistryCycle = {
   packetQueueTrace: PacketQueueTrace;
   packetQueueTraceState: PacketQueueTraceStateInfo;
   packetActivityTrace: PacketActivityTrace;
+  packetScanCue: PacketScanCue;
   packetNavigationHref: string;
   grantsFollowThrough: GrantsFollowThrough;
   readiness: RtpReadiness;
