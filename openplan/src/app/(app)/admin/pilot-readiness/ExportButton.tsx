@@ -11,20 +11,28 @@ interface ExportButtonProps {
   }[]
 }
 
+export function buildPilotReadinessPacket(statusList: ExportButtonProps['statusList'], generatedAt = new Date().toISOString()) {
+  const lines = [
+    '# Pilot Readiness Evidence Packet',
+    `Generated: ${generatedAt}`,
+    '',
+    '## Current Smoke Status',
+    ...statusList.map(s => `- **${s.lane}**: ${s.status} (Last Run: ${s.lastRun}; Source: ${s.details})`),
+    '',
+    '## Operator follow-up',
+    '- Treat PASS lanes as citeable only when the named source document is available in `docs/ops`.',
+    '- Re-run or refresh any FAIL, PENDING, or UNKNOWN lane before using this packet for pilot diligence.',
+    '',
+    '## About OpenPlan Readiness',
+    'OpenPlan is actively tested against production infrastructure. These smoke tests reflect the latest validation runs.',
+  ]
+
+  return lines.join('\n')
+}
+
 export function ExportButton({ statusList }: ExportButtonProps) {
   const handleExport = () => {
-    const lines = [
-      '# Pilot Readiness Evidence Packet',
-      `Generated: ${new Date().toISOString()}`,
-      '',
-      '## Current Smoke Status',
-      ...statusList.map(s => `- **${s.lane}**: ${s.status} (Last Run: ${s.lastRun})`),
-      '',
-      '## About OpenPlan Readiness',
-      'OpenPlan is actively tested against production infrastructure. These smoke tests reflect the latest validation runs.',
-    ]
-
-    const blob = new Blob([lines.join('\n')], { type: 'text/markdown' })
+    const blob = new Blob([buildPilotReadinessPacket(statusList)], { type: 'text/markdown' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
