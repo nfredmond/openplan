@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "check:local-guards": "node harness-env.local-guard.test.js",
+    "check:workspace-isolation-fixture": "node workspace-url-isolation-fixture.test.js",
     "local-rtp-release-review-smoke": "node openplan-local-rtp-release-review-smoke.js",
     "local-grants-flow-smoke": "node openplan-local-grants-flow-smoke.js",
     "local-engagement-report-handoff-smoke": "node openplan-local-engagement-report-handoff-smoke.js",

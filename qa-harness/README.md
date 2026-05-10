@@ -32,6 +32,7 @@ From `openplan/qa-harness`:
 ```bash
 npm install
 npm run check:local-guards
+npm run check:workspace-isolation-fixture
 npm run local-workspace-url-isolation-smoke -- --example-fixture
 OPENPLAN_SYNTH_WORKSPACE_A_PASSWORD=dummy OPENPLAN_SYNTH_WORKSPACE_B_PASSWORD=dummy \
   npm run local-workspace-url-isolation-smoke -- --fixture fixtures/workspace-url-isolation.local.example.json --validate-fixture
@@ -80,7 +81,7 @@ npm run prod-qa-cleanup:apply
 - The UI/UX settle capture harness never logs in, creates users, seeds data, writes Supabase rows, touches billing/email, or persists credentials/tokens. It consumes an existing local storage-state file only for the Playwright browser context.
 - The UI/UX settle capture harness accepts `BASE_URL` values on `localhost` or `127.0.0.1` by default. It always refuses Vercel URLs. Use `--allow-local-network` only for explicit private local URLs such as `192.168.x.x`, and record that choice in the generated ledger.
 - The UI/UX settle capture harness writes only under `docs/ops/2026-04-29-test-output/ui-ux-settle/` unless `OPENPLAN_UI_UX_SETTLE_OUTPUT_DIR` or `--output-dir` points to another directory under `docs/ops/`.
-- The local workspace URL isolation fixture is a template: replace placeholder IDs/text with records from a local synthetic seed and export the password env vars before running it. Every denied user must also have an own-workspace URL check so the harness can prove session continuity after a cross-workspace denial.
+- The local workspace URL isolation fixture is a template: replace placeholder IDs/text with records from a local synthetic seed and export the password env vars before running it. Every check must include `allowedText` and `leakText`; every denied user must also have an own-workspace URL check so the harness can prove session continuity after a cross-workspace denial. When user entries include `workspaceName`, denied users must belong to a different workspace name than the allowed user.
 - Intended for controlled operator use, not CI.
 - Production smoke scripts create real production QA users/workspaces/records unless their description says read-only. Run cleanup after proof so production residue does not accumulate.
 - The production admin operations auth smoke creates a reviewer session only; it must not be used to click triage/provision controls or capture prospect rows.

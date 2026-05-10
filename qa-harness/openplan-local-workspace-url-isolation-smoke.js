@@ -189,14 +189,31 @@ function validateFixture(fixture, args) {
   for (const check of fixture.checks) {
     if (!check.name) throw new Error('Every check needs a name.');
     if (!check.url) throw new Error(`Check ${check.name} needs a url.`);
+    if (!check.allowedText) throw new Error(`Check ${check.name} needs allowedText so the own-workspace view is proven.`);
+    if (!check.leakText || asArray(check.leakText).length === 0) {
+      throw new Error(`Check ${check.name} needs leakText so the denied view can prove no workspace data leaked.`);
+    }
     if (!check.allowedUser || !users[check.allowedUser]) {
       throw new Error(`Check ${check.name} has missing/unknown allowedUser.`);
     }
+    const deniedUsers = deniedUsersForCheck(check, userKeys);
     if (asArray(check.deniedUsers).some((userKey) => !users[userKey])) {
       throw new Error(`Check ${check.name} references an unknown deniedUser.`);
     }
-    if (deniedUsersForCheck(check, userKeys).includes(check.allowedUser)) {
+    if (deniedUsers.includes(check.allowedUser)) {
       throw new Error(`Check ${check.name} lists its allowedUser as a denied user.`);
+    }
+    if (deniedUsers.length === 0) {
+      throw new Error(`Check ${check.name} must deny at least one other workspace user.`);
+    }
+    for (const deniedUser of deniedUsers) {
+      const allowedWorkspaceName = users[check.allowedUser].workspaceName;
+      const deniedWorkspaceName = users[deniedUser].workspaceName;
+      if (allowedWorkspaceName && deniedWorkspaceName && allowedWorkspaceName === deniedWorkspaceName) {
+        throw new Error(
+          `Check ${check.name} denied user ${deniedUser} must target a different workspace than ${check.allowedUser}.`
+        );
+      }
     }
   }
 
