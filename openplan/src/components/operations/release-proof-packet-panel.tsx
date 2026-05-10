@@ -2,7 +2,11 @@ import Link from "next/link";
 import { ArrowRight, FileCheck2, ShieldAlert } from "lucide-react";
 
 import { StatusBadge } from "@/components/ui/status-badge";
-import { releaseProofPosture, type ReleaseProofStatus } from "@/lib/operations/release-proof-packet";
+import {
+  getReleaseProofItemCaveats,
+  releaseProofPosture,
+  type ReleaseProofStatus,
+} from "@/lib/operations/release-proof-packet";
 
 function proofTone(status: ReleaseProofStatus) {
   switch (status) {
@@ -56,6 +60,31 @@ export function ReleaseProofPacketPanel() {
                   <h3 className="module-record-title">{item.headline}</h3>
                   <p className="module-record-summary">{item.detail}</p>
                   <p className="font-mono text-[0.72rem] text-muted-foreground">{item.artifact}</p>
+                  <div className="grid gap-3 pt-2 text-xs text-muted-foreground md:grid-cols-[0.85fr_1.15fr]">
+                    <div>
+                      <p className="font-semibold uppercase tracking-[0.12em] text-foreground/75">Supports</p>
+                      <p className="mt-1 leading-relaxed">{item.readinessRole}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold uppercase tracking-[0.12em] text-foreground/75">Operator check</p>
+                      <p className="mt-1 leading-relaxed">{item.operatorCheck}</p>
+                    </div>
+                  </div>
+                  <div className="pt-2">
+                    <p className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      Caveats carried with this artifact
+                    </p>
+                    <ul className="mt-1.5 space-y-1.5 text-xs text-muted-foreground">
+                      {getReleaseProofItemCaveats(item).map((caveat) => (
+                        <li key={`${item.key}-${caveat.key}`} className="flex gap-2">
+                          <span aria-hidden="true" className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-700/70" />
+                          <span>
+                            <span className="font-semibold text-foreground/80">{caveat.label}:</span> {caveat.text}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>

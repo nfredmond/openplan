@@ -36,8 +36,12 @@ describe("pilot readiness export packet", () => {
 
     for (const proofItem of releaseProofPosture.proofItems) {
       expect(packet).toContain(`- **${proofItem.label}**: ${proofItem.headline} Source: ${proofItem.artifact}`);
+      expect(packet).toContain(`  - Supports: ${proofItem.readinessRole}`);
+      expect(packet).toContain(`  - Operator check: ${proofItem.operatorCheck}`);
     }
 
+    expect(packet).toContain("Billing proof waiver (docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md)");
+    expect(packet).toContain("Modeling proof boundary (docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md)");
     expect(packet).toContain("No fresh same-cycle paid canary is claimed");
     expect(packet).toContain("Onboarding remains a supervised implementation step");
     expect(packet).toContain("RPO/RTO commitments are filled per managed-hosting engagement");
