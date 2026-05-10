@@ -383,6 +383,20 @@ export default async function EngagementCampaignDetailPage({
               </div>
             </div>
 
+            <div className="module-note border-sky-300/40 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Map export readiness</p>
+              <h3 className="mt-2 text-sm font-semibold text-foreground">
+                {counts.exportCoverage.mapReadyItems} approved item{counts.exportCoverage.mapReadyItems === 1 ? "" : "s"} ready for GIS/map export
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {counts.exportCoverage.handoffReadyWithoutLocation > 0
+                  ? `${counts.exportCoverage.handoffReadyWithoutLocation} approved categorized item${counts.exportCoverage.handoffReadyWithoutLocation === 1 ? "" : "s"} still need a map location before they can appear in public map exports.`
+                  : counts.moderationQueue.readyForHandoffCount > 0
+                    ? "Every handoff-ready item has a location for map display and downstream GIS review."
+                    : "Approve and categorize geolocated items to build a reliable public map/export layer."}
+              </p>
+            </div>
+
             <div className="grid gap-3 xl:grid-cols-2">
               <article className="module-record-row">
                 <div className="module-record-head">

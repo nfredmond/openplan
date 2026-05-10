@@ -81,6 +81,12 @@ type GeographyCoverageSummary = {
   geolocatedShare: number;
 };
 
+type ExportCoverageSummary = {
+  mapReadyItems: number;
+  handoffReadyWithoutLocation: number;
+  mapReadyShare: number;
+};
+
 type EngagementCounts = {
   totalItems: number;
   geolocatedItems: number;
@@ -94,6 +100,7 @@ type EngagementCounts = {
   sourceSummaries: SourceSummary[];
   moderationQueue: ModerationQueueSummary;
   geographyCoverage: GeographyCoverageSummary;
+  exportCoverage: ExportCoverageSummary;
   lastActivityAt: string | null;
   recentActivity: RecentActivityWindow;
 };
@@ -311,6 +318,14 @@ export function summarizeEngagementItems(
   const readyForHandoffCount = categoryCounts
     .filter((category) => category.categoryId !== null)
     .reduce((sum, category) => sum + category.approvedCount, 0);
+  const mapReadyItems = items.filter(
+    (item) =>
+      item.status === "approved" &&
+      Boolean(item.category_id) &&
+      typeof item.latitude === "number" &&
+      typeof item.longitude === "number"
+  ).length;
+  const handoffReadyWithoutLocation = readyForHandoffCount - mapReadyItems;
 
   return {
     totalItems,
@@ -339,6 +354,11 @@ export function summarizeEngagementItems(
       geolocatedItems,
       nonGeolocatedItems,
       geolocatedShare: totalItems > 0 ? geolocatedItems / totalItems : 0,
+    },
+    exportCoverage: {
+      mapReadyItems,
+      handoffReadyWithoutLocation,
+      mapReadyShare: readyForHandoffCount > 0 ? mapReadyItems / readyForHandoffCount : 0,
     },
     lastActivityAt,
     recentActivity: {

@@ -64,6 +64,11 @@ describe("summarizeEngagementItems", () => {
       geographyCoverage: {
         geolocatedShare: 1 / 3,
       },
+      exportCoverage: {
+        mapReadyItems: 1,
+        handoffReadyWithoutLocation: 0,
+        mapReadyShare: 1,
+      },
       recentActivity: {
         count: 2,
         byStatus: expect.objectContaining({
