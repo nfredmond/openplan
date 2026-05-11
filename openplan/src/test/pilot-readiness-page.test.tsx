@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import PilotReadinessPage from "@/app/(app)/admin/pilot-readiness/page";
 import { buildPilotReadinessControlSummary } from "@/lib/operations/admin-operator-control";
+import type { SmokeStatus } from "@/lib/operations/pilot-readiness";
 import { buildPilotReadinessPacket } from "@/lib/operations/pilot-readiness-packet";
 import {
   getOpenPlanRepositoryArtifactUrl,
@@ -13,6 +14,7 @@ import {
   getAdminPilotReadinessProofArtifactIndex,
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
+import { getSupervisedOnboardingEvidenceFlow } from "@/lib/operations/supervised-onboarding-evidence";
 
 const smokeStatusFixture = vi.hoisted(() => [
   {
@@ -21,7 +23,7 @@ const smokeStatusFixture = vi.hoisted(() => [
     lastRun: "2026-05-01",
     details: "docs/ops/2026-05-01-openplan-rc-proof-log.md",
   },
-]);
+] satisfies SmokeStatus[]);
 
 vi.mock("@/lib/operations/pilot-readiness", () => ({
   getSmokeStatus: () => smokeStatusFixture,
@@ -64,6 +66,9 @@ describe("PilotReadinessPage", () => {
     expect(screen.getByRole("heading", { name: /Which artifacts support sale and pilot readiness/i })).toBeInTheDocument();
     expect(screen.getByText(/The export below uses the same release-proof posture as Command Center/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Run a read-only preflight before outward reliance/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Supervised onboarding evidence flow/i })).toBeInTheDocument();
+    expect(screen.getByText("Trace the admin queue behind this packet")).toBeInTheDocument();
+    expect(screen.getByText(getSupervisedOnboardingEvidenceFlow().boundary)).toBeInTheDocument();
     expect(screen.getByText("pnpm ops:check-pilot-preflight")).toBeInTheDocument();
     expect(screen.getAllByText("docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md").length).toBeGreaterThan(0);
     expect(screen.getByText(/Run this in a terminal immediately before a buyer call/i)).toBeInTheDocument();

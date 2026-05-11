@@ -1,5 +1,6 @@
 import { FileCheck2, ShieldCheck, TerminalSquare } from "lucide-react";
 import { ExportButton } from "./ExportButton";
+import { SupervisedOnboardingEvidenceFlowPanel } from "@/components/operations/supervised-onboarding-evidence-flow";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { buildPilotReadinessControlSummary } from "@/lib/operations/admin-operator-control";
 import { getSmokeStatus, type SmokeStatus } from "@/lib/operations/pilot-readiness";
@@ -219,6 +220,8 @@ export default function PilotReadinessPage() {
           ))}
         </div>
       </article>
+
+      <SupervisedOnboardingEvidenceFlowPanel context="pilot-readiness" />
 
       <article className="module-section-surface">
         <div className="module-section-header">

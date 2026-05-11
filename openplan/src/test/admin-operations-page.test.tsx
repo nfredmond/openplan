@@ -64,6 +64,7 @@ vi.mock("@/lib/workspaces/current", () => ({
 
 import AdminOperationsPage from "@/app/(app)/admin/operations/page";
 import { summarizeOperationalWarnings } from "@/lib/observability/operational-events";
+import { getSupervisedOnboardingEvidenceFlow } from "@/lib/operations/supervised-onboarding-evidence";
 
 describe("AdminOperationsPage", () => {
   afterEach(() => {
@@ -138,6 +139,9 @@ describe("AdminOperationsPage", () => {
     render(await AdminOperationsPage());
 
     expect(screen.getByText("Warning watchboard")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Supervised onboarding evidence flow/i })).toBeInTheDocument();
+    expect(screen.getByText("Bridge this queue to pilot readiness")).toBeInTheDocument();
+    expect(screen.getByText(getSupervisedOnboardingEvidenceFlow().summary)).toBeInTheDocument();
     expect(screen.getByText("Oversized API request")).toBeInTheDocument();
     expect(screen.getByText("High-cost AI analysis call")).toBeInTheDocument();
     expect(screen.getByText("CSP report-only violation")).toBeInTheDocument();

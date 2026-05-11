@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
 import { RecentAccessRequests } from "@/components/operations/recent-access-requests";
+import { SupervisedOnboardingEvidenceFlowPanel } from "@/components/operations/supervised-onboarding-evidence-flow";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   canReviewAccessRequests,
@@ -149,6 +150,8 @@ export default async function AdminOperationsPage() {
         requests={accessRequestActivity.requests}
         error={accessRequestActivity.error}
       />
+
+      <SupervisedOnboardingEvidenceFlowPanel context="admin-operations" />
 
       <article className="module-section-surface">
         <div className="module-section-header">
