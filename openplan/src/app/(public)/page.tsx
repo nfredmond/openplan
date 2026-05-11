@@ -1,6 +1,17 @@
 import Link from "next/link";
 import { ArrowRight, FileText, Map, MessageSquareText, ShieldCheck } from "lucide-react";
 
+const sourceProofLinks = [
+  {
+    href: "https://github.com/nfredmond/openplan",
+    label: "Source repository",
+  },
+  {
+    href: "https://github.com/nfredmond/openplan/blob/main/LICENSE",
+    label: "Apache-2.0 license text",
+  },
+];
+
 const operatingFlows = [
   {
     title: "Move from corridor question to delivery packet",
@@ -28,10 +39,11 @@ const publicSurfaces = [
       "Nevada County 2026-03-24 screening runtime vs. Caltrans counts, gated as internal prototype only — caveats and validation metrics shown verbatim.",
   },
   {
-    href: "/explore",
-    label: "Analysis Studio preview",
-    title: "Explore maps and scenario work",
-    description: "Review corridors, overlays, run history, and map-ready outputs in a serious planning workspace.",
+    href: "/request-access?workflow=modeling&source=landing",
+    label: "Analysis Studio access",
+    title: "Request the gated map and scenario workspace",
+    description:
+      "Analysis Studio is a signed-in operator surface. Request a supervised workspace review before using corridor maps, overlays, run history, and map-ready outputs.",
   },
   {
     href: "/pricing",
@@ -46,10 +58,11 @@ const publicSurfaces = [
     description: "Submit agency context and a first workflow without triggering automatic provisioning or outbound messages.",
   },
   {
-    href: "/engagement",
-    label: "Engagement workspace",
-    title: "Track public input as planning evidence",
-    description: "Follow campaigns, categories, moderation status, and summary-ready engagement records in one operational flow.",
+    href: "/request-access?workflow=engagement&source=landing",
+    label: "Engagement workspace access",
+    title: "Request the gated engagement workspace",
+    description:
+      "Public share links can be published, but campaign management is a signed-in workspace surface with moderation and operator review.",
   },
 ];
 
@@ -101,7 +114,7 @@ const coreLanes = [
 
 export default function PublicLandingPage() {
   return (
-    <main className="public-page">
+    <div className="public-page">
       <div className="public-page-backdrop" />
 
       <section className="public-hero-grid">
@@ -114,16 +127,25 @@ export default function PublicLandingPage() {
             </p>
           </div>
 
+          <div className="public-source-proof" aria-label="Open-source proof path">
+            <span>Proof path for the Apache-2.0 claim:</span>
+            {sourceProofLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="public-source-proof-link">
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
           <div className="public-actions">
-            <Link href="/sign-in" className="public-primary-link">
-              Sign in
+            <Link href="/request-access" className="public-primary-link">
+              Request access
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href="/pricing" className="public-secondary-link">
               Review services
             </Link>
-            <Link href="/request-access" className="public-secondary-link">
-              Request access
+            <Link href="/sign-in" className="public-secondary-link">
+              Sign in to existing workspace
             </Link>
           </div>
 
@@ -262,6 +284,6 @@ export default function PublicLandingPage() {
           </div>
         </article>
       </section>
-    </main>
+    </div>
   );
 }

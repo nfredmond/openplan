@@ -22,6 +22,15 @@ describe("PricingPage", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Apache-2.0 source code license/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Open-source proof path/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Source repository/i })).toHaveAttribute(
+      "href",
+      "https://github.com/nfredmond/openplan",
+    );
+    expect(screen.getByRole("link", { name: /Apache-2.0 license text/i })).toHaveAttribute(
+      "href",
+      "https://github.com/nfredmond/openplan/blob/main/LICENSE",
+    );
     expect(screen.getByText(/Managed hosting \+ support/i)).toBeInTheDocument();
     expect(screen.getByText(/Implementation \+ planning services/i)).toBeInTheDocument();
     expect(screen.getByText(/Stripe remains the payment rail for hosted workspace support and service retainers/i)).toBeInTheDocument();

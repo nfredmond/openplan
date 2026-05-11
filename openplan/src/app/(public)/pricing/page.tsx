@@ -1,6 +1,17 @@
 import Link from "next/link";
 import { ArrowRight, CreditCard, ShieldCheck } from "lucide-react";
 
+const sourceProofLinks = [
+  {
+    href: "https://github.com/nfredmond/openplan",
+    label: "Source repository",
+  },
+  {
+    href: "https://github.com/nfredmond/openplan/blob/main/LICENSE",
+    label: "Apache-2.0 license text",
+  },
+];
+
 const serviceLanes = [
   {
     name: "Self-hosted core",
@@ -85,6 +96,15 @@ export default function PricingPage() {
             <p className="public-lead max-w-4xl">
               OpenPlan is positioned as Apache-2.0 open-source software first. Nat Ford Planning earns revenue by operating hosted workspaces, onboarding teams, supporting planning workflows, and building custom extensions — not by locking agencies into a black-box license.
             </p>
+          </div>
+
+          <div className="public-source-proof" aria-label="Open-source proof path">
+            <span>Proof path for the open-source posture:</span>
+            {sourceProofLinks.map((link) => (
+              <Link key={link.href} href={link.href} className="public-source-proof-link">
+                {link.label}
+              </Link>
+            ))}
           </div>
 
           <div className="public-actions">

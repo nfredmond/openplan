@@ -16,6 +16,8 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
       /Open-source planning software that keeps maps, engagement, and delivery in one record/i,
       /Apache-2\.0 planning software for agencies, tribes, RTPAs, counties, and consulting teams/i,
       /supports it through managed hosting, onboarding, planning services, and custom implementation work/i,
+      /Proof path for the Apache-2\.0 claim/i,
+      /https:\/\/github\.com\/nfredmond\/openplan\/blob\/main\/LICENSE/i,
       /managed operations when you need someone accountable to run it/i,
     ],
   },
@@ -25,6 +27,8 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
     requiredMarkers: [
       /Apache-2\.0 open-source software first/i,
       /earns revenue by operating hosted workspaces, onboarding teams, supporting planning workflows, and building custom extensions/i,
+      /Proof path for the open-source posture/i,
+      /https:\/\/github\.com\/nfredmond\/openplan\/blob\/main\/LICENSE/i,
       /does not turn the open-source core into a proprietary software license/i,
       /not priced as a seat-based proprietary license/i,
       /no fresh same-cycle paid canary was run for this release packet/i,

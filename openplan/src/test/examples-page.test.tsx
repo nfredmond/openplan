@@ -23,7 +23,7 @@ describe("ExamplesEvidenceCatalogPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Clone the proof trail/i)).toBeInTheDocument();
     expect(screen.getByText(/Request implementation help/i)).toBeInTheDocument();
-    expect(screen.getByText(/No subscription-first demo claim/i)).toBeInTheDocument();
+    expect(screen.getByText(/No instant checkout demo claim/i)).toBeInTheDocument();
     expect(screen.getByText(/Guided demo fit check/i)).toBeInTheDocument();
     expect(screen.getByText(/one scoped first workflow/i)).toBeInTheDocument();
     expect(screen.getByText(/self-hosted, managed-hosted, implementation-only, or a mix/i)).toBeInTheDocument();

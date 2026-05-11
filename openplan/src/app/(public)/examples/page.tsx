@@ -293,7 +293,7 @@ export default function ExamplesEvidenceCatalogPage() {
             <div className="public-ledger-row">
               <div className="public-ledger-index">03</div>
               <div className="public-ledger-body">
-                <p className="public-ledger-label">No subscription-first demo claim</p>
+                <p className="public-ledger-label">No instant checkout demo claim</p>
                 <p className="public-ledger-copy text-foreground">
                   A public example is not a promise that every workspace will reproduce these results.
                   Production commitments belong in scoped services with human review.

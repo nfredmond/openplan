@@ -255,6 +255,31 @@
     --shell-muted: #556575;
   }
 
+  .top-nav-primary-link {
+    display: inline-flex;
+    min-height: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    background: var(--pine);
+    padding: 0.45rem 0.8rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: white;
+    transition:
+      background-color 180ms ease,
+      color 180ms ease,
+      transform 180ms ease;
+  }
+
+  .top-nav-primary-link:hover {
+    background: var(--pine-deep);
+  }
+
+  .top-nav-primary-link:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 42%, transparent);
+  }
+
   .app-shell-toolbar {
     position: relative;
     overflow: hidden;
@@ -2741,6 +2766,43 @@
   gap: 0.75rem;
 }
 
+.public-source-proof {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem 0.75rem;
+  border-left: 2px solid color-mix(in srgb, var(--pine) 46%, white 54%);
+  background: color-mix(in srgb, white 74%, var(--fog) 26%);
+  padding: 0.75rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+
+.public-source-proof-link {
+  color: var(--foreground);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color 180ms ease;
+}
+
+.public-source-proof-link:hover {
+  color: var(--pine-deep);
+}
+
+@media (max-width: 640px) {
+  .public-actions {
+    display: grid;
+  }
+
+  .public-primary-link,
+  .public-secondary-link {
+    width: 100%;
+  }
+}
+
 .public-primary-link,
 .public-secondary-link {
   display: inline-flex;
@@ -3216,10 +3278,15 @@
 
 .dark .public-fact,
 .dark .public-inline-label,
+.dark .public-source-proof,
 .dark .public-context-strip,
 .dark .public-note-block {
   border-left-color: rgba(99, 179, 237, 0.3);
   background: color-mix(in srgb, #0f1720 82%, var(--fog) 18%);
+}
+
+.dark .public-source-proof-link:hover {
+  color: #bbf7d0;
 }
 
 .dark .public-ledger-row,
