@@ -66,9 +66,9 @@ describe("AccessRequestProvisionControls", () => {
     fireEvent.change(screen.getByLabelText("Workspace name"), {
       target: { value: "NCTC Pilot Workspace" },
     });
-    const createButton = screen.getByRole("button", { name: /Create invite/i });
+    const createButton = screen.getByRole("button", { name: /Create manual invite/i });
     expect(createButton).toBeDisabled();
-    fireEvent.click(screen.getByLabelText(/manual operator provisioning step/i));
+    fireEvent.click(screen.getByLabelText(/manual, operator-initiated provisioning step/i));
     fireEvent.click(createButton);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
@@ -99,11 +99,18 @@ describe("AccessRequestProvisionControls", () => {
       />,
     );
 
-    const createButton = screen.getByRole("button", { name: /Create invite/i });
+    const createButton = screen.getByRole("button", { name: /Create manual invite/i });
+    const acknowledgement = screen.getByLabelText(/manual, operator-initiated provisioning step/i);
+    const acknowledgementDescriptionId = acknowledgement.getAttribute("aria-describedby");
+
     expect(screen.getByText(/do not send outbound email/i)).toBeInTheDocument();
+    expect(screen.getByText(/do not auto-deliver the invitation URL/i)).toBeInTheDocument();
+    expect(screen.getByText(/do not treat this as autonomous access activation/i)).toBeInTheDocument();
+    expect(acknowledgementDescriptionId).toBeTruthy();
+    expect(document.getElementById(acknowledgementDescriptionId ?? "")?.textContent).toMatch(/do not send outbound email/i);
     expect(createButton).toBeDisabled();
 
-    fireEvent.click(screen.getByLabelText(/manual operator provisioning step/i));
+    fireEvent.click(acknowledgement);
 
     expect(createButton).toBeEnabled();
   });
@@ -119,7 +126,7 @@ describe("AccessRequestProvisionControls", () => {
     );
 
     expect(screen.getByText(/Available after the request is marked contacted or invited/i)).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Create invite/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Create manual invite/i })).not.toBeInTheDocument();
   });
 
   it("renders already-linked access requests without another provisioning action", () => {
@@ -133,7 +140,7 @@ describe("AccessRequestProvisionControls", () => {
     );
 
     expect(screen.getByText("Workspace 11111111 linked.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Create invite/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Create manual invite/i })).not.toBeInTheDocument();
   });
 
   it("surfaces linked owner invite status without exposing an invitation URL or token", () => {

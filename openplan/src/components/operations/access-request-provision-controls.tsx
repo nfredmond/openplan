@@ -42,6 +42,7 @@ export function AccessRequestProvisionControls({
   const [manualAcknowledgement, setManualAcknowledgement] = useState(false);
   const canProvision = !linkedWorkspaceId && canProvisionAccessRequestStatus(currentStatus);
   const trimmedWorkspaceName = draftWorkspaceName.trim();
+  const acknowledgementDescriptionId = `access-request-${requestId}-manual-provisioning-acknowledgement`;
 
   async function provisionWorkspace() {
     if (!canProvision || !trimmedWorkspaceName || !manualAcknowledgement) {
@@ -118,10 +119,14 @@ export function AccessRequestProvisionControls({
               checked={manualAcknowledgement}
               onChange={(event) => setManualAcknowledgement(event.target.checked)}
               disabled={pending}
+              aria-describedby={acknowledgementDescriptionId}
             />
             <span>
-              I have confirmed this is a manual operator provisioning step. Create the workspace and owner invite only;
-              do not send outbound email.
+              I have confirmed this is a manual, operator-initiated provisioning step.
+              <span id={acknowledgementDescriptionId} className="mt-1 block">
+                Create the workspace and owner invite only; do not send outbound email, do not auto-deliver the
+                invitation URL, and do not treat this as autonomous access activation.
+              </span>
             </span>
           </label>
           <Button
@@ -132,7 +137,7 @@ export function AccessRequestProvisionControls({
             onClick={provisionWorkspace}
           >
             {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-            Create invite
+            Create manual invite
           </Button>
         </div>
       ) : (
