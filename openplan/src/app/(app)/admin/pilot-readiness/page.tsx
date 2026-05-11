@@ -35,14 +35,16 @@ function getStatusProofArtifact(status: SmokeStatus) {
   return details.includes("/") ? details : `docs/ops/${details}`;
 }
 
-function ProofArtifactLink({ artifact, href }: { artifact: string; href?: string }) {
+function ProofArtifactLink({ artifact, href, contextLabel }: { artifact: string; href?: string; contextLabel?: string }) {
+  const linkContext = contextLabel ? ` for ${contextLabel}` : "";
+
   return (
     <a
       href={href ?? getOpenPlanRepositoryArtifactUrl(artifact)}
       target="_blank"
       rel="noreferrer"
       className="break-all font-mono text-[0.72rem] font-medium text-emerald-700 underline decoration-emerald-700/30 underline-offset-4 hover:text-emerald-900 hover:decoration-emerald-800 dark:text-emerald-200 dark:hover:text-emerald-100"
-      aria-label={`Open proof artifact ${artifact}`}
+      aria-label={`Open proof artifact ${artifact}${linkContext}`}
     >
       {artifact}
     </a>
@@ -58,7 +60,7 @@ export default function PilotReadinessPage() {
     releaseProofPosture.proofItems.find((item) => item.key === "sales-caveats") ?? releaseProofPosture.proofItems[0];
 
   return (
-    <section className="module-page">
+    <section className="module-page" aria-labelledby="pilot-readiness-ledger-title">
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -70,7 +72,7 @@ export default function PilotReadinessPage() {
               <StatusBadge tone={pilotControl.tone}>{pilotControl.label}</StatusBadge>
               <StatusBadge tone="neutral">Latest evidence: {pilotControl.latestEvidenceDate}</StatusBadge>
             </div>
-            <h1 className="module-intro-title">Pilot readiness evidence ledger</h1>
+            <h1 id="pilot-readiness-ledger-title" className="module-intro-title">Pilot readiness evidence ledger</h1>
             <p className="module-intro-description">
               Read the latest smoke-test evidence as an operator ledger: what is citeable, what needs repair, and which
               caveats must travel with any supervised pilot conversation. This is evidence review, not buyer
@@ -83,10 +85,10 @@ export default function PilotReadinessPage() {
             className="mt-6 divide-y divide-border/70 border-y border-border/80"
           >
             <div className="grid gap-2 py-3 sm:grid-cols-[11rem_4rem_minmax(0,1fr)] sm:items-baseline">
-              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <dt id="pilot-readiness-ledger-passing-label" className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Passing checks
               </dt>
-              <dd className="font-mono text-xl font-semibold text-emerald-700 dark:text-emerald-200">
+              <dd aria-label="Passing checks count" aria-describedby="pilot-readiness-ledger-passing-label" className="font-mono text-xl font-semibold text-emerald-700 dark:text-emerald-200">
                 {pilotControl.counts.pass}
               </dd>
               <dd className="text-sm leading-relaxed text-muted-foreground">
@@ -94,10 +96,10 @@ export default function PilotReadinessPage() {
               </dd>
             </div>
             <div className="grid gap-2 py-3 sm:grid-cols-[11rem_4rem_minmax(0,1fr)] sm:items-baseline">
-              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <dt id="pilot-readiness-ledger-failing-label" className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Failing checks
               </dt>
-              <dd className="font-mono text-xl font-semibold text-rose-700 dark:text-rose-200">
+              <dd aria-label="Failing checks count" aria-describedby="pilot-readiness-ledger-failing-label" className="font-mono text-xl font-semibold text-rose-700 dark:text-rose-200">
                 {pilotControl.counts.fail}
               </dd>
               <dd className="text-sm leading-relaxed text-muted-foreground">
@@ -105,10 +107,10 @@ export default function PilotReadinessPage() {
               </dd>
             </div>
             <div className="grid gap-2 py-3 sm:grid-cols-[11rem_4rem_minmax(0,1fr)] sm:items-baseline">
-              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <dt id="pilot-readiness-ledger-pending-label" className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Pending checks
               </dt>
-              <dd className="font-mono text-xl font-semibold text-amber-700 dark:text-amber-200">
+              <dd aria-label="Pending checks count" aria-describedby="pilot-readiness-ledger-pending-label" className="font-mono text-xl font-semibold text-amber-700 dark:text-amber-200">
                 {pilotControl.counts.pending}
               </dd>
               <dd className="text-sm leading-relaxed text-muted-foreground">
@@ -116,10 +118,10 @@ export default function PilotReadinessPage() {
               </dd>
             </div>
             <div className="grid gap-2 py-3 sm:grid-cols-[11rem_4rem_minmax(0,1fr)] sm:items-baseline">
-              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <dt id="pilot-readiness-ledger-caveats-label" className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                 Caveats
               </dt>
-              <dd className="font-mono text-xl font-semibold text-foreground">
+              <dd aria-label="Required caveats count" aria-describedby="pilot-readiness-ledger-caveats-label" className="font-mono text-xl font-semibold text-foreground">
                 {pilotControl.requiredCaveatCount}
               </dd>
               <dd className="text-sm leading-relaxed text-muted-foreground">
@@ -195,7 +197,7 @@ export default function PilotReadinessPage() {
                 Proof source
               </p>
               <p className="mt-1 break-all font-mono text-[0.72rem] text-muted-foreground">
-                <ProofArtifactLink artifact={pilotControl.preflightProofArtifact} />
+                <ProofArtifactLink artifact={pilotControl.preflightProofArtifact} contextLabel="deployment preflight proof source" />
               </p>
             </div>
             <div>
@@ -227,9 +229,9 @@ export default function PilotReadinessPage() {
           <StatusBadge tone="warning">Source docs before claims</StatusBadge>
         </div>
 
-        <div className="mt-5 module-record-list">
+        <ol className="mt-5 module-record-list" aria-label="Pilot readiness proof and document hub source sequence">
           {proofHubSteps.map((step) => (
-            <div key={step.key} className="module-record-row">
+            <li key={step.key} className="module-record-row" aria-labelledby={`pilot-readiness-proof-hub-${step.key}-title`}>
               <div className="module-record-head">
                 <div className="module-record-main">
                   <div className="module-record-kicker">
@@ -241,7 +243,7 @@ export default function PilotReadinessPage() {
                     </span>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="module-record-title">{step.label}</h3>
+                    <h3 id={`pilot-readiness-proof-hub-${step.key}-title`} className="module-record-title">{step.label}</h3>
                     <p className="module-record-summary">{step.operatorAction}</p>
                     <dl className="grid gap-2 text-[0.76rem] leading-relaxed text-muted-foreground md:grid-cols-3">
                       <div>
@@ -258,14 +260,14 @@ export default function PilotReadinessPage() {
                       </div>
                     </dl>
                     <p>
-                      <ProofArtifactLink artifact={step.artifact} />
+                      <ProofArtifactLink artifact={step.artifact} contextLabel={`proof/doc hub step ${step.order}: ${step.label}`} />
                     </p>
                   </div>
                 </div>
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ol>
       </article>
 
       <article className="module-section-surface" aria-label="Compact proof artifact index">
@@ -296,7 +298,7 @@ export default function PilotReadinessPage() {
                     <p className="module-record-summary">{item.operatorUse}</p>
                     <p className="text-xs text-muted-foreground">{item.buyerSafeCaveat}</p>
                     <p>
-                      <ProofArtifactLink artifact={item.artifact} />
+                      <ProofArtifactLink artifact={item.artifact} contextLabel={`proof artifact index item: ${item.label}`} />
                     </p>
                   </div>
                 </div>
@@ -334,7 +336,7 @@ export default function PilotReadinessPage() {
                   <h3 className="module-record-title">{finalPilotReadinessChecklistSync.verdict}</h3>
                   <p className="module-record-summary">{finalPilotReadinessChecklistSync.supervisedOnboardingCaveat}</p>
                   <p className="font-mono text-[0.72rem] text-muted-foreground">
-                    <ProofArtifactLink artifact={finalPilotReadinessChecklistSync.checklistArtifact} />
+                    <ProofArtifactLink artifact={finalPilotReadinessChecklistSync.checklistArtifact} contextLabel="final checklist sync source" />
                   </p>
                 </div>
               </div>
@@ -355,7 +357,7 @@ export default function PilotReadinessPage() {
                   <ul className="space-y-1 font-mono text-[0.72rem] text-muted-foreground">
                     {finalPilotReadinessChecklistSync.exportFilenames.map((filename) => (
                       <li key={filename}>
-                        <ProofArtifactLink artifact={filename} />
+                        <ProofArtifactLink artifact={filename} contextLabel="generated packet file" />
                       </li>
                     ))}
                   </ul>
@@ -379,7 +381,7 @@ export default function PilotReadinessPage() {
                     <p className="module-record-summary">{artifact.role}</p>
                     <p className="text-xs text-muted-foreground">{artifact.caveat}</p>
                     <p>
-                      <ProofArtifactLink artifact={artifact.artifact} />
+                      <ProofArtifactLink artifact={artifact.artifact} contextLabel={`latest proof lane: ${artifact.label}`} />
                     </p>
                   </div>
                 </div>
@@ -420,7 +422,7 @@ export default function PilotReadinessPage() {
                     <p className="module-record-summary">{item.readinessRole}</p>
                     <p className="text-xs text-muted-foreground">{item.operatorCheck}</p>
                     <p>
-                      <ProofArtifactLink artifact={item.artifact} />
+                      <ProofArtifactLink artifact={item.artifact} contextLabel={`release-proof drilldown item: ${item.label}`} />
                     </p>
                     <p className="text-[0.72rem] text-muted-foreground">
                       Caveats: {getReleaseProofItemCaveats(item).map((caveat) => caveat.label).join(" · ")}
@@ -466,7 +468,7 @@ export default function PilotReadinessPage() {
                       <p className="module-record-summary break-all">{status.details}</p>
                       {proofArtifact ? (
                         <p className="text-[0.72rem] text-muted-foreground">
-                          Exact proof: <ProofArtifactLink artifact={proofArtifact} href={proofArtifactHref ?? undefined} />
+                          Exact proof: <ProofArtifactLink artifact={proofArtifact} href={proofArtifactHref ?? undefined} contextLabel={`tracked check: ${status.lane}`} />
                         </p>
                       ) : null}
                     </div>

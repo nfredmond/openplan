@@ -30,6 +30,11 @@ vi.mock("@/lib/operations/pilot-readiness", () => ({
   getSmokeStatus: () => smokeStatusFixture,
 }));
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+const proofArtifactLinkName = (artifact: string) =>
+  new RegExp(`^Open proof artifact ${escapeRegExp(artifact)}(?: for .+)?$`);
+
 describe("PilotReadinessPage", () => {
   it("shows that the export caveat cue is synchronized with Command Center release proof", () => {
     render(<PilotReadinessPage />);
@@ -45,7 +50,13 @@ describe("PilotReadinessPage", () => {
     expect(cue).toHaveTextContent(finalPilotReadinessChecklistSync.checklistArtifact);
     expect(cue).toHaveTextContent(salesCaveatProof?.artifact ?? "");
     expect(screen.getByRole("heading", { name: /Pilot readiness evidence ledger/i })).toBeInTheDocument();
-    expect(screen.getByLabelText(/Pilot readiness evidence ledger/i)).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/Pilot readiness evidence ledger/i).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText("Passing checks count")).toHaveTextContent(String(smokeStatusFixture.length));
+    expect(screen.getByLabelText("Failing checks count")).toHaveTextContent("0");
+    expect(screen.getByLabelText("Pending checks count")).toHaveTextContent("0");
+    expect(screen.getByLabelText("Required caveats count")).toHaveTextContent(
+      String(buildPilotReadinessControlSummary(smokeStatusFixture).requiredCaveatCount),
+    );
     expect(screen.getByText(/evidence review, not buyer authorization or a launch certificate/i)).toBeInTheDocument();
     expect(screen.getByText(/Recent proof artifacts that may be cited after source-document review/i)).toBeInTheDocument();
     expect(screen.getByText(/Lanes requiring repair before the evidence appears in buyer or SOW language/i)).toBeInTheDocument();
@@ -61,6 +72,9 @@ describe("PilotReadinessPage", () => {
     expect(screen.getByLabelText("Pilot readiness proof and document hub guide")).toHaveTextContent(
       "Source docs before claims",
     );
+    expect(
+      screen.getByRole("list", { name: "Pilot readiness proof and document hub source sequence" }),
+    ).toBeInTheDocument();
     expect(screen.getByText(/it is not the evidence itself/i)).toBeInTheDocument();
     expect(screen.getByText(/does not certify a finished product suite/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Compact proof artifact index")).toHaveTextContent("Buyer-safe caveats required");
@@ -113,7 +127,7 @@ describe("PilotReadinessPage", () => {
     expect(screen.getByText("Exact proof:")).toBeInTheDocument();
     expect(
       screen.getByRole("link", {
-        name: `Open proof artifact ${smokeStatusFixture[0].details}`,
+        name: proofArtifactLinkName(smokeStatusFixture[0].details),
       }),
     ).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(smokeStatusFixture[0].details));
   });
@@ -121,7 +135,6 @@ describe("PilotReadinessPage", () => {
   it("links every rendered proof artifact path to the exact GitHub main-branch blob URL", () => {
     render(<PilotReadinessPage />);
 
-    const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const expectedProofArtifacts = Array.from(
       new Set([
         smokeStatusFixture[0].details,
@@ -138,7 +151,7 @@ describe("PilotReadinessPage", () => {
 
     for (const artifact of expectedProofArtifacts) {
       const expectedHref = `${OPENPLAN_REPOSITORY_BLOB_BASE_URL}/${artifact}`;
-      const links = screen.getAllByRole("link", { name: `Open proof artifact ${artifact}` });
+      const links = screen.getAllByRole("link", { name: proofArtifactLinkName(artifact) });
 
       expect(expectedHref, `${artifact} should resolve to the OpenPlan main-branch blob URL`).toMatch(
         new RegExp(`^${escapeRegExp(OPENPLAN_REPOSITORY_BLOB_BASE_URL)}/`),
@@ -182,7 +195,7 @@ describe("PilotReadinessPage", () => {
       expect(pageText, `${artifact.artifact} should render on the admin page`).toContain(artifact.artifact);
       expect(pageText, `${artifact.label} caveat should render on the admin page`).toContain(artifact.buyerSafeCaveat);
       expect(
-        screen.getAllByRole("link", { name: `Open proof artifact ${artifact.artifact}` })[0],
+        screen.getAllByRole("link", { name: proofArtifactLinkName(artifact.artifact) })[0],
         `${artifact.label} should link to the exact proof artifact`,
       ).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(artifact.artifact));
       expect(packet, `${artifact.label} should export from the packet helper`).toContain(artifact.label);
@@ -210,8 +223,9 @@ describe("PilotReadinessPage", () => {
         "stop",
       );
 
-      const link = screen.getAllByRole("link", { name: `Open proof artifact ${step.artifact}` })[0];
+      const link = screen.getAllByRole("link", { name: proofArtifactLinkName(step.artifact) })[0];
       expect(link).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(step.artifact));
+      expect(screen.getByRole("listitem", { name: step.label })).toBeInTheDocument();
     }
 
     expect(screen.getByText("Source docs before claims")).toBeInTheDocument();
