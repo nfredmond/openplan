@@ -44,11 +44,12 @@ describe("PilotReadinessPage", () => {
     expect(cue).toHaveTextContent(`${releaseProofPosture.proofItems.length} proof artifacts`);
     expect(cue).toHaveTextContent(finalPilotReadinessChecklistSync.checklistArtifact);
     expect(cue).toHaveTextContent(salesCaveatProof?.artifact ?? "");
-    expect(screen.getByRole("heading", { name: /Proof status overview/i })).toBeInTheDocument();
-    expect(screen.getByText(/export an operator summary for supervised pilot diligence/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tracked lanes with a recent passing artifact/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tracked lanes requiring proof repair before citation/i)).toBeInTheDocument();
-    expect(screen.getByText(/Tracked lanes missing a current proof artifact/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Pilot readiness evidence ledger/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/Pilot readiness evidence ledger/i)).toBeInTheDocument();
+    expect(screen.getByText(/evidence review, not buyer authorization or a launch certificate/i)).toBeInTheDocument();
+    expect(screen.getByText(/Recent proof artifacts that may be cited after source-document review/i)).toBeInTheDocument();
+    expect(screen.getByText(/Lanes requiring repair before the evidence appears in buyer or SOW language/i)).toBeInTheDocument();
+    expect(screen.getByText(/do not cite them as ready/i)).toBeInTheDocument();
     expect(screen.getByText(/verify source documents before external reliance/i)).toBeInTheDocument();
     expect(pageText).not.toMatch(/shareable summary/i);
     expect(pageText).not.toMatch(/areas are healthy/i);
@@ -101,6 +102,7 @@ describe("PilotReadinessPage", () => {
     expect(screen.getAllByText("docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md").length).toBeGreaterThan(0);
     expect(screen.getByText(/Run this in a terminal immediately before a buyer call/i)).toBeInTheDocument();
     expect(screen.getByText(/No commands run in the browser/i)).toBeInTheDocument();
+    expect(screen.getByText(/supervised onboarding, billing proof, modeling, AI, legal\/compliance, and hosting terms/i)).toBeInTheDocument();
     expect(screen.getByText(/Sale readiness: names the current gate evidence/i)).toBeInTheDocument();
     expect(screen.getByText(/Pilot readiness: turns smoke status and source documents/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Billing proof waiver/i).length).toBeGreaterThan(0);

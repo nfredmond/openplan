@@ -70,35 +70,64 @@ export default function PilotReadinessPage() {
               <StatusBadge tone={pilotControl.tone}>{pilotControl.label}</StatusBadge>
               <StatusBadge tone="neutral">Latest evidence: {pilotControl.latestEvidenceDate}</StatusBadge>
             </div>
-            <h1 className="module-intro-title">Proof status overview</h1>
+            <h1 className="module-intro-title">Pilot readiness evidence ledger</h1>
             <p className="module-intro-description">
-              Track the latest smoke-test results, see which lanes have current evidence, and export an operator summary
-              for supervised pilot diligence.
+              Read the latest smoke-test evidence as an operator ledger: what is citeable, what needs repair, and which
+              caveats must travel with any supervised pilot conversation. This is evidence review, not buyer
+              authorization or a launch certificate.
             </p>
           </div>
 
-          <div className="module-summary-grid cols-4">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Passing checks</p>
-              <p className="module-summary-value">{pilotControl.counts.pass}</p>
-              <p className="module-summary-detail">Tracked lanes with a recent passing artifact.</p>
+          <dl
+            aria-label="Pilot readiness evidence ledger"
+            className="mt-6 divide-y divide-border/70 border-y border-border/80"
+          >
+            <div className="grid gap-2 py-3 sm:grid-cols-[11rem_4rem_minmax(0,1fr)] sm:items-baseline">
+              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                Passing checks
+              </dt>
+              <dd className="font-mono text-xl font-semibold text-emerald-700 dark:text-emerald-200">
+                {pilotControl.counts.pass}
+              </dd>
+              <dd className="text-sm leading-relaxed text-muted-foreground">
+                Recent proof artifacts that may be cited after source-document review.
+              </dd>
             </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Failing checks</p>
-              <p className="module-summary-value">{pilotControl.counts.fail}</p>
-              <p className="module-summary-detail">Tracked lanes requiring proof repair before citation.</p>
+            <div className="grid gap-2 py-3 sm:grid-cols-[11rem_4rem_minmax(0,1fr)] sm:items-baseline">
+              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                Failing checks
+              </dt>
+              <dd className="font-mono text-xl font-semibold text-rose-700 dark:text-rose-200">
+                {pilotControl.counts.fail}
+              </dd>
+              <dd className="text-sm leading-relaxed text-muted-foreground">
+                Lanes requiring repair before the evidence appears in buyer or SOW language.
+              </dd>
             </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Pending checks</p>
-              <p className="module-summary-value">{pilotControl.counts.pending}</p>
-              <p className="module-summary-detail">Tracked lanes missing a current proof artifact.</p>
+            <div className="grid gap-2 py-3 sm:grid-cols-[11rem_4rem_minmax(0,1fr)] sm:items-baseline">
+              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                Pending checks
+              </dt>
+              <dd className="font-mono text-xl font-semibold text-amber-700 dark:text-amber-200">
+                {pilotControl.counts.pending}
+              </dd>
+              <dd className="text-sm leading-relaxed text-muted-foreground">
+                Tracked lanes missing a current artifact; do not cite them as ready.
+              </dd>
             </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Export</p>
-              <p className="module-summary-value">{pilotControl.requiredCaveatCount}</p>
-              <p className="module-summary-detail">Required caveats that must accompany the packet.</p>
+            <div className="grid gap-2 py-3 sm:grid-cols-[11rem_4rem_minmax(0,1fr)] sm:items-baseline">
+              <dt className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                Caveats
+              </dt>
+              <dd className="font-mono text-xl font-semibold text-foreground">
+                {pilotControl.requiredCaveatCount}
+              </dd>
+              <dd className="text-sm leading-relaxed text-muted-foreground">
+                Required boundaries for supervised onboarding, billing proof, modeling, AI, legal/compliance, and hosting
+                terms.
+              </dd>
             </div>
-          </div>
+          </dl>
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <ExportButton statusList={statusList} />
