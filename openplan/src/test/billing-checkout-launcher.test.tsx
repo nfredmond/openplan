@@ -74,13 +74,17 @@ describe("BillingCheckoutLauncher", () => {
     expect(assignMock).not.toHaveBeenCalled();
   });
 
-  it("blocks responses that claim a payment session was created", async () => {
+  it.each([
+    ["payment session", { paymentSessionCreated: true }],
+    ["workspace activation", { workspaceActivationCreated: true }],
+    ["subscription", { subscriptionCreated: true }],
+    ["checkout-enabled", { checkoutDisabled: false }],
+  ])("blocks responses that claim %s was created", async (_claim, unsafeClaim) => {
     fetchMock.mockResolvedValue({
       ok: true,
       json: async () => ({
         intakeUrl: "/contact/openplan-fit?product=openplan&tier=starter",
-        checkoutDisabled: false,
-        paymentSessionCreated: true,
+        ...unsafeClaim,
       }),
     });
 

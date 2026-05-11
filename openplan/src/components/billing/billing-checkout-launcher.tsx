@@ -24,6 +24,8 @@ type CheckoutLaunchResponse = {
   intakeUrl?: string;
   checkoutDisabled?: boolean;
   paymentSessionCreated?: boolean;
+  workspaceActivationCreated?: boolean;
+  subscriptionCreated?: boolean;
   error?: string;
   details?: string;
 };
@@ -122,7 +124,12 @@ export function BillingCheckoutLauncher({
         throw new Error(payload.details || payload.error || "Failed to open fit review");
       }
 
-      if (payload.paymentSessionCreated === true || payload.checkoutDisabled === false) {
+      if (
+        payload.paymentSessionCreated === true ||
+        payload.workspaceActivationCreated === true ||
+        payload.subscriptionCreated === true ||
+        payload.checkoutDisabled === false
+      ) {
         throw new Error("OpenPlan direct checkout is disabled; request human fit review before payment setup.");
       }
 

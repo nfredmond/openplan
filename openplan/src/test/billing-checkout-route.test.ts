@@ -59,6 +59,7 @@ describe("/api/billing/checkout fit-review routing", () => {
       manualReviewRequired: true,
     });
     expect(payload.message).toMatch(/creates no payment session, subscription, or workspace activation/i);
+    expect(JSON.stringify(payload)).not.toMatch(/checkout\.stripe\.com|cs_test|sessionId|subscriptionId|active subscription/i);
     expect(payload.intakeUrl).toContain("product=openplan");
     expect(payload.intakeUrl).toContain("tier=professional");
     expect(payload.intakeUrl).toContain("checkout=disabled");
