@@ -37,7 +37,7 @@ What has been proven for this release-to-sale posture:
 | Grants/funding workflow | PASS | Local rendered/API smoke confirms funding need, awarded opportunity, committed award, project RTP posture write-back, obligation milestone, paid reimbursement invoice, closeout, and funded/reimbursed posture. | `docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md` |
 | Engagement handoff | PASS | Local rendered/API smoke confirms public feedback intake, staff moderation, public publication, handoff report provenance, HTML artifact generation, and source-context traceability. | `docs/ops/2026-05-01-openplan-local-engagement-report-handoff-smoke.md` |
 | Analysis/report linkage | PASS | Local rendered/API smoke confirms corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, report linkage, HTML artifact, and source-context traceability. | `docs/ops/2026-05-01-openplan-local-analysis-report-linkage-smoke.md` |
-| Phase 1 shared spine | PASS | Local API/rendered smoke confirms one seeded NCTC project ID is reused across RTP, grants, engagement, scenario/analysis runs, county-run modeling evidence, reports, map, Data Hub, and aerial evidence packages without duplicate project creation. | `docs/ops/2026-05-01-openplan-local-spine-smoke.md` |
+| Phase 1 shared spine | PASS | Local API/rendered smoke confirms one seeded NCTC project ID is reused across RTP, grants, engagement, scenario/analysis runs, county-run modeling evidence, reports, map, Data Hub, and aerial evidence packages without duplicate project creation. | `docs/ops/2026-05-02-openplan-local-spine-smoke.md` |
 | Admin/support onboarding flow | PASS | Local rendered/API smoke confirms public intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, owner invitation, review-event audit trail, and invited-owner acceptance. | `docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md` |
 | Production Admin Operations access | PASS | Production authenticated browser smoke confirms the configured reviewer can load `/admin/operations`, see the service-lane intake surface unlocked, and avoid triage/provision actions or prospect row capture during proof. | `docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md` |
 | Billing posture | PASS with explicit waiver | Billing is positioned as historical live payment evidence plus current non-money-moving proof. No fresh same-cycle paid checkout canary is claimed. | `docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md` |
@@ -184,7 +184,7 @@ Avoid:
 - docs/ops/2026-05-01-openplan-local-grants-flow-smoke.md
 - docs/ops/2026-05-01-openplan-local-engagement-report-handoff-smoke.md
 - docs/ops/2026-05-01-openplan-local-analysis-report-linkage-smoke.md
-- docs/ops/2026-05-01-openplan-local-spine-smoke.md
+- docs/ops/2026-05-02-openplan-local-spine-smoke.md
 - docs/ops/2026-05-01-openplan-local-admin-support-flow-smoke.md
 - docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md
 - docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md

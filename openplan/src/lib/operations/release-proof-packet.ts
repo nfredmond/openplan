@@ -1,3 +1,10 @@
+import {
+  ADMIN_PILOT_READINESS_ROUTE,
+  ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACTS,
+  FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
+  PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
+} from "@/lib/operations/pilot-readiness-proof-paths";
+
 export type ReleaseProofStatus = "pass" | "caveat" | "next";
 
 export type ReleaseProofItem = {
@@ -74,7 +81,7 @@ export const releaseProofCaveatItems = [
     key: "supervised-onboarding",
     label: "Supervised onboarding",
     text: "Onboarding remains a supervised implementation step, not instant self-serve activation; buyer use requires operator review before reliance.",
-    sourceArtifact: "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
+    sourceArtifact: FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
   },
   {
     key: "hosting-rpo-rto",
@@ -98,17 +105,13 @@ export const releaseProofCaveatItems = [
 
 export const finalPilotReadinessChecklistSync = {
   label: "Final pilot-readiness checklist sync",
-  checklistArtifact: "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
+  checklistArtifact: FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
   verdict: "PASS for a supervised pilot-readiness conversation; not a launch certificate for a finished planning suite.",
   operatorInstruction:
     "Use this sync block before buyer reliance: confirm the final checklist, exported Admin Pilot Readiness packet filenames, and latest proof-lane artifacts still match the current caveats.",
   supervisedOnboardingCaveat:
     "Onboarding is a supervised implementation step: no instant public workspace activation, no broad self-serve municipal SaaS claim, and no outbound reliance without human review.",
-  exportFilenames: [
-    "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md",
-    "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html",
-    "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf",
-  ],
+  exportFilenames: ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACTS,
   latestProofArtifacts: [
     {
       label: "Managed support diligence",
@@ -196,7 +199,7 @@ export const adminPilotReadinessProofArtifactIndex = [
     key: "pilot-preflight-proof",
     label: "Pilot preflight operator proof",
     category: "preflight-proof",
-    artifact: "docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md",
+    artifact: PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
     buyerSafeCaveat:
       "The preflight is read-only operational confidence, not self-serve activation, schema approval, or production-write proof.",
     operatorUse: "Run or cite the preflight pattern immediately before serious buyer, demo, or pilot reliance.",
@@ -287,7 +290,7 @@ export const releaseProofPosture = {
   actions: [
     {
       label: "Open readiness packet",
-      href: "/admin/pilot-readiness",
+      href: ADMIN_PILOT_READINESS_ROUTE,
       detail: "Check smoke evidence and missing proof rows before external use.",
     },
     {

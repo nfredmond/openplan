@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
+import { ADMIN_PILOT_READINESS_ROUTE } from "@/lib/operations/pilot-readiness-proof-paths";
 import { getAdminPilotReadinessProofArtifactIndex } from "@/lib/operations/release-proof-packet";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { buildWorkflowNextActionGroups, type WorkflowNextActionEntry } from "@/lib/operations/workflow-next-action-groups";
@@ -247,7 +248,7 @@ export function WorkspaceCommandBoard({
                     </p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">
                       Start with the{" "}
-                      <Link href="/admin/pilot-readiness" className="font-semibold text-primary hover:underline">
+                      <Link href={ADMIN_PILOT_READINESS_ROUTE} className="font-semibold text-primary hover:underline">
                         readiness packet + preflight proof
                       </Link>
                       {pilotPreflightProofArtifact

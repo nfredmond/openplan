@@ -1,3 +1,9 @@
+import {
+  ADMIN_PILOT_READINESS_ROUTE,
+  FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
+  PHASE1_SHARED_SPINE_PROOF_ARTIFACT,
+} from "@/lib/operations/pilot-readiness-proof-paths";
+
 export type ProjectSpineCrosslinkReadiness = "ready" | "attention" | "missing";
 export type ProjectSpineCrosslinkSourceState = "linked" | "empty" | "schema_pending";
 export type ProjectSpineCrosslinkBoardState = "active" | "empty" | "schema_pending";
@@ -127,7 +133,7 @@ const schemaSetupNextAction: Record<ProjectSpineCrosslinkRowId, string> = {
   aerial_evidence: "Apply the aerial mission and evidence package tables, then attach only material aerial context to the project spine.",
 };
 
-const proofHref = "/admin/pilot-readiness";
+const proofHref = ADMIN_PILOT_READINESS_ROUTE;
 
 const rowProofReferences: Record<ProjectSpineCrosslinkRowId, ProjectSpineProofReference> = {
   rtp_packets: {
@@ -177,14 +183,14 @@ const rowProofReferences: Record<ProjectSpineCrosslinkRowId, ProjectSpineProofRe
 const boardProofReferences: Record<ProjectSpineCrosslinkBoardState, ProjectSpineProofReference> = {
   active: {
     label: "Final pilot-readiness checklist",
-    artifact: "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
+    artifact: FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
     href: proofHref,
     relevance:
       "Use this operator packet to confirm which proof lanes can be cited and which caveats must travel with them.",
   },
   empty: {
     label: "Phase 1 shared spine proof",
-    artifact: "docs/ops/2026-05-02-openplan-local-spine-smoke.md",
+    artifact: PHASE1_SHARED_SPINE_PROOF_ARTIFACT,
     href: proofHref,
     relevance:
       "Use the prior cross-surface proof as the setup checklist; this empty project still needs its own scoped acceptance rerun.",

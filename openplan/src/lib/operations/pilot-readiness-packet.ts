@@ -1,3 +1,4 @@
+import { PHASE1_SHARED_SPINE_PROOF_ARTIFACT } from "@/lib/operations/pilot-readiness-proof-paths";
 import {
   finalPilotReadinessChecklistSync,
   getAdminPilotReadinessProofArtifactCategoryLabel,
@@ -137,7 +138,7 @@ export const adminPilotReadinessStaticPacket = {
       status: "PASS",
       evidence:
         "Local API/rendered smoke confirms one seeded NCTC project ID is reused across RTP, grants, engagement, scenario/analysis runs, county-run modeling evidence, reports, map, Data Hub, and aerial evidence packages without duplicate project creation.",
-      sources: ["docs/ops/2026-05-01-openplan-local-spine-smoke.md"],
+      sources: [PHASE1_SHARED_SPINE_PROOF_ARTIFACT],
     },
     {
       area: "Admin/support onboarding flow",
