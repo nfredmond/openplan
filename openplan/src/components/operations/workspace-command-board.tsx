@@ -222,8 +222,18 @@ export function WorkspaceCommandBoard({
           </p>
         </div>
         <div className="divide-y divide-border/60">
-          {workflowGroups.map((group) => (
-            <section key={group.key} className="grid gap-3 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)]">
+          {workflowGroups.map((group) => {
+            const isReleaseProofGroup = group.key === "admin-release-proof";
+
+            return (
+              <section
+                key={group.key}
+                className={
+                  isReleaseProofGroup
+                    ? "grid gap-3 px-4 py-3 lg:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1fr)]"
+                    : "grid gap-3 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)]"
+                }
+              >
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-foreground">{group.title}</span>
@@ -271,7 +281,7 @@ export function WorkspaceCommandBoard({
                         Readiness: <span className="font-medium text-foreground">{releaseProofPosture.title}</span>.{" "}
                         {releaseProofPosture.wedge}
                       </p>
-                      <div className="mt-2 grid gap-1.5">
+                      <nav aria-label="Release proof drilldown actions" className="mt-2 grid gap-1.5">
                         {commandBoardReleaseProofActions.map((action) => (
                           <Link
                             key={action.label}
@@ -282,8 +292,11 @@ export function WorkspaceCommandBoard({
                             <span className="block pt-0.5 leading-5 text-muted-foreground">{action.detail}</span>
                           </Link>
                         ))}
-                      </div>
-                      <ul className="mt-2 space-y-1 text-xs leading-5 text-muted-foreground">
+                      </nav>
+                      <ul
+                        aria-label="Release proof supporting artifacts"
+                        className="mt-2 space-y-1 text-xs leading-5 text-muted-foreground"
+                      >
                         {commandBoardReleaseProofArtifacts.map((artifact) => (
                           <li key={artifact.key}>
                             <span className="font-medium text-foreground">{artifact.label}:</span>{" "}
@@ -322,8 +335,9 @@ export function WorkspaceCommandBoard({
                   </Link>
                 ))}
               </div>
-            </section>
-          ))}
+              </section>
+            );
+          })}
         </div>
       </div>
 

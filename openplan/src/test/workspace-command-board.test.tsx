@@ -125,6 +125,9 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getAllByText(/docs\/ops\/2026-05-10-openplan-pilot-preflight-operator-proof\.md/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Keep claims inside the supervised-pilot caveats before external use\./i)).toBeInTheDocument();
     expect(screen.getByText("Release proof drilldown")).toBeInTheDocument();
+    expect(screen.getByText("Release proof drilldown").closest("section")?.className).toContain("lg:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1fr)]");
+    expect(screen.getByRole("navigation", { name: /Release proof drilldown actions/i })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: /Release proof supporting artifacts/i })).toBeInTheDocument();
     expect(screen.getByText(releaseProofPosture.title)).toBeInTheDocument();
     expect(screen.getByText(/supervised planning workbench support for rural RTPA\/county workflows/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open readiness packet/i })).toHaveAttribute(
