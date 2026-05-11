@@ -1,4 +1,4 @@
-import { GitBranch } from "lucide-react";
+import { GitBranch, ShieldCheck } from "lucide-react";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import { getOpenPlanRepositoryArtifactUrl } from "@/lib/operations/pilot-readiness-proof-paths";
@@ -25,6 +25,7 @@ function ProofArtifactLink({ artifact }: { artifact: string }) {
 export function SupervisedOnboardingEvidenceFlowPanel({ context }: SupervisedOnboardingEvidenceFlowPanelProps) {
   const flow = getSupervisedOnboardingEvidenceFlow();
   const isAdminOperations = context === "admin-operations";
+  const guard = flow.manualProvisioningGuard;
 
   return (
     <article className="module-section-surface" aria-label="Supervised onboarding evidence flow">
@@ -45,6 +46,25 @@ export function SupervisedOnboardingEvidenceFlowPanel({ context }: SupervisedOnb
         <p className="mt-2 text-[0.78rem] leading-relaxed text-muted-foreground">{flow.boundary}</p>
         <p className="mt-3 text-[0.72rem] leading-relaxed text-muted-foreground">
           Source proof: <ProofArtifactLink artifact={flow.sourceProof} />
+        </p>
+      </div>
+
+      <div className="mt-4 module-subpanel" aria-label="Manual provisioning guard">
+        <div className="flex items-center gap-2 text-[0.78rem] font-semibold text-foreground">
+          <ShieldCheck className="h-3.5 w-3.5 text-emerald-700" />
+          {guard.label}
+        </div>
+        <p className="mt-2 text-[0.78rem] leading-relaxed text-muted-foreground">{guard.sideEffectSummary}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          <StatusBadge tone="warning">Acknowledgement: {guard.acknowledgement}</StatusBadge>
+          {guard.guardrails.map((guardrail) => (
+            <StatusBadge key={guardrail} tone="neutral">
+              {guardrail}
+            </StatusBadge>
+          ))}
+        </div>
+        <p className="mt-3 text-[0.72rem] leading-relaxed text-muted-foreground">
+          Guard proof: <ProofArtifactLink artifact={guard.proofArtifact} />
         </p>
       </div>
 

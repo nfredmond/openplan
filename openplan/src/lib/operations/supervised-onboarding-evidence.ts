@@ -2,6 +2,10 @@ import {
   ADMIN_PILOT_READINESS_ROUTE,
   FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
 } from "@/lib/operations/pilot-readiness-proof-paths";
+import {
+  ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+  accessRequestProvisioningSideEffectLabel,
+} from "@/lib/access-request-status";
 
 export type SupervisedOnboardingEvidenceStep = {
   key: string;
@@ -10,6 +14,14 @@ export type SupervisedOnboardingEvidenceStep = {
   operatorCheckpoint: string;
   proofArtifact: string;
   buyerSafeCaveat: string;
+};
+
+export type SupervisedOnboardingManualProvisioningGuard = {
+  label: string;
+  acknowledgement: typeof ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT;
+  sideEffectSummary: string;
+  proofArtifact: string;
+  guardrails: readonly string[];
 };
 
 export const SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT =
@@ -25,6 +37,18 @@ export const supervisedOnboardingEvidenceFlow = {
   boundary:
     "This is an operator-controlled evidence bridge only: no public self-serve activation, no outbound email automation, no schema mutation, and no claim that a pilot is ready without a fresh human-reviewed preflight.",
   sourceProof: SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT,
+  manualProvisioningGuard: {
+    label: "Manual provisioning guard",
+    acknowledgement: ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+    sideEffectSummary: accessRequestProvisioningSideEffectLabel(),
+    proofArtifact: ACCESS_REQUEST_MANUAL_PROVISIONING_GUARD_PROOF_ARTIFACT,
+    guardrails: [
+      "No production writes during proof smoke",
+      "No autonomous provisioning",
+      "No outbound email",
+      "Manual invite delivery only",
+    ],
+  } satisfies SupervisedOnboardingManualProvisioningGuard,
   stages: [
     {
       key: "public-intake",

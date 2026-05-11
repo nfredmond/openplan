@@ -142,6 +142,11 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByRole("heading", { name: /Supervised onboarding evidence flow/i })).toBeInTheDocument();
     expect(screen.getByText("Bridge this queue to pilot readiness")).toBeInTheDocument();
     expect(screen.getByText(getSupervisedOnboardingEvidenceFlow().summary)).toBeInTheDocument();
+    expect(screen.getByLabelText("Manual provisioning guard")).toBeInTheDocument();
+    expect(screen.getByText(/Acknowledgement: manual_provisioning_no_email/i)).toBeInTheDocument();
+    expect(screen.getByText("No production writes during proof smoke")).toBeInTheDocument();
+    expect(screen.getByText("No autonomous provisioning")).toBeInTheDocument();
+    expect(screen.getByText("No outbound email")).toBeInTheDocument();
     expect(screen.getByText("Oversized API request")).toBeInTheDocument();
     expect(screen.getByText("High-cost AI analysis call")).toBeInTheDocument();
     expect(screen.getByText("CSP report-only violation")).toBeInTheDocument();

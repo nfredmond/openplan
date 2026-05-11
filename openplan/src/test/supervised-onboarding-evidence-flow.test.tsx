@@ -29,19 +29,27 @@ describe("supervised onboarding evidence flow", () => {
     expect(screen.getByText(flow.boundary)).toBeInTheDocument();
     expect(screen.getByText("Bridge this queue to pilot readiness")).toBeInTheDocument();
     expect(screen.getByText(SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT)).toBeInTheDocument();
+    expect(screen.getByLabelText("Manual provisioning guard")).toBeInTheDocument();
+    expect(screen.getByText("Manual provisioning guard")).toBeInTheDocument();
+    expect(screen.getByText(/Acknowledgement: manual_provisioning_no_email/i)).toBeInTheDocument();
+    expect(screen.getByText("No production writes during proof smoke")).toBeInTheDocument();
+    expect(screen.getByText("No autonomous provisioning")).toBeInTheDocument();
+    expect(screen.getByText("No outbound email")).toBeInTheDocument();
+    expect(screen.getByText("Manual invite delivery only")).toBeInTheDocument();
 
     for (const stage of flow.stages) {
       expect(screen.getByText(stage.label)).toBeInTheDocument();
       expect(screen.getByText(stage.operatorCheckpoint)).toBeInTheDocument();
       expect(screen.getByText(stage.buyerSafeCaveat)).toBeInTheDocument();
       expect(screen.getByText(stage.appSurface)).toBeInTheDocument();
-      expect(screen.getByRole("link", { name: `Open proof artifact ${stage.proofArtifact}` })).toHaveAttribute(
-        "href",
-        getOpenPlanRepositoryArtifactUrl(stage.proofArtifact),
-      );
+      expect(
+        screen
+          .getAllByRole("link", { name: `Open proof artifact ${stage.proofArtifact}` })
+          .some((link) => link.getAttribute("href") === getOpenPlanRepositoryArtifactUrl(stage.proofArtifact)),
+      ).toBe(true);
     }
 
-    expect(screen.getByText(/manual_provisioning_no_email/)).toBeInTheDocument();
+    expect(screen.getAllByText(/manual_provisioning_no_email/).length).toBeGreaterThan(0);
     expect(screen.getByText(/PASS supports a supervised pilot-readiness conversation only/i)).toBeInTheDocument();
   });
 
@@ -52,6 +60,7 @@ describe("supervised onboarding evidence flow", () => {
     expect(artifacts).toContain("openplan/src/test/admin-operations-page.test.tsx");
     expect(artifacts).toContain("openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md");
     expect(artifacts).toContain("docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md");
+    expect(artifacts).toHaveLength(new Set(artifacts).size);
 
     for (const artifact of artifacts) {
       expect(existsSync(resolveRepoArtifact(artifact)), `${artifact} should exist`).toBe(true);
