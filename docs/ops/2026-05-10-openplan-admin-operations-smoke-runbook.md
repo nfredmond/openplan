@@ -33,6 +33,13 @@ The current code-level provisioning guard is documented in [Access request manua
 | 6. Verify visible surfaces | Confirm `Warning watchboard`, `Recent supervised onboarding requests`, `Assistant action activity`, and `Supervised action triage` are visible. | Required sections render, including the no-write action activity posture. | Section names only; row count only if needed. |
 | 7. Exit without mutation | Leave the page without clicking triage/provisioning controls. | Rows unchanged; no emails/workspaces/invitations/billing actions. | `rows changed: no`; `provisioning clicks: no`. |
 
+
+## Post-Deploy Production Health Bridge
+
+If this Admin Operations smoke is being used after a `main` deploy, run the [Admin Ops → Production Health Evidence Bridge](2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md) before calling the proof current. That bridge requires a passing [prod health evidence-log helper](2026-05-10-prod-health-evidence-log-helper.md) output with `Gate decision: PASS` plus the no-write admin proof result.
+
+Do not substitute a successful `/admin/operations` page load for Vercel Ready verification, and do not substitute a passing public health check for the reviewer-gated admin smoke. They are separate facts that must stay adjacent in the handoff.
+
 ## Authenticated Smoke Boundary
 
 The production harness `qa-harness/openplan-prod-admin-operations-auth-smoke.js` creates a reviewer auth session only and requires `OPENPLAN_PROD_ADMIN_OPERATIONS_ALLOW_MAGIC_LINK=1`. Treat that flag as an explicit operator approval gate for session creation. It is not approval to mutate production app data.
@@ -80,6 +87,8 @@ Use restrained language after a clean run:
 
 ## Related Proof
 
+- [Admin Ops → Production Health Evidence Bridge](2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md)
+- [Prod health evidence-log helper](2026-05-10-prod-health-evidence-log-helper.md)
 - [Final pilot-readiness smoke checklist](2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md)
 - [Access request manual provisioning guard proof](../../openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md)
 - [Production admin operations authenticated smoke](2026-05-01-openplan-production-admin-operations-authenticated-smoke.md)

@@ -53,6 +53,13 @@ docs/ops/YYYY-MM-DD-test-output/prod-health-evidence/YYYYMMDDTHHMMSSZ-prod-healt
 - Use `--health-url <url>` only when intentionally checking a preview or alternate deployment.
 - The helper reads a public URL and writes a local file only. It does not call Supabase, mutate production, or consume secret tokens.
 
+
+## Admin Operations Bridge
+
+When the deploy being closed touches `/admin/operations`, request-access intake, reviewer gating, manual owner-invite provisioning guardrails, pilot-readiness exports, or admin/support proof docs, pair this helper with the [Admin Ops → Production Health Evidence Bridge](2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md).
+
+The bridge keeps Vercel Ready + public health evidence adjacent to the no-write Admin Operations proof flow. It does not authorize prospect PII capture, triage/provisioning clicks, emails, Supabase service-role access, billing changes, or production writes.
+
 ## Acceptance gate
 
 Close the post-push evidence gate only when the generated log says:

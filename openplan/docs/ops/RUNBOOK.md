@@ -39,7 +39,7 @@ pnpm ops:check-prod-health
 
 The workflow validates `GET` and `HEAD` on `/api/health`. It intentionally fails if the shallow route starts claiming dependency readiness for database or billing, because that endpoint is only the public uptime probe.
 
-After a push to `main`, pair this health check with Vercel deployment state using the root ops helper: `../docs/ops/2026-05-10-prod-health-evidence-log-helper.md`. The helper writes a local evidence log only; it does not use Supabase, secrets, or production writes.
+After a push to `main`, pair this health check with Vercel deployment state using the root ops helper: `../docs/ops/2026-05-10-prod-health-evidence-log-helper.md`. If the deploy touches Admin Operations or request-access proof, also use `../docs/ops/2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md`. The helper writes a local evidence log only; it does not use Supabase, secrets, or production writes. The bridge is the same posture: local evidence sequencing only, no secrets and no production writes.
 
 GitHub scheduled workflows can be delayed or dropped during platform load. Treat this as the first no-spend alarm, not a formal uptime SLA. If the workflow fails, capture the run URL and continue with the app-down path below.
 
@@ -182,7 +182,7 @@ Symptoms:
 
 Actions:
 
-1. For proof-only checks, use the root [Admin Operations Smoke Runbook](../../../docs/ops/2026-05-10-openplan-admin-operations-smoke-runbook.md). It is intentionally non-mutating and must not click triage or provisioning controls.
+1. For proof-only checks, use the root [Admin Operations Smoke Runbook](../../../docs/ops/2026-05-10-openplan-admin-operations-smoke-runbook.md). It is intentionally non-mutating and must not click triage or provisioning controls. After an admin-affecting production deploy, pair it with the root [Admin Ops → Production Health Evidence Bridge](../../../docs/ops/2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md) before calling the proof current.
 2. Treat successful owner-invite provisioning as a production write. Do not run it unless Nathaniel has approved the exact request row and recipient context.
 3. Confirm the reviewer is allowlisted through `OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS`; do not broaden the allowlist for convenience during a smoke.
 4. Preserve the current manual guard: the access-request provisioning route requires `manual_provisioning_no_email` before any service-role lookup, workspace insert, owner-invite creation, billing mutation, or provisioning RPC. See [Access request manual provisioning guard proof](2026-05-10-access-request-manual-provisioning-guard-proof.md).
