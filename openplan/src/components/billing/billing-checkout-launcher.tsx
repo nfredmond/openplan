@@ -19,8 +19,11 @@ type BillingCheckoutLauncherProps = {
 };
 
 type CheckoutLaunchResponse = {
+  // Deprecated compatibility only. New OpenPlan billing requests must use intakeUrl and must not open Stripe.
   checkoutUrl?: string;
   intakeUrl?: string;
+  checkoutDisabled?: boolean;
+  paymentSessionCreated?: boolean;
   error?: string;
   details?: string;
 };
@@ -114,9 +117,13 @@ export function BillingCheckoutLauncher({
       });
 
       const payload = (await response.json().catch(() => ({}))) as CheckoutLaunchResponse;
-      const redirectUrl = payload.intakeUrl ?? payload.checkoutUrl;
+      const redirectUrl = payload.intakeUrl;
       if (!response.ok || !redirectUrl) {
         throw new Error(payload.details || payload.error || "Failed to open fit review");
+      }
+
+      if (payload.paymentSessionCreated === true || payload.checkoutDisabled === false) {
+        throw new Error("OpenPlan direct checkout is disabled; request human fit review before payment setup.");
       }
 
       onCheckoutRedirect(redirectUrl);
@@ -159,8 +166,8 @@ export function BillingCheckoutLauncher({
           <p className="mt-2 text-sm font-semibold text-foreground">{formatPeriodEnd(currentPeriodEnd)}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {normalizedStatus === "checkout_pending"
-              ? "Webhook confirmation still governs final activation."
-              : "Shown when Stripe has already reported the current billing period."}
+              ? "Manual review and ledger reconciliation still govern access decisions."
+              : "Shown only when the service ledger has an already-reviewed billing period."}
           </p>
         </div>
         <div className="bg-background/70 px-4 py-4">

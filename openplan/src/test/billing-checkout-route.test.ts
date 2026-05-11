@@ -53,7 +53,12 @@ describe("/api/billing/checkout fit-review routing", () => {
       product: "openplan",
       tier: "professional",
       checkoutDisabled: true,
+      paymentSessionCreated: false,
+      workspaceActivationCreated: false,
+      subscriptionCreated: false,
+      manualReviewRequired: true,
     });
+    expect(payload.message).toMatch(/creates no payment session, subscription, or workspace activation/i);
     expect(payload.intakeUrl).toContain("product=openplan");
     expect(payload.intakeUrl).toContain("tier=professional");
     expect(payload.intakeUrl).toContain("checkout=disabled");

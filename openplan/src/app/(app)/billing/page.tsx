@@ -506,7 +506,7 @@ export default async function BillingPage({
 
       {checkoutState === "cancel" ? (
         <article className={noticeClass("warning")}>
-          Stripe checkout was canceled before payment completion for plan <strong>{titleCase(checkoutPlan)}</strong>. The workspace may still show <strong>Checkout Pending</strong> until a new checkout is completed or operations clears the abandoned pending state.
+          Stripe checkout was canceled before payment completion for plan <strong>{titleCase(checkoutPlan)}</strong>. The workspace may still show <strong>Checkout Pending</strong> until operations reviews the abandoned attempt and clears or re-scopes the pending state.
         </article>
       ) : null}
 
@@ -514,7 +514,7 @@ export default async function BillingPage({
         <article className={noticeClass("warning")}>
           <p className="font-semibold tracking-tight">Activation is paused for billing identity review.</p>
           <p className="mt-2 text-sm opacity-90">
-            OpenPlan detected a purchaser-email mismatch during checkout, so this workspace stayed in <strong>Checkout Pending</strong> instead of auto-activating access.
+            OpenPlan detected a purchaser-email mismatch during checkout, so this workspace stayed in <strong>Checkout Pending</strong>; access must not be activated without manual commercial review.
           </p>
           <ul className="mt-3 space-y-1.5 text-sm opacity-90">
             {initiatedByUserEmail ? <li>Workspace checkout was initiated by: <strong>{initiatedByUserEmail}</strong></li> : null}

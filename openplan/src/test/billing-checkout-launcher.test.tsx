@@ -50,6 +50,58 @@ describe("BillingCheckoutLauncher", () => {
     });
   });
 
+  it("refuses legacy checkoutUrl-only responses so direct payment sessions cannot be launched", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({ checkoutUrl: "https://checkout.stripe.com/c/pay/cs_test_123" }),
+    });
+
+    render(
+      <BillingCheckoutLauncher
+        workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        workspaceName="Nevada County Pilot"
+        currentPlan="pilot"
+        currentStatus="pilot"
+        currentPeriodEnd={null}
+        canStartCheckout
+        onCheckoutRedirect={assignMock}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Request Starter fit review for Nevada County Pilot" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Failed to open fit review");
+    expect(assignMock).not.toHaveBeenCalled();
+  });
+
+  it("blocks responses that claim a payment session was created", async () => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        intakeUrl: "/contact/openplan-fit?product=openplan&tier=starter",
+        checkoutDisabled: false,
+        paymentSessionCreated: true,
+      }),
+    });
+
+    render(
+      <BillingCheckoutLauncher
+        workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        workspaceName="Nevada County Pilot"
+        currentPlan="pilot"
+        currentStatus="pilot"
+        currentPeriodEnd={null}
+        canStartCheckout
+        onCheckoutRedirect={assignMock}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Request Starter fit review for Nevada County Pilot" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(/direct checkout is disabled/i);
+    expect(assignMock).not.toHaveBeenCalled();
+  });
+
   it("surfaces API errors inline instead of silently failing", async () => {
     fetchMock.mockResolvedValue({
       ok: false,

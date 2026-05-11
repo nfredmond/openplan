@@ -110,7 +110,11 @@ export async function POST(request: NextRequest) {
       product: "openplan",
       tier: legacyOpenPlanTier?.tier ?? requestedTier,
       checkoutDisabled: true,
-      message: "OpenPlan direct checkout is disabled. Continue through fit-review intake.",
+      paymentSessionCreated: false,
+      workspaceActivationCreated: false,
+      subscriptionCreated: false,
+      manualReviewRequired: true,
+      message: "OpenPlan direct checkout is disabled. This creates no payment session, subscription, or workspace activation; continue through human fit-review intake.",
     },
     { status: 200 },
   );
