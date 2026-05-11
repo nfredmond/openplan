@@ -90,7 +90,10 @@ describe("/api/workspaces/current", () => {
     const response = await getCurrentWorkspace(makeRequest());
 
     expect(response.status).toBe(404);
-    expect(await response.json()).toMatchObject({ error: "No workspace membership found" });
+    expect(await response.json()).toMatchObject({
+      error: "No provisioned supervised pilot workspace membership found",
+      code: "NO_WORKSPACE_MEMBERSHIP",
+    });
   });
 
   it("returns 500 when helper-backed workspace resolution fails", async () => {

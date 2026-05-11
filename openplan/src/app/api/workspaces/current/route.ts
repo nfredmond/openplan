@@ -35,7 +35,13 @@ export async function GET(request: NextRequest) {
   const workspace = currentWorkspace.workspace;
 
   if (!membership) {
-    return NextResponse.json({ error: "No workspace membership found" }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: "No provisioned supervised pilot workspace membership found",
+        code: "NO_WORKSPACE_MEMBERSHIP",
+      },
+      { status: 404 }
+    );
   }
 
   return NextResponse.json(
