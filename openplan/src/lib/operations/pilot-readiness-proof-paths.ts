@@ -1,5 +1,16 @@
 export const ADMIN_PILOT_READINESS_ROUTE = "/admin/pilot-readiness";
 
+export const OPENPLAN_REPOSITORY_BLOB_BASE_URL = "https://github.com/nfredmond/openplan/blob/main";
+
+export function normalizePilotReadinessProofArtifactPath(artifact: string) {
+  return artifact.trim().replace(/^\.\//, "").replace(/^\/+/, "");
+}
+
+export function getOpenPlanRepositoryArtifactUrl(artifact: string) {
+  const artifactPath = normalizePilotReadinessProofArtifactPath(artifact);
+  return `${OPENPLAN_REPOSITORY_BLOB_BASE_URL}/${artifactPath.split("/").map(encodeURIComponent).join("/")}`;
+}
+
 export const FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT =
   "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md";
 

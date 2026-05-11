@@ -3,6 +3,7 @@ import { ExportButton } from "./ExportButton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { buildPilotReadinessControlSummary } from "@/lib/operations/admin-operator-control";
 import { getSmokeStatus, type SmokeStatus } from "@/lib/operations/pilot-readiness";
+import { getOpenPlanRepositoryArtifactUrl } from "@/lib/operations/pilot-readiness-proof-paths";
 import {
   finalPilotReadinessChecklistSync,
   getAdminPilotReadinessProofArtifactCategoryLabel,
@@ -20,6 +21,30 @@ function getStatusTone(status: SmokeStatus["status"]): "success" | "danger" | "w
   if (status === "FAIL") return "danger";
   if (status === "PENDING") return "warning";
   return "neutral";
+}
+
+function getStatusProofArtifact(status: SmokeStatus) {
+  if (status.proofArtifact) return status.proofArtifact;
+
+  const details = status.details.trim();
+  if (!details || details === "No test runs found") return null;
+  if (!/\.(md|html|pdf|ts|tsx|mjs|json)$/i.test(details)) return null;
+
+  return details.includes("/") ? details : `docs/ops/${details}`;
+}
+
+function ProofArtifactLink({ artifact, href }: { artifact: string; href?: string }) {
+  return (
+    <a
+      href={href ?? getOpenPlanRepositoryArtifactUrl(artifact)}
+      target="_blank"
+      rel="noreferrer"
+      className="break-all font-mono text-[0.72rem] font-medium text-emerald-700 underline decoration-emerald-700/30 underline-offset-4 hover:text-emerald-900 hover:decoration-emerald-800 dark:text-emerald-200 dark:hover:text-emerald-100"
+      aria-label={`Open proof artifact ${artifact}`}
+    >
+      {artifact}
+    </a>
+  );
 }
 
 export default function PilotReadinessPage() {
@@ -138,7 +163,7 @@ export default function PilotReadinessPage() {
                 Proof source
               </p>
               <p className="mt-1 break-all font-mono text-[0.72rem] text-muted-foreground">
-                {pilotControl.preflightProofArtifact}
+                <ProofArtifactLink artifact={pilotControl.preflightProofArtifact} />
               </p>
             </div>
             <div>
@@ -184,7 +209,9 @@ export default function PilotReadinessPage() {
                     <h3 className="module-record-title">{item.label}</h3>
                     <p className="module-record-summary">{item.operatorUse}</p>
                     <p className="text-xs text-muted-foreground">{item.buyerSafeCaveat}</p>
-                    <p className="font-mono text-[0.72rem] text-muted-foreground">{item.artifact}</p>
+                    <p>
+                      <ProofArtifactLink artifact={item.artifact} />
+                    </p>
                   </div>
                 </div>
               </div>
@@ -219,7 +246,7 @@ export default function PilotReadinessPage() {
                   <h3 className="module-record-title">{finalPilotReadinessChecklistSync.verdict}</h3>
                   <p className="module-record-summary">{finalPilotReadinessChecklistSync.supervisedOnboardingCaveat}</p>
                   <p className="font-mono text-[0.72rem] text-muted-foreground">
-                    {finalPilotReadinessChecklistSync.checklistArtifact}
+                    <ProofArtifactLink artifact={finalPilotReadinessChecklistSync.checklistArtifact} />
                   </p>
                 </div>
               </div>
@@ -239,7 +266,9 @@ export default function PilotReadinessPage() {
                   <h3 className="module-record-title">Admin Pilot Readiness proof packet filenames</h3>
                   <ul className="space-y-1 font-mono text-[0.72rem] text-muted-foreground">
                     {finalPilotReadinessChecklistSync.exportFilenames.map((filename) => (
-                      <li key={filename}>{filename}</li>
+                      <li key={filename}>
+                        <ProofArtifactLink artifact={filename} />
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -261,7 +290,9 @@ export default function PilotReadinessPage() {
                     <h3 className="module-record-title">{artifact.label}</h3>
                     <p className="module-record-summary">{artifact.role}</p>
                     <p className="text-xs text-muted-foreground">{artifact.caveat}</p>
-                    <p className="font-mono text-[0.72rem] text-muted-foreground">{artifact.artifact}</p>
+                    <p>
+                      <ProofArtifactLink artifact={artifact.artifact} />
+                    </p>
                   </div>
                 </div>
               </div>
@@ -300,7 +331,9 @@ export default function PilotReadinessPage() {
                     <h3 className="module-record-title">{item.headline}</h3>
                     <p className="module-record-summary">{item.readinessRole}</p>
                     <p className="text-xs text-muted-foreground">{item.operatorCheck}</p>
-                    <p className="font-mono text-[0.72rem] text-muted-foreground">{item.artifact}</p>
+                    <p>
+                      <ProofArtifactLink artifact={item.artifact} />
+                    </p>
                     <p className="text-[0.72rem] text-muted-foreground">
                       Caveats: {getReleaseProofItemCaveats(item).map((caveat) => caveat.label).join(" · ")}
                     </p>
@@ -324,35 +357,45 @@ export default function PilotReadinessPage() {
         </div>
 
         <div className="mt-5 module-record-list">
-          {statusList.map((status) => (
-            <div key={status.lane} className="module-record-row">
-              <div className="module-record-head">
-                <div className="module-record-main">
-                  <div className="module-record-kicker">
-                    <StatusBadge tone={getStatusTone(status.status)}>{status.status}</StatusBadge>
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <h3 className="module-record-title">{status.lane}</h3>
-                      <p className="module-record-stamp">Last run: {status.lastRun}</p>
+          {statusList.map((status) => {
+            const proofArtifact = getStatusProofArtifact(status);
+            const proofArtifactHref = proofArtifact
+              ? (status.proofArtifactHref ?? getOpenPlanRepositoryArtifactUrl(proofArtifact))
+              : null;
+
+            return (
+              <div key={status.lane} className="module-record-row">
+                <div className="module-record-head">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={getStatusTone(status.status)}>{status.status}</StatusBadge>
                     </div>
-                    <p className="module-record-summary break-all">
-                      {status.details}
-                    </p>
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title">{status.lane}</h3>
+                        <p className="module-record-stamp">Last run: {status.lastRun}</p>
+                      </div>
+                      <p className="module-record-summary break-all">{status.details}</p>
+                      {proofArtifact ? (
+                        <p className="text-[0.72rem] text-muted-foreground">
+                          Exact proof: <ProofArtifactLink artifact={proofArtifact} href={proofArtifactHref ?? undefined} />
+                        </p>
+                      ) : null}
+                    </div>
                   </div>
                 </div>
+                <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
+                  {status.status === "PASS"
+                    ? "Recent passing proof artifact available for pilot diligence."
+                    : status.status === "FAIL"
+                      ? "Failing evidence — needs follow-up before this lane can be cited as ready."
+                      : status.status === "PENDING"
+                        ? "Tracked but still needs a fresh proof artifact."
+                        : "Could not be interpreted automatically. Inspect the source file directly."}
+                </p>
               </div>
-              <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
-                {status.status === "PASS"
-                  ? "Recent passing proof artifact available for pilot diligence."
-                  : status.status === "FAIL"
-                    ? "Failing evidence — needs follow-up before this lane can be cited as ready."
-                    : status.status === "PENDING"
-                      ? "Tracked but still needs a fresh proof artifact."
-                      : "Could not be interpreted automatically. Inspect the source file directly."}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </article>
     </section>

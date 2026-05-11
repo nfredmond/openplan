@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { getOpenPlanRepositoryArtifactUrl } from "@/lib/operations/pilot-readiness-proof-paths";
 
 export type SmokeStatusValue = "PASS" | "FAIL" | "PENDING" | "UNKNOWN";
 
@@ -8,6 +9,8 @@ export interface SmokeStatus {
   status: SmokeStatusValue;
   lastRun: string;
   details: string;
+  proofArtifact?: string;
+  proofArtifactHref?: string;
 }
 
 const STATUS_HEADER_RE = /^\s*(?:\*\*)?status(?:\*\*)?\s*:\s*(PASS|FAIL|PENDING|UNKNOWN)\b/im;
@@ -59,12 +62,15 @@ export function getSmokeStatus(opsDir = defaultOpsDir()): SmokeStatus[] {
       const latestFile = matchingFiles[0];
       const content = fs.readFileSync(path.join(opsDir, latestFile), "utf8");
       const dateMatch = latestFile.match(/^(\d{4}-\d{2}-\d{2})/);
+      const proofArtifact = `docs/ops/${latestFile}`;
 
       statusList.push({
         lane,
         status: parseSmokeStatus(content),
         lastRun: dateMatch ? dateMatch[1] : "Unknown",
         details: latestFile,
+        proofArtifact,
+        proofArtifactHref: getOpenPlanRepositoryArtifactUrl(proofArtifact),
       });
     } else {
       statusList.push({

@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { getSmokeStatus, parseSmokeStatus } from "@/lib/operations/pilot-readiness";
+import { getOpenPlanRepositoryArtifactUrl } from "@/lib/operations/pilot-readiness-proof-paths";
 
 const tempDirs: string[] = [];
 
@@ -48,6 +49,10 @@ describe("pilot readiness status parsing", () => {
       status: "PASS",
       lastRun: "2026-04-08",
       details: "2026-04-08-openplan-production-authenticated-smoke.md",
+      proofArtifact: "docs/ops/2026-04-08-openplan-production-authenticated-smoke.md",
+      proofArtifactHref: getOpenPlanRepositoryArtifactUrl(
+        "docs/ops/2026-04-08-openplan-production-authenticated-smoke.md",
+      ),
     });
   });
 
@@ -93,7 +98,13 @@ describe("pilot readiness status parsing", () => {
       ["Production Admin Operations Auth", "2026-05-01", "2026-05-01-openplan-production-admin-operations-authenticated-smoke.md"],
     ];
     for (const [lane, lastRun, details] of expected) {
-      expect(statuses.find((s) => s.lane === lane)).toMatchObject({ status: "PASS", lastRun, details });
+      expect(statuses.find((s) => s.lane === lane)).toMatchObject({
+        status: "PASS",
+        lastRun,
+        details,
+        proofArtifact: `docs/ops/${details}`,
+        proofArtifactHref: getOpenPlanRepositoryArtifactUrl(`docs/ops/${details}`),
+      });
     }
   });
 });

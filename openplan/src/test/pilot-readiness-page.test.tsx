@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import PilotReadinessPage from "@/app/(app)/admin/pilot-readiness/page";
 import { buildPilotReadinessControlSummary } from "@/lib/operations/admin-operator-control";
 import { buildPilotReadinessPacket } from "@/lib/operations/pilot-readiness-packet";
+import { getOpenPlanRepositoryArtifactUrl } from "@/lib/operations/pilot-readiness-proof-paths";
 import {
   finalPilotReadinessChecklistSync,
   getAdminPilotReadinessProofArtifactIndex,
@@ -47,12 +48,12 @@ describe("PilotReadinessPage", () => {
     }
 
     for (const artifact of finalPilotReadinessChecklistSync.latestProofArtifacts) {
-      expect(screen.getByText(artifact.label)).toBeInTheDocument();
+      expect(screen.getAllByText(artifact.label).length).toBeGreaterThan(0);
       expect(screen.getAllByText(artifact.artifact).length).toBeGreaterThan(0);
     }
 
     for (const artifact of getAdminPilotReadinessProofArtifactIndex()) {
-      expect(screen.getByText(artifact.label)).toBeInTheDocument();
+      expect(screen.getAllByText(artifact.label).length).toBeGreaterThan(0);
       expect(screen.getAllByText(artifact.artifact).length).toBeGreaterThan(0);
       expect(screen.getByText(artifact.buyerSafeCaveat)).toBeInTheDocument();
     }
@@ -68,6 +69,12 @@ describe("PilotReadinessPage", () => {
     expect(screen.getByText(/Pilot readiness: turns smoke status and source documents/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Billing proof waiver/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /Export Readiness Packet/i })).toBeInTheDocument();
+    expect(screen.getByText("Exact proof:")).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", {
+        name: `Open proof artifact ${smokeStatusFixture[0].details}`,
+      }),
+    ).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(smokeStatusFixture[0].details));
   });
 
   it("keeps the rendered proof index, preflight cue, and export packet helper on the same source data", () => {
@@ -90,6 +97,10 @@ describe("PilotReadinessPage", () => {
       expect(pageText, `${artifact.label} should render on the admin page`).toContain(artifact.label);
       expect(pageText, `${artifact.artifact} should render on the admin page`).toContain(artifact.artifact);
       expect(pageText, `${artifact.label} caveat should render on the admin page`).toContain(artifact.buyerSafeCaveat);
+      expect(
+        screen.getAllByRole("link", { name: `Open proof artifact ${artifact.artifact}` })[0],
+        `${artifact.label} should link to the exact proof artifact`,
+      ).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(artifact.artifact));
       expect(packet, `${artifact.label} should export from the packet helper`).toContain(artifact.label);
       expect(packet, `${artifact.artifact} should export from the packet helper`).toContain(artifact.artifact);
       expect(packet, `${artifact.label} caveat should export from the packet helper`).toContain(artifact.buyerSafeCaveat);
