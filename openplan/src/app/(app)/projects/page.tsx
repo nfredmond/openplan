@@ -4,6 +4,7 @@ import { ArrowRight, FolderKanban, Layers3, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ProjectWorkspaceCreator } from "@/components/projects/project-workspace-creator";
+import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import {
   buildGrantDecisionModelingSupport,
@@ -24,6 +25,7 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { createClient } from "@/lib/supabase/server";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type ProjectRow = {
   id: string;
@@ -170,11 +172,28 @@ export default async function ProjectsPage({
     redirect("/sign-in");
   }
 
+  const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
+
+  if (!membership || !workspace) {
+    return (
+      <WorkspaceMembershipRequired
+        moduleLabel="Projects"
+        title="Projects need a provisioned pilot workspace"
+        description="The project workbench is available after an operator attaches this account to a supervised pilot workspace. This screen does not create autonomous workspaces or bypass intake review."
+        primaryHref="/request-access"
+        primaryLabel="Request supervised pilot access"
+      />
+    );
+  }
+
+  const workspaceId = membership.workspace_id;
+
   const { data: projectsData } = await supabase
     .from("projects")
     .select(
       "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, workspaces(name, plan, created_at)"
     )
+    .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
 
   const projectIds = ((projectsData ?? []) as ProjectRow[]).map((project) => project.id);

@@ -8,9 +8,11 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
   throw new Error("redirect");
 });
 const authGetUserMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const projectsOrderMock = vi.fn();
-const projectsSelectMock = vi.fn(() => ({ order: projectsOrderMock }));
+const projectsEqMock = vi.fn(() => ({ order: projectsOrderMock }));
+const projectsSelectMock = vi.fn(() => ({ eq: projectsEqMock }));
 
 const reportsOrderMock = vi.fn();
 const reportsInMock = vi.fn(() => ({ order: reportsOrderMock }));
@@ -72,6 +74,14 @@ vi.mock("@/components/projects/project-workspace-creator", () => ({
   ProjectWorkspaceCreator: () => <div data-testid="project-workspace-creator" />,
 }));
 
+vi.mock("@/components/workspaces/workspace-membership-required", () => ({
+  WorkspaceMembershipRequired: () => <div data-testid="workspace-membership-required" />,
+}));
+
+vi.mock("@/lib/workspaces/current", () => ({
+  loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+}));
+
 import ProjectsPage from "@/app/(app)/projects/page";
 
 async function renderPage() {
@@ -88,6 +98,11 @@ describe("ProjectsPage", () => {
           id: "user-1",
         },
       },
+    });
+
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: "workspace-1", role: "owner" },
+      workspace: { id: "workspace-1", name: "OpenPlan QA", plan: "pilot" },
     });
 
     projectsOrderMock.mockResolvedValue({
@@ -289,6 +304,22 @@ describe("ProjectsPage", () => {
     });
   });
 
+
+  it("scopes the project registry to the helper-selected current workspace", async () => {
+    await renderPage();
+
+    expect(loadCurrentWorkspaceMembershipMock).toHaveBeenCalledWith(expect.anything(), "user-1");
+    expect(projectsEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
+  });
+
+  it("shows the supervised pilot workspace gate when no membership exists", async () => {
+    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({ membership: null, workspace: null });
+
+    await renderPage();
+
+    expect(screen.getByTestId("workspace-membership-required")).toBeInTheDocument();
+    expect(projectsEqMock).not.toHaveBeenCalled();
+  });
   it("surfaces report packet health on project cards", async () => {
     await renderPage();
 

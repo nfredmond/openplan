@@ -11,6 +11,7 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
 });
 
 const authGetUserMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const projectSingleMock = vi.fn();
 const projectEqMock = vi.fn(() => ({ single: projectSingleMock }));
@@ -235,6 +236,14 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
 }));
 
+vi.mock("@/lib/workspaces/current", () => ({
+  loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+}));
+
+vi.mock("@/components/workspaces/workspace-membership-required", () => ({
+  WorkspaceMembershipRequired: () => <div data-testid="workspace-membership-required" />,
+}));
+
 vi.mock("@/components/projects/project-record-composer", () => ({
   ProjectRecordComposer: () => <div data-testid="project-record-composer" />,
 }));
@@ -319,6 +328,11 @@ describe("ProjectDetailPage", () => {
           id: "user-1",
         },
       },
+    });
+
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: "workspace-1", role: "owner" },
+      workspace: { id: "workspace-1", name: "OpenPlan QA", plan: "pilot" },
     });
 
     projectSingleMock.mockResolvedValue({
@@ -587,6 +601,31 @@ describe("ProjectDetailPage", () => {
     });
   });
 
+
+  it("blocks project detail access when the selected workspace does not own the project", async () => {
+    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
+      membership: { workspace_id: "workspace-other", role: "member" },
+      workspace: { id: "workspace-other", name: "Other workspace", plan: "pilot" },
+    });
+
+    await expect(
+      ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+    ).rejects.toThrow("notFound");
+
+    expect(notFoundMock).toHaveBeenCalled();
+    expect(workspaceSingleMock).not.toHaveBeenCalled();
+  });
+
+  it("shows the supervised membership gate when the account has no workspace", async () => {
+    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({ membership: null, workspace: null });
+
+    render(
+      await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+    );
+
+    expect(screen.getByTestId("workspace-membership-required")).toBeInTheDocument();
+    expect(workspaceSingleMock).not.toHaveBeenCalled();
+  });
   it("surfaces project-linked report freshness guidance", async () => {
     await renderPage();
 

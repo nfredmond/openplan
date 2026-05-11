@@ -5,6 +5,7 @@ import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
+import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { ProjectStageGateBoard } from "@/components/projects/project-stage-gate-board";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
@@ -31,6 +32,7 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { createClient } from "@/lib/supabase/server";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
 import { ProjectPostureHeader } from "./_components/project-posture-header";
 import { ProjectPostureUnified } from "./_components/project-posture-unified";
@@ -116,6 +118,20 @@ export default async function ProjectDetailPage({
     redirect("/sign-in");
   }
 
+  const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
+
+  if (!membership) {
+    return (
+      <WorkspaceMembershipRequired
+        moduleLabel="Project workbench"
+        title="Project access needs a provisioned pilot workspace"
+        description="This project control room is only available to accounts attached to the owning supervised pilot workspace. Ask an owner/admin to add you through the operator-reviewed intake flow."
+        primaryHref="/projects"
+        primaryLabel="Back to projects"
+      />
+    );
+  }
+
   const { data: projectData } = await supabase
     .from("projects")
     .select(
@@ -129,6 +145,10 @@ export default async function ProjectDetailPage({
   }
 
   const project = projectData as ProjectRow;
+
+  if (membership.workspace_id !== project.workspace_id) {
+    notFound();
+  }
 
   const { data: workspaceData } = await supabase
     .from("workspaces")
