@@ -22,7 +22,7 @@ const operatingPosture = [
   {
     title: "Managed hosting and services",
     description:
-      "Nat Ford commercial terms cover managed hosting, onboarding, support, planning services, and custom implementation work around the open-source core. Workspace activation, service scope, and billing are gated and reviewed individually.",
+      "Nat Ford commercial terms cover managed hosting, onboarding, support, planning services, and custom implementation work around the open-source core. Workspace setup, service scope, and payment setup are gated and reviewed individually.",
   },
   {
     title: "Screening-grade boundary",

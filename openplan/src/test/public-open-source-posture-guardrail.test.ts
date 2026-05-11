@@ -42,7 +42,7 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
       /self-hosting, managed-hosting, or implementation review/i,
       /not a live workspace, hosted subscription, or service commitment/i,
       /fits the current open-source product boundary/i,
-      /Provision, invite, or scope services only after workspace ownership, data posture, billing, and support obligations are clear/i,
+      /Prepare any workspace setup, invitations, or service scope only after ownership, data posture, billing, and support obligations are clear/i,
     ],
   },
   {
@@ -52,7 +52,7 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
       /Open-source license boundary/i,
       /Managed hosting and services/i,
       /commercial terms cover managed hosting, onboarding, support, planning services, and custom implementation work around the open-source core/i,
-      /Workspace activation, service scope, and billing are gated and reviewed individually/i,
+      /Workspace setup, service scope, and payment setup are gated and reviewed individually/i,
     ],
   },
   {

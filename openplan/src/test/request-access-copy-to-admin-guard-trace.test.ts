@@ -70,7 +70,7 @@ describe("request-access copy to admin provisioning guard trace", () => {
       "without turning prospect interest into automatic workspace creation",
     );
     expect(requestAccessPage).toContain(
-      "Provision, invite, or scope services only after workspace ownership, data posture, billing, and support obligations are clear",
+      "Prepare any workspace setup, invitations, or service scope only after ownership, data posture, billing, and support obligations are clear",
     );
     expect(requestAccessPageTest).toContain(
       "does not create an account, hosted workspace, subscription, or services contract",

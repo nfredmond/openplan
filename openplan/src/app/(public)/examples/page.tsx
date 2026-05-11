@@ -18,7 +18,7 @@ export const metadata = buildOpenPlanPublicMetadata({
 
 export default function ExamplesEvidenceCatalogPage() {
   return (
-    <main className="public-page">
+    <div className="public-page">
       <div className="public-page-backdrop" />
 
       <section className="public-hero-grid">
@@ -369,6 +369,6 @@ export default function ExamplesEvidenceCatalogPage() {
           </div>
         </article>
       </section>
-    </main>
+    </div>
   );
 }

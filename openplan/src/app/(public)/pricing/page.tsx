@@ -44,10 +44,10 @@ const serviceLanes = [
     price: "From $249/mo",
     features: [
       "Nat Ford-operated hosting for one or more planning workspaces",
-      "Workspace activation, billing, backups, and support handled through the managed service lane",
-      "Signed-in planning workspace, Analysis Studio access, engagement, reporting, and billing infrastructure",
+      "Workspace setup, payment records, backups, and support handled through a reviewed managed-service lane",
+      "Signed-in planning workspace, Analysis Studio access, engagement, reporting, and support-led payment records",
       "Email support with a 2-business-day target for baseline managed hosting",
-      "Stripe remains the payment rail for hosted workspace support and service retainers",
+      "Stripe remains available as the payment rail for hosted workspace support and service retainers",
     ],
     cta: "Request managed hosting",
     fit: "Good for a small agency, tribe, RTPA, or consultant team that wants the open-source product operated for them with clear support boundaries.",
@@ -72,7 +72,7 @@ const serviceLanes = [
 const implementationNotes = [
   "The OpenPlan codebase is intended to be open-source first under Apache-2.0. Managed hosting, onboarding, support, planning services, and custom extensions are the commercial lanes.",
   "Prices shown are service baselines, not proprietary software-license fees. Final managed-hosting or implementation scope may vary by agency complexity, data requirements, support level, and procurement path.",
-  "Checkout and subscription records remain in the product because hosted workspaces need a reliable payment, entitlement, and support ledger. That infrastructure does not turn the open-source core into a proprietary software license.",
+  "Payment and entitlement records remain in the product because hosted workspaces need a reliable support ledger. That infrastructure does not turn the open-source core into a proprietary software license.",
   "For this release, billing evidence is historical live payment evidence plus current non-money-moving billing checks. No new same-cycle paid checkout was run, so sales language should call that check waived rather than re-proven.",
   "No hidden fees, punitive change orders, black-box scoring claims, or unsupported planning-grade promises.",
 ];

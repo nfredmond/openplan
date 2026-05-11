@@ -33,7 +33,7 @@ const reviewFacts = [
 const reviewSteps = [
   "Confirm the agency, responsible contact, first planning lane, and whether the likely path is self-hosted, managed hosted, implementation support, or a mix.",
   "Decide whether the request fits the current open-source product boundary and Nat Ford service capacity.",
-  "Provision, invite, or scope services only after workspace ownership, data posture, billing, and support obligations are clear.",
+  "Prepare any workspace setup, invitations, or service scope only after ownership, data posture, billing, and support obligations are clear.",
 ];
 
 export default async function RequestAccessPage({
@@ -44,7 +44,7 @@ export default async function RequestAccessPage({
   const prefill = buildRequestAccessPrefill("/request-access", (await searchParams) ?? {});
 
   return (
-    <main className="public-page">
+    <div className="public-page">
       <div className="public-page-backdrop" />
 
       <section className="public-hero-grid">
@@ -125,21 +125,21 @@ export default async function RequestAccessPage({
               <h3 className="public-ledger-title">Review fit before commitment</h3>
               <p className="public-ledger-copy">
                 The request is checked against the live product surface, data posture, and support capacity before any
-                activation decision.
+                access or service-scope decision.
               </p>
             </div>
           </div>
           <div className="public-ledger-row">
             <div className="public-ledger-index">02</div>
             <div className="public-ledger-body">
-              <h3 className="public-ledger-title">Keep billing separate</h3>
+              <h3 className="public-ledger-title">Keep payment setup separate</h3>
               <p className="public-ledger-copy">
-                Managed-hosting billing and checkout remain on the services lane, with workspace selection and service scope confirmed separately from this request.
+                Managed-hosting payment setup stays outside this intake form, with workspace selection and service scope confirmed separately from this request.
               </p>
             </div>
           </div>
         </div>
       </article>
-    </main>
+    </div>
   );
 }
