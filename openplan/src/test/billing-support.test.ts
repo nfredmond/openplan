@@ -18,7 +18,7 @@ describe("resolveBillingSupportState", () => {
 
     expect(state).toMatchObject({
       tone: "warning",
-      title: "Stripe returned, but OpenPlan has not confirmed activation yet",
+      title: "Stripe returned, but OpenPlan still requires review",
     });
     expect(state?.bullets.join(" ")).toMatch(/Most recent checkout initialization/i);
     expect(state?.bullets.join(" ")).toMatch(/capture the workspace ID, the purchaser email/i);
@@ -42,7 +42,7 @@ describe("resolveBillingSupportState", () => {
 
     expect(state).toMatchObject({
       tone: "info",
-      title: "Checkout is pending workspace activation",
+      title: "Checkout is pending billing review",
     });
     expect(state?.bullets.some((bullet) => /blocked pending review/i.test(bullet))).toBe(true);
   });

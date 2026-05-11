@@ -65,9 +65,9 @@ export function resolveBillingSupportState({
   if (normalizedCheckoutState === "success" && normalizedStatus === "checkout_pending" && !latestWebhookUpdate) {
     return {
       tone: "warning",
-      title: "Stripe returned, but OpenPlan has not confirmed activation yet",
+      title: "Stripe returned, but OpenPlan still requires review",
       summary:
-        "This workspace is still in Checkout Pending and no recent webhook-backed billing update is visible yet. Treat access as unconfirmed until the status card or billing events show a processed update.",
+        "This workspace is still in Checkout Pending and no recent reviewed billing update is visible yet. Treat access as unconfirmed until operations reconciles the workspace ledger and any required review checks.",
       bullets: [
         `Most recent checkout initialization: ${formatEventMoment(latestCheckoutInitialized?.createdAt ?? null)}.`,
         `Workspace billing record last updated: ${formatEventMoment(billingUpdatedAt)}.`,
@@ -79,9 +79,9 @@ export function resolveBillingSupportState({
   if (normalizedStatus === "checkout_pending") {
     return {
       tone: "info",
-      title: "Checkout is pending workspace activation",
+      title: "Checkout is pending billing review",
       summary:
-        "OpenPlan has recorded an attempted checkout for this workspace, but final access still depends on webhook reconciliation and any required review checks.",
+        "OpenPlan has recorded an attempted checkout for this workspace, but access remains unconfirmed until ledger reconciliation and any required manual review checks are complete.",
       bullets: [
         `Latest checkout initialization: ${formatEventMoment(latestCheckoutInitialized?.createdAt ?? null)}.`,
         latestWebhookUpdate
@@ -89,7 +89,7 @@ export function resolveBillingSupportState({
           : "No webhook-backed billing update is visible in the recent event list yet.",
         latestBlockedUpdate
           ? `A billing update was blocked pending review at ${formatEventMoment(latestBlockedUpdate.createdAt)}.`
-          : "If you already completed Stripe checkout, stay on this workspace-specific billing page and refresh here instead of assuming access is active elsewhere.",
+          : "If you already completed Stripe checkout, stay on this workspace-specific billing page and refresh here instead of assuming access is active.",
       ],
     };
   }
@@ -105,7 +105,7 @@ export function resolveBillingSupportState({
         latestWebhookUpdate
           ? `Most recent webhook billing update: ${formatEventMoment(latestWebhookUpdate.createdAt)}.`
           : "No recent webhook billing update is visible in the current event history.",
-        "If this status is unexpected, verify you are in the intended workspace before launching a new checkout or asking support to intervene.",
+        "If this status is unexpected, verify you are in the intended workspace before asking support to reconcile billing or review fit.",
       ],
     };
   }
