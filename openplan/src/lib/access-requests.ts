@@ -107,6 +107,7 @@ export type AccessRequestSourceContext = {
   checkoutDisabled?: boolean;
   workspaceId?: string;
   source?: string;
+  intent?: string;
 };
 
 export type RecentAccessRequestSafetyRecord = {

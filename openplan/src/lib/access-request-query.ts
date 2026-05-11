@@ -15,6 +15,7 @@ export type PublicIntakeSourceContext = {
   checkoutDisabled?: boolean;
   workspaceId?: string;
   source?: string;
+  intent?: string;
 };
 
 export type RequestAccessPrefill = {
@@ -57,6 +58,21 @@ const WORKFLOW_ALIASES: Record<string, AccessRequestFirstWorkflow> = {
   model: "modeling",
   engagement: "engagement",
   other: "other",
+};
+
+const INTENT_NOTES: Record<string, string> = {
+  "open-source-services-review":
+    "CTA intent: review the Apache-2.0 open-source core alongside optional Nat Ford managed hosting, onboarding, implementation, support, and planning services.",
+  "modeling-workspace-review":
+    "CTA intent: review a supervised modeling or Analysis Studio workspace before any hosted access, billing, or support commitment is created.",
+  "engagement-workspace-review":
+    "CTA intent: review a supervised engagement workspace before any campaign administration access, public launch, or support commitment is created.",
+  "self-hosting-review":
+    "CTA intent: evaluate self-hosting the Apache-2.0 OpenPlan core without creating a Nat Ford-hosted workspace or billing record from this request alone.",
+  "managed-hosting-review":
+    "CTA intent: review Nat Ford managed hosting/admin support around the open-source core before workspace activation, billing, or support terms are confirmed.",
+  "implementation-review":
+    "CTA intent: scope implementation, onboarding, or planning-services support around the open-source core before any paid services commitment is created.",
 };
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -113,6 +129,16 @@ function resolveDeploymentPosture(value: string | null | undefined): AccessReque
     : undefined;
 }
 
+function inferDeploymentPosture(serviceLane: AccessRequestServiceLane | undefined): AccessRequestDeploymentPosture | undefined {
+  if (serviceLane === "self_host_evaluation") return "self_hosted";
+  if (serviceLane === "managed_hosting_admin") return "nat_ford_managed";
+  if (serviceLane === "implementation_onboarding" || serviceLane === "planning_services" || serviceLane === "custom_software_ai_systems") {
+    return "undecided";
+  }
+
+  return undefined;
+}
+
 function compactContext(context: PublicIntakeSourceContext): PublicIntakeSourceContext {
   return Object.fromEntries(
     Object.entries(context).filter(([, value]) => value !== undefined && value !== false),
@@ -129,6 +155,7 @@ function sourcePathWithAllowedParams(pathname: string, context: PublicIntakeSour
   if (context.checkoutDisabled) params.set("checkoutDisabled", "1");
   if (context.workspaceId) params.set("workspaceId", context.workspaceId);
   if (context.source) params.set("source", context.source);
+  if (context.intent) params.set("intent", context.intent);
 
   const query = params.toString();
   return query ? `${pathname}?${query}`.slice(0, 220) : pathname.slice(0, 220);
@@ -142,6 +169,7 @@ export function buildRequestAccessPrefill(
   const tier = cleanToken(firstParam(searchParams, "tier") ?? firstParam(searchParams, "plan"));
   const checkout = cleanToken(firstParam(searchParams, "checkout"));
   const source = cleanToken(firstParam(searchParams, "source"), 120);
+  const intent = cleanToken(firstParam(searchParams, "intent"), 120);
   const workspaceId = cleanWorkspaceId(firstParam(searchParams, "workspaceId"));
   const legacyCheckout = cleanBoolean(firstParam(searchParams, "legacyCheckout"));
   const checkoutDisabled = cleanBoolean(firstParam(searchParams, "checkoutDisabled")) || checkout === "disabled";
@@ -155,12 +183,17 @@ export function buildRequestAccessPrefill(
     checkoutDisabled,
     workspaceId,
     source,
+    intent,
   });
 
+  const serviceLane = resolveServiceLane(firstParam(searchParams, "lane"));
+  const deploymentPosture = resolveDeploymentPosture(firstParam(searchParams, "deployment")) ?? inferDeploymentPosture(serviceLane);
+  const desiredFirstWorkflow = resolveWorkflow(firstParam(searchParams, "workflow"));
+
   const initialValues: RequestAccessPrefill["initialValues"] = {
-    serviceLane: resolveServiceLane(firstParam(searchParams, "lane")),
-    deploymentPosture: resolveDeploymentPosture(firstParam(searchParams, "deployment")),
-    desiredFirstWorkflow: resolveWorkflow(firstParam(searchParams, "workflow")),
+    serviceLane,
+    deploymentPosture,
+    desiredFirstWorkflow,
   };
 
   if (isOpenPlanFit) {
@@ -176,6 +209,11 @@ export function buildRequestAccessPrefill(
       .join(" ");
     initialValues.useCase =
       "Review fit for OpenPlan implementation/support before any managed deployment, checkout, or custom fork is created.";
+  } else if (intent && INTENT_NOTES[intent]) {
+    initialValues.onboardingNeeds = [
+      INTENT_NOTES[intent],
+      "Review only: do not create a workspace, send email, start billing, or scope paid services from this request without explicit human follow-up.",
+    ].join(" ");
   }
 
   return {

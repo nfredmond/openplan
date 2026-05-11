@@ -23,7 +23,10 @@ describe("PublicLandingPage", () => {
     ).toBeInTheDocument();
 
     const actions = screen.getAllByRole("link", { name: /Request access/i });
-    expect(actions[0]).toHaveAttribute("href", "/request-access");
+    expect(actions[0]).toHaveAttribute(
+      "href",
+      "/request-access?product=openplan&source=landing&intent=open-source-services-review",
+    );
     expect(actions[0]).toHaveClass("public-primary-link");
     expect(screen.getByRole("link", { name: /Sign in to existing workspace/i })).toHaveClass("public-secondary-link");
 
@@ -49,11 +52,11 @@ describe("PublicLandingPage", () => {
     expect(screen.queryByRole("link", { name: /^Engagement workspace$/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Request the gated map and scenario workspace/i })).toHaveAttribute(
       "href",
-      "/request-access?workflow=modeling&source=landing",
+      "/request-access?product=openplan&lane=managed-hosting&workflow=modeling&source=landing&intent=modeling-workspace-review",
     );
     expect(screen.getByRole("link", { name: /Request the gated engagement workspace/i })).toHaveAttribute(
       "href",
-      "/request-access?workflow=engagement&source=landing",
+      "/request-access?product=openplan&lane=implementation&workflow=engagement&source=landing&intent=engagement-workspace-review",
     );
     expect(screen.queryByText(/operator surface/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/operator review/i)).not.toBeInTheDocument();

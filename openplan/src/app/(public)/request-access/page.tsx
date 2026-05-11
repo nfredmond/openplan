@@ -20,8 +20,8 @@ const reviewFacts = [
   },
   {
     label: "Onboarding",
-    value: "Services-led",
-    detail: "Review is tied to the first real planning workflow, hosting preference, support need, and responsible operator.",
+    value: "Open-source + services",
+    detail: "Review distinguishes the Apache-2.0 core from optional Nat Ford managed hosting, support, implementation, and planning services.",
   },
   {
     label: "Boundary",

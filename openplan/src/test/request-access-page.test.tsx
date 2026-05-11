@@ -27,6 +27,7 @@ describe("RequestAccessPage", () => {
     expect(screen.getByLabelText(/Which service lane do you need/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/First workflow to stand up/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/What should OpenPlan help with first/i)).toBeInTheDocument();
+    expect(screen.getByText(/distinguishes the Apache-2.0 core from optional Nat Ford managed hosting/i)).toBeInTheDocument();
     expect(screen.getByText(/does not create an account, hosted workspace, subscription, or services contract/i)).toBeInTheDocument();
     expect(screen.getByText(/collect public intake without turning prospect interest into automatic workspace creation/i)).toBeInTheDocument();
     expect(screen.queryByText(/workspace will be created automatically/i)).not.toBeInTheDocument();
@@ -39,8 +40,8 @@ describe("RequestAccessPage", () => {
         searchParams: Promise.resolve({
           lane: "managed-hosting",
           workflow: "grants",
-          deployment: "nat_ford_managed",
           source: "pricing",
+          intent: "managed-hosting-review",
         }),
       }),
     );
@@ -48,5 +49,8 @@ describe("RequestAccessPage", () => {
     expect(screen.getByLabelText(/Which service lane do you need/i)).toHaveValue("managed_hosting_admin");
     expect(screen.getByLabelText(/First workflow to stand up/i)).toHaveValue("grants");
     expect(screen.getByLabelText(/Deployment posture/i)).toHaveValue("nat_ford_managed");
+    expect((screen.getByLabelText(/Onboarding needs/i) as HTMLTextAreaElement).value).toMatch(
+      /managed hosting\/admin support/i,
+    );
   });
 });

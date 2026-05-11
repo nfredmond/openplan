@@ -62,7 +62,12 @@ const validPayload = {
   onboardingNeeds: "Import existing RTP project tables and brief staff leads.",
   expectedWorkspaceName: "NCTC Pilot",
   useCase: "Screen rural transit corridors and prepare grant support material.",
-  sourcePath: "/request-access",
+  sourcePath: "/request-access?product=openplan&source=landing&intent=open-source-services-review",
+  sourceContext: {
+    product: "openplan",
+    source: "landing",
+    intent: "open-source-services-review",
+  },
 };
 
 describe("POST /api/request-access", () => {
@@ -110,11 +115,16 @@ describe("POST /api/request-access", () => {
         desired_first_workflow: "rtp",
         onboarding_needs: "Import existing RTP project tables and brief staff leads.",
         expected_workspace_name: "NCTC Pilot",
-        source_path: "/request-access",
+        source_path: "/request-access?product=openplan&source=landing&intent=open-source-services-review",
         metadata_json: expect.objectContaining({
           submitted_via: "request_access_form",
           body_fingerprint: expect.any(String),
           source_fingerprint: expect.any(String),
+          source_context: expect.objectContaining({
+            product: "openplan",
+            source: "landing",
+            intent: "open-source-services-review",
+          }),
         }),
       }),
     );

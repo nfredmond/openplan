@@ -407,6 +407,7 @@ export function RequestAccessForm({
             </h3>
             <ul className="public-bullet-list public-bullet-list--compact mt-3 text-sm text-muted-foreground">
               <li>Requests are triaged by service lane before a hosted workspace, implementation scope, or support commitment is created.</li>
+              <li>The Apache-2.0 core stays separate from Nat Ford managed hosting, onboarding, support, billing, and planning-services commitments.</li>
               <li>No outbound message is sent automatically from this form.</li>
               <li>Self-hosting, managed-hosting billing, onboarding, and paid implementation remain separate supervised steps.</li>
             </ul>

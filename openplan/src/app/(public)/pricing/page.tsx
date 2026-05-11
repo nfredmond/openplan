@@ -25,6 +25,7 @@ const serviceLanes = [
   {
     name: "Self-hosted core",
     slug: "self-hosted",
+    intent: "self-hosting-review",
     price: "$0 software license",
     features: [
       "Apache-2.0 source code license",
@@ -39,6 +40,7 @@ const serviceLanes = [
   {
     name: "Managed hosting + support",
     slug: "managed-hosting",
+    intent: "managed-hosting-review",
     price: "From $249/mo",
     features: [
       "Nat Ford-operated hosting for one or more planning workspaces",
@@ -53,6 +55,7 @@ const serviceLanes = [
   {
     name: "Implementation + planning services",
     slug: "implementation",
+    intent: "implementation-review",
     price: "Scoped by engagement",
     features: [
       "Onboarding, data setup, workflow configuration, and staff training",
@@ -117,7 +120,7 @@ export default function PricingPage() {
           </div>
 
           <div className="public-actions">
-            <Link href="/request-access" className="public-primary-link">
+            <Link href="/request-access?product=openplan&source=pricing&intent=open-source-services-review" className="public-primary-link">
               Request a services review
               <ArrowRight className="h-4 w-4" />
             </Link>
@@ -192,7 +195,10 @@ export default function PricingPage() {
               <aside className="public-price-rail">
                 <p className="public-ledger-label">Service lane</p>
                 <p className="public-price">{lane.price}</p>
-                <Link href={`/request-access?lane=${lane.slug}`} className="public-primary-link public-primary-link--full">
+                <Link
+                  href={`/request-access?product=openplan&lane=${lane.slug}&source=pricing&intent=${lane.intent}`}
+                  className="public-primary-link public-primary-link--full"
+                >
                   {lane.cta}
                 </Link>
                 <Link href="/legal" className="public-secondary-link">

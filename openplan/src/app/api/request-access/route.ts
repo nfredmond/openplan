@@ -48,6 +48,7 @@ const accessRequestSchema = z.object({
       checkoutDisabled: z.boolean().optional(),
       workspaceId: z.string().uuid().optional(),
       source: z.string().trim().max(120).optional(),
+      intent: z.string().trim().max(120).optional(),
     })
     .optional(),
   // Honeypot field: real users never see it.

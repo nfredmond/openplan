@@ -48,7 +48,7 @@ const publicSurfaces = [
       "Nevada County 2026-03-24 screening runtime vs. Caltrans counts, gated as internal prototype only — caveats and validation metrics shown verbatim.",
   },
   {
-    href: "/request-access?workflow=modeling&source=landing",
+    href: "/request-access?product=openplan&lane=managed-hosting&workflow=modeling&source=landing&intent=modeling-workspace-review",
     label: "Analysis Studio access",
     title: "Request the gated map and scenario workspace",
     description:
@@ -61,13 +61,13 @@ const publicSurfaces = [
     description: "See how Apache-2.0 software, managed hosting, onboarding, support, planning services, and custom extensions fit together.",
   },
   {
-    href: "/request-access",
+    href: "/request-access?product=openplan&source=landing&intent=open-source-services-review",
     label: "Access intake",
     title: "Request a supervised workspace review",
     description: "Submit agency context and a first workflow without triggering automatic provisioning or outbound messages.",
   },
   {
-    href: "/request-access?workflow=engagement&source=landing",
+    href: "/request-access?product=openplan&lane=implementation&workflow=engagement&source=landing&intent=engagement-workspace-review",
     label: "Engagement workspace access",
     title: "Request the gated engagement workspace",
     description:
@@ -146,7 +146,7 @@ export default function PublicLandingPage() {
           </div>
 
           <div className="public-actions">
-            <Link href="/request-access" className="public-primary-link">
+            <Link href="/request-access?product=openplan&source=landing&intent=open-source-services-review" className="public-primary-link">
               Request access
               <ArrowRight className="h-4 w-4" />
             </Link>

@@ -41,11 +41,11 @@ describe("PricingPage", () => {
     expect(screen.queryByText(/commercial proof waiver/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Request self-hosting review/i })).toHaveAttribute(
       "href",
-      "/request-access?lane=self-hosted",
+      "/request-access?product=openplan&lane=self-hosted&source=pricing&intent=self-hosting-review",
     );
     expect(screen.getByRole("link", { name: /Request managed hosting/i })).toHaveAttribute(
       "href",
-      "/request-access?lane=managed-hosting",
+      "/request-access?product=openplan&lane=managed-hosting&source=pricing&intent=managed-hosting-review",
     );
     expect(screen.queryByText(/Create Starter account/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Create Professional account/i)).not.toBeInTheDocument();
