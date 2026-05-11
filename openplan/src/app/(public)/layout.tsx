@@ -15,7 +15,7 @@ export default function PublicLayout({
           <div className="grid gap-2 border-l-2 border-[color:var(--pine)]/50 pl-4">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">OpenPlan · Nat Ford Planning</p>
             <p className="max-w-2xl text-sm text-muted-foreground">
-              Maps, projects, engagement, and report-ready planning work in one connected civic workbench.
+              Maps, projects, engagement, and report-ready planning work in one connected planning workspace.
             </p>
           </div>
           <div className="grid gap-3 lg:justify-items-end">
@@ -42,7 +42,7 @@ export default function PublicLayout({
               </Link>
             </div>
             <p className="text-sm text-muted-foreground lg:text-right">
-              Open-source planning software with managed services for teams that need traceable work, not dashboard theater.
+              Open-source planning software with managed services for teams that need traceable work, not another static status page.
             </p>
           </div>
         </div>

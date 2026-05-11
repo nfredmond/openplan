@@ -21,9 +21,11 @@ describe("ExamplesEvidenceCatalogPage", () => {
         name: /Open-source proof, then supervised service paths/i,
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Clone the proof trail/i)).toBeInTheDocument();
+    expect(screen.getByText(/Inspect the proof trail/i)).toBeInTheDocument();
     expect(screen.getByText(/Request implementation help/i)).toBeInTheDocument();
     expect(screen.getByText(/No instant checkout demo claim/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Truth-state lock/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Clone the proof trail/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Guided demo fit check/i)).toBeInTheDocument();
     expect(screen.getByText(/one scoped first workflow/i)).toBeInTheDocument();
     expect(screen.getByText(/self-hosted, managed-hosted, implementation-only, or a mix/i)).toBeInTheDocument();

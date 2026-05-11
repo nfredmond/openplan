@@ -34,6 +34,10 @@ describe("TopNav public conversion posture", () => {
     expect(screen.getByRole("link", { name: /Request access/i })).toHaveClass("top-nav-primary-link");
     expect(screen.getByRole("link", { name: /Sign in/i })).toHaveAttribute("href", "/sign-in");
     expect(screen.getByRole("link", { name: /Evidence catalog/i })).toHaveAttribute("href", "/examples");
+    expect(screen.getByText(/Open planning workspace/i)).toBeInTheDocument();
+    expect(screen.getByText(/Maps, engagement, reporting/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Planning operating system/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/operator shell/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /App Preview/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Sign up/i })).not.toBeInTheDocument();
   });

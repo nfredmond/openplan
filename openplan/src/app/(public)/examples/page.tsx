@@ -24,7 +24,7 @@ export default function ExamplesEvidenceCatalogPage() {
           <p className="public-kicker">OpenPlan evidence catalog</p>
           <div className="public-headline-block">
             <h1 className="public-title">
-              Screening-grade proof of what OpenPlan has actually run — caveats intact.
+              A transparent record of what OpenPlan has actually run — caveats intact.
             </h1>
             <p className="public-lead max-w-4xl">
               This is not a product tour and not a forecasting claim. It is a transparency-first look
@@ -35,7 +35,7 @@ export default function ExamplesEvidenceCatalogPage() {
 
           <div className="public-fact-grid public-fact-grid--three">
             <div className="public-fact">
-              <p className="public-fact-label">Truth-state lock</p>
+              <p className="public-fact-label">Current status</p>
               <p className="public-fact-value">Internal prototype only</p>
               <p className="public-fact-detail">
                 Not production-ready forecasting. No outward modeling claims are made from this
@@ -81,7 +81,7 @@ export default function ExamplesEvidenceCatalogPage() {
               Caveats are quoted verbatim from the validation artifact, not paraphrased.
             </div>
             <div className="public-rail-item">
-              The screening gate is displayed as the run emitted it — internal prototype only.
+              The screening gate is displayed as the run recorded it — internal prototype only.
               See the{" "}
               <Link href="/legal" className="underline underline-offset-4 hover:text-foreground">
                 legal notice
@@ -236,7 +236,7 @@ export default function ExamplesEvidenceCatalogPage() {
                 <p className="public-ledger-label">Reference</p>
                 <h3 className="public-ledger-title">Full internal proof record</h3>
                 <p className="public-ledger-copy">
-                  The operator-facing proof doc (with workflow, runtime commands, artifact paths,
+                  The repository proof doc (with workflow, runtime commands, artifact paths,
                   and the same numbers) lives at{" "}
                   <code className="rounded bg-muted/40 px-1.5 py-0.5 text-xs">
                     docs/ops/2026-04-18-modeling-nevada-county-live-proof.md
@@ -272,7 +272,7 @@ export default function ExamplesEvidenceCatalogPage() {
             <div className="public-ledger-row">
               <div className="public-ledger-index">01</div>
               <div className="public-ledger-body">
-                <p className="public-ledger-label">Clone the proof trail</p>
+                <p className="public-ledger-label">Inspect the proof trail</p>
                 <p className="public-ledger-copy text-foreground">
                   Evidence pages point back to repository records, validation artifacts, and caveats
                   so technical reviewers can inspect how a claim was produced before asking for help.
@@ -284,7 +284,7 @@ export default function ExamplesEvidenceCatalogPage() {
               <div className="public-ledger-body">
                 <p className="public-ledger-label">Request implementation help</p>
                 <p className="public-ledger-copy text-foreground">
-                  Conversion routes lead to service conversations — managed hosting, self-hosting
+                  Request-access routes lead to service conversations — managed hosting, self-hosting
                   readiness, workflow setup, or planning analysis — rather than instant unsupervised
                   checkout.
                 </p>

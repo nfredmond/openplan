@@ -43,7 +43,7 @@ const publicSurfaces = [
     label: "Analysis Studio access",
     title: "Request the gated map and scenario workspace",
     description:
-      "Analysis Studio is a signed-in operator surface. Request a supervised workspace review before using corridor maps, overlays, run history, and map-ready outputs.",
+      "Analysis Studio is a signed-in workspace area. Request a supervised review before using corridor maps, overlays, run history, and map-ready outputs.",
   },
   {
     href: "/pricing",
@@ -62,7 +62,7 @@ const publicSurfaces = [
     label: "Engagement workspace access",
     title: "Request the gated engagement workspace",
     description:
-      "Public share links can be published, but campaign management is a signed-in workspace surface with moderation and operator review.",
+      "Public share links can be published, but campaign management stays in a signed-in workspace with moderation and human review.",
   },
 ];
 
@@ -78,9 +78,9 @@ const releaseFacts = [
     detail: "Hosting, support, onboarding, implementation, and custom extensions are the commercial lanes around the open-source core.",
   },
   {
-    label: "Current motion",
-    value: "Supervised rollout",
-    detail: "OpenPlan is live, with deliberate controls around managed-hosting activation, billing, onboarding, and production rollout.",
+    label: "Rollout status",
+    value: "Supervised release",
+    detail: "OpenPlan is live with deliberate controls around managed hosting, billing, onboarding, and production use.",
   },
 ];
 
@@ -88,7 +88,7 @@ const pilotBoundaries = [
   "The source-first posture is intentional: public agencies should be able to inspect the software behind their planning work.",
   "Managed hosting and billing remain intentionally supervised because support obligations, data posture, and workspace ownership matter.",
   "Public engagement portals preserve review and moderation before feedback enters formal reporting or summaries.",
-  "The platform is built for agencies and consulting teams that need traceable planning work, not generic dashboard theater.",
+  "The platform is built for agencies and consulting teams that need traceable planning work, not another static status page.",
 ];
 
 const coreLanes = [
@@ -166,12 +166,12 @@ export default function PublicLandingPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="public-rail-kicker">Planning OS signal</p>
+              <p className="public-rail-kicker">Planning delivery signal</p>
               <h2 className="public-rail-title">Built for real planning delivery</h2>
             </div>
           </div>
           <p className="public-rail-copy">
-            OpenPlan is meant to feel like a serious operations surface for agencies and consulting teams: inspectable software when you need transparency, managed operations when you need someone accountable to run it.
+            OpenPlan is meant to feel like a serious planning workspace for agencies and consulting teams: inspectable software when transparency matters, managed hosting and support when a team needs someone accountable to run it.
           </p>
           <div className="public-rail-list">
             <div className="public-rail-item">
@@ -181,7 +181,7 @@ export default function PublicLandingPage() {
               Services language is explicit about the difference between open-source code and paid hosting, support, onboarding, and planning implementation.
             </div>
             <div className="public-rail-item">
-              The product language is civic, dense, and operational because the work itself is.
+              The product language stays practical and civic because the work itself is.
             </div>
           </div>
         </aside>
@@ -220,7 +220,7 @@ export default function PublicLandingPage() {
               <h2 className="public-section-title">Enter through the right lane</h2>
             </div>
             <p className="public-section-description max-w-xl">
-              Each public route has a specific job and connects back to the broader workbench.
+              Each public route has a specific job and connects back to the broader planning record.
             </p>
           </div>
 

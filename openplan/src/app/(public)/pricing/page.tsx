@@ -34,7 +34,7 @@ const serviceLanes = [
     features: [
       "Nat Ford-operated hosting for one or more planning workspaces",
       "Workspace activation, billing, backups, and support handled through the managed service lane",
-      "Operator-grade app shell, Analysis Studio access, engagement, reporting, and billing infrastructure",
+      "Signed-in planning workspace, Analysis Studio access, engagement, reporting, and billing infrastructure",
       "Email support with a 2-business-day target for baseline managed hosting",
       "Stripe remains the payment rail for hosted workspace support and service retainers",
     ],
@@ -61,7 +61,7 @@ const implementationNotes = [
   "The OpenPlan codebase is intended to be open-source first under Apache-2.0. Managed hosting, onboarding, support, planning services, and custom extensions are the commercial lanes.",
   "Prices shown are service baselines, not proprietary software-license fees. Final managed-hosting or implementation scope may vary by agency complexity, data requirements, support level, and procurement path.",
   "Checkout and subscription records remain in the product because hosted workspaces need a reliable payment, entitlement, and support ledger. That infrastructure does not turn the open-source core into a proprietary software license.",
-  "Current billing proof posture is historical live payment evidence plus current non-money-moving billing proof; no fresh same-cycle paid canary was run for this release packet, so sales language should call that canary waived rather than re-proven.",
+  "For this release, billing evidence is historical live payment evidence plus current non-money-moving billing checks. No new same-cycle paid checkout was run, so sales language should call that check waived rather than re-proven.",
   "No hidden fees, punitive change orders, black-box scoring claims, or unsupported planning-grade promises.",
 ];
 
@@ -137,8 +137,8 @@ export default function PricingPage() {
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="public-rail-kicker">Commercial posture</p>
-              <h2 className="public-rail-title">Open core; paid operations when useful.</h2>
+              <p className="public-rail-kicker">Services posture</p>
+              <h2 className="public-rail-title">Open-source core; paid help when useful.</h2>
             </div>
           </div>
           <p className="public-rail-copy">
@@ -156,7 +156,7 @@ export default function PricingPage() {
         <div className="public-section-header">
           <div>
             <p className="public-section-label">Service catalog</p>
-            <h2 className="public-section-title">Choose the right operating lane</h2>
+            <h2 className="public-section-title">Choose the right service path</h2>
           </div>
           <p className="public-section-description max-w-2xl">
             The lanes are intentionally plain: run OpenPlan yourself, ask Nat Ford to operate it, or pair the software with planning implementation support.
@@ -181,7 +181,7 @@ export default function PricingPage() {
               </div>
 
               <aside className="public-price-rail">
-                <p className="public-ledger-label">Commercial lane</p>
+                <p className="public-ledger-label">Service lane</p>
                 <p className="public-price">{lane.price}</p>
                 <Link href={`/request-access?lane=${lane.slug}`} className="public-primary-link public-primary-link--full">
                   {lane.cta}
@@ -221,18 +221,18 @@ export default function PricingPage() {
               <CreditCard className="h-5 w-5 text-sky-200" />
             </span>
             <div>
-              <p className="public-rail-kicker">Billing lane</p>
+              <p className="public-rail-kicker">Hosted billing</p>
               <h2 className="public-rail-title">Keep hosted-workspace billing explicit.</h2>
             </div>
           </div>
           <p className="public-rail-copy">
-            Billing actions in OpenPlan are tied to a specific hosted workspace because project records, run history, support obligations, and payment posture all need to stay aligned.
+            Billing actions in OpenPlan are tied to a specific hosted workspace because project records, run history, support obligations, and billing status all need to stay aligned.
           </p>
           <div className="public-rail-list">
             <div className="public-rail-item">Do not start managed-hosting billing until the account is attached to the intended workspace.</div>
-            <div className="public-rail-item">Use the current commercial proof waiver honestly: historical live payment plus current non-money-moving billing proof, not a fresh paid checkout canary.</div>
+            <div className="public-rail-item">Use the current billing caveat honestly: historical live payment plus current non-money-moving billing checks, not a fresh paid checkout canary.</div>
             <div className="public-rail-item">Use the request-access lane to decide whether the need is self-hosting, managed hosting, implementation, or a mix.</div>
-            <div className="public-rail-item">If the service scope or workspace target is unclear, stop and resolve it before operators begin paid delivery work.</div>
+            <div className="public-rail-item">If the service scope or workspace target is unclear, stop and resolve it before the team begins paid delivery work.</div>
           </div>
         </article>
       </div>

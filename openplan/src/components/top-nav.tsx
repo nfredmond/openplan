@@ -36,13 +36,13 @@ export async function TopNav() {
           href="/"
           className="grid gap-2 border-l-2 border-[color:var(--pine)] pl-4 transition-colors hover:border-[color:var(--pine-deep)]"
         >
-          <span className="text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Planning operating system</span>
+          <span className="text-[0.62rem] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Open planning workspace</span>
           <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
             <span className="text-lg font-semibold tracking-[0.01em] text-foreground sm:text-[1.1rem]">OpenPlan</span>
-            <span className="text-sm text-muted-foreground">Civic workbench</span>
+            <span className="text-sm text-muted-foreground">Maps, engagement, reporting</span>
           </div>
           <span className="hidden max-w-3xl text-sm text-muted-foreground sm:block">
-            Public entry into the open-source planning workspace, managed-services lane, and share-ready engagement portals.
+            Public entry into the open-source planning workspace, managed services, and share-ready engagement portals.
           </span>
         </Link>
 
@@ -54,7 +54,7 @@ export async function TopNav() {
             <p className="text-sm text-muted-foreground">
               {user
                 ? "Move between the public services surface and the live workspace without dropping planning context."
-                : "Review the open-source posture, managed-services options, and live public engagement views before opening the full operator shell."}
+                : "Review the open-source posture, managed-services options, and live public engagement views before requesting a signed-in workspace."}
             </p>
           </div>
 

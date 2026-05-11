@@ -37,6 +37,9 @@ describe("PublicLandingPage", () => {
       "href",
       "https://github.com/nfredmond/openplan/blob/main/LICENSE",
     );
+    expect(screen.getByText(/Rollout status/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Current motion/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/dashboard theater/i)).not.toBeInTheDocument();
   });
 
   it("does not expose gated app routes as public previews", () => {
@@ -52,6 +55,8 @@ describe("PublicLandingPage", () => {
       "href",
       "/request-access?workflow=engagement&source=landing",
     );
+    expect(screen.queryByText(/operator surface/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/operator review/i)).not.toBeInTheDocument();
   });
 
   it("does not render a nested main landmark inside the public layout main", () => {
