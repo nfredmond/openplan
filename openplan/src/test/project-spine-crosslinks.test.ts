@@ -125,6 +125,8 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(summary.stateProofReference.label).toBe("Phase 1 shared spine proof");
     expect(summary.stateProofReference.artifact).toBe("docs/ops/2026-05-02-openplan-local-spine-smoke.md");
     expect(summary.stateProofReference.relevance).toMatch(/own scoped acceptance rerun/i);
+    expect(summary.stateNextAction).toMatch(/Open the Phase 1 shared spine proof from Admin Pilot Readiness/i);
+    expect(summary.stateNextAction).toMatch(/attach this project to the right RTP cycle/i);
     expect(summary.emptyCount).toBe(6);
     expect(summary.leadAction.id).toBe("rtp_packets");
     expect(summary.rows.map((row) => row.statusLabel)).toContain("Funding target missing");
@@ -195,6 +197,8 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(summary.missingCount).toBe(4);
     expect(summary.schemaPendingLanes).toEqual(["Scenario sets", "Grants / funding profile"]);
     expect(summary.stateDetail).toMatch(/showing setup actions instead of pretending those lanes are empty/i);
+    expect(summary.stateNextAction).toMatch(/Open the migration inventory preflight proof from Admin Pilot Readiness/i);
+    expect(summary.stateNextAction).toMatch(/decide which evidence is genuinely absent/i);
     expect(summary.stateProofReference.label).toBe("Migration inventory preflight proof");
     expect(summary.stateProofReference.href).toBe("/admin/pilot-readiness");
     expect(summary.leadAction.id).toBe("scenario_sets");

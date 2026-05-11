@@ -250,7 +250,8 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
       boardState: "schema_pending",
       stateHeadline: "Some spine lanes are waiting on schema setup",
       stateDetail: `${schemaPendingLanes.join(", ")} ${schemaPendingLanes.length === 1 ? "is" : "are"} unavailable right now, so the board is showing setup actions instead of pretending those lanes are empty.`,
-      stateNextAction: "Apply or verify the missing migration/read path, reload the project, then decide which evidence is genuinely absent.",
+      stateNextAction:
+        "Open the migration inventory preflight proof from Admin Pilot Readiness, apply or verify the missing migration/read path, reload the project, then decide which evidence is genuinely absent.",
       stateProofReference: boardProofReferences.schema_pending,
       schemaPendingLanes,
     };
@@ -262,7 +263,9 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
       stateHeadline: "No downstream outputs are linked yet",
       stateDetail:
         "This is a clean setup queue, not a broken board. Each row names the first operator move needed to turn the project record into reusable packet, funding, scenario, engagement, analysis, or aerial evidence.",
-      stateNextAction: rows[0]?.nextAction ?? "Attach the first project-linked output, then reload the spine.",
+      stateNextAction: rows[0]
+        ? `Open the Phase 1 shared spine proof from Admin Pilot Readiness, then ${rows[0].nextAction.charAt(0).toLowerCase()}${rows[0].nextAction.slice(1)}`
+        : "Open the Phase 1 shared spine proof from Admin Pilot Readiness, attach the first project-linked output, then reload the spine.",
       stateProofReference: boardProofReferences.empty,
       schemaPendingLanes,
     };
