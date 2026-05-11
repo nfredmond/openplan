@@ -24,11 +24,23 @@ export type SupervisedOnboardingManualProvisioningGuard = {
   guardrails: readonly string[];
 };
 
+export type SupervisedOnboardingEvidenceLedgerEntry = {
+  key: string;
+  label: string;
+  operatorUse: string;
+  proofPosture: string;
+  proofArtifact: string;
+  boundary: string;
+};
+
 export const SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT =
   "openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md";
 
 export const ACCESS_REQUEST_MANUAL_PROVISIONING_GUARD_PROOF_ARTIFACT =
   "openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md";
+
+export const ADMIN_OPS_PROD_HEALTH_EVIDENCE_BRIDGE_ARTIFACT =
+  "docs/ops/2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md";
 
 export const supervisedOnboardingEvidenceFlow = {
   label: "Supervised onboarding evidence flow",
@@ -49,6 +61,37 @@ export const supervisedOnboardingEvidenceFlow = {
       "Manual invite delivery only",
     ],
   } satisfies SupervisedOnboardingManualProvisioningGuard,
+  operatorEvidenceLedger: [
+    {
+      key: "manual-provisioning-guard",
+      label: "Manual provisioning guard",
+      operatorUse:
+        "Before creating an owner invite, confirm the request is contacted/invited and the manual_provisioning_no_email acknowledgement is explicit.",
+      proofPosture: "Code guard plus component/route tests",
+      proofArtifact: ACCESS_REQUEST_MANUAL_PROVISIONING_GUARD_PROOF_ARTIFACT,
+      boundary: "No email send, billing change, or autonomous account activation is authorized by this proof.",
+    },
+    {
+      key: "prod-health-evidence",
+      label: "Production health evidence",
+      operatorUse:
+        "After an admin-affecting main deploy, pair Admin Operations proof with Vercel Ready state and public /api/health evidence before calling the proof current.",
+      proofPosture: "No-write production evidence bridge",
+      proofArtifact: ADMIN_OPS_PROD_HEALTH_EVIDENCE_BRIDGE_ARTIFACT,
+      boundary:
+        "Health evidence is shallow deployment proof only; it does not inspect Supabase rows or validate authenticated workflows.",
+    },
+    {
+      key: "pilot-readiness-handoff",
+      label: "Pilot-readiness handoff",
+      operatorUse:
+        "Before buyer reliance, export/read the Pilot Readiness packet and carry the final checklist caveats into the handoff note.",
+      proofPosture: "Operator packet and final checklist sync",
+      proofArtifact: FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
+      boundary:
+        "A PASS supports a supervised pilot conversation only; it is not a launch certificate or self-serve provisioning claim.",
+    },
+  ] satisfies readonly SupervisedOnboardingEvidenceLedgerEntry[],
   stages: [
     {
       key: "public-intake",
@@ -98,8 +141,11 @@ export function getSupervisedOnboardingEvidenceFlow() {
 }
 
 export function getSupervisedOnboardingEvidenceProofArtifacts() {
-  return [
-    supervisedOnboardingEvidenceFlow.sourceProof,
-    ...supervisedOnboardingEvidenceFlow.stages.map((stage) => stage.proofArtifact),
-  ];
+  return Array.from(
+    new Set([
+      supervisedOnboardingEvidenceFlow.sourceProof,
+      ...supervisedOnboardingEvidenceFlow.operatorEvidenceLedger.map((entry) => entry.proofArtifact),
+      ...supervisedOnboardingEvidenceFlow.stages.map((stage) => stage.proofArtifact),
+    ])
+  );
 }

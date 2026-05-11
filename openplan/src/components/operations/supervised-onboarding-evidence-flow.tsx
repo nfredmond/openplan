@@ -68,6 +68,31 @@ export function SupervisedOnboardingEvidenceFlowPanel({ context }: SupervisedOnb
         </p>
       </div>
 
+      <div className="mt-5 module-record-list" aria-label="Operator evidence ledger">
+        {flow.operatorEvidenceLedger.map((entry) => (
+          <div key={entry.key} className="module-record-row">
+            <div className="module-record-head">
+              <div className="module-record-main">
+                <div className="module-record-kicker">
+                  <StatusBadge tone={entry.key === "manual-provisioning-guard" ? "warning" : "info"}>Evidence ledger</StatusBadge>
+                  <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {entry.proofPosture}
+                  </span>
+                </div>
+                <div className="space-y-1.5">
+                  <h3 className="module-record-title">{entry.label}</h3>
+                  <p className="module-record-summary">{entry.operatorUse}</p>
+                  <p className="text-xs text-muted-foreground">{entry.boundary}</p>
+                  <p>
+                    <ProofArtifactLink artifact={entry.proofArtifact} />
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="mt-5 module-record-list">
         {flow.stages.map((stage, index) => (
           <div key={stage.key} className="module-record-row">

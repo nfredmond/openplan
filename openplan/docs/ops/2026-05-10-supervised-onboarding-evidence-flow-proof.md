@@ -9,9 +9,16 @@
 OpenPlan now has a reusable supervised-onboarding evidence bridge that is rendered on both operator surfaces:
 
 - `/admin/operations` shows the bridge directly below the access-request intake queue so an allowlisted reviewer can see how prospect intake flows into pilot-readiness evidence.
+- The bridge now includes a compact operator evidence ledger for three high-risk checkpoints: manual provisioning guard, post-deploy production-health evidence, and pilot-readiness handoff.
 - `/admin/pilot-readiness` shows the same bridge inside the readiness evidence center so the exported/readiness posture remains tied back to the real admin intake and provisioning controls.
 - Shared source data lives in `openplan/src/lib/operations/supervised-onboarding-evidence.ts`.
 - Shared rendering lives in `openplan/src/components/operations/supervised-onboarding-evidence-flow.tsx`.
+
+## Operator evidence ledger
+
+- **Manual provisioning guard:** confirms `manual_provisioning_no_email` stays explicit before invite creation and does not authorize email, billing, or autonomous account activation.
+- **Production health evidence:** points operators to the Admin Ops → Production Health Evidence Bridge so post-deploy admin proof stays paired with Vercel Ready state and public `/api/health` evidence.
+- **Pilot-readiness handoff:** reminds operators to export/read the readiness packet and carry caveats into buyer-facing handoff notes before reliance.
 
 ## Evidence chain
 
@@ -42,7 +49,8 @@ Before this slice, request-access, Admin Operations, and Pilot Readiness each ha
 - intake evidence starts with a real stored request;
 - admin review stays allowlisted and service-role controlled;
 - provisioning remains manual and acknowledgement-gated;
-- pilot readiness carries the same caveats before buyer reliance.
+- pilot readiness carries the same caveats before buyer reliance;
+- production health evidence is kept adjacent to admin proof after deploys without inspecting Supabase rows or mutating production.
 
 This is deliberately not a schema or automation expansion. It improves proof traceability without increasing the activation blast radius.
 
@@ -52,9 +60,9 @@ Targeted validation for this slice:
 
 ```bash
 corepack pnpm exec vitest run \
-  src/test/supervised-onboarding-evidence-flow.test.tsx \
   src/test/admin-operations-page.test.tsx \
-  src/test/pilot-readiness-page.test.tsx
+  src/test/supervised-onboarding-evidence-flow.test.tsx \
+  src/test/admin-ops-prod-health-evidence-bridge.test.ts
 ```
 
 Optional focused lint:
@@ -63,11 +71,10 @@ Optional focused lint:
 corepack pnpm exec eslint \
   src/lib/operations/supervised-onboarding-evidence.ts \
   src/components/operations/supervised-onboarding-evidence-flow.tsx \
-  'src/app/(app)/admin/operations/page.tsx' \
-  'src/app/(app)/admin/pilot-readiness/page.tsx' \
-  src/test/supervised-onboarding-evidence-flow.test.tsx
+  src/test/supervised-onboarding-evidence-flow.test.tsx \
+  src/test/admin-operations-page.test.tsx
 ```
 
 ## Supabase assessment
 
-No migration is required. This slice reads no new database fields and applies no Supabase writes. It only documents and renders the existing access-request/admin/pilot-readiness proof chain.
+No migration is required. This slice reads no new database fields and applies no Supabase writes. It only documents and renders the existing access-request/admin/pilot-readiness proof chain plus the already-documented no-write production-health evidence bridge.

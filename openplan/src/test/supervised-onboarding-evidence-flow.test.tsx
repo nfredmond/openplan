@@ -30,7 +30,12 @@ describe("supervised onboarding evidence flow", () => {
     expect(screen.getByText("Bridge this queue to pilot readiness")).toBeInTheDocument();
     expect(screen.getByText(SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT)).toBeInTheDocument();
     expect(screen.getByLabelText("Manual provisioning guard")).toBeInTheDocument();
-    expect(screen.getByText("Manual provisioning guard")).toBeInTheDocument();
+    expect(screen.getByLabelText("Operator evidence ledger")).toBeInTheDocument();
+    expect(screen.getAllByText("Manual provisioning guard").length).toBeGreaterThan(0);
+    expect(screen.getByText("Production health evidence")).toBeInTheDocument();
+    expect(screen.getByText("Pilot-readiness handoff")).toBeInTheDocument();
+    expect(screen.getByText(/Vercel Ready state and public \/api\/health evidence/i)).toBeInTheDocument();
+    expect(screen.getByText(/not a launch certificate or self-serve provisioning claim/i)).toBeInTheDocument();
     expect(screen.getByText(/Acknowledgement: manual_provisioning_no_email/i)).toBeInTheDocument();
     expect(screen.getByText("No production writes during proof smoke")).toBeInTheDocument();
     expect(screen.getByText("No autonomous provisioning")).toBeInTheDocument();
@@ -59,6 +64,7 @@ describe("supervised onboarding evidence flow", () => {
     expect(artifacts).toContain("openplan/src/test/access-request-route.test.ts");
     expect(artifacts).toContain("openplan/src/test/admin-operations-page.test.tsx");
     expect(artifacts).toContain("openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md");
+    expect(artifacts).toContain("docs/ops/2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md");
     expect(artifacts).toContain("docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md");
     expect(artifacts).toHaveLength(new Set(artifacts).size);
 

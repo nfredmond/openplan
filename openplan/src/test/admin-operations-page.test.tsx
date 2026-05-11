@@ -143,6 +143,11 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByText("Bridge this queue to pilot readiness")).toBeInTheDocument();
     expect(screen.getByText(getSupervisedOnboardingEvidenceFlow().summary)).toBeInTheDocument();
     expect(screen.getByLabelText("Manual provisioning guard")).toBeInTheDocument();
+    expect(screen.getByLabelText("Operator evidence ledger")).toBeInTheDocument();
+    expect(screen.getByText("Production health evidence")).toBeInTheDocument();
+    expect(screen.getByText("Pilot-readiness handoff")).toBeInTheDocument();
+    expect(screen.getByText(/Vercel Ready state and public \/api\/health evidence/i)).toBeInTheDocument();
+    expect(screen.getByText(/not a launch certificate or self-serve provisioning claim/i)).toBeInTheDocument();
     expect(screen.getByText(/Acknowledgement: manual_provisioning_no_email/i)).toBeInTheDocument();
     expect(screen.getByText("No production writes during proof smoke")).toBeInTheDocument();
     expect(screen.getByText("No autonomous provisioning")).toBeInTheDocument();
