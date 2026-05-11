@@ -293,8 +293,7 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByText(/Screen rural transit corridors/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Managed hosting\/admin/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/RTP/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Nat Ford managed/i)).toBeInTheDocument();
-    expect(screen.getByText(/Nat Ford managed/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Nat Ford managed/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Internal planning data/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Request source and intent proof")).toBeInTheDocument();
     expect(screen.getByText(/Confirm this public intake context before triage or any manual invite/i)).toBeInTheDocument();

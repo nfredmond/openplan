@@ -2,6 +2,7 @@ import { Inbox, LockKeyhole, TriangleAlert } from "lucide-react";
 
 import {
   AccessRequestActivitySummaryPanel,
+  AccessRequestOperatorActionPlanPanel,
   AccessRequestProvisioningReadinessPanel,
 } from "@/components/operations/access-request-activity-summary";
 import { AccessRequestProvisionControls } from "@/components/operations/access-request-provision-controls";
@@ -245,6 +246,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
               </div>
 
               <AccessRequestActivitySummaryPanel request={request} />
+              <AccessRequestOperatorActionPlanPanel request={request} />
               <AccessRequestProvisioningReadinessPanel request={request} />
             </div>
             );

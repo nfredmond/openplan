@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 
 import {
   AccessRequestActivitySummaryPanel,
+  AccessRequestOperatorActionPlanPanel,
   AccessRequestProvisioningReadinessPanel,
   summarizeAccessRequestActivity,
+  summarizeAccessRequestOperatorActionPlan,
   summarizeAccessRequestProvisioningReadiness,
 } from "@/components/operations/access-request-activity-summary";
 import type { AccessRequestReviewRow } from "@/lib/access-requests";
@@ -27,6 +29,7 @@ function buildRequest(overrides: Partial<AccessRequestReviewRow> = {}): AccessRe
     expected_workspace_name: "NCTC Pilot",
     status: "new",
     source_path: "/request-access",
+    metadata_json: null,
     created_at: "2026-04-24T12:00:00.000Z",
     reviewed_at: null,
     provisioned_workspace_id: null,
@@ -178,5 +181,58 @@ describe("access request activity summary", () => {
     expect(screen.getByText("Provisioning prep needed")).toBeInTheDocument();
     expect(screen.getByText(/Move status to Contacted or Invited/i)).toBeInTheDocument();
     expect(screen.getByText("Pick the first workflow to seed.")).toBeInTheDocument();
+  });
+
+  it("summarizes manual next steps, risk notes, and managed hosting source expectations", () => {
+    const plan = summarizeAccessRequestOperatorActionPlan(
+      buildRequest({
+        status: "reviewing",
+        source_path: "/request-access",
+        metadata_json: {
+          source_context: {
+            source: "pricing",
+            intent: "managed-hosting-review",
+          },
+        },
+        data_sensitivity: "regulated_sensitive",
+      }),
+    );
+
+    expect(plan.headline).toContain("Managed hosting/admin");
+    expect(plan.steps).toEqual(
+      expect.arrayContaining([
+        "Contact the prospect outside OpenPlan and record the status only after contact is complete.",
+        "Do not auto-create billing, send email, or promise a hosted workspace from this row.",
+      ]),
+    );
+    expect(plan.riskNotes).toEqual(
+      expect.arrayContaining([
+        "High-sensitivity data: require human scoping, confidentiality review, and minimum-data onboarding.",
+        "Managed hosting interest: verify support scope, security expectations, and fee posture manually.",
+      ]),
+    );
+    expect(plan.sourceNotes).toEqual(
+      expect.arrayContaining([
+        "Pricing entry: verify paid tier expectations before any pilot setup.",
+        "Managed hosting signal is present; keep hosting activation supervised.",
+      ]),
+    );
+  });
+
+  it("renders the manual operator action plan without implying side effects", () => {
+    render(
+      <AccessRequestOperatorActionPlanPanel
+        request={buildRequest({
+          status: "contacted",
+          source_path: "/request-access?source=examples&intent=engagement-workspace-review",
+        })}
+      />,
+    );
+
+    expect(screen.getByText("Manual operator action plan")).toBeInTheDocument();
+    expect(screen.getByText("No automation")).toBeInTheDocument();
+    expect(screen.getByText(/Confirm manual commercial scope, owner email, and workspace name/i)).toBeInTheDocument();
+    expect(screen.getByText(/Do not auto-create billing, send email, or promise a hosted workspace/i)).toBeInTheDocument();
+    expect(screen.getByText(/Examples entry: tie follow-up to the showcased workflow/i)).toBeInTheDocument();
   });
 });

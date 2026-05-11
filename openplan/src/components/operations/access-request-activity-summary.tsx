@@ -1,12 +1,18 @@
-import { ArrowRight, Clock3, History } from "lucide-react";
+import { ArrowRight, ClipboardCheck, Clock3, History, ShieldAlert } from "lucide-react";
 
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   accessRequestStatusLabel,
+  buildAccessRequestOperatorSourceProof,
   canProvisionAccessRequestStatus,
   type AccessRequestReviewRow,
   type AccessRequestStatus,
 } from "@/lib/access-requests";
+import {
+  labelAccessRequestDeploymentPosture,
+  labelAccessRequestFirstWorkflow,
+  labelAccessRequestServiceLane,
+} from "@/lib/access-request-intake";
 
 export type AccessRequestActivitySummary = {
   label: string;
@@ -19,6 +25,13 @@ export type AccessRequestProvisioningReadiness = {
   detail: string;
   blockers: string[];
   ready: boolean;
+};
+
+export type AccessRequestOperatorActionPlan = {
+  headline: string;
+  steps: string[];
+  riskNotes: string[];
+  sourceNotes: string[];
 };
 
 function formatTimestamp(value: string | null) {
@@ -158,6 +171,118 @@ export function summarizeAccessRequestProvisioningReadiness(
     blockers,
     ready: false,
   };
+}
+
+export function summarizeAccessRequestOperatorActionPlan(
+  request: Pick<
+    AccessRequestReviewRow,
+    | "status"
+    | "source_path"
+    | "metadata_json"
+    | "service_lane"
+    | "deployment_posture"
+    | "data_sensitivity"
+    | "desired_first_workflow"
+    | "onboarding_needs"
+    | "use_case"
+    | "provisioned_workspace_id"
+    | "owner_invitation"
+  >,
+): AccessRequestOperatorActionPlan {
+  const steps: string[] = [];
+  const riskNotes: string[] = [];
+  const sourceNotes: string[] = [];
+
+  if (request.status === "new") {
+    steps.push("Read use case and onboarding notes, then mark Reviewing, Deferred, or Declined.");
+  } else if (request.status === "reviewing") {
+    steps.push("Contact the prospect outside OpenPlan and record the status only after contact is complete.");
+  } else if (request.status === "contacted" || request.status === "invited") {
+    steps.push("Confirm manual commercial scope, owner email, and workspace name before using the invite control.");
+  } else if (request.status === "provisioned") {
+    steps.push(
+      request.owner_invitation?.accepted_at
+        ? "Owner accepted the invite; move to supervised pilot kickoff and support checks."
+        : "Deliver or follow up on the manual owner invite outside OpenPlan; no email was sent automatically.",
+    );
+  } else {
+    steps.push("No provisioning action: keep the decision trail visible and avoid customer-facing side effects.");
+  }
+
+  steps.push("Do not auto-create billing, send email, or promise a hosted workspace from this row.");
+
+  if (request.data_sensitivity === "regulated_sensitive" || request.data_sensitivity === "confidential_project") {
+    riskNotes.push("High-sensitivity data: require human scoping, confidentiality review, and minimum-data onboarding.");
+  } else if (request.data_sensitivity === "unsure" || !request.data_sensitivity) {
+    riskNotes.push("Data sensitivity is not settled; ask before requesting files or creating a pilot workspace.");
+  }
+
+  if (request.deployment_posture === "nat_ford_managed" || request.service_lane === "managed_hosting_admin") {
+    riskNotes.push("Managed hosting interest: verify support scope, security expectations, and fee posture manually.");
+  }
+
+  if (!request.desired_first_workflow) {
+    riskNotes.push("First workflow is missing; choose a seed workflow before provisioning.");
+  }
+
+  const sourceProof = buildAccessRequestOperatorSourceProof(request);
+  const sourceText = [sourceProof.sourcePath, sourceProof.source, sourceProof.intent, sourceProof.product, sourceProof.tier]
+    .filter(Boolean)
+    .join(" ");
+  if (sourceText.includes("pricing")) sourceNotes.push("Pricing entry: verify paid tier expectations before any pilot setup.");
+  if (sourceText.includes("examples")) sourceNotes.push("Examples entry: tie follow-up to the showcased workflow they likely saw.");
+  if (sourceText.includes("github") || sourceText.includes("source")) sourceNotes.push("Source-repo entry: treat as open-source support or self-host evaluation until scoped.");
+  if (sourceText.includes("managed-hosting") || sourceText.includes("managed hosting") || request.service_lane === "managed_hosting_admin") sourceNotes.push("Managed hosting signal is present; keep hosting activation supervised.");
+  if (sourceNotes.length === 0) {
+    sourceNotes.push(`Source context: ${sourceProof.sourcePath}. Confirm whether this came from pricing, examples, source repo, or managed-hosting copy.`);
+  }
+
+  const headline = `${labelAccessRequestServiceLane(request.service_lane)} · ${labelAccessRequestDeploymentPosture(request.deployment_posture)} · ${labelAccessRequestFirstWorkflow(request.desired_first_workflow)}`;
+
+  return { headline, steps, riskNotes, sourceNotes };
+}
+
+export function AccessRequestOperatorActionPlanPanel({ request }: { request: AccessRequestReviewRow }) {
+  const plan = summarizeAccessRequestOperatorActionPlan(request);
+
+  return (
+    <div className="module-subpanel mt-3" aria-label="Manual operator action plan">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <ClipboardCheck className="h-3.5 w-3.5 text-emerald-700" />
+          Manual operator action plan
+        </div>
+        <StatusBadge tone="warning">No automation</StatusBadge>
+      </div>
+      <p className="mt-2 text-sm font-medium text-foreground">{plan.headline}</p>
+      <ol className="mt-2 list-decimal space-y-1 pl-5 text-xs text-muted-foreground">
+        {plan.steps.map((step) => (
+          <li key={step}>{step}</li>
+        ))}
+      </ol>
+      <div className="mt-3 grid gap-2 md:grid-cols-2">
+        <div>
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+            <ShieldAlert className="h-3.5 w-3.5 text-amber-700" />
+            Risk / triage notes
+          </div>
+          <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+            {(plan.riskNotes.length > 0 ? plan.riskNotes : ["No elevated risk signal captured; still verify scope manually."]).map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-foreground">Source / expectation notes</p>
+          <ul className="mt-1 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+            {plan.sourceNotes.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function AccessRequestProvisioningReadinessPanel({ request }: { request: AccessRequestReviewRow }) {
