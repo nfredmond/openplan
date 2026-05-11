@@ -67,6 +67,7 @@ describe("AccessRequestProvisionControls", () => {
       target: { value: "NCTC Pilot Workspace" },
     });
     const createButton = screen.getByRole("button", { name: /Create manual invite/i });
+    expect(createButton).toHaveTextContent(/no email/i);
     expect(createButton).toBeDisabled();
     fireEvent.click(screen.getByLabelText(/manual, operator-initiated provisioning step/i));
     fireEvent.click(createButton);
@@ -86,6 +87,7 @@ describe("AccessRequestProvisionControls", () => {
     expect(await screen.findByDisplayValue("http://localhost/sign-up?invite=test-token&redirect=%2Fdashboard")).toBeInTheDocument();
     expect(screen.getByText("Pilot workspace and owner invite created. No email was sent.")).toBeInTheDocument();
     expect(screen.getByText(/manual operator acknowledgement/i)).toBeInTheDocument();
+    expect(screen.getByText(/access is not treated as auto-activated/i)).toBeInTheDocument();
     expect(refreshMock).toHaveBeenCalledTimes(1);
   });
 
@@ -106,6 +108,7 @@ describe("AccessRequestProvisionControls", () => {
     expect(screen.getByText(/do not send outbound email/i)).toBeInTheDocument();
     expect(screen.getByText(/do not auto-deliver the invitation URL/i)).toBeInTheDocument();
     expect(screen.getByText(/do not treat this as autonomous access activation/i)).toBeInTheDocument();
+    expect(screen.getByText(/access is not treated as auto-activated/i)).toBeInTheDocument();
     expect(acknowledgementDescriptionId).toBeTruthy();
     expect(document.getElementById(acknowledgementDescriptionId ?? "")?.textContent).toMatch(/do not send outbound email/i);
     expect(createButton).toBeDisabled();

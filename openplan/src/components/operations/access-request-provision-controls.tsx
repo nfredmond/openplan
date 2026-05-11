@@ -137,7 +137,7 @@ export function AccessRequestProvisionControls({
             onClick={provisionWorkspace}
           >
             {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}
-            Create manual invite
+            Create manual invite — no email
           </Button>
         </div>
       ) : (

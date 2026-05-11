@@ -102,5 +102,5 @@ export function accessRequestTriageSideEffectLabel(): string {
 }
 
 export function accessRequestProvisioningSideEffectLabel(): string {
-  return "Creates a pilot workspace and owner invite only after manual operator acknowledgement; no outbound email is sent.";
+  return "Creates a pilot workspace and owner invite only after manual operator acknowledgement; no outbound email is sent, and access is not treated as auto-activated.";
 }
