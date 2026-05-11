@@ -72,6 +72,17 @@ export type AdminPilotReadinessProofArtifactIndexItem = {
   operatorUse: string;
 };
 
+export type AdminPilotReadinessProofHubStep = {
+  key: string;
+  order: number;
+  label: string;
+  operatorAction: string;
+  evidenceAnchor: string;
+  citeOnly: string;
+  stopCondition: string;
+  artifact: string;
+};
+
 export const releaseProofCaveatItems = [
   {
     key: "billing-waiver",
@@ -222,6 +233,70 @@ export const adminPilotReadinessProofArtifactIndex = [
     operatorUse: "Run or cite the preflight pattern immediately before serious buyer, demo, or pilot reliance.",
   },
 ] satisfies AdminPilotReadinessProofArtifactIndexItem[];
+
+export const adminPilotReadinessProofHubSteps = [
+  {
+    key: "confirm-boundary",
+    order: 1,
+    label: "Confirm the proof boundary first",
+    operatorAction:
+      "Start with the final checklist and caveat sheet before reading individual PASS rows or preparing buyer language.",
+    evidenceAnchor: "Final checklist verdict, required caveats, and source artifact list.",
+    citeOnly:
+      "A supervised pilot-readiness conversation for a scoped workbench; not finished-suite, legal, forecasting, or autonomous readiness.",
+    stopCondition:
+      "Stop if a claim needs self-serve activation, legal-grade LAPM automation, grant prediction, or validated behavioral forecasting.",
+    artifact: finalPilotReadinessChecklistSync.checklistArtifact,
+  },
+  {
+    key: "inspect-source-docs",
+    order: 2,
+    label: "Inspect source docs, not dashboard summaries",
+    operatorAction:
+      "Open the proof map and exact artifact paths before citing a lane in demo notes, SOW language, or a diligence packet.",
+    evidenceAnchor: "Named proof artifacts and operator-use notes in the compact index.",
+    citeOnly: "The source document and its stated caveat; never cite this admin page as the evidence itself.",
+    stopCondition: "Stop if the source artifact is stale, missing, or only describes planned work.",
+    artifact: "docs/sales/2026-05-10-openplan-managed-support-proof-map.md",
+  },
+  {
+    key: "compare-export-formats",
+    order: 3,
+    label: "Compare static packet formats",
+    operatorAction:
+      "Use Markdown for edits, HTML for browser review, and PDF only as a generated snapshot after caveat review.",
+    evidenceAnchor: "Generated Admin Pilot Readiness packet filenames.",
+    citeOnly: "Packet copy that still matches the current helper data, final checklist, and caveat list.",
+    stopCondition: "Stop and regenerate if helper copy, checklist posture, or caveats changed after the static exports.",
+    artifact: ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.markdown,
+  },
+  {
+    key: "run-read-only-preflight",
+    order: 4,
+    label: "Run read-only preflight before reliance",
+    operatorAction:
+      "Run the terminal preflight immediately before a serious buyer call, demo, or pilot handoff; do not run writes from this page.",
+    evidenceAnchor: "Preflight command, proof note, ATTENTION handling, and no-write boundary.",
+    citeOnly: "Operational confidence from read-only checks; not deployment approval or production mutation proof.",
+    stopCondition: "Stop if the preflight reports FAIL/ATTENTION that affects the intended buyer claim.",
+    artifact: PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
+  },
+  {
+    key: "record-next-human-review",
+    order: 5,
+    label: "Record the next human review checkpoint",
+    operatorAction:
+      "After the packet is clean, name the owner who will verify buyer-specific data, support terms, and pilot acceptance checks.",
+    evidenceAnchor: "Buyer-specific onboarding validation, managed-support map, and wave summary.",
+    citeOnly: "Scoped pilot readiness after human review, not automatic customer activation.",
+    stopCondition: "Stop if the buyer-specific workflow, data sensitivity, support path, or acceptance smoke is still undecided.",
+    artifact: WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
+  },
+] satisfies AdminPilotReadinessProofHubStep[];
+
+export function getAdminPilotReadinessProofHubSteps() {
+  return adminPilotReadinessProofHubSteps;
+}
 
 export function getAdminPilotReadinessProofArtifactIndex() {
   return adminPilotReadinessProofArtifactIndex;

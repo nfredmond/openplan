@@ -9,6 +9,7 @@ import {
   finalPilotReadinessChecklistSync,
   getAdminPilotReadinessProofArtifactCategoryLabel,
   getAdminPilotReadinessProofArtifactIndex,
+  getAdminPilotReadinessProofHubSteps,
   getReleaseProofItemCaveats,
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
@@ -52,6 +53,7 @@ export default function PilotReadinessPage() {
   const statusList = getSmokeStatus();
   const pilotControl = buildPilotReadinessControlSummary(statusList);
   const proofArtifactIndex = getAdminPilotReadinessProofArtifactIndex();
+  const proofHubSteps = getAdminPilotReadinessProofHubSteps();
   const salesCaveatProof =
     releaseProofPosture.proofItems.find((item) => item.key === "sales-caveats") ?? releaseProofPosture.proofItems[0];
 
@@ -180,6 +182,60 @@ export default function PilotReadinessPage() {
             No commands run in the browser; no schema changes, production writes, workspace provisioning, billing activity,
             or autonomous readiness claims are triggered from this panel.
           </p>
+        </div>
+      </article>
+
+      <article className="module-section-surface" aria-label="Pilot readiness proof and document hub guide">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Proof/doc hub guide</p>
+            <h2 className="module-section-title">How to use this evidence center without overclaiming readiness</h2>
+            <p className="module-section-description">
+              Follow these rows in order before a buyer call or pilot handoff. The page is a navigation hub for source
+              documents; it is not the evidence itself and it does not certify a finished product suite.
+            </p>
+          </div>
+          <StatusBadge tone="warning">Source docs before claims</StatusBadge>
+        </div>
+
+        <div className="mt-5 module-record-list">
+          {proofHubSteps.map((step) => (
+            <div key={step.key} className="module-record-row">
+              <div className="module-record-head">
+                <div className="module-record-main">
+                  <div className="module-record-kicker">
+                    <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-50 text-[0.72rem] font-semibold text-emerald-800 dark:border-emerald-400/30 dark:bg-emerald-950/35 dark:text-emerald-100">
+                      {step.order}
+                    </span>
+                    <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      Operator sequence
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="module-record-title">{step.label}</h3>
+                    <p className="module-record-summary">{step.operatorAction}</p>
+                    <dl className="grid gap-2 text-[0.76rem] leading-relaxed text-muted-foreground md:grid-cols-3">
+                      <div>
+                        <dt className="font-semibold text-foreground">Evidence anchor</dt>
+                        <dd>{step.evidenceAnchor}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-foreground">Safe citation</dt>
+                        <dd>{step.citeOnly}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-foreground">Stop condition</dt>
+                        <dd>{step.stopCondition}</dd>
+                      </div>
+                    </dl>
+                    <p>
+                      <ProofArtifactLink artifact={step.artifact} />
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </article>
 

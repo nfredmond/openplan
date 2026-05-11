@@ -12,6 +12,7 @@ import {
 import {
   finalPilotReadinessChecklistSync,
   getAdminPilotReadinessProofArtifactIndex,
+  getAdminPilotReadinessProofHubSteps,
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
 import { getSupervisedOnboardingEvidenceFlow } from "@/lib/operations/supervised-onboarding-evidence";
@@ -53,6 +54,14 @@ describe("PilotReadinessPage", () => {
     expect(pageText).not.toMatch(/areas are healthy/i);
     expect(screen.getByRole("heading", { name: /Export filenames and caveats before buyer reliance/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Current packet docs, static exports, and preflight proof/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: /How to use this evidence center without overclaiming readiness/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Pilot readiness proof and document hub guide")).toHaveTextContent(
+      "Source docs before claims",
+    );
+    expect(screen.getByText(/it is not the evidence itself/i)).toBeInTheDocument();
+    expect(screen.getByText(/does not certify a finished product suite/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Compact proof artifact index")).toHaveTextContent("Buyer-safe caveats required");
     expect(screen.getByText(finalPilotReadinessChecklistSync.operatorInstruction)).toBeInTheDocument();
     expect(screen.getByText(finalPilotReadinessChecklistSync.supervisedOnboardingCaveat)).toBeInTheDocument();
@@ -71,6 +80,15 @@ describe("PilotReadinessPage", () => {
       expect(screen.getAllByText(artifact.label).length).toBeGreaterThan(0);
       expect(screen.getAllByText(artifact.artifact).length).toBeGreaterThan(0);
       expect(screen.getByText(artifact.buyerSafeCaveat)).toBeInTheDocument();
+    }
+
+    for (const step of getAdminPilotReadinessProofHubSteps()) {
+      expect(screen.getByText(step.label)).toBeInTheDocument();
+      expect(screen.getByText(step.operatorAction)).toBeInTheDocument();
+      expect(screen.getByText(step.evidenceAnchor)).toBeInTheDocument();
+      expect(screen.getByText(step.citeOnly)).toBeInTheDocument();
+      expect(screen.getByText(step.stopCondition)).toBeInTheDocument();
+      expect(screen.getAllByText(step.artifact).length).toBeGreaterThan(0);
     }
 
     expect(screen.getByRole("heading", { name: /Which artifacts support sale and pilot readiness/i })).toBeInTheDocument();
@@ -106,6 +124,7 @@ describe("PilotReadinessPage", () => {
       new Set([
         smokeStatusFixture[0].details,
         ...getAdminPilotReadinessProofArtifactIndex().map((artifact) => artifact.artifact),
+        ...getAdminPilotReadinessProofHubSteps().map((step) => step.artifact),
         finalPilotReadinessChecklistSync.checklistArtifact,
         ...finalPilotReadinessChecklistSync.exportFilenames,
         ...finalPilotReadinessChecklistSync.latestProofArtifacts.map((artifact) => artifact.artifact),
@@ -174,4 +193,28 @@ describe("PilotReadinessPage", () => {
     expect(pageText).toContain(finalPilotReadinessChecklistSync.checklistArtifact);
     expect(pageText).toContain(finalPilotReadinessChecklistSync.supervisedOnboardingCaveat);
   });
+
+  it("renders the proof/doc hub guide as an ordered source-document sequence with stop conditions", () => {
+    render(<PilotReadinessPage />);
+
+    const steps = getAdminPilotReadinessProofHubSteps();
+    expect(steps.map((step) => step.order)).toEqual([1, 2, 3, 4, 5]);
+
+    for (const step of steps) {
+      expect(step.citeOnly.toLowerCase(), `${step.label} should avoid broad readiness claims`).not.toMatch(
+        /self-serve municipal saas|grant prediction|validated behavioral forecasting|legal-grade lapm|autonomous ai planning/,
+      );
+      expect(step.stopCondition.toLowerCase(), `${step.label} should include an explicit stop condition`).toContain(
+        "stop",
+      );
+
+      const link = screen.getAllByRole("link", { name: `Open proof artifact ${step.artifact}` })[0];
+      expect(link).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(step.artifact));
+    }
+
+    expect(screen.getByText("Source docs before claims")).toBeInTheDocument();
+    expect(screen.getAllByText("Operator sequence").length).toBe(steps.length);
+    expect(screen.getByText(/not the evidence itself and it does not certify a finished product suite/i)).toBeInTheDocument();
+  });
+
 });
