@@ -186,7 +186,8 @@ Actions:
 2. Treat successful owner-invite provisioning as a production write. Do not run it unless Nathaniel has approved the exact request row and recipient context.
 3. Confirm the reviewer is allowlisted through `OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS`; do not broaden the allowlist for convenience during a smoke.
 4. Preserve the current manual guard: the access-request provisioning route requires `manual_provisioning_no_email` before any service-role lookup, workspace insert, owner-invite creation, billing mutation, or provisioning RPC. See [Access request manual provisioning guard proof](2026-05-10-access-request-manual-provisioning-guard-proof.md).
-5. Never paste invitation URLs, tokens, cookies, service-role keys, or raw prospect PII into docs, chat, screenshots, or buyer materials.
+5. When citing the public onboarding promise, use the [Request access copy to admin guard trace](2026-05-10-request-access-copy-to-admin-guard-trace.md): `/request-access` review-first/no-auto-send copy must stay aligned to the Admin Operations no-email manual provisioning guard. This trace is docs/tests only, not production proof permission.
+6. Never paste invitation URLs, tokens, cookies, service-role keys, or raw prospect PII into docs, chat, screenshots, or buyer materials.
 
 The current posture is supervised implementation support, not automatic public self-serve workspace activation.
 
