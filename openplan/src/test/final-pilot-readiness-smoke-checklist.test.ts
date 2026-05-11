@@ -33,6 +33,7 @@ const requiredSmokeItems = [
 
 const requiredProofLanes = [
   "Managed support diligence",
+  "Supervised onboarding evidence bridge",
   "County-run manifest proof",
   "Modeling evidence exports",
   "Data Hub lineage readiness",

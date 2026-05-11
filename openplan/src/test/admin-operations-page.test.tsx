@@ -64,7 +64,9 @@ vi.mock("@/lib/workspaces/current", () => ({
 
 import AdminOperationsPage from "@/app/(app)/admin/operations/page";
 import { summarizeOperationalWarnings } from "@/lib/observability/operational-events";
+import { getOpenPlanRepositoryArtifactUrl } from "@/lib/operations/pilot-readiness-proof-paths";
 import { getSupervisedOnboardingEvidenceFlow } from "@/lib/operations/supervised-onboarding-evidence";
+import { ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT } from "@/lib/access-request-status";
 
 describe("AdminOperationsPage", () => {
   afterEach(() => {
@@ -157,6 +159,30 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByText("CSP report-only violation")).toBeInTheDocument();
     expect(screen.getAllByText(/request_body_too_large/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/analysis_cost_threshold_exceeded/).length).toBeGreaterThan(0);
+  });
+
+  it("locks the admin proof panels to the manual provisioning guard and pilot-readiness handoff", async () => {
+    render(await AdminOperationsPage());
+
+    const flow = getSupervisedOnboardingEvidenceFlow();
+    const manualProvisioningStage = flow.stages.find((stage) => stage.key === "manual-provisioning-ack");
+    expect(manualProvisioningStage).toBeDefined();
+
+    expect(screen.getByRole("heading", { name: "Supervised onboarding evidence flow" })).toBeInTheDocument();
+    expect(screen.getByText(flow.boundary)).toBeInTheDocument();
+    expect(screen.getByText("Bridge this queue to pilot readiness")).toBeInTheDocument();
+    expect(screen.getByText(/No self-serve automation/i)).toBeInTheDocument();
+    expect(screen.getAllByText(new RegExp(ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT)).length).toBeGreaterThan(0);
+    expect(screen.getByText("/admin/pilot-readiness")).toBeInTheDocument();
+    expect(screen.getByText(/Read-only preflight command/i)).toBeInTheDocument();
+    expect(screen.getByText(/without provisioning workspaces, starting deployments, or implying self-serve activation/i)).toBeInTheDocument();
+
+    expect(
+      screen.getByRole("link", { name: `Open proof artifact ${flow.sourceProof}` }),
+    ).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(flow.sourceProof));
+    expect(
+      screen.getAllByRole("link", { name: `Open proof artifact ${manualProvisioningStage?.proofArtifact}` })[0],
+    ).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(manualProvisioningStage?.proofArtifact ?? ""));
   });
 
   it("surfaces recent assistant action execution audit rows", async () => {

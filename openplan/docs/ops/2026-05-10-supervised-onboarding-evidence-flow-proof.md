@@ -54,6 +54,15 @@ Before this slice, request-access, Admin Operations, and Pilot Readiness each ha
 
 This is deliberately not a schema or automation expansion. It improves proof traceability without increasing the activation blast radius.
 
+## Regression lock added
+
+This follow-up locks the bridge from both directions:
+
+- `/admin/operations` route tests now assert that the visible operator panels carry the supervised-onboarding bridge, the `manual_provisioning_no_email` guard proof, the `/admin/pilot-readiness` caveat handoff, and the read-only preflight posture together.
+- The final pilot-readiness checklist and generated Admin Pilot Readiness packet now name the supervised onboarding evidence bridge as a latest proof lane, so the export cannot discuss onboarding readiness without also carrying the manual/no-email/no-provisioning-during-smoke boundary.
+
+The lock is intentionally local/test/docs only. It does not add production writes, autonomous provisioning, outbound email, Supabase schema changes, or buyer-facing reliance without human review.
+
 ## Validation
 
 Targeted validation for this slice:
@@ -62,7 +71,10 @@ Targeted validation for this slice:
 corepack pnpm exec vitest run \
   src/test/admin-operations-page.test.tsx \
   src/test/supervised-onboarding-evidence-flow.test.tsx \
-  src/test/admin-ops-prod-health-evidence-bridge.test.ts
+  src/test/admin-ops-prod-health-evidence-bridge.test.ts \
+  src/test/final-pilot-readiness-smoke-checklist.test.ts \
+  src/test/pilot-readiness-export-packet.test.ts \
+  src/test/pilot-readiness-page.test.tsx
 ```
 
 Optional focused lint:

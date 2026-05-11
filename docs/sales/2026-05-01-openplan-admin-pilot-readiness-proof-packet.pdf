@@ -4,7 +4,7 @@
 << /Type /Catalog /Pages 2 0 R >>
 endobj
 2 0 obj
-<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R 18 0 R] /Count 8 >>
+<< /Type /Pages /Kids [4 0 R 6 0 R 8 0 R 10 0 R 12 0 R 14 0 R 16 0 R 18 0 R 20 0 R] /Count 9 >>
 endobj
 3 0 obj
 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
@@ -231,7 +231,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
 endobj
 9 0 obj
-<< /Length 3224 >>
+<< /Length 3264 >>
 stream
 BT
 /F1 9 Tf
@@ -245,13 +245,17 @@ T*
 T*
 (Final checklist / managed support synchronization PASS The final pilot-readiness checklist,) Tj
 T*
-(Wave 6 release-readiness summary, managed-support proof map, county-run manifest proof, and) Tj
+(supervised onboarding bridge, Wave 6 release-readiness summary, managed-support proof map,) Tj
 T*
-(modeling evidence export proof now travel with both the Admin export and static sales) Tj
+(county-run manifest proof, and modeling evidence export proof now travel with both the Admin) Tj
 T*
-(packet. docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md;) Tj
+(export and static sales packet.) Tj
+T*
+(docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md;) Tj
 T*
 (docs/sales/2026-05-10-openplan-managed-support-proof-map.md;) Tj
+T*
+(openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md;) Tj
 T*
 (docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md;) Tj
 T*
@@ -329,10 +333,6 @@ T*
 T*
 (supports operator orientation for the May 10 merge train only; it is not a broad) Tj
 T*
-(launch-readiness certificate.) Tj
-T*
-(Pilot preflight operator proof —) Tj
-T*
 ET
 endstream
 endobj
@@ -340,12 +340,16 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
 endobj
 11 0 obj
-<< /Length 3264 >>
+<< /Length 3330 >>
 stream
 BT
 /F1 9 Tf
 48 742 Td
 12 TL
+(launch-readiness certificate.) Tj
+T*
+(Pilot preflight operator proof —) Tj
+T*
 (docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md Preflight proof The preflight) Tj
 T*
 (is read-only operational confidence, not self-serve activation, schema approval, or) Tj
@@ -398,6 +402,18 @@ T*
 T*
 (operator completion before contracting.) Tj
 T*
+(• Supervised onboarding evidence bridge:) Tj
+T*
+(openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md) Tj
+T*
+(- Role: Connects request-access intake, Admin Operations review, manual no-email) Tj
+T*
+(provisioning, and Pilot Readiness caveats in one proof chain.) Tj
+T*
+(- Caveat: This is operator evidence only; it is not public self-serve activation, outbound) Tj
+T*
+(email automation, or permission to provision during a smoke.) Tj
+T*
 (• County-run manifest proof: docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md) Tj
 T*
 (- Role: Keeps county-run evidence, source context, and caveats visible for pilot diligence.) Tj
@@ -426,6 +442,19 @@ T*
 T*
 (- Caveat: Use as a discoverability summary only; it is not a launch certificate or a) Tj
 T*
+ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
+endobj
+13 0 obj
+<< /Length 3378 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (substitute for fresh preflight before buyer reliance.) Tj
 T*
 (• Release proof synchronization: openplan/src/test/pilot-readiness-export-packet.test.ts) Tj
@@ -442,19 +471,6 @@ T*
 T*
 (Release Proof Packet Alignment) Tj
 T*
-ET
-endstream
-endobj
-12 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
-endobj
-13 0 obj
-<< /Length 3527 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (OpenPlan is inspectable as an Apache-2.0 planning workbench plus Nat Ford managed hosting,) Tj
 T*
 (onboarding, implementation, support, and planning services.) Tj
@@ -535,6 +551,19 @@ T*
 T*
 (- Supports: Sale readiness: keeps public, pricing, and buyer-facing language inside the) Tj
 T*
+ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
+endobj
+15 0 obj
+<< /Length 3605 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (current proof boundary.) Tj
 T*
 (- Operator check: Use it as the stop-list before sharing examples, pricing language,) Tj
@@ -551,19 +580,6 @@ T*
 T*
 (boundary \(docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md\); No) Tj
 T*
-ET
-endstream
-endobj
-14 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
-endobj
-15 0 obj
-<< /Length 3368 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (legal/autonomous AI claim \(docs/ops/2026-05-01-openplan-known-issues-register.md\)) Tj
 T*
 (• Next action: Inspect readiness, then review intake positioning. Source:) Tj
@@ -644,6 +660,19 @@ T*
 T*
 (not replace public-records, legal-hold, or official archive duties.) Tj
 T*
+ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
+endobj
+17 0 obj
+<< /Length 2062 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 () Tj
 T*
 (Implementation-Specific Items Still To Scope) Tj
@@ -660,19 +689,6 @@ T*
 T*
 (• SSO, private cloud, agency-cloud deployment, custom security review, or enhanced) Tj
 T*
-ET
-endstream
-endobj
-16 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
-endobj
-17 0 obj
-<< /Length 1971 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (support/SLA terms;) Tj
 T*
 (• formal RPO/RTO commitments beyond the signed managed-hosting schedule;) Tj
@@ -753,6 +769,19 @@ T*
 T*
 () Tj
 T*
+ET
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 19 0 R >>
+endobj
+19 0 obj
+<< /Length 3208 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (Avoid:) Tj
 T*
 () Tj
@@ -769,19 +798,6 @@ T*
 T*
 (• openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md) Tj
 T*
-ET
-endstream
-endobj
-18 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 19 0 R >>
-endobj
-19 0 obj
-<< /Length 2861 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (• docs/ops/2026-05-01-openplan-phase0-proof-repair.md) Tj
 T*
 (• docs/ops/2026-05-01-openplan-ui-ux-watch-recapture.md) Tj
@@ -815,6 +831,8 @@ T*
 (• docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md) Tj
 T*
 (• docs/sales/2026-05-10-openplan-managed-support-proof-map.md) Tj
+T*
+(• openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md) Tj
 T*
 (• docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md) Tj
 T*
@@ -860,35 +878,50 @@ T*
 T*
 (production guarantees, billing proof, modeling, compliance, AI, backup/restore, and) Tj
 T*
+ET
+endstream
+endobj
+20 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 21 0 R >>
+endobj
+21 0 obj
+<< /Length 65 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (buyer-specific onboarding.) Tj
 T*
 ET
 endstream
 endobj
 xref
-0 20
+0 22
 0000000000 65535 f 
 0000000045 00000 n 
 0000000094 00000 n 
-0000000198 00000 n 
-0000000268 00000 n 
-0000000394 00000 n 
-0000003443 00000 n 
-0000003569 00000 n 
-0000007695 00000 n 
-0000007821 00000 n 
-0000011097 00000 n 
-0000011225 00000 n 
-0000014542 00000 n 
-0000014670 00000 n 
-0000018250 00000 n 
-0000018378 00000 n 
-0000021799 00000 n 
-0000021927 00000 n 
-0000023951 00000 n 
-0000024079 00000 n 
+0000000205 00000 n 
+0000000275 00000 n 
+0000000401 00000 n 
+0000003450 00000 n 
+0000003576 00000 n 
+0000007702 00000 n 
+0000007828 00000 n 
+0000011144 00000 n 
+0000011272 00000 n 
+0000014655 00000 n 
+0000014783 00000 n 
+0000018214 00000 n 
+0000018342 00000 n 
+0000022000 00000 n 
+0000022128 00000 n 
+0000024243 00000 n 
+0000024371 00000 n 
+0000027632 00000 n 
+0000027760 00000 n 
 trailer
-<< /Size 20 /Root 1 0 R >>
+<< /Size 22 /Root 1 0 R >>
 startxref
-26993
+27876
 %%EOF

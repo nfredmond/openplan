@@ -6,6 +6,7 @@ import {
   PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
   WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
 } from "@/lib/operations/pilot-readiness-proof-paths";
+import { SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT } from "@/lib/operations/supervised-onboarding-evidence";
 
 export type ReleaseProofStatus = "pass" | "caveat" | "next";
 
@@ -131,6 +132,12 @@ export const finalPilotReadinessChecklistSync = {
       artifact: "docs/sales/2026-05-10-openplan-managed-support-proof-map.md",
       role: "Connects managed hosting, onboarding, support, backup/restore, billing, and pilot closeout claims to proof.",
       caveat: "Buyer-specific reliance checks and per-engagement operations terms still need operator completion before contracting.",
+    },
+    {
+      label: "Supervised onboarding evidence bridge",
+      artifact: SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT,
+      role: "Connects request-access intake, Admin Operations review, manual no-email provisioning, and Pilot Readiness caveats in one proof chain.",
+      caveat: "This is operator evidence only; it is not public self-serve activation, outbound email automation, or permission to provision during a smoke.",
     },
     {
       label: "County-run manifest proof",

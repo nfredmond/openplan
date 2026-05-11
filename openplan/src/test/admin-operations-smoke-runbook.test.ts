@@ -57,6 +57,8 @@ describe("admin operations smoke runbook", () => {
     expect(runbook).toContain("do not treat as final buyer/pilot proof");
     expect(runbook).toContain("OPENPLAN_PROD_ADMIN_OPERATIONS_ALLOW_MAGIC_LINK=1");
     expect(runbook).toContain("not approval to mutate production app data");
+    expect(runbook).toContain("Supervised onboarding evidence flow");
+    expect(runbook).toContain("manual/no-email onboarding evidence bridge");
     expect(runbook).toContain("Supervised action triage");
     expect(runbook).toContain("no-write action activity posture");
   });
@@ -65,6 +67,8 @@ describe("admin operations smoke runbook", () => {
     const evidenceSection = getMarkdownSection(runbook, "Evidence Template");
 
     expect(evidenceSection).toContain("reviewer masked:");
+    expect(evidenceSection).toContain("supervised onboarding evidence flow visible: yes/no");
+    expect(evidenceSection).toContain("manual no-email guard proof visible: yes/no");
     expect(evidenceSection).toContain("supervised action triage visible: yes/no");
     expect(evidenceSection).toContain("no-write action posture visible: yes/no");
     expect(evidenceSection).toContain("prospect PII captured: no");

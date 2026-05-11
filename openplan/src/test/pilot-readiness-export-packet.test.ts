@@ -14,6 +14,7 @@ import {
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
 import { WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT } from "@/lib/operations/pilot-readiness-proof-paths";
+import { SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT } from "@/lib/operations/supervised-onboarding-evidence";
 
 const repoRoot = path.resolve(process.cwd(), "..");
 
@@ -97,6 +98,9 @@ describe("pilot readiness export packet", () => {
     }
 
     expect(packet).toContain("docs/sales/2026-05-10-openplan-managed-support-proof-map.md");
+    expect(packet).toContain(SUPERVISED_ONBOARDING_EVIDENCE_FLOW_PROOF_ARTIFACT);
+    expect(packet).toContain("manual no-email provisioning");
+    expect(packet).toContain("not public self-serve activation, outbound email automation, or permission to provision during a smoke");
     expect(packet).toContain(WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT);
     expect(packet).toContain("docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md");
     expect(packet).toContain("openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md");

@@ -30,7 +30,7 @@ The current code-level provisioning guard is documented in [Access request manua
 | 3. Run preflight | `cd openplan && pnpm ops:check-admin-operations-smoke -- --origin https://openplan-natford.vercel.app --reviewer-email <allowlisted-email>` | Health, request-access page, unauthenticated admin redirect, and unauthenticated admin API denial pass. | PASS/ATTENTION status, no secret values. |
 | 4. Use skip-network only for rehearsal | `cd openplan && pnpm ops:check-admin-operations-smoke -- --reviewer-email <allowlisted-email> --skip-network` | Reviewer format/local allowlist posture is checked and output warns that network checks were skipped. | Record `skip-network used: yes`; do not treat as final buyer/pilot proof. |
 | 5. Load admin page as reviewer | Sign in as the allowlisted reviewer, or run the approved authenticated smoke only when session creation has been explicitly allowed. | `/admin/operations` renders for the reviewer and is not locked. | Page rendered yes/no; no row contents. |
-| 6. Verify visible surfaces | Confirm `Warning watchboard`, `Recent supervised onboarding requests`, `Assistant action activity`, and `Supervised action triage` are visible. | Required sections render, including the no-write action activity posture. | Section names only; row count only if needed. |
+| 6. Verify visible surfaces | Confirm `Warning watchboard`, `Recent supervised onboarding requests`, `Supervised onboarding evidence flow`, `Assistant action activity`, and `Supervised action triage` are visible. | Required sections render, including the no-write action activity posture and the manual/no-email onboarding evidence bridge. | Section names only; row count only if needed. |
 | 7. Exit without mutation | Leave the page without clicking triage/provisioning controls. | Rows unchanged; no emails/workspaces/invitations/billing actions. | `rows changed: no`; `provisioning clicks: no`. |
 
 
@@ -68,6 +68,8 @@ admin page rendered for reviewer: yes/no
 review lane locked: yes/no
 warning watchboard visible: yes/no
 recent supervised onboarding requests visible: yes/no
+supervised onboarding evidence flow visible: yes/no
+manual no-email guard proof visible: yes/no
 assistant action activity visible: yes/no
 supervised action triage visible: yes/no
 no-write action posture visible: yes/no
@@ -90,6 +92,7 @@ Use restrained language after a clean run:
 - [Admin Ops → Production Health Evidence Bridge](2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md)
 - [Prod health evidence-log helper](2026-05-10-prod-health-evidence-log-helper.md)
 - [Final pilot-readiness smoke checklist](2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md)
+- [Supervised onboarding evidence flow proof](../../openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md)
 - [Access request manual provisioning guard proof](../../openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md)
 - [Production admin operations authenticated smoke](2026-05-01-openplan-production-admin-operations-authenticated-smoke.md)
 - [Local admin support flow smoke](2026-05-01-openplan-local-admin-support-flow-smoke.md)

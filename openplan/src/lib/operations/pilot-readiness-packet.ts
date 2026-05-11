@@ -182,7 +182,7 @@ export const adminPilotReadinessStaticPacket = {
       area: "Final checklist / managed support synchronization",
       status: "PASS",
       evidence:
-        "The final pilot-readiness checklist, Wave 6 release-readiness summary, managed-support proof map, county-run manifest proof, and modeling evidence export proof now travel with both the Admin export and static sales packet.",
+        "The final pilot-readiness checklist, supervised onboarding bridge, Wave 6 release-readiness summary, managed-support proof map, county-run manifest proof, and modeling evidence export proof now travel with both the Admin export and static sales packet.",
       sources: [
         finalPilotReadinessChecklistSync.checklistArtifact,
         ...finalPilotReadinessChecklistSync.latestProofArtifacts.map((artifact) => artifact.artifact),
