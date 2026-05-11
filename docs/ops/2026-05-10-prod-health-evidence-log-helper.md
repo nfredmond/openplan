@@ -27,6 +27,17 @@ npm run ops:log-prod-health-evidence -- \
   --require-vercel-ready
 ```
 
+For fewer manual transcription steps, save Vercel CLI JSON and let the helper read the deployment URL/state from that file:
+
+```bash
+vercel inspect https://openplan-natford.vercel.app --json > /tmp/openplan-vercel-inspect.json
+npm run ops:log-prod-health-evidence -- \
+  --vercel-inspect-json /tmp/openplan-vercel-inspect.json \
+  --require-vercel-ready
+```
+
+The helper records only the deployment URL and Ready state from the JSON; it does not copy the full inspect payload into the evidence log.
+
 By default the helper writes to:
 
 ```text
@@ -36,7 +47,8 @@ docs/ops/YYYY-MM-DD-test-output/prod-health-evidence/YYYYMMDDTHHMMSSZ-prod-healt
 ## Operator notes
 
 - A passing health check does **not** prove the latest Vercel deployment is Ready; record the Vercel state explicitly.
-- `--require-vercel-ready` is recommended for main-push closure because it fails fast if the state was not recorded as `Ready`.
+- `--require-vercel-ready` is recommended for main-push closure because it fails fast if the resolved state was not recorded as `Ready`.
+- Use `--vercel-inspect-json <path>` when you have a saved `vercel inspect --json` payload; explicit `--vercel-url` / `--vercel-state` flags still take precedence.
 - Use `--dry-run` if you only need to preview the evidence packet.
 - Use `--health-url <url>` only when intentionally checking a preview or alternate deployment.
 - The helper reads a public URL and writes a local file only. It does not call Supabase, mutate production, or consume secret tokens.

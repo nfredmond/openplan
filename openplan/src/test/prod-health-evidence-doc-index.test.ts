@@ -23,6 +23,7 @@ describe("production health evidence logger docs index", () => {
     expect(unresolvedLocalMarkdownLinks(helperPath, helperDoc)).toEqual([]);
     expect(helperDoc).toContain("npm run ops:check-prod-health");
     expect(helperDoc).toContain("npm run ops:log-prod-health-evidence");
+    expect(helperDoc).toContain("--vercel-inspect-json");
     expect(helperDoc).toContain("does not call Supabase, mutate production, or consume secret tokens");
     expect(helperDoc).toContain("Gate decision: PASS");
   });

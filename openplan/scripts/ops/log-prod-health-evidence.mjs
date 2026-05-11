@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execFile } from "node:child_process";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
@@ -24,7 +24,8 @@ function usage() {
     "  --health-url <url>           Override OPENPLAN_HEALTH_URL for this run",
     "  --vercel-url <url>           Deployment URL inspected in Vercel",
     "  --vercel-state <state>       Observed Vercel state; use `Ready` only after verification",
-    "  --require-vercel-ready       Exit non-zero if --vercel-state is not Ready",
+    "  --vercel-inspect-json <path> Read saved `vercel inspect --json <url>` output for URL/state",
+    "  --require-vercel-ready       Exit non-zero if the resolved Vercel state is not Ready",
     "  --output-dir <path>          Directory for the generated markdown evidence log",
     "  --commit <sha>               Override detected git commit for deterministic tests/manual repair",
     "  --branch <name>              Override detected git branch for deterministic tests/manual repair",
@@ -58,6 +59,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     healthUrl: readOption(argv, "--health-url"),
     vercelUrl: readOption(argv, "--vercel-url") ?? process.env.OPENPLAN_VERCEL_DEPLOYMENT_URL,
     vercelState: readOption(argv, "--vercel-state") ?? process.env.OPENPLAN_VERCEL_STATE,
+    vercelInspectJson: readOption(argv, "--vercel-inspect-json") ?? process.env.OPENPLAN_VERCEL_INSPECT_JSON,
     outputDir: readOption(argv, "--output-dir") ?? process.env.OPENPLAN_PROD_HEALTH_EVIDENCE_DIR,
     commit: readOption(argv, "--commit"),
     branch: readOption(argv, "--branch"),
@@ -79,8 +81,79 @@ function normalizeDisplay(value, fallback = "not recorded") {
   return text || fallback;
 }
 
+function normalizeVercelReadyState(value) {
+  const text = normalizeDisplay(value, "");
+  if (!text) return "";
+  const comparable = text.toLowerCase().replace(/[\s_-]+/g, "");
+  if (comparable === "ready") return EXPECTED_VERCEL_STATE;
+  return text;
+}
+
 function vercelReadyStatus(vercelState) {
-  return normalizeDisplay(vercelState, "not recorded") === EXPECTED_VERCEL_STATE;
+  return normalizeVercelReadyState(vercelState) === EXPECTED_VERCEL_STATE;
+}
+
+function firstString(...values) {
+  return values.find((value) => typeof value === "string" && value.trim())?.trim();
+}
+
+function normalizeDeploymentUrl(...values) {
+  const text = firstString(...values);
+  if (!text) return undefined;
+  if (/^https?:\/\//i.test(text)) return text;
+  if (/^[a-z0-9.-]+$/i.test(text)) return `https://${text}`;
+  return text;
+}
+
+function vercelInspectFields(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    fail("--vercel-inspect-json must contain a JSON object");
+  }
+
+  const deployment = payload.deployment && typeof payload.deployment === "object" ? payload.deployment : {};
+  const meta = payload.meta && typeof payload.meta === "object" ? payload.meta : {};
+
+  return {
+    url: normalizeDeploymentUrl(
+      payload.url,
+      payload.deploymentUrl,
+      payload.inspectedUrl,
+      deployment.url,
+      deployment.deploymentUrl,
+      meta.url,
+    ),
+    state: normalizeVercelReadyState(
+      firstString(
+        payload.state,
+        payload.readyState,
+        payload.status,
+        deployment.state,
+        deployment.readyState,
+        deployment.status,
+        meta.state,
+      ),
+    ),
+  };
+}
+
+async function readVercelInspectJson(filePath) {
+  if (!filePath) return {};
+
+  let raw;
+  try {
+    raw = await readFile(path.resolve(filePath), "utf8");
+  } catch (error) {
+    fail(`Could not read --vercel-inspect-json file: ${error instanceof Error ? error.message : String(error)}`);
+  }
+
+  try {
+    return vercelInspectFields(JSON.parse(raw));
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      fail("--vercel-inspect-json must be valid JSON");
+    }
+    throw error;
+  }
 }
 
 async function gitValue(args, fallback) {
@@ -107,7 +180,7 @@ function evidenceMarkdown({ healthResult, git, vercelUrl, vercelState }) {
   const vercelReady = vercelReadyStatus(vercelState);
   const decision = vercelReady ? "PASS" : "HOLD";
   const inspectedUrl = normalizeDisplay(vercelUrl);
-  const observedState = normalizeDisplay(vercelState);
+  const observedState = normalizeDisplay(normalizeVercelReadyState(vercelState));
 
   return [
     "# OpenPlan production health evidence log",
@@ -166,18 +239,22 @@ export async function createEvidenceLog(argv = process.argv.slice(2)) {
     return { help: true, text: usage() };
   }
 
+  const inspectFields = await readVercelInspectJson(options.vercelInspectJson);
+  const resolvedVercelUrl = options.vercelUrl ?? inspectFields.url;
+  const resolvedVercelState = options.vercelState ?? inspectFields.state;
+
   const healthResult = await withHealthUrl(options.healthUrl, () => runHealthCheck([]));
-  const vercelReady = vercelReadyStatus(options.vercelState);
+  const vercelReady = vercelReadyStatus(resolvedVercelState);
   if (options.requireVercelReady && !vercelReady) {
-    fail("Vercel Ready verification is required; rerun with --vercel-state Ready after inspecting the deployment.");
+    fail("Vercel Ready verification is required; rerun with --vercel-state Ready or --vercel-inspect-json after inspecting the deployment.");
   }
 
   const git = await gitMeta({ commit: options.commit, branch: options.branch });
   const markdown = evidenceMarkdown({
     healthResult,
     git,
-    vercelUrl: options.vercelUrl,
-    vercelState: options.vercelState,
+    vercelUrl: resolvedVercelUrl,
+    vercelState: resolvedVercelState,
   });
 
   if (options.dryRun) {

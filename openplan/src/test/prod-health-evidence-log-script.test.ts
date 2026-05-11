@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -104,6 +104,43 @@ describe("production health evidence log script", () => {
     expect(result.gateDecision).toBe("HOLD");
     expect(result.text).toContain("Observed Vercel state: not recorded");
     expect(result.text).toContain("Gate decision: HOLD");
+  });
+
+  it("can resolve Vercel URL/state from saved vercel inspect JSON", async () => {
+    await setupMockHealth();
+    const inspectPath = path.join(
+      tmpdir(),
+      `openplan-vercel-inspect-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}.json`,
+    );
+    tempPaths.push(inspectPath);
+    await writeFile(
+      inspectPath,
+      JSON.stringify({
+        deployment: {
+          url: "openplan-natford.vercel.app",
+          readyState: "READY",
+        },
+      }),
+      "utf8",
+    );
+    const { createEvidenceLog } = await importEvidenceLogger();
+
+    const result = await createEvidenceLog([
+      "--commit",
+      "abc123def456",
+      "--branch",
+      "main",
+      "--vercel-inspect-json",
+      inspectPath,
+      "--require-vercel-ready",
+      "--dry-run",
+    ]);
+
+    expect(result.dryRun).toBe(true);
+    expect(result.gateDecision).toBe("PASS");
+    expect(result.text).toContain("Deployment URL inspected: https://openplan-natford.vercel.app");
+    expect(result.text).toContain("Observed Vercel state: Ready");
+    expect(result.text).toContain("Gate decision: PASS");
   });
 
   it("can require explicit Vercel Ready verification for strict post-push closure", async () => {
