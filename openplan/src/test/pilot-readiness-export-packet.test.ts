@@ -36,6 +36,17 @@ describe("pilot readiness export packet", () => {
       "- **Authenticated Auth**: PASS (Last Run: 2026-04-08; Source: 2026-04-08-openplan-production-authenticated-smoke.md)",
     );
     expect(packet).toContain("Treat PASS lanes as citeable only when the named source document is available");
+    expect(packet).toContain("Cite source artifacts, not dashboard summaries");
+  });
+
+  it("preserves the no-autonomous launch-certificate caveat in the admin export", () => {
+    const packet = buildPilotReadinessPacket([], "2026-05-10T00:00:00.000Z");
+
+    expect(packet).toContain("not an autonomous launch certificate");
+    expect(packet).toContain("supervised implementation, human review, and no-autonomous-AI caveats");
+    expect(packet).toContain(finalPilotReadinessChecklistSync.verdict);
+    expect(packet).toContain("not a launch certificate for a finished planning suite");
+    expect(packet).toContain("not sold as legal-grade LAPM/compliance automation or autonomous AI planning");
   });
 
   it("reuses the Command Center release-proof caveats and artifacts", () => {
