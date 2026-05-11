@@ -1,6 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
+import {
+  FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
+  PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
+  WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
+} from "@/lib/operations/pilot-readiness-proof-paths";
+import { releaseProofPosture } from "@/lib/operations/release-proof-packet";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
 const summary: WorkspaceOperationsSummary = {
@@ -116,8 +122,20 @@ describe("WorkspaceCommandBoard", () => {
       "href",
       "/admin/pilot-readiness"
     );
-    expect(screen.getByText(/docs\/ops\/2026-05-10-openplan-pilot-preflight-operator-proof\.md/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/docs\/ops\/2026-05-10-openplan-pilot-preflight-operator-proof\.md/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Keep claims inside the supervised-pilot caveats before external use\./i)).toBeInTheDocument();
+    expect(screen.getByText("Release proof drilldown")).toBeInTheDocument();
+    expect(screen.getByText(releaseProofPosture.title)).toBeInTheDocument();
+    expect(screen.getByText(/supervised planning workbench support for rural RTPA\/county workflows/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open readiness packet/i })).toHaveAttribute(
+      "href",
+      "/admin/pilot-readiness"
+    );
+    expect(screen.getByRole("link", { name: /Review request access/i })).toHaveAttribute("href", "/request-access");
+    expect(screen.getByRole("link", { name: /Review examples/i })).toHaveAttribute("href", "/examples");
+    expect(screen.getByText(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT)).toBeInTheDocument();
+    expect(screen.getByText(WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT)).toBeInTheDocument();
+    expect(screen.getAllByText(PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Funding review: 1/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Primary next action")).toBeInTheDocument();

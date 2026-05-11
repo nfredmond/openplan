@@ -147,7 +147,9 @@ describe("canonical pilot readiness proof paths", () => {
       "href",
       ADMIN_PILOT_READINESS_ROUTE,
     );
-    expect(screen.getByText(new RegExp(PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")))).toBeInTheDocument();
+    expect(
+      screen.getAllByText(new RegExp(PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))).length
+    ).toBeGreaterThan(0);
 
     const projectSpineSummary = buildProjectSpineCrosslinkSummary(emptyProjectSpineInput);
     expect(projectSpineSummary.stateProofReference.href).toBe(ADMIN_PILOT_READINESS_ROUTE);
