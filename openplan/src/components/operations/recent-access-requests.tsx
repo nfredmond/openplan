@@ -9,6 +9,7 @@ import { AccessRequestStatusControls } from "@/components/operations/access-requ
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   accessRequestStatusLabel,
+  buildAccessRequestOperatorSourceProof,
   type AccessRequestReviewRow,
   type AccessRequestStatus,
 } from "@/lib/access-requests";
@@ -85,7 +86,9 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
         </div>
       ) : requests.length > 0 ? (
         <div className="mt-5 module-record-list">
-          {requests.map((request) => (
+          {requests.map((request) => {
+            const sourceProof = buildAccessRequestOperatorSourceProof(request);
+            return (
             <div key={request.id} className="module-record-row">
               <div className="module-record-head">
                 <div className="module-record-main">
@@ -186,10 +189,66 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                 </div>
               </div>
 
+              <div className="mt-3 module-subpanel" aria-label="Request source and intent proof">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      Request source and intent proof
+                    </p>
+                    <p className="mt-1 text-sm text-foreground">
+                      Confirm this public intake context before triage or any manual invite. This panel is read-only and does not create billing, email, workspace, or deployment side effects.
+                    </p>
+                  </div>
+                  <StatusBadge tone={sourceProof.sourcePath === "/request-access" ? "success" : "warning"}>
+                    {sourceProof.sourcePath === "/request-access" ? "Public intake" : "Source check"}
+                  </StatusBadge>
+                </div>
+                <dl className="mt-3 grid gap-2 text-sm md:grid-cols-2 xl:grid-cols-4">
+                  <div>
+                    <dt className="text-muted-foreground">Submitted via</dt>
+                    <dd className="text-foreground">{sourceProof.submittedVia}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Source path</dt>
+                    <dd className="text-foreground">{sourceProof.sourcePath}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Source intent</dt>
+                    <dd className="text-foreground">{sourceProof.intent}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Acquisition source</dt>
+                    <dd className="text-foreground">{sourceProof.source}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Product / tier</dt>
+                    <dd className="text-foreground">{sourceProof.product} / {sourceProof.tier}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Checkout posture</dt>
+                    <dd className="text-foreground">
+                      {sourceProof.checkout}{sourceProof.checkoutDisabled === true ? " · checkout disabled" : ""}{sourceProof.legacyCheckout === true ? " · legacy checkout" : ""}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Referer / received</dt>
+                    <dd className="text-foreground">{sourceProof.refererHost ?? "no referer"}{sourceProof.receivedAt ? ` · ${formatTimestamp(sourceProof.receivedAt)}` : ""}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-muted-foreground">Fingerprint</dt>
+                    <dd className="text-foreground">{sourceProof.sourceFingerprint?.slice(0, 12) ?? "not captured"}</dd>
+                  </div>
+                </dl>
+                {sourceProof.workspaceId ? (
+                  <p className="mt-2 text-sm text-muted-foreground">Workspace context supplied by intake: {sourceProof.workspaceId}. Operator must still verify membership manually.</p>
+                ) : null}
+              </div>
+
               <AccessRequestActivitySummaryPanel request={request} />
               <AccessRequestProvisioningReadinessPanel request={request} />
             </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="module-note mt-4 text-sm leading-relaxed text-muted-foreground">

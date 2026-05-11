@@ -10,6 +10,7 @@ import {
   buildAccessRequestBodyFingerprint,
   buildAccessRequestClientFingerprint,
   buildAccessRequestMetadata,
+  buildAccessRequestOperatorSourceProof,
   buildAccessRequestSupportMetadata,
   canProvisionAccessRequestStatus,
   canTransitionAccessRequestStatus,
@@ -81,12 +82,66 @@ describe("access request helpers", () => {
       useCase: "Screen rural transit corridors and prepare grant support material.",
       expectedWorkspaceName: "NCTC Pilot",
     };
-    const metadata = buildAccessRequestSupportMetadata(request, input, "2026-04-24T12:00:00.000Z");
+    const metadata = buildAccessRequestSupportMetadata(request, input, "2026-04-24T12:00:00.000Z", {
+      product: "openplan",
+      tier: "managed pilot",
+      checkout: "disabled_supervised_intake",
+      checkoutDisabled: true,
+      source: "public landing",
+      intent: "pilot evaluation",
+    });
 
     expect(metadata.body_fingerprint).toBe(buildAccessRequestBodyFingerprint(input));
     expect(metadata.source_fingerprint).toBe(buildAccessRequestClientFingerprint(request));
+    expect(metadata.source_context).toEqual(
+      expect.objectContaining({
+        product: "openplan",
+        tier: "managed pilot",
+        checkoutDisabled: true,
+        intent: "pilot evaluation",
+      }),
+    );
     expect(JSON.stringify(metadata)).not.toContain(input.useCase);
     expect(JSON.stringify(metadata)).not.toContain(input.contactEmail);
+  });
+
+  it("summarizes operator source proof without exposing raw client address or invite side effects", () => {
+    const proof = buildAccessRequestOperatorSourceProof({
+      source_path: "/request-access",
+      metadata_json: {
+        submitted_via: "request_access_form",
+        source_fingerprint: "abcdef1234567890abcdef12",
+        user_agent: "Vitest Access Request",
+        referer_host: "www.natfordplanning.com",
+        received_at: "2026-04-24T12:00:00.000Z",
+        source_context: {
+          product: "openplan",
+          tier: "managed pilot",
+          checkout: "disabled_supervised_intake",
+          checkoutDisabled: true,
+          legacyCheckout: false,
+          source: "public landing",
+          intent: "pilot evaluation",
+        },
+      },
+    });
+
+    expect(proof).toEqual(
+      expect.objectContaining({
+        submittedVia: "request_access_form",
+        sourcePath: "/request-access",
+        source: "public landing",
+        intent: "pilot evaluation",
+        product: "openplan",
+        tier: "managed pilot",
+        checkout: "disabled_supervised_intake",
+        checkoutDisabled: true,
+        legacyCheckout: false,
+        refererHost: "www.natfordplanning.com",
+        sourceFingerprint: "abcdef1234567890abcdef12",
+      }),
+    );
+    expect(JSON.stringify(proof)).not.toContain("203.0.113");
   });
 
   it("detects recent source rate limits and duplicate request content", () => {
@@ -178,6 +233,10 @@ describe("access request helpers", () => {
           expected_workspace_name: "NCTC Pilot",
           status: "contacted",
           source_path: "/request-access",
+          metadata_json: {
+            submitted_via: "request_access_form",
+            source_context: { source: "public landing", intent: "pilot evaluation" },
+          },
           created_at: "2026-04-24T12:00:00.000Z",
           reviewed_at: "2026-04-24T12:05:00.000Z",
           provisioned_workspace_id: "22222222-2222-4222-8222-222222222222",

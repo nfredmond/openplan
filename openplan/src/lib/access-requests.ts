@@ -51,6 +51,7 @@ export type AccessRequestReviewRow = {
   expected_workspace_name: string | null;
   status: AccessRequestStatus;
   source_path: string | null;
+  metadata_json: Record<string, unknown> | null;
   created_at: string | null;
   reviewed_at: string | null;
   provisioned_workspace_id: string | null;
@@ -206,6 +207,7 @@ export const ACCESS_REQUEST_REVIEW_SELECT = [
   "expected_workspace_name",
   "status",
   "source_path",
+  "metadata_json",
   "created_at",
   "reviewed_at",
   "provisioned_workspace_id",
@@ -341,6 +343,59 @@ export function buildAccessRequestSupportMetadata(
   }
 
   return metadata;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function metadataString(value: unknown): string | null {
+  return typeof value === "string" && value.trim() ? value.trim() : null;
+}
+
+function metadataBoolean(value: unknown): boolean | null {
+  return typeof value === "boolean" ? value : null;
+}
+
+export type AccessRequestOperatorSourceProof = {
+  submittedVia: string;
+  sourcePath: string;
+  source: string;
+  intent: string;
+  product: string;
+  tier: string;
+  checkout: string;
+  workspaceId: string | null;
+  checkoutDisabled: boolean | null;
+  legacyCheckout: boolean | null;
+  refererHost: string | null;
+  receivedAt: string | null;
+  userAgent: string | null;
+  sourceFingerprint: string | null;
+};
+
+export function buildAccessRequestOperatorSourceProof(
+  request: Pick<AccessRequestReviewRow, "source_path" | "metadata_json">,
+): AccessRequestOperatorSourceProof {
+  const metadata = isRecord(request.metadata_json) ? request.metadata_json : {};
+  const sourceContext = isRecord(metadata.source_context) ? metadata.source_context : {};
+
+  return {
+    submittedVia: metadataString(metadata.submitted_via) ?? "unknown",
+    sourcePath: request.source_path ?? "unknown",
+    source: metadataString(sourceContext.source) ?? "not specified",
+    intent: metadataString(sourceContext.intent) ?? "not specified",
+    product: metadataString(sourceContext.product) ?? "not specified",
+    tier: metadataString(sourceContext.tier) ?? "not specified",
+    checkout: metadataString(sourceContext.checkout) ?? "not specified",
+    workspaceId: metadataString(sourceContext.workspaceId),
+    checkoutDisabled: metadataBoolean(sourceContext.checkoutDisabled),
+    legacyCheckout: metadataBoolean(sourceContext.legacyCheckout),
+    refererHost: metadataString(metadata.referer_host),
+    receivedAt: metadataString(metadata.received_at),
+    userAgent: metadataString(metadata.user_agent),
+    sourceFingerprint: metadataString(metadata.source_fingerprint),
+  };
 }
 
 export function evaluateAccessRequestSafety(input: {

@@ -249,6 +249,21 @@ describe("AdminOperationsPage", () => {
           expected_workspace_name: "NCTC Pilot",
           status: "new",
           source_path: "/request-access",
+          metadata_json: {
+            submitted_via: "request_access_form",
+            source_fingerprint: "abcdef1234567890abcdef12",
+            user_agent: "Vitest Access Request",
+            referer_host: "www.natfordplanning.com",
+            received_at: "2026-04-24T12:00:01.000Z",
+            source_context: {
+              product: "openplan",
+              tier: "managed pilot",
+              checkout: "disabled_supervised_intake",
+              checkoutDisabled: true,
+              source: "public landing",
+              intent: "pilot evaluation",
+            },
+          },
           created_at: "2026-04-24T12:00:00.000Z",
           reviewed_at: null,
           provisioned_workspace_id: null,
@@ -281,6 +296,16 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByText(/Nat Ford managed/i)).toBeInTheDocument();
     expect(screen.getByText(/Nat Ford managed/i)).toBeInTheDocument();
     expect(screen.getByText(/Internal planning data/i)).toBeInTheDocument();
+    expect(screen.getByLabelText("Request source and intent proof")).toBeInTheDocument();
+    expect(screen.getByText(/Confirm this public intake context before triage or any manual invite/i)).toBeInTheDocument();
+    expect(screen.getByText("Public intake")).toBeInTheDocument();
+    expect(screen.getByText("request_access_form")).toBeInTheDocument();
+    expect(screen.getByText("pilot evaluation")).toBeInTheDocument();
+    expect(screen.getByText("public landing")).toBeInTheDocument();
+    expect(screen.getByText("openplan / managed pilot")).toBeInTheDocument();
+    expect(screen.getByText(/disabled_supervised_intake · checkout disabled/i)).toBeInTheDocument();
+    expect(screen.getByText(/www\.natfordplanning\.com/i)).toBeInTheDocument();
+    expect(screen.getByText("abcdef123456")).toBeInTheDocument();
     expect(screen.getByText(/Import existing RTP project tables/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Mark reviewing/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Defer/i })).toBeInTheDocument();
@@ -320,6 +345,17 @@ describe("AdminOperationsPage", () => {
           expected_workspace_name: "NCTC Pilot",
           status: "provisioned",
           source_path: "/request-access",
+          metadata_json: {
+            submitted_via: "request_access_form",
+            source_context: {
+              product: "openplan",
+              tier: "managed onboarding",
+              checkout: "not_applicable",
+              checkoutDisabled: true,
+              source: "operator referral",
+              intent: "implementation onboarding",
+            },
+          },
           created_at: "2026-04-24T12:00:00.000Z",
           reviewed_at: "2026-04-24T12:07:00.000Z",
           provisioned_workspace_id: "11111111-1111-4111-8111-111111111111",
