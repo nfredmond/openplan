@@ -416,7 +416,7 @@ export function RequestAccessForm({
             <p className="public-section-label">Helpful detail</p>
             <p className="mt-2 text-sm text-muted-foreground">
               The most useful requests name one immediate workflow, data sensitivity, deployment posture, and the staff path
-              needed to get from evaluation to production use.
+              needed to move from evaluation to a supervised pilot or production decision.
             </p>
           </div>
         </aside>

@@ -86,7 +86,7 @@ export default async function RequestAccessPage({
             </div>
           </div>
           <p className="public-rail-copy">
-            OpenPlan can accept self-serve interest without turning prospect intake into automatic workspace creation,
+            OpenPlan can collect public intake without turning prospect interest into automatic workspace creation,
             managed-hosting billing, implementation scope, or customer communication.
           </p>
           <div className="public-rail-list">

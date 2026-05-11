@@ -28,7 +28,9 @@ describe("RequestAccessPage", () => {
     expect(screen.getByLabelText(/First workflow to stand up/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/What should OpenPlan help with first/i)).toBeInTheDocument();
     expect(screen.getByText(/does not create an account, hosted workspace, subscription, or services contract/i)).toBeInTheDocument();
+    expect(screen.getByText(/collect public intake without turning prospect interest into automatic workspace creation/i)).toBeInTheDocument();
     expect(screen.queryByText(/workspace will be created automatically/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/self-serve interest/i)).not.toBeInTheDocument();
   });
 
   it("prefills the service lane and workflow from pricing deep links", async () => {
