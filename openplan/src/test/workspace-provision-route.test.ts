@@ -54,16 +54,15 @@ function provisionRequest(payload: unknown, secret = "provision-secret") {
       "content-type": "application/json",
       authorization: `Bearer ${secret}`,
     },
-    body: JSON.stringify(
-      typeof payload === "object" && payload !== null && !Array.isArray(payload)
-        ? {
-            operatorAcknowledgement:
-              ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
-            ...payload,
-          }
-        : payload,
-    ),
+    body: JSON.stringify(payload),
   });
+}
+
+function acknowledgedProvisionPayload(payload: Record<string, unknown>) {
+  return {
+    operatorAcknowledgement: ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+    ...payload,
+  };
 }
 
 describe("POST /api/admin/workspaces/provision", () => {
@@ -124,10 +123,12 @@ describe("POST /api/admin/workspaces/provision", () => {
     delete process.env.OPENPLAN_WORKSPACE_PROVISIONING_SECRET;
 
     const response = await postProvisionWorkspace(
-      provisionRequest({
-        workspaceName: "Nevada County Transportation Commission",
-        ownerEmail: "owner@nctc.ca.gov",
-      }),
+      provisionRequest(
+        acknowledgedProvisionPayload({
+          workspaceName: "Nevada County Transportation Commission",
+          ownerEmail: "owner@nctc.ca.gov",
+        }),
+      ),
     );
 
     expect(response.status).toBe(503);
@@ -140,10 +141,10 @@ describe("POST /api/admin/workspaces/provision", () => {
   it("returns 401 when the operator secret does not match", async () => {
     const response = await postProvisionWorkspace(
       provisionRequest(
-        {
+        acknowledgedProvisionPayload({
           workspaceName: "Nevada County Transportation Commission",
           ownerEmail: "owner@nctc.ca.gov",
-        },
+        }),
         "wrong-secret",
       ),
     );
@@ -158,7 +159,6 @@ describe("POST /api/admin/workspaces/provision", () => {
       provisionRequest({
         workspaceName: "Nevada County Transportation Commission",
         ownerEmail: "owner@nctc.ca.gov",
-        operatorAcknowledgement: undefined,
       }),
     );
 
@@ -176,13 +176,15 @@ describe("POST /api/admin/workspaces/provision", () => {
 
   it("provisions a workspace with a direct owner membership and billing snapshot", async () => {
     const response = await postProvisionWorkspace(
-      provisionRequest({
-        workspaceName: "Nevada County Transportation Commission",
-        ownerUserId: "22222222-2222-4222-8222-222222222222",
-        plan: "professional",
-        subscriptionStatus: "trialing",
-        stripeCustomerId: "cus_123",
-      }),
+      provisionRequest(
+        acknowledgedProvisionPayload({
+          workspaceName: "Nevada County Transportation Commission",
+          ownerUserId: "22222222-2222-4222-8222-222222222222",
+          plan: "professional",
+          subscriptionStatus: "trialing",
+          stripeCustomerId: "cus_123",
+        }),
+      ),
     );
 
     expect(response.status).toBe(201);
@@ -219,14 +221,27 @@ describe("POST /api/admin/workspaces/provision", () => {
         }),
       }),
     );
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "workspace_provisioned",
+      expect.objectContaining({
+        operatorAcknowledgement:
+          ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+        sideEffects: expect.objectContaining({
+          outboundEmailSent: false,
+          ownerInvitationDelivery: "manual",
+        }),
+      }),
+    );
   });
 
   it("provisions an owner invitation without sending email", async () => {
     const response = await postProvisionWorkspace(
-      provisionRequest({
-        workspaceName: "Nevada County Transportation Commission",
-        ownerEmail: "owner@nctc.ca.gov",
-      }),
+      provisionRequest(
+        acknowledgedProvisionPayload({
+          workspaceName: "Nevada County Transportation Commission",
+          ownerEmail: "owner@nctc.ca.gov",
+        }),
+      ),
     );
 
     expect(response.status).toBe(201);
@@ -261,10 +276,12 @@ describe("POST /api/admin/workspaces/provision", () => {
     });
 
     const response = await postProvisionWorkspace(
-      provisionRequest({
-        workspaceName: "Nevada County Transportation Commission",
-        ownerUserId: "22222222-2222-4222-8222-222222222222",
-      }),
+      provisionRequest(
+        acknowledgedProvisionPayload({
+          workspaceName: "Nevada County Transportation Commission",
+          ownerUserId: "22222222-2222-4222-8222-222222222222",
+        }),
+      ),
     );
 
     expect(response.status).toBe(500);
