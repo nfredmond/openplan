@@ -13,7 +13,10 @@ const anchorProofDocuments = [
   "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
   "docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md",
   "docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md",
+  "openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md",
   "openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md",
+  "openplan/docs/ops/2026-05-10-pilot-readiness-export-proof-tightening.md",
+  "openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md",
 ].map((relativePath) => path.join(repoRoot, relativePath));
 
 const monitoredDocuments = [...salesProofDocuments, ...anchorProofDocuments];
@@ -64,6 +67,32 @@ const overclaimPatterns = [
   },
 ];
 
+const highRiskProofSurfaceTerms = [
+  {
+    label: "launch certificate",
+    pattern: /\b(?:autonomous\s+|finished[- ]suite\s+)?launch certificate\b/i,
+  },
+  {
+    label: "autonomous provisioning",
+    pattern: /\bautonomous\s+(?:provisioning|onboarding|invite|workspace creation)\b/i,
+  },
+  {
+    label: "grant award prediction",
+    pattern: /\bgrant\s+award\s+prediction\b/i,
+  },
+  {
+    label: "legal approval",
+    pattern: /\blegal\s+(?:approval|authorization|sign[- ]off)\b/i,
+  },
+  {
+    label: "self-serve suite",
+    pattern: /\bself[- ]serve\b[^.!?\n|;]{0,80}\b(?:suite|platform|SaaS)\b|\b(?:suite|platform|SaaS)\b[^.!?\n|;]{0,80}\bself[- ]serve\b/i,
+  },
+];
+
+const caveatOrBoundaryContextPattern =
+  /\b(?:not|no|does not|do not|avoid|without|unless|unsupported|boundary|caveat|only|manual|supervised|human review|before buyer reliance|not sold as|not a replacement|doesn['’]t)\b/i;
+
 function stripHtml(text: string): string {
   return text
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
@@ -97,6 +126,25 @@ function candidateClaimChunks(documentPath: string, documentText: string): strin
     (chunk) =>
       !/\b(?:not|no|does not|do not|avoid|without|unless|not sold as|not a replacement|doesn['’]t)\b/i.test(chunk),
   );
+}
+
+function proofSurfaceText(documentPath: string, documentText: string): string {
+  return documentPath.endsWith(".html") ? stripHtml(documentText) : nonExampleLines(documentText).join("\n");
+}
+
+function proofSurfaceTermContexts(documentPath: string, documentText: string, pattern: RegExp): string[] {
+  const text = proofSurfaceText(documentPath, documentText);
+  const globalPattern = new RegExp(pattern.source, pattern.flags.includes("g") ? pattern.flags : `${pattern.flags}g`);
+  const contexts: string[] = [];
+
+  for (const match of text.matchAll(globalPattern)) {
+    const start = Math.max(0, match.index - 360);
+    const end = Math.min(text.length, match.index + match[0].length + 180);
+
+    contexts.push(text.slice(start, end).replace(/\s+/g, " ").trim());
+  }
+
+  return contexts;
 }
 
 describe("sales/proof claim-boundary guard", () => {
@@ -133,6 +181,28 @@ describe("sales/proof claim-boundary guard", () => {
           failures.push(
             `${path.relative(repoRoot, documentPath)} trips ${label} overclaim guard: ${matchedChunk}`,
           );
+        }
+      }
+    }
+
+    expect(failures).toEqual([]);
+  });
+
+  it("keeps high-risk proof-surface terms explicitly caveated when they appear", () => {
+    const failures: string[] = [];
+
+    for (const documentPath of monitoredDocuments) {
+      const rawText = readFileSync(documentPath, "utf8");
+
+      for (const { label, pattern } of highRiskProofSurfaceTerms) {
+        const matchedChunks = proofSurfaceTermContexts(documentPath, rawText, pattern);
+
+        for (const chunk of matchedChunks) {
+          if (!caveatOrBoundaryContextPattern.test(chunk)) {
+            failures.push(
+              `${path.relative(repoRoot, documentPath)} uses ${label} without caveat/boundary context: ${chunk}`,
+            );
+          }
         }
       }
     }
