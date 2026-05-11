@@ -9,6 +9,22 @@ After a push to `main`, do not close the production gate on memory alone. Record
 
 The helper added in this slice keeps that evidence in a small local Markdown log without requiring secrets, Supabase access, production writes, or Vercel API tokens.
 
+## Canonical command and artifact path
+
+Use this command shape when the deploy can be represented by saved Vercel inspect JSON:
+
+```bash
+npm run ops:log-prod-health-evidence -- --vercel-inspect-json /tmp/openplan-vercel-inspect.json --require-vercel-ready
+```
+
+The generated artifact path shape is:
+
+```text
+docs/ops/YYYY-MM-DD-test-output/prod-health-evidence/YYYYMMDDTHHMMSSZ-prod-health-evidence.md
+```
+
+Keep this exact command and path synchronized with the ops README index and the final pilot-readiness checklist so post-deploy proof handoffs do not drift.
+
 ## Standard post-main-push flow
 
 Run from the app directory:
