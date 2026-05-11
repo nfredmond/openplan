@@ -1,5 +1,14 @@
 import Link from "next/link";
 import { ArrowRight, CreditCard, ShieldCheck } from "lucide-react";
+import { buildOpenPlanPublicMetadata } from "@/lib/public-page-metadata";
+
+export const metadata = buildOpenPlanPublicMetadata({
+  title: "Services: managed hosting, support, and implementation",
+  description:
+    "Compare OpenPlan self-hosting, managed hosting, onboarding, support, planning services, and custom implementation around the Apache-2.0 core.",
+  path: "/pricing",
+});
+
 
 const sourceProofLinks = [
   {

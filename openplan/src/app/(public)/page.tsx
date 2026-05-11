@@ -1,5 +1,14 @@
 import Link from "next/link";
 import { ArrowRight, FileText, Map, MessageSquareText, ShieldCheck } from "lucide-react";
+import { buildOpenPlanPublicMetadata } from "@/lib/public-page-metadata";
+
+export const metadata = buildOpenPlanPublicMetadata({
+  title: "Open-source planning workbench with managed services",
+  description:
+    "Apache-2.0 planning software for agencies, tribes, RTPAs, counties, and consultants, backed by optional Nat Ford hosting, onboarding, support, and implementation services.",
+  path: "/",
+});
+
 
 const sourceProofLinks = [
   {

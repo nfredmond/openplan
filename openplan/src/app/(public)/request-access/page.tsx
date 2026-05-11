@@ -1,13 +1,16 @@
 import Link from "next/link";
 import { ArrowRight, ClipboardCheck, ShieldCheck } from "lucide-react";
+import { buildOpenPlanPublicMetadata } from "@/lib/public-page-metadata";
 
 import { RequestAccessForm } from "@/components/request-access/request-access-form";
 import { buildRequestAccessPrefill } from "@/lib/access-request-query";
 
-export const metadata = {
-  title: "Request Services Review | OpenPlan",
-  description: "Request self-hosting, managed hosting, implementation, or planning-services review for OpenPlan.",
-};
+export const metadata = buildOpenPlanPublicMetadata({
+  title: "Request services review: self-hosting, hosting, implementation",
+  description:
+    "Start a reviewed OpenPlan intake for self-hosting, managed hosting, onboarding, implementation, or planning services; no automatic workspace or billing.",
+  path: "/request-access",
+});
 
 const reviewFacts = [
   {

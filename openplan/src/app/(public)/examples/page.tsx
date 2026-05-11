@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AlertTriangle, FileSearch, MapPin, ShieldCheck } from "lucide-react";
+import { buildOpenPlanPublicMetadata } from "@/lib/public-page-metadata";
 import {
   NEVADA_COUNTY_CAVEATS_VERBATIM as caveatsVerbatim,
   NEVADA_COUNTY_FACILITY_RANKING as facilityRanking,
@@ -8,11 +9,12 @@ import {
   NEVADA_COUNTY_VALIDATION_METRICS as validationMetrics,
 } from "@/lib/examples/nevada-county-2026-03-24";
 
-export const metadata = {
-  title: "Evidence catalog · OpenPlan",
+export const metadata = buildOpenPlanPublicMetadata({
+  title: "Evidence catalog: screening proof with caveats intact",
   description:
-    "Screening-grade OpenPlan evidence from a real Nevada County runtime, shown with its caveats, validation metrics, and prototype-only gate verbatim.",
-};
+    "Inspect a real Nevada County screening run with validation metrics, caveats, and prototype-only limits preserved for buyer-safe review.",
+  path: "/examples",
+});
 
 export default function ExamplesEvidenceCatalogPage() {
   return (

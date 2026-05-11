@@ -18,7 +18,7 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
       /supports it through managed hosting, onboarding, planning services, and custom implementation work/i,
       /Proof path for the Apache-2\.0 claim/i,
       /https:\/\/github\.com\/nfredmond\/openplan\/blob\/main\/LICENSE/i,
-      /managed operations when you need someone accountable to run it/i,
+      /managed hosting and support when a team needs someone accountable to run it/i,
     ],
   },
   {
@@ -31,8 +31,8 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
       /https:\/\/github\.com\/nfredmond\/openplan\/blob\/main\/LICENSE/i,
       /does not turn the open-source core into a proprietary software license/i,
       /not priced as a seat-based proprietary license/i,
-      /no fresh same-cycle paid canary was run for this release packet/i,
-      /historical live payment evidence plus current non-money-moving billing proof/i,
+      /No new same-cycle paid checkout was run/i,
+      /historical live payment evidence plus current non-money-moving billing checks/i,
     ],
   },
   {
