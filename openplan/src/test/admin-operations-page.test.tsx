@@ -149,14 +149,61 @@ describe("AdminOperationsPage", () => {
     render(await AdminOperationsPage());
 
     expect(screen.getByText("Assistant action activity")).toBeInTheDocument();
-    expect(screen.getByText("Recent audited operator actions")).toBeInTheDocument();
+    expect(screen.getByText("Recent supervised operator actions")).toBeInTheDocument();
+    expect(screen.getByText("Supervised action triage")).toBeInTheDocument();
+    expect(screen.getByText(/Showing 0 supervised-review rows from 1 recent audit row/i)).toBeInTheDocument();
+    expect(screen.getByText("No-write smoke posture")).toBeInTheDocument();
+    expect(screen.getByText(/does not replay actions, provision workspaces, send email, mutate access requests, or start deployments/i)).toBeInTheDocument();
     expect(screen.getByText("Generate Report Artifact")).toBeInTheDocument();
+    expect(screen.getByText("Safe audited action")).toBeInTheDocument();
     expect(screen.getByText("planner_agent.generate_report_artifact")).toBeInTheDocument();
     expect(screen.getByText(/report report-1/i)).toBeInTheDocument();
     expect(screen.getByText(/2 linked runs/i)).toBeInTheDocument();
     expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
     expect(actionOrderMock).toHaveBeenCalledWith("completed_at", { ascending: false });
-    expect(actionLimitMock).toHaveBeenCalledWith(8);
+    expect(actionLimitMock).toHaveBeenCalledWith(12);
+  });
+
+  it("sorts supervised action triage rows before safe completed rows", async () => {
+    actionLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "action-safe",
+          action_kind: "generate_report_artifact",
+          audit_event: "planner_agent.generate_report_artifact",
+          approval: "safe",
+          regrounding: "refresh_preview",
+          outcome: "succeeded",
+          error_message: null,
+          input_summary: { reportId: "report-safe-123456" },
+          started_at: "2026-04-20T07:05:00.000Z",
+          completed_at: "2026-04-20T07:06:00.000Z",
+        },
+        {
+          id: "action-review",
+          action_kind: "create_workspace_owner_invite",
+          audit_event: "planner_agent.create_workspace_owner_invite",
+          approval: "approval_required",
+          regrounding: "none",
+          outcome: "failed",
+          error_message: "Operator approval missing",
+          input_summary: { projectId: "project-review-123456" },
+          started_at: "2026-04-20T07:00:00.000Z",
+          completed_at: "2026-04-20T07:01:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    render(await AdminOperationsPage());
+
+    const supervisedAction = screen.getByText("Create Workspace Owner Invite");
+    const safeAction = screen.getByText("Generate Report Artifact");
+
+    expect(screen.getByText(/Showing 1 supervised-review row from 2 recent audit rows/i)).toBeInTheDocument();
+    expect(screen.getByText("Failed action")).toBeInTheDocument();
+    expect(screen.getByText(/Failed with: Operator approval missing/i)).toBeInTheDocument();
+    expect(supervisedAction.compareDocumentPosition(safeAction)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
   });
 
   it("keeps access request PII locked when the operator is not allowlisted", async () => {
@@ -306,7 +353,7 @@ describe("AdminOperationsPage", () => {
 
     render(await AdminOperationsPage());
 
-    expect(screen.getByText(/No assistant actions have been recorded for this workspace yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/Keep the admin smoke read-only; do not create rows just to prove the lane renders/i)).toBeInTheDocument();
   });
 
   it("builds a combined query from all configured warning events", () => {

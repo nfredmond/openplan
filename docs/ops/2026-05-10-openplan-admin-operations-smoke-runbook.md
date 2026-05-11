@@ -28,7 +28,7 @@ The sequence proves access posture. It must not become an onboarding workflow. N
 | 3. Run preflight | `cd openplan && pnpm ops:check-admin-operations-smoke -- --origin https://openplan-natford.vercel.app --reviewer-email <allowlisted-email>` | Health, request-access page, unauthenticated admin redirect, and unauthenticated admin API denial pass. | PASS/ATTENTION status, no secret values. |
 | 4. Use skip-network only for rehearsal | `cd openplan && pnpm ops:check-admin-operations-smoke -- --reviewer-email <allowlisted-email> --skip-network` | Reviewer format/local allowlist posture is checked and output warns that network checks were skipped. | Record `skip-network used: yes`; do not treat as final buyer/pilot proof. |
 | 5. Load admin page as reviewer | Sign in as the allowlisted reviewer, or run the approved authenticated smoke only when session creation has been explicitly allowed. | `/admin/operations` renders for the reviewer and is not locked. | Page rendered yes/no; no row contents. |
-| 6. Verify visible surfaces | Confirm `Warning watchboard`, `Recent supervised onboarding requests`, and `Assistant action activity` are visible. | Required sections render. | Section names only; row count only if needed. |
+| 6. Verify visible surfaces | Confirm `Warning watchboard`, `Recent supervised onboarding requests`, `Assistant action activity`, and `Supervised action triage` are visible. | Required sections render, including the no-write action activity posture. | Section names only; row count only if needed. |
 | 7. Exit without mutation | Leave the page without clicking triage/provisioning controls. | Rows unchanged; no emails/workspaces/invitations/billing actions. | `rows changed: no`; `provisioning clicks: no`. |
 
 ## Authenticated Smoke Boundary
@@ -60,6 +60,8 @@ review lane locked: yes/no
 warning watchboard visible: yes/no
 recent supervised onboarding requests visible: yes/no
 assistant action activity visible: yes/no
+supervised action triage visible: yes/no
+no-write action posture visible: yes/no
 prospect PII captured: no
 rows changed: no
 provisioning clicks: no

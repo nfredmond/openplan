@@ -57,12 +57,16 @@ describe("admin operations smoke runbook", () => {
     expect(runbook).toContain("do not treat as final buyer/pilot proof");
     expect(runbook).toContain("OPENPLAN_PROD_ADMIN_OPERATIONS_ALLOW_MAGIC_LINK=1");
     expect(runbook).toContain("not approval to mutate production app data");
+    expect(runbook).toContain("Supervised action triage");
+    expect(runbook).toContain("no-write action activity posture");
   });
 
   it("limits acceptable evidence to buyer-safe, non-PII facts", () => {
     const evidenceSection = getMarkdownSection(runbook, "Evidence Template");
 
     expect(evidenceSection).toContain("reviewer masked:");
+    expect(evidenceSection).toContain("supervised action triage visible: yes/no");
+    expect(evidenceSection).toContain("no-write action posture visible: yes/no");
     expect(evidenceSection).toContain("prospect PII captured: no");
     expect(evidenceSection).toContain("rows changed: no");
     expect(evidenceSection).toContain("provisioning clicks: no");

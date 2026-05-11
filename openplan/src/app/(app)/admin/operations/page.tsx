@@ -58,7 +58,8 @@ export default async function AdminOperationsPage() {
   const actionActivity = workspaceId
     ? await loadRecentActionExecutionsForWorkspace(
         supabase as unknown as RecentActionActivitySupabaseLike,
-        workspaceId
+        workspaceId,
+        12
       )
     : { executions: [], error: null };
   let accessRequestActivity: Awaited<ReturnType<typeof loadRecentAccessRequestsForReview>> = {
@@ -236,7 +237,15 @@ export default async function AdminOperationsPage() {
         </div>
       </article>
 
-      <RecentActionActivity executions={actionActivity.executions} error={actionActivity.error} />
+      <RecentActionActivity
+        executions={actionActivity.executions}
+        error={actionActivity.error}
+        title="Recent supervised operator actions"
+        description="Use this read-only activity lane to triage failed, review-gated, approval-required, and safe action-audit rows without replaying actions or mutating pilot data."
+        emptyDescription="No assistant actions have been recorded for this workspace yet. Keep the admin smoke read-only; do not create rows just to prove the lane renders."
+        prioritizeSupervisedActions
+        showNoWritePosture
+      />
 
       <article className="module-section-surface">
         <div className="module-section-header">
