@@ -42,6 +42,7 @@ const requiredProofLanes = [
   "Scenario source context",
   "Aerial provenance",
   "Release proof synchronization",
+  "Production health evidence logger",
   "Buyer demo evidence links",
 ];
 

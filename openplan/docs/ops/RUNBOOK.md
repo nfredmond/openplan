@@ -39,6 +39,8 @@ pnpm ops:check-prod-health
 
 The workflow validates `GET` and `HEAD` on `/api/health`. It intentionally fails if the shallow route starts claiming dependency readiness for database or billing, because that endpoint is only the public uptime probe.
 
+After a push to `main`, pair this health check with Vercel deployment state using the root ops helper: `../docs/ops/2026-05-10-prod-health-evidence-log-helper.md`. The helper writes a local evidence log only; it does not use Supabase, secrets, or production writes.
+
 GitHub scheduled workflows can be delayed or dropped during platform load. Treat this as the first no-spend alarm, not a formal uptime SLA. If the workflow fails, capture the run URL and continue with the app-down path below.
 
 ## First Five Minutes
