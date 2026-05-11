@@ -4,7 +4,10 @@ import { describe, expect, it, vi } from "vitest";
 import PilotReadinessPage from "@/app/(app)/admin/pilot-readiness/page";
 import { buildPilotReadinessControlSummary } from "@/lib/operations/admin-operator-control";
 import { buildPilotReadinessPacket } from "@/lib/operations/pilot-readiness-packet";
-import { getOpenPlanRepositoryArtifactUrl } from "@/lib/operations/pilot-readiness-proof-paths";
+import {
+  getOpenPlanRepositoryArtifactUrl,
+  OPENPLAN_REPOSITORY_BLOB_BASE_URL,
+} from "@/lib/operations/pilot-readiness-proof-paths";
 import {
   finalPilotReadinessChecklistSync,
   getAdminPilotReadinessProofArtifactIndex,
@@ -75,6 +78,48 @@ describe("PilotReadinessPage", () => {
         name: `Open proof artifact ${smokeStatusFixture[0].details}`,
       }),
     ).toHaveAttribute("href", getOpenPlanRepositoryArtifactUrl(smokeStatusFixture[0].details));
+  });
+
+  it("links every rendered proof artifact path to the exact GitHub main-branch blob URL", () => {
+    render(<PilotReadinessPage />);
+
+    const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const expectedProofArtifacts = Array.from(
+      new Set([
+        smokeStatusFixture[0].details,
+        ...getAdminPilotReadinessProofArtifactIndex().map((artifact) => artifact.artifact),
+        finalPilotReadinessChecklistSync.checklistArtifact,
+        ...finalPilotReadinessChecklistSync.exportFilenames,
+        ...finalPilotReadinessChecklistSync.latestProofArtifacts.map((artifact) => artifact.artifact),
+        ...releaseProofPosture.proofItems.map((item) => item.artifact),
+      ]),
+    );
+
+    expect(expectedProofArtifacts.length).toBeGreaterThan(10);
+
+    for (const artifact of expectedProofArtifacts) {
+      const expectedHref = `${OPENPLAN_REPOSITORY_BLOB_BASE_URL}/${artifact}`;
+      const links = screen.getAllByRole("link", { name: `Open proof artifact ${artifact}` });
+
+      expect(expectedHref, `${artifact} should resolve to the OpenPlan main-branch blob URL`).toMatch(
+        new RegExp(`^${escapeRegExp(OPENPLAN_REPOSITORY_BLOB_BASE_URL)}/`),
+      );
+
+      for (const link of links) {
+        expect(link, `${artifact} should preserve exact visible path text`).toHaveTextContent(artifact);
+        expect(link, `${artifact} should use the exact GitHub artifact URL`).toHaveAttribute("href", expectedHref);
+        expect(link, `${artifact} should open as an external proof artifact`).toHaveAttribute("target", "_blank");
+        expect(link, `${artifact} should avoid leaking opener access`).toHaveAttribute("rel", "noreferrer");
+      }
+    }
+
+    const proofLinks = screen.getAllByRole("link", { name: /^Open proof artifact / });
+    expect(proofLinks.length).toBeGreaterThanOrEqual(expectedProofArtifacts.length);
+    for (const link of proofLinks) {
+      expect(link.getAttribute("href"), "admin proof links should not point at local relative files").toMatch(
+        new RegExp(`^${escapeRegExp(OPENPLAN_REPOSITORY_BLOB_BASE_URL)}/`),
+      );
+    }
   });
 
   it("keeps the rendered proof index, preflight cue, and export packet helper on the same source data", () => {
