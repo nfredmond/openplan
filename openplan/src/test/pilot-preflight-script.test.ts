@@ -32,7 +32,7 @@ async function makeFixture() {
   return { dir, envFile: path.join(dir, ".env.local"), migrationsDir };
 }
 
-async function runNpmPreflightJson(args: string[]) {
+async function runNpmSilentPreflightJson(args: string[]) {
   return await new Promise<{
     exitCode: number;
     stdout: string;
@@ -40,7 +40,7 @@ async function runNpmPreflightJson(args: string[]) {
   }>((resolve) => {
     execFile(
       "npm",
-      ["run", "--silent", "ops:check-pilot-preflight", "--", ...args],
+      ["--silent", "run", "ops:check-pilot-preflight", "--", ...args],
       { cwd: process.cwd(), timeout: 15_000, maxBuffer: 1024 * 1024 },
       (error: ExecFileException | null, stdout, stderr) => {
         resolve({
@@ -198,10 +198,10 @@ describe("pilot preflight script", () => {
     expect(serialized).not.toContain("remote-service-role-secret");
   });
 
-  it("emits a pure JSON npm-run contract for automation without secrets or write claims", async () => {
+  it("emits a stdout-only npm --silent JSON contract even on expected attention exits", async () => {
     const fixture = await makeFixture();
 
-    const result = await runNpmPreflightJson([
+    const result = await runNpmSilentPreflightJson([
       "--env-file",
       fixture.envFile,
       "--migrations-dir",
@@ -211,9 +211,12 @@ describe("pilot preflight script", () => {
       "--json",
     ]);
 
+    // Skipped live checks intentionally produce ATTENTION and a non-zero exit, but
+    // automation still gets a clean JSON contract on stdout when npm is silent.
     expect(result.exitCode).toBe(1);
     expect(result.stderr).toBe("");
     expect(result.stdout.trim().startsWith("{")).toBe(true);
+    expect(result.stdout.trim().endsWith("}")).toBe(true);
     expect(result.stdout).not.toContain("openplan@0.1.0");
     const parsed = JSON.parse(result.stdout);
     expect(parsed).toMatchObject({
@@ -246,6 +249,13 @@ describe("pilot preflight script", () => {
         expect.stringContaining("No schema apply"),
         expect.stringContaining("No secret values"),
         expect.stringContaining("No evidence-file writes"),
+        expect.stringContaining("stdout"),
+      ]),
+    );
+    expect(parsed.issues).toEqual(
+      expect.arrayContaining([
+        "production health: production health check skipped by operator flag",
+        "deployment readiness: Vercel deployment inspection skipped by operator flag",
       ]),
     );
     const serialized = JSON.stringify(parsed);

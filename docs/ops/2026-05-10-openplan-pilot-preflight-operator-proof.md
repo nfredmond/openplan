@@ -44,10 +44,10 @@ Machine-readable evidence for an operator log:
 
 ```bash
 cd openplan
-npm run --silent ops:check-pilot-preflight -- --json
+npm --silent run ops:check-pilot-preflight -- --json
 ```
 
-`--silent` is intentional for npm-based automation. Plain `npm run ops:check-pilot-preflight -- --json` may prepend npm's script banner before the JSON payload, which is fine for a human terminal but not a strict parser. Direct script invocation is also parser-safe:
+`npm --silent` is intentional for npm-based automation. Plain `npm run ops:check-pilot-preflight -- --json` may prepend npm's script banner before the JSON payload, which is fine for a human terminal but not a strict parser. Automation should consume stdout only, preserve the process exit code separately, and avoid parsing combined stdout/stderr. Direct script invocation is also parser-safe:
 
 ```bash
 node scripts/ops/check-pilot-preflight.mjs --json
@@ -67,11 +67,11 @@ If a future change expands the command beyond this safety boundary, this proof n
 
 ## JSON contract for automation
 
-When run as `npm run --silent ops:check-pilot-preflight -- --json`, stdout is a single JSON object. Automation should parse only stdout and should key off these stable fields:
+When run as `npm --silent run ops:check-pilot-preflight -- --json`, stdout is a single JSON object. Automation should parse only stdout and should key off these stable fields:
 
 - `schemaVersion`: currently `pilot-preflight.v1`.
 - `command`: `ops:check-pilot-preflight`.
-- `status`: `ok` or `attention`; the process exits non-zero when status is `attention`, but stdout still contains the parseable summary.
+- `status`: `ok` or `attention`; the process exits non-zero when status is `attention`, but stdout still contains the parseable summary. Treat that non-zero exit as expected for blocked/skipped/missing-readiness posture, not as a reason to discard stdout.
 - `checkedAt`: ISO timestamp for the bundled check.
 - `readOnly` / `secretSafe`: legacy top-level booleans kept for simple consumers.
 - `safety`: explicit machine-readable caveats:
@@ -90,13 +90,13 @@ Minimal parser pattern:
 
 ```bash
 set +e
-json="$(npm run --silent ops:check-pilot-preflight -- --json)"
+json="$(npm --silent run ops:check-pilot-preflight -- --json)"
 code=$?
-node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync(0,"utf8")); if (!p.safety?.readOnly || !p.safety?.noSchemaApply || !p.safety?.noProductionWrites || !p.safety?.noSecretValues) process.exit(2); console.log(`${p.status}: ${p.issues.length} issue(s)`);' <<<"$json"
+node -e 'const fs=require("node:fs"); const p=JSON.parse(fs.readFileSync(0,"utf8")); if (!p.safety?.readOnly || !p.safety?.stdoutOnly || !p.safety?.noSchemaApply || !p.safety?.noProductionWrites || !p.safety?.noSecretValues) process.exit(2); console.log(`${p.status}: ${p.issues.length} issue(s)`);' <<<"$json"
 exit "$code"
 ```
 
-Do not treat this JSON as proof of schema application, production write success, workspace provisioning, or secret-backed billing truth. It is a read-only/no-secret/no-schema-apply preflight contract.
+Do not treat this JSON as proof of schema application, production write success, workspace provisioning, or secret-backed billing truth. It is a read-only/no-secret/no-schema-apply preflight contract. Secret names may appear as configured/missing key labels; secret values, database URLs, tokens, and Supabase project refs must not appear in stdout, stderr, docs, or captured logs.
 
 ## Expected PASS shape
 
@@ -134,7 +134,7 @@ Deployment readiness:
   deployment: https://openplan-natford.vercel.app/
   commit: <current-deployment-commit>
 
-Safety: read-only; no schema apply, production writes, or secret values emitted.
+Safety: read-only; no schema apply, production writes, secret values, or evidence-file writes emitted.
 ```
 
 Acceptance for a buyer/demo/pilot conversation:
@@ -190,13 +190,14 @@ Attention items:
   - production health: production health check skipped by operator flag
   - deployment readiness: Vercel deployment inspection skipped by operator flag
 
-Safety: read-only; no schema apply, production writes, or secret values emitted.
+Safety: read-only; no schema apply, production writes, secret values, or evidence-file writes emitted.
 ```
 
 Expected exit behavior:
 
 - `0` when all enabled sections are `OK`.
 - non-zero when any enabled or intentionally skipped section contributes an attention item.
+- In JSON mode, non-zero `ATTENTION` exits are still contract-compliant when stdout parses as `pilot-preflight.v1`; callers should capture stdout first, parse it, then propagate or handle the original exit code.
 
 ## How to read each section
 
