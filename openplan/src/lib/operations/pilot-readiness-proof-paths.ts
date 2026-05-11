@@ -6,6 +6,9 @@ export const FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT =
 export const PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT =
   "docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md";
 
+export const WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT =
+  "docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md";
+
 export const PHASE1_SHARED_SPINE_PROOF_ARTIFACT = "docs/ops/2026-05-02-openplan-local-spine-smoke.md";
 
 export const ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT = {
@@ -33,6 +36,7 @@ export function getCanonicalPilotReadinessProofPaths() {
     readinessRoute: ADMIN_PILOT_READINESS_ROUTE,
     finalChecklistArtifact: FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
     pilotPreflightOperatorProofArtifact: PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
+    wave6ReleaseReadinessSummaryArtifact: WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
     phase1SharedSpineProofArtifact: PHASE1_SHARED_SPINE_PROOF_ARTIFACT,
     staticPacketArtifacts: ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACTS,
     allPathValues: PILOT_READINESS_CANONICAL_PROOF_PATH_VALUES,

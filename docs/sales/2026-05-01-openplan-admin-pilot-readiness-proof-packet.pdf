@@ -231,7 +231,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
 endobj
 9 0 obj
-<< /Length 3127 >>
+<< /Length 3224 >>
 stream
 BT
 /F1 9 Tf
@@ -245,17 +245,19 @@ T*
 T*
 (Final checklist / managed support synchronization PASS The final pilot-readiness checklist,) Tj
 T*
-(managed-support proof map, county-run manifest proof, and modeling evidence export proof now) Tj
+(Wave 6 release-readiness summary, managed-support proof map, county-run manifest proof, and) Tj
 T*
-(travel with both the Admin export and static sales packet.) Tj
+(modeling evidence export proof now travel with both the Admin export and static sales) Tj
 T*
-(docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md;) Tj
+(packet. docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md;) Tj
 T*
 (docs/sales/2026-05-10-openplan-managed-support-proof-map.md;) Tj
 T*
 (docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md;) Tj
 T*
 (openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md;) Tj
+T*
+(docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md;) Tj
 T*
 (openplan/src/test/pilot-readiness-export-packet.test.ts) Tj
 T*
@@ -321,8 +323,29 @@ T*
 T*
 (changed afterward.) Tj
 T*
+(Wave 6 release-readiness summary —) Tj
+T*
+(docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md Proof packet doc Summary) Tj
+T*
+(supports operator orientation for the May 10 merge train only; it is not a broad) Tj
+T*
+(launch-readiness certificate.) Tj
+T*
 (Pilot preflight operator proof —) Tj
 T*
+ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
+endobj
+11 0 obj
+<< /Length 3264 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md Preflight proof The preflight) Tj
 T*
 (is read-only operational confidence, not self-serve activation, schema approval, or) Tj
@@ -333,19 +356,6 @@ T*
 T*
 (Final Pilot-Readiness Checklist Sync) Tj
 T*
-ET
-endstream
-endobj
-10 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
-endobj
-11 0 obj
-<< /Length 3308 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (• Checklist: docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md) Tj
 T*
 (• Verdict: PASS for a supervised pilot-readiness conversation; not a launch certificate for) Tj
@@ -406,6 +416,18 @@ T*
 T*
 (behavioral forecasting claim is made.) Tj
 T*
+(• Wave 6 release-readiness summary:) Tj
+T*
+(docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md) Tj
+T*
+(- Role: Summarizes the May 10 proof/readiness merge train, validation posture, caveats, and) Tj
+T*
+(merge risk for operator review.) Tj
+T*
+(- Caveat: Use as a discoverability summary only; it is not a launch certificate or a) Tj
+T*
+(substitute for fresh preflight before buyer reliance.) Tj
+T*
 (• Release proof synchronization: openplan/src/test/pilot-readiness-export-packet.test.ts) Tj
 T*
 (- Role: Guards the Admin Pilot Readiness export against drift from Command Center) Tj
@@ -420,6 +442,19 @@ T*
 T*
 (Release Proof Packet Alignment) Tj
 T*
+ET
+endstream
+endobj
+12 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
+endobj
+13 0 obj
+<< /Length 3527 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (OpenPlan is inspectable as an Apache-2.0 planning workbench plus Nat Ford managed hosting,) Tj
 T*
 (onboarding, implementation, support, and planning services.) Tj
@@ -442,19 +477,6 @@ T*
 T*
 (• RPO/RTO commitments are filled per managed-hosting engagement, not promised globally here.) Tj
 T*
-ET
-endstream
-endobj
-12 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
-endobj
-13 0 obj
-<< /Length 3668 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (• Modeling outputs support planning review only inside the current proof boundary; no) Tj
 T*
 (validated behavioral forecasting claim is made.) Tj
@@ -529,6 +551,19 @@ T*
 T*
 (boundary \(docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md\); No) Tj
 T*
+ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
+endobj
+15 0 obj
+<< /Length 3368 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (legal/autonomous AI claim \(docs/ops/2026-05-01-openplan-known-issues-register.md\)) Tj
 T*
 (• Next action: Inspect readiness, then review intake positioning. Source:) Tj
@@ -551,19 +586,6 @@ T*
 T*
 (boundary \(docs/ops/2026-05-08-openplan-modeling-caveat-kpi-sql-gate-proof.md\); No) Tj
 T*
-ET
-endstream
-endobj
-14 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
-endobj
-15 0 obj
-<< /Length 3243 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (legal/autonomous AI claim \(docs/ops/2026-05-01-openplan-known-issues-register.md\)) Tj
 T*
 () Tj
@@ -638,6 +660,19 @@ T*
 T*
 (• SSO, private cloud, agency-cloud deployment, custom security review, or enhanced) Tj
 T*
+ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
+endobj
+17 0 obj
+<< /Length 1971 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (support/SLA terms;) Tj
 T*
 (• formal RPO/RTO commitments beyond the signed managed-hosting schedule;) Tj
@@ -660,19 +695,6 @@ T*
 T*
 () Tj
 T*
-ET
-endstream
-endobj
-16 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
-endobj
-17 0 obj
-<< /Length 2029 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (Buyer-Safe Language) Tj
 T*
 () Tj
@@ -747,6 +769,19 @@ T*
 T*
 (• openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md) Tj
 T*
+ET
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 19 0 R >>
+endobj
+19 0 obj
+<< /Length 2861 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (• docs/ops/2026-05-01-openplan-phase0-proof-repair.md) Tj
 T*
 (• docs/ops/2026-05-01-openplan-ui-ux-watch-recapture.md) Tj
@@ -769,19 +804,6 @@ T*
 T*
 (• docs/ops/2026-05-01-openplan-production-admin-operations-authenticated-smoke.md) Tj
 T*
-ET
-endstream
-endobj
-18 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 19 0 R >>
-endobj
-19 0 obj
-<< /Length 1975 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (• docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md) Tj
 T*
 (• docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md) Tj
@@ -797,6 +819,8 @@ T*
 (• docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md) Tj
 T*
 (• openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md) Tj
+T*
+(• docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md) Tj
 T*
 (• openplan/src/test/pilot-readiness-export-packet.test.ts) Tj
 T*
@@ -853,18 +877,18 @@ xref
 0000003569 00000 n 
 0000007695 00000 n 
 0000007821 00000 n 
-0000011000 00000 n 
-0000011128 00000 n 
-0000014489 00000 n 
-0000014617 00000 n 
-0000018338 00000 n 
-0000018466 00000 n 
-0000021762 00000 n 
-0000021890 00000 n 
-0000023972 00000 n 
-0000024100 00000 n 
+0000011097 00000 n 
+0000011225 00000 n 
+0000014542 00000 n 
+0000014670 00000 n 
+0000018250 00000 n 
+0000018378 00000 n 
+0000021799 00000 n 
+0000021927 00000 n 
+0000023951 00000 n 
+0000024079 00000 n 
 trailer
 << /Size 20 /Root 1 0 R >>
 startxref
-26128
+26993
 %%EOF

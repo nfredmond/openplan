@@ -11,6 +11,7 @@ import {
   getCanonicalPilotReadinessProofPaths,
   PHASE1_SHARED_SPINE_PROOF_ARTIFACT,
   PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
+  WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
 } from "@/lib/operations/pilot-readiness-proof-paths";
 import {
   buildAdminPilotReadinessProofPacketMarkdown,
@@ -128,6 +129,7 @@ describe("canonical pilot readiness proof paths", () => {
     const staticMarkdownArtifact = artifactIndex.find((artifact) => artifact.key === "static-markdown");
     const staticHtmlArtifact = artifactIndex.find((artifact) => artifact.key === "static-html");
     const staticPdfArtifact = artifactIndex.find((artifact) => artifact.key === "static-pdf");
+    const wave6Summary = artifactIndex.find((artifact) => artifact.key === "wave6-release-readiness-summary");
 
     expect(finalChecklist?.artifact).toBe(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT);
     expect(finalPilotReadinessChecklistSync.checklistArtifact).toBe(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT);
@@ -135,6 +137,7 @@ describe("canonical pilot readiness proof paths", () => {
     expect(staticMarkdownArtifact?.artifact).toBe(ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.markdown);
     expect(staticHtmlArtifact?.artifact).toBe(ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.html);
     expect(staticPdfArtifact?.artifact).toBe(ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.pdf);
+    expect(wave6Summary?.artifact).toBe(WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT);
     expect(releaseProofPosture.actions.find((action) => action.label === "Open readiness packet")?.href).toBe(
       ADMIN_PILOT_READINESS_ROUTE,
     );

@@ -4,6 +4,7 @@ import {
   ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACTS,
   FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
   PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
+  WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
 } from "@/lib/operations/pilot-readiness-proof-paths";
 
 export type ReleaseProofStatus = "pass" | "caveat" | "next";
@@ -133,6 +134,12 @@ export const finalPilotReadinessChecklistSync = {
       caveat: "Behavioral-onramp KPIs remain behind the proven SQL/RPC caveat gate; no validated behavioral forecasting claim is made.",
     },
     {
+      label: "Wave 6 release-readiness summary",
+      artifact: WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
+      role: "Summarizes the May 10 proof/readiness merge train, validation posture, caveats, and merge risk for operator review.",
+      caveat: "Use as a discoverability summary only; it is not a launch certificate or a substitute for fresh preflight before buyer reliance.",
+    },
+    {
       label: "Release proof synchronization",
       artifact: "openplan/src/test/pilot-readiness-export-packet.test.ts",
       role: "Guards the Admin Pilot Readiness export against drift from Command Center release-proof copy and the final smoke checklist.",
@@ -195,6 +202,15 @@ export const adminPilotReadinessProofArtifactIndex = [
     buyerSafeCaveat:
       "PDF is a generated snapshot; do not treat it as current if the proof helpers or checklist changed afterward.",
     operatorUse: "Use as the fixed packet attachment only after confirming it matches the current generated packet.",
+  },
+  {
+    key: "wave6-release-readiness-summary",
+    label: "Wave 6 release-readiness summary",
+    category: "proof-packet-doc",
+    artifact: WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
+    buyerSafeCaveat:
+      "Summary supports operator orientation for the May 10 merge train only; it is not a broad launch-readiness certificate.",
+    operatorUse: "Use after the final checklist to find the shipped proof/readiness changes, validation posture, caveats, and merge risk in one place.",
   },
   {
     key: "pilot-preflight-proof",

@@ -262,8 +262,8 @@
 <tr>
 <td>Final checklist / managed support synchronization</td>
 <td>PASS</td>
-<td>The final pilot-readiness checklist, managed-support proof map, county-run manifest proof, and modeling evidence export proof now travel with both the Admin export and static sales packet.</td>
-<td><code>docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md</code>; <code>docs/sales/2026-05-10-openplan-managed-support-proof-map.md</code>; <code>docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md</code>; <code>openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md</code>; <code>openplan/src/test/pilot-readiness-export-packet.test.ts</code></td>
+<td>The final pilot-readiness checklist, Wave 6 release-readiness summary, managed-support proof map, county-run manifest proof, and modeling evidence export proof now travel with both the Admin export and static sales packet.</td>
+<td><code>docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md</code>; <code>docs/sales/2026-05-10-openplan-managed-support-proof-map.md</code>; <code>docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md</code>; <code>openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md</code>; <code>docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md</code>; <code>openplan/src/test/pilot-readiness-export-packet.test.ts</code></td>
 </tr>
 </tbody></table></div>
 <h2>Compact Proof Artifact Index</h2>
@@ -306,6 +306,11 @@
 <td>PDF is a generated snapshot; do not treat it as current if the proof helpers or checklist changed afterward.</td>
 </tr>
 <tr>
+<td><strong>Wave 6 release-readiness summary</strong> — <code>docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md</code></td>
+<td>Proof packet doc</td>
+<td>Summary supports operator orientation for the May 10 merge train only; it is not a broad launch-readiness certificate.</td>
+</tr>
+<tr>
 <td><strong>Pilot preflight operator proof</strong> — <code>docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md</code></td>
 <td>Preflight proof</td>
 <td>The preflight is read-only operational confidence, not self-serve activation, schema approval, or production-write proof.</td>
@@ -335,6 +340,9 @@
 <li><strong>Modeling evidence exports</strong>: openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md</li>
 <li>Role: Carries modeling caveats and source context into report and RTP export paths.</li>
 <li>Caveat: Behavioral-onramp KPIs remain behind the proven SQL/RPC caveat gate; no validated behavioral forecasting claim is made.</li>
+<li><strong>Wave 6 release-readiness summary</strong>: docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md</li>
+<li>Role: Summarizes the May 10 proof/readiness merge train, validation posture, caveats, and merge risk for operator review.</li>
+<li>Caveat: Use as a discoverability summary only; it is not a launch certificate or a substitute for fresh preflight before buyer reliance.</li>
 <li><strong>Release proof synchronization</strong>: openplan/src/test/pilot-readiness-export-packet.test.ts</li>
 <li>Role: Guards the Admin Pilot Readiness export against drift from Command Center release-proof copy and the final smoke checklist.</li>
 <li>Caveat: Internal packet synchronization does not replace fresh smoke reruns after behavior changes.</li>
@@ -478,6 +486,7 @@
 <li>docs/sales/2026-05-10-openplan-managed-support-proof-map.md</li>
 <li>docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md</li>
 <li>openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md</li>
+<li>docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md</li>
 <li>openplan/src/test/pilot-readiness-export-packet.test.ts</li>
 <li>docs/ops/2026-05-01-openplan-release-to-sale-plan.md</li>
 <li>docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md</li>

@@ -13,6 +13,7 @@ import {
   getAdminPilotReadinessProofArtifactIndex,
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
+import { WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT } from "@/lib/operations/pilot-readiness-proof-paths";
 
 const repoRoot = path.resolve(process.cwd(), "..");
 
@@ -85,6 +86,7 @@ describe("pilot readiness export packet", () => {
     }
 
     expect(packet).toContain("docs/sales/2026-05-10-openplan-managed-support-proof-map.md");
+    expect(packet).toContain(WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT);
     expect(packet).toContain("docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md");
     expect(packet).toContain("openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md");
     expect(packet).toContain("openplan/src/test/pilot-readiness-export-packet.test.ts");
@@ -102,6 +104,8 @@ describe("pilot readiness export packet", () => {
       expect(packet).toContain(artifact.buyerSafeCaveat);
     }
 
+    expect(packet).toContain(WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT);
+    expect(packet).toContain("operator orientation");
     expect(packet).toContain("docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md");
     expect(packet).toContain("read-only operational confidence");
   });
