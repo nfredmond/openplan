@@ -25,22 +25,27 @@ const mockAudit = {
 };
 
 vi.mock("@/lib/supabase/server", () => ({
-  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) =>
+    createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
-  createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
+  createApiAuditLogger: (...args: unknown[]) =>
+    createApiAuditLoggerMock(...args),
 }));
 
 vi.mock("@/lib/billing/subscriptions", () => ({
-  applyBillingSubscriptionMutation: (...args: unknown[]) => applyBillingSubscriptionMutationMock(...args),
+  applyBillingSubscriptionMutation: (...args: unknown[]) =>
+    applyBillingSubscriptionMutationMock(...args),
 }));
 
 vi.mock("@/lib/workspaces/invitations", () => ({
-  createWorkspaceInvitation: (...args: unknown[]) => createWorkspaceInvitationMock(...args),
+  createWorkspaceInvitation: (...args: unknown[]) =>
+    createWorkspaceInvitationMock(...args),
 }));
 
 import { POST as postProvisionWorkspace } from "@/app/api/admin/workspaces/provision/route";
+import { ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT } from "@/lib/access-request-status";
 
 function provisionRequest(payload: unknown, secret = "provision-secret") {
   return new NextRequest("http://localhost/api/admin/workspaces/provision", {
@@ -49,7 +54,15 @@ function provisionRequest(payload: unknown, secret = "provision-secret") {
       "content-type": "application/json",
       authorization: `Bearer ${secret}`,
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(
+      typeof payload === "object" && payload !== null && !Array.isArray(payload)
+        ? {
+            operatorAcknowledgement:
+              ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+            ...payload,
+          }
+        : payload,
+    ),
   });
 }
 
@@ -81,14 +94,20 @@ describe("POST /api/admin/workspaces/provision", () => {
     invitationDeleteMock.mockReturnValue({ eq: invitationDeleteEqMock });
 
     fromMock.mockImplementation((table: string) => {
-      if (table === "workspaces") return { insert: workspaceInsertMock, delete: workspaceDeleteMock };
-      if (table === "workspace_members") return { insert: memberInsertMock, delete: memberDeleteMock };
-      if (table === "workspace_invitations") return { delete: invitationDeleteMock };
+      if (table === "workspaces")
+        return { insert: workspaceInsertMock, delete: workspaceDeleteMock };
+      if (table === "workspace_members")
+        return { insert: memberInsertMock, delete: memberDeleteMock };
+      if (table === "workspace_invitations")
+        return { delete: invitationDeleteMock };
       throw new Error(`Unexpected table: ${table}`);
     });
 
     createServiceRoleClientMock.mockReturnValue({ from: fromMock });
-    applyBillingSubscriptionMutationMock.mockResolvedValue({ error: null, ledgerMissing: false });
+    applyBillingSubscriptionMutationMock.mockResolvedValue({
+      error: null,
+      ledgerMissing: false,
+    });
     createWorkspaceInvitationMock.mockResolvedValue({
       invitation: {
         id: "33333333-3333-4333-8333-333333333333",
@@ -96,7 +115,8 @@ describe("POST /api/admin/workspaces/provision", () => {
         role: "owner",
         expires_at: "2026-05-08T12:00:00.000Z",
       },
-      invitationUrl: "http://localhost/sign-up?invite=token&redirect=%2Fdashboard",
+      invitationUrl:
+        "http://localhost/sign-up?invite=token&redirect=%2Fdashboard",
     });
   });
 
@@ -107,11 +127,13 @@ describe("POST /api/admin/workspaces/provision", () => {
       provisionRequest({
         workspaceName: "Nevada County Transportation Commission",
         ownerEmail: "owner@nctc.ca.gov",
-      })
+      }),
     );
 
     expect(response.status).toBe(503);
-    expect(await response.json()).toMatchObject({ error: "Workspace provisioning is not configured" });
+    expect(await response.json()).toMatchObject({
+      error: "Workspace provisioning is not configured",
+    });
     expect(workspaceInsertMock).not.toHaveBeenCalled();
   });
 
@@ -122,13 +144,34 @@ describe("POST /api/admin/workspaces/provision", () => {
           workspaceName: "Nevada County Transportation Commission",
           ownerEmail: "owner@nctc.ca.gov",
         },
-        "wrong-secret"
-      )
+        "wrong-secret",
+      ),
     );
 
     expect(response.status).toBe(401);
     expect(await response.json()).toMatchObject({ error: "Unauthorized" });
     expect(workspaceInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects provisioning payloads without explicit manual operator acknowledgement", async () => {
+    const response = await postProvisionWorkspace(
+      provisionRequest({
+        workspaceName: "Nevada County Transportation Commission",
+        ownerEmail: "owner@nctc.ca.gov",
+        operatorAcknowledgement: undefined,
+      }),
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: "Invalid workspace provisioning payload",
+      requiredAcknowledgement:
+        ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+    });
+    expect(createServiceRoleClientMock).not.toHaveBeenCalled();
+    expect(workspaceInsertMock).not.toHaveBeenCalled();
+    expect(applyBillingSubscriptionMutationMock).not.toHaveBeenCalled();
+    expect(createWorkspaceInvitationMock).not.toHaveBeenCalled();
   });
 
   it("provisions a workspace with a direct owner membership and billing snapshot", async () => {
@@ -139,7 +182,7 @@ describe("POST /api/admin/workspaces/provision", () => {
         plan: "professional",
         subscriptionStatus: "trialing",
         stripeCustomerId: "cus_123",
-      })
+      }),
     );
 
     expect(response.status).toBe(201);
@@ -149,6 +192,12 @@ describe("POST /api/admin/workspaces/provision", () => {
       ownerInvitation: null,
       plan: "professional",
       subscriptionStatus: "trialing",
+      sideEffects: {
+        workspaceProvisioned: true,
+        billingLedgerMutated: true,
+        outboundEmailSent: false,
+        ownerInvitationDelivery: "manual",
+      },
     });
     expect(memberInsertMock).toHaveBeenCalledWith({
       workspace_id: "11111111-1111-4111-8111-111111111111",
@@ -162,7 +211,13 @@ describe("POST /api/admin/workspaces/provision", () => {
         subscriptionPlan: "professional",
         subscriptionStatus: "trialing",
         stripeCustomerId: "cus_123",
-      })
+        metadata: expect.objectContaining({
+          source: "workspace_provisioning",
+          operatorAcknowledgement:
+            ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+          manualDeliveryOnly: true,
+        }),
+      }),
     );
   });
 
@@ -171,13 +226,17 @@ describe("POST /api/admin/workspaces/provision", () => {
       provisionRequest({
         workspaceName: "Nevada County Transportation Commission",
         ownerEmail: "owner@nctc.ca.gov",
-      })
+      }),
     );
 
     expect(response.status).toBe(201);
     expect(await response.json()).toMatchObject({
       workspaceId: "11111111-1111-4111-8111-111111111111",
       ownerMembershipCreated: false,
+      sideEffects: expect.objectContaining({
+        outboundEmailSent: false,
+        ownerInvitationDelivery: "manual",
+      }),
       ownerInvitation: {
         email: "owner@nctc.ca.gov",
         role: "owner",
@@ -191,7 +250,7 @@ describe("POST /api/admin/workspaces/provision", () => {
         email: "owner@nctc.ca.gov",
         role: "owner",
         origin: "http://localhost",
-      })
+      }),
     );
   });
 
@@ -205,19 +264,24 @@ describe("POST /api/admin/workspaces/provision", () => {
       provisionRequest({
         workspaceName: "Nevada County Transportation Commission",
         ownerUserId: "22222222-2222-4222-8222-222222222222",
-      })
+      }),
     );
 
     expect(response.status).toBe(500);
-    expect(await response.json()).toMatchObject({ error: "Failed to provision workspace" });
+    expect(await response.json()).toMatchObject({
+      error: "Failed to provision workspace",
+    });
     expect(memberDeleteEqMock).toHaveBeenCalledWith(
       "workspace_id",
-      "11111111-1111-4111-8111-111111111111"
+      "11111111-1111-4111-8111-111111111111",
     );
     expect(invitationDeleteEqMock).toHaveBeenCalledWith(
       "workspace_id",
-      "11111111-1111-4111-8111-111111111111"
+      "11111111-1111-4111-8111-111111111111",
     );
-    expect(workspaceDeleteEqMock).toHaveBeenCalledWith("id", "11111111-1111-4111-8111-111111111111");
+    expect(workspaceDeleteEqMock).toHaveBeenCalledWith(
+      "id",
+      "11111111-1111-4111-8111-111111111111",
+    );
   });
 });

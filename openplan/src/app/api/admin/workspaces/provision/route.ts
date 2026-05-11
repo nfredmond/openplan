@@ -6,16 +6,33 @@ import { createWorkspaceInvitation } from "@/lib/workspaces/invitations";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
+import { ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT } from "@/lib/access-request-status";
 
 export const runtime = "nodejs";
 
 const provisioningSchema = z
   .object({
     workspaceName: z.string().trim().min(1).max(120),
-    slug: z.string().trim().min(1).max(64).regex(/^[a-z0-9-]+$/).optional(),
-    plan: z.enum(["pilot", "starter", "professional", "enterprise"]).optional().default("pilot"),
+    slug: z
+      .string()
+      .trim()
+      .min(1)
+      .max(64)
+      .regex(/^[a-z0-9-]+$/)
+      .optional(),
+    plan: z
+      .enum(["pilot", "starter", "professional", "enterprise"])
+      .optional()
+      .default("pilot"),
     subscriptionStatus: z
-      .enum(["pilot", "inactive", "checkout_pending", "active", "trialing", "past_due"])
+      .enum([
+        "pilot",
+        "inactive",
+        "checkout_pending",
+        "active",
+        "trialing",
+        "past_due",
+      ])
       .optional()
       .default("pilot"),
     ownerUserId: z.string().uuid().optional(),
@@ -23,6 +40,9 @@ const provisioningSchema = z
     stripeCustomerId: z.string().trim().min(1).max(120).optional(),
     stripeSubscriptionId: z.string().trim().min(1).max(120).optional(),
     stageGateTemplateId: z.string().trim().min(1).max(80).optional(),
+    operatorAcknowledgement: z.literal(
+      ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+    ),
   })
   .refine((value) => Boolean(value.ownerUserId || value.ownerEmail), {
     message: "ownerUserId or ownerEmail is required",
@@ -45,7 +65,9 @@ function configuredProvisioningSecret(): string | null {
 }
 
 function requestSecret(request: NextRequest): string | null {
-  const explicit = request.headers.get("x-openplan-workspace-provisioning-secret")?.trim();
+  const explicit = request.headers
+    .get("x-openplan-workspace-provisioning-secret")
+    ?.trim();
   if (explicit) {
     return explicit;
   }
@@ -71,7 +93,10 @@ function isAuthorized(request: NextRequest): boolean | "missing_config" {
 
   const expectedBuffer = Buffer.from(expected);
   const suppliedBuffer = Buffer.from(supplied);
-  return expectedBuffer.length === suppliedBuffer.length && timingSafeEqual(expectedBuffer, suppliedBuffer);
+  return (
+    expectedBuffer.length === suppliedBuffer.length &&
+    timingSafeEqual(expectedBuffer, suppliedBuffer)
+  );
 }
 
 function normalizeSlug(value: string): string {
@@ -95,7 +120,9 @@ function slugWithSuffix(baseSlug: string, attempt: number): string {
   return `${trimmedBase}-${suffix}`;
 }
 
-function isDuplicateSlugError(error: { code?: string | null; message?: string } | null): boolean {
+function isDuplicateSlugError(
+  error: { code?: string | null; message?: string } | null,
+): boolean {
   if (!error) {
     return false;
   }
@@ -104,13 +131,16 @@ function isDuplicateSlugError(error: { code?: string | null; message?: string } 
     return true;
   }
 
-  return /duplicate key/i.test(error.message ?? "") && /slug/i.test(error.message ?? "");
+  return (
+    /duplicate key/i.test(error.message ?? "") &&
+    /slug/i.test(error.message ?? "")
+  );
 }
 
 async function cleanupProvisionedWorkspace(
   serviceSupabase: ReturnType<typeof createServiceRoleClient>,
   workspaceId: string,
-  audit: ReturnType<typeof createApiAuditLogger>
+  audit: ReturnType<typeof createApiAuditLogger>,
 ) {
   const { error: memberCleanupError } = await serviceSupabase
     .from("workspace_members")
@@ -159,7 +189,10 @@ export async function POST(request: NextRequest) {
 
   if (authorized === "missing_config") {
     audit.warn("workspace_provisioning_secret_missing");
-    return NextResponse.json({ error: "Workspace provisioning is not configured" }, { status: 503 });
+    return NextResponse.json(
+      { error: "Workspace provisioning is not configured" },
+      { status: 503 },
+    );
   }
 
   if (!authorized) {
@@ -170,19 +203,33 @@ export async function POST(request: NextRequest) {
   const payload = await request.json().catch(() => null);
   const parsed = provisioningSchema.safeParse(payload);
   if (!parsed.success) {
-    audit.warn("workspace_provisioning_validation_failed", { issues: parsed.error.issues.length });
-    return NextResponse.json({ error: "Invalid workspace provisioning payload" }, { status: 400 });
+    audit.warn("workspace_provisioning_validation_failed", {
+      issues: parsed.error.issues.length,
+    });
+    return NextResponse.json(
+      {
+        error: "Invalid workspace provisioning payload",
+        requiredAcknowledgement:
+          ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+      },
+      { status: 400 },
+    );
   }
 
   const input = parsed.data;
   let stageGateBinding: ReturnType<typeof resolveStageGateTemplateBinding>;
   try {
-    stageGateBinding = resolveStageGateTemplateBinding(input.stageGateTemplateId);
+    stageGateBinding = resolveStageGateTemplateBinding(
+      input.stageGateTemplateId,
+    );
   } catch {
     audit.warn("unsupported_stage_gate_template", {
       requestedTemplateId: input.stageGateTemplateId ?? null,
     });
-    return NextResponse.json({ error: "Unsupported stage-gate template" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Unsupported stage-gate template" },
+      { status: 400 },
+    );
   }
 
   const serviceSupabase = createServiceRoleClient();
@@ -201,7 +248,9 @@ export async function POST(request: NextRequest) {
         stage_gate_template_version: stageGateBinding.templateVersion,
         stage_gate_binding_source: stageGateBinding.bindingMode,
       })
-      .select("id, slug, name, plan, stage_gate_template_id, stage_gate_template_version")
+      .select(
+        "id, slug, name, plan, stage_gate_template_id, stage_gate_template_version",
+      )
       .single();
 
     if (!error && data) {
@@ -210,7 +259,10 @@ export async function POST(request: NextRequest) {
     }
 
     if (isDuplicateSlugError(error) && attempt < 3) {
-      audit.warn("workspace_slug_conflict", { baseSlug, retryAttempt: attempt + 1 });
+      audit.warn("workspace_slug_conflict", {
+        baseSlug,
+        retryAttempt: attempt + 1,
+      });
       continue;
     }
 
@@ -218,38 +270,55 @@ export async function POST(request: NextRequest) {
       message: error?.message ?? "unknown",
       code: error?.code ?? null,
     });
-    return NextResponse.json({ error: "Failed to provision workspace" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to provision workspace" },
+      { status: 500 },
+    );
   }
 
   if (!workspace) {
     audit.error("workspace_insert_exhausted", { baseSlug });
-    return NextResponse.json({ error: "Failed to provision workspace" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to provision workspace" },
+      { status: 500 },
+    );
   }
 
   try {
     if (input.ownerUserId) {
       const { error: memberError } = await serviceSupabase
         .from("workspace_members")
-        .insert({ workspace_id: workspace.id, user_id: input.ownerUserId, role: "owner" });
+        .insert({
+          workspace_id: workspace.id,
+          user_id: input.ownerUserId,
+          role: "owner",
+        });
 
       if (memberError) {
         throw new Error(memberError.message);
       }
     }
 
-    const billingResult = await applyBillingSubscriptionMutation(serviceSupabase, {
-      workspaceId: workspace.id,
-      subscriptionPlan: input.plan,
-      subscriptionStatus: input.subscriptionStatus,
-      stripeCustomerId: input.stripeCustomerId,
-      stripeSubscriptionId: input.stripeSubscriptionId,
-      metadata: { source: "workspace_provisioning" },
-    });
+    const billingResult = await applyBillingSubscriptionMutation(
+      serviceSupabase,
+      {
+        workspaceId: workspace.id,
+        subscriptionPlan: input.plan,
+        subscriptionStatus: input.subscriptionStatus,
+        stripeCustomerId: input.stripeCustomerId,
+        stripeSubscriptionId: input.stripeSubscriptionId,
+        metadata: {
+          source: "workspace_provisioning",
+          operatorAcknowledgement: input.operatorAcknowledgement,
+          manualDeliveryOnly: true,
+        },
+      },
+    );
 
     if (billingResult.error || billingResult.ledgerMissing) {
       throw new Error(
         billingResult.error?.message ??
-          "Billing ledger schema is unavailable for workspace provisioning"
+          "Billing ledger schema is unavailable for workspace provisioning",
       );
     }
 
@@ -273,6 +342,13 @@ export async function POST(request: NextRequest) {
       subscriptionStatus: input.subscriptionStatus,
       subscriptionPlan: input.plan,
       stripeCustomerAttached: Boolean(input.stripeCustomerId),
+      operatorAcknowledgement: input.operatorAcknowledgement,
+      sideEffects: {
+        workspaceProvisioned: true,
+        billingLedgerMutated: true,
+        outboundEmailSent: false,
+        ownerInvitationDelivery: "manual",
+      },
       durationMs: Date.now() - startedAt,
     });
 
@@ -284,6 +360,12 @@ export async function POST(request: NextRequest) {
         plan: input.plan,
         subscriptionStatus: input.subscriptionStatus,
         ownerMembershipCreated: Boolean(input.ownerUserId),
+        sideEffects: {
+          workspaceProvisioned: true,
+          billingLedgerMutated: true,
+          outboundEmailSent: false,
+          ownerInvitationDelivery: "manual",
+        },
         ownerInvitation: ownerInvitation
           ? {
               id: ownerInvitation.invitation.id,
@@ -295,7 +377,7 @@ export async function POST(request: NextRequest) {
             }
           : null,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     audit.error("workspace_provisioning_failed_after_workspace_insert", {
@@ -304,6 +386,9 @@ export async function POST(request: NextRequest) {
     });
 
     await cleanupProvisionedWorkspace(serviceSupabase, workspace.id, audit);
-    return NextResponse.json({ error: "Failed to provision workspace" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to provision workspace" },
+      { status: 500 },
+    );
   }
 }
