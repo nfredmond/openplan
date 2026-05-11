@@ -41,7 +41,7 @@ const PILOT_PREFLIGHT_COMMAND =
 const PILOT_PREFLIGHT_PROOF_ARTIFACT = PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT;
 
 const PILOT_PREFLIGHT_PROOF_SCOPE =
-  "Read-only pre-conversation readiness bundle covering local guard posture, migration inventory, production health, and Vercel deployment readiness.";
+  "Read-only pre-conversation evidence check covering local guard posture, migration inventory, production health, and Vercel deployment readiness.";
 
 const PILOT_PREFLIGHT_OPERATOR_INSTRUCTION =
   "Run this in a terminal immediately before a buyer call, public demo, supervised pilot kickoff, sales-packet refresh, or post-deploy confidence check; this browser surface only points to the command and proof note.";
@@ -117,8 +117,8 @@ export function buildPilotReadinessControlSummary(statusList: SmokeStatus[]): Pi
 
   if (counts.pass > 0) {
     return {
-      label: "Ready for supervised review",
-      detail: "All tracked readiness lanes have passing proof artifacts. Use the packet as an internal diligence snapshot, not an autonomous launch certificate.",
+      label: "Proof-backed supervised review",
+      detail: "Currently tracked readiness lanes have passing proof artifacts. Treat the packet as an internal diligence snapshot for scoped pilot conversations, not an autonomous launch certificate.",
       tone: "success",
       latestEvidenceDate: resolveLatestEvidenceDate(statusList),
       counts,

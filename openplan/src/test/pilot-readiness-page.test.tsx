@@ -33,6 +33,8 @@ describe("PilotReadinessPage", () => {
   it("shows that the export caveat cue is synchronized with Command Center release proof", () => {
     render(<PilotReadinessPage />);
 
+    const pageText = document.body.textContent ?? "";
+
     const cue = screen.getByLabelText("Export caveat sync status");
     const salesCaveatProof = releaseProofPosture.proofItems.find((item) => item.key === "sales-caveats");
 
@@ -41,6 +43,14 @@ describe("PilotReadinessPage", () => {
     expect(cue).toHaveTextContent(`${releaseProofPosture.proofItems.length} proof artifacts`);
     expect(cue).toHaveTextContent(finalPilotReadinessChecklistSync.checklistArtifact);
     expect(cue).toHaveTextContent(salesCaveatProof?.artifact ?? "");
+    expect(screen.getByRole("heading", { name: /Proof status overview/i })).toBeInTheDocument();
+    expect(screen.getByText(/export an operator summary for supervised pilot diligence/i)).toBeInTheDocument();
+    expect(screen.getByText(/Tracked lanes with a recent passing artifact/i)).toBeInTheDocument();
+    expect(screen.getByText(/Tracked lanes requiring proof repair before citation/i)).toBeInTheDocument();
+    expect(screen.getByText(/Tracked lanes missing a current proof artifact/i)).toBeInTheDocument();
+    expect(screen.getByText(/verify source documents before external reliance/i)).toBeInTheDocument();
+    expect(pageText).not.toMatch(/shareable summary/i);
+    expect(pageText).not.toMatch(/areas are healthy/i);
     expect(screen.getByRole("heading", { name: /Export filenames and caveats before buyer reliance/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Current packet docs, static exports, and preflight proof/i })).toBeInTheDocument();
     expect(screen.getByLabelText("Compact proof artifact index")).toHaveTextContent("Buyer-safe caveats required");
@@ -77,6 +87,9 @@ describe("PilotReadinessPage", () => {
     expect(screen.getByText(/Pilot readiness: turns smoke status and source documents/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Billing proof waiver/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: /Export Readiness Packet/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Latest proof results by app surface/i })).toBeInTheDocument();
+    expect(screen.getByText(/cite only the source artifact, not the dashboard row/i)).toBeInTheDocument();
+    expect(screen.getByText(/Passing proof artifact available for supervised pilot diligence/i)).toBeInTheDocument();
     expect(screen.getByText("Exact proof:")).toBeInTheDocument();
     expect(
       screen.getByRole("link", {

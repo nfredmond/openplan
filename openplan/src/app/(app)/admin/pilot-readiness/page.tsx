@@ -68,10 +68,10 @@ export default function PilotReadinessPage() {
               <StatusBadge tone={pilotControl.tone}>{pilotControl.label}</StatusBadge>
               <StatusBadge tone="neutral">Latest evidence: {pilotControl.latestEvidenceDate}</StatusBadge>
             </div>
-            <h1 className="module-intro-title">Readiness overview</h1>
+            <h1 className="module-intro-title">Proof status overview</h1>
             <p className="module-intro-description">
-              Track the latest smoke-test results, see which areas are healthy, and export a shareable summary of the
-              current status.
+              Track the latest smoke-test results, see which lanes have current evidence, and export an operator summary
+              for supervised pilot diligence.
             </p>
           </div>
 
@@ -79,22 +79,22 @@ export default function PilotReadinessPage() {
             <div className="module-summary-card">
               <p className="module-summary-label">Passing checks</p>
               <p className="module-summary-value">{pilotControl.counts.pass}</p>
-              <p className="module-summary-detail">Checks with a recent passing result.</p>
+              <p className="module-summary-detail">Tracked lanes with a recent passing artifact.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Failing checks</p>
               <p className="module-summary-value">{pilotControl.counts.fail}</p>
-              <p className="module-summary-detail">Checks that need follow-up before they can be treated as healthy.</p>
+              <p className="module-summary-detail">Tracked lanes requiring proof repair before citation.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Pending checks</p>
               <p className="module-summary-value">{pilotControl.counts.pending}</p>
-              <p className="module-summary-detail">Tracked checks that still need a recent result.</p>
+              <p className="module-summary-detail">Tracked lanes missing a current proof artifact.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Export</p>
               <p className="module-summary-value">{pilotControl.requiredCaveatCount}</p>
-              <p className="module-summary-detail">Required caveats travel with the current packet.</p>
+              <p className="module-summary-detail">Required caveats that must accompany the packet.</p>
             </div>
           </div>
 
@@ -129,7 +129,7 @@ export default function PilotReadinessPage() {
           <div className="module-operator-list">
             <div className="module-operator-item">This page shows recorded results rather than planned work.</div>
             <div className="module-operator-item">Each check stays visible even when the latest result is missing, pending, or failing.</div>
-            <div className="module-operator-item">Use the exported summary as a status snapshot, then follow up in the source documents when more detail is needed.</div>
+            <div className="module-operator-item">Use the exported summary as an operator snapshot, then verify source documents before external reliance.</div>
             <div className="module-operator-item">Preflight posture: {pilotControl.preflightPosture}</div>
           </div>
         </article>
@@ -352,9 +352,9 @@ export default function PilotReadinessPage() {
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">Tracked checks</p>
-            <h2 className="module-section-title">Latest results by app surface</h2>
+            <h2 className="module-section-title">Latest proof results by app surface</h2>
             <p className="module-section-description">
-              Each card below shows the latest result we could find for that check.
+              Each row shows the latest parsed result for that check; cite only the source artifact, not the dashboard row.
             </p>
           </div>
         </div>
@@ -389,7 +389,7 @@ export default function PilotReadinessPage() {
                 </div>
                 <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
                   {status.status === "PASS"
-                    ? "Recent passing proof artifact available for pilot diligence."
+                    ? "Passing proof artifact available for supervised pilot diligence."
                     : status.status === "FAIL"
                       ? "Failing evidence — needs follow-up before this lane can be cited as ready."
                       : status.status === "PENDING"
