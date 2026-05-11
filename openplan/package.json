@@ -28,7 +28,8 @@
     "ops:check-migration-inventory": "node scripts/ops/check-migration-inventory.mjs",
     "ops:check-pilot-preflight": "node scripts/ops/check-pilot-preflight.mjs",
     "ops:generate-admin-pilot-readiness-proof-packet": "tsx scripts/ops/generate-admin-pilot-readiness-proof-packet.ts",
-    "ops:check-admin-pilot-readiness-proof-packet-drift": "node scripts/ops/check-admin-pilot-readiness-proof-packet-drift.mjs"
+    "ops:check-admin-pilot-readiness-proof-packet-drift": "node scripts/ops/check-admin-pilot-readiness-proof-packet-drift.mjs",
+    "test:sales-proof-claim-boundaries": "vitest run src/test/sales-proof-claim-boundaries.test.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",

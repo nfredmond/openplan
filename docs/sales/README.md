@@ -22,4 +22,12 @@ Before committing proof-packet work, run the drift guard from `openplan/`:
 npm run ops:check-admin-pilot-readiness-proof-packet-drift
 ```
 
+Before committing buyer-facing sales/proof copy, run the compact claim-boundary guard from `openplan/`:
+
+```bash
+npm run test:sales-proof-claim-boundaries
+```
+
+The guard keeps the saleable proof posture inside four explicit boundaries: no broad self-serve SaaS, no legal/LAPM automation, no grant award prediction, and no autonomous AI planning claim.
+
 Keep buyer claims and buyer-safe caveats in the TypeScript source, then regenerate the MD/HTML/PDF outputs. Avoid hand-editing only one generated format; that is how sales packets become three slightly different stories, which is poor trail discipline and worse procurement hygiene.

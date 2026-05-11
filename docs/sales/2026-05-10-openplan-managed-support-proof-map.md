@@ -41,6 +41,7 @@ This document does not claim:
 - validated behavioral forecasting;
 - autonomous AI planning;
 - legal, engineering, procurement, grant-submission, or LAPM/compliance sign-off;
+- grant award prediction, certified grant scoring, or guaranteed funding competitiveness;
 - private cloud, agency cloud, SSO, custom security review, or enhanced SLA without separate scoping.
 
 ## Recommended Buyer Sentence
