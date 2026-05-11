@@ -45,6 +45,7 @@
 | [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) | **Current ops preflight** — public admin redirect/API-denial checks and Vercel reviewer allowlist env-name verification |
 | [2026-05-01 modeling caveat-gate proof](2026-05-01-openplan-modeling-caveat-gate-proof.md) | **Current modeling-safety proof** — locks screening-grade consent boundary on the county-run reader and proves scenario_comparison_summary does not silently consume behavioral_onramp KPIs |
 | [2026-05-01 production admin operations authenticated smoke](2026-05-01-openplan-production-admin-operations-authenticated-smoke.md) | **Current production admin proof** — allowlisted reviewer session loads `/admin/operations` with service-lane intake unlocked and no prospect row capture |
+| [2026-05-10 access-request manual provisioning guard proof](../../openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md) | **Current Admin/support guard proof** — manual owner-invite provisioning now requires explicit no-email operator acknowledgement before any service-role lookup or workspace/invitation write |
 | [2026-05-01 workspace URL isolation smoke](2026-05-01-openplan-local-workspace-url-isolation-smoke.md) | **Current RLS/browser proof** — synthetic cross-workspace project URLs blocked with session continuity verified |
 | [2026-05-01 RC proof log](2026-05-01-openplan-rc-proof-log.md) | **Current release gate** — test, lint, build, audit, prod health, and public preflight proof |
 | [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) | **Current RTP workflow proof** — cycle creation, packet creation, artifact generation, and release-review anchor landing |
@@ -142,6 +143,7 @@
 - [auth-access-evidence.md](2026-03-15-openplan-v1-auth-access-evidence.md)
 - [billing-identity-review.md](2026-03-16-billing-identity-review-hardening.md)
 - [provisioning-hardening.md](2026-03-16-v1-provisioning-hardening.md)
+- [2026-05-10 access-request manual provisioning guard proof](../../openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md) — current `/admin/operations` owner-invite guard: `manual_provisioning_no_email` acknowledgement is required before any service-role lookup, workspace insert, owner invitation, billing mutation, or provisioning RPC
 - [live-billing-hold-canary.md](2026-03-16-openplan-live-billing-hold-canary.md)
 - [cancel-refund-closeout.md](2026-03-16-openplan-cancel-refund-operational-closeout.md)
 - [billing-reliability-evidence.md](2026-03-15-openplan-v1-billing-reliability-evidence.md)
@@ -153,6 +155,7 @@
 - [2026-05-01 UI/UX watch recapture](2026-05-01-openplan-ui-ux-watch-recapture.md) — local Data Hub and Pilot Readiness desktop/mobile recapture proof
 - [2026-05-01 admin operations smoke preflight](2026-05-01-openplan-admin-operations-smoke-preflight.md) — public preflight and production env-name verification
 - [2026-05-01 production admin operations authenticated smoke](2026-05-01-openplan-production-admin-operations-authenticated-smoke.md) — allowlisted reviewer session loads `/admin/operations`, sees service-lane intake unlocked, and does not capture prospect rows
+- [2026-05-10 access-request manual provisioning guard proof](../../openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md) — current manual provisioning safety proof for `/admin/operations`; pairs with admin smoke runbooks when reviewing why production proof must not click provisioning controls
 - [2026-05-01 workspace URL isolation smoke](2026-05-01-openplan-local-workspace-url-isolation-smoke.md) — local synthetic cross-workspace project URL isolation with session-continuity screenshots
 - [2026-05-01 RC proof log](2026-05-01-openplan-rc-proof-log.md) — current release-candidate gate across test, lint, build, audit, prod health, and public preflight
 - [2026-05-10 prod health evidence-log helper](2026-05-10-prod-health-evidence-log-helper.md) — operator helper for logging the post-main-push production health evidence gate once Vercel is Ready; local file output only, no secrets, no Supabase, no production writes

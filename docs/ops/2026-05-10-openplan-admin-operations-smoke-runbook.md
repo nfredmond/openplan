@@ -19,6 +19,8 @@ The sequence proves access posture. It must not become an onboarding workflow. N
 - **No secret capture:** do not record service-role keys, Supabase tokens, Vercel tokens, magic-link tokens, cookies, browser storage, or invitation URLs.
 - **No buyer overclaim:** describe the result as supervised admin readiness only, not self-serve onboarding or finished SaaS operations.
 
+The current code-level provisioning guard is documented in [Access request manual provisioning guard proof](../../openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md). That guard is additional safety evidence, not permission to click provisioning controls during this smoke.
+
 ## Checklist
 
 | Step | Command or action | Pass condition | Evidence to record |
@@ -79,6 +81,7 @@ Use restrained language after a clean run:
 ## Related Proof
 
 - [Final pilot-readiness smoke checklist](2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md)
+- [Access request manual provisioning guard proof](../../openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md)
 - [Production admin operations authenticated smoke](2026-05-01-openplan-production-admin-operations-authenticated-smoke.md)
 - [Local admin support flow smoke](2026-05-01-openplan-local-admin-support-flow-smoke.md)
 - [Admin operations authenticated smoke checklist](../../openplan/docs/ops/2026-04-24-admin-operations-authenticated-smoke-checklist.md)

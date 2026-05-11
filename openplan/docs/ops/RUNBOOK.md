@@ -172,6 +172,24 @@ Actions:
 3. If the customer is blocked during an active demo or support window, Nathaniel decides whether to raise quota, change plan state, or keep strict enforcement.
 4. Do not bypass quota gates in code for one customer.
 
+## Request Access And Manual Owner-Invite Provisioning
+
+Symptoms:
+
+- A reviewer needs to triage `/request-access` intake from `/admin/operations`.
+- A contacted or invited request may be ready for a supervised pilot workspace and owner invitation.
+- An operator is gathering buyer-safe admin-readiness evidence without writing production data.
+
+Actions:
+
+1. For proof-only checks, use the root [Admin Operations Smoke Runbook](../../../docs/ops/2026-05-10-openplan-admin-operations-smoke-runbook.md). It is intentionally non-mutating and must not click triage or provisioning controls.
+2. Treat successful owner-invite provisioning as a production write. Do not run it unless Nathaniel has approved the exact request row and recipient context.
+3. Confirm the reviewer is allowlisted through `OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS`; do not broaden the allowlist for convenience during a smoke.
+4. Preserve the current manual guard: the access-request provisioning route requires `manual_provisioning_no_email` before any service-role lookup, workspace insert, owner-invite creation, billing mutation, or provisioning RPC. See [Access request manual provisioning guard proof](2026-05-10-access-request-manual-provisioning-guard-proof.md).
+5. Never paste invitation URLs, tokens, cookies, service-role keys, or raw prospect PII into docs, chat, screenshots, or buyer materials.
+
+The current posture is supervised implementation support, not automatic public self-serve workspace activation.
+
 ## CSP Violations
 
 Symptoms:
