@@ -83,8 +83,7 @@
   --sand: var(--map-1);
   --fog: var(--map-2);
 
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: var(--font-display);
 
   /* App semantic tokens (shadcn/tailwind) — mapped onto cartographic tokens */
   --background: var(--bg);

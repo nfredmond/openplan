@@ -11,13 +11,6 @@ const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
 });
 
-const spaceGroteskBody = Space_Grotesk({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  display: "swap",
-  variable: "--font-body",
-});
-
 const jetBrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500"],
@@ -78,7 +71,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${spaceGroteskBody.variable} ${jetBrainsMono.variable} dark`}
+      className={`${spaceGrotesk.variable} ${jetBrainsMono.variable} dark`}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
