@@ -8,6 +8,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { AccessRequestProvisionControls } from "@/components/operations/access-request-provision-controls";
+import { ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT } from "@/lib/access-request-status";
 
 describe("AccessRequestProvisionControls", () => {
   const fetchMock = vi.fn();
@@ -65,7 +66,10 @@ describe("AccessRequestProvisionControls", () => {
     fireEvent.change(screen.getByLabelText("Workspace name"), {
       target: { value: "NCTC Pilot Workspace" },
     });
-    fireEvent.click(screen.getByRole("button", { name: /Create invite/i }));
+    const createButton = screen.getByRole("button", { name: /Create invite/i });
+    expect(createButton).toBeDisabled();
+    fireEvent.click(screen.getByLabelText(/manual operator provisioning step/i));
+    fireEvent.click(createButton);
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     expect(fetchMock).toHaveBeenCalledWith(
@@ -73,13 +77,35 @@ describe("AccessRequestProvisionControls", () => {
       expect.objectContaining({
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ workspaceName: "NCTC Pilot Workspace" }),
+        body: JSON.stringify({
+          workspaceName: "NCTC Pilot Workspace",
+          operatorAcknowledgement: ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+        }),
       }),
     );
     expect(await screen.findByDisplayValue("http://localhost/sign-up?invite=test-token&redirect=%2Fdashboard")).toBeInTheDocument();
     expect(screen.getByText("Pilot workspace and owner invite created. No email was sent.")).toBeInTheDocument();
-    expect(screen.getByText(/Creates a pilot workspace and owner invite/i)).toBeInTheDocument();
+    expect(screen.getByText(/manual operator acknowledgement/i)).toBeInTheDocument();
     expect(refreshMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("requires a manual acknowledgement before enabling provisioning", () => {
+    render(
+      <AccessRequestProvisionControls
+        requestId="44444444-4444-4444-8444-444444444444"
+        status="invited"
+        provisionedWorkspaceId={null}
+        workspaceName="Pilot Workspace"
+      />,
+    );
+
+    const createButton = screen.getByRole("button", { name: /Create invite/i });
+    expect(screen.getByText(/do not send outbound email/i)).toBeInTheDocument();
+    expect(createButton).toBeDisabled();
+
+    fireEvent.click(screen.getByLabelText(/manual operator provisioning step/i));
+
+    expect(createButton).toBeEnabled();
   });
 
   it("waits until the request has been contacted or invited", () => {

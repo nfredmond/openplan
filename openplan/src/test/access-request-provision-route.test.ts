@@ -57,6 +57,14 @@ vi.mock("@/lib/workspaces/invitations", () => ({
 }));
 
 import { POST } from "@/app/api/admin/access-requests/[accessRequestId]/provision/route";
+import { ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT } from "@/lib/access-request-status";
+
+function acknowledgedPayload(payload: Record<string, unknown> = {}) {
+  return {
+    operatorAcknowledgement: ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+    ...payload,
+  };
+}
 
 function provisionRequest(payload: unknown) {
   return new NextRequest(
@@ -151,7 +159,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
 
   it("provisions a pilot workspace, creates an owner invite, and records the access-request link", async () => {
     const response = await POST(
-      provisionRequest({ workspaceName: "NCTC Pilot Workspace" }),
+      provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot Workspace" })),
       routeContext(),
     );
 
@@ -241,7 +249,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
   it("rejects unauthenticated requests before service-role access", async () => {
     authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
 
-    const response = await POST(provisionRequest({ workspaceName: "NCTC Pilot" }), routeContext());
+    const response = await POST(provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })), routeContext());
 
     expect(response.status).toBe(401);
     expect(createServiceRoleClientMock).not.toHaveBeenCalled();
@@ -253,7 +261,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
       data: { user: { id: "user-2", email: "other@openplan.test" } },
     });
 
-    const response = await POST(provisionRequest({ workspaceName: "NCTC Pilot" }), routeContext());
+    const response = await POST(provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })), routeContext());
 
     expect(response.status).toBe(403);
     expect(createServiceRoleClientMock).not.toHaveBeenCalled();
@@ -261,21 +269,41 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
   });
 
   it("rejects invalid ids and payloads", async () => {
-    const invalidIdResponse = await POST(provisionRequest({ workspaceName: "NCTC Pilot" }), routeContext("not-a-uuid"));
+    const invalidIdResponse = await POST(
+      provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })),
+      routeContext("not-a-uuid"),
+    );
     expect(invalidIdResponse.status).toBe(400);
 
     const invalidJsonResponse = await POST(provisionRequest("{"), routeContext());
     expect(invalidJsonResponse.status).toBe(400);
 
-    const invalidPayloadResponse = await POST(provisionRequest({ plan: "professional" }), routeContext());
+    const invalidPayloadResponse = await POST(
+      provisionRequest(acknowledgedPayload({ plan: "professional" })),
+      routeContext(),
+    );
     expect(invalidPayloadResponse.status).toBe(400);
+    expect(workspaceInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects provisioning payloads that do not include manual operator acknowledgement", async () => {
+    const response = await POST(provisionRequest({ workspaceName: "Pilot Workspace" }), routeContext());
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual(
+      expect.objectContaining({
+        error: "Invalid access request provisioning payload",
+        requiredAcknowledgement: ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+      }),
+    );
+    expect(accessSelectMock).not.toHaveBeenCalled();
     expect(workspaceInsertMock).not.toHaveBeenCalled();
   });
 
   it("returns 404 for missing access request rows", async () => {
     accessMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
-    const response = await POST(provisionRequest({ workspaceName: "NCTC Pilot" }), routeContext());
+    const response = await POST(provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })), routeContext());
 
     expect(response.status).toBe(404);
     expect(workspaceInsertMock).not.toHaveBeenCalled();
@@ -294,7 +322,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
       error: null,
     });
 
-    const response = await POST(provisionRequest({ workspaceName: "NCTC Pilot" }), routeContext());
+    const response = await POST(provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })), routeContext());
 
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual(
@@ -320,7 +348,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
       error: null,
     });
 
-    const response = await POST(provisionRequest({ workspaceName: "NCTC Pilot" }), routeContext());
+    const response = await POST(provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })), routeContext());
 
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual(
@@ -338,7 +366,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
       ledgerMissing: false,
     });
 
-    const response = await POST(provisionRequest({ workspaceName: "NCTC Pilot" }), routeContext());
+    const response = await POST(provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })), routeContext());
 
     expect(response.status).toBe(500);
     expect(memberDeleteEqMock).toHaveBeenCalledWith(
@@ -361,7 +389,7 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
       },
     });
 
-    const response = await POST(provisionRequest({ workspaceName: "NCTC Pilot" }), routeContext());
+    const response = await POST(provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })), routeContext());
 
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({

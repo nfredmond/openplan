@@ -37,6 +37,9 @@ export const ACCESS_REQUEST_PROVISIONING_SIDE_EFFECTS = {
   ownerInvitationCreated: true,
 } as const;
 
+export const ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT =
+  "manual_provisioning_no_email" as const;
+
 const ACCESS_REQUEST_TRIAGE_TRANSITIONS: Record<AccessRequestStatus, AccessRequestTriageStatus[]> = {
   new: ["reviewing", "deferred", "declined"],
   reviewing: ["contacted", "deferred", "declined"],
@@ -99,5 +102,5 @@ export function accessRequestTriageSideEffectLabel(): string {
 }
 
 export function accessRequestProvisioningSideEffectLabel(): string {
-  return "Creates a pilot workspace and owner invite; no outbound email is sent.";
+  return "Creates a pilot workspace and owner invite only after manual operator acknowledgement; no outbound email is sent.";
 }

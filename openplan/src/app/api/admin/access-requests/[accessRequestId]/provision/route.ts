@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import {
+  ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
   ACCESS_REQUEST_PROVISIONING_SIDE_EFFECTS,
   canProvisionAccessRequestStatus,
   canReviewAccessRequests,
@@ -31,6 +32,7 @@ const provisionSchema = z
     workspaceName: z.string().trim().min(1).max(120).optional(),
     slug: z.string().trim().min(1).max(64).regex(/^[a-z0-9-]+$/).optional(),
     stageGateTemplateId: z.string().trim().min(1).max(80).optional(),
+    operatorAcknowledgement: z.literal(ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT),
   })
   .strict();
 
@@ -202,7 +204,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
   const parsedBody = provisionSchema.safeParse(bodyRead.data ?? {});
   if (!parsedBody.success) {
     audit.warn("access_request_provision_validation_failed", { issues: parsedBody.error.issues.length });
-    return NextResponse.json({ error: "Invalid access request provisioning payload" }, { status: 400 });
+    return NextResponse.json(
+      {
+        error: "Invalid access request provisioning payload",
+        requiredAcknowledgement: ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+      },
+      { status: 400 },
+    );
   }
 
   let stageGateBinding: ReturnType<typeof resolveStageGateTemplateBinding>;

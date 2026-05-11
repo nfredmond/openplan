@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
+  ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
   accessRequestProvisioningSideEffectLabel,
   canProvisionAccessRequestStatus,
   type AccessRequestStatus,
@@ -38,11 +39,12 @@ export function AccessRequestProvisionControls({
   const [invitationUrl, setInvitationUrl] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [manualAcknowledgement, setManualAcknowledgement] = useState(false);
   const canProvision = !linkedWorkspaceId && canProvisionAccessRequestStatus(currentStatus);
   const trimmedWorkspaceName = draftWorkspaceName.trim();
 
   async function provisionWorkspace() {
-    if (!canProvision || !trimmedWorkspaceName) {
+    if (!canProvision || !trimmedWorkspaceName || !manualAcknowledgement) {
       return;
     }
 
@@ -57,7 +59,10 @@ export function AccessRequestProvisionControls({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ workspaceName: trimmedWorkspaceName }),
+        body: JSON.stringify({
+          workspaceName: trimmedWorkspaceName,
+          operatorAcknowledgement: ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
+        }),
       });
       const payload = await response.json().catch(() => ({}));
 
@@ -106,11 +111,24 @@ export function AccessRequestProvisionControls({
             onChange={(event) => setDraftWorkspaceName(event.target.value)}
             disabled={pending}
           />
+          <label className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100">
+            <input
+              type="checkbox"
+              className="mt-0.5 h-3.5 w-3.5 rounded border-amber-300"
+              checked={manualAcknowledgement}
+              onChange={(event) => setManualAcknowledgement(event.target.checked)}
+              disabled={pending}
+            />
+            <span>
+              I have confirmed this is a manual operator provisioning step. Create the workspace and owner invite only;
+              do not send outbound email.
+            </span>
+          </label>
           <Button
             type="button"
             variant="outline"
             size="xs"
-            disabled={pending || !trimmedWorkspaceName}
+            disabled={pending || !trimmedWorkspaceName || !manualAcknowledgement}
             onClick={provisionWorkspace}
           >
             {pending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Send className="h-3 w-3" />}

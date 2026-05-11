@@ -10,6 +10,7 @@ import type {
 } from "@/lib/access-request-intake";
 import type { WorkspaceInvitationStatus } from "@/lib/workspaces/invitations";
 export {
+  ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
   ACCESS_REQUEST_TRIAGE_SIDE_EFFECTS,
   ACCESS_REQUEST_PROVISIONING_SIDE_EFFECTS,
   accessRequestStatusLabel,
