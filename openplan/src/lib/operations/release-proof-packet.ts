@@ -1,5 +1,6 @@
 import {
   ADMIN_PILOT_READINESS_ROUTE,
+  ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT,
   ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACTS,
   FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
   PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
@@ -172,7 +173,7 @@ export const adminPilotReadinessProofArtifactIndex = [
     key: "static-markdown",
     label: "Static sales packet — Markdown",
     category: "static-sales-packet",
-    artifact: "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md",
+    artifact: ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.markdown,
     buyerSafeCaveat:
       "Buyer-facing packet copy must travel with the caveat sheet and human review before external reliance.",
     operatorUse: "Use as the editable source-style sales packet for diligence review.",
@@ -181,7 +182,7 @@ export const adminPilotReadinessProofArtifactIndex = [
     key: "static-html",
     label: "Static sales packet — HTML",
     category: "static-sales-packet",
-    artifact: "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html",
+    artifact: ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.html,
     buyerSafeCaveat:
       "HTML is a generated presentation artifact; regenerate it when the Markdown/source helpers change.",
     operatorUse: "Use for browser-readable packet review or lightweight sharing after caveat review.",
@@ -190,7 +191,7 @@ export const adminPilotReadinessProofArtifactIndex = [
     key: "static-pdf",
     label: "Static sales packet — PDF",
     category: "static-sales-packet",
-    artifact: "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf",
+    artifact: ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.pdf,
     buyerSafeCaveat:
       "PDF is a generated snapshot; do not treat it as current if the proof helpers or checklist changed afterward.",
     operatorUse: "Use as the fixed packet attachment only after confirming it matches the current generated packet.",

@@ -4,8 +4,11 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import {
+  ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT,
   ADMIN_PILOT_READINESS_ROUTE,
   FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
+  getCanonicalPilotReadinessProofPathValues,
+  getCanonicalPilotReadinessProofPaths,
   PHASE1_SHARED_SPINE_PROOF_ARTIFACT,
   PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
 } from "@/lib/operations/pilot-readiness-proof-paths";
@@ -108,13 +111,30 @@ const emptyProjectSpineInput: ProjectSpineCrosslinkInput = {
 
 describe("canonical pilot readiness proof paths", () => {
   it("keeps artifact index, command board, project spine, and sales packet docs on the same readiness/preflight paths", () => {
+    const canonicalPaths = getCanonicalPilotReadinessProofPaths();
+    expect(canonicalPaths.readinessRoute).toBe(ADMIN_PILOT_READINESS_ROUTE);
+    expect(canonicalPaths.finalChecklistArtifact).toBe(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT);
+    expect(canonicalPaths.pilotPreflightOperatorProofArtifact).toBe(PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT);
+    expect(canonicalPaths.phase1SharedSpineProofArtifact).toBe(PHASE1_SHARED_SPINE_PROOF_ARTIFACT);
+    expect(canonicalPaths.staticPacketArtifacts).toEqual([
+      ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.markdown,
+      ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.html,
+      ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.pdf,
+    ]);
+
     const artifactIndex = getAdminPilotReadinessProofArtifactIndex();
     const finalChecklist = artifactIndex.find((artifact) => artifact.key === "final-checklist");
     const pilotPreflight = artifactIndex.find((artifact) => artifact.key === "pilot-preflight-proof");
+    const staticMarkdownArtifact = artifactIndex.find((artifact) => artifact.key === "static-markdown");
+    const staticHtmlArtifact = artifactIndex.find((artifact) => artifact.key === "static-html");
+    const staticPdfArtifact = artifactIndex.find((artifact) => artifact.key === "static-pdf");
 
     expect(finalChecklist?.artifact).toBe(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT);
     expect(finalPilotReadinessChecklistSync.checklistArtifact).toBe(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT);
     expect(pilotPreflight?.artifact).toBe(PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT);
+    expect(staticMarkdownArtifact?.artifact).toBe(ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.markdown);
+    expect(staticHtmlArtifact?.artifact).toBe(ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.html);
+    expect(staticPdfArtifact?.artifact).toBe(ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.pdf);
     expect(releaseProofPosture.actions.find((action) => action.label === "Open readiness packet")?.href).toBe(
       ADMIN_PILOT_READINESS_ROUTE,
     );
@@ -132,21 +152,21 @@ describe("canonical pilot readiness proof paths", () => {
 
     const generatedMarkdown = buildAdminPilotReadinessProofPacketMarkdown();
     const staticMarkdown = readFileSync(
-      path.join(repoRoot, "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md"),
+      path.join(repoRoot, ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.markdown),
       "utf8",
     );
     const staticHtml = readFileSync(
-      path.join(repoRoot, "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html"),
+      path.join(repoRoot, ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.html),
       "utf8",
     );
     const staticPdf = readFileSync(
-      path.join(repoRoot, "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf"),
+      path.join(repoRoot, ADMIN_PILOT_READINESS_STATIC_PACKET_ARTIFACT_BY_FORMAT.pdf),
     ).toString("latin1");
 
     for (const content of [generatedMarkdown, staticMarkdown, staticHtml, staticPdf]) {
-      expect(content).toContain(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT);
-      expect(content).toContain(PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT);
-      expect(content).toContain(PHASE1_SHARED_SPINE_PROOF_ARTIFACT);
+      for (const proofPath of getCanonicalPilotReadinessProofPathValues().filter((value) => value !== ADMIN_PILOT_READINESS_ROUTE)) {
+        expect(content).toContain(proofPath);
+      }
     }
   });
 });
