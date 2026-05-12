@@ -20,6 +20,9 @@ const healthyPayload = {
   status: "ok",
   service: "openplan",
   checkedAt: "2026-04-24T12:00:00.000Z",
+  deployment: {
+    commit: "abcdef123456",
+  },
   checks: {
     app: "ok",
     database: "not_checked",

@@ -55,6 +55,13 @@ function assertPayload(payload) {
   if (payload.status !== "ok") failures.push(`status must be "ok"; got ${JSON.stringify(payload.status)}`);
   if (payload.service !== "openplan") failures.push(`service must be "openplan"; got ${JSON.stringify(payload.service)}`);
   if (!Number.isFinite(checkedAt)) failures.push("checkedAt must be an ISO timestamp string");
+  const deployment = payload.deployment;
+  if (!deployment || typeof deployment !== "object" || Array.isArray(deployment)) {
+    failures.push("deployment must be an object");
+  } else if (typeof deployment.commit !== "string" || !/^(unknown|[a-f0-9]{7,12})$/.test(deployment.commit)) {
+    failures.push(`deployment.commit must be unknown or a short git SHA; got ${JSON.stringify(deployment.commit)}`);
+  }
+
   if (!checks || typeof checks !== "object" || Array.isArray(checks)) {
     failures.push("checks must be an object");
   } else {
