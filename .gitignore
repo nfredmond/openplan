@@ -1,5 +1,10 @@
 # OpenPlan monorepo-level local artifacts
 
+# Local agent orchestration output. Durable work from these lanes is merged by
+# cherry-picking reviewed commits, not by versioning worktree/log directories.
+.agent-logs/
+openplan-worktrees/
+
 # Generated local story-pack artifacts (non-canonical)
 openplan/.artifacts/
 
