@@ -41,7 +41,7 @@ const PILOT_PREFLIGHT_COMMAND =
 const PILOT_PREFLIGHT_PROOF_ARTIFACT = PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT;
 
 const PILOT_PREFLIGHT_PROOF_SCOPE =
-  "Read-only pre-conversation evidence check covering local guard posture, migration inventory, production health, and Vercel deployment readiness.";
+  "Read-only pre-conversation evidence bundle covering local guard posture, migration inventory, production health, and Vercel deploy-state signals.";
 
 const PILOT_PREFLIGHT_OPERATOR_INSTRUCTION =
   "Run this in a terminal immediately before a buyer call, public demo, supervised pilot kickoff, sales-packet refresh, or post-deploy confidence check; this browser surface only points to the command and proof note.";
@@ -81,7 +81,7 @@ export function buildPilotReadinessControlSummary(statusList: SmokeStatus[]): Pi
   if (counts.fail > 0) {
     return {
       label: "Hold for proof repair",
-      detail: `${counts.fail} readiness lane${counts.fail === 1 ? " is" : "s are"} failing. Repair proof before a buyer-facing readiness claim.`,
+      detail: `${counts.fail} readiness lane${counts.fail === 1 ? " is" : "s are"} failing. Repair source proof before any buyer-facing readiness language is used.`,
       tone: "danger",
       latestEvidenceDate: resolveLatestEvidenceDate(statusList),
       counts,
@@ -100,7 +100,7 @@ export function buildPilotReadinessControlSummary(statusList: SmokeStatus[]): Pi
     const openCount = counts.pending + counts.unknown;
     return {
       label: "Current with open proof gaps",
-      detail: `${counts.pass} lane${counts.pass === 1 ? " has" : "s have"} passing evidence; ${openCount} still need fresh proof before external reliance.`,
+      detail: `${counts.pass} lane${counts.pass === 1 ? " has" : "s have"} passing evidence; ${openCount} still need fresh source proof before external reliance.`,
       tone: "warning",
       latestEvidenceDate: resolveLatestEvidenceDate(statusList),
       counts,
@@ -117,8 +117,8 @@ export function buildPilotReadinessControlSummary(statusList: SmokeStatus[]): Pi
 
   if (counts.pass > 0) {
     return {
-      label: "Proof-backed supervised review",
-      detail: "Currently tracked readiness lanes have passing proof artifacts. Treat the packet as an internal diligence snapshot for scoped pilot conversations, not an autonomous launch certificate.",
+      label: "Ready for supervised review",
+      detail: "All tracked readiness lanes have passing proof artifacts. Use the packet as an internal diligence snapshot for supervised review, not as a launch certificate or automated planning claim.",
       tone: "success",
       latestEvidenceDate: resolveLatestEvidenceDate(statusList),
       counts,

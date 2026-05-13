@@ -213,7 +213,7 @@ export default async function DashboardPage() {
 
   const baselineItems = [
     "Supabase auth flow is live for sign-up, sign-in, and protected routes.",
-    "Analysis API supports validated corridor scoring requests.",
+    "Analysis API accepts schema-checked corridor scoring requests with persisted run output.",
     "Runs persist and reload cleanly at workspace scope.",
     "Report endpoint returns structured HTML / PDF-ready output.",
     "Core layers now use GTFS, crashes, Census, and LODES inputs.",

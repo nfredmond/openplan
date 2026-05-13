@@ -19,17 +19,18 @@ describe("admin operator control summary", () => {
       lane("Production Admin Operations Auth", "PASS", "2026-05-10"),
     ]);
 
-    expect(summary.label).toBe("Proof-backed supervised review");
+    expect(summary.label).toBe("Ready for supervised review");
     expect(summary.tone).toBe("success");
     expect(summary.latestEvidenceDate).toBe("2026-05-10");
     expect(summary.counts).toMatchObject({ total: 2, pass: 2, fail: 0, pending: 0, unknown: 0 });
     expect(summary.preflightCommand).toContain("pnpm ops:check-pilot-preflight");
     expect(summary.preflightProofArtifact).toBe("docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md");
-    expect(summary.preflightProofScope).toContain("Read-only pre-conversation evidence check");
+    expect(summary.preflightProofScope).toContain("Read-only pre-conversation evidence bundle");
+    expect(summary.preflightProofScope).toContain("Vercel deploy-state signals");
     expect(summary.preflightOperatorInstruction).toContain("Run this in a terminal");
     expect(summary.preflightPosture).toContain("read-only preflight");
-    expect(summary.detail).toContain("scoped pilot conversations");
-    expect(summary.detail).toContain("not an autonomous launch certificate");
+    expect(summary.detail).toContain("internal diligence snapshot for supervised review");
+    expect(summary.detail).toContain("not as a launch certificate or automated planning claim");
     expect(summary.supervisedBoundary).toBe(releaseProofPosture.wedge);
     expect(summary.proofPacketCaveat).toBe(finalPilotReadinessChecklistSync.supervisedOnboardingCaveat);
     expect(summary.proofPacketCaveat).toContain("no broad self-serve municipal SaaS claim");
@@ -61,7 +62,7 @@ describe("admin operator control summary", () => {
     expect(summary.label).toBe("Current with open proof gaps");
     expect(summary.tone).toBe("warning");
     expect(summary.latestEvidenceDate).toBe("2026-05-10");
-    expect(summary.detail).toContain("2 still need fresh proof");
+    expect(summary.detail).toContain("2 still need fresh source proof before external reliance");
     expect(summary.openProofLaneLabels).toEqual(["Layout Audit", "Grants Flow"]);
   });
 });

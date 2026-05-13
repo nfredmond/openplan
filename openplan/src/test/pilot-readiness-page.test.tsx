@@ -106,8 +106,9 @@ describe("PilotReadinessPage", () => {
       expect(screen.getAllByText(step.artifact).length).toBeGreaterThan(0);
     }
 
-    expect(screen.getByRole("heading", { name: /Which artifacts support sale and pilot readiness/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Which artifacts support supervised sale and pilot review/i })).toBeInTheDocument();
     expect(screen.getByText(/The export below uses the same release-proof posture as Command Center/i)).toBeInTheDocument();
+    expect(screen.getByText(/the narrow claim it supports/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Run a read-only preflight before outward reliance/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /Supervised onboarding evidence flow/i })).toBeInTheDocument();
     expect(screen.getByText("Trace the admin queue behind this packet")).toBeInTheDocument();

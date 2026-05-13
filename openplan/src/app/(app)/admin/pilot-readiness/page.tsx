@@ -395,10 +395,10 @@ export default function PilotReadinessPage() {
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">Release-proof drilldown</p>
-            <h2 className="module-section-title">Which artifacts support sale and pilot readiness</h2>
+            <h2 className="module-section-title">Which artifacts support supervised sale and pilot review</h2>
             <p className="module-section-description">
               The export below uses the same release-proof posture as Command Center, so operators can see the source
-              artifact, what it supports, and which caveats must travel with the claim.
+              artifact, the narrow claim it supports, and which caveats must travel with that language.
             </p>
           </div>
           <StatusBadge tone="warning">Supervised workbench</StatusBadge>
