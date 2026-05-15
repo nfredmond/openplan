@@ -189,16 +189,22 @@ export function buildProjectSpineReadinessRollup(
       ? `${input.reports.governanceHoldCount} governance hold${(input.reports.governanceHoldCount ?? 0) === 1 ? "" : "s"}`
       : null,
   ].filter((item): item is string => Boolean(item));
+  const reportHeadline =
+    reportStatus === "missing_not_linked"
+      ? "No report packet is linked yet."
+      : reportStatus === "stale_needs_review"
+        ? (input.reports.governanceHoldCount ?? 0) > 0 &&
+          input.reports.refreshRecommendedCount === 0 &&
+          input.reports.noPacketCount === 0
+          ? "At least one report packet has a governance hold to review."
+          : "At least one report packet needs freshness, packet-generation, or governance review."
+        : "Linked report packets look current from recorded freshness checks.";
   lanes.push(
     lane(
       "reports",
       "Report packets",
       reportStatus,
-      reportStatus === "missing_not_linked"
-        ? "No report packet is linked yet."
-        : reportStatus === "stale_needs_review"
-          ? "At least one report packet needs regeneration or first packet generation."
-          : "Linked report packets look current from recorded freshness checks.",
+      reportHeadline,
       reportStatus === "missing_not_linked"
         ? "Create the first project report before relying on this project for packet assembly."
         : reportStatus === "stale_needs_review"

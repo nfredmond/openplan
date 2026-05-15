@@ -124,6 +124,22 @@ describe("project spine readiness rollup", () => {
     const reports = rollup.lanes.find((lane) => lane.key === "reports");
     expect(rollup.status).toBe("stale_needs_review");
     expect(reports?.status).toBe("stale_needs_review");
+    expect(reports?.headline).toBe("At least one report packet has a governance hold to review.");
     expect(reports?.detail).toContain("1 governance hold");
+  });
+
+  it("keeps mixed report freshness and governance pressure framed as operator review work", () => {
+    const rollup = buildProjectSpineReadinessRollup({
+      ...baseInput,
+      reports: {
+        ...baseInput.reports,
+        refreshRecommendedCount: 1,
+        governanceHoldCount: 1,
+      },
+    });
+
+    const reports = rollup.lanes.find((lane) => lane.key === "reports");
+    expect(reports?.headline).toBe("At least one report packet needs freshness, packet-generation, or governance review.");
+    expect(reports?.detail).toContain("1 refresh recommended; 1 governance hold");
   });
 });
