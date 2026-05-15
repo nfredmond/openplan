@@ -106,6 +106,20 @@ export function ProjectPostureHeader({
   projectGrantModelingReadiness,
   projectGrantModelingSupport,
 }: ProjectPostureHeaderProps) {
+  const recommendedReportGovernanceHold = recommendedReport?.evidenceChainDigest?.blockedGateDetail ?? null;
+  const recommendedReportPacketActionLabel = recommendedReport
+    ? getReportPacketActionLabel(recommendedReport.packetFreshness.label)
+    : "Open reports to create the first packet for this project.";
+  const recommendedReportActionLabel = recommendedReportGovernanceHold
+    ? recommendedReport?.packetFreshness.tone === "warning"
+      ? `${recommendedReportPacketActionLabel.replace(/\.$/, "")}, then review the governance hold before release reuse.`
+      : "Next action: open this report and review the governance hold before release reuse."
+    : recommendedReportPacketActionLabel;
+  const recommendedReportDetail =
+    recommendedReportGovernanceHold ??
+    recommendedReport?.packetFreshness.detail ??
+    "No reports are linked to this project yet.";
+
   return (
     <>
       <header className="module-header-grid">
@@ -320,13 +334,10 @@ export function ProjectPostureHeader({
                   : "Packet trail looks current"}
               </h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                {recommendedReport
-                  ? getReportPacketActionLabel(recommendedReport.packetFreshness.label)
-                  : "Open reports to create the first packet for this project."}
+                {recommendedReportActionLabel}
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                {recommendedReport?.packetFreshness.detail ??
-                  "No reports are linked to this project yet."}
+                {recommendedReportDetail}
               </p>
               {recommendedReport?.comparisonDigest ? (
                 <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">

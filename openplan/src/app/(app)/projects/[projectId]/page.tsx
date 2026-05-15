@@ -660,9 +660,21 @@ export default async function ProjectDetailPage({
       };
     })
     .sort((left, right) => {
-      const freshnessPriority =
-        getReportPacketPriority(left.packetFreshness.label) -
-        getReportPacketPriority(right.packetFreshness.label);
+      const leftFreshnessPriority = getReportPacketPriority(left.packetFreshness.label);
+      const rightFreshnessPriority = getReportPacketPriority(right.packetFreshness.label);
+      const leftPriority =
+        leftFreshnessPriority < 2
+          ? leftFreshnessPriority
+          : left.evidenceChainDigest?.blockedGateDetail
+            ? 2
+            : 3;
+      const rightPriority =
+        rightFreshnessPriority < 2
+          ? rightFreshnessPriority
+          : right.evidenceChainDigest?.blockedGateDetail
+            ? 2
+            : 3;
+      const freshnessPriority = leftPriority - rightPriority;
       if (freshnessPriority !== 0) {
         return freshnessPriority;
       }
@@ -685,7 +697,12 @@ export default async function ProjectDetailPage({
   const governanceHoldReportCount = projectReports.filter(
     (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
   ).length;
-  const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount + governanceHoldReportCount;
+  const reportAttentionCount = projectReports.filter(
+    (report) =>
+      report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED ||
+      report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET ||
+      Boolean(report.evidenceChainDigest?.blockedGateDetail)
+  ).length;
   const recommendedReport = projectReports[0] ?? null;
   const comparisonBackedFundingReport =
     projectReports.find((report) => Boolean(report.comparisonDigest)) ?? null;

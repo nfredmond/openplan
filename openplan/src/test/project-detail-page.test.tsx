@@ -657,8 +657,9 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText(/Packet freshness and regeneration cues/i)).toBeInTheDocument();
     expect(screen.getByText(/Downtown Safety Packet needs attention/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Next action: open this report and regenerate the packet\./i)
+      screen.getByText(/Next action: open this report and regenerate the packet, then review the governance hold before release reuse\./i)
     ).toBeInTheDocument();
+    expect(screen.getByText(/1 need attention/i)).toBeInTheDocument();
     expect(screen.getByText(/Showing 2 most recent report records/i)).toBeInTheDocument();
     expect(screen.getAllByText(/^2$/).length).toBeGreaterThan(0);
     expect(screen.getByText(/Reports that still need packet updates or governance review/i)).toBeInTheDocument();
@@ -717,6 +718,106 @@ describe("ProjectDetailPage", () => {
       "href",
       "/reports/report-1#drift-since-generation"
     );
+  }, 10000);
+
+  it("prioritizes a governance-only report hold over a newer clean current packet", async () => {
+    projectSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "project-1",
+        workspace_id: "workspace-1",
+        name: "Downtown Mobility Plan",
+        summary: "Planning effort focused on corridor safety and access.",
+        status: "active",
+        plan_type: "corridor_plan",
+        delivery_phase: "analysis",
+        created_at: "2026-03-28T18:00:00.000Z",
+        updated_at: "2026-03-28T18:30:00.000Z",
+      },
+      error: null,
+    });
+    reportsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "report-2",
+          title: "Board Packet",
+          summary: null,
+          report_type: "board_packet",
+          status: "generated",
+          updated_at: "2026-03-28T21:00:00.000Z",
+          generated_at: "2026-03-28T21:00:00.000Z",
+          latest_artifact_kind: "html",
+        },
+        {
+          id: "report-1",
+          title: "Downtown Safety Packet",
+          summary: "Packet with corridor safety recommendations.",
+          report_type: "project_status",
+          status: "generated",
+          updated_at: "2026-03-28T19:00:00.000Z",
+          generated_at: "2026-03-28T20:00:00.000Z",
+          latest_artifact_kind: "html",
+        },
+      ],
+      count: 2,
+      error: null,
+    });
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          report_id: "report-2",
+          generated_at: "2026-03-28T21:30:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              evidenceChainSummary: {
+                linkedRunCount: 1,
+                scenarioSetLinkCount: 1,
+                projectRecordGroupCount: 2,
+                totalProjectRecordCount: 3,
+                engagementLabel: "Active",
+                engagementItemCount: 4,
+                engagementReadyForHandoffCount: 4,
+                stageGateLabel: "Complete",
+                stageGatePassCount: 2,
+                stageGateHoldCount: 0,
+                stageGateBlockedGateLabel: null,
+              },
+            },
+          },
+        },
+        {
+          report_id: "report-1",
+          generated_at: "2026-03-28T20:00:00.000Z",
+          metadata_json: {
+            sourceContext: {
+              evidenceChainSummary: {
+                linkedRunCount: 2,
+                scenarioSetLinkCount: 1,
+                projectRecordGroupCount: 3,
+                totalProjectRecordCount: 5,
+                engagementLabel: "Active",
+                engagementItemCount: 9,
+                engagementReadyForHandoffCount: 4,
+                stageGateLabel: "Hold present",
+                stageGatePassCount: 1,
+                stageGateHoldCount: 1,
+                stageGateBlockedGateLabel:
+                  "G02 · Agreements, Procurement, and Civil Rights Setup",
+              },
+            },
+          },
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/Downtown Safety Packet needs attention/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Next action: open this report and review the governance hold before release reuse\./i)
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/1 need attention/i).length).toBeGreaterThan(0);
   });
 
   it("keeps artifact-backed linked reports in current-packet posture when report generated_at is null", async () => {
