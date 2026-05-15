@@ -341,7 +341,7 @@ export function buildProjectSpineCrosslinkSummary(
             : "Not linked yet",
       headline:
         input.reportAttentionCount > 0
-          ? `${pluralize(input.reportAttentionCount, "packet")} need refresh or generation before reuse.`
+          ? `${pluralize(input.reportAttentionCount, "packet")} need refresh, generation, or governance review before reuse.`
           : input.reportRecordCount > 0
             ? "Project-linked report packets are visible from this project spine."
             : input.linkedRtpCycleCount > 0
@@ -356,7 +356,7 @@ export function buildProjectSpineCrosslinkSummary(
             : "No evidence-backed or comparison-backed report packet is visible yet.",
       nextAction:
         input.reportAttentionCount > 0
-          ? "Refresh or generate the lead project report before citing it in board, RTP, or public materials."
+          ? "Refresh, generate, or clear the governance hold on the lead project report before citing it in board, RTP, or public materials."
           : input.reportRecordCount > 0
             ? "Open the lead report and confirm packet freshness, source context, and release-review posture."
             : input.linkedRtpCycleCount > 0

@@ -661,6 +661,7 @@ describe("ProjectDetailPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/Showing 2 most recent report records/i)).toBeInTheDocument();
     expect(screen.getAllByText(/^2$/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Reports that still need packet updates or governance review/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Evidence-backed/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Governance holds/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);

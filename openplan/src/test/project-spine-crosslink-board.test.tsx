@@ -153,6 +153,23 @@ describe("ProjectSpineCrosslinkBoard", () => {
     expectNoUnsupportedClaims(text);
   });
 
+  it("frames report-lane attention as freshness, generation, or governance review", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...emptyInput,
+      linkedRtpCycleCount: 1,
+      reportRecordCount: 1,
+      reportAttentionCount: 1,
+    });
+
+    render(<ProjectSpineCrosslinkBoard summary={summary} />);
+
+    expect(screen.getByText("Regeneration needed")).toBeInTheDocument();
+    expect(screen.getAllByText(/1 packet need refresh, generation, or governance review before reuse/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/Refresh, generate, or clear the governance hold on the lead project report before citing it/i).length
+    ).toBeGreaterThan(0);
+  });
+
   it("keeps schema-pending proof copy inside setup and buyer-safe claim boundaries", () => {
     const summary = buildProjectSpineCrosslinkSummary({
       ...emptyInput,

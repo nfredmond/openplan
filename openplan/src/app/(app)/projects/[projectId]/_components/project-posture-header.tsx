@@ -271,7 +271,7 @@ export function ProjectPostureHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Needs attention</p>
             <p className="module-summary-value">{reportAttentionCount}</p>
-            <p className="module-summary-detail">Reports that still need packet updates.</p>
+            <p className="module-summary-detail">Reports that still need packet updates or governance review.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Evidence-backed</p>

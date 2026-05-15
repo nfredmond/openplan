@@ -685,7 +685,7 @@ export default async function ProjectDetailPage({
   const governanceHoldReportCount = projectReports.filter(
     (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
   ).length;
-  const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
+  const reportAttentionCount = refreshRecommendedReportCount + noPacketReportCount + governanceHoldReportCount;
   const recommendedReport = projectReports[0] ?? null;
   const comparisonBackedFundingReport =
     projectReports.find((report) => Boolean(report.comparisonDigest)) ?? null;
