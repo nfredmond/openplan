@@ -11,6 +11,12 @@ export function ProjectSpineReadinessRollup({
 }: {
   rollup: ProjectSpineReadinessRollup;
 }) {
+  const firstOperatorCheck =
+    rollup.lanes.find((lane) => lane.status === "stale_needs_review") ??
+    rollup.lanes.find((lane) => lane.status === "missing_not_linked") ??
+    rollup.lanes[0] ??
+    null;
+
   return (
     <article id="project-spine-readiness" className="module-section-surface scroll-mt-24">
       <div className="module-section-header">
@@ -61,6 +67,15 @@ export function ProjectSpineReadinessRollup({
             Latest source change: {rollup.latestSourceUpdatedAt ? fmtDateTime(rollup.latestSourceUpdatedAt) : "Not available"}
             {rollup.reviewedAgainstAt ? ` · Reviewed against packet ${fmtDateTime(rollup.reviewedAgainstAt)}` : " · No generated packet baseline yet"}
           </p>
+          {firstOperatorCheck ? (
+            <div className="mt-4 rounded-[0.55rem] border border-border/70 bg-card/70 p-3 text-sm leading-relaxed">
+              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                First operator check
+              </p>
+              <p className="mt-1 font-semibold text-foreground">{firstOperatorCheck.label}</p>
+              <p className="mt-1 text-muted-foreground">{firstOperatorCheck.detail}</p>
+            </div>
+          ) : null}
         </div>
 
         <div className="overflow-hidden rounded-[0.75rem] border border-border/70 bg-card/70">
