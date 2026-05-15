@@ -130,6 +130,29 @@ describe("project controls summary", () => {
     expect(summary.recommendedNextAction.targetRowId).toBe("project-report-report-held");
   });
 
+  it("uses the unique report attention count when packet refresh and governance hold overlap", () => {
+    const summary = buildProjectControlsSummary(
+      [],
+      [],
+      [],
+      {
+        attentionCount: 1,
+        refreshRecommendedCount: 1,
+        noPacketCount: 0,
+        governanceHoldCount: 1,
+        comparisonBackedCount: 0,
+        recommendedReportId: "report-overlap",
+        recommendedReportTitle: "Held stale packet",
+      },
+      "2026-03-10T00:00:00.000Z"
+    );
+
+    expect(summary.controlHealth).toBe("attention");
+    expect(summary.attentionSummary.reportPackets.count).toBe(1);
+    expect(summary.recommendedNextAction.label).toBe("Refresh report packet");
+    expect(summary.recommendedNextAction.targetRowId).toBe("project-report-report-overlap");
+  });
+
   it("caveats comparison-backed report context as planning support", () => {
     const summary = buildProjectControlsSummary(
       [],

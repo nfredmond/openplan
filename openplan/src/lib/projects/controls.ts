@@ -32,6 +32,7 @@ export type ProjectInvoiceControlRecordLike = BillingInvoiceRecordLike & {
 };
 
 export type ProjectReportControlSummaryLike = {
+  attentionCount?: number | null;
   refreshRecommendedCount?: number | null;
   noPacketCount?: number | null;
   governanceHoldCount?: number | null;
@@ -158,7 +159,9 @@ export function buildProjectControlsSummary(
   const reportNoPacketCount = reportSummary?.noPacketCount ?? 0;
   const reportGovernanceHoldCount = reportSummary?.governanceHoldCount ?? 0;
   const comparisonBackedCount = reportSummary?.comparisonBackedCount ?? 0;
-  const reportAttentionCount = reportRefreshRecommendedCount + reportNoPacketCount + reportGovernanceHoldCount;
+  const reportAttentionCount =
+    reportSummary?.attentionCount ??
+    reportRefreshRecommendedCount + reportNoPacketCount + reportGovernanceHoldCount;
   const recommendedReportRowId = reportSummary?.recommendedReportId
     ? `project-report-${reportSummary.recommendedReportId}`
     : undefined;

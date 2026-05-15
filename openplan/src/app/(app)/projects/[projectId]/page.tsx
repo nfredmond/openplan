@@ -773,6 +773,7 @@ export default async function ProjectDetailPage({
     submittals,
     projectInvoices,
     {
+      attentionCount: reportAttentionCount,
       refreshRecommendedCount: refreshRecommendedReportCount,
       noPacketCount: noPacketReportCount,
       governanceHoldCount: governanceHoldReportCount,
