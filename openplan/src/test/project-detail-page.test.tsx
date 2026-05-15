@@ -718,6 +718,7 @@ describe("ProjectDetailPage", () => {
       "href",
       "/reports/report-1#drift-since-generation"
     );
+    expectLinkByHref(/Downtown Safety Packet/i, "/reports/report-1#drift-since-generation");
   }, 10000);
 
   it("prioritizes a governance-only report hold over a newer clean current packet", async () => {
@@ -853,10 +854,10 @@ describe("ProjectDetailPage", () => {
     const boardPacketCard = screen
       .getAllByText("Board Packet")
       .map((node) => node.closest("a"))
-      .find((node) => node?.getAttribute("href") === "/reports/report-2");
+      .find((node) => node?.getAttribute("href") === "/reports/report-2#packet-release-review");
 
     expect(boardPacketCard).not.toBeNull();
-    expect(boardPacketCard).toHaveAttribute("href", "/reports/report-2");
+    expect(boardPacketCard).toHaveAttribute("href", "/reports/report-2#packet-release-review");
     expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
   });
 

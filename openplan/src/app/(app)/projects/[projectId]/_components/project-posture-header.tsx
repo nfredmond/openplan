@@ -441,7 +441,7 @@ export function ProjectPostureHeader({
                   <Link
                     key={report.id}
                     id={`project-report-${report.id}`}
-                    href={`/reports/${report.id}`}
+                    href={getReportNavigationHref(report.id, report.packetFreshness.label)}
                     className="block rounded-[0.5rem] border border-border/70 bg-card/70 p-4 transition-colors hover:border-primary/35 hover:bg-card"
                   >
                     <div className="flex items-start justify-between gap-3">
