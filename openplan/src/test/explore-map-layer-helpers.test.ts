@@ -148,7 +148,7 @@ describe("explore map layer helpers", () => {
     expect(canRenderDatasetCoverageOverlay(buildDataset())).toBe(true);
     expect(canRenderDatasetThematicOverlay(buildDataset())).toBe(true);
 
-    expect(canRenderDatasetCoverageOverlay(buildDataset({ geographyScope: "point" }))).toBe(false);
+    expect(canRenderDatasetCoverageOverlay(buildDataset({ geographyScope: "point" }))).toBe(true);
     expect(canRenderDatasetThematicOverlay(buildDataset({ geographyScope: "point" }))).toBe(true);
 
     expect(canRenderDatasetCoverageOverlay(buildDataset({ overlayReady: false }))).toBe(false);

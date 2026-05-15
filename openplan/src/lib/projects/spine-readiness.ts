@@ -50,6 +50,7 @@ export type BuildProjectSpineReadinessInput = {
   reports: CountedRecordTiming & {
     refreshRecommendedCount: number;
     noPacketCount: number;
+    governanceHoldCount?: number;
     evidenceBackedCount: number;
     comparisonBackedCount: number;
   };
@@ -172,9 +173,22 @@ export function buildProjectSpineReadinessRollup(
   const reportStatus: ProjectSpineReadinessStatus =
     input.reports.count === 0
       ? "missing_not_linked"
-      : input.reports.refreshRecommendedCount > 0 || input.reports.noPacketCount > 0
+      : input.reports.refreshRecommendedCount > 0 ||
+          input.reports.noPacketCount > 0 ||
+          (input.reports.governanceHoldCount ?? 0) > 0
         ? "stale_needs_review"
         : "ready_current";
+  const reportNeedsReview = [
+    input.reports.refreshRecommendedCount > 0
+      ? `${input.reports.refreshRecommendedCount} refresh recommended`
+      : null,
+    input.reports.noPacketCount > 0
+      ? `${input.reports.noPacketCount} without a generated packet`
+      : null,
+    (input.reports.governanceHoldCount ?? 0) > 0
+      ? `${input.reports.governanceHoldCount} governance hold${(input.reports.governanceHoldCount ?? 0) === 1 ? "" : "s"}`
+      : null,
+  ].filter((item): item is string => Boolean(item));
   lanes.push(
     lane(
       "reports",
@@ -188,7 +202,7 @@ export function buildProjectSpineReadinessRollup(
       reportStatus === "missing_not_linked"
         ? "Create the first project report before relying on this project for packet assembly."
         : reportStatus === "stale_needs_review"
-          ? `${input.reports.refreshRecommendedCount} refresh recommended and ${input.reports.noPacketCount} without a generated packet.`
+          ? `${reportNeedsReview.join("; ")}.`
           : `${input.reports.evidenceBackedCount} evidence-backed and ${input.reports.comparisonBackedCount} comparison-backed report records are visible.`,
       `${input.reports.count} report${input.reports.count === 1 ? "" : "s"}`,
       input.reports.latestUpdatedAt ?? null,

@@ -892,6 +892,7 @@ export default async function ProjectDetailPage({
       latestUpdatedAt: latestKnownDate(...projectReports.map((report) => report.updated_at)),
       refreshRecommendedCount: refreshRecommendedReportCount,
       noPacketCount: noPacketReportCount,
+      governanceHoldCount: governanceHoldReportCount,
       evidenceBackedCount: evidenceBackedReportCount,
       comparisonBackedCount: comparisonBackedReportCount,
     },

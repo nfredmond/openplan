@@ -106,9 +106,9 @@ describe("buildLinkedDatasetQueueState", () => {
     });
 
     expect(state.items).toHaveLength(1);
-    expect(state.items[0].rowClassName).toBe("module-record-row is-comparison");
+    expect(state.items[0].rowClassName).toBe("module-record-row is-interactive is-comparison");
     expect(state.items[0].summary).toBe("Uses real crash-point geometry + FatalCount.");
-    expect(state.items[0].buttonLabel).toBe("Not drawable");
-    expect(state.items[0].buttonDisabled).toBe(true);
+    expect(state.items[0].buttonLabel).toBe("Show thematic");
+    expect(state.items[0].buttonDisabled).toBe(false);
   });
 });

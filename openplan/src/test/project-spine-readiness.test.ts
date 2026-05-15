@@ -10,6 +10,7 @@ const baseInput = {
     latestUpdatedAt: "2026-05-02T11:00:00.000Z",
     refreshRecommendedCount: 0,
     noPacketCount: 0,
+    governanceHoldCount: 0,
     evidenceBackedCount: 1,
     comparisonBackedCount: 1,
   },
@@ -109,5 +110,20 @@ describe("project spine readiness rollup", () => {
     const aerial = rollup.lanes.find((lane) => lane.key === "aerial");
     expect(aerial?.status).toBe("stale_needs_review");
     expect(aerial?.detail).toContain("0/1 packages are ready");
+  });
+
+  it("keeps report governance holds visible in the shared project spine", () => {
+    const rollup = buildProjectSpineReadinessRollup({
+      ...baseInput,
+      reports: {
+        ...baseInput.reports,
+        governanceHoldCount: 1,
+      },
+    });
+
+    const reports = rollup.lanes.find((lane) => lane.key === "reports");
+    expect(rollup.status).toBe("stale_needs_review");
+    expect(reports?.status).toBe("stale_needs_review");
+    expect(reports?.detail).toContain("1 governance hold");
   });
 });
