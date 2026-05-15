@@ -34,6 +34,7 @@ export type ProjectInvoiceControlRecordLike = BillingInvoiceRecordLike & {
 export type ProjectReportControlSummaryLike = {
   refreshRecommendedCount?: number | null;
   noPacketCount?: number | null;
+  governanceHoldCount?: number | null;
   comparisonBackedCount?: number | null;
   recommendedReportId?: string | null;
   recommendedReportTitle?: string | null;
@@ -155,8 +156,9 @@ export function buildProjectControlsSummary(
   )[0] ?? null;
   const reportRefreshRecommendedCount = reportSummary?.refreshRecommendedCount ?? 0;
   const reportNoPacketCount = reportSummary?.noPacketCount ?? 0;
+  const reportGovernanceHoldCount = reportSummary?.governanceHoldCount ?? 0;
   const comparisonBackedCount = reportSummary?.comparisonBackedCount ?? 0;
-  const reportAttentionCount = reportRefreshRecommendedCount + reportNoPacketCount;
+  const reportAttentionCount = reportRefreshRecommendedCount + reportNoPacketCount + reportGovernanceHoldCount;
   const recommendedReportRowId = reportSummary?.recommendedReportId
     ? `project-report-${reportSummary.recommendedReportId}`
     : undefined;
@@ -280,6 +282,14 @@ export function buildProjectControlsSummary(
                   targetId: PROJECT_CONTROL_TARGET_IDS.report,
                   targetRowId: recommendedReportRowId,
                 }
+              : reportGovernanceHoldCount > 0
+                ? {
+                    label: "Review report governance hold",
+                    detail: `${reportGovernanceHoldCount} report packet${reportGovernanceHoldCount === 1 ? " has" : "s have"} a blocked governance gate in the latest evidence snapshot. ${reportSummary?.recommendedReportTitle ? `${reportSummary.recommendedReportTitle} is the first report to review.` : "Open the first held packet and clear or document the hold before reuse."}`,
+                    tone: "warning" as const,
+                    targetId: PROJECT_CONTROL_TARGET_IDS.report,
+                    targetRowId: recommendedReportRowId,
+                  }
               : comparisonBackedCount > 0
                 ? {
                     label: "Review comparison-backed packet",

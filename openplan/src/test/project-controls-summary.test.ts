@@ -105,6 +105,31 @@ describe("project controls summary", () => {
     expect(summary.recommendedNextAction.targetRowId).toBe("project-report-report-123");
   });
 
+  it("treats governance-only report holds as control-room attention", () => {
+    const summary = buildProjectControlsSummary(
+      [],
+      [],
+      [],
+      {
+        refreshRecommendedCount: 0,
+        noPacketCount: 0,
+        governanceHoldCount: 1,
+        comparisonBackedCount: 0,
+        recommendedReportId: "report-held",
+        recommendedReportTitle: "Council packet",
+      },
+      "2026-03-10T00:00:00.000Z"
+    );
+
+    expect(summary.controlHealth).toBe("attention");
+    expect(summary.attentionSummary.reportPackets.count).toBe(1);
+    expect(summary.recommendedNextAction.label).toBe("Review report governance hold");
+    expect(summary.recommendedNextAction.detail).toContain("blocked governance gate");
+    expect(summary.recommendedNextAction.detail).toContain("Council packet is the first report to review");
+    expect(summary.recommendedNextAction.targetId).toBe("project-reporting");
+    expect(summary.recommendedNextAction.targetRowId).toBe("project-report-report-held");
+  });
+
   it("caveats comparison-backed report context as planning support", () => {
     const summary = buildProjectControlsSummary(
       [],

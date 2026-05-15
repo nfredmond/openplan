@@ -775,6 +775,7 @@ export default async function ProjectDetailPage({
     {
       refreshRecommendedCount: refreshRecommendedReportCount,
       noPacketCount: noPacketReportCount,
+      governanceHoldCount: governanceHoldReportCount,
       comparisonBackedCount: comparisonBackedReportCount,
       recommendedReportId: recommendedReport?.id ?? null,
       recommendedReportTitle: recommendedReport?.title ?? null,
