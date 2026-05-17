@@ -150,6 +150,36 @@ export default async function CommandCenterPage() {
     },
   ];
 
+  const sampleDemoNarrationSteps = [
+    {
+      title: "Start with the proof boundary",
+      detail:
+        "This is a static Nevada County sample for narration. It does not alter the buyer workspace or create operational records.",
+    },
+    {
+      title: "Explain the validation gate",
+      detail:
+        "Call out the internal prototype status first, then explain why failed validation blocks stronger forecasting claims.",
+    },
+    {
+      title: "Show caveat-preserving evidence",
+      detail:
+        "Use the Max APE row and proof note to demonstrate that OpenPlan carries uncomfortable evidence forward instead of smoothing it away.",
+    },
+    {
+      title: "Open the public evidence catalog",
+      detail:
+        "Move to Examples only after the caveats are visible, so the buyer sees completed artifacts as proof posture rather than a sales promise.",
+    },
+  ];
+
+  const sampleDemoTalkTrack = {
+    say:
+      "Say: OpenPlan can organize a supervised, proof-first planning workflow where evidence, caveats, and readiness checks stay visible before buyer reliance.",
+    avoid:
+      "Do not say: this is a self-serve launch, a certified forecast, an automatic activation path, or a completed compliance determination.",
+  };
+
   return (
     <section className="module-page">
       <header className="module-header-grid">
@@ -226,6 +256,31 @@ export default async function CommandCenterPage() {
             <p className="module-summary-detail">
               Show how OpenPlan preserves caveats and blocks outward modeling claims when validation fails.
             </p>
+          </div>
+        </div>
+        <div className="border-t border-border/60 px-4 py-4">
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Demo narration rail</p>
+              <ol className="mt-3 space-y-3">
+                {sampleDemoNarrationSteps.map((step, index) => (
+                  <li key={step.title} className="flex gap-3 text-xs text-muted-foreground">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-background font-semibold text-foreground">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <p className="font-medium text-foreground">{step.title}</p>
+                      <p className="mt-0.5">{step.detail}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+            <div className="rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+              <p className="font-medium text-foreground">What to say / what not to say</p>
+              <p className="mt-2">{sampleDemoTalkTrack.say}</p>
+              <p className="mt-2">{sampleDemoTalkTrack.avoid}</p>
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
