@@ -325,6 +325,11 @@ export const buyerDemoCommandCenterHandoff = {
     "Use Command Center as the internal launch rail: inspect pilot readiness, confirm request-access boundaries, and only then open buyer examples for the supervised story.",
   boundary:
     "No production writes, provisioning, outbound email, checkout, or self-serve activation are implied by this handoff.",
+  preflightCommand: "npm run ops:check-buyer-demo-preflight -- --live-reads",
+  preflightArtifact: "docs/ops/2026-05-17-buyer-demo-preflight-proof.md",
+  currentProofPacket: "docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md",
+  operatorStopRule:
+    "Stop the demo if live-read preflight reports unresolved attention that affects the buyer claim, or if the current proof packet does not cover the workflow being shown.",
   steps: [
     {
       label: "1. Readiness packet",
@@ -468,6 +473,10 @@ export function releaseProofCopyBlock() {
     buyerDemoCommandCenterHandoff.headline,
     buyerDemoCommandCenterHandoff.detail,
     buyerDemoCommandCenterHandoff.boundary,
+    buyerDemoCommandCenterHandoff.preflightCommand,
+    buyerDemoCommandCenterHandoff.preflightArtifact,
+    buyerDemoCommandCenterHandoff.currentProofPacket,
+    buyerDemoCommandCenterHandoff.operatorStopRule,
     ...buyerDemoCommandCenterHandoff.steps.flatMap((step) => [step.label, step.href, step.detail]),
   ].join("\n");
 }

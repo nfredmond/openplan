@@ -202,6 +202,12 @@ describe("CommandCenterPage", () => {
     );
     expect(screen.getByText("Final pre-demo check")).toBeInTheDocument();
     expect(screen.getByText("npm run ops:check-buyer-demo-preflight -- --live-reads")).toBeInTheDocument();
+    expect(screen.getByText("docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md")).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: /Buyer demo proof sequence/i })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /1\. Readiness packet/i })).toHaveAttribute("href", "/admin/pilot-readiness");
+    expect(screen.getByRole("link", { name: /2\. Request access/i })).toHaveAttribute("href", "/request-access");
+    expect(screen.getByRole("link", { name: /3\. Examples/i })).toHaveAttribute("href", "/examples");
+    expect(screen.getByText(/Stop the demo if live-read preflight reports unresolved attention/i)).toBeInTheDocument();
     expect(screen.getByText(/current production health and Vercel read posture/i)).toBeInTheDocument();
     expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
     expect(actionOrderMock).toHaveBeenCalledWith("completed_at", { ascending: false });

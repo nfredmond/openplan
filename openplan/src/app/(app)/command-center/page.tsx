@@ -28,6 +28,7 @@ import {
   loadRecentActionExecutionsForWorkspace,
   type RecentActionActivitySupabaseLike,
 } from "@/lib/operations/action-activity";
+import { buyerDemoCommandCenterHandoff } from "@/lib/operations/release-proof-packet";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -117,8 +118,6 @@ export default async function CommandCenterPage() {
       icon: FileText,
     },
   ];
-
-  const buyerDemoPreflightCommand = "npm run ops:check-buyer-demo-preflight -- --live-reads";
 
   const buyerDemoLinks = [
     {
@@ -222,11 +221,30 @@ export default async function CommandCenterPage() {
         <div className="border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
           <p className="font-medium text-foreground">Final pre-demo check</p>
           <p className="mt-1">
-            Run <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{buyerDemoPreflightCommand}</code>{" "}
+            Run <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{buyerDemoCommandCenterHandoff.preflightCommand}</code>{" "}
             before a live buyer walkthrough. This keeps Command Center handoff notes aligned with current production
             health and Vercel read posture.
           </p>
+          <p className="mt-2">
+            Proof packet: <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{buyerDemoCommandCenterHandoff.currentProofPacket}</code>
+          </p>
         </div>
+        <nav aria-label="Buyer demo proof sequence" className="border-t border-border/60 px-4 py-3">
+          <p className="text-xs font-medium text-foreground">Proof sequence before buyer reliance</p>
+          <ol className="mt-2 space-y-2">
+            {buyerDemoCommandCenterHandoff.steps.map((step) => (
+              <li key={step.href} className="text-xs text-muted-foreground">
+                <Link href={step.href} className="font-medium text-foreground underline-offset-4 hover:underline">
+                  {step.label}
+                </Link>{" "}
+                — {step.detail}
+              </li>
+            ))}
+          </ol>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {buyerDemoCommandCenterHandoff.operatorStopRule}
+          </p>
+        </nav>
       </section>
 
       <section className="mt-6 module-section-surface">

@@ -194,6 +194,12 @@ describe("release proof copy guards", () => {
     expect(buyerDemoCommandCenterHandoff.steps[0]?.detail).toContain("caveat sheet before demo language");
     expect(buyerDemoCommandCenterHandoff.steps[1]?.detail).toContain("triaged/supervised");
     expect(buyerDemoCommandCenterHandoff.steps[2]?.detail).toContain("Use examples only after the proof boundary is clean");
+    expect(buyerDemoCommandCenterHandoff.preflightCommand).toBe("npm run ops:check-buyer-demo-preflight -- --live-reads");
+    expect(buyerDemoCommandCenterHandoff.currentProofPacket).toBe("docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md");
+    expect(buyerDemoCommandCenterHandoff.operatorStopRule).toContain("Stop the demo");
+    expect(copyBlock).toContain(buyerDemoCommandCenterHandoff.preflightArtifact);
+    expect(copyBlock).toContain(buyerDemoCommandCenterHandoff.currentProofPacket);
+    expect(copyBlock).toContain(buyerDemoCommandCenterHandoff.operatorStopRule);
 
     for (const fragment of handoffNoWriteFragments) {
       expect(buyerDemoCommandCenterHandoff.boundary).toContain(fragment);
