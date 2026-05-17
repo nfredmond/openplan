@@ -1,6 +1,6 @@
 # OpenPlan — docs/ops Index
 
-**Last updated:** 2026-05-10
+**Last updated:** 2026-05-17
 **Maintainer:** Mateo Ruiz (Assistant Planner — package-control lane)
 
 ---
@@ -34,6 +34,7 @@
 | [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) | **Current restore-drill proof** — dedicated staging Supabase project created, migrated, restored from private production schema/public-data dumps, validated, and retired |
 | [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) | **Buyer-safe proof export** — static HTML/PDF packet for supervised pilot and managed-service diligence |
 | [2026-05-10 managed support proof map](../sales/2026-05-10-openplan-managed-support-proof-map.md) | **Buyer-facing support diligence map** — ties managed hosting, onboarding, support, backup/restore, billing, and pilot-closeout claims to proof artifacts and caveat boundaries |
+| [2026-05-17 current buyer/demo proof packet](../sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md) | **Current concise buyer/demo packet** — May 17 proof summary with explicit deployment-health currency, documentation-only commit caveats, and no self-serve/autonomous/legal/LAPM/validated-forecasting overclaims |
 | [2026-05-10 final pilot-readiness smoke checklist](2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md) | **Final pilot-diligence index** — indexes latest proof lanes, smoke checks, proof links, caveats, and re-run gates for supervised pilot conversations |
 | [2026-05-10 Wave 6 release-readiness summary](2026-05-10-openplan-wave6-release-readiness-summary.md) | **Merge-train readiness summary** — concise operator summary of shipped proof/readiness improvements, validation posture, caveats, and merge risk for the May 10 Wave 6 train; not a broad launch certificate |
 | [2026-05-10 pilot preflight operator proof](2026-05-10-openplan-pilot-preflight-operator-proof.md) | **Current operator pre-conversation proof** — `pnpm ops:check-pilot-preflight` usage, sample output, and read-only/no-write/no-secret safety boundary |
@@ -88,6 +89,7 @@
 - [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) — completed staging restore drill with migration/data replay, RLS/count/storage validation, and dedicated project cleanup
 - [2026-05-01 Admin Pilot Readiness proof packet](../sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html) — buyer-safe static HTML/PDF proof packet for supervised pilot and managed-service diligence
 - [2026-05-10 managed support proof map](../sales/2026-05-10-openplan-managed-support-proof-map.md) — buyer-facing diligence map that ties managed hosting, onboarding, support, backup/restore, billing, and pilot-closeout claims to proof artifacts and caveat boundaries
+- [2026-05-17 current buyer/demo proof packet](../sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md) — current concise buyer/demo packet with deployment-health currency, documentation-only commit caveats, and bounded proof claims for supervised conversations
 - [2026-05-10 final pilot-readiness smoke checklist](2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md) — final internal pilot-diligence index tying latest proof lanes to smoke checks, links, caveats, and re-run gates
 - [2026-05-10 Wave 6 release-readiness summary](2026-05-10-openplan-wave6-release-readiness-summary.md) — concise merge-train summary of shipped proof/readiness improvements, validation posture, caveats, and low docs-only merge risk; use for operator orientation, not as a self-serve launch certificate
 - [2026-05-10 pilot preflight operator proof](2026-05-10-openplan-pilot-preflight-operator-proof.md) — current `pnpm ops:check-pilot-preflight` operator proof with sample output, buyer/demo/pilot timing, and explicit read-only/no-production-write/no-schema-apply/no-secret-exposure boundary
