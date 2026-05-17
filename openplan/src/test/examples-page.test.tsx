@@ -26,6 +26,8 @@ describe("ExamplesEvidenceCatalogPage", () => {
     expect(screen.getByText(/No instant checkout demo claim/i)).toBeInTheDocument();
     expect(screen.queryByText(/Truth-state lock/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Clone the proof trail/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/One completed run, verbatim/i)).toBeInTheDocument();
+    expect(screen.queryByText(/One live run, verbatim/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Guided demo fit check/i)).toBeInTheDocument();
     expect(screen.getByText(/one scoped first workflow/i)).toBeInTheDocument();
     expect(screen.getByText(/self-hosted, managed-hosted, implementation-only, or a mix/i)).toBeInTheDocument();

@@ -46,7 +46,7 @@ export default function ExamplesEvidenceCatalogPage() {
             </div>
             <div className="public-fact">
               <p className="public-fact-label">What is shown</p>
-              <p className="public-fact-value">One live run, verbatim</p>
+              <p className="public-fact-value">One completed run, verbatim</p>
               <p className="public-fact-detail">
                 Five-station Caltrans validation, facility ranking, APE distribution, and screening
                 gate pulled from the artifact.
