@@ -153,6 +153,50 @@ describe("project controls summary", () => {
     expect(summary.recommendedNextAction.targetRowId).toBe("project-report-report-overlap");
   });
 
+  it("deep-links attention and next-action controls to the first concrete blocked or overdue row", () => {
+    const summary = buildProjectControlsSummary(
+      [
+        {
+          id: "milestone-blocked",
+          title: "Blocked right-of-way clearance",
+          status: "blocked",
+          target_date: "2026-03-15",
+        },
+        {
+          id: "milestone-overdue",
+          title: "Late environmental checkpoint",
+          status: "scheduled",
+          target_date: "2026-03-01",
+        },
+      ],
+      [
+        {
+          id: "submittal-overdue",
+          title: "Late invoice backup",
+          status: "submitted",
+          due_date: "2026-03-02",
+        },
+      ],
+      [
+        {
+          id: "invoice-overdue",
+          status: "submitted",
+          amount: 1200,
+          due_date: "2026-03-03",
+        },
+      ],
+      undefined,
+      "2026-03-10T00:00:00.000Z"
+    );
+
+    expect(summary.recommendedNextAction.label).toBe("Resolve blocked milestone");
+    expect(summary.recommendedNextAction.targetRowId).toBe("project-milestone-milestone-blocked");
+    expect(summary.attentionSummary.blockedMilestones.targetRowId).toBe("project-milestone-milestone-blocked");
+    expect(summary.attentionSummary.overdueMilestones.targetRowId).toBe("project-milestone-milestone-overdue");
+    expect(summary.attentionSummary.overdueSubmittals.targetRowId).toBe("project-submittal-submittal-overdue");
+    expect(summary.attentionSummary.overdueInvoices.targetRowId).toBe("project-invoice-invoice-overdue");
+  });
+
   it("caveats comparison-backed report context as planning support", () => {
     const summary = buildProjectControlsSummary(
       [],

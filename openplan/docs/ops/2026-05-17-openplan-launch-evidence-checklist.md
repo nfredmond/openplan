@@ -102,10 +102,11 @@ Latest docs/evidence deployment proof captured 2026-05-17:
 - Alias health: `https://openplan-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `92b2a832804f`
 - Generated shallow production-health evidence artifact: `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T201518Z-prod-health-evidence.md` with **Gate decision: PASS**
 
-Related safe fix included in this launch slice:
+Related safe fixes included in/after this launch slice:
 
 - Public OpenPlan `Request access` CTAs now preserve the `open-source-services-review` intent note without incorrectly preselecting the legacy implementation/onboarding defaults.
 - The pilot preflight script now runs Vercel inspect under the `natford` scope by default, matching the active production team.
+- Project control attention lanes now carry row-level anchors for the first blocked/overdue milestone, submittal, or invoice instead of stopping at the lane section; proof: `2026-05-17-openplan-project-control-row-deeplink-proof.md`.
 
 ## Missing evidence before calling it fully launched
 

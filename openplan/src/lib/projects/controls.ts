@@ -78,10 +78,10 @@ export type ProjectControlsSummary = {
   controlHealth: "stable" | "active" | "attention";
   attentionSummary: {
     reportPackets: { count: number; targetId: string; targetRowId?: string };
-    blockedMilestones: { count: number; targetId: string };
-    overdueMilestones: { count: number; targetId: string };
-    overdueSubmittals: { count: number; targetId: string };
-    overdueInvoices: { count: number; targetId: string };
+    blockedMilestones: { count: number; targetId: string; targetRowId?: string };
+    overdueMilestones: { count: number; targetId: string; targetRowId?: string };
+    overdueSubmittals: { count: number; targetId: string; targetRowId?: string };
+    overdueInvoices: { count: number; targetId: string; targetRowId?: string };
   };
   deadlineSummary: {
     totalCount: number;
@@ -165,7 +165,19 @@ export function buildProjectControlsSummary(
   const recommendedReportRowId = reportSummary?.recommendedReportId
     ? `project-report-${reportSummary.recommendedReportId}`
     : undefined;
+  const firstBlockedMilestone = sortByEarliestDate(
+    milestoneRows.filter((item) => item.status === "blocked" && Boolean(item.target_date)) as Array<ProjectMilestoneRecordLike & { target_date: string }>
+  )[0] ?? milestoneRows.find((item) => item.status === "blocked") ?? null;
+  const firstOverdueMilestone = sortByEarliestDate(
+    openMilestones.filter((item) => isPast(item.target_date, now) && Boolean(item.target_date)) as Array<ProjectMilestoneRecordLike & { target_date: string }>
+  )[0] ?? null;
+  const firstOverdueSubmittal = sortByEarliestDate(
+    pendingSubmittals.filter((item) => isPast(item.due_date, now) && Boolean(item.due_date)) as Array<ProjectSubmittalRecordLike & { due_date: string }>
+  )[0] ?? null;
   const invoiceSummary = summarizeBillingInvoiceRecords(invoices, now);
+  const firstOverdueInvoice = sortByEarliestDate(
+    activeInvoices.filter((item) => isPast(item.due_date, now) && Boolean(item.due_date)) as Array<ProjectInvoiceControlRecordLike & { due_date: string }>
+  )[0] ?? null;
   const deadlineItems = sortDeadlineItems([
     ...openMilestones
       .filter((item): item is ProjectMilestoneRecordLike & { target_date: string } => Boolean(item.target_date))
@@ -234,10 +246,26 @@ export function buildProjectControlsSummary(
       targetId: PROJECT_CONTROL_TARGET_IDS.report,
       targetRowId: recommendedReportRowId,
     },
-    blockedMilestones: { count: blockedMilestoneCount, targetId: PROJECT_CONTROL_TARGET_IDS.milestone },
-    overdueMilestones: { count: overdueMilestoneCount, targetId: PROJECT_CONTROL_TARGET_IDS.milestone },
-    overdueSubmittals: { count: overdueSubmittalCount, targetId: PROJECT_CONTROL_TARGET_IDS.submittal },
-    overdueInvoices: { count: invoiceSummary.overdueCount, targetId: PROJECT_CONTROL_TARGET_IDS.invoice },
+    blockedMilestones: {
+      count: blockedMilestoneCount,
+      targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
+      targetRowId: buildProjectControlRowTargetId("milestone", firstBlockedMilestone?.id),
+    },
+    overdueMilestones: {
+      count: overdueMilestoneCount,
+      targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
+      targetRowId: buildProjectControlRowTargetId("milestone", firstOverdueMilestone?.id),
+    },
+    overdueSubmittals: {
+      count: overdueSubmittalCount,
+      targetId: PROJECT_CONTROL_TARGET_IDS.submittal,
+      targetRowId: buildProjectControlRowTargetId("submittal", firstOverdueSubmittal?.id),
+    },
+    overdueInvoices: {
+      count: invoiceSummary.overdueCount,
+      targetId: PROJECT_CONTROL_TARGET_IDS.invoice,
+      targetRowId: buildProjectControlRowTargetId("invoice", firstOverdueInvoice?.id),
+    },
   };
 
   const recommendedNextAction =
@@ -247,6 +275,7 @@ export function buildProjectControlsSummary(
           detail: `${blockedMilestoneCount} milestone${blockedMilestoneCount === 1 ? " is" : "s are"} blocked. Clear the blocker before pushing invoicing or delivery posture forward.`,
           tone: "danger" as const,
           targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
+          targetRowId: buildProjectControlRowTargetId("milestone", firstBlockedMilestone?.id),
         }
       : overdueSubmittalCount > 0
         ? {
@@ -254,6 +283,7 @@ export function buildProjectControlsSummary(
             detail: `${overdueSubmittalCount} submittal${overdueSubmittalCount === 1 ? " is" : "s are"} overdue for review or agency response. Reconfirm the next packet owner and due date.`,
             tone: "danger" as const,
             targetId: PROJECT_CONTROL_TARGET_IDS.submittal,
+            targetRowId: buildProjectControlRowTargetId("submittal", firstOverdueSubmittal?.id),
           }
         : overdueMilestoneCount > 0
           ? {
@@ -261,6 +291,7 @@ export function buildProjectControlsSummary(
               detail: `${overdueMilestoneCount} milestone${overdueMilestoneCount === 1 ? " is" : "s are"} behind target date. Rebaseline the next checkpoint and owner.`,
               tone: "warning" as const,
               targetId: PROJECT_CONTROL_TARGET_IDS.milestone,
+              targetRowId: buildProjectControlRowTargetId("milestone", firstOverdueMilestone?.id),
             }
           : invoiceSummary.overdueCount > 0
             ? {
@@ -268,6 +299,7 @@ export function buildProjectControlsSummary(
             detail: `${invoiceSummary.overdueCount} invoice${invoiceSummary.overdueCount === 1 ? " is" : "s are"} overdue. Confirm supporting docs and payment status before advancing closeout claims.`,
             tone: "warning" as const,
             targetId: PROJECT_CONTROL_TARGET_IDS.invoice,
+            targetRowId: buildProjectControlRowTargetId("invoice", firstOverdueInvoice?.id),
           }
           : reportRefreshRecommendedCount > 0
             ? {

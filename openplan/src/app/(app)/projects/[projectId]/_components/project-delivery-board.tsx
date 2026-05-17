@@ -314,7 +314,7 @@ export function ProjectDeliveryBoard({
                 <Link
                   href={buildProjectControlHref(
                     projectControlsSummary.attentionSummary.blockedMilestones.targetId,
-                    firstBlockedMilestone ? `project-milestone-${firstBlockedMilestone.id}` : undefined
+                    projectControlsSummary.attentionSummary.blockedMilestones.targetRowId
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
@@ -330,7 +330,7 @@ export function ProjectDeliveryBoard({
                 <Link
                   href={buildProjectControlHref(
                     projectControlsSummary.attentionSummary.overdueMilestones.targetId,
-                    firstOverdueMilestone ? `project-milestone-${firstOverdueMilestone.id}` : undefined
+                    projectControlsSummary.attentionSummary.overdueMilestones.targetRowId
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
@@ -346,7 +346,7 @@ export function ProjectDeliveryBoard({
                 <Link
                   href={buildProjectControlHref(
                     projectControlsSummary.attentionSummary.overdueSubmittals.targetId,
-                    firstOverdueSubmittal ? `project-submittal-${firstOverdueSubmittal.id}` : undefined
+                    projectControlsSummary.attentionSummary.overdueSubmittals.targetRowId
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
@@ -362,7 +362,7 @@ export function ProjectDeliveryBoard({
                 <Link
                   href={buildProjectControlHref(
                     projectControlsSummary.attentionSummary.overdueInvoices.targetId,
-                    firstOverdueInvoice ? `project-invoice-${firstOverdueInvoice.id}` : undefined
+                    projectControlsSummary.attentionSummary.overdueInvoices.targetRowId
                   )}
                   className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-4 py-3 transition hover:bg-muted/35"
                 >
