@@ -18,9 +18,9 @@ Common gates:
 
 ```bash
 cd openplan
-pnpm lint
-pnpm test
-pnpm build
+npm run lint
+npm test
+npm run build
 ```
 
 For focused changes, run the matching Vitest files first, then expand if feasible.

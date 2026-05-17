@@ -1,13 +1,13 @@
 # OpenPlan Pilot Preflight Operator Proof — 2026-05-10
 
 **Status:** Current operator proof note
-**Command:** `pnpm ops:check-pilot-preflight`
+**Command:** `npm run ops:check-pilot-preflight`
 **Scope:** read-only pre-conversation readiness bundle for supervised buyer, demo, and pilot diligence
 **Posture:** OpenPlan remains a supervised planning workbench and managed implementation/support offer, not a self-serve SaaS launch, legal-compliance engine, grant-award predictor, calibrated behavioral forecast, or autonomous planning authority.
 
 ## Why this exists
 
-`pnpm ops:check-pilot-preflight` gives an operator one bundled preflight before a serious OpenPlan conversation. It collects the minimum posture checks that should be fresh before Nathaniel or the team talk with a buyer, demo prospect, or supervised pilot partner:
+`npm run ops:check-pilot-preflight` gives an operator one bundled preflight before a serious OpenPlan conversation. It collects the minimum posture checks that should be fresh before Nathaniel or the team talk with a buyer, demo prospect, or supervised pilot partner:
 
 1. local Supabase/env guard posture, including non-local URL attention flags without printing secret values;
 2. Supabase migration inventory posture, including duplicate timestamp/slug checks and review flags;
@@ -30,14 +30,14 @@ Recommended default:
 
 ```bash
 cd openplan
-pnpm ops:check-pilot-preflight
+npm run ops:check-pilot-preflight
 ```
 
 Local/offline-safe documentation sample, when production/Vercel checks are intentionally out of scope:
 
 ```bash
 cd openplan
-pnpm ops:check-pilot-preflight -- --skip-health --skip-vercel
+npm run ops:check-pilot-preflight -- --skip-health --skip-vercel
 ```
 
 Machine-readable evidence for an operator log:
@@ -46,6 +46,8 @@ Machine-readable evidence for an operator log:
 cd openplan
 npm --silent run ops:check-pilot-preflight -- --json
 ```
+
+This note was refreshed on 2026-05-17 to align the live operator command with the npm script contract in `openplan/package.json`. Historical proof artifacts may still cite the older pnpm shorthand; for current pre-conversation runs, prefer npm so the command works on hosts that only have Node/npm plus this repository checked out.
 
 `npm --silent` is intentional for npm-based automation. Plain `npm run ops:check-pilot-preflight -- --json` may prepend npm's script banner before the JSON payload, which is fine for a human terminal but not a strict parser. Automation should consume stdout only, preserve the process exit code separately, and avoid parsing combined stdout/stderr. Direct script invocation is also parser-safe:
 

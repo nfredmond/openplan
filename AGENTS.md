@@ -17,23 +17,25 @@ Secondary canonical references (read only if the deep-dive points you to them):
 
 **OpenPlan** — a free, open-source transportation planning intelligence platform. Phase 1 is an AI transit analysis layer that democratizes what Replica and StreetLight Data charge $50K+/year for: natural-language queries over real GTFS, Census, and LODES data, answered with live maps.
 
-**Stack:** Next.js 16 (App Router) · React 19 · Supabase (Postgres + PostGIS + Auth + Storage) · Mapbox GL JS v3 · deck.gl v9.2 · Claude API via Vercel AI SDK · TypeScript · Tailwind CSS v4 · shadcn/ui · pnpm · Vercel
+**Stack:** Next.js 16 (App Router) · React 19 · Supabase (Postgres + PostGIS + Auth + Storage) · Mapbox GL JS v3 · deck.gl v9.2 · Claude API via Vercel AI SDK · TypeScript · Tailwind CSS v4 · shadcn/ui · npm scripts / pnpm audit compatibility · Vercel
 
 **Source code lives in:** `openplan/` subdirectory (run all commands from there)
+
+**Current command posture:** use `npm run …` / `npm exec …` for live operator commands. Historical proof logs still cite `pnpm`; `npm run qa:gate` intentionally shells through `pnpm audit --prod --audit-level=moderate`, so keep pnpm/corepack available for that audit lane.
 
 ## Commands
 
 ```bash
-pnpm dev                          # Start Next.js dev server (localhost:3000)
-pnpm build                        # Production build
-pnpm test                         # Run vitest unit tests
-pnpm test:watch                   # Vitest in watch mode
-pnpm supabase start               # Start local Supabase stack
-pnpm supabase stop                # Stop local Supabase
-pnpm supabase db reset            # Re-apply all migrations from scratch
-pnpm supabase gen types typescript --local > src/types/supabase.ts  # Regenerate DB types
-pnpm seed:gtfs                    # Seed top US transit agencies
-pnpm supabase functions serve parse-gtfs --env-file ../.env.local   # Serve Edge Function locally
+npm run dev                      # Start Next.js dev server (localhost:3000)
+npm run build                    # Production build
+npm test                         # Run vitest unit tests
+npm run test:watch               # Vitest in watch mode
+npm exec supabase start          # Start local Supabase stack
+npm exec supabase stop           # Stop local Supabase
+npm exec supabase db reset       # Re-apply all migrations from scratch
+npm exec supabase gen types typescript --local > src/types/supabase.ts  # Regenerate DB types
+npm run seed:gtfs                # Seed top US transit agencies
+npm exec supabase functions serve parse-gtfs --env-file ../.env.local   # Serve Edge Function locally
 ```
 
 ## Architecture

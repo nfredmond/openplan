@@ -30,17 +30,19 @@ The license does not grant rights to Nat Ford Planning trademarks, logos, privat
 
 ```bash
 cd openplan
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 Useful gates:
 
 ```bash
-pnpm lint
-pnpm test
-pnpm build
+npm run lint
+npm test
+npm run build
 ```
+Command note: package scripts are invoked with `npm run …` in current operator docs because `package-lock.json` is present and npm is the most reliable baseline on this host. `pnpm` remains present for legacy proof logs and the production-audit step inside `npm run qa:gate`.
+
 
 ## Current product truth
 
