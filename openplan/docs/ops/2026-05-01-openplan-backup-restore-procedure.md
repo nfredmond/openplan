@@ -24,6 +24,8 @@ Baseline posture before paid customer launch:
 - For paid production hosting, prefer a Supabase tier with point-in-time recovery (PITR) enabled before customer data becomes material.
 - Capture offline Vercel env snapshots after any production env change.
 - Run a non-production restore drill quarterly and before any major paid rollout.
+- After every restore drill, record the next due quarter/month in the drill log follow-up section and in `docs/ops/KNOWN_ISSUES.md` while KI-2026-05-01-003 remains open.
+- Before any buyer engagement signs, confirm the managed-hosting service schedule has explicit RPO/RTO fields filled or explicitly marked "not separately promised."
 
 ## Capture Vercel Environment Snapshot
 
@@ -122,6 +124,9 @@ Create a dated drill note under `docs/ops/`:
 **Started:** HH:MM TZ
 **Completed:** HH:MM TZ
 **Result:** pass | fail | partial
+**Storage object replay scope:** included | excluded; reason: <value>
+**Next quarterly drill due:** YYYY-Q# or YYYY-MM-DD
+**RPO/RTO schedule check:** <engagement name or n/a>; fields filled | explicitly deferred | not reviewed
 
 ## Steps Run
 - <command or dashboard action, sanitized>
@@ -134,6 +139,8 @@ Create a dated drill note under `docs/ops/`:
 
 ## Follow-Up
 - <owner and next action>
+- Next quarterly restore drill due: <date/quarter and owner>
+- Per-engagement RPO/RTO schedule update needed before signing: <yes/no; where tracked>
 ```
 
 ## Customer Communication Boundary

@@ -43,6 +43,14 @@ const PROHIBITED_PUBLIC_CLAIMS: Array<{ label: string; pattern: RegExp }> = [
     label: "validated award or ridership prediction claim",
     pattern: /\b(?:predict(?:s|ed|ion)?|forecast(?:s|ed)?|score(?:s|d)?)\b.{0,80}\b(?:award likelihood|grant success|funding outcome|reimbursement approval|ridership|traffic volume|vmt)\b/i,
   },
+  {
+    label: "calibrated or validated forecasting availability",
+    pattern: /\b(?:calibrated|validated|certified|planning[- ]grade)\b.{0,80}\b(?:forecast(?:ing|s)?|demand model(?:ing)?|travel demand|traffic volume|ridership|vmt)\b.{0,80}\b(?:ready|available|supported|provided|included|delivered|built in|built-in)\b/i,
+  },
+  {
+    label: "forecasting accuracy or calibration proof",
+    pattern: /\b(?:proves?|guarantees?|certifies?|validates?)\b.{0,80}\b(?:forecast(?:ing)? accuracy|model calibration|traffic volume forecast|ridership forecast|vmt forecast)\b/i,
+  },
 ];
 
 function publicPageSource(file: string) {
@@ -52,7 +60,9 @@ function publicPageSource(file: string) {
 function sourceWithoutExplicitCaveats(source: string) {
   return source
     .replace(/[^.\n]*(?:no|without|not|before any)[^.\n]*\b(?:automatic|automated|instant|immediate|one[- ]click)[^.\n]*/gi, "")
-    .replace(/[^.\n]*(?:disabled|deliberately scoped|human control|reviewed first)[^.\n]*\b(?:checkout|subscription|provisioning|workspace|billing)[^.\n]*/gi, "");
+    .replace(/[^.\n]*(?:disabled|deliberately scoped|human control|reviewed first)[^.\n]*\b(?:checkout|subscription|provisioning|workspace|billing)[^.\n]*/gi, "")
+    .replace(/[^.\n]*(?:no|not|never|without|do not|does not|cannot|isn[’']t|aren[’']t)[^.\n]*\b(?:calibrated|validated|certified|planning[- ]grade|forecast(?:ing|s)?|demand model(?:ing)?|travel demand|traffic volume|ridership|vmt)[^.\n]*/gi, "")
+    .replace(/[^.\n]*\b(?:screening[- ]grade|prototype[- ]only|internal prototype only|caveat|supervised review|qualified reviewer)[^.\n]*\b(?:calibrated|validated|certified|planning[- ]grade|forecast(?:ing|s)?|demand model(?:ing)?|travel demand|traffic volume|ridership|vmt)[^.\n]*/gi, "");
 }
 
 describe("public page claims guardrails", () => {
@@ -71,5 +81,15 @@ describe("public page claims guardrails", () => {
     expect(combinedPublicSource).toMatch(/fit review/i);
     expect(combinedPublicSource).toMatch(/no automatic checkout or workspace creation/i);
     expect(combinedPublicSource).not.toMatch(/\b(?:request access|sign up|get started)\b.{0,120}\b(?:instant|automatic|automated|one[- ]click)\b.{0,120}\b(?:workspace|subscription|tenant|checkout)\b/i);
+  });
+
+  it("keeps public modeling language inside screening-grade and supervised-review boundaries", () => {
+    const combinedPublicSource = PUBLIC_PAGE_FILES.map(publicPageSource).join("\n");
+    const caveatStrippedSource = sourceWithoutExplicitCaveats(combinedPublicSource);
+
+    expect(combinedPublicSource).toMatch(/screening[- ]grade/i);
+    expect(combinedPublicSource).toMatch(/not (?:a )?(?:product tour and not a )?forecasting claim|not production-ready forecasting|not for funding-grade conclusions/i);
+    expect(combinedPublicSource).toMatch(/qualified reviewer|supervised early access|supervised review/i);
+    expect(caveatStrippedSource).not.toMatch(/\b(?:calibrated|validated|certified|planning[- ]grade)\b.{0,120}\b(?:forecast(?:ing|s)?|demand model(?:ing)?|travel demand|traffic volume|ridership|vmt)\b/i);
   });
 });

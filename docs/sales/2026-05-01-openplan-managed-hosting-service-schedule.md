@@ -74,6 +74,10 @@ Fill before signature:
 | Backup mechanism | [managed database backup / file export / client archive / other] |
 | Backup retention target | [insert target or state "not separately promised"] |
 | Restore request target | [insert target or state "best effort during business support hours"] |
+| Recovery Point Objective (RPO) | [insert maximum acceptable data-loss window or state "not separately promised"] |
+| Recovery Time Objective (RTO) | [insert target restoration/workaround window or state "not separately promised"] |
+| Last restore drill reviewed | [insert dated proof log path or state "not reviewed for this engagement"] |
+| Next restore drill due | [insert quarter/date or state "not applicable to this engagement"] |
 | Client-retained records | [describe official records client must retain outside OpenPlan] |
 
 ## Support Targets
@@ -142,7 +146,7 @@ The managed-hosting schedule is ready for a scoped pilot or service engagement w
 - support contacts and workspace owner are named;
 - the first workflow is scoped;
 - data sensitivity is classified;
-- backup/restore posture is either filled or explicitly deferred;
+- backup/restore posture is either filled or explicitly deferred, including RPO, RTO, last restore-drill proof reviewed, and next-drill due fields;
 - enhanced SLA needs are either attached or marked out of scope;
 - billing proof language matches the May 1 release-to-sale waiver;
 - and client/provider reviewers confirm that legal, procurement, and records obligations are handled outside this operational schedule.

@@ -10,6 +10,8 @@
 **Completed:** 15:09 PDT
 **Cleanup posture:** retire/delete dedicated staging project after validation
 **Result:** pass
+**Next quarterly drill due:** 2026-Q3 / by 2026-08-01 before any stronger recovery language or SLA/RPO/RTO commitment
+**RPO/RTO schedule check:** n/a for drill; fill per engagement in `docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md` before signature
 
 ## Scope
 
@@ -65,5 +67,6 @@ Storage object replay was not in scope. Storage validation checked bucket/object
 ## Follow-Up
 
 - Keep `.operator-private/` out of git and remove private dump/password artifacts according to local operator retention practice.
-- For the next quarterly drill, decide whether storage object replay should be included in scope.
+- For the next quarterly drill due by 2026-08-01, decide whether storage object replay should be included in scope and record the decision in the new drill log.
+- Before any managed-hosting engagement signs, fill or explicitly defer the RPO/RTO fields in `docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md`.
 - If a future drill requires PITR instead of dump replay, use the Supabase dashboard/PITR workflow and record sanitized evidence in a new dated log.
