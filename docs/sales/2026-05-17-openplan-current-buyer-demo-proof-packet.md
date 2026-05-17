@@ -17,13 +17,13 @@ This packet consolidates the latest May 17 proof on top of the May 1 / May 10 re
 
 ## Evidence Currency Note
 
-This packet was rechecked against commits through `44457d6` (`test: clean OpenPlan TypeScript baseline`). Fresh shallow production-health evidence now shows the canonical production alias reporting deployed commit `44457d6`. Treat that as deployment/health currency for the code baseline only; the `44457d6` slice itself is test-fixture cleanup, not new buyer functionality or a substitute for workflow-specific smoke tests.
+This packet has been consolidated through commit `2a4a7c5` (`docs: consolidate OpenPlan buyer proof packet`). The latest shallow production-health evidence in this packet still shows the canonical production alias reporting deployed commit `44457d6`; treat that as deployment/health currency for that deployed code baseline only. The later `2a4a7c5` slice is documentation consolidation, not new buyer functionality, production smoke, or a substitute for workflow-specific smoke tests.
 
 ## What Is Proven In Today's Slice
 
 | Proof lane | Current status | What it proves | Source |
 |---|---:|---|---|
-| Production health | PASS, bounded to shallow deployed health | The canonical production alias responded with the shallow health contract for deployed commit `44457d6`; Vercel deployment state was verified Ready before closing the evidence gate. Database and billing dependency checks remain intentionally outside this shallow endpoint. | `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T220335Z-prod-health-evidence.md` |
+| Production health | PASS, bounded to shallow deployed health | The canonical production alias responded with the shallow health contract for deployed commit `44457d6`; Vercel deployment state was verified Ready before closing the evidence gate. Database and billing dependency checks remain intentionally outside this shallow endpoint, and no fresh production-health claim is made for the later documentation-only consolidation commit `2a4a7c5`. | `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T220335Z-prod-health-evidence.md` |
 | Authenticated project report deep link | PASS | A bounded QA user signed into production, created an isolated workspace/project, generated a real project-linked report artifact, and clicked from the project report card into the report detail packet-work anchor. | `docs/ops/2026-05-17-openplan-production-project-report-deeplink-smoke.md` |
 | Command Center / governance attention | PASS for the current lane | Project-level report/governance holds are treated as attention-worthy issues, governance-only report holds are prioritized, duplicate attention counts are suppressed, and report cards link to packet work. | `openplan/docs/ops/2026-05-17-openplan-launch-evidence-checklist.md`; commits `1a0aec0`, `d802dd9`, `7e9d940`, `07444c1` |
 | Mobile request-access polish | PASS within CTA/intake boundary | Public `Request access` CTAs preserve the `open-source-services-review` intent note without incorrectly preselecting legacy implementation/onboarding defaults; focused CTA + pilot preflight tests passed in the May 17 launch evidence pass. | `openplan/docs/ops/2026-05-17-openplan-launch-evidence-checklist.md`; commit `87d1b58` |
@@ -59,7 +59,6 @@ The current known-issues register has **0 open blockers**, but these buyer-relev
 - **Billing:** no fresh same-cycle paid checkout canary is claimed; direct OpenPlan tier checkout routes to fit review instead of Stripe checkout.
 - **Modeling:** county-run and behavioral-onramp evidence must remain screening-grade / human-review language, not calibrated or validated forecasting.
 - **Recovery:** a staging restore drill passed, but future restore confidence depends on repeated drills and engagement-specific RPO/RTO fields.
-- **Tooling:** Node.js action runtime warnings are CI hygiene, not a buyer-facing blocker.
 
 ## Current Artifact Set
 
@@ -85,7 +84,7 @@ Standing buyer/sales packet to keep attached:
 
 ## Operator Checklist Before External Use
 
-- Confirm the production alias health still passes and reports the intended deployed commit if more code has shipped after `44457d6`; keep test-baseline cleanup separate from buyer workflow/functionality claims.
+- Confirm the production alias health still passes and reports the intended deployed commit if production code has shipped after `44457d6`; keep test-baseline cleanup and documentation consolidation separate from buyer workflow/functionality claims.
 - Re-run a scoped authenticated smoke if the project detail/report card flow changes.
 - Attach the buyer caveat sheet and managed-support proof map.
 - Pick one first workflow for the buyer rather than presenting the whole roadmap as complete.
