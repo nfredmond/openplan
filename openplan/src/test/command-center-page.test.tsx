@@ -198,8 +198,15 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText(/does not seed data, run checkout, provision accounts, or write production records/i)).toBeInTheDocument();
     expect(screen.getByText("Nevada County")).toBeInTheDocument();
     expect(screen.getByText("internal prototype only")).toBeInTheDocument();
-    expect(screen.getByText(/237\.62% Max APE/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/237\.62% Max APE/i).length).toBeGreaterThan(0);
     expect(screen.getByText("docs/ops/2026-04-18-modeling-nevada-county-live-proof.md")).toBeInTheDocument();
+    expect(screen.getByText("Sample story beats")).toBeInTheDocument();
+    expect(screen.getByText("Grass Valley corridor screening")).toBeInTheDocument();
+    expect(screen.getByText(/not a full regional travel model or adopted RTP finding/i)).toBeInTheDocument();
+    expect(screen.getByText("Max APE blocks stronger claims")).toBeInTheDocument();
+    expect(screen.getByText(/prevents outward forecasting language/i)).toBeInTheDocument();
+    expect(screen.getByText("Scope the first supervised workflow")).toBeInTheDocument();
+    expect(screen.getByText(/what geography, data owner, review path, and hosting model/i)).toBeInTheDocument();
     expect(screen.getByText("Demo narration rail")).toBeInTheDocument();
     expect(screen.getByText("Start with the proof boundary")).toBeInTheDocument();
     expect(screen.getByText(/does not alter the buyer workspace or create operational records/i)).toBeInTheDocument();

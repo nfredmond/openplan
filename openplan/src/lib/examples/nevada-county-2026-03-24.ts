@@ -75,6 +75,33 @@ export const NEVADA_COUNTY_RUN_CONTEXT = {
   countsSource: "Caltrans 2023 priority counts (five-station subset)",
 } as const;
 
+export type NevadaCountyDemoStoryBeat = {
+  label: string;
+  title: string;
+  detail: string;
+};
+
+export const NEVADA_COUNTY_DEMO_STORY_BEATS: readonly NevadaCountyDemoStoryBeat[] = [
+  {
+    label: "Geography",
+    title: "Grass Valley corridor screening",
+    detail:
+      "Frame the example as a narrow county-scale screening artifact, not a full regional travel model or adopted RTP finding.",
+  },
+  {
+    label: "Evidence stress test",
+    title: "Max APE blocks stronger claims",
+    detail:
+      "Use the 237.62% Max APE result to show how failed validation remains visible and prevents outward forecasting language.",
+  },
+  {
+    label: "Service next step",
+    title: "Scope the first supervised workflow",
+    detail:
+      "End the story by asking what geography, data owner, review path, and hosting model a real pilot would need.",
+  },
+];
+
 export const NEVADA_COUNTY_PROOF_DOC_PATH =
   "docs/ops/2026-04-18-modeling-nevada-county-live-proof.md";
 

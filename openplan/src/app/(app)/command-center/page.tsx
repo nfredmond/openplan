@@ -29,6 +29,7 @@ import {
   type RecentActionActivitySupabaseLike,
 } from "@/lib/operations/action-activity";
 import {
+  NEVADA_COUNTY_DEMO_STORY_BEATS,
   NEVADA_COUNTY_PROOF_DOC_PATH,
   NEVADA_COUNTY_RUN_CONTEXT,
   NEVADA_COUNTY_SCREENING_GATE,
@@ -259,6 +260,18 @@ export default async function CommandCenterPage() {
           </div>
         </div>
         <div className="border-t border-border/60 px-4 py-4">
+          <div className="mb-4 rounded-md border border-border/70 bg-background/70 p-3">
+            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Sample story beats</p>
+            <div className="mt-3 grid gap-3 md:grid-cols-3">
+              {NEVADA_COUNTY_DEMO_STORY_BEATS.map((beat) => (
+                <div key={beat.label} className="text-xs text-muted-foreground">
+                  <p className="font-medium text-foreground">{beat.label}</p>
+                  <p className="mt-1 font-semibold text-foreground">{beat.title}</p>
+                  <p className="mt-1">{beat.detail}</p>
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Demo narration rail</p>
