@@ -13,6 +13,7 @@ const execFile = promisify(execFileCallback);
 const DEFAULT_HEALTH_URL = "https://openplan-natford.vercel.app/api/health";
 const DEFAULT_DEPLOYMENT_TARGET = "https://openplan-natford.vercel.app";
 const DEFAULT_VERCEL_COMMAND = "vercel";
+const DEFAULT_VERCEL_SCOPE = "natford";
 const DEFAULT_TIMEOUT_MS = 15_000;
 const READY_STATES = new Set(["READY"]);
 const JSON_CONTRACT_VERSION = "pilot-preflight.v1";
@@ -55,6 +56,7 @@ function usage() {
     "  --health-url <url>         Production health URL; defaults to canonical production /api/health",
     "  --deployment-target <url>  Vercel deployment or alias to inspect; defaults to canonical production alias",
     "  --vercel-command <path>    Vercel CLI command path; defaults to vercel",
+    "  --vercel-scope <scope>      Vercel team/user scope for inspect; defaults to natford",
     "  --skip-health              Skip the live production health fetch",
     "  --skip-vercel              Skip the read-only Vercel deployment inspection",
     "  --json                     Emit machine-readable summary",
@@ -72,6 +74,7 @@ export function parseArgs(argv) {
     healthUrl: process.env.OPENPLAN_HEALTH_URL || DEFAULT_HEALTH_URL,
     deploymentTarget: process.env.OPENPLAN_DEPLOYMENT_TARGET || DEFAULT_DEPLOYMENT_TARGET,
     vercelCommand: process.env.OPENPLAN_VERCEL_COMMAND || DEFAULT_VERCEL_COMMAND,
+    vercelScope: process.env.OPENPLAN_VERCEL_SCOPE || DEFAULT_VERCEL_SCOPE,
     skipHealth: false,
     skipVercel: false,
     json: false,
@@ -119,6 +122,11 @@ export function parseArgs(argv) {
     }
     if (arg === "--vercel-command") {
       args.vercelCommand = argv[index + 1] ?? "";
+      index += 1;
+      continue;
+    }
+    if (arg === "--vercel-scope") {
+      args.vercelScope = argv[index + 1] ?? "";
       index += 1;
       continue;
     }
@@ -179,11 +187,13 @@ function normalizeVercelInspectPayload(payload, target) {
   };
 }
 
-export async function inspectVercelDeployment({ target = DEFAULT_DEPLOYMENT_TARGET, command = DEFAULT_VERCEL_COMMAND } = {}, deps = {}) {
+export async function inspectVercelDeployment({ target = DEFAULT_DEPLOYMENT_TARGET, command = DEFAULT_VERCEL_COMMAND, scope = DEFAULT_VERCEL_SCOPE } = {}, deps = {}) {
   const normalizedTarget = normalizeUrl(target, "deployment target");
   const runner = deps.execFile ?? execFile;
+  const args = ["inspect", normalizedTarget, "--json"];
+  if (scope) args.push("--scope", scope);
   try {
-    const { stdout } = await runner(command || DEFAULT_VERCEL_COMMAND, ["inspect", normalizedTarget, "--json"], {
+    const { stdout } = await runner(command || DEFAULT_VERCEL_COMMAND, args, {
       timeout: DEFAULT_TIMEOUT_MS,
       maxBuffer: 1024 * 1024,
     });
@@ -253,6 +263,7 @@ export async function buildPilotPreflight(options = {}, deps = {}) {
         {
           target: options.deploymentTarget || DEFAULT_DEPLOYMENT_TARGET,
           command: options.vercelCommand || DEFAULT_VERCEL_COMMAND,
+          scope: options.vercelScope || DEFAULT_VERCEL_SCOPE,
         },
         deps,
       );

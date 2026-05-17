@@ -287,7 +287,7 @@ describe("pilot preflight script", () => {
     expect(calls).toEqual([
       {
         command: "mock-vercel",
-        args: ["inspect", "https://openplan-natford.vercel.app/", "--json"],
+        args: ["inspect", "https://openplan-natford.vercel.app/", "--json", "--scope", "natford"],
       },
     ]);
     expect(result).toMatchObject({
@@ -298,5 +298,33 @@ describe("pilot preflight script", () => {
       environment: "production",
       commitSha: "bd2959c",
     });
+  });
+
+  it("allows the Vercel inspect scope to be overridden", async () => {
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const execFile = async (command: string, args: string[]) => {
+      calls.push({ command, args });
+      return {
+        stdout: JSON.stringify({
+          id: "dpl_mocked",
+          url: "openplan-natford.vercel.app",
+          readyState: "READY",
+          target: "production",
+        }),
+      };
+    };
+
+    await inspectVercelDeployment(
+      { target: "https://openplan-natford.vercel.app", command: "mock-vercel", scope: "custom-scope" },
+      { execFile },
+    );
+
+    expect(calls[0]?.args).toEqual([
+      "inspect",
+      "https://openplan-natford.vercel.app/",
+      "--json",
+      "--scope",
+      "custom-scope",
+    ]);
   });
 });

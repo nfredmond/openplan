@@ -173,10 +173,13 @@ export function buildRequestAccessPrefill(
   const workspaceId = cleanWorkspaceId(firstParam(searchParams, "workspaceId"));
   const legacyCheckout = cleanBoolean(firstParam(searchParams, "legacyCheckout"));
   const checkoutDisabled = cleanBoolean(firstParam(searchParams, "checkoutDisabled")) || checkout === "disabled";
-  const isOpenPlanFit = product === "openplan" || pathname.endsWith("/openplan-fit");
+  const isOpenPlanProduct = product === "openplan";
+  const isLegacyOpenPlanFit =
+    pathname.endsWith("/openplan-fit") ||
+    Boolean(tier || checkout || legacyCheckout || checkoutDisabled || workspaceId);
 
   const sourceContext = compactContext({
-    product: product ?? (isOpenPlanFit ? "openplan" : undefined),
+    product: product ?? (isLegacyOpenPlanFit ? "openplan" : undefined),
     tier,
     checkout,
     legacyCheckout,
@@ -196,7 +199,7 @@ export function buildRequestAccessPrefill(
     desiredFirstWorkflow,
   };
 
-  if (isOpenPlanFit) {
+  if (isOpenPlanProduct && isLegacyOpenPlanFit) {
     initialValues.serviceLane ??= "implementation_onboarding";
     initialValues.deploymentPosture ??= "undecided";
     initialValues.desiredFirstWorkflow ??= "other";

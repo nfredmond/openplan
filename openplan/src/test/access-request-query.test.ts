@@ -52,4 +52,23 @@ describe("buildRequestAccessPrefill", () => {
     expect(prefill.sourceContext).toEqual({ source: "pricing", intent: "managed-hosting-review" });
     expect(prefill.sourcePath).toBe("/contact?source=pricing&intent=managed-hosting-review");
   });
+
+  it("keeps the landing-page OpenPlan review CTA from preselecting the wrong service lane", () => {
+    const prefill = buildRequestAccessPrefill("/request-access", {
+      product: "openplan",
+      source: "landing",
+      intent: "open-source-services-review",
+    });
+
+    expect(prefill.initialValues.serviceLane).toBeUndefined();
+    expect(prefill.initialValues.deploymentPosture).toBeUndefined();
+    expect(prefill.initialValues.desiredFirstWorkflow).toBeUndefined();
+    expect(prefill.initialValues.onboardingNeeds).toContain("CTA intent: review the Apache-2.0 open-source core");
+    expect(prefill.sourceContext).toEqual({
+      product: "openplan",
+      source: "landing",
+      intent: "open-source-services-review",
+    });
+    expect(prefill.sourcePath).toBe("/request-access?product=openplan&source=landing&intent=open-source-services-review");
+  });
 });
