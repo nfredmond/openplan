@@ -94,19 +94,19 @@ Post-commit deployment proof captured 2026-05-17:
 
 Latest docs/evidence deployment proof captured 2026-05-17:
 
-- Commit: `92b2a832804f` (`chore: reduce migration inventory false positives`)
-- Production deployment: `https://openplan-f0h4g47cc-natford.vercel.app`
+- Commit: `77de380ca1ad` (`feat: include RTP review loops in governance attention`)
+- Production deployment: `https://openplan-fd1q3js01-natford.vercel.app`
 - Canonical alias: `https://openplan-natford.vercel.app`
 - Vercel inspect state: **Ready**
-- Deployment health: `https://openplan-f0h4g47cc-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `92b2a832804f`
-- Alias health: `https://openplan-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `92b2a832804f`
-- Generated shallow production-health evidence artifact: `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T201518Z-prod-health-evidence.md` with **Gate decision: PASS**
+- Alias health: `https://openplan-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `77de380ca1ad`
+- Generated shallow production-health evidence artifact: `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T215709Z-prod-health-evidence.md` with **Gate decision: PASS**
 
 Related safe fixes included in/after this launch slice:
 
 - Public OpenPlan `Request access` CTAs now preserve the `open-source-services-review` intent note without incorrectly preselecting the legacy implementation/onboarding defaults.
 - The pilot preflight script now runs Vercel inspect under the `natford` scope by default, matching the active production team.
 - Project control attention lanes now carry row-level anchors for the first blocked/overdue milestone, submittal, or invoice instead of stopping at the lane section; proof: `2026-05-17-openplan-project-control-row-deeplink-proof.md`.
+- Command Center report-governance attention now includes open RTP release-review loops so current packets with unresolved release-review posture are still counted as operator work.
 
 ## Missing evidence before calling it fully launched
 
