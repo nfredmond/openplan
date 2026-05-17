@@ -1,9 +1,9 @@
 # OpenPlan Buyer Demo Evidence Note
 
-**Date:** 2026-05-17 16:26–16:28 PDT  
+**Date:** 2026-05-17 16:26–16:52 PDT  
 **Production alias:** `https://openplan-natford.vercel.app`  
-**Deployed commit checked:** `380e10982588`  
-**Evidence posture:** Read-only buyer-demo rehearsal; no production writes, provisioning, schema changes, checkout/spend actions, outbound email, or secret-value printing.
+**Deployed commit checked:** `d03cf77fd7da`  
+**Evidence posture:** Read-only buyer-demo rehearsal and checkpoint continuation; no production writes, provisioning, schema changes, checkout/spend actions, outbound email, or secret-value printing.
 
 ## Executive status
 
@@ -65,6 +65,11 @@ Confirmed in production:
 
 - page title: `Command Center · OpenPlan · OpenPlan`;
 - proof-first line present: `Run the buyer demo from proof, then intake, then examples.`;
+- read-only Nevada County sample cue present;
+- sample cue states it does not seed data, run checkout, provision accounts, or write production records;
+- demo narration rail present with four steps: proof boundary, validation gate, caveat-preserving evidence, and public evidence catalog handoff;
+- what-to-say / what-not-to-say operator microcopy present;
+- `Open public evidence catalog` link points to `/examples` and navigates successfully;
 - handoff boundary present: `No production writes, provisioning, outbound email, checkout, or self-serve activation are implied by this handoff.`;
 - stop rule present: `Stop the demo if live-read preflight reports unresolved attention...`;
 - handoff links present for readiness packet, request access, and examples.
@@ -112,11 +117,18 @@ Confirmed in production:
 - old phrase `One live run, verbatim` is absent;
 - page states it is `not a guarantee of current runtime state`;
 - supervised access path remains visible;
+- Command Center handoff cue present;
+- handoff cue tells the operator to name the proof boundary, show the internal prototype gate, preserve the Max APE caveat, and route next steps to supervised access or service-lane review;
 - caveat language is prominent.
 
 ## Friction observed
 
 No blocking friction was found in this proof-first path.
+
+Checkpoint continuation on 2026-05-17 added two buyer-safe narration aids after the original rehearsal:
+
+- `a73cee34 feat: add command center demo story rail` — adds the internal Command Center narration rail and guard tests against overclaiming phrases.
+- `d03cf77f feat: add examples command center handoff cue` — adds the public Examples handoff cue and guard tests for the same buyer-safe boundary.
 
 Minor operator note: the demo workspace has a clean proof/readiness surface, but the signed-in Command Center still shows mostly zero operational counts. That is acceptable for a proof-first buyer conversation, but the next product substance lane should make a demo workspace carry a realistic rural RTPA/county story so operators are not presenting an empty queue after the proof boundary is established.
 
@@ -148,4 +160,5 @@ Move from proof surfaces to **demo workspace substance**:
 
 - create a read-only/semi-static rural RTPA or county demo story that gives Command Center meaningful project/report/funding cues;
 - keep it clearly labeled as demo/sample context;
-- avoid mutating production data unless and until a supervised provisioning/demo-data plan is approved.
+- avoid mutating production data unless and until a supervised provisioning/demo-data plan is approved;
+- continue to treat passing deploys and smoke checks as checkpoints, not stop points, until Nathaniel explicitly says stop.

@@ -6,7 +6,7 @@ Use `docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md` as the c
 
 Use `docs/sales/2026-05-17-openplan-buyer-demo-evidence-note.md` as the current dated operator evidence note for the proof-first buyer-demo rehearsal. It records the production health check, `npm run ops:check-buyer-demo-preflight -- --live-reads`, authenticated Command Center → Pilot Readiness → Request Access → Examples browser rehearsal, safe claims, and claims to avoid.
 
-As of the proof-first rehearsal through deployed commit `380e1098`, the current buyer-demo path is smoke-tested for a supervised walkthrough only. Do not convert code-quality cleanup, documentation-only commits, or shallow health checks into buyer feature claims; re-run workflow-specific smoke when product behavior changes.
+As of the checkpoint continuation through deployed commit `d03cf77f`, the current buyer-demo path is smoke-tested for a supervised walkthrough only. Command Center now includes a read-only Nevada County demo narration rail, and `/examples` includes the matching Command Center handoff cue. Do not convert code-quality cleanup, documentation-only commits, or shallow health checks into buyer feature claims; re-run workflow-specific smoke when product behavior changes.
 
 ## Admin Pilot Readiness proof packet
 
