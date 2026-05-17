@@ -34,6 +34,14 @@ Before committing buyer-facing sales/proof copy, run the compact claim-boundary 
 npm run test:sales-proof-claim-boundaries
 ```
 
+Before a supervised buyer/demo conversation, run the buyer-demo preflight from `openplan/`:
+
+```bash
+npm run ops:check-buyer-demo-preflight
+```
+
+Use `--live-reads` only for the final operator rehearsal when read-only production health and Vercel checks are intentionally allowed. The default run is local-first/read-only and does not write evidence files, apply schema, provision workspaces, trigger checkout, or print secret values.
+
 The guard keeps the saleable proof posture inside four explicit boundaries: no broad self-serve SaaS, no legal/LAPM automation, no grant award prediction, and no autonomous AI planning claim.
 
 Keep buyer claims and buyer-safe caveats in the TypeScript source, then regenerate the MD/HTML/PDF outputs. Avoid hand-editing only one generated format; that is how sales packets become three slightly different stories, which is poor trail discipline and worse procurement hygiene.
