@@ -87,8 +87,12 @@ function stripSqlComments(sql) {
     .join("\n");
 }
 
+function stripSqlStringLiterals(sql) {
+  return sql.replace(/(?:\b[eE])?'(?:''|[^'])*'/g, " ");
+}
+
 export function inspectMigrationSql(sql) {
-  const stripped = stripSqlComments(sql);
+  const stripped = stripSqlStringLiterals(stripSqlComments(sql));
   return REVIEW_PATTERNS.filter((item) => item.pattern.test(stripped)).map((item) => item.id);
 }
 

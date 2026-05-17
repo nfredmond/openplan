@@ -87,4 +87,10 @@ describe("migration inventory script", () => {
   it("ignores SQL review markers inside comments", () => {
     expect(inspectMigrationSql("-- drop table public.projects;\nselect 1;\n/* security definer */")).toEqual([]);
   });
+
+  it("ignores SQL review markers inside string literals", () => {
+    expect(
+      inspectMigrationSql("insert into audit_log(message) values ('operator note: drop table public.projects; security definer');\nselect 1;"),
+    ).toEqual([]);
+  });
 });
