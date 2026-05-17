@@ -34,7 +34,7 @@ Primary touched surfaces:
 - [x] Report cards link users into the relevant packet work instead of leaving the next action ambiguous.
 - [x] Unit/component coverage exists for the changed posture/count/link behavior.
 - [x] Live shallow production deployment smoke has been captured for the exact deployed commit.
-- [ ] Authenticated user walkthrough confirms the deep-link target resolves correctly in production data, not just test fixtures.
+- [x] Authenticated user walkthrough confirms the deep-link target resolves correctly in production data, not just test fixtures.
 
 ## Validation proof captured in this pass
 
@@ -94,12 +94,25 @@ Post-commit deployment proof captured 2026-05-17:
 
 Latest docs/evidence deployment proof captured 2026-05-17:
 
-- Commit: `77de380ca1ad` (`feat: include RTP review loops in governance attention`)
-- Production deployment: `https://openplan-fd1q3js01-natford.vercel.app`
+- Commit: `44457d6a5e91` (`test: clean OpenPlan TypeScript baseline`)
+- Production deployment: `https://openplan-5itde6l26-natford.vercel.app`
 - Canonical alias: `https://openplan-natford.vercel.app`
 - Vercel inspect state: **Ready**
-- Alias health: `https://openplan-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `77de380ca1ad`
-- Generated shallow production-health evidence artifact: `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T215709Z-prod-health-evidence.md` with **Gate decision: PASS**
+- Alias health: `https://openplan-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `44457d6a5e91`
+- Generated shallow production-health evidence artifact: `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T220335Z-prod-health-evidence.md` with **Gate decision: PASS**
+
+Authenticated production deep-link proof captured 2026-05-17:
+
+- Proof artifact: `docs/ops/2026-05-17-openplan-production-project-report-deeplink-smoke.md`
+- QA user/workspace/project/report were created in production for an isolated bounded smoke.
+- Verified href: `/reports/a90d42df-d7c4-4093-bb83-44d3d18be84c#drift-since-generation`
+- Result: PASS — clicking the project report card landed on the supported report detail packet-work anchor.
+
+Latest code-quality baseline through 2026-05-17:
+
+- Commit: `44457d6` (`test: clean OpenPlan TypeScript baseline`)
+- Scope: test fixture/baseline cleanup only; useful QA evidence and now shallow production-health checked, but not a separate buyer functionality/workflow smoke.
+- Validation rerun during buyer-packet consolidation: `npm run test:sales-proof-claim-boundaries` passed; `npx tsc --noEmit` passed.
 
 Related safe fixes included in/after this launch slice:
 
@@ -108,11 +121,12 @@ Related safe fixes included in/after this launch slice:
 - Project control attention lanes now carry row-level anchors for the first blocked/overdue milestone, submittal, or invoice instead of stopping at the lane section; proof: `2026-05-17-openplan-project-control-row-deeplink-proof.md`.
 - Command Center report-governance attention now includes open RTP release-review loops so current packets with unresolved release-review posture are still counted as operator work.
 
-## Missing evidence before calling it fully launched
+## Remaining evidence caveats before stronger launch language
 
-1. **Authenticated workflow proof:** use a real or seeded workspace/project to click from project report card → packet work and record the outcome.
-2. **Screenshot or trace artifact:** optional but recommended: one screenshot of the project detail posture area and one of the linked packet destination.
+1. **Workflow currency after test-only commits:** commit `44457d6` is shallow production-health checked, but it is TypeScript/test-baseline cleanup and should not be described as new buyer functionality or as replacing workflow-specific smoke evidence.
+2. **Shallow health boundary:** `/api/health` intentionally does not check database or billing dependencies.
+3. **Buyer caveats:** billing, modeling, recovery, and legal/compliance boundaries remain governed by `docs/ops/KNOWN_ISSUES.md` and the buyer caveat sheet.
 
 ## Operator note
 
-This lane improves trustworthiness of the internal project workspace: it points attention to report governance holds and gives the operator a more direct path to packet remediation. The safe launch language is: **“Project report attention routing is tested locally, deployed, and shallow production-health checked for internal/demo use; authenticated production deep-link proof is still pending.”**
+This lane improves trustworthiness of the internal project workspace: it points attention to report governance holds and gives the operator a more direct path to packet remediation. The safe launch language is: **“Project report attention routing is tested locally, deployed, shallow production-health checked, and authenticated deep-link smoked for supervised internal/demo use; latest test-baseline cleanup is shallow health checked but does not expand buyer functionality claims.”**

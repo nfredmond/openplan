@@ -15,15 +15,20 @@ The safe demo claim is narrow:
 
 This packet consolidates the latest May 17 proof on top of the May 1 / May 10 release-to-sale packet. It should travel with the existing buyer caveat sheet and managed-support proof map.
 
+## Evidence Currency Note
+
+This packet was rechecked against commits through `44457d6` (`test: clean OpenPlan TypeScript baseline`). Fresh shallow production-health evidence now shows the canonical production alias reporting deployed commit `44457d6`. Treat that as deployment/health currency for the code baseline only; the `44457d6` slice itself is test-fixture cleanup, not new buyer functionality or a substitute for workflow-specific smoke tests.
+
 ## What Is Proven In Today's Slice
 
 | Proof lane | Current status | What it proves | Source |
 |---|---:|---|---|
-| Production health | PASS | The canonical production alias responded with the shallow health contract; Vercel deployment state was verified Ready before closing the evidence gate. Database and billing dependency checks remain intentionally outside this shallow endpoint. | `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T201518Z-prod-health-evidence.md` |
+| Production health | PASS, bounded to shallow deployed health | The canonical production alias responded with the shallow health contract for deployed commit `44457d6`; Vercel deployment state was verified Ready before closing the evidence gate. Database and billing dependency checks remain intentionally outside this shallow endpoint. | `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T220335Z-prod-health-evidence.md` |
 | Authenticated project report deep link | PASS | A bounded QA user signed into production, created an isolated workspace/project, generated a real project-linked report artifact, and clicked from the project report card into the report detail packet-work anchor. | `docs/ops/2026-05-17-openplan-production-project-report-deeplink-smoke.md` |
 | Command Center / governance attention | PASS for the current lane | Project-level report/governance holds are treated as attention-worthy issues, governance-only report holds are prioritized, duplicate attention counts are suppressed, and report cards link to packet work. | `openplan/docs/ops/2026-05-17-openplan-launch-evidence-checklist.md`; commits `1a0aec0`, `d802dd9`, `7e9d940`, `07444c1` |
 | Mobile request-access polish | PASS within CTA/intake boundary | Public `Request access` CTAs preserve the `open-source-services-review` intent note without incorrectly preselecting legacy implementation/onboarding defaults; focused CTA + pilot preflight tests passed in the May 17 launch evidence pass. | `openplan/docs/ops/2026-05-17-openplan-launch-evidence-checklist.md`; commit `87d1b58` |
 | Known issue closure | PASS / controlled | The known-issues register shows zero open blockers. The recent report-detail `Received NaN` warning is closed by count coercion and regression coverage. Medium watch items remain visible rather than hidden. | `docs/ops/KNOWN_ISSUES.md`; commit `cac5f7b` |
+| TypeScript/test baseline cleanup | PASS as local code-quality evidence | Commit `44457d6` tightens test fixtures so the TypeScript baseline is clean. This is useful QA evidence, but it is not by itself a production smoke or buyer functionality claim. | commit `44457d6`; `npx tsc --noEmit`; `npm run test:sales-proof-claim-boundaries` |
 
 ## Demo Narrative To Use
 
@@ -64,7 +69,7 @@ Primary current packet:
 
 Supporting proof artifacts:
 
-- `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T201518Z-prod-health-evidence.md`
+- `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T220335Z-prod-health-evidence.md`
 - `docs/ops/2026-05-17-openplan-production-project-report-deeplink-smoke.md`
 - `docs/ops/2026-05-17-test-output/2026-05-17-prod-project-report-deeplink-01-project-detail.png`
 - `docs/ops/2026-05-17-test-output/2026-05-17-prod-project-report-deeplink-02-report-detail.png`
@@ -80,7 +85,7 @@ Standing buyer/sales packet to keep attached:
 
 ## Operator Checklist Before External Use
 
-- Confirm the production alias health still passes if more code has shipped after commit `255f29b`.
+- Confirm the production alias health still passes and reports the intended deployed commit if more code has shipped after `44457d6`; keep test-baseline cleanup separate from buyer workflow/functionality claims.
 - Re-run a scoped authenticated smoke if the project detail/report card flow changes.
 - Attach the buyer caveat sheet and managed-support proof map.
 - Pick one first workflow for the buyer rather than presenting the whole roadmap as complete.
