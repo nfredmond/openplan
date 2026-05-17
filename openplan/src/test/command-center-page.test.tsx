@@ -200,6 +200,7 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText("internal prototype only")).toBeInTheDocument();
     expect(screen.getByText(/237\.62% Max APE/i)).toBeInTheDocument();
     expect(screen.getByText("docs/ops/2026-04-18-modeling-nevada-county-live-proof.md")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open public evidence catalog/i })).toHaveAttribute("href", "/examples");
     expect(screen.getByText("Buyer demo handoff")).toBeInTheDocument();
     expect(screen.getByText(/verify the proof packet first, then review supervised intake and examples before presenting/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open the buyer intake/i })).toHaveAttribute("href", "/request-access");

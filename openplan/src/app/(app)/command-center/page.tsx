@@ -228,9 +228,14 @@ export default async function CommandCenterPage() {
             </p>
           </div>
         </div>
-        <div className="border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">Proof note:</span>{" "}
-          <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{NEVADA_COUNTY_PROOF_DOC_PATH}</code>
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
+          <p>
+            <span className="font-medium text-foreground">Proof note:</span>{" "}
+            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{NEVADA_COUNTY_PROOF_DOC_PATH}</code>
+          </p>
+          <Link href="/examples" className="font-medium text-foreground underline-offset-4 hover:underline">
+            Open public evidence catalog
+          </Link>
         </div>
       </section>
 
