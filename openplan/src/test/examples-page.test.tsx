@@ -31,6 +31,14 @@ describe("ExamplesEvidenceCatalogPage", () => {
     expect(screen.getByText(/Guided demo fit check/i)).toBeInTheDocument();
     expect(screen.getByText(/one scoped first workflow/i)).toBeInTheDocument();
     expect(screen.getByText(/self-hosted, managed-hosted, implementation-only, or a mix/i)).toBeInTheDocument();
+    expect(screen.getByText(/Command Center handoff cue/i)).toBeInTheDocument();
+    expect(screen.getByText(/name the proof boundary, show the internal prototype gate/i)).toBeInTheDocument();
+    expect(screen.getByText(/preserve the Max APE caveat/i)).toBeInTheDocument();
+    expect(screen.getByText(/supervised access or service-lane review/i)).toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/validated forecast/i);
+    expect(document.body).not.toHaveTextContent(/production data seeded/i);
+    expect(document.body).not.toHaveTextContent(/automatic workspace provisioning/i);
+    expect(document.body).not.toHaveTextContent(/instant customer activation/i);
     expect(screen.getByRole("link", { name: "Review service lanes" })).toHaveAttribute(
       "href",
       "/pricing#service-lanes",

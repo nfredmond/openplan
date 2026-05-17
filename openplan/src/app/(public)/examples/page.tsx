@@ -314,13 +314,23 @@ export default function ExamplesEvidenceCatalogPage() {
               Request supervised access
             </Link>
           </div>
-          <div className="mt-5 rounded-xl border border-border/60 bg-muted/20 p-4">
-            <p className="public-ledger-label">Guided demo fit check</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              A useful buyer walkthrough should end with one scoped first workflow, a named review
-              owner, known data-sensitivity constraints, and the right delivery lane: self-hosted,
-              managed-hosted, implementation-only, or a mix.
-            </p>
+          <div className="mt-5 space-y-4 rounded-xl border border-border/60 bg-muted/20 p-4">
+            <div>
+              <p className="public-ledger-label">Guided demo fit check</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                A useful buyer walkthrough should end with one scoped first workflow, a named review
+                owner, known data-sensitivity constraints, and the right delivery lane: self-hosted,
+                managed-hosted, implementation-only, or a mix.
+              </p>
+            </div>
+            <div className="border-t border-border/60 pt-4">
+              <p className="public-ledger-label">Command Center handoff cue</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                If an operator arrives here from Command Center, keep the narration sequence intact:
+                name the proof boundary, show the internal prototype gate, preserve the Max APE caveat,
+                then route the next step to supervised access or service-lane review.
+              </p>
+            </div>
           </div>
         </article>
 
