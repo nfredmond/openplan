@@ -193,6 +193,13 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText("planner_agent.generate_report_artifact")).toBeInTheDocument();
     expect(screen.getByText(/report report-1/i)).toBeInTheDocument();
     expect(screen.getByText(/1 linked run/i)).toBeInTheDocument();
+    expect(screen.getByText("Read-only sample cue")).toBeInTheDocument();
+    expect(screen.getByText("Demo story without changing this workspace")).toBeInTheDocument();
+    expect(screen.getByText(/does not seed data, run checkout, provision accounts, or write production records/i)).toBeInTheDocument();
+    expect(screen.getByText("Nevada County")).toBeInTheDocument();
+    expect(screen.getByText("internal prototype only")).toBeInTheDocument();
+    expect(screen.getByText(/237\.62% Max APE/i)).toBeInTheDocument();
+    expect(screen.getByText("docs/ops/2026-04-18-modeling-nevada-county-live-proof.md")).toBeInTheDocument();
     expect(screen.getByText("Buyer demo handoff")).toBeInTheDocument();
     expect(screen.getByText(/verify the proof packet first, then review supervised intake and examples before presenting/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open the buyer intake/i })).toHaveAttribute("href", "/request-access");

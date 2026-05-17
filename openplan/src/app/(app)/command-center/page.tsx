@@ -28,6 +28,12 @@ import {
   loadRecentActionExecutionsForWorkspace,
   type RecentActionActivitySupabaseLike,
 } from "@/lib/operations/action-activity";
+import {
+  NEVADA_COUNTY_PROOF_DOC_PATH,
+  NEVADA_COUNTY_RUN_CONTEXT,
+  NEVADA_COUNTY_SCREENING_GATE,
+  nevadaCountyMaxApeRow,
+} from "@/lib/examples/nevada-county-2026-03-24";
 import { buyerDemoCommandCenterHandoff } from "@/lib/operations/release-proof-packet";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -75,6 +81,7 @@ export default async function CommandCenterPage() {
 
   const activeReimbursement = summary.counts.projectFundingReimbursementActiveProjects;
   const openOpportunities = summary.counts.openFundingOpportunities;
+  const sampleDemoMetric = nevadaCountyMaxApeRow();
 
   const domainLinks = [
     {
@@ -187,6 +194,45 @@ export default async function CommandCenterPage() {
         description="Recent audited actions from this workspace, including packet generation, funding decisions, and project-record operations."
         emptyDescription="No audited operator actions have run in this workspace yet. Packet generation, funding decisions, and project-record operations will appear here after completion."
       />
+
+      <section className="mt-6 module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Read-only sample cue</p>
+            <h2 className="module-section-title">Demo story without changing this workspace</h2>
+            <p className="module-section-description">
+              If the active workspace is empty, use this static Nevada County example to narrate the buyer-demo path.
+              It is labeled sample context and does not seed data, run checkout, provision accounts, or write production records.
+            </p>
+          </div>
+          <StatusBadge tone="neutral">Sample only</StatusBadge>
+        </div>
+        <div className="grid gap-3 px-4 pb-4 sm:grid-cols-3">
+          <div className="module-subpanel">
+            <p className="module-summary-label">Sample run</p>
+            <p className="module-summary-value text-base">Nevada County</p>
+            <p className="module-summary-detail">
+              {NEVADA_COUNTY_RUN_CONTEXT.engine} · {NEVADA_COUNTY_RUN_CONTEXT.countsSource}
+            </p>
+          </div>
+          <div className="module-subpanel">
+            <p className="module-summary-label">Validation gate</p>
+            <p className="module-summary-value text-base">{NEVADA_COUNTY_SCREENING_GATE.statusLabel}</p>
+            <p className="module-summary-detail">{NEVADA_COUNTY_SCREENING_GATE.reason}</p>
+          </div>
+          <div className="module-subpanel">
+            <p className="module-summary-label">Buyer-safe claim</p>
+            <p className="module-summary-value text-base">{sampleDemoMetric.value} {sampleDemoMetric.label}</p>
+            <p className="module-summary-detail">
+              Show how OpenPlan preserves caveats and blocks outward modeling claims when validation fails.
+            </p>
+          </div>
+        </div>
+        <div className="border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">Proof note:</span>{" "}
+          <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{NEVADA_COUNTY_PROOF_DOC_PATH}</code>
+        </div>
+      </section>
 
       <section className="mt-6 module-section-surface">
         <div className="module-section-header">
