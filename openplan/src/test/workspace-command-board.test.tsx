@@ -98,6 +98,13 @@ describe("WorkspaceCommandBoard", () => {
       screen.getByText(/1 current RTP packet still needs Grants OS follow-through before packet release review is treated as settled\./i)
     ).toBeInTheDocument();
     expect(screen.getByText(/1 ready for release review, 1 routed through Grants OS\./i)).toBeInTheDocument();
+    expect(screen.getByText("Report governance attention")).toBeInTheDocument();
+    expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 1 funding follow-through\./i)).toBeInTheDocument();
+    expect(screen.getByText(/1 current packet is kept out of this attention count unless funding review is flagged\./i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open governance lead action/i })).toHaveAttribute(
+      "href",
+      "/grants#grants-gap-resolution-lane"
+    );
     expect(screen.getAllByRole("link", { name: /Run Grants follow-through on current packets/i })[0]).toHaveAttribute(
       "href",
       "/grants#grants-gap-resolution-lane"
@@ -175,6 +182,7 @@ describe("WorkspaceCommandBoard", () => {
       );
 
       expect(screen.getByText(/0 refresh recommended, 0 without packets, 0 ready for release review\./i)).toBeInTheDocument();
+      expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 0 funding follow-through\./i)).toBeInTheDocument();
       expect(screen.getByText(/0 regenerate · 0 generate · 0 review/i)).toBeInTheDocument();
       expect(screen.getByText(/0 open opportunities · 0 queued checks/i)).toBeInTheDocument();
       expect(screen.getByText(/0 comparison-backed reports/i)).toBeInTheDocument();

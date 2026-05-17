@@ -81,6 +81,9 @@ export function WorkspaceCommandBoard({
   const reportRefreshRecommendedCount = safeCount(counts.reportRefreshRecommended);
   const reportNoPacketCount = safeCount(counts.reportNoPacket);
   const reportPacketCurrentCount = safeCount(counts.reportPacketCurrent);
+  const rtpFundingReviewCount = safeCount(counts.rtpFundingReviewPackets);
+  const reportGovernanceAttentionCount =
+    reportRefreshRecommendedCount + reportNoPacketCount + rtpFundingReviewCount;
   const plansNeedingSetupCount = safeCount(counts.plansNeedingSetup);
   const planCount = safeCount(counts.plans);
   const activeProjectCount = safeCount(counts.activeProjects);
@@ -95,7 +98,6 @@ export function WorkspaceCommandBoard({
   const reimbursementStartCount = safeCount(counts.projectFundingReimbursementStartProjects);
   const reimbursementAdvanceCount = safeCount(counts.projectFundingReimbursementActiveProjects);
   const reimbursementPressure = reimbursementStartCount + reimbursementAdvanceCount;
-  const rtpFundingReviewCount = safeCount(counts.rtpFundingReviewPackets);
   const aerialMissionCount = safeCount(counts.aerialMissions);
   const aerialActiveMissionCount = safeCount(counts.aerialActiveMissions);
   const aerialReadyPackageCount = safeCount(counts.aerialReadyPackages);
@@ -128,6 +130,24 @@ export function WorkspaceCommandBoard({
           <p className="module-summary-detail">
             {reportRefreshRecommendedCount} refresh recommended, {reportNoPacketCount} without packets, {reportPacketCurrentCount} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} ${rtpFundingReviewRoutesThroughGrants ? "routed through Grants OS." : "funding-backed."}` : "."}
           </p>
+        </div>
+        <div className="module-subpanel">
+          <p className="module-summary-label">Report governance attention</p>
+          <p className="module-summary-value">{reportGovernanceAttentionCount}</p>
+          <p className="module-summary-detail">
+            Counts only packets needing action: {reportRefreshRecommendedCount} regenerate, {reportNoPacketCount} generate, {rtpFundingReviewCount} funding follow-through.
+            {reportPacketCurrentCount > 0
+              ? ` ${reportPacketCurrentCount} current packet${reportPacketCurrentCount === 1 ? " is" : "s are"} kept out of this attention count unless funding review is flagged.`
+              : ""}
+          </p>
+          {summary.nextCommand ? (
+            <Link
+              href={isGrantsCommand(summary.nextCommand) ? resolveSharedGrantsQueueHref(summary.nextCommand) : summary.nextCommand.href}
+              className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
+            >
+              Open governance lead action
+            </Link>
+          ) : null}
         </div>
         <div className="module-subpanel">
           <p className="module-summary-label">Plan setup</p>
