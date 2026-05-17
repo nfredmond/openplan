@@ -1,6 +1,17 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ArrowRight, Compass, FileText, FolderKanban, Landmark, PlaneTakeoff, Radar } from "lucide-react";
+import {
+  ArrowRight,
+  ClipboardCheck,
+  Compass,
+  FileText,
+  FolderKanban,
+  Landmark,
+  PlaneTakeoff,
+  Radar,
+  ShieldCheck,
+  UserRoundPlus,
+} from "lucide-react";
 
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
 import { ReleaseProofPacketPanel } from "@/components/operations/release-proof-packet-panel";
@@ -107,6 +118,30 @@ export default async function CommandCenterPage() {
     },
   ];
 
+  const buyerDemoLinks = [
+    {
+      href: "/request-access",
+      title: "Open the buyer intake",
+      description: "Use the public request-access flow when a county, RTPA, or consultant asks for a supervised pilot.",
+      meta: "Public handoff",
+      icon: UserRoundPlus,
+    },
+    {
+      href: "/admin/operations",
+      title: "Review access queue",
+      description: "Triage new requests, check review history, and keep provisioning evidence attached to the workspace.",
+      meta: "Operator review",
+      icon: ShieldCheck,
+    },
+    {
+      href: "/admin/pilot-readiness",
+      title: "Confirm pilot readiness",
+      description: "Export the proof snapshot before a demo so the story stays grounded in visible, current capability.",
+      meta: "Demo preflight",
+      icon: ClipboardCheck,
+    },
+  ];
+
   return (
     <section className="module-page">
       <header className="module-header-grid">
@@ -151,6 +186,38 @@ export default async function CommandCenterPage() {
         description="Recent audited actions from this workspace, including packet generation, funding decisions, and project-record operations."
         emptyDescription="No audited operator actions have run in this workspace yet. Packet generation, funding decisions, and project-record operations will appear here after completion."
       />
+
+      <section className="mt-6 module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Buyer demo handoff</p>
+            <h2 className="module-section-title">Move from interest to supervised pilot</h2>
+            <p className="module-section-description">
+              A short operator path for demos: capture demand, review fit, then verify the proof packet before presenting.
+            </p>
+          </div>
+        </div>
+        <ul className="module-list divide-y divide-border/60">
+          {buyerDemoLinks.map((item) => {
+            const Icon = item.icon;
+            return (
+              <li key={item.href}>
+                <Link href={item.href} className="flex items-start gap-4 px-4 py-3 transition hover:bg-muted/40">
+                  <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                    <p className="text-xs text-muted-foreground">{item.description}</p>
+                  </div>
+                  <span className="whitespace-nowrap text-xs text-muted-foreground">{item.meta}</span>
+                  <ArrowRight className="mt-1 h-4 w-4 text-muted-foreground" />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
 
       <section className="mt-6 module-section-surface">
         <div className="module-section-header">

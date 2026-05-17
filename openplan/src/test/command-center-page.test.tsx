@@ -193,6 +193,13 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText("planner_agent.generate_report_artifact")).toBeInTheDocument();
     expect(screen.getByText(/report report-1/i)).toBeInTheDocument();
     expect(screen.getByText(/1 linked run/i)).toBeInTheDocument();
+    expect(screen.getByText("Buyer demo handoff")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open the buyer intake/i })).toHaveAttribute("href", "/request-access");
+    expect(screen.getByRole("link", { name: /Review access queue/i })).toHaveAttribute("href", "/admin/operations");
+    expect(screen.getByRole("link", { name: /Confirm pilot readiness/i })).toHaveAttribute(
+      "href",
+      "/admin/pilot-readiness"
+    );
     expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
     expect(actionOrderMock).toHaveBeenCalledWith("completed_at", { ascending: false });
     expect(actionLimitMock).toHaveBeenCalledWith(8);
