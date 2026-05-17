@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import {
@@ -25,6 +25,7 @@ const summary: WorkspaceOperationsSummary = {
     reportNoPacket: 0,
     reportPacketCurrent: 1,
     rtpFundingReviewPackets: 1,
+    rtpReviewLoopOpenPackets: 0,
     comparisonBackedReports: 0,
     fundingOpportunities: 1,
     openFundingOpportunities: 1,
@@ -99,7 +100,7 @@ describe("WorkspaceCommandBoard", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(/1 ready for release review, 1 routed through Grants OS\./i)).toBeInTheDocument();
     expect(screen.getByText("Report governance attention")).toBeInTheDocument();
-    expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 1 funding follow-through\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 1 funding follow-through, 0 release-review loop open\./i)).toBeInTheDocument();
     expect(screen.getByText(/1 current packet is kept out of this attention count unless funding review is flagged\./i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open governance lead action/i })).toHaveAttribute(
       "href",
@@ -155,6 +156,46 @@ describe("WorkspaceCommandBoard", () => {
     );
   });
 
+  it("counts open RTP release-review loops as report governance attention", () => {
+    render(
+      <WorkspaceCommandBoard
+        summary={{
+          ...summary,
+          headline: "Run release review on current packets",
+          detail: "Current RTP packets still need release-review follow-through.",
+          counts: {
+            ...summary.counts,
+            rtpFundingReviewPackets: 0,
+            rtpReviewLoopOpenPackets: 2,
+          },
+          nextCommand: {
+            key: "review-current-report-packets",
+            title: "Run release review on current packets",
+            detail: "2 current RTP packets still read as public comment matrix pending.",
+            href: "/reports/report-1#release-review",
+            tone: "warning",
+            priority: 2.5,
+            badges: [
+              { label: "Current", value: 1 },
+              { label: "Review loop open", value: 2 },
+            ],
+          },
+          commandQueue: [],
+          fullCommandQueue: [],
+        }}
+      />
+    );
+
+    const governancePanel = screen.getByText("Report governance attention").closest("div");
+    expect(governancePanel).not.toBeNull();
+    expect(within(governancePanel as HTMLElement).getByText("2")).toBeInTheDocument();
+    expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 0 funding follow-through, 2 release-review loop open\./i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open governance lead action/i })).toHaveAttribute(
+      "href",
+      "/reports/report-1#release-review"
+    );
+  });
+
   it("defaults missing numeric counts to zero instead of rendering NaN", () => {
     const {
       reportPacketCurrent: _reportPacketCurrent,
@@ -182,7 +223,7 @@ describe("WorkspaceCommandBoard", () => {
       );
 
       expect(screen.getByText(/0 refresh recommended, 0 without packets, 0 ready for release review\./i)).toBeInTheDocument();
-      expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 0 funding follow-through\./i)).toBeInTheDocument();
+      expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 0 funding follow-through, 0 release-review loop open\./i)).toBeInTheDocument();
       expect(screen.getByText(/0 regenerate · 0 generate · 0 review/i)).toBeInTheDocument();
       expect(screen.getByText(/0 open opportunities · 0 queued checks/i)).toBeInTheDocument();
       expect(screen.getByText(/0 comparison-backed reports/i)).toBeInTheDocument();

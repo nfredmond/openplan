@@ -82,8 +82,9 @@ export function WorkspaceCommandBoard({
   const reportNoPacketCount = safeCount(counts.reportNoPacket);
   const reportPacketCurrentCount = safeCount(counts.reportPacketCurrent);
   const rtpFundingReviewCount = safeCount(counts.rtpFundingReviewPackets);
+  const rtpReviewLoopOpenCount = safeCount(counts.rtpReviewLoopOpenPackets);
   const reportGovernanceAttentionCount =
-    reportRefreshRecommendedCount + reportNoPacketCount + rtpFundingReviewCount;
+    reportRefreshRecommendedCount + reportNoPacketCount + rtpFundingReviewCount + rtpReviewLoopOpenCount;
   const plansNeedingSetupCount = safeCount(counts.plansNeedingSetup);
   const planCount = safeCount(counts.plans);
   const activeProjectCount = safeCount(counts.activeProjects);
@@ -135,7 +136,7 @@ export function WorkspaceCommandBoard({
           <p className="module-summary-label">Report governance attention</p>
           <p className="module-summary-value">{reportGovernanceAttentionCount}</p>
           <p className="module-summary-detail">
-            Counts only packets needing action: {reportRefreshRecommendedCount} regenerate, {reportNoPacketCount} generate, {rtpFundingReviewCount} funding follow-through.
+            Counts only packets needing action: {reportRefreshRecommendedCount} regenerate, {reportNoPacketCount} generate, {rtpFundingReviewCount} funding follow-through, {rtpReviewLoopOpenCount} release-review loop open.
             {reportPacketCurrentCount > 0
               ? ` ${reportPacketCurrentCount} current packet${reportPacketCurrentCount === 1 ? " is" : "s are"} kept out of this attention count unless funding review is flagged.`
               : ""}

@@ -266,6 +266,7 @@ export type WorkspaceOperationsSummary = {
     reportNoPacket: number;
     reportPacketCurrent: number;
     rtpFundingReviewPackets: number;
+    rtpReviewLoopOpenPackets?: number;
     comparisonBackedReports: number;
     fundingOpportunities: number;
     openFundingOpportunities: number;
@@ -1795,6 +1796,7 @@ export function buildWorkspaceOperationsSummary({
       reportNoPacket,
       reportPacketCurrent,
       rtpFundingReviewPackets,
+      rtpReviewLoopOpenPackets,
       comparisonBackedReports,
       fundingOpportunities: fundingOpportunities.length,
       openFundingOpportunities,
