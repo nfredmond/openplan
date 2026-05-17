@@ -194,6 +194,7 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText(/report report-1/i)).toBeInTheDocument();
     expect(screen.getByText(/1 linked run/i)).toBeInTheDocument();
     expect(screen.getByText("Buyer demo handoff")).toBeInTheDocument();
+    expect(screen.getByText(/verify the proof packet first, then review supervised intake and examples before presenting/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open the buyer intake/i })).toHaveAttribute("href", "/request-access");
     expect(screen.getByRole("link", { name: /Review access queue/i })).toHaveAttribute("href", "/admin/operations");
     expect(screen.getByRole("link", { name: /Confirm pilot readiness/i })).toHaveAttribute(

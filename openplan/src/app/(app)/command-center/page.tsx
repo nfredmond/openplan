@@ -194,7 +194,7 @@ export default async function CommandCenterPage() {
             <p className="module-section-label">Buyer demo handoff</p>
             <h2 className="module-section-title">Move from interest to supervised pilot</h2>
             <p className="module-section-description">
-              A short operator path for demos: capture demand, review fit, then verify the proof packet before presenting.
+              A short operator path for demos: verify the proof packet first, then review supervised intake and examples before presenting.
             </p>
           </div>
         </div>
