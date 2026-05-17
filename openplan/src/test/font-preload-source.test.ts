@@ -5,8 +5,8 @@ const layoutSource = readFileSync("src/app/layout.tsx", "utf8");
 const globalsSource = readFileSync("src/app/globals.css", "utf8");
 
 function rootTokenBlock(source: string) {
-  const match = source.match(/:root\s*\{(?<body>[\s\S]*?)\n\}/);
-  return match?.groups?.body ?? "";
+  const match = source.match(/:root\s*\{([\s\S]*?)\n\}/);
+  return match?.[1] ?? "";
 }
 
 describe("font preload source wiring", () => {

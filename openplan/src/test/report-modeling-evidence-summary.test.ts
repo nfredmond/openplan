@@ -85,6 +85,8 @@ describe("buildPlannerReadableModelingEvidenceSummary", () => {
   it("keeps claim-grade modeling evidence in supervised citation language", () => {
     const baseEvidence = linkedEvidence().evidence;
     if (!baseEvidence) throw new Error("Expected linked evidence fixture");
+    const baseClaimDecision = baseEvidence.claimDecision;
+    if (!baseClaimDecision) throw new Error("Expected linked evidence claim decision fixture");
 
     const summary = buildPlannerReadableModelingEvidenceSummary([
       linkedEvidence({
@@ -92,7 +94,7 @@ describe("buildPlannerReadableModelingEvidenceSummary", () => {
           ...baseEvidence,
           reportLanguage: "Claim-grade evidence may be cited only with source and validation context.",
           claimDecision: {
-            ...baseEvidence.claimDecision,
+            ...baseClaimDecision,
             claimStatus: "claim_grade_passed",
             statusReason: "All required public-data validation checks passed for packet citation.",
             reasons: ["All required public-data validation checks passed for packet citation."],

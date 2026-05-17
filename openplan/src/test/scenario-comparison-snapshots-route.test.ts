@@ -264,8 +264,10 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
         }),
       })
     );
-    const persistedMetadata = comparisonSnapshotInsertMock.mock.calls[0]?.[0]?.metadata_json;
-    const renderedContext = JSON.stringify(persistedMetadata?.sourceContext);
+    const [persistedSnapshot] = comparisonSnapshotInsertMock.mock.calls[0] as unknown as [
+      { metadata_json?: { sourceContext?: unknown } },
+    ];
+    const renderedContext = JSON.stringify(persistedSnapshot.metadata_json?.sourceContext);
     expect(renderedContext).not.toContain("internalSolverKey");
     expect(renderedContext).not.toContain("hidden_raw_key");
     expect(comparisonDeltaInsertMock).toHaveBeenCalledWith([

@@ -135,6 +135,9 @@ describe("/api/models/[modelId]/runs/[modelRunId]/kpis", () => {
       params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }),
     });
 
+    expect(response).toBeDefined();
+    if (!response) throw new Error("Expected model-run KPI GET response");
+
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({
       run_id: MODEL_RUN_ID,
@@ -160,6 +163,9 @@ describe("/api/models/[modelId]/runs/[modelRunId]/kpis", () => {
       }),
       { params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }) }
     );
+
+    expect(response).toBeDefined();
+    if (!response) throw new Error("Expected model-run KPI POST rejection response");
 
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({

@@ -33,6 +33,7 @@ describe("buildRtpExportHtml", () => {
       linkedProjects: normalizeRtpLinkedProjects([
         {
           id: "link-scan",
+          project_id: "project-scan",
           portfolio_role: "constrained",
           priority_rationale: "Priority rationale",
           projects: {
@@ -95,6 +96,7 @@ describe("buildRtpExportHtml", () => {
       linkedProjects: normalizeRtpLinkedProjects([
         {
           id: "link-1",
+          project_id: "project-1",
           portfolio_role: "constrained",
           priority_rationale: "Priority rationale",
           projects: {
