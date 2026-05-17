@@ -4,7 +4,7 @@
 
 Use `docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md` as the current concise buyer/demo proof packet for May 17 evidence. It is a manually curated companion to the generated Admin Pilot Readiness packet, buyer caveat sheet, and managed-support proof map. Keep it buyer-safe: open-source core plus Nat Ford managed services; no self-serve municipal SaaS, autonomous AI, legal/LAPM, validated forecasting, grant-award prediction, or fresh paid-checkout overclaims.
 
-As of the documentation review through commit `c8a9afa`, the current packet distinguishes between shallow deployed health evidence for the last verified deployed code baseline (`44457d6`) and buyer workflow/functionality proof. Do not convert code-quality cleanup or documentation-only commits (`2a4a7c5`, `c8a9afa`) into a buyer feature claim; re-run workflow-specific smoke when product behavior changes.
+As of the documentation review through commit `e870670`, the current packet distinguishes between shallow deployed health evidence, live alias health currency, and buyer workflow/functionality proof. The formal May 17 evidence artifact captured deployed commit `44457d6`; a later ad hoc live health check showed the canonical alias at documentation-only commit `c8a9afa`. Do not convert code-quality cleanup or documentation-only commits (`2a4a7c5`, `c8a9afa`, `e870670`) into a buyer feature claim; re-run workflow-specific smoke when product behavior changes.
 
 ## Admin Pilot Readiness proof packet
 

@@ -17,13 +17,13 @@ This packet consolidates the latest May 17 proof on top of the May 1 / May 10 re
 
 ## Evidence Currency Note
 
-This packet has been documentation-reviewed through commit `c8a9afa` (`docs: tighten OpenPlan buyer proof currency`). The latest shallow production-health evidence in this packet still shows the canonical production alias reporting deployed commit `44457d6`; treat that as deployment/health currency for that deployed code baseline only. The later `2a4a7c5` and `c8a9afa` slices are documentation consolidation/claim-boundary cleanup, not new buyer functionality, production smoke, or a substitute for workflow-specific smoke tests.
+This packet has been documentation-reviewed through commit `e870670` (`docs: sync OpenPlan proof entry points`). The formal shallow production-health evidence artifact in this packet shows the canonical production alias reporting deployed commit `44457d6`; a later ad hoc live health check during the final audit showed the alias reporting documentation-only commit `c8a9afa`. Treat both as shallow deployment/health currency only. The later `2a4a7c5`, `c8a9afa`, and `e870670` slices are TypeScript/docs consolidation and claim-boundary cleanup, not new buyer functionality, production smoke, or a substitute for workflow-specific smoke tests.
 
 ## What Is Proven In Today's Slice
 
 | Proof lane | Current status | What it proves | Source |
 |---|---:|---|---|
-| Production health | PASS, bounded to shallow deployed health | The canonical production alias responded with the shallow health contract for deployed commit `44457d6`; Vercel deployment state was verified Ready before closing the evidence gate. Database and billing dependency checks remain intentionally outside this shallow endpoint, and no fresh production-health claim is made for the later documentation-only commits `2a4a7c5` or `c8a9afa`. | `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T220335Z-prod-health-evidence.md` |
+| Production health | PASS, bounded to shallow deployed health | The formal evidence artifact shows the canonical production alias responding with the shallow health contract for deployed commit `44457d6`; a final-audit live check returned commit `c8a9afa`. Vercel deployment state was verified Ready before closing the evidence gate. Database and billing dependency checks remain intentionally outside this shallow endpoint, and no buyer workflow/functionality claim is made for the later TypeScript/docs-only commits `2a4a7c5`, `c8a9afa`, or `e870670`. | `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T220335Z-prod-health-evidence.md` |
 | Authenticated project report deep link | PASS | A bounded QA user signed into production, created an isolated workspace/project, generated a real project-linked report artifact, and clicked from the project report card into the report detail packet-work anchor. | `docs/ops/2026-05-17-openplan-production-project-report-deeplink-smoke.md` |
 | Command Center / governance attention | PASS for the current lane | Project-level report/governance holds are treated as attention-worthy issues, governance-only report holds are prioritized, duplicate attention counts are suppressed, and report cards link to packet work. | `openplan/docs/ops/2026-05-17-openplan-launch-evidence-checklist.md`; commits `1a0aec0`, `d802dd9`, `7e9d940`, `07444c1` |
 | Mobile request-access polish | PASS within CTA/intake boundary | Public `Request access` CTAs preserve the `open-source-services-review` intent note without incorrectly preselecting legacy implementation/onboarding defaults; focused CTA + pilot preflight tests passed in the May 17 launch evidence pass. | `openplan/docs/ops/2026-05-17-openplan-launch-evidence-checklist.md`; commit `87d1b58` |
@@ -84,7 +84,7 @@ Standing buyer/sales packet to keep attached:
 
 ## Operator Checklist Before External Use
 
-- Confirm the production alias health still passes and reports the intended deployed commit if production code has shipped after `44457d6`; keep test-baseline cleanup and documentation-only commits separate from buyer workflow/functionality claims.
+- Confirm the production alias health still passes and reports the intended deployed commit if production code has shipped after `c8a9afa`; keep test-baseline cleanup and documentation-only commits such as `2a4a7c5`, `c8a9afa`, and `e870670` separate from buyer workflow/functionality claims.
 - Re-run a scoped authenticated smoke if the project detail/report card flow changes.
 - Attach the buyer caveat sheet and managed-support proof map.
 - Pick one first workflow for the buyer rather than presenting the whole roadmap as complete.
