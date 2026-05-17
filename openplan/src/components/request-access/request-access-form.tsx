@@ -134,7 +134,8 @@ export function RequestAccessForm({
   return (
     <form className="public-form-shell" onSubmit={handleSubmit}>
       <div className="public-form-grid">
-        <div className="divide-y divide-border/60">
+        <div className="public-form-main">
+          <div className="divide-y divide-border/60">
           <section className="public-form-section">
             <div className="public-form-heading">
               <h3 className="public-section-label">Agency context</h3>
@@ -397,6 +398,31 @@ export function RequestAccessForm({
               </div>
             </div>
           </section>
+          </div>
+
+          <div className="public-form-footer">
+            {error ? (
+              <p className="mb-4 border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+                {error}
+              </p>
+            ) : null}
+
+            {successMessage ? (
+              <p className="mb-4 border border-emerald-300/80 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100">
+                {successMessage}
+              </p>
+            ) : null}
+
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm text-muted-foreground">
+                Submitting creates an internal intake record only; it does not create an account, hosted workspace, subscription, or services contract.
+              </p>
+              <Button type="submit" disabled={isSubmitting} className="min-w-[13rem] justify-center">
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                Request access
+              </Button>
+            </div>
+          </div>
         </div>
 
         <aside className="public-form-rail">
@@ -423,29 +449,6 @@ export function RequestAccessForm({
         </aside>
       </div>
 
-      <div className="public-form-footer">
-        {error ? (
-          <p className="mb-4 border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-            {error}
-          </p>
-        ) : null}
-
-        {successMessage ? (
-          <p className="mb-4 border border-emerald-300/80 bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100">
-            {successMessage}
-          </p>
-        ) : null}
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
-            Submitting creates an internal intake record only; it does not create an account, hosted workspace, subscription, or services contract.
-          </p>
-          <Button type="submit" disabled={isSubmitting} className="min-w-[13rem] justify-center">
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-            Request access
-          </Button>
-        </div>
-      </div>
 
       <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
         <label htmlFor="request-website">Website</label>

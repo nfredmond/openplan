@@ -33,7 +33,7 @@ Primary touched surfaces:
 - [x] Duplicate report attention counts are suppressed so the project posture does not exaggerate risk.
 - [x] Report cards link users into the relevant packet work instead of leaving the next action ambiguous.
 - [x] Unit/component coverage exists for the changed posture/count/link behavior.
-- [ ] Live production deployment smoke has been captured for the exact deployed commit.
+- [x] Live shallow production deployment smoke has been captured for the exact deployed commit.
 - [ ] Authenticated user walkthrough confirms the deep-link target resolves correctly in production data, not just test fixtures.
 
 ## Validation proof captured in this pass
@@ -92,6 +92,16 @@ Post-commit deployment proof captured 2026-05-17:
 - Deployment health: `https://openplan-d04936lgu-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `23a832638db3`
 - Alias health: `https://openplan-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `23a832638db3`
 
+Latest docs/evidence deployment proof captured 2026-05-17:
+
+- Commit: `92b2a832804f` (`chore: reduce migration inventory false positives`)
+- Production deployment: `https://openplan-f0h4g47cc-natford.vercel.app`
+- Canonical alias: `https://openplan-natford.vercel.app`
+- Vercel inspect state: **Ready**
+- Deployment health: `https://openplan-f0h4g47cc-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `92b2a832804f`
+- Alias health: `https://openplan-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `92b2a832804f`
+- Generated shallow production-health evidence artifact: `docs/ops/2026-05-17-test-output/prod-health-evidence/20260517T201518Z-prod-health-evidence.md` with **Gate decision: PASS**
+
 Related safe fix included in this launch slice:
 
 - Public OpenPlan `Request access` CTAs now preserve the `open-source-services-review` intent note without incorrectly preselecting the legacy implementation/onboarding defaults.
@@ -104,4 +114,4 @@ Related safe fix included in this launch slice:
 
 ## Operator note
 
-This lane improves trustworthiness of the internal project workspace: it points attention to report governance holds and gives the operator a more direct path to packet remediation. The safe launch language is: **“Project report attention routing is tested locally and ready for internal/demo use; production proof is still pending.”**
+This lane improves trustworthiness of the internal project workspace: it points attention to report governance holds and gives the operator a more direct path to packet remediation. The safe launch language is: **“Project report attention routing is tested locally, deployed, and shallow production-health checked for internal/demo use; authenticated production deep-link proof is still pending.”**
