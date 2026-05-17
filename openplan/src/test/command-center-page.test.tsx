@@ -207,6 +207,9 @@ describe("CommandCenterPage", () => {
     expect(screen.getByRole("link", { name: /1\. Readiness packet/i })).toHaveAttribute("href", "/admin/pilot-readiness");
     expect(screen.getByRole("link", { name: /2\. Request access/i })).toHaveAttribute("href", "/request-access");
     expect(screen.getByRole("link", { name: /3\. Examples/i })).toHaveAttribute("href", "/examples");
+    expect(screen.getByText("Handoff boundary:")).toBeInTheDocument();
+    expect(screen.getByText(/No production writes, provisioning, outbound email, checkout, or self-serve activation/i)).toBeInTheDocument();
+    expect(screen.getByText("Stop rule:")).toBeInTheDocument();
     expect(screen.getByText(/Stop the demo if live-read preflight reports unresolved attention/i)).toBeInTheDocument();
     expect(screen.getByText(/current production health and Vercel read posture/i)).toBeInTheDocument();
     expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");

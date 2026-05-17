@@ -241,9 +241,16 @@ export default async function CommandCenterPage() {
               </li>
             ))}
           </ol>
-          <p className="mt-3 text-xs text-muted-foreground">
-            {buyerDemoCommandCenterHandoff.operatorStopRule}
-          </p>
+          <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+            <p>
+              <span className="font-medium text-foreground">Handoff boundary:</span>{" "}
+              {buyerDemoCommandCenterHandoff.boundary}
+            </p>
+            <p>
+              <span className="font-medium text-foreground">Stop rule:</span>{" "}
+              {buyerDemoCommandCenterHandoff.operatorStopRule}
+            </p>
+          </div>
         </nav>
       </section>
 
