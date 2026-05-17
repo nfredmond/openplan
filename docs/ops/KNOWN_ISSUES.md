@@ -30,7 +30,6 @@ The current release-to-sale posture remains PASS for a supervised planning workb
 | KI-2026-05-01-001 | Medium | CEO/Ops | Billing/commercial proof | No fresh same-cycle paid checkout canary is claimed. Direct OpenPlan tier checkout now routes to fit review instead of Stripe checkout. | Accepted boundary for supervised sales. If a procurement reviewer requires current money-moving proof, run a separately approved paid canary and update the billing proof packet. | `2026-05-01-openplan-billing-current-cycle-waiver-proof.md`; commit `ee29492` |
 | KI-2026-05-01-002 | Medium | Product/Ops | Modeling claims | Screening-grade county-run and behavioral-onramp evidence must not be described as calibrated or validated forecasting. | Keep buyer language in screening-grade / human-review posture. Require explicit consent paths for screening-grade evidence consumption. | `2026-04-16-caveat-gate-audit.md`; `2026-04-19-phase-s1-t16-reader-proof.md` |
 | KI-2026-05-01-003 | Medium | Ops | Recovery operations | First staging Supabase restore drill passed, but future restore confidence depends on quarterly repetition and per-engagement RPO/RTO fields. | Not a release blocker. Schedule next drill before stronger recovery language or SLA commitments. | `2026-05-01-openplan-restore-drill-staging-supabase.md`; `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md` |
-| KI-2026-05-01-004 | Low | Platform | CI/tooling | GitHub Actions currently annotates that Node.js 20-based actions are being forced onto Node.js 24. | Track as tooling hygiene. CI is passing; update action versions when upstream actions stop targeting deprecated Node runtime. | GitHub CI run `25237285943`; GitHub CI run `25237739979` |
 
 ## Closed / Recently Controlled
 
@@ -41,6 +40,7 @@ The current release-to-sale posture remains PASS for a supervised planning workb
 | KI-2026-05-01-C03 | 2026-05-01 | UI/code hygiene | App pages are now capped at 1,200 lines by ESLint after Grants and Dashboard decomposition. | `2026-05-01-openplan-app-page-max-lines-guard.md`; commit `6a5c7b8` |
 | KI-2026-05-01-C04 | 2026-05-01 | Phase 1 spine | Local spine smoke proves one seeded NCTC project ID is reused across RTP, grants, engagement, analysis/county-run, reports, map, Data Hub, and aerial evidence rows without duplicate project creation. | `2026-05-01-openplan-local-spine-smoke.md` |
 | KI-2026-05-01-C05 | 2026-05-17 | Reports test hygiene | Report detail command-board count coercion now defaults missing/non-finite counts to zero, and the report-detail page regression test asserts that no React `Received NaN` warning fires. | commit `cac5f7b`; `npm exec vitest -- run src/test/report-detail-page.test.tsx` on 2026-05-17 |
+| KI-2026-05-01-C06 | 2026-05-17 | CI/tooling | GitHub Actions were updated from Node.js 20-based major versions to current Node.js 24-capable majors, and the explicit `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` CI override was removed. | `.github/workflows/ci.yml`; `.github/workflows/production-health.yml`; tag checks for `actions/checkout@v6`, `actions/setup-node@v6`, and `pnpm/action-setup@v6` on 2026-05-17 |
 
 ## Update Rules
 

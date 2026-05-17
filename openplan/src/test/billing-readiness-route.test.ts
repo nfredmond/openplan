@@ -150,6 +150,9 @@ describe("POST /api/billing/readiness", () => {
       ok: true,
       status: "ready",
       readyForPaidCanary: true,
+      nonSpendProofOnly: true,
+      paidCanaryRequiresApproval: true,
+      paidCanaryApprovalNote: expect.stringContaining("does not create a Stripe Checkout Session"),
     });
     expect(loadBillingReadinessFactsMock).toHaveBeenCalledWith(serviceClient, { workspaceId });
     expect(flushUsageEventsToStripeMock).not.toHaveBeenCalled();
@@ -176,6 +179,8 @@ describe("POST /api/billing/readiness", () => {
     expect(await response.json()).toMatchObject({
       ok: true,
       status: "ready",
+      nonSpendProofOnly: true,
+      paidCanaryRequiresApproval: true,
       checks: expect.arrayContaining([
         expect.objectContaining({
           key: "usage_flush_dry_run",

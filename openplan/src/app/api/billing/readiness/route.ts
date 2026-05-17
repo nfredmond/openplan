@@ -174,6 +174,10 @@ export async function POST(request: NextRequest) {
     {
       ok: summary.readyForPaidCanary,
       ...summary,
+      nonSpendProofOnly: true,
+      paidCanaryRequiresApproval: true,
+      paidCanaryApprovalNote:
+        "This readiness response does not create a Stripe Checkout Session, send meter events, mark usage reported, activate a workspace, or authorize a paid canary. A fresh paid canary still requires Nathaniel approval and a human-selected workspace/customer/price.",
     },
     { status: 200 }
   );
