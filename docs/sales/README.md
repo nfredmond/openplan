@@ -1,5 +1,9 @@
 # Sales artifact regeneration notes
 
+## Current buyer/demo proof packet
+
+Use `docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md` as the current concise buyer/demo proof packet for May 17 evidence. It is a manually curated companion to the generated Admin Pilot Readiness packet, buyer caveat sheet, and managed-support proof map. Keep it buyer-safe: open-source core plus Nat Ford managed services; no self-serve municipal SaaS, autonomous AI, legal/LAPM, validated forecasting, grant-award prediction, or fresh paid-checkout overclaims.
+
 ## Admin Pilot Readiness proof packet
 
 The following files are generated artifacts and should travel together in the same commit:
