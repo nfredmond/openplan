@@ -1,6 +1,7 @@
 import { buildPilotReadinessPacket } from "@/app/(app)/admin/pilot-readiness/ExportButton";
 import { buildAdminPilotReadinessProofPacketMarkdown } from "@/lib/operations/pilot-readiness-packet";
 import {
+  buyerDemoCommandCenterHandoff,
   releaseProofCaveatItems,
   releaseProofCopyBlock,
   releaseProofPosture,
@@ -25,6 +26,16 @@ const buyerSafeTermFragments = [
   "managed hosting",
   "supervised planning workbench",
 ] as const;
+
+const handoffNoWriteFragments = [
+  "No production writes",
+  "provisioning",
+  "outbound email",
+  "checkout",
+  "self-serve activation",
+] as const;
+
+const handoffStepHrefs = ["/admin/pilot-readiness", "/request-access", "/examples"] as const;
 
 const caveatContextPattern = /\b(no|not|never|without|avoid|unsupported|boundary|caveat|waiver|supervised|stop-list|behind explicit proof gates|not sold as|not broad|not instant|no validated|no .* claim|do not|before external use|current proof boundary|historical|non-money-moving)\b/i;
 
@@ -134,6 +145,19 @@ function expectUnsupportedClaimsOnlyAsCaveats(text: string) {
   }
 }
 
+function expectAnyUnsupportedClaimsAreCaveated(text: string) {
+  const statements = splitBuyerCopyStatements(text);
+
+  for (const { label, pattern } of unsupportedClaimConcepts) {
+    for (const statement of statements.filter((candidate) => pattern.test(candidate))) {
+      expect(
+        caveatContextPattern.test(statement),
+        `${label} appears without caveat/negation context: ${statement}`,
+      ).toBe(true);
+    }
+  }
+}
+
 function expectBuyerSafeTerms(text: string) {
   expectBuyerSafeBaseline(text);
   expectUnsupportedClaimsOnlyAsCaveats(text);
@@ -161,6 +185,29 @@ describe("release proof copy guards", () => {
     const copyBlock = releaseProofCopyBlock();
 
     expectBuyerSafeTerms(copyBlock);
+  });
+
+  it("keeps the buyer demo handoff sequenced through readiness, supervised intake, and examples without write claims", () => {
+    const copyBlock = releaseProofCopyBlock();
+
+    expect(buyerDemoCommandCenterHandoff.steps.map((step) => step.href)).toEqual(handoffStepHrefs);
+    expect(buyerDemoCommandCenterHandoff.steps[0]?.detail).toContain("caveat sheet before demo language");
+    expect(buyerDemoCommandCenterHandoff.steps[1]?.detail).toContain("triaged/supervised");
+    expect(buyerDemoCommandCenterHandoff.steps[2]?.detail).toContain("Use examples only after the proof boundary is clean");
+
+    for (const fragment of handoffNoWriteFragments) {
+      expect(buyerDemoCommandCenterHandoff.boundary).toContain(fragment);
+      expect(copyBlock).toContain(fragment);
+    }
+
+    expectAnyUnsupportedClaimsAreCaveated(
+      [
+        buyerDemoCommandCenterHandoff.headline,
+        buyerDemoCommandCenterHandoff.detail,
+        buyerDemoCommandCenterHandoff.boundary,
+        ...buyerDemoCommandCenterHandoff.steps.flatMap((step) => [step.label, step.href, step.detail]),
+      ].join("\n"),
+    );
   });
 
   it("keeps buyer-safe terms across the pilot readiness export", () => {
