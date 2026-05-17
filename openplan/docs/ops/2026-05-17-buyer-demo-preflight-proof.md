@@ -20,6 +20,8 @@ For the final operator rehearsal, allow read-only external checks explicitly:
 npm run ops:check-buyer-demo-preflight -- --live-reads
 ```
 
+Command Center now repeats this live-read command in the Buyer Demo Handoff section so the app surface and operator runbook point to the same final pre-demo check.
+
 Equivalent environment flag:
 
 ```bash
@@ -49,6 +51,7 @@ npm test -- --run src/test/buyer-demo-preflight-script.test.ts
 
 Coverage now verifies:
 
+- Command Center displays the live-read buyer-demo preflight command beside the buyer handoff path
 - default local-first command plan
 - opt-in live-read command plan
 - environment flag behavior

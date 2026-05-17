@@ -200,6 +200,9 @@ describe("CommandCenterPage", () => {
       "href",
       "/admin/pilot-readiness"
     );
+    expect(screen.getByText("Final pre-demo check")).toBeInTheDocument();
+    expect(screen.getByText("npm run ops:check-buyer-demo-preflight -- --live-reads")).toBeInTheDocument();
+    expect(screen.getByText(/current production health and Vercel read posture/i)).toBeInTheDocument();
     expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
     expect(actionOrderMock).toHaveBeenCalledWith("completed_at", { ascending: false });
     expect(actionLimitMock).toHaveBeenCalledWith(8);

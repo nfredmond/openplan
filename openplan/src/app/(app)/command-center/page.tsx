@@ -118,6 +118,8 @@ export default async function CommandCenterPage() {
     },
   ];
 
+  const buyerDemoPreflightCommand = "npm run ops:check-buyer-demo-preflight -- --live-reads";
+
   const buyerDemoLinks = [
     {
       href: "/request-access",
@@ -217,6 +219,14 @@ export default async function CommandCenterPage() {
             );
           })}
         </ul>
+        <div className="border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
+          <p className="font-medium text-foreground">Final pre-demo check</p>
+          <p className="mt-1">
+            Run <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{buyerDemoPreflightCommand}</code>{" "}
+            before a live buyer walkthrough. This keeps Command Center handoff notes aligned with current production
+            health and Vercel read posture.
+          </p>
+        </div>
       </section>
 
       <section className="mt-6 module-section-surface">
