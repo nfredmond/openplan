@@ -7,6 +7,8 @@ const packetPath = path.join(repoRoot, "docs/sales/2026-05-17-openplan-current-b
 const salesReadmePath = path.join(repoRoot, "docs/sales/README.md");
 const opsReadmePath = path.join(repoRoot, "docs/ops/README.md");
 const knownIssuesPath = path.join(repoRoot, "docs/ops/KNOWN_ISSUES.md");
+const appPackagePath = path.join(repoRoot, "openplan/package.json");
+const buyerDemoPreflightScriptPath = path.join(repoRoot, "openplan/scripts/ops/check-buyer-demo-preflight.mjs");
 
 function read(relativePath: string) {
   return readFileSync(path.join(repoRoot, relativePath), "utf8");
@@ -72,4 +74,21 @@ describe("current buyer/demo proof packet", () => {
       expect(packet, `packet should prohibit ${prohibitedClaim}`).toContain(prohibitedClaim);
     }
   });
+  it("exposes a read-only buyer-demo preflight bundle for supervised demos", () => {
+    const packageJson = JSON.parse(readFileSync(appPackagePath, "utf8"));
+    const script = readFileSync(buyerDemoPreflightScriptPath, "utf8");
+
+    expect(packageJson.scripts["ops:check-buyer-demo-preflight"]).toBe(
+      "node scripts/ops/check-buyer-demo-preflight.mjs",
+    );
+    expect(script).toContain("test:sales-proof-claim-boundaries");
+    expect(script).toContain("ops:check-pilot-preflight");
+    expect(script).toContain("--skip-health");
+    expect(script).toContain("--skip-vercel");
+    expect(script).toContain("Live external reads are opt-in only");
+    expect(script).toContain("no production writes");
+    expect(script).not.toContain("supabase db push");
+    expect(script).not.toContain("seed:nctc");
+  });
+
 });
