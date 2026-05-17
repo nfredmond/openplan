@@ -77,6 +77,10 @@ function assertPayload(payload) {
   if (failures.length) {
     fail("GET /api/health returned an unexpected payload", failures);
   }
+
+  return {
+    commit: deployment.commit,
+  };
 }
 
 async function request(url, method) {
@@ -96,7 +100,7 @@ async function check(url) {
   const getResponse = await request(url, "GET");
   assertStatus(getResponse, "GET");
   assertCacheDisabled(getResponse, "GET");
-  assertPayload(await getResponse.json());
+  const payloadSummary = assertPayload(await getResponse.json());
 
   const headResponse = await request(url, "HEAD");
   assertStatus(headResponse, "HEAD");
@@ -105,6 +109,7 @@ async function check(url) {
   return {
     url,
     checkedAt: new Date().toISOString(),
+    deployment: payloadSummary,
   };
 }
 
@@ -139,6 +144,7 @@ export function formatResult(result) {
 
   return [
     `OpenPlan health check passed: ${result.url}`,
+    `deploymentCommit=${result.deployment?.commit ?? "unknown"}`,
     `checkedAt=${result.checkedAt}`,
   ].join("\n");
 }

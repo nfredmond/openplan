@@ -225,6 +225,7 @@ async function runHealthCheckForUrl(healthUrl) {
       status: "ok",
       url: result.url,
       checkedAt: result.checkedAt,
+      commitSha: result.deployment?.commit ?? null,
       issues: [],
     };
   } catch (error) {
@@ -268,12 +269,25 @@ export async function buildPilotPreflight(options = {}, deps = {}) {
         deps,
       );
 
-  const sections = { localSupabase, migrationInventory, productionHealth, deploymentReadiness };
+  const healthCommitSha = productionHealth.status === "ok" && typeof productionHealth.commitSha === "string"
+    ? productionHealth.commitSha
+    : null;
+  const deploymentReadinessWithHealthCommit =
+    deploymentReadiness.status === "ok" && !deploymentReadiness.commitSha && healthCommitSha && healthCommitSha !== "unknown"
+      ? { ...deploymentReadiness, commitSha: healthCommitSha, commitSource: "production health endpoint" }
+      : deploymentReadiness;
+
+  const sections = {
+    localSupabase,
+    migrationInventory,
+    productionHealth,
+    deploymentReadiness: deploymentReadinessWithHealthCommit,
+  };
   const issues = [
     ...localSupabase.issues.map((issue) => `local Supabase: ${issue}`),
     ...migrationInventory.issues.map((issue) => `migration inventory: ${issue}`),
     ...productionHealth.issues.map((issue) => `production health: ${issue}`),
-    ...deploymentReadiness.issues.map((issue) => `deployment readiness: ${issue}`),
+    ...deploymentReadinessWithHealthCommit.issues.map((issue) => `deployment readiness: ${issue}`),
   ];
 
   return {
