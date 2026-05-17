@@ -75,13 +75,22 @@ Results:
 - Focused CTA + pilot preflight tests: **2 files passed, 9 tests passed**
 - Pilot preflight bundle: **OK** after correcting the read-only Vercel inspect scope to `natford`
 
-Production-readiness snapshot captured 2026-05-17:
+Production-readiness snapshot captured before commit/push on 2026-05-17:
 
 - Production alias: `https://openplan-natford.vercel.app`
 - Latest inspected deployment: `https://openplan-idn37usze-natford.vercel.app`
 - Deployment state: **READY**
 - Health URL: `https://openplan-natford.vercel.app/api/health`
 - Current deployed health commit before the next local commit: `07444c17fead`
+
+Post-commit deployment proof captured 2026-05-17:
+
+- Commit: `23a832638db3` (`chore: capture OpenPlan launch evidence`)
+- Production deployment: `https://openplan-d04936lgu-natford.vercel.app`
+- Canonical alias: `https://openplan-natford.vercel.app`
+- Vercel inspect state: **READY**
+- Deployment health: `https://openplan-d04936lgu-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `23a832638db3`
+- Alias health: `https://openplan-natford.vercel.app/api/health` returned `status: ok`, `app: ok`, commit `23a832638db3`
 
 Related safe fix included in this launch slice:
 
@@ -90,9 +99,8 @@ Related safe fix included in this launch slice:
 
 ## Missing evidence before calling it fully launched
 
-1. **Post-commit production smoke:** after this evidence/CTA/preflight slice is committed and deployed, confirm the new production deployment is live and cite its commit SHA.
-2. **Authenticated workflow proof:** use a real or seeded workspace/project to click from project report card → packet work and record the outcome.
-3. **Screenshot or trace artifact:** optional but recommended: one screenshot of the project detail posture area and one of the linked packet destination.
+1. **Authenticated workflow proof:** use a real or seeded workspace/project to click from project report card → packet work and record the outcome.
+2. **Screenshot or trace artifact:** optional but recommended: one screenshot of the project detail posture area and one of the linked packet destination.
 
 ## Operator note
 
