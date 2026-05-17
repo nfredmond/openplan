@@ -317,6 +317,33 @@ export function getAdminPilotReadinessProofArtifactCategoryLabel(
   return "Preflight proof";
 }
 
+
+export const buyerDemoCommandCenterHandoff = {
+  label: "Buyer demo handoff",
+  headline: "Run the buyer demo from proof, then intake, then examples.",
+  detail:
+    "Use Command Center as the internal launch rail: inspect pilot readiness, confirm request-access boundaries, and only then open buyer examples for the supervised story.",
+  boundary:
+    "No production writes, provisioning, outbound email, checkout, or self-serve activation are implied by this handoff.",
+  steps: [
+    {
+      label: "1. Readiness packet",
+      href: ADMIN_PILOT_READINESS_ROUTE,
+      detail: "Confirm final checklist, latest preflight proof, and caveat sheet before demo language leaves the room.",
+    },
+    {
+      label: "2. Request access",
+      href: "/request-access",
+      detail: "Verify intake copy still says triaged/supervised and does not promise automatic access, billing, or support.",
+    },
+    {
+      label: "3. Examples",
+      href: "/examples",
+      detail: "Use examples only after the proof boundary is clean; keep claims scoped to the current rural planning workbench wedge.",
+    },
+  ],
+} as const;
+
 export const releaseProofPosture = {
   label: "Release proof packet",
   title: "Proof posture for supervised release review",
@@ -437,5 +464,10 @@ export function releaseProofCopyBlock() {
     ]),
     ...releaseProofPosture.caveatItems.flatMap((caveat) => [caveat.label, caveat.text, caveat.sourceArtifact]),
     ...releaseProofPosture.actions.flatMap((action) => [action.label, action.href, action.detail]),
+    buyerDemoCommandCenterHandoff.label,
+    buyerDemoCommandCenterHandoff.headline,
+    buyerDemoCommandCenterHandoff.detail,
+    buyerDemoCommandCenterHandoff.boundary,
+    ...buyerDemoCommandCenterHandoff.steps.flatMap((step) => [step.label, step.href, step.detail]),
   ].join("\n");
 }

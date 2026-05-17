@@ -4,6 +4,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { ADMIN_PILOT_READINESS_ROUTE } from "@/lib/operations/pilot-readiness-proof-paths";
 import {
+  buyerDemoCommandCenterHandoff,
   getAdminPilotReadinessProofArtifactIndex,
   releaseProofPosture,
 } from "@/lib/operations/release-proof-packet";
@@ -292,6 +293,27 @@ export function WorkspaceCommandBoard({
                           ? `; latest preflight note: ${pilotPreflightProofArtifact.artifact}.`
                           : "."} Keep claims inside the supervised-pilot caveats before external use.
                       </p>
+                    </div>
+
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
+                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                        {buyerDemoCommandCenterHandoff.label}
+                      </p>
+                      <p className="mt-1 text-xs font-semibold leading-5 text-foreground">{buyerDemoCommandCenterHandoff.headline}</p>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{buyerDemoCommandCenterHandoff.detail}</p>
+                      <nav aria-label="Buyer demo handoff steps" className="mt-2 grid gap-1.5">
+                        {buyerDemoCommandCenterHandoff.steps.map((step) => (
+                          <Link
+                            key={step.label}
+                            href={step.href}
+                            className="rounded-lg border border-border/60 bg-background/70 px-2.5 py-2 text-xs transition-colors hover:border-primary/35 hover:bg-background"
+                          >
+                            <span className="font-semibold text-foreground">{step.label}</span>
+                            <span className="block pt-0.5 leading-5 text-muted-foreground">{step.detail}</span>
+                          </Link>
+                        ))}
+                      </nav>
+                      <p className="mt-2 text-[0.72rem] leading-5 text-muted-foreground">{buyerDemoCommandCenterHandoff.boundary}</p>
                     </div>
 
                     <div>
