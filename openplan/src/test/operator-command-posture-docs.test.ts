@@ -25,7 +25,7 @@ describe("OpenPlan operator command posture docs", () => {
 
     expect(packageScripts["ops:check-pilot-preflight"]).toBe("node scripts/ops/check-pilot-preflight.mjs");
     expect(packageScripts["ops:check-buyer-demo-preflight"]).toBe("node scripts/ops/check-buyer-demo-preflight.mjs");
-    expect(packageScripts["qa:gate"]).toContain("pnpm audit --prod --audit-level=moderate");
+    expect(packageScripts["qa:gate"]).toContain("corepack pnpm audit --prod --audit-level=moderate");
 
     const docs = Object.fromEntries(activeOperatorDocs.map((doc) => [doc, read(doc)]));
     const currentCommandSections: Record<string, string> = {
@@ -48,6 +48,7 @@ describe("OpenPlan operator command posture docs", () => {
     expect(docs["AGENTS.md"]).toContain("**Current command posture:** use `npm run …` / `npm exec …` for live operator commands");
     expect(docs["CLAUDE.md"]).toContain("**Current command posture:** use `npm run …` / `npm exec …` for live operator commands");
     expect(docs["README.md"]).toContain("package scripts are invoked with `npm run …` in current operator docs");
+    expect(docs["README.md"]).toContain("Corepack supplies the pnpm audit lane inside `npm run qa:gate`");
     expect(docs["docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md"]).toContain(
       "Historical proof artifacts may still cite the older pnpm shorthand",
     );

@@ -115,7 +115,7 @@ Full rationale: `docs/ops/2026-04-19-phase-p-decisions-locked.md`. Full options 
 
 **Source code lives in:** `openplan/` subdirectory (run all commands from there)
 
-**Current command posture:** use `npm run …` / `npm exec …` for live operator commands. Historical proof logs still cite `pnpm`; `npm run qa:gate` intentionally shells through `pnpm audit --prod --audit-level=moderate`, so keep pnpm/corepack available for that audit lane.
+**Current command posture:** use `npm run …` / `npm exec …` for live operator commands. Historical proof logs still cite `pnpm`; `npm run qa:gate` intentionally shells through `corepack pnpm audit --prod --audit-level=moderate`, so Corepack remains the supported pnpm audit lane even when a bare `pnpm` binary is not on PATH.
 
 ## Commands
 
