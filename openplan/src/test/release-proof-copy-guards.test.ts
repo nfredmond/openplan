@@ -1,8 +1,11 @@
 import { buildPilotReadinessPacket } from "@/app/(app)/admin/pilot-readiness/ExportButton";
 import { buildAdminPilotReadinessProofPacketMarkdown } from "@/lib/operations/pilot-readiness-packet";
 import {
+  CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT,
+  NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF_ARTIFACT,
   buyerDemoCommandCenterHandoff,
   buyerDemoRehearsalChecklist,
+  getAdminPilotReadinessProofArtifactIndex,
   releaseProofCaveatItems,
   releaseProofCopyBlock,
   releaseProofPosture,
@@ -196,7 +199,7 @@ describe("release proof copy guards", () => {
     expect(buyerDemoCommandCenterHandoff.steps[1]?.detail).toContain("triaged/supervised");
     expect(buyerDemoCommandCenterHandoff.steps[2]?.detail).toContain("Use examples only after the proof boundary is clean");
     expect(buyerDemoCommandCenterHandoff.preflightCommand).toBe("npm run ops:check-buyer-demo-preflight -- --live-reads");
-    expect(buyerDemoCommandCenterHandoff.currentProofPacket).toBe("docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md");
+    expect(buyerDemoCommandCenterHandoff.currentProofPacket).toBe(CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT);
     expect(buyerDemoCommandCenterHandoff.operatorStopRule).toContain("Stop the demo");
     expect(copyBlock).toContain(buyerDemoCommandCenterHandoff.preflightArtifact);
     expect(copyBlock).toContain(buyerDemoCommandCenterHandoff.currentProofPacket);
@@ -223,6 +226,16 @@ describe("release proof copy guards", () => {
       expect(buyerDemoCommandCenterHandoff.boundary).toContain(fragment);
       expect(copyBlock).toContain(fragment);
     }
+
+    const proofArtifactIndex = getAdminPilotReadinessProofArtifactIndex();
+    const buyerDemoProofItem = proofArtifactIndex.find((item) => item.key === "current-buyer-demo-proof-packet");
+    const buyerEvidenceBriefItem = proofArtifactIndex.find((item) => item.key === "nevada-county-buyer-evidence-brief");
+
+    expect(buyerDemoProofItem?.artifact).toBe(CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT);
+    expect(buyerDemoProofItem?.buyerSafeCaveat).toContain("supervised demo diligence only");
+    expect(buyerEvidenceBriefItem?.artifact).toBe(NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF_ARTIFACT);
+    expect(buyerEvidenceBriefItem?.buyerSafeCaveat).toContain("static screening-run snapshot");
+    expect(copyBlock).toContain(CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT);
 
     expectAnyUnsupportedClaimsAreCaveated(
       [

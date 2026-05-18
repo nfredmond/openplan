@@ -80,6 +80,11 @@ export type AdminPilotReadinessProofArtifactIndexItem = {
   operatorUse: string;
 };
 
+export const CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT =
+  "docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md";
+export const NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF_ARTIFACT =
+  "docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md";
+
 export type AdminPilotReadinessProofHubStep = {
   key: string;
   order: number;
@@ -246,6 +251,24 @@ export const adminPilotReadinessProofArtifactIndex = [
       "The preflight is read-only operational confidence, not self-serve activation, schema approval, or production-write proof.",
     operatorUse: "Run or cite the preflight pattern immediately before serious buyer, demo, or pilot reliance.",
   },
+  {
+    key: "current-buyer-demo-proof-packet",
+    label: "Current buyer-demo proof packet",
+    category: "proof-packet-doc",
+    artifact: CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT,
+    buyerSafeCaveat:
+      "This packet supports supervised demo diligence only; it does not prove self-serve activation, checkout, production modeling, or legal/compliance automation.",
+    operatorUse: "Use as the May 17 buyer-demo chain before opening examples or discussing a scoped first workflow.",
+  },
+  {
+    key: "nevada-county-buyer-evidence-brief",
+    label: "Nevada County buyer evidence brief",
+    category: "proof-packet-doc",
+    artifact: NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF_ARTIFACT,
+    buyerSafeCaveat:
+      "The brief is a static screening-run snapshot for explanation; it is not current runtime proof, calibrated forecasting, or production model validation.",
+    operatorUse: "Use only after the proof boundary and caveats are stated, then scope one supervised first workflow.",
+  },
 ] satisfies AdminPilotReadinessProofArtifactIndexItem[];
 
 export const adminPilotReadinessProofHubSteps = [
@@ -361,7 +384,7 @@ export const buyerDemoCommandCenterHandoff = {
     "No production writes, provisioning, outbound email, checkout, or self-serve activation are implied by this handoff.",
   preflightCommand: "npm run ops:check-buyer-demo-preflight -- --live-reads",
   preflightArtifact: "docs/ops/2026-05-17-buyer-demo-preflight-proof.md",
-  currentProofPacket: "docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md",
+  currentProofPacket: CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT,
   operatorStopRule:
     "Stop the demo if live-read preflight reports unresolved attention that affects the buyer claim, or if the current proof packet does not cover the workflow being shown.",
   steps: [
