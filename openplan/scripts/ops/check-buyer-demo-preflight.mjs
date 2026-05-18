@@ -17,6 +17,7 @@ function usage() {
     "",
     "Default checks:",
     "  - test:sales-proof-claim-boundaries (sales boundary + current buyer proof packet guards)",
+    "  - Nevada County fixture buyer-safe guards (prototype gate, Max APE, story beats, forbidden claims)",
     "  - ops:check-pilot-preflight with --skip-health --skip-vercel (local env/migration posture only)",
     "",
     "Options:",
@@ -61,6 +62,11 @@ export function buildCommandPlan(options = {}) {
       label: "Sales proof / current buyer packet claim boundaries",
       command: "npm",
       args: ["run", "test:sales-proof-claim-boundaries"],
+    },
+    {
+      label: "Nevada County fixture buyer-safe guards",
+      command: "npm",
+      args: ["test", "--", "--run", "src/test/nevada-county-example-fixture.test.ts"],
     },
     {
       label: options.liveReads
