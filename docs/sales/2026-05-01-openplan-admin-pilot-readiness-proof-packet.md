@@ -43,7 +43,7 @@ What has been proven for this release-to-sale posture:
 | Billing posture | PASS with explicit waiver | Billing is positioned as historical live payment evidence plus current non-money-moving proof. No fresh same-cycle paid checkout canary is claimed. | `docs/ops/2026-05-01-openplan-billing-current-cycle-waiver-proof.md` |
 | Managed hosting posture | Buyer-reviewable template | The service schedule defines scoped managed-hosting responsibilities, support targets, backup/restore fields to fill, and out-of-scope items before signature. | `docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md` |
 | Backup/restore posture | PASS | The operator procedure names durable state, backup cadence, restore decision gates, staging-first posture, validation, and customer communication boundaries. A dedicated staging Supabase project was created, migrated, restored from private production schema/public-data dumps, validated, and retired. | `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md`; `docs/ops/2026-05-01-openplan-restore-drill-staging-supabase.md` |
-| Final checklist / managed support synchronization | PASS | The final pilot-readiness checklist, supervised onboarding bridge, Wave 6 release-readiness summary, managed-support proof map, county-run manifest proof, and modeling evidence export proof now travel with both the Admin export and static sales packet. | `docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md`; `docs/sales/2026-05-10-openplan-managed-support-proof-map.md`; `openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md`; `docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md`; `openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md`; `docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md`; `openplan/src/test/pilot-readiness-export-packet.test.ts` |
+| Final checklist / managed support synchronization | PASS | The final pilot-readiness checklist, supervised onboarding bridge, Wave 6 release-readiness summary, managed-support proof map, county-run manifest proof, and modeling evidence export proof now travel with both the Admin export and static sales packet. | `docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md`; `docs/sales/2026-05-10-openplan-managed-support-proof-map.md`; `openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md`; `docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md`; `openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md`; `docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md`; `docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md`; `docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md`; `openplan/src/test/pilot-readiness-export-packet.test.ts` |
 
 ## Compact Proof Artifact Index
 Use this index as the short operator map before buyer reliance. It names the current proof packet docs, generated static sales packet files, and preflight proof note without expanding the claim beyond supervised-pilot caveats.
@@ -88,6 +88,12 @@ Use this index as the short operator map before buyer reliance. It names the cur
 - **Wave 6 release-readiness summary**: docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md
   - Role: Summarizes the May 10 proof/readiness merge train, validation posture, caveats, and merge risk for operator review.
   - Caveat: Use as a discoverability summary only; it is not a launch certificate or a substitute for fresh preflight before buyer reliance.
+- **Buyer-demo proof packet**: docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md
+  - Role: Collects the current buyer-demo chain, caveats, preflight currency, and examples handoff for supervised walkthrough preparation.
+  - Caveat: Use for supervised demo diligence only; it is not self-serve activation, checkout proof, production modeling proof, or legal/compliance automation.
+- **Nevada County buyer evidence brief**: docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md
+  - Role: Keeps the copyable Nevada County example brief visible in the operator proof packet before external explanation.
+  - Caveat: Treat it as a static screening-run snapshot, not current runtime evidence, calibrated forecasting, or production model validation.
 - **Release proof synchronization**: openplan/src/test/pilot-readiness-export-packet.test.ts
   - Role: Guards the Admin Pilot Readiness export against drift from Command Center release-proof copy and the final smoke checklist.
   - Caveat: Internal packet synchronization does not replace fresh smoke reruns after behavior changes.
@@ -206,6 +212,8 @@ Avoid:
 - docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md
 - openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md
 - docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md
+- docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md
+- docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md
 - openplan/src/test/pilot-readiness-export-packet.test.ts
 - docs/ops/2026-05-01-openplan-release-to-sale-plan.md
 - docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md
@@ -216,8 +224,6 @@ Avoid:
 - docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html
 - docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf
 - docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md
-- docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md
-- docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md
 - docs/sales/2026-05-01-openplan-buyer-one-pager.md
 - docs/sales/2026-05-01-openplan-managed-hosting-service-description.md
 - docs/sales/2026-05-01-openplan-pilot-sow-template.md

@@ -9,6 +9,8 @@ import {
   buildReleaseProofAlignmentMarkdown,
 } from "@/lib/operations/pilot-readiness-packet";
 import {
+  CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT,
+  NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF_ARTIFACT,
   finalPilotReadinessChecklistSync,
   getAdminPilotReadinessProofArtifactIndex,
   releaseProofPosture,
@@ -104,6 +106,10 @@ describe("pilot readiness export packet", () => {
     expect(packet).toContain(WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT);
     expect(packet).toContain("docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md");
     expect(packet).toContain("openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md");
+    expect(packet).toContain(CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT);
+    expect(packet).toContain(NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF_ARTIFACT);
+    expect(packet).toContain("supervised demo diligence only");
+    expect(packet).toContain("static screening-run snapshot");
     expect(packet).toContain("openplan/src/test/pilot-readiness-export-packet.test.ts");
   });
 

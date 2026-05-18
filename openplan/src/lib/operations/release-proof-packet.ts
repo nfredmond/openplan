@@ -170,6 +170,18 @@ export const finalPilotReadinessChecklistSync = {
       caveat: "Use as a discoverability summary only; it is not a launch certificate or a substitute for fresh preflight before buyer reliance.",
     },
     {
+      label: "Buyer-demo proof packet",
+      artifact: CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT,
+      role: "Collects the current buyer-demo chain, caveats, preflight currency, and examples handoff for supervised walkthrough preparation.",
+      caveat: "Use for supervised demo diligence only; it is not self-serve activation, checkout proof, production modeling proof, or legal/compliance automation.",
+    },
+    {
+      label: "Nevada County buyer evidence brief",
+      artifact: NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF_ARTIFACT,
+      role: "Keeps the copyable Nevada County example brief visible in the operator proof packet before external explanation.",
+      caveat: "Treat it as a static screening-run snapshot, not current runtime evidence, calibrated forecasting, or production model validation.",
+    },
+    {
       label: "Release proof synchronization",
       artifact: "openplan/src/test/pilot-readiness-export-packet.test.ts",
       role: "Guards the Admin Pilot Readiness export against drift from Command Center release-proof copy and the final smoke checklist.",

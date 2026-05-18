@@ -231,7 +231,7 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 9 0 R >>
 endobj
 9 0 obj
-<< /Length 3264 >>
+<< /Length 3231 >>
 stream
 BT
 /F1 9 Tf
@@ -262,6 +262,10 @@ T*
 (openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md;) Tj
 T*
 (docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md;) Tj
+T*
+(docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md;) Tj
+T*
+(docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md;) Tj
 T*
 (openplan/src/test/pilot-readiness-export-packet.test.ts) Tj
 T*
@@ -329,10 +333,6 @@ T*
 T*
 (Wave 6 release-readiness summary —) Tj
 T*
-(docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md Proof packet doc Summary) Tj
-T*
-(supports operator orientation for the May 10 merge train only; it is not a broad) Tj
-T*
 ET
 endstream
 endobj
@@ -340,12 +340,16 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 11 0 R >>
 endobj
 11 0 obj
-<< /Length 3355 >>
+<< /Length 3422 >>
 stream
 BT
 /F1 9 Tf
 48 742 Td
 12 TL
+(docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md Proof packet doc Summary) Tj
+T*
+(supports operator orientation for the May 10 merge train only; it is not a broad) Tj
+T*
 (launch-readiness certificate.) Tj
 T*
 (Pilot preflight operator proof —) Tj
@@ -438,10 +442,6 @@ T*
 T*
 (decision support.) Tj
 T*
-(• Modeling evidence exports:) Tj
-T*
-(openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md) Tj
-T*
 ET
 endstream
 endobj
@@ -449,12 +449,16 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 13 0 R >>
 endobj
 13 0 obj
-<< /Length 3333 >>
+<< /Length 3304 >>
 stream
 BT
 /F1 9 Tf
 48 742 Td
 12 TL
+(• Modeling evidence exports:) Tj
+T*
+(openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md) Tj
+T*
 (- Role: Carries modeling caveats and source context into report and RTP export paths.) Tj
 T*
 (- Caveat: Behavioral-onramp KPIs remain behind the proven SQL/RPC caveat gate; no validated) Tj
@@ -472,6 +476,28 @@ T*
 (- Caveat: Use as a discoverability summary only; it is not a launch certificate or a) Tj
 T*
 (substitute for fresh preflight before buyer reliance.) Tj
+T*
+(• Buyer-demo proof packet: docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md) Tj
+T*
+(- Role: Collects the current buyer-demo chain, caveats, preflight currency, and examples) Tj
+T*
+(handoff for supervised walkthrough preparation.) Tj
+T*
+(- Caveat: Use for supervised demo diligence only; it is not self-serve activation, checkout) Tj
+T*
+(proof, production modeling proof, or legal/compliance automation.) Tj
+T*
+(• Nevada County buyer evidence brief:) Tj
+T*
+(docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md) Tj
+T*
+(- Role: Keeps the copyable Nevada County example brief visible in the operator proof packet) Tj
+T*
+(before external explanation.) Tj
+T*
+(- Caveat: Treat it as a static screening-run snapshot, not current runtime evidence,) Tj
+T*
+(calibrated forecasting, or production model validation.) Tj
 T*
 (• Release proof synchronization: openplan/src/test/pilot-readiness-export-packet.test.ts) Tj
 T*
@@ -525,6 +551,19 @@ T*
 T*
 (docs/ops/2026-05-01-openplan-release-to-sale-plan.md) Tj
 T*
+ET
+endstream
+endobj
+14 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
+endobj
+15 0 obj
+<< /Length 3540 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (- Supports: Sale readiness: names the current gate evidence operators may cite for the) Tj
 T*
 (supervised offer.) Tj
@@ -551,19 +590,6 @@ T*
 T*
 (- Operator check: Use it immediately before a pilot demo to verify PASS lanes have named) Tj
 T*
-ET
-endstream
-endobj
-14 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 15 0 R >>
-endobj
-15 0 obj
-<< /Length 3593 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (source docs and every pending/failing lane has a follow-up owner.) Tj
 T*
 (- Caveats carried: Billing proof waiver) Tj
@@ -634,6 +660,19 @@ T*
 T*
 (Onboarding validation    Why it matters) Tj
 T*
+ET
+endstream
+endobj
+16 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
+endobj
+17 0 obj
+<< /Length 3058 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 () Tj
 T*
 (Name one workspace owner and support contact\(s\). Keeps access, triage, and issue escalation) Tj
@@ -660,19 +699,6 @@ T*
 T*
 (Confirm Mapbox, Supabase, Vercel, Stripe, and model-provider posture for the chosen) Tj
 T*
-ET
-endstream
-endobj
-16 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 17 0 R >>
-endobj
-17 0 obj
-<< /Length 2454 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 (workflow. Third-party dependencies are part of the hosted operating path and may affect) Tj
 T*
 (procurement or availability expectations.) Tj
@@ -743,6 +769,19 @@ T*
 T*
 () Tj
 T*
+ET
+endstream
+endobj
+18 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 19 0 R >>
+endobj
+19 0 obj
+<< /Length 2462 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (OpenPlan is ready for scoped pilots and managed-service engagements where the first) Tj
 T*
 (workflow, data posture, support path, and proof boundary are agreed up front.) Tj
@@ -769,19 +808,6 @@ T*
 T*
 (Avoid:) Tj
 T*
-ET
-endstream
-endobj
-18 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 19 0 R >>
-endobj
-19 0 obj
-<< /Length 3009 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
 () Tj
 T*
 (Avoid claiming OpenPlan replaces planners, engineers, attorneys, grant writers, or agency) Tj
@@ -852,9 +878,26 @@ T*
 T*
 (• docs/ops/2026-05-10-openplan-county-run-manifest-proof-ui.md) Tj
 T*
+ET
+endstream
+endobj
+20 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 21 0 R >>
+endobj
+21 0 obj
+<< /Length 1672 >>
+stream
+BT
+/F1 9 Tf
+48 742 Td
+12 TL
 (• openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md) Tj
 T*
 (• docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md) Tj
+T*
+(• docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md) Tj
+T*
+(• docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md) Tj
 T*
 (• openplan/src/test/pilot-readiness-export-packet.test.ts) Tj
 T*
@@ -875,23 +918,6 @@ T*
 (• docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf) Tj
 T*
 (• docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md) Tj
-T*
-(• docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md) Tj
-T*
-ET
-endstream
-endobj
-20 0 obj
-<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents 21 0 R >>
-endobj
-21 0 obj
-<< /Length 679 >>
-stream
-BT
-/F1 9 Tf
-48 742 Td
-12 TL
-(• docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md) Tj
 T*
 (• docs/sales/2026-05-01-openplan-buyer-one-pager.md) Tj
 T*
@@ -928,20 +954,20 @@ xref
 0000003576 00000 n 
 0000007702 00000 n 
 0000007828 00000 n 
-0000011144 00000 n 
-0000011272 00000 n 
-0000014680 00000 n 
-0000014808 00000 n 
-0000018194 00000 n 
-0000018322 00000 n 
-0000021968 00000 n 
-0000022096 00000 n 
-0000024603 00000 n 
-0000024731 00000 n 
-0000027793 00000 n 
-0000027921 00000 n 
+0000011111 00000 n 
+0000011239 00000 n 
+0000014714 00000 n 
+0000014842 00000 n 
+0000018199 00000 n 
+0000018327 00000 n 
+0000021920 00000 n 
+0000022048 00000 n 
+0000025159 00000 n 
+0000025287 00000 n 
+0000027802 00000 n 
+0000027930 00000 n 
 trailer
 << /Size 22 /Root 1 0 R >>
 startxref
-28652
+29655
 %%EOF
