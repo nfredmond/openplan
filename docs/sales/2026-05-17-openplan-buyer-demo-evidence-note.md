@@ -82,7 +82,8 @@ Confirmed in production:
 - handoff boundary present: `No production writes, provisioning, outbound email, checkout, or self-serve activation are implied by this handoff.`;
 - stop rule present: `Stop the demo if live-read preflight reports unresolved attention...`;
 - handoff links present for readiness packet, request access, and examples;
-- later checkpoint browser smoke confirmed the Command Center 90-second opening script, source pointer, and `screening evidence, not production model validation` wording.
+- later checkpoint browser smoke confirmed the Command Center 90-second opening script, source pointer, and `screening evidence, not production model validation` wording;
+- follow-on operator-surface pass added a compact demo rehearsal checklist with read-only proof-first steps and stop conditions before examples.
 
 ### Step 2 — Pilot Readiness
 

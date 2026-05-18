@@ -42,6 +42,13 @@ export type ReleaseProofAction = {
   detail: string;
 };
 
+export type BuyerDemoRehearsalChecklistItem = {
+  key: string;
+  label: string;
+  instruction: string;
+  stopCondition: string;
+};
+
 export type PilotReadinessSyncArtifact = {
   label: string;
   artifact: string;
@@ -318,6 +325,33 @@ export function getAdminPilotReadinessProofArtifactCategoryLabel(
 }
 
 
+export const buyerDemoRehearsalChecklist = [
+  {
+    key: "run-live-preflight",
+    label: "Run live-read preflight",
+    instruction: "Run the buyer-demo preflight with live reads before the walkthrough, then read any attention items before speaking.",
+    stopCondition: "Stop if production health, deployment readiness, or a claim-boundary guard fails for the workflow being shown.",
+  },
+  {
+    key: "open-proof-packet",
+    label: "Open proof packet",
+    instruction: "Open the current buyer-demo proof packet and keep the caveat sheet attached to the conversation.",
+    stopCondition: "Stop if the packet does not cover the workflow, geography, data source, or service lane being discussed.",
+  },
+  {
+    key: "rehearse-caveats",
+    label: "Rehearse caveats out loud",
+    instruction: "Say the Nevada County internal-prototype gate, Max APE caveat, and screening-grade caveats before showing examples.",
+    stopCondition: "Stop if the operator cannot explain why the sample is screening evidence rather than production model validation.",
+  },
+  {
+    key: "open-examples",
+    label: "Open examples after the boundary",
+    instruction: "Open Examples only after the proof boundary is clean, then route next steps to supervised review.",
+    stopCondition: "Stop if the buyer interprets the example as instant activation, checkout, provisioning, or current runtime proof.",
+  },
+] satisfies BuyerDemoRehearsalChecklistItem[];
+
 export const buyerDemoCommandCenterHandoff = {
   label: "Buyer demo handoff",
   headline: "Run the buyer demo from proof, then intake, then examples.",
@@ -478,5 +512,6 @@ export function releaseProofCopyBlock() {
     buyerDemoCommandCenterHandoff.currentProofPacket,
     buyerDemoCommandCenterHandoff.operatorStopRule,
     ...buyerDemoCommandCenterHandoff.steps.flatMap((step) => [step.label, step.href, step.detail]),
+    ...buyerDemoRehearsalChecklist.flatMap((item) => [item.label, item.instruction, item.stopCondition]),
   ].join("\n");
 }

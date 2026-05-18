@@ -22,7 +22,7 @@ For the final operator rehearsal, allow read-only external checks explicitly:
 npm run ops:check-buyer-demo-preflight -- --live-reads
 ```
 
-Command Center now repeats this live-read command in the Buyer Demo Handoff section so the app surface and operator runbook point to the same final pre-demo check. It also surfaces the Nevada County caveats as a `Caveats to say out loud` rail and the 90-second opening script source so the operator does not soften the public evidence record during a buyer walkthrough.
+Command Center now repeats this live-read command in the Buyer Demo Handoff section so the app surface and operator runbook point to the same final pre-demo check. It also surfaces a compact demo rehearsal checklist, the Nevada County caveats as a `Caveats to say out loud` rail, and the 90-second opening script source so the operator does not soften the public evidence record during a buyer walkthrough.
 
 Equivalent environment flag:
 
@@ -54,6 +54,7 @@ npm test -- --run src/test/buyer-demo-preflight-script.test.ts
 Coverage now verifies:
 
 - Command Center displays the live-read buyer-demo preflight command beside the buyer handoff path
+- Command Center surfaces a compact read-only demo rehearsal checklist with explicit stop conditions
 - Command Center surfaces the Nevada County caveats operators should say out loud
 - Command Center surfaces the 90-second opening script as operator guidance, not new buyer functionality
 - the buyer-demo preflight command plan includes the Nevada County fixture guard and talk-track guard

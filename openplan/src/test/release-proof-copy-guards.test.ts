@@ -2,6 +2,7 @@ import { buildPilotReadinessPacket } from "@/app/(app)/admin/pilot-readiness/Exp
 import { buildAdminPilotReadinessProofPacketMarkdown } from "@/lib/operations/pilot-readiness-packet";
 import {
   buyerDemoCommandCenterHandoff,
+  buyerDemoRehearsalChecklist,
   releaseProofCaveatItems,
   releaseProofCopyBlock,
   releaseProofPosture,
@@ -200,6 +201,23 @@ describe("release proof copy guards", () => {
     expect(copyBlock).toContain(buyerDemoCommandCenterHandoff.preflightArtifact);
     expect(copyBlock).toContain(buyerDemoCommandCenterHandoff.currentProofPacket);
     expect(copyBlock).toContain(buyerDemoCommandCenterHandoff.operatorStopRule);
+    expect(buyerDemoRehearsalChecklist).toHaveLength(4);
+    expect(buyerDemoRehearsalChecklist.map((item) => item.key)).toEqual([
+      "run-live-preflight",
+      "open-proof-packet",
+      "rehearse-caveats",
+      "open-examples",
+    ]);
+    expect(buyerDemoRehearsalChecklist[0]?.instruction).toContain("live reads before the walkthrough");
+    expect(buyerDemoRehearsalChecklist[1]?.instruction).toContain("current buyer-demo proof packet");
+    expect(buyerDemoRehearsalChecklist[2]?.stopCondition).toContain("screening evidence rather than production model validation");
+    expect(buyerDemoRehearsalChecklist[3]?.stopCondition).toContain("instant activation, checkout, provisioning");
+
+    for (const item of buyerDemoRehearsalChecklist) {
+      expect(copyBlock).toContain(item.label);
+      expect(copyBlock).toContain(item.instruction);
+      expect(copyBlock).toContain(item.stopCondition);
+    }
 
     for (const fragment of handoffNoWriteFragments) {
       expect(buyerDemoCommandCenterHandoff.boundary).toContain(fragment);
@@ -212,6 +230,7 @@ describe("release proof copy guards", () => {
         buyerDemoCommandCenterHandoff.detail,
         buyerDemoCommandCenterHandoff.boundary,
         ...buyerDemoCommandCenterHandoff.steps.flatMap((step) => [step.label, step.href, step.detail]),
+        ...buyerDemoRehearsalChecklist.flatMap((item) => [item.label, item.instruction, item.stopCondition]),
       ].join("\n"),
     );
   });

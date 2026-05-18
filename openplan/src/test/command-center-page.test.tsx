@@ -231,6 +231,16 @@ describe("CommandCenterPage", () => {
     expect(document.body).not.toHaveTextContent(/production data seeded/i);
     expect(document.body).not.toHaveTextContent(/automatic workspace provisioning/i);
     expect(document.body).not.toHaveTextContent(/instant customer activation/i);
+    expect(screen.getByText("Demo rehearsal checklist")).toBeInTheDocument();
+    expect(screen.getByText("Operator readiness before the buyer sees anything")).toBeInTheDocument();
+    expect(screen.getByText("1. Run live-read preflight")).toBeInTheDocument();
+    expect(screen.getByText(/read any attention items before speaking/i)).toBeInTheDocument();
+    expect(screen.getByText("2. Open proof packet")).toBeInTheDocument();
+    expect(screen.getByText(/keep the caveat sheet attached/i)).toBeInTheDocument();
+    expect(screen.getByText("3. Rehearse caveats out loud")).toBeInTheDocument();
+    expect(screen.getByText(/screening evidence rather than production model validation/i)).toBeInTheDocument();
+    expect(screen.getByText("4. Open examples after the boundary")).toBeInTheDocument();
+    expect(screen.getByText(/instant activation, checkout, provisioning, or current runtime proof/i)).toBeInTheDocument();
     expect(screen.getByText("Buyer demo handoff")).toBeInTheDocument();
     expect(screen.getByText(/verify the proof packet first, then review supervised intake and examples before presenting/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open the buyer intake/i })).toHaveAttribute("href", "/request-access");

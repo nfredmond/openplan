@@ -36,7 +36,7 @@ import {
   NEVADA_COUNTY_SCREENING_GATE,
   nevadaCountyMaxApeRow,
 } from "@/lib/examples/nevada-county-2026-03-24";
-import { buyerDemoCommandCenterHandoff } from "@/lib/operations/release-proof-packet";
+import { buyerDemoCommandCenterHandoff, buyerDemoRehearsalChecklist } from "@/lib/operations/release-proof-packet";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -225,6 +225,31 @@ export default async function CommandCenterPage() {
       <div className="mt-6">
         <ReleaseProofPacketPanel />
       </div>
+
+      <section className="mt-6 module-section-surface">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <p className="module-section-label">Demo rehearsal checklist</p>
+            <h2 className="module-section-title">Operator readiness before the buyer sees anything</h2>
+            <p className="module-section-description">
+              A fast rehearsal strip for the supervised buyer walkthrough. It keeps the demo in proof-first order and gives the operator explicit stop conditions before reliance.
+            </p>
+          </div>
+          <StatusBadge tone="neutral">Read-only</StatusBadge>
+        </div>
+        <ol className="grid gap-3 px-4 pb-4 md:grid-cols-2 xl:grid-cols-4">
+          {buyerDemoRehearsalChecklist.map((item, index) => (
+            <li key={item.key} className="rounded-md border border-border bg-background/70 p-3 text-xs text-muted-foreground">
+              <p className="font-medium text-foreground">{index + 1}. {item.label}</p>
+              <p className="mt-2">{item.instruction}</p>
+              <p className="mt-2 border-t border-border/60 pt-2">
+                <span className="font-medium text-foreground">Stop if: </span>
+                {item.stopCondition}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <RecentActionActivity
         className="mt-6"
