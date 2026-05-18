@@ -23,6 +23,20 @@ const DEFAULT_REQUEST_ACCESS_HTML = [
   "</body>",
   "</html>",
 ].join("");
+const DEFAULT_EXAMPLES_HTML = [
+  "<!doctype html>",
+  "<html>",
+  "<body>",
+  "<main>",
+  "<h1>Evidence catalog: screening proof with caveats intact</h1>",
+  "<p>internal prototype only</p>",
+  "<p>237.62% Max APE</p>",
+  "<p>screening-grade only</p>",
+  "<p>not a guarantee of current runtime state</p>",
+  "</main>",
+  "</body>",
+  "</html>",
+].join("");
 const DEFAULT_CSP = [
   "default-src 'self'",
   "img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com https://*.supabase.co",
@@ -72,6 +86,17 @@ function responseForRequestAccess() {
   });
 }
 
+function responseForExamples() {
+  const status = readNumberEnv("OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_STATUS", 200);
+  return new Response(process.env.OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML ?? DEFAULT_EXAMPLES_HTML, {
+    status,
+    statusText: status === 200 ? "OK" : "Not Found",
+    headers: {
+      "Content-Type": process.env.OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_CONTENT_TYPE ?? "text/html; charset=utf-8",
+    },
+  });
+}
+
 function responseForBillingReadiness() {
   const status = readNumberEnv("OPENPLAN_PUBLIC_DEMO_MOCK_BILLING_READINESS_STATUS", 405);
   const headers = {
@@ -114,6 +139,7 @@ globalThis.fetch = async function mockPublicDemoPreflightFetch(url, init = {}) {
 
   if (parsed.pathname === "/api/health") return responseForHealth(method);
   if (parsed.pathname === "/request-access") return responseForRequestAccess();
+  if (parsed.pathname === "/examples") return responseForExamples();
   if (parsed.pathname === "/api/billing/readiness") return responseForBillingReadiness();
   if (parsed.pathname === "/") return responseForRoot(method);
 

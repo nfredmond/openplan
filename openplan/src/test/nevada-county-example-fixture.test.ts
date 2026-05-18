@@ -1,12 +1,14 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF,
   NEVADA_COUNTY_CAVEATS_VERBATIM,
   NEVADA_COUNTY_DEMO_STORY_BEATS,
   NEVADA_COUNTY_PROOF_DOC_PATH,
   NEVADA_COUNTY_RUN_CONTEXT,
   NEVADA_COUNTY_SCREENING_GATE,
   NEVADA_COUNTY_VALIDATION_METRICS,
+  buildNevadaCountyBuyerEvidenceBriefText,
   nevadaCountyMaxApeRow,
 } from "@/lib/examples/nevada-county-2026-03-24";
 
@@ -35,6 +37,24 @@ describe("Nevada County evidence fixture", () => {
     );
     expect(NEVADA_COUNTY_CAVEATS_VERBATIM).toContain("screening-grade only");
     expect(NEVADA_COUNTY_VALIDATION_METRICS.map((metric) => metric.label)).toContain("Spearman ρ (facility ranking)");
+  });
+
+  it("generates a copyable buyer evidence brief from the same caveated catalog", () => {
+    const brief = buildNevadaCountyBuyerEvidenceBriefText();
+
+    expect(NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF.posture).toBe(
+      "internal prototype only; screening-grade only; not production model validation",
+    );
+    expect(brief).toContain("Nevada County buyer evidence brief");
+    expect(brief).toContain("internal prototype only");
+    expect(brief).toContain("237.62% Max APE");
+    expect(brief).toContain("screening-grade only");
+    expect(brief).toContain("does not prove current runtime state");
+    expect(brief).toContain("Scope one supervised first workflow");
+
+    for (const forbiddenClaim of FORBIDDEN_BUYER_CLAIMS) {
+      expect(brief).not.toMatch(forbiddenClaim);
+    }
   });
 
   it("keeps demo story beats static, supervised, and buyer-safe", () => {

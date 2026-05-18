@@ -204,29 +204,43 @@ async function checkHealth(origin) {
   return "GET/HEAD /api/health return the shallow no-store app health contract";
 }
 
-async function checkRequestAccess(origin) {
-  const requestAccessPath = "/request-access";
-  const response = await request(pathUrl(origin, requestAccessPath), { method: "GET" });
-  assertStatus(response, "GET", requestAccessPath);
+async function assertHtmlRouteMarkers(origin, pathname, routeLabel, requiredMarkers) {
+  const response = await request(pathUrl(origin, pathname), { method: "GET" });
+  assertStatus(response, "GET", pathname);
 
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.includes("text/html")) {
-    fail("GET /request-access must return HTML", [`content-type=${contentType || "<missing>"}`]);
+    fail(`GET ${pathname} must return HTML`, [`content-type=${contentType || "<missing>"}`]);
   }
 
   const html = await response.text();
-  const requiredMarkers = [
-    "Start an OpenPlan self-hosting, managed-hosting, or implementation review.",
-    "request-access-form",
-    "No auto-send",
-  ];
   const missingMarkers = requiredMarkers.filter((marker) => !html.includes(marker));
 
   if (missingMarkers.length) {
-    fail("GET /request-access returned HTML without expected services-intake markers", missingMarkers);
+    fail(`GET ${pathname} returned HTML without expected ${routeLabel} markers`, missingMarkers);
   }
+}
+
+async function checkRequestAccess(origin) {
+  await assertHtmlRouteMarkers(origin, "/request-access", "services-intake", [
+    "Start an OpenPlan self-hosting, managed-hosting, or implementation review.",
+    "request-access-form",
+    "No auto-send",
+  ]);
 
   return "GET /request-access returns the services intake page without submitting a request";
+}
+
+async function checkExamples(origin) {
+  await assertHtmlRouteMarkers(origin, "/examples", "examples evidence-catalog", [
+    "Evidence catalog: screening proof with caveats intact",
+    "internal prototype only",
+    "237.62%",
+    "screening-grade only",
+    "not a guarantee of current runtime state",
+  ]);
+
+  return "GET /examples returns the evidence catalog with prototype, Max APE, and screening-grade caveats visible";
 }
 
 async function checkBillingReadinessPublicPosture(origin) {
@@ -413,6 +427,7 @@ export async function runPreflight(argv = process.argv.slice(2)) {
   } else {
     checks.push(await checkHealth(origin));
     checks.push(await checkRequestAccess(origin));
+    checks.push(await checkExamples(origin));
     checks.push(await checkBillingReadinessPublicPosture(origin));
     checks.push(await checkMapboxCsp(origin));
   }

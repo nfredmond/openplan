@@ -31,6 +31,7 @@ import {
 import {
   NEVADA_COUNTY_CAVEATS_VERBATIM,
   NEVADA_COUNTY_DEMO_STORY_BEATS,
+  NEVADA_COUNTY_FACILITY_RANKING,
   NEVADA_COUNTY_PROOF_DOC_PATH,
   NEVADA_COUNTY_RUN_CONTEXT,
   NEVADA_COUNTY_SCREENING_GATE,
@@ -305,6 +306,41 @@ export default async function CommandCenterPage() {
               ))}
             </div>
           </div>
+          <div className="mb-4 rounded-md border border-border/70 bg-background/70 p-3">
+            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Rural screening evidence table</p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  This table is sample screening evidence from the static Nevada County proof catalog. It shows why the run is useful for explanation but not valid for outward forecasting claims.
+                </p>
+              </div>
+              <span className="text-xs font-medium text-muted-foreground">Read-only sample</span>
+            </div>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full min-w-[38rem] text-left text-xs">
+                <thead className="border-b border-border/60 text-muted-foreground">
+                  <tr>
+                    <th scope="col" className="py-2 pr-4 font-medium">Station</th>
+                    <th scope="col" className="px-4 py-2 font-medium">Observed</th>
+                    <th scope="col" className="px-4 py-2 font-medium">Modeled daily PCE</th>
+                    <th scope="col" className="px-4 py-2 font-medium">Obs rank</th>
+                    <th scope="col" className="py-2 pl-4 font-medium">Mod rank</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/50 text-foreground">
+                  {NEVADA_COUNTY_FACILITY_RANKING.map((row) => (
+                    <tr key={row.station}>
+                      <th scope="row" className="py-2 pr-4 font-medium">{row.station}</th>
+                      <td className="px-4 py-2 tabular-nums">{row.observed}</td>
+                      <td className="px-4 py-2 tabular-nums">{row.modeled}</td>
+                      <td className="px-4 py-2 tabular-nums">{row.obsRank}</td>
+                      <td className="py-2 pl-4 tabular-nums">{row.modRank}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
             <div>
               <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Demo narration rail</p>
@@ -344,9 +380,14 @@ export default async function CommandCenterPage() {
             <span className="font-medium text-foreground">Proof note:</span>{" "}
             <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{NEVADA_COUNTY_PROOF_DOC_PATH}</code>
           </p>
-          <Link href="/examples" className="font-medium text-foreground underline-offset-4 hover:underline">
-            Open public evidence catalog
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link href="/examples" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Open public evidence catalog
+            </Link>
+            <Link href="/examples#nevada-county-buyer-evidence-brief" className="font-medium text-foreground underline-offset-4 hover:underline">
+              Open buyer evidence brief
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -365,16 +406,17 @@ export default async function CommandCenterPage() {
             const Icon = item.icon;
             return (
               <li key={item.href}>
-                <Link href={item.href} className="flex items-start gap-4 px-4 py-3 transition hover:bg-muted/40">
+                <Link href={item.href} className="flex flex-col gap-3 px-4 py-3 transition hover:bg-muted/40 sm:flex-row sm:items-start sm:gap-4">
                   <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
                     <Icon className="h-4 w-4" />
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground">{item.title}</p>
                     <p className="text-xs text-muted-foreground">{item.description}</p>
+                    <span className="mt-2 inline-flex text-xs text-muted-foreground sm:hidden">{item.meta}</span>
                   </div>
-                  <span className="whitespace-nowrap text-xs text-muted-foreground">{item.meta}</span>
-                  <ArrowRight className="mt-1 h-4 w-4 text-muted-foreground" />
+                  <span className="hidden whitespace-nowrap text-xs text-muted-foreground sm:inline">{item.meta}</span>
+                  <ArrowRight className="hidden mt-1 h-4 w-4 text-muted-foreground sm:block" aria-hidden="true" />
                 </Link>
               </li>
             );
@@ -447,7 +489,7 @@ export default async function CommandCenterPage() {
               <li key={domain.key}>
                 <Link
                   href={domain.href}
-                  className="flex items-center gap-4 px-4 py-3 transition hover:bg-muted/40"
+                  className="flex flex-col gap-3 px-4 py-3 transition hover:bg-muted/40 sm:flex-row sm:items-center sm:gap-4"
                 >
                   <span className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
                     <Icon className="h-4 w-4" />
@@ -456,8 +498,8 @@ export default async function CommandCenterPage() {
                     <p className="text-sm font-semibold text-foreground">{domain.title}</p>
                     <p className="text-xs text-muted-foreground">{domain.description}</p>
                   </div>
-                  <span className="text-xs text-muted-foreground">{domain.countLabel}</span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground sm:whitespace-nowrap">{domain.countLabel}</span>
+                  <ArrowRight className="hidden h-4 w-4 text-muted-foreground sm:block" aria-hidden="true" />
                 </Link>
               </li>
             );

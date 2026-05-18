@@ -20,6 +20,7 @@ function usage() {
     "  - Nevada County fixture buyer-safe guards (prototype gate, Max APE, story beats, forbidden claims)",
     "  - Buyer demo talk-track guard (90-second script boundary checks)",
     "  - ops:check-pilot-preflight with --skip-health --skip-vercel (local env/migration posture only)",
+    "  - with --live-reads only: ops:check-public-demo-preflight (/api/health, /request-access, /examples, protected billing posture, CSP)",
     "",
     "Options:",
     "  --live-reads    Also allow read-only production health + Vercel inspect via ops:check-pilot-preflight",
@@ -58,7 +59,7 @@ export function buildCommandPlan(options = {}) {
   const pilotArgs = ["run", "ops:check-pilot-preflight", "--"];
   if (!options.liveReads) pilotArgs.push("--skip-health", "--skip-vercel");
 
-  return [
+  const plan = [
     {
       label: "Sales proof / current buyer packet claim boundaries",
       command: "npm",
@@ -83,6 +84,16 @@ export function buildCommandPlan(options = {}) {
       allowSkippedLiveReadAttention: !options.liveReads,
     },
   ];
+
+  if (options.liveReads) {
+    plan.push({
+      label: "Public demo preflight with examples/readiness checks",
+      command: "npm",
+      args: ["run", "ops:check-public-demo-preflight"],
+    });
+  }
+
+  return plan;
 }
 
 function isOnlySkippedLiveReadAttention(output) {

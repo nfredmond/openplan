@@ -81,6 +81,7 @@ describe("public demo preflight script", () => {
     expect(result.stdout).toContain("OpenPlan public demo preflight passed");
     expect(result.stdout).toContain("GET/HEAD /api/health");
     expect(result.stdout).toContain("GET /request-access");
+    expect(result.stdout).toContain("GET /examples");
     expect(result.stdout).toContain("GET /api/billing/readiness is not publicly readable");
     expect(result.stdout).toContain("CSP includes Mapbox");
     expect(result.stdout).not.toContain("pk.test-public-token");
@@ -88,6 +89,7 @@ describe("public demo preflight script", () => {
       "GET /api/health",
       "HEAD /api/health",
       "GET /request-access",
+      "GET /examples",
       "GET /api/billing/readiness",
       "HEAD /",
     ]);
@@ -131,6 +133,20 @@ describe("public demo preflight script", () => {
       status: 1,
       stderr: expect.stringContaining("expected services-intake markers"),
       calls: expect.arrayContaining(["GET /request-access"]),
+    });
+  });
+
+  it("fails if the examples page loses evidence-catalog caveat markers", async () => {
+    await expect(
+      runPreflight({
+        env: {
+          OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML: "<!doctype html><html><body>Examples</body></html>",
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: 1,
+      stderr: expect.stringContaining("expected examples evidence-catalog markers"),
+      calls: expect.arrayContaining(["GET /examples"]),
     });
   });
 

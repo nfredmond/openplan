@@ -36,11 +36,19 @@ describe("ExamplesEvidenceCatalogPage", () => {
     expect(screen.getByText(/preserve the Max APE caveat/i)).toBeInTheDocument();
     expect(screen.getByText(/supervised access or service-lane review/i)).toBeInTheDocument();
     expect(screen.getByText(/Signed-in operators can return to the internal command surface/i)).toBeInTheDocument();
+    expect(screen.getByText(/Copyable buyer evidence brief/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/Nevada County buyer evidence brief/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Static screening-run snapshot for supervised OpenPlan conversations/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/internal prototype only; screening-grade only; not production model validation/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/237\.62% Max APE/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/does not prove current runtime state, calibrated forecasts/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Scope one supervised first workflow: geography, data owner, review owner, hosting lane/i).length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: /Open operator Command Center/i })).toHaveAttribute(
       "href",
       "/command-center",
     );
     expect(document.body).not.toHaveTextContent(/validated forecast/i);
+    expect(document.body).not.toHaveTextContent(/live run/i);
     expect(document.body).not.toHaveTextContent(/production data seeded/i);
     expect(document.body).not.toHaveTextContent(/automatic workspace provisioning/i);
     expect(document.body).not.toHaveTextContent(/instant customer activation/i);

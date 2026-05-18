@@ -1,7 +1,8 @@
 # OpenPlan buyer-demo preflight proof
 
-**Date:** 2026-05-17  
+**Date:** 2026-05-17
 **Scope:** no-approval, read-only/local-first buyer-demo readiness bundle.
+**Current checkpoint:** updated through `35bfa58e`; the latest change tightens checklist stop-condition copy only and does not expand functional proof.
 
 ## Command
 
@@ -16,7 +17,7 @@ Default behavior is intentionally local-first. The bundle runs:
 3. `npm test -- --run src/test/buyer-demo-talk-track.test.ts` — guards the 90-second spoken-script boundary so operator copy cannot drift into overclaiming.
 4. `ops:check-pilot-preflight -- --skip-health --skip-vercel` — checks local env and migration posture while intentionally skipping production health and Vercel reads.
 
-For the final operator rehearsal, allow read-only external checks explicitly:
+For the final operator rehearsal, allow read-only external checks explicitly. In live-read mode the bundle also runs `ops:check-public-demo-preflight`, which verifies `/api/health`, `/request-access`, `/examples`, protected billing-readiness posture, and public CSP/Mapbox posture without secrets or writes:
 
 ```bash
 npm run ops:check-buyer-demo-preflight -- --live-reads
@@ -58,6 +59,7 @@ Coverage now verifies:
 - Command Center surfaces the Nevada County caveats operators should say out loud
 - Command Center surfaces the 90-second opening script as operator guidance, not new buyer functionality
 - the buyer-demo preflight command plan includes the Nevada County fixture guard and talk-track guard
+- live-read buyer-demo preflight includes the public demo preflight so `/examples` is checked alongside request access
 - default local-first command plan
 - opt-in live-read command plan
 - environment flag behavior

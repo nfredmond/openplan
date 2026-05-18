@@ -74,6 +74,23 @@ describe("current buyer/demo proof packet", () => {
       expect(packet, `packet should prohibit ${prohibitedClaim}`).toContain(prohibitedClaim);
     }
   });
+  it("keeps latest buyer-demo proof-chain currency guarded", () => {
+    const packet = read("docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md");
+    const salesReadme = read("docs/sales/README.md");
+    const evidenceNote = read("docs/sales/2026-05-17-openplan-buyer-demo-evidence-note.md");
+    const preflightProof = read("openplan/docs/ops/2026-05-17-buyer-demo-preflight-proof.md");
+
+    for (const artifact of [packet, salesReadme, evidenceNote, preflightProof]) {
+      expect(artifact).toContain("35bfa58e");
+    }
+
+    expect(packet).toContain("109f18d2");
+    expect(packet).toContain("a962072d");
+    expect(packet).toContain("fc5a1797");
+    expect(packet).not.toContain("reviewed through commit `fc5a1797`");
+    expect(salesReadme).toContain("operator-surface/script/checklist guardrails, not new buyer functionality");
+  });
+
   it("exposes a read-only buyer-demo preflight bundle for supervised demos", () => {
     const packageJson = JSON.parse(readFileSync(appPackagePath, "utf8"));
     const script = readFileSync(buyerDemoPreflightScriptPath, "utf8");
@@ -85,6 +102,7 @@ describe("current buyer/demo proof packet", () => {
     expect(script).toContain("src/test/nevada-county-example-fixture.test.ts");
     expect(script).toContain("src/test/buyer-demo-talk-track.test.ts");
     expect(script).toContain("ops:check-pilot-preflight");
+    expect(script).toContain("ops:check-public-demo-preflight");
     expect(script).toContain("--skip-health");
     expect(script).toContain("--skip-vercel");
     expect(script).toContain("Live external reads are opt-in only");

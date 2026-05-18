@@ -127,3 +127,38 @@ export function nevadaCountyMaxApeRow(): NevadaCountyValidationMetric {
 export function isValidatedNevadaCountyRun(runName: string | null | undefined): boolean {
   return typeof runName === "string" && runName === NEVADA_COUNTY_RUN_NAME;
 }
+
+export const NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF = {
+  title: "Nevada County buyer evidence brief",
+  subtitle: "Static screening-run snapshot for supervised OpenPlan conversations",
+  posture: "internal prototype only; screening-grade only; not production model validation",
+  buyerUse:
+    "Use this brief to explain how OpenPlan keeps evidence, caveats, and next-step scoping together before buyer reliance.",
+  notProofOf:
+    "This brief does not prove current runtime state, calibrated forecasts, production data setup, account/workspace creation, immediate customer activation, payment flow, or legal/compliance determination.",
+  nextStep:
+    "Scope one supervised first workflow: geography, data owner, review owner, hosting lane, and evidence standard.",
+} as const;
+
+export function buildNevadaCountyBuyerEvidenceBriefText(): string {
+  const maxApe = nevadaCountyMaxApeRow();
+  return [
+    NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF.title,
+    NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF.subtitle,
+    "",
+    `Run: ${NEVADA_COUNTY_RUN_CONTEXT.runId}`,
+    `Engine: ${NEVADA_COUNTY_RUN_CONTEXT.engine}`,
+    `Counts source: ${NEVADA_COUNTY_RUN_CONTEXT.countsSource}`,
+    `Status: ${NEVADA_COUNTY_SCREENING_GATE.statusLabel}`,
+    `Gate reason: ${NEVADA_COUNTY_SCREENING_GATE.reason}`,
+    `Key metric: ${maxApe.value} ${maxApe.label} — ${maxApe.note}`,
+    "",
+    "Caveats to keep attached:",
+    ...NEVADA_COUNTY_CAVEATS_VERBATIM.map((caveat) => `- ${caveat}`),
+    "",
+    `Buyer use: ${NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF.buyerUse}`,
+    `Not proof of: ${NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF.notProofOf}`,
+    `Next step: ${NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF.nextStep}`,
+    `Proof doc: ${NEVADA_COUNTY_PROOF_DOC_PATH}`,
+  ].join("\n");
+}

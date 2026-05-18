@@ -41,11 +41,17 @@ describe("buyer demo preflight script", () => {
 
   it("enables opt-in read-only live health and deployment reads", () => {
     expect(parseArgs(["--live-reads"])).toMatchObject({ liveReads: true });
-    expect(buildCommandPlan({ liveReads: true })[3]).toMatchObject({
+    const plan = buildCommandPlan({ liveReads: true });
+    expect(plan[3]).toMatchObject({
       label: "Pilot preflight posture with opt-in read-only live health/deployment reads",
       command: "npm",
       args: ["run", "ops:check-pilot-preflight", "--"],
       allowSkippedLiveReadAttention: false,
+    });
+    expect(plan[4]).toMatchObject({
+      label: "Public demo preflight with examples/readiness checks",
+      command: "npm",
+      args: ["run", "ops:check-public-demo-preflight"],
     });
   });
 

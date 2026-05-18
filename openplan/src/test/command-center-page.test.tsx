@@ -75,6 +75,37 @@ vi.mock("@/components/workspaces/workspace-membership-required", () => ({
 import CommandCenterPage from "@/app/(app)/command-center/page";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
+
+const riskyCommandCenterClaimFragments = [
+  /self-serve launch/i,
+  /certified forecast/i,
+  /automatic activation path/i,
+  /completed compliance determination/i,
+  /run checkout/i,
+  /instant activation/i,
+  /self-serve activation/i,
+] as const;
+
+const allowedRiskContextPattern = /do not say|does not|stop if|no production writes|not production|not a broader|not new|not instant|supervised|boundary|caveat|sample context/i;
+
+function expectRiskyCommandCenterClaimsOnlyInWarningContext() {
+  const statements = (document.body.textContent ?? "")
+    .split(/[\n.]/)
+    .map((statement) => statement.trim())
+    .filter(Boolean);
+
+  for (const pattern of riskyCommandCenterClaimFragments) {
+    const matches = statements.filter((statement) => pattern.test(statement));
+    expect(matches.length, `${pattern} should remain present as warning/boundary copy`).toBeGreaterThan(0);
+    for (const statement of matches) {
+      expect(
+        allowedRiskContextPattern.test(statement),
+        `Risky claim appears without warning context: ${statement}`,
+      ).toBe(true);
+    }
+  }
+}
+
 const summary: WorkspaceOperationsSummary = {
   posture: "attention",
   headline: "Run release review on current packets",
@@ -207,6 +238,18 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText(/prevents outward forecasting language/i)).toBeInTheDocument();
     expect(screen.getByText("Scope the first supervised workflow")).toBeInTheDocument();
     expect(screen.getByText(/what geography, data owner, review path, and hosting model/i)).toBeInTheDocument();
+    expect(screen.getByText("Rural screening evidence table")).toBeInTheDocument();
+    expect(screen.getByText(/sample screening evidence from the static Nevada County proof catalog/i)).toBeInTheDocument();
+    expect(screen.getByText(/useful for explanation but not valid for outward forecasting claims/i)).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Station" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Observed" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Modeled daily PCE" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Obs rank" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Mod rank" })).toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "SR 20 at Jct Rte 49" })).toBeInTheDocument();
+    expect(screen.getByRole("rowheader", { name: "SR 174 at Brunswick Rd" })).toBeInTheDocument();
+    expect(screen.getByText("73,666")).toBeInTheDocument();
+    expect(screen.getByText("34,775")).toBeInTheDocument();
     expect(screen.getByText("Demo narration rail")).toBeInTheDocument();
     expect(screen.getByText("Start with the proof boundary")).toBeInTheDocument();
     expect(screen.getByText(/does not alter the buyer workspace or create operational records/i)).toBeInTheDocument();
@@ -268,6 +311,11 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText("Stop rule:")).toBeInTheDocument();
     expect(screen.getByText(/Stop the demo if live-read preflight reports unresolved attention/i)).toBeInTheDocument();
     expect(screen.getByText(/current production health and Vercel read posture/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open buyer evidence brief/i })).toHaveAttribute(
+      "href",
+      "/examples#nevada-county-buyer-evidence-brief",
+    );
+    expectRiskyCommandCenterClaimsOnlyInWarningContext();
     expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
     expect(actionOrderMock).toHaveBeenCalledWith("completed_at", { ascending: false });
     expect(actionLimitMock).toHaveBeenCalledWith(8);

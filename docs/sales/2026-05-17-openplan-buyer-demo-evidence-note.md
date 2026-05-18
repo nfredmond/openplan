@@ -1,8 +1,8 @@
 # OpenPlan Buyer Demo Evidence Note
 
-**Date:** 2026-05-17 16:26–19:54 PDT  
-**Production alias:** `https://openplan-natford.vercel.app`  
-**Latest operator-surface checkpoint checked:** `fc5a17973c3b`  
+**Date:** 2026-05-17 16:26–19:54 PDT
+**Production alias:** `https://openplan-natford.vercel.app`
+**Latest operator-surface checkpoint checked:** `35bfa58e`
 **Evidence posture:** Read-only buyer-demo rehearsal and checkpoint continuation; no production writes, provisioning, schema changes, checkout/spend actions, outbound email, or secret-value printing.
 
 ## Executive status
@@ -31,7 +31,7 @@ Original timed-rehearsal result:
 Later checkpoint health after operator-surface alignment:
 
 ```json
-{"status":"ok","service":"openplan","deployment":{"commit":"fc5a17973c3b"},"checks":{"app":"ok","database":"not_checked","billing":"not_checked"}}
+{"status":"ok","service":"openplan","deployment":{"commit":"35bfa58e536f"},"checks":{"app":"ok","database":"not_checked","billing":"not_checked"}}
 ```
 
 The later checkpoint confirms deployment currency for script/handoff surfacing only; it is not a substitute for rerunning workflow-specific smoke.
@@ -57,7 +57,7 @@ The preflight confirmed:
 
 ## Timed buyer-demo rehearsal path
 
-Browser profile: authenticated QA workspace.  
+Browser profile: authenticated QA workspace.
 Account/workspace label visible in app shell: `openplan-proof-qa-20260406204637`.
 
 | Step | URL | Observed load duration | Result |
@@ -125,6 +125,7 @@ Confirmed in production:
 
 - page title: `Evidence catalog: screening proof with caveats intact · OpenPlan`;
 - examples page says `One completed run, verbatim`;
+- examples page now includes a copyable Nevada County buyer evidence brief anchored to the same internal-prototype, screening-grade, Max APE caveats;
 - old phrase `One live run, verbatim` is absent;
 - page states it is `not a guarantee of current runtime state`;
 - supervised access path remains visible;
@@ -146,6 +147,9 @@ Checkpoint continuation on 2026-05-17 added two buyer-safe narration aids after 
 - `eb722e86 test: include nevada county guards in buyer preflight` — folds the fixture guard into `npm run ops:check-buyer-demo-preflight` so buyer-demo preflight now checks the shared sample story rail directly.
 - `0e91d840 docs: add buyer demo talk track` — adds the 90-second buyer-demo talk track as a guarded sales artifact.
 - `fc5a1797 feat: surface buyer demo opening script` — surfaces the 90-second opening script in Command Center as operator guidance; this is handoff/script alignment, not new product capability.
+- `109f18d2 test: add talk track guard to buyer preflight` — adds the talk-track boundary guard to the buyer-demo preflight bundle.
+- `a962072d feat: add buyer demo rehearsal checklist` — adds the Command Center rehearsal checklist with read-only proof-first steps and explicit stop conditions.
+- `35bfa58e fix: tighten demo checklist stop copy` — tightens checklist stop-condition wording only; it is operator rehearsal polish, not new product capability.
 
 Minor operator note: the demo workspace has a clean proof/readiness surface, but the signed-in Command Center still shows mostly zero operational counts. That is acceptable for a proof-first buyer conversation, but the next product substance lane should make a demo workspace carry a realistic rural RTPA/county story so operators are not presenting an empty queue after the proof boundary is established.
 
