@@ -242,6 +242,13 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText("Final pre-demo check")).toBeInTheDocument();
     expect(screen.getByText("npm run ops:check-buyer-demo-preflight -- --live-reads")).toBeInTheDocument();
     expect(screen.getByText("docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md")).toBeInTheDocument();
+    expect(screen.getByText("90-second opening script")).toBeInTheDocument();
+    expect(screen.getByText(/Apache-2.0 open-source planning software/i)).toBeInTheDocument();
+    expect(screen.getByText(/the claim, evidence, and caveat stay together/i)).toBeInTheDocument();
+    expect(screen.getByText(/the 237\.62% Max APE means we treat it as screening evidence/i)).toBeInTheDocument();
+    expect(screen.getByText(/not production model validation/i)).toBeInTheDocument();
+    expect(screen.getByText(/scope one supervised first workflow: geography, data owner, review owner, hosting lane/i)).toBeInTheDocument();
+    expect(screen.getByText("docs/sales/2026-05-17-openplan-90-second-buyer-demo-talk-track.md")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /Buyer demo proof sequence/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /1\. Readiness packet/i })).toHaveAttribute("href", "/admin/pilot-readiness");
     expect(screen.getByRole("link", { name: /2\. Request access/i })).toHaveAttribute("href", "/request-access");

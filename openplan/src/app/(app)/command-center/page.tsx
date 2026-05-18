@@ -182,6 +182,13 @@ export default async function CommandCenterPage() {
       "Do not say: this is a self-serve launch, a certified forecast, an automatic activation path, or a completed compliance determination.",
   };
 
+  const buyerDemoOpeningScript = [
+    "OpenPlan is Apache-2.0 open-source planning software with Nat Ford implementation, hosting, onboarding, support, and planning services around it.",
+    "This walkthrough is proof-first: the claim, evidence, and caveat stay together before anyone relies on an output.",
+    "For the Nevada County screening example, the run remains internal prototype only; the 237.62% Max APE means we treat it as screening evidence, not production model validation.",
+    "If this is useful, the next step is to scope one supervised first workflow: geography, data owner, review owner, hosting lane, and evidence standard.",
+  ];
+
   return (
     <section className="module-page">
       <header className="module-header-grid">
@@ -358,6 +365,20 @@ export default async function CommandCenterPage() {
           <p className="mt-2">
             Proof packet: <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{buyerDemoCommandCenterHandoff.currentProofPacket}</code>
           </p>
+          <div className="mt-3 rounded-md border border-border bg-background/70 p-3">
+            <p className="font-medium text-foreground">90-second opening script</p>
+            <ol className="mt-2 space-y-1.5">
+              {buyerDemoOpeningScript.map((line, index) => (
+                <li key={line} className="flex gap-2">
+                  <span className="font-semibold text-foreground">{index + 1}.</span>
+                  <span>{line}</span>
+                </li>
+              ))}
+            </ol>
+            <p className="mt-2">
+              Script source: <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">docs/sales/2026-05-17-openplan-90-second-buyer-demo-talk-track.md</code>
+            </p>
+          </div>
         </div>
         <nav aria-label="Buyer demo proof sequence" className="border-t border-border/60 px-4 py-3">
           <p className="text-xs font-medium text-foreground">Proof sequence before buyer reliance</p>
