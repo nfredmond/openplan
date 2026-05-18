@@ -35,6 +35,11 @@ describe("ExamplesEvidenceCatalogPage", () => {
     expect(screen.getByText(/name the proof boundary, show the internal prototype gate/i)).toBeInTheDocument();
     expect(screen.getByText(/preserve the Max APE caveat/i)).toBeInTheDocument();
     expect(screen.getByText(/supervised access or service-lane review/i)).toBeInTheDocument();
+    expect(screen.getByText(/Signed-in operators can return to the internal command surface/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Open operator Command Center/i })).toHaveAttribute(
+      "href",
+      "/command-center",
+    );
     expect(document.body).not.toHaveTextContent(/validated forecast/i);
     expect(document.body).not.toHaveTextContent(/production data seeded/i);
     expect(document.body).not.toHaveTextContent(/automatic workspace provisioning/i);

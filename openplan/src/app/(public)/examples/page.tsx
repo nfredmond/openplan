@@ -330,6 +330,13 @@ export default function ExamplesEvidenceCatalogPage() {
                 name the proof boundary, show the internal prototype gate, preserve the Max APE caveat,
                 then route the next step to supervised access or service-lane review.
               </p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Signed-in operators can return to the internal command surface; public visitors should use
+                the supervised request path instead.
+              </p>
+              <Link href="/command-center" className="public-secondary-link mt-3 inline-flex">
+                Open operator Command Center
+              </Link>
             </div>
           </div>
         </article>
