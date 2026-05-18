@@ -204,7 +204,7 @@ async function checkHealth(origin) {
   return "GET/HEAD /api/health return the shallow no-store app health contract";
 }
 
-async function assertHtmlRouteMarkers(origin, pathname, routeLabel, requiredMarkers) {
+async function assertHtmlRouteMarkers(origin, pathname, routeLabel, requiredMarkers, forbiddenMarkers = []) {
   const response = await request(pathUrl(origin, pathname), { method: "GET" });
   assertStatus(response, "GET", pathname);
 
@@ -218,6 +218,11 @@ async function assertHtmlRouteMarkers(origin, pathname, routeLabel, requiredMark
 
   if (missingMarkers.length) {
     fail(`GET ${pathname} returned HTML without expected ${routeLabel} markers`, missingMarkers);
+  }
+
+  const forbiddenMatches = forbiddenMarkers.filter((marker) => html.includes(marker));
+  if (forbiddenMatches.length) {
+    fail(`GET ${pathname} returned HTML with forbidden ${routeLabel} copy`, forbiddenMatches);
   }
 }
 
@@ -238,9 +243,19 @@ async function checkExamples(origin) {
     "237.62%",
     "screening-grade only",
     "not a guarantee of current runtime state",
+    "nevada-county-buyer-evidence-brief",
+    "Nevada County buyer evidence brief",
+    "does not prove current runtime state",
+    "Scope one supervised first workflow",
+  ], [
+    "One live run, verbatim",
+    "validated forecast",
+    "production data seeded",
+    "automatic workspace provisioning",
+    "instant customer activation",
   ]);
 
-  return "GET /examples returns the evidence catalog with prototype, Max APE, and screening-grade caveats visible";
+  return "GET /examples returns the evidence catalog, buyer evidence brief, and screening-grade caveats without stale overclaim copy";
 }
 
 async function checkBillingReadinessPublicPosture(origin) {

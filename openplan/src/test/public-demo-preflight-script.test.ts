@@ -82,6 +82,7 @@ describe("public demo preflight script", () => {
     expect(result.stdout).toContain("GET/HEAD /api/health");
     expect(result.stdout).toContain("GET /request-access");
     expect(result.stdout).toContain("GET /examples");
+    expect(result.stdout).toContain("buyer evidence brief");
     expect(result.stdout).toContain("GET /api/billing/readiness is not publicly readable");
     expect(result.stdout).toContain("CSP includes Mapbox");
     expect(result.stdout).not.toContain("pk.test-public-token");
@@ -146,6 +147,58 @@ describe("public demo preflight script", () => {
     ).rejects.toMatchObject({
       status: 1,
       stderr: expect.stringContaining("expected examples evidence-catalog markers"),
+      calls: expect.arrayContaining(["GET /examples"]),
+    });
+  });
+
+  it("fails if the examples page loses the buyer evidence brief markers", async () => {
+    await expect(
+      runPreflight({
+        env: {
+          OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML: [
+            "<!doctype html>",
+            "<html><body>",
+            "<h1>Evidence catalog: screening proof with caveats intact</h1>",
+            "<p>internal prototype only</p>",
+            "<p>237.62%</p>",
+            "<p>screening-grade only</p>",
+            "<p>not a guarantee of current runtime state</p>",
+            "</body></html>",
+          ].join(""),
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: 1,
+      stderr: expect.stringContaining("nevada-county-buyer-evidence-brief"),
+      calls: expect.arrayContaining(["GET /examples"]),
+    });
+  });
+
+  it("fails if the examples page regresses to stale live-run or overclaim copy", async () => {
+    await expect(
+      runPreflight({
+        env: {
+          OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML: [
+            "<!doctype html>",
+            "<html><body>",
+            "<h1>Evidence catalog: screening proof with caveats intact</h1>",
+            "<p>One live run, verbatim</p>",
+            "<p>internal prototype only</p>",
+            "<p>237.62%</p>",
+            "<p>screening-grade only</p>",
+            "<section id=\"nevada-county-buyer-evidence-brief\">",
+            "<h2>Nevada County buyer evidence brief</h2>",
+            "<p>does not prove current runtime state</p>",
+            "<p>Scope one supervised first workflow</p>",
+            "</section>",
+            "<p>not a guarantee of current runtime state</p>",
+            "</body></html>",
+          ].join(""),
+        },
+      }),
+    ).rejects.toMatchObject({
+      status: 1,
+      stderr: expect.stringContaining("forbidden examples evidence-catalog copy"),
       calls: expect.arrayContaining(["GET /examples"]),
     });
   });
