@@ -219,6 +219,12 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText("What to say / what not to say")).toBeInTheDocument();
     expect(screen.getByText(/supervised, proof-first planning workflow/i)).toBeInTheDocument();
     expect(screen.getByText(/not say: this is a self-serve launch/i)).toBeInTheDocument();
+    expect(screen.getByText("Caveats to say out loud")).toBeInTheDocument();
+    expect(screen.getByText(/screening-grade only/i)).toBeInTheDocument();
+    expect(screen.getByText(/OSM default speeds\/capacities/i)).toBeInTheDocument();
+    expect(screen.getByText(/tract fragments are not calibrated TAZs/i)).toBeInTheDocument();
+    expect(screen.getByText(/jobs are estimated from tract-scale demographic proxies/i)).toBeInTheDocument();
+    expect(screen.getByText(/external gateways are inferred from major boundary-crossing roads/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open public evidence catalog/i })).toHaveAttribute("href", "/examples");
     expect(document.body).not.toHaveTextContent(/validated forecast/i);
     expect(document.body).not.toHaveTextContent(/live run/i);

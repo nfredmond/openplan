@@ -29,6 +29,7 @@ import {
   type RecentActionActivitySupabaseLike,
 } from "@/lib/operations/action-activity";
 import {
+  NEVADA_COUNTY_CAVEATS_VERBATIM,
   NEVADA_COUNTY_DEMO_STORY_BEATS,
   NEVADA_COUNTY_PROOF_DOC_PATH,
   NEVADA_COUNTY_RUN_CONTEXT,
@@ -289,10 +290,20 @@ export default async function CommandCenterPage() {
                 ))}
               </ol>
             </div>
-            <div className="rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground">What to say / what not to say</p>
-              <p className="mt-2">{sampleDemoTalkTrack.say}</p>
-              <p className="mt-2">{sampleDemoTalkTrack.avoid}</p>
+            <div className="space-y-3">
+              <div className="rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground">What to say / what not to say</p>
+                <p className="mt-2">{sampleDemoTalkTrack.say}</p>
+                <p className="mt-2">{sampleDemoTalkTrack.avoid}</p>
+              </div>
+              <div className="rounded-md border border-border bg-background/70 p-3 text-xs text-muted-foreground">
+                <p className="font-medium text-foreground">Caveats to say out loud</p>
+                <ul className="mt-2 space-y-1">
+                  {NEVADA_COUNTY_CAVEATS_VERBATIM.map((caveat) => (
+                    <li key={caveat}>• {caveat}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </div>
         </div>
