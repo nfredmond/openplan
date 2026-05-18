@@ -1,8 +1,8 @@
 # OpenPlan Buyer Demo Evidence Note
 
-**Date:** 2026-05-17 16:26–16:58 PDT  
+**Date:** 2026-05-17 16:26–17:11 PDT  
 **Production alias:** `https://openplan-natford.vercel.app`  
-**Deployed commit checked:** `5ae215034b4d`  
+**Deployed commit checked:** `eb722e86e7fb`  
 **Evidence posture:** Read-only buyer-demo rehearsal and checkpoint continuation; no production writes, provisioning, schema changes, checkout/spend actions, outbound email, or secret-value printing.
 
 ## Executive status
@@ -131,6 +131,9 @@ Checkpoint continuation on 2026-05-17 added two buyer-safe narration aids after 
 - `a73cee34 feat: add command center demo story rail` — adds the internal Command Center narration rail and guard tests against overclaiming phrases.
 - `d03cf77f feat: add examples command center handoff cue` — adds the public Examples handoff cue and guard tests for the same buyer-safe boundary.
 - `5ae21503 feat: add nevada county demo story beats` — adds shared static story beats for the Nevada County sample cue so an empty QA workspace can still narrate geography, evidence stress, and supervised-service next steps without seeding production data.
+- `25212f07 test: guard nevada county demo fixture claims` — adds direct regression coverage for the shared fixture's internal-prototype gate, Max APE caveat, proof path, story-beat labels, and forbidden buyer claims.
+- `8a3c441b feat: link examples back to command center` — gives signed-in operators a clearly internal return path from `/examples` to `/command-center`, while public visitors remain pointed to supervised access.
+- `eb722e86 test: include nevada county guards in buyer preflight` — folds the fixture guard into `npm run ops:check-buyer-demo-preflight` so buyer-demo preflight now checks the shared sample story rail directly.
 
 Minor operator note: the demo workspace has a clean proof/readiness surface, but the signed-in Command Center still shows mostly zero operational counts. That is acceptable for a proof-first buyer conversation, but the next product substance lane should make a demo workspace carry a realistic rural RTPA/county story so operators are not presenting an empty queue after the proof boundary is established.
 
