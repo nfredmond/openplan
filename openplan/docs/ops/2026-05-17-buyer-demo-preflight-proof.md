@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-17
 **Scope:** no-approval, read-only/local-first buyer-demo readiness bundle.
-**Current checkpoint:** updated through `35bfa58e`; the latest change tightens checklist stop-condition copy only and does not expand functional proof.
+**Current checkpoint:** operator-surface guardrails are updated through `35bfa58e`; proof-package synchronization is updated through `020eda85`. The latest proof-package changes index and refresh buyer-demo artifacts only and do not expand functional proof.
 
 ## Command
 
@@ -70,3 +70,5 @@ Coverage now verifies:
 ## Caveat
 
 This command proves demo-readiness guardrails and preflight posture. It does not replace a human walkthrough of the live buyer script, nor does the default local-first mode prove current production deployment health. Use `--live-reads` for the final pre-demo operator check.
+
+Follow-on proof-package commits `4af88ee1`, `dd2325ac`, `35d9b970`, `ad30a6f8`, and `020eda85` keep the public Examples brief, Admin Pilot Readiness proof index, generated static packet artifacts, and README currency aligned with this caveated buyer-demo lane. Treat that synchronization as operator packet discipline, not buyer workflow/functionality proof.

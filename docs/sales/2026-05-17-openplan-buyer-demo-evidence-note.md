@@ -2,7 +2,7 @@
 
 **Date:** 2026-05-17 16:26–19:54 PDT
 **Production alias:** `https://openplan-natford.vercel.app`
-**Latest operator-surface checkpoint checked:** `35bfa58e`
+**Latest operator-surface/proof-package checkpoint checked:** `020eda85`
 **Evidence posture:** Read-only buyer-demo rehearsal and checkpoint continuation; no production writes, provisioning, schema changes, checkout/spend actions, outbound email, or secret-value printing.
 
 ## Executive status
@@ -35,6 +35,14 @@ Later checkpoint health after operator-surface alignment:
 ```
 
 The later checkpoint confirms deployment currency for script/handoff surfacing only; it is not a substitute for rerunning workflow-specific smoke.
+
+Latest proof-package checkpoint after artifact-index/static-packet synchronization:
+
+```json
+{"status":"ok","service":"openplan","deployment":{"commit":"020eda850190"},"checks":{"app":"ok","database":"not_checked","billing":"not_checked"}}
+```
+
+This latest checkpoint confirms deployed documentation/proof-package currency only. It does not convert generated packets, README updates, or claim-boundary tests into buyer workflow/functionality proof.
 
 ### Buyer-demo preflight
 
@@ -150,6 +158,11 @@ Checkpoint continuation on 2026-05-17 added two buyer-safe narration aids after 
 - `109f18d2 test: add talk track guard to buyer preflight` — adds the talk-track boundary guard to the buyer-demo preflight bundle.
 - `a962072d feat: add buyer demo rehearsal checklist` — adds the Command Center rehearsal checklist with read-only proof-first steps and explicit stop conditions.
 - `35bfa58e fix: tighten demo checklist stop copy` — tightens checklist stop-condition wording only; it is operator rehearsal polish, not new product capability.
+- `4af88ee1 test: guard public examples buyer evidence brief` — guards the public Examples buyer-evidence caveats and copyable brief boundary.
+- `dd2325ac feat: index buyer demo proof artifacts` — indexes the current buyer-demo proof packet and Nevada County evidence brief in Admin Pilot Readiness.
+- `35d9b970 docs: refresh pilot readiness static packet` — regenerates the static Admin Pilot Readiness packet artifacts after the proof-index source changed.
+- `ad30a6f8 feat: sync buyer demo proof lanes` — keeps May 17 buyer-demo artifacts in the generated proof packet source and packet drift guard.
+- `020eda85 docs: clarify buyer demo proof sync currency` — clarifies README/test currency for proof-package synchronization. This is package discipline, not new buyer functionality.
 
 Minor operator note: the demo workspace has a clean proof/readiness surface, but the signed-in Command Center still shows mostly zero operational counts. That is acceptable for a proof-first buyer conversation, but the next product substance lane should make a demo workspace carry a realistic rural RTPA/county story so operators are not presenting an empty queue after the proof boundary is established.
 

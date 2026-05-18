@@ -82,11 +82,18 @@ describe("current buyer/demo proof packet", () => {
 
     for (const artifact of [packet, salesReadme, evidenceNote, preflightProof]) {
       expect(artifact).toContain("35bfa58e");
+      expect(artifact).toContain("4af88ee1");
+      expect(artifact).toContain("dd2325ac");
+      expect(artifact).toContain("35d9b970");
+      expect(artifact).toContain("ad30a6f8");
+      expect(artifact).toContain("020eda85");
     }
 
     expect(packet).toContain("109f18d2");
     expect(packet).toContain("a962072d");
     expect(packet).toContain("fc5a1797");
+    expect(packet).toContain("proof-package synchronized through commit `020eda85`");
+    expect(packet).toContain("These are not new buyer functionality, production workflow smoke");
     expect(packet).not.toContain("reviewed through commit `fc5a1797`");
     expect(salesReadme).toContain("4af88ee1");
     expect(salesReadme).toContain("dd2325ac");
