@@ -82,6 +82,8 @@ describe("current buyer/demo proof packet", () => {
       "node scripts/ops/check-buyer-demo-preflight.mjs",
     );
     expect(script).toContain("test:sales-proof-claim-boundaries");
+    expect(script).toContain("src/test/nevada-county-example-fixture.test.ts");
+    expect(script).toContain("src/test/buyer-demo-talk-track.test.ts");
     expect(script).toContain("ops:check-pilot-preflight");
     expect(script).toContain("--skip-health");
     expect(script).toContain("--skip-vercel");

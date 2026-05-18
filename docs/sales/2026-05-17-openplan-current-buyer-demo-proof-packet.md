@@ -17,7 +17,7 @@ This packet consolidates the latest May 17 proof on top of the May 1 / May 10 re
 
 ## Evidence Currency Note
 
-This packet has been documentation-reviewed through commit `e870670` (`docs: sync OpenPlan proof entry points`). The formal shallow production-health evidence artifact in this packet shows the canonical production alias reporting deployed commit `44457d6`; a later ad hoc live health check during the final audit showed the alias reporting documentation-only commit `c8a9afa`. Treat both as shallow deployment/health currency only. The later `2a4a7c5`, `c8a9afa`, and `e870670` slices are TypeScript/docs consolidation and claim-boundary cleanup, not new buyer functionality, production smoke, or a substitute for workflow-specific smoke tests.
+This packet has been buyer-demo-chain reviewed through commit `fc5a1797` (`feat: surface buyer demo opening script`). The original May 17 formal shallow production-health evidence artifact in this packet shows the canonical production alias reporting deployed commit `44457d6`; later checkpoint health checks confirmed subsequent documentation/operator-surface commits through `fc5a1797`. Treat these later checks as shallow deployment/script-currency only. The post-rehearsal buyer-demo commits (`0e91d840` and `fc5a1797`) add talk-track and Command Center handoff surfacing; they are not new buyer functionality, production workflow smoke, or a substitute for rerunning workflow-specific smoke tests.
 
 ## What Is Proven In Today's Slice
 
@@ -29,6 +29,7 @@ This packet has been documentation-reviewed through commit `e870670` (`docs: syn
 | Mobile request-access polish | PASS within CTA/intake boundary | Public `Request access` CTAs preserve the `open-source-services-review` intent note without incorrectly preselecting legacy implementation/onboarding defaults; focused CTA + pilot preflight tests passed in the May 17 launch evidence pass. | `openplan/docs/ops/2026-05-17-openplan-launch-evidence-checklist.md`; commit `87d1b58` |
 | Known issue closure | PASS / controlled | The known-issues register shows zero open blockers. The recent report-detail `Received NaN` warning is closed by count coercion and regression coverage. Medium watch items remain visible rather than hidden. | `docs/ops/KNOWN_ISSUES.md`; commit `cac5f7b` |
 | TypeScript/test baseline cleanup | PASS as local code-quality evidence | Commit `44457d6` tightens test fixtures so the TypeScript baseline is clean. This is useful QA evidence, but it is not by itself a production smoke or buyer functionality claim. | commit `44457d6`; `npx tsc --noEmit`; `npm run test:sales-proof-claim-boundaries` |
+| Buyer-demo operator script alignment | PASS as operator-surface guidance | Commits `0e91d840` and `fc5a1797` add the 90-second proof-first talk track and surface it in Command Center. This improves demo discipline; it is not new product capability. | `docs/sales/2026-05-17-openplan-90-second-buyer-demo-talk-track.md`; `openplan/src/test/buyer-demo-talk-track.test.ts`; `openplan/src/test/command-center-page.test.tsx` |
 
 ## Demo Narrative To Use
 
@@ -38,7 +39,7 @@ Use this sequence for a buyer or partner demo:
 2. **Governance posture:** The workspace is built around evidence and review, not black-box automation. Project-level report/governance holds now surface as attention items.
 3. **Project report path:** The project detail page can point directly to report packet work; the May 17 production smoke verified a real authenticated deep link into `#drift-since-generation`.
 4. **Access posture:** Request access remains supervised. Public CTAs can capture open-source / managed-services fit review intent without implying instant public workspace activation.
-5. **Caveat discipline:** Modeling, billing, recovery, legal/compliance, and self-serve activation boundaries remain explicit and buyer-specific.
+5. **Caveat discipline:** Modeling, billing, recovery, legal/compliance, and self-serve activation boundaries remain explicit and buyer-specific. Use the 90-second opening script only as proof-first operator guidance; do not present it as expanded product capability.
 
 ## Do Not Overclaim
 
@@ -73,6 +74,9 @@ Supporting proof artifacts:
 - `docs/ops/2026-05-17-test-output/2026-05-17-prod-project-report-deeplink-01-project-detail.png`
 - `docs/ops/2026-05-17-test-output/2026-05-17-prod-project-report-deeplink-02-report-detail.png`
 - `openplan/docs/ops/2026-05-17-openplan-launch-evidence-checklist.md`
+- `openplan/docs/ops/2026-05-17-buyer-demo-preflight-proof.md`
+- `docs/sales/2026-05-17-openplan-buyer-demo-evidence-note.md`
+- `docs/sales/2026-05-17-openplan-90-second-buyer-demo-talk-track.md`
 - `docs/ops/KNOWN_ISSUES.md`
 
 Standing buyer/sales packet to keep attached:
@@ -84,7 +88,7 @@ Standing buyer/sales packet to keep attached:
 
 ## Operator Checklist Before External Use
 
-- Confirm the production alias health still passes and reports the intended deployed commit if production code has shipped after `c8a9afa`; keep test-baseline cleanup and documentation-only commits such as `2a4a7c5`, `c8a9afa`, and `e870670` separate from buyer workflow/functionality claims.
+- Confirm the production alias health still passes and reports the intended deployed commit if production code has shipped after `fc5a1797`; keep documentation/operator-surface commits such as `0e91d840` and `fc5a1797` separate from buyer workflow/functionality claims.
 - Re-run a scoped authenticated smoke if the project detail/report card flow changes.
 - Attach the buyer caveat sheet and managed-support proof map.
 - Pick one first workflow for the buyer rather than presenting the whole roadmap as complete.

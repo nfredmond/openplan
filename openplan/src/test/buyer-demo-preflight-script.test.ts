@@ -24,6 +24,11 @@ describe("buyer demo preflight script", () => {
         args: ["test", "--", "--run", "src/test/nevada-county-example-fixture.test.ts"],
       },
       {
+        label: "Buyer demo talk-track boundary guard",
+        command: "npm",
+        args: ["test", "--", "--run", "src/test/buyer-demo-talk-track.test.ts"],
+      },
+      {
         label: "Pilot preflight posture, local/read-only only (live reads skipped)",
         command: "npm",
         args: ["run", "ops:check-pilot-preflight", "--", "--skip-health", "--skip-vercel"],
@@ -36,7 +41,7 @@ describe("buyer demo preflight script", () => {
 
   it("enables opt-in read-only live health and deployment reads", () => {
     expect(parseArgs(["--live-reads"])).toMatchObject({ liveReads: true });
-    expect(buildCommandPlan({ liveReads: true })[2]).toMatchObject({
+    expect(buildCommandPlan({ liveReads: true })[3]).toMatchObject({
       label: "Pilot preflight posture with opt-in read-only live health/deployment reads",
       command: "npm",
       args: ["run", "ops:check-pilot-preflight", "--"],

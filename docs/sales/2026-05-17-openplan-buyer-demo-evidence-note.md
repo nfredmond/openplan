@@ -1,8 +1,8 @@
 # OpenPlan Buyer Demo Evidence Note
 
-**Date:** 2026-05-17 16:26–17:11 PDT  
+**Date:** 2026-05-17 16:26–19:54 PDT  
 **Production alias:** `https://openplan-natford.vercel.app`  
-**Deployed commit checked:** `eb722e86e7fb`  
+**Latest operator-surface checkpoint checked:** `fc5a17973c3b`  
 **Evidence posture:** Read-only buyer-demo rehearsal and checkpoint continuation; no production writes, provisioning, schema changes, checkout/spend actions, outbound email, or secret-value printing.
 
 ## Executive status
@@ -22,11 +22,19 @@ This evidence supports a supervised demo conversation. It does **not** support c
 
 `curl -fsS https://openplan-natford.vercel.app/api/health`
 
-Result:
+Original timed-rehearsal result:
 
 ```json
 {"status":"ok","service":"openplan","deployment":{"commit":"380e10982588"},"checks":{"app":"ok","database":"not_checked","billing":"not_checked"}}
 ```
+
+Later checkpoint health after operator-surface alignment:
+
+```json
+{"status":"ok","service":"openplan","deployment":{"commit":"fc5a17973c3b"},"checks":{"app":"ok","database":"not_checked","billing":"not_checked"}}
+```
+
+The later checkpoint confirms deployment currency for script/handoff surfacing only; it is not a substitute for rerunning workflow-specific smoke.
 
 ### Buyer-demo preflight
 
@@ -73,7 +81,8 @@ Confirmed in production:
 - `Open public evidence catalog` link points to `/examples` and navigates successfully;
 - handoff boundary present: `No production writes, provisioning, outbound email, checkout, or self-serve activation are implied by this handoff.`;
 - stop rule present: `Stop the demo if live-read preflight reports unresolved attention...`;
-- handoff links present for readiness packet, request access, and examples.
+- handoff links present for readiness packet, request access, and examples;
+- later checkpoint browser smoke confirmed the Command Center 90-second opening script, source pointer, and `screening evidence, not production model validation` wording.
 
 ### Step 2 — Pilot Readiness
 
@@ -134,6 +143,8 @@ Checkpoint continuation on 2026-05-17 added two buyer-safe narration aids after 
 - `25212f07 test: guard nevada county demo fixture claims` — adds direct regression coverage for the shared fixture's internal-prototype gate, Max APE caveat, proof path, story-beat labels, and forbidden buyer claims.
 - `8a3c441b feat: link examples back to command center` — gives signed-in operators a clearly internal return path from `/examples` to `/command-center`, while public visitors remain pointed to supervised access.
 - `eb722e86 test: include nevada county guards in buyer preflight` — folds the fixture guard into `npm run ops:check-buyer-demo-preflight` so buyer-demo preflight now checks the shared sample story rail directly.
+- `0e91d840 docs: add buyer demo talk track` — adds the 90-second buyer-demo talk track as a guarded sales artifact.
+- `fc5a1797 feat: surface buyer demo opening script` — surfaces the 90-second opening script in Command Center as operator guidance; this is handoff/script alignment, not new product capability.
 
 Minor operator note: the demo workspace has a clean proof/readiness surface, but the signed-in Command Center still shows mostly zero operational counts. That is acceptable for a proof-first buyer conversation, but the next product substance lane should make a demo workspace carry a realistic rural RTPA/county story so operators are not presenting an empty queue after the proof boundary is established.
 

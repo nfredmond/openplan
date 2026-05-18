@@ -18,6 +18,7 @@ function usage() {
     "Default checks:",
     "  - test:sales-proof-claim-boundaries (sales boundary + current buyer proof packet guards)",
     "  - Nevada County fixture buyer-safe guards (prototype gate, Max APE, story beats, forbidden claims)",
+    "  - Buyer demo talk-track guard (90-second script boundary checks)",
     "  - ops:check-pilot-preflight with --skip-health --skip-vercel (local env/migration posture only)",
     "",
     "Options:",
@@ -67,6 +68,11 @@ export function buildCommandPlan(options = {}) {
       label: "Nevada County fixture buyer-safe guards",
       command: "npm",
       args: ["test", "--", "--run", "src/test/nevada-county-example-fixture.test.ts"],
+    },
+    {
+      label: "Buyer demo talk-track boundary guard",
+      command: "npm",
+      args: ["test", "--", "--run", "src/test/buyer-demo-talk-track.test.ts"],
     },
     {
       label: options.liveReads

@@ -13,7 +13,8 @@ Default behavior is intentionally local-first. The bundle runs:
 
 1. `test:sales-proof-claim-boundaries` — guards sales boundary copy and the current buyer proof packet.
 2. `npm test -- --run src/test/nevada-county-example-fixture.test.ts` — guards the shared Nevada County evidence fixture, including the internal-prototype gate, Max APE caveat, story beats, and forbidden buyer claims.
-3. `ops:check-pilot-preflight -- --skip-health --skip-vercel` — checks local env and migration posture while intentionally skipping production health and Vercel reads.
+3. `npm test -- --run src/test/buyer-demo-talk-track.test.ts` — guards the 90-second spoken-script boundary so operator copy cannot drift into overclaiming.
+4. `ops:check-pilot-preflight -- --skip-health --skip-vercel` — checks local env and migration posture while intentionally skipping production health and Vercel reads.
 
 For the final operator rehearsal, allow read-only external checks explicitly:
 
@@ -21,7 +22,7 @@ For the final operator rehearsal, allow read-only external checks explicitly:
 npm run ops:check-buyer-demo-preflight -- --live-reads
 ```
 
-Command Center now repeats this live-read command in the Buyer Demo Handoff section so the app surface and operator runbook point to the same final pre-demo check. It also surfaces the Nevada County caveats as a `Caveats to say out loud` rail so the operator does not soften the public evidence record during a buyer walkthrough.
+Command Center now repeats this live-read command in the Buyer Demo Handoff section so the app surface and operator runbook point to the same final pre-demo check. It also surfaces the Nevada County caveats as a `Caveats to say out loud` rail and the 90-second opening script source so the operator does not soften the public evidence record during a buyer walkthrough.
 
 Equivalent environment flag:
 
@@ -54,7 +55,8 @@ Coverage now verifies:
 
 - Command Center displays the live-read buyer-demo preflight command beside the buyer handoff path
 - Command Center surfaces the Nevada County caveats operators should say out loud
-- the buyer-demo preflight command plan includes the Nevada County fixture guard
+- Command Center surfaces the 90-second opening script as operator guidance, not new buyer functionality
+- the buyer-demo preflight command plan includes the Nevada County fixture guard and talk-track guard
 - default local-first command plan
 - opt-in live-read command plan
 - environment flag behavior
