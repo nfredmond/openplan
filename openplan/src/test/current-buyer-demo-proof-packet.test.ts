@@ -88,7 +88,12 @@ describe("current buyer/demo proof packet", () => {
     expect(packet).toContain("a962072d");
     expect(packet).toContain("fc5a1797");
     expect(packet).not.toContain("reviewed through commit `fc5a1797`");
-    expect(salesReadme).toContain("operator-surface/script/checklist guardrails, not new buyer functionality");
+    expect(salesReadme).toContain("4af88ee1");
+    expect(salesReadme).toContain("dd2325ac");
+    expect(salesReadme).toContain("35d9b970");
+    expect(salesReadme).toContain("ad30a6f8");
+    expect(salesReadme).toContain("operator-surface/script/checklist/proof-package guardrails, not new buyer functionality");
+    expect(salesReadme).toContain("generated packet refreshes");
   });
 
   it("exposes a read-only buyer-demo preflight bundle for supervised demos", () => {
