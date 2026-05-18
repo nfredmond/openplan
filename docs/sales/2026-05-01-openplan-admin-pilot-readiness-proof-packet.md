@@ -58,6 +58,8 @@ Use this index as the short operator map before buyer reliance. It names the cur
 | **Static sales packet — PDF** — `docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf` | Static sales packet | PDF is a generated snapshot; do not treat it as current if the proof helpers or checklist changed afterward. |
 | **Wave 6 release-readiness summary** — `docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md` | Proof packet doc | Summary supports operator orientation for the May 10 merge train only; it is not a broad launch-readiness certificate. |
 | **Pilot preflight operator proof** — `docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md` | Preflight proof | The preflight is read-only operational confidence, not self-serve activation, schema approval, or production-write proof. |
+| **Current buyer-demo proof packet** — `docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md` | Proof packet doc | This packet supports supervised demo diligence only; it does not prove self-serve activation, checkout, production modeling, or legal/compliance automation. |
+| **Nevada County buyer evidence brief** — `docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md` | Proof packet doc | The brief is a static screening-run snapshot for explanation; it is not current runtime proof, calibrated forecasting, or production model validation. |
 
 ## Final Pilot-Readiness Checklist Sync
 - Checklist: docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md
@@ -214,6 +216,8 @@ Avoid:
 - docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.html
 - docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.pdf
 - docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md
+- docs/sales/2026-05-17-openplan-current-buyer-demo-proof-packet.md
+- docs/sales/2026-05-17-openplan-nevada-county-buyer-evidence-brief.md
 - docs/sales/2026-05-01-openplan-buyer-one-pager.md
 - docs/sales/2026-05-01-openplan-managed-hosting-service-description.md
 - docs/sales/2026-05-01-openplan-pilot-sow-template.md
