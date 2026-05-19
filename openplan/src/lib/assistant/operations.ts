@@ -1,4 +1,5 @@
 import type { AssistantQuickLink } from "@/lib/assistant/catalog";
+import { getActionMetadata } from "@/lib/runtime/action-metadata";
 import type {
   AssistantContext,
   ModelAssistantContext,
@@ -62,6 +63,7 @@ function quickLink(
     executeAction?: AssistantQuickLink["executeAction"];
   }
 ): AssistantQuickLink {
+  const actionMetadata = options.executeAction ? getActionMetadata(options.executeAction.kind) : null;
   return {
     id,
     label,
@@ -72,8 +74,8 @@ function quickLink(
     priority: options.priority,
     statusLabel: options.statusLabel,
     reason: options.reason,
-    approval: options.approval,
-    auditEvent: options.auditEvent,
+    approval: actionMetadata?.approval ?? options.approval,
+    auditEvent: actionMetadata?.auditEvent ?? options.auditEvent,
     auditNote: options.auditNote,
     workflowId: options.workflowId,
     prompt: options.prompt,

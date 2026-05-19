@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { readAssistantExecutionSource, verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 
 const paramsSchema = z.object({
   projectId: z.string().uuid(),
@@ -256,14 +257,58 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return { recordType: "meeting", record: data };
     };
 
+    const serviceSupabase = createServiceRoleClient();
+    let approval:
+      | {
+          approvalId: string | null;
+          inputHash: string | null;
+          executionSource: "manual" | "planner_agent_quick_link";
+        }
+      | null = null;
+
+    if (readAssistantExecutionSource(request) === "planner_agent_quick_link" && parsed.data.recordType !== "submittal") {
+      return NextResponse.json(
+        { error: "Planner Agent project-record execution only supports reimbursement submittals" },
+        { status: 403 }
+      );
+    }
+
+    if (parsed.data.recordType === "submittal") {
+      try {
+        approval = await verifyAssistantActionApproval({
+          request,
+          serviceSupabase,
+          userId: user.id,
+          workspaceId: project.workspace_id,
+          action: {
+            kind: "create_project_record",
+            projectId: project.id,
+            recordType: "submittal",
+            title: parsed.data.title,
+            ...(parsed.data.submittalType ? { submittalType: parsed.data.submittalType } : {}),
+            ...(parsed.data.status ? { status: parsed.data.status } : {}),
+            ...(parsed.data.notes ? { notes: parsed.data.notes } : {}),
+          },
+        });
+      } catch (approvalError) {
+        return NextResponse.json(
+          { error: approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed" },
+          { status: 403 }
+        );
+      }
+    }
+
     let result: { recordType: string; record: unknown };
     try {
       result = await withAssistantActionAudit(
-        supabase,
+        serviceSupabase,
         {
           actionKind: "create_project_record",
           workspaceId: project.workspace_id,
           userId: user.id,
+          approvalId: approval?.approvalId ?? null,
+          inputHash: approval?.inputHash ?? null,
+          executionSource: approval?.executionSource ?? "manual",
           inputSummary: {
             projectId: project.id,
             recordType: parsed.data.recordType,

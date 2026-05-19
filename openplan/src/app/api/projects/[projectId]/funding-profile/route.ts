@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { loadProjectAccess } from "@/lib/programs/api";
 
 const paramsSchema = z.object({
@@ -74,15 +75,39 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       notes: parsed.data.notes?.trim() || null,
       created_by: user.id,
     };
+    const assistantAction = {
+      kind: "create_project_funding_profile" as const,
+      projectId: access.project.id,
+      ...(parsed.data.notes !== undefined && parsed.data.notes !== null ? { notes: parsed.data.notes } : {}),
+    };
+    const serviceSupabase = createServiceRoleClient();
+    let approval;
+    try {
+      approval = await verifyAssistantActionApproval({
+        request,
+        serviceSupabase,
+        userId: user.id,
+        workspaceId: access.project.workspace_id,
+        action: assistantAction,
+      });
+    } catch (approvalError) {
+      return NextResponse.json(
+        { error: approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed" },
+        { status: 403 }
+      );
+    }
 
     let profile;
     try {
       profile = await withAssistantActionAudit(
-        supabase,
+        serviceSupabase,
         {
           actionKind: "create_project_funding_profile",
           workspaceId: access.project.workspace_id,
           userId: user.id,
+          approvalId: approval.approvalId,
+          inputHash: approval.inputHash,
+          executionSource: approval.executionSource,
           inputSummary: {
             projectId: access.project.id,
             hasFundingNeed: parsed.data.fundingNeedAmount !== undefined,

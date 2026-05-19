@@ -1,9 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
-  getActionRecord,
   type ActionApproval,
   type RegroundingMode,
-} from "@/lib/runtime/action-registry";
+  getActionMetadata,
+} from "@/lib/runtime/action-metadata";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 
 export type AssistantActionExecutionOutcome = "succeeded" | "failed";
@@ -18,6 +18,9 @@ export type AssistantActionExecutionAuditInput = {
   outcome: AssistantActionExecutionOutcome;
   errorMessage?: string | null;
   inputSummary?: Record<string, unknown> | null;
+  approvalId?: string | null;
+  inputHash?: string | null;
+  executionSource?: "manual" | "planner_agent_quick_link";
   startedAt: string;
   completedAt: string;
 };
@@ -38,6 +41,9 @@ export async function recordAssistantActionExecution(
     outcome: input.outcome,
     error_message: input.errorMessage ?? null,
     input_summary: input.inputSummary ?? null,
+    approval_id: input.approvalId ?? null,
+    input_hash: input.inputHash ?? null,
+    execution_source: input.executionSource ?? "manual",
     started_at: input.startedAt,
     completed_at: input.completedAt,
   });
@@ -54,6 +60,9 @@ export type WithAssistantActionAuditMeta = {
   workspaceId: string | null;
   userId: string | null;
   inputSummary?: Record<string, unknown> | null;
+  approvalId?: string | null;
+  inputHash?: string | null;
+  executionSource?: "manual" | "planner_agent_quick_link";
 };
 
 /**
@@ -71,7 +80,7 @@ export async function withAssistantActionAudit<T>(
   meta: WithAssistantActionAuditMeta,
   body: () => Promise<T>
 ): Promise<T> {
-  const record = getActionRecord(meta.actionKind);
+  const record = getActionMetadata(meta.actionKind);
   const startedAt = new Date().toISOString();
 
   try {
@@ -86,6 +95,9 @@ export async function withAssistantActionAudit<T>(
       regrounding: record.regrounding,
       outcome: "succeeded",
       inputSummary: meta.inputSummary ?? null,
+      approvalId: meta.approvalId ?? null,
+      inputHash: meta.inputHash ?? null,
+      executionSource: meta.executionSource ?? "manual",
       startedAt,
       completedAt,
     });
@@ -110,6 +122,9 @@ export async function withAssistantActionAudit<T>(
       outcome: "failed",
       errorMessage,
       inputSummary: meta.inputSummary ?? null,
+      approvalId: meta.approvalId ?? null,
+      inputHash: meta.inputHash ?? null,
+      executionSource: meta.executionSource ?? "manual",
       startedAt,
       completedAt,
     });

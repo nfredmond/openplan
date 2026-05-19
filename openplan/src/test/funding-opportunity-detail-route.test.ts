@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadFundingOpportunityAccessMock = vi.fn();
@@ -22,6 +23,7 @@ const mockAudit = {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -91,6 +93,16 @@ describe("/api/funding-opportunities/[opportunityId]", () => {
           };
         }
         throw new Error(`Unexpected table: ${table}`);
+      }),
+    });
+    createServiceRoleClientMock.mockReturnValue({
+      from: vi.fn((table: string) => {
+        if (table === "assistant_action_executions") {
+          return {
+            insert: vi.fn().mockResolvedValue({ error: null }),
+          };
+        }
+        throw new Error(`Unexpected service table: ${table}`);
       }),
     });
   });

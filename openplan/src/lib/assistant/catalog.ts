@@ -1,3 +1,5 @@
+import { resolveQuickLinkApproval } from "@/lib/runtime/action-metadata";
+
 export type AssistantTargetKind =
   | "workspace"
   | "analysis_studio"
@@ -437,18 +439,20 @@ export function formatAssistantOperationExecutionMode(link: AssistantQuickLink):
 }
 
 export function resolveAssistantOperationUrgency(link: AssistantQuickLink): AssistantOperationUrgency {
-  if (link.approval === "approval_required") return "high";
+  const approval = resolveQuickLinkApproval(link);
+  if (approval === "approval_required") return "high";
   if (link.priority === "primary" && (link.actionClass === "review_controls" || link.actionClass === "review_packet")) {
     return "high";
   }
-  if (link.priority === "primary" || link.approval === "review" || link.priority === "secondary") {
+  if (link.priority === "primary" || approval === "review" || link.priority === "secondary") {
     return "medium";
   }
   return "low";
 }
 
 export function resolveAssistantOperationTone(link: AssistantQuickLink): AssistantOperationTone {
-  if (link.approval === "approval_required") return "danger";
+  const approval = resolveQuickLinkApproval(link);
+  if (approval === "approval_required") return "danger";
   switch (link.actionClass) {
     case "review_controls":
     case "review_packet":
@@ -457,7 +461,7 @@ export function resolveAssistantOperationTone(link: AssistantQuickLink): Assista
     case "inspect_readiness":
       return "info";
     case "open_surface":
-      return link.approval === "safe" ? "success" : "neutral";
+      return approval === "safe" ? "success" : "neutral";
     default:
       return "neutral";
   }
@@ -552,7 +556,7 @@ export function summarizeAssistantOperations(links: AssistantQuickLink[]): Assis
     else if (groupKey === "review_soon") reviewSoon += 1;
     else supportContext += 1;
 
-    if (link.approval === "approval_required") approvalRequired += 1;
+    if (resolveQuickLinkApproval(link) === "approval_required") approvalRequired += 1;
   }
 
   const leadLink = [...links].sort(compareAssistantOperations)[0] ?? null;
@@ -587,8 +591,9 @@ export function summarizeAssistantOperationExecution(links: AssistantQuickLink[]
     if (link.executionMode === "future_agent_action") futureAgentAction += 1;
     else navigateOnly += 1;
 
-    if (link.approval === "approval_required") approvalRequired += 1;
-    else if (link.approval === "review") review += 1;
+    const approval = resolveQuickLinkApproval(link);
+    if (approval === "approval_required") approvalRequired += 1;
+    else if (approval === "review") review += 1;
     else safe += 1;
   }
 

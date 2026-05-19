@@ -32,6 +32,8 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
 import { executeAction as dispatchRegistryAction } from "@/lib/runtime/action-registry";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
+import { getActionMetadata, resolveQuickLinkApproval } from "@/lib/runtime/action-metadata";
+import type { AssistantActionApprovalEvidence } from "@/lib/runtime/action-registry";
 
 type AppCopilotProps = {
   workspaceId: string | null;
@@ -240,6 +242,47 @@ function formatRemainingSnoozeTime(returnAtMs: number | null, nowMs = Date.now()
   return `${hours}h ${minutes}m`;
 }
 
+async function requestActionApproval(args: {
+  workspaceId: string | null;
+  action: AssistantQuickLinkExecuteAction;
+  label: string;
+}): Promise<AssistantActionApprovalEvidence> {
+  const confirmed = window.confirm(
+    `Approve Planner Agent action: ${args.label}\n\nThis will make a real change in OpenPlan and write an audit row.`
+  );
+  if (!confirmed) {
+    throw new Error("Planner Agent action approval was cancelled.");
+  }
+  return requestActionExecutionFingerprint({ workspaceId: args.workspaceId, action: args.action, requireApproval: true });
+}
+
+async function requestActionExecutionFingerprint(args: {
+  workspaceId: string | null;
+  action: AssistantQuickLinkExecuteAction;
+  requireApproval?: boolean;
+}): Promise<AssistantActionApprovalEvidence> {
+  const response = await fetch("/api/assistant/actions/approvals", {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json" },
+    body: JSON.stringify({
+      workspaceId: args.workspaceId,
+      action: args.action,
+      requireApproval: Boolean(args.requireApproval),
+    }),
+  });
+  const payload = (await response.json().catch(() => null)) as
+    | { approvalId?: string | null; inputHash?: string; error?: string }
+    | null;
+  if (!response.ok || !payload?.inputHash) {
+    throw new Error(payload?.error ?? "Failed to prepare Planner Agent approval evidence");
+  }
+  return {
+    approvalId: payload.approvalId ?? null,
+    inputHash: payload.inputHash,
+    executionSource: "planner_agent_quick_link",
+  };
+}
+
 function buildBoardStateNarrative(args: {
   viewMode: OperationViewMode;
   filter: OperationFilter;
@@ -353,7 +396,7 @@ function actionLabel(action: AssistantAction) {
 }
 
 function quickLinkBadge(link: AssistantQuickLink) {
-  switch (link.approval) {
+  switch (resolveQuickLinkApproval(link)) {
     case "approval_required":
       return { label: "Approval", className: "border-amber-300/25 bg-amber-400/14 text-amber-100" };
     case "review":
@@ -1416,6 +1459,19 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     setOperationHistory((current) => upsertOperationHistory(current, runningStatus));
 
     try {
+      const metadata = getActionMetadata(executeAction.kind);
+      const approvalEvidence =
+        metadata.approval === "approval_required"
+          ? await requestActionApproval({
+              workspaceId,
+              action: executeAction,
+              label: link.label,
+            })
+          : await requestActionExecutionFingerprint({
+              workspaceId,
+              action: executeAction,
+            });
+
       await dispatchRegistryAction(
         executeAction as Extract<AssistantQuickLinkExecuteAction, { kind: typeof executeAction.kind }>,
         {
@@ -1462,7 +1518,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             });
           },
         },
-        { regroundingDepth }
+        { regroundingDepth, approvalEvidence }
       );
       return;
     } catch (executeError) {

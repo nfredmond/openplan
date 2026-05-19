@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { withAssistantActionAudit } from "@/lib/observability/action-audit";
-import { ACTION_REGISTRY } from "@/lib/runtime/action-registry";
+import { ACTION_REGISTRY, getActionRecord } from "@/lib/runtime/action-registry";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 
 type InsertedRow = Record<string, unknown>;
@@ -47,7 +47,7 @@ describe("withAssistantActionAudit (live-loop proof)", () => {
     "link_billing_invoice_funding_award",
     "create_project_record",
   ] as const) {
-    const record = ACTION_REGISTRY[kind];
+    const record = getActionRecord(kind);
 
     it(`writes a succeeded row for ${kind} with registry-driven fields`, async () => {
       const client = makeCapturingClient();
