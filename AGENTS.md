@@ -21,7 +21,7 @@ Secondary canonical references (read only if the deep-dive points you to them):
 
 **Source code lives in:** `openplan/` subdirectory (run all commands from there)
 
-**Current command posture:** use `npm run …` / `npm exec …` for live operator commands. Historical proof logs still cite `pnpm`; `npm run qa:gate` intentionally shells through `corepack pnpm audit --prod --audit-level=moderate`, so Corepack remains the supported pnpm audit lane even when a bare `pnpm` binary is not on PATH.
+**Current command posture:** use `npm run …` / `npm exec …` for live operator commands. Historical proof logs still cite `pnpm`; `npm run qa:gate` intentionally shells through `COREPACK_ENABLE_STRICT=0 corepack pnpm@10.33.0 audit --prod --audit-level=moderate`, so Corepack remains the supported pnpm audit lane even though `packageManager` is pinned to npm and a bare `pnpm` binary is not required on PATH.
 
 ## Commands
 

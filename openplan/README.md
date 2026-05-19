@@ -70,8 +70,8 @@ Run commands from the `openplan/` app directory.
 
 ```bash
 cd openplan
-pnpm install
-pnpm dev
+npm install
+npm run dev
 ```
 
 Then open:
@@ -80,11 +80,13 @@ Then open:
 Useful commands:
 
 ```bash
-pnpm dev
-pnpm build
-pnpm test
-pnpm lint
+npm run dev
+npm run build
+npm test
+npm run lint
 ```
+
+Package commands use npm as the operator baseline because `package-lock.json` is canonical for installs and CI. The release gate still runs `COREPACK_ENABLE_STRICT=0 corepack pnpm@10.33.0 audit --prod --audit-level=moderate` through `npm run qa:gate`, so keep `pnpm-lock.yaml` current when dependencies change.
 
 ## Documentation guide
 

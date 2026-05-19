@@ -41,7 +41,7 @@ npm run lint
 npm test
 npm run build
 ```
-Command note: package scripts are invoked with `npm run …` in current operator docs because `package-lock.json` is present and npm is the most reliable baseline on this host. Corepack supplies the pnpm audit lane inside `npm run qa:gate`; legacy proof logs may still cite bare `pnpm` commands.
+Command note: package scripts are invoked with `npm run …` in current operator docs because `package-lock.json` is canonical and npm is the most reliable baseline on this host. The app pins `packageManager` to npm, while `npm run qa:gate` explicitly pins `pnpm@10.33.0` and disables Corepack strict package-manager enforcement for the production audit lane. Legacy proof logs may still cite bare `pnpm` commands.
 
 
 ## Current product truth
