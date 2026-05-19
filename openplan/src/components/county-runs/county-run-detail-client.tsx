@@ -30,9 +30,10 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
   const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const [enqueueState, setEnqueueState] = useState<{
-    status: "queued_stub";
+    status: "prepared" | "submitted";
     manifestIngestUrl: string;
     manifestPath: string;
+    hasBearerToken: boolean;
   } | null>(null);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "error">("idle");
 
@@ -103,15 +104,16 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const enqueueLabel = getCountyRunEnqueueStatusLabel(enqueueStatus);
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
   const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
-  const canEnqueue = enqueueStatus !== "queued_stub";
+  const canEnqueue = enqueueStatus !== "submitted";
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
-    if (result?.status === "queued_stub") {
+    if (result?.status === "prepared" || result?.status === "submitted") {
       setEnqueueState({
         status: result.status,
         manifestIngestUrl: result.workerPayload.callback.manifestIngestUrl,
         manifestPath: result.workerPayload.artifactTargets.manifestPath,
+        hasBearerToken: result.workerPayload.callback.hasBearerToken,
       });
     }
   };
@@ -138,7 +140,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             Refresh
           </Button>
           <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
-            {enqueueStatus === "queued_stub" ? "Bootstrap prepared" : "Prepare run handoff"}
+            {enqueueStatus === "submitted" ? "Worker submitted" : "Prepare run handoff"}
           </Button>
           <Button asChild variant="outline">
             <Link href={safeBackHref}>Back to county runs</Link>
@@ -157,9 +159,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         {linkCopyState === "error" ? <p className="mt-2 text-sm text-destructive">Unable to copy the current detail link.</p> : null}
         {enqueueState ? (
           <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
-            <div className="font-medium text-foreground">Bootstrap handoff prepared</div>
+            <div className="font-medium text-foreground">
+              {enqueueState.status === "submitted" ? "Bootstrap handoff submitted" : "Bootstrap handoff prepared"}
+            </div>
             <div className="mt-1 break-all">Callback: {enqueueState.manifestIngestUrl}</div>
             <div className="mt-1 break-all">Manifest: {enqueueState.manifestPath}</div>
+            <div className="mt-1">Callback bearer: {enqueueState.hasBearerToken ? "configured" : "not configured"}</div>
           </div>
         ) : null}
       </div>
@@ -331,6 +336,24 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           <CardContent className="space-y-3 text-sm text-muted-foreground">
             {data.workerPayload ? (
               <>
+                {data.workerJobId ? (
+                  <div>
+                    <div className="font-medium text-foreground">Worker job ID</div>
+                    <div className="mt-1 break-all">{data.workerJobId}</div>
+                  </div>
+                ) : null}
+                {data.workerUrl ? (
+                  <div>
+                    <div className="font-medium text-foreground">Worker URL</div>
+                    <div className="mt-1 break-all">{data.workerUrl}</div>
+                  </div>
+                ) : null}
+                {data.workerDispatchError ? (
+                  <div>
+                    <div className="font-medium text-destructive">Dispatch error</div>
+                    <div className="mt-1 break-all text-destructive">{data.workerDispatchError}</div>
+                  </div>
+                ) : null}
                 <div>
                   <div className="font-medium text-foreground">County prefix</div>
                   <div className="mt-1">{data.workerPayload.countyPrefix}</div>
@@ -338,6 +361,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                 <div>
                   <div className="font-medium text-foreground">Callback URL</div>
                   <div className="mt-1 break-all">{data.workerPayload.callback.manifestIngestUrl}</div>
+                  <div className="mt-1">
+                    Bearer credential: {data.workerPayload.callback.hasBearerToken ? "configured" : "not configured"}
+                  </div>
                 </div>
                 <div>
                   <div className="font-medium text-foreground">Artifact targets</div>

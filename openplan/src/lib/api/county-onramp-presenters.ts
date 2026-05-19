@@ -5,6 +5,8 @@ import {
 } from "@/lib/models/county-onramp";
 import {
   buildCountyOnrampWorkerPayloadFromStoredRequest,
+  sanitizedCountyOnrampWorkerPayloadSchema,
+  sanitizeCountyOnrampWorkerPayload,
   storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
 import type {
@@ -23,8 +25,12 @@ export type CountyRunRowLike = {
   run_name: string;
   stage: CountyRunStage;
   status_label: string | null;
-  enqueue_status?: "not-enqueued" | "queued_stub" | "failed" | null;
+  enqueue_status?: "not-enqueued" | "prepared" | "submitted" | "failed" | null;
   last_enqueued_at?: string | null;
+  worker_job_id?: string | null;
+  worker_payload_json?: Record<string, unknown> | null;
+  worker_url?: string | null;
+  worker_dispatch_error?: string | null;
   requested_runtime_json?: Record<string, unknown> | null;
   manifest_json?: Record<string, unknown> | null;
   validation_summary_json?: Record<string, unknown> | null;
@@ -70,15 +76,20 @@ export function presentCountyRunDetail(params: {
   const { row, artifacts, modelingEvidence, origin } = params;
   const manifest = parseCountyOnrampManifest(row.manifest_json);
   const storedRequest = storedCountyOnrampRequestSchema.safeParse(row.requested_runtime_json);
+  const storedWorkerPayload = sanitizedCountyOnrampWorkerPayloadSchema.safeParse(row.worker_payload_json);
   const workerPayload =
-    origin && storedRequest.success
-      ? buildCountyOnrampWorkerPayloadFromStoredRequest({
-          origin,
-          jobId: crypto.randomUUID(),
-          countyRunId: row.id,
-          input: storedRequest.data,
-        })
-      : null;
+    storedWorkerPayload.success
+      ? storedWorkerPayload.data
+      : origin && storedRequest.success
+        ? sanitizeCountyOnrampWorkerPayload(
+            buildCountyOnrampWorkerPayloadFromStoredRequest({
+              origin,
+              jobId: crypto.randomUUID(),
+              countyRunId: row.id,
+              input: storedRequest.data,
+            })
+          )
+        : null;
 
   return {
     id: row.id,
@@ -92,6 +103,9 @@ export function presentCountyRunDetail(params: {
     enqueueStatus: row.enqueue_status ?? "not-enqueued",
     lastEnqueuedAt: row.last_enqueued_at ?? null,
     workerPayload,
+    workerJobId: row.worker_job_id ?? workerPayload?.jobId ?? null,
+    workerUrl: row.worker_url ?? null,
+    workerDispatchError: row.worker_dispatch_error ?? null,
     manifest,
     artifacts: artifacts.map(presentCountyRunArtifact),
     validationSummary: row.validation_summary_json ?? null,

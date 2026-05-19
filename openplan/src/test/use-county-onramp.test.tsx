@@ -75,10 +75,15 @@ describe("useCountyOnramp hooks", () => {
     });
     enqueueCountyRunMock.mockResolvedValue({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      status: "queued_stub",
+      status: "prepared",
+      workerJobId: "123e4567-e89b-12d3-a456-426614174999",
+      workerUrl: null,
       workerPayload: {
         countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-        callback: { manifestIngestUrl: "http://localhost/api/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/manifest" },
+        callback: {
+          manifestIngestUrl: "http://localhost/api/county-runs/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb/manifest",
+          hasBearerToken: false,
+        },
       },
     });
     ingestCountyRunManifestMock.mockResolvedValue({
@@ -109,7 +114,7 @@ describe("useCountyOnramp hooks", () => {
 
     expect(enqueueResult).toMatchObject({
       countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-      status: "queued_stub",
+      status: "prepared",
     });
 
     let ingestResult;

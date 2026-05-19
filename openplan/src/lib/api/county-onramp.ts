@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { countyOnrampManifestSchema, countyRunEnqueueStatusSchema, countyRunStageSchema } from "@/lib/models/county-onramp";
-import { countyOnrampWorkerPayloadSchema } from "@/lib/api/county-onramp-worker";
+import { sanitizedCountyOnrampWorkerPayloadSchema } from "@/lib/api/county-onramp-worker";
 
 export const countyRuntimeOptionsSchema = z.object({
   keepProject: z.boolean().optional(),
@@ -30,7 +30,7 @@ export const createCountyRunResponseSchema = z.object({
   countyRunId: z.string().uuid(),
   stage: countyRunStageSchema,
   runName: z.string().min(1),
-  workerPayload: countyOnrampWorkerPayloadSchema.optional(),
+  workerPayload: sanitizedCountyOnrampWorkerPayloadSchema.optional(),
 });
 
 export const countyRunListItemSchema = z.object({
@@ -109,7 +109,10 @@ export const countyRunDetailResponseSchema = z.object({
   statusLabel: z.string().nullable().optional(),
   enqueueStatus: countyRunEnqueueStatusSchema.optional(),
   lastEnqueuedAt: z.string().nullable().optional(),
-  workerPayload: countyOnrampWorkerPayloadSchema.nullable().optional(),
+  workerPayload: sanitizedCountyOnrampWorkerPayloadSchema.nullable().optional(),
+  workerJobId: z.string().uuid().nullable().optional(),
+  workerUrl: z.string().nullable().optional(),
+  workerDispatchError: z.string().nullable().optional(),
   manifest: countyOnrampManifestSchema.nullable(),
   artifacts: z.array(countyRunArtifactSchema),
   validationSummary: z.record(z.string(), z.unknown()).nullable().optional(),
@@ -118,8 +121,10 @@ export const countyRunDetailResponseSchema = z.object({
 
 export const enqueueCountyRunResponseSchema = z.object({
   countyRunId: z.string().uuid(),
-  status: z.literal("queued_stub"),
-  workerPayload: countyOnrampWorkerPayloadSchema,
+  status: z.enum(["prepared", "submitted"]),
+  workerJobId: z.string().uuid(),
+  workerUrl: z.string().nullable(),
+  workerPayload: sanitizedCountyOnrampWorkerPayloadSchema,
 });
 
 export const countyRunScaffoldResponseSchema = z.object({

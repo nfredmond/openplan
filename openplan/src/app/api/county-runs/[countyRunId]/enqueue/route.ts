@@ -3,8 +3,10 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { enqueueCountyRunResponseSchema } from "@/lib/api/county-onramp";
+import { dispatchCountyOnrampJob, type CountyOnrampDispatchResult } from "@/lib/api/county-onramp-dispatch";
 import {
   buildCountyOnrampWorkerPayloadFromStoredRequest,
+  sanitizeCountyOnrampWorkerPayload,
   storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
 
@@ -69,12 +71,62 @@ export async function POST(request: NextRequest, context: RouteContext) {
       countyRunId: parsedParams.data.countyRunId,
       input: storedRequest.data,
     });
+    const sanitizedWorkerPayload = sanitizeCountyOnrampWorkerPayload(workerPayload);
+    const workerUrl = process.env.OPENPLAN_COUNTY_ONRAMP_WORKER_URL?.trim() || null;
+
+    let dispatchResult: CountyOnrampDispatchResult;
+    try {
+      dispatchResult = await dispatchCountyOnrampJob(workerPayload);
+    } catch (dispatchError) {
+      const dispatchMessage = dispatchError instanceof Error ? dispatchError.message : "County worker dispatch failed";
+      const { error: updateError } = await supabase
+        .from("county_runs")
+        .update({
+          enqueue_status: "failed",
+          last_enqueued_at: new Date().toISOString(),
+          worker_job_id: sanitizedWorkerPayload.jobId,
+          worker_payload_json: sanitizedWorkerPayload,
+          worker_url: workerUrl,
+          worker_dispatch_error: dispatchMessage,
+        })
+        .eq("id", parsedParams.data.countyRunId);
+
+      if (updateError) {
+        audit.error("county_run_enqueue_failure_update_failed", {
+          message: updateError.message,
+          code: updateError.code ?? null,
+          dispatchMessage,
+        });
+        return NextResponse.json({ error: "Failed to persist county enqueue failure state" }, { status: 500 });
+      }
+
+      audit.error("county_run_worker_dispatch_failed", {
+        countyRunId: parsedParams.data.countyRunId,
+        jobId: sanitizedWorkerPayload.jobId,
+        workerUrl,
+        dispatchMessage,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json(
+        {
+          countyRunId: parsedParams.data.countyRunId,
+          status: "failed",
+          error: "Failed to dispatch county worker",
+        },
+        { status: 502 }
+      );
+    }
 
     const { error: updateError } = await supabase
       .from("county_runs")
       .update({
-        enqueue_status: "queued_stub",
+        enqueue_status: dispatchResult.deliveryMode,
         last_enqueued_at: new Date().toISOString(),
+        worker_job_id: sanitizedWorkerPayload.jobId,
+        worker_payload_json: sanitizedWorkerPayload,
+        worker_url: dispatchResult.workerUrl,
+        worker_dispatch_error: null,
       })
       .eq("id", parsedParams.data.countyRunId);
 
@@ -88,12 +140,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const response = enqueueCountyRunResponseSchema.parse({
       countyRunId: parsedParams.data.countyRunId,
-      status: "queued_stub",
-      workerPayload,
+      status: dispatchResult.deliveryMode,
+      workerJobId: sanitizedWorkerPayload.jobId,
+      workerUrl: dispatchResult.workerUrl,
+      workerPayload: sanitizedWorkerPayload,
     });
 
-    audit.info("county_run_enqueue_prepared", {
+    audit.info(dispatchResult.deliveryMode === "submitted" ? "county_run_worker_submitted" : "county_run_enqueue_prepared", {
       countyRunId: parsedParams.data.countyRunId,
+      jobId: sanitizedWorkerPayload.jobId,
+      workerUrl: dispatchResult.workerUrl,
       durationMs: Date.now() - startedAt,
     });
 

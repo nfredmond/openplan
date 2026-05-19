@@ -143,7 +143,9 @@ describe("county onramp client helpers", () => {
         new Response(
           JSON.stringify({
             countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-            status: "queued_stub",
+            status: "prepared",
+            workerJobId: "123e4567-e89b-12d3-a456-426614174999",
+            workerUrl: null,
             workerPayload: {
               jobId: "123e4567-e89b-12d3-a456-426614174999",
               countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -169,6 +171,7 @@ describe("county onramp client helpers", () => {
               },
               callback: {
                 manifestIngestUrl: "http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest",
+                hasBearerToken: false,
               },
             },
           }),
@@ -189,7 +192,7 @@ describe("county onramp client helpers", () => {
     expect(detail.stage).toBe("validated-screening");
 
     const enqueued = await enqueueCountyRun("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
-    expect(enqueued.status).toBe("queued_stub");
+    expect(enqueued.status).toBe("prepared");
 
     const completed = await ingestCountyRunManifest(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
