@@ -93,7 +93,7 @@ describe("POST /api/county-runs/[countyRunId]/validate/refresh", () => {
         run_name: "nevada-run",
         stage: "validation-scaffolded",
         status_label: "Validation pending scaffold edits",
-        enqueue_status: "queued_stub",
+        enqueue_status: "prepared",
         last_enqueued_at: "2026-03-24T23:05:00Z",
         requested_runtime_json: {},
         manifest_json: {
@@ -163,7 +163,7 @@ describe("POST /api/county-runs/[countyRunId]/validate/refresh", () => {
         run_name: "nevada-run",
         stage: "validated-screening",
         status_label: "bounded screening-ready",
-        enqueue_status: "queued_stub",
+        enqueue_status: "prepared",
         last_enqueued_at: "2026-03-24T23:05:00Z",
         requested_runtime_json: {},
         manifest_json: {},

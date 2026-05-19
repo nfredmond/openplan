@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { ingestCountyRunManifestRequestSchema } from "@/lib/api/county-onramp";
 import {
@@ -28,12 +28,29 @@ type CountyRunRow = {
   run_name: string;
   stage: "bootstrap-incomplete" | "runtime-complete" | "validation-scaffolded" | "validated-screening";
   status_label: string | null;
-  enqueue_status?: "not-enqueued" | "queued_stub" | "failed" | null;
+  enqueue_status?: "not-enqueued" | "prepared" | "submitted" | "failed" | null;
   last_enqueued_at?: string | null;
+  worker_job_id?: string | null;
+  worker_payload_json?: Record<string, unknown> | null;
+  worker_url?: string | null;
+  worker_dispatch_error?: string | null;
   requested_runtime_json?: Record<string, unknown> | null;
   manifest_json?: Record<string, unknown> | null;
   validation_summary_json?: Record<string, unknown> | null;
 };
+
+function getBearerToken(request: NextRequest): string | null {
+  const authorization = request.headers.get("authorization")?.trim();
+  if (!authorization?.toLowerCase().startsWith("bearer ")) return null;
+  const token = authorization.slice("bearer ".length).trim();
+  return token || null;
+}
+
+function hasValidCallbackBearer(request: NextRequest): boolean {
+  const configuredToken = process.env.OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN?.trim();
+  if (!configuredToken) return false;
+  return getBearerToken(request) === configuredToken;
+}
 
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("county-runs.manifest", request);
@@ -53,19 +70,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid manifest ingest payload" }, { status: 400 });
     }
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    const callbackBearerValid = hasValidCallbackBearer(request);
+    const supabase = callbackBearerValid ? createServiceRoleClient() : await createClient();
 
-    if (!user) {
-      audit.warn("unauthorized", { durationMs: Date.now() - startedAt });
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!callbackBearerValid) {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (!user) {
+        audit.warn("unauthorized", { durationMs: Date.now() - startedAt });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
     }
 
     const { data: countyRun, error: countyRunError } = await supabase
       .from("county_runs")
-      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, requested_runtime_json, manifest_json, validation_summary_json")
+      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, requested_runtime_json, manifest_json, validation_summary_json")
       .eq("id", parsedParams.data.countyRunId)
       .maybeSingle();
 
@@ -89,6 +110,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .from("county_runs")
         .update({
           status_label: failureStatus,
+          enqueue_status: "failed",
+          worker_dispatch_error: failureStatus,
         })
         .eq("id", existingRow.id);
 
@@ -103,6 +126,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       audit.warn("county_run_worker_failed", {
         countyRunId: existingRow.id,
         jobId: parsed.data.jobId ?? null,
+        authMode: callbackBearerValid ? "callback-bearer" : "session",
         message: failureStatus,
         durationMs: Date.now() - startedAt,
       });
@@ -144,7 +168,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         validation_summary_json: nextRecord.validation_summary_json,
       })
       .eq("id", existingRow.id)
-      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, requested_runtime_json, manifest_json, validation_summary_json")
+      .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, requested_runtime_json, manifest_json, validation_summary_json")
       .single();
 
     if (updateError || !updatedRows) {
@@ -240,6 +264,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     audit.info("county_run_manifest_ingested", {
       countyRunId: existingRow.id,
       jobId: parsed.data.jobId ?? null,
+      authMode: callbackBearerValid ? "callback-bearer" : "session",
       stage: response.stage,
       statusLabel: response.statusLabel ?? null,
       durationMs: Date.now() - startedAt,

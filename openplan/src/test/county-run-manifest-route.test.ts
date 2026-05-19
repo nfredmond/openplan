@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const fromMock = vi.fn();
@@ -36,6 +37,7 @@ const mockAudit = {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -48,6 +50,17 @@ function jsonRequest(payload: unknown) {
   return new NextRequest("http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest", {
     method: "POST",
     headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+function bearerJsonRequest(payload: unknown, token = "callback-secret") {
+  return new NextRequest("http://localhost/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify(payload),
   });
 }
@@ -104,6 +117,7 @@ const manifest = {
 describe("POST /api/county-runs/[countyRunId]/manifest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.unstubAllEnvs();
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
     authGetUserMock.mockResolvedValue({
@@ -159,8 +173,12 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
         run_name: manifest.name,
         stage: "validated-screening",
         status_label: "bounded screening-ready",
-        enqueue_status: "queued_stub",
+        enqueue_status: "submitted",
         last_enqueued_at: "2026-03-24T23:05:00Z",
+        worker_job_id: "123e4567-e89b-12d3-a456-426614174999",
+        worker_payload_json: {},
+        worker_url: "https://worker.example/jobs",
+        worker_dispatch_error: null,
         requested_runtime_json: {
           workspaceId: "11111111-1111-4111-8111-111111111111",
           geographyType: "county_fips",
@@ -257,6 +275,9 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+    createServiceRoleClientMock.mockReturnValue({
+      from: fromMock,
+    });
   });
 
   it("ingests a completed manifest and returns county run detail", async () => {
@@ -268,7 +289,7 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     const payload = await response.json();
     expect(payload.stage).toBe("validated-screening");
     expect(payload.statusLabel).toBe("bounded screening-ready");
-    expect(payload.enqueueStatus).toBe("queued_stub");
+    expect(payload.enqueueStatus).toBe("submitted");
     expect(payload.lastEnqueuedAt).toBe("2026-03-24T23:05:00Z");
     expect(payload.workerPayload.countyRunId).toBe("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa");
     expect(payload.manifest.stage).toBe("validated-screening");
@@ -331,6 +352,38 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
       status: "failed",
     });
+    expect(countyRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status_label: "Worker crashed",
+        enqueue_status: "failed",
+        worker_dispatch_error: "Worker crashed",
+      })
+    );
+  });
+
+  it("accepts valid callback bearer failure updates through the service-role client", async () => {
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+    countyRunUpdateMock.mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    });
+
+    const response = await postCountyRunManifest(
+      bearerJsonRequest({ status: "failed", jobId: "123e4567-e89b-12d3-a456-426614174999", error: { message: "Worker crashed" } }),
+      {
+        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+      }
+    );
+
+    expect(response.status).toBe(202);
+    expect(createServiceRoleClientMock).toHaveBeenCalledTimes(1);
+    expect(createClientMock).not.toHaveBeenCalled();
+    expect(countyRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        enqueue_status: "failed",
+        worker_dispatch_error: "Worker crashed",
+      })
+    );
   });
 
   it("returns 400 for invalid payloads", async () => {

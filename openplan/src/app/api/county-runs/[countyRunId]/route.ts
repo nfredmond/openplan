@@ -37,7 +37,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const { data: countyRun, error: countyRunError } = await supabase
       .from("county_runs")
       .select(
-        "id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, requested_runtime_json, manifest_json, validation_summary_json"
+        "id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, requested_runtime_json, manifest_json, validation_summary_json"
       )
       .eq("id", parsedParams.data.countyRunId)
       .maybeSingle();

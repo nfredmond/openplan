@@ -76,7 +76,7 @@ export const countyOnrampValidationSummarySchema = z
   })
   .passthrough();
 
-export const countyRunEnqueueStatusSchema = z.enum(["not-enqueued", "queued_stub", "failed"]);
+export const countyRunEnqueueStatusSchema = z.enum(["not-enqueued", "prepared", "submitted", "failed"]);
 
 export type CountyRunEnqueueStatus = z.infer<typeof countyRunEnqueueStatusSchema>;
 
@@ -174,8 +174,10 @@ export function getCountyRunCaveats(stage: CountyRunStage): string[] {
 
 export function getCountyRunEnqueueStatusLabel(status: CountyRunEnqueueStatus): string {
   switch (status) {
-    case "queued_stub":
+    case "prepared":
       return "Enqueue Prepared";
+    case "submitted":
+      return "Worker Submitted";
     case "failed":
       return "Enqueue Failed";
     case "not-enqueued":
@@ -186,7 +188,8 @@ export function getCountyRunEnqueueStatusLabel(status: CountyRunEnqueueStatus): 
 
 export function getCountyRunEnqueueStatusTone(status: CountyRunEnqueueStatus): "neutral" | "info" | "danger" {
   switch (status) {
-    case "queued_stub":
+    case "prepared":
+    case "submitted":
       return "info";
     case "failed":
       return "danger";
@@ -198,8 +201,10 @@ export function getCountyRunEnqueueStatusTone(status: CountyRunEnqueueStatus): "
 
 export function getCountyRunEnqueueHelpText(status: CountyRunEnqueueStatus): string {
   switch (status) {
-    case "queued_stub":
+    case "prepared":
       return "County bootstrap handoff is prepared for background execution.";
+    case "submitted":
+      return "County bootstrap handoff was submitted to the configured worker.";
     case "failed":
       return "Most recent enqueue/bootstrap attempt failed and needs operator review.";
     case "not-enqueued":
