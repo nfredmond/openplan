@@ -2,10 +2,17 @@ export type GenerateReportArtifactResult = {
   warningCount: number;
 };
 
-export async function generateReportArtifact(reportId: string): Promise<GenerateReportArtifactResult> {
+export type ReportActionClientOptions = {
+  headers?: Record<string, string>;
+};
+
+export async function generateReportArtifact(
+  reportId: string,
+  options: ReportActionClientOptions = {}
+): Promise<GenerateReportArtifactResult> {
   const response = await fetch(`/api/reports/${reportId}/generate`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...(options.headers ?? {}) },
     body: JSON.stringify({ format: "html" }),
   });
 
@@ -30,6 +37,7 @@ export type CreateRtpPacketRecordOptions = {
   title?: string;
   modelingCountyRunId?: string | null;
   generateAfterCreate?: boolean;
+  headers?: Record<string, string>;
 };
 
 export type CreateRtpPacketRecordResult = {
@@ -42,10 +50,11 @@ export async function createRtpPacketRecord({
   title,
   modelingCountyRunId,
   generateAfterCreate = false,
+  headers,
 }: CreateRtpPacketRecordOptions): Promise<CreateRtpPacketRecordResult> {
   const createResponse = await fetch("/api/reports", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...(headers ?? {}) },
     body: JSON.stringify({
       rtpCycleId,
       reportType: "board_packet",
@@ -75,7 +84,7 @@ export async function createRtpPacketRecord({
     };
   }
 
-  const generation = await generateReportArtifact(reportId);
+  const generation = await generateReportArtifact(reportId, { headers });
 
   return {
     reportId,

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
+import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { readJsonWithLimit } from "@/lib/http/body-limit";
 import {
@@ -1586,7 +1587,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const executionCompletedAt = new Date().toISOString();
     const executionStartedAt = new Date(startedAt).toISOString();
-    const { error: executionAuditError } = await recordAssistantActionExecution(supabase, {
+    const serviceSupabase = createServiceRoleClient();
+    const approval = await verifyAssistantActionApproval({
+      request,
+      serviceSupabase,
+      userId: user.id,
+      workspaceId: report.workspace_id,
+      action: {
+        kind: "generate_report_artifact",
+        reportId: report.id,
+      },
+    });
+    const { error: executionAuditError } = await recordAssistantActionExecution(serviceSupabase, {
       workspaceId: report.workspace_id,
       userId: user.id,
       actionKind: "generate_report_artifact",
@@ -1594,6 +1606,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       approval: "safe",
       regrounding: "refresh_preview",
       outcome: "succeeded",
+      approvalId: approval.approvalId,
+      inputHash: approval.inputHash,
+      executionSource: approval.executionSource,
       inputSummary: {
         reportId: report.id,
         artifactId: artifact.id,

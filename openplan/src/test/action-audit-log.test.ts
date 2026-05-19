@@ -28,6 +28,9 @@ describe("recordAssistantActionExecution", () => {
       regrounding: "refresh_preview",
       outcome: "succeeded",
       inputSummary: { reportId: "report-1", rtpCycleId: "cycle-1" },
+      approvalId: "approval-1",
+      inputHash: "hash-1",
+      executionSource: "planner_agent_quick_link",
       startedAt: "2026-04-16T12:00:00.000Z",
       completedAt: "2026-04-16T12:00:02.000Z",
     });
@@ -57,6 +60,9 @@ describe("recordAssistantActionExecution", () => {
       approval: "safe",
       regrounding: "refresh_preview",
       outcome: "succeeded",
+      approval_id: "approval-1",
+      input_hash: "hash-1",
+      execution_source: "planner_agent_quick_link",
     });
     expect(rows[1]).toMatchObject({
       action_kind: "generate_report_artifact",

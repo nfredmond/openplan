@@ -3,24 +3,44 @@ import {
   generateReportArtifact,
 } from "@/lib/reports/client";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
-
-export type ActionApproval = "safe" | "review" | "approval_required";
-export type RegroundingMode = "refresh_preview" | "none";
+import {
+  getActionMetadata,
+  type RegroundingMode,
+} from "@/lib/runtime/action-metadata";
 
 export type ActionRecord<K extends AssistantQuickLinkExecuteAction["kind"]> = {
   kind: K;
-  approval: ActionApproval;
-  auditEvent: string;
-  regrounding: RegroundingMode;
   effect: (
-    action: Extract<AssistantQuickLinkExecuteAction, { kind: K }>
+    action: Extract<AssistantQuickLinkExecuteAction, { kind: K }>,
+    context: ActionEffectContext
   ) => Promise<void>;
 };
 
-async function postJson(path: string, body: unknown, errorLabel: string): Promise<void> {
+export type AssistantActionApprovalEvidence = {
+  approvalId?: string | null;
+  inputHash: string;
+  executionSource: "planner_agent_quick_link";
+};
+
+export type ActionEffectContext = {
+  approvalEvidence?: AssistantActionApprovalEvidence | null;
+};
+
+function approvalHeaders(context: ActionEffectContext): Record<string, string> {
+  if (!context.approvalEvidence) return {};
+  return {
+    "x-openplan-assistant-execution-source": context.approvalEvidence.executionSource,
+    "x-openplan-assistant-input-hash": context.approvalEvidence.inputHash,
+    ...(context.approvalEvidence.approvalId
+      ? { "x-openplan-assistant-approval-id": context.approvalEvidence.approvalId }
+      : {}),
+  };
+}
+
+async function postJson(path: string, body: unknown, errorLabel: string, context: ActionEffectContext): Promise<void> {
   const response = await fetch(path, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...approvalHeaders(context) },
     body: JSON.stringify(body),
   });
 
@@ -30,10 +50,10 @@ async function postJson(path: string, body: unknown, errorLabel: string): Promis
   }
 }
 
-async function patchJson(path: string, body: unknown, errorLabel: string): Promise<void> {
+async function patchJson(path: string, body: unknown, errorLabel: string, context: ActionEffectContext): Promise<void> {
   const response = await fetch(path, {
     method: "PATCH",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...approvalHeaders(context) },
     body: JSON.stringify(body),
   });
 
@@ -45,34 +65,26 @@ async function patchJson(path: string, body: unknown, errorLabel: string): Promi
 
 const GENERATE_REPORT_ARTIFACT: ActionRecord<"generate_report_artifact"> = {
   kind: "generate_report_artifact",
-  approval: "safe",
-  auditEvent: "planner_agent.generate_report_artifact",
-  regrounding: "refresh_preview",
-  effect: async (action) => {
-    await generateReportArtifact(action.reportId);
+  effect: async (action, context) => {
+    await generateReportArtifact(action.reportId, { headers: approvalHeaders(context) });
   },
 };
 
 const CREATE_RTP_PACKET_RECORD: ActionRecord<"create_rtp_packet_record"> = {
   kind: "create_rtp_packet_record",
-  approval: "safe",
-  auditEvent: "planner_agent.create_rtp_packet_record",
-  regrounding: "refresh_preview",
-  effect: async (action) => {
+  effect: async (action, context) => {
     await createRtpPacketRecord({
       rtpCycleId: action.rtpCycleId,
       modelingCountyRunId: action.modelingCountyRunId,
       generateAfterCreate: action.generateAfterCreate,
+      headers: approvalHeaders(context),
     });
   },
 };
 
 const CREATE_FUNDING_OPPORTUNITY: ActionRecord<"create_funding_opportunity"> = {
   kind: "create_funding_opportunity",
-  approval: "review",
-  auditEvent: "planner_agent.create_funding_opportunity",
-  regrounding: "none",
-  effect: async (action) => {
+  effect: async (action, context) => {
     await postJson(
       "/api/funding-opportunities",
       {
@@ -80,17 +92,15 @@ const CREATE_FUNDING_OPPORTUNITY: ActionRecord<"create_funding_opportunity"> = {
         projectId: action.projectId,
         title: action.title,
       },
-      "Failed to create funding opportunity"
+      "Failed to create funding opportunity",
+      context
     );
   },
 };
 
 const CREATE_PROJECT_FUNDING_PROFILE: ActionRecord<"create_project_funding_profile"> = {
   kind: "create_project_funding_profile",
-  approval: "review",
-  auditEvent: "planner_agent.create_project_funding_profile",
-  regrounding: "none",
-  effect: async (action) => {
+  effect: async (action, context) => {
     await patchJson(
       `/api/projects/${action.projectId}/funding-profile`,
       {
@@ -100,48 +110,42 @@ const CREATE_PROJECT_FUNDING_PROFILE: ActionRecord<"create_project_funding_profi
           action.notes ??
           "Planner Agent created this funding profile anchor. Add funding need and local match next.",
       },
-      "Failed to create project funding profile"
+      "Failed to create project funding profile",
+      context
     );
   },
 };
 
 const UPDATE_FUNDING_OPPORTUNITY_DECISION: ActionRecord<"update_funding_opportunity_decision"> = {
   kind: "update_funding_opportunity_decision",
-  approval: "review",
-  auditEvent: "planner_agent.update_funding_opportunity_decision",
-  regrounding: "none",
-  effect: async (action) => {
+  effect: async (action, context) => {
     await patchJson(
       `/api/funding-opportunities/${action.opportunityId}`,
       { decisionState: action.decisionState },
-      "Failed to update funding opportunity decision"
+      "Failed to update funding opportunity decision",
+      context
     );
   },
 };
 
 const LINK_BILLING_INVOICE_FUNDING_AWARD: ActionRecord<"link_billing_invoice_funding_award"> = {
   kind: "link_billing_invoice_funding_award",
-  approval: "review",
-  auditEvent: "planner_agent.link_billing_invoice_funding_award",
-  regrounding: "none",
-  effect: async (action) => {
+  effect: async (action, context) => {
     await patchJson(
       `/api/billing/invoices/${action.invoiceId}`,
       {
         workspaceId: action.workspaceId,
         fundingAwardId: action.fundingAwardId,
       },
-      "Failed to link billing invoice to funding award"
+      "Failed to link billing invoice to funding award",
+      context
     );
   },
 };
 
 const CREATE_PROJECT_RECORD: ActionRecord<"create_project_record"> = {
   kind: "create_project_record",
-  approval: "review",
-  auditEvent: "planner_agent.create_project_record",
-  regrounding: "none",
-  effect: async (action) => {
+  effect: async (action, context) => {
     await postJson(
       `/api/projects/${action.projectId}/records`,
       {
@@ -151,7 +155,8 @@ const CREATE_PROJECT_RECORD: ActionRecord<"create_project_record"> = {
         status: action.status,
         notes: action.notes,
       },
-      "Failed to create project record"
+      "Failed to create project record",
+      context
     );
   },
 };
@@ -172,8 +177,8 @@ export const ACTION_REGISTRY: ActionRegistry = {
 
 export function getActionRecord<K extends AssistantQuickLinkExecuteAction["kind"]>(
   kind: K
-): ActionRecord<K> {
-  return ACTION_REGISTRY[kind];
+): ActionRecord<K> & ReturnType<typeof getActionMetadata<K>> {
+  return { ...getActionMetadata(kind), ...ACTION_REGISTRY[kind] };
 }
 
 export const MAX_REGROUNDING_DEPTH = 2;
@@ -198,6 +203,7 @@ export type ActionExecutionHost = {
 
 export type ExecuteActionOptions = {
   regroundingDepth?: number;
+  approvalEvidence?: AssistantActionApprovalEvidence | null;
 };
 
 export async function executeAction<K extends AssistantQuickLinkExecuteAction["kind"]>(
@@ -208,7 +214,11 @@ export async function executeAction<K extends AssistantQuickLinkExecuteAction["k
   const record = getActionRecord<K>(action.kind as K);
   const regroundingDepth = Math.max(0, options.regroundingDepth ?? 0);
 
-  await record.effect(action);
+  if (record.approval === "approval_required" && !options.approvalEvidence?.approvalId) {
+    throw new Error("Approval evidence is required before executing this Planner Agent action.");
+  }
+
+  await record.effect(action, { approvalEvidence: options.approvalEvidence });
 
   await host.onCompleted({ regrounding: record.regrounding });
 

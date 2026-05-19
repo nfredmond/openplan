@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
@@ -353,14 +354,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    const assistantAction = {
+      kind: "create_funding_opportunity" as const,
+      ...(parsed.data.programId ? { programId: parsed.data.programId } : {}),
+      ...(parsed.data.projectId ? { projectId: parsed.data.projectId } : {}),
+      title: parsed.data.title.trim(),
+    };
+    const serviceSupabase = createServiceRoleClient();
+    let approval;
+    try {
+      approval = await verifyAssistantActionApproval({
+        request,
+        serviceSupabase,
+        userId: user.id,
+        workspaceId: context.workspaceId,
+        action: assistantAction,
+      });
+    } catch (approvalError) {
+      return NextResponse.json(
+        { error: approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed" },
+        { status: 403 }
+      );
+    }
+
     let opportunity;
     try {
       opportunity = await withAssistantActionAudit(
-        supabase,
+        serviceSupabase,
         {
           actionKind: "create_funding_opportunity",
           workspaceId: context.workspaceId,
           userId: user.id,
+          approvalId: approval.approvalId,
+          inputHash: approval.inputHash,
+          executionSource: approval.executionSource,
           inputSummary: {
             title: parsed.data.title.trim(),
             programId: parsed.data.programId ?? null,

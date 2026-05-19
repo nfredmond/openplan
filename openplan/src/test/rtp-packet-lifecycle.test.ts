@@ -8,6 +8,7 @@ const REPORT_ID = "11111111-1111-4111-8111-111111111111";
 const ARTIFACT_ID = "55555555-5555-4555-8555-555555555555";
 
 const createClientMock = vi.fn();
+const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 
@@ -220,6 +221,7 @@ function buildTableMock(table: string) {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -255,6 +257,9 @@ describe("RTP packet lifecycle: create → generate → review posture", () => {
     createApiAuditLoggerMock.mockReturnValue({ info: vi.fn(), warn: vi.fn(), error: vi.fn() });
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     createClientMock.mockResolvedValue(createSupabase());
+    createServiceRoleClientMock.mockReturnValue({
+      from: (table: string) => buildTableMock(table),
+    });
   });
 
   it("moves no-packet → generated → review posture with expected queueTrace transitions", async () => {

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
+import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import {
   createDefaultTargetedReportSections,
   defaultTargetedReportTitle,
@@ -404,14 +405,29 @@ export async function POST(request: NextRequest) {
     if (target.kind === "rtp_cycle") {
       const executionCompletedAt = new Date().toISOString();
       const executionStartedAt = new Date(startedAt).toISOString();
-      const { error: executionAuditError } = await recordAssistantActionExecution(supabase, {
+      const serviceSupabase = createServiceRoleClient();
+      const approval = await verifyAssistantActionApproval({
+        request,
+        serviceSupabase,
+        userId: user.id,
+        workspaceId: target.workspaceId,
+        action: {
+          kind: "create_rtp_packet_record",
+          rtpCycleId: target.id,
+          ...(parsed.data.modelingCountyRunId ? { modelingCountyRunId: parsed.data.modelingCountyRunId } : {}),
+        },
+      });
+      const { error: executionAuditError } = await recordAssistantActionExecution(serviceSupabase, {
         workspaceId: target.workspaceId,
         userId: user.id,
         actionKind: "create_rtp_packet_record",
         auditEvent: "planner_agent.create_rtp_packet_record",
-        approval: "safe",
+        approval: "review",
         regrounding: "refresh_preview",
         outcome: "succeeded",
+        approvalId: approval.approvalId,
+        inputHash: approval.inputHash,
+        executionSource: approval.executionSource,
         inputSummary: {
           reportId: report.id,
           rtpCycleId: target.id,

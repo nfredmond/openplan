@@ -14,6 +14,7 @@ import {
   getActionRecord,
   MAX_REGROUNDING_DEPTH,
 } from "@/lib/runtime/action-registry";
+import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 
 describe("action registry", () => {
   it("exposes every assistant quick-link execute action as a record", () => {
@@ -29,7 +30,7 @@ describe("action registry", () => {
     ]);
 
     for (const kind of kinds) {
-      const record = ACTION_REGISTRY[kind as keyof typeof ACTION_REGISTRY];
+      const record = getActionRecord(kind as AssistantQuickLinkExecuteAction["kind"]);
       expect(record.kind).toBe(kind);
       expect(["safe", "review", "approval_required"]).toContain(record.approval);
       expect(["refresh_preview", "none"]).toContain(record.regrounding);
@@ -65,7 +66,7 @@ describe("executeAction dispatcher", () => {
       }
     );
 
-    expect(generateReportArtifactMock).toHaveBeenCalledWith("report-1");
+    expect(generateReportArtifactMock).toHaveBeenCalledWith("report-1", { headers: {} });
     expect(onCompleted).toHaveBeenCalledWith({ regrounding: "refresh_preview" });
     expect(refreshAssistantPreview).toHaveBeenCalledTimes(1);
     expect(submitPostActionPrompt).toHaveBeenCalledWith(
@@ -96,12 +97,26 @@ describe("executeAction dispatcher", () => {
         onCompleted,
         refreshAssistantPreview,
         submitPostActionPrompt,
+      },
+      {
+        approvalEvidence: {
+          approvalId: "approval-1",
+          inputHash: "hash-1",
+          executionSource: "planner_agent_quick_link",
+        },
       }
     );
 
     expect(fetchSpy).toHaveBeenCalledWith(
       "/api/funding-opportunities/op-1",
-      expect.objectContaining({ method: "PATCH" })
+      expect.objectContaining({
+        method: "PATCH",
+        headers: expect.objectContaining({
+          "x-openplan-assistant-approval-id": "approval-1",
+          "x-openplan-assistant-execution-source": "planner_agent_quick_link",
+          "x-openplan-assistant-input-hash": "hash-1",
+        }),
+      })
     );
     expect(onCompleted).toHaveBeenCalledWith({ regrounding: "none" });
     expect(refreshAssistantPreview).not.toHaveBeenCalled();
@@ -121,6 +136,19 @@ describe("executeAction dispatcher", () => {
       )
     ).rejects.toThrow("boom");
     expect(onCompleted).not.toHaveBeenCalled();
+  });
+
+  it("refuses approval-required actions without server-issued approval evidence", async () => {
+    await expect(
+      executeAction(
+        {
+          kind: "create_funding_opportunity",
+          projectId: "project-1",
+          title: "ATP Cycle 8",
+        },
+        { onCompleted: vi.fn() }
+      )
+    ).rejects.toThrow("Approval evidence is required");
   });
 });
 

@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import {
   FUNDING_OPPORTUNITY_DECISION_OPTIONS,
@@ -127,6 +128,34 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.summary !== undefined) updates.summary = parsed.data.summary?.trim() || null;
 
     const shouldAuditAsDecision = parsed.data.decisionState !== undefined;
+    const serviceSupabase = shouldAuditAsDecision ? createServiceRoleClient() : null;
+    let approval:
+      | {
+          approvalId: string | null;
+          inputHash: string | null;
+          executionSource: "manual" | "planner_agent_quick_link";
+        }
+      | null = null;
+    if (shouldAuditAsDecision && serviceSupabase) {
+      try {
+        approval = await verifyAssistantActionApproval({
+          request,
+          serviceSupabase,
+          userId: user.id,
+          workspaceId: access.opportunity.workspace_id,
+          action: {
+            kind: "update_funding_opportunity_decision",
+            opportunityId: access.opportunity.id,
+            decisionState: parsed.data.decisionState as "monitor" | "pursue" | "skip",
+          },
+        });
+      } catch (approvalError) {
+        return NextResponse.json(
+          { error: approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed" },
+          { status: 403 }
+        );
+      }
+    }
     const runUpdate = async () => {
       const { data, error } = await supabase
         .from("funding_opportunities")
@@ -147,11 +176,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     try {
       updatedOpportunity = shouldAuditAsDecision
         ? await withAssistantActionAudit(
-            supabase,
+            serviceSupabase!,
             {
               actionKind: "update_funding_opportunity_decision",
               workspaceId: access.opportunity.workspace_id,
               userId: user.id,
+              approvalId: approval?.approvalId ?? null,
+              inputHash: approval?.inputHash ?? null,
+              executionSource: approval?.executionSource ?? "manual",
               inputSummary: {
                 opportunityId: access.opportunity.id,
                 decisionState: parsed.data.decisionState,
