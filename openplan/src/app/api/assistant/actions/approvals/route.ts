@@ -9,6 +9,7 @@ import {
   newAssistantApprovalId,
 } from "@/lib/assistant/action-approval-server";
 import { getActionMetadata } from "@/lib/runtime/action-metadata";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const approvalRequestSchema = z.object({
   workspaceId: z.string().uuid().nullable(),
@@ -21,7 +22,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = approvalRequestSchema.safeParse(payload);
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid assistant approval request" }, { status: 400 });

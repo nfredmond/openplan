@@ -15,6 +15,7 @@ import {
   getScenarioComparisonReadiness,
 } from "@/lib/scenarios/catalog";
 import { loadScenarioSetAccess, looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),
@@ -342,7 +343,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid scenario set id" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.documentJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = patchScenarioSetSchema.safeParse(payload);
 
     if (!parsed.success) {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const workspaceIdSchema = z.string().uuid();
 const runIdSchema = z.string().uuid();
@@ -170,7 +171,9 @@ export async function PATCH(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const body = await request.json().catch(() => null);
+    const bodyBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!bodyBody.ok) return bodyBody.response;
+    const body = bodyBody.data;
     const parsed = runUpdateSchema.safeParse(body);
 
     if (!parsed.success) {

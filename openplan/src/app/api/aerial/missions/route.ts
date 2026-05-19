@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const AERIAL_MISSION_STATUSES = ["planned", "active", "complete", "cancelled"] as const;
 const AERIAL_MISSION_TYPES = ["corridor_survey", "site_inspection", "aoi_capture", "general"] as const;
@@ -22,7 +23,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json();
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createAerialMissionSchema.safeParse(payload);
 
     if (!parsed.success) {

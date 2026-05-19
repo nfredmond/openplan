@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { RTP_PORTFOLIO_ROLE_OPTIONS } from "@/lib/rtp/catalog";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const PORTFOLIO_ROLES = RTP_PORTFOLIO_ROLE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 
@@ -32,7 +33,11 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
     }
 
-    const payload = createLinkSchema.safeParse(await request.json().catch(() => null));
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = createLinkSchema.safeParse(payloadBody.data);
     if (!payload.success) {
       audit.warn("validation_failed", { issues: payload.error.issues });
       return NextResponse.json({ error: "Invalid RTP link payload" }, { status: 400 });
@@ -133,7 +138,11 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
     }
 
-    const payload = deleteLinkSchema.safeParse(await request.json().catch(() => null));
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = deleteLinkSchema.safeParse(payloadBody.data);
     if (!payload.success) {
       audit.warn("validation_failed", { issues: payload.error.issues });
       return NextResponse.json({ error: "Invalid delete payload" }, { status: 400 });

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   missionId: z.string().uuid(),
@@ -48,7 +49,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid mission id" }, { status: 400 });
     }
 
-    const payload = await request.json();
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.networkGeoJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = patchAerialMissionSchema.safeParse(payload);
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });

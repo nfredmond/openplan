@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("network_packages.list", request);
@@ -35,7 +36,9 @@ export async function POST(request: NextRequest) {
   const supabase = await createClient();
   let body;
   try {
-    body = await request.json();
+    const bodyBody = await readJsonOrNullWithLimit<Record<string, unknown>>(request, BODY_LIMITS.networkGeoJson);
+    if (!bodyBody.ok) return bodyBody.response;
+    body = bodyBody.data ?? {};
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }

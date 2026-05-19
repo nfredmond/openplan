@@ -6,6 +6,7 @@ import { loadCampaignAccess, loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
 import { normalizeShareToken } from "@/lib/engagement/public-portal";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   campaignId: z.string().uuid(),
@@ -192,7 +193,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid campaign id" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = patchCampaignSchema.safeParse(payload);
 
     if (!parsed.success) {

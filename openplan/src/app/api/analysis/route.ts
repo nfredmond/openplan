@@ -22,13 +22,13 @@ import { computeCorridorScores } from "@/lib/data-sources/scoring";
 import { classifyWalkBikeAccess } from "@/lib/accessibility/isochrone";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { generateGrantInterpretation } from "@/lib/ai/interpret";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 
-const ANALYSIS_BODY_MAX_BYTES = 64 * 1024;
+const ANALYSIS_BODY_MAX_BYTES = BODY_LIMITS.normalJson;
 
 type Position = [number, number] | [number, number, number];
 

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createDefaultTargetedReportSections } from "@/lib/reports/catalog";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 function looksLikePendingSchema(message: string | null | undefined) {
   return /column .* does not exist|schema cache/i.test(message ?? "");
@@ -18,7 +19,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = applyPacketPresetsSchema.safeParse(await request.json().catch(() => null));
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = applyPacketPresetsSchema.safeParse(payloadBody.data);
     if (!payload.success) {
       audit.warn("validation_failed", { issues: payload.error.issues });
       return NextResponse.json({ error: "Invalid packet preset update payload" }, { status: 400 });

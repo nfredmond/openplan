@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { rebuildProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   FUNDING_AWARD_MATCH_POSTURE_OPTIONS,
   FUNDING_AWARD_RISK_FLAG_OPTIONS,
@@ -94,7 +95,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json();
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createFundingAwardSchema.safeParse(payload);
 
     if (!parsed.success) {

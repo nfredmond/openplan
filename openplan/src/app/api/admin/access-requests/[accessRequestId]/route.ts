@@ -9,13 +9,13 @@ import {
   isAccessRequestTriageStatus,
   type AccessRequestStatus,
 } from "@/lib/access-requests";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const ACCESS_REQUEST_TRIAGE_MAX_BODY_BYTES = 4 * 1024;
+const ACCESS_REQUEST_TRIAGE_MAX_BODY_BYTES = BODY_LIMITS.adminTriageJson;
 
 const paramsSchema = z.object({
   accessRequestId: z.string().uuid(),

@@ -12,6 +12,7 @@ import {
   sanitizeCountyOnrampWorkerPayload,
 } from "@/lib/api/county-onramp-worker";
 import { presentCountyRunListItem } from "@/lib/api/county-onramp-presenters";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("county-runs.list", request);
@@ -105,7 +106,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createCountyRunRequestSchema.safeParse(payload);
 
     if (!parsed.success) {

@@ -10,7 +10,7 @@ import {
   type AccessRequestStatus,
 } from "@/lib/access-requests";
 import { applyBillingSubscriptionMutation } from "@/lib/billing/subscriptions";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -18,7 +18,7 @@ import { createWorkspaceInvitation } from "@/lib/workspaces/invitations";
 
 export const runtime = "nodejs";
 
-const ACCESS_REQUEST_PROVISION_MAX_BODY_BYTES = 4 * 1024;
+const ACCESS_REQUEST_PROVISION_MAX_BODY_BYTES = BODY_LIMITS.smallJson;
 const DUPLICATE_KEY_CODE = "23505";
 const PROVISIONED_PLAN = "pilot";
 const PROVISIONED_SUBSCRIPTION_STATUS = "pilot";

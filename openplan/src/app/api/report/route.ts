@@ -3,11 +3,11 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
-const REPORT_REQUEST_MAX_BODY_BYTES = 64 * 1024;
+const REPORT_REQUEST_MAX_BODY_BYTES = BODY_LIMITS.documentJson;
 
 const mapViewStateSchema = z.object({
   tractMetric: z.enum(["minority", "poverty", "income", "disadvantaged"]).optional(),

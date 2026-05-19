@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   buildBehavioralDemandComparison,
   normalizeBehavioralComparisonSource,
@@ -308,7 +309,9 @@ export async function POST(req: NextRequest, context: RouteContext) {
 
   let body: Record<string, unknown>;
   try {
-    body = (await req.json()) as Record<string, unknown>;
+    const bodyBody = await readJsonOrNullWithLimit<Record<string, unknown>>(req, BODY_LIMITS.normalJson);
+    if (!bodyBody.ok) return bodyBody.response;
+    body = bodyBody.data ?? {};
   } catch {
     return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
   }

@@ -1,7 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { canonicalizeActionPayload, getActionMetadata } from "@/lib/runtime/action-metadata";
 
 export const ASSISTANT_ACTION_APPROVAL_TTL_MS = 5 * 60 * 1000;
@@ -92,9 +91,23 @@ export type AssistantApprovalVerification = {
   executionSource: "manual" | "planner_agent_quick_link";
 };
 
+type AssistantActionApprovalRow = {
+  id: string;
+  workspace_id: string | null;
+  user_id: string;
+  action_kind: string;
+  input_hash: string;
+  expires_at: string;
+  consumed_at: string | null;
+};
+
+type AssistantApprovalSupabaseLike = {
+  from(table: "assistant_action_approvals" | string): unknown;
+};
+
 export async function verifyAssistantActionApproval(params: {
   request: NextRequest;
-  serviceSupabase: Pick<SupabaseClient, "from">;
+  serviceSupabase: AssistantApprovalSupabaseLike;
   userId: string;
   workspaceId: string | null;
   action: AssistantApprovalAction;
@@ -121,8 +134,25 @@ export async function verifyAssistantActionApproval(params: {
     throw new Error("Planner Agent approval evidence is missing.");
   }
 
-  const { data, error } = await params.serviceSupabase
-    .from("assistant_action_approvals")
+  const approvalTable = params.serviceSupabase.from("assistant_action_approvals") as {
+    select(columns: string): {
+      eq(column: string, value: unknown): {
+        maybeSingle(): PromiseLike<{
+          data: AssistantActionApprovalRow | null;
+          error: { message?: string } | null;
+        }>;
+      };
+    };
+    update(values: Record<string, unknown>): {
+      eq(column: string, value: unknown): {
+        is(column: string, value: unknown): PromiseLike<{
+          error: { message?: string } | null;
+        }>;
+      };
+    };
+  };
+
+  const { data, error } = await approvalTable
     .select("id, workspace_id, user_id, action_kind, input_hash, expires_at, consumed_at")
     .eq("id", approvalId)
     .maybeSingle();
@@ -142,8 +172,7 @@ export async function verifyAssistantActionApproval(params: {
     throw new Error("Planner Agent approval evidence is invalid or expired.");
   }
 
-  const { error: consumeError } = await params.serviceSupabase
-    .from("assistant_action_approvals")
+  const { error: consumeError } = await approvalTable
     .update({ consumed_at: new Date().toISOString() })
     .eq("id", approvalId)
     .is("consumed_at", null);

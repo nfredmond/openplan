@@ -743,7 +743,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       new NextRequest("http://localhost/api/reports/1/generate", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ format: "html", oversized: "x".repeat(33 * 1024) }),
+        body: JSON.stringify({ format: "html", oversized: "x".repeat(257 * 1024) }),
       }),
       {
         params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
@@ -756,7 +756,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       "request_body_too_large",
       expect.objectContaining({
         reportId: "11111111-1111-4111-8111-111111111111",
-        maxBytes: 32 * 1024,
+        maxBytes: 256 * 1024,
       })
     );
   });

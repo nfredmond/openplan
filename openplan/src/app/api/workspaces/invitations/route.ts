@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createWorkspaceInvitation, normalizeInvitationRole } from "@/lib/workspaces/invitations";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 export const runtime = "nodejs";
 
@@ -19,7 +20,9 @@ function canManageWorkspaceMembers(role: string | null | undefined): boolean {
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("workspaces.invitations", request);
   const startedAt = Date.now();
-  const payload = await request.json().catch(() => null);
+  const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.smallJson);
+  if (!payloadBody.ok) return payloadBody.response;
+  const payload = payloadBody.data;
   const parsed = invitationSchema.safeParse(payload);
 
   if (!parsed.success) {

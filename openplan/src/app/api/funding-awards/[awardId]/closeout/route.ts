@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { rebuildProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
 import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const awardIdSchema = z.object({
   awardId: z.string().uuid(),
@@ -71,7 +72,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid award identifier" }, { status: 400 });
     }
 
-    const payloadJson = await request.json().catch(() => null);
+    const payloadJsonBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadJsonBody.ok) return payloadJsonBody.response;
+
+    const payloadJson = payloadJsonBody.data;
     const parsedPayload = closeoutPayloadSchema.safeParse(payloadJson ?? undefined);
     if (!parsedPayload.success) {
       audit.warn("validation_failed", { issues: parsedPayload.error.issues });

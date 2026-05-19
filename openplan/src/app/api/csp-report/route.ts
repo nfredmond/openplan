@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 
-const CSP_REPORT_MAX_BYTES = 16 * 1024;
+const CSP_REPORT_MAX_BYTES = BODY_LIMITS.smallJson;
 
 type NormalizedReport = {
   blockedUri?: string;

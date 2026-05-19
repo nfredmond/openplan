@@ -8,6 +8,7 @@ import {
 } from "@/lib/reports/scenario-writeback";
 import { SCENARIO_ENTRY_STATUSES, SCENARIO_ENTRY_TYPES, makeScenarioEntrySlug } from "@/lib/scenarios/catalog";
 import { loadScenarioSetAccess, validateRunAccess } from "@/lib/scenarios/api";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),
@@ -46,7 +47,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid scenario entry route params" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.documentJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = patchScenarioEntrySchema.safeParse(payload);
 
     if (!parsed.success) {

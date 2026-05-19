@@ -5,7 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import {
   checkMonthlyRunQuota,
   isQuotaExceeded,
@@ -86,7 +86,7 @@ const paramsSchema = z.object({
   reportId: z.string().uuid(),
 });
 
-const REPORT_GENERATE_MAX_BODY_BYTES = 32 * 1024;
+const REPORT_GENERATE_MAX_BODY_BYTES = BODY_LIMITS.documentJson;
 
 const generateSchema = z.object({
   format: z.enum(["html", "pdf"]).default("html"),

@@ -138,7 +138,7 @@ describe("POST /api/report", () => {
         runId,
         format: "html",
         mapViewState: {
-          oversized: "x".repeat(65 * 1024),
+          oversized: "x".repeat(257 * 1024),
         },
       })
     );
@@ -148,7 +148,7 @@ describe("POST /api/report", () => {
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "request_body_too_large",
       expect.objectContaining({
-        maxBytes: 64 * 1024,
+        maxBytes: 256 * 1024,
       })
     );
   });

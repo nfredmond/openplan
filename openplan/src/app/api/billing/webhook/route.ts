@@ -16,6 +16,7 @@ import {
   isMissingEnvironmentVariableError,
 } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { BODY_LIMITS, readTextWithLimit } from "@/lib/http/body-limit";
 
 type WebhookEnvelope = {
   provider: "legacy" | "stripe";
@@ -117,7 +118,11 @@ export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("billing.webhook", request);
   const startedAt = Date.now();
 
-  const rawBody = await request.text();
+  const rawBodyRead = await readTextWithLimit(request, BODY_LIMITS.stripeWebhookRaw);
+
+  if (!rawBodyRead.ok) return rawBodyRead.response;
+
+  const rawBody = rawBodyRead.text;
   if (!rawBody) {
     return NextResponse.json({ error: "Empty webhook payload" }, { status: 400 });
   }

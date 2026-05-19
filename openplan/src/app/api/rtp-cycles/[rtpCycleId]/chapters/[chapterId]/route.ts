@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { RTP_CHAPTER_STATUS_OPTIONS } from "@/lib/rtp/catalog";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   rtpCycleId: z.string().uuid(),
@@ -39,7 +40,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid RTP cycle chapter id" }, { status: 400 });
     }
 
-    const payload = patchChapterSchema.safeParse(await request.json().catch(() => null));
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = patchChapterSchema.safeParse(payloadBody.data);
     if (!payload.success) {
       audit.warn("validation_failed", { issues: payload.error.issues });
       return NextResponse.json({ error: "Invalid RTP chapter update payload" }, { status: 400 });
