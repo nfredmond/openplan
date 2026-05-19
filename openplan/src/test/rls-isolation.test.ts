@@ -534,14 +534,14 @@ function parseLocalSupabaseEnv(output: string): LocalSupabaseEnv {
   };
 
   if (!env.API_URL || !env.ANON_KEY || !env.SERVICE_ROLE_KEY) {
-    throw new Error("Unable to resolve local Supabase env. Run `pnpm supabase start` first.");
+    throw new Error("Unable to resolve local Supabase env. Run `npm exec supabase start` first.");
   }
 
   return env as LocalSupabaseEnv;
 }
 
 function getLocalSupabaseEnv(): LocalSupabaseEnv {
-  const output = execFileSync("pnpm", ["supabase", "status", "-o", "env"], {
+  const output = execFileSync("npm", ["exec", "--", "supabase", "status", "-o", "env"], {
     cwd: process.cwd(),
     encoding: "utf8",
     stdio: ["ignore", "pipe", "ignore"],
@@ -775,5 +775,23 @@ liveDescribe("workspace RLS live isolation", () => {
         expect(result.rows, `${result.table} tenant B service-only rows`).toEqual([]);
       }
     }
+  });
+
+  it("keeps assistant action executions readable but service-authored only", async () => {
+    const readable = await readWorkspaceRows(userB, "assistant_action_executions", context.workspaceBId);
+    expect(readable.error, "assistant_action_executions member read error").toBeNull();
+    expect(readable.rows.length, "assistant_action_executions tenant B rows").toBeGreaterThan(0);
+
+    const attemptedClientInsert = probeByTable("assistant_action_executions").build({
+      ...context,
+      suffix: `${context.suffix}_client_insert`,
+    });
+    attemptedClientInsert.id = randomUUID();
+
+    const { error } = await userB.from("assistant_action_executions").insert(attemptedClientInsert);
+
+    expect(error?.message ?? "", "assistant_action_executions client insert error").toMatch(
+      /row-level security|permission denied|violates/i
+    );
   });
 });

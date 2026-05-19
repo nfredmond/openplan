@@ -1,0 +1,39 @@
+name: RLS Isolation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 10 * * *"
+
+jobs:
+  rls-isolation:
+    name: live RLS isolation
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./openplan
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: openplan/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Start Supabase
+        run: npm exec -- supabase start
+
+      - name: Reset local database
+        run: npm exec -- supabase db reset
+
+      - name: Run live RLS isolation proof
+        run: npm run test:rls-live
+
+      - name: Stop Supabase
+        if: always()
+        run: npm exec -- supabase stop
