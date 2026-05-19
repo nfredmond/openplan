@@ -7,6 +7,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
 import { ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT } from "@/lib/access-request-status";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 export const runtime = "nodejs";
 
@@ -200,7 +201,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const payload = await request.json().catch(() => null);
+  const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.smallJson);
+
+  if (!payloadBody.ok) return payloadBody.response;
+
+  const payload = payloadBody.data;
   const parsed = provisioningSchema.safeParse(payload);
   if (!parsed.success) {
     audit.warn("workspace_provisioning_validation_failed", {

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
@@ -48,7 +49,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid model run route params" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = patchSchema.safeParse(payload);
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid promotion payload" }, { status: 400 });

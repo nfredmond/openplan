@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProgramAccess } from "@/lib/programs/api";
 import { replaceLinkSet, restoreLinkSet } from "@/lib/api/link-replacement";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
@@ -547,7 +548,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid program id" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = patchProgramSchema.safeParse(payload);
 
     if (!parsed.success) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import {
   checkMonthlyRunQuota,
   isQuotaExceeded,
@@ -22,7 +22,7 @@ type QaCheck = {
   count?: number;
 };
 
-const NETWORK_PACKAGE_INGEST_MAX_BODY_BYTES = 2 * 1024 * 1024;
+const NETWORK_PACKAGE_INGEST_MAX_BODY_BYTES = BODY_LIMITS.networkGeoJson;
 
 function validateGeoJsonFeatures(geojson: unknown, label: string): QaCheck[] {
   const checks: QaCheck[] = [];

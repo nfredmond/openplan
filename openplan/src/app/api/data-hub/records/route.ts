@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const DUPLICATE_KEY_CODE = "23505";
 
@@ -117,7 +118,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createRecordSchema.safeParse(payload);
 
     if (!parsed.success) {

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -139,7 +140,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = createRtpCycleSchema.safeParse(await request.json());
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = createRtpCycleSchema.safeParse(payloadBody.data);
     if (!payload.success) {
       audit.warn("validation_failed", { issues: payload.error.issues });
       return NextResponse.json({ error: "Invalid RTP cycle payload" }, { status: 400 });

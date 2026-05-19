@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { SCENARIO_SET_STATUSES } from "@/lib/scenarios/catalog";
 import { loadProjectAccess } from "@/lib/scenarios/api";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const listScenarioSetsSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -125,7 +126,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.documentJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createScenarioSetSchema.safeParse(payload);
 
     if (!parsed.success) {

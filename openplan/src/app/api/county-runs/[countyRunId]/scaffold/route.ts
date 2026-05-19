@@ -16,6 +16,7 @@ import {
   summarizeCountyValidationScaffoldCsv,
 } from "@/lib/api/county-onramp-scaffold";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -149,7 +150,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid county run route params" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsedBody = updateCountyRunScaffoldRequestSchema.safeParse(payload);
     if (!parsedBody.success) {
       audit.warn("validation_failed", { issues: parsedBody.error.issues });

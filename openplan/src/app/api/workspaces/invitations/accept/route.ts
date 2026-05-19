@@ -8,6 +8,7 @@ import {
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { type WorkspaceRole } from "@/lib/auth/role-matrix";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,9 @@ async function markExpired(
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("workspaces.invitations.accept", request);
   const startedAt = Date.now();
-  const payload = await request.json().catch(() => null);
+  const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.smallJson);
+  if (!payloadBody.ok) return payloadBody.response;
+  const payload = payloadBody.data;
   const parsed = acceptInvitationSchema.safeParse(payload);
 
   if (!parsed.success) {

@@ -7,6 +7,7 @@ import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const listCampaignsSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -127,7 +128,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createCampaignSchema.safeParse(payload);
 
     if (!parsed.success) {

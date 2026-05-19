@@ -10,6 +10,7 @@ import {
   type ReportType,
 } from "@/lib/reports/catalog";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 function looksLikePendingSchema(message: string | null | undefined) {
   return /column .* does not exist|schema cache/i.test(message ?? "");
@@ -146,7 +147,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.documentJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createReportSchema.safeParse(payload);
 
     if (!parsed.success) {

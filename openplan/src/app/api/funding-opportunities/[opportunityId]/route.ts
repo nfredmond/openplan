@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   FUNDING_OPPORTUNITY_DECISION_OPTIONS,
   FUNDING_OPPORTUNITY_STATUS_OPTIONS,
@@ -61,7 +62,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid funding opportunity id" }, { status: 400 });
     }
 
-    const payload = await request.json();
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = patchFundingOpportunitySchema.safeParse(payload);
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });

@@ -15,13 +15,13 @@ import {
   ACCESS_REQUEST_ORGANIZATION_TYPE_VALUES,
   ACCESS_REQUEST_SERVICE_LANE_VALUES,
 } from "@/lib/access-request-intake";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-const ACCESS_REQUEST_MAX_BODY_BYTES = 16 * 1024;
+const ACCESS_REQUEST_MAX_BODY_BYTES = BODY_LIMITS.smallJson;
 const DUPLICATE_KEY_CODE = "23505";
 
 const accessRequestSchema = z.object({

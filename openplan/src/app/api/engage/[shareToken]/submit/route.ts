@@ -6,11 +6,11 @@ import {
   PUBLIC_SUBMISSION_RECENT_LOOKBACK_MINUTES,
   type RecentPublicSubmissionRecord,
 } from "@/lib/engagement/public-submit";
-import { readJsonWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 
-const PUBLIC_SUBMISSION_MAX_BODY_BYTES = 16 * 1024;
+const PUBLIC_SUBMISSION_MAX_BODY_BYTES = BODY_LIMITS.smallJson;
 
 const paramsSchema = z.object({
   shareToken: z.string().min(8).max(64),

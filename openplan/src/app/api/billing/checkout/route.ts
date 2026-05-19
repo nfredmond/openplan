@@ -5,6 +5,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { buildOpenPlanFitReviewPath, resolveLegacyOpenPlanTierReference } from "@/lib/billing/openplan-fit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const billingCheckoutSchema = z
   .object({
@@ -61,7 +62,9 @@ async function authorizeWorkspaceCheckout(
 
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("billing.checkout", request);
-  const body = await request.json().catch(() => null);
+  const bodyBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.smallJson);
+  if (!bodyBody.ok) return bodyBody.response;
+  const body = bodyBody.data;
   const parsed = billingCheckoutSchema.safeParse(body);
 
   if (!parsed.success) {

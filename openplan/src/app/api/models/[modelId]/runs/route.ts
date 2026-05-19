@@ -11,6 +11,7 @@ import {
   mergeScenarioLaunchPayload,
 } from "@/lib/models/run-launch";
 import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
@@ -118,7 +119,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid model id" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = launchModelRunSchema.safeParse(payload);
 
     if (!parsed.success) {

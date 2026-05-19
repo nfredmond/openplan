@@ -9,6 +9,7 @@ import {
 import { flushUsageEventsToStripe } from "@/lib/billing/usage-flush";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 export const runtime = "nodejs";
 
@@ -68,7 +69,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json().catch(() => ({}));
+  const bodyBody = await readJsonOrNullWithLimit<Record<string, unknown>>(request, BODY_LIMITS.smallJson);
+
+  if (!bodyBody.ok) return bodyBody.response;
+
+  const body = bodyBody.data ?? {};
   const parsed = billingReadinessSchema.safeParse(body);
   if (!parsed.success) {
     audit.warn("billing_readiness_validation_failed", { issues: parsed.error.issues.length });

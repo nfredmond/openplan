@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   invoiceId: z.string().uuid(),
@@ -37,7 +38,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid invoice id" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = patchBillingInvoiceSchema.safeParse(payload);
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });

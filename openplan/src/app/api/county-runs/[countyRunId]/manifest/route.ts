@@ -10,6 +10,7 @@ import {
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
 import { persistBehavioralOnrampKpis } from "@/lib/models/behavioral-onramp-kpis";
 import { refreshCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -63,7 +64,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid county run route params" }, { status: 400 });
     }
 
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = payloadBody.data;
     const parsed = ingestCountyRunManifestRequestSchema.safeParse(payload);
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });

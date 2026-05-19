@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { rebuildAerialProjectPosture } from "@/lib/aerial/posture-writeback";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const AERIAL_PACKAGE_TYPES = ["measurable_output", "qa_bundle", "share_package"] as const;
 const AERIAL_PACKAGE_STATUSES = ["processing", "qa_pending", "ready", "shared"] as const;
@@ -22,7 +23,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json();
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createEvidencePackageSchema.safeParse(payload);
 
     if (!parsed.success) {

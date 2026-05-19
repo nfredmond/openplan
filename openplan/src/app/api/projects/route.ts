@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const createProjectSchema = z.object({
   projectName: z.string().trim().min(1).max(120),
@@ -149,7 +150,9 @@ export async function POST(request: NextRequest) {
   const startedAt = Date.now();
 
   try {
-    const payload = await request.json().catch(() => null);
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+    const payload = payloadBody.data;
     const parsed = createProjectSchema.safeParse(payload);
 
     if (!parsed.success) {
