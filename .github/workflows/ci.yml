@@ -16,23 +16,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 10.33.0
-
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: pnpm
-          cache-dependency-path: openplan/pnpm-lock.yaml
+          cache: npm
+          cache-dependency-path: openplan/package-lock.json
 
       - name: Install
-        run: pnpm install --frozen-lockfile
+        run: npm ci
 
       - name: QA gate
-        run: pnpm qa:gate
+        run: npm run qa:gate
         env:
           NEXT_PUBLIC_SUPABASE_URL: https://example.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
