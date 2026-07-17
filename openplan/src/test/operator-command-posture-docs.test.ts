@@ -10,7 +10,6 @@ function read(relativePath: string) {
 }
 
 const activeOperatorDocs = [
-  "AGENTS.md",
   "CLAUDE.md",
   "CONTRIBUTING.md",
   "README.md",
@@ -31,7 +30,6 @@ describe("OpenPlan operator command posture docs", () => {
 
     const docs = Object.fromEntries(activeOperatorDocs.map((doc) => [doc, read(doc)]));
     const currentCommandSections: Record<string, string> = {
-      "AGENTS.md": docs["AGENTS.md"].slice(docs["AGENTS.md"].indexOf("## Commands")),
       "CLAUDE.md": docs["CLAUDE.md"].slice(docs["CLAUDE.md"].indexOf("## Commands")),
       "CONTRIBUTING.md": docs["CONTRIBUTING.md"],
       "README.md": docs["README.md"],
@@ -47,8 +45,7 @@ describe("OpenPlan operator command posture docs", () => {
       );
     }
 
-    expect(docs["AGENTS.md"]).toContain("**Current command posture:** use `npm run …` / `npm exec …` for live operator commands");
-    expect(docs["CLAUDE.md"]).toContain("**Current command posture:** use `npm run …` / `npm exec …` for live operator commands");
+    expect(docs["CLAUDE.md"]).toContain("**Package manager is npm**");
     expect(docs["README.md"]).toContain("package scripts are invoked with `npm run …` in current operator docs");
     expect(docs["README.md"]).toContain("`npm run qa:gate` explicitly pins `pnpm@10.33.0`");
     expect(docs["docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md"]).toContain(
