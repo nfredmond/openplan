@@ -1,12 +1,18 @@
 "use client";
 
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { CheckCircle2, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { LocationPickerMap } from "./location-picker-map";
+import {
+  engagementGeometryTypeLabel,
+  readStoredEngagementGeometry,
+  type EngagementGeometry,
+} from "@/lib/engagement/geometry";
+import { ENGAGEMENT_PHOTO_MAX_BYTES } from "@/lib/engagement/photo";
+import { GeometryPickerMap } from "./geometry-picker-map";
 import { LocationDisplayMap } from "./location-display-map";
 
 type CategoryOption = {
@@ -23,8 +29,13 @@ type ApprovedItem = {
   submittedBy: string | null;
   latitude: number | null;
   longitude: number | null;
+  geometry?: unknown;
+  votesCount?: number;
+  photoUrl?: string | null;
   createdAt: string;
 };
+
+const PHOTO_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 function fmtDate(value: string): string {
   const parsed = new Date(value);
@@ -50,6 +61,16 @@ function getEngagementGuidance(engagementType: string): { helpfulInput: string; 
         modeLabel: "Community feedback collection",
       };
   }
+}
+
+function getItemLocationLabel(item: ApprovedItem): string | null {
+  const geometry = readStoredEngagementGeometry(item.geometry ?? null);
+  if (geometry) {
+    if (geometry.type === "Point") return "Located";
+    return `${engagementGeometryTypeLabel(geometry.type)} drawn`;
+  }
+  if (item.latitude !== null && item.longitude !== null) return "Located";
+  return null;
 }
 
 function PortalTabButton({
@@ -96,28 +117,81 @@ function SubmissionForm({
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [submittedBy, setSubmittedBy] = useState("");
-  const [latitude, setLatitude] = useState("");
-  const [longitude, setLongitude] = useState("");
+  const [geometry, setGeometry] = useState<EngagementGeometry | null>(null);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
+  const [photoError, setPhotoError] = useState<string | null>(null);
   const [website, setWebsite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    return () => {
+      if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    };
+  }, [photoPreviewUrl]);
+
+  function clearPhoto() {
+    setPhotoFile(null);
+    setPhotoError(null);
+    setPhotoPreviewUrl((previous) => {
+      if (previous) URL.revokeObjectURL(previous);
+      return null;
+    });
+    if (photoInputRef.current) photoInputRef.current.value = "";
+  }
+
+  function handlePhotoChange(file: File | null) {
+    setPhotoError(null);
+
+    if (!file) {
+      clearPhoto();
+      return;
+    }
+
+    if (!PHOTO_CONTENT_TYPES.includes(file.type)) {
+      clearPhoto();
+      setPhotoError("Please choose a JPEG, PNG, or WebP image.");
+      return;
+    }
+
+    if (file.size > ENGAGEMENT_PHOTO_MAX_BYTES) {
+      clearPhoto();
+      setPhotoError("Photo is too large. The limit is 5 MB.");
+      return;
+    }
+
+    setPhotoFile(file);
+    setPhotoPreviewUrl((previous) => {
+      if (previous) URL.revokeObjectURL(previous);
+      return URL.createObjectURL(file);
+    });
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-
-    const parsedLat = latitude.trim() ? Number(latitude) : undefined;
-    const parsedLng = longitude.trim() ? Number(longitude) : undefined;
-
-    if ((latitude.trim() && Number.isNaN(parsedLat)) || (longitude.trim() && Number.isNaN(parsedLng))) {
-      setError("Please enter valid coordinates.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
+      // Two-step photo flow: upload the raw image first, then reference the
+      // returned storage path in the submission payload.
+      let photoPath: string | undefined;
+      if (photoFile) {
+        const uploadResponse = await fetch(`/api/engage/${shareToken}/photo-upload`, {
+          method: "POST",
+          headers: { "content-type": photoFile.type },
+          body: photoFile,
+        });
+        const uploadPayload = (await uploadResponse.json()) as { error?: string; photoPath?: string };
+        if (!uploadResponse.ok || !uploadPayload.photoPath) {
+          throw new Error(uploadPayload.error || "Photo upload failed");
+        }
+        photoPath = uploadPayload.photoPath;
+      }
+
       const response = await fetch(`/api/engage/${shareToken}/submit`, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -126,8 +200,8 @@ function SubmissionForm({
           title: title || undefined,
           body,
           submittedBy: submittedBy || undefined,
-          latitude: parsedLat,
-          longitude: parsedLng,
+          geometry: geometry ?? undefined,
+          photoPath,
           website,
         }),
       });
@@ -165,8 +239,8 @@ function SubmissionForm({
             setTitle("");
             setBody("");
             setSubmittedBy("");
-            setLatitude("");
-            setLongitude("");
+            setGeometry(null);
+            clearPhoto();
             setWebsite("");
             setError(null);
           }}
@@ -254,19 +328,52 @@ function SubmissionForm({
 
               <div className="space-y-2 pt-1">
                 <label className="text-sm font-medium">
-                  Location pin <span className="text-xs text-muted-foreground">(optional)</span>
+                  Map location <span className="text-xs text-muted-foreground">(optional)</span>
                 </label>
-                <p className="text-xs text-muted-foreground">Click on the map to drop a pin if your input is about a specific spot.</p>
+                <p className="text-xs text-muted-foreground">
+                  Drop a pin, trace a street or route as a line, or outline an area if your input is about a specific place.
+                </p>
                 <div className="public-map-frame public-map-frame--editor">
-                  <LocationPickerMap
-                    latitude={latitude}
-                    longitude={longitude}
-                    onLocationChange={(lat, lng) => {
-                      setLatitude(lat);
-                      setLongitude(lng);
-                    }}
-                  />
+                  <GeometryPickerMap onGeometryChange={setGeometry} />
                 </div>
+                {geometry ? (
+                  <p className="text-xs text-muted-foreground">
+                    Attached map shape: {engagementGeometryTypeLabel(geometry.type)}
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="space-y-1.5 pt-1">
+                <label htmlFor="public-photo" className="text-sm font-medium">
+                  Photo <span className="text-xs text-muted-foreground">(optional)</span>
+                </label>
+                <p className="text-xs text-muted-foreground">Attach one JPEG, PNG, or WebP photo up to 5 MB.</p>
+                <input
+                  id="public-photo"
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-foreground hover:file:border-primary/50"
+                  onChange={(event) => handlePhotoChange(event.target.files?.[0] ?? null)}
+                />
+                {photoError ? <p className="text-xs text-destructive">{photoError}</p> : null}
+                {photoPreviewUrl ? (
+                  <div className="flex items-center gap-3">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- local object URL preview */}
+                    <img
+                      src={photoPreviewUrl}
+                      alt="Preview of the attached photo"
+                      className="h-24 w-24 rounded-lg border border-border object-cover"
+                    />
+                    <button
+                      type="button"
+                      className="text-xs font-medium text-destructive hover:underline"
+                      onClick={clearPhoto}
+                    >
+                      Remove photo
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           </section>
@@ -311,7 +418,7 @@ function SubmissionForm({
           <div className="public-note-block">
             <p className="public-section-label">Optional fields</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Picking a topic, adding a pin, or sharing your name can help the team review context, but the main note matters most.
+              Picking a topic, marking a place as a point, line, or area, attaching a photo, or sharing your name can help the team review context, but the main note matters most.
             </p>
           </div>
         </aside>
@@ -368,6 +475,26 @@ export function PublicEngagementPortal({
   } | null;
 }) {
   const [activeTab, setActiveTab] = useState<"submit" | "feedback">(acceptingSubmissions ? "submit" : "feedback");
+  const [sortOrder, setSortOrder] = useState<"newest" | "most_supported">("newest");
+  const [supportedItemIds, setSupportedItemIds] = useState<Set<string>>(new Set());
+  const [voteCounts, setVoteCounts] = useState<Record<string, number>>({});
+
+  const supportedStorageKey = `openplan-engagement-supported-${shareToken}`;
+
+  // localStorage memory of supported items is a soft client hint only — the
+  // server-side unique constraint is the real idempotency guard.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(supportedStorageKey);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as unknown;
+      if (Array.isArray(parsed)) {
+        setSupportedItemIds(new Set(parsed.filter((value): value is string => typeof value === "string")));
+      }
+    } catch {
+      // Ignore unreadable local storage.
+    }
+  }, [supportedStorageKey]);
 
   const categoryMap = useMemo(() => {
     const map = new Map<string, string>();
@@ -376,6 +503,55 @@ export function PublicEngagementPortal({
     }
     return map;
   }, [categories]);
+
+  const displayedVotes = (item: ApprovedItem): number => voteCounts[item.id] ?? item.votesCount ?? 0;
+
+  const sortedItems = useMemo(() => {
+    if (sortOrder === "newest") return approvedItems;
+    return [...approvedItems].sort((left, right) => {
+      const voteDelta =
+        (voteCounts[right.id] ?? right.votesCount ?? 0) - (voteCounts[left.id] ?? left.votesCount ?? 0);
+      if (voteDelta !== 0) return voteDelta;
+      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    });
+  }, [approvedItems, sortOrder, voteCounts]);
+
+  function persistSupported(next: Set<string>) {
+    setSupportedItemIds(next);
+    try {
+      window.localStorage.setItem(supportedStorageKey, JSON.stringify([...next]));
+    } catch {
+      // Ignore unwritable local storage.
+    }
+  }
+
+  async function supportItem(itemId: string): Promise<number | null> {
+    if (supportedItemIds.has(itemId)) return null;
+
+    const baseCount = voteCounts[itemId] ?? approvedItems.find((item) => item.id === itemId)?.votesCount ?? 0;
+
+    // Optimistic update; the server response (including alreadyVoted replays)
+    // settles the final count.
+    persistSupported(new Set([...supportedItemIds, itemId]));
+    setVoteCounts((previous) => ({ ...previous, [itemId]: baseCount + 1 }));
+
+    try {
+      const response = await fetch(`/api/engage/${shareToken}/items/${itemId}/vote`, { method: "POST" });
+      const payload = (await response.json()) as { error?: string; votesCount?: number };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to record support");
+      }
+      const confirmed = typeof payload.votesCount === "number" ? payload.votesCount : baseCount + 1;
+      setVoteCounts((previous) => ({ ...previous, [itemId]: confirmed }));
+      return confirmed;
+    } catch {
+      setVoteCounts((previous) => ({ ...previous, [itemId]: baseCount }));
+      const reverted = new Set(supportedItemIds);
+      reverted.delete(itemId);
+      persistSupported(reverted);
+      return null;
+    }
+  }
 
   const engagementGuidance = getEngagementGuidance(engagementType);
 
@@ -454,7 +630,11 @@ export function PublicEngagementPortal({
                     longitude: item.longitude,
                     title: item.title,
                     body: item.body,
+                    geometry: item.geometry,
+                    votesCount: displayedVotes(item),
                   }))}
+                  onSupport={supportItem}
+                  hasVoted={(itemId) => supportedItemIds.has(itemId)}
                 />
               </div>
 
@@ -463,27 +643,70 @@ export function PublicEngagementPortal({
                   No community feedback has been published for this campaign yet.
                 </div>
               ) : (
-                <div className="public-ledger">
-                  {approvedItems.map((item) => (
-                    <article key={item.id} className="public-ledger-row public-ledger-row--feedback">
-                      <div className="public-ledger-body">
-                        <div className="public-ledger-meta-row text-xs text-muted-foreground">
-                          {item.categoryId && categoryMap.has(item.categoryId) ? <span className="public-inline-label">{categoryMap.get(item.categoryId)}</span> : null}
-                          {item.latitude !== null && item.longitude !== null ? (
-                            <span className="inline-flex items-center gap-1">
-                              <MapPinned className="h-3 w-3" />
-                              Located
-                            </span>
-                          ) : null}
-                          <span>{fmtDate(item.createdAt)}</span>
-                          {item.submittedBy ? <span>by {item.submittedBy}</span> : null}
-                        </div>
-                        {item.title ? <h3 className="public-ledger-title">{item.title}</h3> : null}
-                        <p className="public-ledger-copy whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.body}</p>
-                      </div>
-                    </article>
-                  ))}
-                </div>
+                <>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      {approvedItems.length} published item{approvedItems.length === 1 ? "" : "s"}
+                    </p>
+                    <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+                      Sort by
+                      <select
+                        className="h-9 rounded-lg border border-input bg-background px-2.5 text-xs shadow-xs outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20"
+                        value={sortOrder}
+                        onChange={(event) => setSortOrder(event.target.value as "newest" | "most_supported")}
+                      >
+                        <option value="newest">Newest</option>
+                        <option value="most_supported">Most supported</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <div className="public-ledger">
+                    {sortedItems.map((item) => {
+                      const locationLabel = getItemLocationLabel(item);
+                      const supported = supportedItemIds.has(item.id);
+
+                      return (
+                        <article key={item.id} className="public-ledger-row public-ledger-row--feedback">
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="public-ledger-body">
+                              <div className="public-ledger-meta-row text-xs text-muted-foreground">
+                                {item.categoryId && categoryMap.has(item.categoryId) ? <span className="public-inline-label">{categoryMap.get(item.categoryId)}</span> : null}
+                                {locationLabel ? (
+                                  <span className="inline-flex items-center gap-1">
+                                    <MapPinned className="h-3 w-3" />
+                                    {locationLabel}
+                                  </span>
+                                ) : null}
+                                <span>{fmtDate(item.createdAt)}</span>
+                                {item.submittedBy ? <span>by {item.submittedBy}</span> : null}
+                              </div>
+                              {item.title ? <h3 className="public-ledger-title">{item.title}</h3> : null}
+                              <p className="public-ledger-copy whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.body}</p>
+                              {item.photoUrl ? (
+                                // eslint-disable-next-line @next/next/no-img-element -- short-TTL signed URL from a private bucket
+                                <img
+                                  src={item.photoUrl}
+                                  alt="Photo attached to this community comment"
+                                  className="mt-3 max-h-56 w-auto max-w-full rounded-lg border border-border/70"
+                                />
+                              ) : null}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => void supportItem(item.id)}
+                              disabled={supported}
+                              aria-pressed={supported}
+                              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition hover:border-[color:var(--pine)] hover:text-[color:var(--pine)] disabled:cursor-default disabled:opacity-70"
+                            >
+                              ▲ {supported ? "Supported" : "Support"} · {displayedVotes(item)}
+                            </button>
+                          </div>
+                        </article>
+                      );
+                    })}
+                  </div>
+                </>
               )}
             </>
           ) : null}

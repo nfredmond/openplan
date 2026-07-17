@@ -12,6 +12,10 @@ import {
   engagementStatusTone,
   titleizeEngagementValue,
 } from "@/lib/engagement/catalog";
+import {
+  engagementGeometryTypeLabel,
+  readStoredEngagementGeometry,
+} from "@/lib/engagement/geometry";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 type CategoryOption = {
@@ -31,6 +35,9 @@ type ItemRecord = {
   moderation_notes: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  geometry?: unknown;
+  votes_count?: number | null;
+  photo_url?: string | null;
   updated_at: string;
 };
 
@@ -78,6 +85,8 @@ function ItemRow({
   const [longitude, setLongitude] = useState(item.longitude?.toString() ?? "");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const storedGeometry = readStoredEngagementGeometry(item.geometry ?? null);
+  const votesCount = typeof item.votes_count === "number" ? item.votes_count : 0;
 
   async function submitItem(nextStatus?: string) {
     const nextLatitude = parseCoordinateInput(latitude);
@@ -143,7 +152,13 @@ function ItemRow({
             ) : (
               <StatusBadge tone="warning">Uncategorized</StatusBadge>
             )}
-            {(latitude || longitude) && <StatusBadge tone="neutral">Geolocated</StatusBadge>}
+            {storedGeometry ? (
+              <StatusBadge tone="neutral">{engagementGeometryTypeLabel(storedGeometry.type)} geometry</StatusBadge>
+            ) : (latitude || longitude) ? (
+              <StatusBadge tone="neutral">Geolocated</StatusBadge>
+            ) : null}
+            {votesCount > 0 ? <StatusBadge tone="info">▲ {votesCount} support</StatusBadge> : null}
+            {item.photo_url ? <StatusBadge tone="neutral">Photo attached</StatusBadge> : null}
           </div>
 
           <div className="space-y-1.5">
@@ -152,6 +167,14 @@ function ItemRow({
               <p className="module-record-stamp">Updated {fmtDateTime(item.updated_at)}</p>
             </div>
             <p className="module-record-summary whitespace-pre-wrap">{body}</p>
+            {item.photo_url ? (
+              // eslint-disable-next-line @next/next/no-img-element -- short-TTL signed URL from the private engagement-photos bucket
+              <img
+                src={item.photo_url}
+                alt="Photo attached to this submission"
+                className="mt-2 h-24 w-24 rounded-[0.5rem] border border-border/70 object-cover"
+              />
+            ) : null}
           </div>
         </div>
       </div>

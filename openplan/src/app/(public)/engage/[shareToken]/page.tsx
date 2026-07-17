@@ -2,6 +2,10 @@ import { notFound } from "next/navigation";
 import { Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
+import {
+  ENGAGEMENT_PHOTO_BUCKET,
+  ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS,
+} from "@/lib/engagement/photo";
 
 type CampaignRow = {
   id: string;
@@ -38,6 +42,9 @@ type ApprovedItemRow = {
   submitted_by: string | null;
   latitude: number | null;
   longitude: number | null;
+  geometry: unknown;
+  photo_path: string | null;
+  votes_count: number | null;
   created_at: string;
 };
 
@@ -88,7 +95,7 @@ export default async function PublicEngagementPage({
       .order("created_at", { ascending: true }),
     supabase
       .from("engagement_items")
-      .select("id, category_id, title, body, submitted_by, latitude, longitude, created_at")
+      .select("id, category_id, title, body, submitted_by, latitude, longitude, geometry, photo_path, votes_count, created_at")
       .eq("campaign_id", campaign.id)
       .eq("status", "approved")
       .order("created_at", { ascending: false })
@@ -99,6 +106,29 @@ export default async function PublicEngagementPage({
   const categories = (categoriesData ?? []) as CategoryRow[];
   const approvedItems = (approvedItemsData ?? []) as ApprovedItemRow[];
   const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
+
+  // Photos live in a PRIVATE service-role-only bucket. Short-TTL signed URLs
+  // are minted here, server-side, exclusively for APPROVED items (the query
+  // above filters status) — pending/rejected photos are never reachable
+  // from the public portal.
+  const photoUrlByItemId = new Map<string, string>();
+  const photoPaths = approvedItems
+    .filter((item) => typeof item.photo_path === "string" && item.photo_path.length > 0)
+    .map((item) => item.photo_path as string);
+
+  if (photoPaths.length > 0) {
+    const { data: signedUrls } = await supabase.storage
+      .from(ENGAGEMENT_PHOTO_BUCKET)
+      .createSignedUrls(photoPaths, ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS);
+
+    for (const item of approvedItems) {
+      if (!item.photo_path) continue;
+      const signed = (signedUrls ?? []).find((entry) => entry.path === item.photo_path);
+      if (signed?.signedUrl) {
+        photoUrlByItemId.set(item.id, signed.signedUrl);
+      }
+    }
+  }
 
   return (
     <section className="public-page">
@@ -191,6 +221,9 @@ export default async function PublicEngagementPage({
           submittedBy: item.submitted_by,
           latitude: item.latitude,
           longitude: item.longitude,
+          geometry: item.geometry ?? null,
+          votesCount: item.votes_count ?? 0,
+          photoUrl: photoUrlByItemId.get(item.id) ?? null,
           createdAt: item.created_at,
         }))}
         engagementType={campaign.engagement_type}

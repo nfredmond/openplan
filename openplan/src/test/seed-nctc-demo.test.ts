@@ -442,7 +442,8 @@ describe("buildSeedRecords", () => {
         geometry_attachment: "analysis_crash_points",
         thematic_metric_key: "severityBucket",
         thematic_metric_label: "Severity bucket",
-        row_count: 4,
+        // Matches DEMO_ENGAGEMENT_ITEMS: 4 points + 2 lines + 1 area.
+        row_count: 7,
         refresh_cadence: "manual",
       }),
     ]);
@@ -457,7 +458,7 @@ describe("buildSeedRecords", () => {
         job_type: "validation",
         status: "succeeded",
         refresh_mode: "manual",
-        records_written: 10,
+        records_written: 13,
         triggered_by_label: "seed:nctc",
       }),
     ]);

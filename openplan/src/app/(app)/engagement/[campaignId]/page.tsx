@@ -26,7 +26,12 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { collectReportIdsLinkedToEngagementCampaign } from "@/lib/reports/engagement";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import {
+  ENGAGEMENT_PHOTO_BUCKET,
+  ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS,
+} from "@/lib/engagement/photo";
+import { LocationDisplayMap } from "@/components/engagement/location-display-map";
 
 type CampaignRow = {
   id: string;
@@ -116,7 +121,7 @@ export default async function EngagementCampaignDetailPage({
     supabase
       .from("engagement_items")
       .select(
-        "id, campaign_id, category_id, title, body, submitted_by, status, source_type, moderation_notes, latitude, longitude, metadata_json, created_at, updated_at"
+        "id, campaign_id, category_id, title, body, submitted_by, status, source_type, moderation_notes, latitude, longitude, geometry, photo_path, votes_count, metadata_json, created_at, updated_at"
       )
       .eq("campaign_id", campaign.id)
       .order("updated_at", { ascending: false }),
@@ -223,6 +228,46 @@ export default async function EngagementCampaignDetailPage({
   const sourceSummaries = [...counts.sourceSummaries].sort((left, right) => right.count - left.count);
   const primarySource = sourceSummaries.find((source) => source.count > 0) ?? null;
   const recentItems = (items ?? []).slice(0, 20);
+
+  // Photo thumbnails: the engagement-photos bucket is private with zero
+  // storage policies, so signing requires the service role. This is safe
+  // here because the RLS-scoped campaign read above already proved the
+  // current user's workspace membership — moderators may see photos on
+  // pending/flagged items; the public portal only ever signs approved ones.
+  type ItemPhotoRef = { id: string; photo_path: string | null };
+  const itemsWithPhotos = ((items ?? []) as ItemPhotoRef[]).filter(
+    (item): item is { id: string; photo_path: string } =>
+      typeof item.photo_path === "string" && item.photo_path.length > 0
+  );
+  const photoUrlByItemId = new Map<string, string>();
+  if (itemsWithPhotos.length > 0) {
+    const serviceClient = createServiceRoleClient();
+    const { data: signedUrls } = await serviceClient.storage
+      .from(ENGAGEMENT_PHOTO_BUCKET)
+      .createSignedUrls(
+        itemsWithPhotos.map((item) => item.photo_path),
+        ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS
+      );
+    for (const item of itemsWithPhotos) {
+      const signed = (signedUrls ?? []).find((entry) => entry.path === item.photo_path);
+      if (signed?.signedUrl) {
+        photoUrlByItemId.set(item.id, signed.signedUrl);
+      }
+    }
+  }
+
+  type ItemGeometryRef = {
+    id: string;
+    title: string | null;
+    body: string;
+    latitude: number | null;
+    longitude: number | null;
+    geometry: unknown;
+    votes_count: number | null;
+  };
+  const locatedItems = ((items ?? []) as ItemGeometryRef[]).filter(
+    (item) => item.geometry !== null || (item.latitude !== null && item.longitude !== null)
+  );
 
   return (
     <section className="module-page">
@@ -821,6 +866,33 @@ export default async function EngagementCampaignDetailPage({
         </div>
 
         <div className="space-y-6">
+          {locatedItems.length > 0 ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Geometry Review</p>
+                  <h2 className="module-section-title">Located comments on the map</h2>
+                  <p className="module-section-description">
+                    Every item with a point, line, or area renders here — including pending and flagged items — so moderators can review geometry before approval.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <LocationDisplayMap
+                  items={locatedItems.map((item) => ({
+                    id: item.id,
+                    latitude: item.latitude,
+                    longitude: item.longitude,
+                    title: item.title,
+                    body: item.body,
+                    geometry: item.geometry,
+                    votesCount: item.votes_count ?? 0,
+                  }))}
+                />
+              </div>
+            </article>
+          ) : null}
+
           {(items?.length ?? 0) > 0 && (
             <EngagementBulkModeration
               campaignId={campaign.id}
@@ -841,7 +913,7 @@ export default async function EngagementCampaignDetailPage({
 
           {items?.length ? (
             <EngagementItemRegistry
-              items={recentItems as Array<{
+              items={(recentItems as Array<{
                 id: string;
                 campaign_id: string;
                 category_id: string | null;
@@ -853,8 +925,13 @@ export default async function EngagementCampaignDetailPage({
                 moderation_notes: string | null;
                 latitude: number | null;
                 longitude: number | null;
+                geometry: unknown;
+                votes_count: number | null;
                 updated_at: string;
-              }>}
+              }>).map((item) => ({
+                ...item,
+                photo_url: photoUrlByItemId.get(item.id) ?? null,
+              }))}
               categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
                 id: category.id,
                 label: category.label,

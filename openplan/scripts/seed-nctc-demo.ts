@@ -33,6 +33,10 @@ import { persistBehavioralOnrampKpis } from "../src/lib/models/behavioral-onramp
 import {
   createDefaultTargetedReportSections,
 } from "../src/lib/reports/catalog";
+import {
+  computeEngagementGeometryRepresentativePoint,
+  type EngagementGeometry,
+} from "../src/lib/engagement/geometry";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = path.resolve(SCRIPT_DIR, "..");
@@ -94,6 +98,9 @@ export const DEMO_ENGAGEMENT_ITEM_NEAL_MILL_ID = "d0000001-0000-4000-8000-000000
 export const DEMO_ENGAGEMENT_ITEM_LIBRARY_BIKE_ID = "d0000001-0000-4000-8000-000000000012";
 export const DEMO_ENGAGEMENT_ITEM_SR20_SPEEDING_ID = "d0000001-0000-4000-8000-000000000013";
 export const DEMO_ENGAGEMENT_ITEM_RURAL_BUS_ID = "d0000001-0000-4000-8000-000000000014";
+export const DEMO_ENGAGEMENT_ITEM_SR49_SHOULDER_LINE_ID = "d0000001-0000-4000-8000-000000000060";
+export const DEMO_ENGAGEMENT_ITEM_BENNETT_SIDEWALK_LINE_ID = "d0000001-0000-4000-8000-000000000061";
+export const DEMO_ENGAGEMENT_ITEM_DOWNTOWN_CALM_AREA_ID = "d0000001-0000-4000-8000-000000000062";
 
 // Census tract GEOIDs — synthetic but realistic (state FIPS 06 + county FIPS 057
 // for Nevada County + 6-digit tract suffix). These are hand-authored demo
@@ -244,6 +251,51 @@ export const DEMO_CORRIDOR_EMPIRE_ST = {
   ] as [number, number][],
 };
 
+// Drawn geometries for the demo campaign. Lines and areas store their vertex
+// centroid into latitude/longitude (via the same representative-point helper
+// the public submit route uses) so legacy point surfaces keep rendering them.
+export const DEMO_ENGAGEMENT_GEOMETRY_SR49_SHOULDER: EngagementGeometry = {
+  type: "LineString",
+  coordinates: [
+    [-121.0605, 39.2125],
+    [-121.059, 39.208],
+    [-121.0575, 39.2035],
+    [-121.056, 39.199],
+  ],
+};
+
+export const DEMO_ENGAGEMENT_GEOMETRY_BENNETT_SIDEWALK: EngagementGeometry = {
+  type: "LineString",
+  coordinates: [
+    [-121.0662, 39.2141],
+    [-121.0631, 39.2153],
+    [-121.0603, 39.2162],
+  ],
+};
+
+export const DEMO_ENGAGEMENT_GEOMETRY_DOWNTOWN_CALM: EngagementGeometry = {
+  type: "Polygon",
+  coordinates: [
+    [
+      [-121.0685, 39.2205],
+      [-121.0645, 39.2205],
+      [-121.0645, 39.2175],
+      [-121.0685, 39.2175],
+      [-121.0685, 39.2205],
+    ],
+  ],
+};
+
+const sr49ShoulderPoint = computeEngagementGeometryRepresentativePoint(
+  DEMO_ENGAGEMENT_GEOMETRY_SR49_SHOULDER
+);
+const bennettSidewalkPoint = computeEngagementGeometryRepresentativePoint(
+  DEMO_ENGAGEMENT_GEOMETRY_BENNETT_SIDEWALK
+);
+const downtownCalmPoint = computeEngagementGeometryRepresentativePoint(
+  DEMO_ENGAGEMENT_GEOMETRY_DOWNTOWN_CALM
+);
+
 export const DEMO_ENGAGEMENT_ITEMS = [
   {
     id: DEMO_ENGAGEMENT_ITEM_NEAL_MILL_ID,
@@ -256,6 +308,7 @@ export const DEMO_ENGAGEMENT_ITEMS = [
     source_type: "public",
     latitude: 39.2178,
     longitude: -121.0614,
+    geometry: { type: "Point", coordinates: [-121.0614, 39.2178] } as EngagementGeometry,
   },
   {
     id: DEMO_ENGAGEMENT_ITEM_LIBRARY_BIKE_ID,
@@ -268,6 +321,7 @@ export const DEMO_ENGAGEMENT_ITEMS = [
     source_type: "meeting",
     latitude: 39.2196,
     longitude: -121.0641,
+    geometry: { type: "Point", coordinates: [-121.0641, 39.2196] } as EngagementGeometry,
   },
   {
     id: DEMO_ENGAGEMENT_ITEM_SR20_SPEEDING_ID,
@@ -280,6 +334,7 @@ export const DEMO_ENGAGEMENT_ITEMS = [
     source_type: "email",
     latitude: 39.1965,
     longitude: -121.0356,
+    geometry: { type: "Point", coordinates: [-121.0356, 39.1965] } as EngagementGeometry,
   },
   {
     id: DEMO_ENGAGEMENT_ITEM_RURAL_BUS_ID,
@@ -292,7 +347,68 @@ export const DEMO_ENGAGEMENT_ITEMS = [
     source_type: "public",
     latitude: 39.2579,
     longitude: -121.0174,
+    geometry: { type: "Point", coordinates: [-121.0174, 39.2579] } as EngagementGeometry,
   },
+  {
+    id: DEMO_ENGAGEMENT_ITEM_SR49_SHOULDER_LINE_ID,
+    campaign_id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+    title: "No safe shoulder along SR-49 south of town",
+    body:
+      "People walk and bike this stretch of SR-49 between Grass Valley and the Alta Sierra turnoffs with no usable shoulder. The drawn line marks the gap where a widened shoulder or separated path is most needed.",
+    submitted_by: "Public map comment",
+    status: "approved",
+    source_type: "public",
+    latitude: sr49ShoulderPoint.latitude,
+    longitude: sr49ShoulderPoint.longitude,
+    geometry: DEMO_ENGAGEMENT_GEOMETRY_SR49_SHOULDER,
+  },
+  {
+    id: DEMO_ENGAGEMENT_ITEM_BENNETT_SIDEWALK_LINE_ID,
+    campaign_id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+    title: "Sidewalk gap on Bennett Street",
+    body:
+      "The sidewalk on Bennett Street disappears for several blocks on the drawn segment, forcing wheelchairs and strollers into the roadway near the medical offices.",
+    submitted_by: "Public map comment",
+    status: "approved",
+    source_type: "public",
+    latitude: bennettSidewalkPoint.latitude,
+    longitude: bennettSidewalkPoint.longitude,
+    geometry: DEMO_ENGAGEMENT_GEOMETRY_BENNETT_SIDEWALK,
+  },
+  {
+    id: DEMO_ENGAGEMENT_ITEM_DOWNTOWN_CALM_AREA_ID,
+    campaign_id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+    title: "Traffic calming for the downtown core",
+    body:
+      "The outlined downtown blocks need area-wide traffic calming: tighter corners, raised crossings, and slower posted speeds so Mill Street events feel safe on foot.",
+    submitted_by: "Workshop participant",
+    status: "approved",
+    source_type: "public",
+    latitude: downtownCalmPoint.latitude,
+    longitude: downtownCalmPoint.longitude,
+    geometry: DEMO_ENGAGEMENT_GEOMETRY_DOWNTOWN_CALM,
+  },
+] as const;
+
+// Community support votes spread across the demo items so the public portal
+// renders vote counts and the "Most supported" sort meaningfully.
+// votes_count on engagement_items is maintained by the insert/delete trigger
+// from migration 20260717000084 — the seed only inserts vote rows.
+export const DEMO_ENGAGEMENT_ITEM_VOTES = [
+  { id: "d0000001-0000-4000-8000-000000000070", item_id: DEMO_ENGAGEMENT_ITEM_NEAL_MILL_ID, voter_fingerprint: "nctc-demo-voter-01" },
+  { id: "d0000001-0000-4000-8000-000000000071", item_id: DEMO_ENGAGEMENT_ITEM_NEAL_MILL_ID, voter_fingerprint: "nctc-demo-voter-02" },
+  { id: "d0000001-0000-4000-8000-000000000072", item_id: DEMO_ENGAGEMENT_ITEM_NEAL_MILL_ID, voter_fingerprint: "nctc-demo-voter-03" },
+  { id: "d0000001-0000-4000-8000-000000000073", item_id: DEMO_ENGAGEMENT_ITEM_LIBRARY_BIKE_ID, voter_fingerprint: "nctc-demo-voter-02" },
+  { id: "d0000001-0000-4000-8000-000000000074", item_id: DEMO_ENGAGEMENT_ITEM_SR20_SPEEDING_ID, voter_fingerprint: "nctc-demo-voter-01" },
+  { id: "d0000001-0000-4000-8000-000000000075", item_id: DEMO_ENGAGEMENT_ITEM_SR20_SPEEDING_ID, voter_fingerprint: "nctc-demo-voter-04" },
+  { id: "d0000001-0000-4000-8000-000000000076", item_id: DEMO_ENGAGEMENT_ITEM_RURAL_BUS_ID, voter_fingerprint: "nctc-demo-voter-03" },
+  { id: "d0000001-0000-4000-8000-000000000077", item_id: DEMO_ENGAGEMENT_ITEM_SR49_SHOULDER_LINE_ID, voter_fingerprint: "nctc-demo-voter-02" },
+  { id: "d0000001-0000-4000-8000-000000000078", item_id: DEMO_ENGAGEMENT_ITEM_SR49_SHOULDER_LINE_ID, voter_fingerprint: "nctc-demo-voter-05" },
+  { id: "d0000001-0000-4000-8000-000000000079", item_id: DEMO_ENGAGEMENT_ITEM_BENNETT_SIDEWALK_LINE_ID, voter_fingerprint: "nctc-demo-voter-05" },
+  { id: "d0000001-0000-4000-8000-00000000007a", item_id: DEMO_ENGAGEMENT_ITEM_DOWNTOWN_CALM_AREA_ID, voter_fingerprint: "nctc-demo-voter-01" },
+  { id: "d0000001-0000-4000-8000-00000000007b", item_id: DEMO_ENGAGEMENT_ITEM_DOWNTOWN_CALM_AREA_ID, voter_fingerprint: "nctc-demo-voter-02" },
+  { id: "d0000001-0000-4000-8000-00000000007c", item_id: DEMO_ENGAGEMENT_ITEM_DOWNTOWN_CALM_AREA_ID, voter_fingerprint: "nctc-demo-voter-03" },
+  { id: "d0000001-0000-4000-8000-00000000007d", item_id: DEMO_ENGAGEMENT_ITEM_DOWNTOWN_CALM_AREA_ID, voter_fingerprint: "nctc-demo-voter-04" },
 ] as const;
 
 // Hand-authored Nevada County census tracts. Single-ring MultiPolygons tiled
@@ -1068,7 +1184,8 @@ export function buildSeedRecords(
         refresh_mode: "manual",
         started_at: "2026-04-30T12:38:00.000Z",
         completed_at: DEMO_DATA_HUB_CAPTURED_AT,
-        records_written: 10,
+        // 4 equity tracts + 2 corridors + the engagement comment points.
+        records_written: 6 + DEMO_ENGAGEMENT_ITEMS.length,
         triggered_by_label: "seed:nctc",
         error_summary: null,
         created_by: ownerUserId,
@@ -2165,9 +2282,30 @@ async function main(): Promise<void> {
       throw new Error(`Failed to upsert engagement item ${item.id}: ${error.message}`);
     }
     console.log(
-      `[seed:nctc] upserted engagement item ${item.id} (${item.status}, ${item.latitude}, ${item.longitude})`
+      `[seed:nctc] upserted engagement item ${item.id} (${item.status}, ${item.geometry.type}, ${item.latitude}, ${item.longitude})`
     );
   }
+
+  // Community support votes. Deterministic ids keep re-runs idempotent:
+  // conflicting rows update in place, so the votes_count trigger only fires
+  // on genuinely new votes.
+  for (const vote of DEMO_ENGAGEMENT_ITEM_VOTES) {
+    const { error } = await supabase.from("engagement_item_votes").upsert(
+      {
+        ...vote,
+        campaign_id: DEMO_ENGAGEMENT_CAMPAIGN_ID,
+      },
+      { onConflict: "id" }
+    );
+    if (error) {
+      throw new Error(`Failed to upsert engagement vote ${vote.id}: ${error.message}`);
+    }
+  }
+  console.log(
+    `[seed:nctc] upserted ${DEMO_ENGAGEMENT_ITEM_VOTES.length} engagement support votes across ${
+      new Set(DEMO_ENGAGEMENT_ITEM_VOTES.map((vote) => vote.item_id)).size
+    } items`
+  );
 
   // 15. Deterministic report packet fixture for local UI/UX settle proof.
   const { error: reportError } = await supabase.from("reports").upsert(
@@ -2329,7 +2467,9 @@ async function main(): Promise<void> {
   console.log(`  missions:    ${missions.length} (downtown / SR-49 / Empire Mine)`);
   console.log(`  packages:    ${evidencePackages.length}`);
   console.log(`  corridors:   ${corridors.length} (SR-49 / Empire St)`);
-  console.log(`  engagement:  ${DEMO_ENGAGEMENT_ITEMS.length} approved items`);
+  console.log(
+    `  engagement:  ${DEMO_ENGAGEMENT_ITEMS.length} approved items (points, lines, area) · ${DEMO_ENGAGEMENT_ITEM_VOTES.length} support votes`
+  );
   console.log(`  evidence:    ${modelingEvidenceBundle.claimDecision.claimStatus}`);
   console.log(`  tracts:      ${tracts.length} (Nevada County public demo)`);
   console.log(`  demo user:   ${demoUserId} (${DEMO_USER_EMAIL})`);

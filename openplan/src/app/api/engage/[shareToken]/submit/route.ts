@@ -9,6 +9,17 @@ import {
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import {
+  computeEngagementGeometryRepresentativePoint,
+  parseEngagementGeometry,
+  type EngagementGeometry,
+} from "@/lib/engagement/geometry";
+import {
+  ENGAGEMENT_PHOTO_BUCKET,
+  ENGAGEMENT_PHOTO_UPLOAD_LOOKBACK_MINUTES,
+  isEngagementPhotoPathForCampaign,
+  splitEngagementPhotoPath,
+} from "@/lib/engagement/photo";
 
 const PUBLIC_SUBMISSION_MAX_BODY_BYTES = BODY_LIMITS.smallJson;
 
@@ -23,6 +34,11 @@ const submitSchema = z.object({
   submittedBy: z.string().trim().max(200).optional(),
   latitude: z.number().min(-90).max(90).optional(),
   longitude: z.number().min(-180).max(180).optional(),
+  // GeoJSON Point | LineString | Polygon; fully validated by
+  // parseEngagementGeometry after the base parse.
+  geometry: z.unknown().optional(),
+  // Storage path returned by /api/engage/[shareToken]/photo-upload.
+  photoPath: z.string().trim().max(200).optional(),
   // Honeypot field: should be empty. Bots fill this in.
   website: z.string().max(500).optional(),
 });
@@ -62,6 +78,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ success: true, message: "Thank you for your feedback." }, { status: 201 });
     }
 
+    // Geometry: validate structure, vertex cap, ring closure, and WGS84
+    // bounds; then derive the representative lat/lng that keeps every legacy
+    // point surface working. A geometry, when present, wins over any
+    // separately supplied latitude/longitude.
+    let geometry: EngagementGeometry | null = null;
+    let latitude = parsed.data.latitude ?? null;
+    let longitude = parsed.data.longitude ?? null;
+
+    if (parsed.data.geometry !== undefined && parsed.data.geometry !== null) {
+      const geometryResult = parseEngagementGeometry(parsed.data.geometry);
+      if (!geometryResult.ok) {
+        return NextResponse.json({ error: geometryResult.error }, { status: 400 });
+      }
+      geometry = geometryResult.geometry;
+      const representative = computeEngagementGeometryRepresentativePoint(geometry);
+      latitude = representative.latitude;
+      longitude = representative.longitude;
+    } else if (latitude !== null && longitude !== null) {
+      // Legacy lat/lng-only payload: synthesize a Point geometry so newer
+      // geometry-aware surfaces see a consistent record.
+      geometry = { type: "Point", coordinates: [longitude, latitude] };
+    }
+
     const supabase = createServiceRoleClient();
 
     const { data: campaign, error: campaignError } = await supabase
@@ -98,6 +137,38 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       if (!category) {
         return NextResponse.json({ error: "Invalid category for this campaign" }, { status: 400 });
+      }
+    }
+
+    // Photo path: never trust a client-provided storage path. It must match
+    // the strict <campaignId>/<uuid>.<ext> shape for THIS campaign, and the
+    // object must actually exist in the private bucket with a recent
+    // created_at (i.e. it came from this campaign's photo-upload lane).
+    const photoPath = parsed.data.photoPath || null;
+    if (photoPath) {
+      if (!isEngagementPhotoPathForCampaign(photoPath, campaign.id)) {
+        return NextResponse.json({ error: "Invalid photo reference for this campaign" }, { status: 400 });
+      }
+
+      const pathParts = splitEngagementPhotoPath(photoPath);
+      const { data: photoObjects, error: photoLookupError } = await supabase.storage
+        .from(ENGAGEMENT_PHOTO_BUCKET)
+        .list(pathParts?.folder ?? campaign.id, { limit: 1, search: pathParts?.fileName ?? "" });
+
+      if (photoLookupError) {
+        audit.error("engagement_photo_lookup_failed", {
+          campaignId: campaign.id,
+          message: photoLookupError.message,
+        });
+        return NextResponse.json({ error: "Failed to verify photo upload" }, { status: 500 });
+      }
+
+      const photoObject = (photoObjects ?? []).find((object) => object.name === pathParts?.fileName);
+      const createdAtMs = photoObject?.created_at ? Date.parse(photoObject.created_at) : Number.NaN;
+      const lookbackMs = ENGAGEMENT_PHOTO_UPLOAD_LOOKBACK_MINUTES * 60 * 1000;
+
+      if (!photoObject || Number.isNaN(createdAtMs) || Date.now() - createdAtMs > lookbackMs) {
+        return NextResponse.json({ error: "Photo upload not found or expired. Please re-attach the photo." }, { status: 400 });
       }
     }
 
@@ -165,8 +236,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         submitted_by: parsed.data.submittedBy?.trim() || null,
         status: safety.autoFlagReason ? "flagged" : "pending",
         source_type: "public",
-        latitude: parsed.data.latitude ?? null,
-        longitude: parsed.data.longitude ?? null,
+        latitude,
+        longitude,
+        geometry,
+        photo_path: photoPath,
         metadata_json: metadata,
         moderation_notes: safety.autoFlagReason,
         created_by: null,
