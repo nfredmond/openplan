@@ -35,9 +35,19 @@ export function ExploreGeospatialBriefing({
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {planningSignals.map((signal) => (
             <div key={signal.label} className="rounded-[0.5rem] border border-border/80 bg-background p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
-              <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{signal.label}</p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">{signal.label}</p>
+                {signal.estimated ? (
+                  <StatusBadge tone="warning" title={signal.estimatedNote}>
+                    Estimated
+                  </StatusBadge>
+                ) : null}
+              </div>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{signal.value}</p>
               <p className="mt-2 text-xs text-muted-foreground">{signal.note}</p>
+              {signal.estimated && signal.estimatedNote ? (
+                <p className="mt-1 text-xs text-muted-foreground">{signal.estimatedNote}</p>
+              ) : null}
             </div>
           ))}
         </div>

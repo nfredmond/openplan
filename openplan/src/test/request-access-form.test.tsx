@@ -94,7 +94,7 @@ describe("RequestAccessForm", () => {
         sourcePath: "/request-access",
       }),
     );
-    expect(screen.getByText(/move from evaluation to a supervised pilot or production decision/i)).toBeInTheDocument();
+    expect(screen.getByText(/move from evaluation to a deployment decision/i)).toBeInTheDocument();
     expect(screen.getByText(/Apache-2.0 core stays separate from Nat Ford managed hosting/i)).toBeInTheDocument();
     expect(screen.queryByText(/get from evaluation to production use/i)).not.toBeInTheDocument();
     expect(await screen.findByText(/Request received/i)).toBeInTheDocument();

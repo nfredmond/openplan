@@ -10,8 +10,6 @@ export type LayerKey =
   | "corridors"
   | "engagement"
   | "aerial"
-  | "transit"
-  | "crashes"
   | "equity";
 
 export const LAYER_KEYS: LayerKey[] = [
@@ -20,8 +18,6 @@ export const LAYER_KEYS: LayerKey[] = [
   "corridors",
   "engagement",
   "aerial",
-  "transit",
-  "crashes",
   "equity",
 ];
 
@@ -31,10 +27,13 @@ const DEFAULT_LAYERS: Readonly<Record<LayerKey, boolean>> = Object.freeze({
   corridors: true,
   engagement: true,
   aerial: true,
-  transit: false,
-  crashes: false,
   equity: false,
 });
+
+export type CartographicMapControls = {
+  zoomIn: () => void;
+  zoomOut: () => void;
+};
 
 type CartographicContextValue = {
   selection: CartographicInspectorSelection | null;
@@ -43,6 +42,8 @@ type CartographicContextValue = {
   layers: Record<LayerKey, boolean>;
   toggleLayer: (key: LayerKey) => void;
   setLayer: (key: LayerKey, on: boolean) => void;
+  mapControls: CartographicMapControls | null;
+  registerMapControls: (controls: CartographicMapControls | null) => void;
 };
 
 const CartographicContext = createContext<CartographicContextValue | null>(null);
@@ -50,6 +51,11 @@ const CartographicContext = createContext<CartographicContextValue | null>(null)
 export function CartographicProvider({ children }: { children: React.ReactNode }) {
   const [selection, setSelectionState] = useState<CartographicInspectorSelection | null>(null);
   const [layers, setLayersState] = useState<Record<LayerKey, boolean>>(DEFAULT_LAYERS);
+  const [mapControls, setMapControls] = useState<CartographicMapControls | null>(null);
+
+  const registerMapControls = useCallback((controls: CartographicMapControls | null) => {
+    setMapControls(controls);
+  }, []);
 
   const setSelection = useCallback((next: CartographicInspectorSelection | null) => {
     setSelectionState(next);
@@ -68,8 +74,17 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const value = useMemo<CartographicContextValue>(
-    () => ({ selection, setSelection, clearSelection, layers, toggleLayer, setLayer }),
-    [selection, setSelection, clearSelection, layers, toggleLayer, setLayer],
+    () => ({
+      selection,
+      setSelection,
+      clearSelection,
+      layers,
+      toggleLayer,
+      setLayer,
+      mapControls,
+      registerMapControls,
+    }),
+    [selection, setSelection, clearSelection, layers, toggleLayer, setLayer, mapControls, registerMapControls],
   );
 
   return <CartographicContext.Provider value={value}>{children}</CartographicContext.Provider>;
@@ -103,4 +118,12 @@ export function useCartographicLayers() {
     return { layers: DEFAULT_LAYERS, toggleLayer: NOOP, setLayer: NOOP };
   }
   return { layers: ctx.layers, toggleLayer: ctx.toggleLayer, setLayer: ctx.setLayer };
+}
+
+export function useCartographicMapControls() {
+  const ctx = useContext(CartographicContext);
+  if (!ctx) {
+    return { mapControls: null, registerMapControls: NOOP as (controls: CartographicMapControls | null) => void };
+  }
+  return { mapControls: ctx.mapControls, registerMapControls: ctx.registerMapControls };
 }

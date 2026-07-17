@@ -81,7 +81,7 @@ export function GrantsReimbursementTriageSection({
           <p className="module-section-label">Reimbursement triage</p>
           <h2 className="module-section-title">Workspace reimbursement follow-through queue</h2>
           <p className="module-section-description">
-            Keep award-linked invoices moving. This queue surfaces overdue reimbursement risk, in-flight payment posture, and draft packets that still need operator follow-through.
+            Keep award-linked invoices moving. This queue surfaces overdue reimbursements, in-flight payments, and draft packets that still need follow-up.
           </p>
         </div>
         <StatusBadge tone={reimbursementPriorityQueue.length > 0 ? "warning" : "success"}>
@@ -172,7 +172,7 @@ export function GrantsReimbursementTriageSection({
                   {isJustRelinkedRow && award ? (
                     <div className="mt-3 border-l-2 border-emerald-300/80 bg-emerald-50/80 px-4 py-3 text-sm text-emerald-950 dark:border-emerald-700/60 dark:bg-emerald-950/25 dark:text-emerald-100">
                       <p className="font-semibold tracking-tight">Relink saved in this grants queue</p>
-                      <p className="mt-1">This reimbursement record now contributes to workspace award posture through {award.title}.</p>
+                      <p className="mt-1">This reimbursement record now counts toward workspace award totals through {award.title}.</p>
                     </div>
                   ) : null}
 

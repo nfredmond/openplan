@@ -1,3 +1,4 @@
+import { ESTIMATED_SOURCE_NOTES, resolveEstimatedDomains } from "@/lib/analysis/estimated-source";
 import type { StatusTone } from "@/lib/ui/status";
 
 type DataQuality = {
@@ -9,7 +10,7 @@ type DataQuality = {
 };
 
 export type SourceTransparencyItem = {
-  key: "census" | "crashes" | "lodes" | "equity" | "ai";
+  key: "census" | "crashes" | "transit" | "lodes" | "equity" | "ai";
   label: string;
   status: string;
   detail: string;
@@ -41,13 +42,28 @@ function resolveAiSource(dataQuality: DataQuality, explicitAiSource?: string): s
   return normalizeText(dataQuality.aiInterpretationSource, "fallback");
 }
 
+type SourceSnapshots = {
+  crashes?: { source?: string };
+  transit?: { source?: string };
+  lodes?: { source?: string };
+};
+
 export function buildSourceTransparency(
   metrics: Record<string, unknown>,
   explicitAiSource?: string
 ): SourceTransparencyItem[] {
   const dataQuality = (metrics.dataQuality ?? {}) as DataQuality;
+  const sourceSnapshots = (metrics.sourceSnapshots ?? {}) as SourceSnapshots;
+  const estimatedDomains = resolveEstimatedDomains({
+    sourceSnapshots,
+    dataQuality,
+  });
 
-  const lodesSource = normalizeText(dataQuality.lodesSource, "unknown");
+  const lodesSource = normalizeText(dataQuality.lodesSource ?? sourceSnapshots.lodes?.source, "unknown");
+  const transitSource = normalizeText(sourceSnapshots.transit?.source, "unknown");
+  const crashProvenanceKnown =
+    typeof sourceSnapshots.crashes?.source === "string" ||
+    typeof dataQuality.crashDataAvailable === "boolean";
   const equitySource = normalizeText(
     dataQuality.equitySource ?? metrics.equitySource,
     "cejst-proxy-census"
@@ -67,20 +83,46 @@ export function buildSourceTransparency(
     {
       key: "crashes",
       label: "Crash Safety Data",
-      status: dataQuality.crashDataAvailable ? "Live" : "Estimated",
-      detail: dataQuality.crashDataAvailable
-        ? "Fatal crash indicators were retrieved from the configured source for this run."
-        : "Crash indicators are estimated fallback values and require manual validation.",
-      tone: dataQuality.crashDataAvailable ? "success" : "info",
+      status: !crashProvenanceKnown ? "Unknown" : estimatedDomains.crashes ? "Estimated" : "Live",
+      detail: !crashProvenanceKnown
+        ? "Crash source could not be verified in this run metadata."
+        : estimatedDomains.crashes
+          ? `${ESTIMATED_SOURCE_NOTES.crashes} Crash indicators require manual validation before release.`
+          : "Fatal crash indicators were retrieved from the configured source for this run.",
+      tone: !crashProvenanceKnown ? "neutral" : estimatedDomains.crashes ? "info" : "success",
+    },
+    {
+      key: "transit",
+      label: "Transit Stop Inventory",
+      status:
+        transitSource === "unknown"
+          ? "Unknown"
+          : estimatedDomains.transit
+            ? "Estimated"
+            : formatSourceToken(transitSource),
+      detail:
+        transitSource === "unknown"
+          ? "Transit stop source could not be verified in this run metadata."
+          : estimatedDomains.transit
+            ? `${ESTIMATED_SOURCE_NOTES.transit} Stop counts and density are approximations.`
+            : `Transit stop counts were retrieved from ${formatSourceToken(transitSource)}.`,
+      tone: transitSource === "unknown" ? "neutral" : "info",
     },
     {
       key: "lodes",
       label: "LODES Employment",
-      status: formatSourceToken(lodesSource),
+      status:
+        lodesSource === "unknown"
+          ? "Unknown"
+          : estimatedDomains.lodes
+            ? "Estimated"
+            : formatSourceToken(lodesSource),
       detail:
         lodesSource === "unknown"
           ? "Employment source could not be verified in this run metadata."
-          : `Employment opportunity metrics were derived from ${formatSourceToken(lodesSource)}.`,
+          : estimatedDomains.lodes
+            ? ESTIMATED_SOURCE_NOTES.lodes
+            : `Employment opportunity metrics were derived from ${formatSourceToken(lodesSource)}.`,
       tone: lodesSource === "unknown" ? "neutral" : "info",
     },
     {

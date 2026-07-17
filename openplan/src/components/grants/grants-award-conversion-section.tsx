@@ -34,7 +34,7 @@ export function GrantsAwardConversionSection({
           <p className="module-section-label">Award conversion</p>
           <h2 className="module-section-title">Awarded opportunities still missing committed award records</h2>
           <p className="module-section-description">
-            This is the downstream grants seam that closes the gap between an opportunity marked awarded and the actual award record needed for reimbursement and invoice truth.
+            Close the gap between an opportunity marked awarded and the committed award record that reimbursement and invoicing build on.
           </p>
         </div>
         <StatusBadge tone={awardedOpportunitiesMissingRecords.length > 0 ? "warning" : "success"}>
@@ -54,7 +54,7 @@ export function GrantsAwardConversionSection({
           {activeFocusedOpportunityId === awardConversionOpportunity.id ? (
             <div className="mb-3 rounded-2xl border border-sky-300/70 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-700/60 dark:bg-sky-950/25 dark:text-sky-100">
               <p className="font-semibold tracking-tight">Focused from workspace queue</p>
-              <p className="mt-1">This award conversion creator is pre-targeted to {awardConversionOpportunity.title} so the grants command board can record the exact committed award it flagged next.</p>
+              <p className="mt-1">This award creator is pre-targeted to {awardConversionOpportunity.title} so you can record the exact committed award flagged next in the queue.</p>
             </div>
           ) : null}
           <ProjectFundingAwardCreator
@@ -64,7 +64,7 @@ export function GrantsAwardConversionSection({
             defaultProgramId={awardConversionOpportunity.program?.id ?? null}
             defaultTitle={`${awardConversionOpportunity.title} award`}
             titleLabel="Create the lead award record now"
-            description={`Convert ${awardConversionOpportunity.title} into a committed award record here so reimbursement and invoice truth can start from the shared grants lane.`}
+            description={`Convert ${awardConversionOpportunity.title} into a committed award record here so reimbursement and invoicing can start from the shared grant record.`}
           />
         </div>
       ) : null}

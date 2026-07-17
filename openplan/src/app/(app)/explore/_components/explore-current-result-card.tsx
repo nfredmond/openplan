@@ -142,9 +142,19 @@ export function ExploreCurrentResultCard({
                   .filter(Boolean)
                   .join(" ")}
               >
-                <p className="text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
+                  {item.estimated ? (
+                    <StatusBadge tone="warning" title={item.estimatedNote}>
+                      Estimated
+                    </StatusBadge>
+                  ) : null}
+                </div>
                 <p className="mt-2 text-3xl font-semibold tracking-[-0.03em] text-white">{item.value}</p>
                 <p className="mt-2 text-xs leading-5 text-slate-300/72">{item.note}</p>
+                {item.estimated && item.estimatedNote ? (
+                  <p className="mt-1 text-xs leading-5 text-slate-400/85">{item.estimatedNote}</p>
+                ) : null}
               </div>
             ))}
           </div>

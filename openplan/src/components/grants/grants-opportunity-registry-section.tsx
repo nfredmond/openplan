@@ -49,7 +49,7 @@ export function GrantsOpportunityRegistrySection({
             <p className="module-section-label">Registry</p>
             <h2 className="module-section-title">Funding opportunities across the workspace</h2>
             <p className="module-section-description">
-              Review deadlines, decision posture, linked project/program context, and editable decision notes without hopping record-by-record first.
+              Review deadlines, decision status, linked project/program context, and editable decision notes without hopping record-by-record first.
             </p>
           </div>
         </div>
@@ -104,7 +104,7 @@ export function GrantsOpportunityRegistrySection({
 
       {showModelingCaveat ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          Within the same grant timing and decision posture, opportunities with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Treat that as planning support only, not proof of award likelihood or a replacement for funding-source review.
+          Within the same grant timing and decision status, opportunities with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Treat that as planning support only, not proof of award likelihood or a replacement for funding-source review.
         </p>
       ) : null}
 
@@ -112,7 +112,7 @@ export function GrantsOpportunityRegistrySection({
         <div className="mt-5">
           <EmptyState
             title="No funding opportunities yet"
-            description="Create the first funding opportunity so OpenPlan can start carrying real pursue, monitor, skip, award, and reimbursement posture in the shared workspace lane."
+            description="Create the first funding opportunity so OpenPlan can start tracking pursue, monitor, skip, award, and reimbursement decisions in one shared workspace view."
           />
         </div>
       ) : filteredOpportunities.length === 0 ? (

@@ -53,12 +53,12 @@ export function GrantsPageIntroHeader({
       <article className="module-intro-card">
         <div className="module-intro-kicker">
           <Landmark className="h-3.5 w-3.5" />
-          Shared grants operating lane
+          Grant management
         </div>
         <div className="module-intro-body">
           <h1 className="module-intro-title">Grants</h1>
           <p className="module-intro-description">
-            Manage funding opportunities, pursue decisions, award posture, and reimbursement follow-through as one shared operating surface instead of scattered project notes.
+            Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one place instead of scattered project notes.
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export function GrantsPageIntroHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Pursue</p>
             <p className="module-summary-value">{pursueCount}</p>
-            <p className="module-summary-detail">Opportunities already carrying a real pursue posture.</p>
+            <p className="module-summary-detail">Opportunities the team has decided to pursue.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Closing soon</p>
@@ -95,7 +95,7 @@ export function GrantsPageIntroHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Awarded</p>
             <p className="module-summary-value">{awardedCount}</p>
-            <p className="module-summary-detail">Awarded opportunities that should feed awards and reimbursement truth.</p>
+            <p className="module-summary-detail">Awarded opportunities ready to become award and reimbursement records.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Linked scope</p>
@@ -127,17 +127,17 @@ export function GrantsPageIntroHeader({
             <ShieldCheck className="h-5 w-5 text-emerald-200" />
           </span>
           <div>
-            <p className="module-operator-eyebrow">Grants OS</p>
-            <h2 className="module-operator-title">Keep grant posture connected to project and RTP truth</h2>
+            <p className="module-operator-eyebrow">Grant management</p>
+            <h2 className="module-operator-title">Keep grant decisions connected to project and RTP records</h2>
           </div>
         </div>
         <p className="module-operator-copy">
-          OpenPlan already knows funding need anchors, opportunities, awards, and reimbursement state. This page turns those records into one workspace lane planners can actually run.
+          Funding needs, opportunities, awards, and reimbursement status live in one shared view, tied to the projects and programs they fund.
         </p>
         <div className="module-operator-list">
-          <div className="module-operator-item">Use one opportunity registry instead of re-entering grant posture across projects and programs.</div>
+          <div className="module-operator-item">Use one opportunity registry instead of re-entering grant details across projects and programs.</div>
           <div className="module-operator-item">Move opportunities from monitor to pursue with explicit fit, readiness, and rationale notes.</div>
-          <div className="module-operator-item">Treat awarded dollars and reimbursement follow-through as operational truth, not afterthoughts.</div>
+          <div className="module-operator-item">Track awarded dollars and reimbursement follow-through as first-class records, not afterthoughts.</div>
         </div>
         <div className="mt-4">
           <WorkspaceRuntimeCue summary={operationsSummary} className="border-white/10 bg-white/[0.06] text-emerald-50/82" />

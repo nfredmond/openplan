@@ -31,8 +31,8 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
       /https:\/\/github\.com\/nfredmond\/openplan\/blob\/main\/LICENSE/i,
       /does not turn the open-source core into a proprietary software license/i,
       /not priced as a seat-based proprietary license/i,
-      /No new same-cycle paid checkout was run/i,
-      /historical live payment evidence plus current non-money-moving billing checks/i,
+      /Hosted billing runs on Stripe/i,
+      /Managed-hosting billing starts only after the account is attached to the intended workspace/i,
     ],
   },
   {
@@ -41,7 +41,7 @@ const publicPostureSurfaces: PublicPostureSurface[] = [
     requiredMarkers: [
       /self-hosting, managed-hosting, or implementation review/i,
       /not a live workspace, hosted subscription, or service commitment/i,
-      /fits the current open-source product boundary/i,
+      /fits what OpenPlan does today and current Nat Ford service capacity/i,
       /Prepare any workspace setup, invitations, or service scope only after ownership, data posture, billing, and support obligations are clear/i,
     ],
   },

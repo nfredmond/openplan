@@ -7,6 +7,7 @@ import {
   Target,
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
 import type { BillingInvoiceSummary } from "@/lib/billing/invoice-records";
 import type { ProjectControlsSummary } from "@/lib/projects/controls";
 import {
@@ -430,6 +431,14 @@ export function ProjectDeliveryBoard({
                       {milestone.owner_label ? `${milestone.owner_label}` : ""}
                       {milestone.actual_date ? `${milestone.owner_label ? " · " : ""}Actual ${fmtDateTime(milestone.actual_date)}` : ""}
                     </p>
+                    <div className="mt-3">
+                      <RecordStatusAdvanceButton
+                        projectId={project.id}
+                        recordId={milestone.id}
+                        recordType="milestone"
+                        currentStatus={milestone.status}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -481,6 +490,14 @@ export function ProjectDeliveryBoard({
                     <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
                       Cycle {submittal.review_cycle}{submittal.agency_label ? ` · ${submittal.agency_label}` : ""}{submittal.reference_number ? ` · Ref ${submittal.reference_number}` : ""}
                     </p>
+                    <div className="mt-3">
+                      <RecordStatusAdvanceButton
+                        projectId={project.id}
+                        recordId={submittal.id}
+                        recordType="submittal"
+                        currentStatus={submittal.status}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}

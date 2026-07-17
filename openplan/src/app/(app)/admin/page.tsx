@@ -22,7 +22,7 @@ const adminModules: AdminModule[] = [
     icon: CreditCard,
     status: "Live",
     tone: "success",
-    availabilityNote: "Available now inside the supervised pilot shell.",
+    availabilityNote: "Available now.",
     cta: "Open billing controls",
   },
   {
@@ -32,7 +32,7 @@ const adminModules: AdminModule[] = [
     icon: FileCheck2,
     status: "Evidence live",
     tone: "info",
-    availabilityNote: "This is the launch-facing proof surface for current pilot confidence.",
+    availabilityNote: "Production smoke evidence and readiness packets live here.",
     cta: "Open evidence center",
   },
   {
@@ -42,8 +42,8 @@ const adminModules: AdminModule[] = [
     icon: Users2,
     status: "Staged",
     tone: "neutral",
-    availabilityNote: "Not self-serve in the current pilot. Keep this labeled as upcoming.",
-    cta: "Staged for pilot follow-up",
+    availabilityNote: "Ships in a future release. Membership changes run through support today.",
+    cta: "On the roadmap",
     disabled: true,
   },
   {
@@ -73,8 +73,8 @@ export default function AdminPage() {
           <div className="module-intro-body">
             <h1 className="module-intro-title">Admin control room</h1>
             <p className="module-intro-description">
-              Keep this surface honest and launch-safe: show what operators can use today, show what is still staged,
-              and route pilot diligence into evidence instead of vague platform language.
+              See what is available today, what is on the roadmap, and where to find readiness evidence for
+              diligence reviews.
             </p>
           </div>
 
@@ -82,17 +82,17 @@ export default function AdminPage() {
             <div className="module-summary-card">
               <p className="module-summary-label">Live now</p>
               <p className="module-summary-value">{liveCount}</p>
-              <p className="module-summary-detail">Billing and pilot-readiness evidence are operator-usable today.</p>
+              <p className="module-summary-detail">Billing, readiness evidence, and operational warnings are available today.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Staged next</p>
               <p className="module-summary-value">{stagedCount}</p>
-              <p className="module-summary-detail">Team administration remains staged while warning telemetry is visible now.</p>
+              <p className="module-summary-detail">Team administration is staged for a future release.</p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Pilot posture</p>
-              <p className="module-summary-value">Supervised</p>
-              <p className="module-summary-detail">Admin tools show what is available today and what is still coming next.</p>
+              <p className="module-summary-label">Roadmap</p>
+              <p className="module-summary-value">Visible</p>
+              <p className="module-summary-detail">Staged modules are labeled below and ship in future releases.</p>
             </div>
           </div>
         </article>
@@ -113,7 +113,7 @@ export default function AdminPage() {
           <div className="module-operator-list">
             <div className="module-operator-item">Use Billing to review plan and invoice details.</div>
             <div className="module-operator-item">Use Pilot Readiness to review launch checks and proof materials.</div>
-            <div className="module-operator-item">Some tools are still marked as coming soon.</div>
+            <div className="module-operator-item">Staged tools are labeled below until they ship.</div>
           </div>
         </article>
       </header>
@@ -124,7 +124,7 @@ export default function AdminPage() {
             <p className="module-section-label">Admin modules</p>
             <h2 className="module-section-title">Available controls</h2>
             <p className="module-section-description">
-              Live features are linked below. Staged items are shown as coming soon.
+              Live features are linked below. Staged items are labeled and ship in future releases.
             </p>
           </div>
         </div>
@@ -134,28 +134,28 @@ export default function AdminPage() {
             const Icon = module.icon;
             if (module.disabled) {
               return (
-                <div key={module.title} className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-background/60 px-3 py-2.5 opacity-60">
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-400">
+                <div key={module.title} className="flex items-start gap-3 rounded-[0.375rem] border border-border/70 bg-background/60 px-3 py-2.5 opacity-60">
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-border/70 bg-muted/40 text-muted-foreground">
                     <Icon className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[0.87rem] font-semibold text-gray-700">{module.title}</p>
-                    <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{module.description}</p>
+                    <p className="text-[0.87rem] font-semibold text-foreground/80">{module.title}</p>
+                    <p className="mt-0.5 text-[0.77rem] leading-snug text-muted-foreground">{module.description}</p>
                   </div>
                   <StatusBadge tone={module.tone}>{module.status}</StatusBadge>
                 </div>
               );
             }
             return (
-              <Link key={module.title} href={module.href} className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/40">
-                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-emerald-600/15 bg-emerald-50 text-emerald-700">
+              <Link key={module.title} href={module.href} className="flex items-start gap-3 rounded-[0.375rem] border border-border/70 bg-card px-3 py-2.5 transition-colors hover:border-emerald-600/40 hover:bg-accent/60">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-emerald-600/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   <Icon className="h-3.5 w-3.5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.87rem] font-semibold text-gray-900">{module.title}</p>
-                  <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{module.description}</p>
+                  <p className="text-[0.87rem] font-semibold text-foreground">{module.title}</p>
+                  <p className="mt-0.5 text-[0.77rem] leading-snug text-muted-foreground">{module.description}</p>
                 </div>
-                <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-gray-400" />
+                <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               </Link>
             );
           })}
@@ -166,9 +166,9 @@ export default function AdminPage() {
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">Governance posture</p>
-            <h2 className="module-section-title">What operators can trust right now</h2>
+            <h2 className="module-section-title">What is enforced right now</h2>
             <p className="module-section-description">
-              Pilot governance is active, but not every governance control is exposed as a full settings interface yet.
+              Governance controls are enforced in the runtime today; dedicated settings interfaces for each control are on the roadmap.
             </p>
           </div>
           <StatusBadge tone="info">Standard governance profile</StatusBadge>
@@ -181,19 +181,19 @@ export default function AdminPage() {
               AI policy enforcement active
             </div>
             <p className="mt-2 leading-relaxed">
-              Pilot routes are already operating under the active governance profile for synthesis and data-retention posture.
+              All routes operate under the active governance profile for synthesis and data retention.
             </p>
           </div>
           <div className="module-subpanel text-sm text-muted-foreground">
             <div className="font-semibold text-foreground">Evidence over assumption</div>
             <p className="mt-2 leading-relaxed">
-              Pilot Readiness is the source of truth for smoke status and proof artifacts. It is not decorative marketing chrome.
+              Pilot Readiness is the source of record for smoke status and proof artifacts.
             </p>
           </div>
           <div className="module-subpanel text-sm text-muted-foreground">
-            <div className="font-semibold text-foreground">Self-serve comes later</div>
+            <div className="font-semibold text-foreground">On the roadmap</div>
             <p className="mt-2 leading-relaxed">
-              Team administration and deeper audit surfaces will move forward when the product posture supports honest self-serve use.
+              Self-serve team administration and deeper audit surfaces ship in future releases.
             </p>
           </div>
         </div>

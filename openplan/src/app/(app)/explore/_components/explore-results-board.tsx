@@ -8,6 +8,11 @@ import {
   summarizeMapViewState,
   type MapViewState,
 } from "@/lib/analysis/map-view-state";
+import {
+  describeEstimatedAccessibilityInputs,
+  estimatedSourceNote,
+  resolveEstimatedDomains,
+} from "@/lib/analysis/estimated-source";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { downloadGeojson, downloadMetricsCsv, downloadRecordsCsv, downloadText } from "@/lib/export/download";
 import { resolveStatusTone } from "@/lib/ui/status";
@@ -116,6 +121,11 @@ export function ExploreResultsBoard({
     return buildSourceTransparency(analysisResult.metrics, analysisResult.aiInterpretationSource);
   }, [analysisResult]);
 
+  const estimatedDomains = useMemo(
+    () => resolveEstimatedDomains(analysisResult?.metrics ?? null),
+    [analysisResult]
+  );
+
   const planningSignals = useMemo(() => {
     if (!analysisResult) {
       return [] satisfies PlanningSignal[];
@@ -146,14 +156,18 @@ export function ExploreResultsBoard({
         label: "Stops / sq mi",
         value: typeof analysisResult.metrics.stopsPerSquareMile === "number" ? `${analysisResult.metrics.stopsPerSquareMile}` : "N/A",
         note: "Transit stop density from current transit access proxy layer.",
+        estimated: estimatedDomains.transit,
+        estimatedNote: estimatedDomains.transit ? estimatedSourceNote("transit") : undefined,
       },
       {
         label: "Crash intensity",
         value: typeof analysisResult.metrics.crashesPerSquareMile === "number" ? `${analysisResult.metrics.crashesPerSquareMile}/sq mi` : "N/A",
         note: "Crash density from the active crash source or fallback estimator.",
+        estimated: estimatedDomains.crashes,
+        estimatedNote: estimatedDomains.crashes ? estimatedSourceNote("crashes") : undefined,
       },
     ] satisfies PlanningSignal[];
-  }, [analysisResult]);
+  }, [analysisResult, estimatedDomains]);
 
   const sourceSnapshots = analysisResult?.metrics.sourceSnapshots;
 
@@ -299,16 +313,22 @@ export function ExploreResultsBoard({
     });
   }
 
+  const accessibilityEstimatedNote = describeEstimatedAccessibilityInputs(estimatedDomains);
+
   resultScoreTiles.push(
     {
       label: "Accessibility",
       value: `${analysisResult.metrics.accessibilityScore}`,
       note: "Transit reach, service availability, and jobs-access posture.",
+      estimated: accessibilityEstimatedNote !== null,
+      estimatedNote: accessibilityEstimatedNote ?? undefined,
     },
     {
       label: "Safety",
       value: `${analysisResult.metrics.safetyScore}`,
       note: "Crash-risk lane informed by the active safety source and filters.",
+      estimated: estimatedDomains.crashes,
+      estimatedNote: estimatedDomains.crashes ? estimatedSourceNote("crashes") : undefined,
     },
     {
       label: "Equity",

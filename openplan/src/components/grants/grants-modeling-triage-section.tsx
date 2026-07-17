@@ -37,7 +37,7 @@ export function GrantsModelingTriageSection({
           <p className="module-section-label">Modeling triage</p>
           <h2 className="module-section-title">See where grant modeling support looks strongest, thin, or stale</h2>
           <p className="module-section-description">
-            Saved scenario comparison context stays visible here before operators open a funding opportunity or change grant posture. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.
+            Saved scenario comparison context stays visible here before you open a funding opportunity or change a grant decision. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.
           </p>
         </div>
         <StatusBadge tone={opportunityLinkedModelingProjects.length > 0 ? "info" : "neutral"}>
@@ -189,7 +189,7 @@ export function GrantsModelingTriageSection({
             ))}
           </div>
           <div className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-            Review packet evidence before grant posture changes
+            Review packet evidence before changing a grant decision
             <ArrowRight className="h-4 w-4" />
           </div>
         </Link>

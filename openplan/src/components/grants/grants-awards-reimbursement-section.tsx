@@ -83,9 +83,9 @@ export function GrantsAwardsReimbursementSection({
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Committed awards</p>
-          <h2 className="module-section-title">Workspace award stack and reimbursement posture</h2>
+          <h2 className="module-section-title">Workspace awards and reimbursement status</h2>
           <p className="module-section-description">
-            Reuse the same funding-stack truth from project detail, but surface it here as one workspace lane so operators can see where award dollars are still uninvoiced, in flight, or fully reimbursed.
+            The same funding records shown on each project, brought together in one workspace view so you can see where award dollars are still uninvoiced, in flight, or fully reimbursed.
           </p>
         </div>
         <StatusBadge tone={fundingProjectStacks.length > 0 ? "info" : "neutral"}>

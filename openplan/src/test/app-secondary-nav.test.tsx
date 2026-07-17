@@ -23,12 +23,13 @@ describe("AppSecondaryNav", () => {
     pathnameValue = "/admin/pilot-readiness";
   });
 
-  it("surfaces pilot readiness as an operations-adjacent route", () => {
+  it("keeps the operations section free of operator-only admin routes", () => {
     render(<AppSecondaryNav />);
 
     expect(screen.getByText("Operations")).toBeInTheDocument();
-    expect(screen.getByText(/Commercial controls and pilot-readiness surfaces/i)).toBeInTheDocument();
-    expect(screen.getByText("Pilot Readiness")).toBeInTheDocument();
-    expect(screen.getByText(/Smoke evidence, proof packets, and launch diligence/i)).toBeInTheDocument();
+    expect(screen.getByText("Reports")).toBeInTheDocument();
+    expect(screen.getByText("Billing")).toBeInTheDocument();
+    expect(screen.queryByText("Pilot Readiness")).not.toBeInTheDocument();
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument();
   });
 });

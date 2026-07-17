@@ -45,14 +45,14 @@ const publicSurfaces = [
     label: "Evidence catalog",
     title: "See a real screening run with its caveats",
     description:
-      "Nevada County 2026-03-24 screening runtime vs. Caltrans counts, gated as internal prototype only — caveats and validation metrics shown verbatim.",
+      "Nevada County 2026-03-24 screening run against Caltrans counts — screening-grade evidence with caveats and validation metrics shown verbatim.",
   },
   {
     href: "/request-access?product=openplan&lane=managed-hosting&workflow=modeling&source=landing&intent=modeling-workspace-review",
     label: "Analysis Studio access",
-    title: "Request the gated map and scenario workspace",
+    title: "Request access to the map and scenario workspace",
     description:
-      "Analysis Studio is a signed-in workspace area. Request a supervised review before using corridor maps, overlays, run history, and map-ready outputs.",
+      "Analysis Studio is a signed-in workspace. Request access to work with corridor maps, overlays, run history, and map-ready outputs.",
   },
   {
     href: "/pricing",
@@ -63,13 +63,13 @@ const publicSurfaces = [
   {
     href: "/request-access?product=openplan&source=landing&intent=open-source-services-review",
     label: "Access intake",
-    title: "Request a supervised workspace review",
+    title: "Request a workspace review",
     description: "Submit agency context and a first workflow without triggering automatic provisioning or outbound messages.",
   },
   {
     href: "/request-access?product=openplan&lane=implementation&workflow=engagement&source=landing&intent=engagement-workspace-review",
     label: "Engagement workspace access",
-    title: "Request the gated engagement workspace",
+    title: "Request access to the engagement workspace",
     description:
       "Public share links can be published, but campaign management stays in a signed-in workspace with moderation and human review.",
   },
@@ -77,25 +77,25 @@ const publicSurfaces = [
 
 const releaseFacts = [
   {
-    label: "Core posture",
+    label: "License",
     value: "Apache-2.0 core",
-    detail: "OpenPlan is positioned as inspectable planning software, not a closed black-box SaaS dependency.",
+    detail: "OpenPlan is inspectable planning software, not a closed black-box SaaS dependency.",
   },
   {
-    label: "Public lane",
-    value: "Services-first access",
-    detail: "Hosting, support, onboarding, implementation, and custom extensions are the commercial lanes around the open-source core.",
+    label: "Commercial model",
+    value: "Free software, paid services",
+    detail: "Hosting, support, onboarding, implementation, and custom extensions are the paid services around the open-source core.",
   },
   {
     label: "Rollout status",
-    value: "Supervised release",
-    detail: "OpenPlan is live with deliberate controls around managed hosting, billing, onboarding, and production use.",
+    value: "Live, reviewed onboarding",
+    detail: "OpenPlan is live. New hosted workspaces start with a reviewed onboarding so hosting, billing, and support are set up correctly from day one.",
   },
 ];
 
-const pilotBoundaries = [
-  "The source-first posture is intentional: public agencies should be able to inspect the software behind their planning work.",
-  "Managed hosting and billing remain intentionally supervised because support obligations, data posture, and workspace ownership matter.",
+const operatingCommitments = [
+  "The source-first stance is intentional: public agencies should be able to inspect the software behind their planning work.",
+  "Managed hosting and billing start with a reviewed setup because support obligations, data handling, and workspace ownership matter.",
   "Public engagement portals preserve review and moderation before feedback enters formal reporting or summaries.",
   "The platform is built for agencies and consulting teams that need traceable planning work, not another static status page.",
 ];
@@ -128,7 +128,7 @@ export default function PublicLandingPage() {
 
       <section className="public-hero-grid">
         <article className="public-hero">
-          <p className="public-kicker">OpenPlan public lane</p>
+          <p className="public-kicker">Open-source planning platform</p>
           <div className="public-headline-block">
             <h1 className="public-title">Open-source planning software that keeps maps, engagement, and delivery in one record.</h1>
             <p className="public-lead max-w-4xl">
@@ -252,12 +252,12 @@ export default function PublicLandingPage() {
         <article className="public-surface">
           <div className="public-section-header">
             <div>
-              <p className="public-section-label">Pilot boundary</p>
+              <p className="public-section-label">Operating commitments</p>
               <h2 className="public-section-title">What the current public release promises</h2>
             </div>
           </div>
           <div className="public-ledger">
-            {pilotBoundaries.map((boundary, index) => (
+            {operatingCommitments.map((boundary, index) => (
               <div key={boundary} className="public-ledger-row">
                 <div className="public-ledger-index">0{index + 1}</div>
                 <div className="public-ledger-body">

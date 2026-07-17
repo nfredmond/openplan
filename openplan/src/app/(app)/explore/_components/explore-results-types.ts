@@ -7,6 +7,8 @@ export type ResultScoreTile = {
   value: string;
   note: string;
   emphasis?: boolean;
+  estimated?: boolean;
+  estimatedNote?: string;
 };
 
 export type ResultStatusBadge = {
@@ -30,6 +32,8 @@ export type PlanningSignal = {
   label: string;
   value: string;
   note: string;
+  estimated?: boolean;
+  estimatedNote?: string;
 };
 
 export type GeospatialSourceCard = {
