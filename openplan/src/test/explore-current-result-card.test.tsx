@@ -106,6 +106,32 @@ describe("ExploreCurrentResultCard", () => {
     expect(screen.queryByText("AI interpretation")).not.toBeInTheDocument();
   });
 
+  it("shows an Estimated badge and explanation on tiles backed by fallback sources", () => {
+    render(
+      <ExploreCurrentResultCard
+        {...buildProps({
+          resultScoreTiles: [
+            { label: "Access", value: "78", note: "Transit access score." },
+            {
+              label: "Safety",
+              value: "72",
+              note: "Crash safety score.",
+              estimated: true,
+              estimatedNote: "Crash source API unavailable — area-based estimate.",
+            },
+          ],
+        })}
+      />
+    );
+
+    expect(screen.getByText("Estimated")).toBeInTheDocument();
+    expect(screen.getByText("Estimated")).toHaveAttribute(
+      "title",
+      "Crash source API unavailable — area-based estimate."
+    );
+    expect(screen.getByText("Crash source API unavailable — area-based estimate.")).toBeInTheDocument();
+  });
+
   it("surfaces paired comparison context and dispatches export callbacks", () => {
     const onExportMetrics = vi.fn();
     const onExportGeojson = vi.fn();

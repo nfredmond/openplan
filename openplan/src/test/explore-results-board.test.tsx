@@ -163,6 +163,57 @@ describe("ExploreResultsBoard", () => {
     expect(screen.getByText("Source checks look good")).toBeInTheDocument();
   });
 
+  it("does not surface estimated indicators when all sources are measured", () => {
+    render(
+      <ExploreResultsBoard
+        analysisResult={buildAnalysisResult()}
+        comparisonRun={null}
+        queryText="Downtown access check"
+        currentMapViewState={currentMapViewState}
+        onClearComparison={vi.fn()}
+        onError={vi.fn()}
+      />
+    );
+
+    expect(screen.queryByText("Estimated")).not.toBeInTheDocument();
+  });
+
+  it("labels headline metrics as Estimated when fallback sources backed the run", () => {
+    const estimatedResult = buildAnalysisResult();
+    estimatedResult.metrics.dataQuality = {
+      censusAvailable: true,
+      crashDataAvailable: false,
+      lodesSource: "acs-estimate",
+      equitySource: "cejst-proxy-census",
+      aiInterpretationSource: "ai",
+    };
+    estimatedResult.metrics.sourceSnapshots = {
+      ...estimatedResult.metrics.sourceSnapshots,
+      crashes: { source: "fars-estimate", note: "Fallback estimate." },
+      transit: { source: "estimate", note: "Fallback estimate." },
+      lodes: { source: "acs-estimate", note: "ACS estimation." },
+    };
+
+    render(
+      <ExploreResultsBoard
+        analysisResult={estimatedResult}
+        comparisonRun={null}
+        queryText="Downtown access check"
+        currentMapViewState={currentMapViewState}
+        onClearComparison={vi.fn()}
+        onError={vi.fn()}
+      />
+    );
+
+    // Safety + Accessibility score tiles, plus "Stops / sq mi" and "Crash intensity" planning signals.
+    expect(screen.getAllByText("Estimated").length).toBeGreaterThanOrEqual(4);
+    expect(
+      screen.getByText("Includes estimated inputs (transit stops, employment) — source data unavailable or not yet ingested.")
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/Crash source API unavailable — area-based estimate\./).length).toBeGreaterThanOrEqual(2);
+    expect(screen.getAllByText(/Transit stop inventory unavailable — area-based estimate\./).length).toBeGreaterThanOrEqual(1);
+  });
+
   it("renders comparison context and clears the pinned baseline", () => {
     const onClearComparison = vi.fn();
 
