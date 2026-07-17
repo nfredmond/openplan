@@ -22,7 +22,7 @@ const patchCampaignSchema = z
     rtpCycleId: z.union([z.string().uuid(), z.null()]).optional(),
     rtpCycleChapterId: z.union([z.string().uuid(), z.null()]).optional(),
     shareToken: z
-      .union([z.string().trim().min(8).max(64).regex(/^[a-zA-Z0-9_-]+$/), z.null()])
+      .union([z.string().trim().min(16).max(64).regex(/^[a-zA-Z0-9_-]+$/), z.null()])
       .optional(),
     publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),

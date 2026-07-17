@@ -10,6 +10,7 @@ import {
 } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { timingSafeSecretEquals } from "@/lib/http/secret-compare";
 
 export const runtime = "nodejs";
 
@@ -45,7 +46,7 @@ function isAuthorized(request: NextRequest): boolean | "missing_config" {
     return "missing_config";
   }
 
-  return requestSecret(request) === expected;
+  return timingSafeSecretEquals(requestSecret(request), expected);
 }
 
 export async function POST(request: NextRequest) {

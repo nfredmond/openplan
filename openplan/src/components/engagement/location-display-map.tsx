@@ -45,13 +45,21 @@ export function LocationDisplayMap({ items }: { items: MapItem[] }) {
 
     map.on("load", () => {
       validItems.forEach((item) => {
-        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" })
-          .setHTML(`
-            <div style="padding: 4px; color: black;">
-              ${item.title ? `<strong>${item.title}</strong><br/>` : ""}
-              <p style="margin: 4px 0 0; font-size: 13px;">${item.body}</p>
-            </div>
-          `);
+        // Build popup content via DOM nodes — title/body are public free text
+        // and must never be interpolated into HTML.
+        const content = document.createElement("div");
+        content.style.cssText = "padding: 4px; color: black;";
+        if (item.title) {
+          const title = document.createElement("strong");
+          title.textContent = item.title;
+          content.appendChild(title);
+        }
+        const body = document.createElement("p");
+        body.style.cssText = "margin: 4px 0 0; font-size: 13px;";
+        body.textContent = item.body;
+        content.appendChild(body);
+
+        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "300px" }).setDOMContent(content);
 
         const el = document.createElement('div');
         el.className = 'w-4 h-4 bg-primary rounded-full border-2 border-background shadow-sm cursor-pointer';

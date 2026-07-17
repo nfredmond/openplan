@@ -89,24 +89,25 @@ describe("verifyAssistantActionApproval", () => {
     ).rejects.toThrow("approval evidence is missing");
   });
 
-  it("does not require approval evidence for review-only quick links while preserving the client input hash", async () => {
+  it("does not require approval evidence for review-only quick links and records the server-computed hash, ignoring the client header", async () => {
+    const action = {
+      kind: "create_rtp_packet_record",
+      rtpCycleId: "rtp-cycle-1",
+    } as const;
     const result = await verifyAssistantActionApproval({
       request: plannerRequest({
         "x-openplan-assistant-execution-source": ASSISTANT_ACTION_EXECUTION_SOURCE,
-        "x-openplan-assistant-input-hash": "client-side-review-hash",
+        "x-openplan-assistant-input-hash": "client-side-spoofed-hash",
       }),
       serviceSupabase: { from: vi.fn() },
       userId: "user-1",
       workspaceId: "workspace-1",
-      action: {
-        kind: "create_rtp_packet_record",
-        rtpCycleId: "rtp-cycle-1",
-      },
+      action,
     });
 
     expect(result).toEqual({
       approvalId: null,
-      inputHash: "client-side-review-hash",
+      inputHash: hashAssistantActionPayload(action),
       executionSource: "planner_agent_quick_link",
     });
   });
