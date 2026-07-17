@@ -327,7 +327,7 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          shareToken: " Pilot_Link_01 ",
+          shareToken: " Pilot_Link_2026_01 ",
         }),
       }),
       {
@@ -362,7 +362,7 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          shareToken: " Pilot_Link_02 ",
+          shareToken: " Pilot_Link_2026_02 ",
         }),
       }),
       {
@@ -373,7 +373,7 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     expect(response.status).toBe(200);
     expect(campaignUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        share_token: "pilot_link_02",
+        share_token: "pilot_link_2026_02",
       })
     );
   });

@@ -9,6 +9,7 @@ import {
   verifyStripeWebhookSignature,
 } from "@/lib/billing/webhook";
 import { claimWebhookEvent, completeWebhookEvent } from "@/lib/billing/webhook-idempotency";
+import { timingSafeSecretEquals } from "@/lib/http/secret-compare";
 import { logBillingEvent } from "@/lib/billing/events";
 import { applyBillingSubscriptionMutation } from "@/lib/billing/subscriptions";
 import {
@@ -38,7 +39,7 @@ function isLegacyAuthorized(request: NextRequest): boolean {
   }
 
   const headerSecret = request.headers.get("x-openplan-billing-secret")?.trim();
-  return Boolean(headerSecret && headerSecret === expectedSecret);
+  return timingSafeSecretEquals(headerSecret, expectedSecret);
 }
 
 function parseJson(rawBody: string): unknown {

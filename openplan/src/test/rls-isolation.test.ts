@@ -777,6 +777,43 @@ liveDescribe("workspace RLS live isolation", () => {
     }
   });
 
+  it("rejects cross-workspace project inserts even when created_by is the caller", async () => {
+    const { error } = await userA.from("projects").insert({
+      id: randomUUID(),
+      workspace_id: context.workspaceBId,
+      name: `RLS cross-tenant probe ${context.suffix}`,
+      created_by: context.userAId,
+    });
+
+    expect(error?.message ?? "", "cross-workspace project insert error").toMatch(
+      /row-level security|permission denied|violates/i
+    );
+  });
+
+  it("does not let anon clients enumerate shared engagement campaigns", async () => {
+    const sharedCampaignId = randomUUID();
+    const seeded = await service.from("engagement_campaigns").insert({
+      id: sharedCampaignId,
+      workspace_id: context.workspaceBId,
+      title: `RLS shared campaign ${context.suffix}`,
+      status: "active",
+      engagement_type: "comment_collection",
+      share_token: `rls_probe_${context.suffix}_token`,
+      allow_public_submissions: true,
+      created_by: context.userBId,
+    });
+    expect(seeded.error, "shared campaign seed error").toBeNull();
+
+    const { data: enumerated } = await anon
+      .from("engagement_campaigns")
+      .select("id, share_token")
+      .not("share_token", "is", null);
+
+    expect(enumerated ?? [], "anon-enumerable shared campaigns").toEqual([]);
+
+    await service.from("engagement_campaigns").delete().eq("id", sharedCampaignId);
+  });
+
   it("keeps assistant action executions readable but service-authored only", async () => {
     const readable = await readWorkspaceRows(userB, "assistant_action_executions", context.workspaceBId);
     expect(readable.error, "assistant_action_executions member read error").toBeNull();

@@ -122,7 +122,9 @@ export async function verifyAssistantActionApproval(params: {
   const metadata = getActionMetadata(params.action.kind);
   const headerHash = params.request.headers.get("x-openplan-assistant-input-hash")?.trim() ?? null;
   if (metadata.approval !== "approval_required") {
-    return { approvalId: null, inputHash: headerHash ?? inputHash, executionSource };
+    // Always record the server-computed hash — the client header is unverified
+    // and must not be able to write a spoofed hash into the audit row.
+    return { approvalId: null, inputHash, executionSource };
   }
 
   if (headerHash !== inputHash) {

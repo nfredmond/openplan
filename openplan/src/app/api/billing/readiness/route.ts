@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { timingSafeSecretEquals } from "@/lib/http/secret-compare";
 import {
   buildBillingReadinessSummary,
   loadBillingReadinessFacts,
@@ -51,7 +52,7 @@ function isAuthorized(request: NextRequest): boolean | "missing_config" {
     return "missing_config";
   }
 
-  return requestSecret(request) === expected;
+  return timingSafeSecretEquals(requestSecret(request), expected);
 }
 
 export async function POST(request: NextRequest) {
