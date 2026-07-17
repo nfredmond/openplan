@@ -898,7 +898,7 @@ describe("ReportDetailPage", () => {
     expect(screen.getByText(/Data lineage scan: 1\/1 project-linked datasets output-ready · 4 dependent output checks passed\./i)).toBeInTheDocument();
     expect(screen.getByText(/Funding profile has blockers/i)).toBeInTheDocument();
     expect(screen.getByText(/Funding target: Likely covered\./i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Committed awards exist, but no linked invoice requests/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/still uninvoiced/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Review changed source areas and regenerate/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute(
       "href",
