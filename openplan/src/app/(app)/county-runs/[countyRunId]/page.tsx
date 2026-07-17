@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { CountyRunDetailClient } from "@/components/county-runs/county-run-detail-client";
+import { CountyRunCeqaVmtScreen } from "@/components/county-runs/county-run-ceqa-vmt-screen";
 import { loadBehavioralOnrampKpisForWorkspace } from "@/lib/models/behavioral-onramp-kpis";
 import { CountyRunBehavioralKpisSection } from "./_components/county-run-behavioral-kpis";
 
@@ -46,6 +47,16 @@ export default async function CountyRunDetailPage({ params, searchParams }: Coun
   const isThisRunRejected = kpiResult.rejectedCountyRunIds.includes(countyRunId);
   const basePathname = `/county-runs/${countyRunId}`;
 
+  const { data: countyRunRow } = await supabase
+    .from("county_runs")
+    .select("id, run_name")
+    .eq("id", countyRunId)
+    .eq("workspace_id", membership.workspace_id)
+    .maybeSingle();
+  const runName = (countyRunRow as { id: string; run_name: string | null } | null)?.run_name ?? null;
+
+  const kpisForThisRun = kpiResult.kpis.filter((kpi) => kpi.county_run_id === countyRunId);
+
   return (
     <>
       <CountyRunDetailClient countyRunId={countyRunId} />
@@ -58,6 +69,15 @@ export default async function CountyRunDetailPage({ params, searchParams }: Coun
           acceptingScreeningGrade={acceptingScreeningGrade}
           basePathname={basePathname}
           error={kpiResult.error?.message ?? null}
+        />
+      </section>
+      <section className="module-page pb-10 pt-0">
+        <CountyRunCeqaVmtScreen
+          countyRunId={countyRunId}
+          runName={runName}
+          kpis={kpisForThisRun}
+          heldBackByScreeningGate={isThisRunRejected && !acceptingScreeningGrade}
+          includeScreeningHref={`${basePathname}?includeScreening=1`}
         />
       </section>
     </>
