@@ -17,6 +17,7 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/engagement',
   '/billing',
   '/admin',
+  '/assistant-activity',
 ] as const
 
 const REQUEST_ID_HEADER = 'x-request-id'
