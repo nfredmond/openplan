@@ -481,7 +481,9 @@ export default async function GrantsPage({
   const { data: focusedOpportunityNarrativeDraftData } = activeFocusedOpportunityId
     ? await supabase
         .from("funding_opportunity_narrative_drafts")
-        .select("id, opportunity_id, draft_markdown, model, source, created_at")
+        .select(
+          "id, opportunity_id, draft_markdown, model, source, created_at, grounding_json, grounded_sentence_count, total_sentence_count"
+        )
         .eq("opportunity_id", activeFocusedOpportunityId)
         .order("created_at", { ascending: false })
         .limit(1)

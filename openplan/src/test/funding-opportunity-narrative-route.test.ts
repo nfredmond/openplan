@@ -225,7 +225,17 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     expect(generationArgs.prompt).toContain(GRANT_MODELING_PLANNING_CAVEAT);
     expect(generationArgs.prompt).toContain("No project is linked to this opportunity.");
 
-    // The draft is persisted with the migration's exact columns.
+    // The prompt carries the numbered fact list and the citation contract.
+    expect(generationArgs.prompt).toContain("WORKSPACE FACTS");
+    expect(generationArgs.prompt).toContain("CITATIONS ARE MANDATORY");
+    expect(generationArgs.prompt).toContain(
+      '[fact:fact_1] The funding opportunity is titled "2027 ATP countywide active transportation call", administered by CTC / Caltrans.'
+    );
+    expect(generationArgs.prompt).toContain("[fact:fact_3] The expected award amount recorded for this opportunity is $750,000.");
+    expect(generationArgs.prompt).toContain("[fact:fact_5] Funding-source fit notes on record: Strong safe-routes fit.");
+
+    // The draft is persisted with the migration's exact columns, including
+    // the grounding validation of the (uncited) mock draft.
     expect(draftInsertMock).toHaveBeenCalledWith({
       workspace_id: WORKSPACE_ID,
       opportunity_id: OPPORTUNITY_ID,
@@ -233,7 +243,99 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
       model: "claude-opus-4-8",
       source: "ai",
       created_by: USER_ID,
+      grounding_json: expect.objectContaining({
+        mode: "annotated",
+        is_fully_grounded: false,
+        grounded_sentence_count: 0,
+        total_sentence_count: 1,
+      }),
+      grounded_sentence_count: 0,
+      total_sentence_count: 1,
     });
+  });
+
+  it("persists a fully grounded validation when every sentence cites known facts", async () => {
+    generateTextMock.mockResolvedValue({
+      text: "The opportunity is open and pursued. [fact:fact_2] The expected award is $750,000. [fact:fact_3]",
+      usage: { inputTokens: 1000, outputTokens: 500, totalTokens: 1500 },
+    });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+      grounding_json: {
+        is_fully_grounded: boolean;
+        cited_fact_ids: string[];
+        unknown_fact_ids: string[];
+        sentences: Array<{ is_grounded: boolean }>;
+        facts: Array<{ fact_id: string; claim_text: string }>;
+      };
+      grounded_sentence_count: number;
+      total_sentence_count: number;
+    };
+
+    expect(insertPayload.grounded_sentence_count).toBe(2);
+    expect(insertPayload.total_sentence_count).toBe(2);
+    expect(insertPayload.grounding_json.is_fully_grounded).toBe(true);
+    expect(insertPayload.grounding_json.cited_fact_ids).toEqual(["fact_2", "fact_3"]);
+    expect(insertPayload.grounding_json.unknown_fact_ids).toEqual([]);
+    // The persisted fact list is the citation record the ids resolve against.
+    expect(insertPayload.grounding_json.facts.map((fact) => fact.fact_id)).toContain("fact_2");
+  });
+
+  it("persists a partially grounded validation with flagged sentences", async () => {
+    generateTextMock.mockResolvedValue({
+      text: "The expected award is $750,000. [fact:fact_3] This filler sentence cites nothing. Ghost claim. [fact:fact_99]",
+      usage: { inputTokens: 1000, outputTokens: 500, totalTokens: 1500 },
+    });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+      grounding_json: {
+        is_fully_grounded: boolean;
+        unknown_fact_ids: string[];
+        sentences: Array<{ text: string; is_grounded: boolean }>;
+      };
+      grounded_sentence_count: number;
+      total_sentence_count: number;
+    };
+
+    expect(insertPayload.grounded_sentence_count).toBe(1);
+    expect(insertPayload.total_sentence_count).toBe(3);
+    expect(insertPayload.grounding_json.is_fully_grounded).toBe(false);
+    expect(insertPayload.grounding_json.unknown_fact_ids).toEqual(["fact_99"]);
+    // Annotated mode keeps flagged sentences for operator review.
+    expect(insertPayload.grounding_json.sentences).toHaveLength(3);
+    expect(
+      insertPayload.grounding_json.sentences.filter((sentence) => !sentence.is_grounded)
+    ).toHaveLength(2);
+  });
+
+  it("persists a zero-grounded validation when the draft has no citations", async () => {
+    generateTextMock.mockResolvedValue({
+      text: "First uncited claim. Second uncited claim.",
+      usage: { inputTokens: 1000, outputTokens: 500, totalTokens: 1500 },
+    });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+      draft_markdown: string;
+      grounding_json: { is_fully_grounded: boolean; cited_fact_ids: string[] };
+      grounded_sentence_count: number;
+      total_sentence_count: number;
+    };
+
+    expect(insertPayload.grounded_sentence_count).toBe(0);
+    expect(insertPayload.total_sentence_count).toBe(2);
+    expect(insertPayload.grounding_json.is_fully_grounded).toBe(false);
+    expect(insertPayload.grounding_json.cited_fact_ids).toEqual([]);
+    // The stored draft is the raw model output — validation never rewrites it.
+    expect(insertPayload.draft_markdown).toBe("First uncited claim. Second uncited claim.");
   });
 
   it("respects the OPENPLAN_GRANTS_AI_MODEL override", async () => {
