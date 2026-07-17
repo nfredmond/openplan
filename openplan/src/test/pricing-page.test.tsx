@@ -34,11 +34,12 @@ describe("PricingPage", () => {
     expect(screen.getByText(/Managed hosting \+ support/i)).toBeInTheDocument();
     expect(screen.getByText(/Implementation \+ planning services/i)).toBeInTheDocument();
     expect(screen.getByText(/Signed-in planning workspace, Analysis Studio access/i)).toBeInTheDocument();
-    expect(screen.getByText(/Stripe remains available as the payment rail for hosted workspace support and service retainers/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/historical live payment.*current non-money-moving billing checks/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/No new same-cycle paid checkout was run/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stripe handles payments for hosted workspace support and service retainers/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hosted billing runs on Stripe/i)).toBeInTheDocument();
+    expect(screen.getByText(/Managed-hosting billing starts only after the account is attached to the intended workspace/i)).toBeInTheDocument();
     expect(screen.queryByText(/Operator-grade app shell/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/commercial proof waiver/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/waived/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Request self-hosting review/i })).toHaveAttribute(
       "href",
       "/request-access?product=openplan&lane=self-hosted&source=pricing&intent=self-hosting-review",

@@ -415,7 +415,7 @@ describe("GrantsPage", () => {
       screen.getByText(/See where grant modeling support looks strongest, thin, or stale/i)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Within the same grant timing and decision posture, opportunities with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work/i)
+      screen.getByText(/Within the same grant timing and decision status, opportunities with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work/i)
     ).toBeInTheDocument();
     expect(screen.getAllByText("Project modeling evidence").length).toBeGreaterThan(0);
     expect(

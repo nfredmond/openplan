@@ -53,7 +53,7 @@ export function GrantsFundingNeedEditorSection({
             <p className="font-semibold">Focused from workspace queue</p>
             <p className="mt-1">
               {fundingNeedEditorProject.project.name} already has linked opportunities but still needs a recorded
-              funding-need anchor before gap and award posture can be trusted.
+              funding-need anchor before funding gaps and award coverage can be calculated.
             </p>
             <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-sky-700/80 dark:text-sky-200/80">
               {fundingNeedEditorProject.opportunityCount} linked opportunit

@@ -47,10 +47,10 @@ export function GrantsOpportunityCreatorSection({
 
   const description =
     fundingOpportunityCreatorMode === "gap" && fundingOpportunityCreatorProject
-      ? `Focused from the workspace queue so you can source additional grant coverage for ${fundingOpportunityCreatorProject.name} without leaving the shared grants lane.`
+      ? `Focused from the workspace queue so you can source additional grant coverage for ${fundingOpportunityCreatorProject.name} without leaving the grants workspace.`
       : fundingOpportunityCreatorProject
-        ? `Focused from the workspace queue so you can source candidate grants for ${fundingOpportunityCreatorProject.name} without leaving the shared grants lane.`
-        : "Create a shared grant record tied to a project or program so pursue, monitor, skip, award, and reimbursement work all point back to the same workspace truth.";
+        ? `Focused from the workspace queue so you can source candidate grants for ${fundingOpportunityCreatorProject.name} without leaving the grants workspace.`
+        : "Create a shared grant record tied to a project or program so pursue, monitor, skip, award, and reimbursement work all point back to the same shared record.";
 
   return (
     <div

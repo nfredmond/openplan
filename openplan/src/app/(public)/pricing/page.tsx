@@ -44,10 +44,10 @@ const serviceLanes = [
     price: "From $249/mo",
     features: [
       "Nat Ford-operated hosting for one or more planning workspaces",
-      "Workspace setup, payment records, backups, and support handled through a reviewed managed-service lane",
+      "Workspace setup, payment records, backups, and support handled as part of the managed service",
       "Signed-in planning workspace, Analysis Studio access, engagement, reporting, and support-led payment records",
       "Email support with a 2-business-day target for baseline managed hosting",
-      "Stripe remains available as the payment rail for hosted workspace support and service retainers",
+      "Stripe handles payments for hosted workspace support and service retainers",
     ],
     cta: "Request managed hosting",
     fit: "Good for a small agency, tribe, RTPA, or consultant team that wants the open-source product operated for them with clear support boundaries.",
@@ -73,7 +73,7 @@ const implementationNotes = [
   "The OpenPlan codebase is intended to be open-source first under Apache-2.0. Managed hosting, onboarding, support, planning services, and custom extensions are the commercial lanes.",
   "Prices shown are service baselines, not proprietary software-license fees. Final managed-hosting or implementation scope may vary by agency complexity, data requirements, support level, and procurement path.",
   "Payment and entitlement records remain in the product because hosted workspaces need a reliable support ledger. That infrastructure does not turn the open-source core into a proprietary software license.",
-  "For this release, billing evidence is historical live payment evidence plus current non-money-moving billing checks. No new same-cycle paid checkout was run, so sales language should call that check waived rather than re-proven.",
+  "Hosted billing runs on Stripe. Invoices, payment records, and support history stay attached to the workspace they belong to, so agencies always have a clear ledger of what was paid and why.",
   "No hidden fees, punitive change orders, black-box scoring claims, or unsupported planning-grade promises.",
 ];
 
@@ -244,10 +244,10 @@ export default function PricingPage() {
             Billing actions in OpenPlan are tied to a specific hosted workspace because project records, run history, support obligations, and billing status all need to stay aligned.
           </p>
           <div className="public-rail-list">
-            <div className="public-rail-item">Do not start managed-hosting billing until the account is attached to the intended workspace.</div>
-            <div className="public-rail-item">Use the current billing caveat honestly: historical live payment plus current non-money-moving billing checks, not a fresh paid checkout canary.</div>
-            <div className="public-rail-item">Use the request-access lane to decide whether the need is self-hosting, managed hosting, implementation, or a mix.</div>
-            <div className="public-rail-item">If the service scope or workspace target is unclear, stop and resolve it before the team begins paid delivery work.</div>
+            <div className="public-rail-item">Managed-hosting billing starts only after the account is attached to the intended workspace.</div>
+            <div className="public-rail-item">Invoices and payment records stay attached to the workspace they belong to.</div>
+            <div className="public-rail-item">Use the request-access form to work out whether the need is self-hosting, managed hosting, implementation, or a mix.</div>
+            <div className="public-rail-item">If the service scope or workspace target is unclear, we resolve it before paid delivery work begins.</div>
           </div>
         </article>
       </div>

@@ -50,11 +50,11 @@ describe("PublicLandingPage", () => {
 
     expect(screen.queryByRole("link", { name: /^Analysis Studio preview$/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /^Engagement workspace$/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Request the gated map and scenario workspace/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Request access to the map and scenario workspace/i })).toHaveAttribute(
       "href",
       "/request-access?product=openplan&lane=managed-hosting&workflow=modeling&source=landing&intent=modeling-workspace-review",
     );
-    expect(screen.getByRole("link", { name: /Request the gated engagement workspace/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Request access to the engagement workspace/i })).toHaveAttribute(
       "href",
       "/request-access?product=openplan&lane=implementation&workflow=engagement&source=landing&intent=engagement-workspace-review",
     );

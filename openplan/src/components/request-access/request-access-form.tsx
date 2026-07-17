@@ -374,7 +374,7 @@ export function RequestAccessForm({
             <div className="public-form-heading">
               <h3 className="public-section-label">Use case detail</h3>
               <p className="text-sm text-muted-foreground">
-                A focused first use case makes it easier to decide whether the right path is self-hosted software, managed hosting, implementation help, or no-fit for now.
+                A focused first use case makes it easier to decide whether the right path is self-hosted software, managed hosting, or implementation help.
               </p>
             </div>
 
@@ -443,7 +443,7 @@ export function RequestAccessForm({
             <p className="public-section-label">Helpful detail</p>
             <p className="mt-2 text-sm text-muted-foreground">
               The most useful requests name one immediate workflow, data sensitivity, deployment posture, and the staff path
-              needed to move from evaluation to a supervised pilot or production decision.
+              needed to move from evaluation to a deployment decision.
             </p>
           </div>
         </aside>

@@ -398,9 +398,9 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             </div>
             <StateBlock
               className="mt-3"
-              title="ODM processing is not implemented"
-              description="Imagery → ortho/DSM processing is explicitly out of scope for this prototype. The POST /api/aerial/missions/[id]/process endpoint returns HTTP 501 with an honest integration-boundary payload. No fake processing, no silent stubs."
-              tone="warning"
+              title="Imagery processing ships in a future release"
+              description="Missions, AOIs, and evidence packages are tracked today. Imagery-to-ortho/DSM processing lands in a future release; until then, the POST /api/aerial/missions/[id]/process endpoint returns HTTP 501 with an integration-boundary payload — no simulated outputs."
+              tone="info"
               compact
             />
           </WorksurfaceSection>

@@ -91,8 +91,8 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
           <MissionAoiEditor missionId={mission.id} initialPolygon={initialPolygon} />
           <StateBlock
             className="mt-4"
-            title="Honest scope"
-            description="This editor supports a single outer polygon. Multi-polygon, hole-cutting, and altitude terrain following are out of scope for this prototype."
+            title="Editor scope"
+            description="This editor supports a single outer polygon. Multi-polygon boundaries, hole cutting, and terrain-following altitude ship in a future release."
             tone="info"
             compact
           />

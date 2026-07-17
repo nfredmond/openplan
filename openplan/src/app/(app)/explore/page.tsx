@@ -517,7 +517,7 @@ export default function ExplorePage() {
               Upload a corridor to begin.
             </h2>
             <p className="mt-1.5 text-[0.82rem] leading-relaxed text-slate-300/80">
-              Draw or upload a study boundary, frame the planning question, and run the analysis.
+              Upload a study boundary, frame the planning question, and run the analysis.
             </p>
           </div>
         ) : null}

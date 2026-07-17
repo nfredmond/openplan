@@ -32,7 +32,7 @@ const reviewFacts = [
 
 const reviewSteps = [
   "Confirm the agency, responsible contact, first planning lane, and whether the likely path is self-hosted, managed hosted, implementation support, or a mix.",
-  "Decide whether the request fits the current open-source product boundary and Nat Ford service capacity.",
+  "Confirm the request fits what OpenPlan does today and current Nat Ford service capacity.",
   "Prepare any workspace setup, invitations, or service scope only after ownership, data posture, billing, and support obligations are clear.",
 ];
 
@@ -53,7 +53,7 @@ export default async function RequestAccessPage({
           <div className="public-headline-block">
             <h1 className="public-title">Start an OpenPlan self-hosting, managed-hosting, or implementation review.</h1>
             <p className="public-lead max-w-4xl">
-              Share the agency context, responsible contact, and first planning workflow so Nat Ford can determine whether the right path is self-hosted OpenPlan, managed hosting, onboarding support, planning services, custom implementation, or no-fit for now.
+              Share the agency context, responsible contact, and first planning workflow so Nat Ford can recommend the right path: self-hosted OpenPlan, managed hosting, onboarding support, planning services, or custom implementation.
             </p>
           </div>
 

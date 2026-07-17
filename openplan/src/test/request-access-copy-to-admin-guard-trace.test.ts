@@ -89,7 +89,7 @@ describe("request-access copy to admin provisioning guard trace", () => {
       "Self-hosting, managed-hosting billing, onboarding, and paid implementation remain separate supervised steps",
     );
     expect(requestAccessFormTest).toContain(
-      "move from evaluation to a supervised pilot or production decision",
+      "move from evaluation to a deployment decision",
     );
     expect(requestAccessFormTest).toContain("get from evaluation to production use");
   });
