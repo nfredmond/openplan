@@ -29,7 +29,19 @@ describe("AppSecondaryNav", () => {
     expect(screen.getByText("Operations")).toBeInTheDocument();
     expect(screen.getByText("Reports")).toBeInTheDocument();
     expect(screen.getByText("Billing")).toBeInTheDocument();
+    expect(screen.getByText("Agent Activity")).toBeInTheDocument();
     expect(screen.queryByText("Pilot Readiness")).not.toBeInTheDocument();
     expect(screen.queryByText("Admin")).not.toBeInTheDocument();
+  });
+
+  it("shows the operations section with an Agent Activity link on /assistant-activity", () => {
+    pathnameValue = "/assistant-activity";
+
+    render(<AppSecondaryNav />);
+
+    expect(screen.getByText("Operations")).toBeInTheDocument();
+    const agentActivityLink = screen.getByText("Agent Activity").closest("a");
+    expect(agentActivityLink).toHaveAttribute("href", "/assistant-activity");
+    expect(screen.getByText("Current")).toBeInTheDocument();
   });
 });

@@ -45,6 +45,15 @@ type ConversationEntry =
   | { id: string; role: "assistant"; type: "response"; response: AssistantResponse }
   | {
       id: string;
+      role: "assistant";
+      type: "chat";
+      text: string;
+      status: "streaming" | "complete" | "error";
+      error?: string;
+      question: string;
+    }
+  | {
+      id: string;
       role: "user";
       type: "prompt";
       text: string;
@@ -54,6 +63,30 @@ type ConversationEntry =
         auditEvent?: string;
       };
     };
+
+type ChatHistoryEntry = { role: "user" | "assistant"; content: string };
+
+type PendingApprovalState = {
+  label: string;
+  action: AssistantQuickLinkExecuteAction;
+  resolve: () => void;
+  reject: (error: Error) => void;
+};
+
+const CHAT_HISTORY_LIMIT = 12;
+const CHAT_HISTORY_ENTRY_MAX_CHARS = 4000;
+
+function buildChatHistory(messages: ConversationEntry[]): ChatHistoryEntry[] {
+  const history: ChatHistoryEntry[] = [];
+  for (const entry of messages) {
+    if (entry.type === "prompt" && entry.text.trim()) {
+      history.push({ role: "user", content: entry.text.slice(0, CHAT_HISTORY_ENTRY_MAX_CHARS) });
+    } else if (entry.type === "chat" && entry.status === "complete" && entry.text.trim()) {
+      history.push({ role: "assistant", content: entry.text.slice(0, CHAT_HISTORY_ENTRY_MAX_CHARS) });
+    }
+  }
+  return history.slice(-CHAT_HISTORY_LIMIT);
+}
 
 type OperationInvocationState = {
   linkId: string;
@@ -240,20 +273,6 @@ function formatRemainingSnoozeTime(returnAtMs: number | null, nowMs = Date.now()
   if (hours <= 0) return `${minutes}m`;
   if (minutes === 0) return `${hours}h`;
   return `${hours}h ${minutes}m`;
-}
-
-async function requestActionApproval(args: {
-  workspaceId: string | null;
-  action: AssistantQuickLinkExecuteAction;
-  label: string;
-}): Promise<AssistantActionApprovalEvidence> {
-  const confirmed = window.confirm(
-    `Approve Planner Agent action: ${args.label}\n\nThis will make a real change in OpenPlan and write an audit row.`
-  );
-  if (!confirmed) {
-    throw new Error("Planner Agent action approval was cancelled.");
-  }
-  return requestActionExecutionFingerprint({ workspaceId: args.workspaceId, action: args.action, requireApproval: true });
 }
 
 async function requestActionExecutionFingerprint(args: {
@@ -1230,6 +1249,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const [loadingContext, setLoadingContext] = useState(true);
   const [responding, setResponding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [aiOffline, setAiOffline] = useState(false);
+  const [pendingApproval, setPendingApproval] = useState<PendingApprovalState | null>(null);
 
   const target = useMemo(() => resolveAssistantTarget(pathname, searchParams), [pathname, searchParams]);
   const targetKey = JSON.stringify({ ...target, workspaceId: target.workspaceId ?? workspaceId ?? null });
@@ -1317,6 +1338,214 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     return payload.preview;
   }
 
+  function cancelPendingApproval() {
+    setPendingApproval((current) => {
+      current?.reject(new Error("Planner Agent action approval was cancelled."));
+      return null;
+    });
+  }
+
+  function approvePendingApproval() {
+    setPendingApproval((current) => {
+      current?.resolve();
+      return null;
+    });
+  }
+
+  useEffect(() => {
+    if (!pendingApproval) return;
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        setPendingApproval((current) => {
+          current?.reject(new Error("Planner Agent action approval was cancelled."));
+          return null;
+        });
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown, true);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, true);
+    };
+  }, [pendingApproval]);
+
+  useEffect(() => {
+    if (open) return;
+    setPendingApproval((current) => {
+      current?.reject(new Error("Planner Agent action approval was cancelled."));
+      return null;
+    });
+  }, [open]);
+
+  async function requestActionApproval(args: {
+    workspaceId: string | null;
+    action: AssistantQuickLinkExecuteAction;
+    label: string;
+  }): Promise<AssistantActionApprovalEvidence> {
+    await new Promise<void>((resolve, reject) => {
+      setPendingApproval({ label: args.label, action: args.action, resolve, reject });
+    });
+    return requestActionExecutionFingerprint({ workspaceId: args.workspaceId, action: args.action, requireApproval: true });
+  }
+
+  async function requestDeterministicResponse(args: {
+    question: string | null;
+    workflowId: string | null;
+    localConsoleState: AssistantLocalConsoleState | null;
+  }): Promise<AssistantResponse> {
+    const response = await fetch("/api/assistant", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        kind: target.kind,
+        id: target.id,
+        runId: target.runId,
+        baselineRunId: target.baselineRunId,
+        workspaceId: target.workspaceId ?? workspaceId,
+        workflowId: args.workflowId,
+        question: args.question,
+        localConsoleState: args.localConsoleState,
+      }),
+    });
+
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? "Failed to build Planner Agent response");
+    }
+
+    const payload = (await response.json()) as { response: AssistantResponse };
+    return payload.response;
+  }
+
+  async function submitChat(options?: { question?: string; skipUserEntry?: boolean }) {
+    const question = (options?.question ?? draft).trim();
+    if (!question) return;
+
+    const latestAssistantQuickLinks = [...messages]
+      .reverse()
+      .find((entry): entry is Extract<ConversationEntry, { type: "response" }> => entry.type === "response" && Boolean(entry.response.quickLinks?.length))
+      ?.response.quickLinks;
+    const localConsoleState = liveConsoleState ?? buildLocalConsoleStateSnapshot(preview?.quickLinks ?? latestAssistantQuickLinks);
+    const history = buildChatHistory(messages);
+
+    setResponding(true);
+    setError(null);
+    if (!options?.skipUserEntry) {
+      setMessages((current) => [
+        ...current,
+        {
+          id: `user-${Date.now()}`,
+          role: "user",
+          type: "prompt",
+          text: question,
+        },
+      ]);
+    }
+
+    const chatEntryId = `chat-${Date.now()}`;
+
+    try {
+      const response = await fetch("/api/assistant/chat", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          kind: target.kind,
+          id: target.id,
+          runId: target.runId,
+          baselineRunId: target.baselineRunId,
+          workspaceId: target.workspaceId ?? workspaceId,
+          question,
+          history,
+        }),
+      });
+
+      if (response.status === 503) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        if (payload?.error === "ai_offline") {
+          setAiOffline(true);
+          const deterministic = await requestDeterministicResponse({ question, workflowId: null, localConsoleState });
+          setMessages((current) => [
+            ...current,
+            {
+              id: `assistant-${Date.now()}`,
+              role: "assistant",
+              type: "response",
+              response: deterministic,
+            },
+          ]);
+          setDraft("");
+          return;
+        }
+        throw new Error(payload?.error ?? "Planner Agent chat is unavailable right now.");
+      }
+
+      if (!response.ok || !response.body) {
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error ?? "Failed to stream the Planner Agent chat reply");
+      }
+
+      setAiOffline(false);
+      setMessages((current) => [
+        ...current,
+        {
+          id: chatEntryId,
+          role: "assistant",
+          type: "chat",
+          text: "",
+          status: "streaming",
+          question,
+        },
+      ]);
+      setDraft("");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const delta = decoder.decode(value, { stream: true });
+          if (!delta) continue;
+          setMessages((current) =>
+            current.map((entry) =>
+              entry.id === chatEntryId && entry.type === "chat" ? { ...entry, text: entry.text + delta } : entry
+            )
+          );
+        }
+        const tail = decoder.decode();
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === chatEntryId && entry.type === "chat"
+              ? { ...entry, text: entry.text + tail, status: "complete" as const }
+              : entry
+          )
+        );
+      } catch (streamError) {
+        const streamMessage =
+          streamError instanceof Error ? streamError.message : "The Planner Agent chat reply was interrupted.";
+        setMessages((current) =>
+          current.map((entry) =>
+            entry.id === chatEntryId && entry.type === "chat"
+              ? { ...entry, status: "error" as const, error: streamMessage }
+              : entry
+          )
+        );
+      }
+    } catch (chatError) {
+      setError(chatError instanceof Error ? chatError.message : "Failed to stream the Planner Agent chat reply");
+    } finally {
+      setResponding(false);
+    }
+  }
+
+  function retryChatEntry(entry: Extract<ConversationEntry, { type: "chat" }>) {
+    setMessages((current) => current.filter((candidate) => candidate.id !== entry.id));
+    void submitChat({ question: entry.question, skipUserEntry: true });
+  }
+
   async function submitPrompt(options?: {
     workflowId?: string;
     question?: string;
@@ -1374,34 +1603,19 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     ]);
 
     try {
-      const response = await fetch("/api/assistant", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          kind: target.kind,
-          id: target.id,
-          runId: target.runId,
-          baselineRunId: target.baselineRunId,
-          workspaceId: target.workspaceId ?? workspaceId,
-          workflowId: options?.workflowId ?? null,
-          question: question || null,
-          localConsoleState,
-        }),
+      const deterministicResponse = await requestDeterministicResponse({
+        question: question || null,
+        workflowId: options?.workflowId ?? null,
+        localConsoleState: localConsoleState ?? null,
       });
 
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(payload?.error ?? "Failed to build Planner Agent response");
-      }
-
-      const payload = (await response.json()) as { response: AssistantResponse };
       setMessages((current) => [
         ...current,
         {
           id: `assistant-${Date.now()}`,
           role: "assistant",
           type: "response",
-          response: payload.response,
+          response: deterministicResponse,
         },
       ]);
       if (operationLink && operationStartedAt) {
@@ -1794,6 +2008,15 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     </div>
                   ) : null}
 
+                  {aiOffline ? (
+                    <div
+                      role="status"
+                      className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm font-semibold text-amber-100"
+                    >
+                      AI chat is offline — no API key configured. Suggested actions below still work.
+                    </div>
+                  ) : null}
+
                   {!loadingContext && messages.length === 0 ? (
                     <div className="rounded-[0.75rem] border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-slate-300/82">
                       No grounded context loaded yet.
@@ -1825,6 +2048,36 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               </div>
                             ) : null}
                           </div>
+                        </div>
+                      );
+                    }
+
+                    if (message.type === "chat") {
+                      return (
+                        <div key={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
+                          <div className="mb-3 flex items-center gap-2 text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-300/72">
+                            <Bot className="h-3.5 w-3.5 text-emerald-300" />
+                            Planner Agent
+                            {message.status === "streaming" ? (
+                              <Loader2 className="h-3 w-3 animate-spin text-emerald-300" aria-label="Streaming reply" />
+                            ) : null}
+                          </div>
+                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">
+                            {message.text || (message.status === "streaming" ? "…" : message.status === "complete" ? "No reply text was returned." : "")}
+                          </p>
+                          {message.status === "error" ? (
+                            <div className="mt-3 flex items-center justify-between gap-3 rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-3.5 py-2.5 text-sm text-rose-100/92">
+                              <span>{message.error ?? "The Planner Agent chat reply was interrupted."}</span>
+                              <button
+                                type="button"
+                                onClick={() => retryChatEntry(message)}
+                                disabled={responding}
+                                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-rose-300/28 bg-rose-400/14 px-2.5 py-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-rose-50 transition hover:border-rose-300/45 hover:bg-rose-400/22 hover:text-white disabled:opacity-60"
+                              >
+                                Retry
+                              </button>
+                            </div>
+                          ) : null}
                         </div>
                       );
                     }
@@ -1952,10 +2205,21 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   className="min-h-[108px] border-white/10 bg-white/[0.04] text-slate-50 placeholder:text-slate-400/75"
                 />
                 <div className="mt-3 flex items-center justify-between gap-3">
-                  <p className="text-xs text-slate-400">Grounded to {preview?.title ?? workspaceName}. Planner Agent only opens tracked surfaces for now, record changes still happen inside the destination screen.</p>
+                  <div className="min-w-0">
+                    <p className="text-xs text-slate-400">
+                      Grounded to {preview?.title ?? workspaceName}. Free-text questions stream through the AI copilot; suggested actions stay deterministic, and record changes still happen inside the destination screen.
+                    </p>
+                    <Link
+                      href="/assistant-activity"
+                      className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-200/88 underline-offset-2 transition hover:text-emerald-100 hover:underline"
+                    >
+                      <ArrowUpRight className="h-3 w-3" />
+                      Action log
+                    </Link>
+                  </div>
                   <Button
                     type="button"
-                    onClick={() => submitPrompt()}
+                    onClick={() => void submitChat()}
                     disabled={responding || loadingContext || (!draft.trim() && !preview)}
                     className="shrink-0"
                   >
@@ -1965,6 +2229,45 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 </div>
               </div>
             </div>
+
+            {pendingApproval ? (
+              <div
+                className="absolute inset-0 z-30 flex items-end justify-center bg-slate-950/62 p-5 backdrop-blur-[2px]"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Approve Planner Agent action"
+              >
+                <div className="w-full max-w-[480px] rounded-[0.75rem] border border-amber-300/26 bg-[linear-gradient(180deg,rgba(10,17,25,0.99),rgba(8,14,21,0.99))] px-5 py-4 shadow-[0_28px_60px_rgba(0,0,0,0.45)]">
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-amber-100/78">Approval required</p>
+                  <h3 className="mt-2 text-base font-semibold text-white">{pendingApproval.label}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-200/88">
+                    {getActionMetadata(pendingApproval.action.kind).description}
+                  </p>
+                  <p className="mt-2 text-xs leading-relaxed text-slate-300/78">
+                    Approving records audit evidence ({getActionMetadata(pendingApproval.action.kind).auditEvent}) and then makes a real change in OpenPlan. Press Esc or choose Cancel to stop.
+                  </p>
+                  <div className="mt-4 flex items-center justify-end gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="border-white/12 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08] hover:text-white"
+                      onClick={cancelPendingApproval}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="bg-amber-400/90 text-slate-950 hover:bg-amber-300"
+                      onClick={approvePendingApproval}
+                    >
+                      Approve action
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </aside>
         </div>
       ) : null}

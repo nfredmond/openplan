@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
+import {
+  FundingOpportunityNarrativeDraftPanel,
+  type FundingOpportunityNarrativeDraftRow,
+} from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   formatFundingOpportunityDecisionLabel,
@@ -48,10 +52,12 @@ export function GrantsOpportunityRegistryCard({
   opportunity,
   activeFocusedOpportunityId,
   projectGrantModelingEvidence,
+  latestNarrativeDraft = null,
 }: {
   opportunity: NormalizedOpportunity;
   activeFocusedOpportunityId: string | null;
   projectGrantModelingEvidence: ProjectGrantModelingEvidence | null;
+  latestNarrativeDraft?: FundingOpportunityNarrativeDraftRow | null;
 }) {
   const projectHref = opportunity.project
     ? `/projects/${opportunity.project.id}#project-funding-opportunities`
@@ -203,6 +209,13 @@ export function GrantsOpportunityRegistryCard({
             ))}
           </div>
         </div>
+
+        {activeFocusedOpportunityId === opportunity.id ? (
+          <FundingOpportunityNarrativeDraftPanel
+            opportunityId={opportunity.id}
+            initialDraft={latestNarrativeDraft}
+          />
+        ) : null}
 
         {projectHref || programHref || projectGrantModelingEvidence ? (
           <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">

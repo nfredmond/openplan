@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CalendarClock, Sparkles } from "lucide-react";
 import { EmptyState } from "@/components/ui/state-block";
 import { GrantsOpportunityRegistryCard } from "@/components/grants/grants-opportunity-registry-card";
+import type { FundingOpportunityNarrativeDraftRow } from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import type { ProjectGrantModelingEvidence } from "@/lib/grants/modeling-evidence";
 import {
   type DecisionFilter,
@@ -28,6 +29,7 @@ export function GrantsOpportunityRegistrySection({
   activeFocusedOpportunityId,
   projectGrantModelingEvidenceByProjectId,
   decisionCommandCallout,
+  focusedOpportunityNarrativeDraft = null,
 }: {
   filteredOpportunities: NormalizedOpportunity[];
   opportunitiesCount: number;
@@ -37,6 +39,7 @@ export function GrantsOpportunityRegistrySection({
   activeFocusedOpportunityId: string | null;
   projectGrantModelingEvidenceByProjectId: Map<string, ProjectGrantModelingEvidence>;
   decisionCommandCallout: ReactNode | null;
+  focusedOpportunityNarrativeDraft?: FundingOpportunityNarrativeDraftRow | null;
 }) {
   return (
     <article className="module-section-surface">
@@ -133,6 +136,9 @@ export function GrantsOpportunityRegistrySection({
                 opportunity.project?.id
                   ? projectGrantModelingEvidenceByProjectId.get(opportunity.project.id) ?? null
                   : null
+              }
+              latestNarrativeDraft={
+                opportunity.id === activeFocusedOpportunityId ? focusedOpportunityNarrativeDraft : null
               }
             />
           ))}
