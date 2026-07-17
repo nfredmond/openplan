@@ -7,7 +7,9 @@ import { GrantsModelingTriageSection } from "@/components/grants/grants-modeling
 import { GrantsReimbursementTriageSection } from "@/components/grants/grants-reimbursement-triage-section";
 import { GrantsAwardConversionSection } from "@/components/grants/grants-award-conversion-section";
 import { GrantsPageIntroHeader } from "@/components/grants/grants-page-intro-header";
+import { GrantsProgramCatalogSection } from "@/components/grants/program-catalog-section";
 import { GrantsQueueCallout } from "@/components/grants/grants-queue-callout";
+import type { FundingOpportunityNarrativeDraftRow } from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import { GrantsWorkspaceQueueSection } from "@/components/grants/grants-workspace-queue-section";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -475,6 +477,18 @@ export default async function GrantsPage({
         )
       : null) ?? null;
   const awardConversionOpportunity = focusedAwardConversionOpportunity ?? leadAwardConversionOpportunity;
+  const trackedOpportunityTitles = opportunities.map((opportunity) => opportunity.title);
+  const { data: focusedOpportunityNarrativeDraftData } = activeFocusedOpportunityId
+    ? await supabase
+        .from("funding_opportunity_narrative_drafts")
+        .select("id, opportunity_id, draft_markdown, model, source, created_at")
+        .eq("opportunity_id", activeFocusedOpportunityId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
+  const focusedOpportunityNarrativeDraft =
+    (focusedOpportunityNarrativeDraftData as FundingOpportunityNarrativeDraftRow | null) ?? null;
   const grantsQueue = operationsSummary.fullCommandQueue
     .filter((item) => isGrantsCommand(item))
     .map((item) => ({
@@ -575,6 +589,8 @@ export default async function GrantsPage({
             />
           </div>
 
+          <GrantsProgramCatalogSection trackedTitles={trackedOpportunityTitles} />
+
           <GrantsReimbursementTriageSection
             reimbursementPriorityQueue={reimbursementPriorityQueue}
             awardLinkedInvoicesCount={awardLinkedInvoices.length}
@@ -652,6 +668,7 @@ export default async function GrantsPage({
           showModelingCaveat={opportunityLinkedModelingProjects.length > 0}
           activeFocusedOpportunityId={activeFocusedOpportunityId}
           projectGrantModelingEvidenceByProjectId={projectGrantModelingEvidenceByProjectId}
+          focusedOpportunityNarrativeDraft={focusedOpportunityNarrativeDraft}
           decisionCommandCallout={
             leadDecisionCommand ? (
               <GrantsQueueCallout kind="decision" command={leadDecisionCommand} />

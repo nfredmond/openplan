@@ -113,6 +113,12 @@ vi.mock("@/components/programs/funding-opportunity-creator", () => ({
   FundingOpportunityCreator: () => <div data-testid="funding-opportunity-creator" />,
 }));
 
+vi.mock("@/components/grants/program-catalog-section", () => ({
+  GrantsProgramCatalogSection: (props: { trackedTitles: string[] }) => (
+    <div data-testid="grants-program-catalog-section" data-tracked-count={props.trackedTitles.length} />
+  ),
+}));
+
 vi.mock("@/components/programs/funding-opportunity-decision-controls", () => ({
   FundingOpportunityDecisionControls: (props: unknown) => {
     fundingOpportunityDecisionControlsMock(props);
@@ -454,6 +460,13 @@ describe("GrantsPage", () => {
         }),
       })
     );
+  });
+
+  it("passes the workspace's tracked opportunity titles into the program catalog section", async () => {
+    await renderPage();
+
+    const catalogSection = screen.getByTestId("grants-program-catalog-section");
+    expect(catalogSection).toHaveAttribute("data-tracked-count", "4");
   });
 
   it("orders similarly staged opportunities by modeling readiness before recency", async () => {
