@@ -56,7 +56,20 @@ const sectionMap: Array<{
         { href: "/rtp", label: "RTP Cycles" },
         { href: "/plans", label: "Plans" },
         { href: "/programs", label: "Programs & Cycles" },
+        { href: "/grants", label: "Grants" },
         { href: "/engagement", label: "Engagement" },
+      ],
+    },
+  },
+  {
+    match: ["/grants"],
+    section: {
+      title: "Funding",
+      items: [
+        { href: "/grants", label: "Grant Pipeline" },
+        { href: "/programs", label: "Programs & Cycles" },
+        { href: "/projects", label: "Projects" },
+        { href: "/reports", label: "Reports" },
       ],
     },
   },
@@ -87,16 +100,9 @@ const sectionMap: Array<{
     match: ["/reports", "/billing", "/admin"],
     section: {
       title: "Operations",
-      description: "Commercial controls and pilot-readiness surfaces",
       items: [
         { href: "/reports", label: "Reports" },
         { href: "/billing", label: "Billing" },
-        { href: "/admin", label: "Admin" },
-        {
-          href: "/admin/pilot-readiness",
-          label: "Pilot Readiness",
-          description: "Smoke evidence, proof packets, and launch diligence",
-        },
       ],
     },
   },
@@ -116,9 +122,9 @@ export function AppSecondaryNav() {
     <div className="shell-ledger-panel gap-0">
       <p className="shell-panel-kicker">{section.title}</p>
       {section.description ? (
-        <p className="mt-2 text-xs leading-5 text-slate-300/72">{section.description}</p>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">{section.description}</p>
       ) : null}
-      <ul className="mt-3 divide-y divide-white/[0.06] border-t border-white/[0.06]">
+      <ul className="mt-3 divide-y divide-border/60 border-t border-border/60">
         {section.items.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           return (
@@ -128,26 +134,23 @@ export function AppSecondaryNav() {
                 className={cn(
                   "block rounded px-2 py-1.5 text-[0.8rem] transition-colors duration-150",
                   active
-                    ? "bg-white/[0.07] text-white"
-                    : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200"
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground hover:bg-accent/60 hover:text-foreground"
                 )}
               >
                 <span className="min-w-0">
                   <span className="block">{item.label}</span>
                   {item.description ? (
-                    <span className="mt-1 block text-[0.72rem] leading-5 text-slate-400">
+                    <span className="mt-1 block text-[0.72rem] leading-5 text-muted-foreground">
                       {item.description}
                     </span>
                   ) : null}
                 </span>
-                <span
-                  className={cn(
-                    "text-[0.58rem] font-semibold uppercase tracking-[0.18em]",
-                    active ? "text-emerald-100/84" : "text-slate-500"
-                  )}
-                >
-                  {active ? "Current" : "Lane"}
-                </span>
+                {active ? (
+                  <span className="text-[0.58rem] font-semibold uppercase tracking-[0.18em] text-primary">
+                    Current
+                  </span>
+                ) : null}
               </Link>
             </li>
           );

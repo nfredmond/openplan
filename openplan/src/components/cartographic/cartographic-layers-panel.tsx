@@ -11,8 +11,6 @@ const LAYER_LABELS: Record<LayerKey, string> = {
   corridors: "Study corridors",
   engagement: "Engagement pins",
   aerial: "Aerial missions",
-  transit: "GTFS transit",
-  crashes: "Crash density",
   equity: "Equity priority",
 };
 

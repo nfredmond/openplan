@@ -357,8 +357,8 @@
   .shell-ledger-panel,
   .shell-session-panel,
   .shell-warning-rail {
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid color-mix(in srgb, var(--foreground) 10%, transparent);
+    background: color-mix(in srgb, var(--foreground) 4%, transparent);
     padding: 0.95rem;
   }
 

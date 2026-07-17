@@ -15,7 +15,11 @@ import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { useTheme } from "@/components/theme-provider";
 
-import { useCartographicLayers, useCartographicSelection } from "./cartographic-context";
+import {
+  useCartographicLayers,
+  useCartographicMapControls,
+  useCartographicSelection,
+} from "./cartographic-context";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -143,6 +147,7 @@ export function CartographicMapBackdrop() {
   const [engagementItems, setEngagementItems] =
     useState<EngagementFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
+  const { registerMapControls } = useCartographicMapControls();
   const { selection, setSelection, clearSelection } = useCartographicSelection();
   const router = useRouter();
   const navigateRef = useRef<(path: string) => void>((path) => router.push(path));
@@ -209,12 +214,17 @@ export function CartographicMapBackdrop() {
 
     map.on("load", () => setReady(true));
     mapRef.current = map;
+    registerMapControls({
+      zoomIn: () => map.zoomIn(),
+      zoomOut: () => map.zoomOut(),
+    });
 
     return () => {
+      registerMapControls(null);
       map.remove();
       mapRef.current = null;
     };
-  }, [suppressed, themeMounted, backdropTheme]);
+  }, [suppressed, themeMounted, backdropTheme, registerMapControls]);
 
   // Swap style when theme toggles (without tearing down the whole map).
   useEffect(() => {

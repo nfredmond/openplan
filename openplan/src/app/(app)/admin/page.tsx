@@ -134,28 +134,28 @@ export default function AdminPage() {
             const Icon = module.icon;
             if (module.disabled) {
               return (
-                <div key={module.title} className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-background/60 px-3 py-2.5 opacity-60">
-                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-400">
+                <div key={module.title} className="flex items-start gap-3 rounded-[0.375rem] border border-border/70 bg-background/60 px-3 py-2.5 opacity-60">
+                  <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-border/70 bg-muted/40 text-muted-foreground">
                     <Icon className="h-3.5 w-3.5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[0.87rem] font-semibold text-gray-700">{module.title}</p>
-                    <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{module.description}</p>
+                    <p className="text-[0.87rem] font-semibold text-foreground/80">{module.title}</p>
+                    <p className="mt-0.5 text-[0.77rem] leading-snug text-muted-foreground">{module.description}</p>
                   </div>
                   <StatusBadge tone={module.tone}>{module.status}</StatusBadge>
                 </div>
               );
             }
             return (
-              <Link key={module.title} href={module.href} className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/40">
-                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-emerald-600/15 bg-emerald-50 text-emerald-700">
+              <Link key={module.title} href={module.href} className="flex items-start gap-3 rounded-[0.375rem] border border-border/70 bg-card px-3 py-2.5 transition-colors hover:border-emerald-600/40 hover:bg-accent/60">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-emerald-600/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                   <Icon className="h-3.5 w-3.5" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[0.87rem] font-semibold text-gray-900">{module.title}</p>
-                  <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{module.description}</p>
+                  <p className="text-[0.87rem] font-semibold text-foreground">{module.title}</p>
+                  <p className="mt-0.5 text-[0.77rem] leading-snug text-muted-foreground">{module.description}</p>
                 </div>
-                <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-gray-400" />
+                <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
               </Link>
             );
           })}

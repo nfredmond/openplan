@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
 
 import { AppCopilot } from "@/components/assistant/app-copilot";
+import { canReviewAccessRequests } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/workspaces/current";
 
 import { CartographicProvider } from "./cartographic-context";
+import { CartographicZoomControls } from "./cartographic-zoom-controls";
 import { CartographicHeader } from "./cartographic-header";
 import { CartographicInspectorDockConnected } from "./cartographic-inspector-dock-connected";
 import { CartographicLayersPanel } from "./cartographic-layers-panel";
@@ -21,39 +23,42 @@ import {
   type CartographicRailGroup,
 } from "./cartographic-rail";
 
-const NAV_GROUPS: CartographicRailGroup[] = [
-  {
-    title: "Operate",
-    items: [
-      { href: "/dashboard", label: "Overview", icon: "overview" },
-      { href: "/command-center", label: "Command Center", icon: "command" },
-      { href: "/projects", label: "Projects", icon: "projects" },
-      { href: "/rtp", label: "RTP Cycles", icon: "rtp" },
-      { href: "/plans", label: "Plans", icon: "plans" },
-      { href: "/programs", label: "Programs", icon: "programs" },
-      { href: "/reports", label: "Reports", icon: "reports" },
-    ],
-  },
-  {
-    title: "Analyze",
-    items: [
-      { href: "/engagement", label: "Engagement", icon: "engagement" },
-      { href: "/explore", label: "Analysis Studio", icon: "analysis" },
-      { href: "/scenarios", label: "Scenarios", icon: "scenarios" },
-      { href: "/models", label: "Models", icon: "models" },
-      { href: "/county-runs", label: "County Validation", icon: "county" },
-      { href: "/data-hub", label: "Data Hub", icon: "data" },
-      { href: "/aerial", label: "Aerial Ops", icon: "aerial" },
-    ],
-  },
-  {
-    title: "Govern",
-    items: [
-      { href: "/billing", label: "Billing", icon: "billing" },
-      { href: "/admin", label: "Admin", icon: "admin" },
-    ],
-  },
-];
+function buildNavGroups(isOperator: boolean): CartographicRailGroup[] {
+  return [
+    {
+      title: "Operate",
+      items: [
+        { href: "/dashboard", label: "Overview", icon: "overview" },
+        { href: "/command-center", label: "Command Center", icon: "command" },
+        { href: "/projects", label: "Projects", icon: "projects" },
+        { href: "/rtp", label: "RTP Cycles", icon: "rtp" },
+        { href: "/plans", label: "Plans", icon: "plans" },
+        { href: "/programs", label: "Programs", icon: "programs" },
+        { href: "/grants", label: "Grants", icon: "grants" },
+        { href: "/reports", label: "Reports", icon: "reports" },
+      ],
+    },
+    {
+      title: "Analyze",
+      items: [
+        { href: "/engagement", label: "Engagement", icon: "engagement" },
+        { href: "/explore", label: "Analysis Studio", icon: "analysis" },
+        { href: "/scenarios", label: "Scenarios", icon: "scenarios" },
+        { href: "/models", label: "Models", icon: "models" },
+        { href: "/county-runs", label: "County Validation", icon: "county" },
+        { href: "/data-hub", label: "Data Hub", icon: "data" },
+        { href: "/aerial", label: "Aerial Ops", icon: "aerial" },
+      ],
+    },
+    {
+      title: "Govern",
+      items: [
+        { href: "/billing", label: "Billing", icon: "billing" },
+        ...(isOperator ? [{ href: "/admin", label: "Admin", icon: "admin" as const }] : []),
+      ],
+    },
+  ];
+}
 
 function formatUpdatedLabel(iso?: string | null): string | null {
   if (!iso) return null;
@@ -100,7 +105,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
       <div className="op-cart-shell">
         <CartographicMapBackdrop />
 
-        <CartographicRail groups={NAV_GROUPS} />
+        <CartographicRail groups={buildNavGroups(canReviewAccessRequests(user?.email))} />
 
         <CartographicHeader
           workspaceName={shellState.workspaceName}
@@ -133,10 +138,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
 
         <CartographicInspectorDockConnected />
 
-        <div className="op-cart-zoom" role="group" aria-label="Zoom">
-          <button type="button" aria-label="Zoom in">＋</button>
-          <button type="button" aria-label="Zoom out">−</button>
-        </div>
+        <CartographicZoomControls />
 
         <div className="op-cart-copilot-slot">
           <AppCopilot
