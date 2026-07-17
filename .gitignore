@@ -53,3 +53,6 @@ data/screening-runs/nevada-county-runtime-norenumber-20260324/
 data/screening-runs/nevada-county-runtime-purposemix-a-20260324/
 data/screening-runs/nevada-county-runtime-validation-20260324-remapfix/
 data/screening-runs/placer-county-runtime-connectorbias2-20260324/
+
+# Personal Claude Code preferences (private, not shared)
+CLAUDE.local.md
