@@ -7,6 +7,9 @@ export const BODY_LIMITS = {
   documentJson: 256 * 1024,
   networkGeoJson: 2 * 1024 * 1024,
   stripeWebhookRaw: 256 * 1024,
+  // Public engagement photo upload: 5 MB image payload (matches the
+  // engagement-photos bucket file_size_limit) plus small headroom.
+  publicPhotoRaw: 5 * 1024 * 1024,
 } as const;
 
 export type ReadJsonWithLimitResult<T> =
@@ -63,6 +66,36 @@ export async function readTextWithLimit(
   }
 
   return { ok: true, text, byteLength };
+}
+
+export type ReadBytesWithLimitResult =
+  | {
+      ok: true;
+      bytes: Uint8Array;
+      byteLength: number;
+    }
+  | {
+      ok: false;
+      response: NextResponse;
+      byteLength: number;
+    };
+
+export async function readBytesWithLimit(
+  request: Request,
+  maxBytes: number,
+): Promise<ReadBytesWithLimitResult> {
+  const buffer = await request.arrayBuffer();
+  const byteLength = buffer.byteLength;
+
+  if (byteLength > maxBytes) {
+    return {
+      ok: false,
+      byteLength,
+      response: bodyTooLargeResponse(maxBytes),
+    };
+  }
+
+  return { ok: true, bytes: new Uint8Array(buffer), byteLength };
 }
 
 export async function readJsonWithLimit<T = unknown>(
