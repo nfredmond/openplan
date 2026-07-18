@@ -212,7 +212,10 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
       <p className="text-xs text-muted-foreground">
         The reference baseline and threshold are operator-supplied — the stored KPI set cannot
         provide them. The OPR Technical Advisory (December 2018) default is 15% below the regional
-        or citywide VMT-per-capita baseline.
+        or citywide VMT-per-capita baseline. The pre-filled 22.0 reference is the California
+        statewide average total VMT per capita (FHWA Highway Statistics 2022–2023, Table PS-1:
+        21.8–21.9 mi/day) — total travel on public roads divided by population, a coarse screening
+        reference; replace it with your region&apos;s adopted baseline where one exists.
       </p>
 
       {!inputsValid ? (

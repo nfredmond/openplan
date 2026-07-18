@@ -41,6 +41,15 @@ export const CEQA_PROJECT_TYPES = ["residential", "employment", "retail"] as con
 
 export const CEQA_REFERENCE_LABELS = ["regional", "citywide", "custom"] as const;
 
+/**
+ * California statewide average total VMT per capita, ~22 mi/day: FHWA Highway
+ * Statistics 2023 Table PS-1 reports 8,008 annual VMT per capita (= 21.9/day;
+ * 2022 edition: 7,973 = 21.8/day), derived from HPMS statewide VMT ÷ resident
+ * population. Note this is TOTAL travel on public roads (trucks and
+ * pass-through included) ÷ population — a coarse screening reference, not the
+ * narrower resident-generated VMT that OPR's residential efficiency metric
+ * contemplates. Operator-overridable in the panel.
+ */
 export const DEFAULT_REFERENCE_VMT_PER_CAPITA = 22.0;
 
 export type ComputeCeqaVmtOptions = {

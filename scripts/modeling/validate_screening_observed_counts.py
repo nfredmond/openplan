@@ -11,6 +11,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from screening_metrics import geh_summary, percent_rmse
+
 
 DEFAULT_READY_MEDIAN_APE = 30.0
 DEFAULT_READY_CRITICAL_APE = 50.0
@@ -449,6 +451,8 @@ def build_summary(
     min_ape = min(apes) if apes else None
     max_ape = max(apes) if apes else None
     spearman_rho = compute_spearman_rho(observed, modeled)
+    pct_rmse = percent_rmse(observed, modeled)
+    geh = geh_summary(observed, modeled)
 
     status_label, gate_reasons = classify_gate(
         matched_count=len(matched),
@@ -499,6 +503,10 @@ def build_summary(
             "min_absolute_percent_error": round(min_ape, 2) if min_ape is not None else None,
             "max_absolute_percent_error": round(max_ape, 2) if max_ape is not None else None,
             "spearman_rho_facility_ranking": round(spearman_rho, 4) if spearman_rho is not None else None,
+            "percent_rmse": round(pct_rmse, 2) if pct_rmse is not None else None,
+            "geh_mean": round(geh["mean"], 2) if geh["mean"] is not None else None,
+            "geh_max": round(geh["max"], 2) if geh["max"] is not None else None,
+            "geh_basis": geh["basis"],
         },
         "facility_ranking": facility_ranking,
         "created_at": datetime.now(timezone.utc).isoformat(),
