@@ -150,19 +150,19 @@ export function PilotWorkflowHandoff({
           const isComplete = currentIndex > -1 && index < currentIndex;
           const statusLabel = isCurrent ? "Current surface" : isComplete ? "Context carried" : "Next handoff";
           const rowClassName = [
-            "module-record-row transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/30",
-            isCurrent ? "border-emerald-600/35 bg-emerald-50/35" : "",
+            "module-record-row transition-colors hover:border-emerald-600/30 hover:bg-emerald-500/[0.05]",
+            isCurrent ? "border-emerald-600/35 bg-emerald-500/[0.07]" : "",
           ].join(" ");
           const stepContent = (
             <>
               <div className="module-record-kicker">
-                <span className="flex h-6 w-6 items-center justify-center rounded border border-emerald-600/15 bg-emerald-50 text-[0.72rem] font-bold text-emerald-800">
+                <span className="flex h-6 w-6 items-center justify-center rounded border border-emerald-600/25 bg-emerald-500/10 text-[0.72rem] font-bold text-emerald-800 dark:text-emerald-300">
                   {step.label}
                 </span>
                 {isComplete ? (
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
                 ) : (
-                  <Icon className="h-3.5 w-3.5 text-emerald-700" />
+                  <Icon className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-400" />
                 )}
                 <span className="text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
                   {statusLabel}
@@ -171,7 +171,7 @@ export function PilotWorkflowHandoff({
               <div className="space-y-1.5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <h3 className="module-record-title">{step.title}</h3>
-                  <span className="inline-flex items-center gap-1 text-[0.74rem] font-semibold text-emerald-800">
+                  <span className="inline-flex items-center gap-1 text-[0.74rem] font-semibold text-emerald-800 dark:text-emerald-300">
                     {step.cta}
                     <ArrowRight className="h-3.5 w-3.5" />
                   </span>

@@ -511,8 +511,8 @@
     position: relative;
     overflow: hidden;
     border-radius: 0.75rem;
-    border: 1px solid rgba(199, 210, 220, 0.74);
-    background: #ffffff;
+    border: 1px solid var(--border);
+    background: var(--card);
     box-shadow: 0 1px 2px rgba(4, 12, 20, 0.04);
   }
 
@@ -623,8 +623,8 @@
   .module-empty-state {
     min-width: 0;
     border-radius: 0.5rem;
-    border: 1px solid rgba(199, 210, 220, 0.72);
-    background: #ffffff;
+    border: 1px solid var(--border);
+    background: var(--card);
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
   }
 
@@ -768,8 +768,8 @@
     display: grid;
     gap: 0.7rem;
     border-radius: 0.375rem;
-    border: 1px solid rgba(199, 210, 220, 0.72);
-    background: #ffffff;
+    border: 1px solid var(--border);
+    background: var(--card);
     padding: 0.95rem 1rem;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     transition:
@@ -853,8 +853,8 @@
     align-items: center;
     gap: 0.35rem;
     min-height: 1.55rem;
-    border-left: 2px solid color-mix(in srgb, var(--line) 82%, white 18%);
-    background: color-mix(in srgb, white 72%, var(--fog) 28%);
+    border-left: 2px solid color-mix(in srgb, var(--line) 82%, var(--card) 18%);
+    background: color-mix(in srgb, var(--card) 72%, var(--fog) 28%);
     padding: 0.24rem 0.6rem;
     font-size: 0.64rem;
     font-weight: 700;
@@ -875,8 +875,8 @@
     align-items: center;
     gap: 0.4rem;
     min-height: 1.7rem;
-    border-left: 2px solid color-mix(in srgb, var(--line) 78%, white 22%);
-    background: color-mix(in srgb, white 74%, var(--fog) 26%);
+    border-left: 2px solid color-mix(in srgb, var(--line) 78%, var(--card) 22%);
+    background: color-mix(in srgb, var(--card) 74%, var(--fog) 26%);
     padding: 0.3rem 0.7rem;
     font-size: 0.66rem;
     font-weight: 700;
@@ -906,8 +906,8 @@
     justify-content: space-between;
     gap: 0.9rem;
     min-width: 11rem;
-    border-left: 2px solid color-mix(in srgb, var(--line) 76%, white 24%);
-    background: color-mix(in srgb, white 78%, var(--fog) 22%);
+    border-left: 2px solid color-mix(in srgb, var(--line) 76%, var(--card) 24%);
+    background: color-mix(in srgb, var(--card) 78%, var(--fog) 22%);
     padding: 0.72rem 0.85rem 0.72rem 0.9rem;
     transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
   }
@@ -920,13 +920,13 @@
 
   .module-filter-link.is-active {
     border-left-color: color-mix(in srgb, var(--accent) 72%, var(--line) 28%);
-    background: color-mix(in srgb, var(--accent) 10%, white 90%);
+    background: color-mix(in srgb, var(--accent) 10%, var(--card) 90%);
     color: var(--foreground);
   }
 
   .module-filter-link.is-warning-active {
     border-left-color: color-mix(in srgb, var(--copper) 72%, var(--line) 28%);
-    background: color-mix(in srgb, var(--copper) 12%, white 88%);
+    background: color-mix(in srgb, var(--copper) 12%, var(--card) 88%);
   }
 
   .module-filter-label {
@@ -942,7 +942,7 @@
     justify-content: center;
     min-width: 1.9rem;
     padding-left: 0.45rem;
-    border-left: 1px solid color-mix(in srgb, var(--line) 82%, white 18%);
+    border-left: 1px solid color-mix(in srgb, var(--line) 82%, var(--card) 18%);
     font-size: 0.72rem;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -1263,17 +1263,6 @@
     }
   }
 
-  .dark .module-record-row {
-    border-color: rgba(64, 82, 96, 0.78);
-    background: rgba(18, 28, 38, 0.92);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-  }
-
-  .dark .module-record-row.is-interactive:hover {
-    border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.24);
-  }
-
   .dark .module-record-row.is-selected {
     border-color: color-mix(in srgb, var(--pine) 46%, var(--border));
     background: linear-gradient(180deg, rgba(22, 43, 31, 0.82), rgba(12, 22, 31, 0.94));
@@ -1403,7 +1392,7 @@
 
   .module-empty-state {
     border-style: dashed;
-    background: rgba(255, 255, 255, 0.66);
+    background: color-mix(in srgb, var(--card) 66%, transparent);
     padding: 1.25rem;
     color: var(--muted-foreground);
   }
@@ -1432,7 +1421,7 @@
     width: 100%;
     border-radius: 0.375rem;
     border: 1px solid var(--input);
-    background: #ffffff;
+    background: var(--card);
     padding: 0 0.85rem;
     font-size: 0.9rem;
     color: var(--foreground);
@@ -1444,8 +1433,8 @@
     gap: 0.25rem;
     overflow-x: auto;
     border-radius: 0.5rem;
-    border: 1px solid rgba(199, 210, 220, 0.72);
-    background: rgba(247, 248, 244, 0.72);
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--background) 72%, transparent);
     padding: 0.25rem;
   }
 
@@ -1456,7 +1445,7 @@
   }
 
   .module-tab-trigger[data-state="active"] {
-    background: #ffffff;
+    background: var(--card);
     box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
   }
 

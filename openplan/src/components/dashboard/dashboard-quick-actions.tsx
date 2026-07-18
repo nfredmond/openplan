@@ -27,16 +27,16 @@ export function DashboardQuickActions({ actions }: { actions: DashboardQuickActi
             <Link
               key={action.key}
               href={action.href}
-              className="flex items-start gap-3 rounded-[0.375rem] border border-slate-200 bg-white px-3 py-2.5 transition-colors hover:border-emerald-600/30 hover:bg-emerald-50/40"
+              className="flex items-start gap-3 rounded-[0.375rem] border border-border/70 bg-card px-3 py-2.5 transition-colors hover:border-emerald-600/40 hover:bg-emerald-500/[0.06]"
             >
-              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-emerald-600/15 bg-emerald-50 text-emerald-700">
+              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded border border-emerald-600/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <Icon className="h-3.5 w-3.5" />
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[0.87rem] font-semibold text-gray-900">{action.title}</p>
-                <p className="mt-0.5 text-[0.77rem] leading-snug text-gray-500">{action.description}</p>
+                <p className="text-[0.87rem] font-semibold text-foreground">{action.title}</p>
+                <p className="mt-0.5 text-[0.77rem] leading-snug text-muted-foreground">{action.description}</p>
               </div>
-              <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-gray-400" />
+              <ArrowRight className="mt-1 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             </Link>
           );
         })}

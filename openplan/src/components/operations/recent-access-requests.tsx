@@ -107,7 +107,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                   <div className="space-y-1.5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <h3 className="module-record-title">{request.agency_name}</h3>
-                      <code className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[0.72rem] text-slate-700">
+                      <code className="rounded border border-border/70 bg-muted/15 px-2 py-1 text-[0.72rem] text-foreground/80">
                         {request.id.slice(0, 8)}
                       </code>
                     </div>

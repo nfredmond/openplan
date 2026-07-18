@@ -305,12 +305,12 @@ export default async function PlansPage({
           </div>
 
           {/* Filter rows */}
-          <div className="mt-4 space-y-2 border-b border-slate-100 pb-3 text-[0.78rem]">
+          <div className="mt-4 space-y-2 border-b border-border/60 pb-3 text-[0.78rem]">
             <div className="flex flex-wrap items-center gap-1">
-              <span className="mr-1 text-slate-400">Status:</span>
+              <span className="mr-1 text-muted-foreground/70">Status:</span>
               <Link
                 href={buildFilterHref({ ...filters, status: undefined })}
-                className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+                className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
               >
                 All
               </Link>
@@ -318,17 +318,17 @@ export default async function PlansPage({
                 <Link
                   key={option.value}
                   href={buildFilterHref({ ...filters, status: option.value })}
-                  className={cn("rounded px-2 py-0.5 transition-colors", filters.status === option.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+                  className={cn("rounded px-2 py-0.5 transition-colors", filters.status === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
                 >
                   {option.label}
                 </Link>
               ))}
             </div>
             <div className="flex flex-wrap items-center gap-1">
-              <span className="mr-1 text-slate-400">Type:</span>
+              <span className="mr-1 text-muted-foreground/70">Type:</span>
               <Link
                 href={buildFilterHref({ ...filters, planType: undefined })}
-                className={cn("rounded px-2 py-0.5 transition-colors", !filters.planType ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+                className={cn("rounded px-2 py-0.5 transition-colors", !filters.planType ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
               >
                 All types
               </Link>
@@ -336,7 +336,7 @@ export default async function PlansPage({
                 <Link
                   key={option.value}
                   href={buildFilterHref({ ...filters, planType: option.value })}
-                  className={cn("rounded px-2 py-0.5 transition-colors", filters.planType === option.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}
+                  className={cn("rounded px-2 py-0.5 transition-colors", filters.planType === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
                 >
                   {option.label}
                 </Link>
