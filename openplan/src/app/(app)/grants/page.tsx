@@ -7,6 +7,7 @@ import { GrantsModelingTriageSection } from "@/components/grants/grants-modeling
 import { GrantsReimbursementTriageSection } from "@/components/grants/grants-reimbursement-triage-section";
 import { GrantsAwardConversionSection } from "@/components/grants/grants-award-conversion-section";
 import { GrantsBcaScreeningSection } from "@/components/grants/grants-bca-screening-section";
+import { GrantsGovLiveSection } from "@/components/grants/grants-gov-live-section";
 import { GrantsPageIntroHeader } from "@/components/grants/grants-page-intro-header";
 import { GrantsProgramCatalogSection } from "@/components/grants/program-catalog-section";
 import { GrantsQueueCallout } from "@/components/grants/grants-queue-callout";
@@ -34,6 +35,11 @@ import {
 import {
   buildProjectFundingStackSummary,
 } from "@/lib/projects/funding";
+import {
+  buildLatestBcaScreeningByProjectId,
+  type ProjectBcaScreeningRowLike,
+} from "@/lib/grants/bca-evidence";
+import { bcaAnalysisInputsSchema } from "@/lib/bca/schema";
 import {
   buildProjectGrantModelingEvidenceByProjectId,
   describeProjectGrantModelingReadiness,
@@ -115,6 +121,7 @@ export default async function GrantsPage({
     { data: fundingAwardsData },
     { data: fundingInvoicesData },
     { data: projectFundingProfilesData },
+    { data: projectBcaScreeningsData },
     operationsSummary,
   ] = await Promise.all([
     supabase
@@ -149,6 +156,13 @@ export default async function GrantsPage({
     supabase
       .from("project_funding_profiles")
       .select("project_id, funding_need_amount, local_match_need_amount, notes")
+      .eq("workspace_id", membership.workspace_id),
+    // Latest screening per project via the DISTINCT ON view — bounded by
+    // project count, so no workspace-wide row cap can drop an older project's
+    // newest save (which would falsely flip its bca-support cue to "none").
+    supabase
+      .from("project_bca_screenings_latest")
+      .select("id, project_id, inputs_json, result_json, engine_version, created_at")
       .eq("workspace_id", membership.workspace_id),
     loadWorkspaceOperationsSummaryForWorkspace(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
@@ -223,11 +237,34 @@ export default async function GrantsPage({
     fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
   );
   const projectFundingProfileByProjectId = new Map(projectFundingProfiles.map((profile) => [profile.project_id, profile]));
-  const bcaScreeningProjects = projectOptions.map((project) => ({
-    id: project.id,
-    name: project.name,
-    fundingNeedAmount: projectFundingProfileByProjectId.get(project.id)?.funding_need_amount ?? null,
-  }));
+  const projectBcaScreeningRows = (projectBcaScreeningsData ?? []) as Array<
+    ProjectBcaScreeningRowLike & { inputs_json: unknown }
+  >;
+  const latestBcaScreeningByProjectId = buildLatestBcaScreeningByProjectId(projectBcaScreeningRows);
+  const canWritePrograms = canAccessWorkspaceAction("programs.write", membership.role);
+  const bcaScreeningProjects = projectOptions.map((project) => {
+    const latest = latestBcaScreeningByProjectId.get(project.id) ?? null;
+    // The client body gets serializable props only; saved inputs are re-parsed
+    // through the wire schema so a malformed stored payload prefills nothing.
+    const latestRow = latest
+      ? projectBcaScreeningRows.find((row) => row.id === latest.id) ?? null
+      : null;
+    const parsedInputs = latestRow ? bcaAnalysisInputsSchema.safeParse(latestRow.inputs_json) : null;
+    return {
+      id: project.id,
+      name: project.name,
+      fundingNeedAmount: projectFundingProfileByProjectId.get(project.id)?.funding_need_amount ?? null,
+      latestScreening: latest
+        ? {
+            createdAt: latest.createdAt,
+            netPresentValue: latest.netPresentValue,
+            benefitCostRatio: latest.benefitCostRatio,
+            analysisHorizonYears: latest.analysisHorizonYears,
+            inputs: parsedInputs?.success ? parsedInputs.data : null,
+          }
+        : null,
+    };
+  });
   const opportunitiesByProjectId = new Map<string, typeof opportunities>();
   const fundingAwardsByProjectId = new Map<string, typeof fundingAwards>();
   const awardLinkedInvoicesByProjectId = new Map<string, BillingInvoiceRow[]>();
@@ -599,6 +636,8 @@ export default async function GrantsPage({
 
           <GrantsProgramCatalogSection trackedTitles={trackedOpportunityTitles} />
 
+          <GrantsGovLiveSection trackedTitles={trackedOpportunityTitles} />
+
           <GrantsReimbursementTriageSection
             reimbursementPriorityQueue={reimbursementPriorityQueue}
             awardLinkedInvoicesCount={awardLinkedInvoices.length}
@@ -637,7 +676,7 @@ export default async function GrantsPage({
             />
           ) : null}
 
-          <GrantsBcaScreeningSection projects={bcaScreeningProjects} />
+          <GrantsBcaScreeningSection projects={bcaScreeningProjects} canSave={canWritePrograms} />
 
           <GrantsWorkspaceQueueSection grantsQueue={grantsQueue} />
 
@@ -678,6 +717,7 @@ export default async function GrantsPage({
           showModelingCaveat={opportunityLinkedModelingProjects.length > 0}
           activeFocusedOpportunityId={activeFocusedOpportunityId}
           projectGrantModelingEvidenceByProjectId={projectGrantModelingEvidenceByProjectId}
+          latestBcaScreeningByProjectId={latestBcaScreeningByProjectId}
           focusedOpportunityNarrativeDraft={focusedOpportunityNarrativeDraft}
           decisionCommandCallout={
             leadDecisionCommand ? (

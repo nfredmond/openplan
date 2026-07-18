@@ -1,0 +1,467 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - generic [ref=f3e4]:
+      - region [ref=f3e5]
+      - link [ref=f3e7] [cursor=pointer]:
+        - /url: https://www.mapbox.com/
+    - complementary "Primary navigation" [ref=f3e8]:
+      - generic [ref=f3e9]:
+        - link "OpenPlan home" [ref=f3e10] [cursor=pointer]:
+          - /url: /dashboard
+          - text: ◎
+        - navigation [ref=f3e12]:
+          - generic [ref=f3e13]:
+            - paragraph [ref=f3e14]: Operate
+            - link "Overview" [ref=f3e15] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Command Center" [ref=f3e21] [cursor=pointer]:
+              - /url: /command-center
+            - link "Projects" [ref=f3e29] [cursor=pointer]:
+              - /url: /projects
+            - link "RTP Cycles" [ref=f3e32] [cursor=pointer]:
+              - /url: /rtp
+            - link "Plans" [ref=f3e37] [cursor=pointer]:
+              - /url: /plans
+            - link "Programs" [ref=f3e40] [cursor=pointer]:
+              - /url: /programs
+            - link "Grants" [ref=f3e44] [cursor=pointer]:
+              - /url: /grants
+            - link "Reports" [ref=f3e47] [cursor=pointer]:
+              - /url: /reports
+          - generic [ref=f3e51]:
+            - paragraph [ref=f3e53]: Analyze
+            - link "Engagement" [ref=f3e54] [cursor=pointer]:
+              - /url: /engagement
+            - link "Analysis Studio" [ref=f3e59] [cursor=pointer]:
+              - /url: /explore
+            - link "Scenarios" [ref=f3e62] [cursor=pointer]:
+              - /url: /scenarios
+            - link "Models" [ref=f3e66] [cursor=pointer]:
+              - /url: /models
+            - link "County Validation" [ref=f3e73] [cursor=pointer]:
+              - /url: /county-runs
+            - link "Data Hub" [ref=f3e76] [cursor=pointer]:
+              - /url: /data-hub
+            - link "Aerial Ops" [ref=f3e81] [cursor=pointer]:
+              - /url: /aerial
+          - generic [ref=f3e84]:
+            - paragraph [ref=f3e86]: Govern
+            - link "Billing" [ref=f3e87] [cursor=pointer]:
+              - /url: /billing
+        - generic [ref=f3e92]:
+          - button "Switch to light mode" [ref=f3e93]
+          - generic: Theme
+    - banner [ref=f3e100]:
+      - generic [ref=f3e103]:
+        - generic [ref=f3e104]: Nevada County Transportation Commission (demo)
+        - generic [ref=f3e105]: pilot · Jul 17, 8:24 PM
+      - generic [ref=f3e106]:
+        - searchbox "Search OpenPlan" [ref=f3e110]
+        - generic [ref=f3e111]: ⌘K
+      - button "Notifications" [ref=f3e112] [cursor=pointer]
+      - button "New run" [ref=f3e116] [cursor=pointer]
+    - generic [ref=f3e118]:
+      - generic [ref=f3e119]:
+        - paragraph [ref=f3e120]: Transportation Modeling
+        - list [ref=f3e121]:
+          - listitem [ref=f3e122]:
+            - link "Models Current" [ref=f3e123] [cursor=pointer]:
+              - /url: /models
+              - generic [ref=f3e124]: Models
+              - text: Current
+          - listitem [ref=f3e126]:
+            - link "Scenarios" [ref=f3e127] [cursor=pointer]:
+              - /url: /scenarios
+          - listitem [ref=f3e130]:
+            - link "County Validation" [ref=f3e131] [cursor=pointer]:
+              - /url: /county-runs
+          - listitem [ref=f3e134]:
+            - link "Data Hub" [ref=f3e135] [cursor=pointer]:
+              - /url: /data-hub
+      - generic [ref=f3e334]:
+        - link "Back to Models" [ref=f3e335] [cursor=pointer]:
+          - /url: /models
+        - status [ref=f3e338]:
+          - generic [ref=f3e343]:
+            - paragraph [ref=f3e344]: No validated screening run on file
+            - paragraph [ref=f3e345]: Modeling outputs in this workspace are prototype-only until a county-run clears the screening gate. Any numbers produced here should not be used for outward modeling claims.
+          - link "Review county runs" [ref=f3e347] [cursor=pointer]:
+            - /url: /county-runs
+        - generic [ref=f3e348]:
+          - article [ref=f3e349]:
+            - generic [ref=f3e350]: Model detail
+            - generic [ref=f3e355]:
+              - generic [ref=f3e356]:
+                - generic [ref=f3e357]: Draft
+                - generic [ref=f3e358]: Travel Demand Model
+                - generic [ref=f3e359]: Needs setup
+              - heading "SR-49 corridor screening assignment" [level=1] [ref=f3e360]
+              - paragraph [ref=f3e361]: Live AequilibraE screening assignment for the SR-49 corridor study area. Screening-grade demand model run to verify the worker pipeline end to end.
+            - generic [ref=f3e362]:
+              - generic [ref=f3e363]:
+                - paragraph [ref=f3e364]: Checks passed
+                - paragraph [ref=f3e365]: 2/8
+                - paragraph [ref=f3e366]: Capture a versioned config identifier before calling a run review-ready.
+              - generic [ref=f3e367]:
+                - paragraph [ref=f3e368]: Linked plans
+                - paragraph [ref=f3e369]: "0"
+                - paragraph [ref=f3e370]: Plans that already reference this model.
+              - generic [ref=f3e371]:
+                - paragraph [ref=f3e372]: Datasets
+                - paragraph [ref=f3e373]: "0"
+                - paragraph [ref=f3e374]: Linked Data Hub records.
+              - generic [ref=f3e375]:
+                - paragraph [ref=f3e376]: Runs
+                - paragraph [ref=f3e377]: "0"
+                - paragraph [ref=f3e378]: Recorded run references tied to this model.
+              - generic [ref=f3e379]:
+                - paragraph [ref=f3e380]: Reports
+                - paragraph [ref=f3e381]: "0"
+                - paragraph [ref=f3e382]: Reports that reference this model.
+          - article [ref=f3e383]:
+            - generic [ref=f3e389]:
+              - paragraph [ref=f3e390]: Model summary
+              - heading "Draft model record" [level=2] [ref=f3e391]
+            - paragraph [ref=f3e392]: Capture config versioning, provenance, and traceability before moving the record forward.
+            - generic [ref=f3e393]:
+              - generic [ref=f3e394]: "No output chain yet: No run or report record is attached yet."
+              - generic [ref=f3e395]: Capture a versioned config identifier before calling a run review-ready.
+              - generic [ref=f3e396]: No linked datasets yet.
+        - generic [ref=f3e397]:
+          - article [ref=f3e398]:
+            - generic [ref=f3e400]:
+              - paragraph [ref=f3e401]: Controls
+              - heading "Model record workflow" [level=2] [ref=f3e402]
+              - paragraph [ref=f3e403]: Keep the config metadata, anchors, and traceability links current. This is readiness management, not run orchestration.
+            - generic [ref=f3e408]:
+              - generic [ref=f3e409]:
+                - generic [ref=f3e410]:
+                  - paragraph [ref=f3e411]: Anchors
+                  - paragraph [ref=f3e412]: 2/2
+                  - paragraph [ref=f3e413]: Primary project and scenario context.
+                - generic [ref=f3e414]:
+                  - paragraph [ref=f3e415]: Explicit links
+                  - paragraph [ref=f3e416]: "0"
+                  - paragraph [ref=f3e420]: Attached provenance, outputs, and related records.
+                - generic [ref=f3e421]:
+                  - paragraph [ref=f3e422]: Timestamps
+                  - paragraph [ref=f3e423]: 0/2
+                  - paragraph [ref=f3e427]: Validation and latest recorded execution evidence.
+              - generic [ref=f3e428]:
+                - tablist [ref=f3e429]:
+                  - tab "Core" [selected] [ref=f3e430]
+                  - tab "Provenance" [ref=f3e431]
+                  - tab "Links" [ref=f3e432]
+                  - tab "Timestamps" [ref=f3e433]
+                - tabpanel "Core" [ref=f3e434]:
+                  - generic [ref=f3e435]:
+                    - text: Title
+                    - textbox "Title" [ref=f3e436]: SR-49 corridor screening assignment
+                  - generic [ref=f3e437]:
+                    - generic [ref=f3e438]:
+                      - text: Primary project
+                      - combobox "Primary project" [ref=f3e439]:
+                        - option "No primary project"
+                        - option "NCTC 2045 RTP (proof-of-capability)" [selected]
+                    - generic [ref=f3e440]:
+                      - text: Primary scenario set
+                      - combobox "Primary scenario set" [ref=f3e441]:
+                        - option "No primary scenario set"
+                        - option "NCTC 2045 RTP scenario comparison" [selected]
+                  - generic [ref=f3e442]:
+                    - generic [ref=f3e443]:
+                      - text: Model family
+                      - combobox "Model family" [ref=f3e444]:
+                        - option "Travel Demand Model" [selected]
+                        - option "Activity-Based Model"
+                        - option "Scenario Model"
+                        - option "Accessibility / Sketch Model"
+                        - option "Other Model"
+                    - generic [ref=f3e445]:
+                      - text: Status
+                      - combobox "Status" [ref=f3e446]:
+                        - option "Draft" [selected]
+                        - option "Configuring"
+                        - option "Ready for Review"
+                        - option "Approved"
+                        - option "Archived"
+                  - generic [ref=f3e447]:
+                    - generic [ref=f3e448]:
+                      - text: Config version
+                      - textbox "Config version" [ref=f3e449]:
+                        - /placeholder: Versioned config or template label
+                    - generic [ref=f3e450]:
+                      - text: Operator
+                      - textbox "Operator" [ref=f3e451]:
+                        - /placeholder: Owner or operator
+                  - generic [ref=f3e452]:
+                    - text: Horizon / window
+                    - textbox "Horizon / window" [ref=f3e453]:
+                      - /placeholder: 2045 RTP / 2035 transit buildout
+                  - generic [ref=f3e454]:
+                    - text: Summary
+                    - textbox "Summary" [ref=f3e455]: Live AequilibraE screening assignment for the SR-49 corridor study area. Screening-grade demand model run to verify the worker pipeline end to end.
+              - button "Save model record" [ref=f3e456]
+          - generic [ref=f3e457]:
+            - article [ref=f3e458]:
+              - generic [ref=f3e460]:
+                - paragraph [ref=f3e461]: Execution
+                - heading "Managed scenario → run execution" [level=2] [ref=f3e462]
+                - paragraph [ref=f3e463]: Launch a managed run with immutable input snapshots, then promote or reassign the resulting analysis run into the right scenario entry.
+              - generic [ref=f3e467]:
+                - generic [ref=f3e468]:
+                  - paragraph [ref=f3e469]: Managed runs
+                  - paragraph [ref=f3e470]: "1"
+                  - paragraph [ref=f3e471]: Execution records tied to this model.
+                - generic [ref=f3e472]:
+                  - paragraph [ref=f3e473]: Latest status
+                  - paragraph [ref=f3e474]: running
+                  - paragraph [ref=f3e475]: SR-49 corridor screening assignment managed run
+                - generic [ref=f3e476]:
+                  - paragraph [ref=f3e477]: Scenario attach
+                  - paragraph [ref=f3e478]: "2"
+                  - paragraph [ref=f3e479]: Scenario entries available for direct evidence promotion.
+                - generic [ref=f3e480]:
+                  - paragraph [ref=f3e481]: Run modes available
+                  - paragraph [ref=f3e482]: "3"
+                  - paragraph [ref=f3e483]: Deterministic Corridor · Fast Screening · Behavioral Demand
+              - generic [ref=f3e484]:
+                - generic [ref=f3e485]:
+                  - generic [ref=f3e486]:
+                    - paragraph [ref=f3e487]: Launch run
+                    - paragraph [ref=f3e488]: Use model defaults, then optionally bind the result back into a specific scenario entry.
+                  - generic [ref=f3e489]:
+                    - text: Run mode
+                    - combobox "Run mode" [ref=f3e490]:
+                      - option "Deterministic Corridor (Synchronous)"
+                      - option "Fast Screening (AequilibraE worker prototype)" [selected]
+                      - option "Behavioral Demand (ActivitySim prototype / preflight-backed)"
+                    - generic [ref=f3e491]:
+                      - generic [ref=f3e492]:
+                        - paragraph [ref=f3e493]: Fast Screening
+                        - generic [ref=f3e494]: Launchable
+                      - paragraph [ref=f3e495]: Worker-backed AequilibraE screening lane for assignment and accessibility review.
+                      - paragraph [ref=f3e496]: "Expected runtime: Expected runtime is on the order of minutes and completes asynchronously through the worker queue."
+                      - paragraph [ref=f3e497]: "Caveat: Screening-grade prototype output. Do not treat it as behavioral demand or forecast-ready calibration."
+                  - generic [ref=f3e498]:
+                    - text: Run title
+                    - textbox "Run title" [ref=f3e499]: SR-49 corridor screening assignment managed run
+                  - generic [ref=f3e500]:
+                    - text: Scenario entry (optional)
+                    - combobox "Scenario entry (optional)" [ref=f3e501]:
+                      - option "No direct scenario attach"
+                      - option "Existing conditions baseline · baseline · 3 assumptions" [selected]
+                      - option "SR-49 safety package · alternative · 3 assumptions"
+                    - paragraph [ref=f3e616]: Selected entry is currently ready. If attach is enabled, the completed run will become its attached evidence.
+                  - generic [ref=f3e502]:
+                    - checkbox "Attach completed run to selected scenario entry" [checked] [ref=f3e503]
+                    - text: Attach completed run to selected scenario entry
+                  - generic [ref=f3e504]:
+                    - text: Query text
+                    - textbox "Query text" [ref=f3e505]:
+                      - /placeholder: Describe what this managed run is analyzing.
+                      - text: Screening assignment for the SR-49 corridor between Grass Valley and Nevada City.
+                  - generic [ref=f3e506]:
+                    - text: Corridor GeoJSON
+                    - textbox "Corridor GeoJSON" [ref=f3e507]:
+                      - /placeholder: "{\"type\":\"Polygon\",\"coordinates\":[...]}"
+                      - text: "{\"type\":\"Polygon\",\"coordinates\":[[[-121.10,39.19],[-120.98,39.19],[-120.98,39.28],[-121.10,39.28],[-121.10,39.19]]]}"
+                  - button "Launch managed run" [ref=f3e508]
+                - generic [ref=f3e509]:
+                  - generic [ref=f3e510]:
+                    - generic [ref=f3e511]:
+                      - paragraph [ref=f3e512]: Run history
+                      - paragraph [ref=f3e513]: Latest orchestrated executions tied to this model.
+                    - generic [ref=f3e514]: 1 stored
+                  - generic [ref=f3e617]: One or more runs are in progress. This view auto-refreshes every few seconds while runs are active (paused when the tab is hidden).
+                  - generic [ref=f3e622]:
+                    - generic [ref=f3e623]:
+                      - generic [ref=f3e624]: running
+                      - generic [ref=f3e625]: AequilibraE
+                      - generic [ref=f3e626]: Existing conditions baseline
+                    - generic [ref=f3e627]:
+                      - generic [ref=f3e628]:
+                        - heading "SR-49 corridor screening assignment managed run" [level=3] [ref=f3e629]
+                        - paragraph [ref=f3e630]: 7/17/2026, 8:36:54 PM
+                      - paragraph [ref=f3e631]: Managed execution record created without a linked analysis run yet.
+                      - paragraph [ref=f3e632]: Expected runtime is on the order of minutes and completes asynchronously through the worker queue.
+                      - paragraph [ref=f3e633]: Screening-grade prototype output. Do not treat it as behavioral demand or forecast-ready calibration.
+                    - generic [ref=f3e634]:
+                      - generic [ref=f3e636]:
+                        - heading "Execution stages" [level=4] [ref=f3e637]
+                        - list [ref=f3e638]:
+                          - listitem [ref=f3e639]:
+                            - generic [ref=f3e640]:
+                              - generic [ref=f3e641]:
+                                - paragraph [ref=f3e642]: AequilibraE Setup
+                                - paragraph [ref=f3e643]: Duration unavailable
+                              - generic [ref=f3e644]: running
+                            - generic [ref=f3e645]: Starting AequilibraE Setup...
+                          - listitem [ref=f3e646]:
+                            - generic [ref=f3e647]:
+                              - generic [ref=f3e648]:
+                                - paragraph [ref=f3e649]: Network Assignment
+                                - paragraph [ref=f3e650]: Duration unavailable
+                              - generic [ref=f3e651]: queued
+                          - listitem [ref=f3e652]:
+                            - generic [ref=f3e653]:
+                              - generic [ref=f3e654]:
+                                - paragraph [ref=f3e655]: Artifact Extraction
+                                - paragraph [ref=f3e656]: Duration unavailable
+                              - generic [ref=f3e657]: queued
+                      - generic [ref=f3e660]:
+                        - paragraph [ref=f3e661]: Evidence packet
+                        - paragraph [ref=f3e662]: Evidence becomes available after the run completes successfully.
+                        - paragraph [ref=f3e663]: Expected runtime is on the order of minutes and completes asynchronously through the worker queue.
+            - article [ref=f3e516]:
+              - generic [ref=f3e518]:
+                - paragraph [ref=f3e519]: Anchors
+                - heading "Primary planning context" [level=2] [ref=f3e520]
+                - paragraph [ref=f3e521]: These anchors define what decision frame the model record belongs to before any explicit cross-links are added.
+              - generic [ref=f3e522]:
+                - generic [ref=f3e523]:
+                  - generic [ref=f3e525]:
+                    - paragraph [ref=f3e526]: Primary project
+                    - link "NCTC 2045 RTP (proof-of-capability)" [ref=f3e527] [cursor=pointer]:
+                      - /url: /projects/d0000001-0000-4000-8000-000000000003
+                    - paragraph [ref=f3e528]: "Proof-of-capability demo: what OpenPlan produces when a rural RTPA like Nevada County runs an RTP cycle through it, grounded in real NCTC geography and a real screening-grade AequilibraE assignment. Internal prototype only — not a calibrated planning-grade model."
+                  - generic [ref=f3e529]:
+                    - generic [ref=f3e530]: active
+                    - generic [ref=f3e531]: analysis
+                    - generic [ref=f3e532]: Updated 7/17/2026, 8:24:31 PM
+                - generic [ref=f3e533]:
+                  - generic [ref=f3e535]:
+                    - paragraph [ref=f3e536]: Primary scenario set
+                    - link "NCTC 2045 RTP scenario comparison" [ref=f3e537] [cursor=pointer]:
+                      - /url: /scenarios/d0000001-0000-4000-8000-000000000030
+                    - paragraph [ref=f3e538]: Does the SR-49 safety package improve access and safety enough to advance into the NCTC 2045 RTP programming pipeline?
+                  - generic [ref=f3e539]:
+                    - generic [ref=f3e540]: active
+                    - generic [ref=f3e541]: Updated 7/17/2026, 8:24:31 PM
+                    - generic [ref=f3e542]: 0 assumption sets
+                    - generic [ref=f3e543]: 0 data packages
+                    - generic [ref=f3e544]: 0 indicator snapshots
+            - article [ref=f3e545]:
+              - generic [ref=f3e546]:
+                - generic [ref=f3e547]:
+                  - paragraph [ref=f3e548]: Readiness
+                  - heading "Configuration and traceability checks" [level=2] [ref=f3e549]
+                - generic [ref=f3e550]: 6 gaps
+              - generic [ref=f3e555]:
+                - generic [ref=f3e556]:
+                  - generic [ref=f3e557]:
+                    - paragraph [ref=f3e558]: Project basis
+                    - generic [ref=f3e559]: Ready
+                  - paragraph [ref=f3e560]: A primary project anchor is on record.
+                - generic [ref=f3e561]:
+                  - generic [ref=f3e562]:
+                    - paragraph [ref=f3e563]: Scenario basis
+                    - generic [ref=f3e564]: Ready
+                  - paragraph [ref=f3e565]: At least one scenario basis is linked.
+                - generic [ref=f3e566]:
+                  - generic [ref=f3e567]:
+                    - paragraph [ref=f3e568]: Config version
+                    - generic [ref=f3e569]: Missing
+                  - paragraph [ref=f3e570]: Capture a versioned config identifier before calling a run review-ready.
+                - generic [ref=f3e571]:
+                  - generic [ref=f3e572]:
+                    - paragraph [ref=f3e573]: Operator
+                    - generic [ref=f3e574]: Missing
+                  - paragraph [ref=f3e575]: Record the operator or team responsible for maintaining this model setup.
+                - generic [ref=f3e576]:
+                  - generic [ref=f3e577]:
+                    - paragraph [ref=f3e578]: Assumptions
+                    - generic [ref=f3e579]: Missing
+                  - paragraph [ref=f3e580]: Summarize the principal assumptions, policy knobs, or calibration basis.
+                - generic [ref=f3e581]:
+                  - generic [ref=f3e582]:
+                    - paragraph [ref=f3e583]: Input provenance
+                    - generic [ref=f3e584]: Missing
+                  - paragraph [ref=f3e585]: Link Data Hub datasets or describe the input snapshot posture.
+                - generic [ref=f3e586]:
+                  - generic [ref=f3e587]:
+                    - paragraph [ref=f3e588]: Output traceability
+                    - generic [ref=f3e589]: Missing
+                  - paragraph [ref=f3e590]: Link a run, report, or explicit output note so downstream review can be traced.
+                - generic [ref=f3e591]:
+                  - generic [ref=f3e592]:
+                    - paragraph [ref=f3e593]: Validation checkpoint
+                    - generic [ref=f3e594]: Missing
+                  - paragraph [ref=f3e595]: Record when this model config was last checked or reviewed.
+            - article [ref=f3e596]:
+              - generic [ref=f3e597]:
+                - generic [ref=f3e598]:
+                  - paragraph [ref=f3e599]: Linked records
+                  - heading "Explicit provenance and outputs" [level=2] [ref=f3e600]
+                  - paragraph [ref=f3e601]: Review the linked evidence chain without wading through repetitive empty-state blocks.
+                - generic [ref=f3e602]: 0 explicit links
+              - status [ref=f3e606]:
+                - generic [ref=f3e612]:
+                  - paragraph [ref=f3e613]: No explicit links yet
+                  - paragraph [ref=f3e614]: Use the Links tab in the control panel to attach supporting scenarios, plans, datasets, reports, recorded runs, or related projects.
+    - complementary "Map layers" [ref=f3e251]:
+      - generic [ref=f3e252]: Layers
+      - list [ref=f3e253]:
+        - listitem [ref=f3e254]:
+          - generic [ref=f3e255] [cursor=pointer]:
+            - checkbox "Projects 1" [checked] [ref=f3e321]
+            - generic [ref=f3e257]: Projects
+            - generic [ref=f3e322]: "1"
+        - listitem [ref=f3e258]:
+          - generic [ref=f3e259] [cursor=pointer]:
+            - checkbox "RTP cycles 1" [checked] [ref=f3e323]
+            - generic [ref=f3e261]: RTP cycles
+            - generic [ref=f3e324]: "1"
+        - listitem [ref=f3e262]:
+          - generic [ref=f3e263] [cursor=pointer]:
+            - checkbox "Study corridors 2" [checked] [ref=f3e325]
+            - generic [ref=f3e265]: Study corridors
+            - generic [ref=f3e326]: "2"
+        - listitem [ref=f3e266]:
+          - generic [ref=f3e267] [cursor=pointer]:
+            - checkbox "Engagement pins 7" [checked] [ref=f3e327]
+            - generic [ref=f3e269]: Engagement pins
+            - generic [ref=f3e328]: "7"
+        - listitem [ref=f3e270]:
+          - generic [ref=f3e271] [cursor=pointer]:
+            - checkbox "Aerial missions 3" [checked] [ref=f3e329]
+            - generic [ref=f3e273]: Aerial missions
+            - generic [ref=f3e330]: "3"
+        - listitem [ref=f3e274]:
+          - generic [ref=f3e275] [cursor=pointer]:
+            - checkbox "Equity priority 4" [ref=f3e331]
+            - generic [ref=f3e277]: Equity priority
+            - generic [ref=f3e332]: "4"
+      - generic [ref=f3e278]:
+        - text: "Basemap:"
+        - strong [ref=f3e279]: Mapbox dark
+    - complementary "Map legend" [ref=f3e280]:
+      - button "Legend" [expanded] [ref=f3e281] [cursor=pointer]:
+        - generic [ref=f3e283]: ▾
+      - list [ref=f3e284]:
+        - listitem [ref=f3e285]:
+          - generic [ref=f3e287]: Projects
+        - listitem [ref=f3e288]:
+          - generic [ref=f3e290]: Community input
+        - listitem [ref=f3e291]:
+          - generic [ref=f3e293]: Aerial AOIs
+        - listitem [ref=f3e294]:
+          - generic [ref=f3e295]: Corridors by LOS
+          - generic [ref=f3e301]:
+            - generic [ref=f3e302]: A/B
+            - generic [ref=f3e303]: C/D
+            - generic [ref=f3e304]: E
+            - generic [ref=f3e305]: F
+        - listitem [ref=f3e306]:
+          - generic [ref=f3e308]: RTP cycles
+    - region
+    - group "Zoom" [ref=f3e309]:
+      - button "Zoom in" [ref=f3e310] [cursor=pointer]: ＋
+      - button "Zoom out" [ref=f3e311] [cursor=pointer]: −
+    - button "Planner Agent" [ref=f3e312]
+    - generic "Account" [ref=f3e314]:
+      - generic [ref=f3e315]:
+        - generic [ref=f3e316]: nctc-demo@openplan-demo.natford.example
+        - generic [ref=f3e317]: owner
+      - button "Sign out" [ref=f3e319] [cursor=pointer]
+  - alert [ref=f3e320]

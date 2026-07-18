@@ -1,0 +1,25 @@
+[    4752ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/api/models/91adc700-92a4-4e17-8c48-4c2b8a2e4fdf/runs/b3dd080b-eebb-492d-ba4b-411fdd26c0a4/launch:0
+[ 1593673ms] [ERROR] TypeError: Cannot read properties of undefined (reading 'getOwnLayer')
+    at Map.getLayer (http://localhost:3000/_next/static/chunks/c36f3faa-d0a32b512dc27cd7.js:118:1750)
+    at http://localhost:3000/_next/static/chunks/app/(app)/explore/page-7564dd5188ffe80e.js:5:15204
+    at iw (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:92921)
+    at ux (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120960)
+    at uS (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120223)
+    at uE (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120355)
+    at uS (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120285)
+    at uE (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120421)
+    at uS (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120285)
+    at uE (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120421) @ http://localhost:3000/_next/static/chunks/3794-ba2500baa4c52d55.js:0
+[ 1593687ms] [ERROR] [openplan/root-error] {message: Cannot read properties of undefined (reading 'getOwnLayer'), digest: null} @ http://localhost:3000/_next/static/chunks/app/error-d14c639d3a43ec59.js:0
+[ 1655889ms] [ERROR] TypeError: Cannot read properties of undefined (reading 'getOwnLayer')
+    at Map.getLayer (http://localhost:3000/_next/static/chunks/c36f3faa-d0a32b512dc27cd7.js:118:1750)
+    at http://localhost:3000/_next/static/chunks/app/(app)/explore/page-7564dd5188ffe80e.js:5:15204
+    at iw (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:92921)
+    at ux (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120960)
+    at uS (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120223)
+    at uE (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120355)
+    at uS (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120285)
+    at uE (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120421)
+    at uS (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120285)
+    at uE (http://localhost:3000/_next/static/chunks/4bd1b696-e356ca5ba0218e27.js:1:120421) @ http://localhost:3000/_next/static/chunks/3794-ba2500baa4c52d55.js:0
+[ 1655893ms] [ERROR] [openplan/root-error] {message: Cannot read properties of undefined (reading 'getOwnLayer'), digest: null} @ http://localhost:3000/_next/static/chunks/app/error-d14c639d3a43ec59.js:0

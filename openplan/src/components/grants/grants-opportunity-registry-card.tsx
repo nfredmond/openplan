@@ -6,6 +6,7 @@ import {
   type FundingOpportunityNarrativeDraftRow,
 } from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import { StatusBadge } from "@/components/ui/status-badge";
+import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
 import {
   formatFundingOpportunityDecisionLabel,
   formatFundingOpportunityStatusLabel,
@@ -25,6 +26,7 @@ import {
   type FundingOpportunityRow,
   formatCurrency,
   formatDateTime,
+  formatDeadline,
   isClosingSoon,
   isDecisionSoon,
 } from "@/lib/grants/page-helpers";
@@ -52,11 +54,13 @@ export function GrantsOpportunityRegistryCard({
   opportunity,
   activeFocusedOpportunityId,
   projectGrantModelingEvidence,
+  latestBcaScreening = null,
   latestNarrativeDraft = null,
 }: {
   opportunity: NormalizedOpportunity;
   activeFocusedOpportunityId: string | null;
   projectGrantModelingEvidence: ProjectGrantModelingEvidence | null;
+  latestBcaScreening?: ProjectBcaScreeningSummary | null;
   latestNarrativeDraft?: FundingOpportunityNarrativeDraftRow | null;
 }) {
   const projectHref = opportunity.project
@@ -74,7 +78,8 @@ export function GrantsOpportunityRegistryCard({
   );
   const evidenceReadinessCues = buildGrantEvidenceReadinessCues(
     opportunity,
-    projectGrantModelingEvidence
+    projectGrantModelingEvidence,
+    latestBcaScreening
   );
   const evidenceReadinessSummary = summarizeGrantEvidenceReadiness(evidenceReadinessCues);
   const isFocused =
@@ -119,8 +124,8 @@ export function GrantsOpportunityRegistryCard({
           <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
           <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
           <span className="module-record-chip">Likely {formatCurrency(opportunity.expected_award_amount)}</span>
-          <span className="module-record-chip">Opens {formatDateTime(opportunity.opens_at)}</span>
-          <span className="module-record-chip">Closes {formatDateTime(opportunity.closes_at)}</span>
+          <span className="module-record-chip">Opens {formatDeadline(opportunity.opens_at, "opens")}</span>
+          <span className="module-record-chip">Closes {formatDeadline(opportunity.closes_at, "closes")}</span>
           <span className="module-record-chip">Decision due {formatDateTime(opportunity.decision_due_at)}</span>
           <span className="module-record-chip">Project {opportunity.project?.name ?? "Not linked"}</span>
           {projectGrantModelingEvidence ? (

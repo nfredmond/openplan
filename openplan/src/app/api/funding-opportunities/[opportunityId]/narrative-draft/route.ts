@@ -18,6 +18,13 @@ import {
   buildGrantEvidenceReadinessCues,
   summarizeGrantEvidenceReadiness,
 } from "@/lib/grants/evidence-readiness";
+import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
+import {
+  buildBcaScreeningFactClaims,
+  buildLatestBcaScreeningByProjectId,
+  type ProjectBcaScreeningRowLike,
+  type ProjectBcaScreeningSummary,
+} from "@/lib/grants/bca-evidence";
 import {
   buildProjectFundingStackSummary,
   type ProjectFundingStackSummary,
@@ -183,38 +190,52 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let modelingReadinessDetail: string | null = null;
     let modelingHeadline: string | null = null;
     let modelingEvidence: ProjectGrantModelingEvidence | null = null;
+    let bcaScreening: ProjectBcaScreeningSummary | null = null;
 
     if (opportunity.project_id) {
-      const [projectResult, profileResult, awardsResult, projectOpportunitiesResult, invoicesResult, reportsResult] =
-        await Promise.all([
-          supabase
-            .from("projects")
-            .select("id, name")
-            .eq("id", opportunity.project_id)
-            .maybeSingle(),
-          supabase
-            .from("project_funding_profiles")
-            .select("project_id, funding_need_amount, local_match_need_amount, notes, updated_at")
-            .eq("project_id", opportunity.project_id)
-            .maybeSingle(),
-          supabase
-            .from("funding_awards")
-            .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
-            .eq("project_id", opportunity.project_id),
-          supabase
-            .from("funding_opportunities")
-            .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
-            .eq("project_id", opportunity.project_id),
-          supabase
-            .from("billing_invoice_records")
-            .select("id, funding_award_id, status, due_date, amount, retention_percent, retention_amount, net_amount")
-            .eq("project_id", opportunity.project_id),
-          supabase
-            .from("reports")
-            .select("id, project_id, title, updated_at, generated_at, latest_artifact_kind")
-            .eq("project_id", opportunity.project_id)
-            .order("updated_at", { ascending: false }),
-        ]);
+      const [
+        projectResult,
+        profileResult,
+        awardsResult,
+        projectOpportunitiesResult,
+        invoicesResult,
+        reportsResult,
+        bcaScreeningsResult,
+      ] = await Promise.all([
+        supabase
+          .from("projects")
+          .select("id, name")
+          .eq("id", opportunity.project_id)
+          .maybeSingle(),
+        supabase
+          .from("project_funding_profiles")
+          .select("project_id, funding_need_amount, local_match_need_amount, notes, updated_at")
+          .eq("project_id", opportunity.project_id)
+          .maybeSingle(),
+        supabase
+          .from("funding_awards")
+          .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+          .eq("project_id", opportunity.project_id),
+        supabase
+          .from("funding_opportunities")
+          .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+          .eq("project_id", opportunity.project_id),
+        supabase
+          .from("billing_invoice_records")
+          .select("id, funding_award_id, status, due_date, amount, retention_percent, retention_amount, net_amount")
+          .eq("project_id", opportunity.project_id),
+        supabase
+          .from("reports")
+          .select("id, project_id, title, updated_at, generated_at, latest_artifact_kind")
+          .eq("project_id", opportunity.project_id)
+          .order("updated_at", { ascending: false }),
+        supabase
+          .from("project_bca_screenings")
+          .select("id, project_id, result_json, engine_version, created_at")
+          .eq("project_id", opportunity.project_id)
+          .order("created_at", { ascending: false })
+          .limit(5),
+      ]);
 
       projectName = (projectResult.data as { id: string; name: string } | null)?.name ?? null;
 
@@ -259,6 +280,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelingHeadline = modelingEvidence
         ? `${modelingEvidence.leadComparisonReport.title} — ${modelingEvidence.leadComparisonReport.comparisonDigest.headline}. ${modelingEvidence.leadComparisonReport.comparisonDigest.detail}`
         : null;
+
+      bcaScreening =
+        buildLatestBcaScreeningByProjectId(
+          (bcaScreeningsResult.data ?? []) as ProjectBcaScreeningRowLike[]
+        ).get(opportunity.project_id) ?? null;
     }
 
     const evidenceCues = buildGrantEvidenceReadinessCues(
@@ -272,7 +298,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         closes_at: opportunity.closes_at ?? null,
         decision_due_at: opportunity.decision_due_at ?? null,
       },
-      modelingEvidence
+      modelingEvidence,
+      bcaScreening
     );
     const evidenceReadinessSummary = summarizeGrantEvidenceReadiness(evidenceCues);
 
@@ -300,6 +327,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       hasModelingEvidence
         ? `Modeling evidence readiness: ${modelingReadinessDetail} ${GRANT_MODELING_PLANNING_CAVEAT}`
         : null,
+      ...(bcaScreening ? buildBcaScreeningFactClaims(bcaScreening, projectName) : []),
       `Evidence readiness (deterministic guardrail summary): ${evidenceReadinessSummary}`,
     ]);
     const factIds = facts.map((fact) => fact.fact_id);
@@ -315,6 +343,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
       "- If (and only if) you reference the modeling evidence or model results below, you MUST include the following caveat sentence verbatim in the same paragraph:",
       `  "${GRANT_MODELING_PLANNING_CAVEAT}"`,
+      "- If (and only if) you reference the benefit-cost screening facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must describe the results as screening-level — never as an application benefit-cost analysis:",
+      `  "${BCA_NARRATIVE_CAVEAT}"`,
       "- Do not promise awards, eligibility determinations, or fiscal compliance; this draft supports an operator-reviewed application.",
       "",
       "WORKSPACE FACTS (the only citable claims; cite as [fact:fact_N]):",
@@ -325,7 +355,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         : "No project is linked to this opportunity. Ground the narrative in the opportunity-record facts only.",
       hasModelingEvidence
         ? "Modeling-evidence facts above are deterministic, computed from stored reports, and screening-grade."
-        : "No comparison-backed modeling packet is visible for this opportunity's project. Do not reference modeling or analysis results.",
+        : bcaScreening
+          ? "No comparison-backed travel-demand modeling packet is visible for this project. Do not reference travel-demand model or forecasting results; the benefit-cost screening facts above are the only analysis you may cite, and only as screening-level."
+          : "No comparison-backed modeling packet or benefit-cost screening is visible for this project. Do not reference modeling or analysis results.",
     ].join("\n");
 
     let draftText: string;

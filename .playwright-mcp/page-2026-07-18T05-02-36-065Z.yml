@@ -1,0 +1,568 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e4]:
+      - region [ref=e5]
+      - link [ref=e7] [cursor=pointer]:
+        - /url: https://www.mapbox.com/
+    - complementary "Primary navigation" [ref=e8]:
+      - generic [ref=e9]:
+        - link "OpenPlan home" [ref=e10] [cursor=pointer]:
+          - /url: /dashboard
+          - text: ◎
+        - navigation [ref=e12]:
+          - generic [ref=e13]:
+            - paragraph [ref=e14]: Operate
+            - link "Overview" [ref=e15] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Command Center" [ref=e21] [cursor=pointer]:
+              - /url: /command-center
+            - link "Projects" [ref=e29] [cursor=pointer]:
+              - /url: /projects
+            - link "RTP Cycles" [ref=e32] [cursor=pointer]:
+              - /url: /rtp
+            - link "Plans" [ref=e37] [cursor=pointer]:
+              - /url: /plans
+            - link "Programs" [ref=e40] [cursor=pointer]:
+              - /url: /programs
+            - link "Grants" [ref=e44] [cursor=pointer]:
+              - /url: /grants
+            - link "Reports" [ref=e47] [cursor=pointer]:
+              - /url: /reports
+          - generic [ref=e51]:
+            - paragraph [ref=e53]: Analyze
+            - link "Engagement" [ref=e54] [cursor=pointer]:
+              - /url: /engagement
+            - link "Analysis Studio" [ref=e59] [cursor=pointer]:
+              - /url: /explore
+            - link "Scenarios" [ref=e62] [cursor=pointer]:
+              - /url: /scenarios
+            - link "Models" [ref=e66] [cursor=pointer]:
+              - /url: /models
+            - link "County Validation" [ref=e73] [cursor=pointer]:
+              - /url: /county-runs
+            - link "Data Hub" [ref=e76] [cursor=pointer]:
+              - /url: /data-hub
+            - link "Aerial Ops" [ref=e81] [cursor=pointer]:
+              - /url: /aerial
+          - generic [ref=e84]:
+            - paragraph [ref=e86]: Govern
+            - link "Billing" [ref=e87] [cursor=pointer]:
+              - /url: /billing
+        - generic [ref=e92]:
+          - button "Switch to light mode" [ref=e93]
+          - generic: Theme
+    - banner [ref=e100]:
+      - generic [ref=e103]:
+        - generic [ref=e104]: Nevada County Transportation Commission (demo)
+        - generic [ref=e105]: pilot · Jul 17, 8:24 PM
+      - generic [ref=e106]:
+        - searchbox "Search OpenPlan" [ref=e110]
+        - generic [ref=e111]: ⌘K
+      - button "Notifications" [ref=e112] [cursor=pointer]
+      - button "New run" [ref=e116] [cursor=pointer]
+    - generic [ref=e118]:
+      - generic [ref=e119]:
+        - paragraph [ref=e120]: Transportation Modeling
+        - list [ref=e121]:
+          - listitem [ref=e122]:
+            - link "Models Current" [ref=e123] [cursor=pointer]:
+              - /url: /models
+              - generic [ref=e124]: Models
+              - text: Current
+          - listitem [ref=e126]:
+            - link "Scenarios" [ref=e127] [cursor=pointer]:
+              - /url: /scenarios
+          - listitem [ref=e130]:
+            - link "County Validation" [ref=e131] [cursor=pointer]:
+              - /url: /county-runs
+          - listitem [ref=e134]:
+            - link "Data Hub" [ref=e135] [cursor=pointer]:
+              - /url: /data-hub
+      - generic [ref=e140]:
+        - link "Back to Models" [ref=e141] [cursor=pointer]:
+          - /url: /models
+        - status [ref=e144]:
+          - generic [ref=e149]:
+            - paragraph [ref=e150]: No validated screening run on file
+            - paragraph [ref=e151]: Modeling outputs in this workspace are prototype-only until a county-run clears the screening gate. Any numbers produced here should not be used for outward modeling claims.
+          - link "Review county runs" [ref=e153] [cursor=pointer]:
+            - /url: /county-runs
+        - generic [ref=e154]:
+          - article [ref=e155]:
+            - generic [ref=e156]: Model detail
+            - generic [ref=e161]:
+              - generic [ref=e162]:
+                - generic [ref=e163]: Draft
+                - generic [ref=e164]: Travel Demand Model
+                - generic [ref=e165]: Needs setup
+              - heading "SR-49 corridor screening assignment" [level=1] [ref=e166]
+              - paragraph [ref=e167]: Live AequilibraE screening assignment for the SR-49 corridor study area. Screening-grade demand model run to verify the worker pipeline end to end.
+            - generic [ref=e168]:
+              - generic [ref=e169]:
+                - paragraph [ref=e170]: Checks passed
+                - paragraph [ref=e171]: 2/8
+                - paragraph [ref=e172]: Capture a versioned config identifier before calling a run review-ready.
+              - generic [ref=e173]:
+                - paragraph [ref=e174]: Linked plans
+                - paragraph [ref=e175]: "0"
+                - paragraph [ref=e176]: Plans that already reference this model.
+              - generic [ref=e177]:
+                - paragraph [ref=e178]: Datasets
+                - paragraph [ref=e179]: "0"
+                - paragraph [ref=e180]: Linked Data Hub records.
+              - generic [ref=e181]:
+                - paragraph [ref=e182]: Runs
+                - paragraph [ref=e183]: "0"
+                - paragraph [ref=e184]: Recorded run references tied to this model.
+              - generic [ref=e185]:
+                - paragraph [ref=e186]: Reports
+                - paragraph [ref=e187]: "0"
+                - paragraph [ref=e188]: Reports that reference this model.
+          - article [ref=e189]:
+            - generic [ref=e195]:
+              - paragraph [ref=e196]: Model summary
+              - heading "Draft model record" [level=2] [ref=e197]
+            - paragraph [ref=e198]: Capture config versioning, provenance, and traceability before moving the record forward.
+            - generic [ref=e199]:
+              - generic [ref=e200]: "No output chain yet: No run or report record is attached yet."
+              - generic [ref=e201]: Capture a versioned config identifier before calling a run review-ready.
+              - generic [ref=e202]: No linked datasets yet.
+        - generic [ref=e203]:
+          - article [ref=e204]:
+            - generic [ref=e206]:
+              - paragraph [ref=e207]: Controls
+              - heading "Model record workflow" [level=2] [ref=e208]
+              - paragraph [ref=e209]: Keep the config metadata, anchors, and traceability links current. This is readiness management, not run orchestration.
+            - generic [ref=e214]:
+              - generic [ref=e215]:
+                - generic [ref=e216]:
+                  - paragraph [ref=e217]: Anchors
+                  - paragraph [ref=e218]: 2/2
+                  - paragraph [ref=e219]: Primary project and scenario context.
+                - generic [ref=e220]:
+                  - paragraph [ref=e221]: Explicit links
+                  - paragraph [ref=e222]: "0"
+                  - paragraph [ref=e226]: Attached provenance, outputs, and related records.
+                - generic [ref=e227]:
+                  - paragraph [ref=e228]: Timestamps
+                  - paragraph [ref=e229]: 0/2
+                  - paragraph [ref=e233]: Validation and latest recorded execution evidence.
+              - generic [ref=e234]:
+                - tablist [ref=e235]:
+                  - tab "Core" [selected] [ref=e236]
+                  - tab "Provenance" [ref=e237]
+                  - tab "Links" [ref=e238]
+                  - tab "Timestamps" [ref=e239]
+                - tabpanel "Core" [ref=e240]:
+                  - generic [ref=e241]:
+                    - text: Title
+                    - textbox "Title" [ref=e242]: SR-49 corridor screening assignment
+                  - generic [ref=e243]:
+                    - generic [ref=e244]:
+                      - text: Primary project
+                      - combobox "Primary project" [ref=e245]:
+                        - option "No primary project"
+                        - option "NCTC 2045 RTP (proof-of-capability)" [selected]
+                    - generic [ref=e246]:
+                      - text: Primary scenario set
+                      - combobox "Primary scenario set" [ref=e247]:
+                        - option "No primary scenario set"
+                        - option "NCTC 2045 RTP scenario comparison" [selected]
+                  - generic [ref=e248]:
+                    - generic [ref=e249]:
+                      - text: Model family
+                      - combobox "Model family" [ref=e250]:
+                        - option "Travel Demand Model" [selected]
+                        - option "Activity-Based Model"
+                        - option "Scenario Model"
+                        - option "Accessibility / Sketch Model"
+                        - option "Other Model"
+                    - generic [ref=e251]:
+                      - text: Status
+                      - combobox "Status" [ref=e252]:
+                        - option "Draft" [selected]
+                        - option "Configuring"
+                        - option "Ready for Review"
+                        - option "Approved"
+                        - option "Archived"
+                  - generic [ref=e253]:
+                    - generic [ref=e254]:
+                      - text: Config version
+                      - textbox "Config version" [ref=e255]:
+                        - /placeholder: Versioned config or template label
+                    - generic [ref=e256]:
+                      - text: Operator
+                      - textbox "Operator" [ref=e257]:
+                        - /placeholder: Owner or operator
+                  - generic [ref=e258]:
+                    - text: Horizon / window
+                    - textbox "Horizon / window" [ref=e259]:
+                      - /placeholder: 2045 RTP / 2035 transit buildout
+                  - generic [ref=e260]:
+                    - text: Summary
+                    - textbox "Summary" [ref=e261]: Live AequilibraE screening assignment for the SR-49 corridor study area. Screening-grade demand model run to verify the worker pipeline end to end.
+              - button "Save model record" [ref=e262]
+          - generic [ref=e263]:
+            - article [ref=e264]:
+              - generic [ref=e266]:
+                - paragraph [ref=e267]: Execution
+                - heading "Managed scenario → run execution" [level=2] [ref=e268]
+                - paragraph [ref=e269]: Launch a managed run with immutable input snapshots, then promote or reassign the resulting analysis run into the right scenario entry.
+              - generic [ref=e273]:
+                - generic [ref=e274]:
+                  - paragraph [ref=e275]: Managed runs
+                  - paragraph [ref=e276]: "1"
+                  - paragraph [ref=e277]: Execution records tied to this model.
+                - generic [ref=e278]:
+                  - paragraph [ref=e279]: Latest status
+                  - paragraph [ref=e280]: succeeded
+                  - paragraph [ref=e281]: SR-49 corridor screening assignment managed run
+                - generic [ref=e282]:
+                  - paragraph [ref=e283]: Scenario attach
+                  - paragraph [ref=e284]: "2"
+                  - paragraph [ref=e285]: Scenario entries available for direct evidence promotion.
+                - generic [ref=e286]:
+                  - paragraph [ref=e287]: Run modes available
+                  - paragraph [ref=e288]: "3"
+                  - paragraph [ref=e289]: Deterministic Corridor · Fast Screening · Behavioral Demand
+              - generic [ref=e290]:
+                - generic [ref=e291]:
+                  - generic [ref=e292]:
+                    - paragraph [ref=e293]: Launch run
+                    - paragraph [ref=e294]: Use model defaults, then optionally bind the result back into a specific scenario entry.
+                  - generic [ref=e295]:
+                    - text: Run mode
+                    - combobox "Run mode" [ref=e296]:
+                      - option "Deterministic Corridor (Synchronous)" [selected]
+                      - option "Fast Screening (AequilibraE worker prototype)"
+                      - option "Behavioral Demand (ActivitySim prototype / preflight-backed)"
+                    - generic [ref=e297]:
+                      - generic [ref=e298]:
+                        - paragraph [ref=e299]: Deterministic Corridor
+                        - generic [ref=e300]: Launchable
+                      - paragraph [ref=e301]: Original synchronous corridor analysis path.
+                      - paragraph [ref=e302]: "Expected runtime: Usually returns in the current request cycle for corridor-scale queries."
+                      - paragraph [ref=e303]: "Caveat: Deterministic scorecard output, not a worker-backed network assignment or behavioral model."
+                  - generic [ref=e304]:
+                    - text: Run title
+                    - textbox "Run title" [ref=e305]: SR-49 corridor screening assignment managed run
+                  - generic [ref=e306]:
+                    - text: Scenario entry (optional)
+                    - combobox "Scenario entry (optional)" [ref=e307]:
+                      - option "No direct scenario attach" [selected]
+                      - option "Existing conditions baseline · baseline · 3 assumptions"
+                      - option "SR-49 safety package · alternative · 3 assumptions"
+                  - generic [ref=e308]:
+                    - checkbox "Attach completed run to selected scenario entry" [checked] [disabled] [ref=e309]
+                    - text: Attach completed run to selected scenario entry
+                  - generic [ref=e310]:
+                    - text: Query text
+                    - textbox "Query text" [ref=e311]:
+                      - /placeholder: Describe what this managed run is analyzing.
+                  - generic [ref=e312]:
+                    - text: Corridor GeoJSON
+                    - textbox "Corridor GeoJSON" [ref=e313]:
+                      - /placeholder: "{\"type\":\"Polygon\",\"coordinates\":[...]}"
+                  - button "Launch managed run" [ref=e314]
+                - generic [ref=e315]:
+                  - generic [ref=e316]:
+                    - generic [ref=e317]:
+                      - paragraph [ref=e318]: Run history
+                      - paragraph [ref=e319]: Latest orchestrated executions tied to this model.
+                    - generic [ref=e320]: 1 stored
+                  - generic [ref=e583]:
+                    - generic [ref=e584]:
+                      - paragraph [ref=e585]: Traffic Assignment Results
+                      - paragraph [ref=e586]: 1,956 links · Peak 4,177 PCE/day
+                    - generic [ref=e587]:
+                      - paragraph [ref=e588]: Daily Volume (PCE)
+                      - generic [ref=e596]:
+                        - generic [ref=e597]: Low
+                        - generic [ref=e598]: High
+                    - generic [ref=e599]:
+                      - region "Map" [ref=e600]
+                      - generic:
+                        - generic [ref=e601]:
+                          - button "Zoom in" [ref=e602] [cursor=pointer]
+                          - button "Zoom out" [ref=e604] [cursor=pointer]
+                          - button "Reset bearing to north" [ref=e606]
+                        - button "Toggle attribution" [ref=e609] [cursor=pointer]
+                        - link "Mapbox homepage" [ref=e612] [cursor=pointer]:
+                          - /url: https://www.mapbox.com/
+                  - generic [ref=e325]:
+                    - generic [ref=e326]:
+                      - generic [ref=e327]: succeeded
+                      - generic [ref=e328]: AequilibraE
+                      - generic [ref=e329]: Existing conditions baseline
+                    - generic [ref=e330]:
+                      - generic [ref=e331]:
+                        - heading "SR-49 corridor screening assignment managed run" [level=3] [ref=e332]
+                        - paragraph [ref=e333]: 7/17/2026, 10:00:22 PM
+                      - paragraph [ref=e334]: Managed execution record created without a linked analysis run yet.
+                      - paragraph [ref=e335]: Expected runtime is on the order of minutes and completes asynchronously through the worker queue.
+                      - paragraph [ref=e336]: Screening-grade prototype output. Do not treat it as behavioral demand or forecast-ready calibration.
+                    - generic [ref=e337]:
+                      - generic [ref=e338]:
+                        - generic [ref=e339]:
+                          - heading "Execution stages" [level=4] [ref=e340]
+                          - list [ref=e341]:
+                            - listitem [ref=e342]:
+                              - generic [ref=e343]:
+                                - generic [ref=e344]:
+                                  - paragraph [ref=e345]: AequilibraE Setup
+                                  - paragraph [ref=e346]: 1m 52s
+                                - generic [ref=e347]: succeeded
+                              - generic [ref=e348]: "Creating AequilibraE project from OSM... OSM download complete. Network: 21792 nodes, 24967 links, 318 components Largest component: 20769 nodes (95.3%) Added 26 centroids with connectors. Renumbered to contiguous IDs (max=21818) Populated speed/capacity for 25045 links. Setup complete."
+                            - listitem [ref=e349]:
+                              - generic [ref=e350]:
+                                - generic [ref=e351]:
+                                  - paragraph [ref=e352]: Network Assignment
+                                  - paragraph [ref=e353]: 2s
+                                - generic [ref=e354]: succeeded
+                              - generic [ref=e355]: "Building graph... Graph: 48409 links, 19206 nodes Running skims... Reachable OD pairs: 342/650 Loading demand... Demand: 66,572 total, 31,516 routable Running BFW assignment... Converged: gap=0.009970, iterations=50 Links with volume: 1956/25045"
+                            - listitem [ref=e356]:
+                              - generic [ref=e357]:
+                                - generic [ref=e358]:
+                                  - paragraph [ref=e359]: Artifact Extraction
+                                  - paragraph [ref=e360]: 0s
+                                - generic [ref=e361]: succeeded
+                              - generic [ref=e362]: "Extracting artifacts... Daily VMT: 33,402 vehicle-miles · 0.3275 VMT/capita (pop 101,987) Wrote evidence packet to /tmp/claude-1000/-home-nathaniel-code-openplan/83bdae97-c6e6-4c12-ba55-a78c5b1514df/scratchpad/aeq-work/runs/b3dd080b-eeb/run_output/evidence_packet.json. Uploaded evidence packet to private Storage as storage://run-artifacts/model-runs/b3dd080b-eebb-492d-ba4b-411fdd26c0a4/evidence_packet.json. Uploaded volumes GeoJSON (1956 features) to private Storage as storage://run-artifacts/model-runs/b3dd080b-eebb-492d-ba4b-411fdd26c0a4/volumes.geojson. Artifact extraction complete."
+                        - generic [ref=e363]:
+                          - heading "Run artifacts" [level=4] [ref=e364]
+                          - list [ref=e365]:
+                            - listitem [ref=e366]:
+                              - generic [ref=e367]:
+                                - paragraph [ref=e368]: Link Volumes
+                                - paragraph [ref=e369]: 3.2 MB
+                              - link "View / Download" [ref=e370] [cursor=pointer]:
+                                - /url: /api/models/91adc700-92a4-4e17-8c48-4c2b8a2e4fdf/runs/b3dd080b-eebb-492d-ba4b-411fdd26c0a4/artifacts/bb46f2aa-2fb9-4562-965e-77222d179c05/download
+                            - listitem [ref=e371]:
+                              - generic [ref=e372]:
+                                - paragraph [ref=e373]: Demand Matrix
+                                - paragraph [ref=e374]: 5.7 KB
+                              - link "View / Download" [ref=e375] [cursor=pointer]:
+                                - /url: /api/models/91adc700-92a4-4e17-8c48-4c2b8a2e4fdf/runs/b3dd080b-eebb-492d-ba4b-411fdd26c0a4/artifacts/b76b80cb-02f4-4c10-b93c-a14d97f95a05/download
+                            - listitem [ref=e376]:
+                              - generic [ref=e377]:
+                                - paragraph [ref=e378]: Skim Matrix
+                                - paragraph [ref=e379]: 11.1 KB
+                              - link "View / Download" [ref=e380] [cursor=pointer]:
+                                - /url: /api/models/91adc700-92a4-4e17-8c48-4c2b8a2e4fdf/runs/b3dd080b-eebb-492d-ba4b-411fdd26c0a4/artifacts/3529f044-d1b3-41ec-93c6-100da31b2539/download
+                            - listitem [ref=e381]:
+                              - generic [ref=e382]:
+                                - paragraph [ref=e383]: Evidence Packet
+                                - paragraph [ref=e384]: 1.3 KB
+                              - link "View / Download" [ref=e385] [cursor=pointer]:
+                                - /url: /api/models/91adc700-92a4-4e17-8c48-4c2b8a2e4fdf/runs/b3dd080b-eebb-492d-ba4b-411fdd26c0a4/artifacts/83d78a24-e82b-45e7-a574-a0b83707ee73/download
+                            - listitem [ref=e386]:
+                              - generic [ref=e387]:
+                                - paragraph [ref=e388]: Volumes Geojson
+                                - paragraph [ref=e389]: 752.1 KB
+                              - link "View / Download" [ref=e390] [cursor=pointer]:
+                                - /url: /api/models/91adc700-92a4-4e17-8c48-4c2b8a2e4fdf/runs/b3dd080b-eebb-492d-ba4b-411fdd26c0a4/artifacts/3da20982-3e7d-435c-8275-64eb4fbff815/download
+                      - generic [ref=e392]:
+                        - generic [ref=e393]:
+                          - paragraph [ref=e394]: Evidence packet
+                          - paragraph [ref=e395]: Inspect the normalized planner-safe packet and refresh it after worker reruns.
+                          - paragraph [ref=e396]: Expected runtime is on the order of minutes and completes asynchronously through the worker queue.
+                        - button "Inspect evidence" [ref=e398]
+                      - article [ref=e399]:
+                        - generic [ref=e400]:
+                          - generic [ref=e407]:
+                            - paragraph [ref=e408]: CEQA VMT screen
+                            - heading "§15064.3 transportation-impact screening" [level=2] [ref=e409]
+                            - paragraph [ref=e410]: Screens this run's stored VMT KPIs — derived from assignment link volumes (Σ volume × length), screening-grade, not measured — against an operator-supplied reference baseline using the OPR percent-below threshold. Arithmetic only; nothing is estimated when the KPI set lacks VMT.
+                          - generic [ref=e411]: Screening-level — not a determination of record
+                        - button "Hide CEQA screen" [active] [ref=e613]
+                        - generic [ref=e614]:
+                          - generic [ref=e615]:
+                            - paragraph [ref=e616]: KPI inputs (stored)
+                            - paragraph [ref=e617]:
+                              - text: Per-capita daily VMT from
+                              - code [ref=e618]: vmt_per_capita
+                              - text: ": 0.328 VMT/capita."
+                          - generic [ref=e619]:
+                            - generic [ref=e620]:
+                              - text: Reference VMT/capita (regional)
+                              - textbox "Reference VMT per capita" [ref=e621]: "22"
+                            - generic [ref=e622]:
+                              - text: Threshold (% below reference)
+                              - textbox "Screening threshold percent below reference" [ref=e623]: "15"
+                            - generic [ref=e624]:
+                              - text: Project type
+                              - combobox "CEQA project type" [ref=e625]:
+                                - option "residential" [selected]
+                                - option "employment"
+                                - option "retail"
+                            - generic [ref=e626]:
+                              - text: Reference baseline
+                              - combobox "CEQA reference baseline label" [ref=e627]:
+                                - option "regional" [selected]
+                                - option "citywide"
+                                - option "custom"
+                          - paragraph [ref=e628]: The reference baseline and threshold are operator-supplied — the stored KPI set cannot provide them. The OPR Technical Advisory (December 2018) default is 15% below the regional or citywide VMT-per-capita baseline.
+                          - generic [ref=e629]:
+                            - generic [ref=e630]:
+                              - paragraph [ref=e631]: "Screening determination: less than significant"
+                              - generic [ref=e632]: Less than significant
+                            - paragraph [ref=e633]:
+                              - text: Scenario
+                              - code [ref=e634]: SR-49 corridor screening assignment managed run
+                              - text: ": 0.328 VMT per capita versus a cut line of 18.7 VMT per capita (15% below the regional reference of 22) —"
+                              - generic [ref=e635]: 98.3%
+                              - text: below the threshold.
+                            - paragraph [ref=e636]: California Public Resources Code §21099; CEQA Guidelines §15064.3 (14 CCR §15064.3); Governor's Office of Planning and Research, Technical Advisory on Evaluating Transportation Impacts in CEQA (December 2018).
+                            - paragraph [ref=e637]: Determinations in this memo are screening-level. A lead agency may adopt a different threshold or a custom methodology with substantial evidence. This screening-grade output is not a CEQA determination of record.
+                            - button "Download memo (markdown)" [ref=e639]
+            - article [ref=e414]:
+              - generic [ref=e416]:
+                - paragraph [ref=e417]: Anchors
+                - heading "Primary planning context" [level=2] [ref=e418]
+                - paragraph [ref=e419]: These anchors define what decision frame the model record belongs to before any explicit cross-links are added.
+              - generic [ref=e420]:
+                - generic [ref=e421]:
+                  - generic [ref=e423]:
+                    - paragraph [ref=e424]: Primary project
+                    - link "NCTC 2045 RTP (proof-of-capability)" [ref=e425] [cursor=pointer]:
+                      - /url: /projects/d0000001-0000-4000-8000-000000000003
+                    - paragraph [ref=e426]: "Proof-of-capability demo: what OpenPlan produces when a rural RTPA like Nevada County runs an RTP cycle through it, grounded in real NCTC geography and a real screening-grade AequilibraE assignment. Internal prototype only — not a calibrated planning-grade model."
+                  - generic [ref=e427]:
+                    - generic [ref=e428]: active
+                    - generic [ref=e429]: analysis
+                    - generic [ref=e430]: Updated 7/17/2026, 8:24:31 PM
+                - generic [ref=e431]:
+                  - generic [ref=e433]:
+                    - paragraph [ref=e434]: Primary scenario set
+                    - link "NCTC 2045 RTP scenario comparison" [ref=e435] [cursor=pointer]:
+                      - /url: /scenarios/d0000001-0000-4000-8000-000000000030
+                    - paragraph [ref=e436]: Does the SR-49 safety package improve access and safety enough to advance into the NCTC 2045 RTP programming pipeline?
+                  - generic [ref=e437]:
+                    - generic [ref=e438]: active
+                    - generic [ref=e439]: Updated 7/17/2026, 8:24:31 PM
+                    - generic [ref=e440]: 0 assumption sets
+                    - generic [ref=e441]: 0 data packages
+                    - generic [ref=e442]: 0 indicator snapshots
+            - article [ref=e443]:
+              - generic [ref=e444]:
+                - generic [ref=e445]:
+                  - paragraph [ref=e446]: Readiness
+                  - heading "Configuration and traceability checks" [level=2] [ref=e447]
+                - generic [ref=e448]: 6 gaps
+              - generic [ref=e453]:
+                - generic [ref=e454]:
+                  - generic [ref=e455]:
+                    - paragraph [ref=e456]: Project basis
+                    - generic [ref=e457]: Ready
+                  - paragraph [ref=e458]: A primary project anchor is on record.
+                - generic [ref=e459]:
+                  - generic [ref=e460]:
+                    - paragraph [ref=e461]: Scenario basis
+                    - generic [ref=e462]: Ready
+                  - paragraph [ref=e463]: At least one scenario basis is linked.
+                - generic [ref=e464]:
+                  - generic [ref=e465]:
+                    - paragraph [ref=e466]: Config version
+                    - generic [ref=e467]: Missing
+                  - paragraph [ref=e468]: Capture a versioned config identifier before calling a run review-ready.
+                - generic [ref=e469]:
+                  - generic [ref=e470]:
+                    - paragraph [ref=e471]: Operator
+                    - generic [ref=e472]: Missing
+                  - paragraph [ref=e473]: Record the operator or team responsible for maintaining this model setup.
+                - generic [ref=e474]:
+                  - generic [ref=e475]:
+                    - paragraph [ref=e476]: Assumptions
+                    - generic [ref=e477]: Missing
+                  - paragraph [ref=e478]: Summarize the principal assumptions, policy knobs, or calibration basis.
+                - generic [ref=e479]:
+                  - generic [ref=e480]:
+                    - paragraph [ref=e481]: Input provenance
+                    - generic [ref=e482]: Missing
+                  - paragraph [ref=e483]: Link Data Hub datasets or describe the input snapshot posture.
+                - generic [ref=e484]:
+                  - generic [ref=e485]:
+                    - paragraph [ref=e486]: Output traceability
+                    - generic [ref=e487]: Missing
+                  - paragraph [ref=e488]: Link a run, report, or explicit output note so downstream review can be traced.
+                - generic [ref=e489]:
+                  - generic [ref=e490]:
+                    - paragraph [ref=e491]: Validation checkpoint
+                    - generic [ref=e492]: Missing
+                  - paragraph [ref=e493]: Record when this model config was last checked or reviewed.
+            - article [ref=e494]:
+              - generic [ref=e495]:
+                - generic [ref=e496]:
+                  - paragraph [ref=e497]: Linked records
+                  - heading "Explicit provenance and outputs" [level=2] [ref=e498]
+                  - paragraph [ref=e499]: Review the linked evidence chain without wading through repetitive empty-state blocks.
+                - generic [ref=e500]: 0 explicit links
+              - status [ref=e504]:
+                - generic [ref=e510]:
+                  - paragraph [ref=e511]: No explicit links yet
+                  - paragraph [ref=e512]: Use the Links tab in the control panel to attach supporting scenarios, plans, datasets, reports, recorded runs, or related projects.
+    - complementary "Map layers" [ref=e513]:
+      - generic [ref=e514]: Layers
+      - list [ref=e515]:
+        - listitem [ref=e516]:
+          - generic [ref=e517] [cursor=pointer]:
+            - checkbox "Projects 1" [checked] [ref=e640]
+            - generic [ref=e519]: Projects
+            - generic [ref=e641]: "1"
+        - listitem [ref=e520]:
+          - generic [ref=e521] [cursor=pointer]:
+            - checkbox "RTP cycles 1" [checked] [ref=e642]
+            - generic [ref=e523]: RTP cycles
+            - generic [ref=e643]: "1"
+        - listitem [ref=e524]:
+          - generic [ref=e525] [cursor=pointer]:
+            - checkbox "Study corridors 2" [checked] [ref=e644]
+            - generic [ref=e527]: Study corridors
+            - generic [ref=e645]: "2"
+        - listitem [ref=e528]:
+          - generic [ref=e529] [cursor=pointer]:
+            - checkbox "Engagement pins 7" [checked] [ref=e646]
+            - generic [ref=e531]: Engagement pins
+            - generic [ref=e647]: "7"
+        - listitem [ref=e532]:
+          - generic [ref=e533] [cursor=pointer]:
+            - checkbox "Aerial missions 3" [checked] [ref=e648]
+            - generic [ref=e535]: Aerial missions
+            - generic [ref=e649]: "3"
+        - listitem [ref=e536]:
+          - generic [ref=e537] [cursor=pointer]:
+            - checkbox "Equity priority 4" [ref=e650]
+            - generic [ref=e539]: Equity priority
+            - generic [ref=e651]: "4"
+      - generic [ref=e540]:
+        - text: "Basemap:"
+        - strong [ref=e541]: Mapbox dark
+    - complementary "Map legend" [ref=e542]:
+      - button "Legend" [expanded] [ref=e543] [cursor=pointer]:
+        - generic [ref=e545]: ▾
+      - list [ref=e546]:
+        - listitem [ref=e547]:
+          - generic [ref=e549]: Projects
+        - listitem [ref=e550]:
+          - generic [ref=e552]: Community input
+        - listitem [ref=e553]:
+          - generic [ref=e555]: Aerial AOIs
+        - listitem [ref=e556]:
+          - generic [ref=e557]: Corridors by LOS
+          - generic [ref=e563]:
+            - generic [ref=e564]: A/B
+            - generic [ref=e565]: C/D
+            - generic [ref=e566]: E
+            - generic [ref=e567]: F
+        - listitem [ref=e568]:
+          - generic [ref=e570]: RTP cycles
+    - region
+    - group "Zoom" [ref=e571]:
+      - button "Zoom in" [ref=e572] [cursor=pointer]: ＋
+      - button "Zoom out" [ref=e573] [cursor=pointer]: −
+    - button "Planner Agent" [ref=e574]
+    - generic "Account" [ref=e576]:
+      - generic [ref=e577]:
+        - generic [ref=e578]: nctc-demo@openplan-demo.natford.example
+        - generic [ref=e579]: owner
+      - button "Sign out" [ref=e581] [cursor=pointer]
+  - alert [ref=e582]

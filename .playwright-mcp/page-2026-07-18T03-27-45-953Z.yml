@@ -1,0 +1,591 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e55] [cursor=pointer]
+  - alert [ref=e49]
+  - generic [ref=e59]:
+    - generic [ref=e61]:
+      - region [ref=e62]
+      - link [ref=e64] [cursor=pointer]:
+        - /url: https://www.mapbox.com/
+    - complementary "Primary navigation" [ref=e65]:
+      - generic [ref=e66]:
+        - link "OpenPlan home" [ref=e67] [cursor=pointer]:
+          - /url: /dashboard
+          - text: ◎
+        - navigation [ref=e69]:
+          - generic [ref=e70]:
+            - paragraph [ref=e71]: Operate
+            - link "Overview" [ref=e72] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Command Center" [ref=e78] [cursor=pointer]:
+              - /url: /command-center
+            - link "Projects" [ref=e86] [cursor=pointer]:
+              - /url: /projects
+            - link "RTP Cycles" [ref=e89] [cursor=pointer]:
+              - /url: /rtp
+            - link "Plans" [ref=e94] [cursor=pointer]:
+              - /url: /plans
+            - link "Programs" [ref=e97] [cursor=pointer]:
+              - /url: /programs
+            - link "Grants" [ref=e101] [cursor=pointer]:
+              - /url: /grants
+            - link "Reports" [ref=e104] [cursor=pointer]:
+              - /url: /reports
+          - generic [ref=e108]:
+            - paragraph [ref=e110]: Analyze
+            - link "Engagement" [ref=e111] [cursor=pointer]:
+              - /url: /engagement
+            - link "Analysis Studio" [ref=e116] [cursor=pointer]:
+              - /url: /explore
+            - link "Scenarios" [ref=e119] [cursor=pointer]:
+              - /url: /scenarios
+            - link "Models" [ref=e123] [cursor=pointer]:
+              - /url: /models
+            - link "County Validation" [ref=e130] [cursor=pointer]:
+              - /url: /county-runs
+            - link "Data Hub" [ref=e133] [cursor=pointer]:
+              - /url: /data-hub
+            - link "Aerial Ops" [ref=e138] [cursor=pointer]:
+              - /url: /aerial
+          - generic [ref=e141]:
+            - paragraph [ref=e143]: Govern
+            - link "Billing" [ref=e144] [cursor=pointer]:
+              - /url: /billing
+        - generic [ref=e149]:
+          - button "Switch to light mode" [ref=e150]
+          - generic: Theme
+    - banner [ref=e157]:
+      - generic [ref=e160]:
+        - generic [ref=e161]: Nevada County Transportation Commission (demo)
+        - generic [ref=e162]: pilot · Jul 17, 8:24 PM
+      - generic [ref=e163]:
+        - searchbox "Search OpenPlan" [ref=e167]
+        - generic [ref=e168]: ⌘K
+      - button "Notifications" [ref=e169] [cursor=pointer]
+      - button "New run" [ref=e173] [cursor=pointer]
+    - generic [ref=e175]:
+      - generic [ref=e176]:
+        - paragraph [ref=e177]: Overview
+        - list [ref=e178]:
+          - listitem [ref=e179]:
+            - link "Workspace Dashboard Current" [ref=e180] [cursor=pointer]:
+              - /url: /dashboard
+              - generic [ref=e181]: Workspace Dashboard
+              - text: Current
+          - listitem [ref=e183]:
+            - link "Command Center" [ref=e184] [cursor=pointer]:
+              - /url: /command-center
+          - listitem [ref=e187]:
+            - link "Projects" [ref=e188] [cursor=pointer]:
+              - /url: /projects
+          - listitem [ref=e191]:
+            - link "Reports" [ref=e192] [cursor=pointer]:
+              - /url: /reports
+      - generic [ref=e196]:
+        - generic [ref=e197]:
+          - article [ref=e198]:
+            - generic [ref=e199]: Workspace dashboard
+            - generic [ref=e200]:
+              - generic [ref=e201]:
+                - generic [ref=e202]:
+                  - generic [ref=e203]: Role
+                  - strong [ref=e204]: owner
+                - generic [ref=e205]:
+                  - generic [ref=e206]: Plan
+                  - strong [ref=e207]: pilot
+              - heading "Nevada County Transportation Commission (demo)" [level=1] [ref=e208]
+              - paragraph [ref=e209]: Use this overview to see current work, recent activity, and the next planning tasks that need attention.
+            - generic [ref=e210]:
+              - generic [ref=e211]:
+                - paragraph [ref=e212]: Total runs
+                - paragraph [ref=e213]: "2"
+                - paragraph [ref=e214]: 2 completed runs in this workspace
+              - generic [ref=e215]:
+                - paragraph [ref=e216]: Run completion rate
+                - paragraph [ref=e217]: 100%
+                - paragraph [ref=e218]: 2/2 runs completed
+              - generic [ref=e219]:
+                - paragraph [ref=e220]: Report generation rate
+                - paragraph [ref=e221]: 0%
+                - paragraph [ref=e222]: 0/2 runs exported
+              - generic [ref=e223]:
+                - paragraph [ref=e224]: Time to first result
+                - paragraph [ref=e225]: Not available
+                - paragraph [ref=e226]: First run at 4/30/2026, 5:10:00 AM
+          - article [ref=e227]:
+            - generic [ref=e233]:
+              - paragraph [ref=e234]: Overview
+              - heading "Start here, then move into the work" [level=2] [ref=e235]
+            - paragraph [ref=e236]: Start with a quick scan of your workspace, then open the project, analysis, or report that needs work.
+            - generic [ref=e237]:
+              - generic [ref=e238]: Review active projects, recent updates, and items that need follow-up.
+              - generic [ref=e239]: "Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Across 1 opportunity-linked project: 0 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review."
+              - generic [ref=e240]: Open Projects to manage a planning effort, or Analysis Studio to work on a corridor study.
+              - generic [ref=e241]: "Time to first result: Not available."
+        - article [ref=e242]:
+          - generic [ref=e243]:
+            - generic [ref=e244]:
+              - paragraph [ref=e245]: Workflow spine
+              - heading "Move one planning story from context to packet" [level=2] [ref=e246]
+              - paragraph [ref=e247]: The shortest complete path through OpenPlan — from context to a board-ready packet.
+            - generic [ref=e248]: End-to-end path
+          - generic [ref=e249]:
+            - link "1 Next handoff Project or county context Open projects Anchor the planning story in a project, county run, or program before evidence starts moving." [ref=e250] [cursor=pointer]:
+              - /url: /projects
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - generic [ref=e254]: "1"
+                  - generic [ref=e257]: Next handoff
+                - generic [ref=e258]:
+                  - generic [ref=e259]:
+                    - heading "Project or county context" [level=3] [ref=e260]
+                    - generic [ref=e261]: Open projects
+                  - paragraph [ref=e264]: Anchor the planning story in a project, county run, or program before evidence starts moving.
+            - link "2 Next handoff Analysis evidence Open analysis Run or review corridor evidence with source transparency, geometry, and comparison context intact." [ref=e265] [cursor=pointer]:
+              - /url: /explore
+              - generic [ref=e267]:
+                - generic [ref=e268]:
+                  - generic [ref=e269]: "2"
+                  - generic [ref=e272]: Next handoff
+                - generic [ref=e273]:
+                  - generic [ref=e274]:
+                    - heading "Analysis evidence" [level=3] [ref=e275]
+                    - generic [ref=e276]: Open analysis
+                  - paragraph [ref=e279]: Run or review corridor evidence with source transparency, geometry, and comparison context intact.
+            - link "3 Next handoff Engagement signal Open engagement Review campaign input and handoff-ready public comments before packet assembly." [ref=e280] [cursor=pointer]:
+              - /url: /engagement
+              - generic [ref=e282]:
+                - generic [ref=e283]:
+                  - generic [ref=e284]: "3"
+                  - generic [ref=e288]: Next handoff
+                - generic [ref=e289]:
+                  - generic [ref=e290]:
+                    - heading "Engagement signal" [level=3] [ref=e291]
+                    - generic [ref=e292]: Open engagement
+                  - paragraph [ref=e295]: Review campaign input and handoff-ready public comments before packet assembly.
+            - link "4 Next handoff Packet assembly Open reports Generate or refresh the report packet so provenance and readiness signals are current." [ref=e296] [cursor=pointer]:
+              - /url: /reports
+              - generic [ref=e298]:
+                - generic [ref=e299]:
+                  - generic [ref=e300]: "4"
+                  - generic [ref=e304]: Next handoff
+                - generic [ref=e305]:
+                  - generic [ref=e306]:
+                    - heading "Packet assembly" [level=3] [ref=e307]
+                    - generic [ref=e308]: Open reports
+                  - paragraph [ref=e311]: Generate or refresh the report packet so provenance and readiness signals are current.
+            - link "5 Next handoff Readiness proof Open readiness Check smoke evidence and operational warnings before using the packet externally." [ref=e312] [cursor=pointer]:
+              - /url: /admin/pilot-readiness
+              - generic [ref=e314]:
+                - generic [ref=e315]:
+                  - generic [ref=e316]: "5"
+                  - generic [ref=e320]: Next handoff
+                - generic [ref=e321]:
+                  - generic [ref=e322]:
+                    - heading "Readiness proof" [level=3] [ref=e323]
+                    - generic [ref=e324]: Open readiness
+                  - paragraph [ref=e327]: Check smoke evidence and operational warnings before using the packet externally.
+        - generic [ref=e328]:
+          - article [ref=e329]:
+            - generic [ref=e331]:
+              - paragraph [ref=e332]: Quick actions
+              - heading "Move into the work" [level=2] [ref=e333]
+            - generic [ref=e334]:
+              - link [ref=e335] [cursor=pointer]:
+                - /url: /explore
+                - generic [ref=e344]:
+                  - paragraph [ref=e345]: Open Analysis Studio
+                  - paragraph [ref=e346]: Run corridor analysis with map context, metrics, and report-ready outputs intact.
+              - link [ref=e349] [cursor=pointer]:
+                - /url: /projects
+                - generic [ref=e353]:
+                  - paragraph [ref=e354]: Open Projects Module
+                  - paragraph [ref=e355]: Move into the project control rooms for deliverables, risks, decisions, issues, and meetings.
+              - link [ref=e358] [cursor=pointer]:
+                - /url: /grants?focusInvoiceId=d0000001-0000-4000-8000-000000000043#grants-reimbursement-triage
+                - generic [ref=e362]:
+                  - paragraph [ref=e363]: Open Grants Surface
+                  - paragraph [ref=e364]: "Jump straight into the current lead grants action: advance reimbursement invoicing."
+              - link [ref=e367] [cursor=pointer]:
+                - /url: /reports
+                - generic [ref=e372]:
+                  - paragraph [ref=e373]: Open Reports Surface
+                  - paragraph [ref=e374]: Review where evidence packs, board-ready exports, and grant artifacts will converge.
+          - article [ref=e377]:
+            - generic [ref=e378]:
+              - generic [ref=e379]:
+                - paragraph [ref=e380]: Operations command board
+                - heading "What the workspace should do next" [level=2] [ref=e381]
+                - paragraph [ref=e382]: 1 report packet needs regeneration because the underlying record changed after generation. Start with NCTC 2045 RTP settle board packet.
+              - generic [ref=e383]: Attention
+            - generic [ref=e384]:
+              - generic [ref=e385]:
+                - paragraph [ref=e386]: Packet work
+                - paragraph [ref=e387]: "1"
+                - paragraph [ref=e388]: 1 refresh recommended, 0 without packets, 0 ready for release review.
+              - generic [ref=e389]:
+                - paragraph [ref=e390]: Report governance attention
+                - paragraph [ref=e391]: "1"
+                - paragraph [ref=e392]: "Counts only packets needing action: 1 regenerate, 0 generate, 0 funding follow-through, 0 release-review loop open."
+                - link "Open governance lead action" [ref=e393] [cursor=pointer]:
+                  - /url: /reports/d0000001-0000-4000-8000-000000000019#drift-since-generation
+              - generic [ref=e394]:
+                - paragraph [ref=e395]: Plan setup
+                - paragraph [ref=e396]: "1"
+                - paragraph [ref=e397]: 1 total plans, 1 active projects in scope.
+              - generic [ref=e398]:
+                - paragraph [ref=e399]: Funding pressure
+                - paragraph [ref=e400]: "1"
+                - paragraph [ref=e401]: 0 closing within 14 days, 1 project funding gaps.
+              - generic [ref=e402]:
+                - paragraph [ref=e403]: Reimbursement follow-through
+                - paragraph [ref=e404]: "1"
+                - paragraph [ref=e405]: 0 need first reimbursement packets, 1 already in the invoice follow-through lane.
+              - generic [ref=e406]:
+                - paragraph [ref=e407]: Aerial evidence
+                - paragraph [ref=e408]: "3"
+                - paragraph [ref=e409]: 1 active, 2 evidence packages ready. Partial field verification evidence is available.
+            - generic [ref=e410]:
+              - generic [ref=e411]:
+                - generic [ref=e412]:
+                  - paragraph [ref=e413]: Primary next action
+                  - heading "Refresh report packets" [level=3] [ref=e414]
+                  - paragraph [ref=e415]: 1 report packet needs regeneration because the underlying record changed after generation. Start with NCTC 2045 RTP settle board packet.
+                - generic [ref=e416]: Next
+              - generic [ref=e417]:
+                - generic [ref=e418]: "Refresh: 1"
+                - generic [ref=e419]: "Reports: 1"
+              - link "Open primary action" [ref=e420] [cursor=pointer]:
+                - /url: /reports/d0000001-0000-4000-8000-000000000019#drift-since-generation
+            - generic [ref=e421]:
+              - generic [ref=e422]:
+                - paragraph [ref=e423]: Workflow next-action groups
+                - paragraph [ref=e424]: Review, check, inspect, or regenerate work by lane before treating the Command Center queue as clear.
+              - generic [ref=e425]:
+                - generic [ref=e426]:
+                  - generic [ref=e427]:
+                    - generic [ref=e428]:
+                      - generic [ref=e429]: RTP
+                      - generic [ref=e430]: Next
+                    - paragraph [ref=e431]: Packet freshness, cycle setup, and release-review posture.
+                    - paragraph [ref=e432]: 5 queued actions · 2 shown · 1 regenerate · 0 generate · 0 review
+                    - generic [ref=e433]:
+                      - paragraph [ref=e434]: "Readiness: Refresh before release"
+                      - paragraph [ref=e435]: 1 packet has stale source context and should be regenerated before release review or board sharing.
+                      - paragraph [ref=e436]: "Refresh: 1 · Current: 0"
+                  - generic [ref=e437]:
+                    - 'link "Refresh report packets queued 1 report packet needs regeneration because the underlying record changed after generation. Start with NCTC 2045 RTP settle board packet. Refresh: 1 · Reports: 1" [ref=e438] [cursor=pointer]':
+                      - /url: /reports/d0000001-0000-4000-8000-000000000019#drift-since-generation
+                      - generic [ref=e439]:
+                        - paragraph [ref=e440]: Refresh report packets
+                        - generic [ref=e441]: queued
+                      - paragraph [ref=e442]: 1 report packet needs regeneration because the underlying record changed after generation. Start with NCTC 2045 RTP settle board packet.
+                      - paragraph [ref=e443]: "Refresh: 1 · Reports: 1"
+                    - 'link "Advance reimbursement invoicing queued 1 project funding stack has reimbursement work underway and still needs follow-through. Reopen NCTC 2045 RTP (proof-of-capability) first and move $686,250 through billing triage. Reimbursement active: 1 · Follow-through: $686,250" [ref=e444] [cursor=pointer]':
+                      - /url: /grants?focusInvoiceId=d0000001-0000-4000-8000-000000000043#grants-reimbursement-triage
+                      - generic [ref=e445]:
+                        - paragraph [ref=e446]: Advance reimbursement invoicing
+                        - generic [ref=e447]: queued
+                      - paragraph [ref=e448]: 1 project funding stack has reimbursement work underway and still needs follow-through. Reopen NCTC 2045 RTP (proof-of-capability) first and move $686,250 through billing triage.
+                      - paragraph [ref=e449]: "Reimbursement active: 1 · Follow-through: $686,250"
+                - generic [ref=e450]:
+                  - generic [ref=e451]:
+                    - generic [ref=e452]:
+                      - generic [ref=e453]: Grants
+                      - generic [ref=e454]: Next
+                    - paragraph [ref=e455]: Funding windows, award records, reimbursement, and gap follow-through.
+                    - paragraph [ref=e456]: 2 queued actions · 1 open opportunity · 2 queued checks
+                    - generic [ref=e457]:
+                      - paragraph [ref=e458]: "Readiness: Funding gap visible"
+                      - paragraph [ref=e459]: 1 open opportunity remain visible; 0 projects need pursue decisions, 1 project show funding gaps, and 0 opportunity-linked projects need modeling refresh before strong readiness language.
+                      - paragraph [ref=e460]: "Open: 1 · Decisions: 0 · Stale modeling: 0"
+                  - generic [ref=e461]:
+                    - 'link "Advance reimbursement invoicing queued 1 project funding stack has reimbursement work underway and still needs follow-through. Reopen NCTC 2045 RTP (proof-of-capability) first and move $686,250 through billing triage. Reimbursement active: 1 · Follow-through: $686,250" [ref=e462] [cursor=pointer]':
+                      - /url: /grants?focusInvoiceId=d0000001-0000-4000-8000-000000000043#grants-reimbursement-triage
+                      - generic [ref=e463]:
+                        - paragraph [ref=e464]: Advance reimbursement invoicing
+                        - generic [ref=e465]: queued
+                      - paragraph [ref=e466]: 1 project funding stack has reimbursement work underway and still needs follow-through. Reopen NCTC 2045 RTP (proof-of-capability) first and move $686,250 through billing triage.
+                      - paragraph [ref=e467]: "Reimbursement active: 1 · Follow-through: $686,250"
+                    - 'link "Close project funding gaps queued 1 project funding stack still shows an uncovered gap after current pursued dollars. NCTC 2045 RTP (proof-of-capability) still carries $250,000 uncovered. Gap projects: 1 · Largest gap: $250,000" [ref=e468] [cursor=pointer]':
+                      - /url: /grants?focusProjectId=d0000001-0000-4000-8000-000000000003#grants-gap-resolution-lane
+                      - generic [ref=e469]:
+                        - paragraph [ref=e470]: Close project funding gaps
+                        - generic [ref=e471]: queued
+                      - paragraph [ref=e472]: 1 project funding stack still shows an uncovered gap after current pursued dollars. NCTC 2045 RTP (proof-of-capability) still carries $250,000 uncovered.
+                      - paragraph [ref=e473]: "Gap projects: 1 · Largest gap: $250,000"
+                - generic [ref=e474]:
+                  - generic [ref=e475]:
+                    - generic [ref=e476]:
+                      - generic [ref=e477]: Engagement
+                      - generic [ref=e478]: Check
+                    - paragraph [ref=e479]: Comment moderation, categorization, duplicate review, and report handoff.
+                    - paragraph [ref=e480]: standing check · handoff check
+                    - generic [ref=e481]:
+                      - paragraph [ref=e482]: "Readiness: Handoff check"
+                      - paragraph [ref=e483]: No engagement exception is queued; confirm moderation, duplicate review, and report handoff before calling the loop settled.
+                      - paragraph [ref=e484]: "Queued: 0"
+                  - link [ref=e486] [cursor=pointer]:
+                    - /url: /engagement
+                    - paragraph [ref=e488]: Inspect engagement handoff readiness
+                    - paragraph [ref=e489]: No engagement exception is queued. Check moderation, categorization, duplicate review, and report handoff before closing public-review loops.
+                    - paragraph [ref=e490]: "Standing check: handoff"
+                - generic [ref=e491]:
+                  - generic [ref=e492]:
+                    - generic [ref=e493]:
+                      - generic [ref=e494]: Analysis / modeling
+                      - generic [ref=e495]: Check
+                    - paragraph [ref=e496]: Scenario, model, and comparison evidence with caveat-safe language.
+                    - paragraph [ref=e497]: "standing check · 1 opportunity-linked project: 0 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support."
+                    - generic [ref=e498]:
+                      - paragraph [ref=e499]: "Readiness: Evidence needs strengthening"
+                      - paragraph [ref=e500]: "1 opportunity-linked project: 0 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support. Keep analysis language caveated until stale, thin, or unsupported project-linked evidence is resolved."
+                      - paragraph [ref=e501]: "Ready: 0 · Refresh: 0 · Thin/none: 1"
+                  - link [ref=e503] [cursor=pointer]:
+                    - /url: /models
+                    - paragraph [ref=e505]: Check modeling caveats
+                    - paragraph [ref=e506]: No modeling queue pressure. Check scenario evidence, comparison context, and caveat posture before using analysis language in grants or reports.
+                    - paragraph [ref=e507]: "Comparison-backed: 0 · Modeling triage: 1 opportunity-linked project: 0 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support."
+                - generic [ref=e508]:
+                  - generic [ref=e509]:
+                    - generic [ref=e510]:
+                      - generic [ref=e511]: Aerial
+                      - generic [ref=e512]: Check
+                    - paragraph [ref=e513]: Mission status, AOI evidence packages, and field-verification readiness.
+                    - paragraph [ref=e514]: 2 queued actions · 3 missions · 2 ready packages
+                    - generic [ref=e515]:
+                      - paragraph [ref=e516]: "Readiness: Mission evidence in progress"
+                      - paragraph [ref=e517]: 1 mission is active; wait for package QA before relying on aerial output downstream.
+                      - paragraph [ref=e518]: "Missions: 3 · Ready packages: 2"
+                  - generic [ref=e519]:
+                    - 'link "Advance active program packages queued 1 program package is still in assembly, submission, or review posture. NCTC 2045 RTP programming pipeline is a good next package anchor. Active programs: 1 · Programs: 1" [ref=e520] [cursor=pointer]':
+                      - /url: /programs
+                      - generic [ref=e521]:
+                        - paragraph [ref=e522]: Advance active program packages
+                        - generic [ref=e523]: queued
+                      - paragraph [ref=e524]: 1 program package is still in assembly, submission, or review posture. NCTC 2045 RTP programming pipeline is a good next package anchor.
+                      - paragraph [ref=e525]: "Active programs: 1 · Programs: 1"
+                    - 'link "Review aerial evidence posture queued 1 mission is active. Evidence packages are pending QA and verification — check back after collection concludes. Missions: 3 · Active: 1 · Packages ready: 2" [ref=e526] [cursor=pointer]':
+                      - /url: /projects
+                      - generic [ref=e527]:
+                        - paragraph [ref=e528]: Review aerial evidence posture
+                        - generic [ref=e529]: queued
+                      - paragraph [ref=e530]: 1 mission is active. Evidence packages are pending QA and verification — check back after collection concludes.
+                      - paragraph [ref=e531]: "Missions: 3 · Active: 1 · Packages ready: 2"
+                - generic [ref=e532]:
+                  - generic [ref=e533]:
+                    - generic [ref=e534]:
+                      - generic [ref=e535]: Admin / release proof
+                      - generic [ref=e536]: Next
+                    - paragraph [ref=e537]: Pilot readiness, caveat checks, artifacts, and release-proof packet evidence.
+                    - paragraph [ref=e538]: 4 queued actions · 2 shown · 6 total commands · 4 proof-linked actions
+                    - generic [ref=e539]:
+                      - paragraph [ref=e540]: "Readiness: Proof packet has stale inputs"
+                      - paragraph [ref=e541]: 1 stale evidence item should be refreshed before external demo, pilot-readiness, or sale-motion language.
+                      - paragraph [ref=e542]: "Commands: 6 · Proof-linked: 4 · Stale evidence: 1"
+                    - generic [ref=e543]:
+                      - generic [ref=e544]:
+                        - paragraph [ref=e545]: Pilot proof reference
+                        - paragraph [ref=e546]:
+                          - text: Start with the
+                          - link "readiness packet + preflight proof" [ref=e547] [cursor=pointer]:
+                            - /url: /admin/pilot-readiness
+                          - text: "; latest preflight note: docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md. Keep claims inside the supervised-pilot caveats before external use."
+                      - generic [ref=e548]:
+                        - paragraph [ref=e549]: Buyer demo handoff
+                        - paragraph [ref=e550]: Run the buyer demo from proof, then intake, then examples.
+                        - paragraph [ref=e551]: "Use Command Center as the internal launch rail: inspect pilot readiness, confirm request-access boundaries, and only then open buyer examples for the supervised story."
+                        - navigation "Buyer demo handoff steps" [ref=e552]:
+                          - link "1. Readiness packet Confirm final checklist, latest preflight proof, and caveat sheet before demo language leaves the room." [ref=e553] [cursor=pointer]:
+                            - /url: /admin/pilot-readiness
+                            - text: 1. Readiness packet
+                            - generic [ref=e554]: Confirm final checklist, latest preflight proof, and caveat sheet before demo language leaves the room.
+                          - link "2. Request access Verify intake copy still says triaged/supervised and does not promise automatic access, billing, or support." [ref=e555] [cursor=pointer]:
+                            - /url: /request-access
+                            - text: 2. Request access
+                            - generic [ref=e556]: Verify intake copy still says triaged/supervised and does not promise automatic access, billing, or support.
+                          - link "3. Examples Use examples only after the proof boundary is clean; keep claims scoped to the current rural planning workbench wedge." [ref=e557] [cursor=pointer]:
+                            - /url: /examples
+                            - text: 3. Examples
+                            - generic [ref=e558]: Use examples only after the proof boundary is clean; keep claims scoped to the current rural planning workbench wedge.
+                        - paragraph [ref=e559]: No production writes, provisioning, outbound email, checkout, or self-serve activation are implied by this handoff.
+                      - generic [ref=e560]:
+                        - paragraph [ref=e561]: Release proof drilldown
+                        - paragraph [ref=e562]: "Readiness: Proof posture for supervised release review. Sell the current wedge as supervised planning workbench support for rural RTPA/county workflows, not broad self-serve municipal SaaS."
+                        - navigation "Release proof drilldown actions" [ref=e563]:
+                          - link "Open readiness packet Check smoke evidence and missing proof rows before external use." [ref=e564] [cursor=pointer]:
+                            - /url: /admin/pilot-readiness
+                            - text: Open readiness packet
+                            - generic [ref=e565]: Check smoke evidence and missing proof rows before external use.
+                          - link "Review request access Confirm service-intake language still matches supervised onboarding." [ref=e566] [cursor=pointer]:
+                            - /url: /request-access
+                            - text: Review request access
+                            - generic [ref=e567]: Confirm service-intake language still matches supervised onboarding.
+                          - link "Review examples Confirm buyer examples do not exceed the current proof packet." [ref=e568] [cursor=pointer]:
+                            - /url: /examples
+                            - text: Review examples
+                            - generic [ref=e569]: Confirm buyer examples do not exceed the current proof packet.
+                        - list "Release proof supporting artifacts" [ref=e570]:
+                          - listitem [ref=e571]:
+                            - generic [ref=e572]: "Final pilot-readiness checklist:"
+                            - code [ref=e573]: docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md
+                          - listitem [ref=e574]:
+                            - generic [ref=e575]: "Wave 6 release-readiness summary:"
+                            - code [ref=e576]: docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md
+                          - listitem [ref=e577]:
+                            - generic [ref=e578]: "Pilot preflight operator proof:"
+                            - code [ref=e579]: docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md
+                  - generic [ref=e580]:
+                    - 'link "Refresh report packets queued 1 report packet needs regeneration because the underlying record changed after generation. Start with NCTC 2045 RTP settle board packet. Refresh: 1 · Reports: 1" [ref=e581] [cursor=pointer]':
+                      - /url: /reports/d0000001-0000-4000-8000-000000000019#drift-since-generation
+                      - generic [ref=e582]:
+                        - paragraph [ref=e583]: Refresh report packets
+                        - generic [ref=e584]: queued
+                      - paragraph [ref=e585]: 1 report packet needs regeneration because the underlying record changed after generation. Start with NCTC 2045 RTP settle board packet.
+                      - paragraph [ref=e586]: "Refresh: 1 · Reports: 1"
+                    - 'link "Advance reimbursement invoicing queued 1 project funding stack has reimbursement work underway and still needs follow-through. Reopen NCTC 2045 RTP (proof-of-capability) first and move $686,250 through billing triage. Reimbursement active: 1 · Follow-through: $686,250" [ref=e587] [cursor=pointer]':
+                      - /url: /grants?focusInvoiceId=d0000001-0000-4000-8000-000000000043#grants-reimbursement-triage
+                      - generic [ref=e588]:
+                        - paragraph [ref=e589]: Advance reimbursement invoicing
+                        - generic [ref=e590]: queued
+                      - paragraph [ref=e591]: 1 project funding stack has reimbursement work underway and still needs follow-through. Reopen NCTC 2045 RTP (proof-of-capability) first and move $686,250 through billing triage.
+                      - paragraph [ref=e592]: "Reimbursement active: 1 · Follow-through: $686,250"
+            - generic [ref=e593]:
+              - paragraph [ref=e594]: Command queue
+              - 'link "Refresh report packets 1 report packet needs regeneration because the underlying record changed after generation. Start with NCTC 2045 RTP settle board packet. Next Refresh: 1 Reports: 1" [ref=e595] [cursor=pointer]':
+                - /url: /reports/d0000001-0000-4000-8000-000000000019#drift-since-generation
+                - generic [ref=e596]:
+                  - generic [ref=e597]:
+                    - paragraph [ref=e599]: Refresh report packets
+                    - paragraph [ref=e600]: 1 report packet needs regeneration because the underlying record changed after generation. Start with NCTC 2045 RTP settle board packet.
+                  - generic [ref=e601]: Next
+                - generic [ref=e602]:
+                  - generic [ref=e603]: "Refresh: 1"
+                  - generic [ref=e604]: "Reports: 1"
+              - 'link "Advance reimbursement invoicing Grants OS 1 project funding stack has reimbursement work underway and still needs follow-through. Reopen NCTC 2045 RTP (proof-of-capability) first and move $686,250 through billing triage. Next Reimbursement active: 1 Follow-through: $686,250" [ref=e605] [cursor=pointer]':
+                - /url: /grants?focusInvoiceId=d0000001-0000-4000-8000-000000000043#grants-reimbursement-triage
+                - generic [ref=e606]:
+                  - generic [ref=e607]:
+                    - generic [ref=e608]:
+                      - paragraph [ref=e609]: Advance reimbursement invoicing
+                      - generic [ref=e610]: Grants OS
+                    - paragraph [ref=e611]: 1 project funding stack has reimbursement work underway and still needs follow-through. Reopen NCTC 2045 RTP (proof-of-capability) first and move $686,250 through billing triage.
+                  - generic [ref=e612]: Next
+                - generic [ref=e613]:
+                  - generic [ref=e614]: "Reimbursement active: 1"
+                  - generic [ref=e615]: "Follow-through: $686,250"
+              - 'link "Close project funding gaps Grants OS 1 project funding stack still shows an uncovered gap after current pursued dollars. NCTC 2045 RTP (proof-of-capability) still carries $250,000 uncovered. Next Gap projects: 1 Largest gap: $250,000" [ref=e616] [cursor=pointer]':
+                - /url: /grants?focusProjectId=d0000001-0000-4000-8000-000000000003#grants-gap-resolution-lane
+                - generic [ref=e617]:
+                  - generic [ref=e618]:
+                    - generic [ref=e619]:
+                      - paragraph [ref=e620]: Close project funding gaps
+                      - generic [ref=e621]: Grants OS
+                    - paragraph [ref=e622]: 1 project funding stack still shows an uncovered gap after current pursued dollars. NCTC 2045 RTP (proof-of-capability) still carries $250,000 uncovered.
+                  - generic [ref=e623]: Next
+                - generic [ref=e624]:
+                  - generic [ref=e625]: "Gap projects: 1"
+                  - generic [ref=e626]: "Largest gap: $250,000"
+              - 'link "Tighten plan foundations 1 plan record still needs core setup around project linkage, geography, or horizon year. Reopen NCTC 2045 RTP local proof plan first. Queue Needs setup: 1 Plans: 1" [ref=e627] [cursor=pointer]':
+                - /url: /plans
+                - generic [ref=e628]:
+                  - generic [ref=e629]:
+                    - paragraph [ref=e631]: Tighten plan foundations
+                    - paragraph [ref=e632]: 1 plan record still needs core setup around project linkage, geography, or horizon year. Reopen NCTC 2045 RTP local proof plan first.
+                  - generic [ref=e633]: Queue
+                - generic [ref=e634]:
+                  - generic [ref=e635]: "Needs setup: 1"
+                  - generic [ref=e636]: "Plans: 1"
+              - 'link "Advance active program packages 1 program package is still in assembly, submission, or review posture. NCTC 2045 RTP programming pipeline is a good next package anchor. Queue Active programs: 1 Programs: 1" [ref=e637] [cursor=pointer]':
+                - /url: /programs
+                - generic [ref=e638]:
+                  - generic [ref=e639]:
+                    - paragraph [ref=e641]: Advance active program packages
+                    - paragraph [ref=e642]: 1 program package is still in assembly, submission, or review posture. NCTC 2045 RTP programming pipeline is a good next package anchor.
+                  - generic [ref=e643]: Queue
+                - generic [ref=e644]:
+                  - generic [ref=e645]: "Active programs: 1"
+                  - generic [ref=e646]: "Programs: 1"
+            - generic [ref=e647]:
+              - paragraph [ref=e648]: Baseline
+              - paragraph [ref=e649]: Supabase auth flow is live for sign-up, sign-in, and protected routes.
+              - paragraph [ref=e650]: Analysis API accepts schema-checked corridor scoring requests with persisted run output.
+              - paragraph [ref=e651]: Runs persist and reload cleanly at workspace scope.
+              - paragraph [ref=e652]: Report endpoint returns structured HTML / PDF-ready output.
+              - paragraph [ref=e653]: Core layers now use GTFS, crashes, Census, and LODES inputs.
+              - paragraph [ref=e654]: KPI instrumentation tracks completion, reporting, and time-to-first-result.
+        - article [ref=e655]:
+          - generic [ref=e656]:
+            - generic [ref=e657]:
+              - paragraph [ref=e658]: Run history
+              - heading "Analysis run history" [level=2] [ref=e659]
+              - paragraph [ref=e660]: The operator record directly beneath the live result stack — reload a prior run, promote a baseline, or retire stale work.
+            - generic [ref=e661]: 0 stored
+          - status [ref=e664]:
+            - generic [ref=e669]:
+              - paragraph [ref=e670]: Loading run history
+              - paragraph [ref=e671]: Refreshing workspace records.
+    - complementary "Map layers" [ref=e672]:
+      - generic [ref=e673]: Layers
+      - list [ref=e674]:
+        - listitem [ref=e675]:
+          - generic [ref=e676] [cursor=pointer]:
+            - checkbox "Projects 1" [checked] [ref=e677]
+            - generic [ref=e678]: Projects
+            - generic [ref=e679]: "1"
+        - listitem [ref=e680]:
+          - generic [ref=e681] [cursor=pointer]:
+            - checkbox "RTP cycles 1" [checked] [ref=e682]
+            - generic [ref=e683]: RTP cycles
+            - generic [ref=e684]: "1"
+        - listitem [ref=e685]:
+          - generic [ref=e686] [cursor=pointer]:
+            - checkbox "Study corridors 2" [checked] [ref=e687]
+            - generic [ref=e688]: Study corridors
+            - generic [ref=e689]: "2"
+        - listitem [ref=e690]:
+          - generic [ref=e691] [cursor=pointer]:
+            - checkbox "Engagement pins 7" [checked] [ref=e692]
+            - generic [ref=e693]: Engagement pins
+            - generic [ref=e694]: "7"
+        - listitem [ref=e695]:
+          - generic [ref=e696] [cursor=pointer]:
+            - checkbox "Aerial missions 3" [checked] [ref=e697]
+            - generic [ref=e698]: Aerial missions
+            - generic [ref=e699]: "3"
+        - listitem [ref=e700]:
+          - generic [ref=e701] [cursor=pointer]:
+            - checkbox "Equity priority 4" [ref=e702]
+            - generic [ref=e703]: Equity priority
+            - generic [ref=e704]: "4"
+      - generic [ref=e705]:
+        - text: "Basemap:"
+        - strong [ref=e706]: Mapbox dark
+    - complementary "Map legend" [ref=e707]:
+      - button "Legend" [expanded] [ref=e708] [cursor=pointer]:
+        - generic [ref=e710]: ▾
+      - list [ref=e711]:
+        - listitem [ref=e712]:
+          - generic [ref=e714]: Projects
+        - listitem [ref=e715]:
+          - generic [ref=e717]: Community input
+        - listitem [ref=e718]:
+          - generic [ref=e720]: Aerial AOIs
+        - listitem [ref=e721]:
+          - generic [ref=e722]: Corridors by LOS
+          - generic [ref=e728]:
+            - generic [ref=e729]: A/B
+            - generic [ref=e730]: C/D
+            - generic [ref=e731]: E
+            - generic [ref=e732]: F
+        - listitem [ref=e733]:
+          - generic [ref=e735]: RTP cycles
+    - region
+    - group "Zoom" [ref=e736]:
+      - button "Zoom in" [ref=e737] [cursor=pointer]: ＋
+      - button "Zoom out" [ref=e738] [cursor=pointer]: −
+    - button "Planner Agent" [ref=e739]
+    - generic "Account" [ref=e741]:
+      - generic [ref=e742]:
+        - generic [ref=e743]: nctc-demo@openplan-demo.natford.example
+        - generic [ref=e744]: owner
+      - button "Sign out" [ref=e746] [cursor=pointer]
