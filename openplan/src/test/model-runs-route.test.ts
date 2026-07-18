@@ -349,11 +349,70 @@ describe("/api/models/[modelId]/runs", () => {
         result_summary_json: expect.objectContaining({
           engine: "sketch_abm",
           caveat: expect.stringContaining("Screening-grade"),
+          // Sketch-grade caveats stored where the evidence-packet
+          // normalizer reads them (result_summary_json.caveats).
+          caveats: [expect.stringContaining("Screening-grade")],
           total_real_households: SKETCH_FIXTURE_REAL_HOUSEHOLDS,
           expansion_factor: tripsBreakdown.expansion_factor,
         }),
       })
     );
+
+    // Benchmark fit lands in result_summary_json as a screening diagnostic
+    // against reference benchmarks (never local observations).
+    const succeededUpdate = (
+      modelRunUpdateMock.mock.calls as unknown as Array<[Record<string, unknown>]>
+    )
+      .map((call) => call[0])
+      .find((update) => update.status === "succeeded")!;
+    const benchmarkFit = (succeededUpdate.result_summary_json as Record<string, unknown>)
+      .benchmark_fit as {
+      grade: string;
+      vmt_percent_error: number;
+      mode_split_rmse: number;
+      fit_score_0_100: number;
+      components: { vmt_score: number; mode_split_score: number };
+      modeled: { vmt_per_capita: number; mode_split_pct: Record<string, number> };
+      reference: { vmt_per_capita: number; mode_split_pct: Record<string, number> };
+      sources: string[];
+      recommendation: string;
+    };
+
+    expect(benchmarkFit.grade).toBe("sketch_screening");
+    // Modeled VMT per capita is the EXPANDED KPI value, reused verbatim.
+    expect(benchmarkFit.modeled.vmt_per_capita).toBe(vmtPerCapita.value);
+    // Scored against the CEQA-screen operator-default reference (22.0).
+    expect(benchmarkFit.reference.vmt_per_capita).toBe(22);
+    expect(benchmarkFit.vmt_percent_error).toBeCloseTo(
+      (((vmtPerCapita.value ?? 0) - 22) / 22) * 100,
+      9
+    );
+    expect(benchmarkFit.components.vmt_score).toBeCloseTo(
+      Math.max(0, 100 - Math.abs(benchmarkFit.vmt_percent_error) * 2),
+      9
+    );
+    expect(benchmarkFit.components.mode_split_score).toBeCloseTo(
+      Math.max(0, 100 - benchmarkFit.mode_split_rmse * 10),
+      9
+    );
+    expect(benchmarkFit.fit_score_0_100).toBeCloseTo(
+      (benchmarkFit.components.vmt_score + benchmarkFit.components.mode_split_score) / 2,
+      9
+    );
+    // Modeled split is in percentage points and matches the KPI shares (0–1).
+    const modeledSplitSum = Object.values(benchmarkFit.modeled.mode_split_pct).reduce(
+      (sum, share) => sum + share,
+      0
+    );
+    expect(modeledSplitSum).toBeCloseTo(100, 6);
+    expect(benchmarkFit.modeled.mode_split_pct.auto / 100).toBeCloseTo(
+      byName.get("mode_share_auto")!.value ?? 0,
+      9
+    );
+    expect(benchmarkFit.sources.join(" ")).toContain("not a local observation");
+    expect(typeof benchmarkFit.recommendation).toBe("string");
+    // Screening claim boundary: no strong-claim vocabulary in the block.
+    expect(JSON.stringify(benchmarkFit)).not.toMatch(/validat|calibrat|forecast/i);
 
     // Successful sketch launch records a quota-weighted usage event.
     expect(recordUsageEventBestEffortMock).toHaveBeenCalledTimes(1);

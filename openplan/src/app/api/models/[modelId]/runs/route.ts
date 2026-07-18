@@ -14,6 +14,11 @@ import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models
 import { fetchCensusForCorridor } from "@/lib/data-sources/census";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
 import { runABM } from "@/lib/models/sketch-abm/abm-runner";
+import {
+  DEFAULT_SKETCH_REFERENCE_BENCHMARKS,
+  computeBenchmarkFit,
+  type SketchModeSplitPct,
+} from "@/lib/models/sketch-abm/benchmark-fit";
 import { buildSketchAbmInputs, seedFromRunId } from "@/lib/models/sketch-abm/sketch-abm-inputs";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
@@ -620,6 +625,31 @@ export async function POST(request: NextRequest, context: RouteContext) {
           throw new Error(`Failed to record sketch activity model KPIs: ${kpiInsertError.message}`);
         }
 
+        // Benchmark fit — screening diagnostic against reference benchmarks
+        // (not local observations). Modeled VMT per capita is the EXPANDED
+        // KPI value computed above (reused verbatim, never recomputed);
+        // modeled mode split is the runner's aggregate split, already in
+        // percentage points (0–100) as computeBenchmarkFit expects.
+        const modeledVmtPerCapita =
+          kpiRows.find((row) => row.kpi_name === "vmt_per_capita")?.value ?? null;
+        const modeledModeSplitPct: SketchModeSplitPct = {
+          auto: abmOutputs.summary.mode_split.auto ?? 0,
+          transit: abmOutputs.summary.mode_split.transit ?? 0,
+          walk: abmOutputs.summary.mode_split.walk ?? 0,
+          bike: abmOutputs.summary.mode_split.bike ?? 0,
+          shared: abmOutputs.summary.mode_split.shared ?? 0,
+        };
+        const benchmarkFit =
+          modeledVmtPerCapita !== null && Number.isFinite(modeledVmtPerCapita)
+            ? computeBenchmarkFit({
+                modeled: {
+                  vmt_per_capita: modeledVmtPerCapita,
+                  mode_split_pct: modeledModeSplitPct,
+                },
+                reference: DEFAULT_SKETCH_REFERENCE_BENCHMARKS,
+              })
+            : null;
+
         const sketchCompletedAt = new Date().toISOString();
         const { error: sketchRunUpdateError } = await supabase
           .from("model_runs")
@@ -628,6 +658,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
             result_summary_json: {
               engine: "sketch_abm",
               caveat: runMode.caveatSummary,
+              // Consumed by the evidence-packet normalizer so the packet for
+              // a sketch run always carries the sketch-grade caveats.
+              caveats: [runMode.caveatSummary],
               synthetic_households: abmOutputs.summary.total_households,
               synthetic_persons: abmOutputs.summary.total_persons,
               total_real_households: totalRealHouseholds,
@@ -635,6 +668,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
               total_tours: Math.round(abmOutputs.summary.total_tours * expansionFactor),
               total_trips: Math.round(abmOutputs.summary.total_trips * expansionFactor),
               zone_count: abmInputs.zones.length,
+              // Screening diagnostic against reference benchmarks; null when
+              // the run had no finite VMT-per-capita KPI to score.
+              benchmark_fit: benchmarkFit,
             },
             completed_at: sketchCompletedAt,
           })
