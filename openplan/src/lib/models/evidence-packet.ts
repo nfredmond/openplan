@@ -66,6 +66,12 @@ export type NormalizedEvidencePacket = {
     engine_summary: Record<string, unknown> | null;
   };
   caveats: string[];
+  /**
+   * Employment-input provenance (the worker's jobs_provenance block): LODES
+   * WAC coverage vs the synthetic population-share fallback. Null when the
+   * packet predates the block or the engine has no employment inputs.
+   */
+  employment: Record<string, unknown> | null;
   provenance: {
     platform: string;
     engine_version: string;
@@ -317,6 +323,7 @@ export function normalizeEvidencePacket({
       ...asArray(raw.caveats).map((value) => asString(value)),
       fallbackReason,
     ]),
+    employment: asRecord(raw.employment),
     provenance: {
       platform: asString(rawProvenance.platform) ?? "OpenPlan",
       engine_version:
@@ -610,4 +617,35 @@ export function summarizeEvidenceCategories(packet: NormalizedEvidencePacket) {
       topItems: items.slice(0, 3),
     }))
     .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
+}
+
+/**
+ * One-line description of the employment-input provenance block
+ * (the worker's jobs_provenance: LODES WAC vs population-share fallback).
+ */
+export function describeEmploymentProvenance(employment: Record<string, unknown>): string {
+  const year = asString(employment.year);
+  const lodesTracts = asNumber(employment.tracts_from_lodes) ?? 0;
+  const synthTracts = asNumber(employment.tracts_from_synthetic_fallback) ?? 0;
+  const states = asArray(employment.states_used)
+    .map((value) => asString(value))
+    .filter((value): value is string => Boolean(value));
+
+  if (lodesTracts > 0) {
+    const base = `LEHD LODES8 WAC S000/JT00${year ? ` ${year}` : ""} — ${lodesTracts} tract${
+      lodesTracts === 1 ? "" : "s"
+    }${states.length > 0 ? ` (states ${states.join(", ")})` : ""}`;
+    return synthTracts > 0
+      ? `${base}; ${synthTracts} tract${synthTracts === 1 ? "" : "s"} from the population-share fallback`
+      : base;
+  }
+  return "Synthetic employment (population-share fallback) — LODES was unavailable for this run";
+}
+
+/** True when any tract's jobs came from the synthetic fallback (or no LODES at all). */
+export function employmentUsedSyntheticFallback(employment: Record<string, unknown>): boolean {
+  return (
+    (asNumber(employment.tracts_from_synthetic_fallback) ?? 0) > 0 ||
+    (asNumber(employment.tracts_from_lodes) ?? 0) === 0
+  );
 }

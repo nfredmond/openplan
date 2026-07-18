@@ -125,7 +125,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const nowIso = new Date().toISOString();
 
-    // Update run to queued and clear stale prior-run residue
+    // Update run to queued and clear stale prior-run residue.
+    // result_summary_json is NOT NULL DEFAULT '{}' — reset to {}, never null.
     const { error: updateError } = await supabase
       .from("model_runs")
       .update({
@@ -134,12 +135,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
         started_at: null,
         completed_at: null,
         error_message: null,
-        result_summary_json: null,
+        result_summary_json: {},
         source_analysis_run_id: null,
       })
       .eq("id", modelRun.id);
 
     if (updateError) {
+      audit.error("model_run_requeue_failed", {
+        modelId: access.model.id,
+        modelRunId: modelRun.id,
+        message: updateError.message,
+        code: updateError.code ?? null,
+      });
       return NextResponse.json({ error: "Failed to queue model run" }, { status: 500 });
     }
 
