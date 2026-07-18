@@ -337,17 +337,17 @@ export default async function ModelsPage({
             </span>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 text-[0.78rem]">
-            <Link href="/models" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
+            <Link href="/models" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
               All ({models.length})
             </Link>
             {MODEL_STATUS_OPTIONS.map((opt) => (
-              <Link key={opt.value} href={`/models?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+              <Link key={opt.value} href={`/models?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
                 {opt.label} ({models.filter((m) => m.status === opt.value).length})
               </Link>
             ))}
             {hasActiveFilters ? (
-              <Link href="/models" className="ml-auto rounded px-2 py-0.5 text-slate-400 hover:text-slate-700">
+              <Link href="/models" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
                 Clear filters ×
               </Link>
             ) : null}

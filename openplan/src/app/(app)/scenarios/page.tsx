@@ -181,8 +181,8 @@ export default async function ScenariosPage({
             </span>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 text-[0.78rem]">
-            <Link href="/scenarios" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
+            <Link href="/scenarios" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
               All ({scenarioSets.length})
             </Link>
             {[
@@ -190,7 +190,7 @@ export default async function ScenariosPage({
               { value: "active", label: "Active" },
               { value: "archived", label: "Archived" },
             ].map((opt) => (
-              <Link key={opt.value} href={`/scenarios?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800")}>
+              <Link key={opt.value} href={`/scenarios?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
                 {opt.label} ({scenarioSets.filter((s) => s.status === opt.value).length})
               </Link>
             ))}

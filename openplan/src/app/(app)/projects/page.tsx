@@ -544,12 +544,12 @@ export default async function ProjectsPage({
           </div>
 
           {/* Status filter bar */}
-          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-slate-100 pb-3 text-[0.78rem]">
+          <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
             <Link
               href="/projects"
               className={cn(
                 "rounded px-2 py-0.5 transition-colors",
-                !statusFilter ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800"
+                !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground"
               )}
             >
               All ({projects.length})
@@ -562,7 +562,7 @@ export default async function ProjectsPage({
                   href={`/projects?status=${status}`}
                   className={cn(
                     "rounded px-2 py-0.5 transition-colors",
-                    statusFilter === status ? "bg-emerald-50 font-semibold text-emerald-700" : "text-slate-500 hover:text-slate-800"
+                    statusFilter === status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {titleize(status)} ({count})

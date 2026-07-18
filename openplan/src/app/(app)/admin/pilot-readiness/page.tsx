@@ -185,7 +185,7 @@ export default function PilotReadinessPage() {
             <TerminalSquare className="h-3.5 w-3.5 text-emerald-700" />
             Read-only command
           </div>
-          <code className="mt-2 block break-words rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-[0.72rem] text-slate-700">
+          <code className="mt-2 block break-words rounded border border-border/70 bg-muted/15 px-2 py-1.5 text-[0.72rem] text-foreground/80">
             {pilotControl.preflightCommand}
           </code>
           <p className="mt-3 text-[0.78rem] leading-relaxed text-muted-foreground">

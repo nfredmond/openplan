@@ -229,7 +229,7 @@ export default async function AdminOperationsPage() {
                 <TerminalSquare className="h-3.5 w-3.5 text-emerald-700" />
                 Read-only preflight command
               </div>
-              <code className="mt-2 block break-words rounded border border-slate-200 bg-slate-50 px-2 py-1.5 text-[0.72rem] text-slate-700">
+              <code className="mt-2 block break-words rounded border border-border/70 bg-muted/15 px-2 py-1.5 text-[0.72rem] text-foreground/80">
                 {pilotControl.preflightCommand}
               </code>
             </div>
@@ -276,7 +276,7 @@ export default async function AdminOperationsPage() {
                   <div className="space-y-1.5">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <h3 className="module-record-title">{event.label}</h3>
-                      <code className="rounded border border-slate-200 bg-slate-50 px-2 py-1 text-[0.72rem] text-slate-700">
+                      <code className="rounded border border-border/70 bg-muted/15 px-2 py-1 text-[0.72rem] text-foreground/80">
                         {event.event}
                       </code>
                     </div>

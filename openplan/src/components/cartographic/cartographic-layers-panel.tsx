@@ -3,7 +3,16 @@
 import { useEffect, useState } from "react";
 
 import { LAYER_KEYS, useCartographicLayers, type LayerKey } from "./cartographic-context";
+import { useTheme } from "@/components/theme-provider";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import type { MapFeatureCounts } from "@/app/api/map-features/counts/route";
+
+const HAS_MAPBOX_BASEMAP = Boolean(
+  resolvePublicMapboxToken(
+    process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+    process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+  ),
+);
 
 const LAYER_LABELS: Record<LayerKey, string> = {
   projects: "Projects",
@@ -27,7 +36,19 @@ function formatChip(count: number | null | undefined): string | undefined {
 
 export function CartographicLayersPanel() {
   const { layers, toggleLayer } = useCartographicLayers();
+  const { resolvedTheme } = useTheme();
   const [counts, setCounts] = useState<MapFeatureCounts | null>(null);
+  const [themeMounted, setThemeMounted] = useState(false);
+
+  useEffect(() => {
+    // One-shot mount gate so the theme-dependent basemap label matches SSR output.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setThemeMounted(true);
+  }, []);
+
+  const basemapLabel = HAS_MAPBOX_BASEMAP
+    ? `Mapbox ${themeMounted && resolvedTheme === "dark" ? "dark" : "light"}`
+    : "Civic parchment";
 
   useEffect(() => {
     const controller = new AbortController();
@@ -72,7 +93,7 @@ export function CartographicLayersPanel() {
         })}
       </ul>
       <div className="op-cart-layers__ft">
-        Basemap: <strong>Civic parchment</strong>
+        Basemap: <strong>{basemapLabel}</strong>
       </div>
     </aside>
   );
