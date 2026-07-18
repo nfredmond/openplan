@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
+import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
 
@@ -676,6 +677,10 @@ function ModelRunStagingAndArtifacts({
           engineKey={run.engine_key}
           comparisonCandidates={comparisonCandidates}
         />
+      ) : null}
+
+      {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
+        <ModelRunCeqaVmtScreen modelId={modelId} modelRunId={run.id} runTitle={run.run_title} />
       ) : null}
     </div>
   );
