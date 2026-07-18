@@ -28,7 +28,7 @@ SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 # Optional, defaults shown:
 SPATIALITE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/mod_spatialite.so
 AEQ_WORK_DIR=<scratch dir; default is repo data/pilot-nevada-county>
-CENSUS_API_KEY=<optional, raises ACS/LODES rate limits>
+CENSUS_API_KEY=<REQUIRED for dynamic study areas — the Census ACS API rejects keyless requests; free at https://api.census.gov/data/key_signup.html>
 ```
 
 For local runs against the local Supabase stack, use the local API URL and the

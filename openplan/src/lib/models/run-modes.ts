@@ -2,6 +2,7 @@ export const MANAGED_RUN_MODE_KEYS = [
   "deterministic_corridor_v1",
   "aequilibrae",
   "behavioral_demand",
+  "sketch_abm",
 ] as const;
 
 export type ManagedRunModeKey = (typeof MANAGED_RUN_MODE_KEYS)[number];
@@ -58,6 +59,22 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     comparisonMessage:
       "Comparison surfaces behavioral artifacts and KPI summaries when present. Where the prototype lane only reaches preflight or partial ingestion, comparison stays caveated instead of implying full run-to-run parity.",
     availability: "prototype",
+  },
+  {
+    key: "sketch_abm",
+    label: "Sketch Activity Model",
+    shortLabel: "Sketch Activity Model",
+    launchLabel: "Sketch Activity Model (in-process sketch prototype)",
+    engineLabel: "Sketch Activity Model",
+    summaryDetail:
+      "In-process sketch activity-based model over a synthetic population and distance-based screening skims.",
+    runtimeExpectation:
+      "Runs synchronously in-process and usually completes in seconds for corridor-scale zone counts.",
+    caveatSummary:
+      "Screening-grade sketch output over a synthetic population and distance-based skims. Do not treat it as a validated travel model, calibrated behavioral demand, or forecast-ready prediction.",
+    comparisonMessage:
+      "Comparison is limited to screening-grade sketch KPIs. Treat cross-run deltas as exploratory scenario contrasts, not calibrated run-to-run parity.",
+    availability: "launchable",
   },
 ];
 

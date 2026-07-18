@@ -33,7 +33,11 @@ type RouteContext = {
   params: Promise<{ modelId: string; modelRunId: string; artifactId: string }>;
 };
 
-async function loadAuthorizedRun(modelId: string, modelRunId: string) {
+type AuthorizedRun =
+  | { errorResponse: NextResponse }
+  | { supabase: Awaited<ReturnType<typeof createClient>>; run: { id: string; model_id: string } };
+
+async function loadAuthorizedRun(modelId: string, modelRunId: string): Promise<AuthorizedRun> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -74,7 +78,7 @@ async function loadAuthorizedRun(modelId: string, modelRunId: string) {
 // GET /api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/download
 // Resolves an artifact's private storage reference to a short-TTL signed URL
 // (or streams dev-local files when OPENPLAN_WORKER_LOCAL_ROOT is set).
-export async function GET(req: NextRequest, context: RouteContext) {
+export async function GET(req: NextRequest, context: RouteContext): Promise<NextResponse> {
   const audit = createApiAuditLogger("model_runs.artifact.download", req);
   const routeParams = await context.params;
   const parsedParams = paramsSchema.safeParse(routeParams);

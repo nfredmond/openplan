@@ -1,12 +1,180 @@
 import { describe, expect, it } from "vitest";
 import {
   buildEvidenceHighlights,
+  describeEmploymentProvenance,
+  employmentUsedSyntheticFallback,
   formatDurationSeconds,
   labelForArtifactType,
   labelForEngineKey,
   labelForKpiCategory,
   normalizeEvidencePacket,
 } from "@/lib/models/evidence-packet";
+
+const LODES_EMPLOYMENT = {
+  primary: "lehd_lodes8_wac_s000_jt00",
+  year: "2022",
+  states_used: ["ca"],
+  states_failed: [],
+  tracts_from_lodes: 24,
+  tracts_from_synthetic_fallback: 2,
+  fallback_method: "jobs = round(0.47 × ACS population), floor 25",
+  caveat: "Screening-grade. Total jobs are LODES WAC workplace counts where available.",
+};
+
+function normalizeMinimal(rawPacket: Record<string, unknown>) {
+  return normalizeEvidencePacket({
+    rawPacket,
+    modelId: "model-123",
+    modelRunId: "run-123",
+    modelTitle: "Minimal",
+    runRecord: { id: "run-123", status: "succeeded", engine_key: "aequilibrae" },
+    artifacts: [],
+    stages: [],
+    kpis: [],
+  });
+}
+
+const BENCHMARK_FIT_BLOCK = {
+  grade: "sketch_screening",
+  vmt_percent_error: -12.5,
+  mode_split_rmse: 3.2,
+  fit_score_0_100: 71.5,
+  components: { vmt_score: 75, mode_split_score: 68 },
+  reference: {
+    vmt_per_capita: 22,
+    mode_split_pct: { auto: 88, transit: 1.5, walk: 6, bike: 1.5, shared: 3 },
+  },
+  sources: ["Reference benchmark source note"],
+  recommendation: "Directional only — review assumptions",
+};
+
+const NORMALIZED_BENCHMARK_FIT = {
+  grade: "sketch_screening",
+  vmt_percent_error: -12.5,
+  mode_split_rmse: 3.2,
+  fit_score_0_100: 71.5,
+  components: { vmt_score: 75, mode_split_score: 68 },
+  reference: BENCHMARK_FIT_BLOCK.reference,
+  sources: ["Reference benchmark source note"],
+  recommendation: "Directional only — review assumptions",
+};
+
+describe("benchmark fit mapping", () => {
+  it("maps a top-level raw benchmark_fit block onto the normalized packet", () => {
+    expect(normalizeMinimal({ benchmark_fit: BENCHMARK_FIT_BLOCK }).benchmark_fit).toEqual(
+      NORMALIZED_BENCHMARK_FIT
+    );
+  });
+
+  it("maps benchmark_fit from the run row's result_summary_json on the synthesized path", () => {
+    const packet = normalizeEvidencePacket({
+      modelId: "model-123",
+      modelRunId: "run-123",
+      modelTitle: "Sketch run",
+      runRecord: {
+        id: "run-123",
+        status: "succeeded",
+        engine_key: "sketch_abm",
+        result_summary_json: {
+          engine: "sketch_abm",
+          benchmark_fit: BENCHMARK_FIT_BLOCK,
+          caveats: ["Screening-grade sketch output over a synthetic population."],
+        },
+      },
+      artifacts: [],
+      stages: [],
+      kpis: [],
+    });
+
+    expect(packet.benchmark_fit).toEqual(NORMALIZED_BENCHMARK_FIT);
+    // result_summary_json.caveats surface on the packet caveat list.
+    expect(packet.caveats).toContain("Screening-grade sketch output over a synthetic population.");
+  });
+
+  it("maps benchmark_fit from raw.outputs.result_summary (re-normalizing an API payload)", () => {
+    const packet = normalizeMinimal({
+      outputs: { result_summary: { benchmark_fit: BENCHMARK_FIT_BLOCK } },
+    });
+
+    expect(packet.benchmark_fit).toEqual(NORMALIZED_BENCHMARK_FIT);
+  });
+
+  it("leaves benchmark_fit null when no block is present anywhere", () => {
+    expect(normalizeMinimal({ engine: "AequilibraE 1.6.1" }).benchmark_fit).toBeNull();
+    expect(
+      normalizeEvidencePacket({
+        modelId: "model-123",
+        modelRunId: "run-123",
+        modelTitle: "No fit",
+        runRecord: {
+          id: "run-123",
+          status: "succeeded",
+          engine_key: "sketch_abm",
+          result_summary_json: { engine: "sketch_abm", benchmark_fit: null },
+        },
+        artifacts: [],
+        stages: [],
+        kpis: [],
+      }).benchmark_fit
+    ).toBeNull();
+  });
+
+  it("maps malformed benchmark_fit fields defensively to nulls", () => {
+    const packet = normalizeMinimal({
+      benchmark_fit: {
+        vmt_percent_error: "not-a-number",
+        fit_score_0_100: Number.NaN,
+        components: "broken",
+        sources: [42, "kept"],
+      },
+    });
+
+    expect(packet.benchmark_fit).toEqual({
+      grade: "sketch_screening",
+      vmt_percent_error: null,
+      mode_split_rmse: null,
+      fit_score_0_100: null,
+      components: { vmt_score: null, mode_split_score: null },
+      reference: {},
+      sources: ["kept"],
+      recommendation: null,
+    });
+  });
+});
+
+describe("employment provenance", () => {
+  it("maps the worker packet employment block onto the normalized packet", () => {
+    expect(normalizeMinimal({ employment: LODES_EMPLOYMENT }).employment).toEqual(LODES_EMPLOYMENT);
+  });
+
+  it("leaves employment null for packets without the block", () => {
+    expect(normalizeMinimal({ engine: "AequilibraE 1.6.1" }).employment).toBeNull();
+  });
+
+  it("describes LODES coverage including the fallback tract count", () => {
+    expect(describeEmploymentProvenance(LODES_EMPLOYMENT)).toBe(
+      "LEHD LODES8 WAC S000/JT00 2022 — 24 tracts (states ca); 2 tracts from the population-share fallback"
+    );
+    expect(employmentUsedSyntheticFallback(LODES_EMPLOYMENT)).toBe(true);
+  });
+
+  it("labels a fully synthetic run and full LODES coverage correctly", () => {
+    const synthetic = {
+      ...LODES_EMPLOYMENT,
+      tracts_from_lodes: 0,
+      tracts_from_synthetic_fallback: 26,
+      states_used: [],
+    };
+    expect(describeEmploymentProvenance(synthetic)).toContain("Synthetic employment");
+    expect(employmentUsedSyntheticFallback(synthetic)).toBe(true);
+
+    const fullCoverage = { ...LODES_EMPLOYMENT, tracts_from_synthetic_fallback: 0 };
+    expect(describeEmploymentProvenance(fullCoverage)).toBe(
+      "LEHD LODES8 WAC S000/JT00 2022 — 24 tracts (states ca)"
+    );
+    expect(employmentUsedSyntheticFallback(fullCoverage)).toBe(false);
+  });
+});
 
 describe("evidence packet helpers", () => {
   it("normalizes legacy worker packet shape into planner-safe structure", () => {
@@ -180,6 +348,7 @@ describe("evidence packet helpers", () => {
     expect(labelForEngineKey("deterministic_corridor_v1")).toBe("Deterministic Corridor");
     expect(labelForEngineKey("aequilibrae")).toBe("AequilibraE");
     expect(labelForEngineKey("behavioral_demand")).toBe("Behavioral Demand");
+    expect(labelForEngineKey("sketch_abm")).toBe("Sketch Activity Model");
     expect(labelForArtifactType("volumes_geojson")).toBe("Volumes Geojson");
     expect(labelForArtifactType("behavioral_kpi_summary_json")).toBe("Behavioral KPI Summary");
     expect(labelForKpiCategory("behavioral_onramp")).toBe("Behavioral Onramp");

@@ -29,6 +29,26 @@ export type NormalizedEvidencePacketScenarioBasis = {
   } | null;
 };
 
+/**
+ * Benchmark-fit block: a screening diagnostic comparing sketch-run outputs
+ * against reference benchmarks (never local observations). `mode_split_rmse`
+ * is in percentage points of mode share. Null on packets whose engine never
+ * computed a benchmark fit.
+ */
+export type NormalizedEvidencePacketBenchmarkFit = {
+  vmt_percent_error: number | null;
+  mode_split_rmse: number | null;
+  fit_score_0_100: number | null;
+  components: {
+    vmt_score: number | null;
+    mode_split_score: number | null;
+  };
+  reference: Record<string, unknown>;
+  sources: string[];
+  grade: "sketch_screening";
+  recommendation: string | null;
+};
+
 export type NormalizedEvidencePacket = {
   packet_version: string;
   generated_at: string;
@@ -66,6 +86,17 @@ export type NormalizedEvidencePacket = {
     engine_summary: Record<string, unknown> | null;
   };
   caveats: string[];
+  /**
+   * Employment-input provenance (the worker's jobs_provenance block): LODES
+   * WAC coverage vs the synthetic population-share fallback. Null when the
+   * packet predates the block or the engine has no employment inputs.
+   */
+  employment: Record<string, unknown> | null;
+  /**
+   * Screening-grade benchmark fit against reference benchmarks (sketch lane).
+   * Null when the run's engine did not compute one.
+   */
+  benchmark_fit?: NormalizedEvidencePacketBenchmarkFit | null;
   provenance: {
     platform: string;
     engine_version: string;
@@ -169,6 +200,34 @@ export function buildEvidenceArtifactList(artifacts: Array<Record<string, unknow
     hash: asString(artifact.content_hash),
     size_bytes: asNumber(artifact.file_size_bytes),
   }));
+}
+
+/**
+ * Defensive mapping of a raw benchmark-fit block (top-level `benchmark_fit`
+ * or `result_summary_json.benchmark_fit` from the sketch lane) onto the
+ * normalized shape. Returns null when no block is present.
+ */
+function normalizeBenchmarkFit(value: unknown): NormalizedEvidencePacketBenchmarkFit | null {
+  const raw = asRecord(value);
+  if (!raw) {
+    return null;
+  }
+
+  const components = asRecord(raw.components) ?? {};
+
+  return {
+    vmt_percent_error: asNumber(raw.vmt_percent_error),
+    mode_split_rmse: asNumber(raw.mode_split_rmse),
+    fit_score_0_100: asNumber(raw.fit_score_0_100),
+    components: {
+      vmt_score: asNumber(components.vmt_score),
+      mode_split_score: asNumber(components.mode_split_score),
+    },
+    reference: asRecord(raw.reference) ?? {},
+    sources: dedupeStrings(asArray(raw.sources).map((source) => asString(source))),
+    grade: "sketch_screening",
+    recommendation: asString(raw.recommendation),
+  };
 }
 
 export function normalizeEvidencePacket({
@@ -315,8 +374,13 @@ export function normalizeEvidencePacket({
     },
     caveats: dedupeStrings([
       ...asArray(raw.caveats).map((value) => asString(value)),
+      // The sketch lane stores its screening-grade caveats in
+      // result_summary_json.caveats; surface them on the packet.
+      ...asArray(normalizedResultSummary.caveats).map((value) => asString(value)),
       fallbackReason,
     ]),
+    employment: asRecord(raw.employment),
+    benchmark_fit: normalizeBenchmarkFit(raw.benchmark_fit ?? normalizedResultSummary.benchmark_fit),
     provenance: {
       platform: asString(rawProvenance.platform) ?? "OpenPlan",
       engine_version:
@@ -540,6 +604,7 @@ export function buildEvidenceHighlights(packet: NormalizedEvidencePacket): Evide
 export function labelForEngineKey(engineKey: string | null | undefined) {
   if (engineKey === "aequilibrae") return "AequilibraE";
   if (engineKey === "deterministic_corridor_v1") return "Deterministic Corridor";
+  if (engineKey === "sketch_abm") return "Sketch Activity Model";
   if (!engineKey) return "Unknown engine";
   return engineKey
     .split(/[_-]+/)
@@ -610,4 +675,35 @@ export function summarizeEvidenceCategories(packet: NormalizedEvidencePacket) {
       topItems: items.slice(0, 3),
     }))
     .sort((a, b) => b.count - a.count || a.category.localeCompare(b.category));
+}
+
+/**
+ * One-line description of the employment-input provenance block
+ * (the worker's jobs_provenance: LODES WAC vs population-share fallback).
+ */
+export function describeEmploymentProvenance(employment: Record<string, unknown>): string {
+  const year = asString(employment.year);
+  const lodesTracts = asNumber(employment.tracts_from_lodes) ?? 0;
+  const synthTracts = asNumber(employment.tracts_from_synthetic_fallback) ?? 0;
+  const states = asArray(employment.states_used)
+    .map((value) => asString(value))
+    .filter((value): value is string => Boolean(value));
+
+  if (lodesTracts > 0) {
+    const base = `LEHD LODES8 WAC S000/JT00${year ? ` ${year}` : ""} — ${lodesTracts} tract${
+      lodesTracts === 1 ? "" : "s"
+    }${states.length > 0 ? ` (states ${states.join(", ")})` : ""}`;
+    return synthTracts > 0
+      ? `${base}; ${synthTracts} tract${synthTracts === 1 ? "" : "s"} from the population-share fallback`
+      : base;
+  }
+  return "Synthetic employment (population-share fallback) — LODES was unavailable for this run";
+}
+
+/** True when any tract's jobs came from the synthetic fallback (or no LODES at all). */
+export function employmentUsedSyntheticFallback(employment: Record<string, unknown>): boolean {
+  return (
+    (asNumber(employment.tracts_from_synthetic_fallback) ?? 0) > 0 ||
+    (asNumber(employment.tracts_from_lodes) ?? 0) === 0
+  );
 }

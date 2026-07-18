@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { extractModelLaunchTemplate, mergeScenarioLaunchPayload } from "@/lib/models/run-launch";
-import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models/run-modes";
 
 describe("model run launch helpers", () => {
   it("extracts launch defaults from model config", () => {
@@ -60,5 +60,28 @@ describe("model run launch helpers", () => {
     expect(runMode.availability).toBe("prototype");
     expect(runMode.runtimeExpectation).toContain("tens of minutes to hours");
     expect(runMode.caveatSummary).toContain("prototype/preflight-backed");
+  });
+
+  it("registers sketch_abm as the fourth managed run mode", () => {
+    expect(MANAGED_RUN_MODE_KEYS).toEqual([
+      "deterministic_corridor_v1",
+      "aequilibrae",
+      "behavioral_demand",
+      "sketch_abm",
+    ]);
+  });
+
+  it("defines the sketch activity model as a launchable screening-grade in-process mode", () => {
+    const runMode = getManagedRunModeDefinition("sketch_abm");
+
+    expect(runMode.label).toBe("Sketch Activity Model");
+    // Launchable after benchmark validation (sketch-abm-benchmark-validation),
+    // but still screening-grade — the caveat must never soften to forecast
+    // language even though the UI now offers it directly.
+    expect(runMode.availability).toBe("launchable");
+    expect(runMode.runtimeExpectation).toContain("synchronously in-process");
+    expect(runMode.runtimeExpectation).toContain("seconds");
+    expect(runMode.caveatSummary).toContain("Screening-grade");
+    expect(runMode.caveatSummary).toContain("Do not treat it as a validated travel model");
   });
 });

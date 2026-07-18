@@ -1,5 +1,8 @@
 aequilibrae>=1.6.0
-numpy>=1.26
+# <2.1: newer numpy ABIs heap-corrupt aequilibrae 1.6.x's compiled path
+# engine (glibc "corrupted size vs. prev_size" aborts mid-skim/assignment,
+# reproduced on numpy 2.4/2.5 with cp311 and cp314; clean on 2.0.x).
+numpy>=1.26,<2.1
 pandas>=2.0
 shapely>=2.0
 requests>=2.31

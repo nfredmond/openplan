@@ -342,7 +342,7 @@ export function ModelRunManager({
         <div className="module-summary-card">
           <p className="module-summary-label">Run modes available</p>
           <p className="module-summary-value text-base">{MANAGED_RUN_MODE_DEFINITIONS.length}</p>
-          <p className="module-summary-detail">Deterministic Corridor · Fast Screening · Behavioral Demand</p>
+          <p className="module-summary-detail">{MANAGED_RUN_MODE_DEFINITIONS.map((mode) => mode.shortLabel).join(" · ")}</p>
         </div>
       </div>
 
@@ -471,13 +471,15 @@ export function ModelRunManager({
 
           {selectedRunMode.availability !== "launchable" ? (
             <div className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
-              Behavioral demand is available here as an honest planner-facing run class, but this form is still prototype/preflight-backed. Managed launch wiring for a full ActivitySim runtime has not been enabled through the model-run API yet.
+              {selectedRunMode.label} is a prototype surface — managed launch from this form is not enabled for it yet. {selectedRunMode.runtimeExpectation} {selectedRunMode.caveatSummary}
             </div>
           ) : null}
 
           <Button type="button" onClick={() => void handleLaunch()} disabled={launchDisabled}>
             {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {selectedRunMode.availability === "launchable" ? "Launch managed run" : "Behavioral demand launch not yet available"}
+            {selectedRunMode.availability === "launchable"
+              ? "Launch managed run"
+              : `${selectedRunMode.label} launch not yet available`}
           </Button>
         </div>
 

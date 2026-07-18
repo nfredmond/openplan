@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildEvidenceHighlights,
+  describeEmploymentProvenance,
+  employmentUsedSyntheticFallback,
   formatDurationSeconds,
   labelForEngineKey,
   labelForKpiCategory,
@@ -14,6 +16,7 @@ import {
   summarizeEvidenceCategories,
   type NormalizedEvidencePacket,
 } from "@/lib/models/evidence-packet";
+import { ESTIMATED_BADGE_LABEL } from "@/lib/analysis/estimated-source";
 import {
   buildModelRunKpiComparisonSummary,
   formatModelRunKpiDelta,
@@ -285,6 +288,88 @@ export function ModelRunEvidencePanel({
                     <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Query text</p>
                       <p className="mt-2 text-sm text-foreground">{evidence.inputs.query_text}</p>
+                    </div>
+                  ) : null}
+
+                  {evidence.employment ? (
+                    <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3" data-testid="evidence-employment-inputs">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Employment inputs</p>
+                      <p className="mt-2 text-sm text-foreground">{describeEmploymentProvenance(evidence.employment)}</p>
+                      {employmentUsedSyntheticFallback(evidence.employment) ? (
+                        <div className="mt-2 flex items-start gap-2">
+                          <StatusBadge tone="warning">{ESTIMATED_BADGE_LABEL}</StatusBadge>
+                          {typeof evidence.employment.caveat === "string" ? (
+                            <p className="text-xs text-muted-foreground">{evidence.employment.caveat}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  {evidence.benchmark_fit ? (
+                    <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3" data-testid="evidence-benchmark-fit">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Benchmark fit</p>
+                        {typeof evidence.benchmark_fit.fit_score_0_100 === "number" ? (
+                          // Tone thresholds on the same rounded value shown in the
+                          // label and aligns with the recommendation ladder's
+                          // strict >60 floor, so a "Large deviation" run (score
+                          // <= 60) never shows a non-warning badge.
+                          <StatusBadge
+                            tone={Math.round(evidence.benchmark_fit.fit_score_0_100) <= 60 ? "warning" : "info"}
+                          >
+                            Fit {Math.round(evidence.benchmark_fit.fit_score_0_100)}/100
+                          </StatusBadge>
+                        ) : null}
+                      </div>
+                      <dl className="mt-2 space-y-1.5 text-sm text-muted-foreground">
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>VMT component</dt>
+                          <dd className="text-right text-foreground">
+                            {typeof evidence.benchmark_fit.components.vmt_score === "number"
+                              ? `${Math.round(evidence.benchmark_fit.components.vmt_score)}/100`
+                              : "Unavailable"}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>Mode-split component</dt>
+                          <dd className="text-right text-foreground">
+                            {typeof evidence.benchmark_fit.components.mode_split_score === "number"
+                              ? `${Math.round(evidence.benchmark_fit.components.mode_split_score)}/100`
+                              : "Unavailable"}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>VMT vs reference</dt>
+                          <dd className="text-right text-foreground">
+                            {typeof evidence.benchmark_fit.vmt_percent_error === "number"
+                              ? `${evidence.benchmark_fit.vmt_percent_error >= 0 ? "+" : ""}${evidence.benchmark_fit.vmt_percent_error.toFixed(1)}%`
+                              : "Unavailable"}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt>Mode-split RMSE</dt>
+                          <dd className="text-right text-foreground">
+                            {typeof evidence.benchmark_fit.mode_split_rmse === "number"
+                              ? `${evidence.benchmark_fit.mode_split_rmse.toFixed(1)} pct-pts`
+                              : "Unavailable"}
+                          </dd>
+                        </div>
+                      </dl>
+                      {evidence.benchmark_fit.recommendation ? (
+                        <p className="mt-2 text-sm text-foreground">{evidence.benchmark_fit.recommendation}</p>
+                      ) : null}
+                      {evidence.benchmark_fit.sources.length > 0 ? (
+                        <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                          {evidence.benchmark_fit.sources.map((source) => (
+                            <li key={source}>{source}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        County-run validation compares against observed traffic counts, while sketch benchmark fit
+                        compares against reference benchmarks only.
+                      </p>
                     </div>
                   ) : null}
 

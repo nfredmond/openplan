@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import {
+  loadJsonArtifact,
+  resolveRunWorkDir,
+  workerLocalRoot,
+} from "@/lib/models/artifact-source";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   buildBehavioralDemandComparison,
@@ -61,24 +65,6 @@ async function loadAuthorizedRun(
   return { supabase, access, run } as const;
 }
 
-async function loadJsonArtifact(fileUrl: string): Promise<unknown> {
-  if (fileUrl.startsWith("local://")) {
-    const payload = await readFile(fileUrl.slice("local://".length), "utf8");
-    return JSON.parse(payload);
-  }
-
-  if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
-    const res = await fetch(fileUrl, { cache: "no-store" });
-    if (!res.ok) {
-      throw new Error(`Artifact fetch failed (${res.status})`);
-    }
-    return res.json();
-  }
-
-  const payload = await readFile(fileUrl, "utf8");
-  return JSON.parse(payload);
-}
-
 async function loadBehavioralArtifactSource(supabase: Awaited<ReturnType<typeof createClient>>, runId: string) {
   const { data: artifacts, error } = await supabase
     .from("model_run_artifacts")
@@ -100,7 +86,14 @@ async function loadBehavioralArtifactSource(supabase: Awaited<ReturnType<typeof 
 
   for (const candidate of candidates) {
     try {
-      const payload = await loadJsonArtifact(candidate.file_url as string);
+      // Scoped read: file_url is member-writable data, so the resolver is
+      // bound to the candidate run's storage prefix / local work dir.
+      const envRoot = workerLocalRoot();
+      const payload = await loadJsonArtifact(candidate.file_url as string, {
+        bucket: "run-artifacts",
+        objectPathPrefix: `model-runs/${runId}/`,
+        localRoot: envRoot ? resolveRunWorkDir(envRoot, runId) : undefined,
+      });
       const normalized = normalizeBehavioralComparisonSource(payload);
       if (normalized) {
         return normalized;
