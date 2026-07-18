@@ -22,8 +22,24 @@ export type CeqaVmtKpiRowLike = {
   geometry_ref?: string | null;
 };
 
+/**
+ * Resident (internal→internal, external-gateway-excluded) VMT KPI names — the
+ * CEQA §15064.3 preferred figure. §15064.3 measures resident/employee-generated
+ * VMT, not pass-through travel, so when a run carries both a resident and a
+ * network VMT KPI the screen must select the resident one deterministically
+ * (findRunLevelKpi uses array-order .find, so a shared set would be
+ * order-dependent). These are checked BEFORE the generic sets below.
+ */
+export const CEQA_RESIDENT_VMT_PER_CAPITA_KPI_NAMES: ReadonlySet<string> = new Set([
+  "resident_vmt_per_capita",
+]);
+export const CEQA_RESIDENT_DAILY_VMT_KPI_NAMES: ReadonlySet<string> = new Set([
+  "resident_vmt",
+]);
+
 /** Run-level per-capita daily VMT KPI names, checked first. */
 export const CEQA_VMT_PER_CAPITA_KPI_NAMES: ReadonlySet<string> = new Set([
+  "resident_vmt_per_capita",
   "vmt_per_capita",
   "daily_vmt_per_capita",
   "per_capita_vmt",
@@ -31,6 +47,7 @@ export const CEQA_VMT_PER_CAPITA_KPI_NAMES: ReadonlySet<string> = new Set([
 
 /** Run-level total daily VMT KPI names (combined with a population KPI). */
 export const CEQA_DAILY_VMT_KPI_NAMES: ReadonlySet<string> = new Set([
+  "resident_vmt",
   "daily_vmt",
   "total_vmt",
   "vmt_total",
@@ -97,6 +114,32 @@ function findRunLevelKpi(
  * unavailable — never estimated.
  */
 export function deriveCeqaVmtScreeningInputs(kpis: CeqaVmtKpiRowLike[]): CeqaVmtScreeningInputs {
+  // Resident VMT (gateway-excluded) is the §15064.3-meaningful figure and wins
+  // over any network VMT KPI on the same run. Checked before the generic sets
+  // so selection is deterministic regardless of KPI row order.
+  const residentPerCapita = findRunLevelKpi(kpis, CEQA_RESIDENT_VMT_PER_CAPITA_KPI_NAMES);
+  if (residentPerCapita) {
+    return {
+      status: "per-capita",
+      vmtPerCapita: residentPerCapita.value as number,
+      vmtKpiName: residentPerCapita.kpi_name,
+    };
+  }
+  const residentDaily = findRunLevelKpi(kpis, CEQA_RESIDENT_DAILY_VMT_KPI_NAMES);
+  if (residentDaily) {
+    const population = findRunLevelKpi(kpis, CEQA_POPULATION_KPI_NAMES);
+    if (population) {
+      return {
+        status: "total-with-population",
+        dailyVmt: residentDaily.value as number,
+        population: population.value as number,
+        vmtKpiName: residentDaily.kpi_name,
+        populationKpiName: population.kpi_name,
+      };
+    }
+    return { status: "missing-population", vmtKpiName: residentDaily.kpi_name };
+  }
+
   const perCapita = findRunLevelKpi(kpis, CEQA_VMT_PER_CAPITA_KPI_NAMES);
   if (perCapita) {
     return {
