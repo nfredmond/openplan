@@ -91,6 +91,15 @@ function classifyCall(call: KpiCall): string | null {
     return "model-run-kpi-writer";
   }
 
+  if (
+    call.filePath === "src/app/api/models/[modelId]/runs/route.ts" &&
+    chain.includes(".insert(kpiRows)")
+  ) {
+    // Synchronous sketch_abm launch branch registering run-scoped
+    // screening-grade sketch KPIs (kpi_category "sketch_abm", run_id set).
+    return "sketch-abm-run-kpi-writer";
+  }
+
   return null;
 }
 
@@ -123,6 +132,10 @@ describe("model_run_kpis reader inventory", () => {
       expect.objectContaining({
         filePath: "src/app/api/models/[modelId]/runs/[modelRunId]/launch/route.ts",
         classification: "model-run-cleanup-by-run-id",
+      }),
+      expect.objectContaining({
+        filePath: "src/app/api/models/[modelId]/runs/route.ts",
+        classification: "sketch-abm-run-kpi-writer",
       }),
       expect.objectContaining({
         filePath: "src/lib/models/behavioral-onramp-kpis.ts",

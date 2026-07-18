@@ -547,6 +547,7 @@ export function buildEvidenceHighlights(packet: NormalizedEvidencePacket): Evide
 export function labelForEngineKey(engineKey: string | null | undefined) {
   if (engineKey === "aequilibrae") return "AequilibraE";
   if (engineKey === "deterministic_corridor_v1") return "Deterministic Corridor";
+  if (engineKey === "sketch_abm") return "Sketch Activity Model";
   if (!engineKey) return "Unknown engine";
   return engineKey
     .split(/[_-]+/)
