@@ -647,14 +647,21 @@ def stage_artifacts(
         kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
 
     for cat, name, label, value, unit in kpis:
-        sb_post_kpi({
+        kpi_payload = {
             "run_id": run_id,
             "kpi_category": cat,
             "kpi_name": name,
             "kpi_label": label,
             "value": value,
             "unit": unit,
-        })
+        }
+        # VMT KPIs carry their derivation provenance, mirroring the seeded
+        # county-lane convention (breakdown_json.provenance).
+        if name in ("daily_vmt", "vmt_per_capita"):
+            kpi_payload["breakdown_json"] = {
+                "provenance": evidence["vmt"]["method"] + "; " + evidence["vmt"]["source"],
+            }
+        sb_post_kpi(kpi_payload)
 
     # Generate GeoJSON for the map and upload to Supabase Storage
     try:
