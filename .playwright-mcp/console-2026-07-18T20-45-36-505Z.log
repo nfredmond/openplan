@@ -1,0 +1,14 @@
+[    3805ms] [INFO] [O11Y] [DatadogRUM] Initialized {service: app-console, env: production, version: 6e7f27fbd24dffd71c0bcddc0155bde8b47e234b} @ https://platform.claude.com/_next/static/chunks/47971-4dbc2924b4e6283c.js:46
+[    5845ms] [WARNING] [Intercom] The App ID in your code snippet has not been set. Set it to your App ID found in settings to complete installation: https://app.intercom.com/a/apps/_/settings/web @ https://js.intercomcdn.com/frame-modern.e3624fb5.js:0
+[    6927ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[    6927ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   24931ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   24932ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   25432ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   25432ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   26432ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   26432ms] [ERROR] Cross-Origin-Opener-Policy policy would block the window.closed call. @ https://accounts.google.com/gsi/client:137
+[   29293ms] [LOG] recaptchacompat disabled @ https://platform.claude.com/_next/static/chunks/47971-4dbc2924b4e6283c.js:46
+[   38227ms] [INFO] [O11Y] [DatadogRUM] Initialized {service: app-console, env: production, version: 6e7f27fbd24dffd71c0bcddc0155bde8b47e234b} @ https://platform.claude.com/_next/static/chunks/47971-4dbc2924b4e6283c.js:46
+[   38346ms] [LOG] recaptchacompat disabled @ https://platform.claude.com/_next/static/chunks/47971-4dbc2924b4e6283c.js:46
+[   39365ms] [INFO] [Intercom] Launcher is disabled in settings or current page does not match display conditions @ https://js.intercomcdn.com/frame-modern.e3624fb5.js:0

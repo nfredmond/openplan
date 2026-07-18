@@ -8,7 +8,7 @@ gained agency/eligibility facets populated from the API's own metadata.
 
 ### BCA persistence (`project_bca_screenings`)
 
-- **Migration `20260718000088`** — append-only table mirroring the narrative-drafts pattern:
+- **Migration `20260718000089`** — append-only table mirroring the narrative-drafts pattern:
   workspace/project scoped, member read + insert RLS (`created_by = auth.uid()`), no
   UPDATE/DELETE grants, latest-per-project indexes, plus a `project_bca_screenings_latest`
   `DISTINCT ON (project_id)` view (security_invoker) for the grants-page read. **Not applied to

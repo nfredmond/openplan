@@ -1,0 +1,249 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - generic [ref=f3e4]:
+      - region [ref=f3e5]
+      - link [ref=f3e7] [cursor=pointer]:
+        - /url: https://www.mapbox.com/
+    - complementary "Primary navigation" [ref=f3e8]:
+      - generic [ref=f3e9]:
+        - link "OpenPlan home" [ref=f3e10] [cursor=pointer]:
+          - /url: /dashboard
+          - text: ◎
+        - navigation [ref=f3e12]:
+          - generic [ref=f3e13]:
+            - paragraph [ref=f3e14]: Operate
+            - link "Overview" [ref=f3e15] [cursor=pointer]:
+              - /url: /dashboard
+            - link "Command Center" [ref=f3e21] [cursor=pointer]:
+              - /url: /command-center
+            - link "Projects" [ref=f3e29] [cursor=pointer]:
+              - /url: /projects
+            - link "RTP Cycles" [ref=f3e32] [cursor=pointer]:
+              - /url: /rtp
+            - link "Plans" [ref=f3e37] [cursor=pointer]:
+              - /url: /plans
+            - link "Programs" [ref=f3e40] [cursor=pointer]:
+              - /url: /programs
+            - link "Grants" [ref=f3e44] [cursor=pointer]:
+              - /url: /grants
+            - link "Reports" [ref=f3e47] [cursor=pointer]:
+              - /url: /reports
+          - generic [ref=f3e51]:
+            - paragraph [ref=f3e53]: Analyze
+            - link "Engagement" [ref=f3e54] [cursor=pointer]:
+              - /url: /engagement
+            - link "Analysis Studio" [ref=f3e59] [cursor=pointer]:
+              - /url: /explore
+            - link "Scenarios" [ref=f3e62] [cursor=pointer]:
+              - /url: /scenarios
+            - link "Models" [ref=f3e66] [cursor=pointer]:
+              - /url: /models
+            - link "County Validation" [ref=f3e73] [cursor=pointer]:
+              - /url: /county-runs
+            - link "Data Hub" [ref=f3e76] [cursor=pointer]:
+              - /url: /data-hub
+            - link "Aerial Ops" [ref=f3e81] [cursor=pointer]:
+              - /url: /aerial
+          - generic [ref=f3e84]:
+            - paragraph [ref=f3e86]: Govern
+            - link "Billing" [ref=f3e87] [cursor=pointer]:
+              - /url: /billing
+        - generic [ref=f3e92]:
+          - button "Switch to light mode" [ref=f3e93]
+          - generic: Theme
+    - banner [ref=f3e100]:
+      - generic [ref=f3e103]:
+        - generic [ref=f3e104]: Nevada County Transportation Commission (demo)
+        - generic [ref=f3e105]: pilot · Jul 17, 8:24 PM
+      - generic [ref=f3e106]:
+        - searchbox "Search OpenPlan" [ref=f3e110]
+        - generic [ref=f3e111]: ⌘K
+      - button "Notifications" [ref=f3e112] [cursor=pointer]
+      - button "New run" [ref=f3e116] [cursor=pointer]
+    - generic [ref=f3e118]:
+      - generic [ref=f3e119]:
+        - paragraph [ref=f3e120]: Transportation Modeling
+        - list [ref=f3e121]:
+          - listitem [ref=f3e122]:
+            - link "Models Current" [ref=f3e123] [cursor=pointer]:
+              - /url: /models
+              - generic [ref=f3e124]: Models
+              - text: Current
+          - listitem [ref=f3e126]:
+            - link "Scenarios" [ref=f3e127] [cursor=pointer]:
+              - /url: /scenarios
+          - listitem [ref=f3e130]:
+            - link "County Validation" [ref=f3e131] [cursor=pointer]:
+              - /url: /county-runs
+          - listitem [ref=f3e134]:
+            - link "Data Hub" [ref=f3e135] [cursor=pointer]:
+              - /url: /data-hub
+      - generic [ref=f3e139]:
+        - generic [ref=f3e140]:
+          - article [ref=f3e141]:
+            - generic [ref=f3e142]: Models module live
+            - generic [ref=f3e147]:
+              - heading "Models" [level=1] [ref=f3e148]
+              - paragraph [ref=f3e149]: Keep methods, assumptions, and results connected to the plans and projects they support.
+            - generic [ref=f3e150]:
+              - generic [ref=f3e151]:
+                - paragraph [ref=f3e152]: Models
+                - paragraph [ref=f3e153]: "0"
+                - paragraph [ref=f3e154]: Managed model records in the current workspace.
+              - generic [ref=f3e155]:
+                - paragraph [ref=f3e156]: Ready for review
+                - paragraph [ref=f3e157]: "0"
+                - paragraph [ref=f3e158]: Records that reached review or approval posture.
+              - generic [ref=f3e159]:
+                - paragraph [ref=f3e160]: Linked results
+                - paragraph [ref=f3e161]: "0"
+                - paragraph [ref=f3e162]: 0 currently pass every readiness check.
+          - article [ref=f3e163]:
+            - generic [ref=f3e169]:
+              - paragraph [ref=f3e170]: Modeling
+              - heading "Keep methods and results easy to review" [level=2] [ref=f3e171]
+            - paragraph [ref=f3e172]: Use this page to keep model descriptions, assumptions, related scenarios, and results organized for planning review.
+            - generic [ref=f3e173]:
+              - generic [ref=f3e174]: Link each model to the project or scenario it supports.
+              - generic [ref=f3e175]: Keep related datasets, reports, and results connected in one place.
+              - generic [ref=f3e176]: Use filters to see which models are ready to review and which still need work.
+            - link "Stage a county-level onramp run" [ref=f3e177] [cursor=pointer]:
+              - /url: /county-runs
+        - generic [ref=f3e180]:
+          - article [ref=f3e181]:
+            - generic [ref=f3e183]:
+              - paragraph [ref=f3e184]: Create
+              - heading "New managed model record" [level=2] [ref=f3e185]
+              - paragraph [ref=f3e186]: "Start with the operator-owned metadata: project or scenario anchor, config version, and what the record is intended to produce. Link specific datasets, reports, plans, and recorded runs on the detail page."
+            - generic [ref=f3e192]:
+              - generic [ref=f3e193]:
+                - paragraph [ref=f3e194]: Essential setup
+                - paragraph [ref=f3e195]: Create the record first. Advanced provenance and detailed links can layer in after the shell exists.
+                - generic [ref=f3e196]:
+                  - generic [ref=f3e197]:
+                    - text: Title
+                    - textbox "Title" [ref=f3e198]:
+                      - /placeholder: Countywide 2045 travel demand model setup
+                  - generic [ref=f3e199]:
+                    - generic [ref=f3e200]:
+                      - generic [ref=f3e201]: Primary projector use scenario below
+                      - combobox "Primary projector use scenario below" [ref=f3e202]:
+                        - option "No primary project" [selected]
+                        - option "NCTC 2045 RTP (proof-of-capability)"
+                    - generic [ref=f3e203]:
+                      - text: Primary scenario set
+                      - combobox "Primary scenario set" [ref=f3e204]:
+                        - option "No primary scenario set" [selected]
+                        - option "NCTC 2045 RTP scenario comparison"
+                  - generic [ref=f3e205]:
+                    - generic [ref=f3e206]:
+                      - text: Model family
+                      - combobox "Model family" [ref=f3e207]:
+                        - option "Travel Demand Model" [selected]
+                        - option "Activity-Based Model"
+                        - option "Scenario Model"
+                        - option "Accessibility / Sketch Model"
+                        - option "Other Model"
+                    - generic [ref=f3e208]:
+                      - text: Status
+                      - combobox "Status" [ref=f3e209]:
+                        - option "Draft" [selected]
+                        - option "Configuring"
+                        - option "Ready for Review"
+                        - option "Approved"
+                        - option "Archived"
+                  - generic [ref=f3e210]:
+                    - text: Summary
+                    - textbox "Summary" [ref=f3e211]:
+                      - /placeholder: What this managed model record is for and what planning decision it should support.
+              - group [ref=f3e212]:
+                - generic "Advanced metadata Optional now, but useful for provenance, calibration posture, and handoff quality. 0 filled" [ref=f3e213] [cursor=pointer]:
+                  - generic [ref=f3e217]:
+                    - paragraph [ref=f3e218]: Advanced metadata
+                    - paragraph [ref=f3e219]: Optional now, but useful for provenance, calibration posture, and handoff quality.
+                  - generic [ref=f3e220]: 0 filled
+              - button "Create model record" [ref=f3e224]
+          - article [ref=f3e225]:
+            - generic [ref=f3e226]:
+              - generic [ref=f3e227]:
+                - paragraph [ref=f3e228]: Catalog
+                - heading "Managed model records" [level=2] [ref=f3e229]
+                - paragraph [ref=f3e230]: Filter by readiness, status, project, or model family to isolate the records that actually need attention.
+              - generic [ref=f3e231]: 0 total
+            - generic [ref=f3e234]:
+              - link "All (0)" [ref=f3e235] [cursor=pointer]:
+                - /url: /models
+              - link "Draft (0)" [ref=f3e236] [cursor=pointer]:
+                - /url: /models?status=draft
+              - link "Configuring (0)" [ref=f3e237] [cursor=pointer]:
+                - /url: /models?status=configuring
+              - link "Ready for Review (0)" [ref=f3e238] [cursor=pointer]:
+                - /url: /models?status=ready_for_review
+              - link "Approved (0)" [ref=f3e239] [cursor=pointer]:
+                - /url: /models?status=approved
+              - link "Archived (0)" [ref=f3e240] [cursor=pointer]:
+                - /url: /models?status=archived
+            - status [ref=f3e242]:
+              - generic [ref=f3e248]:
+                - paragraph [ref=f3e249]: No models yet
+                - paragraph [ref=f3e250]: Create the first model record to establish config versioning, readiness checks, and traceability across scenarios, datasets, reports, and linked plans.
+    - complementary "Map layers" [ref=f3e251]:
+      - generic [ref=f3e252]: Layers
+      - list [ref=f3e253]:
+        - listitem [ref=f3e254]:
+          - generic [ref=f3e255] [cursor=pointer]:
+            - checkbox "Projects" [checked] [ref=f3e256]
+            - generic [ref=f3e257]: Projects
+        - listitem [ref=f3e258]:
+          - generic [ref=f3e259] [cursor=pointer]:
+            - checkbox "RTP cycles" [checked] [ref=f3e260]
+            - generic [ref=f3e261]: RTP cycles
+        - listitem [ref=f3e262]:
+          - generic [ref=f3e263] [cursor=pointer]:
+            - checkbox "Study corridors" [checked] [ref=f3e264]
+            - generic [ref=f3e265]: Study corridors
+        - listitem [ref=f3e266]:
+          - generic [ref=f3e267] [cursor=pointer]:
+            - checkbox "Engagement pins" [checked] [ref=f3e268]
+            - generic [ref=f3e269]: Engagement pins
+        - listitem [ref=f3e270]:
+          - generic [ref=f3e271] [cursor=pointer]:
+            - checkbox "Aerial missions" [checked] [ref=f3e272]
+            - generic [ref=f3e273]: Aerial missions
+        - listitem [ref=f3e274]:
+          - generic [ref=f3e275] [cursor=pointer]:
+            - checkbox "Equity priority" [ref=f3e276]
+            - generic [ref=f3e277]: Equity priority
+      - generic [ref=f3e278]:
+        - text: "Basemap:"
+        - strong [ref=f3e279]: Mapbox dark
+    - complementary "Map legend" [ref=f3e280]:
+      - button "Legend" [expanded] [ref=f3e281] [cursor=pointer]:
+        - generic [ref=f3e283]: ▾
+      - list [ref=f3e284]:
+        - listitem [ref=f3e285]:
+          - generic [ref=f3e287]: Projects
+        - listitem [ref=f3e288]:
+          - generic [ref=f3e290]: Community input
+        - listitem [ref=f3e291]:
+          - generic [ref=f3e293]: Aerial AOIs
+        - listitem [ref=f3e294]:
+          - generic [ref=f3e295]: Corridors by LOS
+          - generic [ref=f3e301]:
+            - generic [ref=f3e302]: A/B
+            - generic [ref=f3e303]: C/D
+            - generic [ref=f3e304]: E
+            - generic [ref=f3e305]: F
+        - listitem [ref=f3e306]:
+          - generic [ref=f3e308]: RTP cycles
+    - region
+    - group "Zoom" [ref=f3e309]:
+      - button "Zoom in" [disabled] [ref=f3e310] [cursor=pointer]: ＋
+      - button "Zoom out" [disabled] [ref=f3e311] [cursor=pointer]: −
+    - button "Planner Agent" [ref=f3e312]
+    - generic "Account" [ref=f3e314]:
+      - generic [ref=f3e315]:
+        - generic [ref=f3e316]: nctc-demo@openplan-demo.natford.example
+        - generic [ref=f3e317]: owner
+      - button "Sign out" [ref=f3e319] [cursor=pointer]
+  - alert [ref=f3e320]

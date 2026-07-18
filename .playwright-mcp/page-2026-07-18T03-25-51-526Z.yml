@@ -1,0 +1,52 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "Open-source planning workbench OpenPlan" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]: Open-source planning workbench
+        - generic [ref=e7]: OpenPlan
+      - paragraph [ref=e8]: Your workspace
+    - main [ref=e9]:
+      - complementary [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - paragraph [ref=e13]: Your workspace
+            - heading "Maps, engagement, and reporting in one planning record." [level=1] [ref=e14]
+            - paragraph [ref=e15]: OpenPlan is open-source planning software for agencies, tribes, RTPAs, counties, and consulting teams. Sign in to pick up project work, run history, and board-ready packets right where you left them.
+          - generic [ref=e16]:
+            - paragraph [ref=e18]: Corridor analysis, overlays, and run history stay in one workspace.
+            - paragraph [ref=e20]: Public engagement stays connected to project context and reporting.
+            - paragraph [ref=e22]: Board-ready packets carry their evidence forward with you.
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - paragraph [ref=e25]: New to OpenPlan?
+            - paragraph [ref=e26]: Create an account, then open your workspace to move a planning story from context to a board-ready packet.
+          - generic [ref=e27]:
+            - paragraph [ref=e28]: Why teams use it
+            - paragraph [ref=e29]: Analysis, engagement, and deliverables stay tied to the same record, so nothing gets stranded across separate tools.
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - paragraph [ref=e34]: Sign in
+          - heading "Sign in to your workspace." [level=2] [ref=e35]
+          - paragraph [ref=e36]: Pick up project work, run history, and board-ready packets right where you left them — maps, engagement, and reporting stay connected.
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - generic [ref=e40]:
+              - text: Work email
+              - textbox "Work email" [ref=e41]:
+                - /placeholder: name@agency.gov
+                - text: nctc-demo@openplan-demo.natford.example
+            - generic [ref=e42]:
+              - text: Password
+              - textbox "Password" [ref=e43]:
+                - /placeholder: ••••••••
+                - text: NctcDemo!2026
+          - generic [ref=e44]:
+            - paragraph [ref=e45]: Back to your planning workspace.
+            - button "Sign in" [ref=e46]
+        - generic [ref=e47]:
+          - text: New to OpenPlan?
+          - link "Create an account" [ref=e48] [cursor=pointer]:
+            - /url: /sign-up?plan=starter&redirect=%2Fdashboard
+          - text: .
+  - alert [ref=e49]
