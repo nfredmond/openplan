@@ -28,6 +28,12 @@ export type GrantProgramCatalogEntry = {
   url: string;
   /** 2-3 sentence orientation summary. */
   summary: string;
+  /**
+   * How benefit-cost analysis figures into this program's selection process,
+   * when it materially does. Screening guidance only — the current NOFO or
+   * program guidelines control what an application must contain.
+   */
+  bcaNote?: string;
 };
 
 export const GRANT_PROGRAM_CATALOG: readonly GrantProgramCatalogEntry[] = [
@@ -68,6 +74,8 @@ export const GRANT_PROGRAM_CATALOG: readonly GrantProgramCatalogEntry[] = [
     url: "https://dot.ca.gov/programs/local-assistance/fed-and-state-programs/highway-safety-improvement-program",
     summary:
       "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A workhorse program for small agencies with documented collision patterns, and pairs naturally with a Local Roadway Safety Plan or safety action plan.",
+    bcaNote:
+      "Awards are scored on benefit/cost computed with the Caltrans Local Roadway Safety Manual method — countermeasure crash-reduction factors and Caltrans-published crash costs control the actual score. The screening BCA is a USDOT-style screening analogue (crashes avoided by severity at USDOT crash costs), not a preview of the LRSM B/C.",
   },
   {
     key: "ss4a",
@@ -103,6 +111,8 @@ export const GRANT_PROGRAM_CATALOG: readonly GrantProgramCatalogEntry[] = [
     url: "https://www.transportation.gov/BUILDgrants",
     summary:
       "USDOT's broad multimodal discretionary program (TIGER, then RAISE, now BUILD) for locally significant capital projects, with funding reserved for rural awards and smaller minimum award sizes for rural applicants. Highly competitive, but one of the few federal programs where a small agency can fund a transformative corridor project directly.",
+    bcaNote:
+      "USDOT expects a benefit-cost analysis following its BCA Guidance with capital applications. A screening BCR below 1.0 is an early warning to rescope before committing to a full application-of-record analysis.",
   },
   {
     key: "infra",
@@ -120,6 +130,8 @@ export const GRANT_PROGRAM_CATALOG: readonly GrantProgramCatalogEntry[] = [
     url: "https://www.transportation.gov/grants/infra-grant-program",
     summary:
       "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. For rural agencies, the realistic path is usually a partnership with Caltrans or a regional agency on a goods-movement or corridor application.",
+    bcaNote:
+      "USDOT requires a benefit-cost analysis per its BCA Guidance for INFRA applications, with freight benefits typically driving the ratio. Run the screening BCA early — a BCR below 1.0 at screening grade is a signal to rescope or firm up benefit evidence before committing to the full analysis.",
   },
   {
     key: "cmaq",

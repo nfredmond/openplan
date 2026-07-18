@@ -113,6 +113,12 @@ export function GrantsProgramCatalogSection({ trackedTitles }: { trackedTitles: 
                     <dt className="shrink-0 font-semibold text-foreground/70">Match</dt>
                     <dd>{program.matchRequirement}</dd>
                   </div>
+                  {program.bcaNote ? (
+                    <div className="flex gap-1.5 sm:col-span-2">
+                      <dt className="shrink-0 font-semibold text-foreground/70">Benefit-cost</dt>
+                      <dd>{program.bcaNote}</dd>
+                    </div>
+                  ) : null}
                 </dl>
                 <a
                   href={program.url}

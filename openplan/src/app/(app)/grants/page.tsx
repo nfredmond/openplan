@@ -6,6 +6,7 @@ import { GrantsAwardsReimbursementSection } from "@/components/grants/grants-awa
 import { GrantsModelingTriageSection } from "@/components/grants/grants-modeling-triage-section";
 import { GrantsReimbursementTriageSection } from "@/components/grants/grants-reimbursement-triage-section";
 import { GrantsAwardConversionSection } from "@/components/grants/grants-award-conversion-section";
+import { GrantsBcaScreeningSection } from "@/components/grants/grants-bca-screening-section";
 import { GrantsPageIntroHeader } from "@/components/grants/grants-page-intro-header";
 import { GrantsProgramCatalogSection } from "@/components/grants/program-catalog-section";
 import { GrantsQueueCallout } from "@/components/grants/grants-queue-callout";
@@ -222,6 +223,11 @@ export default async function GrantsPage({
     fundingAwards.map((award) => award.funding_opportunity_id).filter((value): value is string => Boolean(value))
   );
   const projectFundingProfileByProjectId = new Map(projectFundingProfiles.map((profile) => [profile.project_id, profile]));
+  const bcaScreeningProjects = projectOptions.map((project) => ({
+    id: project.id,
+    name: project.name,
+    fundingNeedAmount: projectFundingProfileByProjectId.get(project.id)?.funding_need_amount ?? null,
+  }));
   const opportunitiesByProjectId = new Map<string, typeof opportunities>();
   const fundingAwardsByProjectId = new Map<string, typeof fundingAwards>();
   const awardLinkedInvoicesByProjectId = new Map<string, BillingInvoiceRow[]>();
@@ -630,6 +636,8 @@ export default async function GrantsPage({
               leadModelingCommand={leadModelingCommand}
             />
           ) : null}
+
+          <GrantsBcaScreeningSection projects={bcaScreeningProjects} />
 
           <GrantsWorkspaceQueueSection grantsQueue={grantsQueue} />
 

@@ -84,6 +84,14 @@ describe("grant program catalog", () => {
     }
   });
 
+  it("carries benefit-cost guidance on the BCA-scored programs and phrases it as screening guidance", () => {
+    for (const expected of ["hsip", "raise", "infra"]) {
+      const program = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === expected)!;
+      expect(program.bcaNote?.trim().length, `bcaNote for ${expected}`).toBeGreaterThan(40);
+      expect(program.bcaNote!.toLowerCase(), `bcaNote mentions screening for ${expected}`).toContain("screening");
+    }
+  });
+
   it("matches tracked titles case-insensitively", () => {
     const atp = GRANT_PROGRAM_CATALOG.find((program) => program.key === "atp")!;
 
