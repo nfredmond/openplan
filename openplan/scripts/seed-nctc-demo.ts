@@ -116,6 +116,7 @@ export const DEMO_EXISTING_CONDITIONS_CHAPTER_KEY = "existing_conditions_travel_
 export const DEMO_EXISTING_CONDITIONS_CHAPTER_TITLE =
   "Existing conditions and travel patterns (demo)";
 
+export const DEMO_ENGAGEMENT_SHARE_TOKEN = "nctc_demo_sr49_corridor";
 export const DEMO_USER_EMAIL = "nctc-demo@openplan-demo.natford.example";
 export const DEMO_WORKSPACE_NAME = "Nevada County Transportation Commission (demo)";
 export const DEMO_WORKSPACE_SLUG = "nctc-demo";
@@ -1667,12 +1668,26 @@ async function main(): Promise<void> {
     }
   }
 
+  // A password is only set when OPENPLAN_DEMO_USER_PASSWORD is provided, so
+  // the demo account stays sign-in-proof on environments that never export it.
+  const demoUserPassword = process.env.OPENPLAN_DEMO_USER_PASSWORD?.trim() || undefined;
+
   if (demoUserId) {
     console.log(`[seed:nctc] reusing existing demo user: ${demoUserId}`);
+    if (demoUserPassword) {
+      const { error: passwordError } = await supabase.auth.admin.updateUserById(demoUserId, {
+        password: demoUserPassword,
+      });
+      if (passwordError) {
+        throw new Error(`Failed to set demo user password: ${passwordError.message}`);
+      }
+      console.log("[seed:nctc] demo user password updated from OPENPLAN_DEMO_USER_PASSWORD");
+    }
   } else {
     const { data: created, error: createUserError } = await supabase.auth.admin.createUser({
       email: DEMO_USER_EMAIL,
       email_confirm: true,
+      ...(demoUserPassword ? { password: demoUserPassword } : {}),
       user_metadata: { name: "NCTC Demo Operator", is_demo: true },
     });
     if (createUserError || !created?.user?.id) {
@@ -2259,7 +2274,8 @@ async function main(): Promise<void> {
       engagement_type: "map_feedback",
       public_description:
         "Shareable map comments collected during the demo RTP outreach window.",
-      allow_public_submissions: false,
+      share_token: DEMO_ENGAGEMENT_SHARE_TOKEN,
+      allow_public_submissions: true,
       created_by: demoUserId,
     },
     { onConflict: "id" }

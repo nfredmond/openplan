@@ -5,6 +5,21 @@ const LOCAL_DEV_CONNECT_SRC =
     ? []
     : ["http://localhost:*", "http://127.0.0.1:*", "ws://localhost:*", "ws://127.0.0.1:*"];
 
+// The configured Supabase instance must always be reachable from the browser —
+// a production build serving a local/self-hosted stack (demo laptops,
+// air-gapped deploys) is otherwise blocked by the *.supabase.co-only rule.
+const SUPABASE_CONNECT_SRC = (() => {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!raw) return [];
+  try {
+    const url = new URL(raw);
+    const ws = `${url.protocol === "https:" ? "wss:" : "ws:"}//${url.host}`;
+    return [url.origin, ws];
+  } catch {
+    return [];
+  }
+})();
+
 const CSP_POLICY = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
@@ -14,6 +29,7 @@ const CSP_POLICY = [
     "connect-src 'self'",
     "https://*.supabase.co",
     "wss://*.supabase.co",
+    ...SUPABASE_CONNECT_SRC,
     ...LOCAL_DEV_CONNECT_SRC,
     "https://api.mapbox.com",
     "https://events.mapbox.com",
