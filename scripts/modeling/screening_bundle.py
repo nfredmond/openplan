@@ -63,8 +63,12 @@ def build_bundle_manifest(
     keep_project: bool,
     artifacts: dict[str, str] | None = None,
     caveats: list[str] | None = None,
+    vmt: dict[str, Any] | None = None,
+    engine_versions: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     return {
+        **({"vmt": vmt} if vmt else {}),
+        **({"engine_versions": engine_versions} if engine_versions else {}),
         "run_name": run_name,
         "screening_grade": True,
         "boundary": {
@@ -101,15 +105,19 @@ def build_evidence_packet(
     demand_meta: dict[str, Any],
     skims: dict[str, Any],
     caveats: list[str],
+    vmt: dict[str, Any] | None = None,
+    engine_versions: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     return {
         "run_name": run_name,
         "run_id": run_name,
         "engine": "AequilibraE screening runtime",
+        **({"engine_versions": engine_versions} if engine_versions else {}),
         "network_source": "OpenStreetMap",
         "zone_system": zone_meta["zone_type"],
         "assignment": assignment_meta,
         "demand": demand_meta["summary"],
+        **({"vmt": vmt} if vmt else {}),
         "skims": skims,
         "caveats": caveats,
     }
@@ -125,6 +133,8 @@ def write_bundle_outputs(
     demand_meta: dict[str, Any],
     assignment_meta: dict[str, Any],
     keep_project: bool,
+    vmt: dict[str, Any] | None = None,
+    engine_versions: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     manifest = build_bundle_manifest(
         run_name=run_name,
@@ -135,6 +145,8 @@ def write_bundle_outputs(
         demand_meta=demand_meta,
         assignment_meta=assignment_meta,
         keep_project=keep_project,
+        vmt=vmt,
+        engine_versions=engine_versions,
     )
     write_json(run_dir / "bundle_manifest.json", manifest)
     evidence = build_evidence_packet(
@@ -144,6 +156,8 @@ def write_bundle_outputs(
         demand_meta=demand_meta,
         skims=manifest["skims"],
         caveats=manifest["caveats"],
+        vmt=vmt,
+        engine_versions=engine_versions,
     )
     write_json(run_dir / "run_output" / "evidence_packet.json", evidence)
     return manifest

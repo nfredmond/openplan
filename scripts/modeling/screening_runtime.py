@@ -8,7 +8,9 @@ import re
 import shutil
 import sqlite3
 import string
+import time
 import warnings
+from importlib import metadata as importlib_metadata
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +28,11 @@ from screening_boundary import (
     zip_uri,
 )
 from screening_bundle import build_run_summary, ensure_dir, slugify, write_boundary_artifact, write_bundle_outputs
+from screening_metrics import (
+    VMT_NETWORK_CIRCUITY,
+    compute_internal_resident_vmt,
+    compute_network_daily_vmt,
+)
 
 ACS_5_URL = os.getenv("CENSUS_ACS5_URL", "https://api.census.gov/data/2022/acs/acs5")
 CENSUS_API_KEY = os.getenv("CENSUS_API_KEY", "")
@@ -920,7 +927,22 @@ def run_assignment(
 
     geojson_paths = export_loaded_links_geojson(project_dir, link_results, run_output_dir)
 
+    # Unfiltered network VMT (all loaded links, external/through travel included);
+    # links.distance is metres — converted inside compute_network_daily_vmt.
+    network_daily_vmt = None
+    if "PCE_tot" in link_results.columns:
+        volumes_by_link = link_results.set_index("link_id")["PCE_tot"]
+        distances = links_df.set_index("link_id")["distance"].reindex(volumes_by_link.index).fillna(0.0)
+        network_daily_vmt = round(
+            compute_network_daily_vmt(volumes_by_link.to_numpy(), distances.to_numpy()), 1
+        )
+
     return {
+        "network_daily_vehicle_miles": network_daily_vmt,
+        "network_vmt_basis": (
+            "Σ link daily volume × link length over all loaded links, external/through "
+            "travel included; not the resident-VMT figure used for CEQA screening."
+        ),
         "convergence": {
             "final_gap": float(rgap) if np.isfinite(rgap) else None,
             "iterations": iterations,
@@ -940,6 +962,23 @@ def run_assignment(
         "loaded_links": int((link_results["PCE_tot"] > 0).sum()) if "PCE_tot" in link_results.columns else 0,
         "link_results_path": str(run_output_dir / "link_volumes.csv"),
         **geojson_paths,
+    }
+
+
+def collect_engine_versions() -> dict[str, str]:
+    import sys
+
+    def _pkg_version(package: str) -> str:
+        try:
+            return importlib_metadata.version(package)
+        except importlib_metadata.PackageNotFoundError:
+            return "unknown"
+
+    return {
+        "aequilibrae": _pkg_version("aequilibrae"),
+        "numpy": _pkg_version("numpy"),
+        "pandas": _pkg_version("pandas"),
+        "python": sys.version.split()[0],
     }
 
 
@@ -979,15 +1018,25 @@ def run_screening_model(
     ensure_dir(run_dir / "work")
     ensure_dir(cache_path)
 
-    boundary_meta = resolve_boundary(boundary_geojson, county_fips, cache_path)
+    stage_seconds: dict[str, float] = {}
+
+    def _timed(stage: str, fn, *args, **kwargs):
+        started = time.monotonic()
+        result = fn(*args, **kwargs)
+        stage_seconds[stage] = round(time.monotonic() - started, 2)
+        return result
+
+    boundary_meta = _timed("boundary", resolve_boundary, boundary_geojson, county_fips, cache_path)
     boundary_path = write_boundary_artifact(boundary_meta["geometry"], boundary_dir)
     boundary_meta["artifact_path"] = str(boundary_path)
 
-    zones_df, zone_meta = build_zone_package(boundary_meta["geometry"], package_dir, cache_path)
-    network_meta = build_network(run_dir, boundary_meta["geometry"], zones_df, network_buffer_miles)
+    zones_df, zone_meta = _timed("zones", build_zone_package, boundary_meta["geometry"], package_dir, cache_path)
+    network_meta = _timed("network", build_network, run_dir, boundary_meta["geometry"], zones_df, network_buffer_miles)
     project_dir = Path(network_meta["project_dir"])
-    skim_meta = compute_freeflow_skims(project_dir, network_meta["centroid_map"], run_output_dir)
-    demand_meta = synthesize_demand(
+    skim_meta = _timed("skims", compute_freeflow_skims, project_dir, network_meta["centroid_map"], run_output_dir)
+    demand_meta = _timed(
+        "demand",
+        synthesize_demand,
         zones_df,
         skim_meta["matrix"],
         project_dir,
@@ -999,7 +1048,44 @@ def run_screening_model(
         hbo_scalar=hbo_scalar,
         nhb_scalar=nhb_scalar,
     )
-    assignment_meta = run_assignment(project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta)
+    assignment_meta = _timed(
+        "assignment", run_assignment, project_dir, network_meta["centroid_map"], demand_meta["matrix"], run_output_dir, skim_meta
+    )
+
+    # Internal-resident VMT (the CEQA §15064.3 estimator): same derivation the
+    # seeded NCTC bundle proved out — internal OD × centroid distance × circuity,
+    # gateway zones excluded so pass-through travel is not counted.
+    vmt_inputs = compute_internal_resident_vmt(
+        demand_meta["matrix"],
+        demand_meta["zone_ids"],
+        zones_df["centroid_lon"].to_numpy(dtype=float),
+        zones_df["centroid_lat"].to_numpy(dtype=float),
+        zones_df["area_sq_mi"].to_numpy(dtype=float),
+        zones_df["est_population"].to_numpy(dtype=float),
+        gateway_zone_ids=[int(gw["zone_id"]) for gw in demand_meta["gateways"]],
+    )
+    gateway_id_list = ", ".join(str(z) for z in vmt_inputs["excluded_gateway_zone_ids"])
+    vmt_block = {
+        "method": "internal_od_centroid_distance",
+        "daily_vmt": round(vmt_inputs["daily_vmt"], 1),
+        "vmt_per_capita": round(vmt_inputs["vmt_per_capita"], 3),
+        "population_total": int(round(vmt_inputs["population"])),
+        "internal_trips": round(vmt_inputs["internal_trips"], 1),
+        "avg_trip_miles": round(vmt_inputs["avg_trip_miles"], 2),
+        "circuity": vmt_inputs["circuity"],
+        "excluded_gateway_zone_ids": vmt_inputs["excluded_gateway_zone_ids"],
+        "network_daily_vmt_unfiltered": assignment_meta.get("network_daily_vehicle_miles"),
+        "provenance": (
+            "Internal resident VMT (screening-grade, derived — not measured): "
+            f"Σ internal-to-internal OD trips × centroid great-circle distance × {VMT_NETWORK_CIRCUITY} circuity "
+            "(intrazonal ≈ 0.5·√(area/π)); external gateway zones "
+            f"[{gateway_id_list}] excluded so pass-through travel is not counted; "
+            f"divided by resident population {int(round(vmt_inputs['population'])):,}. "
+            f"Source artifacts: package/od_trip_matrix.csv + package/zone_attributes.csv ({name})."
+        ),
+    }
+    engine_versions = collect_engine_versions()
+
     manifest = write_bundle_outputs(
         run_dir=run_dir,
         run_name=name,
@@ -1010,6 +1096,8 @@ def run_screening_model(
         demand_meta=demand_meta,
         assignment_meta=assignment_meta,
         keep_project=keep_project,
+        vmt=vmt_block,
+        engine_versions=engine_versions,
     )
 
     validation_summary = None
@@ -1018,6 +1106,7 @@ def run_screening_model(
 
         counts_csv_path = Path(counts_csv).expanduser().resolve()
         validation_dir = run_dir / "validation"
+        validation_started = time.monotonic()
         validation_summary = run_validation_bundle(
             run_output_dir=run_output_dir,
             counts_csv=counts_csv_path,
@@ -1027,6 +1116,7 @@ def run_screening_model(
             ready_critical_ape=ready_critical_ape,
             required_matches=required_matches,
         )
+        stage_seconds["validation"] = round(time.monotonic() - validation_started, 2)
         manifest.setdefault("artifacts", {}).update(
             {
                 "validation_results": "validation/validation_results.csv",
@@ -1048,6 +1138,9 @@ def run_screening_model(
         shutil.rmtree(project_dir)
 
     summary = build_run_summary(name, run_dir, boundary_meta, zone_meta, demand_meta, assignment_meta, manifest)
+    summary["vmt"] = vmt_block
+    summary["engine_versions"] = engine_versions
+    summary["stage_wall_clock_seconds"] = stage_seconds
     if validation_summary is not None:
         summary["validation"] = {
             "status_label": validation_summary["screening_gate"]["status_label"],
