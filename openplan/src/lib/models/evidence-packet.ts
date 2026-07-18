@@ -29,6 +29,26 @@ export type NormalizedEvidencePacketScenarioBasis = {
   } | null;
 };
 
+/**
+ * Benchmark-fit block: a screening diagnostic comparing sketch-run outputs
+ * against reference benchmarks (never local observations). `mode_split_rmse`
+ * is in percentage points of mode share. Null on packets whose engine never
+ * computed a benchmark fit.
+ */
+export type NormalizedEvidencePacketBenchmarkFit = {
+  vmt_percent_error: number | null;
+  mode_split_rmse: number | null;
+  fit_score_0_100: number | null;
+  components: {
+    vmt_score: number | null;
+    mode_split_score: number | null;
+  };
+  reference: Record<string, unknown>;
+  sources: string[];
+  grade: "sketch_screening";
+  recommendation: string | null;
+};
+
 export type NormalizedEvidencePacket = {
   packet_version: string;
   generated_at: string;
@@ -72,6 +92,11 @@ export type NormalizedEvidencePacket = {
    * packet predates the block or the engine has no employment inputs.
    */
   employment: Record<string, unknown> | null;
+  /**
+   * Screening-grade benchmark fit against reference benchmarks (sketch lane).
+   * Null when the run's engine did not compute one.
+   */
+  benchmark_fit?: NormalizedEvidencePacketBenchmarkFit | null;
   provenance: {
     platform: string;
     engine_version: string;
@@ -175,6 +200,34 @@ export function buildEvidenceArtifactList(artifacts: Array<Record<string, unknow
     hash: asString(artifact.content_hash),
     size_bytes: asNumber(artifact.file_size_bytes),
   }));
+}
+
+/**
+ * Defensive mapping of a raw benchmark-fit block (top-level `benchmark_fit`
+ * or `result_summary_json.benchmark_fit` from the sketch lane) onto the
+ * normalized shape. Returns null when no block is present.
+ */
+function normalizeBenchmarkFit(value: unknown): NormalizedEvidencePacketBenchmarkFit | null {
+  const raw = asRecord(value);
+  if (!raw) {
+    return null;
+  }
+
+  const components = asRecord(raw.components) ?? {};
+
+  return {
+    vmt_percent_error: asNumber(raw.vmt_percent_error),
+    mode_split_rmse: asNumber(raw.mode_split_rmse),
+    fit_score_0_100: asNumber(raw.fit_score_0_100),
+    components: {
+      vmt_score: asNumber(components.vmt_score),
+      mode_split_score: asNumber(components.mode_split_score),
+    },
+    reference: asRecord(raw.reference) ?? {},
+    sources: dedupeStrings(asArray(raw.sources).map((source) => asString(source))),
+    grade: "sketch_screening",
+    recommendation: asString(raw.recommendation),
+  };
 }
 
 export function normalizeEvidencePacket({
@@ -321,9 +374,13 @@ export function normalizeEvidencePacket({
     },
     caveats: dedupeStrings([
       ...asArray(raw.caveats).map((value) => asString(value)),
+      // The sketch lane stores its screening-grade caveats in
+      // result_summary_json.caveats; surface them on the packet.
+      ...asArray(normalizedResultSummary.caveats).map((value) => asString(value)),
       fallbackReason,
     ]),
     employment: asRecord(raw.employment),
+    benchmark_fit: normalizeBenchmarkFit(raw.benchmark_fit ?? normalizedResultSummary.benchmark_fit),
     provenance: {
       platform: asString(rawProvenance.platform) ?? "OpenPlan",
       engine_version:
