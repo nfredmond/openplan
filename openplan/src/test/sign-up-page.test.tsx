@@ -39,6 +39,15 @@ describe("SignUpPage", () => {
     searchParamsValue.forEach((_, key) => searchParamsValue.delete(key));
   });
 
+  it("uses the confident, welcoming product voice in the sign-up header", async () => {
+    render(<SignUpPage />);
+
+    expect(await screen.findByRole("heading", { name: /Create your OpenPlan account/i })).toBeInTheDocument();
+    expect(screen.getByText(/projects, maps, engagement, and reporting come together/i)).toBeInTheDocument();
+    expect(screen.queryByText(/supervised early access/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/establishes the operator account only/i)).not.toBeInTheDocument();
+  });
+
   it("preserves plan and redirect context on the sign-in link", async () => {
     searchParamsValue.set("plan", "starter");
     searchParamsValue.set("redirect", "/reports");

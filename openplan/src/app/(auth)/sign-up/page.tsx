@@ -89,9 +89,9 @@ function SignUpForm() {
     <section className={frameClassName()}>
       <header className="border-b border-border/60 px-6 py-5 sm:px-7">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Create account</p>
-        <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Create the identity before the workspace is activated.</h2>
+        <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Create your OpenPlan account.</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          This step establishes the operator account only. Workspace setup, managed-hosting billing, and paid service activation still happen after sign-in so OpenPlan can target the right workspace explicitly.
+          Set up your account to get into OpenPlan. You will create or open your workspace right after signing in — that is where projects, maps, engagement, and reporting come together.
         </p>
       </header>
 
@@ -168,7 +168,7 @@ function SignUpForm() {
           ) : null}
 
           <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Account first, workspace targeting second.</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Choose your workspace right after signing in.</p>
             <Button type="submit" className="sm:min-w-44" disabled={loading}>
               {loading ? "Creating account..." : "Create account"}
             </Button>
@@ -197,7 +197,7 @@ function SignUpForm() {
           <Link href="/legal" className="underline underline-offset-4 hover:text-foreground">
             legal notice
           </Link>{" "}
-          that govern supervised early access.
+          that govern your use of OpenPlan.
         </p>
       </footer>
     </section>

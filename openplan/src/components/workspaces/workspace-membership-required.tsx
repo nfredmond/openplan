@@ -6,7 +6,7 @@ export function WorkspaceMembershipRequired({
   title,
   description,
   primaryHref = "/request-access",
-  primaryLabel = "Request supervised pilot access",
+  primaryLabel = "Request workspace access",
   secondaryHref = "/dashboard",
   secondaryLabel = "Back to overview",
 }: {
@@ -29,7 +29,7 @@ export function WorkspaceMembershipRequired({
           <h1 className="module-intro-title">{title ?? `${moduleLabel} needs a provisioned workspace`}</h1>
           <p className="module-intro-description">
             {description ??
-              `${moduleLabel} records are workspace-scoped inside the supervised pilot planning workbench. You are signed in, but this account is not attached to a provisioned pilot workspace yet. Request supervised pilot access or ask an owner/admin to add you to the correct workspace.`}
+              `${moduleLabel} records are workspace-scoped. You are signed in, but this account is not attached to a workspace yet. Request access or ask an owner/admin to add you to the correct workspace.`}
           </p>
         </div>
         <div className="mt-5 flex flex-wrap gap-5 border-t border-white/10 pt-4 text-sm">
