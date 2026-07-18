@@ -146,7 +146,22 @@ def fetch_tracts_for_study_area(
             print(f"  Warning: ACS fetch failed for {state_fips}/{county_fips}: {res.status_code}")
             continue
 
-        data = res.json()
+        # The Census API returns HTTP 200 with an HTML "Missing Key" page when
+        # no API key is supplied — surface that as an actionable error instead
+        # of a cryptic JSONDecodeError.
+        try:
+            data = res.json()
+        except ValueError as exc:
+            body_head = res.text[:300]
+            if "key" in body_head.lower():
+                raise DataPipelineError(
+                    "Census ACS API rejected the request — an API key is required. "
+                    "Get a free key at https://api.census.gov/data/key_signup.html "
+                    "and set CENSUS_API_KEY in openplan/.env.local (the worker reads it)."
+                ) from exc
+            raise DataPipelineError(
+                f"Census ACS API returned non-JSON for {state_fips}/{county_fips}: {body_head!r}"
+            ) from exc
         if not data or len(data) < 2:
             continue
 

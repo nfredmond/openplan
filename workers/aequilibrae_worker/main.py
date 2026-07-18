@@ -36,6 +36,11 @@ load_dotenv("../../openplan/.env.local", override=False)  # local dev fallback
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
+# Skim/assignment parallelism. AequilibraE defaults to every core, which
+# multiplies graph copies across multiprocessing workers — on shared/dev boxes
+# that risks OOM kills mid-run. Default to 1; raise via env on big machines.
+AEQ_CORES = max(1, int(os.getenv("AEQ_CORES", "1")))
+
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase credentials in environment.")
 
@@ -279,6 +284,7 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     next_node = max_node + 1
     next_link = max_link + 1
     centroid_map = {}
+    disconnected_zones = []
 
     for _, z in active_zones.iterrows():
         zid = int(z["zone_id"])
@@ -298,6 +304,16 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
         ).fetchall()
 
         nearest_in_comp = [(nid, d) for nid, d in nearest if nid in largest][:3]
+        if not nearest_in_comp:
+            # None of the 50 nearest network nodes belong to the largest
+            # connected component — the zone sits on a disconnected subnetwork
+            # of this OSM snapshot (or beyond the search radius). A centroid
+            # registered without connectors is absent from the routing graph
+            # and hard-crashes AequilibraE's skimming, so exclude the zone
+            # honestly instead.
+            conn.execute("DELETE FROM nodes WHERE node_id=?", (centroid_nid,))
+            disconnected_zones.append(zid)
+            continue
         for near_nid, dist2 in nearest_in_comp:
             nx, ny = conn.execute("SELECT X(geometry),Y(geometry) FROM nodes WHERE node_id=?", (near_nid,)).fetchone()
             line_wkt = f"LINESTRING({clon} {clat}, {nx} {ny})"
@@ -313,6 +329,12 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     conn.commit()
 
     log += f"Added {len(centroid_map)} centroids with connectors.\n"
+    if disconnected_zones:
+        log += (
+            f"Excluded {len(disconnected_zones)} zone(s) with no connection to the "
+            f"main network on this OSM snapshot: {disconnected_zones}. Their demand "
+            "is omitted from skims and assignment (screening-grade caveat).\n"
+        )
 
     # --- Renumber to contiguous 1..N ---
     old_ids = [r[0] for r in conn.execute("SELECT node_id FROM nodes ORDER BY node_id")]
@@ -360,6 +382,7 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
         "n_nodes": len(old_ids),
         "n_links": len(links_data),
         "largest_component_pct": round(100 * len(largest) / len(nodes_all), 1),
+        "disconnected_zones": disconnected_zones,
         "log": log,
     }
 
@@ -397,6 +420,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     sb_patch_stage(stage_id, {"log_tail": log})
 
     skimming = NetworkSkimming(graph)
+    skimming.set_cores(AEQ_CORES)
     skimming.execute()
     skim_mat = skimming.results.skims
     time_skim = skim_mat.matrix["travel_time"]
@@ -447,6 +471,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     tc = TrafficClass(name="car", graph=graph, matrix=demand_mat)
     tc.set_pce(1.0)
     assig.add_class(tc)
+    assig.set_cores(AEQ_CORES)
     assig.set_vdf("BPR")
     assig.set_vdf_parameters({"alpha": 0.15, "beta": 4.0})
     assig.set_capacity_field("capacity")
@@ -582,6 +607,7 @@ def stage_artifacts(
         "skims": assign_result["skims"],
         "loaded_links": assign_result["loaded_links"],
         "largest_component_pct": setup_result.get("largest_component_pct"),
+        "excluded_zones": setup_result.get("disconnected_zones") or [],
         "bbox": list(bbox) if bbox else None,
         "vmt": {
             "daily_vmt": daily_vmt,
