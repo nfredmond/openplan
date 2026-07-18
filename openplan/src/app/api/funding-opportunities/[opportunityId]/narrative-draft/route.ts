@@ -22,6 +22,13 @@ import {
   buildProjectFundingStackSummary,
   type ProjectFundingStackSummary,
 } from "@/lib/projects/funding";
+import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
+import {
+  buildNarrativeFactList,
+  renderNarrativeFactPromptLines,
+  summarizeNarrativeGrounding,
+  type NarrativeFact,
+} from "@/lib/grants/narrative-grounding";
 
 const DEFAULT_NARRATIVE_MODEL_ID = "claude-opus-4-8";
 
@@ -71,18 +78,20 @@ function formatAmount(value: number): string {
   }).format(value);
 }
 
-function describeFundingSummary(summary: ProjectFundingStackSummary, projectName: string | null): string {
+function fundingSummaryClaims(summary: ProjectFundingStackSummary, projectName: string | null): string[] {
+  const projectLabel = projectName ?? "The linked project";
   return [
-    `Project: ${projectName ?? "(unnamed project)"}`,
-    `Funding posture: ${summary.label} — ${summary.reason}`,
-    `Pipeline posture: ${summary.pipelineLabel} — ${summary.pipelineReason}`,
-    `Funding need: ${summary.hasTargetNeed ? formatAmount(summary.fundingNeedAmount) : "not recorded"}`,
-    `Local match need: ${summary.localMatchNeedAmount > 0 ? formatAmount(summary.localMatchNeedAmount) : "not recorded"}`,
-    `Committed award dollars: ${formatAmount(summary.committedFundingAmount)} across ${summary.awardCount} award record(s)`,
-    `Pursued (likely) opportunity dollars: ${formatAmount(summary.likelyFundingAmount)} across ${summary.pursuedOpportunityCount} pursued opportunit(ies)`,
-    `Remaining gap after committed + pursued dollars: ${formatAmount(summary.unfundedAfterLikelyAmount)}`,
-    `Reimbursement posture: ${summary.reimbursementLabel} — ${summary.reimbursementReason}`,
-  ].join("\n");
+    `${projectLabel} funding posture: ${summary.label} — ${summary.reason}`,
+    `${projectLabel} pipeline posture: ${summary.pipelineLabel} — ${summary.pipelineReason}`,
+    summary.hasTargetNeed ? `${projectLabel} funding need: ${formatAmount(summary.fundingNeedAmount)}` : null,
+    summary.localMatchNeedAmount > 0
+      ? `${projectLabel} local match need: ${formatAmount(summary.localMatchNeedAmount)}`
+      : null,
+    `${projectLabel} committed award dollars: ${formatAmount(summary.committedFundingAmount)} across ${summary.awardCount} award record(s)`,
+    `${projectLabel} pursued (likely) opportunity dollars: ${formatAmount(summary.likelyFundingAmount)} across ${summary.pursuedOpportunityCount} pursued opportunit(ies)`,
+    `${projectLabel} remaining gap after committed + pursued dollars: ${formatAmount(summary.unfundedAfterLikelyAmount)}`,
+    `${projectLabel} reimbursement posture: ${summary.reimbursementLabel} — ${summary.reimbursementReason}`,
+  ].filter((claim): claim is string => claim !== null);
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -253,39 +262,54 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const modelId = process.env.OPENPLAN_GRANTS_AI_MODEL?.trim() || DEFAULT_NARRATIVE_MODEL_ID;
 
+    // Numbered fact list (fact_1..fact_N): every workspace-specific claim the
+    // model is allowed to state, in citable form. The generated narrative must
+    // cite these with inline [fact:N] tokens; the citations are validated
+    // deterministically after generation (planner-pack grounding contract).
+    const hasModelingEvidence = Boolean(modelingHeadline && modelingReadinessDetail);
+    const facts: NarrativeFact[] = buildNarrativeFactList([
+      `The funding opportunity is titled "${opportunity.title}"${opportunity.agency_name ? `, administered by ${opportunity.agency_name}` : ""}.`,
+      `The opportunity status is "${opportunity.opportunity_status}" and the workspace decision posture is "${opportunity.decision_state}".`,
+      opportunity.expected_award_amount != null
+        ? `The expected award amount recorded for this opportunity is ${formatAmount(Number(opportunity.expected_award_amount))}.`
+        : null,
+      opportunity.summary ? `Opportunity summary on record: ${opportunity.summary}` : null,
+      opportunity.fit_notes ? `Funding-source fit notes on record: ${opportunity.fit_notes}` : null,
+      opportunity.readiness_notes ? `Readiness notes on record: ${opportunity.readiness_notes}` : null,
+      opportunity.decision_rationale
+        ? `Decision rationale on record: ${opportunity.decision_rationale}`
+        : null,
+      ...(fundingSummary ? fundingSummaryClaims(fundingSummary, projectName) : []),
+      hasModelingEvidence ? `${modelingHeadline} ${GRANT_MODELING_PLANNING_CAVEAT}` : null,
+      hasModelingEvidence
+        ? `Modeling evidence readiness: ${modelingReadinessDetail} ${GRANT_MODELING_PLANNING_CAVEAT}`
+        : null,
+      `Evidence readiness (deterministic guardrail summary): ${evidenceReadinessSummary}`,
+    ]);
+    const factIds = facts.map((fact) => fact.fact_id);
+
     const promptSections = [
       "Write a grant-application need and readiness narrative for the funding opportunity described below.",
       "",
       "REQUIREMENTS:",
       "- Write 3-5 paragraphs of professional grant-narrative prose in markdown (paragraphs only; no headings, no bullet lists).",
-      "- Ground every statement STRICTLY in the data provided below. Do not invent numbers, dollar amounts, dates, deadlines, commitments, partners, or project details that are not present in the data.",
+      "- Ground every statement STRICTLY in the numbered WORKSPACE FACTS below. Do not invent numbers, dollar amounts, dates, deadlines, commitments, partners, or project details that are not present in the facts.",
+      "- CITATIONS ARE MANDATORY: every sentence that states a workspace-specific fact MUST end with one or more inline citation tokens of the form [fact:fact_N] naming the fact(s) it draws on, e.g. \"The project carries a documented funding need. [fact:fact_3]\".",
+      "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual — when in doubt, prefer citing.",
       "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
       "- If (and only if) you reference the modeling evidence or model results below, you MUST include the following caveat sentence verbatim in the same paragraph:",
       `  "${GRANT_MODELING_PLANNING_CAVEAT}"`,
       "- Do not promise awards, eligibility determinations, or fiscal compliance; this draft supports an operator-reviewed application.",
       "",
-      "FUNDING OPPORTUNITY:",
-      `Title: ${opportunity.title}`,
-      `Administering agency: ${opportunity.agency_name ?? "not recorded"}`,
-      `Status: ${opportunity.opportunity_status}; decision posture: ${opportunity.decision_state}`,
-      `Expected award amount: ${opportunity.expected_award_amount != null ? formatAmount(Number(opportunity.expected_award_amount)) : "not recorded"}`,
-      `Summary: ${opportunity.summary ?? "not recorded"}`,
-      `Fit notes: ${opportunity.fit_notes ?? "not recorded"}`,
-      `Readiness notes: ${opportunity.readiness_notes ?? "not recorded"}`,
-      `Decision rationale: ${opportunity.decision_rationale ?? "not recorded"}`,
+      "WORKSPACE FACTS (the only citable claims; cite as [fact:fact_N]):",
+      ...renderNarrativeFactPromptLines(facts),
       "",
-      "LINKED PROJECT FUNDING SUMMARY:",
       fundingSummary
-        ? describeFundingSummary(fundingSummary, projectName)
-        : "No project is linked to this opportunity. Ground the narrative in the opportunity record only.",
-      "",
-      "MODELING EVIDENCE (deterministic, computed from stored reports):",
-      modelingHeadline && modelingReadinessDetail
-        ? [modelingHeadline, modelingReadinessDetail].join("\n")
+        ? "A linked project funding stack backs the facts above."
+        : "No project is linked to this opportunity. Ground the narrative in the opportunity-record facts only.",
+      hasModelingEvidence
+        ? "Modeling-evidence facts above are deterministic, computed from stored reports, and screening-grade."
         : "No comparison-backed modeling packet is visible for this opportunity's project. Do not reference modeling or analysis results.",
-      "",
-      "EVIDENCE READINESS (deterministic guardrail summary):",
-      evidenceReadinessSummary,
     ].join("\n");
 
     let draftText: string;
@@ -320,6 +344,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "narrative_generation_failed" }, { status: 502 });
     }
 
+    // Deterministic per-sentence citation validation (annotated mode keeps
+    // every sentence and flags ungrounded ones for operator review; the raw
+    // draft with its [fact:N] tokens is what gets stored).
+    const grounding = summarizeNarrativeGrounding(
+      validateGroundedNarrative(draftText, factIds, "annotated"),
+      facts
+    );
+
     const { data: draft, error: insertError } = await supabase
       .from("funding_opportunity_narrative_drafts")
       .insert({
@@ -329,8 +361,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
         model: modelId,
         source: "ai",
         created_by: user.id,
+        grounding_json: grounding,
+        grounded_sentence_count: grounding.grounded_sentence_count,
+        total_sentence_count: grounding.total_sentence_count,
       })
-      .select("id, opportunity_id, draft_markdown, model, source, created_at")
+      .select(
+        "id, opportunity_id, draft_markdown, model, source, created_at, grounding_json, grounded_sentence_count, total_sentence_count"
+      )
       .single();
 
     if (insertError || !draft) {
@@ -352,6 +389,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       model: modelId,
       inputTokens,
       outputTokens,
+      groundedSentenceCount: grounding.grounded_sentence_count,
+      totalSentenceCount: grounding.total_sentence_count,
+      isFullyGrounded: grounding.is_fully_grounded,
       durationMs: Date.now() - startedAt,
     });
 

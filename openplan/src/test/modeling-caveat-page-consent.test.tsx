@@ -65,6 +65,15 @@ describe("CountyRunDetailPage — modeling caveat page consent", () => {
     });
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
+      from: vi.fn(() => ({
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            eq: vi.fn(() => ({
+              maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+            })),
+          })),
+        })),
+      })),
     });
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "owner" },
