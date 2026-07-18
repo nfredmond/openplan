@@ -139,47 +139,59 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
 
     if (volumesGeojsonArtifact?.file_url) {
-      const geojson = (await loadJsonArtifact(
-        volumesGeojsonArtifact.file_url
-      )) as GeoJsonFeatureCollection;
-      const features = (geojson.features ?? []).filter((feature) => {
-        const value = Number(
-          (feature.properties as Record<string, unknown> | undefined)?.pce_tot ?? 0
+      try {
+        const envRoot = workerLocalRoot();
+        const geojson = (await loadJsonArtifact(volumesGeojsonArtifact.file_url, {
+          bucket: "run-artifacts",
+          objectPathPrefix: `model-runs/${modelRunId}/`,
+          localRoot: envRoot ? resolveRunWorkDir(envRoot, modelRunId) : undefined,
+        })) as GeoJsonFeatureCollection;
+        const features = (geojson.features ?? []).filter((feature) => {
+          const value = Number(
+            (feature.properties as Record<string, unknown> | undefined)?.pce_tot ?? 0
+          );
+          return value >= minVolume;
+        });
+
+        features.sort(
+          (a, b) =>
+            Number((b.properties as Record<string, unknown> | undefined)?.pce_tot ?? 0) -
+            Number((a.properties as Record<string, unknown> | undefined)?.pce_tot ?? 0)
         );
-        return value >= minVolume;
-      });
 
-      features.sort(
-        (a, b) =>
-          Number((b.properties as Record<string, unknown> | undefined)?.pce_tot ?? 0) -
-          Number((a.properties as Record<string, unknown> | undefined)?.pce_tot ?? 0)
-      );
-
-      const limitedFeatures = features.slice(0, limit);
-      const maxVolume =
-        limitedFeatures.length > 0
-          ? Math.max(
-              ...limitedFeatures.map((feature) =>
-                Number(
-                  (feature.properties as Record<string, unknown> | undefined)?.pce_tot ?? 0
+        const limitedFeatures = features.slice(0, limit);
+        const maxVolume =
+          limitedFeatures.length > 0
+            ? Math.max(
+                ...limitedFeatures.map((feature) =>
+                  Number(
+                    (feature.properties as Record<string, unknown> | undefined)?.pce_tot ?? 0
+                  )
                 )
               )
-            )
-          : 0;
+            : 0;
 
-      return NextResponse.json({
-        type: "FeatureCollection",
-        features: limitedFeatures,
-        metadata: {
-          ...(geojson.metadata ?? {}),
-          totalLinks: limitedFeatures.length,
-          maxVolume,
-          minVolume,
+        return NextResponse.json({
+          type: "FeatureCollection",
+          features: limitedFeatures,
+          metadata: {
+            ...(geojson.metadata ?? {}),
+            totalLinks: limitedFeatures.length,
+            maxVolume,
+            minVolume,
+            modelRunId,
+            source: "artifact",
+            engine: run.engine_key ?? "AequilibraE 1.6.1",
+          },
+        });
+      } catch (error) {
+        // Out-of-scope or unreadable refs (member-registered rows can carry
+        // arbitrary file_url) degrade to the gated reconstruction below.
+        audit.warn("model_run_volumes_artifact_unreadable", {
           modelRunId,
-          source: "artifact",
-          engine: run.engine_key ?? "AequilibraE 1.6.1",
-        },
-      });
+          message: error instanceof Error ? error.message : String(error),
+        });
+      }
     }
 
     // Run-local filesystem reconstruction is a dev-only fallback. Hosted

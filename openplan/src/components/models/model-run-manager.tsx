@@ -651,7 +651,12 @@ function ModelRunStagingAndArtifacts({
                       <p className="font-medium text-foreground">{labelForArtifactType(art.artifact_type)}</p>
                       {formatFileSize(art.file_size_bytes) ? <p className="text-xs">{formatFileSize(art.file_size_bytes)}</p> : null}
                     </div>
-                    <a href={art.file_url} target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground">
+                    <a
+                      href={`/api/models/${modelId}/runs/${run.id}/artifacts/${art.id}/download`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-foreground"
+                    >
                       View / Download
                     </a>
                   </li>
