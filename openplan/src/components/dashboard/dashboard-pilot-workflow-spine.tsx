@@ -4,7 +4,7 @@ export function DashboardPilotWorkflowSpine() {
   return (
     <PilotWorkflowHandoff
       title="Move one planning story from context to packet"
-      description="This is the shortest complete path through OpenPlan for a supervised pilot walkthrough."
+      description="The shortest complete path through OpenPlan — from context to a board-ready packet."
     />
   );
 }

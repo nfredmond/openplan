@@ -84,9 +84,9 @@ function SignInForm() {
     <section className={frameClassName()}>
       <header className="border-b border-border/60 px-6 py-5 sm:px-7">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Sign in</p>
-        <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Resume work inside the correct workspace.</h2>
+        <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Sign in to your workspace.</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Access your OpenPlan workspace, then confirm the project and billing context before you continue into delivery work.
+          Pick up project work, run history, and board-ready packets right where you left them — maps, engagement, and reporting stay connected.
         </p>
       </header>
 
@@ -180,7 +180,7 @@ function SignInForm() {
           ) : null}
 
           <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Credential check, then workspace selection.</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">Back to your planning workspace.</p>
             <Button type="submit" className="sm:min-w-40" disabled={loading}>
               {loading ? "Signing in..." : "Sign in"}
             </Button>

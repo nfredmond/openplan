@@ -40,6 +40,16 @@ describe("SignInPage", () => {
     searchParamsValue.forEach((_, key) => searchParamsValue.delete(key));
   });
 
+  it("uses the confident, welcoming product voice in the sign-in header", async () => {
+    render(<SignInPage />);
+
+    expect(await screen.findByRole("heading", { name: /Sign in to your workspace/i })).toBeInTheDocument();
+    expect(screen.getByText(/maps, engagement, and reporting stay connected/i)).toBeInTheDocument();
+    expect(screen.queryByText(/supervised/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/operations checkpoint/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Resume work inside the correct workspace/i)).not.toBeInTheDocument();
+  });
+
   it("surfaces first-success guidance after account creation and preserves the redirect target", async () => {
     searchParamsValue.set("created", "1");
     searchParamsValue.set("plan", "starter");

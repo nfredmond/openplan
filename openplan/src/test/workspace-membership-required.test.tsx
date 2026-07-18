@@ -13,13 +13,12 @@ vi.mock("next/link", () => ({
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 
 describe("WorkspaceMembershipRequired", () => {
-  it("sets a supervised pilot/workbench boundary for unprovisioned signed-in accounts", () => {
+  it("explains the workspace boundary for unprovisioned signed-in accounts", () => {
     render(<WorkspaceMembershipRequired moduleLabel="Projects" />);
 
     expect(screen.getByText("Workspace membership required")).toBeInTheDocument();
-    expect(screen.getByText(/supervised pilot planning workbench/i)).toBeInTheDocument();
-    expect(screen.getByText(/planning workbench/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /request supervised pilot access/i })).toHaveAttribute(
+    expect(screen.getByText(/records are workspace-scoped/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /request workspace access/i })).toHaveAttribute(
       "href",
       "/request-access"
     );

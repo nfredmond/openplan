@@ -181,7 +181,7 @@ export default async function ProjectsPage({
         title="Projects need a provisioned pilot workspace"
         description="The project workbench is available after an operator attaches this account to a supervised pilot workspace. This screen does not create autonomous workspaces or bypass intake review."
         primaryHref="/request-access"
-        primaryLabel="Request supervised pilot access"
+        primaryLabel="Request workspace access"
       />
     );
   }

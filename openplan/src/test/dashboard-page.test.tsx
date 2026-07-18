@@ -206,7 +206,11 @@ describe("DashboardPage", () => {
     expect(screen.getByText(/Current RTP packet work is now a Grants OS follow-through lane/i)).toBeInTheDocument();
     expect(screen.getByText(/Analysis API accepts schema-checked corridor scoring requests/i)).toBeInTheDocument();
     expect(screen.queryByText(/validated corridor scoring requests/i)).not.toBeInTheDocument();
-    expect(screen.getByText("Pilot workflow spine")).toBeInTheDocument();
+    expect(screen.getByText("Workflow spine")).toBeInTheDocument();
+    expect(
+      screen.getByText("The shortest complete path through OpenPlan — from context to a board-ready packet.")
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/supervised pilot/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute("href", "/projects");
     expectLinkByHref(/Packet assembly/i, "/reports");
   });

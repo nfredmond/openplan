@@ -23,6 +23,8 @@ import {
   type ProjectFundingStackSummary,
 } from "@/lib/projects/funding";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
+import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
+import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 import {
   buildNarrativeFactList,
   renderNarrativeFactPromptLines,
@@ -159,6 +161,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const opportunity = access.opportunity;
+
+    const rateLimit = await checkAiUsageRateLimit(opportunity.workspace_id);
+    if (!rateLimit.allowed) {
+      audit.warn("narrative_draft_rate_limited", {
+        opportunityId: opportunity.id,
+        workspaceId: opportunity.workspace_id,
+        userId: user.id,
+        recentCount: rateLimit.count,
+      });
+      return NextResponse.json(
+        { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+        { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+      );
+    }
 
     // Load the linked project's funding summary + deterministic modeling
     // evidence, mirroring what the grants page computes.
@@ -381,6 +397,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const inputTokens = nullIfUndefined(usage?.inputTokens);
     const outputTokens = nullIfUndefined(usage?.outputTokens);
+
+    await recordUsageEventBestEffort(
+      {
+        workspaceId: opportunity.workspace_id,
+        eventKey: "grant_narrative_draft",
+        bucketKey: "grant_narrative_draft",
+        sourceRoute: "/api/funding-opportunities/[opportunityId]/narrative-draft",
+        metadata: { opportunityId: opportunity.id, model: modelId },
+      },
+      audit
+    );
 
     audit.info("narrative_draft_created", {
       opportunityId: opportunity.id,
