@@ -104,14 +104,73 @@ describe("loadJsonArtifact", () => {
     expect(readFileMock).not.toHaveBeenCalled();
   });
 
-  it("reads local:// paths when the dev flag is set", async () => {
+  it("reads local:// paths inside the worker root when the dev flag is set", async () => {
     process.env.OPENPLAN_WORKER_LOCAL_ROOT = "/srv/runs";
     const payload = { type: "FeatureCollection", features: [] };
     readFileMock.mockResolvedValue(JSON.stringify(payload));
 
-    const result = await loadJsonArtifact("local:///tmp/volumes.geojson");
+    const result = await loadJsonArtifact("local:///srv/runs/runs/abc/volumes.geojson");
 
     expect(result).toEqual(payload);
-    expect(readFileMock).toHaveBeenCalledWith("/tmp/volumes.geojson", "utf8");
+    expect(readFileMock).toHaveBeenCalledWith("/srv/runs/runs/abc/volumes.geojson", "utf8");
+  });
+
+  it("refuses local paths that escape the worker root", async () => {
+    process.env.OPENPLAN_WORKER_LOCAL_ROOT = "/srv/runs";
+    await expect(loadJsonArtifact("local:///etc/passwd")).rejects.toThrow(
+      /escapes the worker-local root/
+    );
+    await expect(loadJsonArtifact("local:///srv/runs/../secrets.env")).rejects.toThrow(
+      /escapes the worker-local root/
+    );
+    expect(readFileMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses storage refs outside the read scope", async () => {
+    await expect(
+      loadJsonArtifact("storage://engagement-photos/private/photo.json", {
+        bucket: "run-artifacts",
+        objectPathPrefix: "model-runs/abc/",
+      })
+    ).rejects.toThrow(/outside this run's scope/);
+    await expect(
+      loadJsonArtifact("storage://run-artifacts/model-runs/other-run/volumes.geojson", {
+        bucket: "run-artifacts",
+        objectPathPrefix: "model-runs/abc/",
+      })
+    ).rejects.toThrow(/outside this run's scope/);
+    expect(downloadMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses remote URLs for scoped reads", async () => {
+    await expect(
+      loadJsonArtifact("https://evil.example/x.json", {
+        bucket: "run-artifacts",
+        objectPathPrefix: "model-runs/abc/",
+      })
+    ).rejects.toThrow(/not supported for scoped artifact reads/);
+  });
+
+  it("contains scoped local reads to the provided localRoot", async () => {
+    process.env.OPENPLAN_WORKER_LOCAL_ROOT = "/srv/runs";
+    readFileMock.mockResolvedValue(JSON.stringify({ ok: true }));
+
+    await expect(
+      loadJsonArtifact("local:///srv/runs/runs/other-run/volumes.geojson", {
+        bucket: "run-artifacts",
+        objectPathPrefix: "model-runs/abc/",
+        localRoot: "/srv/runs/runs/abcdef012345",
+      })
+    ).rejects.toThrow(/escapes the worker-local root/);
+
+    const ok = await loadJsonArtifact(
+      "local:///srv/runs/runs/abcdef012345/run_output/volumes.geojson",
+      {
+        bucket: "run-artifacts",
+        objectPathPrefix: "model-runs/abc/",
+        localRoot: "/srv/runs/runs/abcdef012345",
+      }
+    );
+    expect(ok).toEqual({ ok: true });
   });
 });
