@@ -332,6 +332,32 @@ export function formatDateTime(value: string | null | undefined) {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
+/**
+ * Deadline-aware variant of formatDateTime. Records created from grants.gov
+ * synopses carry synthetic sentinel times (00:00:00Z opens, 23:59:59Z closes)
+ * because the API publishes dates only — rendering those as precise local
+ * timestamps would fabricate a deadline time. Sentinels render date-only,
+ * with closes flagged to check the NOFO; real operator-entered times keep
+ * the precise rendering.
+ */
+export function formatDeadline(value: string | null | undefined, kind: "opens" | "closes") {
+  if (!value) return "Not set";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+  const isSentinel =
+    kind === "opens"
+      ? parsed.getUTCHours() === 0 && parsed.getUTCMinutes() === 0 && parsed.getUTCSeconds() === 0
+      : parsed.getUTCHours() === 23 && parsed.getUTCMinutes() === 59 && parsed.getUTCSeconds() === 59;
+  if (!isSentinel) return parsed.toLocaleString();
+  const dateOnly = parsed.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  return kind === "closes" ? `${dateOnly} (deadline time per NOFO)` : dateOnly;
+}
+
 export function isClosingSoon(value: string | null | undefined) {
   if (!value) return false;
   const parsed = new Date(value);

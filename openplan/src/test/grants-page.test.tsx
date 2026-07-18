@@ -119,6 +119,12 @@ vi.mock("@/components/grants/program-catalog-section", () => ({
   ),
 }));
 
+vi.mock("@/components/grants/grants-gov-live-section", () => ({
+  GrantsGovLiveSection: (props: { trackedTitles: string[] }) => (
+    <div data-testid="grants-gov-live-section" data-tracked-count={props.trackedTitles.length} />
+  ),
+}));
+
 vi.mock("@/components/programs/funding-opportunity-decision-controls", () => ({
   FundingOpportunityDecisionControls: (props: unknown) => {
     fundingOpportunityDecisionControlsMock(props);

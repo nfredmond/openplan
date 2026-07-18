@@ -7,6 +7,7 @@ import { GrantsModelingTriageSection } from "@/components/grants/grants-modeling
 import { GrantsReimbursementTriageSection } from "@/components/grants/grants-reimbursement-triage-section";
 import { GrantsAwardConversionSection } from "@/components/grants/grants-award-conversion-section";
 import { GrantsBcaScreeningSection } from "@/components/grants/grants-bca-screening-section";
+import { GrantsGovLiveSection } from "@/components/grants/grants-gov-live-section";
 import { GrantsPageIntroHeader } from "@/components/grants/grants-page-intro-header";
 import { GrantsProgramCatalogSection } from "@/components/grants/program-catalog-section";
 import { GrantsQueueCallout } from "@/components/grants/grants-queue-callout";
@@ -598,6 +599,8 @@ export default async function GrantsPage({
           </div>
 
           <GrantsProgramCatalogSection trackedTitles={trackedOpportunityTitles} />
+
+          <GrantsGovLiveSection trackedTitles={trackedOpportunityTitles} />
 
           <GrantsReimbursementTriageSection
             reimbursementPriorityQueue={reimbursementPriorityQueue}
