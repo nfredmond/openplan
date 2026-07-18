@@ -74,7 +74,7 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
       "Screening-grade sketch output over a synthetic population and distance-based skims. Do not treat it as a validated travel model, calibrated behavioral demand, or forecast-ready prediction.",
     comparisonMessage:
       "Comparison is limited to screening-grade sketch KPIs. Treat cross-run deltas as exploratory scenario contrasts, not calibrated run-to-run parity.",
-    availability: "prototype",
+    availability: "launchable",
   },
 ];
 
