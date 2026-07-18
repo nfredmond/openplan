@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Download, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -31,6 +32,40 @@ import {
   combineTdmStrategies,
   summarizeTdmCombination,
 } from "@/lib/tdm";
+import { formatSavedDate } from "@/lib/grants/bca-evidence";
+
+/**
+ * True when a saved analysis uses only fields this form can round-trip.
+ * Rows saved through this panel always qualify; rows written directly via the
+ * API can carry fields (commercial/freight hours, escalation, 'other' costs,
+ * a separate CO2 rate) the form would silently drop — for those we skip the
+ * one-click load rather than prefill a reduced analysis that contradicts the
+ * saved headline.
+ */
+function isFaithfullyLoadable(inputs: BcaAnalysisInputs): boolean {
+  if (inputs.co2DiscountRatePct !== undefined) return false;
+  for (const benefit of inputs.benefits) {
+    if (benefit.kind === "travelTime") {
+      if (benefit.annualHoursSaved.commercial || benefit.annualHoursSaved.freight) return false;
+      if (benefit.annualGrowthRatePct !== undefined) return false;
+    } else if (benefit.kind === "emissions") {
+      // The form carries VMT only; a directly-entered tonnage can't be shown.
+      if (benefit.annualMetricTonsCo2eReduced !== undefined && benefit.annualVmtReduced === undefined) {
+        return false;
+      }
+    } else if (benefit.kind === "other" && benefit.annualGrowthRatePct !== undefined) {
+      return false;
+    }
+  }
+  for (const cost of inputs.costs) {
+    if (cost.kind === "other") return false;
+    if (cost.kind === "capital" && cost.startYearOffset) return false;
+    if (cost.kind === "operationsMaintenance" && (cost.escalationRatePct !== undefined || cost.startYearOffset)) {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * Presentational core of the benefit-cost screening panel on /grants.
@@ -40,15 +75,27 @@ import {
  * Unparseable or contradictory inputs block the run with a named message
  * instead of being silently dropped or coerced.
  */
+export type BcaScreeningSavedSummary = {
+  createdAt: string | null;
+  netPresentValue: number;
+  benefitCostRatio: number | null;
+  analysisHorizonYears: number;
+  /** Wire-schema-validated saved inputs; null when the stored payload failed the parse. */
+  inputs: BcaAnalysisInputs | null;
+};
+
 export type BcaScreeningProjectOption = {
   id: string;
   name: string;
   /** Cost-proxy prefill from project_funding_profiles; NUMERIC arrives as string. */
   fundingNeedAmount: number | string | null;
+  latestScreening?: BcaScreeningSavedSummary | null;
 };
 
 export type BcaScreeningBodyProps = {
   projects: BcaScreeningProjectOption[];
+  /** Whether the operator's role can save screenings (programs.write). */
+  canSave: boolean;
 };
 
 /** Fixed seed so the uncertainty screen is reproducible; stamped on the memo. */
@@ -79,8 +126,13 @@ type BcaScreeningDerivation = {
   issues: string[];
 };
 
-export function BcaScreeningBody({ projects }: BcaScreeningBodyProps) {
+export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
+  const router = useRouter();
   const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveNotice, setSaveNotice] = useState<{ tone: "success" | "error"; text: string } | null>(
+    null
+  );
   const [capitalCostInput, setCapitalCostInput] = useState("");
   const [spreadYearsInput, setSpreadYearsInput] = useState("1");
   const [annualOmInput, setAnnualOmInput] = useState("");
@@ -98,14 +150,93 @@ export function BcaScreeningBody({ projects }: BcaScreeningBodyProps) {
   const [uncertaintyEnabled, setUncertaintyEnabled] = useState(false);
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
+  const savedInputs = selectedProject?.latestScreening?.inputs ?? null;
+  const loadableSavedInputs = savedInputs && isFaithfullyLoadable(savedInputs) ? savedInputs : null;
 
   function handleProjectChange(projectId: string) {
     setSelectedProjectId(projectId);
+    setSaveNotice(null);
     const project = projects.find((entry) => entry.id === projectId) ?? null;
     const need = project ? parseOptionalInput(String(project.fundingNeedAmount ?? "")).value : null;
     // Always reset so a project without a recorded need never inherits the
     // previous project's prefill (the memo would misattribute the cost).
     setCapitalCostInput(need !== null && need > 0 ? String(need) : "");
+  }
+
+  function handleLoadSavedInputs(saved: BcaAnalysisInputs) {
+    setBaseYearInput(String(saved.baseYear));
+    setHorizonInput(String(saved.analysisHorizonYears));
+    setDiscountRateInput(String(saved.discountRatePct));
+
+    const travelTime = saved.benefits.find((benefit) => benefit.kind === "travelTime");
+    setHoursCommuterInput(
+      travelTime?.kind === "travelTime" && travelTime.annualHoursSaved.commuter
+        ? String(travelTime.annualHoursSaved.commuter)
+        : ""
+    );
+    const safety = saved.benefits.find((benefit) => benefit.kind === "safety");
+    setCrashesFatalInput(
+      safety?.kind === "safety" && safety.annualCrashesAvoided.fatal
+        ? String(safety.annualCrashesAvoided.fatal)
+        : ""
+    );
+    setCrashesInjuryInput(
+      safety?.kind === "safety" && safety.annualCrashesAvoided.injury
+        ? String(safety.annualCrashesAvoided.injury)
+        : ""
+    );
+    setCrashesPdoInput(
+      safety?.kind === "safety" && safety.annualCrashesAvoided.propertyDamageOnly
+        ? String(safety.annualCrashesAvoided.propertyDamageOnly)
+        : ""
+    );
+    const vehicleOperating = saved.benefits.find((benefit) => benefit.kind === "vehicleOperating");
+    const emissions = saved.benefits.find((benefit) => benefit.kind === "emissions");
+    const savedVmt =
+      (vehicleOperating?.kind === "vehicleOperating" ? vehicleOperating.annualVmtReduced : null) ??
+      (emissions?.kind === "emissions" ? emissions.annualVmtReduced ?? null : null);
+    setVmtReducedInput(savedVmt ? String(savedVmt) : "");
+    const other = saved.benefits.find((benefit) => benefit.kind === "other");
+    setOtherBenefitInput(other?.kind === "other" ? String(other.annualValue) : "");
+
+    const capital = saved.costs.find((cost) => cost.kind === "capital");
+    setCapitalCostInput(capital?.kind === "capital" ? String(capital.totalAmount) : "");
+    setSpreadYearsInput(capital?.kind === "capital" ? String(capital.spreadYears ?? 1) : "1");
+    const om = saved.costs.find((cost) => cost.kind === "operationsMaintenance");
+    setAnnualOmInput(om?.kind === "operationsMaintenance" ? String(om.annualAmount) : "");
+    setSaveNotice(null);
+  }
+
+  async function handleSaveScreening() {
+    if (!analysisInputs || !selectedProjectId || !result) return;
+    setSaving(true);
+    setSaveNotice(null);
+    try {
+      const response = await fetch(`/api/projects/${selectedProjectId}/bca-screenings`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          inputs: analysisInputs,
+          contextLabel: selectedProject?.name ?? undefined,
+        }),
+      });
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to save the screening");
+      }
+      setSaveNotice({
+        tone: "success",
+        text: "Screening saved to the project record. Narrative drafts and evidence cues for this project's opportunities can now cite it.",
+      });
+      router.refresh();
+    } catch (error) {
+      setSaveNotice({
+        tone: "error",
+        text: error instanceof Error ? error.message : "Failed to save the screening",
+      });
+    } finally {
+      setSaving(false);
+    }
   }
 
   function toggleTdmStrategy(key: string) {
@@ -136,7 +267,9 @@ export function BcaScreeningBody({ projects }: BcaScreeningBodyProps) {
   const derivation: BcaScreeningDerivation = useMemo(() => {
     const issues: string[] = [];
 
-    const parseField = (label: string, raw: string): number | null => {
+    // Upper bounds mirror bcaAnalysisInputsSchema so a value the engine would
+    // happily render can never surprise the operator with a save-time 400.
+    const parseField = (label: string, raw: string, max?: number): number | null => {
       const parsed = parseOptionalInput(raw);
       if (parsed.invalid) {
         issues.push(`${label} is not a number.`);
@@ -146,8 +279,17 @@ export function BcaScreeningBody({ projects }: BcaScreeningBodyProps) {
         issues.push(`${label} cannot be negative.`);
         return null;
       }
+      if (parsed.value !== null && max !== undefined && parsed.value > max) {
+        issues.push(`${label} is above the maximum this screen accepts (${max.toLocaleString("en-US")}).`);
+        return null;
+      }
       return parsed.value;
     };
+
+    const MAX_DOLLARS = 1e12;
+    const MAX_HOURS = 1e9;
+    const MAX_COUNT = 1e6;
+    const MAX_MILES = 1e12;
 
     const baseYear = parseField("Base year", baseYearInput);
     if (baseYear === null && !issues.some((issue) => issue.startsWith("Base year"))) {
@@ -163,12 +305,12 @@ export function BcaScreeningBody({ projects }: BcaScreeningBodyProps) {
       issues.push("Analysis horizon must be a whole number of years between 1 and 100.");
     }
 
-    const discountRate = parseField("Discount rate", discountRateInput);
+    const discountRate = parseField("Discount rate", discountRateInput, 100);
     if (discountRate === null && !issues.some((issue) => issue.startsWith("Discount rate"))) {
       issues.push("Discount rate is required.");
     }
 
-    const capital = parseField("Capital cost", capitalCostInput);
+    const capital = parseField("Capital cost", capitalCostInput, MAX_DOLLARS);
     const spreadYears = parseField("Capital spread", spreadYearsInput);
     if (spreadYears !== null && (!Number.isInteger(spreadYears) || spreadYears < 1)) {
       issues.push("Capital spread must be a whole number of years, at least 1.");
@@ -184,13 +326,13 @@ export function BcaScreeningBody({ projects }: BcaScreeningBodyProps) {
       );
     }
 
-    const hoursCommuter = parseField("Travel time saved", hoursCommuterInput);
-    const fatal = parseField("Fatal crashes avoided", crashesFatalInput);
-    const injury = parseField("Injury crashes avoided", crashesInjuryInput);
-    const pdo = parseField("PDO crashes avoided", crashesPdoInput);
-    const vmtReduced = parseField("Annual VMT reduced", vmtReducedInput);
-    const otherBenefit = parseField("Other annual benefit", otherBenefitInput);
-    const annualOm = parseField("Annual O&M cost", annualOmInput);
+    const hoursCommuter = parseField("Travel time saved", hoursCommuterInput, MAX_HOURS);
+    const fatal = parseField("Fatal crashes avoided", crashesFatalInput, MAX_COUNT);
+    const injury = parseField("Injury crashes avoided", crashesInjuryInput, MAX_COUNT);
+    const pdo = parseField("PDO crashes avoided", crashesPdoInput, MAX_COUNT);
+    const vmtReduced = parseField("Annual VMT reduced", vmtReducedInput, MAX_MILES);
+    const otherBenefit = parseField("Other annual benefit", otherBenefitInput, MAX_DOLLARS);
+    const annualOm = parseField("Annual O&M cost", annualOmInput, MAX_DOLLARS);
 
     if (issues.length > 0) return { inputs: null, issues };
 
@@ -428,6 +570,51 @@ export function BcaScreeningBody({ projects }: BcaScreeningBodyProps) {
         </p>
       ) : null}
 
+      {selectedProject?.latestScreening ? (
+        <div
+          className="flex flex-wrap items-center gap-3 rounded-[0.75rem] border border-border/70 bg-background/60 px-5 py-3 text-sm"
+          data-testid="bca-last-saved"
+        >
+          <p className="text-foreground/90">
+            Last saved screening:{" "}
+            {selectedProject.latestScreening.benefitCostRatio !== null ? (
+              <>
+                BCR{" "}
+                <span className="font-medium tabular-nums">
+                  {formatNumber(selectedProject.latestScreening.benefitCostRatio, 2)}
+                </span>
+                {", "}
+              </>
+            ) : null}
+            NPV{" "}
+            <span className="font-medium tabular-nums">
+              {formatUsd(selectedProject.latestScreening.netPresentValue)}
+            </span>{" "}
+            over <span className="tabular-nums">{selectedProject.latestScreening.analysisHorizonYears}</span>{" "}
+            years
+            {selectedProject.latestScreening.createdAt
+              ? ` — saved ${formatSavedDate(selectedProject.latestScreening.createdAt)}`
+              : ""}
+            .
+          </p>
+          {loadableSavedInputs ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => handleLoadSavedInputs(loadableSavedInputs)}
+            >
+              Load saved inputs
+            </Button>
+          ) : selectedProject.latestScreening.inputs ? (
+            <p className="text-xs text-muted-foreground">
+              Saved with options this quick screen can&apos;t reproduce — download its memo or
+              re-enter the inputs.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <div className="rounded-[0.75rem] border border-border/70 bg-background/60 px-5 py-4">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Annual benefits (operator-supplied)
@@ -655,11 +842,31 @@ export function BcaScreeningBody({ projects }: BcaScreeningBodyProps) {
           <p className="mt-2 text-xs text-muted-foreground" data-testid="bca-caveat">
             {BCA_SCREENING_CAVEAT}
           </p>
-          <div className="mt-3">
+          {saveNotice ? (
+            <p
+              className={`mt-3 text-sm ${saveNotice.tone === "success" ? "text-[color:var(--pine)]" : "text-destructive"}`}
+              data-testid="bca-save-notice"
+              role={saveNotice.tone === "error" ? "alert" : "status"}
+            >
+              {saveNotice.text}
+            </p>
+          ) : null}
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            {selectedProject && canSave ? (
+              <Button type="button" size="sm" onClick={handleSaveScreening} disabled={saving}>
+                <Save className="h-4 w-4" />
+                {saving ? "Saving…" : "Save screening to project record"}
+              </Button>
+            ) : null}
             <Button type="button" variant="outline" size="sm" onClick={handleDownloadMemo}>
               <Download className="h-4 w-4" />
               Download memo (markdown)
             </Button>
+            {canSave && !selectedProject ? (
+              <p className="text-xs text-muted-foreground">
+                Select a project above to save this screening to its record.
+              </p>
+            ) : null}
           </div>
         </div>
       ) : null}

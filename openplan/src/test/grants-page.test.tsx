@@ -42,6 +42,9 @@ const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+const bcaScreeningsEqMock = vi.fn(async () => ({ data: [], error: null }));
+const bcaScreeningsSelectMock = vi.fn(() => ({ eq: bcaScreeningsEqMock }));
+
 const scenarioSetsInMock = vi.fn(async () => ({ data: [], error: null }));
 const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
 const scenarioComparisonSummaryInMock = vi.fn(async () => ({ data: [], error: null }));
@@ -54,6 +57,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "funding_awards") return { select: fundingAwardsSelectMock };
   if (table === "billing_invoice_records") return { select: invoiceRecordsSelectMock };
   if (table === "project_funding_profiles") return { select: projectFundingProfilesSelectMock };
+  if (table === "project_bca_screenings_latest") return { select: bcaScreeningsSelectMock };
   if (table === "reports") return { select: reportsSelectMock };
   if (table === "report_artifacts") return { select: reportArtifactsSelectMock };
   if (table === "scenario_sets") return { select: scenarioSetsSelectMock };
@@ -122,6 +126,16 @@ vi.mock("@/components/grants/program-catalog-section", () => ({
 vi.mock("@/components/grants/grants-gov-live-section", () => ({
   GrantsGovLiveSection: (props: { trackedTitles: string[] }) => (
     <div data-testid="grants-gov-live-section" data-tracked-count={props.trackedTitles.length} />
+  ),
+}));
+
+vi.mock("@/components/grants/grants-bca-screening-section", () => ({
+  GrantsBcaScreeningSection: (props: { projects: unknown[]; canSave: boolean }) => (
+    <div
+      data-testid="grants-bca-screening-section"
+      data-project-count={props.projects.length}
+      data-can-save={String(props.canSave)}
+    />
   ),
 }));
 

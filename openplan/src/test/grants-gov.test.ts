@@ -83,6 +83,38 @@ describe("buildGrantsGovSearchBody", () => {
     expect(() => buildGrantsGovSearchBody({ rows: 101 })).toThrow();
     expect(() => buildGrantsGovSearchBody({ rows: 2.5 })).toThrow();
   });
+
+  it("includes trimmed agency and eligibility filters when provided", () => {
+    const body = buildGrantsGovSearchBody({
+      agencies: "  DOT-FTA|DOT-FRA  ",
+      eligibilities: " 01|02 ",
+    });
+    expect(body.agencies).toBe("DOT-FTA|DOT-FRA");
+    expect(body.eligibilities).toBe("01|02");
+  });
+
+  it("omits facet filter keys entirely when empty or whitespace-only", () => {
+    expect(buildGrantsGovSearchBody()).not.toHaveProperty("agencies");
+    expect(buildGrantsGovSearchBody()).not.toHaveProperty("eligibilities");
+    const blank = buildGrantsGovSearchBody({ agencies: "   ", eligibilities: "" });
+    expect(blank).not.toHaveProperty("agencies");
+    expect(blank).not.toHaveProperty("eligibilities");
+  });
+
+  it("rejects facet filters outside the pipe-joined code alphabet", () => {
+    expect(() => buildGrantsGovSearchBody({ agencies: "DOT-FTA;DROP TABLE" })).toThrow();
+    expect(() => buildGrantsGovSearchBody({ agencies: "<script>" })).toThrow();
+    expect(() => buildGrantsGovSearchBody({ agencies: "DOT-FTA|" })).toThrow();
+    expect(() => buildGrantsGovSearchBody({ agencies: "|DOT-FTA" })).toThrow();
+    expect(() => buildGrantsGovSearchBody({ agencies: "DOT-FTA||DOT-FRA" })).toThrow();
+    expect(() => buildGrantsGovSearchBody({ eligibilities: "01\n02" })).toThrow();
+    expect(() => buildGrantsGovSearchBody({ eligibilities: "01&02" })).toThrow();
+  });
+
+  it("rejects facet filters longer than 200 characters", () => {
+    expect(() => buildGrantsGovSearchBody({ agencies: "A".repeat(201) })).toThrow();
+    expect(buildGrantsGovSearchBody({ agencies: "A".repeat(200) }).agencies).toBe("A".repeat(200));
+  });
 });
 
 describe("parseGrantsGovDate", () => {
@@ -146,6 +178,75 @@ describe("parseGrantsGovSearchResponse", () => {
       data: { hitCount: 1, oppHits: [{ id: 362478, title: "Numeric id hit" }] },
     });
     expect(result!.opportunities[0].id).toBe("362478");
+  });
+
+  it("returns empty facet arrays — never null — when the payload has no facet metadata", () => {
+    const result = parseGrantsGovSearchResponse(REAL_RESPONSE);
+    expect(result!.agencyFacets).toEqual([]);
+    expect(result!.eligibilityFacets).toEqual([]);
+    const nonArray = parseGrantsGovSearchResponse({
+      errorcode: 0,
+      data: { hitCount: 0, oppHits: [], agencies: "not-an-array", eligibilities: { "01": 3 } },
+    });
+    expect(nonArray!.agencyFacets).toEqual([]);
+    expect(nonArray!.eligibilityFacets).toEqual([]);
+  });
+
+  it("flattens sub-agency facets, sorts by count desc then label, and skips malformed entries", () => {
+    // Facet shape mirrors a real Search2 response: sub-agency values are the
+    // codes the request's `agencies` filter accepts.
+    const result = parseGrantsGovSearchResponse({
+      errorcode: 0,
+      data: {
+        hitCount: 11,
+        oppHits: [],
+        agencies: [
+          {
+            label: "Department of Transportation",
+            value: "DOT",
+            count: 9,
+            subAgencyOptions: [
+              { label: "DOT/Federal Railroad Administration", value: "DOT-FRA", count: 4 },
+              { label: "Maritime Administration", value: "DOT-MA", count: 1 },
+              { label: "DOT - Federal Transit Administration", value: "DOT-FTA", count: 4 },
+              { label: "Missing value", count: 3 },
+              { label: "Non-numeric count", value: "DOT-XXX", count: "three" },
+              null,
+            ],
+          },
+          {
+            label: "Department of Homeland Security",
+            value: "DHS",
+            count: 2,
+            subAgencyOptions: [
+              { label: "DHS - Federal Emergency Management Agency", value: "DHS-DHS", count: 2 },
+            ],
+          },
+          { label: "No sub-agency options at all", value: "XXX", count: 1 },
+          "not an object",
+        ],
+        eligibilities: [
+          { label: "County governments", value: "01", count: 6 },
+          { label: "State governments", value: "00", count: 7 },
+          { label: "City or township governments", value: "02", count: 6 },
+          { label: "Missing count", value: "99" },
+          { label: "", value: "25", count: 2 },
+          42,
+        ],
+      },
+    });
+
+    expect(result!.agencyFacets).toEqual([
+      { label: "DOT - Federal Transit Administration", value: "DOT-FTA", count: 4 },
+      { label: "DOT/Federal Railroad Administration", value: "DOT-FRA", count: 4 },
+      { label: "DHS - Federal Emergency Management Agency", value: "DHS-DHS", count: 2 },
+      { label: "Maritime Administration", value: "DOT-MA", count: 1 },
+    ]);
+    expect(result!.eligibilityFacets).toEqual([
+      { label: "State governments", value: "00", count: 7 },
+      { label: "City or township governments", value: "02", count: 6 },
+      { label: "County governments", value: "01", count: 6 },
+    ]);
   });
 });
 

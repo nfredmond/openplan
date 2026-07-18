@@ -24,7 +24,18 @@ const OPPORTUNITY = {
   detailUrl: "https://www.grants.gov/search-results-detail/362478",
 };
 
-function loadedPayload(opportunities = [OPPORTUNITY]) {
+const FACETS = {
+  agencyFacets: [
+    { label: "DOT - Federal Transit Administration", value: "DOT-FTA", count: 4 },
+    { label: "Maritime Administration", value: "DOT-MA", count: 1 },
+  ],
+  eligibilityFacets: [
+    { label: "County governments", value: "01", count: 6 },
+    { label: "City or township governments", value: "02", count: 5 },
+  ],
+};
+
+function loadedPayload(opportunities = [OPPORTUNITY], facets?: typeof FACETS) {
   return {
     ok: true,
     status: 200,
@@ -33,6 +44,7 @@ function loadedPayload(opportunities = [OPPORTUNITY]) {
       hitCount: opportunities.length,
       fetchedAt: "2026-07-18T19:00:00.000Z",
       cached: false,
+      ...(facets ?? {}),
     }),
   };
 }
@@ -64,6 +76,78 @@ describe("GrantsGovLiveSection", () => {
     });
     expect(String(fetchMock.mock.calls[0][0])).toBe("/api/grants-gov/opportunities?keyword=marine");
     expect(screen.getByText("Maritime Administration", { exact: false })).toBeTruthy();
+  });
+
+  it("shows facet selects only after a load that returned facets, labeled with counts", async () => {
+    fetchMock.mockResolvedValue(loadedPayload([OPPORTUNITY], FACETS));
+    render(<GrantsGovLiveSection trackedTitles={[]} />);
+
+    // No selects before the first load — the empty section stays single-action.
+    expect(screen.queryByTestId("grants-gov-agency-filter")).toBeNull();
+    expect(screen.queryByTestId("grants-gov-eligibility-filter")).toBeNull();
+
+    fireEvent.click(screen.getByTestId("grants-gov-load"));
+    await waitFor(() => {
+      expect(screen.getByTestId("grants-gov-agency-filter")).toBeTruthy();
+    });
+    expect(screen.getByTestId("grants-gov-eligibility-filter")).toBeTruthy();
+
+    expect(screen.getByRole("option", { name: "All agencies" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "DOT - Federal Transit Administration (4)" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "Maritime Administration (1)" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "All eligibilities" })).toBeTruthy();
+    expect(screen.getByRole("option", { name: "County governments (6)" })).toBeTruthy();
+  });
+
+  it("keeps facet selects hidden when the response carries no facet metadata", async () => {
+    fetchMock.mockResolvedValue(loadedPayload());
+    render(<GrantsGovLiveSection trackedTitles={[]} />);
+
+    fireEvent.click(screen.getByTestId("grants-gov-load"));
+    await waitFor(() => {
+      expect(screen.getByText(OPPORTUNITY.title)).toBeTruthy();
+    });
+    expect(screen.queryByTestId("grants-gov-agency-filter")).toBeNull();
+    expect(screen.queryByTestId("grants-gov-eligibility-filter")).toBeNull();
+  });
+
+  it("re-runs the search with the chosen facets as query params", async () => {
+    fetchMock.mockResolvedValue(loadedPayload([OPPORTUNITY], FACETS));
+    render(<GrantsGovLiveSection trackedTitles={[]} />);
+
+    fireEvent.change(screen.getByLabelText(/Keyword \(optional\)/), {
+      target: { value: "marine" },
+    });
+    fireEvent.click(screen.getByTestId("grants-gov-load"));
+    await waitFor(() => {
+      expect(screen.getByTestId("grants-gov-agency-filter")).toBeTruthy();
+    });
+    expect(String(fetchMock.mock.calls[0][0])).toBe("/api/grants-gov/opportunities?keyword=marine");
+
+    fireEvent.change(screen.getByTestId("grants-gov-agency-filter"), {
+      target: { value: "DOT-FTA" },
+    });
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+    expect(String(fetchMock.mock.calls[1][0])).toBe(
+      "/api/grants-gov/opportunities?keyword=marine&agency=DOT-FTA"
+    );
+
+    // Wait for the reload to settle so the next change fires from 'loaded'.
+    await waitFor(() => {
+      expect((screen.getByTestId("grants-gov-load") as HTMLButtonElement).disabled).toBe(false);
+    });
+    fireEvent.change(screen.getByTestId("grants-gov-eligibility-filter"), {
+      target: { value: "01" },
+    });
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+    });
+    // The earlier agency choice persists alongside the new eligibility one.
+    expect(String(fetchMock.mock.calls[2][0])).toBe(
+      "/api/grants-gov/opportunities?keyword=marine&agency=DOT-FTA&eligibility=01"
+    );
   });
 
   it("shows the honest offline state when the upstream is unreachable (502)", async () => {

@@ -15,6 +15,8 @@ import {
 
 const querySchema = z.object({
   keyword: z.string().trim().max(120).optional(),
+  agency: z.string().trim().max(200).optional(),
+  eligibility: z.string().trim().max(200).optional(),
 });
 
 const UPSTREAM_TIMEOUT_MS = 10_000;
@@ -37,12 +39,24 @@ export async function GET(request: NextRequest) {
 
   const parsedQuery = querySchema.safeParse({
     keyword: request.nextUrl.searchParams.get("keyword") ?? undefined,
+    agency: request.nextUrl.searchParams.get("agency") ?? undefined,
+    eligibility: request.nextUrl.searchParams.get("eligibility") ?? undefined,
   });
   if (!parsedQuery.success) {
     return NextResponse.json({ error: "invalid_query" }, { status: 400 });
   }
 
-  const searchBody = buildGrantsGovSearchBody({ keyword: parsedQuery.data.keyword });
+  let searchBody: ReturnType<typeof buildGrantsGovSearchBody>;
+  try {
+    searchBody = buildGrantsGovSearchBody({
+      keyword: parsedQuery.data.keyword,
+      agencies: parsedQuery.data.agency,
+      eligibilities: parsedQuery.data.eligibility,
+    });
+  } catch {
+    // The lib rejects facet filters outside its pipe-joined code alphabet.
+    return NextResponse.json({ error: "invalid_query" }, { status: 400 });
+  }
   const cacheKey = JSON.stringify(searchBody);
   const now = Date.now();
   const cached = getCachedGrantsGovResult(cacheKey, now);

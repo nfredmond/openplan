@@ -1,3 +1,8 @@
+import { BCA_SCREENING_CAVEAT } from "@/lib/bca/parameters";
+import {
+  summarizeBcaScreeningForCue,
+  type ProjectBcaScreeningSummary,
+} from "@/lib/grants/bca-evidence";
 import {
   GRANT_MODELING_PLANNING_CAVEAT,
   describeProjectGrantModelingReadiness,
@@ -10,7 +15,8 @@ export type GrantEvidenceReadinessCueKey =
   | "funding-source-fit"
   | "source-artifact-anchors"
   | "modeling-boundary"
-  | "match-reimbursement-posture";
+  | "match-reimbursement-posture"
+  | "bca-support";
 
 export type GrantEvidenceReadinessCue = {
   key: GrantEvidenceReadinessCueKey;
@@ -61,7 +67,8 @@ function mentionsMatchOrReimbursement(opportunity: OpportunityEvidenceReadinessI
 
 export function buildGrantEvidenceReadinessCues(
   opportunity: OpportunityEvidenceReadinessInput,
-  modelingEvidence: ProjectGrantModelingEvidence | null | undefined
+  modelingEvidence: ProjectGrantModelingEvidence | null | undefined,
+  bcaScreening?: ProjectBcaScreeningSummary | null
 ): GrantEvidenceReadinessCue[] {
   const fitNotesRecorded = hasText(opportunity.fit_notes);
   const readinessNotesRecorded = hasText(opportunity.readiness_notes);
@@ -128,6 +135,17 @@ export function buildGrantEvidenceReadinessCues(
       nextAction: fiscalPostureMentioned
         ? "Cross-check the award, match, obligation, and invoice lanes before application or reimbursement language leaves OpenPlan."
         : "Record whether local match, reimbursement timing, and obligation risk are known, unknown, or out of scope for this source.",
+    },
+    {
+      key: "bca-support",
+      label: bcaScreening ? "BCA screening saved" : "No BCA screening saved",
+      tone: bcaScreening ? "success" : "neutral",
+      detail: bcaScreening
+        ? `${summarizeBcaScreeningForCue(bcaScreening)} ${BCA_SCREENING_CAVEAT}`
+        : "No screening-level benefit-cost analysis is saved for this project. A benefit-cost case matters most for benefit-cost-scored sources — USDOT BUILD and INFRA-class programs require an application BCA, and California's Local HSIP scores on a Local Roadway Safety Manual benefit/cost.",
+      nextAction: bcaScreening
+        ? "Re-run and re-save the screening if costs or benefits have changed. This is a USDOT-style screening analogue; confirm the source's own required method (USDOT BCA Guidance, or the Caltrans LRSM for Local HSIP) before application use."
+        : "If this source scores on benefit-cost, run the benefit-cost screen on the grants worksurface and save it to the project record.",
     },
   ];
 }

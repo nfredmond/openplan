@@ -11,6 +11,7 @@ import {
   GRANTS_GOV_SYNC_CAVEAT,
   describeGrantsGovWindow,
   toFundingOpportunityDraft,
+  type GrantsGovFacetOption,
   type GrantsGovOpportunity,
 } from "@/lib/grants/grants-gov";
 
@@ -33,21 +34,37 @@ type LoadState =
       cached: boolean;
     };
 
+interface FacetLists {
+  agencies: GrantsGovFacetOption[];
+  eligibilities: GrantsGovFacetOption[];
+}
+
 export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[] }) {
   const router = useRouter();
   const [loadState, setLoadState] = useState<LoadState>({ phase: "idle" });
   const [keywordInput, setKeywordInput] = useState("");
+  const [agencyFilter, setAgencyFilter] = useState("");
+  const [eligibilityFilter, setEligibilityFilter] = useState("");
+  // Facets from the most recent successful response. Kept outside loadState so
+  // the selects survive a later offline/error load and can filter back out.
+  const [lastFacets, setLastFacets] = useState<FacetLists | null>(null);
   const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
   const [locallyTrackedIds, setLocallyTrackedIds] = useState<readonly string[]>([]);
   const [trackError, setTrackError] = useState<string | null>(null);
 
-  async function loadOpportunities() {
+  async function loadOpportunities(overrides?: { agency?: string; eligibility?: string }) {
     setLoadState({ phase: "loading" });
     setTrackError(null);
     try {
       const params = new URLSearchParams();
       const keyword = keywordInput.trim().slice(0, 120);
       if (keyword) params.set("keyword", keyword);
+      // Overrides carry a just-selected facet value, since the matching
+      // setState has not re-rendered yet when the select's onChange fires.
+      const agency = (overrides?.agency ?? agencyFilter).trim().slice(0, 200);
+      if (agency) params.set("agency", agency);
+      const eligibility = (overrides?.eligibility ?? eligibilityFilter).trim().slice(0, 200);
+      if (eligibility) params.set("eligibility", eligibility);
       const query = params.toString();
       const response = await fetch(`/api/grants-gov/opportunities${query ? `?${query}` : ""}`, {
         credentials: "same-origin",
@@ -63,6 +80,8 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
         hitCount: number;
         fetchedAt: string;
         cached: boolean;
+        agencyFacets?: GrantsGovFacetOption[];
+        eligibilityFacets?: GrantsGovFacetOption[];
       };
       setLoadState({
         phase: "loaded",
@@ -71,8 +90,32 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
         fetchedAt: payload.fetchedAt,
         cached: Boolean(payload.cached),
       });
+      const nextAgencies = Array.isArray(payload.agencyFacets) ? payload.agencyFacets : [];
+      const nextEligibilities = Array.isArray(payload.eligibilityFacets) ? payload.eligibilityFacets : [];
+      setLastFacets({ agencies: nextAgencies, eligibilities: nextEligibilities });
+      // If a facet list comes back empty its select unmounts (e.g. a zero-hit
+      // response). Drop the stored filter too, so it can't keep silently
+      // constraining later searches with no visible way to clear it.
+      if (nextAgencies.length === 0) setAgencyFilter("");
+      if (nextEligibilities.length === 0) setEligibilityFilter("");
     } catch {
       setLoadState({ phase: "offline" });
+    }
+  }
+
+  function handleAgencyFilterChange(value: string) {
+    setAgencyFilter(value);
+    // Re-query immediately only once a load has already happened; a change
+    // mid-flight just updates the selection for the next explicit load.
+    if (loadState.phase !== "idle" && loadState.phase !== "loading") {
+      void loadOpportunities({ agency: value });
+    }
+  }
+
+  function handleEligibilityFilterChange(value: string) {
+    setEligibilityFilter(value);
+    if (loadState.phase !== "idle" && loadState.phase !== "loading") {
+      void loadOpportunities({ eligibility: value });
     }
   }
 
@@ -135,11 +178,49 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
             maxLength={120}
           />
         </label>
+        {lastFacets && lastFacets.agencies.length > 0 ? (
+          <label className="block min-w-[13rem] text-xs font-medium text-muted-foreground">
+            Agency
+            <select
+              className="module-select mt-1"
+              value={agencyFilter}
+              onChange={(event) => handleAgencyFilterChange(event.target.value)}
+              aria-label="Agency filter"
+              data-testid="grants-gov-agency-filter"
+            >
+              <option value="">All agencies</option>
+              {lastFacets.agencies.map((facet) => (
+                <option key={facet.value} value={facet.value}>
+                  {facet.label} ({facet.count})
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
+        {lastFacets && lastFacets.eligibilities.length > 0 ? (
+          <label className="block min-w-[13rem] text-xs font-medium text-muted-foreground">
+            Applicant eligibility
+            <select
+              className="module-select mt-1"
+              value={eligibilityFilter}
+              onChange={(event) => handleEligibilityFilterChange(event.target.value)}
+              aria-label="Applicant eligibility filter"
+              data-testid="grants-gov-eligibility-filter"
+            >
+              <option value="">All eligibilities</option>
+              {lastFacets.eligibilities.map((facet) => (
+                <option key={facet.value} value={facet.value}>
+                  {facet.label} ({facet.count})
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <Button
           type="button"
           variant="outline"
           size="sm"
-          onClick={loadOpportunities}
+          onClick={() => void loadOpportunities()}
           disabled={loadState.phase === "loading"}
           data-testid="grants-gov-load"
         >

@@ -109,6 +109,55 @@ describe("/api/grants-gov/opportunities", () => {
     });
   });
 
+  it("forwards agency and eligibility filters into the upstream body", async () => {
+    const response = await GET(
+      request(
+        "http://localhost/api/grants-gov/opportunities?keyword=transit&agency=DOT-FTA%7CDOT-FRA&eligibility=01"
+      )
+    );
+    expect(response.status).toBe(200);
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toEqual({
+      keyword: "transit",
+      rows: 25,
+      oppStatuses: "forecasted|posted",
+      fundingCategories: "T",
+      agencies: "DOT-FTA|DOT-FRA",
+      eligibilities: "01",
+    });
+  });
+
+  it("omits facet fields from the upstream body when the params are absent", async () => {
+    await GET(request());
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(init.body));
+    expect(body).not.toHaveProperty("agencies");
+    expect(body).not.toHaveProperty("eligibilities");
+  });
+
+  it("rejects facet params with characters outside the code alphabet", async () => {
+    const agencyResponse = await GET(
+      request(`http://localhost/api/grants-gov/opportunities?agency=${encodeURIComponent("DOT-FTA;DROP")}`)
+    );
+    expect(agencyResponse.status).toBe(400);
+    expect((await agencyResponse.json()).error).toBe("invalid_query");
+
+    const eligibilityResponse = await GET(
+      request(`http://localhost/api/grants-gov/opportunities?eligibility=${encodeURIComponent("<01>")}`)
+    );
+    expect(eligibilityResponse.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects oversized facet params", async () => {
+    const response = await GET(
+      request(`http://localhost/api/grants-gov/opportunities?agency=${"A".repeat(201)}`)
+    );
+    expect(response.status).toBe(400);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("serves the second identical request from cache without re-fetching", async () => {
     const first = await GET(request());
     expect(first.status).toBe(200);
@@ -124,6 +173,19 @@ describe("/api/grants-gov/opportunities", () => {
     await GET(request());
     await GET(request("http://localhost/api/grants-gov/opportunities?keyword=bridge"));
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("gives distinct facet selections distinct cache entries", async () => {
+    await GET(request());
+    await GET(request("http://localhost/api/grants-gov/opportunities?agency=DOT-FTA"));
+    await GET(request("http://localhost/api/grants-gov/opportunities?agency=DOT-FRA"));
+    await GET(request("http://localhost/api/grants-gov/opportunities?agency=DOT-FTA&eligibility=01"));
+    expect(fetchMock).toHaveBeenCalledTimes(4);
+
+    // Repeating one of the faceted searches hits its own cache entry.
+    const repeat = await GET(request("http://localhost/api/grants-gov/opportunities?agency=DOT-FTA"));
+    expect((await repeat.json()).cached).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(4);
   });
 
   it("returns 502 when grants.gov is unreachable", async () => {

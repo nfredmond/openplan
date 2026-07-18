@@ -85,6 +85,16 @@ export const DEFAULT_ANALYSIS_HORIZON_YEARS = 20;
 export const BCA_SCREENING_CAVEAT =
   "Screening-level benefit-cost estimate for internal prioritization and grant-readiness review — not a benefit-cost analysis of record. Confirm monetization values against the current USDOT Benefit-Cost Analysis Guidance before including results in an application.";
 
+/**
+ * Single-sentence caveat for the AI grant-narrative path. The full two-sentence
+ * BCA_SCREENING_CAVEAT trips the per-sentence grounding validator when a model
+ * reproduces it (the second sentence trails uncited); this mirrors the
+ * one-sentence GRANT_MODELING_PLANNING_CAVEAT so a cited BCA fact stays cleanly
+ * grounded. Used only in narrative fact claims and the draft prompt.
+ */
+export const BCA_NARRATIVE_CAVEAT =
+  "This is a screening-level benefit-cost estimate for grant-readiness review, not a benefit-cost analysis of record.";
+
 export const BCA_METHOD_CITATION =
   "USDOT Benefit-Cost Analysis Guidance for Discretionary Grant Programs; OMB Circular A-94 (2023 revision).";
 

@@ -6,6 +6,7 @@ import {
   type FundingOpportunityNarrativeDraftRow,
 } from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import { StatusBadge } from "@/components/ui/status-badge";
+import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
 import {
   formatFundingOpportunityDecisionLabel,
   formatFundingOpportunityStatusLabel,
@@ -53,11 +54,13 @@ export function GrantsOpportunityRegistryCard({
   opportunity,
   activeFocusedOpportunityId,
   projectGrantModelingEvidence,
+  latestBcaScreening = null,
   latestNarrativeDraft = null,
 }: {
   opportunity: NormalizedOpportunity;
   activeFocusedOpportunityId: string | null;
   projectGrantModelingEvidence: ProjectGrantModelingEvidence | null;
+  latestBcaScreening?: ProjectBcaScreeningSummary | null;
   latestNarrativeDraft?: FundingOpportunityNarrativeDraftRow | null;
 }) {
   const projectHref = opportunity.project
@@ -75,7 +78,8 @@ export function GrantsOpportunityRegistryCard({
   );
   const evidenceReadinessCues = buildGrantEvidenceReadinessCues(
     opportunity,
-    projectGrantModelingEvidence
+    projectGrantModelingEvidence,
+    latestBcaScreening
   );
   const evidenceReadinessSummary = summarizeGrantEvidenceReadiness(evidenceReadinessCues);
   const isFocused =

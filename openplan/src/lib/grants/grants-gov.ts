@@ -22,6 +22,10 @@ export interface GrantsGovSearchOptions {
   rows?: number;
   oppStatuses?: string;
   fundingCategories?: string;
+  /** Pipe-joined sub-agency codes, e.g. "DOT-FTA|DOT-FRA". */
+  agencies?: string;
+  /** Pipe-joined 2-digit applicant-eligibility codes, e.g. "01|02". */
+  eligibilities?: string;
 }
 
 export interface GrantsGovOpportunity {
@@ -38,27 +42,69 @@ export interface GrantsGovOpportunity {
   detailUrl: string;
 }
 
+/** One selectable facet value from a Search2 response (agency or eligibility). */
+export interface GrantsGovFacetOption {
+  label: string;
+  value: string;
+  count: number;
+}
+
 export interface GrantsGovSearchResult {
   hitCount: number;
   opportunities: GrantsGovOpportunity[];
 }
 
-export function buildGrantsGovSearchBody(options: GrantsGovSearchOptions = {}): {
+/** Parser output: hits plus the response's facet metadata — always arrays, never null. */
+export interface GrantsGovFacetedSearchResult extends GrantsGovSearchResult {
+  /** Sub-agency options flattened from data.agencies — their `value` is what the `agencies` filter takes. */
+  agencyFacets: GrantsGovFacetOption[];
+  eligibilityFacets: GrantsGovFacetOption[];
+}
+
+export interface GrantsGovSearchBody {
   keyword: string;
   rows: number;
   oppStatuses: string;
   fundingCategories: string;
-} {
+  agencies?: string;
+  eligibilities?: string;
+}
+
+/**
+ * Facet filters are pipe-joined grants.gov codes. Anything outside this
+ * conservative alphabet is rejected before it can reach the upstream body.
+ */
+const GRANTS_GOV_FACET_FILTER_PATTERN = /^[A-Za-z0-9 .\-]+(\|[A-Za-z0-9 .\-]+)*$/;
+const GRANTS_GOV_FACET_FILTER_MAX_LENGTH = 200;
+
+/** Trimmed filter value, null when empty; throws on anything outside the code alphabet. */
+function normalizeFacetFilter(value: string | undefined, name: string): string | null {
+  const trimmed = (value ?? "").trim();
+  if (trimmed.length === 0) return null;
+  if (trimmed.length > GRANTS_GOV_FACET_FILTER_MAX_LENGTH || !GRANTS_GOV_FACET_FILTER_PATTERN.test(trimmed)) {
+    throw new Error(
+      `grants.gov ${name} filter must be pipe-joined codes (letters, digits, spaces, dots, hyphens), at most ${GRANTS_GOV_FACET_FILTER_MAX_LENGTH} characters`
+    );
+  }
+  return trimmed;
+}
+
+export function buildGrantsGovSearchBody(options: GrantsGovSearchOptions = {}): GrantsGovSearchBody {
   const rows = options.rows ?? GRANTS_GOV_DEFAULT_ROWS;
   if (!Number.isInteger(rows) || rows < 1 || rows > 100) {
     throw new Error(`grants.gov rows must be an integer between 1 and 100, got ${String(options.rows)}`);
   }
-  return {
+  const body: GrantsGovSearchBody = {
     keyword: (options.keyword ?? "").trim(),
     rows,
     oppStatuses: options.oppStatuses ?? GRANTS_GOV_DEFAULT_STATUSES,
     fundingCategories: options.fundingCategories ?? GRANTS_GOV_TRANSPORTATION_CATEGORY,
   };
+  const agencies = normalizeFacetFilter(options.agencies, "agencies");
+  if (agencies) body.agencies = agencies;
+  const eligibilities = normalizeFacetFilter(options.eligibilities, "eligibilities");
+  if (eligibilities) body.eligibilities = eligibilities;
+  return body;
 }
 
 /** "07/06/2026" → "2026-07-06"; null for anything that is not a real calendar date. */
@@ -81,12 +127,61 @@ function coerceTrimmedString(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function parseFacetOption(raw: unknown): GrantsGovFacetOption | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const record = raw as Record<string, unknown>;
+  const label = coerceTrimmedString(record.label);
+  const value = coerceTrimmedString(record.value);
+  if (!label || !value || typeof record.count !== "number" || !Number.isFinite(record.count)) return null;
+  return { label, value, count: record.count };
+}
+
+/** Count desc, then label asc (plain code-unit order — locale-independent, so deterministic). */
+function sortFacetOptions(options: GrantsGovFacetOption[]): GrantsGovFacetOption[] {
+  return options.sort((a, b) => {
+    if (b.count !== a.count) return b.count - a.count;
+    if (a.label < b.label) return -1;
+    if (a.label > b.label) return 1;
+    return 0;
+  });
+}
+
+function parseFacetOptionList(raw: unknown): GrantsGovFacetOption[] {
+  if (!Array.isArray(raw)) return [];
+  const options: GrantsGovFacetOption[] = [];
+  for (const entry of raw) {
+    const parsed = parseFacetOption(entry);
+    if (parsed) options.push(parsed);
+  }
+  return sortFacetOptions(options);
+}
+
+/**
+ * The `agencies` request filter takes sub-agency codes (e.g. "DOT-FTA"), so
+ * the top-level agency rows are only containers — flatten their
+ * subAgencyOptions and skip anything malformed.
+ */
+function parseAgencyFacetOptions(raw: unknown): GrantsGovFacetOption[] {
+  if (!Array.isArray(raw)) return [];
+  const options: GrantsGovFacetOption[] = [];
+  for (const entry of raw) {
+    if (typeof entry !== "object" || entry === null) continue;
+    const subOptions = (entry as Record<string, unknown>).subAgencyOptions;
+    if (!Array.isArray(subOptions)) continue;
+    for (const subOption of subOptions) {
+      const parsed = parseFacetOption(subOption);
+      if (parsed) options.push(parsed);
+    }
+  }
+  return sortFacetOptions(options);
+}
+
 /**
  * Defensive parse of the Search2 response. Returns null when the payload is
  * not a successful grants.gov response — callers surface an honest offline
  * state instead of guessing.
  */
-export function parseGrantsGovSearchResponse(payload: unknown): GrantsGovSearchResult | null {
+export function parseGrantsGovSearchResponse(payload: unknown): GrantsGovFacetedSearchResult | null {
   if (typeof payload !== "object" || payload === null) return null;
   const root = payload as Record<string, unknown>;
   if (root.errorcode !== 0) return null;
@@ -119,7 +214,12 @@ export function parseGrantsGovSearchResponse(payload: unknown): GrantsGovSearchR
     });
   }
 
-  return { hitCount, opportunities };
+  return {
+    hitCount,
+    opportunities,
+    agencyFacets: parseAgencyFacetOptions(dataRecord.agencies),
+    eligibilityFacets: parseFacetOptionList(dataRecord.eligibilities),
+  };
 }
 
 export type GrantsGovWindowTone = "info" | "neutral" | "warning" | "danger";

@@ -1,4 +1,6 @@
 import { describe, expect, it } from "vitest";
+import { BCA_SCREENING_CAVEAT } from "@/lib/bca/parameters";
+import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
 import {
   buildGrantEvidenceReadinessCues,
   summarizeGrantEvidenceReadiness,
@@ -68,12 +70,13 @@ describe("buildGrantEvidenceReadinessCues", () => {
   it("keeps documented evidence cues bounded to supervised grant review", () => {
     const cues = buildGrantEvidenceReadinessCues(baseOpportunity, buildEvidence());
 
-    expect(cues).toHaveLength(4);
+    expect(cues).toHaveLength(5);
     expect(cues.map((cue) => cue.key)).toEqual([
       "funding-source-fit",
       "source-artifact-anchors",
       "modeling-boundary",
       "match-reimbursement-posture",
+      "bca-support",
     ]);
     expect(cues.find((cue) => cue.key === "funding-source-fit")).toMatchObject({
       label: "Fit notes documented",
@@ -119,7 +122,42 @@ describe("buildGrantEvidenceReadinessCues", () => {
       "No local match or reimbursement posture is stated"
     );
     expect(summarizeGrantEvidenceReadiness(cues)).toBe(
-      "3 of 4 visible grant evidence cues need operator review before pursue, application, or reimbursement language is treated as ready."
+      "3 of 5 visible grant evidence cues need operator review before pursue, application, or reimbursement language is treated as ready."
     );
+  });
+
+  it("reports a saved BCA screening as evidence with the caveat, and stays neutral when none exists", () => {
+    const screening: ProjectBcaScreeningSummary = {
+      id: "bca-1",
+      projectId: "project-1",
+      netPresentValue: 250000,
+      benefitCostRatio: 1.25,
+      presentValueBenefits: 1250000,
+      presentValueCosts: 1000000,
+      analysisHorizonYears: 20,
+      discountRatePct: 3.1,
+      baseYear: 2026,
+      engineVersion: "openplan-bca-ts",
+      createdAt: "2026-07-18T20:00:00.000Z",
+    };
+
+    const withScreening = buildGrantEvidenceReadinessCues(baseOpportunity, buildEvidence(), screening);
+    const savedCue = withScreening.find((cue) => cue.key === "bca-support");
+    expect(savedCue).toMatchObject({ label: "BCA screening saved", tone: "success" });
+    expect(savedCue?.detail).toContain("BCR 1.25");
+    expect(savedCue?.detail).toContain(BCA_SCREENING_CAVEAT);
+
+    const withoutScreening = buildGrantEvidenceReadinessCues(baseOpportunity, buildEvidence());
+    const missingCue = withoutScreening.find((cue) => cue.key === "bca-support");
+    // Missing BCA is neutral, not a warning — it only matters for
+    // benefit-cost-scored sources, and alarm fatigue is a real cost.
+    expect(missingCue).toMatchObject({ label: "No BCA screening saved", tone: "neutral" });
+    // HSIP scores on the Caltrans LRSM, not USDOT BCA Guidance — the copy must
+    // not lump it with BUILD/INFRA under a single "USDOT guidance" umbrella.
+    expect(missingCue?.detail).toContain("Local Roadway Safety Manual");
+    expect(missingCue?.detail).toContain("BUILD and INFRA");
+    // The results caveat belongs on the saved state only — there is no estimate
+    // to caveat when none is saved.
+    expect(missingCue?.detail).not.toContain(BCA_SCREENING_CAVEAT);
   });
 });
