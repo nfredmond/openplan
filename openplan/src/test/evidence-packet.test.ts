@@ -240,6 +240,7 @@ describe("evidence packet helpers", () => {
     expect(labelForEngineKey("deterministic_corridor_v1")).toBe("Deterministic Corridor");
     expect(labelForEngineKey("aequilibrae")).toBe("AequilibraE");
     expect(labelForEngineKey("behavioral_demand")).toBe("Behavioral Demand");
+    expect(labelForEngineKey("sketch_abm")).toBe("Sketch Activity Model");
     expect(labelForArtifactType("volumes_geojson")).toBe("Volumes Geojson");
     expect(labelForArtifactType("behavioral_kpi_summary_json")).toBe("Behavioral KPI Summary");
     expect(labelForKpiCategory("behavioral_onramp")).toBe("Behavioral Onramp");

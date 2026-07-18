@@ -4,6 +4,9 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
+const fetchCensusForCorridorMock = vi.fn();
+const fetchLODESForCorridorMock = vi.fn();
+const recordUsageEventBestEffortMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -11,11 +14,27 @@ const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
 const modelMaybeSingleMock = vi.fn();
 const modelEqMock = vi.fn(() => ({ maybeSingle: modelMaybeSingleMock }));
 const modelSelectMock = vi.fn(() => ({ eq: modelEqMock }));
+const modelUpdateEqMock = vi.fn();
+const modelUpdateMock = vi.fn(() => ({ eq: modelUpdateEqMock }));
 
 const membershipMaybeSingleMock = vi.fn();
 const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMock }));
 const membershipEqWorkspaceMock = vi.fn(() => ({ eq: membershipEqUserMock }));
 const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
+
+const modelRunInsertMock = vi.fn();
+const modelRunUpdateEqMock = vi.fn();
+const modelRunUpdateMock = vi.fn(() => ({ eq: modelRunUpdateEqMock }));
+// Monthly quota count: from("model_runs").select("id", …).eq(…).gte(…)
+const modelRunQuotaGteMock = vi.fn();
+const modelRunQuotaEqMock = vi.fn(() => ({ gte: modelRunQuotaGteMock }));
+const modelRunSelectMock = vi.fn(() => ({ eq: modelRunQuotaEqMock }));
+
+const modelRunKpisInsertMock = vi.fn();
+
+const workspaceMaybeSingleMock = vi.fn();
+const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
+const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -25,10 +44,19 @@ const mockAudit = {
 
 const fromMock = vi.fn((table: string) => {
   if (table === "models") {
-    return { select: modelSelectMock };
+    return { select: modelSelectMock, update: modelUpdateMock };
   }
   if (table === "workspace_members") {
     return { select: membershipSelectMock };
+  }
+  if (table === "model_runs") {
+    return { insert: modelRunInsertMock, update: modelRunUpdateMock, select: modelRunSelectMock };
+  }
+  if (table === "model_run_kpis") {
+    return { insert: modelRunKpisInsertMock };
+  }
+  if (table === "workspaces") {
+    return { select: workspaceSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -42,7 +70,45 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
+vi.mock("@/lib/data-sources/census", () => ({
+  fetchCensusForCorridor: (...args: unknown[]) => fetchCensusForCorridorMock(...args),
+}));
+
+vi.mock("@/lib/data-sources/lodes", () => ({
+  fetchLODESForCorridor: (...args: unknown[]) => fetchLODESForCorridorMock(...args),
+}));
+
+vi.mock("@/lib/billing/usage-recording", () => ({
+  recordUsageEventBestEffort: (...args: unknown[]) => recordUsageEventBestEffortMock(...args),
+}));
+
 import { POST as postModelRun } from "@/app/api/models/[modelId]/runs/route";
+
+/** Three-tract corridor fixture (real runABM runs over these zones). The
+ * 2,700 real households deliberately exceed the 2,000 synthetic-household
+ * cap so the expansion weighting (real / synthetic > 1) is exercised. */
+const SKETCH_CENSUS_FIXTURE = {
+  tracts: [
+    { geoid: "06021010100", population: 3200, totalHouseholds: 1250 },
+    { geoid: "06021010200", population: 2100, totalHouseholds: 830 },
+    { geoid: "06021010300", population: 1500, totalHouseholds: 620 },
+  ],
+  totalPopulation: 6800,
+  totalCommuters: 2900,
+};
+
+const SKETCH_FIXTURE_REAL_HOUSEHOLDS = SKETCH_CENSUS_FIXTURE.tracts.reduce(
+  (sum, tract) => sum + tract.totalHouseholds,
+  0
+);
+
+function launchRequest(body: Record<string, unknown>) {
+  return new NextRequest(`http://localhost/api/models/${MODEL_ID}/runs`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
 
 describe("/api/models/[modelId]/runs", () => {
   beforeEach(() => {
@@ -91,6 +157,21 @@ describe("/api/models/[modelId]/runs", () => {
       error: null,
     });
 
+    modelRunInsertMock.mockResolvedValue({ error: null });
+    modelRunUpdateEqMock.mockResolvedValue({ error: null });
+    modelUpdateEqMock.mockResolvedValue({ error: null });
+    modelRunKpisInsertMock.mockResolvedValue({ error: null });
+    modelRunQuotaGteMock.mockResolvedValue({ count: 0, error: null });
+    recordUsageEventBestEffortMock.mockResolvedValue(undefined);
+
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: { plan: "pilot", subscription_plan: "pilot", subscription_status: "active" },
+      error: null,
+    });
+
+    fetchCensusForCorridorMock.mockResolvedValue(SKETCH_CENSUS_FIXTURE);
+    fetchLODESForCorridorMock.mockResolvedValue({ totalJobs: 1800 });
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
@@ -99,13 +180,7 @@ describe("/api/models/[modelId]/runs", () => {
 
   it("returns an honest prototype message for behavioral demand launch attempts", async () => {
     const response = await postModelRun(
-      new NextRequest(`http://localhost/api/models/${MODEL_ID}/runs`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          engineKey: "behavioral_demand",
-        }),
-      }),
+      launchRequest({ engineKey: "behavioral_demand" }),
       { params: Promise.resolve({ modelId: MODEL_ID }) }
     );
 
@@ -116,5 +191,261 @@ describe("/api/models/[modelId]/runs", () => {
       runtimeExpectation: expect.stringContaining("tens of minutes to hours"),
       caveat: expect.stringContaining("prototype/preflight-backed"),
     });
+  });
+
+  it("runs the sketch activity model in-process and records screening KPIs", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "sketch_abm" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    // scenario_attach tells callers the sketch branch records the run only —
+    // attach-as-evidence wiring did not execute.
+    expect(await response.json()).toMatchObject({
+      modelRunId: expect.any(String),
+      status: "succeeded",
+      scenario_attach: "recorded-only",
+    });
+
+    // Run row inserted as running with the sketch engine key.
+    expect(modelRunInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({ engine_key: "sketch_abm", status: "running" })
+    );
+
+    // KPI rows registered in one insert, all run-scoped in the sketch category.
+    expect(modelRunKpisInsertMock).toHaveBeenCalledTimes(1);
+    const kpiRows = modelRunKpisInsertMock.mock.calls[0][0] as Array<{
+      run_id: string;
+      kpi_name: string;
+      kpi_category: string;
+      value: number | null;
+      unit: string;
+      breakdown_json: Record<string, unknown>;
+    }>;
+
+    for (const row of kpiRows) {
+      expect(row.kpi_category).toBe("sketch_abm");
+      expect(row.run_id).toEqual(expect.any(String));
+    }
+
+    const byName = new Map(kpiRows.map((row) => [row.kpi_name, row]));
+    for (const required of [
+      "total_tours",
+      "total_trips",
+      "mode_share_auto",
+      "mode_share_transit",
+      "mode_share_walk",
+      "mode_share_bike",
+      "mode_share_shared",
+      "daily_vmt",
+      "vmt_per_capita",
+      "population_total",
+    ]) {
+      expect(byName.has(required)).toBe(true);
+    }
+
+    // Real runABM over the 3-zone fixture produced actual travel.
+    expect(byName.get("total_trips")!.value).toBeGreaterThan(0);
+
+    // Expansion weighting: the 2,700-household fixture exceeds the 2,000
+    // synthetic cap, so trip-derived KPIs must be scaled by the
+    // real-vs-synthetic household ratio (> 1), not reported at sample scale.
+    const totalTrips = byName.get("total_trips")!;
+    const tripsBreakdown = totalTrips.breakdown_json as {
+      sample_trips: number;
+      expansion_factor: number;
+      synthetic_households: number;
+      total_real_households: number;
+    };
+    expect(tripsBreakdown.total_real_households).toBe(SKETCH_FIXTURE_REAL_HOUSEHOLDS);
+    expect(tripsBreakdown.synthetic_households).toBeGreaterThan(0);
+    expect(tripsBreakdown.synthetic_households).toBeLessThan(SKETCH_FIXTURE_REAL_HOUSEHOLDS);
+    expect(tripsBreakdown.expansion_factor).toBeCloseTo(
+      SKETCH_FIXTURE_REAL_HOUSEHOLDS / tripsBreakdown.synthetic_households,
+      9
+    );
+    expect(tripsBreakdown.expansion_factor).toBeGreaterThan(1.3);
+    // Trips KPI = sample trips × expansion factor (rounded to whole trips).
+    expect(totalTrips.value).toBe(
+      Math.round(tripsBreakdown.sample_trips * tripsBreakdown.expansion_factor)
+    );
+
+    const totalTours = byName.get("total_tours")!;
+    const toursBreakdown = totalTours.breakdown_json as {
+      sample_tours: number;
+      expansion_factor: number;
+    };
+    expect(toursBreakdown.expansion_factor).toBeCloseTo(tripsBreakdown.expansion_factor, 9);
+    expect(totalTours.value).toBe(
+      Math.round(toursBreakdown.sample_tours * toursBreakdown.expansion_factor)
+    );
+
+    const shareSum = [
+      "mode_share_auto",
+      "mode_share_transit",
+      "mode_share_walk",
+      "mode_share_bike",
+      "mode_share_shared",
+    ].reduce((sum, name) => sum + (byName.get(name)!.value ?? 0), 0);
+    expect(shareSum).toBeCloseTo(1, 6);
+
+    // VMT family: exact names, screening-grade provenance, consistent values.
+    const dailyVmt = byName.get("daily_vmt")!;
+    expect(dailyVmt.unit).toBe("vehicle-miles/day");
+    expect(dailyVmt.value).toBeGreaterThan(0);
+    const dailyVmtProvenance = String(dailyVmt.breakdown_json.provenance);
+    expect(dailyVmtProvenance).toContain("Screening-grade");
+    expect(dailyVmtProvenance).toContain("expansion-weighted");
+    // Vehicle-mile honesty: occupancy-adjusted HOV, taxi_tnc counted as a
+    // vehicle trip, transit_drive access legs documented as excluded.
+    expect(dailyVmtProvenance).toContain("auto_hov2 /2");
+    expect(dailyVmtProvenance).toContain("auto_hov3 /3.2");
+    expect(dailyVmtProvenance).toContain("taxi_tnc x1.0");
+    expect(dailyVmtProvenance).toContain("transit_drive");
+    expect(dailyVmt.breakdown_json.occupancy_assumptions).toEqual({
+      auto_sov: 1,
+      auto_hov2: 2,
+      auto_hov3: 3.2,
+      taxi_tnc: 1,
+    });
+    expect(dailyVmt.breakdown_json.excluded_modes).toEqual(["transit_drive"]);
+
+    // daily_vmt = sample vehicle-km × expansion factor × km→miles.
+    const vmtBreakdown = dailyVmt.breakdown_json as {
+      sample_vehicle_km: number;
+      expansion_factor: number;
+      km_to_miles: number;
+    };
+    expect(vmtBreakdown.sample_vehicle_km).toBeGreaterThan(0);
+    expect(vmtBreakdown.expansion_factor).toBeCloseTo(tripsBreakdown.expansion_factor, 9);
+    expect(dailyVmt.value).toBeCloseTo(
+      vmtBreakdown.sample_vehicle_km * vmtBreakdown.expansion_factor * vmtBreakdown.km_to_miles,
+      6
+    );
+
+    const vmtPerCapita = byName.get("vmt_per_capita")!;
+    expect(vmtPerCapita.unit).toBe("vehicle-miles/person/day");
+    const vmtPerCapitaProvenance = String(vmtPerCapita.breakdown_json.provenance);
+    expect(vmtPerCapitaProvenance).toContain("Screening-grade");
+    expect(vmtPerCapitaProvenance).toContain("expansion-weighted");
+    // Tract set is county-bbox-scale, not a corridor-clipped summary.
+    expect(vmtPerCapitaProvenance).toContain("county-bbox-scale");
+    expect(vmtPerCapitaProvenance).not.toContain("corridor ACS tract summary");
+
+    const populationTotal = byName.get("population_total")!;
+    expect(populationTotal.unit).toBe("persons");
+    expect(populationTotal.value).toBe(SKETCH_CENSUS_FIXTURE.totalPopulation);
+    // vmt_per_capita divides the EXPANDED daily_vmt by full ACS population.
+    expect(vmtPerCapita.value).toBeCloseTo(
+      (dailyVmt.value ?? 0) / SKETCH_CENSUS_FIXTURE.totalPopulation,
+      9
+    );
+
+    // Run row transitioned to succeeded with a caveated summary.
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "succeeded",
+        result_summary_json: expect.objectContaining({
+          engine: "sketch_abm",
+          caveat: expect.stringContaining("Screening-grade"),
+          total_real_households: SKETCH_FIXTURE_REAL_HOUSEHOLDS,
+          expansion_factor: tripsBreakdown.expansion_factor,
+        }),
+      })
+    );
+
+    // Successful sketch launch records a quota-weighted usage event.
+    expect(recordUsageEventBestEffortMock).toHaveBeenCalledTimes(1);
+    expect(recordUsageEventBestEffortMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        eventKey: "model_run.launch",
+        bucketKey: "runs",
+        weight: 5,
+        idempotencyKey: expect.stringMatching(/^model_run:.+:launch$/),
+      }),
+      expect.anything()
+    );
+  });
+
+  it("marks the run failed and returns 500 when sketch input fetch fails", async () => {
+    fetchCensusForCorridorMock.mockRejectedValue(new Error("census upstream unavailable"));
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "sketch_abm" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "census upstream unavailable" });
+
+    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "failed",
+        error_message: "census upstream unavailable",
+      })
+    );
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "sketch_abm_model_run_failed",
+      expect.objectContaining({ modelId: MODEL_ID, message: "census upstream unavailable" })
+    );
+  });
+
+  it("fails the run with 422 when the study area exceeds the 150-tract sketch zone cap", async () => {
+    fetchCensusForCorridorMock.mockResolvedValue({
+      tracts: Array.from({ length: 151 }, (_, index) => ({
+        geoid: `06021${String(index + 1).padStart(6, "0")}`,
+        population: 100,
+        totalHouseholds: 40,
+      })),
+      totalPopulation: 15100,
+      totalCommuters: 6000,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "sketch_abm" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(422);
+    const payload = (await response.json()) as { error: string };
+    expect(payload.error).toContain("151 census tracts");
+    expect(payload.error).toContain("caps at 150");
+    expect(payload.error).toContain("draw a smaller corridor");
+
+    // The run row is honestly marked failed; no KPIs and no usage event.
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "failed",
+        error_message: expect.stringContaining("caps at 150"),
+      })
+    );
+    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+    expect(recordUsageEventBestEffortMock).not.toHaveBeenCalled();
+  });
+
+  it("gates the sketch branch behind an active subscription with 402", async () => {
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: { plan: "pilot", subscription_plan: "pilot", subscription_status: "canceled" },
+      error: null,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "sketch_abm" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(402);
+    expect(await response.json()).toEqual({
+      error: "Workspace subscription is not active. Start or resume billing to run analyses.",
+    });
+
+    // Gated before any run row, upstream fetch, or usage recording.
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
+    expect(fetchCensusForCorridorMock).not.toHaveBeenCalled();
+    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+    expect(recordUsageEventBestEffortMock).not.toHaveBeenCalled();
   });
 });
