@@ -31,11 +31,22 @@ export type BehavioralOnrampKpiSnapshot = {
   run_id: string | null;
 };
 
+type CountyOnrampRunSnapshotWithVmt = CountyOnrampManifest["summary"]["run"] & {
+  daily_vmt?: number | null;
+  vmt_per_capita?: number | null;
+  vmt_provenance?: string | null;
+};
+
+function runSnapshot(manifest: CountyOnrampManifest): CountyOnrampRunSnapshotWithVmt {
+  return manifest.summary.run as CountyOnrampRunSnapshotWithVmt;
+}
+
 const BEHAVIORAL_KPI_DEFINITIONS: Array<{
   name: string;
   label: string;
   unit: string;
   pick: (manifest: CountyOnrampManifest) => number | null;
+  breakdown?: (manifest: CountyOnrampManifest) => Record<string, unknown>;
 }> = [
   {
     name: "total_trips",
@@ -73,6 +84,24 @@ const BEHAVIORAL_KPI_DEFINITIONS: Array<{
     unit: "jobs",
     pick: (m) => m.summary.run.jobs_total,
   },
+  {
+    // Total daily VMT (screening-grade). Feeds the CEQA §15064.3 screen when
+    // paired with population_total. Null when the run producer did not derive it.
+    name: "daily_vmt",
+    label: "Daily VMT (screening)",
+    unit: "vehicle-miles/day",
+    pick: (m) => runSnapshot(m).daily_vmt ?? null,
+    breakdown: (m) => ({ provenance: runSnapshot(m).vmt_provenance ?? null }),
+  },
+  {
+    // Per-capita daily VMT (screening-grade). The CEQA §15064.3 screen reads
+    // this preferentially. Never presented as measured VMT.
+    name: "vmt_per_capita",
+    label: "VMT per capita (screening)",
+    unit: "vehicle-miles/person/day",
+    pick: (m) => runSnapshot(m).vmt_per_capita ?? null,
+    breakdown: (m) => ({ provenance: runSnapshot(m).vmt_provenance ?? null }),
+  },
 ];
 
 export function buildBehavioralOnrampKpis(manifest: CountyOnrampManifest): BehavioralOnrampKpi[] {
@@ -87,6 +116,7 @@ export function buildBehavioralOnrampKpis(manifest: CountyOnrampManifest): Behav
       stage: manifest.stage,
       mode: manifest.mode,
       generated_at: manifest.generated_at,
+      ...(definition.breakdown?.(manifest) ?? {}),
     },
   }));
 }

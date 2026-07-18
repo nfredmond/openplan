@@ -38,6 +38,12 @@ export const countyOnrampRunSnapshotSchema = z.object({
   loaded_links: z.number().nullable(),
   final_gap: z.number().nullable(),
   total_trips: z.number().nullable(),
+  // Screening-grade VMT (optional): daily internal resident VMT and per-capita
+  // VMT, with a provenance string documenting how they were derived. Absent for
+  // runs whose producer has not computed VMT.
+  daily_vmt: z.number().nullable().optional(),
+  vmt_per_capita: z.number().nullable().optional(),
+  vmt_provenance: z.string().nullable().optional(),
 }).passthrough();
 
 export const countyOnrampScaffoldSummarySchema = z

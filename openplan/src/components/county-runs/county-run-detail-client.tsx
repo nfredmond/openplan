@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
-import { RefreshCcw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { AlertTriangle, RefreshCcw } from "lucide-react";
 import { useCountyRunDetail, useCountyRunMutations } from "@/lib/hooks/use-county-onramp";
 import {
   getCountyRunEnqueueHelpText,
@@ -24,10 +24,36 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { NevadaCountyValidatedEvidence } from "@/components/county-runs/nevada-county-validated-evidence";
 import { CountyRunModelingEvidence } from "@/components/county-runs/county-run-modeling-evidence";
 
+const COUNTY_RUN_STUCK_THRESHOLD_MS = 10 * 60 * 1000;
+
 export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 15000);
+  // We own the polling loop (the hook's built-in interval is disabled with 0):
+  // poll every 5s while the run is non-terminal, stop when it settles, and pause
+  // while the tab is hidden. `now` advances only inside the timer so there is no
+  // setState during render or the effect body.
+  const { data, loading, error, refresh } = useCountyRunDetail(countyRunId, 0);
+  const [now, setNow] = useState(0);
+  const stageIsTerminal = data?.stage === "validated-screening";
+  const shouldPoll = Boolean(data) && !stageIsTerminal;
+  const awaitingWorker =
+    data?.enqueueStatus === "submitted" && data?.stage === "bootstrap-incomplete";
+  useEffect(() => {
+    if (!shouldPoll) return;
+    const id = window.setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      setNow(Date.now());
+      void refresh();
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [shouldPoll, refresh]);
+  const enqueuedAtMs = data?.lastEnqueuedAt ? Date.parse(data.lastEnqueuedAt) : Number.NaN;
+  const runIsStuck =
+    Boolean(awaitingWorker) &&
+    now > 0 &&
+    Number.isFinite(enqueuedAtMs) &&
+    now - enqueuedAtMs > COUNTY_RUN_STUCK_THRESHOLD_MS;
   const { enqueue, loading: actionLoading, error: actionError } = useCountyRunMutations();
   const [enqueueState, setEnqueueState] = useState<{
     status: "prepared" | "submitted";
@@ -154,6 +180,22 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           <p className="mt-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Why this stage:</span> {stageReasonLabel}
           </p>
+        ) : null}
+        {awaitingWorker ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Waiting for the modeling worker to pick up this run — auto-refreshing every few seconds
+            (paused when the tab is hidden).
+          </p>
+        ) : null}
+        {runIsStuck ? (
+          <div className="mt-3 flex items-start gap-2 rounded-xl border border-amber-300/80 bg-amber-50/70 px-4 py-2.5 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span>
+              This run has been submitted for over 10 minutes with no worker progress. No worker has
+              picked this up — check that the modeling worker is running (see{" "}
+              <code>workers/aequilibrae_worker/DEPLOY.md</code>).
+            </span>
+          </div>
         ) : null}
         {actionError ? <p className="mt-2 text-sm text-destructive">{actionError}</p> : null}
         {linkCopyState === "error" ? <p className="mt-2 text-sm text-destructive">Unable to copy the current detail link.</p> : null}

@@ -8,6 +8,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import {
+  loadJsonArtifact,
+  resolveRunWorkDir,
+  workerLocalRoot,
+} from "./artifact-source";
 
 /**
  * GET /api/models/[modelId]/runs/[modelRunId]/volumes
@@ -42,33 +47,6 @@ type GeoJsonFeatureCollection = {
   features: GeoJSON.Feature[];
   metadata?: Record<string, unknown>;
 };
-
-const DEFAULT_WORKER_ROOT = path.resolve(
-  process.cwd(),
-  "../data/pilot-nevada-county"
-);
-
-async function loadJsonArtifact(fileUrl: string): Promise<unknown> {
-  if (fileUrl.startsWith("local://")) {
-    const payload = await readFile(fileUrl.slice("local://".length), "utf8");
-    return JSON.parse(payload);
-  }
-
-  if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
-    const res = await fetch(fileUrl, { cache: "no-store" });
-    if (!res.ok) {
-      throw new Error(`Artifact fetch failed (${res.status})`);
-    }
-    return res.json();
-  }
-
-  const payload = await readFile(fileUrl, "utf8");
-  return JSON.parse(payload);
-}
-
-function resolveRunWorkDir(modelRunId: string) {
-  return path.join(DEFAULT_WORKER_ROOT, "runs", modelRunId.slice(0, 12));
-}
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("model_runs.volumes", request);
@@ -204,7 +182,21 @@ export async function GET(request: NextRequest, context: RouteContext) {
       });
     }
 
-    const runWorkDir = resolveRunWorkDir(modelRunId);
+    // Run-local filesystem reconstruction is a dev-only fallback. Hosted
+    // deployments (app and worker on different hosts) must not read local
+    // paths, so it is gated behind OPENPLAN_WORKER_LOCAL_ROOT.
+    const localRoot = workerLocalRoot();
+    if (!localRoot) {
+      return NextResponse.json(
+        {
+          error:
+            "No volumes artifact is registered for this run. The worker uploads a volumes_geojson artifact to Storage; run-local filesystem reconstruction is disabled unless OPENPLAN_WORKER_LOCAL_ROOT is set.",
+        },
+        { status: 404 }
+      );
+    }
+
+    const runWorkDir = resolveRunWorkDir(localRoot, modelRunId);
     const volumesPath = path.join(runWorkDir, "run_output", "link_volumes.csv");
     const dbPath = path.join(runWorkDir, "aeq_project", "project_database.sqlite");
 

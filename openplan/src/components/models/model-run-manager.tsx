@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Loader2, Play, Sparkles } from "lucide-react";
+import { AlertTriangle, ArrowRight, Loader2, Play, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -80,6 +80,44 @@ function fmtDateTime(value: string | null | undefined) {
   if (!value) return "Unknown";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+}
+
+const NON_TERMINAL_RUN_STATUSES = new Set(["queued", "running"]);
+const RUN_POLL_INTERVAL_MS = 5000;
+const STUCK_RUN_THRESHOLD_MS = 10 * 60 * 1000;
+
+function isNonTerminalRun(run: Pick<ManagedModelRun, "status">): boolean {
+  return NON_TERMINAL_RUN_STATUSES.has(run.status);
+}
+
+function latestProgressMs(run: ManagedModelRun): number | null {
+  const times: number[] = [];
+  const push = (value: string | null | undefined) => {
+    if (!value) return;
+    const t = new Date(value).getTime();
+    if (Number.isFinite(t)) times.push(t);
+  };
+  push(run.created_at);
+  push(run.started_at);
+  for (const stage of run.stages ?? []) {
+    push(stage.started_at);
+    push(stage.completed_at);
+  }
+  return times.length ? Math.max(...times) : null;
+}
+
+/**
+ * A run is "stuck" when it is queued/running, no stage is actively running
+ * (so no worker is mid-execution), and there has been no stage progress for
+ * over 10 minutes — the signature of "no worker has picked this up."
+ */
+function isRunStuck(run: ManagedModelRun, now: number): boolean {
+  if (!isNonTerminalRun(run)) return false;
+  const stages = run.stages ?? [];
+  if (stages.some((stage) => stage.status === "running")) return false;
+  const latest = latestProgressMs(run);
+  if (latest === null) return false;
+  return now - latest > STUCK_RUN_THRESHOLD_MS;
 }
 
 function toneForRunStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
@@ -247,6 +285,27 @@ export function ModelRunManager({
   }
 
   const latestRun = modelRuns[0] ?? null;
+  const hasActiveRun = useMemo(() => modelRuns.some(isNonTerminalRun), [modelRuns]);
+  const [now, setNow] = useState(0);
+
+  // Poll while any run is non-terminal so the UI reflects worker progress
+  // without a manual refresh. Pause when the tab is hidden; stop when terminal.
+  // `now` advances only inside the timer, keeping stuck-run detection live
+  // without any setState during render/effect body.
+  useEffect(() => {
+    if (!hasActiveRun) return;
+    const id = window.setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
+      setNow(Date.now());
+      router.refresh();
+    }, RUN_POLL_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [hasActiveRun, router]);
+
+  const stuckRuns = useMemo(
+    () => (now ? modelRuns.filter((run) => isRunStuck(run, now)) : []),
+    [modelRuns, now]
+  );
 
   return (
     <article className="module-section-surface">
@@ -441,10 +500,23 @@ export function ModelRunManager({
             );
           })()}
 
-          {modelRuns.some((r) => r.status === "queued" || r.status === "running") ? (
+          {hasActiveRun ? (
             <div className="mt-3 flex items-center gap-2 rounded-[0.5rem] border border-sky-200/80 bg-sky-50/60 px-4 py-2.5 text-sm text-sky-800 dark:border-sky-800 dark:bg-sky-950/30 dark:text-sky-200">
               <Loader2 className="h-4 w-4 animate-spin flex-shrink-0" />
-              <span>One or more runs are in progress. Refresh the page to check for updates.</span>
+              <span>One or more runs are in progress. This view auto-refreshes every few seconds while runs are active (paused when the tab is hidden).</span>
+            </div>
+          ) : null}
+
+          {stuckRuns.length > 0 ? (
+            <div className="mt-3 flex items-start gap-2 rounded-[0.5rem] border border-amber-300/80 bg-amber-50/70 px-4 py-2.5 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200">
+              <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              <span>
+                {stuckRuns.length === 1
+                  ? `Run "${stuckRuns[0].run_title}" has been ${stuckRuns[0].status} for over 10 minutes with no stage progress.`
+                  : `${stuckRuns.length} runs have been queued/running for over 10 minutes with no stage progress.`}{" "}
+                No worker has picked this up — check that the modeling worker is running (see
+                {" "}<code>workers/aequilibrae_worker/DEPLOY.md</code>).
+              </span>
             </div>
           ) : null}
 

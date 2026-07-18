@@ -1,7 +1,12 @@
+import fs from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { buildBehavioralOnrampKpis } from "@/lib/models/behavioral-onramp-kpis";
+import { deriveCeqaVmtScreeningInputs } from "@/lib/models/ceqa-vmt-screen";
 import {
+  ARTIFACT_ROOT,
+  computeNctcInternalResidentVmt,
   DEMO_AWARDED_FUNDING_OPPORTUNITY_ID,
   DEMO_AWARDED_FUNDING_OPPORTUNITY_TITLE,
   DEMO_DATA_CONNECTOR_ID,
@@ -173,7 +178,7 @@ describe("buildSeedRecords", () => {
     const manifest = buildNctcCountyOnrampManifest(bundleManifest, validationSummary);
     const kpis = buildBehavioralOnrampKpis(manifest);
 
-    expect(kpis).toHaveLength(6);
+    expect(kpis).toHaveLength(8);
     expect(kpis.every((kpi) => kpi.kpi_category === "behavioral_onramp")).toBe(true);
     expect(kpis.find((kpi) => kpi.kpi_name === "total_trips")).toMatchObject({
       kpi_label: "Total trips (behavioral)",
@@ -632,6 +637,48 @@ describe("buildSeedRecords", () => {
     expect(records.existingConditionsChapter.sort_order).toBe(5);
     expect(records.existingConditionsChapter.required).toBe(true);
     expect(records.existingConditionsChapter.created_by).toBe(ownerUserId);
+  });
+});
+
+describe("seeded internal resident VMT (CEQA screen input)", () => {
+  const realBundle = JSON.parse(
+    fs.readFileSync(path.join(ARTIFACT_ROOT, "bundle_manifest.json"), "utf8")
+  ) as Record<string, unknown>;
+
+  it("derives a defensible screening-grade per-capita VMT from the frozen artifacts", () => {
+    const vmt = computeNctcInternalResidentVmt(ARTIFACT_ROOT, realBundle);
+
+    // External gateway zones (US-20/SR-49/I-80 crossings) are excluded so
+    // pass-through traffic is not counted as resident VMT.
+    expect(vmt.excludedGatewayZoneIds).toEqual([3, 9, 20, 21, 23, 24]);
+    expect(vmt.population).toBeCloseTo(102322, 0);
+    // ~25.7 VMT/capita — near CA statewide average, not the ~194 that raw
+    // network VMT (incl. externals) would produce.
+    expect(vmt.vmtPerCapita).toBeGreaterThan(15);
+    expect(vmt.vmtPerCapita).toBeLessThan(45);
+    expect(vmt.vmtPerCapita).toBeCloseTo(25.7, 0);
+    expect(vmt.dailyVmt).toBeGreaterThan(0);
+    expect(vmt.provenance).toContain("screening-grade");
+  });
+
+  it("is resolved by the CEQA VMT screen's derivation helper via the seeded KPI set", () => {
+    const vmt = computeNctcInternalResidentVmt(ARTIFACT_ROOT, realBundle);
+    const manifest = buildNctcCountyOnrampManifest(realBundle, validationSummary, vmt);
+    const kpis = buildBehavioralOnrampKpis(manifest);
+
+    // The behavioral KPI set the seed persists carries a vmt_per_capita KPI…
+    const perCapita = kpis.find((kpi) => kpi.kpi_name === "vmt_per_capita");
+    expect(perCapita?.value).toBeCloseTo(vmt.vmtPerCapita, 5);
+
+    // …and the CEQA screen's key matching resolves it to a per-capita input.
+    const inputs = deriveCeqaVmtScreeningInputs(
+      kpis.map((kpi) => ({ kpi_name: kpi.kpi_name, kpi_label: kpi.kpi_label, value: kpi.value, unit: kpi.unit }))
+    );
+    expect(inputs.status).toBe("per-capita");
+    if (inputs.status === "per-capita") {
+      expect(inputs.vmtKpiName).toBe("vmt_per_capita");
+      expect(inputs.vmtPerCapita).toBeCloseTo(vmt.vmtPerCapita, 5);
+    }
   });
 });
 
