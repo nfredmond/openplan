@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { executeAction as dispatchRegistryAction } from "@/lib/runtime/action-registry";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 import { getActionMetadata, resolveQuickLinkApproval } from "@/lib/runtime/action-metadata";
+import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import type { AssistantActionApprovalEvidence } from "@/lib/runtime/action-registry";
 
 type AppCopilotProps = {
@@ -2062,9 +2063,16 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               <Loader2 className="h-3 w-3 animate-spin text-emerald-300" aria-label="Streaming reply" />
                             ) : null}
                           </div>
-                          <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">
-                            {message.text || (message.status === "streaming" ? "…" : message.status === "complete" ? "No reply text was returned." : "")}
-                          </p>
+                          {message.text ? (
+                            <div
+                              className="chapter-markdown text-sm leading-relaxed text-slate-100"
+                              dangerouslySetInnerHTML={{ __html: renderChapterMarkdownToHtml(message.text) }}
+                            />
+                          ) : (
+                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">
+                              {message.status === "streaming" ? "…" : message.status === "complete" ? "No reply text was returned." : ""}
+                            </p>
+                          )}
                           {message.status === "error" ? (
                             <div className="mt-3 flex items-center justify-between gap-3 rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-3.5 py-2.5 text-sm text-rose-100/92">
                               <span>{message.error ?? "The Planner Agent chat reply was interrupted."}</span>
