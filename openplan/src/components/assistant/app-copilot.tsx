@@ -1503,6 +1503,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
+      let receivedText = "";
 
       try {
         for (;;) {
@@ -1510,6 +1511,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           if (done) break;
           const delta = decoder.decode(value, { stream: true });
           if (!delta) continue;
+          receivedText += delta;
           setMessages((current) =>
             current.map((entry) =>
               entry.id === chatEntryId && entry.type === "chat" ? { ...entry, text: entry.text + delta } : entry
@@ -1517,13 +1519,32 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           );
         }
         const tail = decoder.decode();
-        setMessages((current) =>
-          current.map((entry) =>
-            entry.id === chatEntryId && entry.type === "chat"
-              ? { ...entry, text: entry.text + tail, status: "complete" as const }
-              : entry
-          )
-        );
+        receivedText += tail;
+        // A plain-text stream cannot carry an error frame, so an upstream model
+        // failure before any token arrives ends the stream with an empty body.
+        // Treat an empty completed reply as an error (with retry) rather than a
+        // silent blank bubble.
+        if (receivedText.trim().length === 0) {
+          setMessages((current) =>
+            current.map((entry) =>
+              entry.id === chatEntryId && entry.type === "chat"
+                ? {
+                    ...entry,
+                    status: "error" as const,
+                    error: "The Planner Agent chat reply came back empty — the model may be busy. Try again.",
+                  }
+                : entry
+            )
+          );
+        } else {
+          setMessages((current) =>
+            current.map((entry) =>
+              entry.id === chatEntryId && entry.type === "chat"
+                ? { ...entry, text: entry.text + tail, status: "complete" as const }
+                : entry
+            )
+          );
+        }
       } catch (streamError) {
         const streamMessage =
           streamError instanceof Error ? streamError.message : "The Planner Agent chat reply was interrupted.";

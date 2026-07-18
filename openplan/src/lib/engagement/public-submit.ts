@@ -52,7 +52,13 @@ export function getPublicSubmissionUserAgent(request: NextRequest): string {
 }
 
 export function buildPublicSubmissionClientFingerprint(request: NextRequest): string {
-  return hashValue(`${getPublicSubmissionClientIp(request)}|${getPublicSubmissionUserAgent(request)}`);
+  // Keyed on the platform-provided client IP ONLY. The User-Agent is a
+  // client-controlled header — including it let an attacker mint a fresh
+  // fingerprint per request (rotating UA) and thereby bypass the vote
+  // idempotency guard, the submission rate limit, and the photo-upload
+  // limit that all key on this value. The UA is still recorded separately
+  // for moderation context (user_agent column), just not trusted for identity.
+  return hashValue(`ip|${getPublicSubmissionClientIp(request)}`);
 }
 
 export function buildPublicSubmissionBodyFingerprint(input: {

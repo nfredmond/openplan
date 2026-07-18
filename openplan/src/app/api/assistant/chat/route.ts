@@ -8,6 +8,7 @@ import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { loadAssistantContext } from "@/lib/assistant/context";
 import { buildAssistantChatSystemPrompt } from "@/lib/assistant/chat-context";
 import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
 
 const ASSISTANT_CHAT_MAX_BODY_BYTES = BODY_LIMITS.normalJson;
 const ASSISTANT_CHAT_DEFAULT_MODEL = "claude-opus-4-8";
@@ -105,9 +106,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Assistant context not found" }, { status: 404 });
     }
 
+    if (context.workspace.id) {
+      const rateLimit = await checkAiUsageRateLimit(context.workspace.id);
+      if (!rateLimit.allowed) {
+        audit.warn("assistant_chat_rate_limited", {
+          workspaceId: context.workspace.id,
+          userId: user.id,
+          recentCount: rateLimit.count,
+        });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
+    }
+
     const modelId = resolveAssistantChatModelId();
     const systemPrompt = buildAssistantChatSystemPrompt(context);
-    const history = parsed.data.history ?? [];
+    // Drop any leading assistant turns so the forwarded conversation always
+    // starts with a user message — the Messages API 400s otherwise, and a
+    // dropped-reply history window can otherwise begin with an assistant entry.
+    let history = parsed.data.history ?? [];
+    while (history.length > 0 && history[0].role === "assistant") {
+      history = history.slice(1);
+    }
 
     if (context.workspace.id) {
       await recordUsageEventBestEffort(
