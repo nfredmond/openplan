@@ -1,12 +1,72 @@
 import { describe, expect, it } from "vitest";
 import {
   buildEvidenceHighlights,
+  describeEmploymentProvenance,
+  employmentUsedSyntheticFallback,
   formatDurationSeconds,
   labelForArtifactType,
   labelForEngineKey,
   labelForKpiCategory,
   normalizeEvidencePacket,
 } from "@/lib/models/evidence-packet";
+
+const LODES_EMPLOYMENT = {
+  primary: "lehd_lodes8_wac_s000_jt00",
+  year: "2022",
+  states_used: ["ca"],
+  states_failed: [],
+  tracts_from_lodes: 24,
+  tracts_from_synthetic_fallback: 2,
+  fallback_method: "jobs = round(0.47 × ACS population), floor 25",
+  caveat: "Screening-grade. Total jobs are LODES WAC workplace counts where available.",
+};
+
+function normalizeMinimal(rawPacket: Record<string, unknown>) {
+  return normalizeEvidencePacket({
+    rawPacket,
+    modelId: "model-123",
+    modelRunId: "run-123",
+    modelTitle: "Minimal",
+    runRecord: { id: "run-123", status: "succeeded", engine_key: "aequilibrae" },
+    artifacts: [],
+    stages: [],
+    kpis: [],
+  });
+}
+
+describe("employment provenance", () => {
+  it("maps the worker packet employment block onto the normalized packet", () => {
+    expect(normalizeMinimal({ employment: LODES_EMPLOYMENT }).employment).toEqual(LODES_EMPLOYMENT);
+  });
+
+  it("leaves employment null for packets without the block", () => {
+    expect(normalizeMinimal({ engine: "AequilibraE 1.6.1" }).employment).toBeNull();
+  });
+
+  it("describes LODES coverage including the fallback tract count", () => {
+    expect(describeEmploymentProvenance(LODES_EMPLOYMENT)).toBe(
+      "LEHD LODES8 WAC S000/JT00 2022 — 24 tracts (states ca); 2 tracts from the population-share fallback"
+    );
+    expect(employmentUsedSyntheticFallback(LODES_EMPLOYMENT)).toBe(true);
+  });
+
+  it("labels a fully synthetic run and full LODES coverage correctly", () => {
+    const synthetic = {
+      ...LODES_EMPLOYMENT,
+      tracts_from_lodes: 0,
+      tracts_from_synthetic_fallback: 26,
+      states_used: [],
+    };
+    expect(describeEmploymentProvenance(synthetic)).toContain("Synthetic employment");
+    expect(employmentUsedSyntheticFallback(synthetic)).toBe(true);
+
+    const fullCoverage = { ...LODES_EMPLOYMENT, tracts_from_synthetic_fallback: 0 };
+    expect(describeEmploymentProvenance(fullCoverage)).toBe(
+      "LEHD LODES8 WAC S000/JT00 2022 — 24 tracts (states ca)"
+    );
+    expect(employmentUsedSyntheticFallback(fullCoverage)).toBe(false);
+  });
+});
 
 describe("evidence packet helpers", () => {
   it("normalizes legacy worker packet shape into planner-safe structure", () => {

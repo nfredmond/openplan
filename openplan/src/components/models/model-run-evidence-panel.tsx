@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildEvidenceHighlights,
+  describeEmploymentProvenance,
+  employmentUsedSyntheticFallback,
   formatDurationSeconds,
   labelForEngineKey,
   labelForKpiCategory,
@@ -14,6 +16,7 @@ import {
   summarizeEvidenceCategories,
   type NormalizedEvidencePacket,
 } from "@/lib/models/evidence-packet";
+import { ESTIMATED_BADGE_LABEL } from "@/lib/analysis/estimated-source";
 import {
   buildModelRunKpiComparisonSummary,
   formatModelRunKpiDelta,
@@ -285,6 +288,21 @@ export function ModelRunEvidencePanel({
                     <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3">
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Query text</p>
                       <p className="mt-2 text-sm text-foreground">{evidence.inputs.query_text}</p>
+                    </div>
+                  ) : null}
+
+                  {evidence.employment ? (
+                    <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/90 p-3" data-testid="evidence-employment-inputs">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">Employment inputs</p>
+                      <p className="mt-2 text-sm text-foreground">{describeEmploymentProvenance(evidence.employment)}</p>
+                      {employmentUsedSyntheticFallback(evidence.employment) ? (
+                        <div className="mt-2 flex items-start gap-2">
+                          <StatusBadge tone="warning">{ESTIMATED_BADGE_LABEL}</StatusBadge>
+                          {typeof evidence.employment.caveat === "string" ? (
+                            <p className="text-xs text-muted-foreground">{evidence.employment.caveat}</p>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                   ) : null}
 

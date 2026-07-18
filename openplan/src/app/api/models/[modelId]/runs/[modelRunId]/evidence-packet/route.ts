@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import {
+  loadJsonArtifact,
+  resolveRunWorkDir,
+  workerLocalRoot,
+} from "@/lib/models/artifact-source";
 import {
   normalizeEvidencePacket,
   type NormalizedEvidencePacketScenarioBasis,
@@ -205,24 +209,6 @@ async function loadScenarioBasis({
   };
 }
 
-async function loadJsonArtifact(fileUrl: string): Promise<unknown> {
-  if (fileUrl.startsWith("local://")) {
-    const payload = await readFile(fileUrl.slice("local://".length), "utf8");
-    return JSON.parse(payload);
-  }
-
-  if (fileUrl.startsWith("http://") || fileUrl.startsWith("https://")) {
-    const res = await fetch(fileUrl, { cache: "no-store" });
-    if (!res.ok) {
-      throw new Error(`Artifact fetch failed (${res.status})`);
-    }
-    return res.json();
-  }
-
-  const payload = await readFile(fileUrl, "utf8");
-  return JSON.parse(payload);
-}
-
 // GET /api/models/[modelId]/runs/[modelRunId]/evidence-packet
 // Return the worker-authored evidence packet when available, with a synthesized fallback.
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -359,7 +345,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   if (evidenceArtifact?.file_url) {
     try {
-      storedPacket = await loadJsonArtifact(evidenceArtifact.file_url);
+      // Scoped read: file_url is member-writable data, so the resolver is
+      // bound to this run's storage prefix / local work dir.
+      const envRoot = workerLocalRoot();
+      storedPacket = await loadJsonArtifact(evidenceArtifact.file_url, {
+        bucket: "run-artifacts",
+        objectPathPrefix: `model-runs/${parsedParams.data.modelRunId}/`,
+        localRoot: envRoot
+          ? resolveRunWorkDir(envRoot, parsedParams.data.modelRunId)
+          : undefined,
+      });
     } catch (error) {
       audit.warn("evidence_packet_artifact_load_failed", {
         modelRunId: parsedParams.data.modelRunId,

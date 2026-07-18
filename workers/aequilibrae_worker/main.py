@@ -590,6 +590,9 @@ def stage_artifacts(
             "method": "sum(link assigned PCE volume × link length in miles); centroid connectors excluded; AequilibraE distance metres → miles",
             "source": "derived from assignment link volumes — screening-grade, not measured",
         },
+        # LODES-vs-synthetic employment provenance from the package manifest,
+        # so the app can badge synthetic-fallback jobs as Estimated.
+        "employment": (package_meta or {}).get("jobs_provenance"),
         "caveats": ["Uncalibrated", "OSM default speeds/capacities", "Closed boundary", "Screening-grade"],
         "created_at": datetime.now(timezone.utc).isoformat(),
         "model_area": model_area_label,
@@ -599,6 +602,33 @@ def stage_artifacts(
     with open(evidence_path, "w") as f:
         json.dump(evidence, f, indent=2)
     log += f"Wrote evidence packet to {evidence_path}.\n"
+
+    # Upload the evidence packet to the private run-artifacts bucket so the
+    # app can read it when app and worker run on different hosts (local://
+    # refs only resolve in single-host dev). Falls back to local:// on failure.
+    evidence_storage_ref = None
+    try:
+        ev_object_path = f"model-runs/{run_id}/evidence_packet.json"
+        ev_upload_url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{ev_object_path}"
+        with open(evidence_path, "rb") as f:
+            ev_upload_res = requests.post(
+                ev_upload_url,
+                headers={
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Content-Type": "application/json",
+                    "x-upsert": "true",
+                },
+                data=f.read(),
+                timeout=60,
+            )
+        if ev_upload_res.status_code in (200, 201):
+            evidence_storage_ref = f"storage://run-artifacts/{ev_object_path}"
+            log += f"Uploaded evidence packet to private Storage as {evidence_storage_ref}.\n"
+        else:
+            log += f"Evidence packet Storage upload failed ({ev_upload_res.status_code}); registering local path.\n"
+    except Exception as e:
+        log += f"Evidence packet Storage upload warning: {e}\n"
 
     # Register artifacts in Supabase
     for fname, atype in [
@@ -612,11 +642,16 @@ def stage_artifacts(
             size = os.path.getsize(fpath)
             with open(fpath, "rb") as fh:
                 content_hash = hashlib.sha256(fh.read()).hexdigest()[:16]
+            file_url = (
+                evidence_storage_ref
+                if atype == "evidence_packet" and evidence_storage_ref
+                else f"local://{fpath}"
+            )
             sb_post_artifact({
                 "run_id": run_id,
                 "stage_id": stage_id,
                 "artifact_type": atype,
-                "file_url": f"local://{fpath}",
+                "file_url": file_url,
                 "file_size_bytes": size,
                 "content_hash": content_hash,
                 "metadata_json": evidence if atype == "evidence_packet" else {"filename": fname},
