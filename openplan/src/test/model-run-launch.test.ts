@@ -71,11 +71,14 @@ describe("model run launch helpers", () => {
     ]);
   });
 
-  it("defines the sketch activity model as a screening-grade in-process prototype", () => {
+  it("defines the sketch activity model as a launchable screening-grade in-process mode", () => {
     const runMode = getManagedRunModeDefinition("sketch_abm");
 
     expect(runMode.label).toBe("Sketch Activity Model");
-    expect(runMode.availability).toBe("prototype");
+    // Launchable after benchmark validation (sketch-abm-benchmark-validation),
+    // but still screening-grade — the caveat must never soften to forecast
+    // language even though the UI now offers it directly.
+    expect(runMode.availability).toBe("launchable");
     expect(runMode.runtimeExpectation).toContain("synchronously in-process");
     expect(runMode.runtimeExpectation).toContain("seconds");
     expect(runMode.caveatSummary).toContain("Screening-grade");
