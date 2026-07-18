@@ -305,13 +305,13 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
       county_run_id: string;
       run_id: null;
     }>;
-    expect(kpiRows).toHaveLength(6);
+    expect(kpiRows).toHaveLength(8);
     expect(kpiRows.every((row) => row.kpi_category === "behavioral_onramp")).toBe(true);
     expect(kpiRows.every((row) => row.county_run_id === "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa")).toBe(true);
     expect(kpiRows.find((row) => row.kpi_name === "total_trips")?.value).toBe(231828.75);
     expect(mockAudit.info).toHaveBeenCalledWith(
       "county_run_behavioral_kpis_written",
-      expect.objectContaining({ kpiCount: 6, stage: "validated-screening" })
+      expect.objectContaining({ kpiCount: 8, stage: "validated-screening" })
     );
     expect(evidenceDeleteEqCountyRunIdMock).toHaveBeenCalledWith(
       "county_run_id",

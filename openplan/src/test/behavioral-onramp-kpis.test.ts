@@ -47,9 +47,9 @@ const manifest = {
 } as unknown as CountyOnrampManifest;
 
 describe("buildBehavioralOnrampKpis", () => {
-  it("derives six behavioral KPIs from a county onramp manifest", () => {
+  it("derives eight behavioral KPIs (incl. VMT) from a county onramp manifest", () => {
     const kpis = buildBehavioralOnrampKpis(manifest);
-    expect(kpis).toHaveLength(6);
+    expect(kpis).toHaveLength(8);
     expect(kpis.every((kpi) => kpi.kpi_category === "behavioral_onramp")).toBe(true);
     const totalTrips = kpis.find((kpi) => kpi.kpi_name === "total_trips");
     expect(totalTrips?.value).toBe(231828.75);
@@ -60,6 +60,35 @@ describe("buildBehavioralOnrampKpis", () => {
       mode: "existing-run",
       generated_at: "2026-03-24T23:00:00Z",
     });
+    // VMT KPIs are present but null when the manifest carries no VMT.
+    const perCapita = kpis.find((kpi) => kpi.kpi_name === "vmt_per_capita");
+    expect(perCapita?.value).toBeNull();
+    expect(kpis.find((kpi) => kpi.kpi_name === "daily_vmt")?.value).toBeNull();
+  });
+
+  it("emits VMT KPIs with provenance when the manifest carries them", () => {
+    const withVmt = {
+      ...manifest,
+      summary: {
+        ...manifest.summary,
+        run: {
+          ...manifest.summary.run,
+          daily_vmt: 2633001,
+          vmt_per_capita: 25.732,
+          vmt_provenance: "internal resident VMT, screening-grade",
+        },
+      },
+    } as unknown as CountyOnrampManifest;
+
+    const kpis = buildBehavioralOnrampKpis(withVmt);
+    const perCapita = kpis.find((kpi) => kpi.kpi_name === "vmt_per_capita");
+    expect(perCapita?.value).toBe(25.732);
+    expect(perCapita?.unit).toBe("vehicle-miles/person/day");
+    expect(perCapita?.breakdown_json).toMatchObject({
+      source: "county_onramp",
+      provenance: "internal resident VMT, screening-grade",
+    });
+    expect(kpis.find((kpi) => kpi.kpi_name === "daily_vmt")?.value).toBe(2633001);
   });
 });
 
@@ -102,7 +131,7 @@ describe("persistBehavioralOnrampKpis", () => {
     expect(captured.deleteEqFirst).toEqual(["county_run_id", "run-1"]);
     expect(captured.deleteEqSecond).toEqual(["kpi_category", "behavioral_onramp"]);
     const rows = captured.insert as Array<{ kpi_name: string; county_run_id: string; run_id: null }>;
-    expect(rows).toHaveLength(6);
+    expect(rows).toHaveLength(8);
     expect(rows.every((row) => row.county_run_id === "run-1")).toBe(true);
     expect(rows.every((row) => row.run_id === null)).toBe(true);
   });

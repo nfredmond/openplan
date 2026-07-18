@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "seed:workspace-isolation": "tsx scripts/seed-local-workspace-isolation.ts",
     "seed:nctc": "tsx scripts/seed-nctc-demo.ts",
+    "worker:aequilibrae": "cd ../workers/aequilibrae_worker && python3 main.py",
     "ops:check-admin-operations-smoke": "node scripts/ops/check-admin-operations-smoke-prereqs.mjs",
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",
     "ops:log-prod-health-evidence": "node scripts/ops/log-prod-health-evidence.mjs",

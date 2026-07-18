@@ -44,7 +44,7 @@ const REPO_ROOT = path.resolve(APP_ROOT, "..");
 
 const DEFAULT_ENV_CANDIDATES = [path.join(APP_ROOT, ".env.local")];
 
-const ARTIFACT_ROOT = path.join(
+export const ARTIFACT_ROOT = path.join(
   REPO_ROOT,
   "data",
   "screening-runs",
@@ -824,9 +824,145 @@ export function buildExistingConditionsChapterMarkdown(
   ].join("\n");
 }
 
+/**
+ * Screening-grade internal resident VMT for the seeded Nevada County run.
+ *
+ * The frozen county screening run loads ~266k external through-trips onto the
+ * US-20 / SR-49 / I-80 corridors, so dividing total network VMT by resident
+ * population overstates per-capita VMT (~194) — that is pass-through traffic,
+ * not resident travel, and CEQA §15064.3 measures resident/employee-generated
+ * VMT. We therefore isolate INTERNAL resident travel: sum over the internal OD
+ * matrix (external gateway zones excluded) of trips × centroid-to-centroid
+ * great-circle distance × a 1.30 network-circuity factor, with intrazonal
+ * distance ≈ 0.5·√(area/π). This is derived, screening-grade, and never
+ * presented as measured. It is deliberately conservative (internal trips
+ * to/from gateway tracts are dropped, and the full resident population is the
+ * denominator).
+ */
+export type NctcInternalResidentVmt = {
+  dailyVmt: number;
+  population: number;
+  vmtPerCapita: number;
+  internalTrips: number;
+  avgTripMiles: number;
+  circuity: number;
+  excludedGatewayZoneIds: number[];
+  provenance: string;
+};
+
+const VMT_NETWORK_CIRCUITY = 1.3;
+
+function haversineMiles(lon1: number, lat1: number, lon2: number, lat2: number): number {
+  const R = 3958.7613;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+/** Minimal CSV parse (no quoting in these numeric artifact files). */
+function parseCsvRows(content: string): string[][] {
+  return content
+    .split(/\r?\n/)
+    .filter((line) => line.length > 0)
+    .map((line) => line.split(","));
+}
+
+export function computeNctcInternalResidentVmt(
+  artifactRoot: string,
+  bundleManifest: Record<string, unknown>
+): NctcInternalResidentVmt {
+  const demand = record(bundleManifest.demand);
+  const gateways = Array.isArray(demand.external_gateways)
+    ? (demand.external_gateways as Array<Record<string, unknown>>)
+    : [];
+  const gatewayZoneIds = new Set<number>();
+  for (const gw of gateways) {
+    const zid = num(gw.zone_id);
+    if (zid !== null) gatewayZoneIds.add(Math.round(zid));
+  }
+
+  const zoneRows = parseCsvRows(
+    fs.readFileSync(path.join(artifactRoot, "package", "zone_attributes.csv"), "utf8")
+  );
+  const zoneHeader = zoneRows[0];
+  const col = (name: string) => zoneHeader.indexOf(name);
+  const idxZoneId = col("zone_id");
+  const idxLon = col("centroid_lon");
+  const idxLat = col("centroid_lat");
+  const idxArea = col("area_sq_mi");
+  const idxPop = col("est_population");
+  const zones = new Map<number, { lon: number; lat: number; area: number; pop: number }>();
+  for (const row of zoneRows.slice(1)) {
+    const zid = Math.round(Number(row[idxZoneId]));
+    zones.set(zid, {
+      lon: Number(row[idxLon]),
+      lat: Number(row[idxLat]),
+      area: Number(row[idxArea]),
+      pop: Number(row[idxPop]),
+    });
+  }
+  const population = Array.from(zones.values()).reduce((sum, z) => sum + (z.pop || 0), 0);
+
+  const odRows = parseCsvRows(
+    fs.readFileSync(path.join(artifactRoot, "package", "od_trip_matrix.csv"), "utf8")
+  );
+  const destIds = odRows[0].slice(1).map((v) => Math.round(Number(v)));
+
+  let dailyVmt = 0;
+  let internalTrips = 0;
+  for (const row of odRows.slice(1)) {
+    const origin = Math.round(Number(row[0]));
+    if (gatewayZoneIds.has(origin)) continue;
+    const oz = zones.get(origin);
+    if (!oz) continue;
+    for (let k = 0; k < destIds.length; k += 1) {
+      const dest = destIds[k];
+      if (gatewayZoneIds.has(dest)) continue;
+      const trips = Number(row[k + 1]);
+      if (!Number.isFinite(trips) || trips <= 0) continue;
+      const dz = zones.get(dest);
+      if (!dz) continue;
+      let miles: number;
+      if (origin === dest) {
+        miles = oz.area > 0 ? 0.5 * Math.sqrt(oz.area / Math.PI) : 0.75;
+      } else {
+        miles = haversineMiles(oz.lon, oz.lat, dz.lon, dz.lat) * VMT_NETWORK_CIRCUITY;
+      }
+      dailyVmt += trips * miles;
+      internalTrips += trips;
+    }
+  }
+
+  const vmtPerCapita = population > 0 ? dailyVmt / population : 0;
+  const excludedGatewayZoneIds = Array.from(gatewayZoneIds).sort((a, b) => a - b);
+  const avgTripMiles = internalTrips > 0 ? dailyVmt / internalTrips : 0;
+  const provenance =
+    `Internal resident VMT (screening-grade, derived — not measured): ` +
+    `Σ internal-to-internal OD trips × centroid great-circle distance × ${VMT_NETWORK_CIRCUITY} circuity ` +
+    `(intrazonal ≈ 0.5·√(area/π)); external gateway zones [${excludedGatewayZoneIds.join(", ")}] excluded so ` +
+    `US-20/SR-49/I-80 pass-through travel is not counted; divided by resident population ${Math.round(population).toLocaleString("en-US")}. ` +
+    `Source artifacts: package/od_trip_matrix.csv + package/zone_attributes.csv (${DEMO_COUNTY_RUN_NAME}).`;
+
+  return {
+    dailyVmt,
+    population,
+    vmtPerCapita,
+    internalTrips,
+    avgTripMiles,
+    circuity: VMT_NETWORK_CIRCUITY,
+    excludedGatewayZoneIds,
+    provenance,
+  };
+}
+
 export function buildNctcCountyOnrampManifest(
   bundleManifest: Record<string, unknown>,
-  validationSummary: Record<string, unknown>
+  validationSummary: Record<string, unknown>,
+  vmt?: NctcInternalResidentVmt | null
 ): CountyOnrampManifest {
   const artifacts = record(bundleManifest.artifacts);
   const zones = record(bundleManifest.zones);
@@ -871,6 +1007,9 @@ export function buildNctcCountyOnrampManifest(
         loaded_links: num(assignmentNetwork.links) ?? num(assignment.loaded_links),
         final_gap: num(convergence.final_gap),
         total_trips: num(demand.total_trips),
+        daily_vmt: vmt ? vmt.dailyVmt : null,
+        vmt_per_capita: vmt ? vmt.vmtPerCapita : null,
+        vmt_provenance: vmt ? vmt.provenance : null,
       },
       validation: validationSummary,
       bundle_validation: {
@@ -1623,8 +1762,16 @@ async function main(): Promise<void> {
 
   const bundleManifest = readJson("bundle_manifest.json");
   const validationSummary = readJson(path.join("validation", "validation_summary.json"));
-  const countyRunOnrampManifest = buildNctcCountyOnrampManifest(bundleManifest, validationSummary);
+  const internalVmt = computeNctcInternalResidentVmt(ARTIFACT_ROOT, bundleManifest);
+  const countyRunOnrampManifest = buildNctcCountyOnrampManifest(bundleManifest, validationSummary, internalVmt);
   const modelingEvidenceBundle = buildNctcModelingEvidenceBundle(bundleManifest, validationSummary);
+
+  console.log(
+    `[seed:nctc] internal resident VMT (screening): ${Math.round(internalVmt.dailyVmt).toLocaleString("en-US")} veh-mi/day, ` +
+      `${internalVmt.vmtPerCapita.toFixed(3)} VMT/capita ` +
+      `(avg ${internalVmt.avgTripMiles.toFixed(2)} mi over ${Math.round(internalVmt.internalTrips).toLocaleString("en-US")} internal trips; ` +
+      `gateways excluded: ${internalVmt.excludedGatewayZoneIds.join(", ")})`
+  );
 
   console.log(
     `[seed:nctc] manifest: screening_grade=${bundleManifest.screening_grade}, ` +

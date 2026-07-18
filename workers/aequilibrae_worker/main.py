@@ -122,6 +122,26 @@ def sb_patch_stage(stage_id: str, payload: dict):
     requests.patch(url, headers=HEADERS, json=payload)
 
 
+def sb_claim_stage(stage_id: str, payload: dict) -> bool:
+    """Atomically claim a queued stage.
+
+    Transitions status queued -> running only if the row is still queued. Using
+    a conditional PATCH (id=eq.X & status=eq.queued) with return=representation
+    means a second worker that lost the race gets an empty result set and skips,
+    so two replicas never double-process the same stage.
+    """
+    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}&status=eq.queued"
+    res = requests.patch(url, headers=HEADERS, json=payload)
+    if res.status_code not in (200, 201, 204):
+        print(f"  Claim PATCH returned {res.status_code}: {res.text[:200]}")
+        return False
+    try:
+        rows = res.json()
+    except ValueError:
+        rows = []
+    return bool(rows)
+
+
 def sb_patch_run(run_id: str, payload: dict):
     url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
     requests.patch(url, headers=HEADERS, json=payload)
@@ -460,7 +480,64 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
 
 
 # ─── Stage 3: Artifact Extraction ──────────────────────────────────────
-def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dict, assign_result: dict) -> str:
+def compute_daily_vmt(db_path: str, link_volumes_csv: str) -> float | None:
+    """Total daily VMT = Σ (link assigned volume × link length in miles).
+
+    AequilibraE stores link `distance` in metres, so we convert to miles.
+    Virtual centroid connectors carry demand on/off the network but are not
+    real roadway, so they are excluded from VMT. Returns None if inputs are
+    missing.
+    """
+    if not (os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
+        return None
+
+    import csv as _csv
+
+    meters_per_mile = 1609.34
+    pce_by_link: dict[int, float] = {}
+    with open(link_volumes_csv) as fh:
+        for row in _csv.DictReader(fh):
+            raw_id = row.get("link_id") or row.get("") or ""
+            try:
+                lid = int(float(raw_id))
+            except (TypeError, ValueError):
+                continue
+            try:
+                pce = float(row.get("PCE_tot", 0) or 0)
+            except (TypeError, ValueError):
+                pce = 0.0
+            if pce:
+                pce_by_link[lid] = pce
+
+    if not pce_by_link:
+        return 0.0
+
+    conn = sqlite3.connect(db_path)
+    try:
+        vmt = 0.0
+        for lid, link_type, distance in conn.execute(
+            "SELECT link_id, link_type, distance FROM links"
+        ):
+            if link_type == "centroid_connector":
+                continue
+            pce = pce_by_link.get(int(lid))
+            if not pce:
+                continue
+            dist_m = float(distance) if distance is not None else 0.0
+            vmt += pce * (dist_m / meters_per_mile)
+    finally:
+        conn.close()
+    return vmt
+
+
+def stage_artifacts(
+    run_id: str,
+    stage_id: str,
+    work_dir: str,
+    setup_result: dict,
+    assign_result: dict,
+    package_meta: dict | None = None,
+) -> str:
     out_dir = os.path.join(work_dir, "run_output")
     bbox = setup_result.get("bbox")
     model_area_label = (
@@ -469,6 +546,29 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
         else "Dynamic study area"
     )
     log = "Extracting artifacts...\n"
+
+    # ── Daily VMT (Σ link volume × length in miles) and per-capita VMT ──
+    db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+    link_volumes_csv = os.path.join(out_dir, "link_volumes.csv")
+    daily_vmt = None
+    vmt_per_capita = None
+    population_total = None
+    try:
+        population_total = float(package_meta["total_population"]) if package_meta and package_meta.get("total_population") else None
+    except (TypeError, ValueError):
+        population_total = None
+    try:
+        daily_vmt = compute_daily_vmt(db_path, link_volumes_csv)
+        if daily_vmt is not None:
+            daily_vmt = round(daily_vmt, 1)
+            if population_total and population_total > 0:
+                vmt_per_capita = round(daily_vmt / population_total, 4)
+        log += (
+            f"Daily VMT: {daily_vmt:,.0f} vehicle-miles"
+            + (f" · {vmt_per_capita} VMT/capita (pop {population_total:,.0f})\n" if vmt_per_capita is not None else " (population unknown — per-capita not derived)\n")
+        )
+    except Exception as e:
+        log += f"VMT computation warning: {e}\n"
 
     evidence = {
         "run_id": run_id,
@@ -483,6 +583,13 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
         "loaded_links": assign_result["loaded_links"],
         "largest_component_pct": setup_result.get("largest_component_pct"),
         "bbox": list(bbox) if bbox else None,
+        "vmt": {
+            "daily_vmt": daily_vmt,
+            "vmt_per_capita": vmt_per_capita,
+            "population_total": population_total,
+            "method": "sum(link assigned PCE volume × link length in miles); centroid connectors excluded; AequilibraE distance metres → miles",
+            "source": "derived from assignment link volumes — screening-grade, not measured",
+        },
         "caveats": ["Uncalibrated", "OSM default speeds/capacities", "Closed boundary", "Screening-grade"],
         "created_at": datetime.now(timezone.utc).isoformat(),
         "model_area": model_area_label,
@@ -529,6 +636,15 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
     if assign_result["skims"]["avg_time_min"] is not None:
         kpis.append(("assignment", "avg_travel_time", "Avg Travel Time", round(assign_result["skims"]["avg_time_min"], 1), "min"))
         kpis.append(("assignment", "max_travel_time", "Max Travel Time", round(assign_result["skims"]["max_time_min"], 1), "min"))
+
+    # VMT KPIs land in a directly-readable category (not behavioral_onramp) so
+    # the CEQA §15064.3 screen can derive a determination from them.
+    if daily_vmt is not None:
+        kpis.append(("general", "daily_vmt", "Daily VMT", daily_vmt, "vehicle-miles/day"))
+    if vmt_per_capita is not None:
+        kpis.append(("general", "vmt_per_capita", "VMT per Capita", vmt_per_capita, "vehicle-miles/person/day"))
+    if population_total is not None:
+        kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
 
     for cat, name, label, value, unit in kpis:
         sb_post_kpi({
@@ -593,9 +709,12 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
             with open(geojson_path, "w") as f:
                 json.dump(fc, f)
 
-            # Upload to Supabase Storage
-            storage_path = f"model-runs/{run_id}/volumes.geojson"
-            upload_url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{storage_path}"
+            # Upload to the (private) run-artifacts bucket. Store the storage
+            # PATH — not a public URL — so the app resolves it through a
+            # service-role signed URL and workspace RLS is never bypassed.
+            bucket = "run-artifacts"
+            object_path = f"model-runs/{run_id}/volumes.geojson"
+            upload_url = f"{SUPABASE_URL}/storage/v1/object/{bucket}/{object_path}"
             with open(geojson_path, "rb") as f:
                 upload_headers = {
                     "apikey": SUPABASE_KEY,
@@ -606,19 +725,19 @@ def stage_artifacts(run_id: str, stage_id: str, work_dir: str, setup_result: dic
                 upload_res = requests.post(upload_url, headers=upload_headers, data=f.read())
 
             if upload_res.status_code in (200, 201):
-                public_url = f"{SUPABASE_URL}/storage/v1/object/public/run-artifacts/{storage_path}"
+                storage_ref = f"storage://{bucket}/{object_path}"
                 with open(geojson_path, "rb") as geojson_file:
                     geojson_hash = hashlib.sha256(geojson_file.read()).hexdigest()[:16]
                 sb_post_artifact({
                     "run_id": run_id,
                     "stage_id": stage_id,
                     "artifact_type": "volumes_geojson",
-                    "file_url": public_url,
+                    "file_url": storage_ref,
                     "file_size_bytes": os.path.getsize(geojson_path),
                     "content_hash": geojson_hash,
                     "metadata_json": {"format": "geojson", "features": len(features), "maxVolume": max_vol},
                 })
-                log += f"Uploaded volumes GeoJSON ({len(features)} features) to Supabase Storage.\n"
+                log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
             else:
                 log += f"Storage upload failed ({upload_res.status_code}): {upload_res.text[:200]}\n"
         else:
@@ -645,8 +764,14 @@ def process_stage(stage: dict):
 
     print(f"[{time.strftime('%X')}] Processing: {stage_name} (run={run_id[:8]}…)")
 
-    # Claim
-    sb_patch_stage(stage_id, {"status": "running", "started_at": now_iso, "log_tail": f"Starting {stage_name}..."})
+    # Atomic claim: only one worker may transition this stage queued -> running.
+    claimed = sb_claim_stage(
+        stage_id,
+        {"status": "running", "started_at": now_iso, "log_tail": f"Starting {stage_name}..."},
+    )
+    if not claimed:
+        print(f"[{time.strftime('%X')}] ⏭️ Lost claim race for {stage_name} (run={run_id[:8]}…); another worker owns it.")
+        return
     sb_patch_run(run_id, {"status": "running"})
 
     # Each run gets its own working directory
@@ -688,7 +813,9 @@ def process_stage(stage: dict):
         elif stage_name == "Artifact Extraction":
             with open(state_file) as f:
                 state = json.load(f)
-            log = stage_artifacts(run_id, stage_id, work_dir, state["setup"], state["assignment"])
+            log = stage_artifacts(
+                run_id, stage_id, work_dir, state["setup"], state["assignment"], state.get("package")
+            )
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),

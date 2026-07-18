@@ -62,6 +62,7 @@ export function useCountyRuns(params: {
     }
 
     const timer = window.setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
       void refresh();
     }, refreshMs);
 
@@ -115,6 +116,7 @@ export function useCountyRunDetail(countyRunId?: string, refreshMs?: number) {
     }
 
     const timer = window.setInterval(() => {
+      if (typeof document !== "undefined" && document.hidden) return;
       void refresh();
     }, refreshMs);
 

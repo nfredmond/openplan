@@ -28,12 +28,20 @@ import pandas as pd
 import requests
 from shapely.geometry import Point, shape
 
+from lodes import DEFAULT_LODES_YEAR, fetch_lodes_jobs_by_tract
+
 CENSUS_API_KEY = os.getenv("CENSUS_API_KEY", "")
 TIGER_TRACT_LAYER = os.getenv(
     "TIGER_TRACT_LAYER_URL",
     "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/8/query",
 )
 ACS_5_URL = os.getenv("CENSUS_ACS5_URL", "https://api.census.gov/data/2022/acs/acs5")
+
+# Real LODES employment: LODES8 Workplace Area Characteristics (total jobs).
+LODES_YEAR = os.getenv("LODES_YEAR", DEFAULT_LODES_YEAR)
+LODES_CACHE_DIR = os.getenv(
+    "LODES_CACHE_DIR", os.path.join(os.path.dirname(__file__), ".lodes_cache")
+)
 
 
 class DataPipelineError(RuntimeError):
@@ -168,15 +176,38 @@ def fetch_tracts_for_study_area(
     return tracts
 
 
-def enrich_zone_attributes(tracts: pd.DataFrame) -> pd.DataFrame:
-    """Shape dynamic tract rows into the worker's expected zone package schema."""
+def enrich_zone_attributes(
+    tracts: pd.DataFrame, jobs_by_geoid: dict[str, int] | None = None
+) -> pd.DataFrame:
+    """Shape dynamic tract rows into the worker's expected zone package schema.
+
+    Total jobs come from real LODES WAC counts (`jobs_by_geoid`, keyed by
+    11-digit tract GEOID) when available; tracts without a LODES value fall back
+    to a population proxy. The per-tract source is recorded in `jobs_source`.
+    """
     zones = tracts.copy().reset_index(drop=True)
     zones.insert(2, "zone_id", np.arange(1, len(zones) + 1))
 
-    # Pragmatic tract-level employment estimates for MVP.
-    # Keep the fields the worker bundle already ships so downstream code remains stable.
-    total_jobs = np.maximum(np.round(zones["est_population"] * 0.47), 25)
+    jobs_by_geoid = jobs_by_geoid or {}
+    total_jobs_values: list[int] = []
+    jobs_sources: list[str] = []
+    for _, zone in zones.iterrows():
+        geoid = str(zone["geoid"])
+        lodes_jobs = jobs_by_geoid.get(geoid)
+        if lodes_jobs is not None:
+            # Real LODES total jobs (may legitimately be small/zero — gravity
+            # attractions floor separately, so no artificial floor here).
+            total_jobs_values.append(int(max(lodes_jobs, 0)))
+            jobs_sources.append("lodes_wac")
+        else:
+            total_jobs_values.append(int(max(round(float(zone["est_population"]) * 0.47), 25)))
+            jobs_sources.append("synthetic_pop_proxy")
+
+    total_jobs = np.array(total_jobs_values)
     zones["total_jobs"] = total_jobs.astype(int)
+    zones["jobs_source"] = jobs_sources
+    # Sector splits remain fixed shares of total jobs (screening-grade); only the
+    # total is sourced from LODES. Downstream demand uses total_jobs only.
     zones["retail_jobs"] = np.round(total_jobs * 0.15).astype(int)
     zones["health_jobs"] = np.round(total_jobs * 0.09).astype(int)
     zones["education_jobs"] = np.round(total_jobs * 0.10).astype(int)
@@ -195,6 +226,7 @@ def enrich_zone_attributes(tracts: pd.DataFrame) -> pd.DataFrame:
             "centroid_lat",
             "area_sq_mi",
             "total_jobs",
+            "jobs_source",
             "retail_jobs",
             "health_jobs",
             "education_jobs",
@@ -290,7 +322,29 @@ def generate_package(
 
     print(f"  Fetching Census tracts for study area bbox {bbox}...")
     tracts = fetch_tracts_for_study_area(bbox=bbox, corridor_geojson=corridor_geojson)
-    zones = enrich_zone_attributes(tracts)
+
+    # Real LODES employment (WAC total jobs) per state, aggregated to tracts,
+    # with the population-proxy synthesis kept as an explicit fallback.
+    state_fips = {str(g)[:2] for g in tracts["geoid"].astype(str) if len(str(g)) >= 2}
+    try:
+        jobs_by_geoid, lodes_used, lodes_failed = fetch_lodes_jobs_by_tract(
+            state_fips, LODES_YEAR, LODES_CACHE_DIR
+        )
+    except Exception as exc:  # never let LODES stop a run
+        print(f"  LODES fetch error ({exc}); falling back to synthetic jobs.")
+        jobs_by_geoid, lodes_used, lodes_failed = {}, [], sorted(state_fips)
+
+    zones = enrich_zone_attributes(tracts, jobs_by_geoid)
+    lodes_tract_count = int((zones["jobs_source"] == "lodes_wac").sum())
+    synth_tract_count = int((zones["jobs_source"] == "synthetic_pop_proxy").sum())
+    if lodes_tract_count:
+        print(
+            f"  Jobs: {lodes_tract_count} tracts from LODES8 WAC {LODES_YEAR} "
+            f"(states {','.join(lodes_used) or '—'}), {synth_tract_count} from synthetic fallback."
+        )
+    else:
+        print(f"  Jobs: synthetic population proxy for all {synth_tract_count} tracts (LODES unavailable).")
+
     od = build_daily_od_matrix(zones)
 
     zone_path = os.path.join(output_dir, "zone_attributes.csv")
@@ -312,7 +366,26 @@ def generate_package(
         "source": {
             "tracts": "Census TIGERweb 2020",
             "demographics": "ACS 2022 5-year",
+            "jobs": (
+                f"LEHD LODES8 WAC S000/JT00 {LODES_YEAR} (states {','.join(lodes_used)})"
+                if lodes_tract_count
+                else "synthetic: jobs = 0.47 × ACS population (LODES unavailable)"
+            ),
             "od": "synthetic gravity model",
+        },
+        "jobs_provenance": {
+            "primary": "lehd_lodes8_wac_s000_jt00",
+            "year": str(LODES_YEAR),
+            "states_used": lodes_used,
+            "states_failed": lodes_failed,
+            "tracts_from_lodes": lodes_tract_count,
+            "tracts_from_synthetic_fallback": synth_tract_count,
+            "fallback_method": "jobs = round(0.47 × ACS population), floor 25",
+            "caveat": (
+                "Screening-grade. Total jobs are LODES WAC workplace counts where available; "
+                "a population proxy is used for any tract LODES could not supply. Sector splits "
+                "remain fixed shares of the total."
+            ),
         },
         "files": {
             "zone_attributes": os.path.basename(zone_path),
