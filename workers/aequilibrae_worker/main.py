@@ -28,6 +28,8 @@ from shapely.geometry import box, shape
 from dotenv import load_dotenv
 
 from data_pipeline import DataPipelineError, generate_package
+from resident_vmt import compute_internal_resident_vmt
+from gateways import detect_external_gateways, build_external_gateway_matrix
 
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
@@ -40,6 +42,12 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 # multiplies graph copies across multiprocessing workers — on shared/dev boxes
 # that risks OOM kills mid-run. Default to 1; raise via env on big machines.
 AEQ_CORES = max(1, int(os.getenv("AEQ_CORES", "1")))
+
+# Degrees to expand the OSM download beyond the study-area boundary so that
+# highways crossing the cordon physically extend outside it and can be detected
+# as external gateways (≈2 mi at these latitudes). Zone/centroid selection stays
+# on the un-buffered study area.
+GATEWAY_BUFFER_DEG = max(0.0, float(os.getenv("AEQ_GATEWAY_BUFFER_DEG", "0.03")))
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase credentials in environment.")
@@ -221,7 +229,12 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
 
     project = Project()
     project.new(proj_dir)
-    model_area = box(*bbox)
+    # Download OSM for a buffered bbox so boundary-crossing highways extend past
+    # the study area and can be detected as external gateways below. Zone
+    # selection stays on the un-buffered bbox.
+    b = GATEWAY_BUFFER_DEG
+    buffered_bbox = (bbox[0] - b, bbox[1] - b, bbox[2] + b, bbox[3] + b)
+    model_area = box(*buffered_bbox)
     project.network.create_from_osm(model_area=model_area, modes=["car"], clean=True)
     project.close()
 
@@ -373,7 +386,33 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     conn.commit()
     conn.close()
 
-    log += f"Populated speed/capacity for {len(updates)} links.\nSetup complete.\n"
+    log += f"Populated speed/capacity for {len(updates)} links.\n"
+
+    # --- Detect external gateways (highways crossing the study-area boundary) ---
+    # The buffered OSM download above means crossing links extend outside the
+    # un-buffered bbox; attach each cordon crossing to the nearest resident zone
+    # so through-traffic can be loaded (screening-grade) and later excluded from
+    # resident VMT. Never fails the run.
+    gateways = []
+    try:
+        boundary = box(*bbox)
+        # Only offer zones that made it into the routable graph — a gateway
+        # attached to a disconnected zone would be silently dropped when its
+        # through-traffic is layered onto the assignment matrix.
+        connected_ids = {int(z) for z in centroid_map.keys()}
+        connected_zones = active_zones[active_zones["zone_id"].astype(int).isin(connected_ids)]
+        gateways = detect_external_gateways(db_path, boundary, connected_zones, SPATIALITE_PATH)
+        if gateways:
+            log += (
+                f"Detected {len(gateways)} external gateway(s): "
+                f"{[g['label'] for g in gateways]}\n"
+            )
+        else:
+            log += "No external gateways detected (closed-boundary study area).\n"
+    except Exception as e:
+        log += f"Gateway detection warning: {e}\n"
+
+    log += "Setup complete.\n"
 
     return {
         "centroid_map": centroid_map,
@@ -383,6 +422,7 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
         "n_links": len(links_data),
         "largest_component_pct": round(100 * len(largest) / len(nodes_all), 1),
         "disconnected_zones": disconnected_zones,
+        "gateways": gateways,
         "log": log,
     }
 
@@ -450,6 +490,26 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
             except KeyError:
                 pass
 
+    # --- Layer external gateway (through-traffic) demand onto the internal OD ---
+    # so the assigned network volumes reflect real pass-through travel on the
+    # highways that cross the study-area boundary. The gateway matrix is aligned
+    # to the same zone order as od_array (centroids_sorted -> zone_id).
+    external_gateway_trips = 0.0
+    gateways = setup_result.get("gateways") or []
+    if gateways:
+        try:
+            ordered_zone_ids = [int(remap_inv[c]) for c in centroids_sorted]
+            zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+            zattr["zone_id"] = zattr["zone_id"].astype(int)
+            zattr = zattr.set_index("zone_id", drop=False)
+            ordered_df = zattr.loc[ordered_zone_ids, ["zone_id", "est_population", "total_jobs"]].reset_index(drop=True)
+            gw_matrix = build_external_gateway_matrix(gateways, ordered_df)
+            od_array = od_array + gw_matrix
+            external_gateway_trips = float(gw_matrix.sum())
+            log += f"Layered {external_gateway_trips:,.0f} external gateway trips from {len(gateways)} gateway(s).\n"
+        except Exception as e:
+            log += f"Gateway demand layering warning: {e}\n"
+
     total_trips = float(od_array.sum())
     od_array[~np.isfinite(time_skim)] = 0
     routable_trips = float(od_array.sum())
@@ -496,7 +556,11 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     return {
         "convergence": {"final_gap": float(rgap) if np.isfinite(rgap) else None, "iterations": int(iters)},
         "network": {"links": int(graph.num_links), "nodes": int(graph.num_nodes), "zones": n_zones},
-        "demand": {"total_trips": total_trips, "routable_trips": routable_trips},
+        "demand": {
+            "total_trips": total_trips,
+            "routable_trips": routable_trips,
+            "external_gateway_trips": external_gateway_trips,
+        },
         "skims": {"reachable_pairs": n_reachable, "total_pairs": n_pairs,
                   "avg_time_min": avg_time, "max_time_min": max_time},
         "loaded_links": loaded_links,
@@ -595,6 +659,73 @@ def stage_artifacts(
     except Exception as e:
         log += f"VMT computation warning: {e}\n"
 
+    # ── Resident VMT (CEQA §15064.3): Σ internal→internal OD × great-circle × ──
+    # circuity, external gateway zones excluded. Same estimator the county lane
+    # and the NCTC seed use — the AequilibraE lane converges onto it. Computed
+    # from the internal base OD (od_trip_matrix.csv), NOT the gateway-augmented
+    # assignment demand, so pass-through travel is not counted.
+    gateways = setup_result.get("gateways") or []
+    gateway_zone_ids = sorted({int(g["zone_id"]) for g in gateways})
+    resident_vmt = None
+    resident_vmt_per_capita = None
+    resident_meta = None
+    try:
+        pkg_dir = (package_meta or {}).get("package_dir")
+        if pkg_dir:
+            zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+            zattr["zone_id"] = zattr["zone_id"].astype(int)
+            zone_ids = zattr["zone_id"].tolist()
+            od_df = pd.read_csv(os.path.join(pkg_dir, "od_trip_matrix.csv"), index_col=0)
+            # od_trip_matrix.csv: int row index, str(zone_id) column labels.
+            od = [
+                [
+                    float(od_df.loc[zi, str(zj)])
+                    if (zi in od_df.index and str(zj) in od_df.columns)
+                    else 0.0
+                    for zj in zone_ids
+                ]
+                for zi in zone_ids
+            ]
+            # No gateway exclusion here: the base OD (od_trip_matrix.csv) is the
+            # closed internal demand — external gateway through-traffic is layered
+            # onto the assignment matrix only (network figure), never written to
+            # this OD. Excluding gateway zones would drop legitimate resident
+            # trips at edge zones and bias the CEQA screen low. Gateways serve the
+            # network VMT figure; resident VMT is the pure internal OD.
+            resident_meta = compute_internal_resident_vmt(
+                od,
+                zone_ids,
+                zattr["centroid_lon"].tolist(),
+                zattr["centroid_lat"].tolist(),
+                zattr["area_sq_mi"].tolist(),
+                zattr["est_population"].tolist(),
+                gateway_zone_ids=[],
+            )
+            resident_vmt = round(resident_meta["daily_vmt"], 1)
+            pop_resident = resident_meta["population"]
+            if pop_resident and pop_resident > 0:
+                resident_vmt_per_capita = round(resident_vmt / pop_resident, 4)
+            log += (
+                f"Resident VMT: {resident_vmt:,.0f} vehicle-miles"
+                + (f" · {resident_vmt_per_capita} resident VMT/capita\n" if resident_vmt_per_capita is not None else "\n")
+            )
+    except Exception as e:
+        log += f"Resident VMT computation warning: {e}\n"
+
+    resident_provenance = (
+        "Σ internal→internal OD trips × centroid great-circle distance × 1.30 network "
+        "circuity (intrazonal ≈ 0.5·√(area/π), 0.75 mi fallback where tract area is "
+        "unavailable), over the closed internal demand OD. External gateway "
+        "through-traffic is loaded onto the network VMT figure only and is absent from "
+        "this resident OD, so no gateway exclusion is applied. Screening-grade, "
+        "derived — not measured. Not a validated travel model or calibrated forecast."
+    )
+    boundary_caveat = (
+        f"Through-traffic loaded at {len(gateways)} boundary gateway(s) (screening-grade)"
+        if gateways
+        else "Closed boundary"
+    )
+
     evidence = {
         "run_id": run_id,
         "engine": "AequilibraE 1.6.1",
@@ -613,13 +744,20 @@ def stage_artifacts(
             "daily_vmt": daily_vmt,
             "vmt_per_capita": vmt_per_capita,
             "population_total": population_total,
-            "method": "sum(link assigned PCE volume × link length in miles); centroid connectors excluded; AequilibraE distance metres → miles",
+            "method": "sum(link assigned PCE volume × link length in miles); centroid connectors excluded; AequilibraE distance metres → miles; includes external gateway through-traffic when gateways are detected",
             "source": "derived from assignment link volumes — screening-grade, not measured",
+            "resident_vmt": resident_vmt,
+            "resident_vmt_per_capita": resident_vmt_per_capita,
+            "resident_method": resident_provenance,
+            "resident_avg_trip_miles": round(resident_meta["avg_trip_miles"], 3) if resident_meta else None,
+            "excluded_gateway_zone_ids": [],
+            "network_gateway_zone_ids": gateway_zone_ids,
         },
+        "gateways": gateways,
         # LODES-vs-synthetic employment provenance from the package manifest,
         # so the app can badge synthetic-fallback jobs as Estimated.
         "employment": (package_meta or {}).get("jobs_provenance"),
-        "caveats": ["Uncalibrated", "OSM default speeds/capacities", "Closed boundary", "Screening-grade"],
+        "caveats": ["Uncalibrated", "OSM default speeds/capacities", boundary_caveat, "Screening-grade"],
         "created_at": datetime.now(timezone.utc).isoformat(),
         "model_area": model_area_label,
     }
@@ -704,8 +842,15 @@ def stage_artifacts(
         kpis.append(("general", "daily_vmt", "Daily VMT", daily_vmt, "vehicle-miles/day"))
     if vmt_per_capita is not None:
         kpis.append(("general", "vmt_per_capita", "VMT per Capita", vmt_per_capita, "vehicle-miles/person/day"))
+    # Resident (internal→internal, gateway-excluded) VMT — the CEQA §15064.3
+    # number the screen prefers. Same estimator as the county lane and seed.
+    if resident_vmt is not None:
+        kpis.append(("general", "resident_vmt", "Resident VMT", resident_vmt, "vehicle-miles/day"))
+    if resident_vmt_per_capita is not None:
+        kpis.append(("general", "resident_vmt_per_capita", "Resident VMT per Capita", resident_vmt_per_capita, "vehicle-miles/person/day"))
     if population_total is not None:
         kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
+    kpis.append(("assignment", "external_gateways", "External Gateways", len(gateways), "count"))
 
     for cat, name, label, value, unit in kpis:
         kpi_payload = {
@@ -722,6 +867,8 @@ def stage_artifacts(
             kpi_payload["breakdown_json"] = {
                 "provenance": evidence["vmt"]["method"] + "; " + evidence["vmt"]["source"],
             }
+        elif name in ("resident_vmt", "resident_vmt_per_capita"):
+            kpi_payload["breakdown_json"] = {"provenance": resident_provenance}
         sb_post_kpi(kpi_payload)
 
     # Generate GeoJSON for the map and upload to Supabase Storage
