@@ -26,6 +26,7 @@ import csv
 import gzip
 import io
 import os
+import zlib
 from typing import Iterable
 
 DEFAULT_LODES_YEAR = os.getenv("LODES_YEAR", "2022")
@@ -123,6 +124,152 @@ def download_lodes_wac(
             except OSError:
                 pass
         raise LodesDownloadError(f"LODES WAC decompress failed for {state_abbr} {year}: {exc}") from exc
+
+
+# ─── LODES OD (origin-destination home→work commute flows) ─────────────────
+# Same host as WAC; part ∈ {main, aux}: `main` = jobs where home & work are in
+# the same state, `aux` = jobs whose home is out of state. Rows are keyed by
+# `w_geocode` (workplace block) + `h_geocode` (home block); `S000` is total
+# jobs/flows. We aggregate 15-digit blocks to 11-digit tract pairs.
+
+
+def lodes_od_url(state_abbr: str, part: str, year: str | int = DEFAULT_LODES_YEAR) -> str:
+    return (
+        f"https://lehd.ces.census.gov/data/lodes/LODES8/{state_abbr}/od/"
+        f"{state_abbr}_od_{part}_JT00_{year}.csv.gz"
+    )
+
+
+def aggregate_od_by_tract_pair(rows_iter, keep_tracts: Iterable[str] | None = None) -> dict[tuple[str, str], int]:
+    """Sum LODES OD `S000` to (home_tract, work_tract) pairs.
+
+    Pure/stdlib — accepts any iterable of dict rows (e.g. a streaming
+    `csv.DictReader`), so the full decompressed file is never materialized.
+    `keep_tracts`, when given, drops any pair with an endpoint outside the set,
+    bounding the returned dict to |study tracts|². Key order is
+    (home, work) so the origin axis aligns with `productions` (home-based).
+    """
+    keep = {str(t) for t in keep_tracts} if keep_tracts is not None else None
+    flows: dict[tuple[str, str], int] = {}
+    for row in rows_iter:
+        w = (row.get("w_geocode") or "").strip()
+        h = (row.get("h_geocode") or "").strip()
+        if len(w) < 11 or len(h) < 11:
+            continue
+        w_tract = w[:11]
+        h_tract = h[:11]
+        if keep is not None and (w_tract not in keep or h_tract not in keep):
+            continue
+        raw = row.get("S000")
+        try:
+            s000 = int(float(raw)) if raw not in (None, "") else 0
+        except (TypeError, ValueError):
+            continue
+        if s000 <= 0:
+            continue
+        key = (h_tract, w_tract)
+        flows[key] = flows.get(key, 0) + s000
+    return flows
+
+
+def aggregate_od_by_tract_pair_text(od_csv_text: str, keep_tracts: Iterable[str] | None = None) -> dict[tuple[str, str], int]:
+    """Text wrapper around `aggregate_od_by_tract_pair` for unit tests."""
+    return aggregate_od_by_tract_pair(csv.DictReader(io.StringIO(od_csv_text)), keep_tracts)
+
+
+def download_lodes_od(
+    state_abbr: str,
+    part: str,
+    year: str | int = DEFAULT_LODES_YEAR,
+    cache_dir: str | None = None,
+    keep_tracts: Iterable[str] | None = None,
+) -> dict[tuple[str, str], int]:
+    """Download (or read from cache) a LODES OD part and aggregate to tract pairs.
+
+    Unlike `download_lodes_wac`, this NEVER decompresses the whole file into a
+    single string — an OD `main` part can be ~1 GB decompressed. The `.gz` is
+    cached, then read through a streaming `gzip.open(...)` so aggregation runs
+    row-by-row and only the bounded (keep_tracts²) result dict is retained.
+    """
+    import requests  # lazy so the module imports with the stdlib alone
+
+    fname = f"{state_abbr}_od_{part}_JT00_{year}.csv.gz"
+    cache_path = os.path.join(cache_dir, fname) if cache_dir else None
+
+    src: str | io.BytesIO
+    if cache_path and os.path.exists(cache_path) and os.path.getsize(cache_path) > 0:
+        src = cache_path
+    else:
+        url = lodes_od_url(state_abbr, part, year)
+        try:
+            res = requests.get(url, timeout=180)
+        except Exception as exc:
+            raise LodesDownloadError(f"LODES OD request failed for {state_abbr} {part} {year}: {exc}") from exc
+        if res.status_code != 200:
+            raise LodesDownloadError(
+                f"LODES OD download failed for {state_abbr} {part} {year}: HTTP {res.status_code}"
+            )
+        if cache_path:
+            os.makedirs(cache_dir, exist_ok=True)
+            with open(cache_path, "wb") as fh:
+                fh.write(res.content)
+            src = cache_path
+        else:
+            src = io.BytesIO(res.content)
+
+    try:
+        with gzip.open(src, "rt", encoding="utf-8") as fh:
+            return aggregate_od_by_tract_pair(csv.DictReader(fh), keep_tracts)
+    except (OSError, EOFError, zlib.error) as exc:
+        # zlib.error (mid-stream deflate corruption) is NOT an OSError subclass;
+        # without it a corrupt cache would never be purged and every re-run would
+        # re-fail identically. Purge so the next run re-downloads.
+        if cache_path and os.path.exists(cache_path):
+            try:
+                os.remove(cache_path)
+            except OSError:
+                pass
+        raise LodesDownloadError(f"LODES OD decompress failed for {state_abbr} {part} {year}: {exc}") from exc
+
+
+def fetch_lodes_od_by_tract_pair(
+    state_fips: Iterable[str],
+    keep_tracts: Iterable[str] | None = None,
+    year: str | int = DEFAULT_LODES_YEAR,
+    cache_dir: str | None = None,
+) -> tuple[dict[tuple[str, str], int], list[str], list[str]]:
+    """Fetch + aggregate LODES OD (main + aux) for the given state FIPS codes.
+
+    Returns (flows_by_tract_pair, used_state_fips, failed_state_fips). A state
+    counts as `used` when its `main` part downloads; an `aux` failure is
+    tolerated (aux carries out-of-state home tracts that `keep_tracts` usually
+    drops anyway) and does not fail the state.
+    """
+    flows: dict[tuple[str, str], int] = {}
+    used: list[str] = []
+    failed: list[str] = []
+    for fips in sorted({str(f).zfill(2) for f in state_fips}):
+        abbr = STATE_FIPS_TO_ABBR.get(fips)
+        if not abbr:
+            failed.append(fips)
+            continue
+        try:
+            main = download_lodes_od(abbr, "main", year, cache_dir, keep_tracts)
+        except LodesDownloadError:
+            failed.append(fips)
+            continue
+        for key, count in main.items():
+            flows[key] = flows.get(key, 0) + count
+        try:
+            aux = download_lodes_od(abbr, "aux", year, cache_dir, keep_tracts)
+            for key, count in aux.items():
+                flows[key] = flows.get(key, 0) + count
+        except Exception:
+            # aux is best-effort — never let an aux failure (download, corrupt
+            # cache, disk) discard the good main flows already merged.
+            pass
+        used.append(fips)
+    return flows, used, failed
 
 
 def fetch_lodes_jobs_by_tract(
