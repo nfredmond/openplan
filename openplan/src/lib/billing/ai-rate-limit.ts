@@ -7,7 +7,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
  * bound pure-AI usage because AI calls don't insert into the runs table. The
  * window is generous enough that a human clicking through a demo never trips it.
  */
-export const AI_RATE_LIMIT_BUCKET_KEYS = ["assistant_chat", "grant_narrative_draft"] as const;
+export const AI_RATE_LIMIT_BUCKET_KEYS = ["assistant_chat", "grant_narrative_draft", "engagement_synthesis"] as const;
 export const AI_RATE_LIMIT_WINDOW_SECONDS = 300;
 export const AI_RATE_LIMIT_MAX_PER_WINDOW = 20;
 
