@@ -28,7 +28,11 @@ import pandas as pd
 import requests
 from shapely.geometry import Point, shape
 
-from lodes import DEFAULT_LODES_YEAR, fetch_lodes_jobs_by_tract
+from lodes import (
+    DEFAULT_LODES_YEAR,
+    fetch_lodes_jobs_by_tract,
+    fetch_lodes_od_by_tract_pair,
+)
 
 CENSUS_API_KEY = os.getenv("CENSUS_API_KEY", "")
 TIGER_TRACT_LAYER = os.getenv(
@@ -42,6 +46,13 @@ LODES_YEAR = os.getenv("LODES_YEAR", DEFAULT_LODES_YEAR)
 LODES_CACHE_DIR = os.getenv(
     "LODES_CACHE_DIR", os.path.join(os.path.dirname(__file__), ".lodes_cache")
 )
+# Share of daily person-trips that are home-based-work commutes (NHTS ballpark).
+# LODES OD (home→work) reshapes only this fraction of the trip distribution; the
+# rest keeps the gravity deterrence shape. Env-overridable.
+HBW_SHARE = min(1.0, max(0.0, float(os.getenv("HBW_SHARE", "0.19"))))
+# Skip the LODES seed when observed pairs cover too little of the productions
+# mass, so a handful of flows can't dominate the whole distribution.
+OD_MIN_COVERAGE = float(os.getenv("OD_MIN_COVERAGE", "0.05"))
 
 
 class DataPipelineError(RuntimeError):
@@ -263,8 +274,24 @@ def _haversine_miles(lon1: float, lat1: float, lon2: float, lat2: float) -> floa
     return 2 * 3958.7613 * math.asin(math.sqrt(a))
 
 
-def build_daily_od_matrix(zones: pd.DataFrame) -> pd.DataFrame:
-    """Generate a doubly-constrained gravity-model OD matrix in daily trips."""
+def build_daily_od_matrix(
+    zones: pd.DataFrame,
+    od_by_pair: dict[tuple[str, str], int] | None = None,
+    od_meta: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    """Generate a doubly-constrained gravity-model OD matrix in daily trips.
+
+    When `od_by_pair` (real LODES home→work tract-pair flows) is supplied, it
+    reshapes the Furness SEED — not the marginals. The doubly-constrained loop
+    already balances every cell to the productions/attractions totals, and only
+    the seed's *relative shape* enters the result (any scaling is absorbed into
+    the balancing factors). So real commute geography changes the trip
+    DISTRIBUTION while per-zone daily productions (households×7.5) stay
+    identical — no annual→daily expansion constant is needed or invented. With
+    `od_by_pair` None/empty the seed is the pure gravity friction and the output
+    is byte-identical to the previous behaviour. `od_meta`, if given, is filled
+    with {used_lodes, coverage, pairs_matched} for provenance.
+    """
     if zones.empty:
         raise DataPipelineError("Cannot build OD matrix with zero zones")
 
@@ -295,17 +322,57 @@ def build_daily_od_matrix(zones: pd.DataFrame) -> pd.DataFrame:
     friction = 1.0 / np.power(1.0 + (dist / 6.0), 1.6)
     np.fill_diagonal(friction, friction.diagonal() * 1.8)
 
+    # Blend real LODES commute geography into the seed (shape only; marginals
+    # unchanged). friction is strictly positive, so the (1-HBW_SHARE) term alone
+    # guarantees no zero rows regardless of LODES sparsity.
+    seed = friction
+    used_lodes = False
+    coverage = 0.0
+    pairs_matched = 0
+    if od_by_pair:
+        # enrich_zone_attributes emits the tract column as "GEOID" (uppercase).
+        geoids = zones["GEOID"].astype(str).tolist()
+        idx_of: dict[str, int] = {}
+        for i, g in enumerate(geoids):
+            idx_of.setdefault(g, i)  # first zone for a tract wins (tracts are unique here)
+        lodes = np.zeros((n, n), dtype=float)
+        for (home_tract, work_tract), flow in od_by_pair.items():
+            hi = idx_of.get(home_tract)
+            wi = idx_of.get(work_tract)
+            if hi is None or wi is None:
+                continue
+            lodes[hi, wi] += float(flow)
+            pairs_matched += 1
+        if lodes.sum() > 0:
+            lodes = lodes + lodes.T  # symmetrize: approximate AM/PM round-trip
+            origin_covered = lodes.sum(axis=1) > 0
+            coverage = (
+                float(productions[origin_covered].sum() / productions.sum())
+                if productions.sum() > 0
+                else 0.0
+            )
+            if coverage >= OD_MIN_COVERAGE:
+                lodes_norm = lodes / lodes.sum()
+                friction_norm = friction / friction.sum()
+                seed = HBW_SHARE * lodes_norm + (1.0 - HBW_SHARE) * friction_norm
+                used_lodes = True
+
+    if od_meta is not None:
+        od_meta["used_lodes"] = used_lodes
+        od_meta["coverage"] = round(coverage, 4)
+        od_meta["pairs_matched"] = pairs_matched
+
     a_factors = np.ones(n, dtype=float)
     b_factors = np.ones(n, dtype=float)
 
     for _ in range(30):
-        denom_a = friction @ (b_factors * attractions)
+        denom_a = seed @ (b_factors * attractions)
         a_factors = np.divide(1.0, denom_a, out=np.zeros_like(denom_a), where=denom_a > 0)
 
-        denom_b = friction.T @ (a_factors * productions)
+        denom_b = seed.T @ (a_factors * productions)
         b_factors = np.divide(1.0, denom_b, out=np.zeros_like(denom_b), where=denom_b > 0)
 
-    matrix = np.outer(a_factors * productions, b_factors * attractions) * friction
+    matrix = np.outer(a_factors * productions, b_factors * attractions) * seed
     matrix = np.nan_to_num(matrix, nan=0.0, posinf=0.0, neginf=0.0)
 
     # Round while keeping the matrix usable; tiny cells can become zero.
@@ -360,7 +427,29 @@ def generate_package(
     else:
         print(f"  Jobs: synthetic population proxy for all {synth_tract_count} tracts (LODES unavailable).")
 
-    od = build_daily_od_matrix(zones)
+    # Real LODES OD (home→work commute flows), aggregated to the study-area
+    # tract pairs, to shape the trip distribution. keep_tracts bounds the fetch
+    # to this study area (memory-safe on state-scale OD files). Never fails a run.
+    try:
+        # enrich_zone_attributes emits the tract column as "GEOID" (uppercase).
+        keep_tracts = {str(g) for g in zones["GEOID"].astype(str)}
+        od_by_pair, od_states_used, od_states_failed = fetch_lodes_od_by_tract_pair(
+            state_fips, keep_tracts, LODES_YEAR, LODES_CACHE_DIR
+        )
+    except Exception as exc:  # never let LODES stop a run
+        print(f"  LODES OD fetch error ({exc}); using pure gravity distribution.")
+        od_by_pair, od_states_used, od_states_failed = {}, [], sorted(state_fips)
+
+    od_meta: dict[str, Any] = {}
+    od = build_daily_od_matrix(zones, od_by_pair=od_by_pair, od_meta=od_meta)
+    od_used_lodes = bool(od_meta.get("used_lodes"))
+    if od_used_lodes:
+        print(
+            f"  OD: LODES8-seeded gravity — {od_meta['pairs_matched']} tract-pair flows, "
+            f"coverage {od_meta['coverage']:.0%} (states {','.join(od_states_used) or '—'})."
+        )
+    else:
+        print("  OD: synthetic gravity distribution (LODES OD unavailable or below coverage floor).")
 
     zone_path = os.path.join(output_dir, "zone_attributes.csv")
     od_path = os.path.join(output_dir, "od_trip_matrix.csv")
@@ -377,7 +466,7 @@ def generate_package(
         "total_households": int(zones["households"].sum()),
         "total_jobs_est": int(zones["total_jobs"].sum()),
         "total_trips": int(od.to_numpy().sum()),
-        "demand_method": "gravity_daily_v1",
+        "demand_method": "lodes_seeded_gravity_v1" if od_used_lodes else "gravity_daily_v1",
         "source": {
             "tracts": "Census TIGERweb 2020",
             "demographics": "ACS 2022 5-year",
@@ -386,7 +475,11 @@ def generate_package(
                 if lodes_tract_count
                 else "synthetic: jobs = 0.47 × ACS population (LODES unavailable)"
             ),
-            "od": "synthetic gravity model",
+            "od": (
+                "LODES8-seeded doubly-constrained gravity, HBW-weighted (screening-grade, derived)"
+                if od_used_lodes
+                else "synthetic gravity model"
+            ),
         },
         "jobs_provenance": {
             "primary": "lehd_lodes8_wac_s000_jt00",
@@ -400,6 +493,43 @@ def generate_package(
                 "Screening-grade. Total jobs are LODES WAC workplace counts where available; "
                 "a population proxy is used for any tract LODES could not supply. Sector splits "
                 "remain fixed shares of the total."
+            ),
+        },
+        "od_provenance": {
+            "primary": "lehd_lodes8_od_s000_jt00",
+            "year": str(LODES_YEAR),
+            "parts": ["main", "aux"],
+            "states_used": od_states_used,
+            "states_failed": od_states_failed,
+            "seed_method": "furness_ipf_seed_v1",
+            "blend": (
+                f"seed = {HBW_SHARE:.2f}·LODES(home→work, symmetrized, normalized) + "
+                f"{1 - HBW_SHARE:.2f}·gravity_friction(normalized); marginals unchanged, "
+                "LODES supplies distribution shape only"
+            ),
+            "hbw_share": HBW_SHARE,
+            "pairs_matched": od_meta.get("pairs_matched", 0),
+            "od_pair_coverage": od_meta.get("coverage", 0.0),
+            "used_lodes": od_used_lodes,
+            "marginals": (
+                "unchanged — daily productions = max(households×7.5, pop×1.8), attractions "
+                "from jobs; magnitude fixed by marginals via IPF, no expansion constant"
+            ),
+            "directionality": (
+                "LODES is one-directional home→work; the seed is symmetrized (L+Lᵀ) to "
+                "approximate a daily AM/PM round-trip"
+            ),
+            "fallback_method": (
+                "pure gravity friction seed when LODES OD is unavailable or coverage is below "
+                f"{OD_MIN_COVERAGE:.0%} of productions mass (identical to gravity_daily_v1)"
+            ),
+            "caveat": (
+                "Screening-grade, derived. LODES OD is annual home-based-WORK commute worker "
+                "counts; it is used only to SHAPE the trip distribution via IPF seeding at an "
+                "assumed commute share, weighted against a gravity deterrence prior — not "
+                "calibrated or validated against observed traffic counts. Non-work trips are not "
+                "separately modeled; directionality assumes symmetric round-trips. Not a "
+                "validated travel model or calibrated forecast."
             ),
         },
         "files": {
