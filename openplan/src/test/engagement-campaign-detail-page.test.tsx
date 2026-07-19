@@ -126,6 +126,10 @@ vi.mock("@/components/engagement/engagement-bulk-moderation", () => ({
   EngagementBulkModeration: () => <div data-testid="engagement-bulk-moderation" />,
 }));
 
+vi.mock("@/components/engagement/engagement-synthesis-panel", () => ({
+  EngagementSynthesisPanel: () => <div data-testid="engagement-synthesis-panel" />,
+}));
+
 import EngagementCampaignDetailPage from "@/app/(app)/engagement/[campaignId]/page";
 
 async function renderPage() {
