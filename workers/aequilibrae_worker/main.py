@@ -28,8 +28,9 @@ from shapely.geometry import box, shape
 from dotenv import load_dotenv
 
 from data_pipeline import DataPipelineError, generate_package
-from resident_vmt import compute_internal_resident_vmt
+from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazonal_miles
 from gateways import detect_external_gateways, build_external_gateway_matrix
+import mode_choice
 
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
@@ -48,6 +49,10 @@ AEQ_CORES = max(1, int(os.getenv("AEQ_CORES", "1")))
 # as external gateways (≈2 mi at these latitudes). Zone/centroid selection stays
 # on the un-buffered study area.
 GATEWAY_BUFFER_DEG = max(0.0, float(os.getenv("AEQ_GATEWAY_BUFFER_DEG", "0.03")))
+
+# Split internal person-trips into auto vs active (walk+bike) and assign only
+# the auto matrix. Default on; set to 0 for the old all-auto behaviour.
+MODE_SPLIT_ENABLED = os.getenv("MODE_SPLIT_ENABLED", "1") not in ("0", "false", "False", "")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase credentials in environment.")
@@ -427,6 +432,24 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     }
 
 
+def _write_auto_od_matrix(path: str, auto_int: np.ndarray, ordered_zone_ids: list, od_full: pd.DataFrame) -> None:
+    """Write the auto-only OD (zone_id-indexed, same layout as od_trip_matrix.csv).
+
+    Starts from the full person-trip OD and overwrites each connected cell with
+    its auto integer count; disconnected/omitted zones keep their original
+    (person) value and are treated as auto — a screening-grade approximation.
+    """
+    auto_df = od_full.copy()
+    for i, zi in enumerate(ordered_zone_ids):
+        if zi not in auto_df.index:
+            continue
+        for j, zj in enumerate(ordered_zone_ids):
+            col = str(zj)
+            if col in auto_df.columns:
+                auto_df.loc[zi, col] = int(auto_int[i, j])
+    auto_df.to_csv(path)
+
+
 # ─── Stage 2: Network Assignment ───────────────────────────────────────
 def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: dict, pkg_dir: str) -> dict:
     from aequilibrae import Project
@@ -482,6 +505,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
 
     od_full = pd.read_csv(os.path.join(pkg_dir, "od_trip_matrix.csv"), index_col=0)
     remap_inv = {v: k for k, v in centroid_map.items()}
+    ordered_zone_ids = [int(remap_inv[c]) for c in centroids_sorted]
     od_array = np.zeros((n_zones, n_zones))
     for i, ci in enumerate(centroids_sorted):
         for j, cj in enumerate(centroids_sorted):
@@ -490,15 +514,65 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
             except KeyError:
                 pass
 
-    # --- Layer external gateway (through-traffic) demand onto the internal OD ---
-    # so the assigned network volumes reflect real pass-through travel on the
-    # highways that cross the study-area boundary. The gateway matrix is aligned
-    # to the same zone order as od_array (centroids_sorted -> zone_id).
+    internal_person_trips = float(od_array.sum())
+
+    # --- Mode choice: split internal person-trips into auto vs active; only the
+    # auto matrix is assigned. Transit is NOT modeled (no transit LOS yet — see
+    # mode_choice.py). Through-traffic (gateways, below) stays 100% auto. ---
+    # A stale od_auto_matrix.csv from a prior in-place run of the same run_id
+    # must never outlive a disabled/failed split, or stage_artifacts would
+    # mislabel the resident VMT basis. Remove it unless THIS invocation writes
+    # a fresh one below.
+    auto_od_path = os.path.join(pkg_dir, "od_auto_matrix.csv")
+
+    def _clear_stale_auto_od():
+        if os.path.exists(auto_od_path):
+            try:
+                os.remove(auto_od_path)
+            except OSError:
+                pass
+
+    mode_split = None
+    if MODE_SPLIT_ENABLED:
+        try:
+            zattr_mc = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+            zattr_mc["zone_id"] = zattr_mc["zone_id"].astype(int)
+            zattr_mc = zattr_mc.set_index("zone_id", drop=False)
+            zc = zattr_mc.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat", "area_sq_mi"]]
+            lons = zc["centroid_lon"].to_numpy(dtype=float)
+            lats = zc["centroid_lat"].to_numpy(dtype=float)
+            areas = zc["area_sq_mi"].to_numpy(dtype=float)
+            dist_miles = np.zeros((n_zones, n_zones))
+            for i in range(n_zones):
+                for j in range(n_zones):
+                    dist_miles[i, j] = (
+                        intrazonal_miles(areas[i]) if i == j
+                        else haversine_miles(lons[i], lats[i], lons[j], lats[j])
+                    )
+            auto_float, auto_int, active_int, mm = mode_choice.split_matrix(od_array, time_skim, dist_miles)
+            _write_auto_od_matrix(auto_od_path, auto_int, ordered_zone_ids, od_full)
+            od_array = auto_float
+            shares = mode_choice.aggregate_shares(internal_person_trips, float(auto_float.sum()))
+            mode_split = {**mm, "shares_pct": shares}
+            log += (
+                f"Mode choice: auto {mm['auto_trips']:,} / active {mm['active_trips']:,} "
+                f"(auto {shares['auto']:.1f}% · active {shares['active']:.1f}% · transit not modeled)\n"
+            )
+        except Exception as e:
+            log += f"Mode choice warning ({e}); assigning all internal trips as auto.\n"
+            mode_split = None
+            _clear_stale_auto_od()
+    else:
+        _clear_stale_auto_od()
+
+    # --- Layer external gateway (through-traffic) demand onto the auto OD ---
+    # so the assigned volumes reflect real pass-through travel on the highways
+    # that cross the study-area boundary. Through-traffic is 100% auto. The
+    # gateway matrix is aligned to the same zone order as od_array.
     external_gateway_trips = 0.0
     gateways = setup_result.get("gateways") or []
     if gateways:
         try:
-            ordered_zone_ids = [int(remap_inv[c]) for c in centroids_sorted]
             zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
             zattr["zone_id"] = zattr["zone_id"].astype(int)
             zattr = zattr.set_index("zone_id", drop=False)
@@ -510,7 +584,9 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
         except Exception as e:
             log += f"Gateway demand layering warning: {e}\n"
 
-    total_trips = float(od_array.sum())
+    # total_trips stays person-scale (internal person + gateway); the assigned
+    # matrix is auto-only + gateway, so routable_trips reflects assigned auto.
+    total_trips = internal_person_trips + external_gateway_trips
     od_array[~np.isfinite(time_skim)] = 0
     routable_trips = float(od_array.sum())
 
@@ -561,6 +637,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
             "routable_trips": routable_trips,
             "external_gateway_trips": external_gateway_trips,
         },
+        "mode_split": mode_split,
         "skims": {"reachable_pairs": n_reachable, "total_pairs": n_pairs,
                   "avg_time_min": avg_time, "max_time_min": max_time},
         "loaded_links": loaded_links,
@@ -666,64 +743,88 @@ def stage_artifacts(
     # assignment demand, so pass-through travel is not counted.
     gateways = setup_result.get("gateways") or []
     gateway_zone_ids = sorted({int(g["zone_id"]) for g in gateways})
+    mode_split = assign_result.get("mode_split")
     resident_vmt = None
     resident_vmt_per_capita = None
+    resident_vmt_all_trips = None
     resident_meta = None
+    resident_basis = "all_trips"
     try:
         pkg_dir = (package_meta or {}).get("package_dir")
         if pkg_dir:
             zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
             zattr["zone_id"] = zattr["zone_id"].astype(int)
             zone_ids = zattr["zone_id"].tolist()
-            od_df = pd.read_csv(os.path.join(pkg_dir, "od_trip_matrix.csv"), index_col=0)
-            # od_trip_matrix.csv: int row index, str(zone_id) column labels.
-            od = [
-                [
-                    float(od_df.loc[zi, str(zj)])
-                    if (zi in od_df.index and str(zj) in od_df.columns)
-                    else 0.0
-                    for zj in zone_ids
+            lons = zattr["centroid_lon"].tolist()
+            lats = zattr["centroid_lat"].tolist()
+            areas = zattr["area_sq_mi"].tolist()
+            pops = zattr["est_population"].tolist()
+
+            def _resident_from(csv_name: str):
+                # od CSV: int row index, str(zone_id) column labels. No gateway
+                # exclusion — the base OD is closed internal demand; gateway
+                # through-traffic is on the network figure only.
+                od_df = pd.read_csv(os.path.join(pkg_dir, csv_name), index_col=0)
+                od = [
+                    [
+                        float(od_df.loc[zi, str(zj)])
+                        if (zi in od_df.index and str(zj) in od_df.columns)
+                        else 0.0
+                        for zj in zone_ids
+                    ]
+                    for zi in zone_ids
                 ]
-                for zi in zone_ids
-            ]
-            # No gateway exclusion here: the base OD (od_trip_matrix.csv) is the
-            # closed internal demand — external gateway through-traffic is layered
-            # onto the assignment matrix only (network figure), never written to
-            # this OD. Excluding gateway zones would drop legitimate resident
-            # trips at edge zones and bias the CEQA screen low. Gateways serve the
-            # network VMT figure; resident VMT is the pure internal OD.
-            resident_meta = compute_internal_resident_vmt(
-                od,
-                zone_ids,
-                zattr["centroid_lon"].tolist(),
-                zattr["centroid_lat"].tolist(),
-                zattr["area_sq_mi"].tolist(),
-                zattr["est_population"].tolist(),
-                gateway_zone_ids=[],
-            )
+                return compute_internal_resident_vmt(
+                    od, zone_ids, lons, lats, areas, pops, gateway_zone_ids=[]
+                )
+
+            # All-trips figure (cross-lane continuity with the county/NCTC lanes).
+            all_meta = _resident_from("od_trip_matrix.csv")
+            resident_vmt_all_trips = round(all_meta["daily_vmt"], 1)
+            # Headline resident VMT is auto-only when mode choice produced an auto
+            # OD for THIS run (the §15064.3 vehicle-VMT basis); else all internal
+            # trips. Gate on this run's mode_split, not just file existence, so a
+            # stale od_auto_matrix.csv can never mislabel a mode-choice-off run.
+            auto_csv = os.path.join(pkg_dir, "od_auto_matrix.csv")
+            if mode_split and os.path.exists(auto_csv):
+                resident_meta = _resident_from("od_auto_matrix.csv")
+                resident_basis = "auto_only"
+            else:
+                resident_meta = all_meta
             resident_vmt = round(resident_meta["daily_vmt"], 1)
             pop_resident = resident_meta["population"]
             if pop_resident and pop_resident > 0:
                 resident_vmt_per_capita = round(resident_vmt / pop_resident, 4)
             log += (
-                f"Resident VMT: {resident_vmt:,.0f} vehicle-miles"
-                + (f" · {resident_vmt_per_capita} resident VMT/capita\n" if resident_vmt_per_capita is not None else "\n")
+                f"Resident VMT ({resident_basis}): {resident_vmt:,.0f} vehicle-miles"
+                + (f" · {resident_vmt_per_capita} resident VMT/capita" if resident_vmt_per_capita is not None else "")
+                + (f"  (all-trips {resident_vmt_all_trips:,.0f})\n" if resident_vmt_all_trips is not None else "\n")
             )
     except Exception as e:
         log += f"Resident VMT computation warning: {e}\n"
 
+    resident_basis_note = (
+        "auto trips only (mode-choice output — the CEQA §15064.3 vehicle-VMT basis)"
+        if resident_basis == "auto_only"
+        else "all internal person-trips (mode choice not applied)"
+    )
     resident_provenance = (
         "Σ internal→internal OD trips × centroid great-circle distance × 1.30 network "
         "circuity (intrazonal ≈ 0.5·√(area/π), 0.75 mi fallback where tract area is "
-        "unavailable), over the closed internal demand OD. External gateway "
-        "through-traffic is loaded onto the network VMT figure only and is absent from "
-        "this resident OD, so no gateway exclusion is applied. Screening-grade, "
-        "derived — not measured. Not a validated travel model or calibrated forecast."
+        f"unavailable), over {resident_basis_note}. External gateway through-traffic is "
+        "loaded onto the network VMT figure only and is absent from this resident OD, so "
+        "no gateway exclusion is applied. Screening-grade, derived — not measured. Not a "
+        "validated travel model or calibrated forecast."
     )
     boundary_caveat = (
         f"Through-traffic loaded at {len(gateways)} boundary gateway(s) (screening-grade)"
         if gateways
         else "Closed boundary"
+    )
+    mode_caveat = (
+        "Auto-only assignment (mode choice splits off walk/bike; transit not modeled until F.3)"
+        if mode_split
+        else "All internal trips assigned as auto (mode choice disabled)"
     )
 
     evidence = {
@@ -748,16 +849,19 @@ def stage_artifacts(
             "source": "derived from assignment link volumes — screening-grade, not measured",
             "resident_vmt": resident_vmt,
             "resident_vmt_per_capita": resident_vmt_per_capita,
+            "resident_vmt_all_trips": resident_vmt_all_trips,
+            "resident_basis": resident_basis,
             "resident_method": resident_provenance,
             "resident_avg_trip_miles": round(resident_meta["avg_trip_miles"], 3) if resident_meta else None,
             "excluded_gateway_zone_ids": [],
             "network_gateway_zone_ids": gateway_zone_ids,
         },
+        "mode_split": mode_split,
         "gateways": gateways,
         # LODES-vs-synthetic employment provenance from the package manifest,
         # so the app can badge synthetic-fallback jobs as Estimated.
         "employment": (package_meta or {}).get("jobs_provenance"),
-        "caveats": ["Uncalibrated", "OSM default speeds/capacities", boundary_caveat, "Screening-grade"],
+        "caveats": ["Uncalibrated", "OSM default speeds/capacities", boundary_caveat, mode_caveat, "Screening-grade"],
         "created_at": datetime.now(timezone.utc).isoformat(),
         "model_area": model_area_label,
     }
@@ -848,9 +952,37 @@ def stage_artifacts(
         kpis.append(("general", "resident_vmt", "Resident VMT", resident_vmt, "vehicle-miles/day"))
     if resident_vmt_per_capita is not None:
         kpis.append(("general", "resident_vmt_per_capita", "Resident VMT per Capita", resident_vmt_per_capita, "vehicle-miles/person/day"))
+    # All-modes resident person-trip miles, archived for cross-lane continuity
+    # with the county/NCTC lanes (which do not yet split modes).
+    if resident_vmt_all_trips is not None:
+        kpis.append(("general", "resident_vmt_all_trips", "Resident Person-Trip Miles (all modes)", resident_vmt_all_trips, "vehicle-miles/day"))
     if population_total is not None:
         kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
     kpis.append(("assignment", "external_gateways", "External Gateways", len(gateways), "count"))
+    # Mode-split KPIs (percentage points, 0-100), in the directly-readable
+    # `general` category. Transit is a hard 0.0 — NOT modeled until transit LOS
+    # (F.3); the provenance says so, so a reader never mistakes it for "no
+    # transit demand".
+    # Distinct, unit-explicit KPI names (the sketch lane emits mode_share_auto /
+    # mode_share_transit as 0-1 "share"; these are 0-100 "percent" — different
+    # names + units so a cross-engine comparison never mixes the two scales).
+    if mode_split and mode_split.get("shares_pct"):
+        sp = mode_split["shares_pct"]
+        kpis.append(("general", "auto_mode_share_pct", "Auto Mode Share", sp["auto"], "percent"))
+        kpis.append(("general", "active_mode_share_pct", "Active (Walk+Bike) Mode Share", sp["active"], "percent"))
+        kpis.append(("general", "transit_mode_share_pct", "Transit Mode Share", sp["transit"], "percent"))
+        kpis.append(("general", "auto_person_trips", "Auto Person-Trips (assigned)", mode_split["auto_trips"], "trips/day"))
+        kpis.append(("general", "active_person_trips", "Active (Walk+Bike) Person-Trips", mode_split["active_trips"], "trips/day"))
+
+    mode_provenance = (
+        "Screening-grade binary auto-vs-non-motorized (walk+bike) logit applied per "
+        "internal OD cell before assignment. Auto disutility from the real AequilibraE "
+        "travel-time skim; walk/bike from centroid great-circle distance at fixed planning "
+        "speeds; coefficients are a trip-weighted blend of the sketch-ABM per-purpose "
+        "tables. TRANSIT IS NOT MODELED (no transit LOS until GTFS/F.3) — transit share is "
+        "reported as 0.0, which can only under-state non-auto travel. Not a validated mode "
+        "choice model or calibrated forecast."
+    )
 
     for cat, name, label, value, unit in kpis:
         kpi_payload = {
@@ -869,6 +1001,12 @@ def stage_artifacts(
             }
         elif name in ("resident_vmt", "resident_vmt_per_capita"):
             kpi_payload["breakdown_json"] = {"provenance": resident_provenance}
+        elif name == "resident_vmt_all_trips":
+            kpi_payload["breakdown_json"] = {
+                "provenance": "All internal person-trips (not auto-only). " + resident_provenance,
+            }
+        elif name in ("auto_mode_share_pct", "active_mode_share_pct", "transit_mode_share_pct", "auto_person_trips", "active_person_trips"):
+            kpi_payload["breakdown_json"] = {"provenance": mode_provenance}
         sb_post_kpi(kpi_payload)
 
     # Generate GeoJSON for the map and upload to Supabase Storage
