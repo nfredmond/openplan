@@ -33,3 +33,34 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
           SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role
           ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
+
+  worker-tests:
+    name: worker (python unit tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./workers/aequilibrae_worker
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Lightweight deps only — the modeling unit tests do NOT import aequilibrae
+      # (that heavy engine stays a local/deploy concern). This guards the pure
+      # demand logic: LODES OD, resident VMT, OD-matrix blend, mode choice, GTFS.
+      - name: Install test deps
+        run: pip install "numpy<2.1" pandas shapely requests
+
+      - name: Syntax check
+        run: python -m py_compile *.py
+
+      - name: Unit tests
+        run: |
+          python test_lodes.py
+          python test_resident_vmt.py
+          python test_od_matrix.py
+          python test_mode_choice.py
+          python test_gtfs_skim.py
