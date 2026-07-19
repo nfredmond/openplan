@@ -126,6 +126,102 @@ def download_lodes_wac(
         raise LodesDownloadError(f"LODES WAC decompress failed for {state_abbr} {year}: {exc}") from exc
 
 
+# ─── Block-group aggregations (12-digit GEOID) for finer sub-tract TAZs ─────
+# A 15-digit LODES geocode = state[2] + county[3] + tract[6] + block[4]; the
+# first 12 characters are the block-group GEOID. These mirror the tract (:11)
+# aggregators so the pipeline can build block-group zones without new sources.
+
+
+def aggregate_wac_jobs_by_block_group(wac_csv_text: str) -> dict[str, int]:
+    """Sum WAC total jobs (C000) to 12-digit block-group GEOIDs. Pure/stdlib."""
+    reader = csv.DictReader(io.StringIO(wac_csv_text))
+    jobs_by_bg: dict[str, int] = {}
+    for row in reader:
+        geocode = (row.get("w_geocode") or "").strip()
+        if len(geocode) < 12:
+            continue
+        bg = geocode[:12]
+        raw = row.get("C000")
+        try:
+            c000 = int(float(raw)) if raw not in (None, "") else 0
+        except (TypeError, ValueError):
+            continue
+        jobs_by_bg[bg] = jobs_by_bg.get(bg, 0) + c000
+    return jobs_by_bg
+
+
+def lodes_rac_url(state_abbr: str, year: str | int = DEFAULT_LODES_YEAR) -> str:
+    """Residence Area Characteristics: total resident-workers (C000) by home
+    block. A keyless within-tract population-distribution proxy for disaggregating
+    tract population to block groups (no ACS/CENSUS key needed)."""
+    return (
+        f"https://lehd.ces.census.gov/data/lodes/LODES8/{state_abbr}/rac/"
+        f"{state_abbr}_rac_S000_JT00_{year}.csv.gz"
+    )
+
+
+def aggregate_rac_by_block_group(rac_csv_text: str) -> dict[str, int]:
+    """Sum RAC total resident-workers (C000) to 12-digit block-group GEOIDs
+    (keyed by `h_geocode`). Pure/stdlib-only."""
+    reader = csv.DictReader(io.StringIO(rac_csv_text))
+    residents_by_bg: dict[str, int] = {}
+    for row in reader:
+        geocode = (row.get("h_geocode") or "").strip()
+        if len(geocode) < 12:
+            continue
+        bg = geocode[:12]
+        raw = row.get("C000")
+        try:
+            c000 = int(float(raw)) if raw not in (None, "") else 0
+        except (TypeError, ValueError):
+            continue
+        residents_by_bg[bg] = residents_by_bg.get(bg, 0) + c000
+    return residents_by_bg
+
+
+def download_lodes_rac(
+    state_abbr: str,
+    year: str | int = DEFAULT_LODES_YEAR,
+    cache_dir: str | None = None,
+) -> str:
+    """Download (or read from cache) a RAC .csv.gz and return decoded CSV text.
+    Mirrors download_lodes_wac (same host/caching contract)."""
+    import requests  # lazy so the module imports with the stdlib alone
+
+    fname = f"{state_abbr}_rac_S000_JT00_{year}.csv.gz"
+    cache_path = os.path.join(cache_dir, fname) if cache_dir else None
+
+    raw: bytes | None = None
+    if cache_path and os.path.exists(cache_path) and os.path.getsize(cache_path) > 0:
+        with open(cache_path, "rb") as fh:
+            raw = fh.read()
+    else:
+        url = lodes_rac_url(state_abbr, year)
+        try:
+            res = requests.get(url, timeout=180)
+        except Exception as exc:  # network error
+            raise LodesDownloadError(f"LODES RAC request failed for {state_abbr} {year}: {exc}") from exc
+        if res.status_code != 200:
+            raise LodesDownloadError(
+                f"LODES RAC download failed for {state_abbr} {year}: HTTP {res.status_code}"
+            )
+        raw = res.content
+        if cache_path:
+            os.makedirs(cache_dir, exist_ok=True)
+            with open(cache_path, "wb") as fh:
+                fh.write(raw)
+
+    try:
+        return gzip.decompress(raw).decode("utf-8")
+    except (OSError, EOFError) as exc:
+        if cache_path and os.path.exists(cache_path):
+            try:
+                os.remove(cache_path)
+            except OSError:
+                pass
+        raise LodesDownloadError(f"LODES RAC decompress failed for {state_abbr} {year}: {exc}") from exc
+
+
 # ─── LODES OD (origin-destination home→work commute flows) ─────────────────
 # Same host as WAC; part ∈ {main, aux}: `main` = jobs where home & work are in
 # the same state, `aux` = jobs whose home is out of state. Rows are keyed by

@@ -266,6 +266,216 @@ def enrich_zone_attributes(
     return ordered
 
 
+# ─── Block-group (sub-tract TAZ) support ───────────────────────────────────
+# Census tracts are coarse: on the Nevada County pilot ~36% of daily trips are
+# intrazonal and never load the network, so link-level volumes fall far below
+# observed counts. Block groups (~3x finer, 80 vs 26 here) cut that intrazonal
+# share. TIGERweb layer 8 already serves 12-digit block-group GEOIDs (the tract
+# path truncates them to 11). ACS/Decennial population at BG level needs a
+# CENSUS key, so when unavailable we DISAGGREGATE the known tract population to
+# its block groups by LODES residence share (RAC) — screening-grade, marginal-
+# preserving, keyless. NOT an ACS-measured BG population.
+BLOCK_GROUP_LAYER = os.getenv(
+    "TIGER_BLOCK_GROUP_LAYER_URL",
+    "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/8/query",
+)
+
+
+def fetch_block_groups_for_study_area(
+    bbox: tuple[float, float, float, float],
+    corridor_geojson: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    """Return block-group rows (12-digit GEOID, centroid, land area, geometry)
+    whose centroid falls inside the study area. Keyless (TIGERweb geometry only).
+    """
+    min_lon, min_lat, max_lon, max_lat = bbox
+    params = {
+        "where": "1=1",
+        "geometry": f"{min_lon},{min_lat},{max_lon},{max_lat}",
+        "geometryType": "esriGeometryEnvelope",
+        "spatialRel": "esriSpatialRelIntersects",
+        "outFields": "GEOID,STATE,COUNTY,TRACT,BLKGRP,CENTLAT,CENTLON,AREALAND",
+        "returnGeometry": "true",
+        "f": "geojson",
+        "resultRecordCount": 5000,
+        "inSR": "4326",
+        "outSR": "4326",
+    }
+    res = requests.get(BLOCK_GROUP_LAYER, params=params, timeout=60)
+    if res.status_code != 200:
+        raise DataPipelineError(f"TIGERweb block-group query failed: {res.status_code}")
+    payload = res.json()
+    if payload.get("error"):
+        raise DataPipelineError(f"TIGERweb block-group error: {payload['error']}")
+
+    study_geom = shape(corridor_geojson) if corridor_geojson else None
+    rows: list[dict[str, Any]] = []
+    for feat in payload.get("features", []):
+        props = feat.get("properties") or {}
+        geoid = str(props.get("GEOID", ""))
+        if len(geoid) != 12:
+            continue
+        try:
+            lat = float(str(props.get("CENTLAT", "0")).replace("+", ""))
+            lon = float(str(props.get("CENTLON", "0")).replace("+", ""))
+        except ValueError:
+            continue
+        if not (min_lon <= lon <= max_lon and min_lat <= lat <= max_lat):
+            continue
+        if study_geom is not None:
+            pt = Point(lon, lat)
+            if not (study_geom.contains(pt) or study_geom.touches(pt)):
+                continue
+        area_land = props.get("AREALAND")
+        try:
+            area_sq_mi = float(area_land) / 2_589_988.11 if area_land not in (None, "") else 0.0
+        except (TypeError, ValueError):
+            area_sq_mi = 0.0
+        rows.append({
+            "geoid": geoid,
+            "parent_tract": geoid[:11],
+            "NAMELSAD": props.get("NAMELSAD") or f"Block Group {props.get('BLKGRP','')} (Tract {geoid[5:11]})",
+            "centroid_lon": lon,
+            "centroid_lat": lat,
+            "area_sq_mi": round(area_sq_mi, 6),
+            "geometry_geojson": feat.get("geometry"),
+        })
+    if not rows:
+        raise DataPipelineError("No block groups found in the requested study area")
+    return pd.DataFrame(rows)
+
+
+def disaggregate_tracts_to_block_groups(
+    tract_zones: pd.DataFrame,
+    bg_rows: pd.DataFrame,
+    residents_by_bg: dict[str, int] | None = None,
+    jobs_by_bg: dict[str, int] | None = None,
+) -> pd.DataFrame:
+    """Split each tract's population/households across its block groups and emit
+    the worker zone schema at block-group resolution.
+
+    Population & households are distributed by LODES residence share
+    (`residents_by_bg`, RAC C000), falling back to land-area share, then equal
+    share — always preserving each parent tract's ACS total (screening-grade,
+    keyless). Jobs come from real BG-level LODES WAC (`jobs_by_bg`) when present,
+    else a population proxy. `tract_zones` must carry GEOID (11-digit),
+    est_population, households.
+    """
+    residents_by_bg = residents_by_bg or {}
+    jobs_by_bg = jobs_by_bg or {}
+    tz = tract_zones.copy()
+    tz["GEOID"] = tz["GEOID"].astype(str)
+    pop_by_tract = dict(zip(tz["GEOID"], tz["est_population"].astype(float)))
+    hh_by_tract = dict(zip(tz["GEOID"], tz["households"].astype(float))) if "households" in tz.columns else {}
+
+    bg = bg_rows[bg_rows["parent_tract"].isin(pop_by_tract)].copy().reset_index(drop=True)
+    if bg.empty:
+        raise DataPipelineError("No block groups match the study-area tracts")
+
+    est_pop: list[int] = []
+    households: list[int] = []
+    total_jobs: list[int] = []
+    jobs_sources: list[str] = []
+    for parent, group in bg.groupby("parent_tract", sort=False):
+        idx = group.index.tolist()
+        res_w = np.array([float(residents_by_bg.get(str(bg.at[i, "geoid"]), 0.0)) for i in idx])
+        if res_w.sum() > 0:
+            shares = res_w / res_w.sum()
+        else:
+            area_w = np.array([float(bg.at[i, "area_sq_mi"]) for i in idx])
+            shares = area_w / area_w.sum() if area_w.sum() > 0 else np.full(len(idx), 1.0 / len(idx))
+        p_total = float(pop_by_tract.get(parent, 0.0))
+        h_total = float(hh_by_tract.get(parent, 0.0))
+        # Largest-remainder round so the tract marginal is preserved exactly.
+        p_alloc = _largest_remainder(p_total * shares)
+        h_alloc = _largest_remainder(h_total * shares)
+        for k, i in enumerate(idx):
+            bg.at[i, "_pop"] = int(p_alloc[k])
+            bg.at[i, "_hh"] = int(h_alloc[k])
+
+    for i in range(len(bg)):
+        geoid = str(bg.at[i, "geoid"])
+        est_pop.append(int(bg.at[i, "_pop"]))
+        households.append(int(bg.at[i, "_hh"]))
+        j = jobs_by_bg.get(geoid)
+        if j is not None:
+            total_jobs.append(int(max(j, 0)))
+            jobs_sources.append("lodes_wac_bg")
+        else:
+            total_jobs.append(int(max(round(int(bg.at[i, "_pop"]) * 0.47), 5)))
+            jobs_sources.append("synthetic_pop_proxy")
+
+    tj = np.array(total_jobs)
+    out = pd.DataFrame({
+        "GEOID": bg["geoid"].astype(str),
+        "NAMELSAD": bg["NAMELSAD"],
+        "zone_id": np.arange(1, len(bg) + 1),
+        "centroid_lon": bg["centroid_lon"].astype(float),
+        "centroid_lat": bg["centroid_lat"].astype(float),
+        "area_sq_mi": bg["area_sq_mi"].astype(float),
+        "total_jobs": tj.astype(int),
+        "jobs_source": jobs_sources,
+        "retail_jobs": np.round(tj * 0.15).astype(int),
+        "health_jobs": np.round(tj * 0.09).astype(int),
+        "education_jobs": np.round(tj * 0.10).astype(int),
+        "accommodation_jobs": np.round(tj * 0.04).astype(int),
+        "govt_jobs": np.round(tj * 0.07).astype(int),
+        "est_population": np.array(est_pop, dtype=int),
+        "households": np.array(households, dtype=int),
+    })
+    return out
+
+
+def _refine_zones_to_block_groups(
+    tract_zones: pd.DataFrame,
+    bbox: tuple[float, float, float, float],
+    corridor_geojson: dict[str, Any] | None,
+    state_fips: set[str],
+) -> pd.DataFrame:
+    """Refine enriched tract zones to block groups: fetch BG geometry (keyless),
+    LODES RAC residence weights + WAC BG jobs per state, then disaggregate. Raises
+    DataPipelineError on any hard failure so the caller can fall back to tracts."""
+    from lodes import (
+        STATE_FIPS_TO_ABBR,
+        aggregate_rac_by_block_group,
+        aggregate_wac_jobs_by_block_group,
+        download_lodes_rac,
+        download_lodes_wac,
+    )
+
+    bg_rows = fetch_block_groups_for_study_area(bbox, corridor_geojson)
+    residents_by_bg: dict[str, int] = {}
+    jobs_by_bg: dict[str, int] = {}
+    for fips in sorted(state_fips):
+        abbr = STATE_FIPS_TO_ABBR.get(fips)
+        if not abbr:
+            continue
+        try:
+            residents_by_bg.update(aggregate_rac_by_block_group(download_lodes_rac(abbr, LODES_YEAR, LODES_CACHE_DIR)))
+        except Exception as exc:  # RAC is a weight only; area fallback covers it
+            print(f"  LODES RAC unavailable for {abbr} ({exc}); using area-share fallback.")
+        try:
+            jobs_by_bg.update(aggregate_wac_jobs_by_block_group(download_lodes_wac(abbr, LODES_YEAR, LODES_CACHE_DIR)))
+        except Exception as exc:  # WAC absent -> synthetic jobs proxy per BG
+            print(f"  LODES WAC (BG) unavailable for {abbr} ({exc}); using synthetic jobs proxy.")
+    return disaggregate_tracts_to_block_groups(
+        tract_zones, bg_rows, residents_by_bg=residents_by_bg, jobs_by_bg=jobs_by_bg
+    )
+
+
+def _largest_remainder(values: np.ndarray) -> np.ndarray:
+    """Round a float vector to ints preserving the (rounded) total — largest-
+    remainder method, so disaggregated marginals match the parent exactly."""
+    target = int(round(float(values.sum())))
+    floors = np.floor(values).astype(int)
+    remainder = target - int(floors.sum())
+    if remainder <= 0:
+        return floors
+    order = np.argsort(-(values - floors))  # largest fractional parts first
+    floors[order[:remainder]] += 1
+    return floors
+
+
 def _haversine_miles(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
     lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
     dlon = lon2 - lon1
@@ -393,8 +603,16 @@ def generate_package(
     output_dir: str,
     bbox: tuple[float, float, float, float] | None = None,
     corridor_geojson: dict[str, Any] | None = None,
+    zone_geography: str = "tract",
 ) -> dict[str, Any]:
-    """Generate zone_attributes.csv + od_trip_matrix.csv in output_dir."""
+    """Generate zone_attributes.csv + od_trip_matrix.csv in output_dir.
+
+    ``zone_geography`` selects the zone resolution: "tract" (default) or
+    "block_group" (~3x finer TAZs — cuts the intrazonal share, more accurate
+    trip lengths/VMT; requires no extra key, disaggregates tract ACS population
+    by keyless LODES residence share). Falls back to tracts if BG refinement
+    fails.
+    """
     if corridor_geojson is not None and bbox is None:
         bbox = bbox_from_corridor_geojson(corridor_geojson)
     if bbox is None:
@@ -427,18 +645,33 @@ def generate_package(
     else:
         print(f"  Jobs: synthetic population proxy for all {synth_tract_count} tracts (LODES unavailable).")
 
+    # Optional finer sub-tract TAZs: disaggregate tract zones to block groups.
+    use_block_groups = str(zone_geography).lower() in ("block_group", "blockgroup", "bg")
+    if use_block_groups:
+        try:
+            zones = _refine_zones_to_block_groups(zones, bbox, corridor_geojson, state_fips)
+            print(f"  Zones refined to {len(zones)} block groups (from {len(tracts)} tracts).")
+        except DataPipelineError as exc:
+            print(f"  Block-group refinement failed ({exc}); keeping {len(tracts)} tract zones.")
+            use_block_groups = False
+
     # Real LODES OD (home→work commute flows), aggregated to the study-area
     # tract pairs, to shape the trip distribution. keep_tracts bounds the fetch
     # to this study area (memory-safe on state-scale OD files). Never fails a run.
-    try:
-        # enrich_zone_attributes emits the tract column as "GEOID" (uppercase).
-        keep_tracts = {str(g) for g in zones["GEOID"].astype(str)}
-        od_by_pair, od_states_used, od_states_failed = fetch_lodes_od_by_tract_pair(
-            state_fips, keep_tracts, LODES_YEAR, LODES_CACHE_DIR
-        )
-    except Exception as exc:  # never let LODES stop a run
-        print(f"  LODES OD fetch error ({exc}); using pure gravity distribution.")
-        od_by_pair, od_states_used, od_states_failed = {}, [], sorted(state_fips)
+    # LODES OD is tract-keyed, so it only seeds TRACT zones; block-group zones use
+    # the pure gravity distribution (their marginals still carry real BG pop/jobs).
+    if use_block_groups:
+        od_by_pair, od_states_used, od_states_failed = {}, [], []
+    else:
+        try:
+            # enrich_zone_attributes emits the tract column as "GEOID" (uppercase).
+            keep_tracts = {str(g) for g in zones["GEOID"].astype(str)}
+            od_by_pair, od_states_used, od_states_failed = fetch_lodes_od_by_tract_pair(
+                state_fips, keep_tracts, LODES_YEAR, LODES_CACHE_DIR
+            )
+        except Exception as exc:  # never let LODES stop a run
+            print(f"  LODES OD fetch error ({exc}); using pure gravity distribution.")
+            od_by_pair, od_states_used, od_states_failed = {}, [], sorted(state_fips)
 
     od_meta: dict[str, Any] = {}
     od = build_daily_od_matrix(zones, od_by_pair=od_by_pair, od_meta=od_meta)
@@ -461,6 +694,7 @@ def generate_package(
     manifest = {
         "version": "dynamic-v1",
         "bbox": [float(v) for v in bbox],
+        "zone_geography": "block_group" if use_block_groups else "tract",
         "zones": int(len(zones)),
         "total_population": int(zones["est_population"].sum()),
         "total_households": int(zones["households"].sum()),

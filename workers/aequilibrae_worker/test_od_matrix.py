@@ -137,6 +137,62 @@ def test_output_format():
     assert od.index.name == "origin_zone"
 
 
+def _tract_zones():
+    return pd.DataFrame({
+        "GEOID": ["06057000100", "06057000200"],
+        "NAMELSAD": ["Tract 1", "Tract 2"],
+        "est_population": [1000, 600],
+        "households": [400, 240],
+    })
+
+
+def _bg_rows():
+    # Tract ...100 has 2 BGs; tract ...200 has 1 BG.
+    return pd.DataFrame({
+        "geoid": ["060570001001", "060570001002", "060570002001"],
+        "parent_tract": ["06057000100", "06057000100", "06057000200"],
+        "NAMELSAD": ["BG 1", "BG 2", "BG 3"],
+        "centroid_lon": [-121.0, -121.1, -121.2],
+        "centroid_lat": [39.2, 39.3, 39.4],
+        "area_sq_mi": [2.0, 6.0, 4.0],
+    })
+
+
+def test_disaggregation_preserves_tract_population_exactly():
+    z = dp.disaggregate_tracts_to_block_groups(
+        _tract_zones(), _bg_rows(),
+        residents_by_bg={"060570001001": 75, "060570001002": 25, "060570002001": 999},
+        jobs_by_bg={"060570001001": 50, "060570001002": 10, "060570002001": 30},
+    )
+    assert z["est_population"].sum() == 1600  # global marginal preserved
+    p = dict(zip(z["GEOID"], z["est_population"]))
+    assert p["060570001001"] + p["060570001002"] == 1000  # tract-100 marginal
+    assert p["060570002001"] == 600                       # tract-200 marginal
+    assert p["060570001001"] == 750 and p["060570001002"] == 250  # RAC shares
+    assert z["households"].sum() == 640
+    j = dict(zip(z["GEOID"], z["total_jobs"]))
+    assert j["060570001001"] == 50 and j["060570002001"] == 30   # BG WAC jobs
+    assert (z["jobs_source"] == "lodes_wac_bg").all()
+    assert z["zone_id"].tolist() == [1, 2, 3]
+
+
+def test_disaggregation_area_fallback_when_no_residents():
+    z = dp.disaggregate_tracts_to_block_groups(
+        _tract_zones(), _bg_rows(),
+        residents_by_bg={},  # force area fallback
+        jobs_by_bg=None,     # force synthetic jobs proxy
+    )
+    p = dict(zip(z["GEOID"], z["est_population"]))
+    assert p["060570001001"] == 250 and p["060570001002"] == 750  # area shares 2:6
+    assert (z["jobs_source"] == "synthetic_pop_proxy").all()
+
+
+def test_largest_remainder_preserves_total():
+    vals = np.array([0.5, 0.5, 0.5, 0.5])  # sum 2.0
+    out = dp._largest_remainder(vals)
+    assert out.sum() == 2 and set(out.tolist()) <= {0, 1}
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in sorted(globals().items()) if name.startswith("test_")]
     try:

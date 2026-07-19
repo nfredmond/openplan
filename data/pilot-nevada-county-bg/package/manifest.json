@@ -1,0 +1,15 @@
+{
+  "package_name": "pilot-nevada-county-bg",
+  "version": "1.0.0-bg",
+  "calibration_status": "uncalibrated",
+  "zone_geography": "block_group",
+  "total_population": 101987,
+  "zones": 80,
+  "bbox": [
+    -121.3,
+    39.0,
+    -120.0,
+    39.5
+  ],
+  "provenance": "Block-group TAZs: TIGERweb geometry; parent-tract ACS population disaggregated by LODES RAC residence share (keyless, marginal-preserving); block-group jobs from LODES WAC. Screening-grade, NOT ACS-measured BG population."
+}
