@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy worker code and bundled seed data. main.py imports data_pipeline, which
 # imports lodes; main.py also imports resident_vmt and gateways — all must be
 # present or the image fails to import at startup.
-COPY main.py data_pipeline.py lodes.py resident_vmt.py gateways.py .
+COPY main.py data_pipeline.py lodes.py resident_vmt.py gateways.py mode_choice.py gtfs_skim.py .
 COPY data/ data/
 
 # Set environment defaults for cloud

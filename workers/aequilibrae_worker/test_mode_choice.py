@@ -12,70 +12,91 @@ import mode_choice as mc
 
 def test_aggregate_coeffs_blend_golden():
     # trip-weighted blend of the 8 sketch-ABM purposes; pinned so a coefficient
-    # or weight edit is caught. Values match a hand computation from
-    # mode-choice.ts MODE_COEFFS × _PURPOSE_WEIGHTS.
+    # or weight edit is caught. Hand-computed from mode-choice.ts MODE_COEFFS ×
+    # _PURPOSE_WEIGHTS.
     c = mc.AGGREGATE_COEFFS
     assert abs(c["asc_walk"] - (-1.059)) < 1e-3, c["asc_walk"]
     assert abs(c["asc_bike"] - (-1.990)) < 1e-3, c["asc_bike"]
+    assert abs(c["asc_transit"] - (-1.270)) < 1e-3, c["asc_transit"]
     assert abs(c["coef_ivtt"] - (-0.02227)) < 1e-4, c["coef_ivtt"]
     assert abs(c["coef_ovtt"] - (-0.04002)) < 1e-4, c["coef_ovtt"]
+    assert abs(c["coef_cost"] - (-0.3175)) < 1e-3, c["coef_cost"]
 
 
 def test_auto_share_rises_with_distance():
     dist = np.array([[0.75, 0.5, 12.0], [0.5, 0.75, 3.0], [12.0, 3.0, 0.75]])
     tmin = dist / 30.0 * 60.0
-    P = mc.auto_share_matrix(tmin, dist)
-    # near pair has more active (lower P_auto) than a far pair
-    assert P[0, 1] < P[0, 2]
-    # far trip beyond bike/walk feasibility → all auto
-    assert P[0, 2] == 1.0
-    # intrazonal (0.75 mi) is split by the logit — walk-feasible, so < all-auto
-    assert 0.0 < P[0, 0] < 1.0 and 0.0 < P[1, 1] < 1.0
-    # probabilities are valid
-    assert np.all((P >= 0) & (P <= 1))
+    P_auto, P_transit, P_active = mc.mode_share_matrices(tmin, dist)  # transit=None
+    assert np.all(P_transit == 0.0)  # no feed → transit 0 everywhere
+    # near pair has more active (lower auto) than a far pair
+    assert P_auto[0, 1] < P_auto[0, 2]
+    assert P_auto[0, 2] == 1.0  # beyond walk/bike feasibility → all auto
+    assert 0.0 < P_auto[0, 0] < 1.0  # intrazonal split by the logit
+    assert np.allclose(P_auto + P_transit + P_active, 1.0)
 
 
-def test_infeasible_active_all_auto_no_warnings():
-    # every pair beyond bike/walk range → P_auto must be exactly 1 everywhere
-    dist = np.full((3, 3), 20.0)
+def test_transit_available_gets_small_share_else_zero():
+    n = 3
+    dist = np.full((n, n), 4.0)
     np.fill_diagonal(dist, 0.75)
     tmin = dist / 30.0 * 60.0
-    with np.errstate(all="raise"):  # any unmasked nan/inf op would raise here
-        P = mc.auto_share_matrix(tmin, dist)
-    off = ~np.eye(3, dtype=bool)
-    assert np.all(P[off] == 1.0)
+    # transit available only for pair (0,1): moderate LOS
+    available = np.zeros((n, n), dtype=bool)
+    available[0, 1] = True
+    transit = {
+        "ivtt": np.full((n, n), 15.0),
+        "wait": np.full((n, n), 10.0),
+        "walk": np.full((n, n), 8.0),
+        "fare": np.full((n, n), 1.5),
+        "available": available,
+    }
+    P_auto, P_transit, P_active = mc.mode_share_matrices(tmin, dist, transit=transit)
+    assert P_transit[0, 1] > 0.0  # served pair gets a positive transit share
+    assert P_transit[0, 2] == 0.0 and P_transit[1, 0] == 0.0  # unavailable → exactly 0
+    assert np.allclose(P_auto + P_transit + P_active, 1.0)
+    # unavailable cells reproduce the transit=None (F.2) split bit-for-bit
+    Pa_none, Pt_none, Pac_none = mc.mode_share_matrices(tmin, dist, transit=None)
+    assert np.isclose(P_auto[0, 2], Pa_none[0, 2]) and np.isclose(P_active[0, 2], Pac_none[0, 2])
 
 
-def test_split_conserves_trips():
+def test_split_conserves_trips_three_way():
+    n = 3
     dist = np.array([[0.75, 0.8, 6.0], [0.8, 0.75, 2.0], [6.0, 2.0, 0.75]])
     tmin = dist / 30.0 * 60.0
     od = np.array([[100, 220, 51], [180, 90, 77], [40, 66, 110.0]])
-    auto_f, auto_i, active_i, meta = mc.split_matrix(od, tmin, dist)
-    # exact integer conservation on the persisted matrices
-    assert np.all(auto_i + active_i == np.round(od).astype(np.int64))
-    assert np.all(auto_i <= np.round(od).astype(np.int64))
-    assert np.all(active_i >= 0)
-    # auto_float is bounded by person trips
-    assert np.all(auto_f <= od + 1e-9)
-    assert meta["transit_modeled"] is False
+    available = np.zeros((n, n), dtype=bool)
+    available[0, 1] = available[1, 0] = True
+    transit = {
+        "ivtt": np.full((n, n), 12.0), "wait": np.full((n, n), 8.0),
+        "walk": np.full((n, n), 6.0), "fare": np.full((n, n), 1.5), "available": available,
+    }
+    auto_f, auto_i, transit_i, active_i, meta = mc.split_matrix(od, tmin, dist, transit=transit)
+    person_int = np.round(od).astype(np.int64)
+    # exact 3-way integer conservation, active as residual
+    assert np.all(auto_i + transit_i + active_i == person_int)
+    assert np.all(auto_i >= 0) and np.all(transit_i >= 0) and np.all(active_i >= 0)
+    assert meta["transit_modeled"] is True
+    assert meta["transit_available_pairs"] == 2
+    assert meta["transit_trips"] >= 0
 
 
-def test_aggregate_shares_percentage_points_and_zero_transit():
-    s = mc.aggregate_shares(1000.0, 870.0)
-    assert abs(s["auto"] - 87.0) < 1e-6
+def test_aggregate_shares_three_way():
+    s = mc.aggregate_shares(1000.0, 850.0, 20.0)
+    assert abs(s["auto"] - 85.0) < 1e-6
+    assert abs(s["transit"] - 2.0) < 1e-6
     assert abs(s["active"] - 13.0) < 1e-6
-    assert s["transit"] == 0.0  # hard zero — not modeled
-    # sums to 100 (auto + active), transit excluded
-    assert abs(s["auto"] + s["active"] - 100.0) < 1e-6
-    # empty demand → all auto by convention
+    assert abs(s["auto"] + s["transit"] + s["active"] - 100.0) < 1e-6
+    # default transit=0
+    assert mc.aggregate_shares(1000.0, 900.0)["transit"] == 0.0
     assert mc.aggregate_shares(0.0, 0.0)["auto"] == 100.0
 
 
 def test_unreachable_cell_is_auto():
     dist = np.array([[0.75, 1.0], [1.0, 0.75]])
     tmin = np.array([[0.0, np.inf], [np.inf, 0.0]])  # unreachable off-diagonal
-    P = mc.auto_share_matrix(tmin, dist)
-    assert P[0, 1] == 1.0 and P[1, 0] == 1.0
+    P_auto, P_transit, P_active = mc.mode_share_matrices(tmin, dist)
+    assert P_auto[0, 1] == 1.0 and P_auto[1, 0] == 1.0
+    assert P_transit[0, 1] == 0.0 and P_active[0, 1] == 0.0
 
 
 if __name__ == "__main__":

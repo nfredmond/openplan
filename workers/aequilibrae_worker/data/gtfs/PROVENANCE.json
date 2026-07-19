@@ -1,0 +1,15 @@
+{
+  "operator": "o-9qcy-nevadacountygoldcountrystage",
+  "agency": "Nevada County Connects (Gold Country Stage)",
+  "agency_id": "1523",
+  "source_url": "https://data.trilliumtransit.com/gtfs/goldcountrystage-ca-us/goldcountrystage-ca-us.zip",
+  "retrieved_date": "2026-07-18",
+  "feed_publisher": "Trillium Solutions, Inc.",
+  "feed_version": "UTC: 28-Jul-2025 14:25",
+  "service_period": { "start": "2025-07-25", "end": "2026-01-31" },
+  "sha256": "35813c7a77d2a27331a9cadc01dba45f0c4c65a8f40fd13c194d66ad11bb3c8f",
+  "routes": 8,
+  "stops": 251,
+  "license": "Publicly published GTFS. Attribution: Nevada County Connects / Gold Country Stage; feed hosted by Trillium Solutions, Inc.",
+  "note": "Frozen static GTFS snapshot bundled for reproducible, keyless, screening-grade transit LOS. Refresh with refresh_gtfs.py (maintainer-only, off the run path)."
+}
