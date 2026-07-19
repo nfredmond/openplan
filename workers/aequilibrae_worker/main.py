@@ -29,9 +29,16 @@ from dotenv import load_dotenv
 
 from data_pipeline import DataPipelineError, generate_package
 from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazonal_miles
-from gateways import detect_external_gateways, build_external_gateway_matrix
+from gateways import (
+    detect_external_gateways,
+    build_cordon_injections,
+    resolve_exterior_node,
+    pair_passthrough_cordons,
+    GATEWAY_PASSTHROUGH_SHARE,
+)
 import mode_choice
 import gtfs_skim
+import count_validation
 
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
@@ -54,6 +61,25 @@ GATEWAY_BUFFER_DEG = max(0.0, float(os.getenv("AEQ_GATEWAY_BUFFER_DEG", "0.03"))
 # Split internal person-trips into auto vs active (walk+bike) and assign only
 # the auto matrix. Default on; set to 0 for the old all-auto behaviour.
 MODE_SPLIT_ENABLED = os.getenv("MODE_SPLIT_ENABLED", "1") not in ("0", "false", "False", "")
+
+# Fixed share of each boundary-crossing highway's daily volume routed as
+# pass-through (cordon→same-route cordon) so interior mainlines load, rather than
+# terminating at internal zones. Uncalibrated screening assumption; the env
+# override is for what-if sweeps only, never to fit observed counts.
+try:
+    PASSTHROUGH_SHARE = float(os.getenv("GATEWAY_PASSTHROUGH_SHARE", str(GATEWAY_PASSTHROUGH_SHARE)))
+except ValueError:
+    PASSTHROUGH_SHARE = GATEWAY_PASSTHROUGH_SHARE
+PASSTHROUGH_SHARE = min(max(PASSTHROUGH_SHARE, 0.0), 0.9)
+
+# Observed-count validation: match assigned link volumes to published traffic
+# counts and report screening-grade fit metrics + a gate. Default counts cover
+# the Nevada County pilot; VALIDATION_COUNTS_PATH overrides. Set to 0 to disable.
+COUNT_VALIDATION_ENABLED = os.getenv("COUNT_VALIDATION_ENABLED", "1") not in ("0", "false", "False", "")
+VALIDATION_COUNTS_PATH = os.getenv(
+    "VALIDATION_COUNTS_PATH",
+    os.path.join(os.path.dirname(__file__), "data", "validation", "nevada_county_priority_counts.csv"),
+)
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase credentials in environment.")
@@ -355,7 +381,61 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
             "is omitted from skims and assignment (screening-grade caveat).\n"
         )
 
-    # --- Renumber to contiguous 1..N ---
+    # --- External gateways + cordon centroids (BEFORE renumber; conn open) ---
+    # Create a cordon centroid at each boundary highway crossing, connected to
+    # the crossing link's EXTERIOR endpoint, so external through-traffic is
+    # forced ACROSS the boundary highway link instead of dumping onto local
+    # roads at an interior tract connector (the routing defect count validation
+    # exposed). Cordon zones use a reserved id namespace (>= 9_000_000), never
+    # appear in zone_attributes, and never touch mode choice or resident VMT.
+    gateways = []
+    cordon_map: dict[int, int] = {}
+    try:
+        boundary = box(*bbox)
+        connected_ids = {int(z) for z in centroid_map.keys()}
+        connected_zones = active_zones[active_zones["zone_id"].astype(int).isin(connected_ids)]
+        gateways = detect_external_gateways(db_path, boundary, connected_zones, SPATIALITE_PATH)
+        dropped = 0
+        for idx, gw in enumerate(gateways, start=1):
+            ext_node = resolve_exterior_node(conn, gw["link_id"], boundary)
+            if ext_node is None or ext_node not in largest:
+                dropped += 1
+                gw["cordon_zone_id"] = None
+                continue
+            cordon_zid = 9_000_000 + idx
+            cordon_nid = next_node
+            next_node += 1
+            clon, clat = gw["boundary_lon"], gw["boundary_lat"]
+            conn.execute(
+                "INSERT INTO nodes (node_id, is_centroid, geometry) VALUES (?, 1, MakePoint(?, ?, 4326))",
+                (cordon_nid, clon, clat),
+            )
+            nx, ny = conn.execute("SELECT X(geometry),Y(geometry) FROM nodes WHERE node_id=?", (ext_node,)).fetchone()
+            line_wkt = f"LINESTRING({clon} {clat}, {nx} {ny})"
+            length_m = max(((clon - nx) ** 2 + (clat - ny) ** 2) ** 0.5 * 111000, 10)
+            conn.execute(
+                "INSERT INTO links (link_id,a_node,b_node,direction,distance,modes,link_type,name,"
+                "speed_ab,speed_ba,capacity_ab,capacity_ba,geometry) "
+                "VALUES (?,?,?,0,?,'c','centroid_connector','cordon_connector',50,50,99999,99999,GeomFromText(?,4326))",
+                (next_link, cordon_nid, ext_node, length_m, line_wkt),
+            )
+            next_link += 1
+            cordon_map[cordon_zid] = cordon_nid
+            gw["cordon_zone_id"] = cordon_zid
+        conn.commit()
+        if gateways:
+            log += (
+                f"Detected {len(gateways)} external gateway(s); built {len(cordon_map)} cordon "
+                "centroid(s) on boundary highways"
+                + (f" ({dropped} dropped — exterior endpoint off the main network)" if dropped else "")
+                + ".\n"
+            )
+        else:
+            log += "No external gateways detected (closed-boundary study area).\n"
+    except Exception as e:
+        log += f"Gateway/cordon setup warning: {e}\n"
+
+    # --- Renumber to contiguous 1..N (sweeps internal + cordon centroids) ---
     old_ids = [r[0] for r in conn.execute("SELECT node_id FROM nodes ORDER BY node_id")]
     remap = {old: new for new, old in enumerate(old_ids, 1)}
     for old, new in remap.items():
@@ -369,6 +449,7 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     conn.commit()
 
     centroid_map = {z: remap[n] for z, n in centroid_map.items()}
+    cordon_map = {z: remap[n] for z, n in cordon_map.items()}
     log += f"Renumbered to contiguous IDs (max={max(remap.values())})\n"
 
     # --- Populate speed/capacity from link types ---
@@ -392,36 +473,11 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     conn.commit()
     conn.close()
 
-    log += f"Populated speed/capacity for {len(updates)} links.\n"
-
-    # --- Detect external gateways (highways crossing the study-area boundary) ---
-    # The buffered OSM download above means crossing links extend outside the
-    # un-buffered bbox; attach each cordon crossing to the nearest resident zone
-    # so through-traffic can be loaded (screening-grade) and later excluded from
-    # resident VMT. Never fails the run.
-    gateways = []
-    try:
-        boundary = box(*bbox)
-        # Only offer zones that made it into the routable graph — a gateway
-        # attached to a disconnected zone would be silently dropped when its
-        # through-traffic is layered onto the assignment matrix.
-        connected_ids = {int(z) for z in centroid_map.keys()}
-        connected_zones = active_zones[active_zones["zone_id"].astype(int).isin(connected_ids)]
-        gateways = detect_external_gateways(db_path, boundary, connected_zones, SPATIALITE_PATH)
-        if gateways:
-            log += (
-                f"Detected {len(gateways)} external gateway(s): "
-                f"{[g['label'] for g in gateways]}\n"
-            )
-        else:
-            log += "No external gateways detected (closed-boundary study area).\n"
-    except Exception as e:
-        log += f"Gateway detection warning: {e}\n"
-
-    log += "Setup complete.\n"
+    log += f"Populated speed/capacity for {len(updates)} links.\nSetup complete.\n"
 
     return {
         "centroid_map": centroid_map,
+        "cordon_map": cordon_map,
         "bbox": bbox,
         "n_zones": len(centroid_map),
         "n_nodes": len(old_ids),
@@ -464,8 +520,16 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     centroid_map = setup_result["centroid_map"]
     # Keys might be strings after JSON round-trip
     centroid_map = {int(k): int(v) for k, v in centroid_map.items()}
-    centroids_sorted = sorted(centroid_map.values())
+    cordon_map = {int(k): int(v) for k, v in (setup_result.get("cordon_map") or {}).items()}
+    centroids_sorted = sorted(centroid_map.values())          # INTERNAL zones only
     n_zones = len(centroids_sorted)
+    # The assignment graph carries internal + external cordon centroids; cordons
+    # only ever appear in the assembled assignment matrix — internal logic (mode
+    # choice, resident VMT, od_array) stays on the internal sub-block.
+    assignment_centroids = sorted(set(centroids_sorted) | set(cordon_map.values()))
+    n_assign = len(assignment_centroids)
+    _pos = {node: k for k, node in enumerate(assignment_centroids)}
+    ii = np.array([_pos[c] for c in centroids_sorted])        # internal positions in the full matrix
 
     log = "Building graph...\n"
     sb_patch_stage(stage_id, {"log_tail": log})
@@ -475,7 +539,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     project.network.build_graphs(modes=["c"])
     graph = project.network.graphs["c"]
     graph.set_graph("travel_time")
-    graph.prepare_graph(np.array(centroids_sorted))
+    graph.prepare_graph(np.array(assignment_centroids))
     graph.set_blocked_centroid_flows(True)
     graph.set_skimming(["travel_time"])
 
@@ -487,7 +551,8 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     skimming.set_cores(AEQ_CORES)
     skimming.execute()
     skim_mat = skimming.results.skims
-    time_skim = skim_mat.matrix["travel_time"]
+    time_skim_full = skim_mat.matrix["travel_time"]          # (n_assign × n_assign)
+    time_skim = time_skim_full[np.ix_(ii, ii)]               # internal sub-block
 
     finite = np.isfinite(time_skim) & (time_skim > 0)
     np.fill_diagonal(finite, False)
@@ -611,38 +676,69 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     else:
         _clear_stale_auto_od()
 
-    # --- Layer external gateway (through-traffic) demand onto the auto OD ---
-    # so the assigned volumes reflect real pass-through travel on the highways
-    # that cross the study-area boundary. Through-traffic is 100% auto. The
-    # gateway matrix is aligned to the same zone order as od_array.
+    # --- Assemble the full assignment demand matrix over internal + cordon
+    # zones. Internal auto demand (od_array = auto_float from mode choice, or the
+    # full internal OD if mode choice is off) sits in the internal block.
+    # External gateway trips enter/exit at CORDON centroids placed on the
+    # boundary highways, so through-traffic is forced ACROSS the crossing highway
+    # link instead of dumping onto local roads. Each cordon's boundary-crossing
+    # volume splits into an internal-destined portion (1−share; distributed by
+    # job/pop share) and a pass-through portion (share; routed to the SAME route's
+    # other cordon) — this loads the interior mainline ONLY for routes detected
+    # crossing the boundary at two cordons (e.g. an interstate that traverses the
+    # county); single-crossing routes have no partner and stay 100% internal. The
+    # share is a fixed, documented screening assumption — NOT tuned to counts. ---
+    full_od = np.zeros((n_assign, n_assign))
+    full_od[np.ix_(ii, ii)] = od_array
     external_gateway_trips = 0.0
+    passthrough_trips = 0.0
     gateways = setup_result.get("gateways") or []
-    if gateways:
+    active_gws = [g for g in gateways if g.get("cordon_zone_id") and int(g["cordon_zone_id"]) in cordon_map]
+    if active_gws:
         try:
             zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
             zattr["zone_id"] = zattr["zone_id"].astype(int)
             zattr = zattr.set_index("zone_id", drop=False)
-            ordered_df = zattr.loc[ordered_zone_ids, ["zone_id", "est_population", "total_jobs"]].reset_index(drop=True)
-            gw_matrix = build_external_gateway_matrix(gateways, ordered_df)
-            od_array = od_array + gw_matrix
-            external_gateway_trips = float(gw_matrix.sum())
-            log += f"Layered {external_gateway_trips:,.0f} external gateway trips from {len(gateways)} gateway(s).\n"
+            ordered_df = zattr.loc[ordered_zone_ids, ["est_population", "total_jobs"]].reset_index(drop=True)
+            job_shares, pop_shares = build_cordon_injections(ordered_df)
+            partners = pair_passthrough_cordons(active_gws)  # cordon_zid → same-route partners
+            for g in active_gws:
+                cordon_zid = int(g["cordon_zone_id"])
+                cpos = _pos[cordon_map[cordon_zid]]
+                pt = PASSTHROUGH_SHARE if partners.get(cordon_zid) else 0.0  # only paired routes pass through
+                internal_frac = 1.0 - pt
+                full_od[cpos, ii] += float(g["daily_in"]) * internal_frac * job_shares    # external → internal
+                full_od[ii, cpos] += float(g["daily_out"]) * internal_frac * pop_shares   # internal → external
+                external_gateway_trips += float(g["daily_in"]) + float(g["daily_out"])
+                if pt > 0.0:
+                    through_vol = float(g["daily_in"]) * pt
+                    dest_cordons = partners[cordon_zid]
+                    per_dest = through_vol / len(dest_cordons)
+                    for dest_zid in dest_cordons:
+                        dpos = _pos[cordon_map[int(dest_zid)]]
+                        full_od[cpos, dpos] += per_dest   # enter at this cordon, exit at same-route cordon
+                        passthrough_trips += per_dest
+            log += (
+                f"Loaded {external_gateway_trips:,.0f} external gateway trips via {len(active_gws)} "
+                f"cordon centroid(s) on boundary highways ({passthrough_trips:,.0f} routed as "
+                f"pass-through at share {PASSTHROUGH_SHARE:.2f} across {len(partners)} paired cordon(s)).\n"
+            )
         except Exception as e:
-            log += f"Gateway demand layering warning: {e}\n"
+            log += f"Cordon gateway loading warning: {e}\n"
 
-    # total_trips stays person-scale (internal person + gateway); the assigned
-    # matrix is auto-only + gateway, so routable_trips reflects assigned auto.
+    # total_trips stays person-scale (internal person + gateway); routable_trips
+    # reflects the assigned (auto + gateway) demand.
     total_trips = internal_person_trips + external_gateway_trips
-    od_array[~np.isfinite(time_skim)] = 0
-    routable_trips = float(od_array.sum())
+    full_od[~np.isfinite(time_skim_full)] = 0
+    routable_trips = float(full_od.sum())
 
     demand_mat = AequilibraeMatrix()
     demand_mat.create_empty(
         file_name=os.path.join(out_dir, "demand.omx"),
-        zones=n_zones, matrix_names=["demand"], memory_only=False,
+        zones=n_assign, matrix_names=["demand"], memory_only=False,
     )
-    demand_mat.index = np.array(centroids_sorted)
-    demand_mat.matrix["demand"][:, :] = od_array
+    demand_mat.index = np.array(assignment_centroids)
+    demand_mat.matrix["demand"][:, :] = full_od
     demand_mat.computational_view(["demand"])
 
     log += f"Demand: {total_trips:,.0f} total, {routable_trips:,.0f} routable\n"
@@ -740,6 +836,48 @@ def compute_daily_vmt(db_path: str, link_volumes_csv: str) -> float | None:
     finally:
         conn.close()
     return vmt
+
+
+def _run_count_validation(db_path: str, link_volumes_csv: str) -> dict | None:
+    """Match assigned link volumes to observed traffic counts → screening-grade
+    fit summary. Returns None when disabled or inputs are missing (never fails
+    the run)."""
+    import csv as _csv
+    if not (COUNT_VALIDATION_ENABLED and os.path.exists(VALIDATION_COUNTS_PATH)
+            and os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
+        return None
+    with open(VALIDATION_COUNTS_PATH) as f:
+        stations = list(_csv.DictReader(f))
+    if not stations:
+        return None
+    pce: dict[int, float] = {}
+    with open(link_volumes_csv) as f:
+        for row in _csv.DictReader(f):
+            try:
+                pce[int(float(row["link_id"]))] = float(row.get("PCE_tot") or 0.0)
+            except (TypeError, ValueError, KeyError):
+                continue
+    conn = sqlite3.connect(db_path)
+    conn.enable_load_extension(True)
+    conn.load_extension(SPATIALITE_PATH)
+    try:
+        rows = conn.execute(
+            "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
+            "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
+            "WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'"
+        ).fetchall()
+    finally:
+        conn.close()
+    modeled_links = [
+        {
+            "link_id": int(lid), "name": name, "link_type": lt,
+            "lon": float(cx) if cx is not None else None,
+            "lat": float(cy) if cy is not None else None,
+            "volume": pce.get(int(lid), 0.0),
+        }
+        for lid, name, lt, cx, cy in rows
+    ]
+    return count_validation.validate_against_counts(stations, modeled_links)
 
 
 def stage_artifacts(
@@ -880,6 +1018,23 @@ def stage_artifacts(
             f"(GTFS feed {(mode_split or {}).get('transit_status', 'unavailable')})"
         )
 
+    # ── Observed-count validation (screening-grade diagnostic, NOT calibration) ──
+    validation = None
+    try:
+        validation = _run_count_validation(db_path, link_volumes_csv)
+        if validation:
+            log += (
+                f"Count validation: {validation['stations_matched']}/{validation['stations_total']} "
+                f"stations matched; median APE {validation['median_ape']}%, %RMSE "
+                f"{validation['percent_rmse']}, gate '{validation['screening_gate']}'.\n"
+            )
+    except Exception as e:
+        log += f"Count validation warning: {e}\n"
+    validation_provenance = (validation or {}).get("method") or (
+        "Observed-count validation did not run (no counts for this study area or disabled). "
+        "Absence of validation is not a calibration claim."
+    )
+
     evidence = {
         "run_id": run_id,
         "engine": "AequilibraE 1.6.1",
@@ -910,6 +1065,7 @@ def stage_artifacts(
             "network_gateway_zone_ids": gateway_zone_ids,
         },
         "mode_split": mode_split,
+        "validation": validation,
         "gateways": gateways,
         # LODES-vs-synthetic employment provenance from the package manifest,
         # so the app can badge synthetic-fallback jobs as Estimated.
@@ -1028,6 +1184,20 @@ def stage_artifacts(
         kpis.append(("general", "active_person_trips", "Active (Walk+Bike) Person-Trips", mode_split["active_trips"], "trips/day"))
         kpis.append(("general", "transit_available_pairs", "Transit-Available OD Pairs", mode_split.get("transit_available_pairs", 0), "count"))
 
+    # Observed-count validation KPIs (screening-grade diagnostic). Emitted only
+    # when >=1 station matched — a 0-match run is not a validation. The gate
+    # label + per-station detail live in evidence.validation.
+    if validation and validation.get("stations_matched", 0) > 0:
+        kpis.append(("general", "validation_stations_matched", "Validation Stations Matched", validation["stations_matched"], "count"))
+        if validation.get("median_ape") is not None:
+            kpis.append(("assignment", "validation_median_ape", "Validation Median APE", validation["median_ape"], "percent"))
+        if validation.get("percent_rmse") is not None:
+            kpis.append(("assignment", "validation_percent_rmse", "Validation %RMSE", validation["percent_rmse"], "percent"))
+        if (validation.get("geh") or {}).get("mean") is not None:
+            kpis.append(("assignment", "validation_geh_mean", "Validation GEH (mean, avg-hourly)", round(validation["geh"]["mean"], 2), "geh"))
+        if validation.get("spearman_rho") is not None:
+            kpis.append(("assignment", "validation_spearman_rho", "Validation Spearman rho", validation["spearman_rho"], "ratio"))
+
     _transit_status = (mode_split or {}).get("transit_status", "not_run")
     if _transit_status == "modeled":
         mode_provenance = (
@@ -1079,6 +1249,14 @@ def stage_artifacts(
             "transit_available_pairs",
         ):
             kpi_payload["breakdown_json"] = {"provenance": mode_provenance}
+        elif name in (
+            "validation_stations_matched", "validation_median_ape", "validation_percent_rmse",
+            "validation_geh_mean", "validation_spearman_rho",
+        ):
+            kpi_payload["breakdown_json"] = {
+                "provenance": validation_provenance,
+                "screening_gate": (validation or {}).get("screening_gate"),
+            }
         sb_post_kpi(kpi_payload)
 
     # Generate GeoJSON for the map and upload to Supabase Storage

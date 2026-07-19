@@ -121,6 +121,7 @@ def detect_external_gateways(
         gateways.append(
             {
                 "label": label,
+                "name": str(gateway.get("name") or ""),
                 "zone_id": int(zone_id),
                 "link_type": gateway["link_type"],
                 "link_id": gateway["link_id"],
@@ -131,6 +132,83 @@ def detect_external_gateways(
             }
         )
     return gateways
+
+
+def resolve_exterior_node(conn: sqlite3.Connection, link_id: int, boundary_geom) -> int | None:
+    """Endpoint node of the boundary-crossing link that lies OUTSIDE the
+    study-area boundary. Connecting a cordon centroid to this exterior node
+    forces every external↔internal path to traverse the crossing highway link
+    (rather than dumping onto local roads at an interior tract connector).
+    Returns a plain network node id (is_centroid=0), or None if neither endpoint
+    qualifies.
+    """
+    row = conn.execute("SELECT a_node, b_node FROM links WHERE link_id=?", (int(link_id),)).fetchone()
+    if not row:
+        return None
+    for nid in row:
+        pt = conn.execute(
+            "SELECT X(geometry), Y(geometry), COALESCE(is_centroid, 0) FROM nodes WHERE node_id=?",
+            (int(nid),),
+        ).fetchone()
+        if not pt:
+            continue
+        x, y, is_centroid = pt
+        if is_centroid or x is None or y is None:
+            continue
+        if not boundary_geom.contains(Point(float(x), float(y))):
+            return int(nid)
+    return None
+
+
+def build_cordon_injections(zones_df: pd.DataFrame) -> tuple[np.ndarray, np.ndarray]:
+    """Per-internal-zone job and population shares for distributing external
+    gateway trips (external→internal by job share, internal→external by pop
+    share). Same share math as build_external_gateway_matrix — no new demand
+    parameters."""
+    pop = zones_df["est_population"].to_numpy(dtype=float)
+    jobs = zones_df["total_jobs"].to_numpy(dtype=float)
+    n = len(zones_df)
+    pop_shares = pop / pop.sum() if pop.sum() > 0 else np.full(n, 1 / n)
+    job_shares = jobs / jobs.sum() if jobs.sum() > 0 else np.full(n, 1 / n)
+    return job_shares, pop_shares
+
+
+# Fixed screening-grade share of each boundary-crossing highway's daily volume
+# treated as pass-through (enters at one cordon, exits at the same route's other
+# cordon) rather than terminating inside the study area. Uncalibrated: a flat
+# corridor assumption, NOT tuned to any observed count. Rural intercity through
+# corridors (US-20/SR-49) carry a substantial through-share; a single flat value
+# is a screening simplification (per-facility shares would refine it). Env
+# override GATEWAY_PASSTHROUGH_SHARE only for what-if sweeps — never to fit counts.
+GATEWAY_PASSTHROUGH_SHARE = 0.35
+
+
+def pair_passthrough_cordons(gateways: list[dict[str, Any]]) -> dict[int, list[int]]:
+    """Map each cordon zone id to the OTHER cordon zone ids on the same route
+    (same normalized highway name), so a fixed share of its boundary-crossing
+    volume can be routed as pass-through across the study area (entering at one
+    cordon, exiting at the paired one — forcing the interior mainline to load).
+
+    A route detected crossing the boundary at only one place has no partner and
+    is omitted (its volume stays 100% internal-destined). Blank-named crossings
+    carry no route identity and are never paired.
+    """
+    by_route: dict[str, list[int]] = {}
+    for gw in gateways:
+        cordon_zid = gw.get("cordon_zone_id")
+        if cordon_zid is None:
+            continue
+        route = _slugify(gw.get("name") or "")
+        if route in ("", "gateway"):
+            continue
+        by_route.setdefault(route, []).append(int(cordon_zid))
+    pairs: dict[int, list[int]] = {}
+    for cordon_ids in by_route.values():
+        if len(cordon_ids) < 2:
+            continue
+        for cid in cordon_ids:
+            pairs[cid] = [other for other in cordon_ids if other != cid]
+    return pairs
 
 
 def build_external_gateway_matrix(gateways: list[dict[str, Any]], zones_df: pd.DataFrame) -> np.ndarray:
