@@ -31,6 +31,7 @@ from data_pipeline import DataPipelineError, generate_package
 from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazonal_miles
 from gateways import detect_external_gateways, build_external_gateway_matrix
 import mode_choice
+import gtfs_skim
 
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
@@ -516,9 +517,10 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
 
     internal_person_trips = float(od_array.sum())
 
-    # --- Mode choice: split internal person-trips into auto vs active; only the
-    # auto matrix is assigned. Transit is NOT modeled (no transit LOS yet — see
-    # mode_choice.py). Through-traffic (gateways, below) stays 100% auto. ---
+    # --- Mode choice: split internal person-trips into auto / transit / active;
+    # only the auto matrix is assigned. Transit LOS comes from the bundled GTFS
+    # (gtfs_skim); transit share is 0 where no service. Through-traffic (gateways,
+    # below) stays 100% auto. ---
     # A stale od_auto_matrix.csv from a prior in-place run of the same run_id
     # must never outlive a disabled/failed split, or stage_artifacts would
     # mislabel the resident VMT basis. Remove it unless THIS invocation writes
@@ -549,14 +551,58 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                         intrazonal_miles(areas[i]) if i == j
                         else haversine_miles(lons[i], lats[i], lons[j], lats[j])
                     )
-            auto_float, auto_int, active_int, mm = mode_choice.split_matrix(od_array, time_skim, dist_miles)
+
+            # Transit LOS from the bundled GTFS. A feed failure falls back to the
+            # auto/active split, but records transit_status so a 0 transit share
+            # is never mistaken for "no transit demand".
+            transit_skim = None
+            transit_status = "modeled"
+            transit_los_meta = {}
+            try:
+                los = gtfs_skim.load_feed()
+                transit_skim = gtfs_skim.transit_skim(los, lons, lats)
+                transit_los_meta = {
+                    "service_day": los.service_day,
+                    "service_period": f"{los.service_start}..{los.service_end}",
+                    "n_routes": los.n_routes,
+                    "n_served_stops": los.n_stops,
+                    "n_lines": len(los.lines),
+                    "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
+                    "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
+                }
+            except Exception as te:
+                transit_status = "feed_unavailable"
+                log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
+
+            auto_float, auto_int, transit_int, active_int, mm = mode_choice.split_matrix(
+                od_array, time_skim, dist_miles, transit=transit_skim
+            )
             _write_auto_od_matrix(auto_od_path, auto_int, ordered_zone_ids, od_full)
             od_array = auto_float
-            shares = mode_choice.aggregate_shares(internal_person_trips, float(auto_float.sum()))
-            mode_split = {**mm, "shares_pct": shares}
+            # Shares from the INTEGER trip counts so the percent KPIs agree with
+            # the *_person_trips count KPIs (active is the residual → sums to 100).
+            total_int = mm["auto_trips"] + mm["transit_trips"] + mm["active_trips"]
+            if total_int > 0:
+                share_auto = round(100.0 * mm["auto_trips"] / total_int, 2)
+                share_transit = round(100.0 * mm["transit_trips"] / total_int, 2)
+                shares = {
+                    "auto": share_auto,
+                    "transit": share_transit,
+                    "active": round(max(100.0 - share_auto - share_transit, 0.0), 2),
+                }
+            else:
+                shares = {"auto": 100.0, "transit": 0.0, "active": 0.0}
+            mode_split = {
+                **mm,
+                "shares_pct": shares,
+                "transit_status": transit_status,
+                "transit_los": transit_los_meta,
+            }
             log += (
-                f"Mode choice: auto {mm['auto_trips']:,} / active {mm['active_trips']:,} "
-                f"(auto {shares['auto']:.1f}% · active {shares['active']:.1f}% · transit not modeled)\n"
+                f"Mode choice: auto {mm['auto_trips']:,} / transit {mm['transit_trips']:,} / "
+                f"active {mm['active_trips']:,} "
+                f"(auto {shares['auto']:.1f}% · transit {shares['transit']:.2f}% · active {shares['active']:.1f}%; "
+                f"transit {transit_status}, {mm['transit_available_pairs']}/{mm['transit_total_pairs']} pairs served)\n"
             )
         except Exception as e:
             log += f"Mode choice warning ({e}); assigning all internal trips as auto.\n"
@@ -821,11 +867,18 @@ def stage_artifacts(
         if gateways
         else "Closed boundary"
     )
-    mode_caveat = (
-        "Auto-only assignment (mode choice splits off walk/bike; transit not modeled until F.3)"
-        if mode_split
-        else "All internal trips assigned as auto (mode choice disabled)"
-    )
+    if not mode_split:
+        mode_caveat = "All internal trips assigned as auto (mode choice disabled)"
+    elif (mode_split or {}).get("transit_status") == "modeled":
+        mode_caveat = (
+            "Auto-only assignment; 3-way mode choice splits off walk/bike + GTFS-derived "
+            "transit (transit 0 where no service, small where rural service exists)"
+        )
+    else:
+        mode_caveat = (
+            "Auto-only assignment; mode choice splits off walk/bike; transit 0 "
+            f"(GTFS feed {(mode_split or {}).get('transit_status', 'unavailable')})"
+        )
 
     evidence = {
         "run_id": run_id,
@@ -960,29 +1013,44 @@ def stage_artifacts(
         kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
     kpis.append(("assignment", "external_gateways", "External Gateways", len(gateways), "count"))
     # Mode-split KPIs (percentage points, 0-100), in the directly-readable
-    # `general` category. Transit is a hard 0.0 — NOT modeled until transit LOS
-    # (F.3); the provenance says so, so a reader never mistakes it for "no
-    # transit demand".
-    # Distinct, unit-explicit KPI names (the sketch lane emits mode_share_auto /
-    # mode_share_transit as 0-1 "share"; these are 0-100 "percent" — different
-    # names + units so a cross-engine comparison never mixes the two scales).
+    # `general` category. Distinct, unit-explicit KPI names (the sketch lane
+    # emits mode_share_auto / mode_share_transit as 0-1 "share"; these are 0-100
+    # "percent" — different names + units so a cross-engine comparison never
+    # mixes the two scales). Transit share is REAL (GTFS-derived), 0 where no
+    # service; transit_status distinguishes that from a feed-load failure.
     if mode_split and mode_split.get("shares_pct"):
         sp = mode_split["shares_pct"]
         kpis.append(("general", "auto_mode_share_pct", "Auto Mode Share", sp["auto"], "percent"))
-        kpis.append(("general", "active_mode_share_pct", "Active (Walk+Bike) Mode Share", sp["active"], "percent"))
         kpis.append(("general", "transit_mode_share_pct", "Transit Mode Share", sp["transit"], "percent"))
+        kpis.append(("general", "active_mode_share_pct", "Active (Walk+Bike) Mode Share", sp["active"], "percent"))
         kpis.append(("general", "auto_person_trips", "Auto Person-Trips (assigned)", mode_split["auto_trips"], "trips/day"))
+        kpis.append(("general", "transit_person_trips", "Transit Person-Trips", mode_split.get("transit_trips", 0), "trips/day"))
         kpis.append(("general", "active_person_trips", "Active (Walk+Bike) Person-Trips", mode_split["active_trips"], "trips/day"))
+        kpis.append(("general", "transit_available_pairs", "Transit-Available OD Pairs", mode_split.get("transit_available_pairs", 0), "count"))
 
-    mode_provenance = (
-        "Screening-grade binary auto-vs-non-motorized (walk+bike) logit applied per "
-        "internal OD cell before assignment. Auto disutility from the real AequilibraE "
-        "travel-time skim; walk/bike from centroid great-circle distance at fixed planning "
-        "speeds; coefficients are a trip-weighted blend of the sketch-ABM per-purpose "
-        "tables. TRANSIT IS NOT MODELED (no transit LOS until GTFS/F.3) — transit share is "
-        "reported as 0.0, which can only under-state non-auto travel. Not a validated mode "
-        "choice model or calibrated forecast."
-    )
+    _transit_status = (mode_split or {}).get("transit_status", "not_run")
+    if _transit_status == "modeled":
+        mode_provenance = (
+            "Screening-grade 3-way auto/transit/active(walk+bike) logit applied per internal "
+            "OD cell before assignment. Auto disutility from the real AequilibraE travel-time "
+            "skim; walk/bike from centroid great-circle distance at fixed planning speeds; "
+            "transit LOS from published GTFS schedules (headway approximation — access-walk + "
+            "wait≈headway/2 + scheduled in-vehicle time + one optional transfer + egress-walk + "
+            "flat fare). Transit is available ONLY where a walk-access served stop exists at "
+            "both ends and a direct-or-one-transfer scheduled itinerary runs on the modeled "
+            "day — transit share is 0 elsewhere by construction, small where rural service "
+            "exists. Coefficients are a trip-weighted blend of the sketch-ABM per-purpose "
+            "tables. Derived from a FROZEN GTFS snapshot (service window "
+            f"{((mode_split or {}).get('transit_los') or {}).get('service_period', 'n/a')}); a "
+            "screening approximation, not current or real-time service. NOT a calibrated "
+            "transit assignment or a validated model."
+        )
+    else:
+        mode_provenance = (
+            "Screening-grade auto-vs-active(walk+bike) logit; transit share is 0 because the "
+            f"GTFS transit feed did not load (transit_status={_transit_status}) — this is NOT "
+            "'no transit demand'. Not a validated mode choice model or calibrated forecast."
+        )
 
     for cat, name, label, value, unit in kpis:
         kpi_payload = {
@@ -1005,7 +1073,11 @@ def stage_artifacts(
             kpi_payload["breakdown_json"] = {
                 "provenance": "All internal person-trips (not auto-only). " + resident_provenance,
             }
-        elif name in ("auto_mode_share_pct", "active_mode_share_pct", "transit_mode_share_pct", "auto_person_trips", "active_person_trips"):
+        elif name in (
+            "auto_mode_share_pct", "transit_mode_share_pct", "active_mode_share_pct",
+            "auto_person_trips", "transit_person_trips", "active_person_trips",
+            "transit_available_pairs",
+        ):
             kpi_payload["breakdown_json"] = {"provenance": mode_provenance}
         sb_post_kpi(kpi_payload)
 
