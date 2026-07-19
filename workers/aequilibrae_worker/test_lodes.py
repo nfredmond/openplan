@@ -180,6 +180,48 @@ def test_fetch_od_main_failure_marks_state_failed():
         lodes.download_lodes_od = original
 
 
+def test_aggregate_wac_jobs_by_block_group():
+    csv_text = (
+        "w_geocode,C000,CA01\n"
+        "060570101001000,120,10\n"   # BG 060570101001
+        "060570101001999,80,8\n"     # BG 060570101001 (same BG, diff block)
+        "060570101002000,200,20\n"   # BG 060570101002 (diff BG, same tract)
+        "06057010100,15,1\n"         # 11 chars -> too short -> skipped
+        "060570101002001,,0\n"       # blank C000 -> 0
+    )
+    agg = lodes.aggregate_wac_jobs_by_block_group(csv_text)
+    assert agg == {"060570101001": 200, "060570101002": 200}, agg
+
+
+def test_lodes_rac_url():
+    url = lodes.lodes_rac_url("ca", 2022)
+    assert url == (
+        "https://lehd.ces.census.gov/data/lodes/LODES8/ca/rac/"
+        "ca_rac_S000_JT00_2022.csv.gz"
+    ), url
+
+
+def test_aggregate_rac_by_block_group():
+    csv_text = (
+        "h_geocode,C000,CA01\n"
+        "060570101001000,50,5\n"     # BG 060570101001
+        "060570101001500,30,3\n"     # BG 060570101001
+        "060570102003000,90,9\n"     # BG 060570102003
+        "0605,7,1\n"                 # too short -> skipped
+        "060570102003111,,0\n"       # blank -> 0
+    )
+    agg = lodes.aggregate_rac_by_block_group(csv_text)
+    assert agg == {"060570101001": 80, "060570102003": 90}, agg
+
+
+def test_bg_geoids_share_parent_tract_prefix():
+    # A block-group GEOID's first 11 chars are its parent tract — the invariant
+    # the disaggregation relies on.
+    csv_text = "w_geocode,C000\n060570101001000,10\n060570101002000,20\n"
+    agg = lodes.aggregate_wac_jobs_by_block_group(csv_text)
+    assert all(bg[:11] == "06057010100" for bg in agg), agg
+
+
 def main():
     tests = [obj for name, obj in sorted(globals().items()) if name.startswith("test_")]
     for test in tests:

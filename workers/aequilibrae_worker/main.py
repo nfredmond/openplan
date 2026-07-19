@@ -237,8 +237,14 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
         manifest["bbox"] = manifest.get("bbox") or list(bbox)
         return manifest
 
+    # AEQ_ZONE_GEOGRAPHY="block_group" builds ~3x finer sub-tract TAZs (lower
+    # intrazonal share, more accurate trip lengths/VMT). Default "tract".
+    zone_geography = os.getenv("AEQ_ZONE_GEOGRAPHY", "tract")
     try:
-        manifest = generate_package(output_dir=pkg_dir, bbox=bbox, corridor_geojson=corridor_geojson)
+        manifest = generate_package(
+            output_dir=pkg_dir, bbox=bbox, corridor_geojson=corridor_geojson,
+            zone_geography=zone_geography,
+        )
     except DataPipelineError as exc:
         raise RuntimeError(f"Dynamic package generation failed: {exc}") from exc
 
