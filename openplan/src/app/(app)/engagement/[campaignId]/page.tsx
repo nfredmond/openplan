@@ -143,7 +143,7 @@ export default async function EngagementCampaignDetailPage({
     supabase
       .from("engagement_items")
       .select(
-        "id, campaign_id, category_id, title, body, submitted_by, status, source_type, moderation_notes, latitude, longitude, geometry, photo_path, votes_count, metadata_json, created_at, updated_at"
+        "id, campaign_id, category_id, title, body, submitted_by, status, source_type, moderation_notes, latitude, longitude, geometry, photo_path, votes_count, parent_item_id, metadata_json, created_at, updated_at"
       )
       .eq("campaign_id", campaign.id)
       .order("updated_at", { ascending: false }),
@@ -1173,6 +1173,7 @@ export default async function EngagementCampaignDetailPage({
                 longitude: number | null;
                 geometry: unknown;
                 votes_count: number | null;
+                parent_item_id: string | null;
                 updated_at: string;
               }>).map((item) => ({
                 ...item,

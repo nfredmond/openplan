@@ -37,6 +37,9 @@ const paramsSchema = z.object({
 
 const submitSchema = z.object({
   categoryId: z.string().uuid().optional(),
+  // E6 — when present, this submission is a reply to an approved top-level
+  // comment. Validated (approved, same campaign, itself top-level) below.
+  parentItemId: z.string().uuid().optional(),
   title: z.string().trim().max(160).optional(),
   body: z.string().trim().min(1).max(4000),
   submittedBy: z.string().trim().max(200).optional(),
@@ -161,6 +164,39 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
+    // E6 — reply target: must be an APPROVED, top-level (parent_item_id IS NULL)
+    // item in THIS campaign. One level of nesting only, so a reply can't be
+    // replied to. An unknown/non-approved/nested parent returns 400 rather than
+    // silently dropping the link, and never lets a reply attach to a
+    // pending/rejected item (which would leak its existence).
+    let parentItemId: string | null = null;
+    if (parsed.data.parentItemId) {
+      const { data: parent, error: parentError } = await supabase
+        .from("engagement_items")
+        .select("id, parent_item_id")
+        .eq("id", parsed.data.parentItemId)
+        .eq("campaign_id", campaign.id)
+        .eq("status", "approved")
+        .maybeSingle();
+
+      if (parentError) {
+        audit.error("engagement_reply_parent_lookup_failed", {
+          campaignId: campaign.id,
+          message: parentError.message,
+          code: parentError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify the comment being replied to" }, { status: 500 });
+      }
+
+      if (!parent || (parent as { parent_item_id: string | null }).parent_item_id !== null) {
+        return NextResponse.json(
+          { error: "You can only reply to an approved top-level comment." },
+          { status: 400 }
+        );
+      }
+      parentItemId = (parent as { id: string }).id;
+    }
+
     // Photo path: never trust a client-provided storage path. It must match
     // the strict <campaignId>/<uuid>.<ext> shape for THIS campaign, and the
     // object must actually exist in the private bucket with a recent
@@ -252,6 +288,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .insert({
         campaign_id: campaign.id,
         category_id: parsed.data.categoryId ?? null,
+        parent_item_id: parentItemId,
         title: parsed.data.title?.trim() || null,
         body: parsed.data.body.trim(),
         submitted_by: parsed.data.submittedBy?.trim() || null,

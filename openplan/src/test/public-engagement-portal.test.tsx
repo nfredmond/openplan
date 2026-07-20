@@ -1,6 +1,43 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
+import { PublicEngagementPortal, groupApprovedItems } from "@/components/engagement/public-engagement-portal";
+
+const mkItem = (id: string, createdAt: string, parentItemId: string | null = null) => ({
+  id,
+  categoryId: null,
+  title: null,
+  body: `body ${id}`,
+  submittedBy: null,
+  latitude: null,
+  longitude: null,
+  geometry: null,
+  votesCount: 0,
+  parentItemId,
+  photoUrl: null,
+  createdAt,
+});
+
+describe("groupApprovedItems (E6 threaded replies)", () => {
+  it("nests replies under their parent, oldest-first, preserving top-level order", () => {
+    const items = [
+      mkItem("p1", "2026-07-03T00:00:00Z"),
+      mkItem("p2", "2026-07-02T00:00:00Z"),
+      mkItem("r-late", "2026-07-05T00:00:00Z", "p1"),
+      mkItem("r-early", "2026-07-04T00:00:00Z", "p1"),
+    ];
+    const { topLevel, repliesByParent } = groupApprovedItems(items);
+    expect(topLevel.map((i) => i.id)).toEqual(["p1", "p2"]); // input order kept
+    expect(repliesByParent.get("p1")?.map((i) => i.id)).toEqual(["r-early", "r-late"]); // chronological
+    expect(repliesByParent.has("p2")).toBe(false);
+  });
+
+  it("drops an orphaned reply whose parent is not an approved top-level item", () => {
+    const items = [mkItem("p1", "2026-07-03T00:00:00Z"), mkItem("orphan", "2026-07-04T00:00:00Z", "gone")];
+    const { topLevel, repliesByParent } = groupApprovedItems(items);
+    expect(topLevel.map((i) => i.id)).toEqual(["p1"]);
+    expect([...repliesByParent.values()].flat()).toHaveLength(0); // orphan hidden, not shown as top-level
+  });
+});
 
 const APPROVED_ITEMS = [
   {

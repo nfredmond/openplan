@@ -42,9 +42,45 @@ type ApprovedItem = {
   longitude: number | null;
   geometry?: unknown;
   votesCount?: number;
+  parentItemId?: string | null;
   photoUrl?: string | null;
   createdAt: string;
 };
+
+export type ApprovedItemGrouping = {
+  topLevel: ApprovedItem[];
+  repliesByParent: Map<string, ApprovedItem[]>;
+};
+
+/**
+ * E6 — split approved items into top-level comments and the replies nested under
+ * them. A reply whose parent is not itself an approved top-level item (e.g. the
+ * parent was un-approved after the reply cleared moderation) is dropped from the
+ * public view rather than shown stripped of its context. Replies read oldest-
+ * first so a thread flows chronologically. Preserves the caller's ordering of
+ * top-level items (the loader sorts newest-first).
+ */
+export function groupApprovedItems(items: ApprovedItem[]): ApprovedItemGrouping {
+  const topLevel = items.filter((item) => !item.parentItemId);
+  const topLevelIds = new Set(topLevel.map((item) => item.id));
+  const repliesByParent = new Map<string, ApprovedItem[]>();
+  for (const item of items) {
+    const parentId = item.parentItemId;
+    if (!parentId || !topLevelIds.has(parentId)) continue; // top-level or orphaned
+    const bucket = repliesByParent.get(parentId);
+    if (bucket) bucket.push(item);
+    else repliesByParent.set(parentId, [item]);
+  }
+  for (const bucket of repliesByParent.values()) {
+    bucket.sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime());
+  }
+  return { topLevel, repliesByParent };
+}
+
+function replyPreviewLabel(item: ApprovedItem): string {
+  const source = item.title?.trim() || item.body.trim();
+  return source.length > 60 ? `${source.slice(0, 60)}…` : source;
+}
 
 const PHOTO_CONTENT_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -120,11 +156,17 @@ function SubmissionForm({
   categories,
   helpfulInput,
   demographicsEnabled,
+  parentItemId = null,
+  replyingToLabel = null,
+  onCancelReply,
 }: {
   shareToken: string;
   categories: CategoryOption[];
   helpfulInput: string;
   demographicsEnabled: boolean;
+  parentItemId?: string | null;
+  replyingToLabel?: string | null;
+  onCancelReply?: () => void;
 }) {
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
@@ -216,6 +258,7 @@ function SubmissionForm({
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           categoryId: categoryId || undefined,
+          parentItemId: parentItemId || undefined,
           title: title || undefined,
           body,
           submittedBy: submittedBy || undefined,
@@ -277,6 +320,7 @@ function SubmissionForm({
             setRaceEthnicity([]);
             setHouseholdTenure("");
             setError(null);
+            onCancelReply?.();
           }}
         >
           Share another response
@@ -287,6 +331,23 @@ function SubmissionForm({
 
   return (
     <form className="public-form-shell" onSubmit={handleSubmit}>
+      {replyingToLabel ? (
+        <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-[color:var(--pine)]/40 bg-[color:var(--pine)]/5 px-3.5 py-2.5">
+          <p className="text-sm text-foreground">
+            <span className="font-semibold">Replying to:</span>{" "}
+            <span className="text-muted-foreground">{replyingToLabel}</span>
+          </p>
+          {onCancelReply ? (
+            <button
+              type="button"
+              onClick={onCancelReply}
+              className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Cancel reply
+            </button>
+          ) : null}
+        </div>
+      ) : null}
       <div className="public-form-grid">
         <div className="divide-y divide-border/60">
           <section className="public-form-section">
@@ -609,6 +670,9 @@ export function PublicEngagementPortal({
   const [sortOrder, setSortOrder] = useState<"newest" | "most_supported">("newest");
   const [supportedItemIds, setSupportedItemIds] = useState<Set<string>>(new Set());
   const [voteCounts, setVoteCounts] = useState<Record<string, number>>({});
+  // E6 — the top-level comment the participant is replying to (null = a new
+  // top-level submission). Set from a "Reply" button in the feed.
+  const [replyTarget, setReplyTarget] = useState<{ id: string; label: string } | null>(null);
 
   const supportedStorageKey = `openplan-engagement-supported-${shareToken}`;
 
@@ -645,15 +709,31 @@ export function PublicEngagementPortal({
 
   const displayedVotes = (item: ApprovedItem): number => voteCounts[item.id] ?? item.votesCount ?? 0;
 
+  // E6 — the feed is threaded: top-level comments with their approved replies
+  // nested underneath. Sorting, the map, and counts operate on top-level items.
+  const { topLevel, repliesByParent } = useMemo(() => groupApprovedItems(approvedItems), [approvedItems]);
+  // Count only the replies actually rendered (orphans whose parent was later
+  // un-approved are dropped by groupApprovedItems), so the label can't overstate.
+  const replyCount = useMemo(
+    () => [...repliesByParent.values()].reduce((sum, bucket) => sum + bucket.length, 0),
+    [repliesByParent]
+  );
+
+  function startReply(item: ApprovedItem) {
+    setReplyTarget({ id: item.id, label: replyPreviewLabel(item) });
+    setActiveTab("submit");
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   const sortedItems = useMemo(() => {
-    if (sortOrder === "newest") return approvedItems;
-    return [...approvedItems].sort((left, right) => {
+    if (sortOrder === "newest") return topLevel;
+    return [...topLevel].sort((left, right) => {
       const voteDelta =
         (voteCounts[right.id] ?? right.votesCount ?? 0) - (voteCounts[left.id] ?? left.votesCount ?? 0);
       if (voteDelta !== 0) return voteDelta;
       return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
     });
-  }, [approvedItems, sortOrder, voteCounts]);
+  }, [topLevel, sortOrder, voteCounts]);
 
   function persistSupported(next: Set<string>) {
     setSupportedItemIds(next);
@@ -694,6 +774,69 @@ export function PublicEngagementPortal({
 
   const engagementGuidance = getEngagementGuidance(engagementType);
 
+  function renderComment(item: ApprovedItem, options: { isReply: boolean }) {
+    const locationLabel = getItemLocationLabel(item);
+    const supported = supportedItemIds.has(item.id);
+    const replies = options.isReply ? [] : repliesByParent.get(item.id) ?? [];
+
+    return (
+      <article
+        key={item.id}
+        className={`public-ledger-row public-ledger-row--feedback${options.isReply ? " public-ledger-row--reply" : ""}`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="public-ledger-body">
+            <div className="public-ledger-meta-row text-xs text-muted-foreground">
+              {options.isReply ? <span className="public-inline-label">Reply</span> : null}
+              {item.categoryId && categoryMap.has(item.categoryId) ? <span className="public-inline-label">{categoryMap.get(item.categoryId)}</span> : null}
+              {locationLabel ? (
+                <span className="inline-flex items-center gap-1">
+                  <MapPinned className="h-3 w-3" />
+                  {locationLabel}
+                </span>
+              ) : null}
+              <span>{fmtDate(item.createdAt)}</span>
+              {item.submittedBy ? <span>by {item.submittedBy}</span> : null}
+            </div>
+            {item.title ? <h3 className="public-ledger-title">{item.title}</h3> : null}
+            <p className="public-ledger-copy whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.body}</p>
+            {item.photoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element -- short-TTL signed URL from a private bucket
+              <img
+                src={item.photoUrl}
+                alt="Photo attached to this community comment"
+                className="mt-3 max-h-56 w-auto max-w-full rounded-lg border border-border/70"
+              />
+            ) : null}
+            {!options.isReply && acceptingSubmissions ? (
+              <button
+                type="button"
+                onClick={() => startReply(item)}
+                className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-[color:var(--pine)]"
+              >
+                <MessageSquare className="h-3.5 w-3.5" /> Reply
+              </button>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={() => void supportItem(item.id)}
+            disabled={supported}
+            aria-pressed={supported}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition hover:border-[color:var(--pine)] hover:text-[color:var(--pine)] disabled:cursor-default disabled:opacity-70"
+          >
+            ▲ {supported ? "Supported" : "Support"} · {displayedVotes(item)}
+          </button>
+        </div>
+        {replies.length > 0 ? (
+          <div className="mt-3 space-y-2 border-l-2 border-border/50 pl-4">
+            {replies.map((reply) => renderComment(reply, { isReply: true }))}
+          </div>
+        ) : null}
+      </article>
+    );
+  }
+
   return (
     <div className="public-content-grid public-content-grid--portal">
       <div className="public-surface">
@@ -722,7 +865,7 @@ export function PublicEngagementPortal({
             active={activeTab === "feedback"}
             icon={<MessageSquare className="h-3.5 w-3.5" />}
             label="Community feedback"
-            count={approvedItems.length}
+            count={topLevel.length}
             onClick={() => setActiveTab("feedback")}
           />
         </div>
@@ -745,7 +888,15 @@ export function PublicEngagementPortal({
                 </div>
               </div>
 
-              <SubmissionForm shareToken={shareToken} categories={categories} helpfulInput={engagementGuidance.helpfulInput} demographicsEnabled={demographicsEnabled} />
+              <SubmissionForm
+                shareToken={shareToken}
+                categories={categories}
+                helpfulInput={engagementGuidance.helpfulInput}
+                demographicsEnabled={demographicsEnabled}
+                parentItemId={replyTarget?.id ?? null}
+                replyingToLabel={replyTarget?.label ?? null}
+                onCancelReply={replyTarget ? () => setReplyTarget(null) : undefined}
+              />
             </>
           ) : null}
 
@@ -763,7 +914,7 @@ export function PublicEngagementPortal({
             <>
               <div className="public-map-frame public-map-frame--display">
                 <LocationDisplayMap
-                  items={approvedItems.map((item) => ({
+                  items={topLevel.map((item) => ({
                     id: item.id,
                     latitude: item.latitude,
                     longitude: item.longitude,
@@ -778,7 +929,7 @@ export function PublicEngagementPortal({
                 />
               </div>
 
-              {approvedItems.length === 0 ? (
+              {topLevel.length === 0 ? (
                 <div className="public-success-state text-sm text-muted-foreground">
                   No community feedback has been published for this campaign yet.
                 </div>
@@ -786,7 +937,8 @@ export function PublicEngagementPortal({
                 <>
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="text-xs text-muted-foreground">
-                      {approvedItems.length} published item{approvedItems.length === 1 ? "" : "s"}
+                      {topLevel.length} published comment{topLevel.length === 1 ? "" : "s"}
+                      {replyCount > 0 ? ` · ${replyCount} repl${replyCount === 1 ? "y" : "ies"}` : ""}
                     </p>
                     <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                       Sort by
@@ -802,49 +954,7 @@ export function PublicEngagementPortal({
                   </div>
 
                   <div className="public-ledger">
-                    {sortedItems.map((item) => {
-                      const locationLabel = getItemLocationLabel(item);
-                      const supported = supportedItemIds.has(item.id);
-
-                      return (
-                        <article key={item.id} className="public-ledger-row public-ledger-row--feedback">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="public-ledger-body">
-                              <div className="public-ledger-meta-row text-xs text-muted-foreground">
-                                {item.categoryId && categoryMap.has(item.categoryId) ? <span className="public-inline-label">{categoryMap.get(item.categoryId)}</span> : null}
-                                {locationLabel ? (
-                                  <span className="inline-flex items-center gap-1">
-                                    <MapPinned className="h-3 w-3" />
-                                    {locationLabel}
-                                  </span>
-                                ) : null}
-                                <span>{fmtDate(item.createdAt)}</span>
-                                {item.submittedBy ? <span>by {item.submittedBy}</span> : null}
-                              </div>
-                              {item.title ? <h3 className="public-ledger-title">{item.title}</h3> : null}
-                              <p className="public-ledger-copy whitespace-pre-wrap text-sm leading-relaxed text-foreground">{item.body}</p>
-                              {item.photoUrl ? (
-                                // eslint-disable-next-line @next/next/no-img-element -- short-TTL signed URL from a private bucket
-                                <img
-                                  src={item.photoUrl}
-                                  alt="Photo attached to this community comment"
-                                  className="mt-3 max-h-56 w-auto max-w-full rounded-lg border border-border/70"
-                                />
-                              ) : null}
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => void supportItem(item.id)}
-                              disabled={supported}
-                              aria-pressed={supported}
-                              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-semibold text-foreground transition hover:border-[color:var(--pine)] hover:text-[color:var(--pine)] disabled:cursor-default disabled:opacity-70"
-                            >
-                              ▲ {supported ? "Supported" : "Support"} · {displayedVotes(item)}
-                            </button>
-                          </div>
-                        </article>
-                      );
-                    })}
+                    {sortedItems.map((item) => renderComment(item, { isReply: false }))}
                   </div>
                 </>
               )}

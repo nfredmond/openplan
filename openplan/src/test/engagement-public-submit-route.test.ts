@@ -18,7 +18,17 @@ const itemRecentOrderMock = vi.fn(() => ({ limit: itemRecentLimitMock }));
 const itemRecentGteMock = vi.fn(() => ({ order: itemRecentOrderMock }));
 const itemRecentEqSourceMock = vi.fn(() => ({ gte: itemRecentGteMock }));
 const itemRecentEqCampaignMock = vi.fn(() => ({ eq: itemRecentEqSourceMock }));
-const itemSelectMock = vi.fn(() => ({ eq: itemRecentEqCampaignMock }));
+
+// E6 — the reply parent-validation query selects "id, parent_item_id" and chains
+// .eq(id).eq(campaign).eq(status).maybeSingle(). Route on the selected columns so
+// it never collides with the recent-items query on the same table.
+const parentMaybeSingleMock = vi.fn();
+const parentChain = { eq: () => ({ eq: () => ({ eq: () => ({ maybeSingle: parentMaybeSingleMock }) }) }) };
+const itemSelectMock = vi.fn((columns?: string) =>
+  typeof columns === "string" && columns.includes("parent_item_id")
+    ? parentChain
+    : { eq: itemRecentEqCampaignMock }
+);
 
 const itemSingleMock = vi.fn();
 const itemInsertSelectMock = vi.fn(() => ({ single: itemSingleMock }));
@@ -568,5 +578,58 @@ describe("POST /api/engage/[shareToken]/submit", () => {
         photo_path: "11111111-1111-4111-8111-111111111111/33333333-3333-4333-8333-333333333333.jpg",
       })
     );
+  });
+
+  // ── E6 threaded replies ───────────────────────────────────────────────────
+  const PARENT_ID = "44444444-4444-4444-8444-444444444444";
+
+  it("accepts a reply to an approved top-level comment and stores parent_item_id", async () => {
+    parentMaybeSingleMock.mockResolvedValueOnce({ data: { id: PARENT_ID, parent_item_id: null }, error: null });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", { body: "I agree — and the signal timing is bad too.", parentItemId: PARENT_ID }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(itemInsertMock).toHaveBeenCalledWith(expect.objectContaining({ parent_item_id: PARENT_ID, status: "pending" }));
+  });
+
+  it("stores parent_item_id null for an ordinary top-level submission", async () => {
+    const response = await POST(
+      jsonRequest("test-share-token-12345", { body: "A standalone top-level comment." }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(parentMaybeSingleMock).not.toHaveBeenCalled(); // no parent lookup without parentItemId
+    expect(itemInsertMock).toHaveBeenCalledWith(expect.objectContaining({ parent_item_id: null }));
+  });
+
+  it("rejects a reply to an unknown or non-approved parent (400, no insert)", async () => {
+    parentMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null }); // filtered by status='approved'
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", { body: "Reply to a pending/hidden comment.", parentItemId: PARENT_ID }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(itemInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a reply to a reply — one level of nesting only (400, no insert)", async () => {
+    parentMaybeSingleMock.mockResolvedValueOnce({
+      data: { id: PARENT_ID, parent_item_id: "55555555-5555-4555-8555-555555555555" },
+      error: null,
+    });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", { body: "Nested reply attempt.", parentItemId: PARENT_ID }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(itemInsertMock).not.toHaveBeenCalled();
   });
 });
