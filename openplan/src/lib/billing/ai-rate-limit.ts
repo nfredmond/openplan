@@ -11,6 +11,16 @@ export const AI_RATE_LIMIT_BUCKET_KEYS = ["assistant_chat", "grant_narrative_dra
 export const AI_RATE_LIMIT_WINDOW_SECONDS = 300;
 export const AI_RATE_LIMIT_MAX_PER_WINDOW = 20;
 
+/**
+ * Public, unauthenticated AI (E8 comment translation) records into its OWN
+ * bucket, deliberately OUTSIDE AI_RATE_LIMIT_BUCKET_KEYS, so anonymous portal
+ * traffic can never consume — and 429-lock-out — the workspace's STAFF AI
+ * allowance (assistant chat, grant drafts, synthesis). It is metered separately
+ * with its own cap.
+ */
+export const PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS = ["engagement_public_translation"] as const;
+export const PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW = 30;
+
 export type AiRateLimitResult = {
   allowed: boolean;
   count: number;
@@ -33,11 +43,16 @@ export async function checkAiUsageRateLimit(
     windowSeconds?: number;
     max?: number;
     nowMs?: number;
+    // Which usage buckets to count against this limit. Defaults to the STAFF
+    // buckets; public translation passes its own bucket so the two meter
+    // independently and public traffic can't lock out staff AI.
+    bucketKeys?: readonly string[];
   }
 ): Promise<AiRateLimitResult> {
   const windowSeconds = options?.windowSeconds ?? AI_RATE_LIMIT_WINDOW_SECONDS;
   const max = options?.max ?? AI_RATE_LIMIT_MAX_PER_WINDOW;
   const nowMs = options?.nowMs ?? Date.now();
+  const bucketKeys = options?.bucketKeys ?? AI_RATE_LIMIT_BUCKET_KEYS;
   const sinceIso = new Date(nowMs - windowSeconds * 1000).toISOString();
 
   try {
@@ -46,7 +61,7 @@ export async function checkAiUsageRateLimit(
       .from("usage_events")
       .select("id", { count: "exact", head: true })
       .eq("workspace_id", workspaceId)
-      .in("bucket_key", [...AI_RATE_LIMIT_BUCKET_KEYS])
+      .in("bucket_key", [...bucketKeys])
       .gte("occurred_at", sinceIso);
 
     if (error) {

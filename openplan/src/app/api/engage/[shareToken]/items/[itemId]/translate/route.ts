@@ -4,7 +4,11 @@ import { z } from "zod";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
+import {
+  checkAiUsageRateLimit,
+  PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS,
+  PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW,
+} from "@/lib/billing/ai-rate-limit";
 import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 import {
   isTranslationLanguage,
@@ -129,8 +133,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ source: "cache", language, translated: cached }, { status: 200 });
     }
 
-    // First (uncached) translation of this (item, language): guard cost.
-    const rateLimit = await checkAiUsageRateLimit(item.workspaceId);
+    // First (uncached) translation of this (item, language): guard cost against
+    // the DEDICATED public bucket, so this anonymous route can never drain — or
+    // 429-lock-out — the workspace's staff AI allowance.
+    const rateLimit = await checkAiUsageRateLimit(item.workspaceId, {
+      bucketKeys: PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS,
+      max: PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW,
+    });
     if (!rateLimit.allowed) {
       return NextResponse.json(
         { error: "Too many translation requests right now. Please try again shortly." },
@@ -164,7 +173,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       {
         workspaceId: item.workspaceId,
         eventKey: "engagement_translation",
-        bucketKey: "engagement_synthesis",
+        // Dedicated public bucket — NOT the staff engagement_synthesis bucket —
+        // so this metering stays isolated from staff AI rate limits.
+        bucketKey: PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS[0],
         sourceRoute: "/api/engage/[shareToken]/items/[itemId]/translate",
         metadata: { itemId: item.id, language, model: result.model },
       },

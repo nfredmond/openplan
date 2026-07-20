@@ -170,6 +170,9 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
     });
     expect(json.items).toHaveLength(1);
     expect(json.items[0].categoryLabel).toBe("Safety");
+    // Internal submission tracking (IP fingerprint / user-agent / referer) must
+    // not travel into a downloadable export an agency may share onward.
+    expect(json.items[0]).not.toHaveProperty("metadata_json");
     expect(json.meta.handoffReadiness).toMatchObject({
       readyForHandoffCount: 1,
       actionableCount: 0,
