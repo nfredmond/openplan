@@ -20,6 +20,14 @@ import {
   isEngagementPhotoPathForCampaign,
   splitEngagementPhotoPath,
 } from "@/lib/engagement/photo";
+import {
+  AGE_BANDS,
+  HOUSEHOLD_TENURE,
+  LANGUAGES,
+  RACE_ETHNICITY,
+  demographicsRowFromInput,
+  type DemographicsInput,
+} from "@/lib/engagement/demographics";
 
 const PUBLIC_SUBMISSION_MAX_BODY_BYTES = BODY_LIMITS.smallJson;
 
@@ -41,6 +49,19 @@ const submitSchema = z.object({
   photoPath: z.string().trim().max(200).optional(),
   // Honeypot field: should be empty. Bots fill this in.
   website: z.string().max(500).optional(),
+  // E5a — optional demographics, parsed separately + non-fatally below so a
+  // malformed optional field can never block a valid comment.
+  demographics: z.unknown().optional(),
+});
+
+// Parsed on its own after the comment is saved; failure just skips storage.
+const demographicsSchema = z.object({
+  ageBand: z.enum(AGE_BANDS).optional(),
+  zip5: z.string().trim().regex(/^\d{5}$/).optional(),
+  primaryLanguage: z.enum(LANGUAGES).optional(),
+  raceEthnicity: z.array(z.enum(RACE_ETHNICITY)).max(8).optional(),
+  householdTenure: z.enum(HOUSEHOLD_TENURE).optional(),
+  consented: z.boolean().optional(),
 });
 
 type RouteContext = {
@@ -105,7 +126,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: campaign, error: campaignError } = await supabase
       .from("engagement_campaigns")
-      .select("id, status, allow_public_submissions, submissions_closed_at")
+      .select("id, status, allow_public_submissions, submissions_closed_at, demographics_enabled")
       .eq("share_token", parsedParams.data.shareToken)
       .eq("status", "active")
       .maybeSingle();
@@ -254,6 +275,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
         code: insertError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to submit feedback" }, { status: 500 });
+    }
+
+    // E5a — persist optional demographics only when the campaign opted in, into
+    // the service-role-only sibling table. Parsed + stored non-fatally: the
+    // comment is already saved, so nothing here can fail the submission.
+    if (campaign.demographics_enabled && parsed.data.demographics !== undefined) {
+      const demographicsParse = demographicsSchema.safeParse(parsed.data.demographics);
+      if (demographicsParse.success) {
+        const demographicsRow = demographicsRowFromInput(
+          item.id,
+          campaign.id,
+          demographicsParse.data as DemographicsInput
+        );
+        if (demographicsRow) {
+          const { error: demographicsError } = await supabase
+            .from("engagement_item_demographics")
+            .insert(demographicsRow);
+          if (demographicsError) {
+            audit.warn("engagement_demographics_insert_failed", {
+              campaignId: campaign.id,
+              submissionId: item.id,
+              message: demographicsError.message,
+            });
+          }
+        }
+      }
     }
 
     audit.info("engagement_public_submission_accepted", {

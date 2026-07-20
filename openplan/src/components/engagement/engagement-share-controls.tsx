@@ -16,6 +16,7 @@ type ShareControlsCampaign = {
   public_description: string | null;
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
+  demographics_enabled: boolean;
 };
 
 function generateShareToken(): string {
@@ -43,6 +44,7 @@ export function EngagementShareControls({
   const [shareToken, setShareToken] = useState(campaign.share_token ?? "");
   const [publicDescription, setPublicDescription] = useState(campaign.public_description ?? "");
   const [allowSubmissions, setAllowSubmissions] = useState(campaign.allow_public_submissions);
+  const [demographicsEnabled, setDemographicsEnabled] = useState(campaign.demographics_enabled);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -88,6 +90,7 @@ export function EngagementShareControls({
           shareToken: shareToken || null,
           publicDescription: publicDescription || null,
           allowPublicSubmissions: allowSubmissions,
+          demographicsEnabled,
         }),
       });
 
@@ -241,6 +244,25 @@ export function EngagementShareControls({
           <label htmlFor="allow-submissions" className="text-sm font-medium">
             Accept public submissions through the portal
           </label>
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-3">
+            <input
+              id="demographics-enabled"
+              type="checkbox"
+              checked={demographicsEnabled}
+              onChange={(e) => setDemographicsEnabled(e.target.checked)}
+              className="h-4 w-4 rounded border-border"
+            />
+            <label htmlFor="demographics-enabled" className="text-sm font-medium">
+              Ask respondents optional demographics (Title VI / representativeness)
+            </label>
+          </div>
+          <p className="pl-7 text-xs text-muted-foreground">
+            Adds an optional, privacy-safe &ldquo;About you&rdquo; block (age band, ZIP, language, tenure, race).
+            Coarse bands only, never shown with a comment, and surfaced only as k-anonymized aggregates.
+          </p>
         </div>
 
         {error && (

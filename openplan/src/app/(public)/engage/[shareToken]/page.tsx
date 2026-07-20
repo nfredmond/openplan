@@ -17,6 +17,7 @@ type CampaignRow = {
   engagement_type: string;
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
+  demographics_enabled: boolean;
   updated_at: string;
 };
 
@@ -73,7 +74,7 @@ export default async function PublicEngagementPage({
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, updated_at")
+    .select("id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at")
     .eq("share_token", shareToken)
     .eq("status", "active")
     .maybeSingle();
@@ -228,6 +229,7 @@ export default async function PublicEngagementPage({
           createdAt: item.created_at,
         }))}
         engagementType={campaign.engagement_type}
+        demographicsEnabled={campaign.demographics_enabled}
         projectContext={project ? { name: project.name, summary: project.summary } : null}
       />
     </section>

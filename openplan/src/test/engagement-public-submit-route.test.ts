@@ -27,6 +27,8 @@ const itemInsertMock = vi.fn(() => ({ select: itemInsertSelectMock }));
 const storageListMock = vi.fn();
 const storageFromMock = vi.fn(() => ({ list: storageListMock }));
 
+const demographicsInsertMock = vi.fn();
+
 const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
@@ -36,6 +38,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "engagement_items") {
     return { select: itemSelectMock, insert: itemInsertMock };
+  }
+  if (table === "engagement_item_demographics") {
+    return { insert: demographicsInsertMock };
   }
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -97,6 +102,79 @@ describe("POST /api/engage/[shareToken]/submit", () => {
       },
       error: null,
     });
+
+    demographicsInsertMock.mockResolvedValue({ error: null });
+  });
+
+  const demographicsCampaign = {
+    id: "11111111-1111-4111-8111-111111111111",
+    status: "active",
+    allow_public_submissions: true,
+    submissions_closed_at: null,
+    demographics_enabled: true,
+  };
+
+  it("stores optional demographics (ZIP coarsened to ZIP-3) when the campaign opted in", async () => {
+    campaignMaybeSingleMock.mockResolvedValueOnce({ data: demographicsCampaign, error: null });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", {
+        body: "The bus stop needs a shelter.",
+        demographics: {
+          ageBand: "25_34",
+          zip5: "95945",
+          primaryLanguage: "es",
+          raceEthnicity: ["hispanic"],
+          householdTenure: "rent",
+          consented: true,
+        },
+      }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(demographicsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        item_id: "22222222-2222-4222-8222-222222222222",
+        campaign_id: "11111111-1111-4111-8111-111111111111",
+        age_band: "25_34",
+        zip3: "959",
+        primary_language: "es",
+        race_ethnicity: ["hispanic"],
+        household_tenure: "rent",
+        consented: true,
+      })
+    );
+  });
+
+  it("ignores demographics when the campaign has not opted in", async () => {
+    // default campaign mock has no demographics_enabled → treated as false
+    const response = await POST(
+      jsonRequest("test-share-token-12345", {
+        body: "A comment with demographics that should be dropped.",
+        demographics: { ageBand: "25_34", zip5: "95945" },
+      }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(demographicsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("saves the comment even when the optional demographics are malformed (non-fatal)", async () => {
+    campaignMaybeSingleMock.mockResolvedValueOnce({ data: demographicsCampaign, error: null });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", {
+        body: "Comment with a bad demographics payload.",
+        demographics: { ageBand: "not_a_real_band", zip5: "abc" },
+      }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(201); // comment still accepted
+    expect(itemInsertMock).toHaveBeenCalled();
+    expect(demographicsInsertMock).not.toHaveBeenCalled(); // invalid → skipped
   });
 
   it("accepts a valid public submission", async () => {
