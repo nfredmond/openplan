@@ -12,8 +12,18 @@ import {
   type EngagementGeometry,
 } from "@/lib/engagement/geometry";
 import { ENGAGEMENT_PHOTO_MAX_BYTES } from "@/lib/engagement/photo";
+import {
+  AGE_BANDS,
+  HOUSEHOLD_TENURE,
+  LANGUAGES,
+  RACE_ETHNICITY,
+  demographicLabel,
+} from "@/lib/engagement/demographics";
 import { GeometryPickerMap } from "./geometry-picker-map";
 import { LocationDisplayMap } from "./location-display-map";
+
+const PUBLIC_SELECT_CLASS =
+  "flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20";
 
 type CategoryOption = {
   id: string;
@@ -109,10 +119,12 @@ function SubmissionForm({
   shareToken,
   categories,
   helpfulInput,
+  demographicsEnabled,
 }: {
   shareToken: string;
   categories: CategoryOption[];
   helpfulInput: string;
+  demographicsEnabled: boolean;
 }) {
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
@@ -123,6 +135,12 @@ function SubmissionForm({
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [website, setWebsite] = useState("");
+  // E5a — optional self-reported demographics (only when the campaign opts in).
+  const [ageBand, setAgeBand] = useState("");
+  const [zip5, setZip5] = useState("");
+  const [primaryLanguage, setPrimaryLanguage] = useState("");
+  const [raceEthnicity, setRaceEthnicity] = useState<string[]>([]);
+  const [householdTenure, setHouseholdTenure] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -204,6 +222,16 @@ function SubmissionForm({
           geometry: geometry ?? undefined,
           photoPath,
           website,
+          demographics: demographicsEnabled
+            ? {
+                ageBand: ageBand || undefined,
+                zip5: /^\d{5}$/.test(zip5) ? zip5 : undefined,
+                primaryLanguage: primaryLanguage || undefined,
+                raceEthnicity: raceEthnicity.length ? raceEthnicity : undefined,
+                householdTenure: householdTenure || undefined,
+                consented: true,
+              }
+            : undefined,
         }),
       });
 
@@ -243,6 +271,11 @@ function SubmissionForm({
             setGeometry(null);
             clearPhoto();
             setWebsite("");
+            setAgeBand("");
+            setZip5("");
+            setPrimaryLanguage("");
+            setRaceEthnicity([]);
+            setHouseholdTenure("");
             setError(null);
           }}
         >
@@ -398,6 +431,101 @@ function SubmissionForm({
               />
             </div>
           </section>
+
+          {demographicsEnabled ? (
+            <section className="public-form-section">
+              <div className="public-form-heading">
+                <h3 className="public-section-label">About you (optional)</h3>
+                <p className="text-sm text-muted-foreground">
+                  A few optional questions help the team check whether outreach is reaching the whole
+                  community. Every field is optional, shown only in aggregate (small groups are never
+                  displayed), and never published alongside your comment.
+                </p>
+              </div>
+
+              <div className="mt-4 grid gap-4">
+                <div className="space-y-1.5">
+                  <label htmlFor="demo-age" className="text-sm font-medium">
+                    Age range <span className="text-xs text-muted-foreground">(optional)</span>
+                  </label>
+                  <select id="demo-age" className={PUBLIC_SELECT_CLASS} value={ageBand} onChange={(event) => setAgeBand(event.target.value)}>
+                    <option value="">Prefer not to say</option>
+                    {AGE_BANDS.filter((band) => band !== "prefer_not_to_say").map((band) => (
+                      <option key={band} value={band}>
+                        {demographicLabel(band)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="demo-zip" className="text-sm font-medium">
+                    ZIP code <span className="text-xs text-muted-foreground">(optional)</span>
+                  </label>
+                  <Input
+                    id="demo-zip"
+                    inputMode="numeric"
+                    placeholder="e.g. 95945"
+                    value={zip5}
+                    onChange={(event) => setZip5(event.target.value.replace(/\D/g, "").slice(0, 5))}
+                    maxLength={5}
+                  />
+                  <p className="text-xs text-muted-foreground">Only the first 3 digits are ever stored.</p>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="demo-language" className="text-sm font-medium">
+                    Primary language <span className="text-xs text-muted-foreground">(optional)</span>
+                  </label>
+                  <select id="demo-language" className={PUBLIC_SELECT_CLASS} value={primaryLanguage} onChange={(event) => setPrimaryLanguage(event.target.value)}>
+                    <option value="">Prefer not to say</option>
+                    {LANGUAGES.filter((language) => language !== "prefer_not_to_say").map((language) => (
+                      <option key={language} value={language}>
+                        {demographicLabel(language)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label htmlFor="demo-tenure" className="text-sm font-medium">
+                    Do you rent or own your home? <span className="text-xs text-muted-foreground">(optional)</span>
+                  </label>
+                  <select id="demo-tenure" className={PUBLIC_SELECT_CLASS} value={householdTenure} onChange={(event) => setHouseholdTenure(event.target.value)}>
+                    <option value="">Prefer not to say</option>
+                    {HOUSEHOLD_TENURE.filter((tenure) => tenure !== "prefer_not_to_say").map((tenure) => (
+                      <option key={tenure} value={tenure}>
+                        {demographicLabel(tenure)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <fieldset className="space-y-1.5">
+                  <legend className="text-sm font-medium">
+                    Race / ethnicity <span className="text-xs text-muted-foreground">(optional, select any)</span>
+                  </legend>
+                  <div className="grid gap-1.5 sm:grid-cols-2">
+                    {RACE_ETHNICITY.filter((race) => race !== "prefer_not_to_say").map((race) => (
+                      <label key={race} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          className="h-4 w-4 rounded border-input"
+                          checked={raceEthnicity.includes(race)}
+                          onChange={(event) =>
+                            setRaceEthnicity((previous) =>
+                              event.target.checked ? [...previous, race] : previous.filter((value) => value !== race)
+                            )
+                          }
+                        />
+                        {demographicLabel(race)}
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
+              </div>
+            </section>
+          ) : null}
         </div>
 
         <aside className="public-form-rail">
@@ -463,6 +591,7 @@ export function PublicEngagementPortal({
   categories,
   approvedItems,
   engagementType,
+  demographicsEnabled = false,
   projectContext,
 }: {
   shareToken: string;
@@ -470,6 +599,7 @@ export function PublicEngagementPortal({
   categories: CategoryOption[];
   approvedItems: ApprovedItem[];
   engagementType: string;
+  demographicsEnabled?: boolean;
   projectContext?: {
     name: string;
     summary: string | null;
@@ -615,7 +745,7 @@ export function PublicEngagementPortal({
                 </div>
               </div>
 
-              <SubmissionForm shareToken={shareToken} categories={categories} helpfulInput={engagementGuidance.helpfulInput} />
+              <SubmissionForm shareToken={shareToken} categories={categories} helpfulInput={engagementGuidance.helpfulInput} demographicsEnabled={demographicsEnabled} />
             </>
           ) : null}
 

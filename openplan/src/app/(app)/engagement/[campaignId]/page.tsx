@@ -35,6 +35,8 @@ import { LocationDisplayMap } from "@/components/engagement/location-display-map
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
 import { ParticipationHeatmapMap, type HeatmapPoint } from "@/components/engagement/participation-heatmap-map";
 import { ParticipationDashboard } from "@/components/engagement/participation-dashboard";
+import { DemographicsPanel } from "@/components/engagement/demographics-panel";
+import { loadDemographicsSummary } from "@/lib/engagement/demographics";
 import {
   hotspotsToFeatureCollection,
   loadSentimentHotspots,
@@ -55,6 +57,7 @@ type CampaignRow = {
   public_description: string | null;
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
+  demographics_enabled: boolean;
   ai_synthesis_json: EngagementSynthesis | null;
   ai_synthesized_at: string | null;
   created_at: string;
@@ -106,7 +109,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, ai_synthesis_json, ai_synthesized_at, created_at, updated_at")
+    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, ai_synthesis_json, ai_synthesized_at, created_at, updated_at")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -315,6 +318,10 @@ export default async function EngagementCampaignDetailPage({
   const intakeTrend = buildDailyIntake(
     (items ?? []) as Array<{ created_at?: string | null; updated_at?: string | null }>
   );
+  // E5a — k-anonymized self-reported demographics (only when the campaign opted in).
+  const demographicsSummary = campaign.demographics_enabled
+    ? (await loadDemographicsSummary(supabase, campaign.id)).summary
+    : null;
 
   return (
     <section className="module-page">
@@ -994,6 +1001,25 @@ export default async function EngagementCampaignDetailPage({
                   hotspots={hotspots}
                   intake={intakeTrend}
                 />
+              </div>
+            </article>
+          ) : null}
+
+          {campaign.demographics_enabled && demographicsSummary ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Representativeness</p>
+                  <h2 className="module-section-title">Respondent demographics (screening)</h2>
+                  <p className="module-section-description">
+                    Optional, self-reported demographics of respondents, shown only as k-anonymized aggregates. A
+                    screening cue to check whether outreach reached the whole community — not a statistical sample or a
+                    civil-rights finding.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <DemographicsPanel summary={demographicsSummary} />
               </div>
             </article>
           ) : null}

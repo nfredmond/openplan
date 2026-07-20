@@ -26,6 +26,7 @@ const patchCampaignSchema = z
       .optional(),
     publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
+    demographicsEnabled: z.boolean().optional(),
   })
   .superRefine((value, context) => {
     if (value.rtpCycleChapterId && value.rtpCycleId === null) {
@@ -377,6 +378,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.shareToken !== undefined) updates.share_token = nextShareToken;
     if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
+    if (parsed.data.demographicsEnabled !== undefined) updates.demographics_enabled = parsed.data.demographicsEnabled;
 
     const { error: updateError } = await supabase.from("engagement_campaigns").update(updates).eq("id", access.campaign.id);
 
