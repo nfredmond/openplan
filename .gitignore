@@ -60,3 +60,6 @@ workers/aequilibrae_worker/.lodes_cache/
 
 # Personal Claude Code preferences (private, not shared)
 CLAUDE.local.md
+
+# generated test-output artifacts — never version these
+docs/ops/*-test-output/
