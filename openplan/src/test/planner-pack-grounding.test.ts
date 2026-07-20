@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  extractHardClaims,
   GROUNDING_ANNOTATION_PREFIX,
   splitSentences,
   validateGroundedNarrative,
@@ -213,5 +214,93 @@ describe("citation token matching", () => {
       "Done.",
     ]);
     expect(out.ungroundedSentenceCount).toBe(2);
+  });
+});
+
+describe("extractHardClaims", () => {
+  it("extracts currency, percentages, years and large figures; ignores small integers and citation ids", () => {
+    expect(
+      extractHardClaims("Costs $4.2M, cuts VMT 6.4%, opens 2027, serves 12,000 people. [fact:vmt_2026]")
+    ).toEqual(["4.2", "6.4", "2027", "12000"]);
+    expect(extractHardClaims("Adds 3 lanes across 2 phases.")).toEqual([]);
+  });
+});
+
+describe("numeric faithfulness (opt-in second belt)", () => {
+  const facts = new Map([
+    ["cost", "The corridor improvement is estimated at $4.2 million over 5 years."],
+    ["vmt", "Scenario 1 cuts VMT per capita by 6.4%."],
+  ]);
+
+  it("keeps a cited sentence whose figures all appear in its cited fact", () => {
+    const out = validateGroundedNarrative(
+      "The project costs $4.2 million. [fact:cost]",
+      ["cost"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(true);
+    expect(out.verdict).toBe("pass");
+  });
+
+  it("blocks a cited sentence asserting a dollar figure absent from its cited fact", () => {
+    const out = validateGroundedNarrative(
+      "The project costs $9.9 million. [fact:cost]",
+      ["cost"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(false);
+    expect(out.verdict).toBe("block");
+    expect(out.text).not.toContain("9.9");
+    expect(out.issues).toEqual([
+      {
+        kind: "unfaithful_citation",
+        detail: "numbers not supported by cited facts: ['9.9']",
+        sentence: "The project costs $9.9 million. [fact:cost]",
+      },
+    ]);
+  });
+
+  it("checks only the sentence's OWN cited facts, not every fact", () => {
+    // 6.4 exists in the `vmt` fact, but this sentence cites only `cost`.
+    const out = validateGroundedNarrative(
+      "The project delivers a 6.4% reduction. [fact:cost]",
+      ["cost", "vmt"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(false);
+    expect(out.issues[0]?.kind).toBe("unfaithful_citation");
+  });
+
+  it("ignores bare small integers so it doesn't nag on non-figures", () => {
+    const out = validateGroundedNarrative(
+      "The plan sequences 3 projects across 2 phases. [fact:cost]",
+      ["cost"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(true);
+  });
+
+  it("is backward-compatible: without fact texts, figures are not cross-checked", () => {
+    const out = validateGroundedNarrative(
+      "The project costs $9.9 million. [fact:cost]",
+      ["cost"],
+      "strict"
+    );
+    expect(out.isFullyGrounded).toBe(true);
+  });
+
+  it("annotates rather than drops an unfaithful sentence in annotated mode", () => {
+    const out = validateGroundedNarrative(
+      "The project costs $9.9 million. [fact:cost]",
+      ["cost"],
+      "annotated",
+      facts
+    );
+    expect(out.text).toContain(`${GROUNDING_ANNOTATION_PREFIX}The project costs $9.9 million.`);
+    expect(out.ungroundedSentenceCount).toBe(1);
   });
 });
