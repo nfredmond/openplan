@@ -6,6 +6,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 
 const REPORT_REQUEST_MAX_BODY_BYTES = BODY_LIMITS.documentJson;
 
@@ -237,7 +238,7 @@ function buildPdf(
   const summaryText = sanitizeText(summaryValue);
   const interpretation = sanitizeText(
     typeof run.ai_interpretation === "string"
-      ? run.ai_interpretation
+      ? stripFactCitationTokens(run.ai_interpretation)
       : typeof run.summary_text === "string"
         ? run.summary_text
         : "No interpretation available."
@@ -341,7 +342,8 @@ function buildHtml(
   const generatedAt = new Date().toLocaleString();
   const title = typeof run.title === "string" ? run.title : "Corridor Analysis Report";
   const queryText = typeof run.query_text === "string" ? run.query_text : "";
-  const aiInterpretation = typeof run.ai_interpretation === "string" ? run.ai_interpretation : null;
+  const aiInterpretation =
+    typeof run.ai_interpretation === "string" ? stripFactCitationTokens(run.ai_interpretation) : null;
   const summaryText = typeof run.summary_text === "string" ? run.summary_text : "No summary available.";
   const mapViewSummary = buildMapViewSummary(mapViewState);
 
