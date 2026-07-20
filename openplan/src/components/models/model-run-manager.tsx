@@ -13,6 +13,7 @@ import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-pa
 import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
 import { ModelRunEmissionsPanel } from "@/components/models/model-run-emissions-panel";
 import { ModelRunEquityPanel } from "@/components/models/model-run-equity-panel";
+import { ModelRunEngagementPanel } from "@/components/models/model-run-engagement-panel";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
 
@@ -693,6 +694,10 @@ function ModelRunStagingAndArtifacts({
 
       {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
         <ModelRunEquityPanel modelId={modelId} modelRunId={run.id} />
+      ) : null}
+
+      {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
+        <ModelRunEngagementPanel modelId={modelId} modelRunId={run.id} />
       ) : null}
     </div>
   );
