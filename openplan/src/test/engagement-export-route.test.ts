@@ -113,6 +113,8 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
           source_type: "public",
           latitude: 39.22,
           longitude: -121.06,
+          geometry: null,
+          votes_count: 3,
           moderation_notes: null,
           metadata_json: {},
           created_at: "2026-03-20T12:00:00.000Z",
@@ -196,6 +198,40 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
         }),
       ],
     });
+  });
+
+  it("returns a GeoJSON FeatureCollection (WGS84) that GIS tools import", async () => {
+    itemsOrderMock.mockResolvedValueOnce({
+      data: [
+        // point synthesized from lat/lng (no stored geometry)
+        { id: "aaaaaaa1-0000-4000-8000-000000000001", campaign_id: validCampaignId, category_id: "55555555-5555-4555-8555-555555555555", title: "Point item", body: "b1", submitted_by: "Jane", status: "approved", source_type: "public", latitude: 39.22, longitude: -121.06, geometry: null, votes_count: 4, moderation_notes: "internal note", metadata_json: {}, created_at: "2026-03-20T12:00:00.000Z", updated_at: "2026-03-20T12:00:00.000Z" },
+        // stored LineString geometry passes through
+        { id: "aaaaaaa1-0000-4000-8000-000000000002", campaign_id: validCampaignId, category_id: null, title: "Line item", body: "b2", submitted_by: null, status: "approved", source_type: "public", latitude: 39.2, longitude: -121.05, geometry: { type: "LineString", coordinates: [[-121.06, 39.2], [-121.04, 39.24]] }, votes_count: 0, moderation_notes: null, metadata_json: {}, created_at: "2026-03-20T12:00:00.000Z", updated_at: "2026-03-20T12:00:00.000Z" },
+        // no location → skipped, not emitted as a feature
+        { id: "aaaaaaa1-0000-4000-8000-000000000003", campaign_id: validCampaignId, category_id: null, title: "No location", body: "b3", submitted_by: null, status: "approved", source_type: "public", latitude: null, longitude: null, geometry: null, votes_count: 1, moderation_notes: null, metadata_json: {}, created_at: "2026-03-20T12:00:00.000Z", updated_at: "2026-03-20T12:00:00.000Z" },
+      ],
+      error: null,
+    });
+
+    const response = await GET(
+      new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=geojson`),
+      { params: Promise.resolve({ campaignId: validCampaignId }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("application/geo+json");
+    expect(response.headers.get("content-disposition")).toContain(".geojson");
+
+    const fc = JSON.parse(await response.text());
+    expect(fc.type).toBe("FeatureCollection");
+    expect(fc.features).toHaveLength(2); // the no-location item is skipped
+
+    const point = fc.features[0];
+    expect(point.geometry).toEqual({ type: "Point", coordinates: [-121.06, 39.22] }); // [lng, lat]
+    expect(point.properties).toMatchObject({ id: "aaaaaaa1-0000-4000-8000-000000000001", category_label: "Safety", votes_count: 4 });
+    expect(point.properties).not.toHaveProperty("moderation_notes"); // internal note excluded from a portable file
+
+    expect(fc.features[1].geometry.type).toBe("LineString");
   });
 
   it("rejects unsupported format", async () => {
