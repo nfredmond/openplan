@@ -33,7 +33,7 @@ describe("checkAiUsageRateLimit", () => {
     const { supabase, eq, inFn, gte } = supabaseReturning({ count: 0 });
     await checkAiUsageRateLimit("ws-42", { serviceSupabase: supabase, nowMs: 1_000_000_000_000 });
     expect(eq).toHaveBeenCalledWith("workspace_id", "ws-42");
-    expect(inFn).toHaveBeenCalledWith("bucket_key", ["assistant_chat", "grant_narrative_draft"]);
+    expect(inFn).toHaveBeenCalledWith("bucket_key", ["assistant_chat", "grant_narrative_draft", "engagement_synthesis"]);
     expect(gte).toHaveBeenCalledWith("occurred_at", new Date(1_000_000_000_000 - 300_000).toISOString());
   });
 

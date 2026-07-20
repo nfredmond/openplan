@@ -32,6 +32,8 @@ import {
   ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS,
 } from "@/lib/engagement/photo";
 import { LocationDisplayMap } from "@/components/engagement/location-display-map";
+import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
+import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
 
 type CampaignRow = {
   id: string;
@@ -45,6 +47,8 @@ type CampaignRow = {
   public_description: string | null;
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
+  ai_synthesis_json: EngagementSynthesis | null;
+  ai_synthesized_at: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -94,7 +98,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, created_at, updated_at")
+    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, ai_synthesis_json, ai_synthesized_at, created_at, updated_at")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -888,6 +892,30 @@ export default async function EngagementCampaignDetailPage({
                     geometry: item.geometry,
                     votesCount: item.votes_count ?? 0,
                   }))}
+                />
+              </div>
+            </article>
+          ) : null}
+
+          {counts.statusCounts.approved > 0 ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">AI Synthesis</p>
+                  <h2 className="module-section-title">Themes and cited narrative</h2>
+                  <p className="module-section-description">
+                    Cluster the approved comments into themes with sentiment and a narrative where every
+                    sentence cites the source comments — screening-grade, not a representativeness finding.
+                    Falls back to a deterministic summary when AI is offline.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <EngagementSynthesisPanel
+                  campaignId={campaign.id}
+                  approvedItemCount={counts.statusCounts.approved}
+                  initialSynthesis={campaign.ai_synthesis_json}
+                  initialSynthesizedAt={campaign.ai_synthesized_at}
                 />
               </div>
             </article>
