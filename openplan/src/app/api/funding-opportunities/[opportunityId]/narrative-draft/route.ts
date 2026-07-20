@@ -34,6 +34,7 @@ import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
 import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 import {
   buildNarrativeFactList,
+  factClaimTextMap,
   renderNarrativeFactPromptLines,
   summarizeNarrativeGrounding,
   type NarrativeFact,
@@ -396,7 +397,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // every sentence and flags ungrounded ones for operator review; the raw
     // draft with its [fact:N] tokens is what gets stored).
     const grounding = summarizeNarrativeGrounding(
-      validateGroundedNarrative(draftText, factIds, "annotated"),
+      validateGroundedNarrative(draftText, factIds, "annotated", factClaimTextMap(facts)),
       facts
     );
 

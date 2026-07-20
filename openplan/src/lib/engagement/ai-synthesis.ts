@@ -21,6 +21,7 @@ import { generateText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 
 import {
+  factClaimTextMap,
   renderNarrativeFactPromptLines,
   summarizeNarrativeGrounding,
   type NarrativeDraftGrounding,
@@ -290,7 +291,7 @@ export async function generateEngagementSynthesis(
     const narrative = String((payload as ModelSynthesisPayload).narrative ?? "").trim();
     if (!narrative) return buildDeterministicSynthesis(items, "invalid_output");
 
-    const validated = validateGroundedNarrative(narrative, knownFactIds, "annotated");
+    const validated = validateGroundedNarrative(narrative, knownFactIds, "annotated", factClaimTextMap(facts));
     const themes = coerceThemes(payload.themes, knownFactIds);
 
     return {

@@ -8,6 +8,7 @@ import {
   type CrashSeverityFilter,
   type CrashUserFilter,
 } from "@/lib/analysis/map-view-state";
+import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import type { AnalysisResult, CorridorGeometry, TractMetric } from "./_types";
 
 type UseExploreRunHistoryParams = {
@@ -87,7 +88,7 @@ export function useExploreRunHistory({
         metrics: runMetrics,
         geojson: run.result_geojson,
         summary: run.summary_text,
-        aiInterpretation: run.ai_interpretation ?? undefined,
+        aiInterpretation: run.ai_interpretation ? stripFactCitationTokens(run.ai_interpretation) : undefined,
         aiInterpretationSource:
           (typeof runMetrics.aiInterpretationSource === "string" && runMetrics.aiInterpretationSource) ||
           (typeof runMetrics.dataQuality?.aiInterpretationSource === "string" && runMetrics.dataQuality?.aiInterpretationSource) ||

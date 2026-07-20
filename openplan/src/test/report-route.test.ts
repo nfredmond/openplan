@@ -96,7 +96,9 @@ describe("POST /api/report", () => {
         title: "Test Corridor",
         query_text: "Evaluate this corridor",
         summary_text: "Summary text",
-        ai_interpretation: "Interpretation text",
+        // Stored interpretations keep their [fact:N] provenance tokens; the
+        // report renderers must strip them before output.
+        ai_interpretation: "Interpretation text with 12345 residents. [fact:m_totalPopulation]",
         metrics: {
           overallScore: 70,
           accessibilityScore: 68,
@@ -179,7 +181,7 @@ describe("POST /api/report", () => {
         title: "Missing artifacts run",
         query_text: "Evaluate this corridor",
         summary_text: "",
-        ai_interpretation: "Interpretation text",
+        ai_interpretation: "Interpretation text. [fact:m_population]",
         metrics: {
           overallScore: 70,
           accessibilityScore: 68,
@@ -266,6 +268,10 @@ describe("POST /api/report", () => {
     expect(html).toContain("Poverty share");
     expect(html).toContain("Overlay mode");
     expect(html).toContain("Overlay geometry");
+    // The stored interpretation carries [fact:N] tokens; the rendered report
+    // must show the prose stripped of them.
+    expect(html).toContain("Interpretation text with 12345 residents.");
+    expect(html).not.toContain("[fact:");
     expect(decisionInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         decision: "PASS",
@@ -297,7 +303,11 @@ describe("POST /api/report", () => {
     expect(response.headers.get("content-type")).toContain("application/pdf");
 
     const bytes = new Uint8Array(await response.arrayBuffer());
-    const signature = new TextDecoder().decode(bytes.slice(0, 4));
-    expect(signature).toBe("%PDF");
+    const decoded = new TextDecoder().decode(bytes);
+    expect(decoded.slice(0, 4)).toBe("%PDF");
+    // PDF content streams are uncompressed here — the stored [fact:N] tokens
+    // must not survive into the grant-facing artifact.
+    expect(decoded).toContain("12345 residents");
+    expect(decoded).not.toContain("[fact:");
   });
 });

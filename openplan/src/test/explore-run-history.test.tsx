@@ -176,6 +176,22 @@ describe("useExploreRunHistory", () => {
     expect(result.current.comparisonRun).toBeNull();
     expect(props.setError).toHaveBeenCalledWith("Load or run an analysis first, then choose a comparison run.");
   });
+
+  it("strips stored [fact:N] provenance tokens when loading a run's interpretation", () => {
+    const props = buildHookProps();
+    const baselineRun = buildRun({
+      ai_interpretation: "Stored narrative with 12,000 trips. [fact:m_totalTrips] More prose. [fact:s_1]",
+    });
+    const { result } = renderHook(() => useExploreRunHistory(props));
+
+    act(() => result.current.loadRun(baselineRun));
+
+    expect(props.setAnalysisResult).toHaveBeenCalledWith(
+      expect.objectContaining({
+        aiInterpretation: "Stored narrative with 12,000 trips. More prose.",
+      })
+    );
+  });
 });
 
 describe("ExploreRunHistoryPanel", () => {
