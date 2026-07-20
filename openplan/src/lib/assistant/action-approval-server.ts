@@ -147,9 +147,12 @@ export async function verifyAssistantActionApproval(params: {
     };
     update(values: Record<string, unknown>): {
       eq(column: string, value: unknown): {
-        is(column: string, value: unknown): PromiseLike<{
-          error: { message?: string } | null;
-        }>;
+        is(column: string, value: unknown): {
+          select(columns: string): PromiseLike<{
+            data: Array<{ id: string }> | null;
+            error: { message?: string } | null;
+          }>;
+        };
       };
     };
   };
@@ -174,13 +177,23 @@ export async function verifyAssistantActionApproval(params: {
     throw new Error("Planner Agent approval evidence is invalid or expired.");
   }
 
-  const { error: consumeError } = await approvalTable
+  // Single-use consume. `UPDATE ... WHERE consumed_at IS NULL` is atomic — only the
+  // request that actually flips the row from null gets a row back. We MUST check
+  // rows-affected: PostgREST returns no error for a zero-row update, so without this a
+  // request that lost the race (its earlier read still saw consumed_at = null) would
+  // return success and double-spend the approval on a consequential action.
+  const { data: consumedRows, error: consumeError } = await approvalTable
     .update({ consumed_at: new Date().toISOString() })
     .eq("id", approvalId)
-    .is("consumed_at", null);
+    .is("consumed_at", null)
+    .select("id");
 
   if (consumeError) {
     throw new Error("Planner Agent approval evidence could not be consumed.");
+  }
+
+  if (!consumedRows || consumedRows.length !== 1) {
+    throw new Error("Planner Agent approval evidence was already consumed.");
   }
 
   return { approvalId, inputHash, executionSource };
