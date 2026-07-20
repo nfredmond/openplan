@@ -22,6 +22,7 @@ import { computeCorridorScores } from "@/lib/data-sources/scoring";
 import { classifyWalkBikeAccess } from "@/lib/accessibility/isochrone";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { generateGrantInterpretation } from "@/lib/ai/interpret";
+import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
@@ -575,7 +576,10 @@ export async function POST(request: NextRequest) {
         metrics: finalizedMetrics,
         geojson,
         summary,
-        aiInterpretation: aiInterpretationResult.text,
+        // The stored value keeps its [fact:N] provenance tokens; this response
+        // feeds the explore result card directly, so strip for display here
+        // just like use-explore-run-history does for the history path.
+        aiInterpretation: stripFactCitationTokens(aiInterpretationResult.text),
         aiInterpretationSource: aiInterpretationResult.source,
       },
       { status: 200 }
