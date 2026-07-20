@@ -24,6 +24,8 @@ export type NarrativeGroundingSentence = {
   cited_fact_ids: string[];
   is_grounded: boolean;
   unknown_fact_ids: string[];
+  /** Consequential figures the sentence asserts that appear in none of its cited facts. */
+  unfaithful_claims: string[];
 };
 
 /**
@@ -60,6 +62,15 @@ export function renderNarrativeFactPromptLines(facts: NarrativeFact[]): string[]
   return facts.map((fact) => `[fact:${fact.fact_id}] ${fact.claim_text}`);
 }
 
+/**
+ * Map `fact_id -> claim_text` for the faithfulness belt in
+ * `validateGroundedNarrative`. Pass this as the fourth argument so a sentence
+ * that cites a valid fact but asserts a figure absent from that fact is caught.
+ */
+export function factClaimTextMap(facts: NarrativeFact[]): Map<string, string> {
+  return new Map(facts.map((fact) => [fact.fact_id, fact.claim_text]));
+}
+
 /** Collapse an annotated-mode validation into the persisted summary. */
 export function summarizeNarrativeGrounding(
   validated: GroundedNarrative,
@@ -70,6 +81,7 @@ export function summarizeNarrativeGrounding(
     cited_fact_ids: sentence.citedFactIds,
     is_grounded: sentence.isGrounded,
     unknown_fact_ids: sentence.unknownFactIds,
+    unfaithful_claims: sentence.unfaithfulClaims,
   });
 
   const sentences = validated.sentences.map(toSentence);
@@ -120,6 +132,8 @@ function parseSentence(value: unknown): NarrativeGroundingSentence | null {
     cited_fact_ids: record.cited_fact_ids,
     is_grounded: record.is_grounded,
     unknown_fact_ids: record.unknown_fact_ids,
+    // Tolerate pre-faithfulness rows that predate this field.
+    unfaithful_claims: isStringArray(record.unfaithful_claims) ? record.unfaithful_claims : [],
   };
 }
 
@@ -175,15 +189,42 @@ export function parseStoredNarrativeGrounding(value: unknown): NarrativeDraftGro
   };
 }
 
-/** Sentences an operator should review: uncited or citing unknown fact ids. */
+export type FlaggedNarrativeSentence = {
+  text: string;
+  reason: "missing_citation" | "unknown_fact_id" | "unfaithful_citation";
+  unknown_fact_ids: string[];
+  unfaithful_claims: string[];
+};
+
+/**
+ * Sentences an operator should review: uncited, citing unknown fact ids, or
+ * asserting a figure that appears in none of their cited facts.
+ */
 export function listFlaggedNarrativeSentences(
   grounding: NarrativeDraftGrounding
-): Array<{ text: string; reason: "missing_citation" | "unknown_fact_id"; unknown_fact_ids: string[] }> {
+): FlaggedNarrativeSentence[] {
   return [...grounding.sentences, ...grounding.dropped_sentences]
     .filter((sentence) => !sentence.is_grounded)
     .map((sentence) => ({
       text: sentence.text,
-      reason: sentence.cited_fact_ids.length === 0 ? ("missing_citation" as const) : ("unknown_fact_id" as const),
+      reason:
+        sentence.cited_fact_ids.length === 0
+          ? ("missing_citation" as const)
+          : sentence.unknown_fact_ids.length > 0
+            ? ("unknown_fact_id" as const)
+            : ("unfaithful_citation" as const),
       unknown_fact_ids: sentence.unknown_fact_ids,
+      unfaithful_claims: sentence.unfaithful_claims,
     }));
+}
+
+/**
+ * Export gate for grant-facing documents. A narrative may only be committed to
+ * a final, buyer/funder-facing artifact when every factual sentence is grounded
+ * AND faithful. Callers assembling an export (not an in-progress draft) must
+ * refuse to ship when this returns false and route
+ * `listFlaggedNarrativeSentences` to human review instead of dropping content.
+ */
+export function isNarrativeExportable(grounding: NarrativeDraftGrounding): boolean {
+  return grounding.is_fully_grounded;
 }

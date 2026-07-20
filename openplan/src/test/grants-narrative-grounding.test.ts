@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import {
   buildNarrativeFactList,
+  factClaimTextMap,
+  isNarrativeExportable,
   listFlaggedNarrativeSentences,
   parseStoredNarrativeGrounding,
   renderNarrativeFactPromptLines,
@@ -152,8 +154,35 @@ describe("parseStoredNarrativeGrounding + listFlaggedNarrativeSentences", () => 
     const flagged = listFlaggedNarrativeSentences(summary);
 
     expect(flagged).toEqual([
-      { text: "Uncited filler.", reason: "missing_citation", unknown_fact_ids: [] },
-      { text: "Ghost claim. [fact:fact_9]", reason: "unknown_fact_id", unknown_fact_ids: ["fact_9"] },
+      { text: "Uncited filler.", reason: "missing_citation", unknown_fact_ids: [], unfaithful_claims: [] },
+      {
+        text: "Ghost claim. [fact:fact_9]",
+        reason: "unknown_fact_id",
+        unknown_fact_ids: ["fact_9"],
+        unfaithful_claims: [],
+      },
+    ]);
+  });
+
+  it("flags a sentence that cites a valid fact but asserts an unsupported figure", () => {
+    // fact_1 claim text is "Need is $2M."; the sentence cites it but says $5M.
+    const validated = validateGroundedNarrative(
+      "Need is $5M. [fact:fact_1]",
+      ["fact_1"],
+      "annotated",
+      factClaimTextMap(facts)
+    );
+    const summary = summarizeNarrativeGrounding(validated, facts);
+
+    expect(summary.is_fully_grounded).toBe(false);
+    expect(isNarrativeExportable(summary)).toBe(false);
+    expect(listFlaggedNarrativeSentences(summary)).toEqual([
+      {
+        text: "Need is $5M. [fact:fact_1]",
+        reason: "unfaithful_citation",
+        unknown_fact_ids: [],
+        unfaithful_claims: ["5"],
+      },
     ]);
   });
 });
