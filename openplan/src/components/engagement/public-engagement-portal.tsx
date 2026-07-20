@@ -19,6 +19,11 @@ import {
   RACE_ETHNICITY,
   demographicLabel,
 } from "@/lib/engagement/demographics";
+import {
+  TRANSLATION_LANGUAGES,
+  TRANSLATION_LANGUAGE_LABELS,
+  type TranslationLanguage,
+} from "@/lib/engagement/translation";
 import { GeometryPickerMap } from "./geometry-picker-map";
 import { LocationDisplayMap } from "./location-display-map";
 
@@ -673,6 +678,10 @@ export function PublicEngagementPortal({
   // E6 — the top-level comment the participant is replying to (null = a new
   // top-level submission). Set from a "Reply" button in the feed.
   const [replyTarget, setReplyTarget] = useState<{ id: string; label: string } | null>(null);
+  // E8 — per-comment machine translation (null language = show original).
+  const [translations, setTranslations] = useState<
+    Record<string, { language: TranslationLanguage; text: string | null; status: "loading" | "done" | "unavailable" }>
+  >({});
 
   const supportedStorageKey = `openplan-engagement-supported-${shareToken}`;
 
@@ -723,6 +732,33 @@ export function PublicEngagementPortal({
     setReplyTarget({ id: item.id, label: replyPreviewLabel(item) });
     setActiveTab("submit");
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function translateComment(itemId: string, language: TranslationLanguage) {
+    setTranslations((previous) => ({ ...previous, [itemId]: { language, text: null, status: "loading" } }));
+    try {
+      const response = await fetch(`/api/engage/${shareToken}/items/${itemId}/translate`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ language }),
+      });
+      const payload = (await response.json()) as { translated?: string | null; source?: string };
+      if (!response.ok || payload.source === "unavailable" || typeof payload.translated !== "string") {
+        setTranslations((previous) => ({ ...previous, [itemId]: { language, text: null, status: "unavailable" } }));
+        return;
+      }
+      setTranslations((previous) => ({ ...previous, [itemId]: { language, text: payload.translated as string, status: "done" } }));
+    } catch {
+      setTranslations((previous) => ({ ...previous, [itemId]: { language, text: null, status: "unavailable" } }));
+    }
+  }
+
+  function clearTranslation(itemId: string) {
+    setTranslations((previous) => {
+      const next = { ...previous };
+      delete next[itemId];
+      return next;
+    });
   }
 
   const sortedItems = useMemo(() => {
@@ -778,6 +814,7 @@ export function PublicEngagementPortal({
     const locationLabel = getItemLocationLabel(item);
     const supported = supportedItemIds.has(item.id);
     const replies = options.isReply ? [] : repliesByParent.get(item.id) ?? [];
+    const translation = translations[item.id];
 
     return (
       <article
@@ -807,6 +844,42 @@ export function PublicEngagementPortal({
                 alt="Photo attached to this community comment"
                 className="mt-3 max-h-56 w-auto max-w-full rounded-lg border border-border/70"
               />
+            ) : null}
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+              <label className="inline-flex items-center gap-1.5 text-muted-foreground">
+                Translate
+                <select
+                  aria-label="Translate this comment"
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20"
+                  value={translation?.language ?? ""}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    if (!value) clearTranslation(item.id);
+                    else void translateComment(item.id, value as TranslationLanguage);
+                  }}
+                >
+                  <option value="">Original</option>
+                  {TRANSLATION_LANGUAGES.map((language) => (
+                    <option key={language} value={language}>
+                      {TRANSLATION_LANGUAGE_LABELS[language]}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {translation?.status === "loading" ? <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" /> : null}
+            </div>
+            {translation?.status === "done" && translation.text ? (
+              <div className="mt-2 rounded-lg border border-border/60 bg-muted/30 px-3 py-2">
+                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">{translation.text}</p>
+                <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
+                  Machine translation — the original comment above is the authoritative record.
+                </p>
+              </div>
+            ) : null}
+            {translation?.status === "unavailable" ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Translation is unavailable right now. The original comment is shown above.
+              </p>
             ) : null}
             {!options.isReply && acceptingSubmissions ? (
               <button
