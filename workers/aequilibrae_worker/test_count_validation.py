@@ -79,6 +79,20 @@ def test_unmatched_station_reported():
     assert s["results"][0]["match_status"] == "unmatched"
 
 
+def test_metric_status_for_gate():
+    # >=3 matches + median <=30 -> pass
+    assert cv.metric_status_for_gate(28.0, 40.0, 3)[0] == "pass"
+    # median between 30 and 50 -> warn
+    assert cv.metric_status_for_gate(32.95, 42.0, 3)[0] == "warn"
+    # median >50 (or facility >50) -> fail
+    assert cv.metric_status_for_gate(60.0, 70.0, 3)[0] == "fail"
+    assert cv.metric_status_for_gate(20.0, 55.0, 3)[0] == "fail"  # a facility over critical
+    # too few matches -> fail regardless of APE
+    assert cv.metric_status_for_gate(10.0, 12.0, 2)[0] == "fail"
+    # no median -> fail
+    assert cv.metric_status_for_gate(None, None, 3)[0] == "fail"
+
+
 def test_metrics_parity_with_screening_metrics():
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts", "modeling"))
     try:

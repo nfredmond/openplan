@@ -167,6 +167,27 @@ def classify_gate(
     ]
 
 
+def metric_status_for_gate(
+    median_ape: float | None,
+    max_ape: float | None,
+    matched_count: int,
+    ready_median_ape: float = DEFAULT_READY_MEDIAN_APE,
+    ready_critical_ape: float = DEFAULT_READY_CRITICAL_APE,
+    required_matches: int = DEFAULT_REQUIRED_MATCHES,
+) -> tuple[str, str]:
+    """Map the observed-count gate to a per-metric ('pass'|'warn'|'fail', detail)
+    for the modeling claim spine — same thresholds as classify_gate."""
+    if matched_count < required_matches:
+        return "fail", f"Only {matched_count} matched station(s); >= {required_matches} required for a screening claim."
+    if median_ape is None:
+        return "fail", "No usable percent-error metric."
+    if median_ape > ready_critical_ape or (max_ape is not None and max_ape > ready_critical_ape):
+        return "fail", f"Median APE {median_ape}% (or a facility) exceeds the {ready_critical_ape:.0f}% critical threshold."
+    if median_ape > ready_median_ape:
+        return "warn", f"Median APE {median_ape}% exceeds the {ready_median_ape:.0f}% screening threshold."
+    return "pass", f"Median APE {median_ape}% within the {ready_median_ape:.0f}% screening threshold across {matched_count} stations."
+
+
 def validate_against_counts(
     stations: Sequence[dict[str, Any]],
     modeled_links: Sequence[dict[str, Any]],
