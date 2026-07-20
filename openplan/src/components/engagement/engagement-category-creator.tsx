@@ -8,10 +8,23 @@ import { Form, FormActions, FormError, FormField, FormLabel } from "@/components
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+/** Screening-friendly, colorblind-aware preset palette for category map pins. */
+const CATEGORY_COLORS = [
+  "#38bdf8", // sky
+  "#f97316", // orange
+  "#22c55e", // green
+  "#e11d48", // rose
+  "#a855f7", // purple
+  "#eab308", // amber
+  "#14b8a6", // teal
+  "#64748b", // slate
+] as const;
+
 export function EngagementCategoryCreator({ campaignId }: { campaignId: string }) {
   const router = useRouter();
   const [label, setLabel] = useState("");
   const [description, setDescription] = useState("");
+  const [color, setColor] = useState<string>(CATEGORY_COLORS[0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,7 +37,7 @@ export function EngagementCategoryCreator({ campaignId }: { campaignId: string }
       const response = await fetch(`/api/engagement/campaigns/${campaignId}/categories`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ label, description }),
+        body: JSON.stringify({ label, description, color }),
       });
 
       const payload = (await response.json()) as { error?: string };
@@ -80,6 +93,25 @@ export function EngagementCategoryCreator({ campaignId }: { campaignId: string }
             value={description}
             onChange={(event) => setDescription(event.target.value)}
           />
+        </FormField>
+
+        <FormField>
+          <FormLabel htmlFor="engagement-category-color">Map color</FormLabel>
+          <div id="engagement-category-color" className="flex flex-wrap gap-2">
+            {CATEGORY_COLORS.map((swatch) => (
+              <button
+                key={swatch}
+                type="button"
+                aria-label={`Use color ${swatch}`}
+                aria-pressed={color === swatch}
+                onClick={() => setColor(swatch)}
+                className={`h-8 w-8 rounded-full border-2 transition-transform ${
+                  color === swatch ? "border-foreground scale-110" : "border-transparent"
+                }`}
+                style={{ backgroundColor: swatch }}
+              />
+            ))}
+          </div>
         </FormField>
 
         {error ? <FormError>{error}</FormError> : null}

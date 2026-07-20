@@ -19,6 +19,7 @@ type CategoryOption = {
   id: string;
   label: string;
   description: string | null;
+  color?: string | null;
 };
 
 type ApprovedItem = {
@@ -504,6 +505,14 @@ export function PublicEngagementPortal({
     return map;
   }, [categories]);
 
+  const categoryColorMap = useMemo(() => {
+    const map = new Map<string, string | null>();
+    for (const category of categories) {
+      map.set(category.id, category.color ?? null);
+    }
+    return map;
+  }, [categories]);
+
   const displayedVotes = (item: ApprovedItem): number => voteCounts[item.id] ?? item.votesCount ?? 0;
 
   const sortedItems = useMemo(() => {
@@ -632,6 +641,7 @@ export function PublicEngagementPortal({
                     body: item.body,
                     geometry: item.geometry,
                     votesCount: displayedVotes(item),
+                    color: item.categoryId ? categoryColorMap.get(item.categoryId) ?? null : null,
                   }))}
                   onSupport={supportItem}
                   hasVoted={(itemId) => supportedItemIds.has(itemId)}
