@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Sparkles, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
+import { listFlaggedNarrativeSentences, stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
 import type { EngagementSynthesis, EngagementSentiment } from "@/lib/engagement/ai-synthesis";
 
 const SENTIMENT_LABEL: Record<EngagementSentiment, string> = {
@@ -69,6 +69,7 @@ export function EngagementSynthesisPanel({
   const isOffline = synthesis?.source === "deterministic-fallback";
   const grounded = synthesis?.grounding;
   const displayNarrative = synthesis ? stripFactCitationTokens(synthesis.narrative) : "";
+  const flaggedSentences = grounded ? listFlaggedNarrativeSentences(grounded) : [];
 
   return (
     <div className="space-y-4">
@@ -125,7 +126,9 @@ export function EngagementSynthesisPanel({
                     </p>
                   </div>
                   {theme.summary ? (
-                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{theme.summary}</p>
+                    <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                      {stripFactCitationTokens(theme.summary)}
+                    </p>
                   ) : null}
                 </div>
               ))}
@@ -141,6 +144,29 @@ export function EngagementSynthesisPanel({
                 </p>
               ))}
             </div>
+          ) : null}
+
+          {flaggedSentences.length > 0 ? (
+            <details data-testid="synthesis-flagged-sentences">
+              <summary className="cursor-pointer text-xs text-muted-foreground underline-offset-2 hover:underline">
+                <ShieldAlert className="mr-1 inline h-3.5 w-3.5 text-amber-700 dark:text-amber-300" />
+                {flaggedSentences.length} sentence{flaggedSentences.length === 1 ? "" : "s"} flagged for review
+              </summary>
+              <ul className="mt-2 space-y-1.5 border-l-2 border-amber-500/40 pl-3 text-xs text-muted-foreground">
+                {flaggedSentences.map((sentence, index) => (
+                  <li key={index}>
+                    <span className="text-foreground/80">{stripFactCitationTokens(sentence.text)}</span>{" "}
+                    <span className="text-[0.68rem] uppercase tracking-wide">
+                      {sentence.reason === "missing_citation"
+                        ? "— no citation"
+                        : sentence.reason === "unfaithful_citation"
+                          ? `— figures not in cited comments: ${sentence.unfaithful_claims.join(", ")}`
+                          : `— unknown fact ids: ${sentence.unknown_fact_ids.join(", ")}`}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </details>
           ) : null}
 
           <p className="text-[0.7rem] leading-relaxed text-muted-foreground">{synthesis.caveat}</p>

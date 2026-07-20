@@ -16,6 +16,7 @@ export type InterpretationFallbackReason =
   | "missing_api_key"
   | "generation_error"
   | "empty_output"
+  | "all_ungrounded"
   | null;
 
 export interface InterpretationResult {
@@ -27,6 +28,15 @@ export interface InterpretationResult {
   totalTokens: number | null;
   estimatedCostUsd: number | null;
   fallbackReason: InterpretationFallbackReason;
+  /**
+   * Sentences the grounding contract removed from the model's draft (uncited,
+   * unknown fact ids, or unfaithful figures). Non-zero means the shipped
+   * narrative is a grounded SUBSET of what the model wrote — callers must
+   * disclose that (audit log, run provenance), not present silence as fidelity.
+   */
+  droppedSentenceCount: number;
+  /** One issue summary per dropped sentence, e.g. `missing_citation: <text>`. */
+  droppedSentenceIssues: string[];
 }
 
 function nullIfUndefined(value: number | undefined): number | null {
@@ -59,6 +69,8 @@ function fallback(
     totalTokens: null,
     estimatedCostUsd: null,
     fallbackReason: reason,
+    droppedSentenceCount: 0,
+    droppedSentenceIssues: [],
   };
 }
 
@@ -118,17 +130,29 @@ export async function generateGrantInterpretation(
     // Grounding contract: keep only sentences that cite a known fact AND whose
     // figures appear in those cited facts. The kept text retains its [fact:N]
     // tokens as an in-place provenance record; render sites strip them for
-    // display. If nothing survives, ship the deterministic summary instead of
-    // ungrounded AI prose.
-    const validated = validateGroundedNarrative(cleaned, factIds, "annotated", factClaimTextMap(facts));
-    const groundedText = validated.sentences
-      .filter((sentence) => sentence.isGrounded)
-      .map((sentence) => sentence.text)
-      .join(" ")
-      .trim();
+    // display. Validation runs per paragraph so surviving text keeps the
+    // model's paragraph structure. If nothing survives, ship the deterministic
+    // summary instead of ungrounded AI prose.
+    const claimTexts = factClaimTextMap(facts);
+    const droppedSentenceIssues: string[] = [];
+    const groundedParagraphs: string[] = [];
+    for (const paragraph of cleaned.split(/\n{2,}/)) {
+      if (!paragraph.trim()) continue;
+      const validated = validateGroundedNarrative(paragraph, factIds, "annotated", claimTexts);
+      droppedSentenceIssues.push(
+        ...validated.issues.map((issue) => `${issue.kind}: ${issue.sentence}`)
+      );
+      const kept = validated.sentences
+        .filter((sentence) => sentence.isGrounded)
+        .map((sentence) => sentence.text)
+        .join(" ")
+        .trim();
+      if (kept) groundedParagraphs.push(kept);
+    }
+    const groundedText = groundedParagraphs.join("\n\n");
 
     if (!groundedText) {
-      return fallback(summaryText, "empty_output");
+      return fallback(summaryText, "all_ungrounded");
     }
 
     const inputTokens = nullIfUndefined(usage?.inputTokens);
@@ -144,6 +168,8 @@ export async function generateGrantInterpretation(
       totalTokens,
       estimatedCostUsd: estimateHaikuCostUsd(inputTokens, outputTokens),
       fallbackReason: null,
+      droppedSentenceCount: droppedSentenceIssues.length,
+      droppedSentenceIssues,
     };
   } catch {
     return fallback(summaryText, "generation_error");

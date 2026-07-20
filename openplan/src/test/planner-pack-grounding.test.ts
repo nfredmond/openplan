@@ -221,8 +221,26 @@ describe("extractHardClaims", () => {
   it("extracts currency, percentages, years and large figures; ignores small integers and citation ids", () => {
     expect(
       extractHardClaims("Costs $4.2M, cuts VMT 6.4%, opens 2027, serves 12,000 people. [fact:vmt_2026]")
-    ).toEqual(["4.2", "6.4", "2027", "12000"]);
+    ).toEqual(["4200000", "6.4", "2027", "12000"]);
     expect(extractHardClaims("Adds 3 lanes across 2 phases.")).toEqual([]);
+  });
+
+  it("multiplies out magnitude suffixes so notation variants share one core", () => {
+    expect(extractHardClaims("A $4.2 million investment.")).toEqual(["4200000"]);
+    expect(extractHardClaims("A $4,200,000 investment.")).toEqual(["4200000"]);
+    expect(extractHardClaims("A $4.2B program.")).toEqual(["4200000000"]);
+    expect(extractHardClaims("About 12k daily trips.")).toEqual(["12000"]);
+    expect(extractHardClaims("Nearly 3 thousand riders.")).toEqual(["3000"]);
+  });
+
+  it("treats spelled-out percent and magnitude words as consequential", () => {
+    expect(extractHardClaims("Transit use fell 64 percent.")).toEqual(["64"]);
+    expect(extractHardClaims("Costs 3 million dollars.")).toEqual(["3000000"]);
+  });
+
+  it("does not pick up trailing commas from enumerations as grouping", () => {
+    expect(extractHardClaims("Alternatives 1, 2, and 3 each cut delay.")).toEqual([]);
+    expect(extractHardClaims("Phases 1,2 and 3 are funded.")).toEqual([]);
   });
 });
 
@@ -256,10 +274,72 @@ describe("numeric faithfulness (opt-in second belt)", () => {
     expect(out.issues).toEqual([
       {
         kind: "unfaithful_citation",
-        detail: "numbers not supported by cited facts: ['9.9']",
+        detail: "numbers not supported by cited facts: ['9900000']",
         sentence: "The project costs $9.9 million. [fact:cost]",
       },
     ]);
+  });
+
+  it("blocks a magnitude fabrication: $4.2 billion against a $4.2 million fact", () => {
+    const out = validateGroundedNarrative(
+      "The project costs $4.2 billion. [fact:cost]",
+      ["cost"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(false);
+    expect(out.issues[0]?.kind).toBe("unfaithful_citation");
+  });
+
+  it("does not let a stray small integer in the fact launder a scaled figure", () => {
+    // The cost fact contains "5" (from "over 5 years") — "$5 million" must
+    // still be blocked because its scaled core is 5000000, not 5.
+    const out = validateGroundedNarrative(
+      "The project will cost $5 million. [fact:cost]",
+      ["cost"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(false);
+    expect(out.issues[0]?.kind).toBe("unfaithful_citation");
+  });
+
+  it("accepts equivalent notation: $4,200,000 against a $4.2 million fact", () => {
+    const out = validateGroundedNarrative(
+      "The corridor needs a $4,200,000 investment. [fact:cost]",
+      ["cost"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(true);
+  });
+
+  it("catches spelled-out percentages: '64 percent' against a 6.4% fact", () => {
+    const out = validateGroundedNarrative(
+      "Transit use fell 64 percent over the decade. [fact:vmt]",
+      ["vmt"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(false);
+    expect(out.issues[0]?.kind).toBe("unfaithful_citation");
+  });
+
+  it("does not flag enumerated alternatives with comma-separated small integers", () => {
+    const out = validateGroundedNarrative(
+      "Alternatives 1, 2, and 3 each reduce corridor delay. [fact:cost]",
+      ["cost"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(true);
+  });
+
+  it("reports faithfulnessChecked according to whether fact texts were supplied", () => {
+    const withBelt = validateGroundedNarrative("Fine. [fact:cost]", ["cost"], "strict", facts);
+    const withoutBelt = validateGroundedNarrative("Fine. [fact:cost]", ["cost"], "strict");
+    expect(withBelt.faithfulnessChecked).toBe(true);
+    expect(withoutBelt.faithfulnessChecked).toBe(false);
   });
 
   it("checks only the sentence's OWN cited facts, not every fact", () => {
@@ -302,5 +382,57 @@ describe("numeric faithfulness (opt-in second belt)", () => {
     );
     expect(out.text).toContain(`${GROUNDING_ANNOTATION_PREFIX}The project costs $9.9 million.`);
     expect(out.ungroundedSentenceCount).toBe(1);
+  });
+});
+
+describe("numeric faithfulness — documented bounds (characterization)", () => {
+  // These pin the belt's KNOWN LIMITS so future maintainers don't over-trust
+  // it: the belt proves presence of each figure in the sentence's cited facts,
+  // nothing stronger. It narrows operator review; it does not replace it.
+  const facts = new Map([
+    ["pop", "population: 1000"],
+    ["jobs", "jobs: 5000"],
+    ["score", "Overall score 82 of 100."],
+    ["dist", "The corridor is 4.5 miles long."],
+  ]);
+
+  it("KNOWN LIMIT: values swapped across pooled citations pass (presence, not attribution)", () => {
+    const out = validateGroundedNarrative(
+      "The corridor has 5000 residents supporting 1000 jobs. [fact:pop] [fact:jobs]",
+      ["pop", "jobs"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(true);
+  });
+
+  it("KNOWN LIMIT: a bare fact number can be re-unitized (82 -> 82%)", () => {
+    const out = validateGroundedNarrative(
+      "Transit serves 82% of corridor households. [fact:score]",
+      ["score"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(true);
+  });
+
+  it("KNOWN LIMIT: unit classes beyond scaling are not distinguished (4.5 miles -> 4.5%)", () => {
+    const out = validateGroundedNarrative(
+      "The project cuts emissions by 4.5%. [fact:dist]",
+      ["dist"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(true);
+  });
+
+  it("KNOWN LIMIT: spelled-out word numbers are invisible ('nine million')", () => {
+    const out = validateGroundedNarrative(
+      "The program unlocks nine million dollars. [fact:pop]",
+      ["pop"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(true);
   });
 });

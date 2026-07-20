@@ -103,6 +103,42 @@ describe("FundingOpportunityNarrativeDraftPanel grounding", () => {
     expect(screen.getByText("— unknown fact id: fact_9")).toBeInTheDocument();
   });
 
+  it("labels unfaithful-citation sentences with the unsupported figures", () => {
+    render(
+      <FundingOpportunityNarrativeDraftPanel
+        opportunityId={OPPORTUNITY_ID}
+        initialDraft={draftRow({
+          grounding_json: {
+            mode: "annotated",
+            facts: [{ fact_id: "fact_3", claim_text: "Local match committed: $750,000." }],
+            sentences: [
+              {
+                text: "The expected award is $900,000. [fact:fact_3]",
+                cited_fact_ids: ["fact_3"],
+                is_grounded: false,
+                unknown_fact_ids: [],
+                unfaithful_claims: ["900000"],
+              },
+            ],
+            dropped_sentences: [],
+            cited_fact_ids: ["fact_3"],
+            unknown_fact_ids: [],
+            grounded_sentence_count: 0,
+            total_sentence_count: 1,
+            is_fully_grounded: false,
+            faithfulness_checked: true,
+          },
+          grounded_sentence_count: 0,
+          total_sentence_count: 1,
+        })}
+      />
+    );
+
+    // The fabricated figure the belt caught is shown, not a blank
+    // "unknown fact ids" label.
+    expect(screen.getByText("— figure not in cited facts: 900000")).toBeInTheDocument();
+  });
+
   it("strips [fact:N] tokens from the rendered markdown but keeps them for copy", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.assign(navigator, { clipboard: { writeText } });

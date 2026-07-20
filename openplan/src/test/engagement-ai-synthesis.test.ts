@@ -1,4 +1,14 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const generateTextMock = vi.fn();
+
+vi.mock("ai", () => ({
+  generateText: (...args: unknown[]) => generateTextMock(...args),
+}));
+
+vi.mock("@ai-sdk/anthropic", () => ({
+  anthropic: (modelId: string) => ({ __modelId: modelId }),
+}));
 
 import {
   buildDeterministicSynthesis,
@@ -68,5 +78,54 @@ describe("engagement AI synthesis", () => {
     expect(synthesis.themes).toEqual([]);
     expect(synthesis.narrative).toBe("");
     expect(synthesis.grounding.is_fully_grounded).toBe(true); // vacuously
+  });
+
+  it("PINNED: the faithfulness belt flags model-computed aggregate figures on the AI path", async () => {
+    // Intended behavior, not an accident: an aggregate percentage the model
+    // computed ("40% of comments...") appears in NO cited source comment, so
+    // it is not deterministically verifiable from the citations — the belt
+    // flags it for staff review. The raw narrative is still stored; only the
+    // persisted grounding summary carries the flag.
+    process.env.ANTHROPIC_API_KEY = "sk-test";
+    const corpus = items(4);
+    const [a, b] = [itemFactId(corpus[0].id), itemFactId(corpus[1].id)];
+    generateTextMock.mockResolvedValueOnce({
+      text: JSON.stringify({
+        overall_sentiment: "mixed",
+        themes: [{ label: "Safety", sentiment: "mixed", fact_ids: [a], summary: "Safety concerns." }],
+        narrative: `40% of comments raise safety concerns. [fact:${a}] [fact:${b}]`,
+      }),
+    });
+
+    const synthesis = await generateEngagementSynthesis(corpus);
+
+    expect(synthesis.source).toBe("ai");
+    // Raw narrative is stored verbatim.
+    expect(synthesis.narrative).toContain("40%");
+    // The grounding summary flags the aggregate as an unfaithful citation.
+    expect(synthesis.grounding.is_fully_grounded).toBe(false);
+    expect(synthesis.grounding.faithfulness_checked).toBe(true);
+    const flagged = synthesis.grounding.sentences.filter((s) => !s.is_grounded);
+    expect(flagged).toHaveLength(1);
+    expect(flagged[0]?.unfaithful_claims).toEqual(["40"]);
+  });
+
+  it("keeps a faithful AI narrative fully grounded on the model path", async () => {
+    process.env.ANTHROPIC_API_KEY = "sk-test";
+    const corpus = items(2);
+    const factId = itemFactId(corpus[0].id);
+    generateTextMock.mockResolvedValueOnce({
+      text: JSON.stringify({
+        overall_sentiment: "neutral",
+        themes: [],
+        narrative: `Residents discussed corridor conditions. [fact:${factId}]`,
+      }),
+    });
+
+    const synthesis = await generateEngagementSynthesis(corpus);
+
+    expect(synthesis.source).toBe("ai");
+    expect(synthesis.grounding.is_fully_grounded).toBe(true);
+    expect(synthesis.grounding.faithfulness_checked).toBe(true);
   });
 });

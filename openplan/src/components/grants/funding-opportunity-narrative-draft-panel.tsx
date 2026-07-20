@@ -209,7 +209,9 @@ function NarrativeGroundingLine({ draft }: { draft: FundingOpportunityNarrativeD
                 <span className="text-[0.68rem] uppercase tracking-wide">
                   {sentence.reason === "missing_citation"
                     ? "— no citation"
-                    : `— unknown fact id${sentence.unknown_fact_ids.length === 1 ? "" : "s"}: ${sentence.unknown_fact_ids.join(", ")}`}
+                    : sentence.reason === "unfaithful_citation"
+                      ? `— figure${sentence.unfaithful_claims.length === 1 ? "" : "s"} not in cited facts: ${sentence.unfaithful_claims.join(", ")}`
+                      : `— unknown fact id${sentence.unknown_fact_ids.length === 1 ? "" : "s"}: ${sentence.unknown_fact_ids.join(", ")}`}
                 </span>
               </li>
             ))}

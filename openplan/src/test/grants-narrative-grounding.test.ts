@@ -175,14 +175,63 @@ describe("parseStoredNarrativeGrounding + listFlaggedNarrativeSentences", () => 
     const summary = summarizeNarrativeGrounding(validated, facts);
 
     expect(summary.is_fully_grounded).toBe(false);
+    expect(summary.faithfulness_checked).toBe(true);
     expect(isNarrativeExportable(summary)).toBe(false);
     expect(listFlaggedNarrativeSentences(summary)).toEqual([
       {
         text: "Need is $5M. [fact:fact_1]",
         reason: "unfaithful_citation",
         unknown_fact_ids: [],
-        unfaithful_claims: ["5"],
+        unfaithful_claims: ["5000000"],
       },
     ]);
+  });
+
+  it("parses a legacy pre-belt row: sentences default unfaithful_claims, gate stays closed", () => {
+    // Shape persisted before the faithfulness belt existed: no
+    // unfaithful_claims on sentences, no faithfulness_checked on the summary.
+    const legacy = {
+      mode: "annotated",
+      facts: [{ fact_id: "fact_1", claim_text: "Need is $2M." }],
+      sentences: [
+        {
+          text: "The project unlocks $12.5 million. [fact:fact_1]",
+          cited_fact_ids: ["fact_1"],
+          is_grounded: true,
+          unknown_fact_ids: [],
+        },
+      ],
+      dropped_sentences: [],
+      cited_fact_ids: ["fact_1"],
+      unknown_fact_ids: [],
+      grounded_sentence_count: 1,
+      total_sentence_count: 1,
+      is_fully_grounded: true,
+    };
+
+    const parsed = parseStoredNarrativeGrounding(legacy);
+    expect(parsed).not.toBeNull();
+    expect(parsed?.sentences[0]?.unfaithful_claims).toEqual([]);
+    expect(parsed?.faithfulness_checked).toBe(false);
+    // A citation-only pass from before the belt must never read as faithful.
+    expect(isNarrativeExportable(parsed!)).toBe(false);
+  });
+
+  it("exportable only when fully grounded AND the belt actually ran", () => {
+    const validated = validateGroundedNarrative(
+      "Need is documented. [fact:fact_1]",
+      ["fact_1"],
+      "annotated",
+      factClaimTextMap(facts)
+    );
+    const withBelt = summarizeNarrativeGrounding(validated, facts);
+    expect(isNarrativeExportable(withBelt)).toBe(true);
+
+    const withoutBelt = summarizeNarrativeGrounding(
+      validateGroundedNarrative("Need is documented. [fact:fact_1]", ["fact_1"], "annotated"),
+      facts
+    );
+    expect(withoutBelt.is_fully_grounded).toBe(true);
+    expect(isNarrativeExportable(withoutBelt)).toBe(false);
   });
 });

@@ -44,6 +44,13 @@ export type NarrativeDraftGrounding = {
   grounded_sentence_count: number;
   total_sentence_count: number;
   is_fully_grounded: boolean;
+  /**
+   * Whether the numeric-faithfulness belt ran when this summary was computed.
+   * Rows persisted before the belt existed parse as `false` — their
+   * `is_fully_grounded` is a citation-only claim and must not be treated as
+   * faithful by the export gate.
+   */
+  faithfulness_checked: boolean;
 };
 
 /** Build sequential fact ids fact_1..fact_N over claim texts, skipping blanks. */
@@ -96,6 +103,7 @@ export function summarizeNarrativeGrounding(
     grounded_sentence_count: sentences.filter((sentence) => sentence.is_grounded).length,
     total_sentence_count: sentences.length + validated.droppedSentences.length,
     is_fully_grounded: validated.isFullyGrounded,
+    faithfulness_checked: validated.faithfulnessChecked,
   };
 }
 
@@ -186,6 +194,10 @@ export function parseStoredNarrativeGrounding(value: unknown): NarrativeDraftGro
       typeof record.is_fully_grounded === "boolean"
         ? record.is_fully_grounded
         : parsedSentences.every((sentence) => sentence.is_grounded),
+    // Legacy rows (pre-belt) parse as unchecked so the export gate never
+    // treats a citation-only pass as a faithfulness pass.
+    faithfulness_checked:
+      typeof record.faithfulness_checked === "boolean" ? record.faithfulness_checked : false,
   };
 }
 
@@ -221,10 +233,16 @@ export function listFlaggedNarrativeSentences(
 /**
  * Export gate for grant-facing documents. A narrative may only be committed to
  * a final, buyer/funder-facing artifact when every factual sentence is grounded
- * AND faithful. Callers assembling an export (not an in-progress draft) must
- * refuse to ship when this returns false and route
- * `listFlaggedNarrativeSentences` to human review instead of dropping content.
+ * AND faithful — which requires that the faithfulness belt actually ran, so
+ * legacy citation-only rows are never exportable on their stored verdict.
+ * Callers assembling an export (not an in-progress draft) must refuse to ship
+ * when this returns false and route `listFlaggedNarrativeSentences` to human
+ * review instead of dropping content.
+ *
+ * Forward-looking contract: no automated export path exists yet — the grants
+ * narrative currently leaves OpenPlan only through the operator-reviewed draft
+ * panel. Any future export/download route MUST call this before shipping.
  */
 export function isNarrativeExportable(grounding: NarrativeDraftGrounding): boolean {
-  return grounding.is_fully_grounded;
+  return grounding.is_fully_grounded && grounding.faithfulness_checked;
 }

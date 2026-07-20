@@ -71,6 +71,12 @@ export type GroundedNarrative = {
   isFullyGrounded: boolean;
   /** `pass` when fully grounded; `block` means the export gate must reject. */
   verdict: "pass" | "block";
+  /**
+   * True when the numeric-faithfulness belt ran (the caller supplied fact
+   * claim texts). Grounding results computed without it make a strictly
+   * weaker claim — export gates must not treat them as faithful.
+   */
+  faithfulnessChecked: boolean;
 };
 
 function isCitationOnly(piece: string): boolean {
@@ -147,23 +153,76 @@ function classifySentence(sentence: string, knownFactIds: ReadonlySet<string>): 
   };
 }
 
-/** Matches a numeric token: optional `$`, digits with optional grouping/decimals, optional `%`. */
-const NUMERIC_TOKEN_PATTERN = /\$?\d[\d,]*(?:\.\d+)?%?/g;
+/**
+ * Matches a numeric token: optional `$`, comma-grouped (`12,000`) or plain
+ * digits with optional decimals, then an optional magnitude/percent suffix —
+ * attached (`%`, `k`, `K`, `M`, `B`) or a following word (`percent`,
+ * `thousand`, `million`, `billion`, `bn`). Commas are consumed only as
+ * thousands grouping, so enumerations like "Alternatives 1, 2, and 3" stay
+ * separate bare integers instead of picking up trailing commas.
+ */
+const NUMERIC_TOKEN_PATTERN =
+  /\$?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?:%|[kKMB]\b|\s?(?:[pP]ercent|[tT]housand|[mM]illion|[bB]illion|bn)\b)?/g;
 
-/** Digits-and-decimal core of a numeric token (`$4,200.50%` -> `4200.50`). */
+const MAGNITUDE_SUFFIX_ZEROS: Record<string, number> = {
+  k: 3,
+  K: 3,
+  thousand: 3,
+  M: 6,
+  million: 6,
+  B: 9,
+  bn: 9,
+  billion: 9,
+};
+
+const MAGNITUDE_SUFFIX_PATTERN = /(%|[kKMB]|[pP]ercent|[tT]housand|[mM]illion|[bB]illion|bn)$/;
+
+/** Shift `value`'s decimal point right by `zeros` digits using string math (no float error). */
+function scaleDecimalString(value: string, zeros: number): string {
+  const [whole, frac = ""] = value.split(".");
+  const digits = whole + frac;
+  const fracDigitsAfterShift = frac.length - zeros;
+  if (fracDigitsAfterShift <= 0) {
+    return digits + "0".repeat(-fracDigitsAfterShift);
+  }
+  const cut = digits.length - fracDigitsAfterShift;
+  return `${digits.slice(0, cut)}.${digits.slice(cut)}`;
+}
+
+/** Canonical form: no leading zeros, no trailing fractional zeros, no bare trailing dot. */
+function canonicalizeCore(value: string): string {
+  let out = value.replace(/^0+(?=\d)/, "");
+  if (out.includes(".")) {
+    out = out.replace(/0+$/, "").replace(/\.$/, "");
+  }
+  return out;
+}
+
+/**
+ * Digits-and-decimal core of a numeric token, with magnitude suffixes
+ * multiplied out so "$4.2 million", "$4.2M", and "4,200,000" all reduce to
+ * the same core ("4200000") — a fabricated magnitude ("$4.2 billion" against
+ * a "$4.2 million" fact) can no longer collide on the bare mantissa.
+ */
 function numericCore(token: string): string {
-  return token.replace(/[$,%\s]/g, "");
+  const cleaned = token.replace(/[$,\s]/g, "");
+  const suffix = cleaned.match(MAGNITUDE_SUFFIX_PATTERN)?.[1];
+  const bare = suffix ? cleaned.slice(0, -suffix.length) : cleaned;
+  const zeros = suffix ? (MAGNITUDE_SUFFIX_ZEROS[suffix] ?? 0) : 0;
+  return canonicalizeCore(zeros > 0 ? scaleDecimalString(bare, zeros) : bare);
 }
 
 /**
  * A numeric token is "consequential" — worth cross-checking against the cited
- * fact — when it is money, a percentage, a 4-digit year, or a large / decimal /
- * comma-grouped figure. Bare small integers ("2 phases", "3 lanes") are ignored
- * so the faithfulness belt stays low-false-positive.
+ * fact — when it is money, a percentage (symbol or the word "percent"), carries
+ * a magnitude suffix (k/M/B/thousand/million/billion), a 4-digit year, or a
+ * large / decimal / comma-grouped figure. Bare small integers ("2 phases",
+ * "3 lanes") are ignored so the faithfulness belt stays low-false-positive.
  */
 function isConsequentialNumber(token: string): boolean {
   if (token.includes("$") || token.includes("%")) return true;
   if (token.includes(".") || token.includes(",")) return true;
+  if (MAGNITUDE_SUFFIX_PATTERN.test(token.replace(/\s/g, ""))) return true;
   const core = numericCore(token);
   if (/^\d{4}$/.test(core)) {
     const year = Number(core);
@@ -174,9 +233,19 @@ function isConsequentialNumber(token: string): boolean {
 
 /**
  * Extract the normalized numeric cores of the consequential figures a sentence
- * asserts (currency, percentages, years, large numbers) — the values a grant
- * reviewer would act on, so each must be traceable to a cited fact. Citation
- * tokens are stripped first so a numeric fact_id can't be mistaken for a claim.
+ * asserts (currency, percentages, magnitude-suffixed figures, years, large
+ * numbers) — the values a grant reviewer would act on, so each must be
+ * traceable to a cited fact. Citation tokens are stripped first so a numeric
+ * fact_id can't be mistaken for a claim.
+ *
+ * DOCUMENTED BOUNDS of this deterministic belt (it narrows operator review —
+ * it does not replace it):
+ * - Unit-class blind beyond `$`/`%` scaling: "4.5%" matches a cited fact's
+ *   bare "4.5" (e.g. "4.5 miles"), and "$68,500" matches a bare "68500".
+ * - Presence, not attribution: a figure found in ANY of the sentence's cited
+ *   facts licenses it, so values swapped between two cited facts pass.
+ * - Signs are not captured ("-3.2%" reduces to "3.2").
+ * - Spelled-out word numbers ("nine million") are invisible to it.
  */
 export function extractHardClaims(text: string): string[] {
   const cores: string[] = [];
@@ -294,5 +363,6 @@ export function validateGroundedNarrative(
     issues,
     isFullyGrounded,
     verdict: isFullyGrounded ? "pass" : "block",
+    faithfulnessChecked: factClaimTexts !== undefined,
   };
 }

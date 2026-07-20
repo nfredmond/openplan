@@ -487,6 +487,9 @@ export async function POST(request: NextRequest) {
       dataQuality: {
         ...(scores.dataQuality ?? {}),
         aiInterpretationSource: aiInterpretationResult.source,
+        // Provenance disclosure: >0 means the stored narrative is the grounded
+        // subset of the model's draft, not the full draft.
+        aiInterpretationDroppedSentences: aiInterpretationResult.droppedSentenceCount,
       },
     };
 
@@ -526,6 +529,15 @@ export async function POST(request: NextRequest) {
         runId,
         workspaceId,
         reason: aiInterpretationResult.fallbackReason,
+      });
+    }
+
+    if (aiInterpretationResult.droppedSentenceCount > 0) {
+      audit.warn("analysis_ai_sentences_dropped", {
+        runId,
+        workspaceId,
+        droppedSentenceCount: aiInterpretationResult.droppedSentenceCount,
+        issues: aiInterpretationResult.droppedSentenceIssues.slice(0, 10),
       });
     }
 
