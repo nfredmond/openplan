@@ -232,7 +232,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
           },
         },
         categories: exportCategories,
-        items: items.map((item) => ({
+        // Drop metadata_json from the export: it carries internal submission
+        // tracking (source_fingerprint / user_agent / referer_host) that must
+        // not travel into a downloadable file an agency may share onward.
+        items: items.map(({ metadata_json: _metadata, ...item }) => ({
           ...item,
           categoryLabel: item.category_id ? categoryMap.get(item.category_id) ?? null : null,
         })),

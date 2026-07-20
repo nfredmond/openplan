@@ -28,7 +28,11 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn() }),
 }));
-vi.mock("@/lib/billing/ai-rate-limit", () => ({ checkAiUsageRateLimit: (...a: unknown[]) => checkAiUsageRateLimit(...a) }));
+vi.mock("@/lib/billing/ai-rate-limit", () => ({
+  checkAiUsageRateLimit: (...a: unknown[]) => checkAiUsageRateLimit(...a),
+  PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS: ["engagement_public_translation"],
+  PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW: 30,
+}));
 vi.mock("@/lib/billing/usage-recording", () => ({ recordUsageEventBestEffort: (...a: unknown[]) => recordUsageEventBestEffort(...a) }));
 vi.mock("@/lib/engagement/translation", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
@@ -108,7 +112,16 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
       p_language: "es",
       p_translation: "Necesita una señal.",
     });
+    // Metered against the DEDICATED public bucket, never the staff AI buckets.
+    expect(checkAiUsageRateLimit).toHaveBeenCalledWith(
+      "ws-1",
+      expect.objectContaining({ bucketKeys: ["engagement_public_translation"] })
+    );
     expect(recordUsageEventBestEffort).toHaveBeenCalledTimes(1);
+    expect(recordUsageEventBestEffort).toHaveBeenCalledWith(
+      expect.objectContaining({ bucketKey: "engagement_public_translation" }),
+      expect.anything()
+    );
   });
 
   it("429 when the workspace AI rate limit is exhausted (no model call)", async () => {
