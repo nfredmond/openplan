@@ -6,6 +6,7 @@ import { loadCampaignAccess } from "@/lib/engagement/api";
 import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 
 const paramsSchema = z.object({
   campaignId: z.string().uuid(),
@@ -26,6 +27,8 @@ type ExportItemRow = {
   source_type: string;
   latitude: number | null;
   longitude: number | null;
+  geometry: unknown;
+  votes_count: number | null;
   moderation_notes: string | null;
   metadata_json: Record<string, unknown> | null;
   created_at: string;
@@ -73,6 +76,58 @@ function buildCSV(items: ExportItemRow[], categoryMap: Map<string, string>): str
   return [headers.join(","), ...rows].join("\n");
 }
 
+type GeoJsonFeature = {
+  type: "Feature";
+  geometry: EngagementGeometry;
+  properties: Record<string, unknown>;
+};
+
+/**
+ * E10 — a proper GeoJSON FeatureCollection (RFC 7946, so WGS84) that QGIS /
+ * ArcGIS import natively. Uses the stored geometry (Point / LineString /
+ * Polygon) when present, else synthesizes a Point from the representative
+ * lat/lng; items with no location are skipped (returned as `skipped`) since a
+ * feature without geometry isn't useful in a GIS layer. moderation_notes is
+ * deliberately EXCLUDED from properties — it is an internal staff note that
+ * should not travel into a portable file an agency may share onward.
+ */
+function buildGeoJSON(
+  items: ExportItemRow[],
+  categoryMap: Map<string, string>
+): { collection: { type: "FeatureCollection"; features: GeoJsonFeature[] }; skipped: number } {
+  const features: GeoJsonFeature[] = [];
+  let skipped = 0;
+
+  for (const item of items) {
+    let geometry = readStoredEngagementGeometry(item.geometry);
+    if (!geometry && item.latitude !== null && item.longitude !== null) {
+      geometry = { type: "Point", coordinates: [item.longitude, item.latitude] };
+    }
+    if (!geometry) {
+      skipped += 1;
+      continue;
+    }
+
+    features.push({
+      type: "Feature",
+      geometry,
+      properties: {
+        id: item.id,
+        title: item.title,
+        body: item.body,
+        category_label: item.category_id ? categoryMap.get(item.category_id) ?? null : null,
+        status: item.status,
+        source_type: item.source_type,
+        votes_count: item.votes_count ?? 0,
+        submitted_by: item.submitted_by,
+        created_at: item.created_at,
+      },
+    });
+  }
+
+  return { collection: { type: "FeatureCollection", features }, skipped };
+}
+
 export async function GET(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("engagement.campaigns.export", request);
   const startedAt = Date.now();
@@ -88,8 +143,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const format = request.nextUrl.searchParams.get("format") ?? "csv";
     const statusFilter = request.nextUrl.searchParams.get("status") ?? null;
 
-    if (format !== "csv" && format !== "json") {
-      return NextResponse.json({ error: "Supported formats: csv, json" }, { status: 400 });
+    if (format !== "csv" && format !== "json" && format !== "geojson") {
+      return NextResponse.json({ error: "Supported formats: csv, json, geojson" }, { status: 400 });
     }
 
     const supabase = await createClient();
@@ -127,7 +182,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       (() => {
         let query = supabase
           .from("engagement_items")
-          .select("id, campaign_id, category_id, title, body, submitted_by, status, source_type, latitude, longitude, moderation_notes, metadata_json, created_at, updated_at")
+          .select("id, campaign_id, category_id, title, body, submitted_by, status, source_type, latitude, longitude, geometry, votes_count, moderation_notes, metadata_json, created_at, updated_at")
           .eq("campaign_id", access.campaign.id)
           .order("created_at", { ascending: true });
 
@@ -203,6 +258,17 @@ export async function GET(request: NextRequest, context: RouteContext) {
         headers: {
           "Content-Type": "application/json",
           "Content-Disposition": `attachment; filename="engagement-${access.campaign.id}-export.json"`,
+        },
+      });
+    }
+
+    if (format === "geojson") {
+      const { collection } = buildGeoJSON(items, categoryMap);
+      return new NextResponse(JSON.stringify(collection), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/geo+json",
+          "Content-Disposition": `attachment; filename="engagement-${access.campaign.id}-export.geojson"`,
         },
       });
     }
