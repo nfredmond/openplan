@@ -129,6 +129,9 @@ vi.mock("@/components/engagement/engagement-bulk-moderation", () => ({
 vi.mock("@/components/engagement/engagement-synthesis-panel", () => ({
   EngagementSynthesisPanel: () => <div data-testid="engagement-synthesis-panel" />,
 }));
+vi.mock("@/components/engagement/representativeness-panel", () => ({
+  RepresentativenessPanel: () => <div data-testid="representativeness-panel" />,
+}));
 
 import EngagementCampaignDetailPage from "@/app/(app)/engagement/[campaignId]/page";
 

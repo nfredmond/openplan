@@ -34,6 +34,7 @@ import {
 } from "@/lib/scenarios/catalog";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { loadSentimentHotspots, negativeItemIdsFromSyntheses } from "@/lib/engagement/hotspots";
+import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
 import { CURRENT_WORKSPACE_MEMBERSHIP_SELECT, loadCurrentWorkspaceMembership, unwrapWorkspaceRecord } from "@/lib/workspaces/current";
 import {
@@ -507,6 +508,12 @@ export type ReportAssistantContext = {
       significantCount: number;
       testedCount: number;
       globalNegativeSharePct: number | null;
+    } | null;
+    representativeness: {
+      respondentCount: number;
+      tractCount: number;
+      underRepresented: string[];
+      computedAt: string;
     } | null;
   } | null;
   rtpCycle: {
@@ -2305,7 +2312,7 @@ async function loadReportContext(
   const engagementCampaignResult = engagementCampaignId
     ? await supabase
         .from("engagement_campaigns")
-        .select("id, title, status, ai_synthesis_json")
+        .select("id, title, status, ai_synthesis_json, representativeness_json")
         .eq("workspace_id", report.workspace_id)
         .eq("id", engagementCampaignId)
         .maybeSingle()
@@ -2339,6 +2346,25 @@ async function loadReportContext(
       engagementHotspotsSummary = null;
     }
   }
+
+  // E5b — the cached representativeness screening (read-only; no recompute).
+  const engagementRepresentativenessSummary: {
+    respondentCount: number;
+    tractCount: number;
+    underRepresented: string[];
+    computedAt: string;
+  } | null = (() => {
+    const cached = (
+      engagementCampaignResult.data as { representativeness_json?: CampaignRepresentativeness | null } | null
+    )?.representativeness_json;
+    if (!cached) return null;
+    return {
+      respondentCount: cached.respondentCount,
+      tractCount: cached.tractCount,
+      underRepresented: cached.underRepresented,
+      computedAt: cached.computedAt,
+    };
+  })();
 
   return {
     kind: report.report_type === "board_packet" && report.rtp_cycle_id ? "rtp_packet_report" : "report",
@@ -2381,6 +2407,7 @@ async function loadReportContext(
           title: engagementCampaignResult.data.title,
           status: engagementCampaignResult.data.status,
           hotspots: engagementHotspotsSummary,
+          representativeness: engagementRepresentativenessSummary,
         }
       : null,
     rtpCycle: rtpCycle

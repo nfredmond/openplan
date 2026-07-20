@@ -1,5 +1,6 @@
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import type { HotspotAnalysis } from "@/lib/engagement/hotspots";
+import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 
 export type ReportEngagementCampaignRecord = {
   id: string;
@@ -40,6 +41,8 @@ export type ReportEngagementSummary = {
   categories: ReportEngagementCategoryRecord[];
   /** Screening-grade spatial hotspots (E3), when computed by the caller. */
   hotspots: HotspotAnalysis | null;
+  /** Cached spatial representativeness screening (E5b), when present. */
+  representativeness: CampaignRepresentativeness | null;
 };
 
 export type ReportEngagementHandoffCountsSnapshot = {
@@ -180,11 +183,13 @@ export function buildReportEngagementSummary({
   categories,
   items,
   hotspots = null,
+  representativeness = null,
 }: {
   campaign: ReportEngagementCampaignRecord | null;
   categories: ReportEngagementCategoryRecord[];
   items: ReportEngagementItemRecord[];
   hotspots?: HotspotAnalysis | null;
+  representativeness?: CampaignRepresentativeness | null;
 }): ReportEngagementSummary | null {
   if (!campaign) {
     return null;
@@ -195,6 +200,7 @@ export function buildReportEngagementSummary({
     counts: summarizeEngagementItems(categories, items),
     categories,
     hotspots,
+    representativeness,
   };
 }
 

@@ -37,6 +37,8 @@ import { ParticipationHeatmapMap, type HeatmapPoint } from "@/components/engagem
 import { ParticipationDashboard } from "@/components/engagement/participation-dashboard";
 import { DemographicsPanel } from "@/components/engagement/demographics-panel";
 import { loadDemographicsSummary } from "@/lib/engagement/demographics";
+import { RepresentativenessPanel } from "@/components/engagement/representativeness-panel";
+import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import {
   hotspotsToFeatureCollection,
   loadSentimentHotspots,
@@ -58,6 +60,7 @@ type CampaignRow = {
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
   demographics_enabled: boolean;
+  representativeness_json: CampaignRepresentativeness | null;
   ai_synthesis_json: EngagementSynthesis | null;
   ai_synthesized_at: string | null;
   created_at: string;
@@ -109,7 +112,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, ai_synthesis_json, ai_synthesized_at, created_at, updated_at")
+    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -1020,6 +1023,25 @@ export default async function EngagementCampaignDetailPage({
               </div>
               <div className="mt-5">
                 <DemographicsPanel summary={demographicsSummary} />
+              </div>
+            </article>
+          ) : null}
+
+          {heatmapPoints.length > 0 ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Representativeness</p>
+                  <h2 className="module-section-title">Where engagement came from (screening)</h2>
+                  <p className="module-section-description">
+                    An ecological, area-based check: did comments come disproportionately from higher- or lower-need
+                    tracts than the study area as a whole? Inferred from geography over a self-selected sample — a cue
+                    to check outreach reach, not a statistical sample or a civil-rights finding.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <RepresentativenessPanel campaignId={campaign.id} initialResult={campaign.representativeness_json} />
               </div>
             </article>
           ) : null}
