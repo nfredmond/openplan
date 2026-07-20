@@ -33,6 +33,8 @@ import {
   buildScenarioLinkedReports,
 } from "@/lib/scenarios/catalog";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
+import { loadSentimentHotspots, negativeItemIdsFromSyntheses } from "@/lib/engagement/hotspots";
+import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
 import { CURRENT_WORKSPACE_MEMBERSHIP_SELECT, loadCurrentWorkspaceMembership, unwrapWorkspaceRecord } from "@/lib/workspaces/current";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
@@ -500,6 +502,12 @@ export type ReportAssistantContext = {
     id: string;
     title: string;
     status: string;
+    hotspots: {
+      clusterCount: number;
+      significantCount: number;
+      testedCount: number;
+      globalNegativeSharePct: number | null;
+    } | null;
   } | null;
   rtpCycle: {
     id: string;
@@ -2297,11 +2305,40 @@ async function loadReportContext(
   const engagementCampaignResult = engagementCampaignId
     ? await supabase
         .from("engagement_campaigns")
-        .select("id, title, status")
+        .select("id, title, status, ai_synthesis_json")
         .eq("workspace_id", report.workspace_id)
         .eq("id", engagementCampaignId)
         .maybeSingle()
     : { data: null };
+
+  // E3 — a compact spatial-hotspots summary so the copilot can reference where
+  // resident concerns concentrate. Defensive: never let it break context load.
+  let engagementHotspotsSummary: {
+    clusterCount: number;
+    significantCount: number;
+    testedCount: number;
+    globalNegativeSharePct: number | null;
+  } | null = null;
+  if (engagementCampaignId && engagementCampaignResult.data) {
+    try {
+      const synthesis =
+        (engagementCampaignResult.data as { ai_synthesis_json?: EngagementSynthesis | null }).ai_synthesis_json ??
+        null;
+      const { analysis } = await loadSentimentHotspots(supabase, {
+        workspaceId: report.workspace_id,
+        campaignId: engagementCampaignId,
+        negativeItemIds: negativeItemIdsFromSyntheses([synthesis]),
+      });
+      engagementHotspotsSummary = {
+        clusterCount: analysis.clusterCount,
+        significantCount: analysis.significantCount,
+        testedCount: analysis.testedCount,
+        globalNegativeSharePct: analysis.globalNegativeSharePct,
+      };
+    } catch {
+      engagementHotspotsSummary = null;
+    }
+  }
 
   return {
     kind: report.report_type === "board_packet" && report.rtp_cycle_id ? "rtp_packet_report" : "report",
@@ -2343,6 +2380,7 @@ async function loadReportContext(
           id: engagementCampaignResult.data.id,
           title: engagementCampaignResult.data.title,
           status: engagementCampaignResult.data.status,
+          hotspots: engagementHotspotsSummary,
         }
       : null,
     rtpCycle: rtpCycle

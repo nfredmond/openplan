@@ -283,6 +283,7 @@ describe("EngagementCampaignDetailPage", () => {
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
+      rpc: vi.fn().mockResolvedValue({ data: [], error: null }),
     });
   });
 
