@@ -18,6 +18,8 @@ from __future__ import annotations
 import math
 from typing import Any, Iterable, Sequence
 
+from time_of_day import DEFAULT_PEAK_HOUR_FACTOR, PEAK_HOUR_FACTOR_NOTE, peak_hour_volume
+
 # Screening gate thresholds (mirror the county lane defaults).
 DEFAULT_READY_MEDIAN_APE = 30.0
 DEFAULT_READY_CRITICAL_APE = 50.0
@@ -91,6 +93,30 @@ def geh_summary(observed_daily: Sequence[float], modeled_daily: Sequence[float],
     if not values:
         return {"mean": None, "max": None, "stations": 0, "basis": GEH_BASIS_NOTE}
     return {"mean": sum(values) / len(values), "max": max(values), "stations": len(values), "basis": GEH_BASIS_NOTE}
+
+
+def peak_hour_geh_summary(
+    observed_daily: Sequence[float],
+    modeled_daily: Sequence[float],
+    peak_hour_factor: float = DEFAULT_PEAK_HOUR_FACTOR,
+) -> dict[str, Any]:
+    """GEH on PEAK-HOUR equivalents (daily x K-factor) — the customary basis for
+    the GEH < 5 acceptance rule, so the screening figure is comparable to the
+    convention. Still screening-grade (generic K, not calibrated)."""
+    values = []
+    for obs, mod in zip(observed_daily, modeled_daily):
+        geh = geh_statistic(peak_hour_volume(float(obs), peak_hour_factor), peak_hour_volume(float(mod), peak_hour_factor))
+        if geh is not None:
+            values.append(geh)
+    if not values:
+        return {"mean": None, "max": None, "stations": 0, "factor": peak_hour_factor, "basis": PEAK_HOUR_FACTOR_NOTE}
+    return {
+        "mean": sum(values) / len(values),
+        "max": max(values),
+        "stations": len(values),
+        "factor": peak_hour_factor,
+        "basis": PEAK_HOUR_FACTOR_NOTE,
+    }
 
 
 def compute_spearman_rho(observed: Sequence[float], modeled: Sequence[float]) -> float | None:
@@ -246,6 +272,7 @@ def validate_against_counts(
         "max_ape": round(max_ape, 2) if max_ape is not None else None,
         "percent_rmse": round(percent_rmse(observed_v, modeled_v), 2) if percent_rmse(observed_v, modeled_v) is not None else None,
         "geh": geh_summary(observed_v, modeled_v),
+        "peak_hour_geh": peak_hour_geh_summary(observed_v, modeled_v),
         "spearman_rho": round(compute_spearman_rho(observed_v, modeled_v), 3) if compute_spearman_rho(observed_v, modeled_v) is not None else None,
         "screening_gate": status_label,
         "gate_reasons": gate_reasons,
@@ -253,8 +280,8 @@ def validate_against_counts(
         "method": (
             "Observed traffic counts matched to assigned links by name/link-type/bbox; "
             "modeled daily PCE volume vs observed AADT. Median/mean/max APE, %RMSE, "
-            "GEH (average-hourly basis), Spearman rank correlation. Screening-grade "
-            "DIAGNOSTIC (a sanity check against a few counts) — NOT a calibration or a "
-            "validated/calibrated forecast."
+            "GEH on both an average-hourly (daily/24) AND a peak-hour (daily x K-factor) "
+            "basis, Spearman rank correlation. Screening-grade DIAGNOSTIC (a sanity check "
+            "against a few counts) — NOT a calibration or a validated/calibrated forecast."
         ),
     }

@@ -106,6 +106,43 @@ def test_metrics_parity_with_screening_metrics():
     assert abs(cv.geh_summary(obs, mod)["mean"] - sm.geh_summary(obs, mod)["mean"]) < 1e-9
 
 
+def test_peak_hour_geh_scales_from_avg_hourly():
+    import math
+    obs = [45500, 26000, 10300, 35500]
+    mod = [44000, 24000, 9500, 33000]
+    avg = cv.geh_summary(obs, mod)["mean"]
+    peak = cv.peak_hour_geh_summary(obs, mod)["mean"]
+    # avg uses daily/24, peak uses daily*K → peak/avg = sqrt(K*24). Peak-hour GEH
+    # is the stricter, customary basis for the < 5 rule.
+    assert abs(peak / avg - math.sqrt(0.09 * 24.0)) < 1e-9, (peak, avg)
+    assert peak > avg
+
+
+def test_peak_hour_geh_reports_factor_and_handles_empty():
+    empty = cv.peak_hour_geh_summary([], [])
+    assert empty["mean"] is None
+    assert empty["factor"] == 0.09
+    assert "K-factor" in empty["basis"]
+
+
+def test_validate_emits_both_geh_bases():
+    stations = [
+        _station("S1", 40000, "Grass Valley Highway", "motorway"),
+        _station("S2", 26000, "Idaho Maryland Road", "primary"),
+        _station("S3", 10000, "Brunswick Road", "secondary"),
+    ]
+    links = [
+        _link(1, "Grass Valley Highway", "motorway", -121.05, 39.22, 41000),
+        _link(2, "Idaho Maryland Road", "primary", -121.04, 39.23, 24000),
+        _link(3, "Brunswick Road", "secondary", -121.03, 39.24, 9500),
+    ]
+    out = cv.validate_against_counts(stations, links)
+    assert out["geh"]["mean"] is not None
+    assert out["peak_hour_geh"]["mean"] is not None
+    assert out["peak_hour_geh"]["factor"] == 0.09
+    assert "peak-hour" in out["method"]
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:

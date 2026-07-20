@@ -1364,6 +1364,8 @@ def stage_artifacts(
             kpis.append(("assignment", "validation_percent_rmse", "Validation %RMSE", validation["percent_rmse"], "percent"))
         if (validation.get("geh") or {}).get("mean") is not None:
             kpis.append(("assignment", "validation_geh_mean", "Validation GEH (mean, avg-hourly)", round(validation["geh"]["mean"], 2), "geh"))
+        if (validation.get("peak_hour_geh") or {}).get("mean") is not None:
+            kpis.append(("assignment", "validation_peak_hour_geh_mean", "Validation GEH (mean, peak-hour)", round(validation["peak_hour_geh"]["mean"], 2), "geh"))
         if validation.get("spearman_rho") is not None:
             kpis.append(("assignment", "validation_spearman_rho", "Validation Spearman rho", validation["spearman_rho"], "ratio"))
 
@@ -1420,7 +1422,7 @@ def stage_artifacts(
             kpi_payload["breakdown_json"] = {"provenance": mode_provenance}
         elif name in (
             "validation_stations_matched", "validation_median_ape", "validation_percent_rmse",
-            "validation_geh_mean", "validation_spearman_rho",
+            "validation_geh_mean", "validation_peak_hour_geh_mean", "validation_spearman_rho",
         ):
             kpi_payload["breakdown_json"] = {
                 "provenance": validation_provenance,

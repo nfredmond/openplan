@@ -17,10 +17,13 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy worker code and bundled seed data. main.py imports data_pipeline, which
-# imports lodes; main.py also imports resident_vmt and gateways — all must be
-# present or the image fails to import at startup.
-COPY main.py data_pipeline.py lodes.py resident_vmt.py gateways.py mode_choice.py gtfs_skim.py count_validation.py emissions.py equity.py .
+# Copy ALL worker Python modules via a glob. main.py's import graph pulls in
+# data_pipeline/lodes/resident_vmt/gateways/mode_choice/count_validation/
+# time_of_day/etc. — every module must be present or the image crashes at import
+# on startup. An explicit enumeration has silently omitted a new stdlib sibling
+# TWICE (mode_choice.py, then time_of_day.py); a glob makes that impossible.
+# Test/off-run-path scripts ride along harmlessly (CMD runs only main.py).
+COPY *.py .
 COPY data/ data/
 
 # Set environment defaults for cloud
