@@ -39,6 +39,8 @@ import { DemographicsPanel } from "@/components/engagement/demographics-panel";
 import { loadDemographicsSummary } from "@/lib/engagement/demographics";
 import { RepresentativenessPanel } from "@/components/engagement/representativeness-panel";
 import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
+import { NearDuplicatesPanel } from "@/components/engagement/near-duplicates-panel";
+import { loadNearDuplicates } from "@/lib/engagement/near-duplicates";
 import {
   hotspotsToFeatureCollection,
   loadSentimentHotspots,
@@ -325,6 +327,18 @@ export default async function EngagementCampaignDetailPage({
   const demographicsSummary = campaign.demographics_enabled
     ? (await loadDemographicsSummary(supabase, campaign.id)).summary
     : null;
+  // E9 — fuzzy near-duplicate groups (pg_trgm) to help moderators collapse
+  // paraphrased/re-posted comments the exact fingerprint check misses.
+  const nearDuplicates =
+    (items?.length ?? 0) >= 2
+      ? (await loadNearDuplicates(supabase, { workspaceId: campaign.workspace_id, campaignId: campaign.id })).analysis
+      : null;
+  const nearDuplicateSnippetById = new Map(
+    ((items ?? []) as Array<{ id: string; body: string; status: string | null }>).map((item) => [
+      item.id,
+      { snippet: item.body.trim().replace(/\s+/g, " ").slice(0, 120), status: item.status ?? "pending" },
+    ])
+  );
 
   return (
     <section className="module-page">
@@ -1042,6 +1056,24 @@ export default async function EngagementCampaignDetailPage({
               </div>
               <div className="mt-5">
                 <RepresentativenessPanel campaignId={campaign.id} initialResult={campaign.representativeness_json} />
+              </div>
+            </article>
+          ) : null}
+
+          {nearDuplicates && nearDuplicates.groupCount > 0 ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Moderation</p>
+                  <h2 className="module-section-title">Near-duplicate comments</h2>
+                  <p className="module-section-description">
+                    Fuzzy trigram look-alikes the exact-duplicate check misses (paraphrases, typos, re-posts) — a
+                    screening aid to help collapse duplicates. Nothing is merged automatically.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <NearDuplicatesPanel analysis={nearDuplicates} snippetById={nearDuplicateSnippetById} />
               </div>
             </article>
           ) : null}
