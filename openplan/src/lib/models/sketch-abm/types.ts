@@ -237,4 +237,6 @@ export interface ABMOutputs {
     avg_trip_length_km: number;
     avg_trips_per_person: number;
   };
+  /** Reproducibility seed used for the run (null when run with ambient RNG). */
+  seed?: number | null;
 }

@@ -13,7 +13,7 @@ import {
 import { MANAGED_RUN_MODE_KEYS, getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import { fetchCensusForCorridor } from "@/lib/data-sources/census";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
-import { runABM } from "@/lib/models/sketch-abm/abm-runner";
+import { runABM, DEFAULT_ABM_SEED } from "@/lib/models/sketch-abm/abm-runner";
 import {
   DEFAULT_SKETCH_REFERENCE_BENCHMARKS,
   computeBenchmarkFit,
@@ -598,7 +598,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
           lodesJobs: lodes,
           seed: seedFromRunId(modelRunId),
         });
-        const abmOutputs = await runABM(abmInputs);
+        // Fixed seed → reproducible: the same package produces the same run.
+        const abmOutputs = await runABM(abmInputs, { seed: DEFAULT_ABM_SEED });
 
         const populationTotal = abmInputs.zones.reduce((sum, zone) => sum + zone.population, 0);
         // Sample-scale vehicle-km: person-trip distance weighted by the

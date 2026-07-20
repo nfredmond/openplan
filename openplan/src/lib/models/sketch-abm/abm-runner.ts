@@ -18,6 +18,8 @@
 import { chooseDestination } from "./destination-choice";
 import { aggregateMode, chooseTourMode } from "./mode-choice";
 import { scheduleTours } from "./time-of-day-choice";
+import { withSeededRandom } from "./rng";
+export { DEFAULT_ABM_SEED } from "./rng";
 import {
   applyHouseholdCDAP,
   generateToursForPerson,
@@ -36,9 +38,26 @@ import type {
 export type { ABMInputs, ABMOutputs, Household, ScheduledTour, Trip } from "./types";
 
 /**
- * Run complete Activity-Based Model simulation
+ * Run the complete Activity-Based Model simulation. Reproducible: pass
+ * `{ seed }` to install a deterministic PRNG for the whole run so identical
+ * inputs + seed produce identical trips/tours/summary. With no seed the run uses
+ * the ambient `Math.random` (preserving the benchmark test's global-override
+ * pattern). Production callers pass `DEFAULT_ABM_SEED`.
  */
-export async function runABM(inputs: ABMInputs): Promise<ABMOutputs> {
+export async function runABM(inputs: ABMInputs, opts?: { seed?: number }): Promise<ABMOutputs> {
+  const seed = opts?.seed;
+  if (seed === undefined) {
+    return { ...(await simulateABM(inputs)), seed: null };
+  }
+  const result = await withSeededRandom(seed, () => simulateABM(inputs));
+  return { ...result, seed };
+}
+
+/**
+ * Internal ABM pipeline. Synchronous per household (no awaits), which is what
+ * makes the seeded-`Math.random` swap in `runABM` safe.
+ */
+async function simulateABM(inputs: ABMInputs): Promise<Omit<ABMOutputs, "seed">> {
   console.log("[ABM] Starting simulation...");
   console.log(`[ABM] Households: ${inputs.households.length}, Zones: ${inputs.zones.length}`);
 
