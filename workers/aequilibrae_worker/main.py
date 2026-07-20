@@ -39,6 +39,7 @@ from gateways import (
 import mode_choice
 import gtfs_skim
 import count_validation
+import emissions
 
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
@@ -926,6 +927,20 @@ def stage_artifacts(
     except Exception as e:
         log += f"VMT computation warning: {e}\n"
 
+    # ── Screening GHG (CO2e) from network VMT — EMFAC-style rate × VMT, ─────────
+    # annualized. A published-rate × VMT product, NOT an EMFAC run of record.
+    emissions_screen = None
+    try:
+        _emissions_year = int(os.getenv("AEQ_EMISSIONS_ANALYSIS_YEAR", str(emissions.DEFAULT_ANALYSIS_YEAR)))
+        emissions_screen = emissions.estimate_screening_emissions(daily_vmt, population_total, _emissions_year)
+        if emissions_screen is not None:
+            log += (
+                f"Screening CO2e: {emissions_screen['co2e_metric_tons_year']:,.0f} MT/year "
+                f"({emissions_screen['co2e_g_per_mile']} g/mi, {emissions_screen['analysis_year']})\n"
+            )
+    except Exception as e:
+        log += f"Emissions screening warning: {e}\n"
+
     # ── Resident VMT (CEQA §15064.3): Σ internal→internal OD × great-circle × ──
     # circuity, external gateway zones excluded. Same estimator the county lane
     # and the NCTC seed use — the AequilibraE lane converges onto it. Computed
@@ -1070,6 +1085,7 @@ def stage_artifacts(
             "excluded_gateway_zone_ids": [],
             "network_gateway_zone_ids": gateway_zone_ids,
         },
+        "emissions": emissions_screen,
         "mode_split": mode_split,
         "validation": validation,
         "gateways": gateways,
@@ -1173,6 +1189,12 @@ def stage_artifacts(
         kpis.append(("general", "resident_vmt_all_trips", "Resident Person-Trip Miles (all modes)", resident_vmt_all_trips, "vehicle-miles/day"))
     if population_total is not None:
         kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
+    # Screening GHG (CO2e) — annual metric tons (the CEQA-style figure) + a
+    # per-capita rate. Derived from network VMT; screening-grade, not an EMFAC run.
+    if emissions_screen is not None:
+        kpis.append(("general", "co2e_metric_tons_year", "GHG (CO2e, annual screening)", emissions_screen["co2e_metric_tons_year"], "metric tons CO2e/year"))
+        if emissions_screen.get("co2e_kg_per_capita_day") is not None:
+            kpis.append(("general", "co2e_kg_per_capita_day", "GHG per Capita (CO2e)", emissions_screen["co2e_kg_per_capita_day"], "kg CO2e/person/day"))
     kpis.append(("assignment", "external_gateways", "External Gateways", len(gateways), "count"))
     # Mode-split KPIs (percentage points, 0-100), in the directly-readable
     # `general` category. Distinct, unit-explicit KPI names (the sketch lane
@@ -1262,6 +1284,12 @@ def stage_artifacts(
             kpi_payload["breakdown_json"] = {
                 "provenance": validation_provenance,
                 "screening_gate": (validation or {}).get("screening_gate"),
+            }
+        elif name in ("co2e_metric_tons_year", "co2e_kg_per_capita_day") and emissions_screen is not None:
+            kpi_payload["breakdown_json"] = {
+                "provenance": emissions_screen["method"],
+                "co2e_g_per_mile": emissions_screen["co2e_g_per_mile"],
+                "analysis_year": emissions_screen["analysis_year"],
             }
         sb_post_kpi(kpi_payload)
 

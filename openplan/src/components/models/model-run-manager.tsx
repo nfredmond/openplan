@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
 import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
+import { ModelRunEmissionsPanel } from "@/components/models/model-run-emissions-panel";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
 
@@ -683,6 +684,10 @@ function ModelRunStagingAndArtifacts({
 
       {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
         <ModelRunCeqaVmtScreen modelId={modelId} modelRunId={run.id} runTitle={run.run_title} />
+      ) : null}
+
+      {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
+        <ModelRunEmissionsPanel modelId={modelId} modelRunId={run.id} />
       ) : null}
     </div>
   );
