@@ -47,6 +47,7 @@ type ApprovedItemRow = {
   geometry: unknown;
   photo_path: string | null;
   votes_count: number | null;
+  parent_item_id: string | null;
   created_at: string;
 };
 
@@ -97,11 +98,11 @@ export default async function PublicEngagementPage({
       .order("created_at", { ascending: true }),
     supabase
       .from("engagement_items")
-      .select("id, category_id, title, body, submitted_by, latitude, longitude, geometry, photo_path, votes_count, created_at")
+      .select("id, category_id, title, body, submitted_by, latitude, longitude, geometry, photo_path, votes_count, parent_item_id, created_at")
       .eq("campaign_id", campaign.id)
       .eq("status", "approved")
       .order("created_at", { ascending: false })
-      .limit(100),
+      .limit(200),
   ]);
 
   const project = (projectData ?? null) as PublicProjectRow | null;
@@ -225,6 +226,7 @@ export default async function PublicEngagementPage({
           longitude: item.longitude,
           geometry: item.geometry ?? null,
           votesCount: item.votes_count ?? 0,
+          parentItemId: item.parent_item_id,
           photoUrl: photoUrlByItemId.get(item.id) ?? null,
           createdAt: item.created_at,
         }))}

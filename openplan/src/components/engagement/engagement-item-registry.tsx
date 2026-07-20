@@ -37,6 +37,7 @@ type ItemRecord = {
   longitude?: number | null;
   geometry?: unknown;
   votes_count?: number | null;
+  parent_item_id?: string | null;
   photo_url?: string | null;
   updated_at: string;
 };
@@ -146,6 +147,7 @@ function ItemRow({
         <div className="module-record-main">
           <div className="module-record-kicker">
             <StatusBadge tone={engagementStatusTone(status)}>{titleizeEngagementValue(status)}</StatusBadge>
+            {item.parent_item_id ? <StatusBadge tone="neutral">↳ Reply</StatusBadge> : null}
             <StatusBadge tone="info">{titleizeEngagementValue(sourceType)}</StatusBadge>
             {categoryId ? (
               <StatusBadge tone="neutral">{categories.find((category) => category.id === categoryId)?.label ?? "Category"}</StatusBadge>
