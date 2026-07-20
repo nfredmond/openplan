@@ -45,6 +45,7 @@ import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { loadSentimentHotspots, negativeItemIdsFromSyntheses } from "@/lib/engagement/hotspots";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
+import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import {
   loadReportScenarioSetLinks,
   type ReportScenarioSupabaseLike,
@@ -1155,7 +1156,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ? await Promise.all([
             supabase
               .from("engagement_campaigns")
-              .select("id, title, summary, status, engagement_type, share_token, updated_at, ai_synthesis_json")
+              .select("id, title, summary, status, engagement_type, share_token, updated_at, ai_synthesis_json, representativeness_json")
               .eq("workspace_id", report.workspace_id)
               .eq("id", engagementCampaignId)
               .maybeSingle(),
@@ -1219,6 +1220,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       categories: engagementCategoriesResult.data ?? [],
       items: engagementItemsResult.data ?? [],
       hotspots: engagementHotspots,
+      // Read the cached E5b screening (never recompute in the report path).
+      representativeness:
+        (engagementCampaignResult.data as { representativeness_json?: CampaignRepresentativeness | null } | null)
+          ?.representativeness_json ?? null,
     });
 
     const runIds = (reportRunsResult.data ?? []).map((item) => item.run_id);

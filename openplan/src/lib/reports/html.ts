@@ -245,6 +245,42 @@ function engagementHotspotsMarkup(data: ReportGenerationData): string {
   </div>`;
 }
 
+function engagementRepresentativenessMarkup(data: ReportGenerationData): string {
+  const representativeness = data.engagement?.representativeness;
+  if (!representativeness || representativeness.respondentCount === 0) {
+    return "";
+  }
+
+  const rows = representativeness.metrics.filter((metric) => metric.baselinePct !== null);
+  const under = representativeness.underRepresented.length;
+  const over = representativeness.metrics.filter((metric) => metric.status === "over").length;
+  const informative = representativeness.metrics.filter((metric) => metric.status !== "insufficient").length;
+  const heading =
+    informative === 0
+      ? "Not enough spatial spread to screen representativeness (screening)"
+      : under > 0
+        ? `${under} group${under === 1 ? "" : "s"} under-represented (screening)`
+        : over > 0
+          ? `${over} group${over === 1 ? "" : "s"} over-represented (screening)`
+          : "Respondents broadly mirror the area (screening)";
+
+  return `<div style="margin-top: 18px;">
+    <h3>Representativeness (screening)</h3>
+    <p>${esc(heading)} • ${representativeness.respondentCount} of ${representativeness.locatedRespondentCount} located respondents across ${representativeness.tractCount} tract${representativeness.tractCount === 1 ? "" : "s"}.</p>
+    <ul class="record-list">${rows
+      .map((metric) => {
+        const ratio = metric.representationRatio !== null ? ` • ${metric.representationRatio.toFixed(2)}×` : "";
+        const respondent = metric.respondentPct !== null ? `${metric.respondentPct}%` : "—";
+        return `<li>
+          <strong>${esc(metric.label)}</strong>
+          <span class="meta">respondents ${respondent} vs area ${metric.baselinePct}%${esc(ratio)} • ${esc(metric.status)}</span>
+        </li>`;
+      })
+      .join("")}</ul>
+    <p class="meta">${esc(representativeness.caveat)}</p>
+  </div>`;
+}
+
 function engagementHandoffMarkup(data: ReportGenerationData): string {
   const provenance = extractEngagementHandoffProvenance(data.sections);
   if (!provenance) {
@@ -772,6 +808,7 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       </div>
     </div>
     ${engagementHotspotsMarkup(data)}
+    ${engagementRepresentativenessMarkup(data)}
     ${engagementHandoffMarkup(data)}
     <div class="two-col" style="margin-top: 18px;">
       <div>
