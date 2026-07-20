@@ -32,6 +32,7 @@ type CategoryRow = {
   slug: string | null;
   description: string | null;
   sort_order: number | null;
+  color: string | null;
 };
 
 type ApprovedItemRow = {
@@ -89,7 +90,7 @@ export default async function PublicEngagementPage({
       : Promise.resolve({ data: null }),
     supabase
       .from("engagement_categories")
-      .select("id, label, slug, description, sort_order")
+      .select("id, label, slug, description, sort_order, color")
       .eq("campaign_id", campaign.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
@@ -212,7 +213,7 @@ export default async function PublicEngagementPage({
       <PublicEngagementPortal
         shareToken={shareToken}
         acceptingSubmissions={acceptingSubmissions}
-        categories={categories.map((c) => ({ id: c.id, label: c.label, description: c.description }))}
+        categories={categories.map((c) => ({ id: c.id, label: c.label, description: c.description, color: c.color }))}
         approvedItems={approvedItems.map((item) => ({
           id: item.id,
           categoryId: item.category_id,

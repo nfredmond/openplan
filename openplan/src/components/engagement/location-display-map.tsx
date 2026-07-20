@@ -15,7 +15,16 @@ type MapItem = {
   body: string;
   geometry?: unknown;
   votesCount?: number;
+  /** Category display color (hex). Falls back to the default when absent. */
+  color?: string | null;
 };
+
+const DEFAULT_MAP_COLOR = "#38bdf8";
+
+/** Accept only a safe hex color to use in inline styles / paint expressions. */
+function safeHexColor(value: string | null | undefined): string | null {
+  return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : null;
+}
 
 type SupportHandler = (itemId: string) => Promise<number | null>;
 
@@ -172,30 +181,34 @@ export function LocationDisplayMap({
               type: "Feature" as const,
               id: item.id,
               geometry: item.parsedGeometry,
-              properties: { itemId: item.id },
+              properties: { itemId: item.id, color: safeHexColor(item.color) ?? DEFAULT_MAP_COLOR },
             })),
           },
         });
+
+        // Data-driven color: each feature carries its category color (default
+        // when absent), so lines/areas render per-category, not one uniform hue.
+        const shapeColor = ["coalesce", ["get", "color"], DEFAULT_MAP_COLOR] as unknown as mapboxgl.Expression;
 
         map.addLayer({
           id: "engagement-shapes-fill",
           type: "fill",
           source: "engagement-shapes",
-          paint: { "fill-color": "#38bdf8", "fill-opacity": 0.2 },
+          paint: { "fill-color": shapeColor, "fill-opacity": 0.2 },
           filter: ["==", ["geometry-type"], "Polygon"],
         });
         map.addLayer({
           id: "engagement-shapes-outline",
           type: "line",
           source: "engagement-shapes",
-          paint: { "line-color": "#38bdf8", "line-width": 2 },
+          paint: { "line-color": shapeColor, "line-width": 2 },
           filter: ["==", ["geometry-type"], "Polygon"],
         });
         map.addLayer({
           id: "engagement-shapes-line",
           type: "line",
           source: "engagement-shapes",
-          paint: { "line-color": "#38bdf8", "line-width": 3 },
+          paint: { "line-color": shapeColor, "line-width": 3 },
           filter: ["==", ["geometry-type"], "LineString"],
         });
 
@@ -229,7 +242,8 @@ export function LocationDisplayMap({
         );
 
         const el = document.createElement('div');
-        el.className = 'w-4 h-4 bg-primary rounded-full border-2 border-background shadow-sm cursor-pointer';
+        el.className = 'w-4 h-4 rounded-full border-2 border-background shadow-sm cursor-pointer';
+        el.style.backgroundColor = safeHexColor(item.color) ?? DEFAULT_MAP_COLOR;
 
         const marker = new mapboxgl.Marker({ element: el })
           .setLngLat([item.longitude, item.latitude])

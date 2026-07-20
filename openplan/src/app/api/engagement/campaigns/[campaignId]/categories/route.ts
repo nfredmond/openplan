@@ -14,6 +14,12 @@ const createCategorySchema = z.object({
   label: z.string().trim().min(1).max(120),
   description: z.string().trim().max(1000).optional(),
   sortOrder: z.number().int().min(0).max(1000).optional(),
+  color: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/, "color must be a #RRGGBB hex string")
+    .optional(),
+  icon: z.string().trim().max(40).optional(),
 });
 
 const DUPLICATE_KEY_CODE = "23505";
@@ -83,9 +89,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
         slug: makeEngagementCategorySlug(parsed.data.label),
         description: parsed.data.description?.trim() || null,
         sort_order: parsed.data.sortOrder ?? 0,
+        color: parsed.data.color ?? null,
+        icon: parsed.data.icon?.trim() || null,
         created_by: user.id,
       })
-      .select("id, campaign_id, label, slug, description, sort_order, created_at, updated_at")
+      .select("id, campaign_id, label, slug, description, sort_order, color, icon, created_at, updated_at")
       .single();
 
     if (insertError || !category) {

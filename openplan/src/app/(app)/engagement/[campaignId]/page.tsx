@@ -118,7 +118,7 @@ export default async function EngagementCampaignDetailPage({
       : Promise.resolve({ data: null }),
     supabase
       .from("engagement_categories")
-      .select("id, campaign_id, label, slug, description, sort_order, created_at, updated_at")
+      .select("id, campaign_id, label, slug, description, sort_order, color, icon, created_at, updated_at")
       .eq("campaign_id", campaign.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
@@ -140,6 +140,9 @@ export default async function EngagementCampaignDetailPage({
   ]);
 
   const counts = summarizeEngagementItems(categories ?? [], items ?? []);
+  const categoryColorById = new Map(
+    ((categories ?? []) as Array<{ id: string; color?: string | null }>).map((c) => [c.id, c.color ?? null])
+  );
   const handoffReadiness = getEngagementHandoffReadiness({
     campaignStatus: campaign.status,
     projectLinked: Boolean(project),
@@ -268,6 +271,7 @@ export default async function EngagementCampaignDetailPage({
     longitude: number | null;
     geometry: unknown;
     votes_count: number | null;
+    category_id: string | null;
   };
   const locatedItems = ((items ?? []) as ItemGeometryRef[]).filter(
     (item) => item.geometry !== null || (item.latitude !== null && item.longitude !== null)
@@ -891,6 +895,7 @@ export default async function EngagementCampaignDetailPage({
                     body: item.body,
                     geometry: item.geometry,
                     votesCount: item.votes_count ?? 0,
+                    color: item.category_id ? categoryColorById.get(item.category_id) ?? null : null,
                   }))}
                 />
               </div>
