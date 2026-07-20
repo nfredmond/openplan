@@ -40,6 +40,7 @@ import mode_choice
 import gtfs_skim
 import count_validation
 import emissions
+import equity
 
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
@@ -1008,6 +1009,50 @@ def stage_artifacts(
     except Exception as e:
         log += f"Resident VMT computation warning: {e}\n"
 
+    # ── Equity / EJ overlay (screening, Title VI ACS indicators) ──────────────
+    # Real ACS low-income / minority / zero-vehicle shares at the run's geography;
+    # compares resident VMT/capita for above-typical-disadvantage zones vs the
+    # rest. Needs a CENSUS key (now live). Screening-grade, NOT the SB 535 list.
+    equity_screen = None
+    try:
+        census_key = os.getenv("CENSUS_API_KEY", "")
+        pkg_dir = (package_meta or {}).get("package_dir")
+        if census_key and pkg_dir:
+            zattr_e = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+            zattr_e["zone_id"] = zattr_e["zone_id"].astype(int)
+            zone_ids_e = zattr_e["zone_id"].tolist()
+            geoids_e = [str(g).zfill(11) for g in zattr_e["GEOID"].tolist()]
+            lons_e = zattr_e["centroid_lon"].tolist(); lats_e = zattr_e["centroid_lat"].tolist()
+            areas_e = zattr_e["area_sq_mi"].tolist(); pops_e = zattr_e["est_population"].tolist()
+            eq_csv = ("od_auto_matrix.csv"
+                      if (mode_split and os.path.exists(os.path.join(pkg_dir, "od_auto_matrix.csv")))
+                      else "od_trip_matrix.csv")
+            od_e = pd.read_csv(os.path.join(pkg_dir, eq_csv), index_col=0)
+            od_mat = [[float(od_e.loc[zi, str(zj)]) if (zi in od_e.index and str(zj) in od_e.columns) else 0.0
+                       for zj in zone_ids_e] for zi in zone_ids_e]
+            per_zone_vmt = equity.resident_vmt_by_origin_zone(od_mat, zone_ids_e, lons_e, lats_e, areas_e, gateway_zone_ids)
+            level_e = "block group" if all(len(g) == 12 for g in geoids_e) else "tract"
+            pairs_e = {(g[:2], g[2:5]) for g in geoids_e}
+            acs_e = equity.fetch_acs_equity(pairs_e, level_e, census_key)
+            if any(acs_e.get(g) for g in geoids_e):
+                zones_eq = []
+                for zid, geoid, pop in zip(zone_ids_e, geoids_e, pops_e):
+                    z = equity.build_equity_zone(geoid, float(pop), acs_e.get(geoid) or {})
+                    z["zone_id"] = int(zid)
+                    zones_eq.append(z)
+                zones_eq = equity.classify_equity_focus(zones_eq)
+                equity_screen = equity.summarize_equity(zones_eq, per_zone_vmt)
+                equity_screen["geography"] = level_e
+                log += (
+                    f"Equity overlay ({level_e}): {equity_screen['focus_zone_count']}/"
+                    f"{equity_screen['total_zone_count']} focus zones; VMT/capita disparity "
+                    f"{equity_screen.get('vmt_per_capita_disparity_ratio')}\n"
+                )
+            else:
+                log += "Equity overlay skipped: ACS equity data unavailable for study geographies.\n"
+    except Exception as e:
+        log += f"Equity overlay warning: {e}\n"
+
     resident_basis_note = (
         "auto trips only (mode-choice output — the CEQA §15064.3 vehicle-VMT basis)"
         if resident_basis == "auto_only"
@@ -1086,6 +1131,7 @@ def stage_artifacts(
             "network_gateway_zone_ids": gateway_zone_ids,
         },
         "emissions": emissions_screen,
+        "equity": equity_screen,
         "mode_split": mode_split,
         "validation": validation,
         "gateways": gateways,
@@ -1195,6 +1241,20 @@ def stage_artifacts(
         kpis.append(("general", "co2e_metric_tons_year", "GHG (CO2e, annual screening)", emissions_screen["co2e_metric_tons_year"], "metric tons CO2e/year"))
         if emissions_screen.get("co2e_kg_per_capita_day") is not None:
             kpis.append(("general", "co2e_kg_per_capita_day", "GHG per Capita (CO2e)", emissions_screen["co2e_kg_per_capita_day"], "kg CO2e/person/day"))
+    # Equity / EJ overlay (category `equity`, directly-readable). Compares
+    # resident VMT/capita between above-typical-disadvantage zones and the rest.
+    if equity_screen is not None:
+        kpis.append(("equity", "equity_focus_zone_count", "Equity-Focus Zones", equity_screen["focus_zone_count"], "count"))
+        if equity_screen.get("focus_population_share") is not None:
+            kpis.append(("equity", "equity_focus_population_share", "Equity-Focus Population Share", round(equity_screen["focus_population_share"] * 100, 1), "percent"))
+        _fpc = (equity_screen.get("equity_focus") or {}).get("resident_vmt_per_capita")
+        _rpc = (equity_screen.get("rest_of_area") or {}).get("resident_vmt_per_capita")
+        if _fpc is not None:
+            kpis.append(("equity", "equity_focus_vmt_per_capita", "Equity-Focus Resident VMT/Capita", _fpc, "vehicle-miles/person/day"))
+        if _rpc is not None:
+            kpis.append(("equity", "equity_rest_vmt_per_capita", "Rest-of-Area Resident VMT/Capita", _rpc, "vehicle-miles/person/day"))
+        if equity_screen.get("vmt_per_capita_disparity_ratio") is not None:
+            kpis.append(("equity", "equity_vmt_disparity_ratio", "Equity VMT/Capita Disparity Ratio", equity_screen["vmt_per_capita_disparity_ratio"], "ratio"))
     kpis.append(("assignment", "external_gateways", "External Gateways", len(gateways), "count"))
     # Mode-split KPIs (percentage points, 0-100), in the directly-readable
     # `general` category. Distinct, unit-explicit KPI names (the sketch lane
@@ -1290,6 +1350,13 @@ def stage_artifacts(
                 "provenance": emissions_screen["method"],
                 "co2e_g_per_mile": emissions_screen["co2e_g_per_mile"],
                 "analysis_year": emissions_screen["analysis_year"],
+            }
+        elif name.startswith("equity_") and equity_screen is not None:
+            kpi_payload["breakdown_json"] = {
+                "provenance": equity_screen["method"],
+                "geography": equity_screen.get("geography"),
+                "equity_focus": equity_screen.get("equity_focus"),
+                "rest_of_area": equity_screen.get("rest_of_area"),
             }
         sb_post_kpi(kpi_payload)
 
