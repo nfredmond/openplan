@@ -41,6 +41,8 @@ import { RepresentativenessPanel } from "@/components/engagement/representativen
 import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import { NearDuplicatesPanel } from "@/components/engagement/near-duplicates-panel";
 import { loadNearDuplicates } from "@/lib/engagement/near-duplicates";
+import { AiModerationPanel, type ModeratedItem } from "@/components/engagement/ai-moderation-panel";
+import type { ItemModeration } from "@/lib/engagement/ai-moderation";
 import {
   hotspotsToFeatureCollection,
   loadSentimentHotspots,
@@ -339,6 +341,41 @@ export default async function EngagementCampaignDetailPage({
       { snippet: item.body.trim().replace(/\s+/g, " ").slice(0, 120), status: item.status ?? "pending" },
     ])
   );
+
+  // E9 part 2 — AI moderation assist: the queue (pending/flagged) + any stored
+  // per-item assessment (metadata_json.ai_moderation), flagged items surfaced.
+  type StoredModeration = {
+    flags?: string[];
+    severity?: string;
+    rationale?: string;
+    suggested_action?: string;
+    source?: string;
+  };
+  const moderationQueueItems = ((items ?? []) as Array<{
+    id: string;
+    body: string;
+    status: string | null;
+    metadata_json?: { ai_moderation?: StoredModeration } | null;
+  }>).filter((item) => item.status === "pending" || item.status === "flagged");
+  const moderationFlagged: ModeratedItem[] = moderationQueueItems
+    .filter((item) => (item.metadata_json?.ai_moderation?.flags?.length ?? 0) > 0)
+    .map((item) => {
+      const mod = item.metadata_json!.ai_moderation!;
+      return {
+        id: item.id,
+        snippet: item.body.trim().replace(/\s+/g, " ").slice(0, 120),
+        moderation: {
+          item_id: item.id,
+          flags: (mod.flags ?? []) as ItemModeration["flags"],
+          severity: (mod.severity ?? "none") as ItemModeration["severity"],
+          rationale: mod.rationale ?? "",
+          suggested_action: (mod.suggested_action ?? "review") as ItemModeration["suggested_action"],
+        },
+      };
+    });
+  const lastModerationSource =
+    (moderationQueueItems.find((item) => item.metadata_json?.ai_moderation?.source)?.metadata_json?.ai_moderation
+      ?.source as "ai" | "deterministic-fallback" | undefined) ?? null;
 
   return (
     <section className="module-page">
@@ -1074,6 +1111,30 @@ export default async function EngagementCampaignDetailPage({
               </div>
               <div className="mt-5">
                 <NearDuplicatesPanel analysis={nearDuplicates} snippetById={nearDuplicateSnippetById} />
+              </div>
+            </article>
+          ) : null}
+
+          {moderationQueueItems.length > 0 ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Moderation</p>
+                  <h2 className="module-section-title">AI moderation assist</h2>
+                  <p className="module-section-description">
+                    A Claude pass over the review queue that flags possible toxicity, personal info, off-topic, or
+                    spam with a rationale — a triage aid. It never changes a comment&rsquo;s status; a moderator
+                    decides. Falls back to a deterministic PII/spam check when AI is offline.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <AiModerationPanel
+                  campaignId={campaign.id}
+                  queueCount={moderationQueueItems.length}
+                  flagged={moderationFlagged}
+                  lastSource={lastModerationSource}
+                />
               </div>
             </article>
           ) : null}
