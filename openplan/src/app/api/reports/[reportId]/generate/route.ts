@@ -43,6 +43,8 @@ import { buildReportHtml } from "@/lib/reports/html";
 import { renderHtmlToPdf } from "@/lib/reports/pdf";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { loadSentimentHotspots, negativeItemIdsFromSyntheses } from "@/lib/engagement/hotspots";
+import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
 import {
   loadReportScenarioSetLinks,
   type ReportScenarioSupabaseLike,
@@ -1153,7 +1155,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ? await Promise.all([
             supabase
               .from("engagement_campaigns")
-              .select("id, title, summary, status, engagement_type, share_token, updated_at")
+              .select("id, title, summary, status, engagement_type, share_token, updated_at, ai_synthesis_json")
               .eq("workspace_id", report.workspace_id)
               .eq("id", engagementCampaignId)
               .maybeSingle(),
@@ -1192,10 +1194,31 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load engagement handoff context" }, { status: 500 });
     }
 
+    // E3 — screening-grade spatial hotspots for the report's engagement section.
+    // Sentiment is AI-derived from the campaign's E1 synthesis (a proxy). Never
+    // let a hotspot failure block report generation.
+    let engagementHotspots = null;
+    if (engagementCampaignId && engagementCampaignResult.data) {
+      try {
+        const synthesis =
+          (engagementCampaignResult.data as { ai_synthesis_json?: EngagementSynthesis | null }).ai_synthesis_json ??
+          null;
+        const { analysis } = await loadSentimentHotspots(supabase, {
+          workspaceId: report.workspace_id,
+          campaignId: engagementCampaignId,
+          negativeItemIds: negativeItemIdsFromSyntheses([synthesis]),
+        });
+        engagementHotspots = analysis;
+      } catch {
+        engagementHotspots = null;
+      }
+    }
+
     const engagement = buildReportEngagementSummary({
       campaign: engagementCampaignResult.data,
       categories: engagementCategoriesResult.data ?? [],
       items: engagementItemsResult.data ?? [],
+      hotspots: engagementHotspots,
     });
 
     const runIds = (reportRunsResult.data ?? []).map((item) => item.run_id);

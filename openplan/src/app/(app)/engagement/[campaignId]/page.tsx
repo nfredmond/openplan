@@ -33,6 +33,14 @@ import {
 } from "@/lib/engagement/photo";
 import { LocationDisplayMap } from "@/components/engagement/location-display-map";
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
+import { ParticipationHeatmapMap, type HeatmapPoint } from "@/components/engagement/participation-heatmap-map";
+import { ParticipationDashboard } from "@/components/engagement/participation-dashboard";
+import {
+  hotspotsToFeatureCollection,
+  loadSentimentHotspots,
+  negativeItemIdsFromSyntheses,
+} from "@/lib/engagement/hotspots";
+import { buildDailyIntake } from "@/lib/engagement/participation-dashboard";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
 
 type CampaignRow = {
@@ -275,6 +283,37 @@ export default async function EngagementCampaignDetailPage({
   };
   const locatedItems = ((items ?? []) as ItemGeometryRef[]).filter(
     (item) => item.geometry !== null || (item.latitude !== null && item.longitude !== null)
+  );
+
+  // Participation insights (E3): the heatmap, the intake trend, and the
+  // screening-grade spatial hotspot test. Sentiment for the hotspot test is
+  // AI-derived from the campaign's E1 synthesis (a proxy), never a column.
+  const negativeItemIds = negativeItemIdsFromSyntheses([campaign.ai_synthesis_json]);
+  const negativeItemIdSet = new Set(negativeItemIds);
+  const { analysis: hotspots } = await loadSentimentHotspots(supabase, {
+    workspaceId: campaign.workspace_id,
+    campaignId: campaign.id,
+    negativeItemIds,
+  });
+  const hotspotFeatures = hotspotsToFeatureCollection(hotspots.clusters);
+  const heatmapPoints: HeatmapPoint[] = (
+    (items ?? []) as Array<{
+      id: string;
+      status: string | null;
+      latitude: number | null;
+      longitude: number | null;
+      votes_count: number | null;
+    }>
+  )
+    .filter((it) => it.status === "approved" && typeof it.latitude === "number" && typeof it.longitude === "number")
+    .map((it) => ({
+      lng: it.longitude as number,
+      lat: it.latitude as number,
+      weight: (it.votes_count ?? 0) + 1,
+      negative: negativeItemIdSet.has(it.id),
+    }));
+  const intakeTrend = buildDailyIntake(
+    (items ?? []) as Array<{ created_at?: string | null; updated_at?: string | null }>
   );
 
   return (
@@ -921,6 +960,39 @@ export default async function EngagementCampaignDetailPage({
                   approvedItemCount={counts.statusCounts.approved}
                   initialSynthesis={campaign.ai_synthesis_json}
                   initialSynthesizedAt={campaign.ai_synthesized_at}
+                />
+              </div>
+            </article>
+          ) : null}
+
+          {(items?.length ?? 0) > 0 ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Participation Insights</p>
+                  <h2 className="module-section-title">Heatmap and spatial hotspots</h2>
+                  <p className="module-section-description">
+                    Where residents engaged, the mix of what they said, and a screening-grade test for
+                    statistically elevated clusters of negative sentiment — the spatial signal no pure
+                    comment tool surfaces. Not an inferential or representativeness finding.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 space-y-6">
+                {heatmapPoints.length > 0 || hotspotFeatures.features.length > 0 ? (
+                  <ParticipationHeatmapMap
+                    points={heatmapPoints}
+                    hotspots={hotspotFeatures}
+                    sentimentAvailable={hotspots.sentimentAvailable}
+                  />
+                ) : null}
+                <ParticipationDashboard
+                  counts={counts}
+                  categories={
+                    (categories ?? []) as Array<{ id: string; label: string | null; color?: string | null }>
+                  }
+                  hotspots={hotspots}
+                  intake={intakeTrend}
                 />
               </div>
             </article>

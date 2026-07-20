@@ -209,6 +209,42 @@ function runMarkup(run: RunRecord): string {
   </article>`;
 }
 
+function engagementHotspotsMarkup(data: ReportGenerationData): string {
+  const hotspots = data.engagement?.hotspots;
+  if (!hotspots || hotspots.clusterCount === 0) {
+    return "";
+  }
+
+  const significant = hotspots.clusters.filter((cluster) => cluster.significant);
+  const rows = (significant.length > 0 ? significant : hotspots.clusters).slice(0, 4);
+  const heading =
+    significant.length > 0
+      ? `${significant.length} elevated-concern cluster${significant.length === 1 ? "" : "s"} (screening)`
+      : `${hotspots.clusterCount} comment cluster${hotspots.clusterCount === 1 ? "" : "s"}`;
+  const baseline =
+    hotspots.sentimentAvailable && hotspots.globalNegativeSharePct !== null
+      ? ` • baseline ${hotspots.globalNegativeSharePct}% negative`
+      : "";
+
+  return `<div style="margin-top: 18px;">
+    <h3>Spatial hotspots (screening)</h3>
+    <p>${esc(heading)}${esc(baseline)}.</p>
+    <ul class="record-list">${rows
+      .map((cluster, index) => {
+        const share =
+          cluster.clusterNegativeSharePct !== null ? ` • ${cluster.clusterNegativeSharePct}% negative` : "";
+        const z = cluster.zScore !== null ? ` • z=${cluster.zScore.toFixed(2)}` : "";
+        const flag = cluster.significant ? " • elevated (screening)" : "";
+        return `<li>
+          <strong>Cluster ${index + 1}</strong>
+          <span class="meta">${cluster.nItems} comment${cluster.nItems === 1 ? "" : "s"}${esc(share)}${esc(z)}${esc(flag)}</span>
+        </li>`;
+      })
+      .join("")}</ul>
+    <p class="meta">${esc(hotspots.caveat)}</p>
+  </div>`;
+}
+
 function engagementHandoffMarkup(data: ReportGenerationData): string {
   const provenance = extractEngagementHandoffProvenance(data.sections);
   if (!provenance) {
@@ -735,6 +771,7 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
         }</p>
       </div>
     </div>
+    ${engagementHotspotsMarkup(data)}
     ${engagementHandoffMarkup(data)}
     <div class="two-col" style="margin-top: 18px;">
       <div>
