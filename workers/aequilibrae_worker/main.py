@@ -204,8 +204,78 @@ def sb_post_kpi(payload: dict):
     requests.post(url, headers=HEADERS, json=payload)
 
 
+def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, validation: dict | None) -> None:
+    """Write the shared modeling claim-grade spine for THIS model run — the same
+    tables the county lane populates (modeling_validation_results +
+    modeling_claim_decisions) so reports read one consistent claim grade. Derived
+    from the observed-count gate; NEVER 'claim_grade_passed' (that needs
+    calibration — the flagged claim boundary). Best-effort; never fails a run."""
+    if not workspace_id:
+        return
+    try:
+        matched = int((validation or {}).get("stations_matched", 0) or 0)
+        median_ape = (validation or {}).get("median_ape")
+        max_ape = (validation or {}).get("max_ape")
+        gate = (validation or {}).get("screening_gate")
+        if gate == "bounded screening-ready":
+            claim_status, reason = "screening_grade", (
+                f"Observed-count validation passed the screening gate ({matched} stations, "
+                f"median APE {median_ape}%)."
+            )
+        elif validation and matched > 0:
+            claim_status, reason = "prototype_only", (
+                f"Observed-count validation did not meet the screening gate ({matched} stations, "
+                f"median APE {median_ape}%)."
+            )
+        else:
+            claim_status, reason = "prototype_only", (
+                "No observed-count validation for this study area; screening-grade claims require a "
+                "validation pass."
+            )
+        upsert_headers = dict(HEADERS)
+        upsert_headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
+        requests.post(
+            f"{SUPABASE_URL}/rest/v1/modeling_claim_decisions?on_conflict=model_run_id,track",
+            headers=upsert_headers,
+            json={
+                "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
+                "claim_status": claim_status, "status_reason": reason,
+                "validation_summary_json": validation or {},
+            }, timeout=20,
+        )
+        # Refresh the per-metric validation rows for this run/track.
+        requests.delete(
+            f"{SUPABASE_URL}/rest/v1/modeling_validation_results?model_run_id=eq.{run_id}&track=eq.assignment",
+            headers=HEADERS, timeout=20,
+        )
+        if validation and matched > 0:
+            status, detail = count_validation.metric_status_for_gate(median_ape, max_ape, matched)
+            rows = [{
+                "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
+                "metric_key": "count_median_ape", "metric_label": "Median APE vs observed counts",
+                "threshold_comparator": "lte", "status": status, "blocks_claim_grade": True,
+                "detail": detail,
+                "metadata_json": {
+                    "median_ape": median_ape, "max_ape": max_ape,
+                    "percent_rmse": (validation or {}).get("percent_rmse"),
+                    "geh_mean": ((validation or {}).get("geh") or {}).get("mean"),
+                    "spearman_rho": (validation or {}).get("spearman_rho"),
+                },
+            }, {
+                "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
+                "metric_key": "count_stations_matched", "metric_label": "Matched count stations",
+                "threshold_comparator": "gte", "status": "pass" if matched >= 3 else "fail",
+                "blocks_claim_grade": True,
+                "detail": f"{matched} station(s) matched; >=3 required for a screening claim.",
+                "metadata_json": {"stations_matched": matched},
+            }]
+            requests.post(f"{SUPABASE_URL}/rest/v1/modeling_validation_results", headers=HEADERS, json=rows, timeout=20)
+    except Exception:
+        pass  # evidence spine is best-effort; never fail the run over it
+
+
 def sb_get_run(run_id: str) -> dict:
-    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,corridor_geojson,query_text,engine_key,run_title"
+    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,workspace_id,corridor_geojson,query_text,engine_key,run_title"
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
         raise RuntimeError(f"Failed to load model run {run_id}: {res.status_code} {res.text[:200]}")
@@ -1096,6 +1166,17 @@ def stage_artifacts(
             )
     except Exception as e:
         log += f"Count validation warning: {e}\n"
+
+    # Write the shared modeling claim-grade spine (modeling_validation_results +
+    # modeling_claim_decisions) so reports read one consistent claim grade for
+    # this run — the same tables the county lane populates.
+    try:
+        _ws_id = (sb_get_run(run_id) or {}).get("workspace_id")
+        write_model_run_modeling_evidence(run_id, _ws_id, validation)
+        log += f"Modeling claim spine updated (gate '{(validation or {}).get('screening_gate', 'unvalidated')}').\n"
+    except Exception as e:
+        log += f"Modeling evidence spine warning: {e}\n"
+
     validation_provenance = (validation or {}).get("method") or (
         "Observed-count validation did not run (no counts for this study area or disabled). "
         "Absence of validation is not a calibration claim."
