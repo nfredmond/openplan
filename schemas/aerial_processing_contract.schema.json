@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://natfordplanning.com/schemas/aerial_processing_contract.schema.json",
+  "title": "Nat Ford aerial processing contract (natford-aerial-processing.v1)",
+  "description": "Service-level contract between a planning application (e.g. OpenPlan) and the Aerial Intel Platform acting as its ODM processing backend. The consumer POSTs a ProcessingRequest to the platform's external processing endpoint; the platform processes the imagery through its NodeODM pipeline and POSTs ProcessingCallback payloads to the consumer's callbackUrl as the job advances. Both directions authenticate with a pre-shared bearer token. On a 'succeeded' callback the consumer writes its evidence record (OpenPlan: an aerial_evidence_packages row) from the artifacts list. This file is committed identically to both repositories; treat it as the single source of truth and bump schemaVersion for any breaking change.",
+  "$defs": {
+    "ProcessingRequest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "requestId", "callbackUrl", "externalRef", "missionTitle", "imagery"],
+      "properties": {
+        "schemaVersion": { "const": "natford-aerial-processing.v1" },
+        "requestId": {
+          "type": "string",
+          "minLength": 8,
+          "maxLength": 128,
+          "description": "Caller-generated idempotency key. Retried submissions with the same requestId must not create a second job."
+        },
+        "callbackUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "HTTPS endpoint on the consumer that receives ProcessingCallback payloads. Bearer-authenticated with the shared callback token."
+        },
+        "externalRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["system", "missionId", "workspaceId"],
+          "properties": {
+            "system": { "type": "string", "description": "Consumer identifier, e.g. \"openplan\"." },
+            "missionId": { "type": "string", "description": "Consumer-side mission id (OpenPlan: aerial_missions.id)." },
+            "workspaceId": { "type": "string", "description": "Consumer-side tenant scope (OpenPlan: workspaces.id)." },
+            "projectId": { "type": "string", "description": "Optional consumer-side project id." }
+          }
+        },
+        "missionTitle": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "imagery": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "url"],
+          "properties": {
+            "type": { "const": "zip_url" },
+            "url": {
+              "type": "string",
+              "format": "uri",
+              "description": "Signed, time-limited URL to a ZIP of source images. Must remain valid long enough for the platform's ingest cron to pull it."
+            },
+            "imageCount": { "type": "integer", "minimum": 1 },
+            "sizeBytes": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "presetId": {
+          "type": "string",
+          "enum": ["fast-preview", "balanced", "high-quality"],
+          "default": "balanced",
+          "description": "Processing preset on the platform's NodeODM adapter."
+        },
+        "notes": { "type": "string", "maxLength": 2048 }
+      }
+    },
+    "ProcessingCallback": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "requestId", "jobReference", "status", "occurredAt", "callbackId"],
+      "properties": {
+        "schemaVersion": { "const": "natford-aerial-processing.v1" },
+        "requestId": { "type": "string", "description": "Echo of ProcessingRequest.requestId." },
+        "callbackId": {
+          "type": "string",
+          "minLength": 8,
+          "description": "Unique per delivery; consumers must dedupe on it (redeliveries are allowed)."
+        },
+        "jobReference": { "type": "string", "description": "Platform-side drone_processing_jobs.id." },
+        "status": {
+          "type": "string",
+          "enum": ["accepted", "running", "succeeded", "failed", "canceled"],
+          "description": "Job lifecycle status, aligned with the platform's drone_processing_jobs.status vocabulary."
+        },
+        "occurredAt": { "type": "string", "format": "date-time" },
+        "progress": { "type": "number", "minimum": 0, "maximum": 100 },
+        "message": { "type": "string", "maxLength": 2048 },
+        "artifacts": {
+          "type": "array",
+          "description": "Present when status is 'succeeded'. Each entry is a processed output the consumer can pull to build its evidence record.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "downloadUrl", "expiresAt"],
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["orthomosaic", "dsm", "dtm", "point_cloud", "mesh"],
+                "description": "Canonical output kinds from the platform's real-output adapter."
+              },
+              "downloadUrl": { "type": "string", "format": "uri", "description": "Signed, time-limited URL." },
+              "expiresAt": { "type": "string", "format": "date-time" },
+              "sizeBytes": { "type": "integer", "minimum": 0 },
+              "contentType": { "type": "string" }
+            }
+          }
+        },
+        "benchmarkSummary": {
+          "type": "object",
+          "description": "The platform's benchmark_summary.json for the run (schema owned by the platform; pass through opaque)."
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "succeeded" } } },
+          "then": { "required": ["artifacts"] }
+        }
+      ]
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/ProcessingRequest" },
+    { "$ref": "#/$defs/ProcessingCallback" }
+  ]
+}
