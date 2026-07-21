@@ -180,6 +180,36 @@ describe("POST /api/aerial/missions/[missionId]/process", () => {
     expect(jobInsertMock).not.toHaveBeenCalled();
   });
 
+  it("accepts a localhost http imagery URL but rejects plain-http remote URLs", async () => {
+    process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_URL = "https://worker.example.com";
+    process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN = "worker-secret";
+
+    const rejected = await postProcessMission(
+      request({ imageryZipUrl: "http://storage.example.com/imagery.zip" }),
+      routeContext()
+    );
+    expect(rejected.status).toBe(400);
+
+    const fetchMock = vi.fn(async (_url: string, init: RequestInit) => {
+      const dispatched = JSON.parse(String(init.body));
+      expect(dispatched.imagery.url).toBe("http://localhost:3300/imagery.zip");
+      return {
+        status: 202,
+        ok: true,
+        json: async () => acceptedWorkerResponse(dispatched.requestId),
+        text: async () => "",
+      };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const accepted = await postProcessMission(
+      request({ imageryZipUrl: "http://localhost:3300/imagery.zip" }),
+      routeContext()
+    );
+    expect(accepted.status).toBe(202);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("dispatches to the worker and records the accepted job", async () => {
     process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_URL = "https://worker.example.com/";
     process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN = "worker-secret";
