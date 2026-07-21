@@ -49,6 +49,14 @@ import count_validation
 import emissions
 import equity
 
+# Provenance stamp for the ACTUAL installed engine version — a hardcoded
+# string drifts silently under the >=1.6.0 pin (it already had, to "1.6.1").
+try:
+    from importlib.metadata import version as _pkg_version
+    ENGINE_STAMP = f"AequilibraE {_pkg_version('aequilibrae')}"
+except Exception:
+    ENGINE_STAMP = "AequilibraE (version unknown)"
+
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
 load_dotenv("../../openplan/.env.local", override=False)  # local dev fallback
@@ -662,12 +670,37 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     project.open(proj_dir)
     project.network.build_graphs(modes=["c"])
     graph = project.network.graphs["c"]
+    # distance_net zeroes virtual centroid connectors so the routed-distance
+    # skim shares resident_vmt_network's connector-excluded basis (the
+    # convergence diagnostic compares like with like; connectors are modeling
+    # artifacts, counted by neither VMT estimator). graph.network carries no
+    # link_type column, so connector ids come from the project DB. Added
+    # BEFORE prepare_graph so the field is carried into the compressed graph.
+    # Diagnostic-only plumbing: any failure here must degrade to the plain
+    # travel-time skim (diagnostic silently absent), never fail the stage.
+    skim_fields = ["travel_time"]
+    try:
+        _conn_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+        try:
+            connector_ids = {
+                int(r[0]) for r in _conn_db.execute(
+                    "SELECT link_id FROM links WHERE link_type = 'centroid_connector'"
+                )
+            }
+        finally:
+            _conn_db.close()
+        graph.network["distance_net"] = np.where(
+            graph.network["link_id"].isin(connector_ids), 0.0, graph.network["distance"]
+        )
+        skim_fields = ["travel_time", "distance", "distance_net"]
+    except Exception as e:
+        log += f"Convergence skim setup warning ({e}); routed-circuity diagnostic disabled.\n"
     graph.set_graph("travel_time")
     graph.prepare_graph(np.array(assignment_centroids))
     graph.set_blocked_centroid_flows(True)
-    # "distance" rides along so the assignment classes carry a blended,
-    # flow-consistent routed-distance skim (the convergence diagnostic input).
-    graph.set_skimming(["travel_time", "distance"])
+    # "distance"/"distance_net" ride along so the assignment classes carry
+    # blended, flow-consistent routed-distance skims (diagnostic inputs).
+    graph.set_skimming(skim_fields)
 
     log += f"Graph: {graph.num_links} links, {graph.num_nodes} nodes\n"
     log += "Running skims...\n"
@@ -933,7 +966,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
             for j in range(n_zones):
                 if i != j:
                     straight_mi[i, j] = haversine_miles(lons_cd[i], lats_cd[i], lons_cd[j], lats_cd[j])
-        routed_m = resident_class.results.skims.matrix["distance"][np.ix_(ii, ii)]
+        routed_m = resident_class.results.skims.matrix["distance_net"][np.ix_(ii, ii)]
         convergence_diag = convergence.routed_effective_circuity(
             resident_od[np.ix_(ii, ii)], routed_m, straight_mi
         )
@@ -1337,7 +1370,7 @@ def stage_artifacts(
 
     evidence = {
         "run_id": run_id,
-        "engine": "AequilibraE 1.6.1",
+        "engine": ENGINE_STAMP,
         "network_source": "OpenStreetMap",
         "algorithm": "BFW",
         "vdf": "BPR (α=0.15, β=4.0)",
@@ -1634,11 +1667,12 @@ def stage_artifacts(
             kpi_payload["breakdown_json"] = {
                 "provenance": (
                     "Demand-weighted routed distance (blended BFW assignment skim, resident "
-                    "class) ÷ great-circle distance over interzonal resident OD pairs — the "
-                    "circuity this run's own routing implies, reported beside the fixed 1.30 "
-                    "the OD estimator assumes. Screening-grade DIAGNOSTIC only; the OD "
-                    "estimator's 1.30 is unchanged (replacing it is a flagged calibration "
-                    "decision, not a code change)."
+                    "class, virtual centroid connectors excluded — the same basis as "
+                    "resident_vmt_network) ÷ great-circle distance over interzonal resident "
+                    "OD pairs — the circuity this run's own routing implies, reported beside "
+                    "the fixed 1.30 the OD estimator assumes. Screening-grade DIAGNOSTIC "
+                    "only; the OD estimator's 1.30 is unchanged (replacing it is a flagged "
+                    "calibration decision, not a code change)."
                 ),
                 **(assign_result.get("convergence_diagnostic") or {}),
             }
@@ -1715,7 +1749,7 @@ def stage_artifacts(
                 "metadata": {
                     "totalLinks": len(features),
                     "maxVolume": max_vol,
-                    "engine": "AequilibraE 1.6.1",
+                    "engine": ENGINE_STAMP,
                     "modelRunId": run_id,
                 },
             }
