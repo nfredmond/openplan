@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
 import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
+import { ModelRunTripGenScreen } from "@/components/models/model-run-trip-gen-screen";
 import { ModelRunEmissionsPanel } from "@/components/models/model-run-emissions-panel";
 import { ModelRunEquityPanel } from "@/components/models/model-run-equity-panel";
 import { ModelRunEngagementPanel } from "@/components/models/model-run-engagement-panel";
@@ -686,6 +687,10 @@ function ModelRunStagingAndArtifacts({
 
       {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
         <ModelRunCeqaVmtScreen modelId={modelId} modelRunId={run.id} runTitle={run.run_title} />
+      ) : null}
+
+      {run.status === "succeeded" && run.engine_key === "ite_trip_generation" ? (
+        <ModelRunTripGenScreen modelId={modelId} modelRunId={run.id} runTitle={run.run_title} />
       ) : null}
 
       {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
