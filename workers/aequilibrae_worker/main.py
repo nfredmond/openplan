@@ -36,6 +36,7 @@ from data_pipeline import (
 from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazonal_miles
 import convergence
 import link_vmt
+import select_link
 from gateways import (
     detect_external_gateways,
     build_cordon_injections,
@@ -940,6 +941,54 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     assig.max_iter = 50
     assig.rgap_target = 0.01
     assig.set_algorithm("bfw")
+
+    # Select-link corridor attribution: resolve the validation-station
+    # screenlines to link_ids and attach them to BOTH traffic classes BEFORE
+    # execute (aequilibrae copies each class's _selected_links into its results
+    # at execute start; setting after has no effect). Purely diagnostic — any
+    # failure logs and skips, and set_select_links is all-or-nothing on an
+    # unknown link_id, so screenlines are pre-filtered to graph-present links.
+    select_link_sets: dict[str, list[tuple[int, int]]] = {}
+    try:
+        if COUNT_VALIDATION_ENABLED and os.path.exists(VALIDATION_COUNTS_PATH):
+            import csv as _csv
+            with open(VALIDATION_COUNTS_PATH) as _f:
+                _sl_stations = list(_csv.DictReader(_f))
+            _sl_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+            _sl_db.enable_load_extension(True)
+            _sl_db.load_extension(SPATIALITE_PATH)
+            try:
+                _sl_rows = _sl_db.execute(
+                    "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
+                    "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
+                    "WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'"
+                ).fetchall()
+            finally:
+                _sl_db.close()
+            _sl_modeled = [
+                {"link_id": int(lid), "name": nm, "link_type": lt,
+                 "lon": float(cx) if cx is not None else None,
+                 "lat": float(cy) if cy is not None else None}
+                for lid, nm, lt, cx, cy in _sl_rows
+            ]
+            _screenlines = select_link.select_link_screenlines(_sl_stations, _sl_modeled)
+            _graph_link_ids = {int(x) for x in graph.graph["link_id"].values}
+            for _name, _link_ids in _screenlines.items():
+                _present = [lid for lid in _link_ids if lid in _graph_link_ids]
+                if _present:
+                    select_link_sets[_name] = [(lid, 0) for lid in _present]  # dir 0 = both
+            if select_link_sets:
+                resident_class.set_select_links(select_link_sets)
+                external_class.set_select_links(select_link_sets)
+                log += (
+                    f"Select-link: {len(select_link_sets)} corridor screenline(s) attached "
+                    f"({sum(len(v) for v in select_link_sets.values())} links).\n"
+                )
+                sb_patch_stage(stage_id, {"log_tail": log})
+    except Exception as e:
+        select_link_sets = {}
+        log += f"Select-link setup warning ({e}); corridor attribution skipped.\n"
+
     assig.execute()
 
     rgap = getattr(assig.assignment, "rgap", float("nan"))
@@ -978,6 +1027,45 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     except Exception as e:
         log += f"Convergence diagnostic warning: {e}\n"
 
+    # Select-link corridor attribution: classify each screenline's OD (the
+    # trips that route through it) into local / commute / through by cordon
+    # endpoint. Diagnostic; the SL-OD matrices are indexed over the assignment
+    # centroids, so cordon membership marks the boundary-injection zones.
+    select_link_analysis = None
+    if select_link_sets:
+        cordon_nodes = set(cordon_map.values())
+        is_cordon = np.array([c in cordon_nodes for c in assignment_centroids])
+
+        def _sl_od(cls, name):
+            arr = np.asarray(cls.results.select_link_od.matrix[name])
+            return arr[:, :, 0] if arr.ndim == 3 else arr
+
+        # Per-screenline try/except: one anomalous screenline logs and skips
+        # rather than voiding the whole run's corridor attribution.
+        screenlines_out = []
+        for name in select_link_sets:
+            try:
+                combined = _sl_od(resident_class, name) + _sl_od(external_class, name)
+                attr = select_link.link_attribution(combined, is_cordon)
+                attr["screenline"] = name
+                attr["link_ids"] = [lid for lid, _ in select_link_sets[name]]
+                screenlines_out.append(attr)
+            except Exception as e:
+                log += f"Select-link screenline {name} skipped ({e}).\n"
+        if screenlines_out:
+            select_link_analysis = {
+                "screenlines": screenlines_out,
+                "cordon_zone_count": int(is_cordon.sum()),
+            }
+            reached = [s for s in screenlines_out if s["total_trips"] > 0]
+            if reached:
+                log += (
+                    f"Select-link attribution: {len(reached)}/{len(screenlines_out)} screenline(s) "
+                    f"reached; through share "
+                    f"{min(s['through_share'] for s in reached):.0%}–"
+                    f"{max(s['through_share'] for s in reached):.0%}.\n"
+                )
+
     project.close()
 
     log += f"Converged: gap={rgap:.6f}, iterations={iters}\n"
@@ -996,6 +1084,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                   "avg_time_min": avg_time, "max_time_min": max_time},
         "loaded_links": loaded_links,
         "convergence_diagnostic": convergence_diag,
+        "select_link_analysis": select_link_analysis,
         "log": log,
     }
 
@@ -1191,6 +1280,7 @@ def stage_artifacts(
     gateways = setup_result.get("gateways") or []
     gateway_zone_ids = sorted({int(g["zone_id"]) for g in gateways})
     mode_split = assign_result.get("mode_split")
+    select_link_analysis = assign_result.get("select_link_analysis")
     resident_vmt = None
     resident_vmt_per_capita = None
     resident_vmt_all_trips = None
@@ -1407,6 +1497,11 @@ def stage_artifacts(
         "equity": equity_screen,
         "mode_split": mode_split,
         "validation": validation,
+        # Select-link corridor attribution: per-screenline local/commute/through
+        # split of the trips routing through it. Screening decomposition of the
+        # assigned demand — not a calibration; None where no counts define
+        # corridor screenlines for this study area.
+        "select_link": select_link_analysis,
         "gateways": gateways,
         # TAZ resolution the dynamic package was actually built at (post any
         # tract fallback), with its OD-seed provenance. None fields for
@@ -1532,6 +1627,12 @@ def stage_artifacts(
     convergence_diag = assign_result.get("convergence_diagnostic")
     if convergence_diag and convergence_diag.get("effective_circuity") is not None:
         kpis.append(("assignment", "effective_circuity_routed", "Routed Effective Circuity", convergence_diag["effective_circuity"], "ratio"))
+    # Select-link corridor attribution: a discovery KPI (count of reached
+    # screenlines); the per-corridor local/commute/through detail rides in
+    # breakdown_json + the evidence packet. Assignment category, CEQA-disjoint.
+    sl_reached = [s for s in ((select_link_analysis or {}).get("screenlines") or []) if s.get("total_trips")]
+    if sl_reached:
+        kpis.append(("assignment", "select_link_screenlines", "Corridor Screenlines Attributed", len(sl_reached), "count"))
     if population_total is not None:
         kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
     # Screening GHG (CO2e) — annual metric tons (the CEQA-style figure) + a
@@ -1675,6 +1776,19 @@ def stage_artifacts(
                     "calibration decision, not a code change)."
                 ),
                 **(assign_result.get("convergence_diagnostic") or {}),
+            }
+        elif name == "select_link_screenlines":
+            kpi_payload["breakdown_json"] = {
+                "provenance": (
+                    "Select-link analysis on each corridor screenline (the validation-count "
+                    "stations' road links): the origin-destination pattern of trips routing "
+                    "through the screenline, split by boundary-cordon endpoint into local "
+                    "(internal↔internal), commute (one cordon endpoint), and through (both "
+                    "cordon endpoints). Screening decomposition of demand the 2-class BFW "
+                    "assignment already routed — not a calibration or a validated forecast; "
+                    "the split is as good as the documented cordon gateway assumptions."
+                ),
+                "screenlines": sl_reached,
             }
         elif name in (
             "auto_mode_share_pct", "transit_mode_share_pct", "active_mode_share_pct",
