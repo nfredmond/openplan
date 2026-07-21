@@ -20,12 +20,27 @@ const paramsSchema = z.object({
   missionId: z.string().uuid(),
 });
 
+// Mirrors the worker's URL rule (isAcceptableContractUrl on the platform
+// side): https anywhere, plain http only for localhost loops — self-hosted
+// deployments serve imagery to the worker from the same machine.
+function isAcceptableImageryUrl(value: string): boolean {
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return false;
+  }
+  if (parsed.protocol === "https:") return true;
+  if (parsed.protocol !== "http:") return false;
+  return parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+}
+
 const processBodySchema = z.object({
   imageryZipUrl: z
     .string()
     .url()
-    .refine((value) => value.startsWith("https://"), {
-      message: "imageryZipUrl must be an https URL",
+    .refine(isAcceptableImageryUrl, {
+      message: "imageryZipUrl must be an https URL (http allowed for localhost only)",
     }),
   imageCount: z.number().int().positive().optional(),
   sizeBytes: z.number().int().positive().optional(),
