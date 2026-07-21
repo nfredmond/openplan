@@ -42,6 +42,34 @@ def test_screenline_prefers_named_over_type():
     assert out == {"S1": [1, 2]}, out  # named only; type-only(3) dropped, out-of-bbox(4) dropped
 
 
+def test_screenline_name_collapses_whitespace():
+    # aequilibrae's set_select_links rewrites spaces in a link-set name to
+    # underscores; the screenline key must be pre-collapsed to match, else the
+    # SL-OD results are looked up under the wrong key and silently dropped.
+    links = [_link(1, "SR 20", "motorway", -121.05, 39.2)]
+    st = _station(station_id="SR 20 JCT 49")  # spaces in the id
+    out = sl.select_link_screenlines([st], links)
+    assert list(out.keys()) == ["SR_20_JCT_49"], out
+    assert " " not in list(out.keys())[0]
+
+
+def test_screenline_name_falls_back_to_label_then_index():
+    links = [_link(1, "SR 20", "motorway", -121.05, 39.2)]
+    st = _station(station_id="", label="Golden Center at 49")
+    out = sl.select_link_screenlines([st], links)
+    assert list(out.keys()) == ["Golden_Center_at_49"], out
+
+
+def test_screenline_collapsed_name_collision_kept_distinct():
+    links = [_link(1, "SR 20", "motorway", -121.05, 39.2), _link(2, "SR 20", "motorway", -121.05, 39.21)]
+    # Two stations whose ids collapse to the same key must not overwrite.
+    s1 = _station(station_id="SR 20")
+    s2 = _station(station_id="SR_20", bbox_min_lon=-121.1, bbox_max_lon=-121.0,
+                  bbox_min_lat=39.15, bbox_max_lat=39.25)
+    out = sl.select_link_screenlines([s1, s2], links)
+    assert len(out) == 2, out  # distinct keys, no overwrite
+
+
 def test_screenline_type_fallback_when_no_named_match():
     links = [_link(7, "Unnamed Hwy", "motorway", -121.05, 39.2)]
     st = _station(candidate_model_names="", facility_name="")

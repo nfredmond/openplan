@@ -1033,21 +1033,26 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # centroids, so cordon membership marks the boundary-injection zones.
     select_link_analysis = None
     if select_link_sets:
-        try:
-            cordon_nodes = set(cordon_map.values())
-            is_cordon = np.array([c in cordon_nodes for c in assignment_centroids])
+        cordon_nodes = set(cordon_map.values())
+        is_cordon = np.array([c in cordon_nodes for c in assignment_centroids])
 
-            def _sl_od(cls, name):
-                arr = np.asarray(cls.results.select_link_od.matrix[name])
-                return arr[:, :, 0] if arr.ndim == 3 else arr
+        def _sl_od(cls, name):
+            arr = np.asarray(cls.results.select_link_od.matrix[name])
+            return arr[:, :, 0] if arr.ndim == 3 else arr
 
-            screenlines_out = []
-            for name in select_link_sets:
+        # Per-screenline try/except: one anomalous screenline logs and skips
+        # rather than voiding the whole run's corridor attribution.
+        screenlines_out = []
+        for name in select_link_sets:
+            try:
                 combined = _sl_od(resident_class, name) + _sl_od(external_class, name)
                 attr = select_link.link_attribution(combined, is_cordon)
                 attr["screenline"] = name
                 attr["link_ids"] = [lid for lid, _ in select_link_sets[name]]
                 screenlines_out.append(attr)
+            except Exception as e:
+                log += f"Select-link screenline {name} skipped ({e}).\n"
+        if screenlines_out:
             select_link_analysis = {
                 "screenlines": screenlines_out,
                 "cordon_zone_count": int(is_cordon.sum()),
@@ -1060,9 +1065,6 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                     f"{min(s['through_share'] for s in reached):.0%}–"
                     f"{max(s['through_share'] for s in reached):.0%}.\n"
                 )
-        except Exception as e:
-            select_link_analysis = None
-            log += f"Select-link attribution warning ({e}); skipped.\n"
 
     project.close()
 

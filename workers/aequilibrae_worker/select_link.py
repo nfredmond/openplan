@@ -84,8 +84,15 @@ def select_link_screenlines(
             continue
         # Deterministic order + de-dup + cap.
         screenline = sorted(dict.fromkeys(screenline))[:MAX_LINKS_PER_SCREENLINE]
-        station_id = str(station.get("station_id") or station.get("label") or f"station_{len(out)}")
-        out[station_id] = screenline
+        raw_name = str(station.get("station_id") or station.get("label") or f"station_{len(out)}")
+        # AequilibraE's set_select_links rewrites any whitespace in a link-set
+        # NAME to underscores, so the SL-OD results are keyed by the collapsed
+        # name. Collapse it here too, or the worker would store under one key
+        # and look up under another (KeyError → the whole analysis is lost).
+        name = "_".join(raw_name.split()) or f"station_{len(out)}"
+        while name in out:  # keep distinct stations distinct after collapsing
+            name = f"{name}_{len(out)}"
+        out[name] = screenline
         if len(out) >= MAX_SCREENLINES:
             break
     return out
