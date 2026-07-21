@@ -89,6 +89,10 @@ const launchModelRunSchema = z.object({
   tripGenProgram: tripGenProgramSchema.optional(),
   /** ite_trip_generation only: read the program from a scenario_assumption_sets row. */
   assumptionSetId: z.string().uuid().optional(),
+  /** aequilibrae only: TAZ resolution for the worker's dynamic Census package.
+   * "block_group" builds ~3x finer sub-tract zones (lower intrazonal share);
+   * default "tract". Ignored by every other engine. */
+  zoneGeography: z.enum(["tract", "block_group"]).optional(),
 });
 
 type RouteContext = {
@@ -581,6 +585,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         modelFamily: access.model.model_family ?? null,
         configVersion: access.model.config_version ?? null,
         launchedAt,
+        // The worker reads this to size the dynamic package's TAZs; stamped
+        // only for the engine that consumes it so other engines' snapshots
+        // don't carry a dead option.
+        ...(isAequilibraeRun && parsed.data.zoneGeography
+          ? { zoneGeography: parsed.data.zoneGeography }
+          : {}),
       },
       assumption_snapshot_json: launchPayload.assumptionSnapshot,
       started_at: isAequilibraeRun ? null : launchedAt,

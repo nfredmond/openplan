@@ -110,7 +110,7 @@ def test_fetch_od_merges_main_and_aux():
             ("ca", "main"): {("06057010200", "06057010100"): 10},
             ("ca", "aux"): {("32031000100", "06057010100"): 3},  # out-of-state home
         }
-        lodes.download_lodes_od = lambda abbr, part, year, cache_dir, keep_tracts: data[(abbr, part)]
+        lodes.download_lodes_od = lambda abbr, part, year, cache_dir, keep_tracts, geoid_len=11: data[(abbr, part)]
         flows, used, failed = lodes.fetch_lodes_od_by_tract_pair(["06"], None, 2022, None)
         assert flows == {
             ("06057010200", "06057010100"): 10,
@@ -124,7 +124,7 @@ def test_fetch_od_merges_main_and_aux():
 def test_fetch_od_aux_failure_tolerated():
     original = lodes.download_lodes_od
     try:
-        def stub(abbr, part, year, cache_dir, keep_tracts):
+        def stub(abbr, part, year, cache_dir, keep_tracts, geoid_len=11):
             if part == "aux":
                 raise lodes.LodesDownloadError("aux 404")
             return {("06057010200", "06057010100"): 5}
@@ -139,7 +139,7 @@ def test_fetch_od_aux_failure_tolerated():
 def test_fetch_od_aux_generic_error_tolerated():
     original = lodes.download_lodes_od
     try:
-        def stub(abbr, part, year, cache_dir, keep_tracts):
+        def stub(abbr, part, year, cache_dir, keep_tracts, geoid_len=11):
             if part == "aux":
                 raise ValueError("unexpected non-LodesDownloadError")
             return {("06057010200", "06057010100"): 8}
@@ -170,7 +170,7 @@ def test_download_od_corrupt_cache_is_purged():
 def test_fetch_od_main_failure_marks_state_failed():
     original = lodes.download_lodes_od
     try:
-        def stub(abbr, part, year, cache_dir, keep_tracts):
+        def stub(abbr, part, year, cache_dir, keep_tracts, geoid_len=11):
             raise lodes.LodesDownloadError("main 404")
         lodes.download_lodes_od = stub
         flows, used, failed = lodes.fetch_lodes_od_by_tract_pair(["06", "99"], None, 2022, None)
@@ -220,6 +220,43 @@ def test_bg_geoids_share_parent_tract_prefix():
     csv_text = "w_geocode,C000\n060570101001000,10\n060570101002000,20\n"
     agg = lodes.aggregate_wac_jobs_by_block_group(csv_text)
     assert all(bg[:11] == "06057010100" for bg in agg), agg
+
+
+def test_aggregate_od_by_block_group_pair():
+    # geoid_len=12 rolls the same block-keyed rows up to block-group pairs.
+    csv_text = (
+        "w_geocode,h_geocode,S000\n"
+        "060570101001000,060570102001001,7\n"
+        "060570101001002,060570102001003,5\n"   # same BG pair -> summed
+        "060570101002000,060570102001001,4\n"   # different work BG
+        "060570101001000,999990001001000,9\n"   # out-of-area home BG
+    )
+    agg = lodes.aggregate_od_by_tract_pair_text(csv_text, geoid_len=12)
+    assert agg[("060570102001", "060570101001")] == 12, agg
+    assert agg[("060570102001", "060570101002")] == 4, agg
+    assert ("999990001001", "060570101001") in agg
+
+
+def test_aggregate_od_bg_keep_filter():
+    csv_text = (
+        "w_geocode,h_geocode,S000\n"
+        "060570101001000,060570102001001,7\n"
+        "060570101001000,999990001001000,9\n"
+    )
+    keep = {"060570101001", "060570102001"}
+    agg = lodes.aggregate_od_by_tract_pair_text(csv_text, keep, geoid_len=12)
+    assert agg == {("060570102001", "060570101001"): 7}, agg
+
+
+def test_aggregate_od_tract_default_unchanged():
+    # geoid_len defaults to 11 — byte-identical to the historical tract roll-up.
+    csv_text = (
+        "w_geocode,h_geocode,S000\n"
+        "060570101001000,060570102001001,7\n"
+        "060570101002000,060570102002000,5\n"   # same tract pair via different BGs
+    )
+    agg = lodes.aggregate_od_by_tract_pair_text(csv_text)
+    assert agg == {("06057010200", "06057010100"): 12}, agg
 
 
 def main():

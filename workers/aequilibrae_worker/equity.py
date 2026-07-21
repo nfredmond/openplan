@@ -49,6 +49,21 @@ def _share(numerator: float, denominator: float) -> float:
     return float(numerator) / float(denominator) if denominator and denominator > 0 else 0.0
 
 
+def repair_geoids(raw_values: Iterable[Any], zone_geography: str | None = None) -> list[str]:
+    """Restore Census GEOID strings that lost leading zeros to numeric coercion.
+
+    A CSV round-trip can turn a leading-zero GEOID into an int (CA tract
+    ``06057000100`` → ``6057000100``). Zero-padding needs the EXPECTED length —
+    a CA block group coerced to 11 digits is indistinguishable from a clean
+    tract GEOID by length alone. ``zone_geography`` supplies it: 'block_group'
+    pads to 12, anything else to 11. When the package manifest doesn't stamp a
+    geography (pre-staged pilots), pass None and tract length is assumed —
+    exactly the historical behavior.
+    """
+    expected_len = 12 if str(zone_geography or "").lower() in ("block_group", "blockgroup", "bg") else 11
+    return [str(v).strip().zfill(expected_len) for v in raw_values]
+
+
 def resident_vmt_by_origin_zone(
     od_matrix: Sequence[Sequence[float]],
     zone_ids: Sequence[int],

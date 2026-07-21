@@ -27,7 +27,12 @@ import pandas as pd
 from shapely.geometry import box, shape
 from dotenv import load_dotenv
 
-from data_pipeline import DataPipelineError, generate_package
+from data_pipeline import (
+    DataPipelineError,
+    generate_package,
+    normalize_zone_geography,
+    package_geography_mismatch,
+)
 from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazonal_miles
 import link_vmt
 from gateways import (
@@ -276,7 +281,7 @@ def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, val
 
 
 def sb_get_run(run_id: str) -> dict:
-    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,workspace_id,corridor_geojson,query_text,engine_key,run_title"
+    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,workspace_id,corridor_geojson,query_text,engine_key,run_title,input_snapshot_json"
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
         raise RuntimeError(f"Failed to load model run {run_id}: {res.status_code} {res.text[:200]}")
@@ -297,22 +302,46 @@ def resolve_run_study_area(run_row: dict) -> tuple[dict | None, tuple]:
     return None, PILOT_BBOX
 
 
+def resolve_zone_geography(run_row: dict | None) -> str:
+    """Per-run zone geography: launch option > AEQ_ZONE_GEOGRAPHY env > tract.
+
+    The launch route stamps the option into input_snapshot_json.zoneGeography;
+    the env var remains as an ops-level fallback for pre-option runs.
+    """
+    snapshot = (run_row or {}).get("input_snapshot_json") or {}
+    requested = snapshot.get("zoneGeography") or snapshot.get("zone_geography")
+    if not requested:
+        requested = os.getenv("AEQ_ZONE_GEOGRAPHY", "tract")
+    return normalize_zone_geography(requested)
+
+
 def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = None) -> dict:
     run_row = run_row or sb_get_run(run_id)
     corridor_geojson, bbox = resolve_run_study_area(run_row)
     pkg_dir = os.path.join(work_dir, "package")
     manifest_path = os.path.join(pkg_dir, "manifest.json")
 
+    # "block_group" builds ~3x finer sub-tract TAZs than "tract" (lower
+    # intrazonal share, more accurate trip lengths/VMT).
+    zone_geography = resolve_zone_geography(run_row)
+
     if os.path.exists(manifest_path):
         with open(manifest_path) as f:
             manifest = json.load(f)
-        manifest["package_dir"] = pkg_dir
-        manifest["bbox"] = manifest.get("bbox") or list(bbox)
-        return manifest
+        # A relaunch may change the requested geography; a dynamic package
+        # cached at the old resolution must not silently satisfy it. Pre-staged
+        # pilot/builder packages (non-dynamic-v1) always reuse verbatim.
+        if package_geography_mismatch(manifest, zone_geography):
+            print(
+                f"Cached package is {manifest.get('zone_geography')} but the run "
+                f"requests {zone_geography}; rebuilding the dynamic package."
+            )
+            shutil.rmtree(pkg_dir)
+        else:
+            manifest["package_dir"] = pkg_dir
+            manifest["bbox"] = manifest.get("bbox") or list(bbox)
+            return manifest
 
-    # AEQ_ZONE_GEOGRAPHY="block_group" builds ~3x finer sub-tract TAZs (lower
-    # intrazonal share, more accurate trip lengths/VMT). Default "tract".
-    zone_geography = os.getenv("AEQ_ZONE_GEOGRAPHY", "tract")
     try:
         manifest = generate_package(
             output_dir=pkg_dir, bbox=bbox, corridor_geojson=corridor_geojson,
@@ -1150,10 +1179,15 @@ def stage_artifacts(
         census_key = os.getenv("CENSUS_API_KEY", "")
         pkg_dir = (package_meta or {}).get("package_dir")
         if census_key and pkg_dir:
-            zattr_e = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+            zattr_e = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"), dtype={"GEOID": str})
             zattr_e["zone_id"] = zattr_e["zone_id"].astype(int)
             zone_ids_e = zattr_e["zone_id"].tolist()
-            geoids_e = [str(g).zfill(11) for g in zattr_e["GEOID"].tolist()]
+            # zfill length must come from the package geography, not be assumed
+            # tract: a leading-zero-state block group coerced to 11 digits is
+            # indistinguishable from a tract GEOID by length alone.
+            geoids_e = equity.repair_geoids(
+                zattr_e["GEOID"].tolist(), (package_meta or {}).get("zone_geography")
+            )
             lons_e = zattr_e["centroid_lon"].tolist(); lats_e = zattr_e["centroid_lat"].tolist()
             areas_e = zattr_e["area_sq_mi"].tolist(); pops_e = zattr_e["est_population"].tolist()
             eq_csv = ("od_auto_matrix.csv"
@@ -1190,13 +1224,17 @@ def stage_artifacts(
         if resident_basis == "auto_only"
         else "all internal person-trips (mode choice not applied)"
     )
+    # Zone geography (TAZ resolution) as the dynamic package actually built it;
+    # None for pre-staged packages whose manifests predate the stamp.
+    zone_geography = (package_meta or {}).get("zone_geography")
+    zone_noun = "block-group" if zone_geography == "block_group" else "tract"
     resident_provenance = (
         "Σ internal→internal OD trips × centroid great-circle distance × 1.30 network "
-        "circuity (intrazonal ≈ 0.5·√(area/π), 0.75 mi fallback where tract area is "
-        f"unavailable), over {resident_basis_note}. External gateway through-traffic is "
-        "loaded onto the network VMT figure only and is absent from this resident OD, so "
-        "no gateway exclusion is applied. Screening-grade, derived — not measured. Not a "
-        "validated travel model or calibrated forecast."
+        f"circuity (intrazonal ≈ 0.5·√(area/π), 0.75 mi fallback where {zone_noun} area is "
+        f"unavailable), over {resident_basis_note}, at {zone_noun} zone resolution. External "
+        "gateway through-traffic is loaded onto the network VMT figure only and is absent "
+        "from this resident OD, so no gateway exclusion is applied. Screening-grade, "
+        "derived — not measured. Not a validated travel model or calibrated forecast."
     )
     boundary_caveat = (
         f"Through-traffic loaded at {len(gateways)} boundary gateway(s) (screening-grade)"
@@ -1280,6 +1318,15 @@ def stage_artifacts(
         "mode_split": mode_split,
         "validation": validation,
         "gateways": gateways,
+        # TAZ resolution the dynamic package was actually built at (post any
+        # tract fallback), with its OD-seed provenance. None fields for
+        # pre-staged packages whose manifests predate these stamps.
+        "zones": {
+            "zone_geography": zone_geography,
+            "count": (package_meta or {}).get("zones"),
+            "demand_method": (package_meta or {}).get("demand_method"),
+            "od_provenance": (package_meta or {}).get("od_provenance"),
+        },
         # LODES-vs-synthetic employment provenance from the package manifest,
         # so the app can badge synthetic-fallback jobs as Estimated.
         "employment": (package_meta or {}).get("jobs_provenance"),
@@ -1477,7 +1524,15 @@ def stage_artifacts(
         }
         # VMT KPIs carry their derivation provenance, mirroring the seeded
         # county-lane convention (breakdown_json.provenance).
-        if name in ("daily_vmt", "vmt_per_capita"):
+        if name == "zones" and zone_geography is not None:
+            kpi_payload["breakdown_json"] = {
+                "zone_geography": zone_geography,
+                "provenance": (
+                    f"TAZs are Census {zone_noun}s from the dynamic package "
+                    "(per-run launch option; tract is the default)."
+                ),
+            }
+        elif name in ("daily_vmt", "vmt_per_capita"):
             kpi_payload["breakdown_json"] = {
                 "provenance": evidence["vmt"]["method"] + "; " + evidence["vmt"]["source"],
             }

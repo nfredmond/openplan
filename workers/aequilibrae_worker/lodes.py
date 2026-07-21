@@ -236,24 +236,30 @@ def lodes_od_url(state_abbr: str, part: str, year: str | int = DEFAULT_LODES_YEA
     )
 
 
-def aggregate_od_by_tract_pair(rows_iter, keep_tracts: Iterable[str] | None = None) -> dict[tuple[str, str], int]:
-    """Sum LODES OD `S000` to (home_tract, work_tract) pairs.
+def aggregate_od_by_tract_pair(
+    rows_iter, keep_tracts: Iterable[str] | None = None, geoid_len: int = 11
+) -> dict[tuple[str, str], int]:
+    """Sum LODES OD `S000` to (home, work) GEOID pairs at `geoid_len` chars.
 
-    Pure/stdlib — accepts any iterable of dict rows (e.g. a streaming
-    `csv.DictReader`), so the full decompressed file is never materialized.
-    `keep_tracts`, when given, drops any pair with an endpoint outside the set,
-    bounding the returned dict to |study tracts|². Key order is
-    (home, work) so the origin axis aligns with `productions` (home-based).
+    `geoid_len=11` (default) aggregates the 15-digit block geocodes to tract
+    pairs; `geoid_len=12` to block-group pairs — LODES OD is block-keyed, so
+    both are exact roll-ups of the same file. Pure/stdlib — accepts any
+    iterable of dict rows (e.g. a streaming `csv.DictReader`), so the full
+    decompressed file is never materialized. `keep_tracts`, when given, drops
+    any pair with an endpoint outside the set (its GEOIDs must be at
+    `geoid_len` chars), bounding the returned dict to |study zones|². Key
+    order is (home, work) so the origin axis aligns with `productions`
+    (home-based).
     """
     keep = {str(t) for t in keep_tracts} if keep_tracts is not None else None
     flows: dict[tuple[str, str], int] = {}
     for row in rows_iter:
         w = (row.get("w_geocode") or "").strip()
         h = (row.get("h_geocode") or "").strip()
-        if len(w) < 11 or len(h) < 11:
+        if len(w) < geoid_len or len(h) < geoid_len:
             continue
-        w_tract = w[:11]
-        h_tract = h[:11]
+        w_tract = w[:geoid_len]
+        h_tract = h[:geoid_len]
         if keep is not None and (w_tract not in keep or h_tract not in keep):
             continue
         raw = row.get("S000")
@@ -268,9 +274,11 @@ def aggregate_od_by_tract_pair(rows_iter, keep_tracts: Iterable[str] | None = No
     return flows
 
 
-def aggregate_od_by_tract_pair_text(od_csv_text: str, keep_tracts: Iterable[str] | None = None) -> dict[tuple[str, str], int]:
+def aggregate_od_by_tract_pair_text(
+    od_csv_text: str, keep_tracts: Iterable[str] | None = None, geoid_len: int = 11
+) -> dict[tuple[str, str], int]:
     """Text wrapper around `aggregate_od_by_tract_pair` for unit tests."""
-    return aggregate_od_by_tract_pair(csv.DictReader(io.StringIO(od_csv_text)), keep_tracts)
+    return aggregate_od_by_tract_pair(csv.DictReader(io.StringIO(od_csv_text)), keep_tracts, geoid_len)
 
 
 def download_lodes_od(
@@ -279,6 +287,7 @@ def download_lodes_od(
     year: str | int = DEFAULT_LODES_YEAR,
     cache_dir: str | None = None,
     keep_tracts: Iterable[str] | None = None,
+    geoid_len: int = 11,
 ) -> dict[tuple[str, str], int]:
     """Download (or read from cache) a LODES OD part and aggregate to tract pairs.
 
@@ -315,7 +324,7 @@ def download_lodes_od(
 
     try:
         with gzip.open(src, "rt", encoding="utf-8") as fh:
-            return aggregate_od_by_tract_pair(csv.DictReader(fh), keep_tracts)
+            return aggregate_od_by_tract_pair(csv.DictReader(fh), keep_tracts, geoid_len)
     except (OSError, EOFError, zlib.error) as exc:
         # zlib.error (mid-stream deflate corruption) is NOT an OSError subclass;
         # without it a corrupt cache would never be purged and every re-run would
@@ -333,10 +342,13 @@ def fetch_lodes_od_by_tract_pair(
     keep_tracts: Iterable[str] | None = None,
     year: str | int = DEFAULT_LODES_YEAR,
     cache_dir: str | None = None,
+    geoid_len: int = 11,
 ) -> tuple[dict[tuple[str, str], int], list[str], list[str]]:
     """Fetch + aggregate LODES OD (main + aux) for the given state FIPS codes.
 
-    Returns (flows_by_tract_pair, used_state_fips, failed_state_fips). A state
+    `geoid_len` picks the roll-up: 11 = tract pairs (default), 12 = block-group
+    pairs (`keep_tracts` GEOIDs must match that length). Returns
+    (flows_by_geoid_pair, used_state_fips, failed_state_fips). A state
     counts as `used` when its `main` part downloads; an `aux` failure is
     tolerated (aux carries out-of-state home tracts that `keep_tracts` usually
     drops anyway) and does not fail the state.
@@ -350,14 +362,14 @@ def fetch_lodes_od_by_tract_pair(
             failed.append(fips)
             continue
         try:
-            main = download_lodes_od(abbr, "main", year, cache_dir, keep_tracts)
+            main = download_lodes_od(abbr, "main", year, cache_dir, keep_tracts, geoid_len)
         except LodesDownloadError:
             failed.append(fips)
             continue
         for key, count in main.items():
             flows[key] = flows.get(key, 0) + count
         try:
-            aux = download_lodes_od(abbr, "aux", year, cache_dir, keep_tracts)
+            aux = download_lodes_od(abbr, "aux", year, cache_dir, keep_tracts, geoid_len)
             for key, count in aux.items():
                 flows[key] = flows.get(key, 0) + count
         except Exception:

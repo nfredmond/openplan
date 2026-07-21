@@ -62,6 +62,24 @@ def test_summarize_disparity():
     assert "not the official" in s["method"].lower()
 
 
+def test_repair_geoids_block_group_restores_leading_zero():
+    # CA BG GEOID int-coerced by a CSV round-trip: 060570001001 -> 60570001001.
+    out = eq.repair_geoids([60570001001, "060570001002"], "block_group")
+    assert out == ["060570001001", "060570001002"], out
+
+
+def test_repair_geoids_tract_default():
+    out = eq.repair_geoids([6057000100, "06057000200"], None)
+    assert out == ["06057000100", "06057000200"], out
+
+
+def test_repair_geoids_never_truncates():
+    # A clean 12-char BG under a tract expectation stays 12 chars (zfill no-op),
+    # so unstamped pre-staged BG packages still level-detect correctly.
+    out = eq.repair_geoids(["060570001001"], "tract")
+    assert out == ["060570001001"], out
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:

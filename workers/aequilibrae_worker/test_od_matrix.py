@@ -193,6 +193,48 @@ def test_largest_remainder_preserves_total():
     assert out.sum() == 2 and set(out.tolist()) <= {0, 1}
 
 
+def test_lodes_seed_matches_block_group_geoids():
+    # BG mode passes 12-char GEOID pairs; the seed lookup is GEOID-keyed and
+    # must match them exactly as it does 11-char tract keys.
+    z = _zones().copy()
+    z["GEOID"] = ["060570001001", "060570001002", "060570002001", "060570002002"]
+    meta = {}
+    seeded = dp.build_daily_od_matrix(
+        z,
+        od_by_pair={("060570001001", "060570002001"): 5000, ("060570001002", "060570002002"): 3000},
+        od_meta=meta,
+    )
+    assert meta["used_lodes"] is True, meta
+    assert meta["pairs_matched"] == 2, meta
+    prod = np.round(_productions(z)).astype(int)
+    assert np.all(np.abs(seeded.to_numpy().sum(axis=1) - prod) <= len(z))
+
+
+def test_normalize_zone_geography():
+    assert dp.normalize_zone_geography("block_group") == "block_group"
+    assert dp.normalize_zone_geography("BG") == "block_group"
+    assert dp.normalize_zone_geography("blockgroup") == "block_group"
+    assert dp.normalize_zone_geography("tract") == "tract"
+    assert dp.normalize_zone_geography(None) == "tract"
+    assert dp.normalize_zone_geography("") == "tract"
+    assert dp.normalize_zone_geography("census_tract") == "tract"
+
+
+def test_package_geography_mismatch():
+    dyn_tract = {"version": "dynamic-v1", "zone_geography": "tract"}
+    dyn_bg = {"version": "dynamic-v1", "zone_geography": "block_group"}
+    assert dp.package_geography_mismatch(dyn_tract, "block_group") is True
+    assert dp.package_geography_mismatch(dyn_bg, "bg") is False
+    assert dp.package_geography_mismatch(dyn_tract, "tract") is False
+    # Pre-staged pilot/builder packages are never invalidated: they can't be
+    # regenerated from a bbox, and staging one was a deliberate act.
+    assert dp.package_geography_mismatch(
+        {"version": "1.0.0-bg", "zone_geography": "block_group"}, "tract"
+    ) is False
+    assert dp.package_geography_mismatch({}, "block_group") is False
+    assert dp.package_geography_mismatch({"version": "dynamic-v1"}, "block_group") is False
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in sorted(globals().items()) if name.startswith("test_")]
     try:

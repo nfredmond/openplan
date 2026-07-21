@@ -599,6 +599,31 @@ def build_daily_od_matrix(
     return od
 
 
+def normalize_zone_geography(value: Any) -> str:
+    """Collapse the accepted zone-geography spellings to 'block_group' | 'tract'.
+
+    Anything unrecognized (None, '', typos) is 'tract' — the safe default the
+    worker has always used.
+    """
+    return "block_group" if str(value).lower() in ("block_group", "blockgroup", "bg") else "tract"
+
+
+def package_geography_mismatch(manifest: dict, requested_zone_geography: Any) -> bool:
+    """True when a cached dynamic package was built at a different zone geography.
+
+    Only worker-generated dynamic packages (version 'dynamic-v1') are ever
+    invalidated: pre-staged pilot/builder packages carry other version strings
+    (or no zone_geography at all) and must keep the reuse-verbatim behavior —
+    they were staged deliberately and can't be regenerated from a bbox.
+    """
+    if not isinstance(manifest, dict) or manifest.get("version") != "dynamic-v1":
+        return False
+    stamped = manifest.get("zone_geography")
+    if not stamped:
+        return False
+    return normalize_zone_geography(stamped) != normalize_zone_geography(requested_zone_geography)
+
+
 def generate_package(
     output_dir: str,
     bbox: tuple[float, float, float, float] | None = None,
@@ -646,7 +671,7 @@ def generate_package(
         print(f"  Jobs: synthetic population proxy for all {synth_tract_count} tracts (LODES unavailable).")
 
     # Optional finer sub-tract TAZs: disaggregate tract zones to block groups.
-    use_block_groups = str(zone_geography).lower() in ("block_group", "blockgroup", "bg")
+    use_block_groups = normalize_zone_geography(zone_geography) == "block_group"
     if use_block_groups:
         try:
             zones = _refine_zones_to_block_groups(zones, bbox, corridor_geojson, state_fips)
@@ -655,30 +680,29 @@ def generate_package(
             print(f"  Block-group refinement failed ({exc}); keeping {len(tracts)} tract zones.")
             use_block_groups = False
 
-    # Real LODES OD (home→work commute flows), aggregated to the study-area
-    # tract pairs, to shape the trip distribution. keep_tracts bounds the fetch
-    # to this study area (memory-safe on state-scale OD files). Never fails a run.
-    # LODES OD is tract-keyed, so it only seeds TRACT zones; block-group zones use
-    # the pure gravity distribution (their marginals still carry real BG pop/jobs).
-    if use_block_groups:
-        od_by_pair, od_states_used, od_states_failed = {}, [], []
-    else:
-        try:
-            # enrich_zone_attributes emits the tract column as "GEOID" (uppercase).
-            keep_tracts = {str(g) for g in zones["GEOID"].astype(str)}
-            od_by_pair, od_states_used, od_states_failed = fetch_lodes_od_by_tract_pair(
-                state_fips, keep_tracts, LODES_YEAR, LODES_CACHE_DIR
-            )
-        except Exception as exc:  # never let LODES stop a run
-            print(f"  LODES OD fetch error ({exc}); using pure gravity distribution.")
-            od_by_pair, od_states_used, od_states_failed = {}, [], sorted(state_fips)
+    # Real LODES OD (home→work commute flows), aggregated to study-area GEOID
+    # pairs at the zone geography (LODES OD is block-keyed, so tract AND
+    # block-group pairs are both exact roll-ups of the same file), to shape the
+    # trip distribution. The keep set bounds the fetch to this study area
+    # (memory-safe on state-scale OD files). Never fails a run.
+    od_pair_label = "block-group" if use_block_groups else "tract"
+    try:
+        # enrich_zone_attributes emits the zone GEOID column as "GEOID" (uppercase).
+        keep_geoids = {str(g) for g in zones["GEOID"].astype(str)}
+        od_by_pair, od_states_used, od_states_failed = fetch_lodes_od_by_tract_pair(
+            state_fips, keep_geoids, LODES_YEAR, LODES_CACHE_DIR,
+            geoid_len=12 if use_block_groups else 11,
+        )
+    except Exception as exc:  # never let LODES stop a run
+        print(f"  LODES OD fetch error ({exc}); using pure gravity distribution.")
+        od_by_pair, od_states_used, od_states_failed = {}, [], sorted(state_fips)
 
     od_meta: dict[str, Any] = {}
     od = build_daily_od_matrix(zones, od_by_pair=od_by_pair, od_meta=od_meta)
     od_used_lodes = bool(od_meta.get("used_lodes"))
     if od_used_lodes:
         print(
-            f"  OD: LODES8-seeded gravity — {od_meta['pairs_matched']} tract-pair flows, "
+            f"  OD: LODES8-seeded gravity — {od_meta['pairs_matched']} {od_pair_label}-pair flows, "
             f"coverage {od_meta['coverage']:.0%} (states {','.join(od_states_used) or '—'})."
         )
     else:
@@ -735,6 +759,7 @@ def generate_package(
             "parts": ["main", "aux"],
             "states_used": od_states_used,
             "states_failed": od_states_failed,
+            "aggregation": f"{od_pair_label}-pair roll-up of block-keyed LODES OD",
             "seed_method": "furness_ipf_seed_v1",
             "blend": (
                 f"seed = {HBW_SHARE:.2f}·LODES(home→work, symmetrized, normalized) + "

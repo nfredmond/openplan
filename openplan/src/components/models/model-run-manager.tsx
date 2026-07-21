@@ -241,6 +241,7 @@ export function ModelRunManager({
   const [scenarioEntryId, setScenarioEntryId] = useState("");
   const [attachToScenarioEntry, setAttachToScenarioEntry] = useState(true);
   const [engineKey, setEngineKey] = useState<ManagedRunModeKey>("deterministic_corridor_v1");
+  const [zoneGeography, setZoneGeography] = useState<"tract" | "block_group">("tract");
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -273,6 +274,7 @@ export function ModelRunManager({
           scenarioEntryId: scenarioEntryId || undefined,
           attachToScenarioEntry: attachToScenarioEntry && Boolean(scenarioEntryId),
           engineKey,
+          zoneGeography: engineKey === "aequilibrae" ? zoneGeography : undefined,
         }),
       });
 
@@ -405,6 +407,28 @@ export function ModelRunManager({
               ) : null}
             </div>
           </div>
+
+          {engineKey === "aequilibrae" ? (
+            <div className="space-y-1.5">
+              <label htmlFor="managed-run-zone-geography" className="text-[0.82rem] font-semibold">
+                Zone geography (TAZ resolution)
+              </label>
+              <select
+                id="managed-run-zone-geography"
+                className="module-select"
+                value={zoneGeography}
+                onChange={(event) => setZoneGeography(event.target.value as "tract" | "block_group")}
+              >
+                <option value="tract">Census tracts (default)</option>
+                <option value="block_group">Block groups (~3x finer zones)</option>
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Block groups lower the intrazonal trip share, so trip lengths and screening VMT
+                resolve finer. Population and households are tract ACS totals disaggregated by
+                LODES residence weights. Both resolutions are screening-grade.
+              </p>
+            </div>
+          ) : null}
 
           <div className="space-y-1.5">
             <label htmlFor="managed-run-title" className="text-[0.82rem] font-semibold">
