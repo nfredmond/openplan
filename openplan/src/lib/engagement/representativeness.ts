@@ -71,7 +71,19 @@ export type RepresentativenessResult = {
   caveat: string;
 };
 
-export type StudyAreaSource = "respondent_extent";
+/**
+ * Where the study-area bbox came from. `project_corridor` (the corridor(s)
+ * linked to the campaign's project) is preferred when available: it baselines
+ * against who the project AFFECTS, so a comment cluster from one corner no
+ * longer shrinks the study area to itself and masks who was never reached.
+ * `respondent_extent` is the fallback (buffered bbox of respondent pins).
+ */
+export type StudyAreaSource = "respondent_extent" | "project_corridor";
+
+/** Union bbox over corridor LineStrings ([lng, lat] pairs). Null when empty. */
+export function bboxOfCorridorLines(lines: Array<[number, number][]>): LngLatBbox | null {
+  return bboxOfPoints(lines.flat().map(([lng, lat]) => ({ lng, lat })));
+}
 
 /** The cached, campaign-level result persisted to representativeness_json. */
 export type CampaignRepresentativeness = RepresentativenessResult & {

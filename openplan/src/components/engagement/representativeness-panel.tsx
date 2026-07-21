@@ -138,6 +138,12 @@ export function RepresentativenessPanel({
                 under-represented
               </span>
             ) : null}
+            <span>
+              Study area:{" "}
+              {result.studyAreaSource === "project_corridor"
+                ? "buffered project corridor"
+                : "buffered respondent footprint"}
+            </span>
             <span>Computed {new Date(result.computedAt).toLocaleString()}</span>
           </div>
 

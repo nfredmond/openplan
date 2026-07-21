@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const loadCampaignAccess = vi.fn();
 const getUser = vi.fn();
 const itemsLimit = vi.fn();
+const corridorsLimit = vi.fn();
 const updateEq = vi.fn();
 const fetchCensusForCorridor = vi.fn();
 const fetchTractOverlayFeatures = vi.fn();
@@ -17,6 +18,13 @@ const fakeSupabase = {
       builder.eq = () => builder;
       builder.not = () => builder;
       builder.limit = itemsLimit;
+      return builder;
+    }
+    if (table === "project_corridors") {
+      const builder: Record<string, unknown> = {};
+      builder.select = () => builder;
+      builder.eq = () => builder;
+      builder.limit = corridorsLimit;
       return builder;
     }
     if (table === "engagement_campaigns") {
@@ -65,6 +73,7 @@ beforeEach(() => {
     ],
     error: null,
   });
+  corridorsLimit.mockResolvedValue({ data: [], error: null });
   updateEq.mockResolvedValue({ error: null });
   fetchCensusForCorridor.mockResolvedValue({ tracts: [censusTract("A", 20), censusTract("B", 60)] });
   fetchTractOverlayFeatures.mockResolvedValue([
@@ -115,7 +124,68 @@ describe("POST /api/engagement/campaigns/[campaignId]/representativeness", () =>
     expect(minority.respondentPct).toBe(20); // all from A (20)
     expect(minority.status).toBe("under");
     expect(rep.underRepresented).toContain("minority");
+    expect(rep.studyAreaSource).toBe("respondent_extent");
     // cached to the campaign
     expect(updateEq).toHaveBeenCalledWith("id", CAMPAIGN_ID);
+    // No project on the campaign → the corridor table is never queried.
+    expect(corridorsLimit).not.toHaveBeenCalled();
+  });
+
+  it("sources the study area from the project corridor when one exists", async () => {
+    loadCampaignAccess.mockResolvedValue({
+      campaign: { workspace_id: "ws-1", project_id: "project-1" },
+      error: null,
+      allowed: true,
+    });
+    // Corridor well away from the respondent cluster; its bbox must drive the
+    // ACS fetch instead of the respondent footprint.
+    corridorsLimit.mockResolvedValue({
+      data: [
+        { geometry_geojson: { type: "LineString", coordinates: [[-121.2, 39.3], [-121.1, 39.35]] } },
+        { geometry_geojson: { type: "Polygon", coordinates: [] } }, // invalid → ignored
+      ],
+      error: null,
+    });
+
+    const res = await POST(req(), ctx);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.representativeness.studyAreaSource).toBe("project_corridor");
+
+    // The census query polygon covers the buffered corridor bbox, not the
+    // (tighter, offset) respondent bbox: ring must span the corridor extent.
+    const polygon = fetchCensusForCorridor.mock.calls[0][0] as {
+      coordinates: [number, number][][];
+    };
+    const lngs = polygon.coordinates[0].map(([lng]) => lng);
+    const lats = polygon.coordinates[0].map(([, lat]) => lat);
+    expect(Math.min(...lngs)).toBeLessThanOrEqual(-121.2);
+    expect(Math.max(...lats)).toBeGreaterThanOrEqual(39.35);
+  });
+
+  it("falls back to the respondent footprint when the project has no valid corridor", async () => {
+    loadCampaignAccess.mockResolvedValue({
+      campaign: { workspace_id: "ws-1", project_id: "project-1" },
+      error: null,
+      allowed: true,
+    });
+    corridorsLimit.mockResolvedValue({ data: [{ geometry_geojson: null }], error: null });
+
+    const res = await POST(req(), ctx);
+    expect(res.status).toBe(200);
+    expect((await res.json()).representativeness.studyAreaSource).toBe("respondent_extent");
+  });
+
+  it("treats a corridor query error as non-fatal and falls back", async () => {
+    loadCampaignAccess.mockResolvedValue({
+      campaign: { workspace_id: "ws-1", project_id: "project-1" },
+      error: null,
+      allowed: true,
+    });
+    corridorsLimit.mockResolvedValue({ data: null, error: { message: "boom" } });
+
+    const res = await POST(req(), ctx);
+    expect(res.status).toBe(200);
+    expect((await res.json()).representativeness.studyAreaSource).toBe("respondent_extent");
   });
 });
