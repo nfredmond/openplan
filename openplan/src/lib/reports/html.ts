@@ -209,6 +209,54 @@ function runMarkup(run: RunRecord): string {
   </article>`;
 }
 
+function engagementSynthesisMarkup(data: ReportGenerationData): string {
+  const synthesis = data.engagement?.synthesis;
+  if (!synthesis) {
+    return "";
+  }
+
+  const method =
+    synthesis.source === "ai"
+      ? "AI-assisted synthesis"
+      : "Keyword-based synthesis (computed while AI was offline)";
+  const sentiment =
+    synthesis.overallSentiment === "mixed"
+      ? "mixed"
+      : `predominantly ${synthesis.overallSentiment}`;
+
+  // The export gate already ran in buildReportEngagementSynthesis: prose is
+  // present only when every sentence is grounded and the faithfulness belt
+  // ran. A withheld narrative is stated, never silently dropped.
+  const narrativeMarkup = synthesis.narrative
+    ? synthesis.narrative
+        .split(/\n{2,}/)
+        .map((paragraph) => `<p>${esc(paragraph.trim())}</p>`)
+        .join("")
+    : synthesis.narrativeWithheld
+      ? `<p class="meta">The synthesis narrative is withheld from this artifact because not every sentence passed citation-grounding and faithfulness checks; review the flagged sentences on the campaign page before quoting it.</p>`
+      : "";
+
+  const themesMarkup =
+    synthesis.themes.length > 0
+      ? `<ul class="record-list">${synthesis.themes
+          .map(
+            (theme) => `<li>
+          <strong>${esc(theme.label)}</strong>
+          <span class="meta">${theme.itemCount} comment${theme.itemCount === 1 ? "" : "s"} • ${esc(theme.sentiment)}</span>
+        </li>`
+          )
+          .join("")}</ul>`
+      : "";
+
+  return `<div style="margin-top: 18px;">
+    <h3>Community input synthesis (screening)</h3>
+    <p>${esc(method)} of ${synthesis.analyzedItemCount} approved comment${synthesis.analyzedItemCount === 1 ? "" : "s"} • ${esc(sentiment)} sentiment.</p>
+    ${narrativeMarkup}
+    ${themesMarkup}
+    <p class="meta">${esc(synthesis.caveat)}</p>
+  </div>`;
+}
+
 function engagementHotspotsMarkup(data: ReportGenerationData): string {
   const hotspots = data.engagement?.hotspots;
   if (!hotspots || hotspots.clusterCount === 0) {
@@ -807,6 +855,7 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
         }</p>
       </div>
     </div>
+    ${engagementSynthesisMarkup(data)}
     ${engagementHotspotsMarkup(data)}
     ${engagementRepresentativenessMarkup(data)}
     ${engagementHandoffMarkup(data)}

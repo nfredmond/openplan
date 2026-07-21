@@ -1,6 +1,16 @@
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import type { HotspotAnalysis } from "@/lib/engagement/hotspots";
 import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
+import {
+  ENGAGEMENT_NARRATIVE_CAVEAT,
+  parseStoredEngagementSynthesis,
+  type EngagementSynthesisEvidence,
+} from "@/lib/grants/engagement-evidence";
+import {
+  isNarrativeExportable,
+  parseStoredNarrativeGrounding,
+  stripFactCitationTokens,
+} from "@/lib/grants/narrative-grounding";
 
 export type ReportEngagementCampaignRecord = {
   id: string;
@@ -43,7 +53,50 @@ export type ReportEngagementSummary = {
   hotspots: HotspotAnalysis | null;
   /** Cached spatial representativeness screening (E5b), when present. */
   representativeness: CampaignRepresentativeness | null;
+  /** Cached E1 comment synthesis (themes/sentiment + export-gated narrative). */
+  synthesis: ReportEngagementSynthesis | null;
 };
+
+export type ReportEngagementSynthesis = EngagementSynthesisEvidence & {
+  /**
+   * Token-stripped narrative prose, present ONLY when the stored grounding
+   * passes `isNarrativeExportable` (every sentence grounded AND the
+   * faithfulness belt ran). A report artifact is an export path, so a
+   * narrative with flagged sentences — or a pre-belt legacy row — is withheld
+   * here and left to operator review on the campaign page.
+   */
+  narrative: string | null;
+  /** True when a narrative exists in the cache but the export gate refused it. */
+  narrativeWithheld: boolean;
+  caveat: string;
+};
+
+/**
+ * Parse a stored `ai_synthesis_json` for report rendering: headline fields via
+ * the shared defensive parser, plus the export-gated narrative.
+ */
+export function buildReportEngagementSynthesis(value: unknown): ReportEngagementSynthesis | null {
+  const headline = parseStoredEngagementSynthesis(value);
+  if (!headline) {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const rawNarrative = typeof record.narrative === "string" ? record.narrative.trim() : "";
+  const grounding = parseStoredNarrativeGrounding(record.grounding);
+  const exportable = Boolean(rawNarrative) && grounding !== null && isNarrativeExportable(grounding);
+  const strippedNarrative = exportable ? stripFactCitationTokens(rawNarrative) : "";
+
+  return {
+    ...headline,
+    narrative: strippedNarrative || null,
+    narrativeWithheld: Boolean(rawNarrative) && !strippedNarrative,
+    caveat:
+      typeof record.caveat === "string" && record.caveat.trim()
+        ? record.caveat
+        : ENGAGEMENT_NARRATIVE_CAVEAT,
+  };
+}
 
 export type ReportEngagementHandoffCountsSnapshot = {
   totalItems: number;
@@ -184,12 +237,14 @@ export function buildReportEngagementSummary({
   items,
   hotspots = null,
   representativeness = null,
+  synthesis = null,
 }: {
   campaign: ReportEngagementCampaignRecord | null;
   categories: ReportEngagementCategoryRecord[];
   items: ReportEngagementItemRecord[];
   hotspots?: HotspotAnalysis | null;
   representativeness?: CampaignRepresentativeness | null;
+  synthesis?: ReportEngagementSynthesis | null;
 }): ReportEngagementSummary | null {
   if (!campaign) {
     return null;
@@ -201,6 +256,7 @@ export function buildReportEngagementSummary({
     categories,
     hotspots,
     representativeness,
+    synthesis,
   };
 }
 
