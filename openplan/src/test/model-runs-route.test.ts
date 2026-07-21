@@ -507,4 +507,160 @@ describe("/api/models/[modelId]/runs", () => {
     expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
     expect(recordUsageEventBestEffortMock).not.toHaveBeenCalled();
   });
+
+  const TRIP_GEN_PROGRAM = {
+    lineItems: [
+      { rateKey: "single_family_detached", quantity: 100 },
+      { rateKey: "retail_neighborhood", quantity: 20, internalCaptureShare: 0.1, passByShare: 0.3 },
+    ],
+    avgTripLengthMiles: 5,
+    comparisonBasis: "no_build_zero",
+  };
+
+  it("runs the trip-generation engine in-process with no corridor and records namespaced KPIs", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "ite_trip_generation", tripGenProgram: TRIP_GEN_PROGRAM }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({
+      status: "succeeded",
+      scenario_attach: "recorded-only",
+    });
+
+    // No corridor-dependent fetches for a land-use program engine.
+    expect(fetchCensusForCorridorMock).not.toHaveBeenCalled();
+    expect(fetchLODESForCorridorMock).not.toHaveBeenCalled();
+
+    expect(modelRunInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({ engine_key: "ite_trip_generation", status: "running" })
+    );
+
+    const kpiRows = modelRunKpisInsertMock.mock.calls[0][0] as Array<{
+      kpi_name: string;
+      kpi_category: string;
+      value: number | null;
+      breakdown_json: Record<string, unknown>;
+    }>;
+    expect(kpiRows.map((row) => row.kpi_name).sort()).toEqual([
+      "project_am_peak_hour_trip_ends",
+      "project_daily_trip_ends",
+      "project_daily_vmt_screen",
+      "project_pm_peak_hour_trip_ends",
+      "project_program_units",
+    ]);
+    for (const row of kpiRows) {
+      expect(row.kpi_category).toBe("ite_trip_generation");
+      expect(row.breakdown_json.caveat).toEqual(expect.stringContaining("NOT a CEQA"));
+    }
+    // 100 SFD × 10 = 1000 gross; retail 20 ksf × 120 × 0.9 × 0.7 = 1512; net 2512.
+    const daily = kpiRows.find((row) => row.kpi_name === "project_daily_trip_ends");
+    expect(daily?.value).toBe(2512);
+    const vmt = kpiRows.find((row) => row.kpi_name === "project_daily_vmt_screen");
+    expect(vmt?.value).toBe(12560);
+
+    // Provenance update stamps the full screening caveat for evidence packets.
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "succeeded",
+        result_summary_json: expect.objectContaining({
+          engine: "ite_trip_generation",
+          caveats: [expect.stringContaining("NOT a traffic impact study")],
+          net_daily_trip_ends: 2512,
+          comparison_basis: "no_build_zero",
+        }),
+      })
+    );
+
+    expect(recordUsageEventBestEffortMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({ engineKey: "ite_trip_generation" }),
+      }),
+      mockAudit
+    );
+  });
+
+  it("fails the run with 422 when no land-use program is available", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "ite_trip_generation" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("No land-use program"),
+    });
+    // The run row was created, then honestly marked failed.
+    expect(modelRunInsertMock).toHaveBeenCalled();
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "failed", error_message: expect.stringContaining("No land-use program") })
+    );
+    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+    expect(recordUsageEventBestEffortMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects an invalid program (negative quantity) with 422, never a silent zero", async () => {
+    const response = await postModelRun(
+      launchRequest({
+        engineKey: "ite_trip_generation",
+        tripGenProgram: {
+          ...TRIP_GEN_PROGRAM,
+          lineItems: [{ rateKey: "single_family_detached", quantity: -5 }],
+        },
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("Invalid quantity"),
+    });
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "failed" })
+    );
+    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still requires query/corridor for non-trip-gen engines", async () => {
+    modelMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: MODEL_ID,
+        workspace_id: WORKSPACE_ID,
+        scenario_set_id: null,
+        title: "Bare model",
+        model_family: "travel_demand",
+        config_version: "v1",
+        config_json: {},
+      },
+      error: null,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "sketch_abm" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("Launch configuration is incomplete"),
+    });
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("gates the trip-generation branch behind an active subscription with 402", async () => {
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: { plan: "pilot", subscription_plan: "pilot", subscription_status: "canceled" },
+      error: null,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "ite_trip_generation", tripGenProgram: TRIP_GEN_PROGRAM }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(402);
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
+    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+  });
 });

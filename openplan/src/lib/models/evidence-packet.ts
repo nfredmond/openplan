@@ -605,6 +605,7 @@ export function labelForEngineKey(engineKey: string | null | undefined) {
   if (engineKey === "aequilibrae") return "AequilibraE";
   if (engineKey === "deterministic_corridor_v1") return "Deterministic Corridor";
   if (engineKey === "sketch_abm") return "Sketch Activity Model";
+  if (engineKey === "ite_trip_generation") return "Trip Generation (ITE-style)";
   if (!engineKey) return "Unknown engine";
   return engineKey
     .split(/[_-]+/)
@@ -639,6 +640,8 @@ export function labelForKpiCategory(category: string | null | undefined) {
   if (category === "assignment") return "Assignment";
   if (category === "validation") return "Validation";
   if (category === "accessibility") return "Accessibility";
+  // Avoid the "Ite Trip Generation" title-case artifact.
+  if (category === "ite_trip_generation") return "Trip Generation";
   return titleCaseTokenized(category);
 }
 

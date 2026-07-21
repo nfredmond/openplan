@@ -13,7 +13,12 @@
  * determination. Every result carries ITE_TRIP_GEN_SCREENING_CAVEAT.
  */
 
-import { DEFAULT_TRIP_GEN_RATE_BY_KEY, type TripGenRate, type TripGenUnitBasis } from "./ite-rates";
+import {
+  DEFAULT_TRIP_GEN_RATE_BY_KEY,
+  ITE_RATE_SOURCE,
+  type TripGenRate,
+  type TripGenUnitBasis,
+} from "./ite-rates";
 
 export const ITE_TRIP_GEN_SCREENING_CAVEAT =
   "Screening-level trip-generation estimate (average-rate method) using published public-agency reference rates. This is NOT a traffic impact study and NOT a CEQA §15064.3 VMT determination; its VMT is rate-based, not network-derived, and it has not been validated against local counts. Verify rates and assumptions against the locally adopted or licensed rate manual before any regulatory, funding, or design use.";
@@ -184,4 +189,89 @@ export function computeTripGeneration(program: TripGenProgramInput): TripGenResu
     },
     caveat: ITE_TRIP_GEN_SCREENING_CAVEAT,
   };
+}
+
+/** `model_run_kpis` row shape for this engine (mirrors the sketch_abm rows). */
+export type IteTripGenKpiRow = {
+  run_id: string;
+  kpi_name: string;
+  kpi_label: string;
+  kpi_category: "ite_trip_generation";
+  value: number | null;
+  unit: string;
+  breakdown_json: Record<string, unknown>;
+};
+
+/**
+ * Map a TripGenResult onto `model_run_kpis` rows. Every kpi_name comes from
+ * ITE_TRIP_GEN_KPI_NAMES (the CEQA-disjoint namespace); each row carries a
+ * provenance string and the screening caveat in breakdown_json, mirroring
+ * buildSketchAbmKpiRows.
+ */
+export function buildIteTripGenerationKpiRows(runId: string, result: TripGenResult): IteTripGenKpiRow[] {
+  const provenance = `${ITE_RATE_SOURCE}; average-rate method, gross → internal capture → pass-by; VMT = net daily trip ends × ${result.avgTripLengthMiles} mi average trip length (${result.comparisonBasis} basis).`;
+  const shared = {
+    provenance,
+    caveat: ITE_TRIP_GEN_SCREENING_CAVEAT,
+    comparisonBasis: result.comparisonBasis,
+    avgTripLengthMiles: result.avgTripLengthMiles,
+  };
+  const totalProgramUnits = result.lineItems.reduce((acc, li) => acc + li.quantity, 0);
+
+  const rows: IteTripGenKpiRow[] = [
+    {
+      run_id: runId,
+      kpi_name: "project_daily_trip_ends",
+      kpi_label: "Daily vehicle trip ends (net external)",
+      kpi_category: "ite_trip_generation",
+      value: result.totals.netDailyTrips,
+      unit: "trip ends/day",
+      // The full per-line-item table rides on the headline KPI so the
+      // worksheet UI can render it from one row.
+      breakdown_json: { ...shared, lineItems: result.lineItems },
+    },
+    {
+      run_id: runId,
+      kpi_name: "project_am_peak_hour_trip_ends",
+      kpi_label: "AM peak-hour vehicle trip ends",
+      kpi_category: "ite_trip_generation",
+      value: result.totals.amPeakTrips,
+      unit: "trip ends/hour",
+      breakdown_json: shared,
+    },
+    {
+      run_id: runId,
+      kpi_name: "project_pm_peak_hour_trip_ends",
+      kpi_label: "PM peak-hour vehicle trip ends",
+      kpi_category: "ite_trip_generation",
+      value: result.totals.pmPeakTrips,
+      unit: "trip ends/hour",
+      breakdown_json: shared,
+    },
+    {
+      run_id: runId,
+      kpi_name: "project_daily_vmt_screen",
+      kpi_label: "Daily VMT (rate-based screening)",
+      kpi_category: "ite_trip_generation",
+      value: result.totals.dailyVmt,
+      unit: "vehicle-miles/day",
+      breakdown_json: shared,
+    },
+    {
+      run_id: runId,
+      kpi_name: "project_program_units",
+      kpi_label: "Land-use program size (summed units)",
+      kpi_category: "ite_trip_generation",
+      value: Math.round(totalProgramUnits * 100) / 100,
+      unit: "units (mixed bases)",
+      breakdown_json: shared,
+    },
+  ];
+
+  for (const row of rows) {
+    if (!ITE_TRIP_GEN_KPI_NAMES.has(row.kpi_name)) {
+      throw new Error(`KPI name ${row.kpi_name} is outside the ITE trip-gen namespace`);
+    }
+  }
+  return rows;
 }
