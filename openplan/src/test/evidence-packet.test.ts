@@ -296,6 +296,41 @@ describe("evidence packet helpers", () => {
     ]);
   });
 
+  it("labels the Zones highlight with the worker-stamped zone geography", () => {
+    const packet = normalizeEvidencePacket({
+      rawPacket: {
+        network: { zones: 24, links: 12154 },
+        zones: { zone_geography: "block_group", count: 24, demand_method: "lodes_seeded_gravity_v1" },
+      },
+      modelId: "model-bg",
+      modelRunId: "run-bg",
+      modelTitle: "BG run",
+      runRecord: { id: "run-bg", status: "succeeded", engine_key: "aequilibrae" },
+      artifacts: [],
+      stages: [],
+      kpis: [],
+    });
+
+    const zonesHighlight = buildEvidenceHighlights(packet).find((h) => h.label === "Zones");
+    expect(zonesHighlight?.detail).toBe("Dynamic block-group centroids carried into the model package.");
+  });
+
+  it("keeps the tract Zones wording for packets without a zone-geography stamp", () => {
+    const packet = normalizeEvidencePacket({
+      rawPacket: { network: { zones: 8 } },
+      modelId: "model-legacy",
+      modelRunId: "run-legacy",
+      modelTitle: "Legacy run",
+      runRecord: { id: "run-legacy", status: "succeeded", engine_key: "aequilibrae" },
+      artifacts: [],
+      stages: [],
+      kpis: [],
+    });
+
+    const zonesHighlight = buildEvidenceHighlights(packet).find((h) => h.label === "Zones");
+    expect(zonesHighlight?.detail).toBe("Dynamic tract centroids carried into the model package.");
+  });
+
   it("falls back to behavioral-onramp KPI highlights when no engine summary is present", () => {
     const packet = normalizeEvidencePacket({
       modelId: "model-789",

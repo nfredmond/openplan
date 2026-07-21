@@ -22,14 +22,26 @@ from typing import Any, Iterable, Sequence
 
 from resident_vmt import haversine_miles, intrazonal_miles, VMT_NETWORK_CIRCUITY
 
-# ACS 5-year variables (available at both tract and block-group geography):
+# ACS 5-year variables:
 #   B01003_001E total population
-#   B17001_001E / _002E  poverty universe / income below poverty
+#   B17001_001E / _002E  poverty universe / income below poverty (TRACT ONLY —
+#     the ACS does not publish B17001 at block-group geography; the API returns
+#     HTTP 200 with null cells, verified live 2026-07-21)
+#   C17002_001E / _002E / _003E  income-to-poverty-ratio universe / under 0.50 /
+#     0.50-0.99 (the block-group-published poverty table; _002E+_003E = below
+#     poverty, same universe concept as B17001)
 #   B03002_001E / _003E  race-ethnicity total / white-alone-not-Hispanic
 #   B25044_001E / _003E / _010E  occupied HH / owner no-vehicle / renter no-vehicle
 ACS_EQUITY_VARS = [
     "B01003_001E",
     "B17001_001E", "B17001_002E",
+    "B03002_001E", "B03002_003E",
+    "B25044_001E", "B25044_003E", "B25044_010E",
+]
+
+ACS_EQUITY_VARS_BG = [
+    "B01003_001E",
+    "C17002_001E", "C17002_002E", "C17002_003E",
     "B03002_001E", "B03002_003E",
     "B25044_001E", "B25044_003E", "B25044_010E",
 ]
@@ -182,8 +194,17 @@ def summarize_equity(
 def build_equity_zone(geoid: str, population: float, acs_row: dict[str, float]) -> dict[str, Any]:
     """Compute the three EJ shares for one geography from its ACS variable row."""
     total = float(acs_row.get("B01003_001E", population) or population)
-    pov_univ = float(acs_row.get("B17001_001E", 0.0) or 0.0)
-    pov_below = float(acs_row.get("B17001_002E", 0.0) or 0.0)
+    if "C17002_001E" in acs_row:
+        # Block-group rows carry C17002 (B17001 is not published at BG level):
+        # below-poverty = ratio under 0.50 + ratio 0.50-0.99, same universe.
+        pov_univ = float(acs_row.get("C17002_001E", 0.0) or 0.0)
+        pov_below = (
+            float(acs_row.get("C17002_002E", 0.0) or 0.0)
+            + float(acs_row.get("C17002_003E", 0.0) or 0.0)
+        )
+    else:
+        pov_univ = float(acs_row.get("B17001_001E", 0.0) or 0.0)
+        pov_below = float(acs_row.get("B17001_002E", 0.0) or 0.0)
     race_total = float(acs_row.get("B03002_001E", 0.0) or 0.0)
     white_nh = float(acs_row.get("B03002_003E", 0.0) or 0.0)
     hh_total = float(acs_row.get("B25044_001E", 0.0) or 0.0)
@@ -212,10 +233,13 @@ def fetch_acs_equity(
 
     if not census_key:
         return {}
+    # BG requests must swap B17001 for C17002 — B17001 comes back all-null at
+    # block-group geography (HTTP 200, no error), silently zeroing poverty.
+    acs_vars = ACS_EQUITY_VARS_BG if level == "block group" else ACS_EQUITY_VARS
     out: dict[str, dict[str, float]] = {}
     for state_fips, county_fips in sorted(set(state_county_pairs)):
         params = {
-            "get": "NAME," + ",".join(ACS_EQUITY_VARS),
+            "get": "NAME," + ",".join(acs_vars),
             "for": f"{level}:*",
             "in": f"state:{state_fips} county:{county_fips}"
             + (" tract:*" if level == "block group" else ""),
@@ -236,7 +260,7 @@ def fetch_acs_equity(
             else:
                 geoid = row[idx["state"]] + row[idx["county"]] + row[idx["tract"]]
             vals: dict[str, float] = {}
-            for var in ACS_EQUITY_VARS:
+            for var in acs_vars:
                 try:
                     vals[var] = float(row[idx[var]])
                 except (TypeError, ValueError, KeyError):

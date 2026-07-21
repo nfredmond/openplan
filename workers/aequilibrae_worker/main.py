@@ -331,11 +331,26 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
         # A relaunch may change the requested geography; a dynamic package
         # cached at the old resolution must not silently satisfy it. Pre-staged
         # pilot/builder packages (non-dynamic-v1) always reuse verbatim.
+        rebuild_reason = None
         if package_geography_mismatch(manifest, zone_geography):
-            print(
-                f"Cached package is {manifest.get('zone_geography')} but the run "
-                f"requests {zone_geography}; rebuilding the dynamic package."
+            rebuild_reason = (
+                f"is {manifest.get('zone_geography') or 'unstamped (pre-BG, tract-built)'} "
+                f"but the run requests {zone_geography}"
             )
+        elif manifest.get("version") == "dynamic-v1":
+            # Self-heal a torn cache: a crash between file writes can leave a
+            # manifest over missing CSVs, which would fail stage 1 forever.
+            expected = list((manifest.get("files") or {}).values()) or [
+                "zone_attributes.csv", "od_trip_matrix.csv",
+            ]
+            missing = [f for f in expected if not os.path.exists(os.path.join(pkg_dir, f))]
+            if missing:
+                rebuild_reason = f"is missing {', '.join(missing)}"
+        if rebuild_reason:
+            print(f"Cached package {rebuild_reason}; rebuilding the dynamic package.")
+            # Remove the manifest FIRST — generate_package writes it last, so
+            # no crash window may leave a manifest standing over missing CSVs.
+            os.remove(manifest_path)
             shutil.rmtree(pkg_dir)
         else:
             manifest["package_dir"] = pkg_dir

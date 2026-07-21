@@ -613,15 +613,17 @@ def package_geography_mismatch(manifest: dict, requested_zone_geography: Any) ->
 
     Only worker-generated dynamic packages (version 'dynamic-v1') are ever
     invalidated: pre-staged pilot/builder packages carry other version strings
-    (or no zone_geography at all) and must keep the reuse-verbatim behavior —
-    they were staged deliberately and can't be regenerated from a bbox.
+    and must keep the reuse-verbatim behavior — they were staged deliberately
+    and can't be regenerated from a bbox. A dynamic-v1 manifest WITHOUT a
+    zone_geography stamp predates block-group support (both shipped in the
+    same commit), so it is necessarily tract-built — normalize(None)=='tract'
+    treats it as such, and a block-group request rebuilds it.
     """
     if not isinstance(manifest, dict) or manifest.get("version") != "dynamic-v1":
         return False
-    stamped = manifest.get("zone_geography")
-    if not stamped:
-        return False
-    return normalize_zone_geography(stamped) != normalize_zone_geography(requested_zone_geography)
+    return normalize_zone_geography(manifest.get("zone_geography")) != normalize_zone_geography(
+        requested_zone_geography
+    )
 
 
 def generate_package(

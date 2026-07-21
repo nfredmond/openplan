@@ -232,7 +232,10 @@ def test_package_geography_mismatch():
         {"version": "1.0.0-bg", "zone_geography": "block_group"}, "tract"
     ) is False
     assert dp.package_geography_mismatch({}, "block_group") is False
-    assert dp.package_geography_mismatch({"version": "dynamic-v1"}, "block_group") is False
+    # An unstamped dynamic-v1 manifest predates BG support -> necessarily
+    # tract-built: a BG request rebuilds it, a tract request reuses it.
+    assert dp.package_geography_mismatch({"version": "dynamic-v1"}, "block_group") is True
+    assert dp.package_geography_mismatch({"version": "dynamic-v1"}, "tract") is False
 
 
 if __name__ == "__main__":

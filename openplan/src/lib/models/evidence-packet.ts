@@ -276,6 +276,9 @@ export function normalizeEvidencePacket({
     ...(asString(raw.vdf) ? { vdf: asString(raw.vdf) } : {}),
     ...(asString(raw.model_area) ? { model_area: asString(raw.model_area) } : {}),
     ...(Array.isArray(raw.bbox) ? { bbox: raw.bbox } : {}),
+    // Worker-stamped TAZ resolution block (zone_geography/count/demand_method);
+    // absent on packets that predate per-run zone geography.
+    ...(asRecord(raw.zones) ? { zones: asRecord(raw.zones) } : {}),
   };
 
   const normalizedResultSummary = {
@@ -542,10 +545,14 @@ export function buildEvidenceHighlights(packet: NormalizedEvidencePacket): Evide
   const highlights: EvidenceHighlight[] = [];
   const zones = asNumber(packet.inputs.zone_count) ?? asNumber(network.zones);
   if (zones !== null) {
+    // Packets that predate per-run zone geography carry no zones block and
+    // were all tract-built, so "tract" stays the fallback noun.
+    const zoneGeography = asString(asRecord(engineSummary.zones)?.zone_geography);
+    const zoneNoun = zoneGeography === "block_group" ? "block-group" : "tract";
     highlights.push({
       label: "Zones",
       value: formatCompactNumber(zones) ?? "0",
-      detail: "Dynamic tract centroids carried into the model package.",
+      detail: `Dynamic ${zoneNoun} centroids carried into the model package.`,
     });
   }
 
