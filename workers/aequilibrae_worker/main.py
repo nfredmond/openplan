@@ -34,6 +34,7 @@ from data_pipeline import (
     package_geography_mismatch,
 )
 from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazonal_miles
+import convergence
 import link_vmt
 from gateways import (
     detect_external_gateways,
@@ -47,6 +48,14 @@ import gtfs_skim
 import count_validation
 import emissions
 import equity
+
+# Provenance stamp for the ACTUAL installed engine version — a hardcoded
+# string drifts silently under the >=1.6.0 pin (it already had, to "1.6.1").
+try:
+    from importlib.metadata import version as _pkg_version
+    ENGINE_STAMP = f"AequilibraE {_pkg_version('aequilibrae')}"
+except Exception:
+    ENGINE_STAMP = "AequilibraE (version unknown)"
 
 # Load env: locally from .env, in Docker from environment variables
 load_dotenv()  # will read .env if present
@@ -661,10 +670,37 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     project.open(proj_dir)
     project.network.build_graphs(modes=["c"])
     graph = project.network.graphs["c"]
+    # distance_net zeroes virtual centroid connectors so the routed-distance
+    # skim shares resident_vmt_network's connector-excluded basis (the
+    # convergence diagnostic compares like with like; connectors are modeling
+    # artifacts, counted by neither VMT estimator). graph.network carries no
+    # link_type column, so connector ids come from the project DB. Added
+    # BEFORE prepare_graph so the field is carried into the compressed graph.
+    # Diagnostic-only plumbing: any failure here must degrade to the plain
+    # travel-time skim (diagnostic silently absent), never fail the stage.
+    skim_fields = ["travel_time"]
+    try:
+        _conn_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+        try:
+            connector_ids = {
+                int(r[0]) for r in _conn_db.execute(
+                    "SELECT link_id FROM links WHERE link_type = 'centroid_connector'"
+                )
+            }
+        finally:
+            _conn_db.close()
+        graph.network["distance_net"] = np.where(
+            graph.network["link_id"].isin(connector_ids), 0.0, graph.network["distance"]
+        )
+        skim_fields = ["travel_time", "distance", "distance_net"]
+    except Exception as e:
+        log += f"Convergence skim setup warning ({e}); routed-circuity diagnostic disabled.\n"
     graph.set_graph("travel_time")
     graph.prepare_graph(np.array(assignment_centroids))
     graph.set_blocked_centroid_flows(True)
-    graph.set_skimming(["travel_time"])
+    # "distance"/"distance_net" ride along so the assignment classes carry
+    # blended, flow-consistent routed-distance skims (diagnostic inputs).
+    graph.set_skimming(skim_fields)
 
     log += f"Graph: {graph.num_links} links, {graph.num_nodes} nodes\n"
     log += "Running skims...\n"
@@ -891,10 +927,9 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     sb_patch_stage(stage_id, {"log_tail": log})
 
     assig = TrafficAssignment()
-    for tc in (
-        TrafficClass(name="resident", graph=graph, matrix=resident_mat),
-        TrafficClass(name="external", graph=graph, matrix=external_mat),
-    ):
+    resident_class = TrafficClass(name="resident", graph=graph, matrix=resident_mat)
+    external_class = TrafficClass(name="external", graph=graph, matrix=external_mat)
+    for tc in (resident_class, external_class):
         tc.set_pce(1.0)
         assig.add_class(tc)
     assig.set_cores(AEQ_CORES)
@@ -914,6 +949,35 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     results_df.to_csv(os.path.join(out_dir, "link_volumes.csv"))
     loaded_links = int((results_df["PCE_tot"] > 0).sum()) if "PCE_tot" in results_df.columns else 0
 
+    # Convergence diagnostic: what circuity does THIS run's routing imply?
+    # Demand-weighted routed distance (blended assignment skim, resident class)
+    # over great-circle distance, interzonal pairs only. Diagnostic — never
+    # alters the OD estimator's fixed 1.30, never fails the run.
+    convergence_diag = None
+    try:
+        zattr_cd = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+        zattr_cd["zone_id"] = zattr_cd["zone_id"].astype(int)
+        zattr_cd = zattr_cd.set_index("zone_id", drop=False)
+        zc_cd = zattr_cd.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat"]]
+        lons_cd = zc_cd["centroid_lon"].to_numpy(dtype=float)
+        lats_cd = zc_cd["centroid_lat"].to_numpy(dtype=float)
+        straight_mi = np.zeros((n_zones, n_zones))
+        for i in range(n_zones):
+            for j in range(n_zones):
+                if i != j:
+                    straight_mi[i, j] = haversine_miles(lons_cd[i], lats_cd[i], lons_cd[j], lats_cd[j])
+        routed_m = resident_class.results.skims.matrix["distance_net"][np.ix_(ii, ii)]
+        convergence_diag = convergence.routed_effective_circuity(
+            resident_od[np.ix_(ii, ii)], routed_m, straight_mi
+        )
+        if convergence_diag:
+            log += (
+                f"Routed effective circuity (resident, demand-weighted): "
+                f"{convergence_diag['effective_circuity']} vs {convergence_diag['assumed_circuity']} assumed\n"
+            )
+    except Exception as e:
+        log += f"Convergence diagnostic warning: {e}\n"
+
     project.close()
 
     log += f"Converged: gap={rgap:.6f}, iterations={iters}\n"
@@ -931,6 +995,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
         "skims": {"reachable_pairs": n_reachable, "total_pairs": n_pairs,
                   "avg_time_min": avg_time, "max_time_min": max_time},
         "loaded_links": loaded_links,
+        "convergence_diagnostic": convergence_diag,
         "log": log,
     }
 
@@ -1297,9 +1362,15 @@ def stage_artifacts(
         "Absence of validation is not a calibration claim."
     )
 
+    # Convergence diagnostics between the two resident-VMT estimators —
+    # measured per run, reported with provenance; neither estimator is altered.
+    vmt_estimator_ratio = convergence.network_od_ratio(resident_vmt_network, resident_vmt)
+    if vmt_estimator_ratio is not None:
+        vmt_estimator_ratio = round(vmt_estimator_ratio, 4)
+
     evidence = {
         "run_id": run_id,
-        "engine": "AequilibraE 1.6.1",
+        "engine": ENGINE_STAMP,
         "network_source": "OpenStreetMap",
         "algorithm": "BFW",
         "vdf": "BPR (α=0.15, β=4.0)",
@@ -1325,6 +1396,10 @@ def stage_artifacts(
             "resident_avg_trip_miles": round(resident_meta["avg_trip_miles"], 3) if resident_meta else None,
             "resident_vmt_network": resident_vmt_network,
             "through_vmt_network": through_vmt_network,
+            # Convergence diagnostics between the two estimators (measured on
+            # this run; the OD estimator's fixed 1.30 circuity is unchanged).
+            "resident_vmt_network_od_ratio": vmt_estimator_ratio,
+            "routed_circuity_diagnostic": assign_result.get("convergence_diagnostic"),
             "excluded_gateway_zone_ids": [],
             "network_gateway_zone_ids": gateway_zone_ids,
         },
@@ -1449,6 +1524,14 @@ def stage_artifacts(
         kpis.append(("general", "resident_vmt_network", "Resident VMT (network-routed)", resident_vmt_network, "vehicle-miles/day"))
     if through_vmt_network is not None:
         kpis.append(("general", "through_vmt_network", "Through+External VMT (network-routed)", through_vmt_network, "vehicle-miles/day"))
+    # Convergence diagnostics between the two resident-VMT estimators
+    # (assignment category — run-fit territory, not CEQA-adjacent `general`).
+    # Names deliberately disjoint from every CEQA_* exact-name set.
+    if vmt_estimator_ratio is not None:
+        kpis.append(("assignment", "resident_vmt_network_od_ratio", "Network/OD Resident VMT Ratio", vmt_estimator_ratio, "ratio"))
+    convergence_diag = assign_result.get("convergence_diagnostic")
+    if convergence_diag and convergence_diag.get("effective_circuity") is not None:
+        kpis.append(("assignment", "effective_circuity_routed", "Routed Effective Circuity", convergence_diag["effective_circuity"], "ratio"))
     if population_total is not None:
         kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
     # Screening GHG (CO2e) — annual metric tons (the CEQA-style figure) + a
@@ -1568,6 +1651,31 @@ def stage_artifacts(
                 ),
                 "od_estimator_resident_vmt": resident_vmt,
             }
+        elif name == "resident_vmt_network_od_ratio":
+            kpi_payload["breakdown_json"] = {
+                "provenance": (
+                    "resident_vmt_network ÷ resident_vmt on this run: the network-routed "
+                    "figure (2-class assignment link flows) over the OD estimator "
+                    "(great-circle × 1.30 circuity). Convergence DIAGNOSTIC between two "
+                    "screening estimators — not a correction; neither estimator is altered "
+                    "and the OD-based resident_vmt remains the CEQA §15064.3 screening input."
+                ),
+                "resident_vmt_network": resident_vmt_network,
+                "od_estimator_resident_vmt": resident_vmt,
+            }
+        elif name == "effective_circuity_routed":
+            kpi_payload["breakdown_json"] = {
+                "provenance": (
+                    "Demand-weighted routed distance (blended BFW assignment skim, resident "
+                    "class, virtual centroid connectors excluded — the same basis as "
+                    "resident_vmt_network) ÷ great-circle distance over interzonal resident "
+                    "OD pairs — the circuity this run's own routing implies, reported beside "
+                    "the fixed 1.30 the OD estimator assumes. Screening-grade DIAGNOSTIC "
+                    "only; the OD estimator's 1.30 is unchanged (replacing it is a flagged "
+                    "calibration decision, not a code change)."
+                ),
+                **(assign_result.get("convergence_diagnostic") or {}),
+            }
         elif name in (
             "auto_mode_share_pct", "transit_mode_share_pct", "active_mode_share_pct",
             "auto_person_trips", "transit_person_trips", "active_person_trips",
@@ -1641,7 +1749,7 @@ def stage_artifacts(
                 "metadata": {
                     "totalLinks": len(features),
                     "maxVolume": max_vol,
-                    "engine": "AequilibraE 1.6.1",
+                    "engine": ENGINE_STAMP,
                     "modelRunId": run_id,
                 },
             }
