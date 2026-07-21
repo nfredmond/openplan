@@ -393,4 +393,87 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     expect(await response.json()).toEqual({ error: "narrative_generation_failed" });
     expect(draftInsertMock).not.toHaveBeenCalled();
   });
+
+  // The project-linked branch (the 8-query Promise.all) — locks the wiring
+  // seam: engagement campaigns are queried for the project, the cached
+  // synthesis becomes citable [fact:N] claims, and the prompt flips from the
+  // "do not reference community input" guard to the caveat contract.
+  it("assembles engagement facts from the linked project's synthesis cache", async () => {
+    const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
+
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      supabase: null,
+      opportunity: { ...baseOpportunity, project_id: PROJECT_ID },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+
+    // Generic awaitable query chain: every builder method returns the chain,
+    // awaiting it (or calling maybeSingle) yields the canned result.
+    function chainable(result: { data: unknown; error: null }) {
+      const chain: Record<string, unknown> = {
+        maybeSingle: vi.fn(async () => result),
+        then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
+          Promise.resolve(result).then(resolve, reject),
+      };
+      for (const method of ["select", "eq", "neq", "not", "in", "order", "limit"]) {
+        chain[method] = vi.fn(() => chain);
+      }
+      return chain;
+    }
+
+    const engagementCampaignRow = {
+      id: "55555555-5555-4555-8555-555555555555",
+      project_id: PROJECT_ID,
+      title: "Safe Routes corridor feedback",
+      status: "active",
+      updated_at: "2026-07-18T00:00:00.000Z",
+      ai_synthesis_json: {
+        source: "ai",
+        analyzed_item_count: 42,
+        overall_sentiment: "mixed",
+        themes: [{ label: "Crossing safety", sentiment: "negative", item_count: 12 }],
+      },
+      ai_synthesized_at: "2026-07-18T12:00:00.000Z",
+      representativeness_json: null,
+      representativeness_computed_at: null,
+    };
+
+    createClientMock.mockResolvedValue({
+      auth: { getUser: authGetUserMock },
+      from: vi.fn((table: string) => {
+        if (table === "funding_opportunity_narrative_drafts") return { insert: draftInsertMock };
+        if (table === "projects") {
+          return chainable({ data: { id: PROJECT_ID, name: "Main St Bridge" }, error: null });
+        }
+        if (table === "project_funding_profiles") return chainable({ data: null, error: null });
+        if (table === "engagement_campaigns") {
+          return chainable({ data: [engagementCampaignRow], error: null });
+        }
+        // funding_awards, funding_opportunities, billing_invoice_records,
+        // reports, project_bca_screenings — empty is a valid posture for all.
+        return chainable({ data: [], error: null });
+      }),
+    });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    expect(response.status).toBe(201);
+
+    const generationArgs = generateTextMock.mock.calls[0][0] as { prompt: string };
+    // The synthesis cache surfaced as a citable fact, project name attached.
+    expect(generationArgs.prompt).toContain(
+      "An AI-assisted synthesis of 42 approved public comments"
+    );
+    expect(generationArgs.prompt).toContain('"Crossing safety" (12 comment(s), negative)');
+    expect(generationArgs.prompt).toContain("the Main St Bridge project");
+    // The prompt flips to the engagement-facts posture — the no-engagement
+    // guard must be gone.
+    expect(generationArgs.prompt).toContain(
+      "Community-engagement facts above summarize a saved synthesis of submitted public comments."
+    );
+    expect(generationArgs.prompt).not.toContain(
+      "Do not reference community input, public comments, or outreach results."
+    );
+  });
 });
