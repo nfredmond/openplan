@@ -36,6 +36,7 @@ import {
 } from "@/lib/stage-gates/summary";
 import {
   buildReportEngagementSummary,
+  buildReportEngagementSynthesis,
   extractEngagementHandoffProvenance,
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
@@ -1224,6 +1225,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       representativeness:
         (engagementCampaignResult.data as { representativeness_json?: CampaignRepresentativeness | null } | null)
           ?.representativeness_json ?? null,
+      // E1 synthesis prose is export-gated inside the builder (a report
+      // artifact is an export path; ungrounded narratives are withheld).
+      synthesis: buildReportEngagementSynthesis(
+        (engagementCampaignResult.data as { ai_synthesis_json?: unknown } | null)?.ai_synthesis_json ??
+          null
+      ),
     });
 
     const runIds = (reportRunsResult.data ?? []).map((item) => item.run_id);
