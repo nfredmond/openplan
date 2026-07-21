@@ -8,13 +8,16 @@ import { fetchCensusForCorridor } from "@/lib/data-sources/census";
 import { fetchTractOverlayFeatures, type CensusTractOverlayMetrics } from "@/lib/data-sources/census-geometry";
 import {
   assignRespondentsToTracts,
+  bboxOfCorridorLines,
   bboxOfPoints,
   bboxToPolygon,
   bufferBbox,
   buildRepresentativeness,
   type CampaignRepresentativeness,
+  type StudyAreaSource,
   type TractFeature,
 } from "@/lib/engagement/representativeness";
+import { isCorridorLineGeoJson } from "@/lib/cartographic/corridor-line-geojson";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
 
@@ -83,8 +86,42 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Study area = the engagement footprint (bbox of respondent pins, buffered).
-    const bbox = bufferBbox(bboxOfPoints(respondentPoints)!);
+    // Study area: prefer the corridor(s) linked to the campaign's project —
+    // that baselines against who the project affects, not just where comments
+    // clustered. Fall back to the respondent footprint when no project or no
+    // valid corridor geometry exists (and on a corridor query error: a worse
+    // study area beats a 500 for an on-demand screening).
+    const campaignRow = access.campaign as { workspace_id: string; project_id?: string | null };
+    let studyAreaSource: StudyAreaSource = "respondent_extent";
+    let studyAreaBbox = bboxOfPoints(respondentPoints)!;
+
+    if (campaignRow.project_id) {
+      const { data: corridorRows, error: corridorError } = await supabase
+        .from("project_corridors")
+        .select("geometry_geojson")
+        .eq("workspace_id", campaignRow.workspace_id)
+        .eq("project_id", campaignRow.project_id)
+        .limit(50);
+      if (corridorError) {
+        audit.warn("engagement_representativeness_corridor_load_failed", {
+          campaignId,
+          message: corridorError.message,
+        });
+      } else {
+        const corridorBbox = bboxOfCorridorLines(
+          ((corridorRows ?? []) as Array<{ geometry_geojson: unknown }>)
+            .map((row) => row.geometry_geojson)
+            .filter(isCorridorLineGeoJson)
+            .map((geometry) => geometry.coordinates)
+        );
+        if (corridorBbox) {
+          studyAreaSource = "project_corridor";
+          studyAreaBbox = corridorBbox;
+        }
+      }
+    }
+
+    const bbox = bufferBbox(studyAreaBbox);
     const corridorPolygon = bboxToPolygon(bbox);
 
     // External: ACS metrics for the study-area tracts, then TIGERweb polygons.
@@ -132,7 +169,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       ...result,
       computedAt: new Date().toISOString(),
       locatedRespondentCount: respondentPoints.length,
-      studyAreaSource: "respondent_extent",
+      studyAreaSource,
     };
 
     const { error: updateError } = await supabase

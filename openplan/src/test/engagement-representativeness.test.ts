@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   REPRESENTATIVENESS_SCREENING_CAVEAT,
   assignRespondentsToTracts,
+  bboxOfCorridorLines,
   bboxOfPoints,
   bboxToPolygon,
   bufferBbox,
@@ -173,5 +174,33 @@ describe("assignRespondentsToTracts", () => {
     expect(counts.get("B")).toBe(1);
     expect(counts.has("C")).toBe(false);
     expect([...counts.values()].reduce((s, n) => s + n, 0)).toBe(3);
+  });
+});
+
+describe("bboxOfCorridorLines", () => {
+  it("unions the bbox over multiple corridor LineStrings", () => {
+    const bbox = bboxOfCorridorLines([
+      [
+        [-121.2, 39.3],
+        [-121.1, 39.35],
+      ],
+      [
+        [-121.05, 39.2],
+        [-121.0, 39.4],
+      ],
+    ]);
+    expect(bbox).toEqual({ minLon: -121.2, minLat: 39.2, maxLon: -121.0, maxLat: 39.4 });
+  });
+
+  it("returns null for no corridors and skips non-finite coordinates", () => {
+    expect(bboxOfCorridorLines([])).toBeNull();
+    expect(
+      bboxOfCorridorLines([
+        [
+          [Number.NaN, 39.3],
+          [Number.NaN, 39.35],
+        ],
+      ])
+    ).toBeNull();
   });
 });
