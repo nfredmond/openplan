@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
+import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
 import { GRANT_MODELING_PLANNING_CAVEAT } from "@/lib/grants/modeling-evidence";
 
 const createClientMock = vi.fn();
@@ -228,6 +229,13 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     // screening facts are present (the requirement is conditional on citing).
     // It uses the one-sentence narrative caveat so a cited BCA fact stays grounded.
     expect(generationArgs.prompt).toContain(BCA_NARRATIVE_CAVEAT);
+    // Same conditional-citation contract for community-engagement facts; with
+    // no project linked there is no engagement evidence, so the prompt must
+    // forbid referencing community input outright.
+    expect(generationArgs.prompt).toContain(ENGAGEMENT_NARRATIVE_CAVEAT);
+    expect(generationArgs.prompt).toContain(
+      "Do not reference community input, public comments, or outreach results."
+    );
     expect(generationArgs.prompt).toContain("No project is linked to this opportunity.");
 
     // The prompt carries the numbered fact list and the citation contract.

@@ -26,6 +26,13 @@ import {
   type ProjectBcaScreeningSummary,
 } from "@/lib/grants/bca-evidence";
 import {
+  ENGAGEMENT_NARRATIVE_CAVEAT,
+  buildEngagementFactClaims,
+  buildProjectEngagementEvidenceByProjectId,
+  type ProjectEngagementCampaignRowLike,
+  type ProjectEngagementEvidence,
+} from "@/lib/grants/engagement-evidence";
+import {
   buildProjectFundingStackSummary,
   type ProjectFundingStackSummary,
 } from "@/lib/projects/funding";
@@ -192,6 +199,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let modelingHeadline: string | null = null;
     let modelingEvidence: ProjectGrantModelingEvidence | null = null;
     let bcaScreening: ProjectBcaScreeningSummary | null = null;
+    let engagementEvidence: ProjectEngagementEvidence | null = null;
 
     if (opportunity.project_id) {
       const [
@@ -202,6 +210,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         invoicesResult,
         reportsResult,
         bcaScreeningsResult,
+        engagementCampaignsResult,
       ] = await Promise.all([
         supabase
           .from("projects")
@@ -236,6 +245,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .eq("project_id", opportunity.project_id)
           .order("created_at", { ascending: false })
           .limit(5),
+        supabase
+          .from("engagement_campaigns")
+          .select(
+            "id, project_id, title, status, updated_at, ai_synthesis_json, ai_synthesized_at, representativeness_json, representativeness_computed_at"
+          )
+          .eq("project_id", opportunity.project_id)
+          .neq("status", "archived")
+          .order("updated_at", { ascending: false })
+          .limit(20),
       ]);
 
       projectName = (projectResult.data as { id: string; name: string } | null)?.name ?? null;
@@ -286,6 +304,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
         buildLatestBcaScreeningByProjectId(
           (bcaScreeningsResult.data ?? []) as ProjectBcaScreeningRowLike[]
         ).get(opportunity.project_id) ?? null;
+
+      engagementEvidence =
+        buildProjectEngagementEvidenceByProjectId(
+          (engagementCampaignsResult.data ?? []) as ProjectEngagementCampaignRowLike[]
+        ).get(opportunity.project_id) ?? null;
     }
 
     const evidenceCues = buildGrantEvidenceReadinessCues(
@@ -300,7 +323,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         decision_due_at: opportunity.decision_due_at ?? null,
       },
       modelingEvidence,
-      bcaScreening
+      bcaScreening,
+      engagementEvidence
     );
     const evidenceReadinessSummary = summarizeGrantEvidenceReadiness(evidenceCues);
 
@@ -329,6 +353,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ? `Modeling evidence readiness: ${modelingReadinessDetail} ${GRANT_MODELING_PLANNING_CAVEAT}`
         : null,
       ...(bcaScreening ? buildBcaScreeningFactClaims(bcaScreening, projectName) : []),
+      ...(engagementEvidence ? buildEngagementFactClaims(engagementEvidence, projectName) : []),
       `Evidence readiness (deterministic guardrail summary): ${evidenceReadinessSummary}`,
     ]);
     const factIds = facts.map((fact) => fact.fact_id);
@@ -346,6 +371,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       `  "${GRANT_MODELING_PLANNING_CAVEAT}"`,
       "- If (and only if) you reference the benefit-cost screening facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must describe the results as screening-level — never as an application benefit-cost analysis:",
       `  "${BCA_NARRATIVE_CAVEAT}"`,
+      "- If (and only if) you reference the community-engagement facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must never describe comment counts or sentiment as community consensus, a survey result, or completed public-participation requirements:",
+      `  "${ENGAGEMENT_NARRATIVE_CAVEAT}"`,
       "- Do not promise awards, eligibility determinations, or fiscal compliance; this draft supports an operator-reviewed application.",
       "",
       "WORKSPACE FACTS (the only citable claims; cite as [fact:fact_N]):",
@@ -359,6 +386,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         : bcaScreening
           ? "No comparison-backed travel-demand modeling packet is visible for this project. Do not reference travel-demand model or forecasting results; the benefit-cost screening facts above are the only analysis you may cite, and only as screening-level."
           : "No comparison-backed modeling packet or benefit-cost screening is visible for this project. Do not reference modeling or analysis results.",
+      engagementEvidence
+        ? "Community-engagement facts above summarize a saved synthesis of submitted public comments. Cite them only as screening-level community input."
+        : "No engagement campaign is linked to this project. Do not reference community input, public comments, or outreach results.",
     ].join("\n");
 
     let draftText: string;

@@ -11,7 +11,7 @@ function synthesis(themes: EngagementSynthesis["themes"]): EngagementSynthesis {
   return {
     source: "ai", model: "m", fallback_reason: null, item_count: 0, analyzed_item_count: 0,
     overall_sentiment: "mixed", themes, narrative: "", caveat: "",
-    grounding: { mode: "annotated", facts: [], sentences: [], dropped_sentences: [], cited_fact_ids: [], unknown_fact_ids: [], grounded_sentence_count: 0, total_sentence_count: 0, is_fully_grounded: true },
+    grounding: { mode: "annotated", facts: [], sentences: [], dropped_sentences: [], cited_fact_ids: [], unknown_fact_ids: [], grounded_sentence_count: 0, total_sentence_count: 0, is_fully_grounded: true, faithfulness_checked: true },
   };
 }
 

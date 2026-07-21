@@ -45,6 +45,13 @@ const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 const bcaScreeningsEqMock = vi.fn(async () => ({ data: [], error: null }));
 const bcaScreeningsSelectMock = vi.fn(() => ({ eq: bcaScreeningsEqMock }));
 
+// The engagement query chain: .eq(workspace).not(...).neq(...).order(...)
+const engagementCampaignsOrderMock = vi.fn(async () => ({ data: [], error: null }));
+const engagementCampaignsNeqMock = vi.fn(() => ({ order: engagementCampaignsOrderMock }));
+const engagementCampaignsNotMock = vi.fn(() => ({ neq: engagementCampaignsNeqMock }));
+const engagementCampaignsEqMock = vi.fn(() => ({ not: engagementCampaignsNotMock }));
+const engagementCampaignsSelectMock = vi.fn(() => ({ eq: engagementCampaignsEqMock }));
+
 const scenarioSetsInMock = vi.fn(async () => ({ data: [], error: null }));
 const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
 const scenarioComparisonSummaryInMock = vi.fn(async () => ({ data: [], error: null }));
@@ -60,6 +67,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "project_bca_screenings_latest") return { select: bcaScreeningsSelectMock };
   if (table === "reports") return { select: reportsSelectMock };
   if (table === "report_artifacts") return { select: reportArtifactsSelectMock };
+  if (table === "engagement_campaigns") return { select: engagementCampaignsSelectMock };
   if (table === "scenario_sets") return { select: scenarioSetsSelectMock };
   if (table === "scenario_comparison_summary") return { select: scenarioComparisonSummarySelectMock };
   throw new Error(`Unexpected table: ${table}`);

@@ -5,6 +5,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { GrantsOpportunityRegistryCard } from "@/components/grants/grants-opportunity-registry-card";
 import type { FundingOpportunityNarrativeDraftRow } from "@/components/grants/funding-opportunity-narrative-draft-panel";
 import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
+import type { ProjectEngagementEvidence } from "@/lib/grants/engagement-evidence";
 import type { ProjectGrantModelingEvidence } from "@/lib/grants/modeling-evidence";
 import {
   type DecisionFilter,
@@ -30,6 +31,7 @@ export function GrantsOpportunityRegistrySection({
   activeFocusedOpportunityId,
   projectGrantModelingEvidenceByProjectId,
   latestBcaScreeningByProjectId,
+  engagementEvidenceByProjectId,
   decisionCommandCallout,
   focusedOpportunityNarrativeDraft = null,
 }: {
@@ -41,6 +43,7 @@ export function GrantsOpportunityRegistrySection({
   activeFocusedOpportunityId: string | null;
   projectGrantModelingEvidenceByProjectId: Map<string, ProjectGrantModelingEvidence>;
   latestBcaScreeningByProjectId: Map<string, ProjectBcaScreeningSummary>;
+  engagementEvidenceByProjectId: Map<string, ProjectEngagementEvidence>;
   decisionCommandCallout: ReactNode | null;
   focusedOpportunityNarrativeDraft?: FundingOpportunityNarrativeDraftRow | null;
 }) {
@@ -143,6 +146,11 @@ export function GrantsOpportunityRegistrySection({
               latestBcaScreening={
                 opportunity.project?.id
                   ? latestBcaScreeningByProjectId.get(opportunity.project.id) ?? null
+                  : null
+              }
+              engagementEvidence={
+                opportunity.project?.id
+                  ? engagementEvidenceByProjectId.get(opportunity.project.id) ?? null
                   : null
               }
               latestNarrativeDraft={

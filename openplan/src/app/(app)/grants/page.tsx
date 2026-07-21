@@ -39,6 +39,10 @@ import {
   buildLatestBcaScreeningByProjectId,
   type ProjectBcaScreeningRowLike,
 } from "@/lib/grants/bca-evidence";
+import {
+  buildProjectEngagementEvidenceByProjectId,
+  type ProjectEngagementCampaignRowLike,
+} from "@/lib/grants/engagement-evidence";
 import { bcaAnalysisInputsSchema } from "@/lib/bca/schema";
 import {
   buildProjectGrantModelingEvidenceByProjectId,
@@ -122,6 +126,7 @@ export default async function GrantsPage({
     { data: fundingInvoicesData },
     { data: projectFundingProfilesData },
     { data: projectBcaScreeningsData },
+    { data: engagementCampaignsData },
     operationsSummary,
   ] = await Promise.all([
     supabase
@@ -164,6 +169,17 @@ export default async function GrantsPage({
       .from("project_bca_screenings_latest")
       .select("id, project_id, inputs_json, result_json, engine_version, created_at")
       .eq("workspace_id", membership.workspace_id),
+    // Project-linked engagement campaigns feed the community-engagement
+    // evidence cue (the lane reads the E1/E5b caches, never recomputes them).
+    supabase
+      .from("engagement_campaigns")
+      .select(
+        "id, project_id, title, status, updated_at, ai_synthesis_json, ai_synthesized_at, representativeness_json, representativeness_computed_at"
+      )
+      .eq("workspace_id", membership.workspace_id)
+      .not("project_id", "is", null)
+      .neq("status", "archived")
+      .order("updated_at", { ascending: false }),
     loadWorkspaceOperationsSummaryForWorkspace(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       membership.workspace_id
@@ -241,6 +257,9 @@ export default async function GrantsPage({
     ProjectBcaScreeningRowLike & { inputs_json: unknown }
   >;
   const latestBcaScreeningByProjectId = buildLatestBcaScreeningByProjectId(projectBcaScreeningRows);
+  const engagementEvidenceByProjectId = buildProjectEngagementEvidenceByProjectId(
+    (engagementCampaignsData ?? []) as ProjectEngagementCampaignRowLike[]
+  );
   const canWritePrograms = canAccessWorkspaceAction("programs.write", membership.role);
   const bcaScreeningProjects = projectOptions.map((project) => {
     const latest = latestBcaScreeningByProjectId.get(project.id) ?? null;
@@ -718,6 +737,7 @@ export default async function GrantsPage({
           activeFocusedOpportunityId={activeFocusedOpportunityId}
           projectGrantModelingEvidenceByProjectId={projectGrantModelingEvidenceByProjectId}
           latestBcaScreeningByProjectId={latestBcaScreeningByProjectId}
+          engagementEvidenceByProjectId={engagementEvidenceByProjectId}
           focusedOpportunityNarrativeDraft={focusedOpportunityNarrativeDraft}
           decisionCommandCallout={
             leadDecisionCommand ? (
