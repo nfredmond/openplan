@@ -29,6 +29,7 @@ from dotenv import load_dotenv
 
 from data_pipeline import DataPipelineError, generate_package
 from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazonal_miles
+import link_vmt
 from gateways import (
     detect_external_gateways,
     build_cordon_injections,
@@ -766,8 +767,14 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # crossing the boundary at two cordons (e.g. an interstate that traverses the
     # county); single-crossing routes have no partner and stay 100% internal. The
     # share is a fixed, documented screening assumption — NOT tuned to counts. ---
-    full_od = np.zeros((n_assign, n_assign))
-    full_od[np.ix_(ii, ii)] = od_array
+    # Demand is kept in TWO matrices so the assignment can run one traffic
+    # class per matrix (M7): `resident` = internal auto demand; `external` =
+    # cordon-injected boundary trips + routed pass-through. Per-class link
+    # flows then give network-routed resident VMT with through-traffic
+    # isolated exactly (link_vmt.py) instead of the circuity approximation.
+    resident_od = np.zeros((n_assign, n_assign))
+    resident_od[np.ix_(ii, ii)] = od_array
+    external_od = np.zeros((n_assign, n_assign))
     external_gateway_trips = 0.0
     passthrough_trips = 0.0
     gateways = setup_result.get("gateways") or []
@@ -785,8 +792,8 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                 cpos = _pos[cordon_map[cordon_zid]]
                 pt = PASSTHROUGH_SHARE if partners.get(cordon_zid) else 0.0  # only paired routes pass through
                 internal_frac = 1.0 - pt
-                full_od[cpos, ii] += float(g["daily_in"]) * internal_frac * job_shares    # external → internal
-                full_od[ii, cpos] += float(g["daily_out"]) * internal_frac * pop_shares   # internal → external
+                external_od[cpos, ii] += float(g["daily_in"]) * internal_frac * job_shares    # external → internal
+                external_od[ii, cpos] += float(g["daily_out"]) * internal_frac * pop_shares   # internal → external
                 external_gateway_trips += float(g["daily_in"]) + float(g["daily_out"])
                 if pt > 0.0:
                     through_vol = float(g["daily_in"]) * pt
@@ -794,7 +801,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                     per_dest = through_vol / len(dest_cordons)
                     for dest_zid in dest_cordons:
                         dpos = _pos[cordon_map[int(dest_zid)]]
-                        full_od[cpos, dpos] += per_dest   # enter at this cordon, exit at same-route cordon
+                        external_od[cpos, dpos] += per_dest   # enter at this cordon, exit at same-route cordon
                         passthrough_trips += per_dest
             log += (
                 f"Loaded {external_gateway_trips:,.0f} external gateway trips via {len(active_gws)} "
@@ -807,26 +814,45 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # total_trips stays person-scale (internal person + gateway); routable_trips
     # reflects the assigned (auto + gateway) demand.
     total_trips = internal_person_trips + external_gateway_trips
-    full_od[~np.isfinite(time_skim_full)] = 0
-    routable_trips = float(full_od.sum())
+    unreachable = ~np.isfinite(time_skim_full)
+    resident_od[unreachable] = 0
+    external_od[unreachable] = 0
+    routable_trips = float(resident_od.sum() + external_od.sum())
 
-    demand_mat = AequilibraeMatrix()
-    demand_mat.create_empty(
-        file_name=os.path.join(out_dir, "demand.omx"),
-        zones=n_assign, matrix_names=["demand"], memory_only=False,
-    )
-    demand_mat.index = np.array(assignment_centroids)
-    demand_mat.matrix["demand"][:, :] = full_od
-    demand_mat.computational_view(["demand"])
+    # NOTE: AequilibraE names assignment-result columns after the matrix CORE
+    # (matrix.view_names), NOT the TrafficClass name — so each class's matrix
+    # needs a distinct core name or the per-class columns collide. The cores
+    # "resident"/"external" become link_volumes.csv columns resident_ab/ba/tot
+    # and external_ab/ba/tot, which link_vmt.py reads.
+    def _demand_matrix(file_stem: str, core_name: str, demand_array: np.ndarray) -> AequilibraeMatrix:
+        mat = AequilibraeMatrix()
+        mat.create_empty(
+            file_name=os.path.join(out_dir, f"{file_stem}.omx"),
+            zones=n_assign, matrix_names=[core_name], memory_only=False,
+        )
+        mat.index = np.array(assignment_centroids)
+        mat.matrix[core_name][:, :] = demand_array
+        mat.computational_view([core_name])
+        return mat
 
-    log += f"Demand: {total_trips:,.0f} total, {routable_trips:,.0f} routable\n"
-    log += "Running BFW assignment...\n"
+    # demand.omx keeps its historical meaning (the full assigned demand) for
+    # artifact continuity; the per-class matrices are what get assigned.
+    _demand_matrix("demand", "demand", resident_od + external_od)
+    resident_mat = _demand_matrix("resident_demand", "resident", resident_od)
+    external_mat = _demand_matrix("external_demand", "external", external_od)
+
+    log += f"Demand: {total_trips:,.0f} total, {routable_trips:,.0f} routable "
+    log += f"(resident {resident_od.sum():,.0f} · external {external_od.sum():,.0f})\n"
+    log += "Running BFW assignment (2 classes: resident, external)...\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
     assig = TrafficAssignment()
-    tc = TrafficClass(name="car", graph=graph, matrix=demand_mat)
-    tc.set_pce(1.0)
-    assig.add_class(tc)
+    for tc in (
+        TrafficClass(name="resident", graph=graph, matrix=resident_mat),
+        TrafficClass(name="external", graph=graph, matrix=external_mat),
+    ):
+        tc.set_pce(1.0)
+        assig.add_class(tc)
     assig.set_cores(AEQ_CORES)
     assig.set_vdf("BPR")
     assig.set_vdf_parameters({"alpha": 0.15, "beta": 4.0})
@@ -997,6 +1023,42 @@ def stage_artifacts(
         )
     except Exception as e:
         log += f"VMT computation warning: {e}\n"
+
+    # ── Per-class network VMT (M7): the 2-class assignment leaves resident_tot /
+    # external_tot flow columns on link_volumes.csv; flow × routed link length
+    # separates resident VMT from through+external VMT on the REAL network,
+    # no circuity approximation. Never fails the run; a single-class CSV (pre-M7
+    # rerun) simply reports neither KPI.
+    resident_vmt_network = None
+    through_vmt_network = None
+    try:
+        if os.path.exists(db_path) and os.path.exists(link_volumes_csv):
+            import csv as _csv
+            with open(link_volumes_csv) as fh:
+                class_flows = link_vmt.parse_link_flows(
+                    _csv.DictReader(fh),
+                    {"resident": "resident_tot", "external": "external_tot"},
+                )
+            if class_flows:
+                conn = sqlite3.connect(db_path)
+                try:
+                    link_rows = conn.execute(
+                        "SELECT link_id, link_type, distance FROM links"
+                    ).fetchall()
+                finally:
+                    conn.close()
+                per_class = link_vmt.per_class_vmt(class_flows, link_rows)
+                if "resident" in per_class:
+                    resident_vmt_network = round(per_class["resident"], 1)
+                if "external" in per_class:
+                    through_vmt_network = round(per_class["external"], 1)
+                if resident_vmt_network is not None:
+                    log += (
+                        f"Network-routed VMT split: resident {resident_vmt_network:,.0f} · "
+                        f"through+external {through_vmt_network if through_vmt_network is not None else 0:,.0f} vehicle-miles\n"
+                    )
+    except Exception as e:
+        log += f"Per-class network VMT warning: {e}\n"
 
     # ── Screening GHG (CO2e) from network VMT — EMFAC-style rate × VMT, ─────────
     # annualized. A published-rate × VMT product, NOT an EMFAC run of record.
@@ -1208,6 +1270,8 @@ def stage_artifacts(
             "resident_basis": resident_basis,
             "resident_method": resident_provenance,
             "resident_avg_trip_miles": round(resident_meta["avg_trip_miles"], 3) if resident_meta else None,
+            "resident_vmt_network": resident_vmt_network,
+            "through_vmt_network": through_vmt_network,
             "excluded_gateway_zone_ids": [],
             "network_gateway_zone_ids": gateway_zone_ids,
         },
@@ -1314,6 +1378,15 @@ def stage_artifacts(
     # with the county/NCTC lanes (which do not yet split modes).
     if resident_vmt_all_trips is not None:
         kpis.append(("general", "resident_vmt_all_trips", "Resident Person-Trip Miles (all modes)", resident_vmt_all_trips, "vehicle-miles/day"))
+    # M7 — network-routed per-class VMT from the 2-class assignment. These are
+    # deliberately DISTINCT names from the CEQA-screened resident_vmt* set (the
+    # exact-name CEQA_* KPI sets in ceqa-vmt-screen.ts must not match them):
+    # the OD-based estimator stays the §15064.3 input; these carry the routed
+    # network evidence beside it.
+    if resident_vmt_network is not None:
+        kpis.append(("general", "resident_vmt_network", "Resident VMT (network-routed)", resident_vmt_network, "vehicle-miles/day"))
+    if through_vmt_network is not None:
+        kpis.append(("general", "through_vmt_network", "Through+External VMT (network-routed)", through_vmt_network, "vehicle-miles/day"))
     if population_total is not None:
         kpis.append(("general", "population_total", "Population", round(population_total), "persons"))
     # Screening GHG (CO2e) — annual metric tons (the CEQA-style figure) + a
@@ -1413,6 +1486,17 @@ def stage_artifacts(
         elif name == "resident_vmt_all_trips":
             kpi_payload["breakdown_json"] = {
                 "provenance": "All internal person-trips (not auto-only). " + resident_provenance,
+            }
+        elif name in ("resident_vmt_network", "through_vmt_network"):
+            kpi_payload["breakdown_json"] = {
+                "provenance": (
+                    "Per-class network VMT: 2-class BFW assignment (resident = internal auto "
+                    "demand; external = cordon-injected boundary + routed pass-through), Σ class "
+                    "link flow × routed link length, centroid connectors excluded. The split is "
+                    "as good as the documented cordon gateway assumptions. Screening-grade, "
+                    "derived — not measured. The OD-based resident_vmt remains the CEQA input."
+                ),
+                "od_estimator_resident_vmt": resident_vmt,
             }
         elif name in (
             "auto_mode_share_pct", "transit_mode_share_pct", "active_mode_share_pct",
