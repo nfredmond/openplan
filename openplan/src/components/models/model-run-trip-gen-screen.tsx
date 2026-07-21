@@ -271,7 +271,7 @@ export function ModelRunTripGenScreen({ modelId, modelRunId, runTitle }: ModelRu
       </div>
 
       <div className="mt-4">
-        <Button type="button" variant="outline" size="sm" onClick={handleToggle}>
+        <Button type="button" variant="outline" size="sm" onClick={handleToggle} aria-expanded={isOpen}>
           {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           {isOpen ? "Hide worksheet" : "Open worksheet"}
         </Button>

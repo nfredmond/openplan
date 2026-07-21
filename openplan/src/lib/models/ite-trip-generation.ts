@@ -177,16 +177,27 @@ export function computeTripGeneration(program: TripGenProgramInput): TripGenResu
   const sum = (pick: (li: TripGenLineItemResult) => number): number =>
     round2(lineItems.reduce((acc, li) => acc + pick(li), 0));
 
+  const totals = {
+    netDailyTrips: sum((li) => li.netDailyTrips),
+    amPeakTrips: sum((li) => li.amPeakTrips),
+    pmPeakTrips: sum((li) => li.pmPeakTrips),
+    dailyVmt: sum((li) => li.dailyVmt),
+  };
+
+  // Finite inputs can still overflow to Infinity through multiplication
+  // (e.g. a 1e308 quantity); a non-finite total must fail loudly, never ship
+  // as a "succeeded" run with null-ish KPI values.
+  for (const [key, value] of Object.entries(totals)) {
+    if (!Number.isFinite(value)) {
+      throw new Error(`Trip-generation total ${key} is not a finite number — check program magnitudes.`);
+    }
+  }
+
   return {
     comparisonBasis: program.comparisonBasis,
     avgTripLengthMiles,
     lineItems,
-    totals: {
-      netDailyTrips: sum((li) => li.netDailyTrips),
-      amPeakTrips: sum((li) => li.amPeakTrips),
-      pmPeakTrips: sum((li) => li.pmPeakTrips),
-      dailyVmt: sum((li) => li.dailyVmt),
-    },
+    totals,
     caveat: ITE_TRIP_GEN_SCREENING_CAVEAT,
   };
 }

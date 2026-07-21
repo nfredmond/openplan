@@ -107,16 +107,25 @@ export function TripGenComparisonSaveButton({
 
   return (
     <div className="space-y-2">
-      <Button type="button" variant="outline" size="sm" onClick={() => void handleSave()} disabled={isSaving}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => void handleSave()}
+        disabled={isSaving || saved}
+      >
         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <GitCompareArrows className="h-4 w-4" />}
-        Save trip-gen comparison
+        {saved ? "Comparison saved" : "Save trip-gen comparison"}
       </Button>
-      {saved ? (
-        <p className="text-xs text-emerald-600 dark:text-emerald-300">
-          Comparison snapshot saved with screening caveats. It now appears under saved comparison snapshots.
-        </p>
-      ) : null}
-      {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+      <p aria-live="polite" className="text-xs">
+        {saved ? (
+          <span className="text-emerald-600 dark:text-emerald-300">
+            Comparison snapshot saved with screening caveats. It now appears under saved comparison snapshots.
+          </span>
+        ) : error ? (
+          <span className="text-red-600 dark:text-red-300">{error}</span>
+        ) : null}
+      </p>
     </div>
   );
 }

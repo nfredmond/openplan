@@ -57,24 +57,24 @@ const tripGenRateSchema = z.object({
   key: z.string().trim().min(1).max(80),
   landUse: z.string().trim().min(1).max(160),
   unitBasis: z.enum(TRIP_GEN_UNIT_BASES),
-  dailyTripsPerUnit: z.number(),
-  amPeakShareOfDaily: z.number(),
-  amInboundShare: z.number(),
-  pmPeakShareOfDaily: z.number(),
-  pmInboundShare: z.number(),
+  dailyTripsPerUnit: z.number().finite(),
+  amPeakShareOfDaily: z.number().finite(),
+  amInboundShare: z.number().finite(),
+  pmPeakShareOfDaily: z.number().finite(),
+  pmInboundShare: z.number().finite(),
 });
 
 const tripGenLineItemSchema = z.object({
   rateKey: z.string().trim().min(1).max(80).optional(),
   rate: tripGenRateSchema.optional(),
-  quantity: z.number(),
-  internalCaptureShare: z.number().optional(),
-  passByShare: z.number().optional(),
+  quantity: z.number().finite(),
+  internalCaptureShare: z.number().finite().optional(),
+  passByShare: z.number().finite().optional(),
 });
 
 const tripGenProgramSchema = z.object({
   lineItems: z.array(tripGenLineItemSchema).max(50),
-  avgTripLengthMiles: z.number(),
+  avgTripLengthMiles: z.number().finite(),
   comparisonBasis: z.enum(TRIP_GEN_COMPARISON_BASES),
 });
 
@@ -406,7 +406,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (parsed.data.assumptionSetId) {
       const { data: setRow, error: setError } = await supabase
         .from("scenario_assumption_sets")
-        .select("id, scenario_set_id, assumptions_json")
+        .select("id, scenario_set_id, assumptions_json, scenario_sets(workspace_id)")
         .eq("id", parsed.data.assumptionSetId)
         .maybeSingle();
 
@@ -427,6 +427,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (access.model.scenario_set_id && setRow.scenario_set_id !== access.model.scenario_set_id) {
         return NextResponse.json(
           { error: "Assumption set does not belong to the model's primary scenario set" },
+          { status: 400 }
+        );
+      }
+
+      // RLS only proves the CALLER can read the set (any of their workspaces),
+      // and models without a primary scenario set skip the check above — so a
+      // member of two workspaces could otherwise execute workspace B's land-use
+      // program under workspace A's model. Always pin the set to the model's
+      // workspace.
+      const setWorkspace = Array.isArray(setRow.scenario_sets)
+        ? setRow.scenario_sets[0]
+        : setRow.scenario_sets;
+      if (!setWorkspace || setWorkspace.workspace_id !== access.model.workspace_id) {
+        return NextResponse.json(
+          { error: "Assumption set does not belong to the model's workspace" },
           { status: 400 }
         );
       }
@@ -846,25 +861,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // Program source priority: inline (API/tests) → assumption set → the
       // scenario entry's assumptions_json.tripGenProgram (the primary UX path;
       // the entry's full assumptions already ride in assumption_snapshot_json).
-      const storedCandidate =
-        (assumptionSet?.assumptions_json ?? {})["tripGenProgram"] ??
-        (scenarioEntry?.assumptions_json ?? {})["tripGenProgram"];
+      // The resolved source is recorded so provenance never claims a program
+      // origin that was not actually used.
+      const setCandidate = (assumptionSet?.assumptions_json ?? {})["tripGenProgram"];
+      const entryCandidate = (scenarioEntry?.assumptions_json ?? {})["tripGenProgram"];
 
       let program: TripGenProgramInput | null = parsed.data.tripGenProgram ?? null;
-      if (!program && storedCandidate !== undefined) {
-        const parsedProgram = tripGenProgramSchema.safeParse(storedCandidate);
-        if (!parsedProgram.success) {
-          const message =
-            "Stored land-use program (assumptions_json.tripGenProgram) is malformed for the trip-generation engine.";
-          await failRun(message);
-          audit.warn("ite_trip_gen_program_invalid", {
-            modelId: access.model.id,
-            modelRunId,
-            issues: parsedProgram.error.issues.slice(0, 5),
-          });
-          return NextResponse.json({ error: message, issues: parsedProgram.error.issues }, { status: 422 });
+      let programSource: "inline" | "assumption_set" | "scenario_entry" | null = program ? "inline" : null;
+      if (!program) {
+        const storedCandidate = setCandidate !== undefined ? setCandidate : entryCandidate;
+        const storedSource = setCandidate !== undefined ? ("assumption_set" as const) : ("scenario_entry" as const);
+        if (storedCandidate !== undefined) {
+          const parsedProgram = tripGenProgramSchema.safeParse(storedCandidate);
+          if (!parsedProgram.success) {
+            const message =
+              "Stored land-use program (assumptions_json.tripGenProgram) is malformed for the trip-generation engine.";
+            await failRun(message);
+            audit.warn("ite_trip_gen_program_invalid", {
+              modelId: access.model.id,
+              modelRunId,
+              issues: parsedProgram.error.issues.slice(0, 5),
+            });
+            return NextResponse.json({ error: message, issues: parsedProgram.error.issues }, { status: 422 });
+          }
+          program = parsedProgram.data;
+          programSource = storedSource;
         }
-        program = parsedProgram.data;
       }
 
       if (!program) {
@@ -916,7 +938,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
               pm_peak_trip_ends: result.totals.pmPeakTrips,
               daily_vmt_screen: result.totals.dailyVmt,
               line_item_count: result.lineItems.length,
-              assumption_set_id: assumptionSet?.id ?? null,
+              program_source: programSource,
+              // Only stamped when the program actually CAME from the set —
+              // never a pointer to a set that was loaded but unused.
+              assumption_set_id: programSource === "assumption_set" ? (assumptionSet?.id ?? null) : null,
             },
             completed_at: iteCompletedAt,
           })

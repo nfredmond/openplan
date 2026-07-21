@@ -36,6 +36,14 @@ const workspaceMaybeSingleMock = vi.fn();
 const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
 const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
 
+const scenarioEntryMaybeSingleMock = vi.fn();
+const scenarioEntryEqMock = vi.fn(() => ({ maybeSingle: scenarioEntryMaybeSingleMock }));
+const scenarioEntrySelectMock = vi.fn(() => ({ eq: scenarioEntryEqMock }));
+
+const assumptionSetMaybeSingleMock = vi.fn();
+const assumptionSetEqMock = vi.fn(() => ({ maybeSingle: assumptionSetMaybeSingleMock }));
+const assumptionSetSelectMock = vi.fn(() => ({ eq: assumptionSetEqMock }));
+
 const mockAudit = {
   info: vi.fn(),
   warn: vi.fn(),
@@ -57,6 +65,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "workspaces") {
     return { select: workspaceSelectMock };
+  }
+  if (table === "scenario_entries") {
+    return { select: scenarioEntrySelectMock };
+  }
+  if (table === "scenario_assumption_sets") {
+    return { select: assumptionSetSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -569,6 +583,8 @@ describe("/api/models/[modelId]/runs", () => {
           caveats: [expect.stringContaining("NOT a traffic impact study")],
           net_daily_trip_ends: 2512,
           comparison_basis: "no_build_zero",
+          program_source: "inline",
+          assumption_set_id: null,
         }),
       })
     );
@@ -646,6 +662,121 @@ describe("/api/models/[modelId]/runs", () => {
       error: expect.stringContaining("Launch configuration is incomplete"),
     });
     expect(modelRunInsertMock).not.toHaveBeenCalled();
+  });
+
+  const SET_ID = "55555555-5555-4555-8555-555555555555";
+  const ENTRY_ID = "66666666-6666-4666-8666-666666666666";
+
+  it("resolves the program from an assumption set and stamps honest provenance", async () => {
+    assumptionSetMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: SET_ID,
+        scenario_set_id: "77777777-7777-4777-8777-777777777777",
+        assumptions_json: { tripGenProgram: TRIP_GEN_PROGRAM },
+        scenario_sets: { workspace_id: WORKSPACE_ID },
+      },
+      error: null,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "ite_trip_generation", assumptionSetId: SET_ID }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "succeeded",
+        result_summary_json: expect.objectContaining({
+          program_source: "assumption_set",
+          assumption_set_id: SET_ID,
+        }),
+      })
+    );
+  });
+
+  it("rejects an assumption set from another workspace with 400 before any run insert", async () => {
+    assumptionSetMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: SET_ID,
+        scenario_set_id: "77777777-7777-4777-8777-777777777777",
+        assumptions_json: { tripGenProgram: TRIP_GEN_PROGRAM },
+        // The caller can READ this set via RLS (they are a member of its
+        // workspace) — but it is not the model's workspace.
+        scenario_sets: { workspace_id: "88888888-8888-4888-8888-888888888888" },
+      },
+      error: null,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "ite_trip_generation", assumptionSetId: SET_ID }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("model's workspace"),
+    });
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
+    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("resolves the program from the scenario entry's assumptions (the primary UX path)", async () => {
+    scenarioEntryMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: ENTRY_ID,
+        scenario_set_id: "77777777-7777-4777-8777-777777777777",
+        label: "Proposed project",
+        entry_type: "alternative",
+        status: "draft",
+        assumptions_json: { tripGenProgram: TRIP_GEN_PROGRAM },
+      },
+      error: null,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "ite_trip_generation", scenarioEntryId: ENTRY_ID }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "succeeded",
+        result_summary_json: expect.objectContaining({
+          program_source: "scenario_entry",
+          assumption_set_id: null,
+        }),
+      })
+    );
+  });
+
+  it("fails the run with 422 when the stored entry program is malformed", async () => {
+    scenarioEntryMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: ENTRY_ID,
+        scenario_set_id: "77777777-7777-4777-8777-777777777777",
+        label: "Proposed project",
+        entry_type: "alternative",
+        status: "draft",
+        assumptions_json: { tripGenProgram: { lineItems: "not-an-array" } },
+      },
+      error: null,
+    });
+
+    const response = await postModelRun(
+      launchRequest({ engineKey: "ite_trip_generation", scenarioEntryId: ENTRY_ID }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("malformed"),
+    });
+    expect(modelRunUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "failed" })
+    );
+    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
   });
 
   it("gates the trip-generation branch behind an active subscription with 402", async () => {

@@ -60,6 +60,11 @@ const LAUNCHABLE_RUN_MODES = MANAGED_RUN_MODE_DEFINITIONS.filter(
   (definition) => definition.availability === "launchable"
 );
 
+/** In-process engines record the run only — they deliberately do NOT attach it
+ * as scenario-entry evidence (the sketch/trip-gen branches are recorded-only).
+ * The launch card must say so instead of implying promotion. */
+const RECORDED_ONLY_ENGINE_KEYS: ReadonlySet<string> = new Set(["sketch_abm", "ite_trip_generation"]);
+
 type ScenarioEntryRegistryProps = {
   scenarioSetId: string;
   scenarioSetTitle: string;
@@ -229,6 +234,15 @@ function ScenarioEntryLaunchButton({
           </option>
         ))}
       </select>
+      {RECORDED_ONLY_ENGINE_KEYS.has(selectedEngineKey) ? (
+        <p className="text-xs text-muted-foreground">
+          This engine records the run on the model — it does not attach the run as this entry&apos;s
+          evidence.
+          {selectedEngineKey === "ite_trip_generation"
+            ? " The land-use program is read from this entry's assumptions JSON (tripGenProgram)."
+            : ""}
+        </p>
+      ) : null}
       <Button type="button" variant="outline" size="sm" onClick={() => void handleLaunch()} disabled={isLaunching || !selectedModelId}>
         {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}
         Launch managed run

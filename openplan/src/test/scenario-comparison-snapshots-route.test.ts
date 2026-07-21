@@ -94,6 +94,8 @@ vi.mock("@/lib/reports/scenario-writeback", () => ({
 }));
 
 import { POST as postComparisonSnapshot } from "@/app/api/scenarios/[scenarioSetId]/spine/comparison-snapshots/route";
+import { buildTripGenComparisonPayload } from "@/lib/scenarios/trip-gen-comparison";
+import { ITE_TRIP_GEN_KPI_NAMES } from "@/lib/models/ite-trip-generation";
 
 describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
   beforeEach(() => {
@@ -290,6 +292,73 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
         comparisonSnapshotId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
         staleReportCount: 1,
       })
+    );
+  });
+
+  it("accepts a real buildTripGenComparisonPayload body through the real route schema and persists the split caveats", async () => {
+    // Drift guard: the payload comes from the REAL builder, and the POST goes
+    // through the REAL route handler (real createComparisonSnapshotSchema).
+    // If the spine schema and the builder ever diverge, this returns 400.
+    const baselineKpis = [
+      { kpi_name: "project_daily_trip_ends", kpi_label: "Daily vehicle trip ends", value: 1284, unit: "trip ends / day" },
+      { kpi_name: "project_am_peak_hour_trip_ends", kpi_label: "AM peak-hour trip ends", value: 96, unit: "trip ends / hour" },
+      { kpi_name: "project_pm_peak_hour_trip_ends", kpi_label: "PM peak-hour trip ends", value: 121, unit: "trip ends / hour" },
+      { kpi_name: "project_daily_vmt_screen", kpi_label: "Screening daily VMT", value: 7575.6, unit: "vehicle miles / day" },
+      { kpi_name: "project_program_units", kpi_label: "Program units", value: 180, unit: "dwelling units" },
+    ];
+    const candidateKpis = [
+      { kpi_name: "project_daily_trip_ends", kpi_label: "Daily vehicle trip ends", value: 1046, unit: "trip ends / day" },
+      { kpi_name: "project_am_peak_hour_trip_ends", kpi_label: "AM peak-hour trip ends", value: 78, unit: "trip ends / hour" },
+      { kpi_name: "project_pm_peak_hour_trip_ends", kpi_label: "PM peak-hour trip ends", value: 99, unit: "trip ends / hour" },
+      { kpi_name: "project_daily_vmt_screen", kpi_label: "Screening daily VMT", value: 6171.4, unit: "vehicle miles / day" },
+      { kpi_name: "project_program_units", kpi_label: "Program units", value: 180, unit: "dwelling units" },
+    ];
+
+    // Every fixture KPI name must live in the real engine namespace, so the
+    // fixture cannot drift away from what the engine actually emits.
+    for (const row of [...baselineKpis, ...candidateKpis]) {
+      expect(ITE_TRIP_GEN_KPI_NAMES.has(row.kpi_name)).toBe(true);
+    }
+
+    const payload = buildTripGenComparisonPayload({
+      baselineEntry: { id: "55555555-5555-4555-8555-555555555555", label: "Existing conditions" },
+      candidateEntry: { id: "77777777-7777-4777-8777-777777777777", label: "Protected bike package" },
+      baselineKpis,
+      candidateKpis,
+      label: "Trip generation — Protected bike package vs Existing conditions",
+    });
+
+    expect(payload.indicatorDeltas).toHaveLength(5);
+    expect(payload.caveats.length).toBeGreaterThan(1);
+    for (const caveat of payload.caveats) {
+      expect(caveat.length).toBeGreaterThan(0);
+      expect(caveat.length).toBeLessThanOrEqual(400);
+    }
+
+    const response = await postComparisonSnapshot(
+      new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      }),
+      { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(comparisonSnapshotInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        scenario_set_id: "11111111-1111-4111-8111-111111111111",
+        baseline_entry_id: "55555555-5555-4555-8555-555555555555",
+        candidate_entry_id: "77777777-7777-4777-8777-777777777777",
+        caveats_json: payload.caveats,
+      })
+    );
+    expect(comparisonDeltaInsertMock).toHaveBeenCalledTimes(1);
+    const [deltaRows] = comparisonDeltaInsertMock.mock.calls[0] as unknown as [
+      Array<{ indicator_key: string }>,
+    ];
+    expect(deltaRows.map((row) => row.indicator_key)).toEqual(
+      payload.indicatorDeltas.map((delta) => delta.indicatorKey)
     );
   });
 

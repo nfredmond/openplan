@@ -395,6 +395,14 @@ export function ModelRunManager({
               <p className="mt-2 text-muted-foreground">
                 <span className="text-foreground">Caveat:</span> {selectedRunMode.caveatSummary}
               </p>
+              {engineKey === "ite_trip_generation" ? (
+                <p className="mt-2 text-muted-foreground">
+                  <span className="text-foreground">Input:</span> this engine ignores query text and
+                  corridor GeoJSON. It reads a land-use program from the selected scenario
+                  entry&apos;s assumptions JSON (<code>tripGenProgram</code>); launching without one
+                  fails with a clear error.
+                </p>
+              ) : null}
             </div>
           </div>
 

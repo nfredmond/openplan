@@ -140,6 +140,31 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
     expect((stageUpdateMock.mock.calls[0][0] as Record<string, unknown>).status).toBe("queued");
   });
 
+  it("refuses to re-queue an in-process engine's run to the worker with 409", async () => {
+    // A failed ite_trip_generation run has no corridor; re-queuing it would
+    // hand it to the AequilibraE worker (which falls back to the pilot bbox)
+    // and write assignment outputs under a trip-gen engine_key — an
+    // engine/provenance mismatch. The route must refuse instead.
+    runMaybeSingleMock.mockResolvedValue({
+      data: { id: MODEL_RUN_ID, status: "failed", engine_key: "ite_trip_generation" },
+      error: null,
+    });
+    const res = await relaunchRun(request(), routeContext());
+    expect(res.status).toBe(409);
+    expect(await res.json()).toMatchObject({
+      error: expect.stringContaining("in-process"),
+    });
+    expect(runUpdateMock).not.toHaveBeenCalled();
+    expect(kpiDeleteEqMock).not.toHaveBeenCalled();
+
+    runMaybeSingleMock.mockResolvedValue({
+      data: { id: MODEL_RUN_ID, status: "failed", engine_key: "sketch_abm" },
+      error: null,
+    });
+    const sketchRes = await relaunchRun(request(), routeContext());
+    expect(sketchRes.status).toBe(409);
+  });
+
   it("refuses to relaunch a running or succeeded run", async () => {
     runMaybeSingleMock.mockResolvedValue({
       data: { id: MODEL_RUN_ID, status: "running" },
