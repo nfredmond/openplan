@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { buildOdmProcessingBoundary } from "@/lib/aerial/odm-processing";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -157,10 +157,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const requestId = crypto.randomUUID();
     const callbackUrl = resolveCallbackUrl(request);
 
+    // aerial_processing_jobs is member-SELECT-only under RLS; the row writes
+    // happen with the service role AFTER the explicit membership check above,
+    // matching the callback route's posture.
+    const jobsWriter = createServiceRoleClient();
+
     // Insert the job row BEFORE calling the worker so a crash between the
     // two steps cannot orphan an accepted worker job: the callback route
     // resolves mission/workspace from request_id via this row.
-    const { data: jobRow, error: jobInsertError } = await supabase
+    const { data: jobRow, error: jobInsertError } = await jobsWriter
       .from("aerial_processing_jobs")
       .insert({
         workspace_id: mission.workspace_id,
@@ -202,7 +207,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
 
     const markDispatchFailed = async (detail: string) => {
-      const { error: failError } = await supabase
+      const { error: failError } = await jobsWriter
         .from("aerial_processing_jobs")
         .update({ status: "dispatch_failed", dispatch_error: detail.slice(0, 2048) })
         .eq("id", jobRow.id);
@@ -263,7 +268,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const accepted = parsedAccepted.data;
 
-    const { error: acceptUpdateError } = await supabase
+    const { error: acceptUpdateError } = await jobsWriter
       .from("aerial_processing_jobs")
       .update({
         status: "accepted",
