@@ -8,6 +8,11 @@ import {
   describeProjectGrantModelingReadiness,
   type ProjectGrantModelingEvidence,
 } from "@/lib/grants/modeling-evidence";
+import {
+  ENGAGEMENT_NARRATIVE_CAVEAT,
+  summarizeEngagementForCue,
+  type ProjectEngagementEvidence,
+} from "@/lib/grants/engagement-evidence";
 import type { FundingOpportunityRow } from "@/lib/grants/page-helpers";
 import type { StatusTone } from "@/lib/ui/status";
 
@@ -16,7 +21,8 @@ export type GrantEvidenceReadinessCueKey =
   | "source-artifact-anchors"
   | "modeling-boundary"
   | "match-reimbursement-posture"
-  | "bca-support";
+  | "bca-support"
+  | "community-engagement";
 
 export type GrantEvidenceReadinessCue = {
   key: GrantEvidenceReadinessCueKey;
@@ -68,7 +74,8 @@ function mentionsMatchOrReimbursement(opportunity: OpportunityEvidenceReadinessI
 export function buildGrantEvidenceReadinessCues(
   opportunity: OpportunityEvidenceReadinessInput,
   modelingEvidence: ProjectGrantModelingEvidence | null | undefined,
-  bcaScreening?: ProjectBcaScreeningSummary | null
+  bcaScreening?: ProjectBcaScreeningSummary | null,
+  engagementEvidence?: ProjectEngagementEvidence | null
 ): GrantEvidenceReadinessCue[] {
   const fitNotesRecorded = hasText(opportunity.fit_notes);
   const readinessNotesRecorded = hasText(opportunity.readiness_notes);
@@ -146,6 +153,23 @@ export function buildGrantEvidenceReadinessCues(
       nextAction: bcaScreening
         ? "Re-run and re-save the screening if costs or benefits have changed. This is a USDOT-style screening analogue; confirm the source's own required method (USDOT BCA Guidance, or the Caltrans LRSM for Local HSIP) before application use."
         : "If this source scores on benefit-cost, run the benefit-cost screen on the grants worksurface and save it to the project record.",
+    },
+    {
+      key: "community-engagement",
+      label: engagementEvidence
+        ? engagementEvidence.leadCampaign.synthesis
+          ? "Community input synthesized"
+          : "Engagement not yet synthesized"
+        : "No engagement evidence linked",
+      tone: engagementEvidence ? (engagementEvidence.leadCampaign.synthesis ? "success" : "info") : "neutral",
+      detail: engagementEvidence
+        ? `${summarizeEngagementForCue(engagementEvidence)} ${ENGAGEMENT_NARRATIVE_CAVEAT}`
+        : "No engagement campaign is linked to this project, so the narrative cannot cite community input. Demonstrated community support is a scored criterion in RAISE, SS4A, and ATIIP-class programs.",
+      nextAction: engagementEvidence
+        ? engagementEvidence.leadCampaign.synthesis
+          ? "Cite the synthesis as screening-level community input only; pair it with the representativeness screening before any equity or outreach-sufficiency language."
+          : "Run the campaign's AI synthesis so approved comments become citable narrative evidence."
+        : "Launch an engagement campaign linked to this project (or link an existing one) before relying on community-support language.",
     },
   ];
 }

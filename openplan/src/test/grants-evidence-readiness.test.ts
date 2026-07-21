@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { BCA_SCREENING_CAVEAT } from "@/lib/bca/parameters";
 import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
 import {
+  ENGAGEMENT_NARRATIVE_CAVEAT,
+  type ProjectEngagementEvidence,
+} from "@/lib/grants/engagement-evidence";
+import {
   buildGrantEvidenceReadinessCues,
   summarizeGrantEvidenceReadiness,
 } from "@/lib/grants/evidence-readiness";
@@ -70,13 +74,14 @@ describe("buildGrantEvidenceReadinessCues", () => {
   it("keeps documented evidence cues bounded to supervised grant review", () => {
     const cues = buildGrantEvidenceReadinessCues(baseOpportunity, buildEvidence());
 
-    expect(cues).toHaveLength(5);
+    expect(cues).toHaveLength(6);
     expect(cues.map((cue) => cue.key)).toEqual([
       "funding-source-fit",
       "source-artifact-anchors",
       "modeling-boundary",
       "match-reimbursement-posture",
       "bca-support",
+      "community-engagement",
     ]);
     expect(cues.find((cue) => cue.key === "funding-source-fit")).toMatchObject({
       label: "Fit notes documented",
@@ -122,7 +127,7 @@ describe("buildGrantEvidenceReadinessCues", () => {
       "No local match or reimbursement posture is stated"
     );
     expect(summarizeGrantEvidenceReadiness(cues)).toBe(
-      "3 of 5 visible grant evidence cues need operator review before pursue, application, or reimbursement language is treated as ready."
+      "3 of 6 visible grant evidence cues need operator review before pursue, application, or reimbursement language is treated as ready."
     );
   });
 
@@ -159,5 +164,48 @@ describe("buildGrantEvidenceReadinessCues", () => {
     // The results caveat belongs on the saved state only — there is no estimate
     // to caveat when none is saved.
     expect(missingCue?.detail).not.toContain(BCA_SCREENING_CAVEAT);
+  });
+
+  it("grades community engagement: synthesized > unsynthesized > none, always caveated", () => {
+    const engagement: ProjectEngagementEvidence = {
+      projectId: "project-1",
+      campaignCount: 2,
+      leadCampaign: {
+        id: "camp-1",
+        title: "Main St corridor feedback",
+        status: "active",
+        synthesis: {
+          source: "ai",
+          analyzedItemCount: 42,
+          overallSentiment: "mixed",
+          themes: [{ label: "Crossing safety", sentiment: "negative", itemCount: 12 }],
+        },
+        synthesizedAt: "2026-07-19T00:00:00.000Z",
+        representativeness: null,
+        representativenessComputedAt: null,
+      },
+    };
+
+    const withSynthesis = buildGrantEvidenceReadinessCues(baseOpportunity, buildEvidence(), null, engagement);
+    const synthesizedCue = withSynthesis.find((cue) => cue.key === "community-engagement");
+    expect(synthesizedCue).toMatchObject({ label: "Community input synthesized", tone: "success" });
+    expect(synthesizedCue?.detail).toContain("42 approved comment(s)");
+    expect(synthesizedCue?.detail).toContain(ENGAGEMENT_NARRATIVE_CAVEAT);
+
+    const unsynthesized = buildGrantEvidenceReadinessCues(baseOpportunity, buildEvidence(), null, {
+      ...engagement,
+      leadCampaign: { ...engagement.leadCampaign, synthesis: null },
+    });
+    expect(unsynthesized.find((cue) => cue.key === "community-engagement")).toMatchObject({
+      label: "Engagement not yet synthesized",
+      tone: "info",
+    });
+
+    // Missing engagement is neutral (like missing BCA), but the detail must
+    // still teach why it matters for community-support-scored sources.
+    const none = buildGrantEvidenceReadinessCues(baseOpportunity, buildEvidence(), null, null);
+    const missingEngagementCue = none.find((cue) => cue.key === "community-engagement");
+    expect(missingEngagementCue).toMatchObject({ label: "No engagement evidence linked", tone: "neutral" });
+    expect(missingEngagementCue?.detail).toContain("RAISE, SS4A, and ATIIP");
   });
 });
