@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,19 @@ export type AoiPolygon = {
 
 type EditorStatus = "idle" | "drawing" | "closed";
 
+const KEYBOARD_PAN_STEP_PX = 64;
+
+/**
+ * Mission AOI polygon editor. Keyboard support follows the house pattern from
+ * src/components/engagement/geometry-picker-map.tsx (E7, WCAG 2.1.1): the map
+ * container is the single focusable widget (Mapbox's own keyboard handling
+ * disabled, canvas out of the tab order); arrow keys pan, +/− zoom, Enter or
+ * Space adds a vertex at the center crosshair, Backspace removes the last,
+ * C closes the polygon, Escape clears. Changes announce via a live region.
+ *
+ * Pointer path is unchanged: click adds vertices, double-click closes,
+ * right-click removes the last vertex.
+ */
 export function MissionAoiEditor({
   missionId,
   initialPolygon,
@@ -38,6 +51,75 @@ export function MissionAoiEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const [announcement, setAnnouncement] = useState("");
+  const instructionsId = useId();
+
+  // Map handlers are registered once at mount; they read current state via
+  // refs. (The previous closure-over-state version froze `status` at its
+  // mount value — editing an existing AOI left clicks dead even after Clear.)
+  const verticesRef = useRef(vertices);
+  const statusRef = useRef(status);
+  useEffect(() => {
+    verticesRef.current = vertices;
+    statusRef.current = status;
+  }, [vertices, status]);
+
+  const announceSeqRef = useRef(0);
+  const ZERO_WIDTH_SPACE = String.fromCharCode(0x200b);
+  // Zero-width-space nonce: identical repeat messages still mutate the DOM so
+  // the live region re-announces them. U+200B is invisible and not spoken.
+  const announce = (message: string) => {
+    announceSeqRef.current += 1;
+    setAnnouncement(message + ZERO_WIDTH_SPACE.repeat(announceSeqRef.current % 2));
+  };
+
+  // Shared by map click and keyboard Enter at the crosshair.
+  const commitVertex = (coord: [number, number]) => {
+    if (statusRef.current === "closed") {
+      setError("Polygon is closed. Clear it (or press Escape) to draw a different area.");
+      announce("Polygon is already closed. Clear it to draw a different area.");
+      return;
+    }
+    const nextCount = verticesRef.current.length + 1;
+    setVertices((prev) => [...prev, coord]);
+    setStatus("drawing");
+    setError(null);
+    setSavedMessage(null);
+    announce(`Vertex ${nextCount} added at the map center.`);
+  };
+
+  const closePolygon = () => {
+    if (statusRef.current === "closed") return;
+    if (verticesRef.current.length < 3) {
+      setError("Draw at least 3 vertices before closing the polygon.");
+      announce("Add at least 3 vertices before closing the polygon.");
+      return;
+    }
+    setStatus("closed");
+    setError(null);
+    announce(`Polygon closed with ${verticesRef.current.length} vertices.`);
+  };
+
+  const undo = () => {
+    if (verticesRef.current.length === 0) return;
+    const remaining = verticesRef.current.length - 1;
+    setVertices((prev) => prev.slice(0, -1));
+    setStatus(remaining > 0 ? "drawing" : "idle");
+    setError(null);
+    setSavedMessage(null);
+    announce(remaining > 0 ? "Last vertex removed." : "Last vertex removed. Polygon is empty.");
+  };
+
+  const clear = () => {
+    setVertices([]);
+    setStatus("idle");
+    setError(null);
+    setSavedMessage(null);
+    if (verticesRef.current.length > 0) {
+      announce("Polygon cleared.");
+    }
+  };
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
@@ -56,9 +138,16 @@ export function MissionAoiEditor({
       attributionControl: false,
     });
 
+    // The wrapping <div> is the single keyboard widget; pan/zoom comes from
+    // our handler so there is no duplicate tab stop or double-handled key.
+    map.keyboard.disable();
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 
     map.on("load", () => {
+      const canvas = map.getCanvas();
+      canvas.setAttribute("tabindex", "-1");
+      canvas.setAttribute("aria-hidden", "true");
+
       map.addSource("aoi-preview", {
         type: "geojson",
         data: buildPreviewFeatureCollection([], "idle"),
@@ -98,36 +187,20 @@ export function MissionAoiEditor({
     });
 
     map.on("click", (event) => {
-      if (status === "closed") return;
-      const next: [number, number] = [
+      commitVertex([
         Number(event.lngLat.lng.toFixed(6)),
         Number(event.lngLat.lat.toFixed(6)),
-      ];
-      setVertices((prev) => [...prev, next]);
-      setStatus("drawing");
-      setError(null);
-      setSavedMessage(null);
+      ]);
     });
 
     map.on("dblclick", (event) => {
       event.preventDefault();
-      setVertices((prev) => {
-        if (prev.length < 3) {
-          setError("Draw at least 3 vertices before closing the polygon.");
-          return prev;
-        }
-        setStatus("closed");
-        return prev;
-      });
+      closePolygon();
     });
 
     map.on("contextmenu", (event) => {
       event.preventDefault();
-      setVertices((prev) => {
-        if (prev.length === 0) return prev;
-        if (status === "closed") setStatus(prev.length > 1 ? "drawing" : "idle");
-        return prev.slice(0, -1);
-      });
+      undo();
     });
 
     mapRef.current = map;
@@ -136,6 +209,7 @@ export function MissionAoiEditor({
       map.remove();
       mapRef.current = null;
     };
+    // Handlers read state via refs, so a single registration is safe.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -147,11 +221,66 @@ export function MissionAoiEditor({
     source.setData(buildPreviewFeatureCollection(vertices, status));
   }, [vertices, status]);
 
-  const clear = () => {
-    setVertices([]);
-    setStatus("idle");
-    setError(null);
-    setSavedMessage(null);
+  const handleMapKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    // Mapbox inserts the zoom controls (real <button>s) into this container;
+    // without this guard a keydown on a focused zoom button bubbles here and
+    // would commit a stray vertex while cancelling the button's activation.
+    if (event.target !== event.currentTarget) return;
+    const map = mapRef.current;
+    if (!map) return;
+    switch (event.key) {
+      case "ArrowUp":
+        map.panBy([0, -KEYBOARD_PAN_STEP_PX]);
+        event.preventDefault();
+        break;
+      case "ArrowDown":
+        map.panBy([0, KEYBOARD_PAN_STEP_PX]);
+        event.preventDefault();
+        break;
+      case "ArrowLeft":
+        map.panBy([-KEYBOARD_PAN_STEP_PX, 0]);
+        event.preventDefault();
+        break;
+      case "ArrowRight":
+        map.panBy([KEYBOARD_PAN_STEP_PX, 0]);
+        event.preventDefault();
+        break;
+      case "+":
+      case "=":
+        map.zoomIn();
+        event.preventDefault();
+        break;
+      case "-":
+      case "_":
+        map.zoomOut();
+        event.preventDefault();
+        break;
+      case "Enter":
+      case " ": {
+        event.preventDefault();
+        const c = map.getCenter();
+        commitVertex([Number(c.lng.toFixed(6)), Number(c.lat.toFixed(6))]);
+        break;
+      }
+      case "Backspace":
+      case "Delete":
+        event.preventDefault();
+        undo();
+        break;
+      case "c":
+      case "C":
+        event.preventDefault();
+        closePolygon();
+        break;
+      case "Escape":
+        if (verticesRef.current.length > 0) {
+          event.preventDefault();
+          clear();
+        }
+        break;
+      default:
+        break;
+    }
   };
 
   const save = async () => {
@@ -167,7 +296,7 @@ export function MissionAoiEditor({
         : null;
 
     if (status === "drawing") {
-      setError("Double-click the map to close the polygon before saving.");
+      setError("Double-click the map (or press C) to close the polygon before saving.");
       return;
     }
 
@@ -204,17 +333,41 @@ export function MissionAoiEditor({
   return (
     <div className="space-y-3">
       <div className="relative overflow-hidden rounded-xl border border-border">
-        <div ref={mapContainerRef} className="h-[420px] w-full bg-muted/10" />
-        <div className="absolute bottom-3 left-3 rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
+        <div
+          ref={mapContainerRef}
+          role="application"
+          tabIndex={0}
+          aria-roledescription="Interactive AOI drawing map"
+          aria-label="Mission area-of-interest drawing map"
+          aria-describedby={instructionsId}
+          onKeyDown={handleMapKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          className="h-[420px] w-full bg-muted/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        />
+        {isFocused ? (
+          <div aria-hidden className="pointer-events-none absolute left-1/2 top-1/2 z-10 h-6 w-6 -translate-x-1/2 -translate-y-1/2">
+            <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary/80 shadow" />
+            <span className="absolute left-1/2 top-1/2 h-4 w-px -translate-x-1/2 -translate-y-1/2 bg-primary/80" />
+            <span className="absolute left-1/2 top-1/2 h-px w-4 -translate-x-1/2 -translate-y-1/2 bg-primary/80" />
+          </div>
+        ) : null}
+        <div className="absolute bottom-3 left-3 max-w-[85%] rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
           {status === "idle" && vertices.length === 0
-            ? "Click the map to add vertices. Double-click to close. Right-click removes the last vertex."
+            ? "Click the map or press Enter to add vertices. Double-click or press C to close. Right-click or Backspace removes the last vertex."
             : null}
           {status === "drawing"
-            ? `${vertices.length} vertex${vertices.length === 1 ? "" : "es"} · double-click to close`
+            ? `${vertices.length} vertex${vertices.length === 1 ? "" : "es"} · double-click or press C to close`
             : null}
           {status === "closed" ? `Polygon closed (${vertices.length} vertices).` : null}
         </div>
       </div>
+
+      <p id={instructionsId} className="text-xs text-muted-foreground">
+        Mouse: click to add vertices, double-click to close, right-click to remove the last vertex.
+        Keyboard: focus the map, use arrow keys to pan and +/− to zoom, Enter to add a vertex at the
+        center crosshair, Backspace to remove the last, C to close the polygon, Escape to clear.
+      </p>
 
       {error ? (
         <StateBlock title="Editor error" description={error} tone="danger" compact />
@@ -230,6 +383,10 @@ export function MissionAoiEditor({
         <Button type="button" variant="outline" onClick={clear} disabled={saving}>
           Clear
         </Button>
+      </div>
+
+      <div aria-live="polite" role="status" className="sr-only">
+        {announcement}
       </div>
     </div>
   );
