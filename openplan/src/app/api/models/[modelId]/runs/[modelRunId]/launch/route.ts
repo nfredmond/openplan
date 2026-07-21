@@ -110,7 +110,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // Load the model run
     const { data: modelRun, error: modelRunError } = await supabase
       .from("model_runs")
-      .select("id, status")
+      .select("id, status, engine_key")
       .eq("id", parsedParams.data.modelRunId)
       .eq("model_id", access.model.id)
       .maybeSingle();
@@ -121,6 +121,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (modelRun.status === "running" || modelRun.status === "succeeded") {
       return NextResponse.json({ error: "Cannot launch a run that is already running or succeeded" }, { status: 400 });
+    }
+
+    // This route re-queues a run into the AequilibraE worker (stages below).
+    // In-process engines must never take that path: the worker claims queued
+    // stages with no engine filter, would fall back to the pilot bbox for the
+    // missing corridor, and would write assignment outputs onto a run whose
+    // engine_key still says sketch/trip-gen — an engine/provenance mismatch on
+    // a claim-boundary surface. Relaunch those engines via POST /runs instead.
+    if (modelRun.engine_key === "sketch_abm" || modelRun.engine_key === "ite_trip_generation") {
+      return NextResponse.json(
+        {
+          error:
+            "This run's engine executes in-process and cannot be re-queued to the worker. Launch a new run from the model or scenario entry instead.",
+        },
+        { status: 409 }
+      );
     }
 
     const nowIso = new Date().toISOString();

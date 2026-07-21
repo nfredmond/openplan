@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowRight, FileStack, GitCompareArrows, ShieldCheck } f
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
 import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
+import { TripGenComparisonSaveButton } from "@/components/scenarios/trip-gen-comparison-save";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -70,6 +71,14 @@ type ScenarioComparisonSnapshotRow = {
 type ScenarioComparisonIndicatorDeltaRow = {
   id: string;
   comparison_snapshot_id: string;
+};
+
+type ScenarioTripGenModelRunRow = {
+  id: string;
+  model_id: string;
+  scenario_entry_id: string | null;
+  status: string;
+  engine_key: string;
 };
 
 function formatStamp(value: string | null | undefined): string {
@@ -156,6 +165,50 @@ export default async function ScenarioSetDetailPage({
     baselineRunId: baselineEntry?.attached_run_id ?? null,
     candidateRunIds: alternativeEntries.map((entry) => entry.attached_run_id),
   });
+  // Narrow model_runs lookup for the trip-gen comparison save affordance: the
+  // newest succeeded ite_trip_generation run per entry. Degrades to "no
+  // affordance" on any lookup failure (e.g. the model_runs module migration is
+  // not applied yet) instead of blocking the page.
+  let tripGenModelRuns: ScenarioTripGenModelRunRow[] = [];
+  if (entries.length >= 2) {
+    try {
+      const { data: tripGenRunsData } = await supabase
+        .from("model_runs")
+        .select("id, model_id, scenario_entry_id, status, engine_key")
+        .in(
+          "scenario_entry_id",
+          entries.map((entry) => entry.id)
+        )
+        .eq("engine_key", "ite_trip_generation")
+        .eq("status", "succeeded")
+        .order("created_at", { ascending: false });
+      tripGenModelRuns = (tripGenRunsData ?? []) as ScenarioTripGenModelRunRow[];
+    } catch {
+      tripGenModelRuns = [];
+    }
+  }
+  const latestTripGenRunByEntryId = new Map<string, ScenarioTripGenModelRunRow>();
+  for (const run of tripGenModelRuns) {
+    if (run.scenario_entry_id && !latestTripGenRunByEntryId.has(run.scenario_entry_id)) {
+      latestTripGenRunByEntryId.set(run.scenario_entry_id, run);
+    }
+  }
+  // The spine route only accepts a baseline-typed baselineEntryId and a
+  // non-baseline candidateEntryId, so the affordance follows the same pairing:
+  // the set's baseline entry vs the first non-baseline entry with a succeeded
+  // trip-generation run.
+  const tripGenBaselineRun = baselineEntry ? latestTripGenRunByEntryId.get(baselineEntry.id) ?? null : null;
+  const tripGenCandidateEntry = tripGenBaselineRun
+    ? entries.find(
+        (entry) =>
+          entry.id !== baselineEntry?.id &&
+          entry.entry_type !== "baseline" &&
+          latestTripGenRunByEntryId.has(entry.id)
+      ) ?? null
+    : null;
+  const tripGenCandidateRun = tripGenCandidateEntry
+    ? latestTripGenRunByEntryId.get(tripGenCandidateEntry.id) ?? null
+    : null;
   const comparisonSnapshotsResult = await supabase
     .from("scenario_comparison_snapshots")
     .select("id, baseline_entry_id, candidate_entry_id, label, summary, metadata_json, status, updated_at")
@@ -538,6 +591,34 @@ export default async function ScenarioSetDetailPage({
                 </div>
               ) : null}
             </div>
+
+            {!comparisonSnapshotsSchemaPending &&
+            baselineEntry &&
+            tripGenBaselineRun &&
+            tripGenCandidateEntry &&
+            tripGenCandidateRun ? (
+              <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/75 p-4">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold tracking-tight">Trip-generation comparison ready</p>
+                    <p className="text-sm text-muted-foreground">
+                      {baselineEntry.label} and {tripGenCandidateEntry.label} both have a completed screening
+                      trip-generation run. Save the KPI deltas as a persistent comparison snapshot with the screening
+                      caveats attached.
+                    </p>
+                  </div>
+                  <TripGenComparisonSaveButton
+                    scenarioSetId={scenarioSet.id}
+                    baselineEntryId={baselineEntry.id}
+                    baselineEntryLabel={baselineEntry.label}
+                    candidateEntryId={tripGenCandidateEntry.id}
+                    candidateEntryLabel={tripGenCandidateEntry.label}
+                    baselineRun={{ modelId: tripGenBaselineRun.model_id, modelRunId: tripGenBaselineRun.id }}
+                    candidateRun={{ modelId: tripGenCandidateRun.model_id, modelRunId: tripGenCandidateRun.id }}
+                  />
+                </div>
+              </div>
+            ) : null}
 
             {comparisonSnapshotsSchemaPending ? (
               <div className="module-empty-state mt-5 text-sm">

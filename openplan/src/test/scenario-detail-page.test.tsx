@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -53,6 +53,14 @@ const comparisonSnapshotsSelectMock = vi.fn(() => ({ eq: comparisonSnapshotsEqMo
 const comparisonIndicatorDeltasInMock = vi.fn();
 const comparisonIndicatorDeltasSelectMock = vi.fn(() => ({ in: comparisonIndicatorDeltasInMock }));
 
+// model_runs lookup for the trip-gen comparison save affordance:
+// .select(...).in("scenario_entry_id", ...).eq("engine_key", ...).eq("status", ...).order(...)
+const modelRunsOrderMock = vi.fn();
+const modelRunsEqStatusMock = vi.fn(() => ({ order: modelRunsOrderMock }));
+const modelRunsEqEngineMock = vi.fn(() => ({ eq: modelRunsEqStatusMock }));
+const modelRunsInMock = vi.fn(() => ({ eq: modelRunsEqEngineMock }));
+const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock }));
+
 const buildScenarioComparisonBoardMock = vi.fn();
 
 const fromMock = vi.fn((table: string) => {
@@ -86,6 +94,9 @@ const fromMock = vi.fn((table: string) => {
   if (table === "scenario_comparison_indicator_deltas") {
     return { select: comparisonIndicatorDeltasSelectMock };
   }
+  if (table === "model_runs") {
+    return { select: modelRunsSelectMock };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -93,6 +104,8 @@ const fromMock = vi.fn((table: string) => {
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
+  // Needed by the real TripGenComparisonSaveButton client component the page renders.
+  useRouter: () => ({ refresh: vi.fn() }),
 }));
 
 vi.mock("next/link", () => ({
@@ -283,6 +296,9 @@ describe("ScenarioSetDetailPage", () => {
 
     comparisonSnapshotsOrderMock.mockResolvedValue({ data: [], error: null });
     comparisonIndicatorDeltasInMock.mockResolvedValue({ data: [], error: null });
+    // Default: no succeeded trip-gen model runs, so the save affordance stays hidden
+    // and every pre-existing test keeps its exact behavior.
+    modelRunsOrderMock.mockResolvedValue({ data: [], error: null });
 
     buildScenarioComparisonBoardMock.mockReturnValue([]);
 
@@ -580,5 +596,60 @@ describe("ScenarioSetDetailPage", () => {
     expect(screen.getByText(/not a validated behavioral forecast/i)).toBeInTheDocument();
     expect(screen.getByText(/ready for a draft comparison packet/i)).toBeInTheDocument();
     expect(screen.queryByText(/overallScore/)).not.toBeInTheDocument();
+  });
+
+  it("renders the trip-gen comparison save affordance only when baseline and an alternative both have succeeded runs", async () => {
+    modelRunsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "model-run-alt-1",
+          model_id: "model-1",
+          scenario_entry_id: "entry-alt-1",
+          status: "succeeded",
+          engine_key: "ite_trip_generation",
+        },
+        {
+          id: "model-run-baseline",
+          model_id: "model-1",
+          scenario_entry_id: "entry-baseline",
+          status: "succeeded",
+          engine_key: "ite_trip_generation",
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(fromMock).toHaveBeenCalledWith("model_runs");
+    expect(modelRunsInMock).toHaveBeenCalledWith("scenario_entry_id", ["entry-baseline", "entry-alt-1"]);
+    expect(modelRunsEqEngineMock).toHaveBeenCalledWith("engine_key", "ite_trip_generation");
+    expect(modelRunsEqStatusMock).toHaveBeenCalledWith("status", "succeeded");
+    expect(screen.getByText(/Trip-generation comparison ready/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Existing conditions and Protected bike package both have a completed screening/i)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Save trip-gen comparison/i })).toBeInTheDocument();
+
+    cleanup();
+
+    // Existing-shape case: a succeeded run on only one entry must NOT light the affordance.
+    modelRunsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "model-run-baseline",
+          model_id: "model-1",
+          scenario_entry_id: "entry-baseline",
+          status: "succeeded",
+          engine_key: "ite_trip_generation",
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.queryByText(/Trip-generation comparison ready/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Save trip-gen comparison/i })).not.toBeInTheDocument();
   });
 });

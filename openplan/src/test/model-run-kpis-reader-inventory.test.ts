@@ -100,6 +100,16 @@ function classifyCall(call: KpiCall): string | null {
     return "sketch-abm-run-kpi-writer";
   }
 
+  if (
+    call.filePath === "src/app/api/models/[modelId]/runs/route.ts" &&
+    chain.includes(".insert(iteKpiRows)")
+  ) {
+    // Synchronous ite_trip_generation launch branch registering run-scoped
+    // screening-grade trip-gen KPIs (kpi_category "ite_trip_generation",
+    // run_id set, names disjoint from the CEQA KPI namespace).
+    return "ite-trip-gen-run-kpi-writer";
+  }
+
   return null;
 }
 
@@ -136,6 +146,10 @@ describe("model_run_kpis reader inventory", () => {
       expect.objectContaining({
         filePath: "src/app/api/models/[modelId]/runs/route.ts",
         classification: "sketch-abm-run-kpi-writer",
+      }),
+      expect.objectContaining({
+        filePath: "src/app/api/models/[modelId]/runs/route.ts",
+        classification: "ite-trip-gen-run-kpi-writer",
       }),
       expect.objectContaining({
         filePath: "src/lib/models/behavioral-onramp-kpis.ts",

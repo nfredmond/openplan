@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
 import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
+import { ModelRunTripGenScreen } from "@/components/models/model-run-trip-gen-screen";
 import { ModelRunEmissionsPanel } from "@/components/models/model-run-emissions-panel";
 import { ModelRunEquityPanel } from "@/components/models/model-run-equity-panel";
 import { ModelRunEngagementPanel } from "@/components/models/model-run-engagement-panel";
@@ -394,6 +395,14 @@ export function ModelRunManager({
               <p className="mt-2 text-muted-foreground">
                 <span className="text-foreground">Caveat:</span> {selectedRunMode.caveatSummary}
               </p>
+              {engineKey === "ite_trip_generation" ? (
+                <p className="mt-2 text-muted-foreground">
+                  <span className="text-foreground">Input:</span> this engine ignores query text and
+                  corridor GeoJSON. It reads a land-use program from the selected scenario
+                  entry&apos;s assumptions JSON (<code>tripGenProgram</code>); launching without one
+                  fails with a clear error.
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -686,6 +695,10 @@ function ModelRunStagingAndArtifacts({
 
       {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
         <ModelRunCeqaVmtScreen modelId={modelId} modelRunId={run.id} runTitle={run.run_title} />
+      ) : null}
+
+      {run.status === "succeeded" && run.engine_key === "ite_trip_generation" ? (
+        <ModelRunTripGenScreen modelId={modelId} modelRunId={run.id} runTitle={run.run_title} />
       ) : null}
 
       {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (

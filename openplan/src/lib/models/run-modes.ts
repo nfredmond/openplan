@@ -3,6 +3,7 @@ export const MANAGED_RUN_MODE_KEYS = [
   "aequilibrae",
   "behavioral_demand",
   "sketch_abm",
+  "ite_trip_generation",
 ] as const;
 
 export type ManagedRunModeKey = (typeof MANAGED_RUN_MODE_KEYS)[number];
@@ -74,6 +75,21 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
       "Screening-grade sketch output over a synthetic population and distance-based skims. Do not treat it as a validated travel model, calibrated behavioral demand, or forecast-ready prediction.",
     comparisonMessage:
       "Comparison is limited to screening-grade sketch KPIs. Treat cross-run deltas as exploratory scenario contrasts, not calibrated run-to-run parity.",
+    availability: "launchable",
+  },
+  {
+    key: "ite_trip_generation",
+    label: "Trip Generation (ITE-style)",
+    shortLabel: "Trip Generation",
+    launchLabel: "Trip Generation (in-process screening worksheet)",
+    engineLabel: "Trip Generation",
+    summaryDetail:
+      "In-process average-rate trip generation over a scenario entry's land-use program, with a rate-based VMT screen.",
+    runtimeExpectation: "Runs synchronously in-process and completes in under a second.",
+    caveatSummary:
+      "Screening-level trip-generation worksheet using published public-agency reference rates. NOT a traffic impact study and NOT a CEQA §15064.3 VMT determination; its rate-based VMT never feeds the CEQA screen. Verify rates against the locally adopted or licensed manual before regulatory, funding, or design use.",
+    comparisonMessage:
+      "Comparison is limited to screening-grade trip-generation KPIs saved as scenario comparison snapshots. Treat deltas as exploratory program contrasts, not modeled forecasts.",
     availability: "launchable",
   },
 ];

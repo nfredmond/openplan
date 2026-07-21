@@ -20,6 +20,14 @@ import {
   type SketchModeSplitPct,
 } from "@/lib/models/sketch-abm/benchmark-fit";
 import { buildSketchAbmInputs, seedFromRunId } from "@/lib/models/sketch-abm/sketch-abm-inputs";
+import {
+  ITE_TRIP_GEN_SCREENING_CAVEAT,
+  TRIP_GEN_COMPARISON_BASES,
+  buildIteTripGenerationKpiRows,
+  computeTripGeneration,
+  type TripGenProgramInput,
+} from "@/lib/models/ite-trip-generation";
+import { TRIP_GEN_UNIT_BASES } from "@/lib/models/ite-rates";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   checkMonthlyRunQuota,
@@ -42,6 +50,34 @@ const paramsSchema = z.object({
   modelId: z.string().uuid(),
 });
 
+/** Land-use program shape for the ite_trip_generation engine. Numeric-range
+ * validation (shares 0–1, non-negative rates/quantities) lives in
+ * computeTripGeneration; this schema gates structure only. */
+const tripGenRateSchema = z.object({
+  key: z.string().trim().min(1).max(80),
+  landUse: z.string().trim().min(1).max(160),
+  unitBasis: z.enum(TRIP_GEN_UNIT_BASES),
+  dailyTripsPerUnit: z.number().finite(),
+  amPeakShareOfDaily: z.number().finite(),
+  amInboundShare: z.number().finite(),
+  pmPeakShareOfDaily: z.number().finite(),
+  pmInboundShare: z.number().finite(),
+});
+
+const tripGenLineItemSchema = z.object({
+  rateKey: z.string().trim().min(1).max(80).optional(),
+  rate: tripGenRateSchema.optional(),
+  quantity: z.number().finite(),
+  internalCaptureShare: z.number().finite().optional(),
+  passByShare: z.number().finite().optional(),
+});
+
+const tripGenProgramSchema = z.object({
+  lineItems: z.array(tripGenLineItemSchema).max(50),
+  avgTripLengthMiles: z.number().finite(),
+  comparisonBasis: z.enum(TRIP_GEN_COMPARISON_BASES),
+});
+
 const launchModelRunSchema = z.object({
   scenarioEntryId: z.string().uuid().optional(),
   title: z.string().trim().min(1).max(160).optional(),
@@ -49,6 +85,10 @@ const launchModelRunSchema = z.object({
   corridorGeojson: corridorGeojsonSchema.optional(),
   attachToScenarioEntry: z.boolean().optional(),
   engineKey: z.enum(MANAGED_RUN_MODE_KEYS).optional().default("deterministic_corridor_v1"),
+  /** ite_trip_generation only: an inline land-use program (API/tests). */
+  tripGenProgram: tripGenProgramSchema.optional(),
+  /** ite_trip_generation only: read the program from a scenario_assumption_sets row. */
+  assumptionSetId: z.string().uuid().optional(),
 });
 
 type RouteContext = {
@@ -362,6 +402,53 @@ export async function POST(request: NextRequest, context: RouteContext) {
       scenarioEntry = entry as ScenarioEntryRow;
     }
 
+    let assumptionSet: { id: string; assumptions_json: Record<string, unknown> | null } | null = null;
+    if (parsed.data.assumptionSetId) {
+      const { data: setRow, error: setError } = await supabase
+        .from("scenario_assumption_sets")
+        .select("id, scenario_set_id, assumptions_json, scenario_sets(workspace_id)")
+        .eq("id", parsed.data.assumptionSetId)
+        .maybeSingle();
+
+      if (setError) {
+        audit.error("assumption_set_lookup_failed", {
+          modelId: access.model.id,
+          assumptionSetId: parsed.data.assumptionSetId,
+          message: setError.message,
+          code: setError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify assumption set" }, { status: 500 });
+      }
+
+      if (!setRow) {
+        return NextResponse.json({ error: "Assumption set not found" }, { status: 404 });
+      }
+
+      if (access.model.scenario_set_id && setRow.scenario_set_id !== access.model.scenario_set_id) {
+        return NextResponse.json(
+          { error: "Assumption set does not belong to the model's primary scenario set" },
+          { status: 400 }
+        );
+      }
+
+      // RLS only proves the CALLER can read the set (any of their workspaces),
+      // and models without a primary scenario set skip the check above — so a
+      // member of two workspaces could otherwise execute workspace B's land-use
+      // program under workspace A's model. Always pin the set to the model's
+      // workspace.
+      const setWorkspace = Array.isArray(setRow.scenario_sets)
+        ? setRow.scenario_sets[0]
+        : setRow.scenario_sets;
+      if (!setWorkspace || setWorkspace.workspace_id !== access.model.workspace_id) {
+        return NextResponse.json(
+          { error: "Assumption set does not belong to the model's workspace" },
+          { status: 400 }
+        );
+      }
+
+      assumptionSet = { id: setRow.id, assumptions_json: setRow.assumptions_json ?? null };
+    }
+
     const modelTemplate = extractModelLaunchTemplate(access.model.config_json ?? {});
     const launchPayload = mergeScenarioLaunchPayload({
       modelTemplate,
@@ -371,8 +458,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
     launchPayload.engineKey = parsed.data.engineKey;
     const runMode = getManagedRunModeDefinition(launchPayload.engineKey);
+    const isIteTripGenRun = launchPayload.engineKey === "ite_trip_generation";
 
-    if (!launchPayload.queryText || !launchPayload.corridorGeojson) {
+    // Trip generation runs on a land-use program, not a corridor — it is the
+    // one engine exempt from the query/corridor requirement.
+    if (!isIteTripGenRun && (!launchPayload.queryText || !launchPayload.corridorGeojson)) {
       return NextResponse.json(
         {
           error:
@@ -412,11 +502,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Subscription + quota gate for the synchronous sketch_abm branch only —
+    // Subscription + quota gate for the synchronous in-process branches only —
     // mirrors /runs/[modelRunId]/launch. The deterministic path is gated by
     // /api/analysis downstream and the aequilibrae path by the launch route,
     // so neither is re-gated here.
-    if (isSketchAbmRun) {
+    if (isSketchAbmRun || isIteTripGenRun) {
       const { data: workspaceBilling, error: billingError } = await supabase
         .from("workspaces")
         .select("plan, subscription_plan, subscription_status")
@@ -746,6 +836,179 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .eq("id", modelRunId);
 
         audit.error("sketch_abm_model_run_failed", {
+          modelId: access.model.id,
+          modelRunId,
+          message,
+          durationMs: Date.now() - startedAt,
+        });
+
+        return NextResponse.json({ error: message }, { status: 500 });
+      }
+    }
+
+    if (isIteTripGenRun) {
+      // Synchronous in-process trip-generation worksheet, mirroring the sketch
+      // branch shape: run row is already inserted as running; resolve the
+      // land-use program, compute, then update to succeeded/failed. No
+      // corridor and no external fetches — pure rate-table arithmetic.
+      const failRun = async (message: string) => {
+        await supabase
+          .from("model_runs")
+          .update({ status: "failed", error_message: message, completed_at: new Date().toISOString() })
+          .eq("id", modelRunId);
+      };
+
+      // Program source priority: inline (API/tests) → assumption set → the
+      // scenario entry's assumptions_json.tripGenProgram (the primary UX path;
+      // the entry's full assumptions already ride in assumption_snapshot_json).
+      // The resolved source is recorded so provenance never claims a program
+      // origin that was not actually used.
+      const setCandidate = (assumptionSet?.assumptions_json ?? {})["tripGenProgram"];
+      const entryCandidate = (scenarioEntry?.assumptions_json ?? {})["tripGenProgram"];
+
+      let program: TripGenProgramInput | null = parsed.data.tripGenProgram ?? null;
+      let programSource: "inline" | "assumption_set" | "scenario_entry" | null = program ? "inline" : null;
+      if (!program) {
+        const storedCandidate = setCandidate !== undefined ? setCandidate : entryCandidate;
+        const storedSource = setCandidate !== undefined ? ("assumption_set" as const) : ("scenario_entry" as const);
+        if (storedCandidate !== undefined) {
+          const parsedProgram = tripGenProgramSchema.safeParse(storedCandidate);
+          if (!parsedProgram.success) {
+            const message =
+              "Stored land-use program (assumptions_json.tripGenProgram) is malformed for the trip-generation engine.";
+            await failRun(message);
+            audit.warn("ite_trip_gen_program_invalid", {
+              modelId: access.model.id,
+              modelRunId,
+              issues: parsedProgram.error.issues.slice(0, 5),
+            });
+            return NextResponse.json({ error: message, issues: parsedProgram.error.issues }, { status: 422 });
+          }
+          program = parsedProgram.data;
+          programSource = storedSource;
+        }
+      }
+
+      if (!program) {
+        const message =
+          "No land-use program found. Provide tripGenProgram inline, reference an assumptionSetId, or store one at the scenario entry's assumptions_json.tripGenProgram.";
+        await failRun(message);
+        return NextResponse.json({ error: message }, { status: 422 });
+      }
+
+      try {
+        let result: ReturnType<typeof computeTripGeneration>;
+        try {
+          result = computeTripGeneration(program);
+        } catch (computeError) {
+          // computeTripGeneration throws only on invalid input — operator-fixable.
+          const message =
+            computeError instanceof Error ? computeError.message : "Invalid trip-generation program";
+          await failRun(message);
+          audit.warn("ite_trip_gen_program_rejected", {
+            modelId: access.model.id,
+            modelRunId,
+            message,
+          });
+          return NextResponse.json({ error: message }, { status: 422 });
+        }
+
+        const iteKpiRows = buildIteTripGenerationKpiRows(modelRunId, result);
+        const { error: kpiInsertError } = await supabase.from("model_run_kpis").insert(iteKpiRows);
+        if (kpiInsertError) {
+          throw new Error(`Failed to record trip-generation KPIs: ${kpiInsertError.message}`);
+        }
+
+        const iteCompletedAt = new Date().toISOString();
+        const { error: iteRunUpdateError } = await supabase
+          .from("model_runs")
+          .update({
+            status: "succeeded",
+            result_summary_json: {
+              engine: "ite_trip_generation",
+              // The engine module's full screening caveat is the single source
+              // of truth here (the run-mode caveatSummary is its short form).
+              // Consumed by the evidence-packet normalizer via `caveats`.
+              caveat: ITE_TRIP_GEN_SCREENING_CAVEAT,
+              caveats: [ITE_TRIP_GEN_SCREENING_CAVEAT],
+              comparison_basis: result.comparisonBasis,
+              avg_trip_length_miles: result.avgTripLengthMiles,
+              net_daily_trip_ends: result.totals.netDailyTrips,
+              am_peak_trip_ends: result.totals.amPeakTrips,
+              pm_peak_trip_ends: result.totals.pmPeakTrips,
+              daily_vmt_screen: result.totals.dailyVmt,
+              line_item_count: result.lineItems.length,
+              program_source: programSource,
+              // Only stamped when the program actually CAME from the set —
+              // never a pointer to a set that was loaded but unused.
+              assumption_set_id: programSource === "assumption_set" ? (assumptionSet?.id ?? null) : null,
+            },
+            completed_at: iteCompletedAt,
+          })
+          .eq("id", modelRunId);
+
+        if (iteRunUpdateError) {
+          audit.error("ite_trip_gen_run_update_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            message: iteRunUpdateError.message,
+            code: iteRunUpdateError.code ?? null,
+          });
+          return NextResponse.json(
+            { error: "Trip-generation run completed, but provenance update failed" },
+            { status: 500 }
+          );
+        }
+
+        const { error: iteModelTouchError } = await supabase
+          .from("models")
+          .update({ last_run_recorded_at: iteCompletedAt })
+          .eq("id", access.model.id);
+
+        if (iteModelTouchError) {
+          audit.warn("model_last_run_touch_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            message: iteModelTouchError.message,
+            code: iteModelTouchError.code ?? null,
+          });
+        }
+
+        audit.info("ite_trip_gen_model_run_succeeded", {
+          modelId: access.model.id,
+          modelRunId,
+          lineItemCount: result.lineItems.length,
+          netDailyTrips: result.totals.netDailyTrips,
+          comparisonBasis: result.comparisonBasis,
+          durationMs: Date.now() - startedAt,
+        });
+
+        await recordUsageEventBestEffort(
+          {
+            workspaceId: access.model.workspace_id,
+            eventKey: "model_run.launch",
+            bucketKey: "runs",
+            weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
+            sourceRoute: "/api/models/[modelId]/runs",
+            idempotencyKey: `model_run:${modelRunId}:launch`,
+            metadata: { modelId: access.model.id, modelRunId, engineKey: "ite_trip_generation" },
+          },
+          audit
+        );
+
+        // Mirrors the sketch branch: the run is recorded only — comparison
+        // snapshots are saved explicitly through the scenario spine routes.
+        return NextResponse.json(
+          { modelRunId, status: "succeeded", scenario_attach: "recorded-only" },
+          { status: 201 }
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error && error.message ? error.message : "Trip-generation run failed";
+
+        await failRun(message);
+
+        audit.error("ite_trip_gen_model_run_failed", {
           modelId: access.model.id,
           modelRunId,
           message,

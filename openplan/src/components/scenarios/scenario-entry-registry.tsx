@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
+import { MANAGED_RUN_MODE_DEFINITIONS, type ManagedRunModeKey } from "@/lib/models/run-modes";
 import {
   SCENARIO_ENTRY_STATUSES,
   SCENARIO_ENTRY_TYPES,
@@ -52,6 +53,17 @@ type ModelOption = {
   status: string;
   lastRunRecordedAt: string | null;
 };
+
+/** Entry launches may pick any launchable managed engine; prototype-only lanes
+ * (e.g. behavioral_demand) stay off this scenario-spine control. */
+const LAUNCHABLE_RUN_MODES = MANAGED_RUN_MODE_DEFINITIONS.filter(
+  (definition) => definition.availability === "launchable"
+);
+
+/** In-process engines record the run only — they deliberately do NOT attach it
+ * as scenario-entry evidence (the sketch/trip-gen branches are recorded-only).
+ * The launch card must say so instead of implying promotion. */
+const RECORDED_ONLY_ENGINE_KEYS: ReadonlySet<string> = new Set(["sketch_abm", "ite_trip_generation"]);
 
 type ScenarioEntryRegistryProps = {
   scenarioSetId: string;
@@ -147,6 +159,7 @@ function ScenarioEntryLaunchButton({
 }) {
   const router = useRouter();
   const [selectedModelId, setSelectedModelId] = useState(models[0]?.id ?? "");
+  const [selectedEngineKey, setSelectedEngineKey] = useState<ManagedRunModeKey>("deterministic_corridor_v1");
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -167,6 +180,7 @@ function ScenarioEntryLaunchButton({
           scenarioEntryId: entry.id,
           title: `${entry.label} managed run`,
           attachToScenarioEntry: true,
+          engineKey: selectedEngineKey,
         }),
       });
 
@@ -206,6 +220,28 @@ function ScenarioEntryLaunchButton({
             </option>
           ))}
         </select>
+      ) : null}
+      <select
+        aria-label="Run engine"
+        className="flex h-9 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+        value={selectedEngineKey}
+        onChange={(event) => setSelectedEngineKey(event.target.value as ManagedRunModeKey)}
+        disabled={isLaunching}
+      >
+        {LAUNCHABLE_RUN_MODES.map((mode) => (
+          <option key={mode.key} value={mode.key}>
+            {mode.launchLabel}
+          </option>
+        ))}
+      </select>
+      {RECORDED_ONLY_ENGINE_KEYS.has(selectedEngineKey) ? (
+        <p className="text-xs text-muted-foreground">
+          This engine records the run on the model — it does not attach the run as this entry&apos;s
+          evidence.
+          {selectedEngineKey === "ite_trip_generation"
+            ? " The land-use program is read from this entry's assumptions JSON (tripGenProgram)."
+            : ""}
+        </p>
       ) : null}
       <Button type="button" variant="outline" size="sm" onClick={() => void handleLaunch()} disabled={isLaunching || !selectedModelId}>
         {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Play className="h-4 w-4" />}

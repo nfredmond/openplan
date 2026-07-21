@@ -62,13 +62,21 @@ describe("model run launch helpers", () => {
     expect(runMode.caveatSummary).toContain("prototype/preflight-backed");
   });
 
-  it("registers sketch_abm as the fourth managed run mode", () => {
+  it("registers the managed run modes in order", () => {
     expect(MANAGED_RUN_MODE_KEYS).toEqual([
       "deterministic_corridor_v1",
       "aequilibrae",
       "behavioral_demand",
       "sketch_abm",
+      "ite_trip_generation",
     ]);
+  });
+
+  it("defines trip generation as a launchable in-process worksheet mode with the claim boundary in its caveat", () => {
+    const runMode = getManagedRunModeDefinition("ite_trip_generation");
+    expect(runMode.availability).toBe("launchable");
+    expect(runMode.caveatSummary).toContain("NOT a traffic impact study");
+    expect(runMode.caveatSummary).toContain("NOT a CEQA");
   });
 
   it("defines the sketch activity model as a launchable screening-grade in-process mode", () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  buildIteTripGenerationKpiRows,
   computeTripGeneration,
   ITE_TRIP_GEN_KPI_NAMES,
   ITE_TRIP_GEN_SCREENING_CAVEAT,
@@ -102,6 +103,35 @@ describe("computeTripGeneration — validation (throws, never silently estimates
   it("throws on a custom rate with an out-of-range share", () => {
     const badRate = { key: "x", landUse: "Bad", unitBasis: "ksf" as const, dailyTripsPerUnit: 10, amPeakShareOfDaily: 5, amInboundShare: 0.5, pmPeakShareOfDaily: 0.1, pmInboundShare: 0.5 };
     expect(() => computeTripGeneration({ ...base, lineItems: [{ rate: badRate, quantity: 10 }] })).toThrow();
+  });
+});
+
+describe("buildIteTripGenerationKpiRows", () => {
+  const RUN_ID = "99999999-9999-4999-8999-999999999999";
+
+  it("maps totals onto the five namespaced KPI rows with provenance + caveat", () => {
+    const result = computeTripGeneration({
+      lineItems: [{ rateKey: "single_family_detached", quantity: 100 }],
+      avgTripLengthMiles: 5,
+      comparisonBasis: "no_build_zero",
+    });
+    const rows = buildIteTripGenerationKpiRows(RUN_ID, result);
+
+    expect(rows).toHaveLength(5);
+    expect(new Set(rows.map((row) => row.kpi_name))).toEqual(new Set(ITE_TRIP_GEN_KPI_NAMES));
+    for (const row of rows) {
+      expect(row.run_id).toBe(RUN_ID);
+      expect(row.kpi_category).toBe("ite_trip_generation");
+      expect(String(row.breakdown_json.provenance)).toContain("average-rate method");
+      expect(row.breakdown_json.caveat).toBe(ITE_TRIP_GEN_SCREENING_CAVEAT);
+    }
+
+    expect(rows.find((row) => row.kpi_name === "project_daily_trip_ends")?.value).toBe(1000);
+    expect(rows.find((row) => row.kpi_name === "project_daily_vmt_screen")?.value).toBe(5000);
+    expect(rows.find((row) => row.kpi_name === "project_program_units")?.value).toBe(100);
+    // The worksheet UI reads the line-item table off the headline row.
+    const headline = rows.find((row) => row.kpi_name === "project_daily_trip_ends");
+    expect(Array.isArray(headline?.breakdown_json.lineItems)).toBe(true);
   });
 });
 
