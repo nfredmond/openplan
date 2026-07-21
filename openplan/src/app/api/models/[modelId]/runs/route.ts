@@ -891,8 +891,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
           return NextResponse.json({ error: message }, { status: 422 });
         }
 
-        const kpiRows = buildIteTripGenerationKpiRows(modelRunId, result);
-        const { error: kpiInsertError } = await supabase.from("model_run_kpis").insert(kpiRows);
+        const iteKpiRows = buildIteTripGenerationKpiRows(modelRunId, result);
+        const { error: kpiInsertError } = await supabase.from("model_run_kpis").insert(iteKpiRows);
         if (kpiInsertError) {
           throw new Error(`Failed to record trip-generation KPIs: ${kpiInsertError.message}`);
         }
