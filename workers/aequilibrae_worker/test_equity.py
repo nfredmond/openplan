@@ -62,6 +62,57 @@ def test_summarize_disparity():
     assert "not the official" in s["method"].lower()
 
 
+def test_build_equity_zone_uses_c17002_for_block_groups():
+    # BG ACS rows carry C17002 (B17001 is null at BG geography): below-poverty
+    # = under-0.50 + 0.50-0.99 over the C17002 universe.
+    z = eq.build_equity_zone("060570001001", 1000.0, {
+        "B01003_001E": 1000.0,
+        "C17002_001E": 800.0, "C17002_002E": 60.0, "C17002_003E": 100.0,
+        "B03002_001E": 900.0, "B03002_003E": 600.0,
+        "B25044_001E": 400.0, "B25044_003E": 10.0, "B25044_010E": 30.0,
+    })
+    assert abs(z["low_income_share"] - 0.2) < 1e-9, z
+    assert abs(z["minority_share"] - (300.0 / 900.0)) < 1e-9, z
+    assert abs(z["zero_vehicle_share"] - 0.1) < 1e-9, z
+
+
+def test_build_equity_zone_keeps_b17001_for_tracts():
+    z = eq.build_equity_zone("06057000100", 2000.0, {
+        "B01003_001E": 2000.0,
+        "B17001_001E": 1900.0, "B17001_002E": 380.0,
+        "B03002_001E": 2000.0, "B03002_003E": 1500.0,
+        "B25044_001E": 800.0, "B25044_003E": 20.0, "B25044_010E": 60.0,
+    })
+    assert abs(z["low_income_share"] - 0.2) < 1e-9, z
+
+
+def test_acs_equity_vars_bg_swaps_only_poverty_table():
+    assert "B17001_001E" not in eq.ACS_EQUITY_VARS_BG
+    assert "C17002_001E" in eq.ACS_EQUITY_VARS_BG and "C17002_003E" in eq.ACS_EQUITY_VARS_BG
+    # every non-poverty var is identical across the two lists
+    assert [v for v in eq.ACS_EQUITY_VARS if not v.startswith("B17001")] == [
+        v for v in eq.ACS_EQUITY_VARS_BG if not v.startswith("C17002")
+    ]
+
+
+def test_repair_geoids_block_group_restores_leading_zero():
+    # CA BG GEOID int-coerced by a CSV round-trip: 060570001001 -> 60570001001.
+    out = eq.repair_geoids([60570001001, "060570001002"], "block_group")
+    assert out == ["060570001001", "060570001002"], out
+
+
+def test_repair_geoids_tract_default():
+    out = eq.repair_geoids([6057000100, "06057000200"], None)
+    assert out == ["06057000100", "06057000200"], out
+
+
+def test_repair_geoids_never_truncates():
+    # A clean 12-char BG under a tract expectation stays 12 chars (zfill no-op),
+    # so unstamped pre-staged BG packages still level-detect correctly.
+    out = eq.repair_geoids(["060570001001"], "tract")
+    assert out == ["060570001001"], out
+
+
 if __name__ == "__main__":
     tests = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     try:

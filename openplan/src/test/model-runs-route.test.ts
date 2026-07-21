@@ -31,6 +31,7 @@ const modelRunQuotaEqMock = vi.fn(() => ({ gte: modelRunQuotaGteMock }));
 const modelRunSelectMock = vi.fn(() => ({ eq: modelRunQuotaEqMock }));
 
 const modelRunKpisInsertMock = vi.fn();
+const modelRunStagesInsertMock = vi.fn();
 
 const workspaceMaybeSingleMock = vi.fn();
 const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
@@ -62,6 +63,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "model_run_kpis") {
     return { insert: modelRunKpisInsertMock };
+  }
+  if (table === "model_run_stages") {
+    return { insert: modelRunStagesInsertMock };
   }
   if (table === "workspaces") {
     return { select: workspaceSelectMock };
@@ -172,6 +176,7 @@ describe("/api/models/[modelId]/runs", () => {
     });
 
     modelRunInsertMock.mockResolvedValue({ error: null });
+    modelRunStagesInsertMock.mockResolvedValue({ error: null });
     modelRunUpdateEqMock.mockResolvedValue({ error: null });
     modelUpdateEqMock.mockResolvedValue({ error: null });
     modelRunKpisInsertMock.mockResolvedValue({ error: null });
@@ -793,5 +798,72 @@ describe("/api/models/[modelId]/runs", () => {
     expect(response.status).toBe(402);
     expect(modelRunInsertMock).not.toHaveBeenCalled();
     expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("queues an aequilibrae run and stamps zoneGeography into the input snapshot", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "aequilibrae", zoneGeography: "block_group" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    const payload = (await response.json()) as { status?: string };
+    expect(payload.status).toBe("queued");
+
+    expect(modelRunInsertMock).toHaveBeenCalledTimes(1);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      engine_key: string;
+      status: string;
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect(inserted.engine_key).toBe("aequilibrae");
+    expect(inserted.status).toBe("queued");
+    expect(inserted.input_snapshot_json.zoneGeography).toBe("block_group");
+
+    expect(modelRunStagesInsertMock).toHaveBeenCalledTimes(1);
+    const stages = modelRunStagesInsertMock.mock.calls[0][0] as Array<{ stage_name: string }>;
+    expect(stages.map((s) => s.stage_name)).toEqual([
+      "AequilibraE Setup",
+      "Network Assignment",
+      "Artifact Extraction",
+    ]);
+  });
+
+  it("omits zoneGeography from the snapshot when not requested (worker env fallback stays in charge)", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "aequilibrae" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect("zoneGeography" in inserted.input_snapshot_json).toBe(false);
+  });
+
+  it("ignores zoneGeography for engines that don't consume it", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "sketch_abm", zoneGeography: "block_group" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      engine_key: string;
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect(inserted.engine_key).toBe("sketch_abm");
+    expect("zoneGeography" in inserted.input_snapshot_json).toBe(false);
+  });
+
+  it("rejects an invalid zoneGeography value with 400", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "aequilibrae", zoneGeography: "county" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(modelRunInsertMock).not.toHaveBeenCalled();
   });
 });
