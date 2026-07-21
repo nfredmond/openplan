@@ -63,6 +63,9 @@ const fromMock = vi.fn((table: string) => {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  // The dispatch route writes aerial_processing_jobs with the service role
+  // (member RLS is SELECT-only); route both clients at the same fromMock.
+  createServiceRoleClient: () => ({ from: fromMock }),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
