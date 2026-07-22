@@ -18,6 +18,7 @@ import {
   priorityTierTone,
   type RtpPriorityScores,
 } from "@/lib/rtp/priority-scoring";
+import { formatRtpModelingEvidenceLine, type RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
 
 function serialize(scores: RtpPriorityScores): string {
   const parsed = parsePriorityScores(scores);
@@ -36,16 +37,43 @@ export function RtpPriorityScoreEditor({
   projectId,
   linkId,
   initialScores,
+  availableRuns,
+  initialEvidenceRunId,
+  modelingEvidence,
 }: {
   projectId: string;
   linkId: string;
   initialScores: RtpPriorityScores;
+  availableRuns: Array<{ id: string; title: string; engineKey: string }>;
+  initialEvidenceRunId: string | null;
+  modelingEvidence: RtpModelingEvidence | null;
 }) {
   const router = useRouter();
   const [scores, setScores] = useState<RtpPriorityScores>(initialScores ?? {});
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [evidenceRunId, setEvidenceRunId] = useState(initialEvidenceRunId ?? "");
+  const [savingEvidence, setSavingEvidence] = useState(false);
+
+  async function saveEvidenceRun(runId: string | null) {
+    setSavingEvidence(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/projects/${projectId}/rtp-links`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ linkId, evidenceModelRunId: runId }),
+      });
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) throw new Error(payload.error || "Failed to link the model run");
+      router.refresh();
+    } catch (runError) {
+      setError(runError instanceof Error ? runError.message : "Failed to link the model run");
+    } finally {
+      setSavingEvidence(false);
+    }
+  }
 
   const rationale = useMemo(() => buildRtpPriorityRationale(scores), [scores]);
   const dirty = useMemo(() => serialize(scores) !== serialize(initialScores ?? {}), [scores, initialScores]);
@@ -109,6 +137,43 @@ export function RtpPriorityScoreEditor({
                 <strong className="text-foreground">{rationale.summary.byLevel[level]}/100</strong>
               </span>
             ))}
+          </div>
+
+          <div className="rounded-md border border-border/60 bg-muted/20 p-2.5">
+            <label
+              htmlFor={`evidence-run-${linkId}`}
+              className="text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+            >
+              Representative model run (VMT/GHG evidence)
+            </label>
+            <select
+              id={`evidence-run-${linkId}`}
+              value={evidenceRunId}
+              onChange={(event) => {
+                const next = event.target.value;
+                setEvidenceRunId(next);
+                void saveEvidenceRun(next || null);
+              }}
+              disabled={savingEvidence}
+              className="mt-1 h-9 w-full rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <option value="">No run linked — VMT/GHG scored by planner judgment</option>
+              {availableRuns.map((run) => (
+                <option key={run.id} value={run.id}>
+                  {run.title}
+                </option>
+              ))}
+            </select>
+            {modelingEvidence ? (
+              <p className="mt-1.5 text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">{modelingEvidence.runTitle ?? "Linked run"}:</span>{" "}
+                {formatRtpModelingEvidenceLine(modelingEvidence)}
+              </p>
+            ) : (
+              <p className="mt-1.5 text-[0.7rem] text-muted-foreground">
+                Link a run to show its screening-grade VMT/GHG next to those criteria. The run is named with its numbers — it informs the score, it doesn&apos;t set it.
+              </p>
+            )}
           </div>
 
           <ul className="space-y-2">

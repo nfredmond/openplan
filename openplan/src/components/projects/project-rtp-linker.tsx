@@ -15,6 +15,7 @@ import {
 } from "@/lib/rtp/catalog";
 import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score-editor";
 import type { RtpPriorityScores } from "@/lib/rtp/priority-scoring";
+import type { RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
 
 type AvailableCycle = {
   id: string;
@@ -36,16 +37,26 @@ type ExistingLink = {
   portfolioRole: string;
   priorityRationale: string | null;
   priorityScores: RtpPriorityScores;
+  evidenceModelRunId: string | null;
+  modelingEvidence: RtpModelingEvidence | null;
+};
+
+type AvailableRun = {
+  id: string;
+  title: string;
+  engineKey: string;
 };
 
 export function ProjectRtpLinker({
   projectId,
   availableCycles,
   existingLinks,
+  availableRuns,
 }: {
   projectId: string;
   availableCycles: AvailableCycle[];
   existingLinks: ExistingLink[];
+  availableRuns: AvailableRun[];
 }) {
   const router = useRouter();
   const [selectedCycleId, setSelectedCycleId] = useState("");
@@ -177,7 +188,14 @@ export function ProjectRtpLinker({
                 </div>
 
                 <div className="mt-3">
-                  <RtpPriorityScoreEditor projectId={projectId} linkId={link.id} initialScores={link.priorityScores} />
+                  <RtpPriorityScoreEditor
+                    projectId={projectId}
+                    linkId={link.id}
+                    initialScores={link.priorityScores}
+                    availableRuns={availableRuns}
+                    initialEvidenceRunId={link.evidenceModelRunId}
+                    modelingEvidence={link.modelingEvidence}
+                  />
                 </div>
               </div>
             ))}

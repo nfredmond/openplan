@@ -27,6 +27,7 @@ const updateLinkSchema = z.object({
   portfolioRole: z.enum(PORTFOLIO_ROLES).optional(),
   priorityRationale: z.string().trim().max(2000).nullable().optional(),
   priorityScores: priorityScoresSchema.optional(),
+  evidenceModelRunId: z.string().uuid().nullable().optional(),
 });
 
 const deleteLinkSchema = z.object({
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
         priority_scores: parsePriorityScores(payload.data.priorityScores),
         created_by: user.id,
       })
-      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, created_at")
+      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, created_at")
       .single();
 
     if (error) {
@@ -206,6 +207,21 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
     if (payload.data.priorityScores !== undefined) {
       updates.priority_scores = parsePriorityScores(payload.data.priorityScores);
     }
+    if (payload.data.evidenceModelRunId !== undefined) {
+      if (payload.data.evidenceModelRunId === null) {
+        updates.evidence_model_run_id = null;
+      } else {
+        const { data: run } = await supabase
+          .from("model_runs")
+          .select("id, workspace_id")
+          .eq("id", payload.data.evidenceModelRunId)
+          .maybeSingle();
+        if (!run || run.workspace_id !== link.workspace_id) {
+          return NextResponse.json({ error: "Model run not found in this workspace" }, { status: 400 });
+        }
+        updates.evidence_model_run_id = run.id;
+      }
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
@@ -215,7 +231,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .from("project_rtp_cycle_links")
       .update(updates)
       .eq("id", link.id)
-      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, created_at")
+      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, created_at")
       .single();
 
     if (error) {

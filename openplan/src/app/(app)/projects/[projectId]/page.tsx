@@ -32,6 +32,7 @@ import {
   parseStoredEvidenceChainSummary,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { RTP_EVIDENCE_KPI_NAMES, summarizeRtpModelingEvidence, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
@@ -175,7 +176,7 @@ export default async function ProjectDetailPage({
 
   const projectRtpLinkResult = await supabase
     .from("project_rtp_cycle_links")
-    .select("id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, created_at")
+    .select("id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, created_at")
     .eq("project_id", project.id)
     .order("created_at", { ascending: false });
 
@@ -208,6 +209,41 @@ export default async function ProjectDetailPage({
     ? []
     : ((workspaceRtpCyclesResult.data ?? []) as RtpCycleRow[]);
 
+  // RTP "why" engine: attributed modeling evidence. Load the workspace's succeeded
+  // runs for the evidence-run picker, plus the VMT/GHG KPIs of any run already
+  // attached to an RTP entry (the run is always named alongside its numbers).
+  const evidenceRunIds = Array.from(
+    new Set(projectRtpLinkRows.map((link) => link.evidence_model_run_id).filter((id): id is string => Boolean(id)))
+  );
+  const [availableRunsResult, evidenceKpisResult] = await Promise.all([
+    supabase
+      .from("model_runs")
+      .select("id, run_title, engine_key")
+      .eq("workspace_id", project.workspace_id)
+      .eq("status", "succeeded")
+      .order("created_at", { ascending: false })
+      .limit(50),
+    evidenceRunIds.length
+      ? supabase
+          .from("model_run_kpis")
+          .select("run_id, kpi_name, value")
+          .in("run_id", evidenceRunIds)
+          .in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
+      : Promise.resolve({ data: [], error: null }),
+  ]);
+  const availableModelRuns = looksLikePendingSchema(availableRunsResult.error?.message)
+    ? []
+    : ((availableRunsResult.data ?? []) as Array<{ id: string; run_title: string; engine_key: string }>).map((run) => ({
+        id: run.id,
+        title: run.run_title,
+        engineKey: run.engine_key,
+      }));
+  const runTitleById = new Map(availableModelRuns.map((run) => [run.id, run.title]));
+  const evidenceKpiRows = (evidenceKpisResult.data ?? []) as RtpModelingEvidenceKpiRow[];
+  const modelingEvidenceByRunId = new Map(
+    evidenceRunIds.map((runId) => [runId, summarizeRtpModelingEvidence(runId, runTitleById.get(runId) ?? null, evidenceKpiRows)])
+  );
+
   const rtpCycleById = new Map(linkedRtpCycles.map((cycle) => [cycle.id, cycle]));
   const existingRtpLinks = projectRtpLinkRows
     .map((link) => {
@@ -224,6 +260,10 @@ export default async function ProjectDetailPage({
         portfolioRole: link.portfolio_role,
         priorityRationale: link.priority_rationale,
         priorityScores: link.priority_scores ?? {},
+        evidenceModelRunId: link.evidence_model_run_id ?? null,
+        modelingEvidence: link.evidence_model_run_id
+          ? modelingEvidenceByRunId.get(link.evidence_model_run_id) ?? null
+          : null,
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
@@ -1067,6 +1107,7 @@ export default async function ProjectDetailPage({
         projectRtpLinksPending={projectRtpLinksPending}
         workspaceRtpCycles={workspaceRtpCycles}
         existingRtpLinks={existingRtpLinks}
+        availableModelRuns={availableModelRuns}
         deliverableCount={deliverables?.length ?? 0}
         openRiskCount={openRiskCount}
         openIssueCount={openIssueCount}

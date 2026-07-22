@@ -61,6 +61,15 @@ function hasCountyRunBehavioralFilter(chain: string): boolean {
 function classifyCall(call: KpiCall): string | null {
   const chain = normalizedChain(call.chain);
 
+  if (
+    call.filePath === "src/app/(app)/projects/[projectId]/page.tsx" &&
+    chain.includes('.in("run_id"')
+  ) {
+    // RTP "why" engine: reads a linked run's VMT/GHG KPIs (by run ids) to show as
+    // attributed modeling evidence next to the VMT/GHG priority criteria.
+    return "rtp-priority-evidence-read-by-run-ids";
+  }
+
   if (chain.includes(".select(") && hasRunIdFilter(chain)) {
     return "model-run-read-by-run-id";
   }
@@ -123,6 +132,10 @@ describe("model_run_kpis reader inventory", () => {
     }));
 
     expect(classifications).toEqual([
+      expect.objectContaining({
+        filePath: "src/app/(app)/projects/[projectId]/page.tsx",
+        classification: "rtp-priority-evidence-read-by-run-ids",
+      }),
       expect.objectContaining({
         filePath: "src/app/api/models/[modelId]/runs/[modelRunId]/evidence-packet/route.ts",
         classification: "model-run-read-by-run-id",

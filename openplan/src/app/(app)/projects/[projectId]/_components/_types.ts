@@ -1,5 +1,12 @@
 import type { AerialProjectPosture } from "@/lib/aerial/catalog";
 import type { ProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
+import type { RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
+
+export type AvailableModelRun = {
+  id: string;
+  title: string;
+  engineKey: string;
+};
 
 export type ProjectRow = {
   id: string;
@@ -60,6 +67,7 @@ export type ProjectRtpLinkRow = {
   portfolio_role: string;
   priority_rationale: string | null;
   priority_scores: Record<string, number> | null;
+  evidence_model_run_id: string | null;
   created_at: string;
 };
 
@@ -243,6 +251,8 @@ export type ExistingRtpLink = {
   portfolioRole: string;
   priorityRationale: string | null;
   priorityScores: Record<string, number>;
+  evidenceModelRunId: string | null;
+  modelingEvidence: RtpModelingEvidence | null;
 };
 
 export type AerialMission = {

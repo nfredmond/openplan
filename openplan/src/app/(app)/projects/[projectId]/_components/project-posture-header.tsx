@@ -24,6 +24,7 @@ import {
 } from "@/lib/reports/catalog";
 import { fmtDateTime, titleize, toneForStatus } from "./_helpers";
 import type {
+  AvailableModelRun,
   ExistingRtpLink,
   ProjectReportRow,
   ProjectRow,
@@ -62,6 +63,7 @@ type ProjectPostureHeaderProps = {
   projectRtpLinksPending: boolean;
   workspaceRtpCycles: RtpCycleRow[];
   existingRtpLinks: ExistingRtpLink[];
+  availableModelRuns: AvailableModelRun[];
   deliverableCount: number;
   openRiskCount: number;
   openIssueCount: number;
@@ -90,6 +92,7 @@ export function ProjectPostureHeader({
   projectRtpLinksPending,
   workspaceRtpCycles,
   existingRtpLinks,
+  availableModelRuns,
   deliverableCount,
   openRiskCount,
   openIssueCount,
@@ -255,6 +258,7 @@ export function ProjectPostureHeader({
                 horizonEndYear: cycle.horizon_end_year,
               }))}
               existingLinks={existingRtpLinks}
+              availableRuns={availableModelRuns}
             />
           )}
         </div>

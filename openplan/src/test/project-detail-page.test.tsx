@@ -26,6 +26,15 @@ const runsOrderMock = vi.fn(() => ({ limit: runsLimitMock }));
 const runsEqMock = vi.fn(() => ({ order: runsOrderMock }));
 const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 
+const modelRunsLimitMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
+const modelRunsOrderMock = vi.fn(() => ({ limit: modelRunsLimitMock }));
+const modelRunsStatusEqMock = vi.fn(() => ({ order: modelRunsOrderMock }));
+const modelRunsWsEqMock = vi.fn(() => ({ eq: modelRunsStatusEqMock }));
+const modelRunsSelectMock = vi.fn(() => ({ eq: modelRunsWsEqMock }));
+const modelRunKpisInKpiMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
+const modelRunKpisInRunMock = vi.fn(() => ({ in: modelRunKpisInKpiMock }));
+const modelRunKpisSelectMock = vi.fn(() => ({ in: modelRunKpisInRunMock }));
+
 const reportsLimitMock = vi.fn();
 const reportsOrderMock = vi.fn(() => ({ limit: reportsLimitMock }));
 const reportsEqMock = vi.fn(() => ({ order: reportsOrderMock }));
@@ -158,6 +167,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "runs") {
     return { select: runsSelectMock };
+  }
+  if (table === "model_runs") {
+    return { select: modelRunsSelectMock };
+  }
+  if (table === "model_run_kpis") {
+    return { select: modelRunKpisSelectMock };
   }
   if (table === "reports") {
     return { select: reportsSelectMock };
