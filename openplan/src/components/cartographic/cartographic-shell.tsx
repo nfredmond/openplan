@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { AlertTriangle } from "lucide-react";
 
 import { AppCopilot } from "@/components/assistant/app-copilot";
+import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { canReviewAccessRequests } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -92,6 +92,14 @@ export async function CartographicShell({ children }: { children: React.ReactNod
   const workspaceUpdatedLabel =
     formatUpdatedLabel(workspace?.billing_updated_at ?? workspace?.created_at ?? null) ?? null;
   const membershipPending = shellState.membershipStatus === "not_provisioned";
+  const isOperator = canReviewAccessRequests(user?.email);
+  // A first-run user with no workspace gets a focused self-serve onboarding
+  // wizard in place of the empty page. Operators keep full access to every
+  // (app) route (e.g. /admin) even without a workspace, so the wizard never
+  // hijacks their surface.
+  const showOnboarding = membershipPending && !isOperator;
+  const orgNameHint =
+    typeof user?.user_metadata?.org_name === "string" ? user.user_metadata.org_name : "";
 
   async function handleSignOut() {
     "use server";
@@ -105,7 +113,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
       <div className="op-cart-shell">
         <CartographicMapBackdrop />
 
-        <CartographicRail groups={buildNavGroups(canReviewAccessRequests(user?.email))} />
+        <CartographicRail groups={buildNavGroups(isOperator)} />
 
         <CartographicHeader
           workspaceName={shellState.workspaceName}
@@ -114,22 +122,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
         />
 
         <CartographicOverviewSurface>
-          {membershipPending ? (
-            <div className="op-cart-alert" role="status">
-              <div className="op-cart-alert__hd">
-                <AlertTriangle size={14} strokeWidth={1.8} aria-hidden />
-                <span>Workspace not provisioned</span>
-              </div>
-              <p className="op-cart-alert__body">
-                Signed in but not attached to a workspace. Open Projects to create one or ask an
-                owner to add you.
-              </p>
-              <Link href="/projects" className="op-cart-alert__cta">
-                Open Projects
-              </Link>
-            </div>
-          ) : null}
-          {children}
+          {showOnboarding ? <OnboardingWizard defaultWorkspaceName={orgNameHint} /> : children}
         </CartographicOverviewSurface>
 
         <CartographicLayersPanel />

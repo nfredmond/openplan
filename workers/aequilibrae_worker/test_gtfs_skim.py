@@ -151,6 +151,21 @@ def test_bundled_feed_smoke():
     assert bool(np.all(np.diag(sk["available"]) == False))  # intrazonal never available
 
 
+def test_feed_covers_study_area():
+    los = gs.load_feed(path=_fixture_zip())
+    # Zones sitting over the feed's stops → covered.
+    near_lons = np.array([-121.055, -121.065])
+    near_lats = np.array([39.205, 39.215])
+    assert gs.feed_covers(los, near_lons, near_lats)
+    # Zones in central Texas, far from any Nevada-County stop → NOT covered
+    # (this is the case that must report transit as "no_local_feed", not "modeled").
+    far_lons = np.array([-97.74, -97.70])
+    far_lats = np.array([30.27, 30.30])
+    assert not gs.feed_covers(los, far_lons, far_lats)
+    # Degenerate empty extent → not covered.
+    assert not gs.feed_covers(los, np.array([]), np.array([]))
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in sorted(globals().items()) if name.startswith("test_")]
     try:

@@ -272,6 +272,37 @@ def load_feed(path: str | None = None, url: str | None = None) -> TransitLos:
     return los
 
 
+def feed_covers(los: TransitLos, lons, lats, buffer_miles: float | None = None) -> bool:
+    """True if any served stop lies within the study-area extent (the bbox of the
+    zone centroids, padded by the walk-access buffer).
+
+    Guards against skimming a bundled feed that does not cover the study area:
+    a Nevada-County feed used for, say, a Texas run would find no served stops and
+    return a 0 transit share — but with a misleading transit_status of "modeled".
+    When this returns False the caller reports transit as not modeled ("no_local_feed")
+    instead of pretending a covering feed was applied.
+    """
+    if not los.stops or len(lons) == 0 or len(lats) == 0:
+        return False
+
+    buf = GTFS_ACCESS_MILES if buffer_miles is None else buffer_miles
+    min_lon, max_lon = float(min(lons)), float(max(lons))
+    min_lat, max_lat = float(min(lats)), float(max(lats))
+    mid_lat = (min_lat + max_lat) / 2.0
+
+    # Degree padding for the access buffer: ~69 mi per degree of latitude,
+    # scaled by cos(latitude) for longitude.
+    pad_lat = buf / 69.0
+    pad_lon = buf / max(69.0 * math.cos(math.radians(mid_lat)), 1e-6)
+    lo_lon, hi_lon = min_lon - pad_lon, max_lon + pad_lon
+    lo_lat, hi_lat = min_lat - pad_lat, max_lat + pad_lat
+
+    for slon, slat in los.stops.values():
+        if lo_lon <= slon <= hi_lon and lo_lat <= slat <= hi_lat:
+            return True
+    return False
+
+
 def _access_stops(lon: float, lat: float, los: TransitLos) -> list[tuple[str, float]]:
     """Served stops within the walk-access buffer, as (stop_id, walk_minutes)."""
     out = []

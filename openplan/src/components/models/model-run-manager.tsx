@@ -15,6 +15,7 @@ import { ModelRunTripGenScreen } from "@/components/models/model-run-trip-gen-sc
 import { ModelRunEmissionsPanel } from "@/components/models/model-run-emissions-panel";
 import { ModelRunEquityPanel } from "@/components/models/model-run-equity-panel";
 import { ModelRunEngagementPanel } from "@/components/models/model-run-engagement-panel";
+import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
 
@@ -486,17 +487,21 @@ export function ModelRunManager({
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="managed-run-corridor" className="text-[0.82rem] font-semibold">
-              Corridor GeoJSON
-            </label>
-            <Textarea
-              id="managed-run-corridor"
-              value={corridorText}
-              onChange={(event) => setCorridorText(event.target.value)}
-              rows={10}
-              placeholder='{"type":"Polygon","coordinates":[...]}'
-              className="font-mono text-xs"
-            />
+            <label className="text-[0.82rem] font-semibold">Study area</label>
+            <StudyAreaPicker corridorText={corridorText} onCorridorChange={setCorridorText} />
+            <details className="mt-1 rounded-[0.5rem] border border-border/60 bg-background/60 px-3 py-2">
+              <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+                Advanced: edit raw corridor GeoJSON
+              </summary>
+              <Textarea
+                id="managed-run-corridor"
+                value={corridorText}
+                onChange={(event) => setCorridorText(event.target.value)}
+                rows={8}
+                placeholder='{"type":"Polygon","coordinates":[...]}'
+                className="mt-2 font-mono text-xs"
+              />
+            </details>
           </div>
 
           {error ? (

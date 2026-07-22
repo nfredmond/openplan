@@ -294,19 +294,17 @@ html.dark .op-cart-rail__btn.is-active {
   flex: 1;
   max-width: 480px;
   padding-right: 6px;
-}
-.op-cart-search input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
   font: inherit;
-  font-size: 13px;
   color: var(--ink);
-  min-width: 0;
+  text-align: left;
+  cursor: pointer;
 }
-.op-cart-search input::placeholder {
+.op-cart-search__placeholder {
+  flex: 1;
+  font-size: 13px;
   color: var(--muted);
+  min-width: 0;
+  text-align: left;
 }
 
 /* ---------- OVERVIEW SURFACE (route content) ---------- */

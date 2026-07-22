@@ -337,15 +337,26 @@ def sb_get_run(run_id: str) -> dict:
     return rows[0]
 
 
-def resolve_run_study_area(run_row: dict) -> tuple[dict | None, tuple]:
+def resolve_run_study_area(run_row: dict) -> tuple[dict, tuple]:
+    """Resolve the run's study area to (corridor_geojson, bbox).
+
+    A study area is REQUIRED. The worker never falls back to a default region:
+    silently modeling some other place is worse than a clear failure. Set a study
+    area in the launch form (search a place, draw an area, or paste GeoJSON) and
+    relaunch.
+    """
     corridor_geojson = run_row.get("corridor_geojson")
-    if corridor_geojson:
-        geom = shape(corridor_geojson)
-        if geom.is_empty:
-            raise RuntimeError("corridor_geojson is empty")
-        min_lon, min_lat, max_lon, max_lat = geom.bounds
-        return corridor_geojson, (float(min_lon), float(min_lat), float(max_lon), float(max_lat))
-    return None, PILOT_BBOX
+    if not corridor_geojson:
+        raise RuntimeError(
+            "This run has no study area. Set a study area in the launch form "
+            "(search or draw any US place, or paste corridor GeoJSON) and relaunch. "
+            "The worker does not fall back to a default region."
+        )
+    geom = shape(corridor_geojson)
+    if geom.is_empty:
+        raise RuntimeError("The study area geometry (corridor_geojson) is empty; set a valid area and relaunch.")
+    min_lon, min_lat, max_lon, max_lat = geom.bounds
+    return corridor_geojson, (float(min_lon), float(min_lat), float(max_lon), float(max_lat))
 
 
 def resolve_zone_geography(run_row: dict | None) -> str:
@@ -1145,16 +1156,27 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
             transit_los_meta = {}
             try:
                 los = gtfs_skim.load_feed()
-                transit_skim = gtfs_skim.transit_skim(los, lons, lats)
-                transit_los_meta = {
-                    "service_day": los.service_day,
-                    "service_period": f"{los.service_start}..{los.service_end}",
-                    "n_routes": los.n_routes,
-                    "n_served_stops": los.n_stops,
-                    "n_lines": len(los.lines),
-                    "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
-                    "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
-                }
+                if not gtfs_skim.feed_covers(los, lons, lats):
+                    # The feed loaded but none of its stops fall within the study
+                    # area — skimming it would report a misleading transit_status
+                    # of "modeled" with a 0 share. Be honest: no local feed here.
+                    transit_status = "no_local_feed"
+                    log += (
+                        "No GTFS feed covers this study area; transit not modeled "
+                        "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
+                        "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
+                    )
+                else:
+                    transit_skim = gtfs_skim.transit_skim(los, lons, lats)
+                    transit_los_meta = {
+                        "service_day": los.service_day,
+                        "service_period": f"{los.service_start}..{los.service_end}",
+                        "n_routes": los.n_routes,
+                        "n_served_stops": los.n_stops,
+                        "n_lines": len(los.lines),
+                        "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
+                        "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
+                    }
             except Exception as te:
                 transit_status = "feed_unavailable"
                 log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
@@ -2145,8 +2167,8 @@ def stage_artifacts(
         )
     else:
         mode_provenance = (
-            "Screening-grade auto-vs-active(walk+bike) logit; transit share is 0 because the "
-            f"GTFS transit feed did not load (transit_status={_transit_status}) — this is NOT "
+            "Screening-grade auto-vs-active(walk+bike) logit; transit share is 0 because no usable "
+            f"GTFS feed covered this study area (transit_status={_transit_status}) — this is NOT "
             "'no transit demand'. Not a validated mode choice model or calibrated forecast."
         )
 
@@ -2363,8 +2385,6 @@ def stage_artifacts(
 # ─── Main poll loop ────────────────────────────────────────────────────
 # Work directory: use /tmp/aeq_runs in cloud, or local data dir for dev
 PILOT_WORK_DIR = os.getenv("AEQ_WORK_DIR", os.path.join(os.path.dirname(__file__), "..", "..", "data", "pilot-nevada-county"))
-# Fallback bbox only if a run somehow has no stored corridor geometry.
-PILOT_BBOX = (-121.30, 39.00, -120.00, 39.50)
 
 
 def process_stage(stage: dict):
