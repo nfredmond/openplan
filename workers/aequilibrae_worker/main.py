@@ -131,6 +131,75 @@ VALIDATION_COUNTS_PATH = os.getenv(
     os.path.join(os.path.dirname(__file__), "data", "validation", "nevada_county_priority_counts.csv"),
 )
 
+# Auto-ingest local DOT AADT counts for the study area (keyless Caltrans / state
+# FeatureServers via scripts/modeling/count_sources.py). Default OFF so the
+# Nevada pilot + CI stay byte-identical on the curated priority file; a real
+# deployment sets COUNT_AUTO_INGEST=1 to auto-fetch local counts for any run in
+# a registered region. Best-effort: any failure keeps the default counts.
+COUNT_AUTO_INGEST = os.getenv("COUNT_AUTO_INGEST", "0") in ("1", "true", "True")
+
+# Run-local counts path: stage_assignment sets this from auto-ingest (or the
+# module default) at the top of each run; the validation/calibration helpers
+# read it. Safe as a module global because the worker processes one stage per
+# process at a time.
+_active_counts_path = VALIDATION_COUNTS_PATH
+
+# Rough bounds per registered count-source region (only registered regions can
+# auto-ingest). CA = Caltrans, the one wired source.
+_REGION_BOUNDS = {
+    "CA": (-124.6, 32.4, -114.0, 42.1),
+}
+
+
+def _region_for_bbox(bbox: tuple) -> str | None:
+    """Registered count-source region whose bounds intersect the study bbox."""
+    min_lon, min_lat, max_lon, max_lat = bbox
+    for region, (r0, r1, r2, r3) in _REGION_BOUNDS.items():
+        if not (r0 > max_lon or r2 < min_lon or r1 > max_lat or r3 < min_lat):
+            return region
+    return None
+
+
+def auto_ingest_counts(bbox, proj_dir: str, out_dir: str) -> str | None:
+    """Best-effort: fetch local DOT AADT for the study bbox and build a per-run
+    validation CSV, returning its path (or None). Shells out to the existing
+    scripts/modeling/build_expanded_aadt_counts.py. Skipped when disabled or when
+    VALIDATION_COUNTS_PATH is explicitly overridden."""
+    if not COUNT_AUTO_INGEST or "VALIDATION_COUNTS_PATH" in os.environ:
+        return None
+    if not bbox or len(bbox) != 4:
+        return None
+    region = _region_for_bbox(tuple(bbox))
+    if not region:
+        return None
+    db_path = os.path.join(proj_dir, "project_database.sqlite")
+    script = os.path.normpath(
+        os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "..", "..", "scripts", "modeling", "build_expanded_aadt_counts.py",
+        )
+    )
+    if not os.path.exists(db_path) or not os.path.exists(script):
+        return None
+    out_csv = os.path.join(out_dir, "auto_aadt_counts.csv")
+    try:
+        import subprocess
+        res = subprocess.run(
+            [
+                sys.executable, script,
+                "--fetch-bbox", f"{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}",
+                "--region", region, "--db", db_path, "--out", out_csv,
+            ],
+            capture_output=True, text=True, timeout=180,
+        )
+        if res.returncode != 0 or not os.path.exists(out_csv):
+            return None
+        with open(out_csv) as fh:
+            rows = sum(1 for _ in fh)
+        return out_csv if rows >= 2 else None
+    except Exception:
+        return None
+
 # OPT-IN count-based calibration (OFF by default — the product ships an
 # UNCALIBRATED screening model). When enabled, after the baseline assignment the
 # worker tunes per-road-class free-flow speed/capacity toward observed counts,
@@ -847,7 +916,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     import numpy as _np
     from aequilibrae.paths import TrafficAssignment, TrafficClass
 
-    with open(VALIDATION_COUNTS_PATH) as _cf:
+    with open(_active_counts_path) as _cf:
         stations = list(_csv.DictReader(_cf))
     # Link attributes + link_id->class map, from the project DB (once).
     db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
@@ -1075,6 +1144,18 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     ii = np.array([_pos[c] for c in centroids_sorted])        # internal positions in the full matrix
 
     log = "Building graph...\n"
+
+    # Resolve the counts used for validation/calibration for THIS run: auto-fetch
+    # local DOT AADT for the study area when COUNT_AUTO_INGEST is on and the area
+    # is in a registered region, else the module default. Off-Nevada CA runs get
+    # count-backed validation against local Caltrans counts instead of matching
+    # nothing against the Nevada priority file.
+    global _active_counts_path
+    _active_counts_path = (
+        auto_ingest_counts(setup_result.get("bbox"), proj_dir, out_dir) or VALIDATION_COUNTS_PATH
+    )
+    if _active_counts_path != VALIDATION_COUNTS_PATH:
+        log += f"Auto-ingested local DOT AADT counts for validation ({os.path.basename(_active_counts_path)}).\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
     project = Project()
@@ -1390,9 +1471,9 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # unknown link_id, so screenlines are pre-filtered to graph-present links.
     select_link_sets: dict[str, list[tuple[int, int]]] = {}
     try:
-        if COUNT_VALIDATION_ENABLED and os.path.exists(VALIDATION_COUNTS_PATH):
+        if COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path):
             import csv as _csv
-            with open(VALIDATION_COUNTS_PATH) as _f:
+            with open(_active_counts_path) as _f:
                 _sl_stations = list(_csv.DictReader(_f))
             _sl_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
             _sl_db.enable_load_extension(True)
@@ -1513,7 +1594,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
     # touched; calibrated outputs get distinct KPI names.
     calibration_result = None
-    if CALIBRATION_ENABLED and COUNT_VALIDATION_ENABLED and os.path.exists(VALIDATION_COUNTS_PATH):
+    if CALIBRATION_ENABLED and COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path):
         try:
             def _make_resident_mat(demand_array):
                 m = AequilibraeMatrix()
@@ -1611,10 +1692,10 @@ def _run_count_validation(db_path: str, link_volumes_csv: str) -> dict | None:
     fit summary. Returns None when disabled or inputs are missing (never fails
     the run)."""
     import csv as _csv
-    if not (COUNT_VALIDATION_ENABLED and os.path.exists(VALIDATION_COUNTS_PATH)
+    if not (COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path)
             and os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
         return None
-    with open(VALIDATION_COUNTS_PATH) as f:
+    with open(_active_counts_path) as f:
         stations = list(_csv.DictReader(f))
     if not stations:
         return None
