@@ -2162,6 +2162,25 @@ def stage_artifacts(
                 "metadata_json": evidence if atype == "evidence_packet" else {"filename": fname},
             })
 
+    # Register the zone-attributes package input (local:// — same-host consumers
+    # only). The ActivitySim behavioral worker reads this + travel_time_skims.omx
+    # to build a real ActivitySim input bundle; it's also useful screening
+    # provenance for any run. Lives in package/, not run_output/, so it's not in
+    # the loop above.
+    zone_attr_path = os.path.join(work_dir, "package", "zone_attributes.csv")
+    if os.path.exists(zone_attr_path):
+        with open(zone_attr_path, "rb") as fh:
+            za_hash = hashlib.sha256(fh.read()).hexdigest()[:16]
+        sb_post_artifact({
+            "run_id": run_id,
+            "stage_id": stage_id,
+            "artifact_type": "zone_attributes",
+            "file_url": f"local://{zone_attr_path}",
+            "file_size_bytes": os.path.getsize(zone_attr_path),
+            "content_hash": za_hash,
+            "metadata_json": {"filename": "zone_attributes.csv"},
+        })
+
     # Register KPIs
     kpis = [
         ("assignment", "total_links", "Total Links", assign_result["network"]["links"], "count"),

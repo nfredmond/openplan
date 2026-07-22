@@ -179,8 +179,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const initialStages =
         modelRun.engine_key === "behavioral_demand"
           ? [
-              { run_id: modelRun.id, stage_name: "ActivitySim Bundle Preflight", sort_order: 1, status: "queued" },
-              { run_id: modelRun.id, stage_name: "Runtime Staging & Readiness", sort_order: 2, status: "queued" },
+              { run_id: modelRun.id, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
+              { run_id: modelRun.id, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
+              { run_id: modelRun.id, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
+              { run_id: modelRun.id, stage_name: "ActivitySim Bundle & Preflight", sort_order: 4, status: "queued" },
             ]
           : [
               { run_id: modelRun.id, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },

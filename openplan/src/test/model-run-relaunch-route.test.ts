@@ -193,8 +193,10 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
     expect(stageInsertMock).toHaveBeenCalledTimes(1);
     const stages = stageInsertMock.mock.calls[0][0] as Array<{ stage_name: string }>;
     expect(stages.map((s) => s.stage_name)).toEqual([
-      "ActivitySim Bundle Preflight",
-      "Runtime Staging & Readiness",
+      "AequilibraE Setup",
+      "Network Assignment",
+      "Artifact Extraction",
+      "ActivitySim Bundle & Preflight",
     ]);
   });
 

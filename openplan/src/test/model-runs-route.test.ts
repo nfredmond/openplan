@@ -220,12 +220,15 @@ describe("/api/models/[modelId]/runs", () => {
       })
     );
 
-    // Stages are named honestly for a PREFLIGHT — never "run demand model".
+    // Stages: 3 AequilibraE screening stages (owned by the aeq worker) + 1
+    // ActivitySim bundle/preflight stage. Named honestly — never "run demand model".
     expect(modelRunStagesInsertMock).toHaveBeenCalledTimes(1);
     const stages = modelRunStagesInsertMock.mock.calls[0][0] as Array<{ stage_name: string }>;
     expect(stages.map((s) => s.stage_name)).toEqual([
-      "ActivitySim Bundle Preflight",
-      "Runtime Staging & Readiness",
+      "AequilibraE Setup",
+      "Network Assignment",
+      "Artifact Extraction",
+      "ActivitySim Bundle & Preflight",
     ]);
   });
 

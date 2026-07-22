@@ -61,11 +61,14 @@ HEADERS = {
 
 POLL_INTERVAL_SECONDS = 5
 
-# Stage names this worker owns. The AequilibraE worker owns a disjoint set, so
-# scoping the poll by name means neither worker claims a stage it cannot run.
-STAGE_BUNDLE_PREFLIGHT = "ActivitySim Bundle Preflight"
-STAGE_RUNTIME_STAGING = "Runtime Staging & Readiness"
-OWNED_STAGE_NAMES = (STAGE_BUNDLE_PREFLIGHT, STAGE_RUNTIME_STAGING)
+# Stage this worker owns. The AequilibraE worker owns the three screening stages
+# that precede it; scoping each worker's poll by name means neither claims a
+# stage it cannot run. A behavioral_demand run is:
+#   AequilibraE Setup -> Network Assignment -> Artifact Extraction   (aeq worker)
+#   -> ActivitySim Bundle & Preflight                                (this worker)
+# sequenced by the shared classify_stage_readiness gate.
+STAGE_BUNDLE_PREFLIGHT = "ActivitySim Bundle & Preflight"
+OWNED_STAGE_NAMES = (STAGE_BUNDLE_PREFLIGHT,)
 _STAGE_FILTER = "stage_name=" + urllib.parse.quote(
     "in.(" + ",".join(f'"{name}"' for name in OWNED_STAGE_NAMES) + ")",
     safe="().,",
@@ -73,13 +76,26 @@ _STAGE_FILTER = "stage_name=" + urllib.parse.quote(
 
 EVIDENCE_SCHEMA_VERSION = "openplan.behavioral_demand_preflight_evidence.v0"
 
+# Per-run scratch dir for the built bundle + prototype pipeline outputs.
+ACTIVITYSIM_WORK_DIR = os.getenv(
+    "ACTIVITYSIM_WORK_DIR", str(_REPO_ROOT / "data" / "activitysim-bundles" / "runs")
+)
+
+# worker_residents (employed residents) and area_share are NOT in the AequilibraE
+# worker's zone_attributes.csv but the bundle builder needs them. area_share is
+# exact (area_sq_mi / total); worker_residents is a labeled SCAFFOLD estimate for
+# the synthetic population only — never presented as observed or calibrated.
+WORKER_RESIDENTS_PER_HOUSEHOLD_SCAFFOLD = 1.25
+
 # The honest, non-forecast caveats surfaced on every preflight run.
 PREFLIGHT_CAVEATS = [
-    "This is an ActivitySim PREFLIGHT, not a behavioral forecast.",
-    "The preflight validates run inputs and stages the ActivitySim runtime; it does "
-    "not run a demand model and emits no VMT/trip/mode-share output.",
-    "A calibrated behavioral run additionally requires a screening skim bundle and a "
-    "dedicated modeling host with ActivitySim installed (see DEPLOY.md).",
+    "This is an ActivitySim PREFLIGHT / uncalibrated bundle, not a behavioral forecast.",
+    "The bundle's households/persons are a DETERMINISTIC SYNTHETIC SCAFFOLD (incl. a "
+    "scaffold worker_residents estimate), not a calibrated population synthesis.",
+    "On the default infra no ActivitySim run executes (preflight_only); it emits no "
+    "VMT/trip/mode-share output.",
+    "A calibrated behavioral run additionally requires a dedicated modeling host with "
+    "ActivitySim installed + county-specific calibration (see DEPLOY.md).",
 ]
 
 
@@ -138,6 +154,17 @@ def sb_get_run(run_id: str) -> dict:
     if not rows:
         raise RuntimeError(f"Model run {run_id} not found")
     return rows[0]
+
+
+def sb_get_run_artifacts(run_id: str) -> list[dict]:
+    url = (
+        f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
+        "&select=artifact_type,file_url,metadata_json"
+    )
+    res = requests.get(url, headers=HEADERS, timeout=30)
+    if res.status_code != 200:
+        raise RuntimeError(f"Failed to load run artifacts {run_id}: {res.status_code} {res.text[:200]}")
+    return res.json()
 
 
 def sb_upload_evidence(run_id: str, filename: str, data: bytes, content_type: str) -> str | None:
@@ -233,33 +260,151 @@ def _require_study_area(run: dict) -> dict:
     return corridor
 
 
-def run_bundle_preflight_stage(run_id: str, run: dict, stage_id: str) -> dict:
-    _require_study_area(run)
-    log = (
-        "ActivitySim bundle preflight\n"
-        "- Study area: present (corridor_geojson validated)\n"
-        "- Input-bundle contract: a real ActivitySim run consumes an input bundle of\n"
-        "  land_use.csv + households.csv + persons.csv + skims/travel_time_skims.omx.\n"
-        "- This preflight tier does NOT build that bundle; the bundle is produced by the\n"
-        "  AequilibraE screening -> bundle pipeline (a fuller run).\n"
-    )
-    sb_patch_stage(stage_id, {"log_tail": log})
-    return {"log": log}
+def _local_path(file_url: str | None) -> str | None:
+    """Resolve a `local://<abs_path>` artifact ref to a filesystem path (same-host
+    only). Non-local refs (storage://, http) return None."""
+    if isinstance(file_url, str) and file_url.startswith("local://"):
+        return file_url[len("local://"):]
+    return None
 
 
-def run_runtime_staging_stage(run_id: str, run: dict, stage_id: str) -> dict:
+def _find_artifact_path(artifacts: list[dict], artifact_type: str) -> str | None:
+    for art in artifacts:
+        if art.get("artifact_type") == artifact_type:
+            path = _local_path(art.get("file_url"))
+            if path and os.path.exists(path):
+                return path
+    return None
+
+
+def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:
+    """Copy the AequilibraE worker's zone_attributes.csv, adding the two columns
+    the ActivitySim bundle builder needs but the screening package omits:
+      - area_share:       exact = area_sq_mi / sum(area_sq_mi)
+      - worker_residents: SCAFFOLD = households * 1.25 (avg workers/hh), labeled
+                          in the bundle caveats — never presented as observed.
+    Returns the zone (row) count."""
+    import csv
+
+    with open(src_csv, newline="") as fh:
+        rows = list(csv.DictReader(fh))
+    if not rows:
+        raise RuntimeError("zone_attributes.csv has no rows")
+
+    total_area = sum(float(r.get("area_sq_mi") or 0.0) for r in rows)
+    fieldnames = list(rows[0].keys())
+    for col in ("worker_residents", "area_share"):
+        if col not in fieldnames:
+            fieldnames.append(col)
+
+    for r in rows:
+        if "worker_residents" not in r or r.get("worker_residents") in (None, ""):
+            households = float(r.get("households") or 0.0)
+            r["worker_residents"] = int(round(households * WORKER_RESIDENTS_PER_HOUSEHOLD_SCAFFOLD))
+        if "area_share" not in r or r.get("area_share") in (None, ""):
+            area = float(r.get("area_sq_mi") or 0.0)
+            r["area_share"] = f"{(area / total_area) if total_area > 0 else 0.0:.8f}"
+
+    os.makedirs(os.path.dirname(dest_csv), exist_ok=True)
+    with open(dest_csv, "w", newline="") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+    return len(rows)
+
+
+def _materialize_screening_dir(run_id: str, skim_path: str, zone_attr_path: str, dest_root: str) -> str:
+    """Lay out the screening-run-dir the bundle builder expects:
+    <dir>/bundle_manifest.json, <dir>/package/zone_attributes.csv,
+    <dir>/run_output/travel_time_skims.omx."""
+    import shutil
+
+    screening_dir = os.path.join(dest_root, "screening")
+    if os.path.exists(screening_dir):
+        shutil.rmtree(screening_dir)
+    os.makedirs(os.path.join(screening_dir, "run_output"), exist_ok=True)
+
+    zones = _adapt_zone_attributes(zone_attr_path, os.path.join(screening_dir, "package", "zone_attributes.csv"))
+    shutil.copy2(skim_path, os.path.join(screening_dir, "run_output", "travel_time_skims.omx"))
+
+    # Minimal source manifest — the builder requires the file but tolerates missing
+    # fields (they only feed a provenance excerpt).
+    manifest = {
+        "schema_version": "openplan.screening_handoff.v0",
+        "run_name": f"behavioral-{run_id[:12]}",
+        "screening_grade": True,
+        "source": "aequilibrae_worker",
+        "zones": {"count": zones},
+        "caveats": ["Screening-grade AequilibraE handoff; not calibrated."],
+    }
+    with open(os.path.join(screening_dir, "bundle_manifest.json"), "w") as fh:
+        json.dump(manifest, fh, indent=2)
+    return screening_dir
+
+
+def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dict:
+    """Build a REAL ActivitySim input bundle from the AequilibraE screening
+    artifacts, then run the preflight pipeline (no execution on $0 infra) and
+    write an honest, NON-forecast evidence packet + structural KPIs."""
+    import shutil
+    import sys
+
     corridor = _require_study_area(run)
-    # On the default ($0, RAM-light) infra this lane is preflight-only: no
-    # ActivitySim CLI + no built config package, so no execution is attempted.
-    runtime_mode = "preflight_only"
-    log = (
-        "Runtime staging & readiness\n"
-        f"- Runtime mode on this infra: {runtime_mode}\n"
-        "- ActivitySim execution NOT attempted (no built bundle / config package / CLI here).\n"
-        "- Writing honest preflight evidence packet.\n"
-    )
+
+    log = "ActivitySim bundle & preflight\n- Study area validated.\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
+    # 1. Locate the screening handoff (skim + zone attributes) the AequilibraE
+    #    worker registered as local:// artifacts (same-host consumers only).
+    artifacts = sb_get_run_artifacts(run_id)
+    skim_path = _find_artifact_path(artifacts, "skim_matrix")
+    zone_attr_path = _find_artifact_path(artifacts, "zone_attributes")
+    if not skim_path or not zone_attr_path:
+        raise RuntimeError(
+            "Missing AequilibraE screening handoff (skim_matrix / zone_attributes local:// "
+            "artifacts). The behavioral lane needs the ActivitySim worker co-located with "
+            "the AequilibraE worker (shared filesystem)."
+        )
+    log += f"- Screening handoff located (skim + zone attributes).\n"
+    sb_patch_stage(stage_id, {"log_tail": log})
+
+    # 2. Materialize the screening-run-dir + build the bundle + run the preflight
+    #    pipeline. All stdlib; no ActivitySim needed for the preflight path.
+    run_root = os.path.join(ACTIVITYSIM_WORK_DIR, run_id[:12])
+    if os.path.exists(run_root):
+        shutil.rmtree(run_root)
+    os.makedirs(run_root, exist_ok=True)
+    screening_dir = _materialize_screening_dir(run_id, skim_path, zone_attr_path, run_root)
+
+    scripts_dir = str(_REPO_ROOT / "scripts" / "modeling")
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
+    from run_behavioral_demand_prototype import run_behavioral_demand_prototype
+
+    pipeline = run_behavioral_demand_prototype(
+        screening_run_dir=screening_dir,
+        output_root=os.path.join(run_root, "behavioral_demand_prototype"),
+        force=True,
+    )
+    pipeline_status = pipeline.get("pipeline_status")
+    runtime_mode = pipeline.get("runtime_mode") or "preflight_only"
+    log += f"- Bundle built + preflight pipeline: {pipeline_status} (runtime mode: {runtime_mode}).\n"
+    sb_patch_stage(stage_id, {"log_tail": log})
+
+    # 3. Read the built-bundle structural totals (labeled scaffold, NOT a forecast).
+    bundle_stats = {}
+    manifest_path = pipeline.get("manifest_path")
+    if manifest_path and os.path.exists(manifest_path):
+        with open(manifest_path) as fh:
+            pmanifest = json.load(fh)
+        build_meta = (pmanifest.get("steps", {}).get("build_activitysim_input_bundle", {}) or {}).get("metadata", {})
+        bundle_stats = {
+            "zones": build_meta.get("land_use_rows"),
+            "synthetic_households": build_meta.get("households"),
+            "synthetic_persons": build_meta.get("persons"),
+        }
+
+    # 4. Assemble + upload the honest evidence packet.
     evidence = {
         "schema_version": EVIDENCE_SCHEMA_VERSION,
         "packet_type": "behavioral_demand_preflight_evidence",
@@ -272,21 +417,18 @@ def run_runtime_staging_stage(run_id: str, run: dict, stage_id: str) -> dict:
         "is_forecast": False,
         "claim_tier": "prototype",
         "preflight_status": "complete",
+        "pipeline_status": pipeline_status,
         "runtime_mode": runtime_mode,
-        "config_package_status": "not_built",
+        "bundle": bundle_stats,
         "study_area": {"corridor_geojson_present": bool(corridor)},
         "requirements_for_a_real_run": [
-            "A screening skim bundle (land_use + households + persons + OMX skims) built "
-            "from an AequilibraE screening of this study area.",
             "A dedicated modeling host with ActivitySim installed (multi-GB RAM, always-on).",
             "County-specific calibration before any forecast/regulatory use.",
         ],
-        "caveats": list(PREFLIGHT_CAVEATS),
+        "caveats": list(PREFLIGHT_CAVEATS) + list(pipeline.get("caveats", [])),
     }
     data = (json.dumps(evidence, indent=2) + "\n").encode("utf-8")
-    filename = "behavioral_demand_evidence_packet.json"
-    storage_ref = sb_upload_evidence(run_id, filename, data, "application/json")
-
+    storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json")
     if storage_ref:
         sb_post_artifact(
             {
@@ -300,32 +442,40 @@ def run_runtime_staging_stage(run_id: str, run: dict, stage_id: str) -> dict:
             }
         )
 
-    # One honest, non-forecast general KPI: the runtime mode (a label, not a metric).
-    # value is left null; the mode + provenance live in breakdown_json.
-    sb_post_kpi(
-        {
-            "run_id": run_id,
-            "kpi_category": "general",
-            "kpi_name": "activitysim_runtime_mode",
-            "kpi_label": "ActivitySim runtime mode",
-            "value": None,
-            "unit": "",
-            "breakdown_json": {
-                "mode": runtime_mode,
-                "provenance": "Behavioral-demand preflight — inputs validated & runtime staged; "
-                "NOT a behavioral forecast.",
-            },
-        }
+    # 5. Structural, non-forecast general KPIs (bundle scaffold sizes + runtime mode).
+    scaffold_provenance = (
+        "ActivitySim input-bundle scaffold — deterministic synthetic population, "
+        "NOT a calibrated synthesis or a behavioral forecast."
     )
+    kpis = [
+        ("activitysim_runtime_mode", "ActivitySim runtime mode", None, "", {"mode": runtime_mode, "provenance": scaffold_provenance}),
+    ]
+    if bundle_stats.get("zones") is not None:
+        kpis.append(("activitysim_bundle_zones", "ActivitySim bundle zones", float(bundle_stats["zones"]), "zones", {"provenance": scaffold_provenance}))
+    if bundle_stats.get("synthetic_households") is not None:
+        kpis.append(("activitysim_bundle_synthetic_households", "ActivitySim bundle synthetic households (scaffold)", float(bundle_stats["synthetic_households"]), "households", {"provenance": scaffold_provenance}))
+    if bundle_stats.get("synthetic_persons") is not None:
+        kpis.append(("activitysim_bundle_synthetic_persons", "ActivitySim bundle synthetic persons (scaffold)", float(bundle_stats["synthetic_persons"]), "persons", {"provenance": scaffold_provenance}))
+    for name, label, value, unit, breakdown in kpis:
+        sb_post_kpi(
+            {
+                "run_id": run_id,
+                "kpi_category": "general",
+                "kpi_name": name,
+                "kpi_label": label,
+                "value": value,
+                "unit": unit,
+                "breakdown_json": breakdown,
+            }
+        )
 
-    log += f"- Evidence packet: {'uploaded' if storage_ref else 'upload failed (best-effort)'}\n"
+    log += f"- Evidence packet: {'uploaded' if storage_ref else 'upload failed (best-effort)'}; {len(kpis)} scaffold KPIs written.\n"
     sb_patch_stage(stage_id, {"log_tail": log})
     return {"log": log}
 
 
 STAGE_DISPATCH = {
-    STAGE_BUNDLE_PREFLIGHT: run_bundle_preflight_stage,
-    STAGE_RUNTIME_STAGING: run_runtime_staging_stage,
+    STAGE_BUNDLE_PREFLIGHT: run_bundle_and_preflight_stage,
 }
 
 

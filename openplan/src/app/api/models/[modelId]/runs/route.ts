@@ -637,14 +637,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (isBehavioralDemandRun) {
       // Async ActivitySim behavioral-demand PREFLIGHT. This is NOT a behavioral
-      // forecast: the worker validates the input contract and stages the
-      // ActivitySim runtime, then records an honest readiness/evidence packet.
-      // Stages are named for what actually happens so the planner is never told
-      // a demand model ran. A calibrated behavioral run additionally requires a
-      // dedicated modeling host (see workers/activitysim_worker/DEPLOY.md).
+      // forecast: the AequilibraE worker runs a screening (network + skims), then
+      // the ActivitySim worker builds a real (uncalibrated, scaffold-population)
+      // ActivitySim input bundle and stages the runtime, recording an honest
+      // evidence packet. The three screening stages are owned by the AequilibraE
+      // worker (same names it already runs); the final stage by the ActivitySim
+      // worker. A calibrated run needs a dedicated modeling host + calibration
+      // (see workers/activitysim_worker/DEPLOY.md).
       const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
-        { run_id: modelRunId, stage_name: "ActivitySim Bundle Preflight", sort_order: 1, status: "queued" },
-        { run_id: modelRunId, stage_name: "Runtime Staging & Readiness", sort_order: 2, status: "queued" },
+        { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
+        { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
+        { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
+        { run_id: modelRunId, stage_name: "ActivitySim Bundle & Preflight", sort_order: 4, status: "queued" },
       ]);
 
       if (stageInsertError) {
