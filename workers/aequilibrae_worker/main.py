@@ -114,6 +114,11 @@ CALIBRATION_MAX_ITER = int(os.getenv("AEQ_CALIBRATE_MAX_ITER", "12"))
 # the objective is rounded to 1e-4). A step that only ties the holdout is a
 # no-op and must not promote the run to the calibrated tier.
 CALIBRATION_MIN_IMPROVEMENT = float(os.getenv("AEQ_CALIBRATE_MIN_IMPROVEMENT", "1e-4"))
+# Stage 2 of the staged method: a light, select-link-guided demand nudge on top
+# of the stage-1 capacity/speed calibration. On by default when calibration is
+# on (Nathaniel chose "both, staged"); AEQ_CALIBRATE_DEMAND=0 disables it.
+CALIBRATION_DEMAND_ENABLED = os.getenv("AEQ_CALIBRATE_DEMAND", "1") in ("1", "true", "True")
+CALIBRATION_DEMAND_MAX_ITER = int(os.getenv("AEQ_CALIBRATE_DEMAND_MAX_ITER", "6"))
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase credentials in environment.")
@@ -697,17 +702,94 @@ def _match_counts(stations, link_attrs, vol_by_id):
         best = count_validation.match_station(st, modeled)
         if best:
             out.append({**st, "modeled_daily_pce": best["modeled_daily_pce"],
-                        "matched_link_type": best["matched_link_type"]})
+                        "matched_link_type": best["matched_link_type"],
+                        "matched_link_id": int(best["link_id"])})
     return out
 
 
-def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, baseline_df, log):
-    """Stage-1 (capacity/speed) count calibration outer loop. Returns
-    (calibration_result_or_None, log). Reuses the prepared graph; each iteration
-    mutates per-class free-flow travel_time + capacity and re-runs a fresh BFW
-    assignment. A step is kept only if it improves the HELD-OUT count objective.
-    Never mutates the OD-based resident_vmt or the screening result."""
+def _run_demand_nudge(assign_once, make_resident_mat, resident_od, ii_arr, n_assign,
+                      fit_stations, holdout_stations, link_attrs, graph,
+                      best_df, best_hold_obj, best_fit_ev, best_hold_ev, log):
+    """Stage 2: light select-link-guided demand nudge on the resident internal
+    OD, on top of the stage-1-calibrated network. Each iteration sets select-link
+    on the fit-station links, assigns, reads the resident SL-OD (the Jacobian
+    — which OD cells feed each counted link) + modeled volumes, nudges the
+    internal OD toward counts (sparse + damped + clipped), re-assigns, and keeps
+    the step only on a strict held-out improvement. Returns the updated best
+    state + log. The OD-based resident_vmt / screening result are untouched."""
+    import numpy as np
+    n_zones = len(ii_arr)
+    graph_link_ids = {int(x) for x in graph.graph["link_id"].values}
+    internal = np.ix_(ii_arr, ii_arr)
+    cur_od = np.array(resident_od, dtype=float)   # full n_assign × n_assign
+    accepted = 0
+    for it in range(CALIBRATION_DEMAND_MAX_ITER):
+        fit_matched = _match_counts(fit_stations, link_attrs, _volumes_by_link(best_df))
+        sl_sets, meta = {}, {}
+        for m in fit_matched:
+            lid, obs = m.get("matched_link_id"), float(m.get("observed_volume") or 0.0)
+            if lid is None or obs <= 0 or int(lid) not in graph_link_ids:
+                continue
+            # Sanitize the select-link set NAME exactly as set_select_links does
+            # (collapse whitespace) + bound to the 50-char matrix-core limit +
+            # keep distinct stations distinct, or the SL-OD is stored under one
+            # key and read under another (KeyError) / create_empty raises.
+            raw = "_".join(str(m.get("station_id") or "").split())
+            name = f"cal_{raw}"[:50]
+            while name in sl_sets:
+                name = f"cal_{len(sl_sets)}_{raw}"[:50]
+            sl_sets[name] = [(int(lid), 0)]
+            meta[name] = (int(lid), obs)
+        if not sl_sets:
+            break
+        # Assign the current OD WITH select-link to get the Jacobian + volumes.
+        cur_df, rc = assign_once(resident_matrix=make_resident_mat(cur_od), select_links=sl_sets)
+        cur_vol = _volumes_by_link(cur_df)
+        sl_od_by, ratio_by = {}, {}
+        for name, (lid, obs) in meta.items():
+            modeled = cur_vol.get(lid, 0.0)
+            if modeled <= 0:
+                continue
+            try:
+                arr = np.asarray(rc.results.select_link_od.matrix[name])
+                sl = arr[:, :, 0] if arr.ndim == 3 else arr
+                sl_od_by[name] = sl[internal]        # resident SL-OD, internal block
+                ratio_by[name] = obs / modeled
+            except Exception:
+                continue
+        if not sl_od_by:
+            break
+        mult = calibration.demand_nudge_multipliers(sl_od_by, ratio_by, n_zones)
+        trial_od = cur_od.copy()
+        trial_od[internal] = cur_od[internal] * mult
+        trial_df, _ = assign_once(resident_matrix=make_resident_mat(trial_od))
+        trial_vol = _volumes_by_link(trial_df)
+        trial_hold = calibration.evaluate(_match_counts(holdout_stations, link_attrs, trial_vol))
+        trial_obj = trial_hold["objective"]
+        if trial_obj is not None and calibration.accept_step(
+            best_hold_obj, trial_obj, tol=-CALIBRATION_MIN_IMPROVEMENT
+        ):
+            cur_od, best_df, best_hold_obj, best_hold_ev = trial_od, trial_df, trial_obj, trial_hold
+            best_fit_ev = calibration.evaluate(_match_counts(fit_stations, link_attrs, trial_vol))
+            accepted += 1
+            log += f"  demand iter {it + 1}: accepted (holdout median APE {trial_hold['median_ape']}%).\n"
+        else:
+            log += f"  demand iter {it + 1}: rejected (no strict holdout improvement); stopping.\n"
+            break
+    return accepted, best_df, best_hold_obj, best_fit_ev, best_hold_ev, log
+
+
+def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, baseline_df, log,
+                     *, resident_od=None, ii=None, assignment_centroids=None, make_resident_mat=None):
+    """Staged count calibration outer loop. Returns (calibration_result_or_None,
+    log). Reuses the prepared graph. Stage 1 (always): mutate per-road-class
+    free-flow travel_time + capacity and re-run a fresh BFW assignment. Stage 2
+    (when the resident_od/ii/assignment_centroids/make_resident_mat context is
+    provided and enabled): a select-link-guided demand nudge on the resident
+    internal OD. Every step is kept only if it improves the HELD-OUT count
+    objective. Never mutates the OD-based resident_vmt or the screening result."""
     import csv as _csv
+    import numpy as _np
     from aequilibrae.paths import TrafficAssignment, TrafficClass
 
     with open(VALIDATION_COUNTS_PATH) as _cf:
@@ -747,12 +829,18 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     base_cap = graph.graph["capacity"].to_numpy(dtype=float).copy()
     link_class = graph.graph["link_id"].map(type_by_id)
 
-    def _assign_once():
+    def _assign_once(resident_matrix=None, select_links=None):
+        """Run one BFW assignment. resident_matrix overrides the resident demand
+        (stage-2 nudge); select_links attaches select-link to the resident class
+        (dict name->[(link_id,dir)]). Returns (results_df, resident_class)."""
+        rc = TrafficClass(name="resident", graph=graph, matrix=resident_matrix or resident_mat)
+        ec = TrafficClass(name="external", graph=graph, matrix=external_mat)
         a = TrafficAssignment()
-        for tc in (TrafficClass(name="resident", graph=graph, matrix=resident_mat),
-                   TrafficClass(name="external", graph=graph, matrix=external_mat)):
+        for tc in (rc, ec):
             tc.set_pce(1.0)
             a.add_class(tc)
+        if select_links:
+            rc.set_select_links(select_links)
         a.set_cores(AEQ_CORES)
         a.set_vdf("BPR")
         a.set_vdf_parameters({"alpha": 0.15, "beta": 4.0})
@@ -762,7 +850,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         a.rgap_target = 0.01
         a.set_algorithm("bfw")
         a.execute()
-        return a.results()
+        return a.results(), rc
 
     def _apply(cum):
         # factor>1 (under-assigned class) -> faster (tt down) + more capacity, so
@@ -795,7 +883,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         if trial_cum == cum:
             break  # nothing left to adjust
         _apply(trial_cum)
-        trial_df = _assign_once()
+        trial_df, _ = _assign_once()
         trial_vol = _volumes_by_link(trial_df)
         trial_hold = calibration.evaluate(_match_counts(holdout_stations, link_attrs, trial_vol))
         trial_obj = trial_hold["objective"]
@@ -818,8 +906,27 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
             log += f"  iter {it + 1}: rejected (no strict holdout improvement); stopping.\n"
             break
 
+    # Set the graph to the ACCEPTED stage-1 state (cum may be {} -> baseline) so
+    # stage 2 nudges demand on the stage-1-calibrated network, not a rejected trial.
+    _apply(cum)
+
+    # ── Stage 2: select-link-guided demand nudge (ODME-lite) ──────────────
+    # A stage-2 failure must NOT discard a valid stage-1 calibration — the
+    # raise aborts the tuple-unpack, so best_* keep their stage-1 values.
+    stage2_accepted = 0
+    if (CALIBRATION_DEMAND_ENABLED and resident_od is not None and ii is not None
+            and assignment_centroids is not None and make_resident_mat is not None):
+        try:
+            stage2_accepted, best_df, best_hold_obj, best_fit_ev, best_hold_ev, log = _run_demand_nudge(
+                _assign_once, make_resident_mat, resident_od, _np.asarray(ii), len(assignment_centroids),
+                fit_stations, holdout_stations, link_attrs, graph, best_df, best_hold_obj,
+                best_fit_ev, best_hold_ev, log,
+            )
+        except Exception as e:
+            log += f"  stage-2 demand nudge failed ({e}); keeping the stage-1 calibrated result.\n"
+
     # Only claim the calibrated tier when the holdout GENUINELY improved.
-    if accepted == 0 or best_hold_obj >= base_hold_obj:
+    if (accepted + stage2_accepted) == 0 or best_hold_obj >= base_hold_obj:
         log += "Calibration: no step improved the holdout; keeping the uncalibrated screening result.\n"
         return None, log
 
@@ -827,16 +934,19 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     # link_volumes.csv is untouched).
     cal_csv = os.path.join(out_dir, "link_volumes_calibrated.csv")
     best_df.to_csv(cal_csv)
-    log += (f"Calibration complete: {accepted} accepted step(s). Holdout median APE "
-            f"{base_hold['median_ape']}% -> {best_hold_ev['median_ape']}%.\n")
+    log += (f"Calibration complete: stage-1 {accepted} + stage-2 (demand) {stage2_accepted} "
+            f"accepted step(s). Holdout median APE {base_hold['median_ape']}% -> "
+            f"{best_hold_ev['median_ape']}%.\n")
     return {
         "method": (
-            "Stage-1 count calibration: per-road-class free-flow speed + capacity tuned toward "
-            "observed AADT, re-running BFW equilibrium each iteration; a step is kept only if it "
-            "improves a held-out (never-fit) count set. Screening-grade calibrated result — the "
-            "OD-based resident_vmt (CEQA input) is unchanged."
+            "Staged count calibration. Stage 1: per-road-class free-flow speed + capacity tuned "
+            "toward observed AADT. Stage 2: a light select-link-guided demand nudge on the "
+            "resident internal OD (sparse, damped, clipped) for the residual. Each step re-runs "
+            "BFW equilibrium and is kept only if it improves a held-out (never-fit) count set. "
+            "Screening-grade calibrated result — the OD-based resident_vmt (CEQA input) is unchanged."
         ),
         "accepted_iterations": accepted,
+        "demand_nudge_iterations": stage2_accepted,
         "applied_class_factors": {k: round(v, 4) for k, v in cum.items()},
         "holdout_station_count": len(holdout_stations),
         "fit_station_count": len(fit_stations),
@@ -1274,17 +1384,26 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                 )
 
     # ── Count-based calibration (OPT-IN, off by default) ──────────────────
-    # Stage 1 of the staged method: tune per-ROAD-CLASS free-flow speed +
-    # capacity toward observed counts, re-running equilibrium assignment each
-    # iteration and accepting a step ONLY if it improves a held-out (never-fit)
-    # count set — the honest out-of-sample accuracy and the overfit guard. The
-    # OD-based resident_vmt (CEQA input) is never touched; calibrated outputs
-    # get distinct KPI names. Bounded compute (one execute per iteration).
+    # Staged: (1) per-road-class free-flow speed + capacity toward counts, then
+    # (2) a select-link-guided demand nudge on the resident internal OD. Each
+    # step re-runs equilibrium and is kept ONLY if it improves a held-out
+    # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
+    # touched; calibrated outputs get distinct KPI names.
     calibration_result = None
     if CALIBRATION_ENABLED and COUNT_VALIDATION_ENABLED and os.path.exists(VALIDATION_COUNTS_PATH):
         try:
+            def _make_resident_mat(demand_array):
+                m = AequilibraeMatrix()
+                m.create_empty(zones=n_assign, matrix_names=["resident"], memory_only=True)
+                m.index = np.array(assignment_centroids)
+                m.matrix["resident"][:, :] = demand_array
+                m.computational_view(["resident"])
+                return m
+
             calibration_result, log = _run_calibration(
                 proj_dir, out_dir, graph, resident_mat, external_mat, results_df, log,
+                resident_od=resident_od, ii=ii, assignment_centroids=assignment_centroids,
+                make_resident_mat=_make_resident_mat,
             )
         except Exception as e:
             log += f"Calibration warning ({e}); keeping the uncalibrated screening result.\n"
@@ -2049,6 +2168,7 @@ def stage_artifacts(
                 "provenance": calibration_result.get("method"),
                 "applied_class_factors": calibration_result.get("applied_class_factors"),
                 "accepted_iterations": calibration_result.get("accepted_iterations"),
+                "demand_nudge_iterations": calibration_result.get("demand_nudge_iterations"),
                 "baseline_holdout_median_ape": (calibration_result.get("baseline") or {}).get("holdout", {}).get("median_ape"),
                 "calibrated_holdout_median_ape": (calibration_result.get("calibrated") or {}).get("holdout", {}).get("median_ape"),
                 "holdout_station_count": calibration_result.get("holdout_station_count"),

@@ -135,6 +135,54 @@ def test_accept_step_negative_tol_requires_strict_improvement():
     assert cal.accept_step(0.40, 0.41, tol=-m) is False   # worse -> reject
 
 
+def test_demand_nudge_direction_and_weighting():
+    import numpy as np
+    n = 3
+    # link A (under-counted, ratio 1.5) fed by cell (0,1); link B (over-counted,
+    # ratio 0.5) fed by cell (0,2). Cell (1,2) feeds neither -> stays 1.0.
+    slA = np.zeros((n, n)); slA[0, 1] = 100.0
+    slB = np.zeros((n, n)); slB[0, 2] = 100.0
+    mult = cal.demand_nudge_multipliers({"A": slA, "B": slB}, {"A": 1.5, "B": 0.5}, n, gamma=1.0)
+    assert abs(mult[0, 1] - 1.5) < 1e-9, mult          # under-counted -> boosted
+    assert abs(mult[0, 2] - 0.5) < 1e-9, mult          # over-counted -> shed
+    assert mult[1, 2] == 1.0 and mult[2, 0] == 1.0      # no counted link -> prior
+
+
+def test_demand_nudge_flow_weighted_average():
+    import numpy as np
+    n = 2
+    # cell (0,1) feeds link A (ratio 2.0) with flow 75 and link B (ratio 1.0)
+    # with flow 25 -> weighted ratio = (75*2 + 25*1)/100 = 1.75.
+    slA = np.zeros((n, n)); slA[0, 1] = 75.0
+    slB = np.zeros((n, n)); slB[0, 1] = 25.0
+    mult = cal.demand_nudge_multipliers({"A": slA, "B": slB}, {"A": 2.0, "B": 1.0}, n, gamma=1.0)
+    assert abs(mult[0, 1] - 1.75) < 1e-9, mult
+
+
+def test_demand_nudge_damping_and_clip():
+    import numpy as np
+    n = 2
+    sl = np.zeros((n, n)); sl[0, 1] = 10.0
+    # ratio 4.0, gamma 0.5 -> 2.0, then clip hi=1.5 -> 1.5
+    mult = cal.demand_nudge_multipliers({"A": sl}, {"A": 4.0}, n, gamma=0.5, hi=1.5)
+    assert abs(mult[0, 1] - 1.5) < 1e-9, mult
+    # gamma 0.5 damps a ratio of 4 to 2 before the (higher) clip
+    mult2 = cal.demand_nudge_multipliers({"A": sl}, {"A": 4.0}, n, gamma=0.5, hi=3.0)
+    assert abs(mult2[0, 1] - 2.0) < 1e-9, mult2
+
+
+def test_demand_nudge_ignores_bad_inputs():
+    import numpy as np
+    n = 2
+    sl = np.zeros((n, n)); sl[0, 1] = 10.0
+    # missing/zero ratio -> that link contributes nothing; result all 1.0
+    mult = cal.demand_nudge_multipliers({"A": sl}, {"A": 0.0}, n)
+    assert np.all(mult == 1.0), mult
+    # wrong-shape SL matrix skipped without crashing
+    mult2 = cal.demand_nudge_multipliers({"A": np.zeros((3, 3))}, {"A": 2.0}, n)
+    assert np.all(mult2 == 1.0), mult2
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in sorted(globals().items()) if name.startswith("test_")]
     try:
