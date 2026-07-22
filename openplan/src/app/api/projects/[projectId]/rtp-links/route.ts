@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { RTP_PORTFOLIO_ROLE_OPTIONS } from "@/lib/rtp/catalog";
+import { parsePriorityScores } from "@/lib/rtp/priority-scoring";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const PORTFOLIO_ROLES = RTP_PORTFOLIO_ROLE_OPTIONS.map((option) => option.value) as [string, ...string[]];
@@ -12,10 +13,20 @@ const paramsSchema = z.object({
   projectId: z.string().uuid(),
 });
 
+const priorityScoresSchema = z.record(z.string(), z.number());
+
 const createLinkSchema = z.object({
   rtpCycleId: z.string().uuid(),
   portfolioRole: z.enum(PORTFOLIO_ROLES).optional(),
   priorityRationale: z.string().trim().max(2000).optional(),
+  priorityScores: priorityScoresSchema.optional(),
+});
+
+const updateLinkSchema = z.object({
+  linkId: z.string().uuid(),
+  portfolioRole: z.enum(PORTFOLIO_ROLES).optional(),
+  priorityRationale: z.string().trim().max(2000).nullable().optional(),
+  priorityScores: priorityScoresSchema.optional(),
 });
 
 const deleteLinkSchema = z.object({
@@ -100,9 +111,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
         rtp_cycle_id: cycle.id,
         portfolio_role: payload.data.portfolioRole ?? "candidate",
         priority_rationale: payload.data.priorityRationale || null,
+        priority_scores: parsePriorityScores(payload.data.priorityScores),
         created_by: user.id,
       })
-      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, created_at")
+      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, created_at")
       .single();
 
     if (error) {
@@ -124,6 +136,98 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Failed to create RTP link" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: NextRequest, context: { params: Promise<{ projectId: string }> }) {
+  const audit = createApiAuditLogger("projects.rtp_links.update", request);
+  const startedAt = Date.now();
+
+  try {
+    const routeParams = paramsSchema.safeParse(await context.params);
+    if (!routeParams.success) {
+      audit.warn("params_validation_failed", { issues: routeParams.error.issues });
+      return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
+    }
+
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!payloadBody.ok) return payloadBody.response;
+
+    const payload = updateLinkSchema.safeParse(payloadBody.data);
+    if (!payload.success) {
+      audit.warn("validation_failed", { issues: payload.error.issues });
+      return NextResponse.json({ error: "Invalid RTP link update payload" }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: link, error: linkError } = await supabase
+      .from("project_rtp_cycle_links")
+      .select("id, project_id, workspace_id")
+      .eq("id", payload.data.linkId)
+      .eq("project_id", routeParams.data.projectId)
+      .maybeSingle();
+
+    if (linkError) {
+      audit.error("link_lookup_failed", { error: linkError.message });
+      return NextResponse.json({ error: "Failed to load RTP link" }, { status: 500 });
+    }
+    if (!link) {
+      return NextResponse.json({ error: "RTP link not found" }, { status: 404 });
+    }
+
+    const { data: membership, error: membershipError } = await supabase
+      .from("workspace_members")
+      .select("workspace_id, role")
+      .eq("user_id", user.id)
+      .eq("workspace_id", link.workspace_id)
+      .maybeSingle();
+
+    if (membershipError) {
+      audit.error("membership_lookup_failed", { error: membershipError.message, workspaceId: link.workspace_id });
+      return NextResponse.json({ error: "Failed to resolve workspace membership" }, { status: 500 });
+    }
+    if (!membership || !canAccessWorkspaceAction("plans.write", membership.role)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const updates: Record<string, unknown> = {};
+    if (payload.data.portfolioRole !== undefined) updates.portfolio_role = payload.data.portfolioRole;
+    if (payload.data.priorityRationale !== undefined) {
+      updates.priority_rationale = payload.data.priorityRationale?.trim() || null;
+    }
+    if (payload.data.priorityScores !== undefined) {
+      updates.priority_scores = parsePriorityScores(payload.data.priorityScores);
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
+    }
+
+    const { data, error } = await supabase
+      .from("project_rtp_cycle_links")
+      .update(updates)
+      .eq("id", link.id)
+      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, created_at")
+      .single();
+
+    if (error) {
+      audit.error("update_failed", { error: error.message, code: error.code ?? null });
+      return NextResponse.json({ error: "Failed to update RTP link" }, { status: 500 });
+    }
+
+    audit.info("updated", { projectId: routeParams.data.projectId, linkId: link.id, durationMs: Date.now() - startedAt });
+    return NextResponse.json({ link: data });
+  } catch (error) {
+    audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
+    return NextResponse.json({ error: "Failed to update RTP link" }, { status: 500 });
   }
 }
 
