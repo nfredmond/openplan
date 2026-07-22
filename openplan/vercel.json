@@ -5,5 +5,11 @@
     "src/app/api/reports/[reportId]/generate/route.ts": {
       "maxDuration": 60
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/reap-model-runs",
+      "schedule": "*/5 * * * *"
+    }
+  ]
 }

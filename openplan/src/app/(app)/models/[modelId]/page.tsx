@@ -10,6 +10,8 @@ import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { NEVADA_COUNTY_SCREENING_GATE } from "@/lib/examples/nevada-county-2026-03-24";
 import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
+import { reconcileStaleModelRuns } from "@/lib/models/run-reconcile";
+import type { ReaperRun } from "@/lib/models/run-reaper";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
@@ -117,7 +119,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       supabase
         .from("model_runs")
         .select(
-          "id, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, started_at, completed_at, created_at, stages:model_run_stages(id, stage_name, status, started_at, completed_at, error_message, log_tail), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes)"
+          "id, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, started_at, completed_at, created_at, updated_at, stages:model_run_stages(id, stage_name, status, started_at, completed_at, updated_at, error_message, log_tail), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes)"
         )
         .eq("model_id", model.id)
         .order("created_at", { ascending: false })
@@ -354,6 +356,17 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
 
   const launchTemplate = extractModelLaunchTemplate(model.config_json ?? {});
   const modelRunsSchemaPending = Boolean(modelRunsResult.error && looksLikePendingSchema(modelRunsResult.error.message));
+
+  // Reconcile-on-read: reap runs whose worker crashed or never picked them up
+  // so the UI never shows a run stuck "running"/"queued" forever. The client
+  // re-triggers this loader every 5s (router.refresh) while a run is active,
+  // so a dead run flips to a truthful `failed` state within a poll cycle.
+  // Best-effort + status-guarded; the cron sweep (/api/cron/reap-model-runs)
+  // is the no-viewer backstop.
+  const reapedRunMessages = modelRunsSchemaPending
+    ? new Map<string, string>()
+    : await reconcileStaleModelRuns((modelRunsResult.data ?? []) as unknown as ReaperRun[]);
+
   const modelRuns = modelRunsSchemaPending ? [] : ((modelRunsResult.data ?? []) as unknown as Array<{
     id: string;
     status: string;
@@ -368,7 +381,25 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     created_at: string | null;
     stages: ModelRunStage[];
     artifacts: ModelRunArtifact[];
-  }>).map((r) => ({ ...r, engine_key: r.engine_key ?? "deterministic_corridor_v1" }));
+  }>).map((r) => {
+    const engine_key = r.engine_key ?? "deterministic_corridor_v1";
+    const reapMessage = reapedRunMessages.get(r.id);
+    if (!reapMessage) return { ...r, engine_key };
+    // Reflect the reap in the rendered payload without a re-query. completed_at
+    // is set by the DB write and picked up on the next poll — omitting it here
+    // keeps the loader pure.
+    return {
+      ...r,
+      engine_key,
+      status: "failed",
+      error_message: reapMessage,
+      stages: (r.stages ?? []).map((s) =>
+        s.status === "queued" || s.status === "running"
+          ? { ...s, status: "failed", error_message: reapMessage }
+          : s
+      ),
+    };
+  });
   const scenarioEntryOptions = ((scenarioEntriesResult.data ?? []) as Array<{
     id: string;
     label: string;
