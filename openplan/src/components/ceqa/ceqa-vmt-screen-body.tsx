@@ -114,6 +114,9 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
     const markdown = renderCeqaVmtMarkdown(result, {
       runId: scenarioId,
       engineVersion: CEQA_MEMO_ENGINE_VERSION,
+      // Disclose the calibrated basis in the exported artifact — the on-screen
+      // label must travel into the memo that leaves the tool.
+      calibratedBasis: calibratedActive,
     });
     const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);

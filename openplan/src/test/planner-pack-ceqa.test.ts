@@ -221,6 +221,27 @@ describe("renderCeqaVmtMarkdown", () => {
     );
   });
 
+  it("byte-identically omits calibrated disclosure by default (screening basis)", () => {
+    const result = computeCeqaVmt([{ scenario_id: "a", population: 10, daily_vmt: 100 }], {
+      referenceVmtPerCapita: 22.0,
+    });
+    expect(renderCeqaVmtMarkdown(result, options)).toEqual(
+      renderCeqaVmtMarkdown(result, { ...options, calibratedBasis: false })
+    );
+    expect(renderCeqaVmtMarkdown(result, options)).not.toContain("CALIBRATED-INPUT BASIS");
+  });
+
+  it("discloses the calibrated basis in the exported memo when calibratedBasis is set", () => {
+    const result = computeCeqaVmt([{ scenario_id: "a", population: 10, daily_vmt: 100 }], {
+      referenceVmtPerCapita: 22.0,
+    });
+    const markdown = renderCeqaVmtMarkdown(result, { ...options, calibratedBasis: true });
+    // The title and body must make the calibrated basis unmistakable in the artifact of record.
+    expect(markdown).toContain("# CEQA §15064.3 VMT Significance Determination (CALIBRATED-INPUT BASIS) — run `run-1`");
+    expect(markdown).toContain("Determination basis: CALIBRATED (count-tuned) VMT");
+    expect(markdown).toContain("Do not present this memo as a screening-basis determination.");
+  });
+
   it("preserves the screening-level caveat language verbatim", () => {
     const result = computeCeqaVmt([{ scenario_id: "a", population: 10, daily_vmt: 100 }], {
       referenceVmtPerCapita: 22.0,

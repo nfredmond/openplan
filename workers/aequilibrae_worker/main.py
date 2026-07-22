@@ -962,8 +962,14 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
                         continue
                     for j, zj in enumerate(ordered_zone_ids):
                         col = str(zj)
-                        if col in cal_od_df.columns:
-                            cal_od_df.loc[zi, col] = float(nudged_internal_od[i, j])
+                        # Only overwrite cells the nudge actually carries flow for.
+                        # The nudge OD had network-unreachable pairs zeroed for the
+                        # assignment; leaving those at their screening value keeps
+                        # the calibrated-vs-screening delta PURELY the count nudge
+                        # (not an unreachable-trip removal) on network-island areas.
+                        v = float(nudged_internal_od[i, j])
+                        if col in cal_od_df.columns and v > 0:
+                            cal_od_df.loc[zi, col] = v
                 cal_od_path = os.path.join(pkg_dir, "od_auto_matrix_calibrated.csv")
                 cal_od_df.to_csv(cal_od_path)
                 calibrated_auto_od = os.path.basename(cal_od_path)
