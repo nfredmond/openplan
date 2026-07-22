@@ -38,6 +38,7 @@ import {
   priorityTierLabel,
   priorityTierTone,
 } from "@/lib/rtp/priority-scoring";
+import { RtpPublicShareControls } from "@/components/rtp/rtp-public-share-controls";
 import {
   describeComparisonSnapshotAggregate,
   parseStoredComparisonSnapshotAggregate,
@@ -65,6 +66,8 @@ type RtpCycleRow = {
   public_review_open_at: string | null;
   public_review_close_at: string | null;
   summary: string | null;
+  public_share_token: string | null;
+  public_share_enabled: boolean | null;
   created_at: string;
   updated_at: string;
 };
@@ -213,7 +216,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   const { data: cycleData } = await supabase
     .from("rtp_cycles")
     .select(
-      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, created_at, updated_at"
+      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, public_share_token, public_share_enabled, created_at, updated_at"
     )
     .eq("id", rtpCycleId)
     .eq("workspace_id", membership.workspace_id)
@@ -827,6 +830,11 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                     <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
                   </div>
                 ) : null}
+                <RtpPublicShareControls
+                  rtpCycleId={cycle.id}
+                  initialEnabled={cycle.public_share_enabled ?? false}
+                  initialToken={cycle.public_share_token ?? null}
+                />
                 <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
                   <div className="module-metric-card">
                     <p className="module-metric-label">Funded</p>

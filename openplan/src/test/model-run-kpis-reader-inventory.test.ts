@@ -70,6 +70,15 @@ function classifyCall(call: KpiCall): string | null {
     return "rtp-priority-evidence-read-by-run-ids";
   }
 
+  if (
+    call.filePath === "src/app/(public)/plan/[shareToken]/page.tsx" &&
+    chain.includes('.in("run_id"')
+  ) {
+    // RTP public "why" view: reads a linked run's VMT/GHG KPIs (by run ids) for the
+    // read-only community page — service-role mediated, token + enabled gated.
+    return "rtp-public-evidence-read-by-run-ids";
+  }
+
   if (chain.includes(".select(") && hasRunIdFilter(chain)) {
     return "model-run-read-by-run-id";
   }
@@ -135,6 +144,10 @@ describe("model_run_kpis reader inventory", () => {
       expect.objectContaining({
         filePath: "src/app/(app)/projects/[projectId]/page.tsx",
         classification: "rtp-priority-evidence-read-by-run-ids",
+      }),
+      expect.objectContaining({
+        filePath: "src/app/(public)/plan/[shareToken]/page.tsx",
+        classification: "rtp-public-evidence-read-by-run-ids",
       }),
       expect.objectContaining({
         filePath: "src/app/api/models/[modelId]/runs/[modelRunId]/evidence-packet/route.ts",
