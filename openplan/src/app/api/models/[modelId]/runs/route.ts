@@ -793,7 +793,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         const lodes = await fetchLODESForCorridor(
           corridorForApi,
           census.totalPopulation,
-          census.totalCommuters
+          census.totalCommuters,
+          census.tracts.map((tract) => tract.geoid)
         );
 
         const {
