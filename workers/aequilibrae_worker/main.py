@@ -776,11 +776,16 @@ def _run_demand_nudge(assign_once, make_resident_mat, resident_od, ii_arr, n_ass
         else:
             log += f"  demand iter {it + 1}: rejected (no strict holdout improvement); stopping.\n"
             break
-    return accepted, best_df, best_hold_obj, best_fit_ev, best_hold_ev, log
+    # final_internal_od = the accepted nudged resident internal OD (ordered as
+    # ii → ordered_zone_ids); None if no step was accepted. Used to write a
+    # calibrated auto-OD for the (opt-in, distinct-name) calibrated resident VMT.
+    final_internal_od = cur_od[internal].copy() if accepted else None
+    return accepted, best_df, best_hold_obj, best_fit_ev, best_hold_ev, log, final_internal_od
 
 
 def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, baseline_df, log,
-                     *, resident_od=None, ii=None, assignment_centroids=None, make_resident_mat=None):
+                     *, resident_od=None, ii=None, assignment_centroids=None, make_resident_mat=None,
+                     pkg_dir=None, ordered_zone_ids=None):
     """Staged count calibration outer loop. Returns (calibration_result_or_None,
     log). Reuses the prepared graph. Stage 1 (always): mutate per-road-class
     free-flow travel_time + capacity and re-run a fresh BFW assignment. Stage 2
@@ -914,10 +919,12 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     # A stage-2 failure must NOT discard a valid stage-1 calibration — the
     # raise aborts the tuple-unpack, so best_* keep their stage-1 values.
     stage2_accepted = 0
+    nudged_internal_od = None
     if (CALIBRATION_DEMAND_ENABLED and resident_od is not None and ii is not None
             and assignment_centroids is not None and make_resident_mat is not None):
         try:
-            stage2_accepted, best_df, best_hold_obj, best_fit_ev, best_hold_ev, log = _run_demand_nudge(
+            (stage2_accepted, best_df, best_hold_obj, best_fit_ev, best_hold_ev, log,
+             nudged_internal_od) = _run_demand_nudge(
                 _assign_once, make_resident_mat, resident_od, _np.asarray(ii), len(assignment_centroids),
                 fit_stations, holdout_stations, link_attrs, graph, best_df, best_hold_obj,
                 best_fit_ev, best_hold_ev, log,
@@ -934,6 +941,41 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     # link_volumes.csv is untouched).
     cal_csv = os.path.join(out_dir, "link_volumes_calibrated.csv")
     best_df.to_csv(cal_csv)
+
+    # If the demand nudge changed the resident OD, write a CALIBRATED auto-OD
+    # (opt-in calibrated resident VMT input) — the SCREENING od_auto_matrix.csv
+    # with only the connected-internal cells overwritten by the nudged values,
+    # so its zone COVERAGE matches the screening OD exactly (a determination
+    # can't shift just from missing disconnected zones). Distinct file; the
+    # screening od_auto_matrix.csv is untouched. None unless stage 2 accepted.
+    calibrated_auto_od = None
+    if nudged_internal_od is not None and pkg_dir and ordered_zone_ids is not None:
+        try:
+            src = os.path.join(pkg_dir, "od_auto_matrix.csv")
+            if os.path.exists(src):
+                # float dtype so the nudge's fractional trip values fit (the
+                # screening auto OD is integer counts); the resident-VMT
+                # estimator is float-safe.
+                cal_od_df = pd.read_csv(src, index_col=0).astype(float)
+                for i, zi in enumerate(ordered_zone_ids):
+                    if zi not in cal_od_df.index:
+                        continue
+                    for j, zj in enumerate(ordered_zone_ids):
+                        col = str(zj)
+                        # Only overwrite cells the nudge actually carries flow for.
+                        # The nudge OD had network-unreachable pairs zeroed for the
+                        # assignment; leaving those at their screening value keeps
+                        # the calibrated-vs-screening delta PURELY the count nudge
+                        # (not an unreachable-trip removal) on network-island areas.
+                        v = float(nudged_internal_od[i, j])
+                        if col in cal_od_df.columns and v > 0:
+                            cal_od_df.loc[zi, col] = v
+                cal_od_path = os.path.join(pkg_dir, "od_auto_matrix_calibrated.csv")
+                cal_od_df.to_csv(cal_od_path)
+                calibrated_auto_od = os.path.basename(cal_od_path)
+                log += "Wrote calibrated auto-OD (od_auto_matrix_calibrated.csv) for the opt-in calibrated resident VMT.\n"
+        except Exception as e:
+            log += f"Calibrated auto-OD write warning ({e}); the opt-in calibrated VMT will be absent.\n"
     log += (f"Calibration complete: stage-1 {accepted} + stage-2 (demand) {stage2_accepted} "
             f"accepted step(s). Holdout median APE {base_hold['median_ape']}% -> "
             f"{best_hold_ev['median_ape']}%.\n")
@@ -954,6 +996,7 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         "calibrated": {"fit": best_fit_ev, "holdout": best_hold_ev},
         "holdout_station_ids": sorted(str(s.get("station_id")) for s in holdout_stations),
         "calibrated_link_volumes": os.path.basename(cal_csv),
+        "calibrated_auto_od": calibrated_auto_od,
     }, log
 
 
@@ -1403,7 +1446,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
             calibration_result, log = _run_calibration(
                 proj_dir, out_dir, graph, resident_mat, external_mat, results_df, log,
                 resident_od=resident_od, ii=ii, assignment_centroids=assignment_centroids,
-                make_resident_mat=_make_resident_mat,
+                make_resident_mat=_make_resident_mat, pkg_dir=pkg_dir, ordered_zone_ids=ordered_zone_ids,
             )
         except Exception as e:
             log += f"Calibration warning ({e}); keeping the uncalibrated screening result.\n"
@@ -1642,6 +1685,8 @@ def stage_artifacts(
     resident_vmt = None
     resident_vmt_per_capita = None
     resident_vmt_all_trips = None
+    resident_vmt_calibrated = None
+    resident_vmt_per_capita_calibrated = None
     resident_meta = None
     resident_basis = "all_trips"
     try:
@@ -1695,6 +1740,19 @@ def stage_artifacts(
                 + (f" · {resident_vmt_per_capita} resident VMT/capita" if resident_vmt_per_capita is not None else "")
                 + (f"  (all-trips {resident_vmt_all_trips:,.0f})\n" if resident_vmt_all_trips is not None else "\n")
             )
+
+            # Opt-in CALIBRATED resident VMT — the stage-2 nudged auto OD run
+            # through the SAME estimator + zone coverage, under DISTINCT names.
+            # The screening resident_vmt (default CEQA input) is untouched; this
+            # feeds a CEQA determination only when the operator opts in.
+            _cal_od = (calibration_result or {}).get("calibrated_auto_od")
+            if _cal_od and os.path.exists(os.path.join(pkg_dir, _cal_od)):
+                cal_meta = _resident_from(_cal_od)
+                resident_vmt_calibrated = round(cal_meta["daily_vmt"], 1)
+                if cal_meta["population"] and cal_meta["population"] > 0:
+                    resident_vmt_per_capita_calibrated = round(resident_vmt_calibrated / cal_meta["population"], 4)
+                log += (f"Calibrated resident VMT (opt-in, distinct from the CEQA input): "
+                        f"{resident_vmt_calibrated:,.0f} · {resident_vmt_per_capita_calibrated} /capita.\n")
     except Exception as e:
         log += f"Resident VMT computation warning: {e}\n"
 
@@ -1969,6 +2027,13 @@ def stage_artifacts(
     # is a separate, disclosed result, not the CEQA input.
     if daily_vmt_calibrated is not None:
         kpis.append(("general", "daily_vmt_calibrated", "Daily VMT (calibrated to counts)", daily_vmt_calibrated, "vehicle-miles/day"))
+    # Opt-in CALIBRATED resident VMT (from the stage-2 nudged OD). DISTINCT names
+    # — NOT in any CEQA_* set — so the CEQA screen uses them ONLY when the
+    # operator explicitly opts into a calibrated-input determination.
+    if resident_vmt_calibrated is not None:
+        kpis.append(("general", "resident_vmt_calibrated", "Resident VMT (calibrated to counts)", resident_vmt_calibrated, "vehicle-miles/day"))
+    if resident_vmt_per_capita_calibrated is not None:
+        kpis.append(("general", "resident_vmt_per_capita_calibrated", "Resident VMT per Capita (calibrated to counts)", resident_vmt_per_capita_calibrated, "vehicle-miles/person/day"))
     if calibration_result:
         _cal_hold = (calibration_result.get("calibrated") or {}).get("holdout") or {}
         if _cal_hold.get("median_ape") is not None:

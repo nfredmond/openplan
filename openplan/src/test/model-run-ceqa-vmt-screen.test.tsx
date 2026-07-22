@@ -99,6 +99,41 @@ describe("ModelRunCeqaVmtScreen", () => {
     expect(screen.getByTestId("ceqa-vmt-determination")).toHaveTextContent("25.7");
   });
 
+  it("offers an opt-in calibrated-input determination distinct from screening", async () => {
+    mockKpisFetch([
+      { kpi_name: "resident_vmt_per_capita", kpi_label: "Resident VMT per Capita", value: 25.7, unit: "vehicle-miles/person/day", geometry_ref: null },
+      { kpi_name: "resident_vmt", kpi_label: "Resident VMT", value: 2633000, unit: "vehicle-miles/day", geometry_ref: null },
+      { kpi_name: "population_total", kpi_label: "Population", value: 102322, unit: "persons", geometry_ref: null },
+      { kpi_name: "resident_vmt_per_capita_calibrated", kpi_label: "Resident VMT per Capita (calibrated)", value: 18.0, unit: "vehicle-miles/person/day", geometry_ref: null },
+      { kpi_name: "validation_median_ape_calibrated", kpi_label: "Calibrated Holdout Median APE", value: 16.25, unit: "percent", geometry_ref: null },
+    ]);
+    renderPanel();
+    await openScreen();
+    // Default: screening determination on the screening VMT (25.7).
+    await waitFor(() => expect(screen.getByTestId("ceqa-vmt-determination")).toBeInTheDocument());
+    let det = screen.getByTestId("ceqa-vmt-determination");
+    expect(det).toHaveTextContent("Screening determination");
+    expect(det).toHaveTextContent("25.7");
+    // Opt in: calibrated-input determination on the calibrated VMT (18.0).
+    fireEvent.click(screen.getByTestId("ceqa-vmt-calibrated-toggle").querySelector("input")!);
+    det = screen.getByTestId("ceqa-vmt-determination");
+    expect(det).toHaveTextContent("Calibrated-input determination");
+    expect(det).toHaveTextContent("18");
+    expect(det).toHaveTextContent("calibrated (count-tuned) VMT");
+  });
+
+  it("shows no calibration toggle when there is no calibrated resident VMT", async () => {
+    mockKpisFetch([
+      { kpi_name: "vmt_per_capita", kpi_label: "VMT per Capita", value: 25.7, unit: "vehicle-miles/person/day", geometry_ref: null },
+      { kpi_name: "daily_vmt", kpi_label: "Daily VMT", value: 2633000.6, unit: "vehicle-miles/day", geometry_ref: null },
+      { kpi_name: "population_total", kpi_label: "Population", value: 102322, unit: "persons", geometry_ref: null },
+    ]);
+    renderPanel();
+    await openScreen();
+    await waitFor(() => expect(screen.getByTestId("ceqa-vmt-determination")).toBeInTheDocument());
+    expect(screen.queryByTestId("ceqa-vmt-calibrated-toggle")).not.toBeInTheDocument();
+  });
+
   it("shows no calibration note on an uncalibrated (default) run", async () => {
     mockKpisFetch([
       { kpi_name: "vmt_per_capita", kpi_label: "VMT per Capita", value: 25.7, unit: "vehicle-miles/person/day", geometry_ref: null },

@@ -21,6 +21,11 @@ import { formatFixedPython, formatPythonFloat, pythonRound } from "./utilities";
 export type RenderPlannerPackOptions = {
   runId: string;
   engineVersion: string;
+  /** CEQA memo only: the determination used the opt-in CALIBRATED (count-tuned)
+   * VMT, not the screening default. Disclosed in the exported artifact so a
+   * calibrated-basis memo can never be mistaken for a screening determination.
+   * Omitted/false → the memo is byte-identical to the screening output. */
+  calibratedBasis?: boolean;
 };
 
 function yesNo(value: boolean): string {
@@ -40,7 +45,7 @@ function deltaPercentDisplay(deltaPct: number): string {
 /** Render the CEQA §15064.3 VMT memo as Markdown. */
 export function renderCeqaVmtMarkdown(
   result: CeqaVmtResult,
-  { runId, engineVersion }: RenderPlannerPackOptions
+  { runId, engineVersion, calibratedBasis = false }: RenderPlannerPackOptions
 ): string {
   const thresholdPctDisplay = floorPercent(result.threshold_pct);
   const referenceDisplay = formatPythonFloat(result.reference_vmt_per_capita);
@@ -49,13 +54,19 @@ export function renderCeqaVmtMarkdown(
   const significantScenarios = scenarios.filter((scenario) => scenario.significant);
   const belowScenarios = scenarios.filter((scenario) => !scenario.significant);
 
-  let out = `# CEQA §15064.3 VMT Significance Determination — run \`${runId}\`
+  let out = `# CEQA §15064.3 VMT Significance Determination${
+    calibratedBasis ? " (CALIBRATED-INPUT BASIS)" : ""
+  } — run \`${runId}\`
 
 - Engine version: \`${engineVersion}\`
 - Generated: \`${result.generated_at}\`
 - Project type: **${result.project_type}**
 - Reference baseline: **${result.reference_label}** — ${referenceDisplay} VMT per capita
-- Screening threshold: **${thresholdPctDisplay}% below ${result.reference_label}** → ${thresholdDisplay} VMT per capita
+- Screening threshold: **${thresholdPctDisplay}% below ${result.reference_label}** → ${thresholdDisplay} VMT per capita${
+    calibratedBasis
+      ? "\n- **Determination basis: CALIBRATED (count-tuned) VMT** — an opt-in, count-informed refinement, NOT the screening default"
+      : ""
+  }
 
 ## Scope
 
@@ -63,7 +74,15 @@ This memo documents the CEQA transportation-impact significance screening for ea
 scenario produced by OpenPlan run \`${runId}\`. Per California Public Resources
 Code §21099 and CEQA Guidelines §15064.3 (revised after SB 743), vehicle miles
 traveled (VMT) is the preferred metric for transportation-impact significance for
-land-use and transportation projects.
+land-use and transportation projects.${
+    calibratedBasis
+      ? "\n\n**Calibrated-input basis (disclosure):** the VMT per capita below is the" +
+        " CALIBRATED (count-tuned) estimate from the demand-nudge calibration stage — the model" +
+        " was tuned to observed traffic counts — NOT the default screening VMT. It is a" +
+        " screening-grade calibrated refinement, not a validated forecast; the default screening" +
+        " determination differs. Do not present this memo as a screening-basis determination."
+      : ""
+  }
 
 ## Methodology
 
