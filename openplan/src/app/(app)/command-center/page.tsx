@@ -38,6 +38,7 @@ import {
   nevadaCountyMaxApeRow,
 } from "@/lib/examples/nevada-county-2026-03-24";
 import { buyerDemoCommandCenterHandoff, buyerDemoRehearsalChecklist } from "@/lib/operations/release-proof-packet";
+import { canReviewAccessRequests } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -72,6 +73,9 @@ export default async function CommandCenterPage() {
     );
   }
 
+  // Buyer-demo / sales-rehearsal scaffolding on this page is for operators only
+  // (people who provision pilots), not for the planners who use the workspace.
+  const isOperator = canReviewAccessRequests(user.email);
   const workspaceId = membership.workspace_id;
   const summary = await loadWorkspaceOperationsSummaryForWorkspace(
     supabase as unknown as WorkspaceOperationsSupabaseLike,
@@ -223,9 +227,19 @@ export default async function CommandCenterPage() {
         </WorkspaceCommandBoard>
       </div>
 
-      <div className="mt-6">
-        <ReleaseProofPacketPanel />
-      </div>
+      <RecentActionActivity
+        className="mt-6"
+        executions={actionActivity.executions}
+        error={actionActivity.error}
+        description="Recent audited actions from this workspace, including packet generation, funding decisions, and project-record operations."
+        emptyDescription="No audited operator actions have run in this workspace yet. Packet generation, funding decisions, and project-record operations will appear here after completion."
+      />
+
+      {isOperator ? (
+        <>
+          <div className="mt-6">
+            <ReleaseProofPacketPanel />
+          </div>
 
       <section className="mt-6 module-section-surface">
         <div className="module-section-header">
@@ -251,14 +265,6 @@ export default async function CommandCenterPage() {
           ))}
         </ol>
       </section>
-
-      <RecentActionActivity
-        className="mt-6"
-        executions={actionActivity.executions}
-        error={actionActivity.error}
-        description="Recent audited actions from this workspace, including packet generation, funding decisions, and project-record operations."
-        emptyDescription="No audited operator actions have run in this workspace yet. Packet generation, funding decisions, and project-record operations will appear here after completion."
-      />
 
       <section className="mt-6 module-section-surface">
         <div className="module-section-header">
@@ -471,6 +477,8 @@ export default async function CommandCenterPage() {
           </div>
         </nav>
       </section>
+        </>
+      ) : null}
 
       <section className="mt-6 module-section-surface">
         <div className="module-section-header">

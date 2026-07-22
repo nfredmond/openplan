@@ -9,6 +9,7 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
+const canReviewAccessRequestsMock = vi.fn();
 
 const actionLimitMock = vi.fn();
 const actionOrderMock = vi.fn(() => ({ limit: actionLimitMock }));
@@ -42,6 +43,14 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/workspaces/current", () => ({
   loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
 }));
+
+vi.mock("@/lib/access-requests", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/access-requests")>("@/lib/access-requests");
+  return {
+    ...actual,
+    canReviewAccessRequests: (...args: unknown[]) => canReviewAccessRequestsMock(...args),
+  };
+});
 
 vi.mock("@/lib/operations/workspace-summary", async () => {
   const actual = await vi.importActual<typeof import("@/lib/operations/workspace-summary")>(
@@ -181,6 +190,7 @@ describe("CommandCenterPage", () => {
     });
 
     loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue(summary);
+    canReviewAccessRequestsMock.mockReturnValue(true);
 
     actionLimitMock.mockResolvedValue({
       data: [
@@ -210,7 +220,7 @@ describe("CommandCenterPage", () => {
     });
   });
 
-  it("surfaces recent audited actions inside the operator command surface", async () => {
+  it("shows operational surfaces and operator buyer-demo scaffolding for operators", async () => {
     render(await CommandCenterPage());
 
     expect(screen.getByText("Command Center")).toBeInTheDocument();
@@ -328,5 +338,25 @@ describe("CommandCenterPage", () => {
 
     expect(screen.getByText("Assistant action activity")).toBeInTheDocument();
     expect(screen.getByText(/No audited operator actions have run in this workspace yet/i)).toBeInTheDocument();
+  });
+
+  it("hides the buyer-demo / sales scaffolding for non-operators", async () => {
+    canReviewAccessRequestsMock.mockReturnValue(false);
+
+    render(await CommandCenterPage());
+
+    // Operational cross-domain content stays visible for every workspace member.
+    expect(screen.getByText("Command Center")).toBeInTheDocument();
+    expect(screen.getByTestId("workspace-runtime-cue")).toBeInTheDocument();
+    expect(screen.getByTestId("workspace-command-board")).toBeInTheDocument();
+    expect(screen.getByText("Assistant action activity")).toBeInTheDocument();
+    expect(screen.getByText("Jump into a lane")).toBeInTheDocument();
+
+    // Buyer-demo / sales rehearsal scaffolding is operator-only and hidden here.
+    expect(screen.queryByText("Demo rehearsal checklist")).not.toBeInTheDocument();
+    expect(screen.queryByText("Read-only sample cue")).not.toBeInTheDocument();
+    expect(screen.queryByText("Buyer demo handoff")).not.toBeInTheDocument();
+    expect(screen.queryByText("90-second opening script")).not.toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/Nevada County/i);
   });
 });
