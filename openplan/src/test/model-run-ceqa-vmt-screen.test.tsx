@@ -81,6 +81,36 @@ describe("ModelRunCeqaVmtScreen", () => {
     expect(screen.getByText("Screening-level — not a determination of record")).toBeInTheDocument();
   });
 
+  it("surfaces the count-calibration confidence note (without recalculating VMT) on a calibrated run", async () => {
+    mockKpisFetch([
+      { kpi_name: "vmt_per_capita", kpi_label: "VMT per Capita", value: 25.7, unit: "vehicle-miles/person/day", geometry_ref: null },
+      { kpi_name: "daily_vmt", kpi_label: "Daily VMT", value: 2633000.6, unit: "vehicle-miles/day", geometry_ref: null },
+      { kpi_name: "population_total", kpi_label: "Population", value: 102322, unit: "persons", geometry_ref: null },
+      { kpi_name: "validation_median_ape_calibrated", kpi_label: "Calibrated Holdout Median APE", value: 16.25, unit: "percent", geometry_ref: null },
+    ]);
+    renderPanel();
+    await openScreen();
+    await waitFor(() => expect(screen.getByTestId("ceqa-vmt-determination")).toBeInTheDocument());
+    const note = screen.getByTestId("ceqa-vmt-calibration-confidence");
+    expect(note).toHaveTextContent("Count-validated in this study area");
+    expect(note).toHaveTextContent("16.3"); // formatNumber(16.25, 1)
+    expect(note).toHaveTextContent("does not recalculate VMT");
+    // The determination itself still uses the screening VMT (25.7), unchanged.
+    expect(screen.getByTestId("ceqa-vmt-determination")).toHaveTextContent("25.7");
+  });
+
+  it("shows no calibration note on an uncalibrated (default) run", async () => {
+    mockKpisFetch([
+      { kpi_name: "vmt_per_capita", kpi_label: "VMT per Capita", value: 25.7, unit: "vehicle-miles/person/day", geometry_ref: null },
+      { kpi_name: "daily_vmt", kpi_label: "Daily VMT", value: 2633000.6, unit: "vehicle-miles/day", geometry_ref: null },
+      { kpi_name: "population_total", kpi_label: "Population", value: 102322, unit: "persons", geometry_ref: null },
+    ]);
+    renderPanel();
+    await openScreen();
+    await waitFor(() => expect(screen.getByTestId("ceqa-vmt-determination")).toBeInTheDocument());
+    expect(screen.queryByTestId("ceqa-vmt-calibration-confidence")).not.toBeInTheDocument();
+  });
+
   it("renders the honest empty state when the run stores no VMT KPI", async () => {
     mockKpisFetch([
       { kpi_name: "total_trips", kpi_label: "Total Trips", value: 628262, unit: "trips/day", geometry_ref: null },
