@@ -54,6 +54,16 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
 
   const screeningInputs = useMemo(() => deriveCeqaVmtScreeningInputs(kpis), [kpis]);
 
+  // Count-calibration confidence signal (opt-in calibrated runs only). The
+  // determination still uses the SCREENING VMT — calibration tunes the model to
+  // observed traffic COUNTS (link volumes), which strengthens the evidence for
+  // this area's screening determination without recalculating the per-capita
+  // VMT aggregate. None on the default (uncalibrated) path.
+  const calibratedHoldoutApe = useMemo(() => {
+    const row = kpis.find((k) => k.kpi_name === "validation_median_ape_calibrated");
+    return typeof row?.value === "number" ? row.value : null;
+  }, [kpis]);
+
   const referenceVmtPerCapita = Number(referenceInput);
   const thresholdPct = Number(thresholdPctInput) / 100;
   const inputsValid =
@@ -251,6 +261,19 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
               ? " VMT mitigation or a substantial-evidence finding is required before a lead agency can issue a less-than-significant determination."
               : ""}
           </p>
+          {calibratedHoldoutApe !== null ? (
+            <p
+              className="mt-3 rounded-[0.5rem] border border-[color:var(--pine)]/30 bg-[color:var(--pine)]/5 px-3 py-2 text-xs text-foreground/90"
+              data-testid="ceqa-vmt-calibration-confidence"
+            >
+              <span className="font-semibold">Count-validated in this study area:</span> the model
+              was calibrated to observed traffic counts and reproduces a held-out (never-fit) count
+              set to {formatNumber(calibratedHoldoutApe, 1)}% median absolute percent error. This
+              strengthens the evidence for the screening determination above in this area; it does
+              not recalculate VMT (calibration tunes link-level traffic fidelity, not the per-capita
+              VMT aggregate).
+            </p>
+          ) : null}
           <p className="mt-3 text-xs text-muted-foreground">{CEQA_STATUTORY_CITATION}</p>
           <p className="mt-2 text-xs text-muted-foreground" data-testid="ceqa-vmt-caveat">
             {CEQA_SCREENING_CAVEAT} This screening-grade output is not a CEQA determination of
