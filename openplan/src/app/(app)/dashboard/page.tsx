@@ -4,6 +4,7 @@ import { DashboardKpiGrid } from "@/components/dashboard/dashboard-kpi-grid";
 import { DashboardOperatorGuidance } from "@/components/dashboard/dashboard-operator-guidance";
 import { DashboardPilotWorkflowSpine } from "@/components/dashboard/dashboard-pilot-workflow-spine";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
+import { OnboardingGoals } from "@/components/onboarding/onboarding-goals";
 import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-workspace-intro";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
@@ -220,8 +221,33 @@ export default async function DashboardPage() {
     "KPI instrumentation tracks completion, reporting, and time-to-first-result.",
   ];
 
+  // A brand-new user lands here on an auto-provisioned but empty workspace (the
+  // handle_new_user trigger creates the workspace on sign-up). Guide them with a
+  // first-run goal picker until they have real activity in any core lane.
+  const isFirstRun =
+    kpis.totalRuns === 0 &&
+    operationsSummary.counts.projects === 0 &&
+    operationsSummary.counts.plans === 0 &&
+    operationsSummary.counts.programs === 0 &&
+    operationsSummary.counts.reports === 0;
+
   return (
     <section className="module-page">
+      {isFirstRun ? (
+        <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 dark:bg-primary/10">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Get started</p>
+          <h2 className="mt-1 text-lg font-semibold text-foreground">
+            Welcome to {workspaceName} — what do you want to do first?
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Your workspace is ready and empty. Pick a starting point — you can do all of it later.
+          </p>
+          <div className="mt-4">
+            <OnboardingGoals />
+          </div>
+        </div>
+      ) : null}
+
       <header className="module-header-grid">
         <DashboardWorkspaceIntro
           workspaceName={workspaceName}

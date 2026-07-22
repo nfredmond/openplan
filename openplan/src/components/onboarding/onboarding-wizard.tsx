@@ -2,51 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, ClipboardList, FileText, Loader2, MapPin, Sparkles, Users } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { OnboardingGoals } from "@/components/onboarding/onboarding-goals";
 
-type Goal = {
-  key: string;
-  title: string;
-  description: string;
-  href: string;
-  icon: typeof MapPin;
-};
-
-// The four first-run goals map onto the platform's core lanes. "Model any place"
-// leads straight into the any-place study-area flow.
-const GOALS: Goal[] = [
-  {
-    key: "model",
-    title: "Model any place",
-    description: "Run a travel-demand model for any US city, county, CDP, or metro area.",
-    href: "/models",
-    icon: MapPin,
-  },
-  {
-    key: "engage",
-    title: "Collect community input",
-    description: "Launch a public, map-based engagement campaign and moderate what comes in.",
-    href: "/engagement",
-    icon: Users,
-  },
-  {
-    key: "grants",
-    title: "Find & write grants",
-    description: "Track funding opportunities and draft AI narratives grounded in your data.",
-    href: "/grants",
-    icon: FileText,
-  },
-  {
-    key: "rtp",
-    title: "Build an RTP",
-    description: "Start a Regional Transportation Plan cycle with a linked project portfolio.",
-    href: "/rtp",
-    icon: ClipboardList,
-  },
-];
-
+/**
+ * No-workspace fallback: normally the handle_new_user DB trigger auto-provisions
+ * a workspace on sign-up, so a new user lands on the dashboard already provisioned
+ * (see the dashboard first-run hero). This wizard only appears in the rare
+ * not-provisioned case (e.g. a revoked membership), and lets the user self-create.
+ */
 export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspaceName?: string }) {
   const router = useRouter();
   const [step, setStep] = useState<"name" | "goal">("name");
@@ -78,14 +44,6 @@ export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspa
     } finally {
       setCreating(false);
     }
-  }
-
-  // The workspace already exists server-side; navigating re-renders the shell
-  // with the new membership (leaving the not-provisioned state), then refresh
-  // ensures fresh data on the destination.
-  function goToGoal(href: string) {
-    router.push(href);
-    router.refresh();
   }
 
   return (
@@ -139,30 +97,14 @@ export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspa
               <p className="mt-1 text-sm text-muted-foreground">What do you want to do first? You can do all of it later.</p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              {GOALS.map((goal) => {
-                const Icon = goal.icon;
-                return (
-                  <button
-                    key={goal.key}
-                    type="button"
-                    onClick={() => goToGoal(goal.href)}
-                    className="group flex flex-col gap-2 rounded-lg border border-border bg-background/60 p-4 text-left transition hover:border-primary/60 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <span className="flex items-center justify-between">
-                      <Icon className="h-5 w-5 text-primary" />
-                      <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition group-hover:opacity-100" />
-                    </span>
-                    <span className="font-semibold text-foreground">{goal.title}</span>
-                    <span className="text-xs text-muted-foreground">{goal.description}</span>
-                  </button>
-                );
-              })}
-            </div>
+            <OnboardingGoals />
 
             <button
               type="button"
-              onClick={() => goToGoal("/dashboard")}
+              onClick={() => {
+                router.push("/dashboard");
+                router.refresh();
+              }}
               className="text-sm font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
             >
               Or just explore the dashboard →
