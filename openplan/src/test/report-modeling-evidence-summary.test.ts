@@ -110,6 +110,51 @@ describe("buildPlannerReadableModelingEvidenceSummary", () => {
     expectProvenanceLanguageOnly(`${summary.headline} ${summary.plannerReadout} ${summary.caveats.join(" ")}`);
   });
 
+  it("surfaces the calibrated-to-counts tier distinctly, above screening", () => {
+    const baseEvidence = linkedEvidence().evidence;
+    if (!baseEvidence) throw new Error("Expected linked evidence fixture");
+    const baseClaimDecision = baseEvidence.claimDecision;
+    if (!baseClaimDecision) throw new Error("Expected linked evidence claim decision fixture");
+
+    const summary = buildPlannerReadableModelingEvidenceSummary([
+      linkedEvidence({
+        evidence: {
+          ...baseEvidence,
+          reportLanguage: "Calibrated-to-counts modeling result with held-out validation accuracy.",
+          claimDecision: {
+            ...baseClaimDecision,
+            claimStatus: "calibrated_to_counts",
+            statusReason: "Model calibrated to observed counts; held-out median APE 32.79% -> 22.98%.",
+            reasons: ["Model calibrated to observed counts; held-out median APE 32.79% -> 22.98%."],
+          },
+        },
+      }),
+    ]);
+
+    expect(summary.label).toContain("Calibrated to counts");
+    expect(summary.tone).toBe("success");
+    expect(summary.headline).toContain("calibrated to observed traffic counts");
+    // The boundary: the summary must say calibrated VMT is separate from the CEQA input.
+    expect(summary.headline).toContain("separate from the screening CEQA input");
+  });
+
+  it("ranks calibrated_to_counts above screening but below county-lane claim-grade", () => {
+    const baseEvidence = linkedEvidence().evidence;
+    if (!baseEvidence?.claimDecision) throw new Error("Expected fixture");
+    const withStatus = (status: "screening_grade" | "calibrated_to_counts" | "claim_grade_passed") =>
+      linkedEvidence({
+        evidence: { ...baseEvidence, claimDecision: { ...baseEvidence.claimDecision!, claimStatus: status } },
+      });
+    // strongest of {screening, calibrated} is calibrated
+    expect(
+      buildPlannerReadableModelingEvidenceSummary([withStatus("screening_grade"), withStatus("calibrated_to_counts")]).label
+    ).toContain("strongest: Calibrated to counts");
+    // strongest of {calibrated, claim_grade} is claim-grade
+    expect(
+      buildPlannerReadableModelingEvidenceSummary([withStatus("calibrated_to_counts"), withStatus("claim_grade_passed")]).label
+    ).toContain("strongest: Claim-grade passed");
+  });
+
   it("is explicit when a report has no linked modeling evidence", () => {
     const summary = buildPlannerReadableModelingEvidenceSummary([]);
 

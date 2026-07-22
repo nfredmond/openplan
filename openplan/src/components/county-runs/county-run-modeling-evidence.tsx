@@ -9,6 +9,8 @@ function claimStatusLabel(status: ClaimStatus) {
   switch (status) {
     case "claim_grade_passed":
       return "Claim-grade";
+    case "calibrated_to_counts":
+      return "Calibrated to counts";
     case "screening_grade":
       return "Screening-grade";
     case "prototype_only":
@@ -20,6 +22,7 @@ function claimStatusLabel(status: ClaimStatus) {
 
 function claimStatusTone(status: string | null | undefined): StatusTone {
   if (status === "claim_grade_passed") return "success";
+  if (status === "calibrated_to_counts") return "success";
   if (status === "screening_grade") return "warning";
   if (status === "prototype_only") return "neutral";
   return "info";

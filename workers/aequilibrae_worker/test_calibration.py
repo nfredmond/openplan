@@ -126,6 +126,15 @@ def test_accept_step_overfit_guard():
     assert cal.accept_step(0.40, None) is False         # can't validate -> reject
 
 
+def test_accept_step_negative_tol_requires_strict_improvement():
+    # The loop passes tol<0 so an EQUAL holdout objective (a no-op step) is
+    # rejected and can't promote the run to the calibrated tier.
+    m = 1e-4
+    assert cal.accept_step(0.40, 0.40, tol=-m) is False   # equal -> reject
+    assert cal.accept_step(0.40, 0.3999, tol=-m) is True  # improved by >= one ULP
+    assert cal.accept_step(0.40, 0.41, tol=-m) is False   # worse -> reject
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in sorted(globals().items()) if name.startswith("test_")]
     try:

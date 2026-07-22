@@ -57,7 +57,7 @@ export const countyRunModelingEvidenceSchema = z.object({
   claimDecision: z
     .object({
       track: z.enum(["assignment", "behavioral_demand", "multimodal_accessibility", "shared"]),
-      claimStatus: z.enum(["claim_grade_passed", "screening_grade", "prototype_only"]),
+      claimStatus: z.enum(["claim_grade_passed", "calibrated_to_counts", "screening_grade", "prototype_only"]),
       statusReason: z.string().min(1),
       reasons: z.array(z.string()),
       validationSummary: z.record(z.string(), z.unknown()),

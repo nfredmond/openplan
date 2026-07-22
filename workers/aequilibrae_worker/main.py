@@ -37,6 +37,7 @@ from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazo
 import convergence
 import link_vmt
 import select_link
+import calibration
 from gateways import (
     detect_external_gateways,
     build_cordon_injections,
@@ -98,6 +99,21 @@ VALIDATION_COUNTS_PATH = os.getenv(
     "VALIDATION_COUNTS_PATH",
     os.path.join(os.path.dirname(__file__), "data", "validation", "nevada_county_priority_counts.csv"),
 )
+
+# OPT-IN count-based calibration (OFF by default — the product ships an
+# UNCALIBRATED screening model). When enabled, after the baseline assignment the
+# worker tunes per-road-class free-flow speed/capacity toward observed counts,
+# re-running equilibrium assignment and keeping a step only if it improves a
+# held-out count set (see calibration.py). Produces the distinct
+# 'calibrated_to_counts' claim tier + calibrated KPIs under DISTINCT names; the
+# OD-based resident_vmt (CEQA input) is never touched. A larger count set than
+# the 3-station priority file is strongly recommended (VALIDATION_COUNTS_PATH).
+CALIBRATION_ENABLED = os.getenv("AEQ_CALIBRATE", "0") in ("1", "true", "True")
+CALIBRATION_MAX_ITER = int(os.getenv("AEQ_CALIBRATE_MAX_ITER", "12"))
+# Minimum held-out objective improvement to accept a step (one objective ULP —
+# the objective is rounded to 1e-4). A step that only ties the holdout is a
+# no-op and must not promote the run to the calibrated tier.
+CALIBRATION_MIN_IMPROVEMENT = float(os.getenv("AEQ_CALIBRATE_MIN_IMPROVEMENT", "1e-4"))
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase credentials in environment.")
@@ -220,12 +236,15 @@ def sb_post_kpi(payload: dict):
     requests.post(url, headers=HEADERS, json=payload)
 
 
-def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, validation: dict | None) -> None:
+def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, validation: dict | None,
+                                      calibration: dict | None = None) -> None:
     """Write the shared modeling claim-grade spine for THIS model run — the same
     tables the county lane populates (modeling_validation_results +
     modeling_claim_decisions) so reports read one consistent claim grade. Derived
-    from the observed-count gate; NEVER 'claim_grade_passed' (that needs
-    calibration — the flagged claim boundary). Best-effort; never fails a run."""
+    from the observed-count gate. NEVER 'claim_grade_passed' (that needs the
+    county-lane validation-threshold pass). When count calibration ran and
+    improved a held-out set, the tier is 'calibrated_to_counts' with the
+    out-of-sample holdout accuracy. Best-effort; never fails a run."""
     if not workspace_id:
         return
     try:
@@ -233,7 +252,18 @@ def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, val
         median_ape = (validation or {}).get("median_ape")
         max_ape = (validation or {}).get("max_ape")
         gate = (validation or {}).get("screening_gate")
-        if gate == "bounded screening-ready":
+        if calibration:
+            # Calibrated tier: the honest accuracy is the HELD-OUT median APE.
+            hold = (calibration.get("calibrated") or {}).get("holdout") or {}
+            base_hold = (calibration.get("baseline") or {}).get("holdout") or {}
+            claim_status, reason = "calibrated_to_counts", (
+                f"Model calibrated to observed counts ({calibration.get('fit_station_count')} fit / "
+                f"{calibration.get('holdout_station_count')} holdout stations, "
+                f"{calibration.get('accepted_iterations')} accepted step(s)). Held-out median APE "
+                f"{base_hold.get('median_ape')}% -> {hold.get('median_ape')}%. Calibrated VMT is "
+                f"published under distinct KPI names and is not the CEQA screening input."
+            )
+        elif gate == "bounded screening-ready":
             claim_status, reason = "screening_grade", (
                 f"Observed-count validation passed the screening gate ({matched} stations, "
                 f"median APE {median_ape}%)."
@@ -256,7 +286,8 @@ def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, val
             json={
                 "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
                 "claim_status": claim_status, "status_reason": reason,
-                "validation_summary_json": validation or {},
+                "validation_summary_json": {**(validation or {}),
+                                            **({"calibration": calibration} if calibration else {})},
             }, timeout=20,
         )
         # Refresh the per-metric validation rows for this run/track.
@@ -638,6 +669,182 @@ def _write_auto_od_matrix(path: str, auto_int: np.ndarray, ordered_zone_ids: lis
             if col in auto_df.columns:
                 auto_df.loc[zi, col] = int(auto_int[i, j])
     auto_df.to_csv(path)
+
+
+def _volumes_by_link(results_df) -> dict[int, float]:
+    """{link_id: PCE_tot} from an assignment results frame (indexed by link_id)."""
+    if "PCE_tot" not in results_df.columns:
+        return {}
+    out: dict[int, float] = {}
+    for lid, v in results_df["PCE_tot"].items():
+        try:
+            out[int(lid)] = float(v or 0.0)
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
+def _match_counts(stations, link_attrs, vol_by_id):
+    """Match each station to a modeled link at the given volumes; return the
+    matched dicts (observed_volume + modeled_daily_pce + matched_link_type)."""
+    modeled = [
+        {"link_id": la[0], "name": la[1], "link_type": la[2], "lon": la[3], "lat": la[4],
+         "volume": vol_by_id.get(la[0], 0.0)}
+        for la in link_attrs
+    ]
+    out = []
+    for st in stations:
+        best = count_validation.match_station(st, modeled)
+        if best:
+            out.append({**st, "modeled_daily_pce": best["modeled_daily_pce"],
+                        "matched_link_type": best["matched_link_type"]})
+    return out
+
+
+def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, baseline_df, log):
+    """Stage-1 (capacity/speed) count calibration outer loop. Returns
+    (calibration_result_or_None, log). Reuses the prepared graph; each iteration
+    mutates per-class free-flow travel_time + capacity and re-runs a fresh BFW
+    assignment. A step is kept only if it improves the HELD-OUT count objective.
+    Never mutates the OD-based resident_vmt or the screening result."""
+    import csv as _csv
+    from aequilibrae.paths import TrafficAssignment, TrafficClass
+
+    with open(VALIDATION_COUNTS_PATH) as _cf:
+        stations = list(_csv.DictReader(_cf))
+    # Link attributes + link_id->class map, from the project DB (once).
+    db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+    db.enable_load_extension(True)
+    db.load_extension(SPATIALITE_PATH)
+    try:
+        rows = db.execute(
+            "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
+            "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
+            "WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'"
+        ).fetchall()
+        type_by_id = {int(r[0]): r[1] for r in db.execute("SELECT link_id, link_type FROM links")}
+    finally:
+        db.close()
+    link_attrs = [(int(l), n, t, float(x) if x is not None else None,
+                   float(y) if y is not None else None) for l, n, t, x, y in rows]
+
+    # Fit / holdout split — a 'calibrated' claim requires an out-of-sample holdout.
+    all_matched = _match_counts(stations, link_attrs, _volumes_by_link(baseline_df))
+    fit_stations, holdout_stations = calibration.split_holdout(all_matched)
+    if not fit_stations or not holdout_stations:
+        log += ("Calibration skipped: need matched counts in BOTH a fit and a holdout set "
+                f"(matched {len(all_matched)}, fit {len(fit_stations)}, holdout {len(holdout_stations)}).\n")
+        return None, log
+
+    base_fit = calibration.evaluate(_match_counts(fit_stations, link_attrs, _volumes_by_link(baseline_df)))
+    base_hold = calibration.evaluate(_match_counts(holdout_stations, link_attrs, _volumes_by_link(baseline_df)))
+    log += (f"Calibration: {len(fit_stations)} fit / {len(holdout_stations)} holdout counts; "
+            f"baseline fit median APE {base_fit['median_ape']}%, holdout {base_hold['median_ape']}%.\n")
+
+    # Baseline graph fields to reset-then-apply-cumulative each iteration (so a
+    # per-class factor can't compound incorrectly across iterations).
+    base_tt = graph.graph["travel_time"].to_numpy(dtype=float).copy()
+    base_cap = graph.graph["capacity"].to_numpy(dtype=float).copy()
+    link_class = graph.graph["link_id"].map(type_by_id)
+
+    def _assign_once():
+        a = TrafficAssignment()
+        for tc in (TrafficClass(name="resident", graph=graph, matrix=resident_mat),
+                   TrafficClass(name="external", graph=graph, matrix=external_mat)):
+            tc.set_pce(1.0)
+            a.add_class(tc)
+        a.set_cores(AEQ_CORES)
+        a.set_vdf("BPR")
+        a.set_vdf_parameters({"alpha": 0.15, "beta": 4.0})
+        a.set_capacity_field("capacity")
+        a.set_time_field("travel_time")
+        a.max_iter = 50
+        a.rgap_target = 0.01
+        a.set_algorithm("bfw")
+        a.execute()
+        return a.results()
+
+    def _apply(cum):
+        # factor>1 (under-assigned class) -> faster (tt down) + more capacity, so
+        # the class attracts more equilibrium flow. Reset from baseline first.
+        tt = base_tt.copy()
+        cap = base_cap.copy()
+        for cls, f in cum.items():
+            m = (link_class == cls).to_numpy()
+            tt[m] = base_tt[m] / f
+            cap[m] = base_cap[m] * f
+        graph.graph["travel_time"] = tt
+        graph.graph["capacity"] = cap
+        graph.set_graph("travel_time")
+
+    base_hold_obj = base_hold["objective"]
+    if base_hold_obj is None:
+        log += "Calibration skipped: holdout objective is undefined (no usable holdout counts).\n"
+        return None, log
+    cum: dict[str, float] = {}
+    best_df = baseline_df
+    best_hold_obj = base_hold_obj
+    best_fit_ev, best_hold_ev = base_fit, base_hold
+    accepted = 0
+    for it in range(CALIBRATION_MAX_ITER):
+        fit_matched = _match_counts(fit_stations, link_attrs, _volumes_by_link(best_df))
+        new_f = calibration.class_adjustment_factors(fit_matched)
+        if not new_f:
+            break
+        trial_cum = calibration.compose_factors(cum, new_f)
+        if trial_cum == cum:
+            break  # nothing left to adjust
+        _apply(trial_cum)
+        trial_df = _assign_once()
+        trial_vol = _volumes_by_link(trial_df)
+        trial_hold = calibration.evaluate(_match_counts(holdout_stations, link_attrs, trial_vol))
+        trial_obj = trial_hold["objective"]
+        # Accept ONLY on a STRICT held-out improvement — an equal-objective step
+        # is a no-op and must never promote the run to the calibrated tier. A
+        # negative tol makes accept_step require improvement by at least one
+        # objective ULP (the objective is rounded to 1e-4).
+        if trial_obj is not None and calibration.accept_step(
+            best_hold_obj, trial_obj, tol=-CALIBRATION_MIN_IMPROVEMENT
+        ):
+            cum = trial_cum
+            best_df = trial_df
+            best_hold_obj = trial_obj
+            best_fit_ev = calibration.evaluate(_match_counts(fit_stations, link_attrs, trial_vol))
+            best_hold_ev = trial_hold
+            accepted += 1
+            log += (f"  iter {it + 1}: accepted (holdout median APE {trial_hold['median_ape']}%, "
+                    f"factors { {k: round(v, 3) for k, v in cum.items()} }).\n")
+        else:
+            log += f"  iter {it + 1}: rejected (no strict holdout improvement); stopping.\n"
+            break
+
+    # Only claim the calibrated tier when the holdout GENUINELY improved.
+    if accepted == 0 or best_hold_obj >= base_hold_obj:
+        log += "Calibration: no step improved the holdout; keeping the uncalibrated screening result.\n"
+        return None, log
+
+    # Persist the calibrated link volumes (distinct artifact; the screening
+    # link_volumes.csv is untouched).
+    cal_csv = os.path.join(out_dir, "link_volumes_calibrated.csv")
+    best_df.to_csv(cal_csv)
+    log += (f"Calibration complete: {accepted} accepted step(s). Holdout median APE "
+            f"{base_hold['median_ape']}% -> {best_hold_ev['median_ape']}%.\n")
+    return {
+        "method": (
+            "Stage-1 count calibration: per-road-class free-flow speed + capacity tuned toward "
+            "observed AADT, re-running BFW equilibrium each iteration; a step is kept only if it "
+            "improves a held-out (never-fit) count set. Screening-grade calibrated result — the "
+            "OD-based resident_vmt (CEQA input) is unchanged."
+        ),
+        "accepted_iterations": accepted,
+        "applied_class_factors": {k: round(v, 4) for k, v in cum.items()},
+        "holdout_station_count": len(holdout_stations),
+        "fit_station_count": len(fit_stations),
+        "baseline": {"fit": base_fit, "holdout": base_hold},
+        "calibrated": {"fit": best_fit_ev, "holdout": best_hold_ev},
+        "holdout_station_ids": sorted(str(s.get("station_id")) for s in holdout_stations),
+        "calibrated_link_volumes": os.path.basename(cal_csv),
+    }, log
 
 
 # ─── Stage 2: Network Assignment ───────────────────────────────────────
@@ -1066,6 +1273,22 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                     f"{max(s['through_share'] for s in reached):.0%}.\n"
                 )
 
+    # ── Count-based calibration (OPT-IN, off by default) ──────────────────
+    # Stage 1 of the staged method: tune per-ROAD-CLASS free-flow speed +
+    # capacity toward observed counts, re-running equilibrium assignment each
+    # iteration and accepting a step ONLY if it improves a held-out (never-fit)
+    # count set — the honest out-of-sample accuracy and the overfit guard. The
+    # OD-based resident_vmt (CEQA input) is never touched; calibrated outputs
+    # get distinct KPI names. Bounded compute (one execute per iteration).
+    calibration_result = None
+    if CALIBRATION_ENABLED and COUNT_VALIDATION_ENABLED and os.path.exists(VALIDATION_COUNTS_PATH):
+        try:
+            calibration_result, log = _run_calibration(
+                proj_dir, out_dir, graph, resident_mat, external_mat, results_df, log,
+            )
+        except Exception as e:
+            log += f"Calibration warning ({e}); keeping the uncalibrated screening result.\n"
+
     project.close()
 
     log += f"Converged: gap={rgap:.6f}, iterations={iters}\n"
@@ -1085,6 +1308,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
         "loaded_links": loaded_links,
         "convergence_diagnostic": convergence_diag,
         "select_link_analysis": select_link_analysis,
+        "calibration": calibration_result,
         "log": log,
     }
 
@@ -1202,6 +1426,7 @@ def stage_artifacts(
     # ── Daily VMT (Σ link volume × length in miles) and per-capita VMT ──
     db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
     link_volumes_csv = os.path.join(out_dir, "link_volumes.csv")
+    calibration_result = assign_result.get("calibration")
     daily_vmt = None
     vmt_per_capita = None
     population_total = None
@@ -1221,6 +1446,20 @@ def stage_artifacts(
         )
     except Exception as e:
         log += f"VMT computation warning: {e}\n"
+
+    # Calibrated network VMT — from the calibrated link volumes, under a DISTINCT
+    # KPI name so it never feeds the CEQA screen (which reads exact screening
+    # names). None unless calibration ran and improved the holdout.
+    daily_vmt_calibrated = None
+    if calibration_result and calibration_result.get("calibrated_link_volumes"):
+        try:
+            cal_csv = os.path.join(out_dir, calibration_result["calibrated_link_volumes"])
+            _cvmt = compute_daily_vmt(db_path, cal_csv)
+            if _cvmt is not None:
+                daily_vmt_calibrated = round(_cvmt, 1)
+                log += f"Calibrated daily VMT: {daily_vmt_calibrated:,.0f} vehicle-miles (network, distinct from the CEQA input).\n"
+        except Exception as e:
+            log += f"Calibrated VMT computation warning: {e}\n"
 
     # ── Per-class network VMT (M7): the 2-class assignment leaves resident_tot /
     # external_tot flow columns on link_volumes.csv; flow × routed link length
@@ -1442,8 +1681,9 @@ def stage_artifacts(
     # this run — the same tables the county lane populates.
     try:
         _ws_id = (sb_get_run(run_id) or {}).get("workspace_id")
-        write_model_run_modeling_evidence(run_id, _ws_id, validation)
-        log += f"Modeling claim spine updated (gate '{(validation or {}).get('screening_gate', 'unvalidated')}').\n"
+        write_model_run_modeling_evidence(run_id, _ws_id, validation, calibration_result)
+        _tier = "calibrated_to_counts" if calibration_result else (validation or {}).get("screening_gate", "unvalidated")
+        log += f"Modeling claim spine updated (tier '{_tier}').\n"
     except Exception as e:
         log += f"Modeling evidence spine warning: {e}\n"
 
@@ -1502,6 +1742,10 @@ def stage_artifacts(
         # assigned demand — not a calibration; None where no counts define
         # corridor screenlines for this study area.
         "select_link": select_link_analysis,
+        # Opt-in count calibration (None on the default screening path). Carries
+        # the applied per-class factors + baseline/calibrated fit & holdout
+        # accuracy. Calibrated VMT is under distinct KPI names, not the CEQA input.
+        "calibration": calibration_result,
         "gateways": gateways,
         # TAZ resolution the dynamic package was actually built at (post any
         # tract fallback), with its OD-seed provenance. None fields for
@@ -1600,6 +1844,16 @@ def stage_artifacts(
         kpis.append(("general", "daily_vmt", "Daily VMT", daily_vmt, "vehicle-miles/day"))
     if vmt_per_capita is not None:
         kpis.append(("general", "vmt_per_capita", "VMT per Capita", vmt_per_capita, "vehicle-miles/person/day"))
+    # Calibrated network VMT + calibrated holdout accuracy (opt-in calibration).
+    # DISTINCT names, deliberately absent from every CEQA_* exact-name set so the
+    # §15064.3 screen keeps using the uncalibrated screening VMT — calibrated VMT
+    # is a separate, disclosed result, not the CEQA input.
+    if daily_vmt_calibrated is not None:
+        kpis.append(("general", "daily_vmt_calibrated", "Daily VMT (calibrated to counts)", daily_vmt_calibrated, "vehicle-miles/day"))
+    if calibration_result:
+        _cal_hold = (calibration_result.get("calibrated") or {}).get("holdout") or {}
+        if _cal_hold.get("median_ape") is not None:
+            kpis.append(("assignment", "validation_median_ape_calibrated", "Calibrated Holdout Median APE", _cal_hold["median_ape"], "percent"))
     # Resident (internal→internal, gateway-excluded) VMT — the CEQA §15064.3
     # number the screen prefers. Same estimator as the county lane and seed.
     if resident_vmt is not None:
@@ -1789,6 +2043,15 @@ def stage_artifacts(
                     "the split is as good as the documented cordon gateway assumptions."
                 ),
                 "screenlines": sl_reached,
+            }
+        elif name in ("daily_vmt_calibrated", "validation_median_ape_calibrated") and calibration_result:
+            kpi_payload["breakdown_json"] = {
+                "provenance": calibration_result.get("method"),
+                "applied_class_factors": calibration_result.get("applied_class_factors"),
+                "accepted_iterations": calibration_result.get("accepted_iterations"),
+                "baseline_holdout_median_ape": (calibration_result.get("baseline") or {}).get("holdout", {}).get("median_ape"),
+                "calibrated_holdout_median_ape": (calibration_result.get("calibrated") or {}).get("holdout", {}).get("median_ape"),
+                "holdout_station_count": calibration_result.get("holdout_station_count"),
             }
         elif name in (
             "auto_mode_share_pct", "transit_mode_share_pct", "active_mode_share_pct",

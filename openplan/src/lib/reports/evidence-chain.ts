@@ -83,9 +83,11 @@ export function buildEvidenceChainSummary(input: {
         ? formatModelingClaimStatusLabel("prototype_only")
         : modelingEvidenceClaimStatuses.includes("screening_grade")
           ? formatModelingClaimStatusLabel("screening_grade")
-          : modelingEvidenceClaimStatuses.includes("claim_grade_passed")
-            ? formatModelingClaimStatusLabel("claim_grade_passed")
-            : "No claim decision";
+          : modelingEvidenceClaimStatuses.includes("calibrated_to_counts")
+            ? formatModelingClaimStatusLabel("calibrated_to_counts")
+            : modelingEvidenceClaimStatuses.includes("claim_grade_passed")
+              ? formatModelingClaimStatusLabel("claim_grade_passed")
+              : "No claim decision";
 
   return {
     linkedRunCount: input.linkedRunCount,

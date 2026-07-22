@@ -15,6 +15,7 @@ export type ReportModelingEvidence = {
 
 export function formatModelingClaimStatusLabel(status: ModelingClaimStatus): string {
   if (status === "claim_grade_passed") return "Claim-grade passed";
+  if (status === "calibrated_to_counts") return "Calibrated to counts";
   if (status === "screening_grade") return "Screening-grade";
   return "Prototype-only";
 }
@@ -114,7 +115,10 @@ export type PlannerReadableModelingEvidenceSummary = {
 const MODELING_CLAIM_STATUS_RANK: Record<ModelingClaimStatus, number> = {
   prototype_only: 0,
   screening_grade: 1,
-  claim_grade_passed: 2,
+  // Calibrated is stronger than uncalibrated screening; a county-lane
+  // claim_grade_passed (full validation-threshold pass) still ranks highest.
+  calibrated_to_counts: 2,
+  claim_grade_passed: 3,
 };
 
 function strongestClaimStatus(statuses: ModelingClaimStatus[]): ModelingClaimStatus | null {
@@ -172,15 +176,22 @@ export function buildPlannerReadableModelingEvidenceSummary(
   const fallbackStatusLabel = strongestStatus ? formatModelingClaimStatusLabel(strongestStatus) : "Evidence linked";
   const statusLabel = leadingDecision ? formatModelingClaimStatusLabel(leadingDecision.claimStatus) : fallbackStatusLabel;
   const label = `${linkedRunCount} linked modeling ${linkedRunCount === 1 ? "run" : "runs"} · strongest: ${fallbackStatusLabel}`;
-  const tone = strongestStatus === "claim_grade_passed" ? "success" : strongestStatus ? "warning" : "neutral";
+  const tone =
+    strongestStatus === "claim_grade_passed" || strongestStatus === "calibrated_to_counts"
+      ? "success"
+      : strongestStatus
+        ? "warning"
+        : "neutral";
   const headline =
     strongestStatus === "claim_grade_passed"
       ? "Modeling evidence is ready for supervised planning citation when cited with its validation table."
-      : strongestStatus === "screening_grade"
-        ? "Modeling evidence is suitable for planning context only."
-        : strongestStatus === "prototype_only"
-          ? "Modeling evidence is prototype-only and should not support outward planning claims."
-          : "Modeling evidence is linked, but claim status has not been recorded.";
+      : strongestStatus === "calibrated_to_counts"
+        ? "Modeling evidence is calibrated to observed traffic counts and reports held-out validation accuracy; calibrated VMT is separate from the screening CEQA input."
+        : strongestStatus === "screening_grade"
+          ? "Modeling evidence is suitable for planning context only."
+          : strongestStatus === "prototype_only"
+            ? "Modeling evidence is prototype-only and should not support outward planning claims."
+            : "Modeling evidence is linked, but claim status has not been recorded.";
   const plannerReadout = `${statusLabel}${leadingPlace ? ` for ${leadingPlace}` : ""}; ${totalSourceCount} public ${
     totalSourceCount === 1 ? "source" : "sources"
   } and ${totalValidationCheckCount} validation ${totalValidationCheckCount === 1 ? "check" : "checks"} are attached.`;
