@@ -222,8 +222,9 @@ export function StudyAreaPicker({
           {summary.areaKm2 !== null && summary.areaKm2 > LARGE_AREA_KM2 ? (
             <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-              Large study area. Run this with the <strong>AequilibraE (Fast Screening)</strong> engine — the in-process
-              sketch model caps at 150 tracts, and a metro-scale run can take several minutes.
+              Large study area — best run on the <strong>AequilibraE (Fast Screening)</strong> engine. A metro-scale
+              sketch run exceeds the 150-tract in-process cap and is routed to the AequilibraE worker automatically;
+              expect a few minutes either way.
             </p>
           ) : null}
         </div>

@@ -471,7 +471,7 @@ describe("/api/models/[modelId]/runs", () => {
     );
   });
 
-  it("fails the run with 422 when the study area exceeds the 150-tract sketch zone cap", async () => {
+  it("reroutes to the AequilibraE worker when the study area exceeds the 150-tract sketch zone cap", async () => {
     fetchCensusForCorridorMock.mockResolvedValue({
       tracts: Array.from({ length: 151 }, (_, index) => ({
         geoid: `06021${String(index + 1).padStart(6, "0")}`,
@@ -487,21 +487,59 @@ describe("/api/models/[modelId]/runs", () => {
       { params: Promise.resolve({ modelId: MODEL_ID }) }
     );
 
-    expect(response.status).toBe(422);
-    const payload = (await response.json()) as { error: string };
-    expect(payload.error).toContain("151 census tracts");
-    expect(payload.error).toContain("caps at 150");
-    expect(payload.error).toContain("draw a smaller corridor");
+    // Non-silent handoff, not a 422 refusal: the run is queued on the worker.
+    expect(response.status).toBe(201);
+    const payload = (await response.json()) as {
+      status?: string;
+      engineKey?: string;
+      reroutedFrom?: string;
+      reason?: string;
+      notice?: string;
+    };
+    expect(payload.status).toBe("queued");
+    expect(payload.engineKey).toBe("aequilibrae");
+    expect(payload.reroutedFrom).toBe("sketch_abm");
+    expect(payload.reason).toBe("large_study_area");
+    expect(payload.notice).toContain("151 census tracts");
+    expect(payload.notice).toContain("AequilibraE");
 
-    // The run row is honestly marked failed; no KPIs and no usage event.
+    // The run row is flipped to a queued aequilibrae run with stamped provenance.
     expect(modelRunUpdateMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        status: "failed",
-        error_message: expect.stringContaining("caps at 150"),
+        engine_key: "aequilibrae",
+        status: "queued",
+        started_at: null,
+        input_snapshot_json: expect.objectContaining({
+          reroutedFromEngine: "sketch_abm",
+          rerouteReason: "large_study_area",
+          requestedTractCount: 151,
+        }),
+        result_summary_json: expect.objectContaining({
+          rerouted_from: "sketch_abm",
+          reroute_reason: "large_study_area",
+        }),
       })
     );
+
+    // Worker stages are queued; no sketch KPIs; the launch is metered once.
+    expect(modelRunStagesInsertMock).toHaveBeenCalledTimes(1);
+    const stages = modelRunStagesInsertMock.mock.calls[0][0] as Array<{ stage_name: string }>;
+    expect(stages.map((s) => s.stage_name)).toEqual([
+      "AequilibraE Setup",
+      "Network Assignment",
+      "Artifact Extraction",
+    ]);
     expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
-    expect(recordUsageEventBestEffortMock).not.toHaveBeenCalled();
+    expect(recordUsageEventBestEffortMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata: expect.objectContaining({ engineKey: "aequilibrae", reroutedFrom: "sketch_abm" }),
+      }),
+      expect.anything()
+    );
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "sketch_abm_rerouted_to_worker",
+      expect.objectContaining({ modelId: MODEL_ID, tractCount: 151 })
+    );
   });
 
   it("gates the sketch branch behind an active subscription with 402", async () => {

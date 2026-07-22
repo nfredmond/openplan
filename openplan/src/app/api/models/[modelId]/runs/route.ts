@@ -111,10 +111,11 @@ type ScenarioEntryRow = {
 /** Kilometres → miles for the sketch VMT KPI derivation. */
 const KM_TO_MILES = 0.621371;
 
-/** Hard cap on census-tract zones for the synchronous in-process sketch
- * lane. Skim building is O(zones²) and the run executes inside the request
- * cycle, so larger study areas must be redrawn smaller instead of silently
- * degrading. */
+/** Cap on census-tract zones for the synchronous in-process sketch lane.
+ * Skim building is O(zones²) and the run executes inside the request cycle,
+ * so a study area above this size is handed off to the async AequilibraE
+ * worker (which has no zone cap) rather than run in-process — see the reroute
+ * in the sketch branch below. */
 const SKETCH_ABM_MAX_ZONES = 150;
 
 /**
@@ -486,6 +487,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const isBehavioralDemandRun = launchPayload.engineKey === "behavioral_demand";
     const isSketchAbmRun = launchPayload.engineKey === "sketch_abm";
 
+    // Immutable input snapshot for the run row. Extracted so the sketch lane
+    // can reuse it verbatim when a large study area is rerouted to the worker.
+    const baseInputSnapshot: Record<string, unknown> = {
+      modelId: access.model.id,
+      modelTitle: access.model.title,
+      modelFamily: access.model.model_family ?? null,
+      configVersion: access.model.config_version ?? null,
+      launchedAt,
+      // The worker reads this to size the dynamic package's TAZs; stamped
+      // only for the engine that consumes it so other engines' snapshots
+      // don't carry a dead option.
+      ...(isAequilibraeRun && parsed.data.zoneGeography
+        ? { zoneGeography: parsed.data.zoneGeography }
+        : {}),
+    };
+
     if (isBehavioralDemandRun) {
       audit.info("behavioral_demand_launch_blocked", {
         modelId: access.model.id,
@@ -579,19 +596,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       run_title: launchTitle,
       query_text: launchPayload.queryText,
       corridor_geojson: launchPayload.corridorGeojson,
-      input_snapshot_json: {
-        modelId: access.model.id,
-        modelTitle: access.model.title,
-        modelFamily: access.model.model_family ?? null,
-        configVersion: access.model.config_version ?? null,
-        launchedAt,
-        // The worker reads this to size the dynamic package's TAZs; stamped
-        // only for the engine that consumes it so other engines' snapshots
-        // don't carry a dead option.
-        ...(isAequilibraeRun && parsed.data.zoneGeography
-          ? { zoneGeography: parsed.data.zoneGeography }
-          : {}),
-      },
+      input_snapshot_json: baseInputSnapshot,
       assumption_snapshot_json: launchPayload.assumptionSnapshot,
       started_at: isAequilibraeRun ? null : launchedAt,
       created_by: user.id,
@@ -663,24 +668,126 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
 
         if (census.tracts.length > SKETCH_ABM_MAX_ZONES) {
-          const zoneCapMessage = `Study area resolves to ${census.tracts.length} census tracts; the in-process sketch lane caps at ${SKETCH_ABM_MAX_ZONES} — draw a smaller corridor.`;
-          await supabase
+          // Metro-scale study area: the synchronous in-process sketch lane caps
+          // at SKETCH_ABM_MAX_ZONES zones (O(zones²) skim, runs inside the
+          // request cycle). Rather than refuse a real agency's own city, hand
+          // the run off to the async AequilibraE fast-screening worker, which
+          // builds its own corridor-scaled network and has no zone cap. The
+          // handoff is NOT silent — it is stamped into the run's input/result
+          // provenance, audit-logged, and echoed to the caller so the run
+          // history reads "requested sketch, ran on the worker (large area)".
+          const rerouteNotice =
+            `Study area resolves to ${census.tracts.length} census tracts; the fast in-process sketch lane caps at ${SKETCH_ABM_MAX_ZONES}. ` +
+            `This run was routed to the AequilibraE fast-screening worker (no zone cap) — expect a longer runtime.`;
+          const reroutedAt = new Date().toISOString();
+
+          const { error: rerouteUpdateError } = await supabase
             .from("model_runs")
             .update({
-              status: "failed",
-              error_message: zoneCapMessage,
-              completed_at: new Date().toISOString(),
+              engine_key: "aequilibrae",
+              status: "queued",
+              started_at: null,
+              input_snapshot_json: {
+                ...baseInputSnapshot,
+                reroutedFromEngine: "sketch_abm",
+                rerouteReason: "large_study_area",
+                requestedTractCount: census.tracts.length,
+                sketchZoneCap: SKETCH_ABM_MAX_ZONES,
+                reroutedAt,
+              },
+              result_summary_json: {
+                engine: "aequilibrae",
+                rerouted_from: "sketch_abm",
+                reroute_reason: "large_study_area",
+                note: rerouteNotice,
+              },
             })
             .eq("id", modelRunId);
 
-          audit.warn("sketch_abm_zone_cap_exceeded", {
+          if (rerouteUpdateError) {
+            await supabase
+              .from("model_runs")
+              .update({
+                status: "failed",
+                error_message: "Failed to reroute large sketch study area to the AequilibraE worker",
+                completed_at: new Date().toISOString(),
+              })
+              .eq("id", modelRunId);
+
+            audit.error("sketch_abm_reroute_update_failed", {
+              modelId: access.model.id,
+              modelRunId,
+              message: rerouteUpdateError.message,
+              code: rerouteUpdateError.code ?? null,
+            });
+            return NextResponse.json(
+              { error: "Failed to reroute large study area to the AequilibraE worker" },
+              { status: 500 }
+            );
+          }
+
+          const { error: rerouteStageError } = await supabase.from("model_run_stages").insert([
+            { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
+            { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
+            { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
+          ]);
+
+          if (rerouteStageError) {
+            await supabase
+              .from("model_runs")
+              .update({
+                status: "failed",
+                error_message: "Failed to initialize AequilibraE run stages after reroute",
+                completed_at: new Date().toISOString(),
+              })
+              .eq("id", modelRunId);
+
+            audit.error("sketch_abm_reroute_stage_insert_failed", {
+              modelId: access.model.id,
+              modelRunId,
+              message: rerouteStageError.message,
+              code: rerouteStageError.code ?? null,
+            });
+            return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+          }
+
+          audit.info("sketch_abm_rerouted_to_worker", {
             modelId: access.model.id,
             modelRunId,
             tractCount: census.tracts.length,
             maxZones: SKETCH_ABM_MAX_ZONES,
+            durationMs: Date.now() - startedAt,
           });
 
-          return NextResponse.json({ error: zoneCapMessage }, { status: 422 });
+          await recordUsageEventBestEffort(
+            {
+              workspaceId: access.model.workspace_id,
+              eventKey: "model_run.launch",
+              bucketKey: "runs",
+              weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
+              sourceRoute: "/api/models/[modelId]/runs",
+              idempotencyKey: `model_run:${modelRunId}:launch`,
+              metadata: {
+                modelId: access.model.id,
+                modelRunId,
+                engineKey: "aequilibrae",
+                reroutedFrom: "sketch_abm",
+              },
+            },
+            audit
+          );
+
+          return NextResponse.json(
+            {
+              modelRunId,
+              status: "queued",
+              engineKey: "aequilibrae",
+              reroutedFrom: "sketch_abm",
+              reason: "large_study_area",
+              notice: rerouteNotice,
+            },
+            { status: 201 }
+          );
         }
 
         const lodes = await fetchLODESForCorridor(

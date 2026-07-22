@@ -245,6 +245,10 @@ export function ModelRunManager({
   const [zoneGeography, setZoneGeography] = useState<"tract" | "block_group">("tract");
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Non-silent handoff notice — e.g. a large sketch study area rerouted to the
+  // async AequilibraE worker. Surfaced immediately so the operator knows why a
+  // "fast" run is now queued on the worker.
+  const [launchNotice, setLaunchNotice] = useState<string | null>(null);
 
   const selectedScenarioEntry = useMemo(
     () => scenarioEntries.find((entry) => entry.id === scenarioEntryId) ?? null,
@@ -255,6 +259,7 @@ export function ModelRunManager({
 
   async function handleLaunch() {
     setError(null);
+    setLaunchNotice(null);
     setIsLaunching(true);
 
     try {
@@ -279,9 +284,13 @@ export function ModelRunManager({
         }),
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as { error?: string; notice?: string };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to launch managed model run");
+      }
+
+      if (typeof payload.notice === "string" && payload.notice.trim()) {
+        setLaunchNotice(payload.notice.trim());
       }
 
       router.refresh();
@@ -507,6 +516,12 @@ export function ModelRunManager({
           {error ? (
             <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
               {error}
+            </p>
+          ) : null}
+
+          {launchNotice ? (
+            <p className="rounded-[0.5rem] border border-sky-300/80 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200">
+              {launchNotice}
             </p>
           ) : null}
 
