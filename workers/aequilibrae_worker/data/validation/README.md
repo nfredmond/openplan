@@ -13,6 +13,26 @@ observed counts, never a calibration or a validated forecast.
 | `nevada_county_priority_counts.csv` | 5 (3 in the Grass Valley corridor) | The original hand-picked priority validation points. **Unchanged** — the current screening baseline. |
 | `nevada_county_aadt_2023_expanded.csv` | 24 | Full corridor AADT set for **calibration work** (a defensible calibration needs many independent counts + a holdout, not 3 points). Not wired into any default run. |
 | `nevada_county_aadt_2023_caltrans_raw.geojson` | 26 raw points | The unmodified Caltrans FeatureServer response, as provenance. |
+| `el_dorado_aadt_2023.csv` | 27 | **Second-area (non-Nevada) count set**, El Dorado County / Placerville (US-50, SR-49/153/193). Evidence that the whole stack is geo-general: a real dynamic run there calibrated held-out median APE 62.2% → 51.2% with zero code change. Produced via the multi-state count-source registry. |
+
+## Multi-state count sourcing
+
+The screening model is geo-general (any US corridor). Counts come from state DOT
+AADT FeatureServers via a small registry — `scripts/modeling/count_sources.py`.
+Caltrans (region `CA`) is wired; **adding a state is one registry entry** (its
+FeatureServer `/query` URL + a field map), then it fetches automatically:
+
+```bash
+workers/aequilibrae_worker/.venv311/bin/python scripts/modeling/build_expanded_aadt_counts.py \
+  --fetch-bbox "<minlon,minlat,maxlon,maxlat>" --region CA \
+  --db <a built runs/<id>/aeq_project/project_database.sqlite> \
+  --out <counts.csv>
+```
+
+A single national source (FHWA HPMS) is NOT included — HPMS ships as bulk
+per-state shapefiles / functional-system linework, not a clean bbox API, so a
+national ingest is a larger follow-up. The per-state FeatureServer path covers
+any state that publishes one (most do).
 
 ## Source (100% real — nothing synthesized)
 
