@@ -53,13 +53,14 @@ describe("model run launch helpers", () => {
     expect(payload.engineKey).toBe("deterministic_corridor_v1");
   });
 
-  it("defines behavioral demand as a prototype/preflight-backed run mode", () => {
+  it("defines behavioral demand as a launchable preflight run mode (not a forecast)", () => {
     const runMode = getManagedRunModeDefinition("behavioral_demand");
 
     expect(runMode.label).toBe("Behavioral Demand");
-    expect(runMode.availability).toBe("prototype");
+    // Launchable as a preflight, but honestly badged — never a forecast tier.
+    expect(runMode.availability).toBe("preflight");
     expect(runMode.runtimeExpectation).toContain("tens of minutes to hours");
-    expect(runMode.caveatSummary).toContain("prototype/preflight-backed");
+    expect(runMode.caveatSummary).toContain("NOT a behavioral forecast");
   });
 
   it("registers the managed run modes in order", () => {

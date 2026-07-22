@@ -197,19 +197,36 @@ describe("/api/models/[modelId]/runs", () => {
     });
   });
 
-  it("returns an honest prototype message for behavioral demand launch attempts", async () => {
+  it("enqueues behavioral demand as an async ActivitySim preflight (not a forecast)", async () => {
     const response = await postModelRun(
       launchRequest({ engineKey: "behavioral_demand" }),
       { params: Promise.resolve({ modelId: MODEL_ID }) }
     );
 
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(201);
     expect(await response.json()).toMatchObject({
-      error: expect.stringContaining("prototype/preflight-backed"),
-      runMode: "Behavioral Demand",
-      runtimeExpectation: expect.stringContaining("tens of minutes to hours"),
-      caveat: expect.stringContaining("prototype/preflight-backed"),
+      modelRunId: expect.any(String),
+      status: "queued",
+      engineKey: "behavioral_demand",
+      mode: "preflight",
     });
+
+    // The run row is queued (worker-backed), never started in-process.
+    expect(modelRunInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        engine_key: "behavioral_demand",
+        status: "queued",
+        started_at: null,
+      })
+    );
+
+    // Stages are named honestly for a PREFLIGHT — never "run demand model".
+    expect(modelRunStagesInsertMock).toHaveBeenCalledTimes(1);
+    const stages = modelRunStagesInsertMock.mock.calls[0][0] as Array<{ stage_name: string }>;
+    expect(stages.map((s) => s.stage_name)).toEqual([
+      "ActivitySim Bundle Preflight",
+      "Runtime Staging & Readiness",
+    ]);
   });
 
   it("runs the sketch activity model in-process and records screening KPIs", async () => {

@@ -18,6 +18,7 @@ import string
 import hashlib
 import re
 import tempfile
+import urllib.parse
 from collections import deque
 from datetime import datetime, timezone
 from typing import Tuple
@@ -2661,15 +2662,28 @@ def mark_stage_skipped(stage: dict, reason: str):
     })
 
 
+# This worker owns exactly these stage names. Other workers (e.g. the
+# ActivitySim behavioral-preflight worker) poll the same model_run_stages table,
+# so the poll query is scoped by name — otherwise this worker would claim a
+# behavioral ActivitySim stage it has no code to run. A behavioral_demand run's
+# screening portion reuses these same names, so those stages are still claimed.
+AEQ_STAGE_NAMES = ("AequilibraE Setup", "Network Assignment", "Artifact Extraction")
+_AEQ_STAGE_FILTER = "stage_name=" + urllib.parse.quote(
+    "in.(" + ",".join(f'"{name}"' for name in AEQ_STAGE_NAMES) + ")",
+    safe="().,",
+)
+
+
 def poll_for_jobs():
     print(f"AequilibraE Worker started at {time.strftime('%c')}")
-    print(f"Polling {SUPABASE_URL} for queued stages...")
+    print(f"Polling {SUPABASE_URL} for queued stages (owned: {', '.join(AEQ_STAGE_NAMES)})...")
 
     while True:
         try:
             url = (
                 f"{SUPABASE_URL}/rest/v1/model_run_stages"
-                "?status=eq.queued&select=id,run_id,stage_name,status,sort_order,created_at&order=created_at.asc,sort_order.asc&limit=25"
+                f"?status=eq.queued&{_AEQ_STAGE_FILTER}"
+                "&select=id,run_id,stage_name,status,sort_order,created_at&order=created_at.asc,sort_order.asc&limit=25"
             )
             res = requests.get(url, headers=HEADERS, timeout=30)
             if res.status_code != 200:

@@ -18,7 +18,10 @@ export type ManagedRunModeDefinition = {
   runtimeExpectation: string;
   caveatSummary: string;
   comparisonMessage: string;
-  availability: "launchable" | "prototype";
+  // "launchable" = full managed run. "preflight" = launchable, but produces an
+  // honest input-validation / runtime-staging PREFLIGHT, never a forecast (the
+  // UI badges it distinctly). "prototype" = surfaced but launch disabled.
+  availability: "launchable" | "prototype" | "preflight";
 };
 
 export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
@@ -50,16 +53,16 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     key: "behavioral_demand",
     label: "Behavioral Demand",
     shortLabel: "Behavioral Demand",
-    launchLabel: "Behavioral Demand (ActivitySim prototype / preflight-backed)",
+    launchLabel: "Launch preflight run (ActivitySim input validation & runtime staging)",
     engineLabel: "Behavioral Demand",
-    summaryDetail: "Planner-facing ActivitySim-backed run class with prototype/preflight status messaging.",
+    summaryDetail: "Planner-facing ActivitySim-backed run class. Launching runs an input-validation & runtime-staging preflight, not a behavioral forecast.",
     runtimeExpectation:
-      "Expected runtime is materially longer than screening, often tens of minutes to hours once a full ActivitySim runtime is enabled.",
+      "The preflight completes asynchronously in minutes. A calibrated behavioral run is materially longer (tens of minutes to hours) and requires a dedicated modeling host.",
     caveatSummary:
-      "Current OpenPlan posture is prototype/preflight-backed only. Do not read this as calibrated behavioral forecasting, county-transferable validation, or client-ready demand prediction.",
+      "Launching this validates inputs and stages the ActivitySim runtime — it is NOT a behavioral forecast. Do not read preflight or uncalibrated output as calibrated behavioral forecasting, county-transferable validation, or client-ready demand prediction.",
     comparisonMessage:
-      "Comparison surfaces behavioral artifacts and KPI summaries when present. Where the prototype lane only reaches preflight or partial ingestion, comparison stays caveated instead of implying full run-to-run parity.",
-    availability: "prototype",
+      "Comparison surfaces behavioral artifacts and KPI summaries when present. Where the lane only reaches preflight or partial ingestion, comparison stays caveated instead of implying full run-to-run parity.",
+    availability: "preflight",
   },
   {
     key: "sketch_abm",

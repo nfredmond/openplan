@@ -10,6 +10,7 @@ const runMaybeSingleMock = vi.fn();
 const runUpdateMock = vi.fn();
 const stageSelectEqMock = vi.fn();
 const stageUpdateMock = vi.fn();
+const stageInsertMock = vi.fn();
 const artifactDeleteEqMock = vi.fn();
 const kpiDeleteEqMock = vi.fn();
 
@@ -38,6 +39,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "model_run_stages") {
     return {
       select: vi.fn(() => ({ eq: stageSelectEqMock })),
+      insert: (payload: unknown) => stageInsertMock(payload),
       update: (payload: Record<string, unknown>) => ({
         eq: (..._args: unknown[]) => stageUpdateMock(payload),
       }),
@@ -119,6 +121,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
     runUpdateMock.mockResolvedValue({ error: null });
     stageSelectEqMock.mockResolvedValue({ data: [{ id: "stage-1" }], error: null });
     stageUpdateMock.mockResolvedValue({ error: null });
+    stageInsertMock.mockResolvedValue({ error: null });
     artifactDeleteEqMock.mockResolvedValue({ error: null });
     kpiDeleteEqMock.mockResolvedValue({ error: null });
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
@@ -163,6 +166,36 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
     });
     const sketchRes = await relaunchRun(request(), routeContext());
     expect(sketchRes.status).toBe(409);
+  });
+
+  it("re-queues a failed behavioral_demand preflight (async engine), resetting its stages", async () => {
+    runMaybeSingleMock.mockResolvedValue({
+      data: { id: MODEL_RUN_ID, status: "failed", engine_key: "behavioral_demand" },
+      error: null,
+    });
+    const res = await relaunchRun(request(), routeContext());
+    expect(res.status).toBe(200);
+    expect(runUpdateMock).toHaveBeenCalledTimes(1);
+    expect((runUpdateMock.mock.calls[0][0] as Record<string, unknown>).status).toBe("queued");
+    // Existing stages are reset, not re-created.
+    expect(stageUpdateMock).toHaveBeenCalledTimes(1);
+    expect(stageInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("creates behavioral preflight stages (not AequilibraE stages) when a behavioral run has none", async () => {
+    runMaybeSingleMock.mockResolvedValue({
+      data: { id: MODEL_RUN_ID, status: "failed", engine_key: "behavioral_demand" },
+      error: null,
+    });
+    stageSelectEqMock.mockResolvedValue({ data: [], error: null }); // no existing stages
+    const res = await relaunchRun(request(), routeContext());
+    expect(res.status).toBe(200);
+    expect(stageInsertMock).toHaveBeenCalledTimes(1);
+    const stages = stageInsertMock.mock.calls[0][0] as Array<{ stage_name: string }>;
+    expect(stages.map((s) => s.stage_name)).toEqual([
+      "ActivitySim Bundle Preflight",
+      "Runtime Staging & Readiness",
+    ]);
   });
 
   it("refuses to relaunch a running or succeeded run", async () => {

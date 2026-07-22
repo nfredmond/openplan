@@ -503,26 +503,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         : {}),
     };
 
-    if (isBehavioralDemandRun) {
-      audit.info("behavioral_demand_launch_blocked", {
-        modelId: access.model.id,
-        userId: user.id,
-        runMode: launchPayload.engineKey,
-        durationMs: Date.now() - startedAt,
-      });
-
-      return NextResponse.json(
-        {
-          error:
-            "Behavioral Demand is currently surfaced as a prototype/preflight-backed run mode. Managed launch from this form is not wired through the production model-run API yet.",
-          runMode: runMode.label,
-          runtimeExpectation: runMode.runtimeExpectation,
-          caveat: runMode.caveatSummary,
-        },
-        { status: 409 }
-      );
-    }
-
     // Subscription + quota gate for the synchronous in-process branches only —
     // mirrors /runs/[modelRunId]/launch. The deterministic path is gated by
     // /api/analysis downstream and the aequilibrae path by the launch route,
@@ -592,13 +572,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
       scenario_entry_id: scenarioEntry?.id ?? null,
       engine_key: launchPayload.engineKey || "deterministic_corridor_v1",
       launch_source: scenarioEntry ? "scenario_entry" : "model_detail",
-      status: isAequilibraeRun ? "queued" : "running",
+      // Async worker-backed engines (aequilibrae + behavioral_demand preflight)
+      // enqueue as 'queued' with no started_at; the worker flips them to running.
+      status: isAequilibraeRun || isBehavioralDemandRun ? "queued" : "running",
       run_title: launchTitle,
       query_text: launchPayload.queryText,
       corridor_geojson: launchPayload.corridorGeojson,
       input_snapshot_json: baseInputSnapshot,
       assumption_snapshot_json: launchPayload.assumptionSnapshot,
-      started_at: isAequilibraeRun ? null : launchedAt,
+      started_at: isAequilibraeRun || isBehavioralDemandRun ? null : launchedAt,
       created_by: user.id,
     });
 
@@ -649,6 +631,50 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       return NextResponse.json(
         { modelRunId, status: "queued" },
+        { status: 201 }
+      );
+    }
+
+    if (isBehavioralDemandRun) {
+      // Async ActivitySim behavioral-demand PREFLIGHT. This is NOT a behavioral
+      // forecast: the worker validates the input contract and stages the
+      // ActivitySim runtime, then records an honest readiness/evidence packet.
+      // Stages are named for what actually happens so the planner is never told
+      // a demand model ran. A calibrated behavioral run additionally requires a
+      // dedicated modeling host (see workers/activitysim_worker/DEPLOY.md).
+      const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
+        { run_id: modelRunId, stage_name: "ActivitySim Bundle Preflight", sort_order: 1, status: "queued" },
+        { run_id: modelRunId, stage_name: "Runtime Staging & Readiness", sort_order: 2, status: "queued" },
+      ]);
+
+      if (stageInsertError) {
+        await supabase
+          .from("model_runs")
+          .update({
+            status: "failed",
+            error_message: "Failed to initialize ActivitySim preflight stages",
+            completed_at: new Date().toISOString(),
+          })
+          .eq("id", modelRunId);
+
+        audit.error("model_run_stage_insert_failed", {
+          modelId: access.model.id,
+          modelRunId,
+          message: stageInsertError.message,
+          code: stageInsertError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+      }
+
+      audit.info("behavioral_demand_preflight_enqueued", {
+        modelId: access.model.id,
+        userId: user.id,
+        modelRunId,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json(
+        { modelRunId, status: "queued", engineKey: "behavioral_demand", mode: "preflight" },
         { status: 201 }
       );
     }

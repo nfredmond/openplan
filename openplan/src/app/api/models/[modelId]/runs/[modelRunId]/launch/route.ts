@@ -173,12 +173,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .eq("run_id", modelRun.id);
 
     if (!existingStages || existingStages.length === 0) {
-      // Create initial stages
-      const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
-        { run_id: modelRun.id, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-        { run_id: modelRun.id, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-        { run_id: modelRun.id, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-      ]);
+      // Create initial stages, engine-aware. The behavioral_demand lane runs an
+      // ActivitySim preflight (owned by the activitysim_worker), not the
+      // AequilibraE assignment stages.
+      const initialStages =
+        modelRun.engine_key === "behavioral_demand"
+          ? [
+              { run_id: modelRun.id, stage_name: "ActivitySim Bundle Preflight", sort_order: 1, status: "queued" },
+              { run_id: modelRun.id, stage_name: "Runtime Staging & Readiness", sort_order: 2, status: "queued" },
+            ]
+          : [
+              { run_id: modelRun.id, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
+              { run_id: modelRun.id, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
+              { run_id: modelRun.id, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
+            ];
+      const { error: stageInsertError } = await supabase.from("model_run_stages").insert(initialStages);
 
       if (stageInsertError) {
         audit.error("model_run_stage_insert_failed", {

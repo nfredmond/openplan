@@ -259,7 +259,9 @@ export function ModelRunManager({
     [scenarioEntries, scenarioEntryId]
   );
   const selectedRunMode = useMemo(() => getManagedRunModeDefinition(engineKey), [engineKey]);
-  const launchDisabled = isLaunching || schemaPending || selectedRunMode.availability !== "launchable";
+  // "preflight" is launchable (it runs an honest input-validation / runtime-staging
+  // preflight); only "prototype" keeps the launch button disabled.
+  const launchDisabled = isLaunching || schemaPending || selectedRunMode.availability === "prototype";
 
   async function handleLaunch() {
     setError(null);
@@ -401,7 +403,11 @@ export function ModelRunManager({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <p className="font-semibold text-foreground">{selectedRunMode.label}</p>
                 <StatusBadge tone={selectedRunMode.availability === "launchable" ? "info" : "warning"}>
-                  {selectedRunMode.availability === "launchable" ? "Launchable" : "Prototype surface"}
+                  {selectedRunMode.availability === "launchable"
+                    ? "Launchable"
+                    : selectedRunMode.availability === "preflight"
+                      ? "Preflight"
+                      : "Prototype surface"}
                 </StatusBadge>
               </div>
               <p className="mt-2 text-muted-foreground">{selectedRunMode.summaryDetail}</p>
@@ -529,9 +535,13 @@ export function ModelRunManager({
             </p>
           ) : null}
 
-          {selectedRunMode.availability !== "launchable" ? (
+          {selectedRunMode.availability === "prototype" ? (
             <div className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
               {selectedRunMode.label} is a prototype surface — managed launch from this form is not enabled for it yet. {selectedRunMode.runtimeExpectation} {selectedRunMode.caveatSummary}
+            </div>
+          ) : selectedRunMode.availability === "preflight" ? (
+            <div className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
+              Launching {selectedRunMode.label} runs an input-validation & runtime-staging <span className="font-semibold">preflight</span> — it is <span className="font-semibold">NOT a behavioral forecast</span>. {selectedRunMode.caveatSummary}
             </div>
           ) : null}
 
@@ -539,7 +549,9 @@ export function ModelRunManager({
             {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {selectedRunMode.availability === "launchable"
               ? "Launch managed run"
-              : `${selectedRunMode.label} launch not yet available`}
+              : selectedRunMode.availability === "preflight"
+                ? "Launch preflight run"
+                : `${selectedRunMode.label} launch not yet available`}
           </Button>
         </div>
 
@@ -612,7 +624,7 @@ export function ModelRunManager({
                         <StatusBadge tone="neutral">{labelForEngineKey(run.engine_key)}</StatusBadge>
                         {scenarioLabel ? <StatusBadge tone="neutral">{scenarioLabel}</StatusBadge> : null}
                         {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
-                        {runMode.availability !== "launchable" ? <StatusBadge tone="warning">Prototype / preflight</StatusBadge> : null}
+                        {runMode.availability !== "launchable" ? <StatusBadge tone="warning">{runMode.availability === "preflight" ? "Preflight" : "Prototype / preflight"}</StatusBadge> : null}
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -671,7 +683,12 @@ function ModelRunStagingAndArtifacts({
   artifacts: ModelRunArtifact[];
   comparisonCandidates: ModelRunComparisonCandidate[];
 }) {
-  if (!stages?.length && !artifacts?.length && run.status !== "succeeded" && run.engine_key !== "aequilibrae") {
+  if (
+    !stages?.length &&
+    !artifacts?.length &&
+    run.status !== "succeeded" &&
+    !["aequilibrae", "behavioral_demand"].includes(run.engine_key)
+  ) {
     return null;
   }
 

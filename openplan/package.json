@@ -19,6 +19,7 @@
     "seed:workspace-isolation": "tsx scripts/seed-local-workspace-isolation.ts",
     "seed:nctc": "tsx scripts/seed-nctc-demo.ts",
     "worker:aequilibrae": "bash ../workers/aequilibrae_worker/run.sh",
+    "worker:activitysim": "bash ../workers/activitysim_worker/run.sh",
     "ops:check-admin-operations-smoke": "node scripts/ops/check-admin-operations-smoke-prereqs.mjs",
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",
     "ops:log-prod-health-evidence": "node scripts/ops/log-prod-health-evidence.mjs",
