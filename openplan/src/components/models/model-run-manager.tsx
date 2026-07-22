@@ -237,7 +237,11 @@ export function ModelRunManager({
 }: ModelRunManagerProps) {
   const router = useRouter();
   const [title, setTitle] = useState(`${modelTitle} managed run`);
-  const [queryText, setQueryText] = useState(defaultQueryText);
+  // Non-ITE engines require BOTH a study area AND non-empty query text, so a
+  // brand-new model (empty template) must not default the query box to "" —
+  // that produced a launch 400 that read like a study-area error. Prefill a
+  // sensible screening label; the operator can edit it.
+  const [queryText, setQueryText] = useState(defaultQueryText || `Screening run — ${modelTitle}`);
   const [corridorText, setCorridorText] = useState(defaultCorridorText);
   const [scenarioEntryId, setScenarioEntryId] = useState("");
   const [attachToScenarioEntry, setAttachToScenarioEntry] = useState(true);

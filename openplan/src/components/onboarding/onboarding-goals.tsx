@@ -17,7 +17,7 @@ const GOALS: Goal[] = [
   {
     key: "model",
     title: "Model any place",
-    description: "Run a travel-demand model for any US city, town, CDP, county, or metro area.",
+    description: "Create a travel-demand model, then run it for any US city, town, CDP, county, or metro area.",
     href: "/models",
     icon: MapPin,
   },
