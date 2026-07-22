@@ -28,9 +28,11 @@ off the run path. `GTFS_PATH` / `GTFS_URL` env vars override the bundled feed.
 from __future__ import annotations
 
 import csv
+import hashlib
 import io
 import math
 import os
+import time
 import zipfile
 from typing import Any
 
@@ -151,7 +153,10 @@ def load_feed(path: str | None = None, url: str | None = None) -> TransitLos:
     if url:
         import requests  # lazy
         cache_dir = os.getenv("GTFS_CACHE_DIR", os.path.join(os.path.dirname(_DEFAULT_GTFS_PATH), ".gtfs_cache"))
-        cache_path = os.path.join(cache_dir, "gtfs_feed.zip")
+        # Key the cache by URL — a single fixed filename would serve one place's
+        # feed for another once per-place discovery is on (correctness bug).
+        url_hash = hashlib.md5(url.encode("utf-8")).hexdigest()[:16]
+        cache_path = os.path.join(cache_dir, f"gtfs_feed_{url_hash}.zip")
         if os.path.exists(cache_path) and os.path.getsize(cache_path) > 0:
             with open(cache_path, "rb") as fh:
                 raw = fh.read()
@@ -270,6 +275,99 @@ def load_feed(path: str | None = None, url: str | None = None) -> TransitLos:
         if not los.lines:
             raise GtfsError("GTFS feed produced no usable transit lines on the modeled service day")
     return los
+
+
+# --- Dynamic per-place GTFS discovery (keyless Mobility Database catalog) -----
+
+# MobilityData's published aggregate catalog CSV (keyless, ~3k feeds). Columns
+# include data_type, urls.latest / urls.direct_download, and
+# location.bounding_box.{minimum,maximum}_{latitude,longitude}.
+_MDB_CATALOG_URL = os.getenv("GTFS_CATALOG_URL", "https://bit.ly/catalogs-csv")
+_CATALOG_CACHE_TTL_S = int(os.getenv("GTFS_CATALOG_TTL_S", str(7 * 24 * 3600)))
+
+
+def _load_catalog() -> list[dict[str, Any]]:
+    """Fetch + TTL-cache the keyless MobilityDB catalog CSV as a list of rows."""
+    cache_dir = os.getenv("GTFS_CACHE_DIR", os.path.join(os.path.dirname(_DEFAULT_GTFS_PATH), ".gtfs_cache"))
+    cache_path = os.path.join(cache_dir, "mobilitydb_catalog.csv")
+
+    raw: str | None = None
+    if (
+        os.path.exists(cache_path)
+        and os.path.getsize(cache_path) > 0
+        and (time.time() - os.path.getmtime(cache_path)) < _CATALOG_CACHE_TTL_S
+    ):
+        with open(cache_path, "r", encoding="utf-8") as fh:
+            raw = fh.read()
+
+    if raw is None:
+        import requests  # lazy
+        res = requests.get(_MDB_CATALOG_URL, timeout=60, allow_redirects=True)
+        if res.status_code != 200:
+            raise GtfsError(f"MobilityDB catalog download failed: HTTP {res.status_code}")
+        raw = res.text
+        os.makedirs(cache_dir, exist_ok=True)
+        with open(cache_path, "w", encoding="utf-8") as fh:
+            fh.write(raw)
+
+    return list(csv.DictReader(io.StringIO(raw)))
+
+
+def select_feed_from_catalog(
+    rows: list[dict[str, Any]], bbox: tuple[float, float, float, float]
+) -> str | None:
+    """Pure feed selection: among scheduled GTFS feeds whose bbox intersects the
+    study-area bbox, prefer the smallest (most local) then closest, and return
+    its URL (MobilityData-hosted `urls.latest` preferred over the producer's
+    `urls.direct_download`). Returns None when nothing covers the area."""
+    min_lon, min_lat, max_lon, max_lat = bbox
+    s_cx, s_cy = (min_lon + max_lon) / 2.0, (min_lat + max_lat) / 2.0
+
+    candidates: list[tuple[float, float, str]] = []
+    for row in rows:
+        if (row.get("data_type") or "").strip().lower() != "gtfs":
+            continue
+        # OpenPlan is US-focused; skip feeds with a known non-US country.
+        country = (row.get("location.country_code") or "").strip().upper()
+        if country and country != "US":
+            continue
+        try:
+            f_min_lat = float(row["location.bounding_box.minimum_latitude"])
+            f_max_lat = float(row["location.bounding_box.maximum_latitude"])
+            f_min_lon = float(row["location.bounding_box.minimum_longitude"])
+            f_max_lon = float(row["location.bounding_box.maximum_longitude"])
+        except (KeyError, ValueError, TypeError):
+            continue
+        # Reject corrupt near-worldwide bboxes (some upstream catalog rows span
+        # most of the globe) — no real transit feed spans >100° in a dimension.
+        if (f_max_lon - f_min_lon) > 100.0 or (f_max_lat - f_min_lat) > 100.0:
+            continue
+        # Reject non-overlapping bboxes.
+        if f_min_lon > max_lon or f_max_lon < min_lon or f_min_lat > max_lat or f_max_lat < min_lat:
+            continue
+        url = ((row.get("urls.latest") or row.get("urls.direct_download")) or "").strip()
+        if not url:
+            continue
+        area = max(0.0, (f_max_lon - f_min_lon)) * max(0.0, (f_max_lat - f_min_lat))
+        f_cx, f_cy = (f_min_lon + f_max_lon) / 2.0, (f_min_lat + f_max_lat) / 2.0
+        dist2 = (f_cx - s_cx) ** 2 + (f_cy - s_cy) ** 2
+        candidates.append((area, dist2, url))
+
+    if not candidates:
+        return None
+    candidates.sort(key=lambda c: (c[0], c[1]))  # smallest bbox, then closest centroid
+    return candidates[0][2]
+
+
+def discover_feed(bbox: tuple[float, float, float, float]) -> str | None:
+    """Discover a scheduled GTFS feed URL covering the study-area bbox from the
+    keyless MobilityDB catalog, or None. Best-effort: any failure → None so the
+    caller degrades to the honest no_local_feed state."""
+    try:
+        rows = _load_catalog()
+    except Exception:
+        return None
+    return select_feed_from_catalog(rows, bbox)
 
 
 def feed_covers(los: TransitLos, lons, lats, buffer_miles: float | None = None) -> bool:

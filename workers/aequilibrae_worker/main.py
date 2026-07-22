@@ -105,6 +105,13 @@ GATEWAY_BUFFER_DEG = max(0.0, float(os.getenv("AEQ_GATEWAY_BUFFER_DEG", "0.03"))
 # the auto matrix. Default on; set to 0 for the old all-auto behaviour.
 MODE_SPLIT_ENABLED = os.getenv("MODE_SPLIT_ENABLED", "1") not in ("0", "false", "False", "")
 
+# Dynamic per-place GTFS discovery (keyless Mobility Database catalog). Default
+# OFF so the Nevada County pilot stays byte-identical; when ON (and no explicit
+# GTFS_PATH/GTFS_URL is set) the worker resolves a feed covering the study area,
+# and a discovery miss degrades to the honest no_local_feed state instead of
+# skimming the bundled Nevada feed against an arbitrary place.
+GTFS_DISCOVER = os.getenv("GTFS_DISCOVER", "0") in ("1", "true", "True")
+
 # Fixed share of each boundary-crossing highway's daily volume routed as
 # pass-through (cordon→same-route cordon) so interior mainlines load, rather than
 # terminating at internal zones. Uncalibrated screening assumption; the env
@@ -1187,28 +1194,47 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
             transit_status = "modeled"
             transit_los_meta = {}
             try:
-                los = gtfs_skim.load_feed()
-                if not gtfs_skim.feed_covers(los, lons, lats):
-                    # The feed loaded but none of its stops fall within the study
-                    # area — skimming it would report a misleading transit_status
-                    # of "modeled" with a 0 share. Be honest: no local feed here.
+                discovered_url = None
+                explicit_feed = bool(os.getenv("GTFS_PATH") or os.getenv("GTFS_URL"))
+                discovering = GTFS_DISCOVER and not explicit_feed
+                if discovering:
+                    study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
+                    discovered_url = gtfs_skim.discover_feed(study_bbox)
+                    if discovered_url:
+                        log += f"GTFS discovery selected a feed covering this study area: {discovered_url}\n"
+
+                if discovering and not discovered_url:
+                    # Discovery on, but the catalog has no scheduled feed covering
+                    # this area — do NOT fall back to the bundled Nevada feed.
                     transit_status = "no_local_feed"
                     log += (
-                        "No GTFS feed covers this study area; transit not modeled "
-                        "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
-                        "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
+                        "GTFS discovery found no scheduled feed covering this study area; "
+                        "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
                     )
                 else:
-                    transit_skim = gtfs_skim.transit_skim(los, lons, lats)
-                    transit_los_meta = {
-                        "service_day": los.service_day,
-                        "service_period": f"{los.service_start}..{los.service_end}",
-                        "n_routes": los.n_routes,
-                        "n_served_stops": los.n_stops,
-                        "n_lines": len(los.lines),
-                        "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
-                        "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
-                    }
+                    los = gtfs_skim.load_feed(url=discovered_url)
+                    if not gtfs_skim.feed_covers(los, lons, lats):
+                        # The feed loaded but none of its stops fall within the study
+                        # area — skimming it would report a misleading transit_status
+                        # of "modeled" with a 0 share. Be honest: no local feed here.
+                        transit_status = "no_local_feed"
+                        log += (
+                            "No GTFS feed covers this study area; transit not modeled "
+                            "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
+                            "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
+                        )
+                    else:
+                        transit_skim = gtfs_skim.transit_skim(los, lons, lats)
+                        transit_los_meta = {
+                            "service_day": los.service_day,
+                            "service_period": f"{los.service_start}..{los.service_end}",
+                            "n_routes": los.n_routes,
+                            "n_served_stops": los.n_stops,
+                            "n_lines": len(los.lines),
+                            "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
+                            "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
+                            "source_url": discovered_url or "bundled_or_env",
+                        }
             except Exception as te:
                 transit_status = "feed_unavailable"
                 log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
