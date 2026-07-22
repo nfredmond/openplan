@@ -7,6 +7,11 @@ const migration = readFileSync(
   "utf8"
 );
 
+const lockdown = readFileSync(
+  join(process.cwd(), "supabase/migrations/20260722000005_reap_rpc_lock_down.sql"),
+  "utf8"
+);
+
 describe("reap_model_run_if_stale migration", () => {
   it("defines the reaper function with the documented signature", () => {
     expect(migration).toMatch(/create or replace function public\.reap_model_run_if_stale\(/);
@@ -31,6 +36,20 @@ describe("reap_model_run_if_stale migration", () => {
       /revoke all on function public\.reap_model_run_if_stale\(uuid, timestamptz, text\) from public/
     );
     expect(migration).toMatch(
+      /grant execute on function public\.reap_model_run_if_stale\(uuid, timestamptz, text\) to service_role/
+    );
+  });
+});
+
+describe("reap_model_run_if_stale lockdown migration", () => {
+  it("explicitly revokes execute from anon and authenticated (Supabase default-privilege grants)", () => {
+    // REVOKE ... FROM PUBLIC does NOT remove the direct anon/authenticated
+    // grants Supabase default privileges add to new public functions — without
+    // this an unauthenticated caller could force-fail any run via /rpc.
+    expect(lockdown).toMatch(
+      /revoke all on function public\.reap_model_run_if_stale\(uuid, timestamptz, text\) from anon, authenticated/
+    );
+    expect(lockdown).toMatch(
       /grant execute on function public\.reap_model_run_if_stale\(uuid, timestamptz, text\) to service_role/
     );
   });
