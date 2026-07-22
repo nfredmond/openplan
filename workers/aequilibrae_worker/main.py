@@ -18,6 +18,7 @@ import string
 import hashlib
 import re
 import tempfile
+from collections import deque
 from datetime import datetime, timezone
 from typing import Tuple
 
@@ -70,6 +71,29 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 # multiplies graph copies across multiprocessing workers — on shared/dev boxes
 # that risks OOM kills mid-run. Default to 1; raise via env on big machines.
 AEQ_CORES = max(1, int(os.getenv("AEQ_CORES", "1")))
+
+# Fail-fast guardrail on study-area size. The per-cell OD/skim/VMT glue is still
+# O(zones²) Python (metro-scale vectorization is a Wave 3 job), so a pathological
+# multi-metro draw would run for hours or OOM. Above this many active zones the
+# setup stage errors honestly ("narrow the area") instead of hanging until the
+# reaper kills it. Generous by default (a large single metro at tract geography
+# is well under it); raise via env on a big box. A run's own zoneGeography still
+# governs tract vs block-group resolution.
+AEQ_MAX_ZONES = max(1, int(os.getenv("AEQ_MAX_ZONES", "4000")))
+
+
+def check_zone_budget(zone_count: int, max_zones: int = AEQ_MAX_ZONES) -> None:
+    """Raise an honest, actionable error when a study area is too large for the
+    screening worker to model in a reasonable time. Called once in the setup
+    stage after zones are resolved, before the expensive connector/assignment
+    work."""
+    if zone_count > max_zones:
+        raise RuntimeError(
+            f"Study area resolves to {zone_count} zones, above the screening worker's "
+            f"supported maximum of {max_zones}. Narrow the study area (or split it into "
+            f"sub-areas) and re-launch; a metro at tract geography usually fits. "
+            f"(Operators can raise AEQ_MAX_ZONES on a larger machine.)"
+        )
 
 # Degrees to expand the OSM download beyond the study-area boundary so that
 # highways crossing the cordon physically extend outside it and can be detected
@@ -473,10 +497,14 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
         if node in visited_global:
             continue
         comp = set()
-        queue = [node]
+        queue = deque([node])
         comp.add(node)
         while queue:
-            n = queue.pop(0)
+            # deque.popleft() is O(1); a plain list's pop(0) is O(N), which made
+            # this BFS O(N²) on a metro-scale OSM network (10^5–10^6 nodes) and
+            # was the setup stage's first wall. Component membership is
+            # order-independent, so this is a pure perf fix.
+            n = queue.popleft()
             for nb in adj.get(n, []):
                 if nb not in comp:
                     comp.add(nb)
@@ -503,6 +531,10 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
         (zones["centroid_lon"] >= bbox[0]) & (zones["centroid_lon"] <= bbox[2]) &
         (zones["centroid_lat"] >= bbox[1]) & (zones["centroid_lat"] <= bbox[3])
     ].reset_index(drop=True)
+
+    # Fail fast + honest if the study area is too large to model in reasonable
+    # time, instead of hanging until the stale-run reaper kills it.
+    check_zone_budget(len(active_zones))
 
     max_node = max(nodes_all)
     max_link = conn.execute("SELECT MAX(link_id) FROM links").fetchone()[0]
