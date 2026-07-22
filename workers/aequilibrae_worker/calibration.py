@@ -37,8 +37,13 @@ DEFAULT_FACTOR_LO = 0.5
 DEFAULT_FACTOR_HI = 2.0
 DEFAULT_HOLDOUT_FRAC = 0.30
 DEFAULT_SEED = 20260721
-# GEH per station is normalized to a soft 0..1 penalty at this scale (GEH<5 is
-# the customary "good" line, so 5 maps to ~0.5) for the combined objective.
+# GEH must be computed on average-hourly equivalents (daily volume / 24), the
+# same basis as count_validation.geh_summary — GEH is scale-dependent
+# (GEH(k·o,k·m)=√k·GEH(o,m)), so feeding raw daily AADT would inflate every GEH
+# by √24≈4.9× and break the acceptance scale below.
+GEH_HOURLY_DIVISOR = 24.0
+# GEH per station is normalized to a soft 0..1 penalty at this scale: on the
+# average-hourly basis GEH<5 is the customary "good" line, so 5 maps to ~0.5.
 GEH_SCALE = 5.0
 
 
@@ -66,13 +71,25 @@ def split_holdout(
     fit: list[dict[str, Any]] = []
     holdout: list[dict[str, Any]] = []
     for _, group in sorted(by_stratum.items(), key=lambda kv: str(kv[0])):
-        g = list(group)
+        # Canonical pre-shuffle order (sort by a stable id) so the split is a
+        # pure function of (seed, station set), independent of arrival order.
+        g = sorted(group, key=lambda s: str(s.get("station_id")))
         rng.shuffle(g)
         n_hold = int(round(len(g) * holdout_frac))
         # Never hold out an entire small stratum: leave >= 1 in fit.
         n_hold = min(n_hold, max(0, len(g) - 1))
         holdout.extend(g[:n_hold])
         fit.extend(g[n_hold:])
+    # Stratifying by route can zero the holdout when every stratum is a singleton
+    # (e.g. all distinct facility_names). A calibration that stamps the
+    # 'calibrated_to_counts' claim WITHOUT a real holdout would be an unvalidated
+    # overclaim — so guarantee a non-empty holdout whenever >= 2 stations exist,
+    # via a global un-stratified fallback (still seed-deterministic).
+    if not holdout and len(stations) >= 2:
+        allst = sorted(stations, key=lambda s: str(s.get("station_id")))
+        rng.shuffle(allst)
+        n_hold = min(max(1, int(round(len(allst) * holdout_frac))), len(allst) - 1)
+        return allst[n_hold:], allst[:n_hold]
     return fit, holdout
 
 
@@ -132,12 +149,15 @@ def evaluate(stations: Sequence[dict[str, Any]]) -> dict[str, Any]:
     if not pairs:
         return {"n": 0, "median_ape": None, "geh_mean": None, "objective": None}
     apes = sorted(100.0 * abs(m - o) / o for o, m in pairs if o > 0)
-    gehs = [g for g in (geh_statistic(o, m) for o, m in pairs) if g is not None]
+    gehs = [g for g in (geh_statistic(o / GEH_HOURLY_DIVISOR, m / GEH_HOURLY_DIVISOR)
+                        for o, m in pairs) if g is not None]
     med_ape = median(apes) if apes else None
     geh_mean = (sum(gehs) / len(gehs)) if gehs else None
     return {
         "n": len(pairs),
         "median_ape": round(med_ape, 2) if med_ape is not None else None,
+        # Average-hourly basis (daily/24), comparable to the GEH<5 line and to
+        # count_validation's validation_geh_mean — NOT raw daily GEH.
         "geh_mean": round(geh_mean, 2) if geh_mean is not None else None,
         "objective": calibration_objective(pairs),
     }
@@ -150,7 +170,10 @@ def calibration_objective(obs_mod_pairs: Sequence[tuple[float, float]]) -> float
     pairs = [(o, m) for o, m in obs_mod_pairs if o > 0 and m >= 0]
     if not pairs:
         return None
-    gehs = [g for g in (geh_statistic(o, m) for o, m in pairs) if g is not None]
+    # Average-hourly basis (daily/24) so GEH_SCALE=5 lands on the customary
+    # GEH<5 acceptance line — matches count_validation.geh_summary.
+    gehs = [g for g in (geh_statistic(o / GEH_HOURLY_DIVISOR, m / GEH_HOURLY_DIVISOR)
+                        for o, m in pairs) if g is not None]
     geh_pen = sum(g / (g + GEH_SCALE) for g in gehs) / len(gehs) if gehs else 1.0
     apes = sorted(min(abs(m - o) / o, 1.0) for o, m in pairs)
     ape_pen = median(apes)

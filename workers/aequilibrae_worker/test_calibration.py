@@ -12,6 +12,7 @@ guard rejects any step that degrades the out-of-sample holdout.
 import sys
 
 import calibration as cal
+import count_validation as cv
 
 
 def _st(sid, route, obs, mod, lt="motorway"):
@@ -41,6 +42,35 @@ def test_holdout_stratified_never_empties_a_route():
 
 def test_holdout_empty_input():
     assert cal.split_holdout([]) == ([], [])
+
+
+def test_holdout_never_empty_when_all_routes_distinct():
+    # Every station a distinct facility_name = all singleton strata. The
+    # stratified pass would hold out nothing; the global fallback must still
+    # yield a real holdout, or a 'calibrated' claim would have no out-of-sample
+    # validation behind it.
+    sts = [_st(f"S{i}", f"Route {i}", 10000, 9000) for i in range(6)]
+    fit, hold = cal.split_holdout(sts, holdout_frac=0.30)
+    assert len(hold) >= 1 and len(fit) >= 1 and len(fit) + len(hold) == 6
+    # single station genuinely cannot support a holdout
+    assert cal.split_holdout([_st("only", "R", 1, 1)]) == ([_st("only", "R", 1, 1)], [])
+
+
+def test_holdout_independent_of_input_order():
+    sts = [_st(f"S{i}", "SR 20" if i % 2 else "SR 49", 10000 + i, 9000 + i) for i in range(10)]
+    _, hold_fwd = cal.split_holdout(sts, seed=99)
+    _, hold_rev = cal.split_holdout(list(reversed(sts)), seed=99)
+    ids = lambda xs: sorted(x["station_id"] for x in xs)
+    assert ids(hold_fwd) == ids(hold_rev), "split must not depend on arrival order"
+
+
+def test_geh_on_average_hourly_basis():
+    # geh_mean must match count_validation's daily/24 basis, not raw daily GEH
+    # (~4.9x larger). Uniform 10% error at AADT 24000.
+    ev = cal.evaluate([_st("s", "SR 20", 24000, 26400)])
+    ref = cv.geh_statistic(24000 / 24.0, 26400 / 24.0)
+    assert abs(ev["geh_mean"] - round(ref, 2)) < 0.02, (ev["geh_mean"], ref)
+    assert ev["geh_mean"] < 5.0, "10% error at 24k AADT is GEH~3 (hourly), not ~15 (daily)"
 
 
 def test_class_factor_direction():
