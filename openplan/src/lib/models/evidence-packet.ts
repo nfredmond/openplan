@@ -109,6 +109,32 @@ export type NormalizedEvidencePacket = {
   scenario_basis: NormalizedEvidencePacketScenarioBasis | null;
 };
 
+/** Worker transit-status values, promoted from the packet's mode_split. Only
+ * `modeled` means a covering GTFS feed was actually skimmed; the others mean a
+ * 0 transit share is a data/feed limitation, NOT an absence of transit demand
+ * — the distinction the run detail must surface to avoid overclaiming. */
+export type EvidenceTransitStatus = "modeled" | "no_local_feed" | "feed_unavailable" | "not_run";
+
+const EVIDENCE_TRANSIT_STATUSES: ReadonlySet<string> = new Set<EvidenceTransitStatus>([
+  "modeled",
+  "no_local_feed",
+  "feed_unavailable",
+  "not_run",
+]);
+
+/** Extract the transit status from a normalized packet's engine summary, or
+ * null when the engine did not record one (e.g. sketch/ite packets). */
+export function evidenceTransitStatus(packet: NormalizedEvidencePacket): EvidenceTransitStatus | null {
+  const engineSummary = packet.outputs.engine_summary;
+  if (!engineSummary || typeof engineSummary !== "object") return null;
+  const modeSplit = (engineSummary as Record<string, unknown>).mode_split;
+  if (!modeSplit || typeof modeSplit !== "object") return null;
+  const status = (modeSplit as Record<string, unknown>).transit_status;
+  return typeof status === "string" && EVIDENCE_TRANSIT_STATUSES.has(status)
+    ? (status as EvidenceTransitStatus)
+    : null;
+}
+
 type NormalizeEvidencePacketOptions = {
   rawPacket?: unknown;
   modelId: string;
@@ -279,6 +305,11 @@ export function normalizeEvidencePacket({
     // Worker-stamped TAZ resolution block (zone_geography/count/demand_method);
     // absent on packets that predate per-run zone geography.
     ...(asRecord(raw.zones) ? { zones: asRecord(raw.zones) } : {}),
+    // Mode split carries the load-bearing `transit_status` — surfaced so the
+    // UI can show "transit not modeled (no local feed)" as a first-class label
+    // instead of only in caveat prose (transit share 0 must never read as "no
+    // transit demand").
+    ...(asRecord(raw.mode_split) ? { mode_split: asRecord(raw.mode_split) } : {}),
   };
 
   const normalizedResultSummary = {

@@ -9,13 +9,18 @@ import {
   buildEvidenceHighlights,
   describeEmploymentProvenance,
   employmentUsedSyntheticFallback,
+  evidenceTransitStatus,
   formatDurationSeconds,
   labelForEngineKey,
   labelForKpiCategory,
   normalizeEvidencePacket,
   summarizeEvidenceCategories,
+  type EvidenceTransitStatus,
   type NormalizedEvidencePacket,
 } from "@/lib/models/evidence-packet";
+import { formatModelingClaimStatusLabel } from "@/lib/reports/modeling-evidence";
+import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import type { StatusTone } from "@/lib/ui/status";
 import { ESTIMATED_BADGE_LABEL } from "@/lib/analysis/estimated-source";
 import {
   buildModelRunKpiComparisonSummary,
@@ -32,6 +37,35 @@ type ModelRunComparisonCandidate = {
   completedAt: string | null;
   scenarioLabel: string | null;
 };
+
+function claimStatusTone(status: ModelingClaimStatus): StatusTone {
+  if (status === "calibrated_to_counts" || status === "claim_grade_passed") return "success";
+  if (status === "screening_grade") return "warning";
+  return "neutral";
+}
+
+/** First-class transit-status label so a 0 transit share is never read as "no
+ * transit demand" — the honest distinction between "modeled" and a feed
+ * limitation. */
+function transitStatusDisplay(status: EvidenceTransitStatus | null): { label: string; tone: StatusTone } | null {
+  switch (status) {
+    case "modeled":
+      return { label: "Transit modeled (local GTFS)", tone: "info" };
+    case "no_local_feed":
+      return { label: "Transit not modeled — no local GTFS feed", tone: "warning" };
+    case "feed_unavailable":
+      return { label: "Transit not modeled — feed unavailable", tone: "warning" };
+    case "not_run":
+      return { label: "Transit not modeled", tone: "neutral" };
+    default:
+      return null;
+  }
+}
+
+function shortHash(hash: string | null): string | null {
+  if (!hash) return null;
+  return hash.length > 12 ? `${hash.slice(0, 12)}…` : hash;
+}
 
 type ModelRunEvidencePanelProps = {
   modelId: string;
@@ -69,6 +103,11 @@ export function ModelRunEvidencePanel({
 
   const highlights = useMemo(() => (evidence ? buildEvidenceHighlights(evidence) : []), [evidence]);
   const categories = useMemo(() => (evidence ? summarizeEvidenceCategories(evidence) : []), [evidence]);
+  const transitStatus = useMemo(() => (evidence ? evidenceTransitStatus(evidence) : null), [evidence]);
+  // Honest run posture, derived from the engine's availability tier — never
+  // claims calibrated/claim-grade here (those stay the county-lane spine's job).
+  const claimStatus: ModelingClaimStatus =
+    runMode.availability === "launchable" ? "screening_grade" : "prototype_only";
   const comparisonSummary = useMemo(
     () => (comparisonRows ? buildModelRunKpiComparisonSummary(comparisonRows) : null),
     [comparisonRows]
@@ -228,6 +267,57 @@ export function ModelRunEvidencePanel({
                 <StatusBadge tone="neutral">{evidence.provenance.source_packet_format}</StatusBadge>
                 {evidence.provenance.fallback_reason ? <StatusBadge tone="warning">Synthesized fallback</StatusBadge> : null}
                 {runMode.availability !== "launchable" ? <StatusBadge tone="warning">Prototype / preflight</StatusBadge> : null}
+              </div>
+
+              <div
+                className="rounded-[0.5rem] border border-amber-300/60 bg-amber-50/70 p-4 dark:border-amber-900/50 dark:bg-amber-950/20"
+                data-testid="evidence-run-honesty"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-900/80 dark:text-amber-200/80">
+                  Run honesty &amp; reproducibility
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <StatusBadge tone={claimStatusTone(claimStatus)}>
+                    {formatModelingClaimStatusLabel(claimStatus)}
+                  </StatusBadge>
+                  {claimStatus === "screening_grade" ? (
+                    <StatusBadge tone="neutral">Uncalibrated by default</StatusBadge>
+                  ) : null}
+                  {transitStatusDisplay(transitStatus) ? (
+                    <StatusBadge tone={transitStatusDisplay(transitStatus)!.tone}>
+                      {transitStatusDisplay(transitStatus)!.label}
+                    </StatusBadge>
+                  ) : null}
+                </div>
+                <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-xs text-amber-950/90 dark:text-amber-100/90 sm:grid-cols-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-amber-900/70 dark:text-amber-200/70">Engine version</dt>
+                    <dd className="text-right font-medium">{evidence.provenance.engine_version || "—"}</dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-amber-900/70 dark:text-amber-200/70">Zones</dt>
+                    <dd className="text-right font-medium">
+                      {evidence.inputs.zone_count !== null ? evidence.inputs.zone_count.toLocaleString() : "—"}
+                    </dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-amber-900/70 dark:text-amber-200/70">Run window</dt>
+                    <dd className="text-right font-medium">
+                      {evidence.provenance.run_started_at
+                        ? new Date(evidence.provenance.run_started_at).toLocaleString()
+                        : "—"}
+                      {evidence.provenance.run_completed_at
+                        ? ` → ${new Date(evidence.provenance.run_completed_at).toLocaleString()}`
+                        : ""}
+                    </dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <dt className="text-amber-900/70 dark:text-amber-200/70">Corridor hash</dt>
+                    <dd className="text-right font-mono font-medium">
+                      {shortHash(evidence.assumptions.corridor_geojson_hash) || "—"}
+                    </dd>
+                  </div>
+                </dl>
               </div>
 
               <div className="flex flex-wrap gap-2">
