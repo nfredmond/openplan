@@ -14,6 +14,7 @@ import {
   titleizeRtpValue,
   type RtpPublicReviewSummary,
 } from "@/lib/rtp/catalog";
+import { buildRtpPriorityRationale, computeRtpPriorityScore, priorityTierLabel } from "@/lib/rtp/priority-scoring";
 import type { PortfolioFundingSnapshot, ProjectFundingProfileScan } from "@/lib/projects/funding";
 
 export type RtpExportCycle = {
@@ -47,6 +48,7 @@ export type RtpExportLinkedProject = {
   project_id: string;
   portfolio_role: string;
   priority_rationale: string | null;
+  priority_scores?: Record<string, number> | null;
   projects:
     | {
         id: string;
@@ -528,19 +530,34 @@ export function buildRtpExportHtml(input: {
   }
 
   if (enabledSectionKeys.includes("portfolio_posture")) {
+    const priorityTierCounts = { high: 0, medium: 0, low: 0, unscored: 0 };
+    for (const link of linkedProjects) {
+      priorityTierCounts[computeRtpPriorityScore(link.priority_scores ?? {}).tier] += 1;
+    }
+    const priorityRollup = `${priorityTierCounts.high} high · ${priorityTierCounts.medium} moderate · ${priorityTierCounts.low} lower · ${priorityTierCounts.unscored} unscored`;
+
     sections.push(`
   <section class="section">
     <h2>Portfolio posture</h2>
     <p class="muted">${esc(`${stats.constrainedProjectCount} constrained · ${stats.illustrativeProjectCount} illustrative · ${stats.candidateProjectCount} candidate`)}</p>
+    <p class="muted">Priority mix (VMT/GHG/safety/equity + local–federal alignment): ${esc(priorityRollup)}</p>
     ${linkedProjects.length === 0 ? '<p class="muted">No linked projects yet.</p>' : ""}
     ${linkedProjects
-      .map(
-        (link) => `<div class="card" style="margin-bottom:12px;">
+      .map((link) => {
+        const priority = buildRtpPriorityRationale(link.priority_scores ?? {});
+        const scored = priority.summary.scoredCriteria > 0;
+        const priorityMeta = scored
+          ? ` · Priority ${priority.summary.composite}/100 (${esc(priorityTierLabel(priority.summary.tier))})`
+          : "";
+        const rationaleText = scored
+          ? priority.narrative
+          : link.priority_rationale?.trim() || link.project?.summary?.trim() || "No prioritization rationale recorded yet.";
+        return `<div class="card" style="margin-bottom:12px;">
           <h3>${esc(link.project?.name ?? "Linked project")}</h3>
-          <p class="muted">${esc(formatRtpPortfolioRoleLabel(link.portfolio_role))} · ${esc(titleizeRtpValue(link.project?.status || "draft"))}</p>
-          <p>${esc(link.priority_rationale?.trim() || link.project?.summary?.trim() || "No prioritization rationale recorded yet.")}</p>
-        </div>`
-      )
+          <p class="muted">${esc(formatRtpPortfolioRoleLabel(link.portfolio_role))} · ${esc(titleizeRtpValue(link.project?.status || "draft"))}${priorityMeta}</p>
+          <p>${esc(rationaleText)}</p>
+        </div>`;
+      })
       .join("")}
     ${fundingSourceContext}
   </section>`);

@@ -208,7 +208,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         .order("sort_order", { ascending: true }),
       supabase
         .from("project_rtp_cycle_links")
-        .select("id, portfolio_role, priority_rationale, projects(id, name, status, delivery_phase, summary)")
+        .select("id, portfolio_role, priority_rationale, priority_scores, projects(id, name, status, delivery_phase, summary)")
         .eq("rtp_cycle_id", cycle.id)
         .order("created_at", { ascending: false }),
       supabase

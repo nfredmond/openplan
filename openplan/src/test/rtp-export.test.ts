@@ -436,4 +436,48 @@ describe("buildRtpExportHtml", () => {
     expect(html).toContain("<strong>Chapter record:</strong> 1/1 complete or ready");
   });
 
+  it("renders structured priority scores + generated rationale in the portfolio posture packet", () => {
+    const html = buildRtpExportHtml({
+      cycle: {
+        id: "cycle-why",
+        workspace_id: "ws-why",
+        title: "2027 RTP",
+        status: "draft",
+        geography_label: "Yolo County",
+        horizon_start_year: 2027,
+        horizon_end_year: 2050,
+        adoption_target_date: null,
+        public_review_open_at: null,
+        public_review_close_at: null,
+        summary: null,
+        updated_at: "2026-04-16T00:00:00.000Z",
+      },
+      chapters: [],
+      linkedProjects: normalizeRtpLinkedProjects([
+        {
+          id: "link-why",
+          project_id: "project-why",
+          portfolio_role: "constrained",
+          priority_rationale: "free text fallback",
+          priority_scores: { vmt_reduction: 3, ghg_reduction: 3, safety: 3 },
+          projects: {
+            id: "project-why",
+            name: "SR-49 Complete Street",
+            status: "active",
+            delivery_phase: "analysis",
+            summary: "Project summary",
+          },
+        },
+      ]),
+      campaigns: [],
+      options: { sectionKeys: ["portfolio_posture"] },
+    });
+
+    expect(html).toContain("Priority mix");
+    expect(html).toContain("Priority 50/100 (Moderate priority)");
+    // A scored project shows the generated structured narrative, not the free-text fallback.
+    expect(html).toContain("reduces vmt");
+    expect(html).not.toContain("free text fallback");
+  });
+
 });
