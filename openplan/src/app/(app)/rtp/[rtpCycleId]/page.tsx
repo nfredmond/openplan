@@ -32,6 +32,7 @@ import {
   rtpPortfolioRoleTone,
   titleizeRtpValue,
 } from "@/lib/rtp/catalog";
+import { buildRtpPriorityRationale, priorityTierLabel, priorityTierTone } from "@/lib/rtp/priority-scoring";
 import {
   describeComparisonSnapshotAggregate,
   parseStoredComparisonSnapshotAggregate,
@@ -123,6 +124,7 @@ type ProjectRtpLinkRow = {
   project_id: string;
   portfolio_role: string;
   priority_rationale: string | null;
+  priority_scores: Record<string, number> | null;
   created_at: string;
   projects: ProjectLinkProjectRow | ProjectLinkProjectRow[] | null;
 };
@@ -226,7 +228,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       .order("created_at", { ascending: true }),
     supabase
       .from("project_rtp_cycle_links")
-      .select("id, project_id, portfolio_role, priority_rationale, created_at, projects(id, name, status, delivery_phase, summary, rtp_posture_updated_at)")
+      .select("id, project_id, portfolio_role, priority_rationale, priority_scores, created_at, projects(id, name, status, delivery_phase, summary, rtp_posture_updated_at)")
       .eq("rtp_cycle_id", cycle.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -416,15 +418,19 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     readyCommentCount: engagementSummary.moderationQueue.readyForHandoffCount,
   });
 
-  const projectLinksWithFunding = projectLinks.map((link) => ({
-    ...link,
-    fundingStack: buildProjectFundingStackSummary(
-      fundingProfileByProjectId.get(link.project_id) ?? null,
-      fundingAwardsByProjectId.get(link.project_id) ?? [],
-      fundingOpportunitiesByProjectId.get(link.project_id) ?? [],
-      fundingInvoicesByProjectId.get(link.project_id) ?? []
-    ),
-  }));
+  const projectLinksWithFunding = projectLinks
+    .map((link) => ({
+      ...link,
+      fundingStack: buildProjectFundingStackSummary(
+        fundingProfileByProjectId.get(link.project_id) ?? null,
+        fundingAwardsByProjectId.get(link.project_id) ?? [],
+        fundingOpportunitiesByProjectId.get(link.project_id) ?? [],
+        fundingInvoicesByProjectId.get(link.project_id) ?? []
+      ),
+      priority: buildRtpPriorityRationale(link.priority_scores ?? {}),
+    }))
+    // Prioritized portfolio: highest composite priority first (unscored fall last).
+    .sort((a, b) => b.priority.summary.composite - a.priority.summary.composite);
 
   const fundedProjectCount = projectLinksWithFunding.filter((link) => link.fundingStack.status === "funded").length;
   const likelyCoveredProjectCount = projectLinksWithFunding.filter(
@@ -848,6 +854,11 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                           {formatRtpPortfolioRoleLabel(link.portfolio_role)}
                         </StatusBadge>
                         <StatusBadge tone={projectFundingStackTone(link.fundingStack.pipelineStatus)}>{link.fundingStack.pipelineLabel}</StatusBadge>
+                        {link.priority.summary.scoredCriteria > 0 ? (
+                          <StatusBadge tone={priorityTierTone(link.priority.summary.tier)}>
+                            Priority {link.priority.summary.composite}/100 · {priorityTierLabel(link.priority.summary.tier)}
+                          </StatusBadge>
+                        ) : null}
                         {project?.status ? (
                           <span className="module-record-chip"><span>Status</span><strong>{formatProjectStatusLabel(project.status)}</strong></span>
                         ) : null}
@@ -855,7 +866,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                       <div>
                         <h3 className="text-sm font-semibold tracking-tight">{project?.name ?? "Linked project"}</h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                          {link.priority_rationale?.trim() || project?.summary?.trim() || "No prioritization rationale recorded yet."}
+                          {link.priority.summary.scoredCriteria > 0
+                            ? link.priority.narrative
+                            : link.priority_rationale?.trim() || project?.summary?.trim() || "No prioritization rationale recorded yet."}
                         </p>
                       </div>
                       <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
