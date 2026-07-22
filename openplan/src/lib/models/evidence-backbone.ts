@@ -12,6 +12,11 @@ export type ModelingEvidenceTrack = (typeof MODELING_EVIDENCE_TRACKS)[number];
 
 export const MODELING_CLAIM_STATUSES = [
   "claim_grade_passed",
+  // Model tuned to observed traffic counts with a held-out validation set — a
+  // distinct, disclosed tier above screening. NOT the same as claim_grade_passed
+  // (a county-lane validation-threshold pass); a calibrated run's VMT is
+  // published under distinct KPI names and does not feed the CEQA screen.
+  "calibrated_to_counts",
   "screening_grade",
   "prototype_only",
 ] as const;
@@ -213,6 +218,10 @@ export function modelingClaimAllowsOutwardPlanningLanguage(decision: ModelingCla
 export function modelingClaimReportLanguage(decision: ModelingClaimDecision): string {
   if (decision.claimStatus === "claim_grade_passed") {
     return "Claim-grade public-data modeling result. Required validation checks passed; cite the source manifest and validation table with any outward planning claim.";
+  }
+
+  if (decision.claimStatus === "calibrated_to_counts") {
+    return "Calibrated-to-counts modeling result. The model was tuned to observed traffic counts and reports held-out (out-of-sample) validation accuracy; cite the calibration provenance and holdout metrics. Calibrated VMT is published under distinct KPI names and is not the CEQA screening input unless explicitly promoted.";
   }
 
   if (decision.claimStatus === "screening_grade") {
