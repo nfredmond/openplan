@@ -110,6 +110,10 @@ VALIDATION_COUNTS_PATH = os.getenv(
 # the 3-station priority file is strongly recommended (VALIDATION_COUNTS_PATH).
 CALIBRATION_ENABLED = os.getenv("AEQ_CALIBRATE", "0") in ("1", "true", "True")
 CALIBRATION_MAX_ITER = int(os.getenv("AEQ_CALIBRATE_MAX_ITER", "12"))
+# Minimum held-out objective improvement to accept a step (one objective ULP —
+# the objective is rounded to 1e-4). A step that only ties the holdout is a
+# no-op and must not promote the run to the calibrated tier.
+CALIBRATION_MIN_IMPROVEMENT = float(os.getenv("AEQ_CALIBRATE_MIN_IMPROVEMENT", "1e-4"))
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     raise ValueError("Missing Supabase credentials in environment.")
@@ -773,9 +777,13 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         graph.graph["capacity"] = cap
         graph.set_graph("travel_time")
 
+    base_hold_obj = base_hold["objective"]
+    if base_hold_obj is None:
+        log += "Calibration skipped: holdout objective is undefined (no usable holdout counts).\n"
+        return None, log
     cum: dict[str, float] = {}
     best_df = baseline_df
-    best_hold_obj = base_hold["objective"]
+    best_hold_obj = base_hold_obj
     best_fit_ev, best_hold_ev = base_fit, base_hold
     accepted = 0
     for it in range(CALIBRATION_MAX_ITER):
@@ -790,20 +798,28 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
         trial_df = _assign_once()
         trial_vol = _volumes_by_link(trial_df)
         trial_hold = calibration.evaluate(_match_counts(holdout_stations, link_attrs, trial_vol))
-        if calibration.accept_step(best_hold_obj, trial_hold["objective"]):
+        trial_obj = trial_hold["objective"]
+        # Accept ONLY on a STRICT held-out improvement — an equal-objective step
+        # is a no-op and must never promote the run to the calibrated tier. A
+        # negative tol makes accept_step require improvement by at least one
+        # objective ULP (the objective is rounded to 1e-4).
+        if trial_obj is not None and calibration.accept_step(
+            best_hold_obj, trial_obj, tol=-CALIBRATION_MIN_IMPROVEMENT
+        ):
             cum = trial_cum
             best_df = trial_df
-            best_hold_obj = trial_hold["objective"]
+            best_hold_obj = trial_obj
             best_fit_ev = calibration.evaluate(_match_counts(fit_stations, link_attrs, trial_vol))
             best_hold_ev = trial_hold
             accepted += 1
             log += (f"  iter {it + 1}: accepted (holdout median APE {trial_hold['median_ape']}%, "
                     f"factors { {k: round(v, 3) for k, v in cum.items()} }).\n")
         else:
-            log += f"  iter {it + 1}: rejected (holdout did not improve); stopping.\n"
+            log += f"  iter {it + 1}: rejected (no strict holdout improvement); stopping.\n"
             break
 
-    if accepted == 0:
+    # Only claim the calibrated tier when the holdout GENUINELY improved.
+    if accepted == 0 or best_hold_obj >= base_hold_obj:
         log += "Calibration: no step improved the holdout; keeping the uncalibrated screening result.\n"
         return None, log
 
