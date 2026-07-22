@@ -24,6 +24,7 @@ import {
   buildCeqaScreeningRow,
   deriveCeqaVmtScreeningInputs,
   type CeqaVmtKpiRowLike,
+  type CeqaVmtScreeningInputs,
 } from "@/lib/models/ceqa-vmt-screen";
 
 /**
@@ -64,6 +65,19 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
     return typeof row?.value === "number" ? row.value : null;
   }, [kpis]);
 
+  // Opt-in: a calibrated resident VMT per capita (from the stage-2 nudged OD),
+  // present only when the demand nudge accepted. Off by default — the operator
+  // must explicitly choose a calibrated-input determination.
+  const calibratedPerCapita = useMemo(() => {
+    const row = kpis.find((k) => k.kpi_name === "resident_vmt_per_capita_calibrated");
+    return typeof row?.value === "number" ? row.value : null;
+  }, [kpis]);
+  const [useCalibratedInput, setUseCalibratedInput] = useState(false);
+  const calibratedActive = useCalibratedInput && calibratedPerCapita !== null;
+  const activeInputs: CeqaVmtScreeningInputs = calibratedActive
+    ? { status: "per-capita", vmtPerCapita: calibratedPerCapita as number, vmtKpiName: "resident_vmt_per_capita_calibrated" }
+    : screeningInputs;
+
   const referenceVmtPerCapita = Number(referenceInput);
   const thresholdPct = Number(thresholdPctInput) / 100;
   const inputsValid =
@@ -76,13 +90,13 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
   const result: CeqaVmtResult | null = useMemo(() => {
     if (!inputsValid) return null;
     if (
-      screeningInputs.status !== "per-capita" &&
-      screeningInputs.status !== "total-with-population"
+      activeInputs.status !== "per-capita" &&
+      activeInputs.status !== "total-with-population"
     ) {
       return null;
     }
     try {
-      return computeCeqaVmt([buildCeqaScreeningRow(screeningInputs, scenarioId)], {
+      return computeCeqaVmt([buildCeqaScreeningRow(activeInputs, scenarioId)], {
         referenceVmtPerCapita,
         projectType,
         referenceLabel,
@@ -91,7 +105,7 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
     } catch {
       return null;
     }
-  }, [inputsValid, screeningInputs, scenarioId, referenceVmtPerCapita, projectType, referenceLabel, thresholdPct]);
+  }, [inputsValid, activeInputs, scenarioId, referenceVmtPerCapita, projectType, referenceLabel, thresholdPct]);
 
   const scenario = result?.scenarios[0] ?? null;
 
@@ -235,6 +249,26 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
         </p>
       ) : null}
 
+      {calibratedPerCapita !== null ? (
+        <label
+          className="flex items-start gap-2 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-foreground/90"
+          data-testid="ceqa-vmt-calibrated-toggle"
+        >
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 rounded border-border"
+            checked={useCalibratedInput}
+            onChange={(e) => setUseCalibratedInput(e.target.checked)}
+          />
+          <span>
+            <span className="font-semibold">Use calibrated (count-tuned) VMT for this determination.</span>{" "}
+            Off (default) = screening VMT. On = the calibrated resident VMT/capita from the demand-nudge
+            stage ({formatNumber(calibratedPerCapita, 3)}), a count-informed refinement — clearly a
+            distinct, disclosed calibrated-input determination, not the screening default.
+          </span>
+        </label>
+      ) : null}
+
       {scenario && result ? (
         <div
           className="rounded-[0.75rem] border border-border/70 bg-background px-5 py-4"
@@ -242,12 +276,23 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm font-semibold text-foreground">
-              Screening determination: {scenario.determination}
+              {calibratedActive ? "Calibrated-input determination" : "Screening determination"}:{" "}
+              {scenario.determination}
             </p>
             <StatusBadge tone={scenario.significant ? "warning" : "success"}>
               {scenario.significant ? "Potentially significant" : "Less than significant"}
             </StatusBadge>
           </div>
+          {calibratedActive ? (
+            <p className="mt-2 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-foreground/90">
+              This determination uses <span className="font-semibold">calibrated (count-tuned) VMT</span>{" "}
+              from the demand-nudge stage, count-validated to{" "}
+              {calibratedHoldoutApe !== null ? `${formatNumber(calibratedHoldoutApe, 1)}% held-out median APE` : "the held-out count set"}.
+              It is a screening-grade calibrated estimate, not the default screening determination
+              (toggle off to compare). Calibration primarily improves link-level fit; treat this
+              per-capita figure as a count-informed refinement, not a validated forecast.
+            </p>
+          ) : null}
           <p className="mt-2 text-sm text-foreground/90">
             Scenario <code>{scenario.scenario_id}</code>:{" "}
             <span className="tabular-nums">{formatNumber(scenario.vmt_per_capita, 3)}</span> VMT per
