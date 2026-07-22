@@ -730,7 +730,14 @@ def _run_demand_nudge(assign_once, make_resident_mat, resident_od, ii_arr, n_ass
             lid, obs = m.get("matched_link_id"), float(m.get("observed_volume") or 0.0)
             if lid is None or obs <= 0 or int(lid) not in graph_link_ids:
                 continue
-            name = f"cal_{m.get('station_id')}"
+            # Sanitize the select-link set NAME exactly as set_select_links does
+            # (collapse whitespace) + bound to the 50-char matrix-core limit +
+            # keep distinct stations distinct, or the SL-OD is stored under one
+            # key and read under another (KeyError) / create_empty raises.
+            raw = "_".join(str(m.get("station_id") or "").split())
+            name = f"cal_{raw}"[:50]
+            while name in sl_sets:
+                name = f"cal_{len(sl_sets)}_{raw}"[:50]
             sl_sets[name] = [(int(lid), 0)]
             meta[name] = (int(lid), obs)
         if not sl_sets:
@@ -904,14 +911,19 @@ def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, basel
     _apply(cum)
 
     # ── Stage 2: select-link-guided demand nudge (ODME-lite) ──────────────
+    # A stage-2 failure must NOT discard a valid stage-1 calibration — the
+    # raise aborts the tuple-unpack, so best_* keep their stage-1 values.
     stage2_accepted = 0
     if (CALIBRATION_DEMAND_ENABLED and resident_od is not None and ii is not None
             and assignment_centroids is not None and make_resident_mat is not None):
-        stage2_accepted, best_df, best_hold_obj, best_fit_ev, best_hold_ev, log = _run_demand_nudge(
-            _assign_once, make_resident_mat, resident_od, _np.asarray(ii), len(assignment_centroids),
-            fit_stations, holdout_stations, link_attrs, graph, best_df, best_hold_obj,
-            best_fit_ev, best_hold_ev, log,
-        )
+        try:
+            stage2_accepted, best_df, best_hold_obj, best_fit_ev, best_hold_ev, log = _run_demand_nudge(
+                _assign_once, make_resident_mat, resident_od, _np.asarray(ii), len(assignment_centroids),
+                fit_stations, holdout_stations, link_attrs, graph, best_df, best_hold_obj,
+                best_fit_ev, best_hold_ev, log,
+            )
+        except Exception as e:
+            log += f"  stage-2 demand nudge failed ({e}); keeping the stage-1 calibrated result.\n"
 
     # Only claim the calibrated tier when the holdout GENUINELY improved.
     if (accepted + stage2_accepted) == 0 or best_hold_obj >= base_hold_obj:
