@@ -142,6 +142,79 @@ function buildNarrative(summary: RtpPriorityScoreSummary, drivers: RtpPriorityDr
   return `Scores ${summary.composite}/100 — ${TIER_PHRASE[summary.tier]}. Its strongest contributions are ${topPhrase}.${levelPhrase}${basisPhrase}.`;
 }
 
+export interface RtpPortfolioPrioritySummary {
+  projectCount: number;
+  scoredCount: number;
+  tierCounts: Record<RtpPriorityTier, number>;
+  averageComposite: number; // average composite of the scored projects
+  topCriteria: Array<{ key: string; label: string; policyBasis: string; totalContribution: number }>;
+  narrative: string;
+}
+
+/**
+ * Synthesize a plan-level "why" across a cycle's scored project links: the tier
+ * mix, average score, and the portfolio's strongest collective priorities. This
+ * is the board/community-ready statement of what the plan prioritizes and why.
+ */
+export function buildPortfolioPriorityNarrative(scoresList: unknown[]): RtpPortfolioPrioritySummary {
+  const summaries = scoresList.map((scores) => computeRtpPriorityScore(scores));
+  const tierCounts: Record<RtpPriorityTier, number> = { high: 0, medium: 0, low: 0, unscored: 0 };
+  for (const summary of summaries) tierCounts[summary.tier] += 1;
+
+  const scored = summaries.filter((summary) => summary.scoredCriteria > 0);
+  const averageComposite = scored.length
+    ? Math.round(scored.reduce((sum, summary) => sum + summary.composite, 0) / scored.length)
+    : 0;
+
+  const contributionByKey = new Map<string, number>();
+  for (const raw of scoresList) {
+    const parsed = parsePriorityScores(raw);
+    for (const [key, rating] of Object.entries(parsed)) {
+      const criterion = getRtpPriorityCriterion(key);
+      if (!criterion) continue;
+      const contribution = (rating / RTP_PRIORITY_MAX_RATING) * criterion.weight;
+      contributionByKey.set(key, (contributionByKey.get(key) ?? 0) + contribution);
+    }
+  }
+
+  const topCriteria = Array.from(contributionByKey.entries())
+    .map(([key, totalContribution]) => {
+      const criterion = getRtpPriorityCriterion(key)!;
+      return { key, label: criterion.label, policyBasis: criterion.policyBasis, totalContribution };
+    })
+    .sort((a, b) => b.totalContribution - a.totalContribution || a.label.localeCompare(b.label))
+    .slice(0, 3);
+
+  return {
+    projectCount: scoresList.length,
+    scoredCount: scored.length,
+    tierCounts,
+    averageComposite,
+    topCriteria,
+    narrative: buildPortfolioNarrative(scoresList.length, scored.length, tierCounts, averageComposite, topCriteria),
+  };
+}
+
+function buildPortfolioNarrative(
+  projectCount: number,
+  scoredCount: number,
+  tierCounts: Record<RtpPriorityTier, number>,
+  averageComposite: number,
+  topCriteria: RtpPortfolioPrioritySummary["topCriteria"],
+): string {
+  if (projectCount === 0) return "No projects are linked to this cycle yet.";
+  if (scoredCount === 0) {
+    return `${projectCount} project${projectCount === 1 ? "" : "s"} linked; none scored against the RTP priority criteria yet.`;
+  }
+
+  const mix = `${tierCounts.high} high · ${tierCounts.medium} moderate · ${tierCounts.low} lower priority`;
+  const focus = topCriteria.map((criterion) => criterion.label.toLowerCase()).join(", ");
+  const bases = Array.from(new Set(topCriteria.map((criterion) => criterion.policyBasis)));
+  const basisPhrase = bases.length > 0 ? ` (${bases.join("; ")})` : "";
+
+  return `Across ${projectCount} linked project${projectCount === 1 ? "" : "s"} (${mix}), this portfolio's strongest collective focus is ${focus} — advancing those priorities${basisPhrase}. Average priority score of scored projects: ${averageComposite}/100.`;
+}
+
 export function priorityTierTone(tier: RtpPriorityTier): "success" | "info" | "warning" | "neutral" {
   if (tier === "high") return "success";
   if (tier === "medium") return "info";

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildPortfolioPriorityNarrative,
   buildRtpPriorityRationale,
   computeRtpPriorityScore,
   parsePriorityScores,
@@ -77,5 +78,27 @@ describe("buildRtpPriorityRationale", () => {
 
   it("says unscored when empty", () => {
     expect(buildRtpPriorityRationale({}).narrative).toMatch(/not yet been scored/i);
+  });
+});
+
+describe("buildPortfolioPriorityNarrative", () => {
+  it("summarizes tier mix, average, and top collective priorities", () => {
+    const portfolio = buildPortfolioPriorityNarrative([
+      { vmt_reduction: 3, ghg_reduction: 3, safety: 3 },
+      { vmt_reduction: 3, safety: 3, equity: 3, community_support: 3 },
+      {},
+    ]);
+    expect(portfolio.projectCount).toBe(3);
+    expect(portfolio.scoredCount).toBe(2);
+    expect(portfolio.tierCounts.unscored).toBe(1);
+    expect(portfolio.topCriteria).toHaveLength(3);
+    expect(portfolio.topCriteria.map((criterion) => criterion.key)).toContain("vmt_reduction");
+    expect(portfolio.narrative).toContain("linked project");
+    expect(portfolio.narrative.toLowerCase()).toContain("reduces vmt");
+  });
+
+  it("handles empty and all-unscored portfolios", () => {
+    expect(buildPortfolioPriorityNarrative([]).narrative).toMatch(/No projects are linked/i);
+    expect(buildPortfolioPriorityNarrative([{}, {}]).narrative).toMatch(/none scored/i);
   });
 });

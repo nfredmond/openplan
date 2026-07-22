@@ -14,7 +14,12 @@ import {
   titleizeRtpValue,
   type RtpPublicReviewSummary,
 } from "@/lib/rtp/catalog";
-import { buildRtpPriorityRationale, computeRtpPriorityScore, priorityTierLabel } from "@/lib/rtp/priority-scoring";
+import {
+  buildPortfolioPriorityNarrative,
+  buildRtpPriorityRationale,
+  computeRtpPriorityScore,
+  priorityTierLabel,
+} from "@/lib/rtp/priority-scoring";
 import type { PortfolioFundingSnapshot, ProjectFundingProfileScan } from "@/lib/projects/funding";
 
 export type RtpExportCycle = {
@@ -535,12 +540,14 @@ export function buildRtpExportHtml(input: {
       priorityTierCounts[computeRtpPriorityScore(link.priority_scores ?? {}).tier] += 1;
     }
     const priorityRollup = `${priorityTierCounts.high} high · ${priorityTierCounts.medium} moderate · ${priorityTierCounts.low} lower · ${priorityTierCounts.unscored} unscored`;
+    const portfolioPriority = buildPortfolioPriorityNarrative(linkedProjects.map((link) => link.priority_scores ?? {}));
 
     sections.push(`
   <section class="section">
     <h2>Portfolio posture</h2>
     <p class="muted">${esc(`${stats.constrainedProjectCount} constrained · ${stats.illustrativeProjectCount} illustrative · ${stats.candidateProjectCount} candidate`)}</p>
     <p class="muted">Priority mix (VMT/GHG/safety/equity + local–federal alignment): ${esc(priorityRollup)}</p>
+    ${portfolioPriority.scoredCount > 0 ? `<p><strong>Why this portfolio:</strong> ${esc(portfolioPriority.narrative)}</p>` : ""}
     ${linkedProjects.length === 0 ? '<p class="muted">No linked projects yet.</p>' : ""}
     ${linkedProjects
       .map((link) => {

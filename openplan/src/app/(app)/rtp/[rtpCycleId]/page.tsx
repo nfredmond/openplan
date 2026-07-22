@@ -32,7 +32,12 @@ import {
   rtpPortfolioRoleTone,
   titleizeRtpValue,
 } from "@/lib/rtp/catalog";
-import { buildRtpPriorityRationale, priorityTierLabel, priorityTierTone } from "@/lib/rtp/priority-scoring";
+import {
+  buildPortfolioPriorityNarrative,
+  buildRtpPriorityRationale,
+  priorityTierLabel,
+  priorityTierTone,
+} from "@/lib/rtp/priority-scoring";
 import {
   describeComparisonSnapshotAggregate,
   parseStoredComparisonSnapshotAggregate,
@@ -432,6 +437,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     // Prioritized portfolio: highest composite priority first (unscored fall last).
     .sort((a, b) => b.priority.summary.composite - a.priority.summary.composite);
 
+  const portfolioPriority = buildPortfolioPriorityNarrative(projectLinks.map((link) => link.priority_scores ?? {}));
+
   const fundedProjectCount = projectLinksWithFunding.filter((link) => link.fundingStack.status === "funded").length;
   const likelyCoveredProjectCount = projectLinksWithFunding.filter(
     (link) => link.fundingStack.status !== "funded" && link.fundingStack.pipelineStatus === "likely_covered"
@@ -812,6 +819,14 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               />
             ) : (
               <div className="space-y-3">
+                {portfolioPriority.scoredCount > 0 ? (
+                  <div className="rounded-[0.5rem] border border-emerald-300/50 bg-emerald-50/50 px-4 py-3 text-sm dark:border-emerald-900/40 dark:bg-emerald-950/20">
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 dark:text-emerald-300">
+                      Why this portfolio
+                    </p>
+                    <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
+                  </div>
+                ) : null}
                 <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
                   <div className="module-metric-card">
                     <p className="module-metric-label">Funded</p>
