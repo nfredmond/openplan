@@ -139,3 +139,83 @@ Build from the repo root:
 docker build -f workers/activitysim_worker/Dockerfile -t openplan-activitysim-worker .
 docker run --rm -p 8080:8080 openplan-activitysim-worker
 ```
+
+---
+
+# Supabase poll/claim worker — `behavioral_demand` lane
+
+`supabase_poll.py` is the production entrypoint for the OpenPlan `behavioral_demand`
+run class (the HTTP wrapper above stays for local/manual use). It mirrors the
+AequilibraE worker's REST poll/claim contract exactly (no Postgres RPCs; the
+atomic stage claim is a conditional PATCH `?status=eq.queued`).
+
+A `behavioral_demand` run is a 4-stage async pipeline:
+
+```
+AequilibraE Setup → Network Assignment → Artifact Extraction   (aequilibrae_worker)
+  → ActivitySim Bundle & Preflight                             (this worker)
+```
+
+The AequilibraE worker runs the screening (network + `travel_time_skims.omx`) and
+registers `zone_attributes.csv` + the skim as `local://` artifacts. This worker
+reads them, builds a real (uncalibrated, scaffold-population) ActivitySim input
+bundle, runs the runtime, and writes an honest evidence packet + KPIs. **Because
+the handoff is `local://`, the two workers must share a filesystem (co-located on
+one host, or a shared volume).**
+
+Required env: `SUPABASE_URL` (or `NEXT_PUBLIC_SUPABASE_URL`) + `SUPABASE_SERVICE_ROLE_KEY`.
+
+Run it (light preflight infra — `requests` + stdlib only):
+
+```bash
+npm run worker:activitysim          # from openplan/
+# or: python workers/activitysim_worker/supabase_poll.py
+```
+
+## Two postures: PREFLIGHT ($0) vs EXECUTION (dedicated host)
+
+- **Preflight (default, light infra).** No ActivitySim installed → the runtime
+  stays `preflight_only`. The run still produces a real, inspectable bundle +
+  honest evidence + structural (scaffold) KPIs. **No** VMT/trip/mode-share number
+  is ever written. This is the honest default and runs on modest infra.
+- **Execution (a real, still-UNCALIBRATED run).** Set the execution env so the
+  runtime launches a real ActivitySim CLI:
+
+  ```bash
+  # On a Python-3.11 host with requirements-exec.txt installed:
+  export ACTIVITYSIM_CLI=activitysim
+  # or drive a container instead:
+  #   export ACTIVITYSIM_CONTAINER_IMAGE=openplan-activitysim-exec
+  #   export ACTIVITYSIM_CONTAINER_CLI_TEMPLATE="activitysim run -c {config_dir} -d {data_dir} -o {output_dir} -w {working_dir}"
+  ```
+
+  Build the execution image (Python 3.11 — host 3.12 is not dependable):
+
+  ```bash
+  docker build -f workers/activitysim_worker/Dockerfile.exec -t openplan-activitysim-exec .
+  ```
+
+  When a run actually executes, behavioral KPIs are written **only if** the run
+  produced supportable outputs, and are always labeled `uncalibrated`. A
+  starter/zero-model config runs successfully but emits no trips/tours → no
+  behavioral KPI (honest).
+
+## ⛔ Infra reality — real behavioral runs are NOT $0
+
+ActivitySim is RAM-heavy and long-running. The AequilibraE screening worker runs
+on a **512 MB** Fly VM; ActivitySim **cannot** co-run there. Even a 26-zone
+starter smoke used ~360 MB RSS; a calibrated multi-model metro run needs **several
+GB of RAM**, several vCPUs, minutes-to-hours of runtime, and an always-on poller
+(`auto_stop = false`). A real production behavioral lane therefore requires:
+
+1. **A dedicated modeling host** (≈8–16 GB RAM VM/box) running the Python-3.11
+   `Dockerfile.exec` image with `ACTIVITYSIM_CLI` set, co-located with (or sharing
+   a volume with) the AequilibraE worker. This is **paid infra, not $0.**
+2. **County-specific calibration** — the emitted config is the OpenPlan starter
+   kit (`v0`); a behaviorally meaningful, forecast-grade run needs calibrated
+   settings/coefficients + household/person schema alignment. Until then every run
+   is labeled **uncalibrated / prototype / preflight — never a forecast.**
+
+Verified locally on 2026-07-22: `activitysim==1.5.1` runs an OpenPlan-built bundle
+end-to-end on Python 3.11 (`activitysim_cli`, settings-checker passes, 0 models →
+no fabricated demand). See `docs/ops/2026-07-22-activitysim-behavioral-lane-smoke.md`.

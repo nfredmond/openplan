@@ -198,6 +198,42 @@ class SupabasePollTests(unittest.TestCase):
         stage_patches = [b for m, url, b in self.fake.calls if m == "PATCH" and "model_run_stages?id=eq" in url and "status=eq.queued" not in url]
         self.assertTrue(any(p.get("status") == "failed" for p in stage_patches))
 
+    # ---- L3: real behavioral KPIs only when a run executed ---------------
+    def test_exec_config_unset_defaults_to_preflight(self):
+        for var in (
+            "ACTIVITYSIM_CLI", "ACTIVITYSIM_CLI_TEMPLATE", "ACTIVITYSIM_CONFIG_DIR",
+            "ACTIVITYSIM_CONTAINER_IMAGE", "ACTIVITYSIM_CONTAINER_ENGINE",
+            "ACTIVITYSIM_CONTAINER_CLI_TEMPLATE",
+        ):
+            os.environ.pop(var, None)
+        cfg = supabase_poll._activitysim_exec_config()
+        self.assertIsNone(cfg["activitysim_cli"])
+        self.assertIsNone(cfg["activitysim_container_image"])
+
+    def test_executed_kpis_written_and_labeled_uncalibrated(self):
+        summary_path = os.path.join(self._fixdir, "kpi_summary.json")
+        with open(summary_path, "w") as f:
+            json.dump({
+                "availability_status": "available",
+                "totals": {"households": 100, "persons": 250, "tours": 400, "trips": 900},
+            }, f)
+        n = supabase_poll._write_executed_behavioral_kpis("run-1", {"kpi_summary_path": summary_path})
+        self.assertEqual(n, 4)
+        kpis = [b for m, url, b in self.fake.calls if m == "POST" and url.endswith("/rest/v1/model_run_kpis")]
+        names = {k["kpi_name"] for k in kpis}
+        self.assertEqual(names, {"activitysim_households", "activitysim_persons", "activitysim_tours", "activitysim_trips"})
+        for k in kpis:
+            self.assertEqual(k["breakdown_json"]["calibration"], "uncalibrated")
+            self.assertIn("UNCALIBRATED", k["breakdown_json"]["provenance"])
+
+    def test_executed_kpis_none_when_no_outputs(self):
+        # The common starter/zero-model case: real run executed, no behavioral tables.
+        summary_path = os.path.join(self._fixdir, "kpi_summary_empty.json")
+        with open(summary_path, "w") as f:
+            json.dump({"availability_status": None, "totals": {"households": None, "persons": None, "tours": None, "trips": None}}, f)
+        n = supabase_poll._write_executed_behavioral_kpis("run-1", {"kpi_summary_path": summary_path})
+        self.assertEqual(n, 0)
+
     def test_missing_corridor_fails_honestly(self):
         def get_no_corridor(url, headers=None, timeout=None):
             if "/rest/v1/model_runs?id=eq" in url:

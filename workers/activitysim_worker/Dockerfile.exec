@@ -1,0 +1,32 @@
+# ActivitySim EXECUTION image — for a dedicated modeling host only.
+#
+# The default preflight worker (Dockerfile) runs L1/L2 preflight on light infra.
+# This image installs ActivitySim on Python 3.11 (the proven version) so the
+# Supabase poll worker can EXECUTE a real (still uncalibrated, starter-grade)
+# ActivitySim run. It is RAM-heavy and long-running — deploy on a dedicated host
+# with several GB of RAM and always-on polling, NOT the 512 MB screening VM.
+#
+# Build from the repo root:
+#   docker build -f workers/activitysim_worker/Dockerfile.exec -t openplan-activitysim-exec .
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# ActivitySim's numeric stack (numba/tables/blosc) needs a compiler + libs.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY workers/activitysim_worker/requirements-exec.txt /tmp/activitysim-exec-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/activitysim-exec-requirements.txt
+
+COPY . /app
+
+# Tell the worker a real ActivitySim CLI is available so it runs (not preflights).
+ENV ACTIVITYSIM_CLI=activitysim
+
+# Background poll worker (no HTTP service) — mirrors the AequilibraE worker.
+CMD ["python", "-u", "workers/activitysim_worker/supabase_poll.py"]

@@ -1,0 +1,16 @@
+# ActivitySim EXECUTION requirements — for a dedicated modeling host only.
+#
+# The default preflight worker (requirements.txt: requests + Flask) runs the
+# L1/L2 preflight on light infra. To EXECUTE a real (still uncalibrated,
+# starter-grade) ActivitySim run, a host must install these on Python 3.11
+# (the proven version — host Python 3.12 is not dependable per the P2B smoke),
+# then point the worker at the CLI via ACTIVITYSIM_CLI (see DEPLOY.md).
+#
+# Verified locally on 2026-07-22: activitysim==1.5.1 runs OpenPlan-built bundles
+# end-to-end on Python 3.11.
+activitysim==1.5.1
+openmatrix==0.3.5.0
+PyYAML==6.0.3
+tables==3.11.1
+requests>=2.31
+# activitysim pins compatible pandas / numpy / numba / sharrow itself.

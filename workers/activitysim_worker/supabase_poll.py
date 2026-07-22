@@ -76,6 +76,26 @@ _STAGE_FILTER = "stage_name=" + urllib.parse.quote(
 
 EVIDENCE_SCHEMA_VERSION = "openplan.behavioral_demand_preflight_evidence.v0"
 
+# Runtime modes in which a REAL ActivitySim command actually executed. On the
+# default ($0, RAM-light) infra none of these apply and the run stays a preflight.
+EXECUTED_RUNTIME_MODES = {"activitysim_cli", "activitysim_container_cli"}
+
+
+def _activitysim_exec_config() -> dict:
+    """ActivitySim execution config from env. UNSET by default ($0 infra) → the
+    runtime detects no CLI and stays preflight_only. A dedicated modeling host
+    sets these (ActivitySim installed, or a container image) to run a real —
+    still UNCALIBRATED, starter-grade — ActivitySim run. See DEPLOY.md."""
+    return {
+        "config_dir": os.getenv("ACTIVITYSIM_CONFIG_DIR") or None,
+        "activitysim_cli": os.getenv("ACTIVITYSIM_CLI") or None,
+        "activitysim_cli_template": os.getenv("ACTIVITYSIM_CLI_TEMPLATE") or None,
+        "activitysim_container_image": os.getenv("ACTIVITYSIM_CONTAINER_IMAGE") or None,
+        "container_engine_cli": os.getenv("ACTIVITYSIM_CONTAINER_ENGINE") or None,
+        "activitysim_container_cli_template": os.getenv("ACTIVITYSIM_CONTAINER_CLI_TEMPLATE") or None,
+        "container_network_mode": os.getenv("ACTIVITYSIM_CONTAINER_NETWORK_MODE", "none"),
+    }
+
 # Per-run scratch dir for the built bundle + prototype pipeline outputs.
 ACTIVITYSIM_WORK_DIR = os.getenv(
     "ACTIVITYSIM_WORK_DIR", str(_REPO_ROOT / "data" / "activitysim-bundles" / "runs")
@@ -381,14 +401,20 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         sys.path.insert(0, scripts_dir)
     from run_behavioral_demand_prototype import run_behavioral_demand_prototype
 
+    # Execution config is UNSET on $0 infra → the runtime stays preflight_only.
+    # On a dedicated modeling host (ActivitySim installed / a container image) the
+    # same call runs a real, still-UNCALIBRATED ActivitySim run.
+    exec_cfg = _activitysim_exec_config()
     pipeline = run_behavioral_demand_prototype(
         screening_run_dir=screening_dir,
         output_root=os.path.join(run_root, "behavioral_demand_prototype"),
         force=True,
+        **exec_cfg,
     )
     pipeline_status = pipeline.get("pipeline_status")
     runtime_mode = pipeline.get("runtime_mode") or "preflight_only"
-    log += f"- Bundle built + preflight pipeline: {pipeline_status} (runtime mode: {runtime_mode}).\n"
+    executed = runtime_mode in EXECUTED_RUNTIME_MODES
+    log += f"- Bundle built + pipeline: {pipeline_status} (runtime mode: {runtime_mode}).\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
     # 3. Read the built-bundle structural totals (labeled scaffold, NOT a forecast).
@@ -404,7 +430,18 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
             "synthetic_persons": build_meta.get("persons"),
         }
 
-    # 4. Assemble + upload the honest evidence packet.
+    # 4. Assemble + upload the honest evidence packet. When a real (still
+    #    UNCALIBRATED) ActivitySim run executed, say so; never call it a forecast.
+    if executed:
+        lead_caveats = [
+            "A real but UNCALIBRATED, starter-grade ActivitySim run executed — this is "
+            "NOT a calibrated behavioral forecast.",
+            "The synthetic population is a deterministic scaffold (incl. a scaffold "
+            "worker_residents estimate), not a calibrated synthesis.",
+            "County-specific calibration is required before any forecast/regulatory use.",
+        ]
+    else:
+        lead_caveats = list(PREFLIGHT_CAVEATS)
     evidence = {
         "schema_version": EVIDENCE_SCHEMA_VERSION,
         "packet_type": "behavioral_demand_preflight_evidence",
@@ -416,16 +453,20 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "query_text": run.get("query_text"),
         "is_forecast": False,
         "claim_tier": "prototype",
+        "calibration": "uncalibrated",
+        "executed": executed,
         "preflight_status": "complete",
         "pipeline_status": pipeline_status,
         "runtime_mode": runtime_mode,
         "bundle": bundle_stats,
         "study_area": {"corridor_geojson_present": bool(corridor)},
-        "requirements_for_a_real_run": [
-            "A dedicated modeling host with ActivitySim installed (multi-GB RAM, always-on).",
+        "requirements_for_a_calibrated_run": [
+            "A dedicated modeling host with ActivitySim installed (multi-GB RAM, always-on)."
+            if not executed
+            else "A dedicated modeling host is already providing execution.",
             "County-specific calibration before any forecast/regulatory use.",
         ],
-        "caveats": list(PREFLIGHT_CAVEATS) + list(pipeline.get("caveats", [])),
+        "caveats": lead_caveats + list(pipeline.get("caveats", [])),
     }
     data = (json.dumps(evidence, indent=2) + "\n").encode("utf-8")
     storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json")
@@ -469,9 +510,60 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
             }
         )
 
-    log += f"- Evidence packet: {'uploaded' if storage_ref else 'upload failed (best-effort)'}; {len(kpis)} scaffold KPIs written.\n"
+    # 6. ONLY when a real ActivitySim run executed AND produced supportable
+    #    behavioral outputs, write those KPIs — always LABELED uncalibrated/starter,
+    #    never a forecast. On $0 preflight infra this block is skipped entirely, so
+    #    no demand-shaped number is ever emitted without a real run behind it.
+    real_kpis = _write_executed_behavioral_kpis(run_id, pipeline) if executed else 0
+
+    log += (
+        f"- Evidence packet: {'uploaded' if storage_ref else 'upload failed (best-effort)'}; "
+        f"{len(kpis)} scaffold KPIs"
+        + (f" + {real_kpis} uncalibrated behavioral KPIs" if real_kpis else "")
+        + " written.\n"
+    )
     sb_patch_stage(stage_id, {"log_tail": log})
     return {"log": log}
+
+
+def _write_executed_behavioral_kpis(run_id: str, pipeline: dict) -> int:
+    """Write behavioral KPIs from a REAL (uncalibrated, starter) ActivitySim run,
+    reading the extractor's honest summary. Emits nothing if the run produced
+    insufficient behavioral outputs (the common starter/zero-model case)."""
+    summary_path = pipeline.get("kpi_summary_path")
+    if not summary_path or not os.path.exists(summary_path):
+        return 0
+    try:
+        with open(summary_path) as fh:
+            kpi_summary = json.load(fh)
+    except (OSError, ValueError):
+        return 0
+    if kpi_summary.get("availability_status") == "not_enough_behavioral_outputs":
+        return 0
+
+    provenance = (
+        "Real but UNCALIBRATED, starter-grade ActivitySim run — NOT a calibrated "
+        "behavioral forecast. County-specific calibration required before any use."
+    )
+    totals = kpi_summary.get("totals") or {}
+    written = 0
+    for key, unit in (("households", "households"), ("persons", "persons"), ("tours", "tours"), ("trips", "trips")):
+        value = totals.get(key)
+        if value is None:
+            continue
+        sb_post_kpi(
+            {
+                "run_id": run_id,
+                "kpi_category": "general",
+                "kpi_name": f"activitysim_{key}",
+                "kpi_label": f"ActivitySim {key} (uncalibrated)",
+                "value": float(value),
+                "unit": unit,
+                "breakdown_json": {"provenance": provenance, "calibration": "uncalibrated"},
+            }
+        )
+        written += 1
+    return written
 
 
 STAGE_DISPATCH = {
