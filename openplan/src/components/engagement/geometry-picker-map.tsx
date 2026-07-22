@@ -125,12 +125,24 @@ const LIMIT_MESSAGE = `Vertex limit reached (${ENGAGEMENT_GEOMETRY_MAX_VERTICES}
  */
 export function GeometryPickerMap({
   onGeometryChange,
+  initialMode = "point",
+  allowedModes = ["point", "line", "area"],
+  initialCenter = [-121.033982, 39.239137],
+  initialZoom = 9.5,
 }: {
   onGeometryChange: (geometry: EngagementGeometry | null) => void;
+  /** Starting draw mode (default "point" for the engagement submission form). */
+  initialMode?: EngagementDrawMode;
+  /** Which mode toggles to show; a single mode hides the selector entirely. */
+  allowedModes?: EngagementDrawMode[];
+  /** Initial map center [lng, lat] (default Grass Valley, CA for engagement). */
+  initialCenter?: [number, number];
+  initialZoom?: number;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const [draw, setDraw] = useState<DrawState>({ mode: "point", vertices: [], areaClosed: false });
+  const [draw, setDraw] = useState<DrawState>({ mode: initialMode, vertices: [], areaClosed: false });
+  const visibleModes = MODE_OPTIONS.filter((option) => allowedModes.includes(option.id));
   const [hint, setHint] = useState<string | null>(null);
   const [announcement, setAnnouncement] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -193,8 +205,8 @@ export function GeometryPickerMap({
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-121.033982, 39.239137], // Grass Valley, CA — Nevada County seat (NCTC default)
-      zoom: 9.5,
+      center: initialCenter,
+      zoom: initialZoom,
       attributionControl: false,
     });
 
@@ -414,8 +426,13 @@ export function GeometryPickerMap({
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex overflow-hidden rounded-lg border border-border" role="group" aria-label="Drawing mode">
-          {MODE_OPTIONS.map((option) => (
+        <div
+          className="inline-flex overflow-hidden rounded-lg border border-border"
+          role="group"
+          aria-label="Drawing mode"
+          hidden={visibleModes.length <= 1}
+        >
+          {visibleModes.map((option) => (
             <button
               key={option.id}
               type="button"
