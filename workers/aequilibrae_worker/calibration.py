@@ -180,6 +180,41 @@ def calibration_objective(obs_mod_pairs: Sequence[tuple[float, float]]) -> float
     return round((geh_pen + ape_pen) / 2.0, 4)
 
 
+def demand_nudge_multipliers(sl_od_by_link, count_ratio_by_link, n_zones,
+                             gamma: float = 0.5, lo: float = 0.5, hi: float = 2.0):
+    """Per-OD-cell multiplier to nudge demand toward observed counts (ODME-lite).
+
+    Stage 2 of the staged method. Select-link gives, for each counted link, the
+    OD matrix of the trips using it (the Jacobian — which cells feed the link).
+    A cell's multiplier is the select-link-flow-weighted average of the count
+    ratios (observed/modeled) over the counted links the cell feeds, damped
+    (gamma<1) and clipped. Cells that feed NO counted link stay 1.0 — a sparse,
+    regularized nudge toward the prior matrix; the holdout guard (elsewhere)
+    rejects any overfitting step. Returns an (n_zones, n_zones) numpy array.
+
+    (numpy-only helper — imported here so the stdlib functions above stay
+    dependency-free.)
+    """
+    import numpy as np
+    num = np.zeros((n_zones, n_zones), dtype=float)   # Σ_L sl[i,j]·ratio_L
+    den = np.zeros((n_zones, n_zones), dtype=float)   # Σ_L sl[i,j]
+    for key, sl in sl_od_by_link.items():
+        r = count_ratio_by_link.get(key)
+        if r is None or r <= 0:
+            continue
+        a = np.asarray(sl, dtype=float)
+        if a.shape != (n_zones, n_zones):
+            continue
+        num += a * float(r)
+        den += a
+    mult = np.ones((n_zones, n_zones), dtype=float)
+    mask = den > 0
+    if mask.any():
+        weighted = num[mask] / den[mask]
+        mult[mask] = np.clip(np.power(weighted, gamma), lo, hi)
+    return mult
+
+
 def accept_step(prev_holdout_obj: float | None, new_holdout_obj: float | None,
                 tol: float = 0.0) -> bool:
     """Overfit guard: accept a calibration step only if it does not degrade the
