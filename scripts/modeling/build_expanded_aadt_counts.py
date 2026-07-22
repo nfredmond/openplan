@@ -114,13 +114,27 @@ def cross_street_exclude(desc, route_names):
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Build an expanded Caltrans AADT count set for a corridor.")
-    ap.add_argument("--geojson", required=True, help="Caltrans AADT FeatureServer GeoJSON for the corridor bbox")
+    ap = argparse.ArgumentParser(description="Build an expanded DOT AADT count set for any US corridor.")
+    ap.add_argument("--geojson", help="Pre-fetched AADT GeoJSON (RTE/PM/DESCRIPTION/BACK_AADT/AHEAD_AADT).")
+    ap.add_argument("--fetch-bbox", help="minlon,minlat,maxlon,maxlat — fetch AADT via count_sources instead of --geojson")
+    ap.add_argument("--region", default="CA", help="Count-source region key (default CA=Caltrans; see count_sources.COUNT_SOURCES)")
     ap.add_argument("--db", required=True, help="A built AequilibraE project_database.sqlite (for real link names/types)")
     ap.add_argument("--out", required=True, help="Output counts CSV path")
     args = ap.parse_args()
 
-    pts = load_points(args.geojson)
+    # Source the AADT: either a pre-fetched GeoJSON, or fetch live from the
+    # region's DOT FeatureServer via the count-source registry (multi-state).
+    geojson_path = args.geojson
+    if args.fetch_bbox:
+        import count_sources
+        bbox = tuple(float(v) for v in args.fetch_bbox.split(","))
+        geojson_path = args.out + ".aadt.geojson"
+        n = count_sources.fetch_aadt_geojson(bbox, args.region, geojson_path)
+        print(f"Fetched {n} AADT features for {args.region} bbox {bbox} -> {geojson_path}")
+    if not geojson_path:
+        ap.error("provide --geojson or --fetch-bbox")
+
+    pts = load_points(geojson_path)
     conn = sqlite3.connect(args.db)
     conn.enable_load_extension(True)
     conn.load_extension(SPATIALITE)
