@@ -13,6 +13,8 @@ import {
   rtpCycleStatusTone,
   rtpPortfolioRoleTone,
 } from "@/lib/rtp/catalog";
+import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score-editor";
+import type { RtpPriorityScores } from "@/lib/rtp/priority-scoring";
 
 type AvailableCycle = {
   id: string;
@@ -33,6 +35,7 @@ type ExistingLink = {
   horizonEndYear: number | null;
   portfolioRole: string;
   priorityRationale: string | null;
+  priorityScores: RtpPriorityScores;
 };
 
 export function ProjectRtpLinker({
@@ -171,6 +174,10 @@ export function ProjectRtpLinker({
                   {typeof link.horizonStartYear === "number" && typeof link.horizonEndYear === "number" ? (
                     <span className="module-record-chip"><span>Horizon</span><strong>{link.horizonStartYear}–{link.horizonEndYear}</strong></span>
                   ) : null}
+                </div>
+
+                <div className="mt-3">
+                  <RtpPriorityScoreEditor projectId={projectId} linkId={link.id} initialScores={link.priorityScores} />
                 </div>
               </div>
             ))}

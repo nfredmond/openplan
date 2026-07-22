@@ -175,7 +175,7 @@ export default async function ProjectDetailPage({
 
   const projectRtpLinkResult = await supabase
     .from("project_rtp_cycle_links")
-    .select("id, rtp_cycle_id, portfolio_role, priority_rationale, created_at")
+    .select("id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, created_at")
     .eq("project_id", project.id)
     .order("created_at", { ascending: false });
 
@@ -223,6 +223,7 @@ export default async function ProjectDetailPage({
         horizonEndYear: cycle.horizon_end_year,
         portfolioRole: link.portfolio_role,
         priorityRationale: link.priority_rationale,
+        priorityScores: link.priority_scores ?? {},
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));

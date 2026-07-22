@@ -59,6 +59,7 @@ export type ProjectRtpLinkRow = {
   rtp_cycle_id: string;
   portfolio_role: string;
   priority_rationale: string | null;
+  priority_scores: Record<string, number> | null;
   created_at: string;
 };
 
@@ -241,6 +242,7 @@ export type ExistingRtpLink = {
   horizonEndYear: number | null;
   portfolioRole: string;
   priorityRationale: string | null;
+  priorityScores: Record<string, number>;
 };
 
 export type AerialMission = {
