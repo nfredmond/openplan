@@ -24,6 +24,7 @@
  */
 
 import { fetchJsonWithRetry } from "./http";
+import { pointInPolygon } from "@/lib/engagement/representativeness";
 
 export interface CensusTractData {
   geoid: string;
@@ -68,6 +69,14 @@ const CENSUS_BASE = "https://api.census.gov/data";
 const ACS_YEAR = "2023"; // latest 5-year ACS
 const ACS_DATASET = "acs/acs5";
 const CENSUS_API_KEY = process.env.CENSUS_API_KEY;
+
+// TIGERweb tract/block-group layer used to corridor-clip the tract set. Layer 8
+// returns 12-digit block-group-like GEOIDs + centroids; truncating to 11 digits
+// gives the tract GEOID. Same layer the AequilibraE worker uses
+// (workers/aequilibrae_worker/data_pipeline.py), so the app-side sketch lane
+// sees the SAME corridor-scale study area.
+const TIGER_TRACT_LAYER =
+  "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/8/query";
 
 const VARIABLES = [
   "B01003_001E", // total pop
@@ -316,7 +325,65 @@ function summarizeTracts(tracts: CensusTractData[]): CensusSummary {
 }
 
 /**
- * Main entry: fetch Census/ACS data for tracts overlapping a corridor.
+ * Corridor-clip: the set of tract GEOIDs whose TIGER centroid falls inside the
+ * drawn corridor polygon. Mirrors the AequilibraE worker's tract identification
+ * so the app-side sketch lane sees the SAME corridor-scale study area, not every
+ * tract in the overlapping counties. Returns null on any TIGERweb failure so the
+ * caller falls back to the unclipped county set rather than erroring.
+ */
+async function fetchCorridorTractGeoids(
+  corridorGeojson: { type: string; coordinates: number[][][] | number[][][][] },
+  bbox: BBox
+): Promise<Set<string> | null> {
+  const url =
+    `${TIGER_TRACT_LAYER}?where=1%3D1` +
+    `&geometry=${bbox.minLon},${bbox.minLat},${bbox.maxLon},${bbox.maxLat}` +
+    `&geometryType=esriGeometryEnvelope&spatialRel=esriSpatialRelIntersects` +
+    `&outFields=GEOID,CENTLAT,CENTLON&returnGeometry=false&inSR=4326&resultRecordCount=5000&f=json`;
+
+  try {
+    const payload = await fetchJsonWithRetry<{
+      features?: Array<{ attributes?: { GEOID?: string; CENTLAT?: string; CENTLON?: string } }>;
+      error?: unknown;
+    }>(url, undefined, {
+      timeoutMs: 20000,
+      retries: 1,
+      cacheTtlMs: 24 * 60 * 60 * 1000,
+      cacheKey: `tiger-tracts:${bbox.minLon.toFixed(3)}:${bbox.minLat.toFixed(3)}:${bbox.maxLon.toFixed(3)}:${bbox.maxLat.toFixed(3)}`,
+    });
+
+    if (!payload || payload.error || !Array.isArray(payload.features)) return null;
+
+    const geoids = new Set<string>();
+    for (const feat of payload.features) {
+      const attrs = feat.attributes ?? {};
+      const rawGeoid = String(attrs.GEOID ?? "");
+      if (!rawGeoid) continue;
+      // Layer 8 serves 12-digit block-group ids; truncate to the 11-digit tract.
+      const tractGeoid = rawGeoid.length > 11 ? rawGeoid.slice(0, 11) : rawGeoid;
+      const lat = Number.parseFloat(String(attrs.CENTLAT ?? "").replace("+", ""));
+      const lon = Number.parseFloat(String(attrs.CENTLON ?? "").replace("+", ""));
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+      if (pointInPolygon(lon, lat, corridorGeojson as Parameters<typeof pointInPolygon>[2])) {
+        geoids.add(tractGeoid);
+      }
+    }
+    return geoids;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Main entry: fetch Census/ACS data for tracts inside a corridor.
+ *
+ * The county ACS fetch returns every tract in the overlapping counties; the
+ * result is then CLIPPED to tracts whose centroid falls inside the drawn
+ * corridor, so a modest corridor in a populous county resolves to its true
+ * study-area scale (fewer false sketch-cap trips) and the population denominator
+ * is corridor-honest — not whole counties. Falls back to the unclipped set when
+ * the clip is unavailable (TIGERweb hiccup) or empty (a corridor smaller than
+ * any tract centroid) so a run never errors.
  */
 export async function fetchCensusForCorridor(
   corridorGeojson: { type: string; coordinates: number[][][] | number[][][][] }
@@ -328,11 +395,21 @@ export async function fetchCensusForCorridor(
     return summarizeTracts([]);
   }
 
-  const tracts = await fetchAcsForCounties(counties);
+  const [tracts, clipGeoids] = await Promise.all([
+    fetchAcsForCounties(counties),
+    fetchCorridorTractGeoids(corridorGeojson, bbox),
+  ]);
 
   const dedupedTracts = Array.from(
     new Map(tracts.map((tract) => [tract.geoid, tract])).values()
   );
 
-  return summarizeTracts(dedupedTracts);
+  const clipped =
+    clipGeoids && clipGeoids.size > 0
+      ? dedupedTracts.filter((tract) => clipGeoids.has(tract.geoid))
+      : dedupedTracts;
+
+  // If the clip matched nothing (id mismatch or a sub-tract corridor), keep the
+  // county set so the run still executes.
+  return summarizeTracts(clipped.length > 0 ? clipped : dedupedTracts);
 }
