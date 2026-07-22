@@ -63,3 +63,6 @@ CLAUDE.local.md
 
 # generated test-output artifacts — never version these
 docs/ops/*-test-output/
+
+# Local Python venv (dir in the main checkout; symlink in worktrees) — never track
+workers/aequilibrae_worker/.venv311
