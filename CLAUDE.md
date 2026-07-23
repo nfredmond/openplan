@@ -117,7 +117,3 @@ npm exec supabase gen types typescript --local > src/types/supabase.ts   # regen
 
 Run a single test: `npm test -- src/test/<file>.test.ts` or `npm test -- -t "<test name>"`.
 
-## Frontend design
-
-OpenPlan should read as a **civic workbench / planning operating system**, not a generic AI-SaaS dashboard. Prefer lists/rows/tables/sectioned worksurfaces and a left-rail + worksurface + inspector layout; avoid card grids, chip/pill clusters, and many equal-weight CTAs. Before major UI work, read `docs/ops/2026-04-08-openplan-frontend-design-constitution.md`.
-
