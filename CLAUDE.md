@@ -14,7 +14,23 @@ These are binding constraints from Nathaniel, not preferences. They have been vi
 violate them again. If a proposed task conflicts with one of these, say so and propose an alternative
 instead of proceeding.
 
-**1. It must work for ANYONE in the United States. All of California is the floor.**
+**0. NOTHING IS HARDCODED. Ever.**
+No place, jurisdiction, agency, or organization may be baked into code as a constant. Anything that
+varies between users is **configuration or data**, never a literal. If you find yourself typing a
+county name, a bounding box, a FIPS code, an agency name, a specific coordinate, or "58" because
+California has 58 counties — stop, and make it a parameter, a registry entry, or a database row.
+
+The test: *could a planner in a different place, with different data, use this without a code
+change?* If not, it is hardcoded, and it is a defect.
+
+**And the architecture must not assume the United States.** The US is the current scope; **worldwide
+is the eventual target**, so anything country-specific — FIPS codes, Census/ACS, TIGERweb, KABCO
+severity, state DOT feeds, CCRS — belongs behind an adapter or registry, never in a core type or a
+shared schema. Adding a new country, state, or data source should mean adding a descriptor, not
+editing call sites. Core concepts (a study area, a crash, a claim tier) must stay
+jurisdiction-neutral.
+
+**1. It must work for ANYONE in the United States today. All of California is the floor.**
 No feature ships fitted to one county, one agency, or one pilot. A planner in Ohio, Texas, or Fresno
 must be able to select their own geography and have the feature work — or be told plainly and
 specifically that their area is not covered and why.
@@ -42,10 +58,39 @@ Do not propose conferences, pilots, lighthouse users, demos, design partners, or
 try it". Nathaniel drives all outreach and has explicitly cancelled that lane. The app must be good
 enough for any agency or consultant to use fully and unaided **before** it is shown to anyone.
 
-**4. Self-service is the bar.** Any agency, MPO/RTPA, city, county, tribe, non-profit, or private
-planning/environmental consultant must be able to use OpenPlan fully on their own — their geography,
-their data, no founder involvement, no hand-configured environment. When a change requires operator
-setup or a manual step, that is a defect to be designed out, not a documented workaround.
+**4. Self-service is the bar, and it is now the official product posture.** Any agency, MPO/RTPA,
+city, county, tribe, non-profit, or private planning/environmental consultancy — anywhere in the
+United States — must be able to sign up and use OpenPlan fully on their own: their geography, their
+data, no founder involvement, no hand-configured environment, no access queue. When a change requires
+operator setup or a manual step, that is a defect to be designed out, not a documented workaround.
+
+**Decided 2026-07-23 (Nathaniel):** the product is **self-serve**. The earlier "not self-serve,
+request-access, founder fit-review" posture was introduced unintentionally and is **reversed**. The
+public site should offer real sign-up, a workspace should be usable by a whole team without founder
+involvement, and `/request-access` is no longer the intended front door.
+
+**5. OpenPlan is free and open source. There is no paid tier and no payment step.**
+**Decided 2026-07-23 (Nathaniel):** the Stripe/billing subsystem is **legacy** — it predates this
+posture and is not part of the product. Do not route self-service through it, do not "fix" the
+disabled checkout, and do not add plan/subscription gating to any new feature. Sign-up is free and
+immediate. (`src/lib/billing/*`, `src/app/api/billing/*`, the Stripe env vars, and the plan/quota
+seams are pending removal; treat them as dead code, not as a system to extend.)
+
+**But flip the CLAIM last, not first.** `src/test/public-page-claims-guardrails.test.ts` and
+`sales-proof-claim-boundaries.test.ts` currently assert the site does NOT promise self-serve. Those
+guards exist to prevent overclaiming, and they are still doing their job while the capability is
+missing (as of this writing: no password-reset flow, no teammate-invite UI, and no Supabase auth
+callback route). Deleting them ahead of the capability would simply recreate the overclaim pointing
+the other way.
+
+The required order is:
+
+1. **Build the capability** — sign up → get a workspace → invite teammates → recover a lost
+   password, all without the founder and without paying.
+2. **Then change the public claims** to match what now actually works.
+3. **Then rewrite the guards to assert the NEW truth** — that self-serve works and no founder gate
+   remains. Update them; never just delete them. A module with no claim guard is how overclaiming
+   comes back.
 
 ## Engineering Philosophy
 

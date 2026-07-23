@@ -77,11 +77,31 @@ describe("POST /api/safety/crashes/ingest guards", () => {
     expect(res.status).toBe(400);
   });
 
-  it("400 for years before CCRS existed", async () => {
+  it("does not encode one source's calendar in the transport layer", async () => {
+    // The route must stay jurisdiction- and source-neutral: clamping a year
+    // range to CCRS's 2016 start here would mean editing this route to add any
+    // other state or data source. The ADAPTER owns that limit and clamps
+    // against its own live manifest.
     const res = await POST(
       ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [1999] })
     );
+    expect(res.status).toBe(200);
+    expect(ingestMock).toHaveBeenCalled();
+  });
+
+  it("still rejects years that are not plausible calendar years", async () => {
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [3500] })
+    );
     expect(res.status).toBe(400);
+  });
+
+  it("accepts any positive subdivision code, leaving validity to the adapter", async () => {
+    // A max of 58 would have hardcoded California's county count into the API.
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], countyCode: 201 })
+    );
+    expect(res.status).toBe(200);
   });
 
   it("413 when the body exceeds the route's size limit", async () => {

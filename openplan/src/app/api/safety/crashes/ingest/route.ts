@@ -25,9 +25,14 @@ const ingestSchema = z.object({
     maxLon: z.number().min(-180).max(180),
     maxLat: z.number().min(-90).max(90),
   }),
-  // CCRS begins in 2016; the adapter clamps further against the live manifest.
-  years: z.array(z.number().int().min(2016).max(2100)).min(1).max(20),
-  countyCode: z.number().int().min(1).max(58).optional(),
+  // Jurisdiction-neutral bounds. The transport layer must not encode one
+  // source's calendar or one state's county count — the ADAPTER owns those
+  // limits and clamps against its own live manifest (CCRS, for example, starts
+  // in 2016 and numbers 58 California counties). Baking either here would mean
+  // editing this route to add a state or a data source.
+  years: z.array(z.number().int().min(1900).max(2100)).min(1).max(20),
+  /** Source-specific subdivision code, validated by the adapter that uses it. */
+  countyCode: z.number().int().positive().optional(),
   maxRecords: z.number().int().min(1).max(MAX_RECORDS_CEILING).optional(),
 });
 
