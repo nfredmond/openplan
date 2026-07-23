@@ -141,7 +141,7 @@ export function GeometryPickerMap({
   initialMode?: EngagementDrawMode;
   /** Which mode toggles to show; a single mode hides the selector entirely. */
   allowedModes?: EngagementDrawMode[];
-  /** Initial map center [lng, lat] (default Grass Valley, CA for engagement). */
+  /** Initial map center [lng, lat]. Defaults to the neutral continental view. */
   initialCenter?: [number, number];
   initialZoom?: number;
 }) {

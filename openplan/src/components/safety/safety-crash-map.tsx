@@ -4,8 +4,15 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { SafetyCrashCollection } from "@/lib/safety/client-types";
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+
+// Crashes are only queried once a study area exists, so the constructed view
+// is strictly the "no study area chosen yet" state — the bbox effect below
+// frames every state that has data. A place-shaped default here would have
+// shown a California town to a planner working anywhere else.
+const INITIAL_ZOOM = 3.4;
 
 /**
  * Severity palette, matched to the Explore crash overlay
@@ -45,8 +52,8 @@ export function SafetyCrashMap({ collection, bbox }: SafetyCrashMapProps) {
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-121.033982, 39.239137],
-      zoom: 9,
+      center: CONTINENTAL_US_CENTER,
+      zoom: INITIAL_ZOOM,
       attributionControl: false,
     });
     mapRef.current = map;

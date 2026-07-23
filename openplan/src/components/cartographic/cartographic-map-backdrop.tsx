@@ -13,6 +13,7 @@ import { tractFeatureToSelection } from "@/lib/cartographic/tract-feature-to-sel
 import { engagementItemFeatureToSelection } from "@/lib/cartographic/engagement-item-feature-to-selection";
 import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { useTheme } from "@/components/theme-provider";
 
 import {
@@ -33,10 +34,12 @@ const HAS_INVALID_PUBLIC_MAPBOX_TOKEN = hasInvalidPublicMapboxToken(
 // Routes that own their own map and should suppress the shell backdrop.
 const MAP_OWNING_ROUTES = ["/explore"];
 
-// Default map center when a map has no data attached to it yet. Grass Valley, CA —
-// seat of Nevada County and the home-region reference point for the NCTC demo.
-const DEFAULT_CENTER: [number, number] = [-121.033982, 39.239137];
-const DEFAULT_ZOOM = 9.5;
+// The shell backdrop has no study area of its own, so it opens on the shared
+// neutral view and then frames whatever the workspace actually contains (see
+// the initial-fit effect). A place-shaped default meant every workspace,
+// anywhere on earth, opened on one small California town.
+const INITIAL_CENTER = CONTINENTAL_US_CENTER;
+const INITIAL_ZOOM = 3.4;
 
 const AOI_SOURCE_ID = "cartographic-aerial-mission-aois";
 const AOI_FILL_LAYER_ID = "cartographic-aerial-mission-aois-fill";
@@ -111,6 +114,11 @@ const FIT_MAX_ZOOM = 15;
 const FIT_DURATION_MS = 400;
 const POINT_FIT_ZOOM = 14;
 
+// The one-shot framing of the whole workspace stops at regional scale — a
+// workspace holding a single point should read as "here is your region", not
+// as a street-level zoom onto one marker.
+const INITIAL_FIT_MAX_ZOOM = 11;
+
 type MissionAoiFeatureCollection = {
   type: "FeatureCollection";
   features: Array<{
@@ -129,6 +137,28 @@ type EngagementFeatureCollection = MissionAoiFeatureCollection;
 
 function routeOwnsMap(pathname: string): boolean {
   return MAP_OWNING_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+}
+
+/**
+ * Fold every feature of a collection into a bounds accumulator, reusing the
+ * same geometry rules as fit-to-selection so the initial framing and a later
+ * click agree on what a feature's extent is. Geometries the shared helper
+ * rejects are skipped rather than guessed at.
+ */
+function extendBoundsWithCollection(
+  bounds: mapboxgl.LngLatBounds,
+  collection: MissionAoiFeatureCollection | null,
+): void {
+  for (const feature of collection?.features ?? []) {
+    const instruction = fitInstructionFromGeometry(feature.geometry);
+    if (!instruction) continue;
+    if (instruction.kind === "center") {
+      bounds.extend(instruction.center);
+      continue;
+    }
+    bounds.extend(instruction.bbox[0]);
+    bounds.extend(instruction.bbox[1]);
+  }
 }
 
 export function CartographicMapBackdrop() {
@@ -152,6 +182,11 @@ export function CartographicMapBackdrop() {
   const router = useRouter();
   const navigateRef = useRef<(path: string) => void>((path) => router.push(path));
   const backdropTheme = themeMounted && resolvedTheme === "dark" ? "dark" : "light";
+  // Guards for the one-shot initial framing. Both reset when the map instance
+  // is rebuilt (a theme swap tears it down), so a re-created backdrop re-frames
+  // the workspace instead of being stranded at the neutral continental view.
+  const didInitialFitRef = useRef(false);
+  const userMovedMapRef = useRef(false);
 
   useEffect(() => {
     // One-shot mount gate so stored theme state can resolve without a hydration style diff.
@@ -203,13 +238,24 @@ export function CartographicMapBackdrop() {
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: styleUrl,
-      center: DEFAULT_CENTER,
-      zoom: DEFAULT_ZOOM,
+      center: INITIAL_CENTER,
+      zoom: INITIAL_ZOOM,
       attributionControl: false,
       logoPosition: "bottom-left",
       interactive: true,
       pitchWithRotate: false,
       dragRotate: false,
+    });
+
+    didInitialFitRef.current = false;
+    userMovedMapRef.current = false;
+    // Only user-driven moves carry an originalEvent; programmatic fits do not.
+    // Once the planner has moved the map themselves, no late-arriving payload
+    // is allowed to yank the viewport out from under them.
+    map.on("movestart", (event) => {
+      if ((event as { originalEvent?: unknown }).originalEvent) {
+        userMovedMapRef.current = true;
+      }
     });
 
     map.on("load", () => setReady(true));
@@ -828,6 +874,33 @@ export function CartographicMapBackdrop() {
       map.once("style.load", paint);
     }
   }, [ready, engagementItems, resolvedTheme]);
+
+  // Frame the workspace's own geography once, on the first payload that
+  // carries any. Without this the backdrop would sit at the neutral
+  // continental view forever; with it, the shell shows the planner their
+  // actual region regardless of where on earth that is.
+  //
+  // Census tracts are deliberately excluded: that payload is workspace-
+  // agnostic reference data, so fitting to it would frame whatever the tract
+  // service happens to return rather than this workspace's work.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    if (didInitialFitRef.current || userMovedMapRef.current) return;
+
+    const bounds = new mapboxgl.LngLatBounds();
+    for (const collection of [aois, projectMarkers, corridors, rtpCycles, engagementItems]) {
+      extendBoundsWithCollection(bounds, collection);
+    }
+    if (bounds.isEmpty()) return;
+
+    didInitialFitRef.current = true;
+    map.fitBounds(bounds, {
+      padding: FIT_PADDING,
+      maxZoom: INITIAL_FIT_MAX_ZOOM,
+      duration: 0,
+    });
+  }, [ready, aois, projectMarkers, corridors, rtpCycles, engagementItems]);
 
   // Honor the layers.aerial toggle from the cartographic context.
   useEffect(() => {

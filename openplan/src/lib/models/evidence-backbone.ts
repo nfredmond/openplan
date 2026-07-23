@@ -86,6 +86,14 @@ export type ModelingSourceManifestInput = {
     | "lodes"
     | "gtfs"
     | "osm"
+    // Legacy, read-only: a kind named after one jurisdiction's DOT cannot
+    // describe any other agency's counts, so nothing emits it any more — new
+    // count manifests use the neutral `local_public_counts` kind and name the
+    // publishing agency in sourceLabel/citationText/metadata.sourceAgencies.
+    // It stays in the union so rows already written (and the source_kind CHECK
+    // constraint in 20260424000069_modeling_evidence_backbone.sql) still type.
+    // Replacing it with a neutral `state_dot_counts` needs a migration of that
+    // constraint, which is deliberately not done here.
     | "caltrans_counts"
     | "mobility_database"
     | "ntd"
@@ -355,19 +363,34 @@ export function buildCountyRunModelingEvidenceBundle({
 
   const countsSource = asString(validation?.counts_source_csv);
   if (countsSource) {
+    // The publishing agency is read from the counts themselves (the count
+    // builder stamps each station's source_agency, and the validation summary
+    // carries the distinct set forward) — never inferred from the CSV's file
+    // path. A path substring cannot tell one state DOT's counts from another's,
+    // and an attribution guessed wrong is a falsified citation.
+    const countAgencies = (
+      Array.isArray(validation?.count_source_agencies) ? validation.count_source_agencies : []
+    ).filter((agency): agency is string => typeof agency === "string" && agency.trim().length > 0);
+    const agencyLabel = countAgencies.join(", ");
     sourceManifests.push({
       sourceKey: "observed_count_validation",
-      sourceKind: countsSource.toLowerCase().includes("caltrans") ? "caltrans_counts" : "local_public_counts",
-      sourceLabel: "Observed traffic count validation set",
+      // Neutral counts kind; the agency lives in the label, citation, and metadata.
+      sourceKind: "local_public_counts",
+      sourceLabel: agencyLabel
+        ? `Observed traffic count validation set — ${agencyLabel}`
+        : "Observed traffic count validation set",
       sourceUrl: countsSource,
       sourceVintage: generatedYear,
       geographyId: manifest.county_fips,
       geographyLabel: countyLabel,
       licenseNote: "Public observed-count source; verify agency terms before publication.",
-      citationText: `Observed traffic count validation set used to compare modeled assignment volumes for ${countyLabel}.`,
+      citationText: agencyLabel
+        ? `Observed traffic counts published by ${agencyLabel}, used to compare modeled assignment volumes for ${countyLabel}.`
+        : `Observed traffic count validation set used to compare modeled assignment volumes for ${countyLabel}. Publishing agency not recorded in the count set.`,
       metadata: {
         stationsTotal: validation?.stations_total ?? null,
         stationsMatched: validation?.stations_matched ?? null,
+        sourceAgencies: countAgencies,
       },
       ingestedAt: manifest.generated_at,
     });

@@ -59,6 +59,25 @@ LINK_DEFAULTS = {
     "centroid_connector": (50, 99999, 1),
 }
 
+# OSM `maxspeed` units expressed as a multiplier into the runtime's internal mph (see _parse_speed).
+# The empty key is the load-bearing one: https://wiki.openstreetmap.org/wiki/Key:maxspeed specifies
+# km/h as the implicit unit, so an unqualified tag is metric even in an imperial-signing country.
+KMH_TO_MPH = 1.0 / 1.609344
+KNOTS_TO_MPH = 1.150779
+SPEED_UNIT_TO_MPH = {
+    "": KMH_TO_MPH,
+    "kmh": KMH_TO_MPH,
+    "km/h": KMH_TO_MPH,
+    "kph": KMH_TO_MPH,
+    "kmph": KMH_TO_MPH,
+    "mph": 1.0,
+    "knots": KNOTS_TO_MPH,
+    "knot": KNOTS_TO_MPH,
+}
+# Whole-token match only: "50", "50 mph", "30 km/h" are speeds; "DE:zone30" and "maxspeed=walk" are
+# not, and must not be mined for a digit that happens to sit inside a scheme name.
+SPEED_TAG_RE = re.compile(r"^(?P<magnitude>\d+(?:\.\d+)?)\s*(?P<unit>[a-z/]*)$")
+
 LINK_CLASS_PRIORITY = {
     "motorway": 8,
     "trunk": 7,
@@ -314,10 +333,33 @@ def patch_osm_builder() -> None:
 
 
 def _parse_speed(value: Any) -> int | None:
+    """Normalise a raw OSM ``maxspeed`` tag to the runtime's internal miles per hour.
+
+    Speed convention: this runtime carries speeds in mph everywhere downstream — LINK_DEFAULTS,
+    the ``links.speed_ab``/``speed_ba`` columns once ``build_network`` has normalised them, and the
+    ``speed * 1609.34 / 60`` metres-per-minute travel-time formula. OSM is the opposite: ``maxspeed``
+    defaults to km/h and only marks imperial explicitly ("55 mph"), so a bare "80" means 80 km/h,
+    not 80 mph. Consuming the tag verbatim over-states such a link by ~1.6x, which propagates through
+    assignment into VMT — hence the conversion here rather than at the (mph-only) call sites.
+
+    Tags we cannot interpret ("walk", "none", "DE:urban", "signals") return None so the caller falls
+    back to a documented link-type default instead of to a number invented from stray digits.
+    """
     if value is None:
         return None
-    match = re.search(r"(\d+)", str(value))
-    return int(match.group(1)) if match else None
+    # SQLite's NUMERIC column affinity silently coerces a bare tag like "80" into a number on its way
+    # into links.speed_ab, so an int/float here is still an unconverted OSM value, not an mph one.
+    text = str(value).strip().lower()
+    # Lane- or conditionally-qualified tags ("50|30", "60; 40"): the first segment governs the link.
+    head = re.split(r"[|;,]", text)[0].strip()
+    match = SPEED_TAG_RE.match(head)
+    if match is None:
+        return None
+    to_mph = SPEED_UNIT_TO_MPH.get(match.group("unit"))
+    if to_mph is None:
+        return None
+    mph = int(round(float(match.group("magnitude")) * to_mph))
+    return mph if mph > 0 else None
 
 
 def extract_missing_centroids_from_warnings(caught_warnings: list[warnings.WarningMessage]) -> list[int]:
@@ -430,10 +472,13 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
             nx, ny = conn.execute("SELECT X(geometry), Y(geometry) FROM nodes WHERE node_id=?", (near_node,)).fetchone()
             line_wkt = f"LINESTRING({clon} {clat}, {nx} {ny})"
             length_m = max((d2 ** 0.5) * 111000, 10)
+            # speed_ab/speed_ba are left NULL on purpose: until the normalisation pass below they hold
+            # raw OSM `maxspeed` tags (metric by default), and a literal here would be indistinguishable
+            # from one. LINK_DEFAULTS["centroid_connector"] supplies the mph value in that same pass.
             conn.execute(
                 "INSERT INTO links (link_id, a_node, b_node, direction, distance, modes, link_type, name, "
-                "speed_ab, speed_ba, capacity_ab, capacity_ba, geometry) "
-                "VALUES (?, ?, ?, 0, ?, 'c', 'centroid_connector', 'connector', 50, 50, 99999, 99999, GeomFromText(?, 4326))",
+                "capacity_ab, capacity_ba, geometry) "
+                "VALUES (?, ?, ?, 0, ?, 'c', 'centroid_connector', 'connector', 99999, 99999, GeomFromText(?, 4326))",
                 (next_link, centroid_node, near_node, length_m, line_wkt),
             )
             adjacent_link_types = [
@@ -468,6 +513,8 @@ def build_network(bundle_dir: Path, boundary_geom, zones_df: pd.DataFrame, netwo
         centroid_map[zone_id] = centroid_node
     conn.commit()
 
+    # Normalisation pass: speed_ab/speed_ba come out of the OSM import as raw `maxspeed` tags in mixed
+    # units and go back in as the mph the rest of the pipeline (and `distance` in metres) assumes.
     links_data = conn.execute(
         "SELECT link_id, link_type, speed_ab, speed_ba, distance, lanes_ab, lanes_ba FROM links"
     ).fetchall()

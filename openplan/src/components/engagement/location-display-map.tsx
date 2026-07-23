@@ -4,8 +4,16 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
 const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
+// Zoom for the first paint before the load handler fits to the full extent.
+const SEEDED_ZOOM = 11;
+// Only reachable if every item's geometry turns out to be degenerate (no
+// usable coordinate). Showing the whole continent is honest there; showing
+// somebody else's town would not be.
+const NEUTRAL_ZOOM = 3.4;
 
 type MapItem = {
   id: string;
@@ -147,22 +155,22 @@ export function LocationDisplayMap({
 
     if (pointItems.length === 0 && shapeItems.length === 0) return;
 
-    let center: [number, number] = [-121.033982, 39.239137];
-    let zoom = 9.5;
-    if (pointItems.length > 0) {
-      center = [pointItems[0].longitude, pointItems[0].latitude];
-      zoom = 11;
-    } else if (shapeItems.length > 0) {
-      const firstPosition = collectGeometryPositions(shapeItems[0].parsedGeometry)[0];
-      center = [firstPosition[0], firstPosition[1]];
-      zoom = 11;
-    }
+    // Seed the first paint from the campaign's own data — the load handler
+    // below fits to the full extent once the style is up. There is no
+    // place-shaped default here: this map belongs to whichever agency's
+    // campaign rendered it. The shape branch is safe because the guard above
+    // has already returned when both collections are empty; the remaining
+    // `?? null` covers a shape whose ring parsed to no positions at all.
+    const seed: [number, number] | null =
+      pointItems.length > 0
+        ? [pointItems[0].longitude, pointItems[0].latitude]
+        : (collectGeometryPositions(shapeItems[0].parsedGeometry)[0] ?? null);
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center,
-      zoom,
+      center: seed ?? CONTINENTAL_US_CENTER,
+      zoom: seed ? SEEDED_ZOOM : NEUTRAL_ZOOM,
       attributionControl: false,
     });
 

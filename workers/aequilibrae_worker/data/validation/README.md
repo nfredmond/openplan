@@ -19,8 +19,16 @@ observed counts, never a calibration or a validated forecast.
 
 The screening model is geo-general (any US corridor). Counts come from state DOT
 AADT FeatureServers via a small registry — `scripts/modeling/count_sources.py`.
-Caltrans (region `CA`) is wired; **adding a state is one registry entry** (its
-FeatureServer `/query` URL + a field map), then it fetches automatically:
+Caltrans (region `CA`), WSDOT (`WA`), CDOT (`CO`) and ODOT (`OR`) are wired;
+**adding a state is one registry entry** (its FeatureServer `/query` URL, a field
+map, and its provenance: publishing agency, station-id prefix, count vintage),
+then it fetches automatically:
+
+Provenance is per-region and has no default. `--region` is required — it decides
+whose name goes on every row (`source_agency`, the station-id namespace, the
+count year), so a WSDOT count set is never published under Caltrans' name. A
+region whose feed does not publish a vintage leaves `count_year` blank and says
+so in `notes`, rather than borrowing another source's year.
 
 ```bash
 workers/aequilibrae_worker/.venv311/bin/python scripts/modeling/build_expanded_aadt_counts.py \
@@ -70,6 +78,7 @@ Regenerate:
 ```bash
 workers/aequilibrae_worker/.venv311/bin/python scripts/modeling/build_expanded_aadt_counts.py \
   --geojson workers/aequilibrae_worker/data/validation/nevada_county_aadt_2023_caltrans_raw.geojson \
+  --region CA \
   --db <a built runs/<id>/aeq_project/project_database.sqlite> \
   --out /tmp/regen.csv
 ```

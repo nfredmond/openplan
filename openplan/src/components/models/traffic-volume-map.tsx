@@ -3,8 +3,40 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+
+// The assignment network is fetched asynchronously, so the map has to exist
+// before its extent is known. It opens on the shared neutral view and then
+// fits to the network that actually loaded — a modeled network can be
+// anywhere, so there is no defensible default place to open on.
+const INITIAL_ZOOM = 3.4;
+const NETWORK_FIT_PADDING = 40;
+
+/**
+ * Extend a bounds accumulator with every coordinate in an arbitrarily nested
+ * GeoJSON coordinate array. Deliberately shape-agnostic: link geometry comes
+ * straight out of SpatiaLite's AsGeoJSON, which emits LineString for most
+ * links but MultiLineString for any that were split, and a walker that only
+ * understood one of those would silently under-fit the network.
+ */
+function extendBoundsWithCoordinates(bounds: mapboxgl.LngLatBounds, coordinates: unknown): void {
+  if (!Array.isArray(coordinates)) return;
+  if (
+    coordinates.length >= 2 &&
+    typeof coordinates[0] === "number" &&
+    typeof coordinates[1] === "number"
+  ) {
+    if (Number.isFinite(coordinates[0]) && Number.isFinite(coordinates[1])) {
+      bounds.extend([coordinates[0], coordinates[1]]);
+    }
+    return;
+  }
+  for (const child of coordinates) {
+    extendBoundsWithCoordinates(bounds, child);
+  }
+}
 
 type TrafficVolumeMapProps = {
   geojsonUrl?: string;
@@ -50,8 +82,8 @@ export function TrafficVolumeMap({
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-121.033982, 39.239137],
-      zoom: 12,
+      center: CONTINENTAL_US_CENTER,
+      zoom: INITIAL_ZOOM,
       attributionControl: false,
     });
 
@@ -79,6 +111,18 @@ export function TrafficVolumeMap({
           type: "geojson",
           data: geojson,
         });
+
+        // Frame the network that actually loaded. Without this the results
+        // map would sit at whatever view it was constructed with, which for
+        // any network outside that view means the run renders off-screen and
+        // reads as "no results".
+        const bounds = new mapboxgl.LngLatBounds();
+        for (const feature of (geojson.features ?? []) as Array<{ geometry?: { coordinates?: unknown } }>) {
+          extendBoundsWithCoordinates(bounds, feature.geometry?.coordinates);
+        }
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds, { padding: NETWORK_FIT_PADDING, duration: 0 });
+        }
 
         // Shadow/glow layer for depth
         map.addLayer({

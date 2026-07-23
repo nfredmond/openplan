@@ -47,6 +47,21 @@ describe("buildProjectStageGateSummary", () => {
     expect(gateEight?.evidencePreview[0]?.operatorControlTitle).toBe("Daily reports + progress payment records");
   });
 
+  it("builds the same board when the bound template is named explicitly", () => {
+    const implicit = buildProjectStageGateSummary([]);
+    const explicit = buildProjectStageGateSummary([], { templateId: "ca_stage_gates_v0_1" });
+
+    expect(explicit).toEqual(implicit);
+  });
+
+  it("refuses to render gates for a template it cannot resolve", () => {
+    // Falling back to the default here would show California's statutory gates
+    // under another jurisdiction's template id.
+    expect(() => buildProjectStageGateSummary([], { templateId: "oh_stage_gates_v1" })).toThrow(
+      "Unsupported stage-gate template: oh_stage_gates_v1"
+    );
+  });
+
   it("marks untouched gates as not started", () => {
     const summary = buildProjectStageGateSummary([]);
 

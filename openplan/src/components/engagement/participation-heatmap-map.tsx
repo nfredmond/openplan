@@ -4,9 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { HotspotFeatureCollection } from "@/lib/engagement/hotspots";
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
 const MAPBOX_ACCESS_TOKEN =
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
+// First-paint zoom before the load handler fits to the full extent.
+const SEEDED_ZOOM = 10.5;
+const NEUTRAL_ZOOM = 3.4;
 
 export type HeatmapPoint = { lng: number; lat: number; weight: number; negative: boolean };
 
@@ -48,6 +53,22 @@ function pointsFeatureCollection(points: HeatmapPoint[]) {
       properties: { weight: p.weight, negative: p.negative },
     })),
   };
+}
+
+/**
+ * First usable vertex of any hotspot polygon — the fallback seed when a
+ * campaign has hotspot clusters but no individual points to center on.
+ */
+function firstHotspotPosition(hotspots: HotspotFeatureCollection): [number, number] | null {
+  for (const feature of hotspots.features) {
+    const geom = feature.geometry;
+    const rings = geom.type === "Polygon" ? geom.coordinates : geom.coordinates.flat();
+    for (const ring of rings) {
+      const position = ring[0] as [number, number] | undefined;
+      if (position && Number.isFinite(position[0]) && Number.isFinite(position[1])) return position;
+    }
+  }
+  return null;
 }
 
 function buildHotspotPopup(props: Record<string, unknown>): HTMLElement {
@@ -102,12 +123,17 @@ export function ParticipationHeatmapMap({
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    const center: [number, number] = points.length > 0 ? [points[0].lng, points[0].lat] : [-121.033982, 39.239137];
+    // The load handler fits to points + hotspots, so this only frames the
+    // first paint. Seed it from whatever real coordinate the caller already
+    // handed us; the neutral continental view is the last resort, never a town.
+    const seed: [number, number] | null =
+      points.length > 0 ? [points[0].lng, points[0].lat] : firstHotspotPosition(hotspots);
+
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center,
-      zoom: 10.5,
+      center: seed ?? CONTINENTAL_US_CENTER,
+      zoom: seed ? SEEDED_ZOOM : NEUTRAL_ZOOM,
       attributionControl: false,
     });
     map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");

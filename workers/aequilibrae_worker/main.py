@@ -313,11 +313,47 @@ LINK_DEFAULTS = {
 }
 
 
+# OSM `maxspeed` units expressed as a multiplier into this worker's internal mph
+# (assignment converts with 1609.34 m/mi below). The EMPTY key is the load-bearing
+# one: https://wiki.openstreetmap.org/wiki/Key:maxspeed specifies km/h as the
+# implicit unit, so an unqualified tag is metric even in an imperial-signing
+# country. Reading "80" as 80 mph rather than 80 km/h (50 mph) inflated speeds by
+# 60%, which propagates through travel times into assignment and VMT.
+#
+# Deliberately duplicated from scripts/modeling/screening_runtime.py rather than
+# imported: the worker is a separate deploy unit (its own container) and cannot
+# import from scripts/. Keep the two in sync.
+_KMH_TO_MPH = 1.0 / 1.609344
+_KNOTS_TO_MPH = 1.150779
+_SPEED_UNIT_TO_MPH = {
+    "": _KMH_TO_MPH,
+    "kmh": _KMH_TO_MPH,
+    "km/h": _KMH_TO_MPH,
+    "kph": _KMH_TO_MPH,
+    "kmph": _KMH_TO_MPH,
+    "mph": 1.0,
+    "knots": _KNOTS_TO_MPH,
+    "knot": _KNOTS_TO_MPH,
+}
+# Whole-token match only: "50", "50 mph", "30 km/h" are speeds; "DE:zone30" and
+# "walk" are not, and must not be mined for a digit inside a scheme name.
+_SPEED_TAG_RE = re.compile(r"^(?P<magnitude>\d+(?:\.\d+)?)\s*(?P<unit>[a-z/]*)$")
+
+
 def _parse_speed(val):
+    """Normalize an OSM maxspeed tag to mph, or None when it is not a speed."""
     if val is None:
         return None
-    m = re.search(r"(\d+)", str(val))
-    return int(m.group(1)) if m else None
+    match = _SPEED_TAG_RE.match(str(val).strip().lower())
+    if not match:
+        return None
+    factor = _SPEED_UNIT_TO_MPH.get(match.group("unit"))
+    if factor is None:
+        return None
+    mph = float(match.group("magnitude")) * factor
+    # A zero or negative posted speed is not usable; let the caller fall back to
+    # its class default rather than dividing by zero downstream.
+    return mph if mph > 0 else None
 
 
 # ─── Supabase helpers ───────────────────────────────────────────────────

@@ -5,9 +5,17 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@/components/ui/button";
 import { StateBlock } from "@/components/ui/state-block";
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
 const MAPBOX_ACCESS_TOKEN =
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
+/** Zoom for an existing AOI's first paint, before fitBounds frames its ring. */
+const EXISTING_AOI_ZOOM = 10;
+// A mission with no AOI yet has no geography to show. Opening wide and neutral
+// says "pick your area"; opening on a specific town would have told every
+// operator, anywhere, that they were somewhere they are not.
+const NEUTRAL_ZOOM = 3.4;
 
 export type AoiPolygon = {
   type: "Polygon";
@@ -126,15 +134,15 @@ export function MissionAoiEditor({
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    const center = initialPolygon && initialPolygon.coordinates[0]
-      ? polygonCenter(initialPolygon.coordinates[0])
-      : ([-121.0, 39.2] as [number, number]);
+    // An existing AOI seeds the first paint (the load handler then fits to its
+    // bbox); a mission without one opens neutral rather than on a guess.
+    const center = initialPolygon ? polygonCenter(initialPolygon.coordinates[0] ?? []) : null;
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center,
-      zoom: 10,
+      center: center ?? CONTINENTAL_US_CENTER,
+      zoom: center ? EXISTING_AOI_ZOOM : NEUTRAL_ZOOM,
       attributionControl: false,
     });
 
@@ -432,8 +440,10 @@ function buildPreviewFeatureCollection(
   return { type: "FeatureCollection", features };
 }
 
-function polygonCenter(ring: [number, number][]): [number, number] {
-  if (ring.length === 0) return [-121.0, 39.2];
+// Returns null for an empty ring: an AOI with no vertices has no center, and
+// inventing one would put the operator somewhere they never drew.
+function polygonCenter(ring: [number, number][]): [number, number] | null {
+  if (ring.length === 0) return null;
   let sumLng = 0;
   let sumLat = 0;
   const positions = ring[0][0] === ring[ring.length - 1][0] && ring[0][1] === ring[ring.length - 1][1]

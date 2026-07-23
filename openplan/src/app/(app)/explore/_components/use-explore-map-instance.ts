@@ -8,12 +8,20 @@ import mapboxgl, {
   type Map,
 } from "mapbox-gl";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { installAnalysisLayers } from "./explore-analysis-layer-install";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
   process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
 );
+
+// Explore opens before the planner has chosen a study area. Once they pick a
+// corridor, use-explore-map-layer-effects fits the map to it — so this view
+// only ever frames the "nothing selected yet" state, and it must not pretend
+// to know where the planner works.
+const INITIAL_CENTER = CONTINENTAL_US_CENTER;
+const INITIAL_ZOOM = 3.4;
 
 export function useExploreMapInstance() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -30,8 +38,8 @@ export function useExploreMapInstance() {
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: [-121.033982, 39.239137],
-      zoom: 7,
+      center: INITIAL_CENTER,
+      zoom: INITIAL_ZOOM,
       pitch: 36,
       bearing: -10,
       antialias: true,

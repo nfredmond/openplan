@@ -1,5 +1,10 @@
 import { getOperatorControlProfileByEvidenceId } from "@/lib/stage-gates/operator-controls";
-import caStageGatesTemplate from "@/lib/stage-gates/templates/ca_stage_gates_v0.1.json";
+import { stageGateTemplateRegistry } from "@/lib/stage-gates/template-registry";
+import { DEFAULT_STAGE_GATE_TEMPLATE_ID } from "@/lib/stage-gates/template-loader";
+import type {
+  StageGateTemplateEvidence,
+  StageGateTemplateGate,
+} from "@/lib/stage-gates/template-registry";
 
 export type StageGateDecisionRow = {
   gate_id: string;
@@ -9,39 +14,11 @@ export type StageGateDecisionRow = {
   missing_artifacts?: string[] | null;
 };
 
-type StageGateTemplateEvidence = {
-  evidence_id: string;
-  title: string;
-  artifact_type: string;
-  required: boolean;
-  conditional_required_when?: string;
-};
-
 export type StageGateEvidencePreviewItem = StageGateTemplateEvidence & {
   operatorControlTitle: string | null;
   operatorControlFieldCount: number;
   operatorControlGoal: string | null;
   operatorControlAcceptancePreview: string[];
-};
-
-type StageGateTemplateGate = {
-  gate_id: string;
-  sequence: number;
-  name: string;
-  lapm_mapping?: string[];
-  stip_rtip_mapping?: string[];
-  ceqa_vmt_mapping?: string[];
-  outreach_mapping?: string[];
-  required_evidence?: StageGateTemplateEvidence[];
-};
-
-type StageGateTemplate = {
-  template_id: string;
-  template_name: string;
-  version: string;
-  jurisdiction: string;
-  gate_order: string[];
-  gates: StageGateTemplateGate[];
 };
 
 export type StageGateWorkflowState = "pass" | "hold" | "not_started";
@@ -102,17 +79,45 @@ export type ProjectStageGateSnapshot = {
   };
 };
 
-const template = caStageGatesTemplate as StageGateTemplate;
-
 function normalizeDecisionState(value: string | null | undefined): StageGateWorkflowState {
   if (value === "PASS") return "pass";
   if (value === "HOLD") return "hold";
   return "not_started";
 }
 
+export type ProjectStageGateSummaryOptions = {
+  /**
+   * The template the project is bound to. Omitted means "whatever the registry's
+   * interim default is" — the same template every existing workspace is bound
+   * to, which is why omitting it stays the current behaviour.
+   */
+  templateId?: string;
+};
+
+/**
+ * Build the gate board for a project's bound template.
+ *
+ * An unregistered `templateId` throws rather than falling back: rendering one
+ * jurisdiction's gates under another jurisdiction's template id would be wrong
+ * and indistinguishable from correct. Callers that need to degrade gracefully
+ * should ask `stageGateTemplateRegistry.get(templateId)` first and show an
+ * explicit "template not available" state.
+ */
 export function buildProjectStageGateSummary(
-  decisions: StageGateDecisionRow[] | null | undefined
+  decisions: StageGateDecisionRow[] | null | undefined,
+  options?: ProjectStageGateSummaryOptions
 ): ProjectStageGateSummary {
+  const templateId = options?.templateId?.trim() || DEFAULT_STAGE_GATE_TEMPLATE_ID;
+  if (!templateId) {
+    throw new Error("No stage-gate template is registered");
+  }
+
+  const entry = stageGateTemplateRegistry.get(templateId);
+  if (!entry) {
+    throw new Error(`Unsupported stage-gate template: ${templateId}`);
+  }
+  const template = entry.document;
+
   const latestDecisionByGate = new Map<string, StageGateDecisionRow>();
 
   for (const decision of decisions ?? []) {

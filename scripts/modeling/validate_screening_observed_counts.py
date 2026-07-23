@@ -484,6 +484,15 @@ def build_summary(
         "model_engine": evidence.get("engine", "unknown"),
         "model_caveats": evidence.get("caveats", []),
         "counts_source_csv": str(counts_csv),
+        # Who published these counts, taken from the count rows themselves.
+        # Downstream evidence packets cite this instead of inferring an agency
+        # from the CSV's file path — a path cannot tell one DOT from another,
+        # and a wrong guess is a falsified attribution. Empty means the count
+        # set did not record an agency, which must read as "not recorded".
+        "count_source_agencies": sorted(
+            {str(row.get("source_agency") or "").strip()
+             for row in results if str(row.get("source_agency") or "").strip()}
+        ),
         "model_geometry_source": str(geometry_path),
         "model_project_db": str(project_db) if project_db is not None else None,
         "model_volume_field": volume_field,
@@ -592,6 +601,7 @@ def write_markdown_report(path: Path, summary: dict[str, Any], results: list[dic
         f"- Model run id: `{summary['model_run_id']}`",
         f"- Model engine: `{summary['model_engine']}`",
         f"- Count source CSV: `{summary['counts_source_csv']}`",
+        f"- Count publishing agency: {', '.join(summary['count_source_agencies']) or '_not recorded in the count set_'}",
         f"- Geometry source: `{summary['model_geometry_source']}`",
         f"- Project DB: `{summary['model_project_db']}`",
         f"- Matched stations: **{summary['stations_matched']} / {summary['stations_total']}**",

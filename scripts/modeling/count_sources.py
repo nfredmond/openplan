@@ -13,6 +13,10 @@ study bbox and writes a GeoJSON FeatureCollection whose properties are
 normalized to the columns build_expanded_aadt_counts.py already reads
 (RTE / PM / DESCRIPTION / BACK_AADT / AHEAD_AADT). Every value is real DOT data.
 
+`source_provenance(region)` returns the attribution facts for a region (agency,
+station namespace, published vintage) so the count builder can stamp the agency
+that actually published a count set instead of assuming one.
+
 Not included: a single national HPMS source — FHWA HPMS is distributed as bulk
 per-state shapefiles / functional-system-split linework, not a clean bbox API,
 so a national ingest is a larger follow-up. The per-state FeatureServer path
@@ -26,9 +30,23 @@ from typing import Any
 # region -> AADT FeatureServer. `fields` maps this source's attribute names to
 # the normalized keys. A source with a single directional-total AADT field uses
 # "aadt"; one that splits back/ahead (like Caltrans) uses "back_aadt"/"ahead_aadt".
+#
+# Provenance keys — `agency`, `station_prefix`, `route_label_prefix`,
+# `count_year` — are what the count builder stamps on every row it writes, so a
+# count set always carries the attribution of the DOT that actually published
+# it. They are REQUIRED: source_provenance() refuses an entry that does not
+# declare its agency, because the alternative (a default) is how counts from one
+# state end up wearing another state's name in an evidence packet.
+# `count_year` is the vintage the source publishes; None means the feed does not
+# expose one we map, and the builder then leaves count_year blank rather than
+# asserting a year it cannot support.
 COUNT_SOURCES: dict[str, dict[str, Any]] = {
     "CA": {
         "name": "Caltrans Traffic_Volumes_AADT (2023)",
+        "agency": "Caltrans",
+        "station_prefix": "CT",
+        "route_label_prefix": "SR",
+        "count_year": 2023,
         "query_url": (
             "https://caltrans-gis.dot.ca.gov/arcgis/rest/services/CHhighway/"
             "Traffic_AADT/FeatureServer/0/query"
@@ -43,6 +61,12 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
     # (per-record, one value). Point layer; f=geojson works. Live-verified.
     "WA": {
         "name": "WSDOT Traffic Counts AADT",
+        "agency": "WSDOT",
+        "station_prefix": "WSDOT",
+        # RouteIdentifier is a bare state-route id ("005"); no on-the-ground
+        # prefix is asserted because the feed mixes interstates and state routes.
+        "route_label_prefix": "",
+        "count_year": None,  # layer's vintage field not mapped — never assumed
         "query_url": (
             "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/"
             "FeatureServer/0/query"
@@ -58,6 +82,10 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
     # No free-text location field, so description = the count-station id. Live-verified.
     "CO": {
         "name": "CDOT Highways Traffic Counts AADT",
+        "agency": "CDOT",
+        "station_prefix": "CDOT",
+        "route_label_prefix": "",
+        "count_year": None,  # "latest year" segments; vintage field not mapped
         "query_url": (
             "https://dtdapps.codot.gov/server/rest/services/Webapps/open_data_sde/"
             "FeatureServer/13/query"
@@ -74,6 +102,12 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
     # normalizer's x/y path). Live-verified via that fallback.
     "OR": {
         "name": "ODOT TransGIS AADT - State",
+        "agency": "ODOT",
+        "station_prefix": "ODOT",
+        # HWYNUMB is ODOT's highway number, which is NOT the posted route number,
+        # so no route prefix is invented for it.
+        "route_label_prefix": "",
+        "count_year": None,  # vintage field not mapped
         "query_url": (
             "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/"
             "MapServer/155/query"
@@ -84,12 +118,43 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
             "description": "LOCATION", "aadt": "AADT",
         },
     },
-    # To add a state: append its AADT FeatureServer /query URL + field map. A
+    # To add a state: append its AADT FeatureServer /query URL + field map + the
+    # provenance keys above (agency and station_prefix are mandatory). A
     # single-total AADT source uses "aadt"; one that splits back/ahead (Caltrans)
     # uses "back_aadt"/"ahead_aadt". Segment (linework) sources work too — the
     # normalizer takes the geometry centroid. Also add the state's bbox to
     # workers/aequilibrae_worker/main.py::_REGION_BOUNDS so auto-ingest recognizes it.
 }
+
+# A registry entry without these cannot describe where its counts came from.
+_REQUIRED_PROVENANCE_KEYS = ("name", "agency", "station_prefix")
+
+
+def source_provenance(region: str) -> dict[str, Any]:
+    """Who published this region's counts, how its stations are namespaced, and
+    what vintage (if the feed declares one) — the facts the count builder stamps
+    on every row.
+
+    Fails closed on an unregistered region and on an entry missing its agency: a
+    count row must never inherit some other jurisdiction's attribution because a
+    default was in scope. Vintage may legitimately be None (unknown ≠ wrong)."""
+    if region not in COUNT_SOURCES:
+        raise ValueError(f"No count source registered for region {region!r}. "
+                         f"Registered: {sorted(COUNT_SOURCES)}. Add one to COUNT_SOURCES.")
+    src = COUNT_SOURCES[region]
+    missing = [key for key in _REQUIRED_PROVENANCE_KEYS if not src.get(key)]
+    if missing:
+        raise ValueError(f"Count source {region!r} does not declare {missing}; a count set "
+                         f"cannot be written without the agency that published it.")
+    return {
+        "region": region,
+        "name": src["name"],
+        "agency": src["agency"],
+        "station_prefix": src["station_prefix"],
+        "route_label_prefix": src.get("route_label_prefix", ""),
+        "count_year": src.get("count_year"),
+        "query_url": src.get("query_url"),
+    }
 
 
 def _centroid(geom: dict[str, Any]) -> tuple[float, float] | None:
@@ -163,9 +228,7 @@ def fetch_aadt_geojson(bbox: tuple[float, float, float, float], region: str, out
     fail, the underlying error is raised (never a silent empty result)."""
     import requests  # lazy so the module imports without requests
 
-    if region not in COUNT_SOURCES:
-        raise ValueError(f"No count source registered for region {region!r}. "
-                         f"Registered: {sorted(COUNT_SOURCES)}. Add one to COUNT_SOURCES.")
+    source_provenance(region)  # refuse to fetch counts we could not attribute
     src = COUNT_SOURCES[region]
     fields = src["fields"]
     out_fields = ",".join(sorted({v for v in fields.values()}))
