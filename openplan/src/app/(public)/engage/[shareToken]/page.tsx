@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
+import type { PortalSurveyQuestion } from "@/components/engagement/public-survey-form";
+import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import {
   ENGAGEMENT_PHOTO_BUCKET,
   ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS,
@@ -86,7 +88,7 @@ export default async function PublicEngagementPage({
 
   const campaign = campaignData as CampaignRow;
 
-  const [{ data: projectData }, { data: categoriesData }, { data: approvedItemsData }] = await Promise.all([
+  const [{ data: projectData }, { data: categoriesData }, { data: approvedItemsData }, surveyDefinition] = await Promise.all([
     campaign.project_id
       ? supabase.from("projects").select("id, name, summary").eq("id", campaign.project_id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -103,12 +105,31 @@ export default async function PublicEngagementPage({
       .eq("status", "approved")
       .order("created_at", { ascending: false })
       .limit(200),
+    // Active survey definition (definition tables only; response tables stay
+    // confined to survey-responses.ts). Folded into the portal props below.
+    loadSurveyDefinition(supabase, campaign.id),
   ]);
 
   const project = (projectData ?? null) as PublicProjectRow | null;
   const categories = (categoriesData ?? []) as CategoryRow[];
   const approvedItems = (approvedItemsData ?? []) as ApprovedItemRow[];
   const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
+
+  // Fold each active question's options in and drop everything the participant
+  // widgets do not need — the Map is not serializable across the RSC boundary.
+  const surveyQuestions: PortalSurveyQuestion[] = surveyDefinition.questions.map((question) => ({
+    id: question.id,
+    questionType: question.question_type,
+    prompt: question.prompt,
+    helpText: question.help_text,
+    required: question.required,
+    config: question.config_json,
+    options: (surveyDefinition.optionsByQuestion.get(question.id) ?? []).map((option) => ({
+      id: option.id,
+      label: option.label,
+      value: option.value,
+    })),
+  }));
 
   // Photos live in a PRIVATE service-role-only bucket. Short-TTL signed URLs
   // are minted here, server-side, exclusively for APPROVED items (the query
@@ -233,6 +254,7 @@ export default async function PublicEngagementPage({
         engagementType={campaign.engagement_type}
         demographicsEnabled={campaign.demographics_enabled}
         projectContext={project ? { name: project.name, summary: project.summary } : null}
+        surveyQuestions={surveyQuestions}
       />
     </section>
   );

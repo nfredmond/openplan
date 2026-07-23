@@ -26,6 +26,19 @@ const itemsEqStatusMock = vi.fn(() => ({ order: itemsOrderMock }));
 const itemsEqCampaignMock = vi.fn(() => ({ eq: itemsEqStatusMock }));
 const itemsSelectMock = vi.fn(() => ({ eq: itemsEqCampaignMock }));
 
+// loadSurveyDefinition — questions: select → eq(campaign) → eq(is_active) → order → order.
+const surveyQuestionsOrderCreatedMock = vi.fn().mockResolvedValue({ data: [], error: null });
+const surveyQuestionsOrderSortMock = vi.fn(() => ({ order: surveyQuestionsOrderCreatedMock }));
+const surveyQuestionsEqActiveMock = vi.fn(() => ({ order: surveyQuestionsOrderSortMock }));
+const surveyQuestionsEqCampaignMock = vi.fn(() => ({ eq: surveyQuestionsEqActiveMock }));
+const surveyQuestionsSelectMock = vi.fn(() => ({ eq: surveyQuestionsEqCampaignMock }));
+
+// loadSurveyDefinition — options: select → eq(campaign) → eq(is_active) → order.
+const surveyOptionsOrderMock = vi.fn().mockResolvedValue({ data: [], error: null });
+const surveyOptionsEqActiveMock = vi.fn(() => ({ order: surveyOptionsOrderMock }));
+const surveyOptionsEqCampaignMock = vi.fn(() => ({ eq: surveyOptionsEqActiveMock }));
+const surveyOptionsSelectMock = vi.fn(() => ({ eq: surveyOptionsEqCampaignMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
@@ -38,6 +51,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "engagement_items") {
     return { select: itemsSelectMock };
+  }
+  if (table === "engagement_survey_questions") {
+    return { select: surveyQuestionsSelectMock };
+  }
+  if (table === "engagement_survey_question_options") {
+    return { select: surveyOptionsSelectMock };
   }
   throw new Error(`Unexpected table: ${table}`);
 });

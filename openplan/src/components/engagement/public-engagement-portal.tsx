@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { CheckCircle2, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
+import { CheckCircle2, ClipboardList, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,7 @@ import {
 } from "@/lib/engagement/translation";
 import { GeometryPickerMap } from "./geometry-picker-map";
 import { LocationDisplayMap } from "./location-display-map";
+import { PublicSurveyForm, type PortalSurveyQuestion } from "./public-survey-form";
 
 const PUBLIC_SELECT_CLASS =
   "flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20";
@@ -659,6 +660,7 @@ export function PublicEngagementPortal({
   engagementType,
   demographicsEnabled = false,
   projectContext,
+  surveyQuestions = [],
 }: {
   shareToken: string;
   acceptingSubmissions: boolean;
@@ -670,8 +672,12 @@ export function PublicEngagementPortal({
     name: string;
     summary: string | null;
   } | null;
+  surveyQuestions?: PortalSurveyQuestion[];
 }) {
-  const [activeTab, setActiveTab] = useState<"submit" | "feedback">(acceptingSubmissions ? "submit" : "feedback");
+  const hasSurvey = surveyQuestions.length > 0;
+  const [activeTab, setActiveTab] = useState<"submit" | "feedback" | "survey">(
+    acceptingSubmissions ? "submit" : "feedback"
+  );
   const [sortOrder, setSortOrder] = useState<"newest" | "most_supported">("newest");
   const [supportedItemIds, setSupportedItemIds] = useState<Set<string>>(new Set());
   const [voteCounts, setVoteCounts] = useState<Record<string, number>>({});
@@ -916,12 +922,16 @@ export function PublicEngagementPortal({
         <div className="public-section-header border-b border-border/60 pb-4">
           <div>
             <p className="public-section-label">Public participation</p>
-            <h2 className="public-section-title">{activeTab === "submit" ? "Share your input" : "Community feedback"}</h2>
+            <h2 className="public-section-title">
+              {activeTab === "submit" ? "Share your input" : activeTab === "survey" ? "Survey" : "Community feedback"}
+            </h2>
           </div>
           <p className="public-section-description max-w-2xl">
             {activeTab === "submit"
               ? "Share a specific observation, issue, or idea related to this campaign. A short clear note is enough."
-              : "Review approved community feedback that has already cleared project-team moderation for this campaign."}
+              : activeTab === "survey"
+                ? "Answer the project team's survey questions. Your responses are reviewed before they inform summaries or reporting."
+                : "Review approved community feedback that has already cleared project-team moderation for this campaign."}
           </p>
         </div>
 
@@ -932,6 +942,15 @@ export function PublicEngagementPortal({
               icon={<Send className="h-3.5 w-3.5" />}
               label="Share your input"
               onClick={() => setActiveTab("submit")}
+            />
+          ) : null}
+          {hasSurvey ? (
+            <PortalTabButton
+              active={activeTab === "survey"}
+              icon={<ClipboardList className="h-3.5 w-3.5" />}
+              label="Survey"
+              count={surveyQuestions.length}
+              onClick={() => setActiveTab("survey")}
             />
           ) : null}
           <PortalTabButton
@@ -981,6 +1000,20 @@ export function PublicEngagementPortal({
                 This engagement campaign is no longer accepting new submissions. You can still view approved community feedback.
               </p>
             </div>
+          ) : null}
+
+          {activeTab === "survey" && hasSurvey ? (
+            acceptingSubmissions ? (
+              <PublicSurveyForm shareToken={shareToken} questions={surveyQuestions} />
+            ) : (
+              <div className="public-success-state">
+                <ClipboardList className="mx-auto h-8 w-8 text-muted-foreground" />
+                <h3 className="mt-4 text-lg font-semibold text-foreground">Survey closed</h3>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  This engagement campaign is no longer accepting survey responses.
+                </p>
+              </div>
+            )
           ) : null}
 
           {activeTab === "feedback" ? (
