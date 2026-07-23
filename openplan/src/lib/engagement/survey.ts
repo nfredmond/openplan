@@ -5,7 +5,13 @@ import {
   type EngagementGeometry,
   type EngagementGeometryType,
 } from "./geometry";
-import { normalizePublicSubmissionText } from "./public-submit";
+
+// Local copy of the whitespace normalizer (identical to public-submit's) so this
+// pure lib stays CLIENT-SAFE — importing public-submit would pull node:crypto into
+// the survey-builder client bundle.
+function normalizeText(value: string | null | undefined): string {
+  return (value ?? "").replace(/\s+/g, " ").trim();
+}
 
 // ── Catalog vocabulary (single source of truth; DB CHECK mirrors this) ──────
 export const SURVEY_QUESTION_TYPES_LIST = [
@@ -228,7 +234,7 @@ function isAnswerEmpty(type: SurveyQuestionType, raw: unknown): boolean {
       return allocs.length === 0 || sum === 0;
     }
     case "free_text":
-      return normalizePublicSubmissionText(typeof rec.text === "string" ? rec.text : "").length === 0;
+      return normalizeText(typeof rec.text === "string" ? rec.text : "").length === 0;
     case "file_upload":
       return !(Array.isArray(rec.files) && rec.files.length > 0);
   }
@@ -352,7 +358,7 @@ export function validateSurveyAnswer(
     }
     case "free_text": {
       const cfg = config as z.infer<typeof freeTextConfigSchema>;
-      const text = normalizePublicSubmissionText(a.text as string);
+      const text = normalizeText(a.text as string);
       if (cfg.min_length !== undefined && text.length < cfg.min_length) return fail("TEXT_TOO_SHORT", `Please write at least ${cfg.min_length} characters.`);
       if (text.length > Math.min(cfg.max_length, SURVEY_FREE_TEXT_HARD_MAX)) return fail("TEXT_TOO_LONG", `Please keep it under ${cfg.max_length} characters.`);
       return { ok: true, isEmpty: false, answer: { text }, answerText: text };

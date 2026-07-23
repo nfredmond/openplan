@@ -156,6 +156,64 @@ export async function loadSurveyDefinition(
   return { questions, optionsByQuestion };
 }
 
+// ── Operator builder view (ALL questions incl. archived; definition tables) ──
+export type SurveyBuilderOption = {
+  id: string;
+  question_id: string;
+  campaign_id: string;
+  label: string;
+  value: string | null;
+  is_active: boolean;
+  sort_order: number;
+  metadata_json: Record<string, unknown>;
+};
+export type SurveyBuilderQuestion = {
+  id: string;
+  campaign_id: string;
+  category_id: string | null;
+  question_type: SurveyQuestionType;
+  prompt: string;
+  help_text: string | null;
+  required: boolean;
+  is_active: boolean;
+  sort_order: number;
+  config_json: Record<string, unknown>;
+  options: SurveyBuilderOption[];
+};
+
+/** Full survey definition for the operator builder: every question (active and
+ * archived) with all builder columns + all options. Definition tables only. */
+export async function loadSurveyBuilderDefinition(
+  supabase: QueryClient,
+  campaignId: string
+): Promise<SurveyBuilderQuestion[]> {
+  const questionsResult = await supabase
+    .from("engagement_survey_questions")
+    .select("id, campaign_id, category_id, question_type, prompt, help_text, required, is_active, sort_order, config_json")
+    .eq("campaign_id", campaignId)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+  type RawQuestion = Omit<SurveyBuilderQuestion, "options" | "config_json"> & { config_json: unknown };
+  const questions = (questionsResult.data ?? []) as RawQuestion[];
+
+  const optionsResult = await supabase
+    .from("engagement_survey_question_options")
+    .select("id, question_id, campaign_id, label, value, is_active, sort_order, metadata_json")
+    .eq("campaign_id", campaignId)
+    .order("sort_order", { ascending: true });
+  const optionsByQuestion = new Map<string, SurveyBuilderOption[]>();
+  for (const option of (optionsResult.data ?? []) as SurveyBuilderOption[]) {
+    const arr = optionsByQuestion.get(option.question_id) ?? [];
+    arr.push(option);
+    optionsByQuestion.set(option.question_id, arr);
+  }
+  return questions.map((question) => ({
+    ...question,
+    config_json: (question.config_json ?? {}) as Record<string, unknown>,
+    options: optionsByQuestion.get(question.id) ?? [],
+  }));
+}
+
 /** Moderation list of response sessions (SENSITIVE, campaign_id-scoped). */
 export async function loadSurveyResponseSessions(
   supabase: QueryClient,

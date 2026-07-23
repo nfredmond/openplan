@@ -7,6 +7,7 @@ import { EngagementReportCreateButton } from "@/components/engagement/engagement
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
 import { EngagementItemComposer } from "@/components/engagement/engagement-item-composer";
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
+import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
 import { EngagementShareControls } from "@/components/engagement/engagement-share-controls";
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
@@ -15,6 +16,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
 import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
+import { loadSurveyBuilderDefinition } from "@/lib/engagement/survey-responses";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   formatReportStatusLabel,
@@ -156,6 +158,8 @@ export default async function EngagementCampaignDetailPage({
           .order("updated_at", { ascending: false })
       : Promise.resolve({ data: [] }),
   ]);
+
+  const surveyQuestions = await loadSurveyBuilderDefinition(supabase, campaign.id);
 
   const counts = summarizeEngagementItems(categories ?? [], items ?? []);
   const categoryColorById = new Map(
@@ -1228,6 +1232,17 @@ export default async function EngagementCampaignDetailPage({
               id: category.id,
               label: category.label,
             }))}
+          />
+        </div>
+
+        <div className="grid gap-6 xl:grid-cols-1">
+          <EngagementSurveyBuilder
+            campaignId={campaign.id}
+            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
+              id: category.id,
+              label: category.label,
+            }))}
+            initialQuestions={surveyQuestions}
           />
         </div>
       </div>

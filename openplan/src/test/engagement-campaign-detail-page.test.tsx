@@ -73,6 +73,13 @@ const fromMock = vi.fn((table: string) => {
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
   }
+  // Survey builder definition tables (loadSurveyBuilderDefinition) — empty in these tests.
+  if (table === "engagement_survey_questions") {
+    return { select: () => ({ eq: () => ({ order: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) }) };
+  }
+  if (table === "engagement_survey_question_options") {
+    return { select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });
