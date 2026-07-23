@@ -415,7 +415,7 @@ async function main() {
 
   const canonicalProjects = assertArray(
     await restSelect('projects', {
-      select: 'id,workspace_id,name,aerial_posture,aerial_posture_updated_at',
+      select: 'id,workspace_id,name',
       workspace_id: `eq.${DEMO.workspaceId}`,
       name: `eq.${DEMO_PROJECT_NAME}`,
       order: 'id.asc',
@@ -425,7 +425,15 @@ async function main() {
   assertEqual(canonicalProjects.length, 1, 'Canonical NCTC project count drifted');
   const projectBefore = canonicalProjects[0];
   assertEqual(projectBefore.id, DEMO.projectId, 'Canonical NCTC project id drifted');
-  ids.projectAerialPostureBefore = projectBefore.aerial_posture_updated_at ?? null;
+  // Posture is aerial-owned now (aerial_project_posture keyed on project_id).
+  const posturesBefore = assertArray(
+    await restSelect('aerial_project_posture', {
+      select: 'updated_at',
+      project_id: `eq.${DEMO.projectId}`,
+    }),
+    'aerial_project_posture before'
+  );
+  ids.projectAerialPostureBefore = posturesBefore[0]?.updated_at ?? null;
   notes.push('Verified exactly one canonical seeded NCTC project exists; no project creation API is called by this harness.');
 
   const browser = await chromium.launch({ headless: true });
@@ -554,32 +562,32 @@ async function main() {
     assertEqual(packageRow.status, 'ready', 'Package status drifted');
     assertEqual(packageRow.verification_readiness, 'ready', 'Package verification readiness drifted');
 
-    const projectAfter = firstRow(
-      await restSelect('projects', {
-        select: 'id,workspace_id,name,aerial_posture,aerial_posture_updated_at',
-        id: `eq.${DEMO.projectId}`,
+    const postureAfter = firstRow(
+      await restSelect('aerial_project_posture', {
+        select: 'project_id,workspace_id,posture,updated_at',
+        project_id: `eq.${DEMO.projectId}`,
       }),
-      'NCTC project after aerial evidence package'
+      'aerial_project_posture after aerial evidence package'
     );
-    assertEqual(projectAfter.id, DEMO.projectId, 'Posture write-back updated a different project');
-    assertOk(projectAfter.aerial_posture, 'Project aerial_posture was not written.');
-    assertOk(projectAfter.aerial_posture_updated_at, 'Project aerial_posture_updated_at was not written.');
+    assertEqual(postureAfter.project_id, DEMO.projectId, 'Posture write-back updated a different project');
+    assertOk(postureAfter.posture, 'aerial_project_posture.posture was not written.');
+    assertOk(postureAfter.updated_at, 'aerial_project_posture.updated_at was not written.');
     assertOk(
-      new Date(projectAfter.aerial_posture_updated_at).getTime() >= mutationStartedAt.getTime() - 5000,
-      `Project aerial posture timestamp was not refreshed by this package creation: ${projectAfter.aerial_posture_updated_at}`
+      new Date(postureAfter.updated_at).getTime() >= mutationStartedAt.getTime() - 5000,
+      `aerial_project_posture timestamp was not refreshed by this package creation: ${postureAfter.updated_at}`
     );
     assertEqual(
-      projectAfter.aerial_posture.missionCount,
+      postureAfter.posture.missionCount,
       EXPECTED_POST_RUN_MISSION_COUNT,
-      'Project aerial posture mission count did not match seeded-plus-new expectation'
+      'Aerial posture mission count did not match seeded-plus-new expectation'
     );
     assertEqual(
-      projectAfter.aerial_posture.readyPackageCount,
+      postureAfter.posture.readyPackageCount,
       EXPECTED_POST_RUN_READY_PACKAGE_COUNT,
-      'Project aerial posture ready-package count did not match seeded-plus-new expectation'
+      'Aerial posture ready-package count did not match seeded-plus-new expectation'
     );
-    ids.projectAerialPostureAfter = projectAfter.aerial_posture_updated_at;
-    const postureSummary = projectAfter.aerial_posture;
+    ids.projectAerialPostureAfter = postureAfter.updated_at;
+    const postureSummary = postureAfter.posture;
     const postMutationCounts = await readAerialCounts('post-mutation aerial');
     assertEqual(
       postMutationCounts.missionCount,
@@ -591,7 +599,7 @@ async function main() {
       EXPECTED_POST_RUN_READY_PACKAGE_COUNT,
       'Post-mutation ready-package count drifted'
     );
-    notes.push('Asserted projects.aerial_posture and projects.aerial_posture_updated_at updated on the same seeded project.');
+    notes.push('Asserted aerial_project_posture.posture and .updated_at were written for the seeded project.');
 
     const mapFeaturesResult = await appFetch(`/api/map-features/aerial-missions?workspaceId=${DEMO.workspaceId}`);
     if (mapFeaturesResult.status !== 200) {
@@ -663,8 +671,8 @@ async function main() {
       '- AOI boundary: small closed Polygon around Grass Valley / NCTC demo geography; coordinates are local proof geometry, not a legal survey boundary.',
       '',
       '## Project Aerial Posture',
-      `- Before ` + '`projects.aerial_posture_updated_at`' + `: ${ids.projectAerialPostureBefore ?? 'null'}`,
-      `- After ` + '`projects.aerial_posture_updated_at`' + `: ${ids.projectAerialPostureAfter ?? 'unknown'}`,
+      `- Before ` + '`aerial_project_posture.updated_at`' + `: ${ids.projectAerialPostureBefore ?? 'null'}`,
+      `- After ` + '`aerial_project_posture.updated_at`' + `: ${ids.projectAerialPostureAfter ?? 'unknown'}`,
       '',
       '```json',
       JSON.stringify(postureSummary, null, 2),

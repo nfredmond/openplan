@@ -325,7 +325,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
               <InspectorField
                 label="Posture cached"
                 value={formatDateTime(projectAerialPostureUpdatedAt)}
-                hint="Read from projects.aerial_posture — refreshed after evidence-package mutations."
+                hint="Read from the aerial_project_posture table — refreshed after evidence-package mutations."
               />
             </>
           ) : (

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // T9 live proof: POST /api/aerial/evidence-packages creates an evidence
-// package AND triggers rebuildAerialProjectPosture() -> projects.aerial_posture
-// write-back. Then /aerial/missions/<missionId> SSR-renders the package.
+// package AND triggers rebuildAerialProjectPosture() -> aerial_project_posture
+// write-back (aerial-owned table). Then /aerial/missions/<missionId> SSR-renders
+// the package.
 
 import { createClient } from "@supabase/supabase-js";
 import fs from "node:fs/promises";
@@ -37,13 +38,14 @@ console.log("step 2: sign-in OK");
 const cookieValue = `base64-${Buffer.from(JSON.stringify(session)).toString("base64")}`;
 const cookieHeader = `sb-127-auth-token=${cookieValue}`;
 
-// Pre-state: aerial_posture on project should be null
+// Pre-state: no aerial_project_posture row for this project yet (posture is
+// aerial-owned now, not a column on projects).
 const prePosture = await admin
-  .from("projects")
-  .select("aerial_posture, aerial_posture_updated_at")
-  .eq("id", PROJECT_ID)
-  .single();
-console.log("step 3: PRE-POST aerial_posture on project =", JSON.stringify(prePosture.data, null, 2));
+  .from("aerial_project_posture")
+  .select("posture, updated_at")
+  .eq("project_id", PROJECT_ID)
+  .maybeSingle();
+console.log("step 3: PRE-POST aerial_project_posture =", JSON.stringify(prePosture.data, null, 2));
 
 // POST /api/aerial/evidence-packages
 const postBody = JSON.stringify({
@@ -78,13 +80,13 @@ const pkg = await admin
 console.log("step 5: aerial_evidence_packages row:");
 console.log(JSON.stringify(pkg.data, null, 2));
 
-// Verify posture rebuild on project
+// Verify posture rebuild wrote the aerial-owned table
 const postPosture = await admin
-  .from("projects")
-  .select("aerial_posture, aerial_posture_updated_at")
-  .eq("id", PROJECT_ID)
-  .single();
-console.log("step 6: POST-POST aerial_posture on project =");
+  .from("aerial_project_posture")
+  .select("posture, updated_at")
+  .eq("project_id", PROJECT_ID)
+  .maybeSingle();
+console.log("step 6: POST-POST aerial_project_posture =");
 console.log(JSON.stringify(postPosture.data, null, 2));
 
 // SSR fetch of the mission detail page
