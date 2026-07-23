@@ -97,9 +97,26 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-vi.mock("@/lib/supabase/server", () => ({
-  createClient: (...args: unknown[]) => createClientMock(...args),
-}));
+vi.mock("@/lib/supabase/server", () => {
+  // Generic empty-result chainable for the service-role client (survey results
+  // aggregation + photo signing). Every builder method returns itself; awaiting
+  // yields { data: [], error: null }.
+  const emptyChain = (): Record<string, unknown> => {
+    const chain: Record<string, unknown> = {};
+    for (const method of ["select", "eq", "in", "order", "limit", "not", "gte"]) chain[method] = () => chain;
+    chain.maybeSingle = async () => ({ data: null, error: null });
+    chain.single = async () => ({ data: null, error: null });
+    chain.then = (resolve: (v: { data: unknown[]; error: null }) => unknown) => resolve({ data: [], error: null });
+    return chain;
+  };
+  return {
+    createClient: (...args: unknown[]) => createClientMock(...args),
+    createServiceRoleClient: () => ({
+      from: () => emptyChain(),
+      storage: { from: () => ({ createSignedUrls: async () => ({ data: [] }) }) },
+    }),
+  };
+});
 
 vi.mock("@/components/engagement/engagement-campaign-controls", () => ({
   EngagementCampaignControls: () => <div data-testid="engagement-campaign-controls" />,

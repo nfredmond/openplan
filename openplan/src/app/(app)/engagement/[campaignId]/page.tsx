@@ -8,6 +8,7 @@ import { EngagementCategoryCreator } from "@/components/engagement/engagement-ca
 import { EngagementItemComposer } from "@/components/engagement/engagement-item-composer";
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
 import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
+import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
 import { EngagementShareControls } from "@/components/engagement/engagement-share-controls";
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
@@ -16,7 +17,7 @@ import { EmptyState } from "@/components/ui/state-block";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
 import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
-import { loadSurveyBuilderDefinition } from "@/lib/engagement/survey-responses";
+import { loadSurveyBuilderDefinition, aggregateCampaignSurvey } from "@/lib/engagement/survey-responses";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   formatReportStatusLabel,
@@ -160,6 +161,9 @@ export default async function EngagementCampaignDetailPage({
   ]);
 
   const surveyQuestions = await loadSurveyBuilderDefinition(supabase, campaign.id);
+  // Survey RESULTS read the sensitive response tables → service-role (RLS proven
+  // by the campaign membership check above). Reads stay confined to survey-responses.ts.
+  const surveyResults = await aggregateCampaignSurvey(createServiceRoleClient(), campaign.id);
 
   const counts = summarizeEngagementItems(categories ?? [], items ?? []);
   const categoryColorById = new Map(
@@ -1061,6 +1065,13 @@ export default async function EngagementCampaignDetailPage({
                 />
               </div>
             </article>
+          ) : null}
+
+          {surveyResults.approvedResponseCount > 0 ? (
+            <EngagementSurveyResults
+              approvedResponseCount={surveyResults.approvedResponseCount}
+              questions={surveyResults.questions}
+            />
           ) : null}
 
           {campaign.demographics_enabled && demographicsSummary ? (
