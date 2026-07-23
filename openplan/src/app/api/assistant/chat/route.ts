@@ -6,7 +6,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { loadAssistantContext } from "@/lib/assistant/context";
-import { buildAssistantChatSystemPrompt } from "@/lib/assistant/chat-context";
+import {
+  ASSISTANT_CHAT_MAX_KB_EXCERPTS,
+  buildAssistantChatSystemPrompt,
+} from "@/lib/assistant/chat-context";
+import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
 import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
 import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
 
@@ -122,7 +126,15 @@ export async function POST(request: NextRequest) {
     }
 
     const modelId = resolveAssistantChatModelId();
-    const systemPrompt = buildAssistantChatSystemPrompt(context);
+    // Fold any matching uploaded-document excerpts into the grounding context
+    // (best-effort — retrieval returns [] if the KB is unavailable).
+    const knowledgeBaseExcerpts = await retrieveKnowledgeBaseExcerpts({
+      supabase,
+      workspaceId: context.workspace.id,
+      query: parsed.data.question,
+      limit: ASSISTANT_CHAT_MAX_KB_EXCERPTS,
+    });
+    const systemPrompt = buildAssistantChatSystemPrompt(context, { knowledgeBaseExcerpts });
     // Drop any leading assistant turns so the forwarded conversation always
     // starts with a user message — the Messages API 400s otherwise, and a
     // dropped-reply history window can otherwise begin with an assistant entry.

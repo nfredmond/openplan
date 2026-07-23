@@ -46,6 +46,8 @@ import {
   summarizeNarrativeGrounding,
   type NarrativeFact,
 } from "@/lib/grants/narrative-grounding";
+import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
+import { KB_NARRATIVE_CAVEAT, buildKnowledgeBaseFactClaims } from "@/lib/grants/kb-evidence";
 
 const DEFAULT_NARRATIVE_MODEL_ID = "claude-opus-4-8";
 
@@ -328,6 +330,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
     const evidenceReadinessSummary = summarizeGrantEvidenceReadiness(evidenceCues);
 
+    // Knowledge Base excerpts: keyword-match the opportunity + project context
+    // against the workspace's uploaded documents so the narrative can cite them.
+    // Best-effort — retrieval returns [] if the KB schema/RPC is unavailable.
+    const knowledgeBaseQuery = [
+      opportunity.title,
+      opportunity.summary,
+      opportunity.fit_notes,
+      projectName,
+    ]
+      .filter((part): part is string => Boolean(part && part.trim()))
+      .join(". ");
+    const kbExcerpts = await retrieveKnowledgeBaseExcerpts({
+      supabase,
+      workspaceId: opportunity.workspace_id,
+      projectId: opportunity.project_id ?? null,
+      query: knowledgeBaseQuery,
+      limit: 4,
+    });
+
     const modelId = process.env.OPENPLAN_GRANTS_AI_MODEL?.trim() || DEFAULT_NARRATIVE_MODEL_ID;
 
     // Numbered fact list (fact_1..fact_N): every workspace-specific claim the
@@ -354,6 +375,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         : null,
       ...(bcaScreening ? buildBcaScreeningFactClaims(bcaScreening, projectName) : []),
       ...(engagementEvidence ? buildEngagementFactClaims(engagementEvidence, projectName) : []),
+      ...buildKnowledgeBaseFactClaims(kbExcerpts, projectName),
       `Evidence readiness (deterministic guardrail summary): ${evidenceReadinessSummary}`,
     ]);
     const factIds = facts.map((fact) => fact.fact_id);
@@ -373,6 +395,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       `  "${BCA_NARRATIVE_CAVEAT}"`,
       "- If (and only if) you reference the community-engagement facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must never describe comment counts or sentiment as community consensus, a survey result, or completed public-participation requirements:",
       `  "${ENGAGEMENT_NARRATIVE_CAVEAT}"`,
+      "- If (and only if) you reference the uploaded-document facts below, you MUST include the following caveat sentence verbatim in the same paragraph, attribute the content to the named document, and never present it as OpenPlan's own finding or as independently verified:",
+      `  "${KB_NARRATIVE_CAVEAT}"`,
       "- Do not promise awards, eligibility determinations, or fiscal compliance; this draft supports an operator-reviewed application.",
       "",
       "WORKSPACE FACTS (the only citable claims; cite as [fact:fact_N]):",
@@ -389,6 +413,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       engagementEvidence
         ? "Community-engagement facts above summarize a saved synthesis of submitted public comments. Cite them only as screening-level community input."
         : "No engagement campaign is linked to this project. Do not reference community input, public comments, or outreach results.",
+      kbExcerpts.length > 0
+        ? "Uploaded-document facts above are verbatim excerpts from this workspace's Knowledge Base, matched by keyword; cite them only as uploaded-document content attributed to the named document, never as OpenPlan analysis or a verified finding."
+        : "No Knowledge Base documents matched this opportunity; do not reference uploaded documents.",
     ].join("\n");
 
     let draftText: string;

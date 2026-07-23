@@ -4,6 +4,7 @@ import type {
   ProgramAssistantContext,
   WorkspaceAssistantContext,
 } from "@/lib/assistant/context";
+import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
 
 /**
  * Pure serialization of an RLS-scoped AssistantContext into a compact,
@@ -21,6 +22,7 @@ const ASSISTANT_CHAT_INSTRUCTIONS = [
   "You are the OpenPlan Planner Agent, a copilot for city and regional transportation planners.",
   "Ground every answer ONLY in the workspace context below plus general planning knowledge (federal/state programs, RTP practice, modeling methodology).",
   "Never invent workspace data. If a number, record, or status is not in the context, say it is not visible from the current surface instead of guessing.",
+  "When KNOWLEDGE BASE EXCERPTS are provided below, you may use them to answer, but attribute each to its document by title (and page) and treat them as uploaded material that OpenPlan has not independently verified — never present uploaded-document content as OpenPlan's own finding.",
   "Model results in OpenPlan are screening-grade. When discussing model or run results, preserve that caveat: they support prioritization and narrative, not final engineering or investment-grade forecasts.",
   "Answer concisely in plain language. Prefer short paragraphs or tight lists over long essays.",
   "You cannot execute actions from chat. When an action would help, point the planner at the existing OpenPlan surface (for example the suggested-action buttons in this panel, or the relevant project, RTP, funding, or report screen).",
@@ -299,9 +301,20 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
   return lines;
 }
 
+/** At most this many KB excerpts are folded into the system prompt. */
+export const ASSISTANT_CHAT_MAX_KB_EXCERPTS = 5;
+
+/** Render retrieved KB excerpts as cite-able, provenance-labeled prompt lines. */
+export function renderKnowledgeBaseExcerptLines(excerpts: KnowledgeBaseExcerpt[]): string[] {
+  return excerpts.slice(0, ASSISTANT_CHAT_MAX_KB_EXCERPTS).map((excerpt) => {
+    const page = excerptPageLabel(excerpt.pageFrom, excerpt.pageTo);
+    return `- "${excerpt.documentTitle}"${page ? ` (${page})` : ""}: ${excerpt.snippet}`;
+  });
+}
+
 export function buildAssistantChatSystemPrompt(
   context: AssistantContext,
-  options?: { maxContextChars?: number }
+  options?: { maxContextChars?: number; knowledgeBaseExcerpts?: KnowledgeBaseExcerpt[] }
 ): string {
   const maxContextChars = options?.maxContextChars ?? ASSISTANT_CHAT_CONTEXT_MAX_CHARS;
   const lines = buildAssistantChatContextLines(context);
@@ -324,7 +337,21 @@ export function buildAssistantChatSystemPrompt(
     kept.push(ASSISTANT_CHAT_CONTEXT_TRUNCATION_MARKER);
   }
 
-  return [ASSISTANT_CHAT_INSTRUCTIONS, "", "WORKSPACE CONTEXT (RLS-scoped, current surface):", ...kept.map((line) => `- ${line}`)].join(
-    "\n"
-  );
+  const sections = [
+    ASSISTANT_CHAT_INSTRUCTIONS,
+    "",
+    "WORKSPACE CONTEXT (RLS-scoped, current surface):",
+    ...kept.map((line) => `- ${line}`),
+  ];
+
+  const kbLines = renderKnowledgeBaseExcerptLines(options?.knowledgeBaseExcerpts ?? []);
+  if (kbLines.length > 0) {
+    sections.push(
+      "",
+      "KNOWLEDGE BASE EXCERPTS (uploaded documents, keyword-matched — cite by title/page; not independently verified):",
+      ...kbLines
+    );
+  }
+
+  return sections.join("\n");
 }
