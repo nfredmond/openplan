@@ -61,9 +61,14 @@ try:
 except Exception:
     ENGINE_STAMP = "AequilibraE (version unknown)"
 
-# Load env: locally from .env, in Docker from environment variables
-load_dotenv()  # will read .env if present
-load_dotenv("../../openplan/.env.local", override=False)  # local dev fallback
+# Load env: locally from .env, in Docker from environment variables.
+# Resolve the app's .env.local by ABSOLUTE path from this file so creds load no
+# matter the launch cwd (repo root vs. the worker dir) — a relative path silently
+# no-ops when launched from the repo root. override=False so real env vars (Docker/
+# Fly secrets) always win.
+load_dotenv()  # will read .env in the cwd if present
+_ENV_LOCAL = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "openplan", ".env.local")
+load_dotenv(_ENV_LOCAL, override=False)
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
