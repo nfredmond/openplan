@@ -385,7 +385,14 @@ async function fetchFars(bbox: BBox): Promise<CrashSummary> {
       bicyclistFatalities: Math.round(estCrashesPerYear * estYears * 0.02),
       severeInjuryCrashes: Math.round(estCrashesPerYear * estYears * 1.8),
       totalInjuryCrashes: Math.round(estCrashesPerYear * estYears * 4.5),
-      yearsQueried: years,
+      // Zero years were successfully queried — every year either failed, timed
+      // out, or returned an unrecognized payload. Reporting the REQUESTED years
+      // here made the analysis narrative read
+      // "Safety (2022, 2021, 2020): 12 fatal crashes", dressing an area-based
+      // estimate in three specific years of observed data. Empty is the honest
+      // value and restores the `|| "estimated"` label the narrative already has
+      // (src/app/api/analysis/route.ts:129-131).
+      yearsQueried: [],
       crashesPerSquareMile: Math.round((estCrashesPerYear / area) * 10) / 10,
       source: "fars-estimate",
     };

@@ -72,7 +72,10 @@ describe("fetchCrashesForBbox", () => {
     });
 
     expect(result.source).toBe("fars-estimate");
-    expect(result.yearsQueried).toEqual([2022, 2021, 2020]);
+    // Zero years were successfully queried, so none may be reported. Claiming
+    // the requested years here would present an area-based estimate as three
+    // specific years of observed crash data.
+    expect(result.yearsQueried).toEqual([]);
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 

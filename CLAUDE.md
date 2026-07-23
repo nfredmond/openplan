@@ -89,14 +89,17 @@ Progress is measured by architectural quality, coherence, correctness, and long-
 
 ## Git workflow — one clean `main`
 
-Nathaniel wants **exactly one clean `main`**: no long-lived branches, no open PRs, nothing dangling. Review is done by an **agent (Claude), not a human** — do not wait on human PR review. Once a change is written and verified (lint + tests + build green, plus the relevant worker pytest for Python changes), **land it on `main`, push, and keep everything synced**; delete any working branch afterward. A short-lived working branch during a single change is fine, but converge back to `main` — keep all OpenPlan work consolidated on `main` unless there is a genuinely strong reason to hold something on a branch (and if so, say why).
+Nathaniel wants **exactly one clean `main`**: no long-lived branches, no open PRs, nothing dangling. Review is done by an **agent (Claude), not a human** — do not wait on human PR review. Once a change is written and verified (lint + tests + build green, plus the relevant `workers/**/test_*.py` script for Python changes — see Commands; there is no pytest), **land it on `main`, push, and keep everything synced**; delete any working branch afterward. A short-lived working branch during a single change is fine, but converge back to `main` — keep all OpenPlan work consolidated on `main` unless there is a genuinely strong reason to hold something on a branch (and if so, say why).
 
 ## Critical gotchas
 
-- **All app code lives in `openplan/`.** Run every `npm`/`supabase` command from that subdirectory, not the repo root.
+- **The Next.js app lives in `openplan/`.** There is no root `package.json`, so run every `npm`/`supabase` command for the app from that subdirectory. The one other npm project is `qa-harness/` (Playwright browser smoke checks, its own `package.json` + 25 `local-*`/`prod-*` scripts) — run those from `qa-harness/`, not `openplan/`.
 - **Package manager is npm** (`packageManager: npm@11.11.0`), not pnpm — despite historical proof logs citing `pnpm`. The one exception: `qa:gate` deliberately shells `corepack pnpm@10.33.0 audit` for the dependency audit. Don't "fix" that to npm.
 - **`build` uses the webpack builder** (`next build --webpack`), not Turbopack. If you run `next dev` from a git worktree with a symlinked `node_modules`, Turbopack rejects the symlink — use `next dev --webpack`.
-- **Python modeling workers live in `workers/`** (not `openplan/`) — the AequilibraE screening worker, county onramp, and ActivitySim scaffold. They run their own pytest suites.
+- **Python modeling workers live in `workers/`** (not `openplan/`) — the AequilibraE screening worker, county onramp, and ActivitySim scaffold.
+- **There is no pytest in this repo.** The worker suites are dependency-free stdlib scripts, each run directly: `python3 workers/aequilibrae_worker/test_count_validation.py`. Run them all with `for f in workers/aequilibrae_worker/test_*.py; do python3 "$f" || break; done` (17 files). `pytest` is not installed and not in any `requirements*.txt`.
+- **`npm exec` swallows `--` flags.** `npm exec supabase gen types typescript --local` fails with *"Must specify one of --local, --linked…"* because npm consumes the flag. Use `npm exec -- supabase …` whenever passing a flag.
+- **Prefer `supabase migration up` over `db reset` locally.** `db reset` re-applies every migration from scratch and destroys local data (seeded workspaces, runs, in-flight session state). `migration up` applies only the new ones and is non-destructive.
 
 ## Commands (run from `openplan/`)
 
@@ -110,9 +113,26 @@ npm run qa:gate        # lint + test + pnpm audit + build — the full pre-ship 
 npm run seed:nctc      # seed NCTC pilot demo
 npm run test:rls-live  # live RLS-isolation test (needs OPENPLAN_RLS_LIVE_TEST=1, set by the script)
 
-npm exec supabase start                                                  # local Supabase stack
-npm exec supabase db reset                                               # re-apply all migrations
-npm exec supabase gen types typescript --local > src/types/supabase.ts   # regenerate DB types after schema changes
+npm exec -- supabase start           # local Supabase stack
+npm exec -- supabase migration up    # apply NEW migrations only (non-destructive — prefer this)
+npm exec -- supabase db reset        # re-apply ALL migrations; DESTROYS local data
+```
+
+**Supabase clients are intentionally untyped — there is no `supabase gen types` step.** `src/types/supabase.ts`
+does not exist, nothing imports a generated `Database` type, and the three factories in
+`src/lib/supabase/{client,server,middleware}.ts` take no type parameter. This is a documented convention,
+not an oversight: `src/lib/knowledge-base/documents.ts:4-6` states it — *"the passed-in Supabase client is
+typed loosely and query results are cast, avoiding the Database generic"* (see also `src/lib/models/api.ts`).
+Do not add a type-regeneration step to a schema change; the output would have no consumer. The practical
+consequence: `.select()` strings are **not** type-checked against the schema, so a column typo surfaces at
+runtime rather than at build — cast query results deliberately. Adopting generated types would mean threading
+a `Database` generic through every client, which is a deliberate architectural change, not a chore.
+
+Python worker tests (from the repo root, not `openplan/`):
+
+```bash
+python3 workers/aequilibrae_worker/test_count_validation.py           # one suite
+for f in workers/aequilibrae_worker/test_*.py; do python3 "$f" || break; done   # all 17
 ```
 
 Run a single test: `npm test -- src/test/<file>.test.ts` or `npm test -- -t "<test name>"`.
