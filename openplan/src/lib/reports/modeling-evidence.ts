@@ -3,6 +3,7 @@ import type {
   ModelingEvidenceSnapshot,
   ModelingValidationStatus,
 } from "@/lib/models/evidence-backbone";
+import { strongestModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 export type ReportModelingEvidence = {
   countyRunId: string;
@@ -112,22 +113,6 @@ export type PlannerReadableModelingEvidenceSummary = {
   caveats: string[];
 };
 
-const MODELING_CLAIM_STATUS_RANK: Record<ModelingClaimStatus, number> = {
-  prototype_only: 0,
-  screening_grade: 1,
-  // Calibrated is stronger than uncalibrated screening; a county-lane
-  // claim_grade_passed (full validation-threshold pass) still ranks highest.
-  calibrated_to_counts: 2,
-  claim_grade_passed: 3,
-};
-
-function strongestClaimStatus(statuses: ModelingClaimStatus[]): ModelingClaimStatus | null {
-  return statuses.reduce<ModelingClaimStatus | null>((strongest, status) => {
-    if (!strongest) return status;
-    return MODELING_CLAIM_STATUS_RANK[status] > MODELING_CLAIM_STATUS_RANK[strongest] ? status : strongest;
-  }, null);
-}
-
 function describeValidationCheckCount(item: ReportModelingEvidence): number {
   const summary = item.evidence?.claimDecision?.validationSummary;
   if (!summary) return item.evidence?.validationResults.length ?? 0;
@@ -152,7 +137,7 @@ export function buildPlannerReadableModelingEvidenceSummary(
   }
 
   const statuses = extractReportModelingEvidenceClaimStatuses(modelingEvidence);
-  const strongestStatus = strongestClaimStatus(statuses);
+  const strongestStatus = strongestModelingClaimStatus(statuses);
   const linkedRunCount = modelingEvidence.length;
   const totalSourceCount = modelingEvidence.reduce((count, item) => count + (item.evidence?.sourceManifests.length ?? 0), 0);
   const totalValidationCheckCount = modelingEvidence.reduce((count, item) => count + describeValidationCheckCount(item), 0);

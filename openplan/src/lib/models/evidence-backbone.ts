@@ -23,6 +23,29 @@ export const MODELING_CLAIM_STATUSES = [
 
 export type ModelingClaimStatus = (typeof MODELING_CLAIM_STATUSES)[number];
 
+/** Claim tiers ranked weakest (0) → strongest (3). Calibrated-to-counts outranks
+ * uncalibrated screening; a county-lane claim_grade_passed (full
+ * validation-threshold pass) still ranks highest. Single source of truth —
+ * reused by the report evidence summaries and the model-run evidence panel. */
+export const MODELING_CLAIM_STATUS_RANK: Record<ModelingClaimStatus, number> = {
+  prototype_only: 0,
+  screening_grade: 1,
+  calibrated_to_counts: 2,
+  claim_grade_passed: 3,
+};
+
+export function isModelingClaimStatus(value: unknown): value is ModelingClaimStatus {
+  return typeof value === "string" && (MODELING_CLAIM_STATUSES as readonly string[]).includes(value);
+}
+
+/** The strongest tier in a set, or null if empty. */
+export function strongestModelingClaimStatus(statuses: ModelingClaimStatus[]): ModelingClaimStatus | null {
+  return statuses.reduce<ModelingClaimStatus | null>((strongest, status) => {
+    if (!strongest) return status;
+    return MODELING_CLAIM_STATUS_RANK[status] > MODELING_CLAIM_STATUS_RANK[strongest] ? status : strongest;
+  }, null);
+}
+
 export type ModelingValidationStatus = "pass" | "warn" | "fail";
 
 export type ModelingValidationComparator = "lte" | "gte" | "between" | "eq" | "exists" | "manual";
@@ -764,4 +787,51 @@ export async function loadCountyRunModelingEvidence({
     },
     error: null,
   };
+}
+
+/**
+ * Load the strongest recorded claim tier for each model run, keyed by
+ * model_run_id. The AequilibraE/behavioral worker upserts a
+ * modeling_claim_decisions row per (model_run_id, track) — most importantly
+ * `calibrated_to_counts` when count calibration ran and improved a held-out set.
+ * The model-run evidence panel reads this so a genuinely calibrated run stops
+ * mis-rendering as "screening_grade". Best-effort: a missing table, RLS gap, or
+ * query error returns an empty map and callers fall back to the
+ * engine-availability posture. Reads modeling_claim_decisions (NOT
+ * model_run_kpis), so it stays outside the model_run_kpis reader-inventory guard.
+ */
+export async function loadModelRunClaimStatuses({
+  supabase,
+  modelRunIds,
+}: {
+  supabase: ModelingEvidenceSupabaseLike;
+  modelRunIds: string[];
+}): Promise<Map<string, ModelingClaimStatus>> {
+  const strongestByRun = new Map<string, ModelingClaimStatus>();
+  const uniqueIds = Array.from(new Set(modelRunIds.filter((id): id is string => Boolean(id))));
+  if (uniqueIds.length === 0) {
+    return strongestByRun;
+  }
+
+  const { data, error } = await supabase
+    .from("modeling_claim_decisions")
+    .select("model_run_id, claim_status")
+    .in("model_run_id", uniqueIds);
+
+  if (error || !data) {
+    return strongestByRun; // best-effort; the panel falls back to the availability posture
+  }
+
+  for (const row of data as Array<{ model_run_id: string | null; claim_status: string | null }>) {
+    const runId = row.model_run_id;
+    if (!runId || !isModelingClaimStatus(row.claim_status)) {
+      continue;
+    }
+    const existing = strongestByRun.get(runId);
+    if (!existing || MODELING_CLAIM_STATUS_RANK[row.claim_status] > MODELING_CLAIM_STATUS_RANK[existing]) {
+      strongestByRun.set(runId, row.claim_status);
+    }
+  }
+
+  return strongestByRun;
 }

@@ -16,7 +16,10 @@ function mockEvidenceFetch(packet: Record<string, unknown>) {
   return fetchMock;
 }
 
-function renderPanel(engineKey: string) {
+function renderPanel(
+  engineKey: string,
+  claimStatus?: "calibrated_to_counts" | "screening_grade" | "prototype_only" | "claim_grade_passed" | null
+) {
   return render(
     <ModelRunEvidencePanel
       modelId={MODEL_ID}
@@ -25,6 +28,7 @@ function renderPanel(engineKey: string) {
       runStatus="succeeded"
       engineKey={engineKey}
       comparisonCandidates={[]}
+      claimStatus={claimStatus}
     />
   );
 }
@@ -86,5 +90,41 @@ describe("ModelRunEvidencePanel run-honesty header", () => {
     const block = screen.getByTestId("evidence-run-honesty");
     expect(block).toHaveTextContent("Prototype-only");
     expect(block).not.toHaveTextContent("Uncalibrated by default");
+  });
+
+  it("surfaces the run's REAL calibrated_to_counts tier, not the screening-grade default", async () => {
+    mockEvidenceFetch(AEQUILIBRAE_PACKET);
+    // The worker promoted this run to calibrated_to_counts; the panel must honor
+    // the real claim tier read server-side, not the availability-derived default.
+    renderPanel("aequilibrae", "calibrated_to_counts");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-run-honesty");
+    expect(block).toHaveTextContent("Calibrated to counts");
+    expect(block).not.toHaveTextContent("Screening-grade");
+    // Calibrated is not "uncalibrated by default" — that secondary badge is
+    // reserved for screening_grade.
+    expect(block).not.toHaveTextContent("Uncalibrated by default");
+  });
+
+  it("keeps the Uncalibrated-by-default badge for a screening_grade claim", async () => {
+    mockEvidenceFetch(AEQUILIBRAE_PACKET);
+    renderPanel("aequilibrae", "screening_grade");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-run-honesty");
+    expect(block).toHaveTextContent("Screening-grade");
+    expect(block).toHaveTextContent("Uncalibrated by default");
+    expect(block).not.toHaveTextContent("Calibrated to counts");
+  });
+
+  it("falls back to the availability posture when no claim row exists (null)", async () => {
+    mockEvidenceFetch(AEQUILIBRAE_PACKET);
+    renderPanel("aequilibrae", null);
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-run-honesty");
+    expect(block).toHaveTextContent("Screening-grade");
+    expect(block).toHaveTextContent("Uncalibrated by default");
   });
 });

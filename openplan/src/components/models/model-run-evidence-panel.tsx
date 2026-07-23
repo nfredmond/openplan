@@ -74,6 +74,10 @@ type ModelRunEvidencePanelProps = {
   runStatus: string;
   engineKey: string;
   comparisonCandidates: ModelRunComparisonCandidate[];
+  /** The run's REAL claim tier, read from modeling_claim_decisions server-side.
+   * Null when no claim row exists (e.g. a preflight/uncalibrated run) — the panel
+   * then falls back to the engine-availability posture. */
+  claimStatus?: ModelingClaimStatus | null;
 };
 
 export function ModelRunEvidencePanel({
@@ -83,6 +87,7 @@ export function ModelRunEvidencePanel({
   runStatus,
   engineKey,
   comparisonCandidates,
+  claimStatus: claimStatusProp = null,
 }: ModelRunEvidencePanelProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -104,10 +109,15 @@ export function ModelRunEvidencePanel({
   const highlights = useMemo(() => (evidence ? buildEvidenceHighlights(evidence) : []), [evidence]);
   const categories = useMemo(() => (evidence ? summarizeEvidenceCategories(evidence) : []), [evidence]);
   const transitStatus = useMemo(() => (evidence ? evidenceTransitStatus(evidence) : null), [evidence]);
-  // Honest run posture, derived from the engine's availability tier — never
-  // claims calibrated/claim-grade here (those stay the county-lane spine's job).
-  const claimStatus: ModelingClaimStatus =
+  // Honest run posture. Prefer the run's REAL recorded claim tier (from
+  // modeling_claim_decisions) — so a run the worker genuinely promoted to
+  // calibrated_to_counts renders as such, not as bare screening_grade. Only when
+  // no claim row exists (preflight / uncalibrated / pre-evidence run) fall back
+  // to deriving the tier from the engine's availability. This panel still never
+  // fabricates claim_grade_passed — that tier only comes from a real claim row.
+  const availabilityClaimStatus: ModelingClaimStatus =
     runMode.availability === "launchable" ? "screening_grade" : "prototype_only";
+  const claimStatus: ModelingClaimStatus = claimStatusProp ?? availabilityClaimStatus;
   const comparisonSummary = useMemo(
     () => (comparisonRows ? buildModelRunKpiComparisonSummary(comparisonRows) : null),
     [comparisonRows]

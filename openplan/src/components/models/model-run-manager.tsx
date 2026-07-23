@@ -18,6 +18,7 @@ import { ModelRunEngagementPanel } from "@/components/models/model-run-engagemen
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
+import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -63,6 +64,9 @@ type ManagedModelRun = {
   created_at: string | null;
   stages: ModelRunStage[];
   artifacts: ModelRunArtifact[];
+  /** Real claim tier for this run (from modeling_claim_decisions), resolved
+   * server-side in the model page. Null → the panel derives from availability. */
+  claimStatus?: ModelingClaimStatus | null;
 };
 
 export type ModelRunComparisonCandidate = {
@@ -755,6 +759,7 @@ function ModelRunStagingAndArtifacts({
           runStatus={run.status}
           engineKey={run.engine_key}
           comparisonCandidates={comparisonCandidates}
+          claimStatus={run.claimStatus ?? null}
         />
       ) : null}
 

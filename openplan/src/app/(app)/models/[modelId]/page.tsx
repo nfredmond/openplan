@@ -12,6 +12,7 @@ import { NEVADA_COUNTY_SCREENING_GATE } from "@/lib/examples/nevada-county-2026-
 import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { reconcileStaleModelRuns } from "@/lib/models/run-reconcile";
 import type { ReaperRun } from "@/lib/models/run-reaper";
+import { loadModelRunClaimStatuses, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
@@ -367,6 +368,16 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     ? new Map<string, string>()
     : await reconcileStaleModelRuns((modelRunsResult.data ?? []) as unknown as ReaperRun[]);
 
+  // Real claim tier per run (from modeling_claim_decisions), so the evidence
+  // panel surfaces a genuinely calibrated_to_counts run as such instead of the
+  // engine-availability default. Best-effort: an empty map falls back cleanly.
+  const modelRunClaimStatuses = modelRunsSchemaPending
+    ? new Map<string, ModelingClaimStatus>()
+    : await loadModelRunClaimStatuses({
+        supabase,
+        modelRunIds: ((modelRunsResult.data ?? []) as Array<{ id: string }>).map((r) => r.id),
+      });
+
   const modelRuns = modelRunsSchemaPending ? [] : ((modelRunsResult.data ?? []) as unknown as Array<{
     id: string;
     status: string;
@@ -383,14 +394,16 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     artifacts: ModelRunArtifact[];
   }>).map((r) => {
     const engine_key = r.engine_key ?? "deterministic_corridor_v1";
+    const claimStatus = modelRunClaimStatuses.get(r.id) ?? null;
     const reapMessage = reapedRunMessages.get(r.id);
-    if (!reapMessage) return { ...r, engine_key };
+    if (!reapMessage) return { ...r, engine_key, claimStatus };
     // Reflect the reap in the rendered payload without a re-query. completed_at
     // is set by the DB write and picked up on the next poll — omitting it here
     // keeps the loader pure.
     return {
       ...r,
       engine_key,
+      claimStatus,
       status: "failed",
       error_message: reapMessage,
       stages: (r.stages ?? []).map((s) =>
