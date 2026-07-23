@@ -8,6 +8,45 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Stack:** Next.js 16 (App Router) · React 19 · Supabase (Postgres + PostGIS + Auth + Storage) · Mapbox GL JS v3 (direct, not react-map-gl) · Claude API via Vercel AI SDK · TypeScript · Tailwind CSS v4 · shadcn/ui · Vercel.
 
+## Product non-negotiables — READ BEFORE PLANNING ANY WORK
+
+These are binding constraints from Nathaniel, not preferences. They have been violated before; do not
+violate them again. If a proposed task conflicts with one of these, say so and propose an alternative
+instead of proceeding.
+
+**1. It must work for ANYONE in the United States. All of California is the floor.**
+No feature ships fitted to one county, one agency, or one pilot. A planner in Ohio, Texas, or Fresno
+must be able to select their own geography and have the feature work — or be told plainly and
+specifically that their area is not covered and why.
+
+- **Never hardcode a study area.** No baked-in Nevada County / NCTC / Grass Valley bboxes, county
+  codes, coordinates, or FIPS. A map's initial camera position may default to the continental US
+  (`CONTINENTAL_US_CENTER`); the *analysis geography* must always come from the user.
+- **Reuse the existing any-place front door** — `src/lib/geographies/place-resolver.ts`,
+  `/api/geographies/places`, `/api/geographies/place-boundary`, and
+  `src/components/models/study-area-picker.tsx` (TIGERweb-backed: county / place / CDP / metro / micro).
+  Do not invent a second geography selector.
+- **Geographic limits must be disclosed, never silently applied.** Where a data source genuinely
+  cannot cover an area (e.g. CCRS crash data is California-only), the UI states the limit and the
+  reason. An empty result must never be presentable as "nothing found here".
+- A single-state or single-source capability is acceptable ONLY if it is labeled as such and the app
+  degrades honestly outside it.
+
+**2. Deepen and connect the existing modules. Do not add new ones.**
+OpenPlan already has ~16 modules and none is finished. The work is making them deeper and making them
+compose — a planner should carry one piece of work across modules without re-entering it. Proposing a
+new module is almost always the wrong answer; extending an existing one is almost always right.
+
+**3. Build the product; do not plan outreach.**
+Do not propose conferences, pilots, lighthouse users, demos, design partners, or "get one agency to
+try it". Nathaniel drives all outreach and has explicitly cancelled that lane. The app must be good
+enough for any agency or consultant to use fully and unaided **before** it is shown to anyone.
+
+**4. Self-service is the bar.** Any agency, MPO/RTPA, city, county, tribe, non-profit, or private
+planning/environmental consultant must be able to use OpenPlan fully on their own — their geography,
+their data, no founder involvement, no hand-configured environment. When a change requires operator
+setup or a manual step, that is a defect to be designed out, not a documented workaround.
+
 ## Engineering Philosophy
 
 OpenPlan is intended to become one of the most sophisticated planning software platforms ever built.

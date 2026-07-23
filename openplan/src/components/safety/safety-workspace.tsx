@@ -1,6 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { StudyAreaPicker } from "@/components/models/study-area-picker";
+import { summarizeCorridorText } from "@/lib/models/study-area";
+import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
+import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { SafetyCrashMap } from "./safety-crash-map";
 import {
   COVERAGE_STATE_COPY,
@@ -16,10 +20,6 @@ import {
 } from "@/lib/safety/caveats";
 import type { CrashSeverity } from "@/lib/safety/sources/types";
 
-/** Nevada County — the pilot study area, and CCRS County Code 29. */
-const DEFAULT_BBOX: [number, number, number, number] = [-121.3, 39.1, -120.0, 39.6];
-const DEFAULT_COUNTY_CODE = 29;
-
 const SEVERITY_ORDER: CrashSeverity[] = ["fatal", "severe_injury", "injury", "pdo"];
 
 type SafetyWorkspaceProps = {
@@ -28,6 +28,10 @@ type SafetyWorkspaceProps = {
 };
 
 export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspaceProps) {
+  // The study area comes from the user, always. There is no default geography —
+  // see the "Product non-negotiables" section of CLAUDE.md.
+  const [corridorText, setCorridorText] = useState("");
+  const [place, setPlace] = useState<PlaceBoundaryResponse | null>(null);
   const [ingest, setIngest] = useState<SafetyIngestSummary | null>(latestIngest);
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
   const [severities, setSeverities] = useState<CrashSeverity[]>([]);
@@ -36,16 +40,39 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
   const [ingesting, setIngesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Bounding box of the user's selection, or null until they pick one.
+  const bbox = useMemo(() => {
+    const summary = summarizeCorridorText(corridorText);
+    if (!summary.valid || !summary.bbox) return null;
+    return summary.bbox;
+  }, [corridorText]);
+
+  const mapBbox: [number, number, number, number] | null = bbox
+    ? [bbox.minLon, bbox.minLat, bbox.maxLon, bbox.maxLat]
+    : null;
+
+  // Only a California COUNTY selection yields a lossless county filter. A city,
+  // metro, drawn area, or out-of-state pick falls back to bbox-only, where
+  // reported and mappable totals are equal by construction.
+  const countyCode = useMemo(
+    () => (place?.kind === "county" ? ccrsCountyCodeFromGeoid(place.geoid) : null),
+    [place]
+  );
+
   const loadCrashes = useCallback(async () => {
+    if (!bbox) {
+      setResponse(null);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const params = new URLSearchParams({
         workspaceId,
-        minLon: String(DEFAULT_BBOX[0]),
-        minLat: String(DEFAULT_BBOX[1]),
-        maxLon: String(DEFAULT_BBOX[2]),
-        maxLat: String(DEFAULT_BBOX[3]),
+        minLon: String(bbox.minLon),
+        minLat: String(bbox.minLat),
+        maxLon: String(bbox.maxLon),
+        maxLat: String(bbox.maxLat),
       });
       if (severities.length) params.set("severity", severities.join(","));
       if (mode !== "all") params.set("mode", mode);
@@ -61,13 +88,14 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
     } finally {
       setLoading(false);
     }
-  }, [workspaceId, severities, mode]);
+  }, [workspaceId, severities, mode, bbox]);
 
   useEffect(() => {
     void loadCrashes();
   }, [loadCrashes]);
 
   const runIngest = useCallback(async () => {
+    if (!bbox) return;
     setIngesting(true);
     setError(null);
     try {
@@ -77,31 +105,31 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           workspaceId,
-          bbox: {
-            minLon: DEFAULT_BBOX[0],
-            minLat: DEFAULT_BBOX[1],
-            maxLon: DEFAULT_BBOX[2],
-            maxLat: DEFAULT_BBOX[3],
-          },
+          bbox,
           years,
-          countyCode: DEFAULT_COUNTY_CODE,
+          ...(countyCode === null ? {} : { countyCode }),
         }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Crash ingest failed");
 
+      // Normalize at the boundary. The banner renders these directly, so a
+      // malformed or unexpected response body must not be able to white-screen
+      // the page (an absent count would throw on .toLocaleString()).
+      const count = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
       setIngest({
-        id: body.ingestId,
-        sourceLabel: body.sourceLabel,
+        id: String(body.ingestId ?? ""),
+        sourceLabel: typeof body.sourceLabel === "string" ? body.sourceLabel : null,
         attribution: null,
-        coverageState: body.coverageState,
-        severityCompleteness: "fatal_injury_only",
-        status: body.status,
-        crashCount: body.crashCount,
-        geocodedCount: body.geocodedCount,
-        truncated: body.truncated,
+        coverageState: typeof body.coverageState === "string" ? body.coverageState : "source_unavailable",
+        severityCompleteness:
+          typeof body.severityCompleteness === "string" ? body.severityCompleteness : "fatal_injury_only",
+        status: typeof body.status === "string" ? body.status : "failed",
+        crashCount: count(body.crashCount),
+        geocodedCount: count(body.geocodedCount),
+        truncated: Boolean(body.truncated),
         yearsRequested: years,
-        fetchError: body.error,
+        fetchError: typeof body.error === "string" ? body.error : null,
         createdAt: new Date().toISOString(),
       });
       await loadCrashes();
@@ -110,7 +138,7 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
     } finally {
       setIngesting(false);
     }
-  }, [workspaceId, loadCrashes]);
+  }, [workspaceId, loadCrashes, bbox, countyCode]);
 
   const severityCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -156,12 +184,29 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
         <button
           type="button"
           onClick={() => void runIngest()}
-          disabled={ingesting}
+          disabled={ingesting || !bbox}
           className="rounded-md border px-3 py-2 text-sm font-medium disabled:opacity-60"
         >
           {ingesting ? "Retrieving crashes…" : "Retrieve crash data"}
         </button>
       </header>
+
+      {/* Study area — the app's single geography front door, reused, not reinvented. */}
+      <section className="rounded-lg border p-4" aria-label="Study area">
+        <h2 className="mb-2 text-sm font-medium">Study area</h2>
+        <StudyAreaPicker
+          corridorText={corridorText}
+          onCorridorChange={setCorridorText}
+          onPlaceResolved={setPlace}
+        />
+        {bbox && countyCode === null && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Counts for this selection come from the mapped area only. Pick a California{" "}
+            <strong>county</strong> to also include reported crashes the source agency never
+            geolocated.
+          </p>
+        )}
+      </section>
 
       {/* Coverage banner — source, attribution, and what the data does NOT establish. */}
       <section className="rounded-lg border p-4 text-sm" aria-label="Crash data coverage">
@@ -204,10 +249,16 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
               </p>
             )}
           </div>
+        ) : bbox ? (
+          <p className="text-muted-foreground">
+            No crash data has been retrieved for this study area yet. Nothing is shown on the map —
+            that is not evidence that no crashes occurred.
+          </p>
         ) : (
           <p className="text-muted-foreground">
-            No crash data has been retrieved for this workspace yet. Nothing is shown on the map —
-            that is not evidence that no crashes occurred.
+            Choose a study area above to retrieve reported crashes for it. Crash coverage is
+            currently California-only (California Crash Reporting System); anywhere else will report
+            that plainly rather than showing an empty map.
           </p>
         )}
       </section>
@@ -250,7 +301,7 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="h-[520px] w-full overflow-hidden rounded-lg border">
-        <SafetyCrashMap collection={collection} bbox={DEFAULT_BBOX} />
+        <SafetyCrashMap collection={collection} bbox={mapBbox} />
       </div>
 
       <p className="text-xs text-muted-foreground">

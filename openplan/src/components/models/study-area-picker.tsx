@@ -20,12 +20,25 @@ const GeometryPickerMap = dynamic(
 
 type PickerMode = "search" | "draw";
 
+/**
+ * The single geography front door for the whole app (any US county / city / CDP
+ * / metro / micro, TIGERweb-backed). Do not build a second one — see the
+ * "Product non-negotiables" section of CLAUDE.md.
+ *
+ * `onPlaceResolved` is optional and additive: callers that need to know WHICH
+ * place was chosen (not just its geometry) can receive the resolved boundary —
+ * e.g. Safety derives a state-specific county code from the GEOID. It fires only
+ * for a searched place, never for a hand-drawn area, because a drawn polygon has
+ * no place identity.
+ */
 export function StudyAreaPicker({
   corridorText,
   onCorridorChange,
+  onPlaceResolved,
 }: {
   corridorText: string;
   onCorridorChange: (text: string) => void;
+  onPlaceResolved?: (place: PlaceBoundaryResponse | null) => void;
 }) {
   const [mode, setMode] = useState<PickerMode>("search");
   const [query, setQuery] = useState("");
@@ -82,6 +95,7 @@ export function StudyAreaPicker({
       if (!res.ok) throw new Error("boundary failed");
       const data = (await res.json()) as PlaceBoundaryResponse;
       onCorridorChange(JSON.stringify(data.geojson));
+      onPlaceResolved?.(data);
       setSelectedLabel(data.label ?? item.label);
       setResults([]);
       setQuery("");
@@ -95,12 +109,16 @@ export function StudyAreaPicker({
   function handleDraw(geometry: EngagementGeometry | null) {
     if (geometry && geometry.type === "Polygon") {
       onCorridorChange(JSON.stringify(geometry));
+      // A drawn polygon has no place identity, so any place-derived context
+      // (county codes, labels) must be cleared rather than left stale.
+      onPlaceResolved?.(null);
       setSelectedLabel("Custom drawn area");
     }
   }
 
   function clearArea() {
     onCorridorChange("");
+    onPlaceResolved?.(null);
     setSelectedLabel(null);
     setResults([]);
     setQuery("");
