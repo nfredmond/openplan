@@ -18,6 +18,8 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import { CCRS_SOURCE_ID } from "./sources/ccrs";
+import { fetchSeriousInjuryCollisionIds } from "./sources/ccrs-injury";
 import { resolveCrashSource } from "./sources/registry";
 import type { CrashRecord } from "./sources/types";
 
@@ -33,6 +35,12 @@ export type IngestCrashesParams = {
   countyCode?: number;
   maxRecords?: number;
   requestedBy?: string | null;
+  /**
+   * Join the CCRS injured-person table to separate KABCO A (suspected serious
+   * injury). Defaults to on: without it there is no KSI, which is the measure
+   * SS4A and HSIP actually run on.
+   */
+  enrichSeriousInjury?: boolean;
   signal?: AbortSignal;
 };
 
@@ -47,6 +55,10 @@ export type IngestCrashesResult = {
   storedCount: number;
   truncated: boolean;
   yearsCovered: number[];
+  /** How completely severity could be expressed after any KSI enrichment. */
+  severityCompleteness: string;
+  /** Injury crashes upgraded to KABCO A by the injured-person join. */
+  seriousInjuryUpgrades: number;
   error: string | null;
 };
 
@@ -90,6 +102,48 @@ export function toCrashRows(
     latitude: record.latitude,
     longitude: record.longitude,
   }));
+}
+
+/**
+ * Upgrade injury crashes to KABCO A using the CCRS injured-person table.
+ *
+ * Only `injury` rows are candidates: a fatal crash already outranks serious
+ * injury, and a PDO crash by definition injured nobody. Returns the records
+ * with severity upgraded in place, so the caller writes one consistent batch.
+ *
+ * A failure here is deliberately NOT fatal to the ingest — the crashes are still
+ * real and worth storing. The caller keeps `severityCompleteness` at
+ * `fatal_injury_only` in that case, so the UI says serious injuries could not be
+ * separated instead of implying there were none.
+ */
+export async function applySeriousInjuryUpgrade(
+  records: CrashRecord[],
+  signal?: AbortSignal
+): Promise<{ records: CrashRecord[]; upgraded: number }> {
+  const byYear = new Map<number, string[]>();
+  for (const record of records) {
+    if (record.severity !== "injury" || record.collisionYear === null) continue;
+    const bucket = byYear.get(record.collisionYear) ?? [];
+    bucket.push(record.externalId);
+    byYear.set(record.collisionYear, bucket);
+  }
+
+  const serious = new Set<string>();
+  for (const [year, collisionIds] of byYear) {
+    const found = await fetchSeriousInjuryCollisionIds({ year, collisionIds, signal });
+    for (const id of found) serious.add(id);
+  }
+
+  let upgraded = 0;
+  const out = records.map((record) => {
+    if (record.severity === "injury" && serious.has(record.externalId)) {
+      upgraded += 1;
+      return { ...record, severity: "severe_injury" as const };
+    }
+    return record;
+  });
+
+  return { records: out, upgraded };
 }
 
 /**
@@ -146,6 +200,8 @@ export async function ingestCrashesForStudyArea(
       storedCount: 0,
       truncated: false,
       yearsCovered: [],
+      severityCompleteness: "fatal_only",
+      seriousInjuryUpgrades: 0,
       error: null,
     };
   }
@@ -178,7 +234,24 @@ export async function ingestCrashesForStudyArea(
       signal: params.signal,
     });
 
-    const records = dedupeRecords(fetched.records);
+    let records = dedupeRecords(fetched.records);
+
+    // KSI upgrade. Only CCRS has the injured-person table, and only when the
+    // caller wants it. If it fails, keep the crashes and keep the honest
+    // "serious injuries not separable" completeness rather than losing the run.
+    let severityCompleteness = adapter.severityCompleteness;
+    let seriousInjuryUpgrades = 0;
+    if (adapter.id === CCRS_SOURCE_ID && params.enrichSeriousInjury !== false) {
+      try {
+        const upgrade = await applySeriousInjuryUpgrade(records, params.signal);
+        records = upgrade.records;
+        seriousInjuryUpgrades = upgrade.upgraded;
+        severityCompleteness = "kabco_full";
+      } catch {
+        severityCompleteness = adapter.severityCompleteness;
+      }
+    }
+
     const rows = toCrashRows(records, {
       workspaceId: params.workspaceId,
       ingestId,
@@ -200,6 +273,7 @@ export async function ingestCrashesForStudyArea(
         crash_count: fetched.matchedTotal,
         geocoded_count: fetched.geocodedTotal,
         truncated: fetched.truncated,
+        severity_completeness: severityCompleteness,
       })
       .eq("id", ingestId);
 
@@ -214,6 +288,8 @@ export async function ingestCrashesForStudyArea(
       storedCount: records.length,
       truncated: fetched.truncated,
       yearsCovered: fetched.yearsCovered,
+      severityCompleteness,
+      seriousInjuryUpgrades,
       error: null,
     };
   } catch (error) {
@@ -235,6 +311,8 @@ export async function ingestCrashesForStudyArea(
       storedCount: 0,
       truncated: false,
       yearsCovered: [],
+      severityCompleteness: adapter.severityCompleteness,
+      seriousInjuryUpgrades: 0,
       error: message,
     };
   }

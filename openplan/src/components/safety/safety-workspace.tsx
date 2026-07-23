@@ -135,6 +135,15 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
   // never hide: an ungeocoded crash is a real crash that cannot be plotted.
   const ungeocoded = ingest ? Math.max(0, ingest.crashCount - ingest.geocodedCount) : 0;
 
+  // KSI — killed or seriously injured — is the measure SS4A and HSIP run on, so
+  // it is only shown when the source could actually separate KABCO A. Otherwise
+  // the completeness caveat below explains why there is no KSI figure, rather
+  // than a "0" that would read as "no serious injuries occurred".
+  const ksiAvailable = ingest?.severityCompleteness === "kabco_full";
+  const ksiCount = ksiAvailable
+    ? (severityCounts.fatal ?? 0) + (severityCounts.severe_injury ?? 0)
+    : null;
+
   return (
     <div className="flex flex-col gap-4">
       <header className="flex flex-wrap items-start justify-between gap-3">
@@ -173,6 +182,14 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
               <p className="text-muted-foreground">
                 {ungeocoded.toLocaleString()} reported crashes have no coordinates from the source
                 agency and are counted above but not shown on the map. {SAFETY_GEOCODING_CAVEAT}
+              </p>
+            )}
+            {ksiCount !== null && (
+              <p>
+                <span className="font-medium">{ksiCount.toLocaleString()} killed or seriously injured</span>{" "}
+                <span className="text-muted-foreground">
+                  (KSI) among the crashes in view — the measure SS4A and HSIP are scored on.
+                </span>
               </p>
             )}
             {ingest.severityCompleteness === "fatal_injury_only" && (

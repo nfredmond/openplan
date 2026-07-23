@@ -132,6 +132,7 @@ describe("ingestCrashesForStudyArea", () => {
       bbox: CA_BBOX,
       years: [2025],
       countyCode: 29,
+      enrichSeriousInjury: false,
     });
 
     expect(result.status).toBe("ready");
@@ -163,6 +164,7 @@ describe("ingestCrashesForStudyArea", () => {
       workspaceId: "ws-1",
       bbox: CA_BBOX,
       years: [2025],
+      enrichSeriousInjury: false,
     });
 
     expect(result.status).toBe("failed");
@@ -176,6 +178,74 @@ describe("ingestCrashesForStudyArea", () => {
     expect(service.upserts).toHaveLength(0);
 
     fetchSpy.mockRestore();
+  });
+
+  it("upgrades severity to KABCO A and records kabco_full completeness", async () => {
+    const service = fakeService();
+    const { ccrsAdapter } = await import("@/lib/safety/sources/ccrs");
+    const fetchSpy = vi.spyOn(ccrsAdapter, "fetch").mockResolvedValue({
+      records: [record({ externalId: "a" }), record({ externalId: "b" })],
+      matchedTotal: 2,
+      geocodedTotal: 2,
+      yearsCovered: [2025],
+      truncated: false,
+    });
+
+    const injury = await import("@/lib/safety/sources/ccrs-injury");
+    const injurySpy = vi
+      .spyOn(injury, "fetchSeriousInjuryCollisionIds")
+      .mockResolvedValue(new Set(["b"]));
+
+    const result = await ingestCrashesForStudyArea({
+      service: service as never,
+      workspaceId: "ws-1",
+      bbox: CA_BBOX,
+      years: [2025],
+    });
+
+    expect(result.seriousInjuryUpgrades).toBe(1);
+    expect(result.severityCompleteness).toBe("kabco_full");
+    const rows = service.upserts.flat() as Array<Record<string, unknown>>;
+    expect(rows.find((r) => r.external_id === "b")?.severity).toBe("severe_injury");
+    expect(rows.find((r) => r.external_id === "a")?.severity).toBe("injury");
+    expect(service.updates.at(-1)).toMatchObject({ severity_completeness: "kabco_full" });
+
+    fetchSpy.mockRestore();
+    injurySpy.mockRestore();
+  });
+
+  it("keeps the crashes and the honest completeness when the KSI join fails", async () => {
+    // Losing the enrichment must not lose the run — and must not let a missing
+    // serious-injury count read as "there were none".
+    const service = fakeService();
+    const { ccrsAdapter } = await import("@/lib/safety/sources/ccrs");
+    const fetchSpy = vi.spyOn(ccrsAdapter, "fetch").mockResolvedValue({
+      records: [record({ externalId: "a" })],
+      matchedTotal: 1,
+      geocodedTotal: 1,
+      yearsCovered: [2025],
+      truncated: false,
+    });
+
+    const injury = await import("@/lib/safety/sources/ccrs-injury");
+    const injurySpy = vi
+      .spyOn(injury, "fetchSeriousInjuryCollisionIds")
+      .mockRejectedValue(new Error("injury table unreachable"));
+
+    const result = await ingestCrashesForStudyArea({
+      service: service as never,
+      workspaceId: "ws-1",
+      bbox: CA_BBOX,
+      years: [2025],
+    });
+
+    expect(result.status).toBe("ready");
+    expect(result.storedCount).toBe(1);
+    expect(result.severityCompleteness).toBe("fatal_injury_only");
+    expect(result.seriousInjuryUpgrades).toBe(0);
+
+    fetchSpy.mockRestore();
+    injurySpy.mockRestore();
   });
 
   it("upserts on the natural key so re-ingest cannot duplicate rows", async () => {
@@ -211,6 +281,7 @@ describe("ingestCrashesForStudyArea", () => {
       workspaceId: "ws-1",
       bbox: CA_BBOX,
       years: [2025],
+      enrichSeriousInjury: false,
     });
 
     expect(upsertArgs[0][1]).toMatchObject({ onConflict: "workspace_id,source_id,external_id" });

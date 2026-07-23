@@ -119,6 +119,46 @@ describe("SafetyWorkspace coverage disclosure", () => {
     });
   });
 
+  it("shows a KSI total only when the source could separate serious injury", async () => {
+    const features = [
+      { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "fatal" } },
+      { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "severe_injury" } },
+      { type: "Feature", geometry: { type: "Point", coordinates: [-121, 39.2] }, properties: { severity: "injury" } },
+    ];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => mockCrashResponse(features)) as unknown as typeof fetch
+    );
+
+    render(
+      <SafetyWorkspace
+        workspaceId="ws-1"
+        latestIngest={ingest({ severityCompleteness: "kabco_full" })}
+      />
+    );
+
+    await waitFor(() => {
+      // fatal (1) + serious injury (1) = 2; the plain injury crash is excluded.
+      expect(screen.getByText(/2 killed or seriously injured/)).toBeInTheDocument();
+    });
+  });
+
+  it("shows no KSI figure — not a zero — when serious injury is not separable", async () => {
+    // A "0 KSI" here would read as "no serious injuries occurred", which the
+    // source cannot support.
+    render(
+      <SafetyWorkspace
+        workspaceId="ws-1"
+        latestIngest={ingest({ severityCompleteness: "fatal_injury_only" })}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/cannot be derived from it/i)).toBeInTheDocument();
+    });
+    expect(screen.queryByText(/killed or seriously injured/i)).not.toBeInTheDocument();
+  });
+
   it("reports how many of the matching crashes are actually in view", async () => {
     vi.stubGlobal(
       "fetch",
