@@ -21,6 +21,7 @@ import {
   Radar,
   Route,
   Settings2,
+  ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -35,6 +36,7 @@ const ICONS = {
   programs: ClipboardList,
   grants: Landmark,
   engagement: MessageSquareShare,
+  safety: ShieldAlert,
   analysis: BarChart3,
   scenarios: Briefcase,
   models: CircuitBoard,
