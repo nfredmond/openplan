@@ -167,6 +167,7 @@ function SubmissionForm({
   parentItemId = null,
   replyingToLabel = null,
   onCancelReply,
+  mapView = null,
 }: {
   shareToken: string;
   categories: CategoryOption[];
@@ -175,6 +176,8 @@ function SubmissionForm({
   parentItemId?: string | null;
   replyingToLabel?: string | null;
   onCancelReply?: () => void;
+  /** Where the map opens, derived by the portal from this campaign's own pins. */
+  mapView?: { center: [number, number]; zoom: number } | null;
 }) {
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
@@ -437,7 +440,12 @@ function SubmissionForm({
                   Drop a pin, trace a street or route as a line, or outline an area if your input is about a specific place.
                 </p>
                 <div className="public-map-frame public-map-frame--editor">
-                  <GeometryPickerMap onGeometryChange={setGeometry} />
+                  <GeometryPickerMap
+                    onGeometryChange={setGeometry}
+                    {...(mapView
+                      ? { initialCenter: mapView.center, initialZoom: mapView.zoom }
+                      : {})}
+                  />
                 </div>
                 {geometry ? (
                   <p className="text-xs text-muted-foreground">
@@ -654,6 +662,41 @@ function SubmissionForm({
   );
 }
 
+/**
+ * Where the resident-facing map should open.
+ *
+ * A campaign carries no geography of its own, so rather than defaulting to a
+ * hardcoded town we derive the view from the campaign's OWN approved
+ * submissions. A brand-new campaign with no pins yet returns null and the map
+ * opens on the neutral continental view — never on somebody else's city.
+ */
+export function derivePortalMapCenter(
+  items: Array<{ latitude: number | null; longitude: number | null }>
+): { center: [number, number]; zoom: number } | null {
+  const points = items.filter(
+    (i): i is { latitude: number; longitude: number } =>
+      typeof i.latitude === "number" &&
+      typeof i.longitude === "number" &&
+      Number.isFinite(i.latitude) &&
+      Number.isFinite(i.longitude)
+  );
+  if (points.length === 0) return null;
+
+  const lons = points.map((p) => p.longitude);
+  const lats = points.map((p) => p.latitude);
+  const minLon = Math.min(...lons);
+  const maxLon = Math.max(...lons);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+
+  // Zoom from the spread of existing input, so a citywide campaign and a
+  // single-intersection campaign both open at a usable scale.
+  const span = Math.max(maxLon - minLon, maxLat - minLat);
+  const zoom = span > 2 ? 7 : span > 0.5 ? 9 : span > 0.1 ? 11 : 13;
+
+  return { center: [(minLon + maxLon) / 2, (minLat + maxLat) / 2], zoom };
+}
+
 export function PublicEngagementPortal({
   shareToken,
   acceptingSubmissions,
@@ -680,6 +723,8 @@ export function PublicEngagementPortal({
   closeLoopEntries?: PublicCloseLoopEntry[];
   emailUpdatesAvailable?: boolean;
 }) {
+  const portalMapView = useMemo(() => derivePortalMapCenter(approvedItems), [approvedItems]);
+
   const hasSurvey = surveyQuestions.length > 0;
   const hasCloseLoop = closeLoopEntries.length > 0;
   const [activeTab, setActiveTab] = useState<"submit" | "feedback" | "survey" | "closeloop">(
@@ -1005,6 +1050,7 @@ export function PublicEngagementPortal({
               </div>
 
               <SubmissionForm
+                mapView={portalMapView}
                 shareToken={shareToken}
                 categories={categories}
                 helpfulInput={engagementGuidance.helpfulInput}

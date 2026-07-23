@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { cn } from "@/lib/utils";
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import {
   ENGAGEMENT_GEOMETRY_MAX_VERTICES,
   type EngagementGeometry,
@@ -127,8 +128,13 @@ export function GeometryPickerMap({
   onGeometryChange,
   initialMode = "point",
   allowedModes = ["point", "line", "area"],
-  initialCenter = [-121.033982, 39.239137],
-  initialZoom = 9.5,
+  // Neutral by default. This component is rendered on the PUBLIC, embeddable
+  // resident-facing engagement portal, so a place-specific default meant
+  // residents everywhere opened their agency's map on rural California.
+  // Callers that know their geography pass initialCenter; nobody inherits
+  // somebody else's town.
+  initialCenter = CONTINENTAL_US_CENTER,
+  initialZoom = 3.5,
 }: {
   onGeometryChange: (geometry: EngagementGeometry | null) => void;
   /** Starting draw mode (default "point" for the engagement submission form). */
