@@ -47,6 +47,7 @@ function buildNavGroups(isOperator: boolean): CartographicRailGroup[] {
         { href: "/models", label: "Models", icon: "models" },
         { href: "/county-runs", label: "County Validation", icon: "county" },
         { href: "/data-hub", label: "Data Hub", icon: "data" },
+      { href: "/knowledge-base", label: "Knowledge Base", icon: "knowledge" },
         { href: "/aerial", label: "Aerial Ops", icon: "aerial" },
       ],
     },
