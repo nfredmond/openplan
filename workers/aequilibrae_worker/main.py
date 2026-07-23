@@ -193,7 +193,11 @@ def auto_ingest_counts(bbox, proj_dir: str, out_dir: str) -> str | None:
         res = subprocess.run(
             [
                 sys.executable, script,
-                "--fetch-bbox", f"{bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}",
+                # `--opt=value` (not `--opt value`) so argparse doesn't mistake a
+                # negative-longitude bbox (every real US location) for an option
+                # flag — `--fetch-bbox -121.8,...` fails with "expected one argument"
+                # and silently disabled auto-ingest (→ calibration always skipped).
+                f"--fetch-bbox={bbox[0]},{bbox[1]},{bbox[2]},{bbox[3]}",
                 "--region", region, "--db", db_path, "--out", out_csv,
             ],
             capture_output=True, text=True, timeout=180,
