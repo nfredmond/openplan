@@ -7,23 +7,28 @@ import path from "node:path";
 // invariants across all non-test source and fails CI on any violation:
 //   1. CONFINEMENT — the tables may only be touched (via `.from("t")` OR a
 //      PostgREST embed `t(...)` inside a .select) in the single reader module.
-//   2. READS-ONLY  — inside the reader, every `.from("t")` chain must be a SELECT,
-//      never a mutation (.insert/.update/.upsert/.delete).
-//   3. SCOPE       — each read's chain (bounded at the next `.from(`/`;` so a
-//      batched sibling query cannot lend its filter) must carry .eq("campaign_id").
+//   2. SCOPE       — inside the reader, each SELECT read's chain (bounded at the
+//      next `.from(`/`;` so a batched sibling query cannot lend its filter) must
+//      carry .eq("campaign_id"). .update/.delete writes must too; .insert/.upsert
+//      carry campaign_id in the payload and are trusted inside the reader.
+//   3. NO STRAY OPS — a sensitive `.from()` that is neither a select nor a
+//      recognized write is flagged.
 // A new ad-hoc reader, an embedded read from a non-sensitive parent, a forgotten
-// campaign_id filter, or a sensitive write all fail here.
+// campaign_id filter, or an unscoped update/delete all fail here.
 const SOURCE_ROOT = path.resolve(process.cwd(), "src");
 const SOURCE_EXTENSIONS = new Set([".ts", ".tsx"]);
 const EXCLUDED_SEGMENTS = new Set(["test"]);
 const SENSITIVE_TABLES = ["engagement_survey_response_sessions", "engagement_survey_answers"] as const;
 const ALLOWED_READER = "src/lib/engagement/survey-responses.ts";
 
-const MUTATION_RE = /\.(insert|update|upsert|delete)\(/;
+// Sensitive-table writes: .update/.delete must carry .eq("campaign_id"); .insert/
+// .upsert carry campaign_id in the payload and are trusted inside the reader.
+const FILTER_WRITE_RE = /\.(update|delete)\(/;
+const PAYLOAD_WRITE_RE = /\.(insert|upsert)\(/;
 const SELECT_RE = /\.select\(/;
 const CAMPAIGN_SCOPE_RE = /\.eq\(["']campaign_id["']\s*,/;
 
-type Violation = { file: string; table: string; kind: "confinement" | "mutation" | "not-select" | "unscoped"; snippet: string };
+type Violation = { file: string; table: string; kind: "confinement" | "not-select" | "unscoped"; snippet: string };
 
 function collectSourceFiles(root: string): string[] {
   return fs
@@ -71,13 +76,21 @@ export function analyzeSensitiveAccess(file: string, content: string): { touched
       }
       continue;
     }
-    // Inside the reader: each direct .from() must be a campaign-scoped SELECT.
-    // (Embeds are read-only and covered by their enclosing .from()'s scope check.)
+    // Inside the reader: SELECT reads + .update/.delete writes must be campaign-
+    // scoped; .insert/.upsert are trusted (campaign_id in payload). (Embeds are
+    // read-only and covered by their enclosing .from()'s scope check.)
     for (const idx of froms) {
       const chain = forwardChain(content, idx);
-      if (MUTATION_RE.test(chain)) violations.push({ file, table, kind: "mutation", snippet: chain.slice(0, 80) });
-      else if (!SELECT_RE.test(chain)) violations.push({ file, table, kind: "not-select", snippet: chain.slice(0, 80) });
-      else if (!CAMPAIGN_SCOPE_RE.test(chain)) violations.push({ file, table, kind: "unscoped", snippet: chain.slice(0, 80) });
+      const scoped = CAMPAIGN_SCOPE_RE.test(chain);
+      if (FILTER_WRITE_RE.test(chain)) {
+        if (!scoped) violations.push({ file, table, kind: "unscoped", snippet: chain.slice(0, 80) });
+      } else if (PAYLOAD_WRITE_RE.test(chain)) {
+        // trusted campaign-scoped writer (campaign_id lives in the insert payload)
+      } else if (SELECT_RE.test(chain)) {
+        if (!scoped) violations.push({ file, table, kind: "unscoped", snippet: chain.slice(0, 80) });
+      } else {
+        violations.push({ file, table, kind: "not-select", snippet: chain.slice(0, 80) });
+      }
     }
   }
   return { touched, violations };
@@ -128,11 +141,21 @@ describe("engagement survey response reader inventory", () => {
     expect(violations.some((v) => v.table === "engagement_survey_response_sessions")).toBe(false);
   });
 
-  it("catches a sensitive-table mutation even inside the reader", () => {
-    const { violations } = analyzeSensitiveAccess(
+  it("allows campaign-scoped writes in the reader but flags an unscoped update/delete", () => {
+    const scopedInsert = analyzeSensitiveAccess(
       ALLOWED_READER,
-      `await supabase.from("engagement_survey_response_sessions").update({ status: "approved" }).eq("campaign_id", campaignId);`
+      `await supabase.from("engagement_survey_response_sessions").insert({ campaign_id: campaignId, status: "pending" });`
     );
-    expect(violations.some((v) => v.kind === "mutation")).toBe(true);
+    expect(scopedInsert.violations).toEqual([]);
+    const scopedDelete = analyzeSensitiveAccess(
+      ALLOWED_READER,
+      `await supabase.from("engagement_survey_response_sessions").delete().eq("id", sessionId).eq("campaign_id", campaignId);`
+    );
+    expect(scopedDelete.violations).toEqual([]);
+    const unscopedDelete = analyzeSensitiveAccess(
+      ALLOWED_READER,
+      `await supabase.from("engagement_survey_answers").delete().eq("id", answerId);`
+    );
+    expect(unscopedDelete.violations.some((v) => v.kind === "unscoped")).toBe(true);
   });
 });

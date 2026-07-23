@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { aggregateSurveyQuestion } from "@/lib/engagement/survey-responses";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { aggregateSurveyQuestion, insertSurveyResponse } from "@/lib/engagement/survey-responses";
 
 const OPTS = [
   { id: "a1", label: "Bike lane" },
@@ -51,5 +52,64 @@ describe("aggregateSurveyQuestion — pure dispatch", () => {
     const ft = aggregateSurveyQuestion({ id: "f", question_type: "free_text", prompt: "", config_json: {} }, [], [{ answer_json: { text: "hi" }, answer_text: "More trees" }]);
     expect(ft.family).toBe("text");
     expect((ft.aggregation as { sample: string[] }).sample).toEqual(["More trees"]);
+  });
+});
+
+function mockInsertClient(opts: { sessionError?: { message: string } | null; answersError?: { message: string } | null }) {
+  const deleted: { called: boolean; filters: [string, string][] } = { called: false, filters: [] };
+  const from = (table: string) => {
+    if (table === "engagement_survey_response_sessions") {
+      return {
+        insert: () => ({ select: () => ({ single: async () => ({ data: opts.sessionError ? null : { id: "s1" }, error: opts.sessionError ?? null }) }) }),
+        delete: () => ({
+          eq: (c: string, v: string) => ({
+            eq: (c2: string, v2: string) => {
+              deleted.called = true;
+              deleted.filters.push([c, v], [c2, v2]);
+              return Promise.resolve({ error: null });
+            },
+          }),
+        }),
+      };
+    }
+    if (table === "engagement_survey_answers") {
+      return { insert: async () => ({ error: opts.answersError ?? null }) };
+    }
+    throw new Error(`unexpected table ${table}`);
+  };
+  return { supabase: { from } as unknown as SupabaseClient, deleted };
+}
+
+describe("insertSurveyResponse — transactional-ish write", () => {
+  const base = {
+    campaignId: "camp-1",
+    submittedBy: null,
+    sourceType: "public" as const,
+    status: "pending" as const,
+    respondentFingerprint: "fp",
+    metadata: {},
+    answers: [{ questionId: "q1", questionType: "free_text" as const, questionPromptSnapshot: "P", answerJson: { text: "hi" }, answerText: "hi" }],
+  };
+
+  it("returns the session id when session + answers both insert", async () => {
+    const { supabase, deleted } = mockInsertClient({});
+    const result = await insertSurveyResponse(supabase, base);
+    expect(result).toEqual({ ok: true, sessionId: "s1" });
+    expect(deleted.called).toBe(false);
+  });
+
+  it("deletes the session (campaign-scoped) when the answers insert fails", async () => {
+    const { supabase, deleted } = mockInsertClient({ answersError: { message: "boom" } });
+    const result = await insertSurveyResponse(supabase, base);
+    expect(result.ok).toBe(false);
+    expect(deleted.called).toBe(true);
+    expect(deleted.filters).toEqual([["id", "s1"], ["campaign_id", "camp-1"]]);
+  });
+
+  it("fails without touching answers when the session insert fails", async () => {
+    const { supabase, deleted } = mockInsertClient({ sessionError: { message: "nope" } });
+    const result = await insertSurveyResponse(supabase, base);
+    expect(result.ok).toBe(false);
+    expect(deleted.called).toBe(false);
   });
 });

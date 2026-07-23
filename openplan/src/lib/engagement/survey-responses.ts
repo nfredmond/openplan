@@ -185,6 +185,88 @@ export async function loadApprovedSurveyAnswers(
   return (result.data ?? []) as SurveyAnswerRow[];
 }
 
+/** Recent response sessions for one fingerprint (SENSITIVE, campaign_id-scoped).
+ * Feeds the public-submit rate limit + the one-response-per-fingerprint FLAG. */
+export async function loadRecentFingerprintSessions(
+  supabase: QueryClient,
+  campaignId: string,
+  fingerprint: string
+): Promise<{ id: string; created_at: string }[]> {
+  const result = await supabase
+    .from("engagement_survey_response_sessions")
+    .select("id, created_at")
+    .eq("campaign_id", campaignId)
+    .eq("respondent_fingerprint", fingerprint)
+    .order("created_at", { ascending: false })
+    .limit(25);
+  return (result.data ?? []) as { id: string; created_at: string }[];
+}
+
+export type SurveyAnswerInsert = {
+  questionId: string;
+  questionType: SurveyQuestionType;
+  questionPromptSnapshot: string;
+  answerJson: unknown;
+  answerText: string | null;
+};
+
+/** Insert one response session + its N answers (SENSITIVE, campaign-scoped write).
+ * All sensitive-table writes go through here so the reader-inventory guard's
+ * confinement rule holds. A failed answer insert removes the session (its answers
+ * CASCADE) so no half-validated response persists. */
+export async function insertSurveyResponse(
+  supabase: QueryClient,
+  input: {
+    campaignId: string;
+    submittedBy: string | null;
+    sourceType: "public" | "internal" | "meeting" | "email";
+    status: "pending" | "approved" | "rejected" | "flagged";
+    respondentFingerprint: string | null;
+    metadata: Record<string, unknown>;
+    answers: SurveyAnswerInsert[];
+  }
+): Promise<{ ok: true; sessionId: string } | { ok: false; error: string }> {
+  const sessionResult = await supabase
+    .from("engagement_survey_response_sessions")
+    .insert({
+      campaign_id: input.campaignId,
+      respondent_fingerprint: input.respondentFingerprint,
+      source_type: input.sourceType,
+      status: input.status,
+      submitted_by: input.submittedBy,
+      metadata_json: input.metadata,
+      created_by: null,
+    })
+    .select("id")
+    .single();
+  const session = sessionResult.data as { id: string } | null;
+  if (sessionResult.error || !session) {
+    return { ok: false, error: sessionResult.error?.message ?? "Failed to record survey response" };
+  }
+
+  if (input.answers.length > 0) {
+    const rows = input.answers.map((answer) => ({
+      session_id: session.id,
+      question_id: answer.questionId,
+      campaign_id: input.campaignId,
+      question_type: answer.questionType,
+      question_prompt_snapshot: answer.questionPromptSnapshot,
+      answer_json: answer.answerJson,
+      answer_text: answer.answerText,
+    }));
+    const answersResult = await supabase.from("engagement_survey_answers").insert(rows);
+    if (answersResult.error) {
+      await supabase
+        .from("engagement_survey_response_sessions")
+        .delete()
+        .eq("id", session.id)
+        .eq("campaign_id", input.campaignId);
+      return { ok: false, error: answersResult.error.message };
+    }
+  }
+  return { ok: true, sessionId: session.id };
+}
+
 /** Full campaign survey aggregation: approved answers dispatched per question. */
 export async function aggregateCampaignSurvey(
   supabase: QueryClient,
