@@ -98,7 +98,18 @@ const VARIABLES = [
 /**
  * Compute a bounding box from a GeoJSON polygon/multipolygon.
  */
-export function bboxFromGeojson(geojson: { type: string; coordinates: number[][][] | number[][][][] }): BBox {
+/**
+ * Bounding box of a study-area geometry, or null when it has no usable
+ * coordinates.
+ *
+ * This MUST fail closed. It previously returned a Northern California box for a
+ * degenerate geometry, and because the result feeds real ACS/LODES/crash
+ * queries — not just a map camera — a user anywhere on Earth with an empty or
+ * malformed geometry silently received demographics for Northern California.
+ * Silently wrong is far worse than empty: nothing downstream could tell the
+ * difference between "this is your area" and "this is somebody else's".
+ */
+export function bboxFromGeojson(geojson: { type: string; coordinates: number[][][] | number[][][][] }): BBox | null {
   const coords: number[][] = [];
 
   if (geojson.type === "Polygon") {
@@ -118,7 +129,7 @@ export function bboxFromGeojson(geojson: { type: string; coordinates: number[][]
   }
 
   if (coords.length === 0) {
-    return { minLon: -124.3, maxLon: -121.8, minLat: 39.0, maxLat: 40.4 };
+    return null;
   }
 
   const lons = coords.map((c) => c[0]);
@@ -389,6 +400,10 @@ export async function fetchCensusForCorridor(
   corridorGeojson: { type: string; coordinates: number[][][] | number[][][][] }
 ): Promise<CensusSummary> {
   const bbox = bboxFromGeojson(corridorGeojson);
+  // No resolvable extent: report nothing rather than substituting a geography.
+  if (!bbox) {
+    return summarizeTracts([]);
+  }
   const counties = await resolveCountiesFromBbox(bbox);
 
   if (counties.length === 0) {

@@ -306,6 +306,18 @@ export async function POST(request: NextRequest) {
     };
     const bbox = bboxFromGeojson(corridorForApi);
 
+    // A study area with no usable coordinates cannot be analyzed. Refuse it
+    // rather than substituting a geography — every fetch below (ACS, transit,
+    // crashes) would otherwise return real data for somewhere the user never
+    // chose, and nothing downstream could tell it was the wrong place.
+    if (!bbox) {
+      audit.warn("analysis_rejected_empty_study_area", { workspaceId, userId: user.id });
+      return NextResponse.json(
+        { error: "Study area has no usable coordinates. Draw or select an area and try again." },
+        { status: 400 }
+      );
+    }
+
     // Run Census, transit access, and crash fetches in parallel
     const [census, transit, crashes] = await Promise.all([
       fetchCensusForCorridor(corridorForApi),

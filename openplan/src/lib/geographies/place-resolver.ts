@@ -308,11 +308,16 @@ export async function resolvePlaceBoundary(kind: PlaceKind, geoid: string): Prom
   const geojson = extractCorridorFromGeojson(json);
   if (!geojson) return null;
 
+  // A boundary with no usable coordinates is not a resolved place. Returning it
+  // with a substituted bbox would hand the caller someone else's geography.
+  const bbox = bboxFromGeojson(geojson);
+  if (!bbox) return null;
+
   return {
     kind,
     geoid: cleanGeoid,
     label: labelFromBoundaryGeojson(json, kind),
     geojson,
-    bbox: bboxFromGeojson(geojson),
+    bbox,
   };
 }
