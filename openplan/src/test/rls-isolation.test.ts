@@ -23,6 +23,7 @@ type SeedContext = {
   countyRunBId: string;
   aerialMissionBId: string;
   kbDocumentBId: string;
+  safetyCrashIngestBId: string;
   dataConnectorBId: string;
   dataDatasetBId: string;
   modelBId: string;
@@ -272,6 +273,40 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       workspace_id: workspaceBId,
       chunk_index: 0,
       content: `RLS knowledge base chunk ${suffix}`,
+    }),
+  },
+  {
+    // Safety crash ingest — must be inserted before safety_crashes (FK).
+    table: "safety_crash_ingests",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, safetyCrashIngestBId }) => ({
+      id: safetyCrashIngestBId,
+      workspace_id: workspaceBId,
+      min_lon: -121.3,
+      min_lat: 39.1,
+      max_lon: -120.0,
+      max_lat: 39.6,
+      source_id: "ccrs-ca",
+      source_label: "California Crash Reporting System (CCRS)",
+      attribution: "California Highway Patrol, CCRS (public domain).",
+      coverage_state: "ccrs_ca_statewide",
+      status: "ready",
+    }),
+  },
+  {
+    table: "safety_crashes",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, safetyCrashIngestBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      ingest_id: safetyCrashIngestBId,
+      source_id: "ccrs-ca",
+      external_id: `rls-crash-${suffix}`,
+      severity: "injury",
+      latitude: 39.2,
+      longitude: -121.0,
     }),
   },
   {
@@ -620,7 +655,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(40);
+    expect(tables).toHaveLength(42);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -657,6 +692,8 @@ describe("workspace RLS isolation inventory", () => {
       "rtp_cycle_chapters",
       "rtp_cycles",
       "runs",
+      "safety_crash_ingests",
+      "safety_crashes",
       "scenario_sets",
       "stage_gate_decisions",
       "subscriptions",
@@ -715,6 +752,7 @@ liveDescribe("workspace RLS live isolation", () => {
       countyRunBId: randomUUID(),
       aerialMissionBId: randomUUID(),
       kbDocumentBId: randomUUID(),
+      safetyCrashIngestBId: randomUUID(),
       dataConnectorBId: randomUUID(),
       dataDatasetBId: randomUUID(),
       modelBId: randomUUID(),
