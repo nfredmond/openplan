@@ -251,6 +251,9 @@ export function ModelRunManager({
   const [attachToScenarioEntry, setAttachToScenarioEntry] = useState(true);
   const [engineKey, setEngineKey] = useState<ManagedRunModeKey>("deterministic_corridor_v1");
   const [zoneGeography, setZoneGeography] = useState<"tract" | "block_group">("tract");
+  // Per-run count-calibration opt-in (aequilibrae / behavioral_demand). Default
+  // off — OpenPlan ships an uncalibrated screening model.
+  const [calibrate, setCalibrate] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Non-silent handoff notice — e.g. a large sketch study area rerouted to the
@@ -263,6 +266,10 @@ export function ModelRunManager({
     [scenarioEntries, scenarioEntryId]
   );
   const selectedRunMode = useMemo(() => getManagedRunModeDefinition(engineKey), [engineKey]);
+  // Count calibration runs in the AequilibraE screening stages, so it applies to
+  // the aequilibrae engine and the behavioral_demand preflight (whose screening
+  // stages are AequilibraE-run).
+  const supportsCalibration = engineKey === "aequilibrae" || engineKey === "behavioral_demand";
   // "preflight" is launchable (it runs an honest input-validation / runtime-staging
   // preflight); only "prototype" keeps the launch button disabled.
   const launchDisabled = isLaunching || schemaPending || selectedRunMode.availability === "prototype";
@@ -291,6 +298,9 @@ export function ModelRunManager({
           attachToScenarioEntry: attachToScenarioEntry && Boolean(scenarioEntryId),
           engineKey,
           zoneGeography: engineKey === "aequilibrae" ? zoneGeography : undefined,
+          // Sent for the worker-backed engines that can calibrate; other engines
+          // ignore it (and the route only stamps it for those two).
+          calibrate: supportsCalibration ? calibrate : undefined,
         }),
       });
 
@@ -450,6 +460,30 @@ export function ModelRunManager({
                 Block groups lower the intrazonal trip share, so trip lengths and screening VMT
                 resolve finer. Population and households are tract ACS totals disaggregated by
                 LODES residence weights. Both resolutions are screening-grade.
+              </p>
+            </div>
+          ) : null}
+
+          {supportsCalibration ? (
+            <div className="space-y-1.5">
+              <label className="module-note flex items-start gap-3 text-sm text-foreground">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border-border"
+                  checked={calibrate}
+                  onChange={(event) => setCalibrate(event.target.checked)}
+                />
+                <span>
+                  Attempt count calibration (where local observed counts exist) — produces the
+                  disclosed <span className="font-semibold">calibrated_to_counts</span> tier; leaves
+                  the CEQA VMT input unchanged.
+                </span>
+              </label>
+              <p className="text-xs text-muted-foreground">
+                When observed traffic counts are available for the study area, the assignment is
+                tuned toward them and reports held-out (out-of-sample) accuracy. Where no counts
+                match, the run stays screening-grade. Calibrated VMT publishes under distinct KPI
+                names — it never becomes the CEQA §15064.3 determination input.
               </p>
             </div>
           ) : null}

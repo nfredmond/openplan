@@ -166,12 +166,15 @@ def _region_for_bbox(bbox: tuple) -> str | None:
     return None
 
 
-def auto_ingest_counts(bbox, proj_dir: str, out_dir: str) -> str | None:
+def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: bool = False) -> str | None:
     """Best-effort: fetch local DOT AADT for the study bbox and build a per-run
     validation CSV, returning its path (or None). Shells out to the existing
-    scripts/modeling/build_expanded_aadt_counts.py. Skipped when disabled or when
-    VALIDATION_COUNTS_PATH is explicitly overridden."""
-    if not COUNT_AUTO_INGEST or "VALIDATION_COUNTS_PATH" in os.environ:
+    scripts/modeling/build_expanded_aadt_counts.py. Runs when either the
+    deployment enables COUNT_AUTO_INGEST OR this run opted into calibration
+    (calibrate_requested) — a per-run opt-in must be able to fetch its own count
+    set even where the deployment default is off, so the toggle works standalone
+    (esp. hosted). Skipped when VALIDATION_COUNTS_PATH is explicitly overridden."""
+    if (not COUNT_AUTO_INGEST and not calibrate_requested) or "VALIDATION_COUNTS_PATH" in os.environ:
         return None
     if not bbox or len(bbox) != 4:
         return None
@@ -480,6 +483,23 @@ def resolve_zone_geography(run_row: dict | None) -> str:
     if not requested:
         requested = os.getenv("AEQ_ZONE_GEOGRAPHY", "tract")
     return normalize_zone_geography(requested)
+
+
+def resolve_calibration_enabled(run_row: dict | None) -> bool:
+    """Per-run count calibration: launch option > AEQ_CALIBRATE env > off.
+
+    The launch route stamps the per-run choice into input_snapshot_json.calibrate
+    (a bool); the env var remains an ops-level fallback for runs launched without
+    the option (e.g. the `modeling:local --calibrate` CLI). An explicit per-run
+    value wins over the env — unchecking the box turns calibration off even when a
+    deployment defaults it on. Default OFF: OpenPlan ships an uncalibrated
+    screening model. Mirrors resolve_zone_geography exactly.
+    """
+    snapshot = (run_row or {}).get("input_snapshot_json") or {}
+    requested = snapshot.get("calibrate")
+    if requested is None:
+        return CALIBRATION_ENABLED
+    return bool(requested)
 
 
 def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = None) -> dict:
@@ -1155,14 +1175,26 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
 
     log = "Building graph...\n"
 
+    # Per-run count calibration (launch option > AEQ_CALIBRATE env > off). Resolved
+    # here from the run row (a fresh read — the assignment stage runs in its own
+    # process, so setup's run_row isn't in memory) so it can BOTH gate calibration
+    # below AND drive count auto-ingest for this run: calibration needs a count
+    # set, so a per-run opt-in must fetch one even when the deployment-level
+    # COUNT_AUTO_INGEST is off.
+    run_row = sb_get_run(run_id)
+    calibrate_requested = resolve_calibration_enabled(run_row)
+
     # Resolve the counts used for validation/calibration for THIS run: auto-fetch
-    # local DOT AADT for the study area when COUNT_AUTO_INGEST is on and the area
-    # is in a registered region, else the module default. Off-Nevada CA runs get
-    # count-backed validation against local Caltrans counts instead of matching
-    # nothing against the Nevada priority file.
+    # local DOT AADT for the study area when count auto-ingest is on (deployment
+    # env OR this run's calibrate opt-in) and the area is in a registered region,
+    # else the module default. Off-Nevada CA runs get count-backed validation
+    # against local Caltrans counts instead of matching nothing against the Nevada
+    # priority file.
     global _active_counts_path
     _active_counts_path = (
-        auto_ingest_counts(setup_result.get("bbox"), proj_dir, out_dir) or VALIDATION_COUNTS_PATH
+        auto_ingest_counts(setup_result.get("bbox"), proj_dir, out_dir,
+                           calibrate_requested=calibrate_requested)
+        or VALIDATION_COUNTS_PATH
     )
     if _active_counts_path != VALIDATION_COUNTS_PATH:
         log += f"Auto-ingested local DOT AADT counts for validation ({os.path.basename(_active_counts_path)}).\n"
@@ -1604,7 +1636,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
     # touched; calibrated outputs get distinct KPI names.
     calibration_result = None
-    if CALIBRATION_ENABLED and COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path):
+    if calibrate_requested and COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path):
         try:
             def _make_resident_mat(demand_array):
                 m = AequilibraeMatrix()

@@ -93,6 +93,12 @@ const launchModelRunSchema = z.object({
    * "block_group" builds ~3x finer sub-tract zones (lower intrazonal share);
    * default "tract". Ignored by every other engine. */
   zoneGeography: z.enum(["tract", "block_group"]).optional(),
+  /** aequilibrae / behavioral_demand only: opt into count calibration for this
+   * run. Attempts to tune the assignment toward local observed AADT (where a
+   * count set exists) and produces the disclosed `calibrated_to_counts` tier;
+   * the CEQA §15064.3 VMT input is left unchanged. Default off — an explicit
+   * value wins over the AEQ_CALIBRATE env. Ignored by every other engine. */
+  calibrate: z.boolean().optional(),
 });
 
 type RouteContext = {
@@ -500,6 +506,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // don't carry a dead option.
       ...(isAequilibraeRun && parsed.data.zoneGeography
         ? { zoneGeography: parsed.data.zoneGeography }
+        : {}),
+      // Per-run count-calibration opt-in. Stamped for the worker-backed engines
+      // whose screening stages run in the AequilibraE worker (aequilibrae +
+      // behavioral_demand), and only when the caller sent it — an absent flag
+      // falls back to the worker's AEQ_CALIBRATE env. An explicit false is
+      // stamped too, so unchecking the box beats a calibrate-by-default env.
+      ...((isAequilibraeRun || isBehavioralDemandRun) && parsed.data.calibrate !== undefined
+        ? { calibrate: parsed.data.calibrate }
         : {}),
     };
 

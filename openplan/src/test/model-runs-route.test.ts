@@ -924,4 +924,75 @@ describe("/api/models/[modelId]/runs", () => {
     expect(response.status).toBe(400);
     expect(modelRunInsertMock).not.toHaveBeenCalled();
   });
+
+  it("stamps calibrate:true into the input snapshot for an aequilibrae run", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "aequilibrae", calibrate: true }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      engine_key: string;
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect(inserted.engine_key).toBe("aequilibrae");
+    expect(inserted.input_snapshot_json.calibrate).toBe(true);
+  });
+
+  it("stamps an explicit calibrate:false so a per-run opt-out beats the worker env", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "aequilibrae", calibrate: false }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect(inserted.input_snapshot_json.calibrate).toBe(false);
+  });
+
+  it("stamps calibrate for a behavioral_demand preflight (screening stages are AequilibraE-run)", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "behavioral_demand", calibrate: true }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      engine_key: string;
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect(inserted.engine_key).toBe("behavioral_demand");
+    expect(inserted.input_snapshot_json.calibrate).toBe(true);
+  });
+
+  it("omits calibrate from the snapshot when not requested (worker env fallback stays in charge)", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "aequilibrae" }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect("calibrate" in inserted.input_snapshot_json).toBe(false);
+  });
+
+  it("ignores calibrate for engines that don't consume it", async () => {
+    const response = await postModelRun(
+      launchRequest({ engineKey: "sketch_abm", calibrate: true }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      engine_key: string;
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect(inserted.engine_key).toBe("sketch_abm");
+    expect("calibrate" in inserted.input_snapshot_json).toBe(false);
+  });
 });
