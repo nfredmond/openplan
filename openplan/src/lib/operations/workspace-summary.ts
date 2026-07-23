@@ -1,4 +1,5 @@
-import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/catalog";
+import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/public";
+import { loadWorkspaceAerialPostureInputs } from "@/lib/aerial/queries";
 import { computeNetInvoiceAmount } from "@/lib/billing/invoice-records";
 import {
   GRANT_MODELING_PLANNING_CAVEAT,
@@ -15,7 +16,6 @@ import {
   GRANTS_COMMAND_MODULE_LABEL,
   resolveRtpFundingFollowThrough,
 } from "@/lib/operations/grants-links";
-import { looksLikePendingSchema } from "@/lib/models/run-launch";
 import { buildPlanReadiness } from "@/lib/plans/catalog";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
@@ -716,23 +716,8 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     };
   });
 
-  const aerialMissionsResult = await supabase
-    .from("aerial_missions")
-    .select("id, status, mission_type")
-    .eq("workspace_id", workspaceId)
-    .limit(500);
-  const aerialMissions = looksLikePendingSchema(aerialMissionsResult.error?.message)
-    ? []
-    : ((aerialMissionsResult.data ?? []) as Array<{ id: string; status: string; mission_type: string }>);
-
-  const aerialPackagesResult = await supabase
-    .from("aerial_evidence_packages")
-    .select("id, status, verification_readiness")
-    .eq("workspace_id", workspaceId)
-    .limit(500);
-  const aerialPackages = looksLikePendingSchema(aerialPackagesResult.error?.message)
-    ? []
-    : ((aerialPackagesResult.data ?? []) as Array<{ id: string; status: string; verification_readiness: string }>);
+  const { missions: aerialMissions, packages: aerialPackages } =
+    await loadWorkspaceAerialPostureInputs(supabase, workspaceId);
 
   const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
 

@@ -252,6 +252,16 @@ const fromMock = vi.fn((table: string) => {
   if (table === "aerial_evidence_packages") {
     return { select: aerialPackagesSelectMock };
   }
+  if (table === "aerial_project_posture") {
+    // Cached posture now lives in its own aerial-owned table; no cached row here.
+    return {
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          maybeSingle: vi.fn(async () => ({ data: null, error: null })),
+        })),
+      })),
+    };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });

@@ -2,15 +2,17 @@ import { describe, expect, it, vi } from "vitest";
 
 import { rebuildAerialProjectPosture } from "@/lib/aerial/posture-writeback";
 
-type ProjectsUpdateValues = {
-  aerial_posture: {
+type AerialPostureUpsertValues = {
+  project_id: string;
+  workspace_id: string;
+  posture: {
     missionCount: number;
     activeMissionCount: number;
     completeMissionCount: number;
     readyPackageCount: number;
     verificationReadiness: "none" | "pending" | "partial" | "ready";
   };
-  aerial_posture_updated_at: string;
+  updated_at: string;
 };
 
 function buildSupabase({
@@ -22,9 +24,9 @@ function buildSupabase({
   packages: Array<{ status: string; verification_readiness: string }>;
   updateError?: { message: string; code?: string } | null;
 }) {
-  const capturedUpdate: { values?: ProjectsUpdateValues; where: Array<[string, string]> } = {
+  const capturedUpsert: { values?: AerialPostureUpsertValues; options?: { onConflict?: string } } = {
     values: undefined,
-    where: [],
+    options: undefined,
   };
 
   const from = vi.fn((table: string) => {
@@ -60,21 +62,14 @@ function buildSupabase({
       };
     }
 
-    if (table === "projects") {
+    // Posture is written to the aerial-owned table via upsert (keyed on project_id),
+    // NOT to a column on `projects`.
+    if (table === "aerial_project_posture") {
       return {
-        update: vi.fn((values: ProjectsUpdateValues) => {
-          capturedUpdate.values = values;
-          return {
-            eq: vi.fn((col1: string, val1: string) => {
-              capturedUpdate.where.push([col1, val1]);
-              return {
-                eq: vi.fn(async (col2: string, val2: string) => {
-                  capturedUpdate.where.push([col2, val2]);
-                  return { error: updateError ?? null };
-                }),
-              };
-            }),
-          };
+        upsert: vi.fn(async (values: AerialPostureUpsertValues, options?: { onConflict?: string }) => {
+          capturedUpsert.values = values;
+          capturedUpsert.options = options;
+          return { error: updateError ?? null };
         }),
       };
     }
@@ -84,13 +79,13 @@ function buildSupabase({
 
   return {
     supabase: { from } as unknown as Parameters<typeof rebuildAerialProjectPosture>[0]["supabase"],
-    capturedUpdate,
+    capturedUpsert,
   };
 }
 
 describe("rebuildAerialProjectPosture", () => {
-  it("computes posture from missions + packages and writes it to projects", async () => {
-    const { supabase, capturedUpdate } = buildSupabase({
+  it("computes posture from missions + packages and upserts it to aerial_project_posture", async () => {
+    const { supabase, capturedUpsert } = buildSupabase({
       missions: [
         { id: "m1", status: "complete" },
         { id: "m2", status: "active" },
@@ -119,24 +114,23 @@ describe("rebuildAerialProjectPosture", () => {
       verificationReadiness: "partial",
     });
     expect(result.updatedAt).toBe("2026-04-16T14:30:00.000Z");
-    expect(capturedUpdate.values).toEqual({
-      aerial_posture: {
+    expect(capturedUpsert.values).toEqual({
+      project_id: "project-1",
+      workspace_id: "workspace-1",
+      posture: {
         missionCount: 2,
         activeMissionCount: 1,
         completeMissionCount: 1,
         readyPackageCount: 2,
         verificationReadiness: "partial",
       },
-      aerial_posture_updated_at: "2026-04-16T14:30:00.000Z",
+      updated_at: "2026-04-16T14:30:00.000Z",
     });
-    expect(capturedUpdate.where).toEqual([
-      ["id", "project-1"],
-      ["workspace_id", "workspace-1"],
-    ]);
+    expect(capturedUpsert.options).toEqual({ onConflict: "project_id" });
   });
 
   it("writes a zero posture when the project has no missions", async () => {
-    const { supabase, capturedUpdate } = buildSupabase({
+    const { supabase, capturedUpsert } = buildSupabase({
       missions: [],
       packages: [],
     });
@@ -156,11 +150,13 @@ describe("rebuildAerialProjectPosture", () => {
       readyPackageCount: 0,
       verificationReadiness: "none",
     });
-    expect(capturedUpdate.values?.aerial_posture.missionCount).toBe(0);
-    expect(capturedUpdate.values?.aerial_posture.verificationReadiness).toBe("none");
+    expect(capturedUpsert.values?.project_id).toBe("project-1");
+    expect(capturedUpsert.values?.workspace_id).toBe("workspace-1");
+    expect(capturedUpsert.values?.posture.missionCount).toBe(0);
+    expect(capturedUpsert.values?.posture.verificationReadiness).toBe("none");
   });
 
-  it("surfaces the update error when the projects write fails", async () => {
+  it("surfaces the upsert error when the posture write fails", async () => {
     const { supabase } = buildSupabase({
       missions: [{ id: "m1", status: "complete" }],
       packages: [{ status: "ready", verification_readiness: "ready" }],

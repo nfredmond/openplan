@@ -11,8 +11,8 @@ import {
   buildProjectGrantModelingEvidenceByProjectId,
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
-import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/catalog";
-import { looksLikePendingSchema } from "@/lib/models/run-launch";
+import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/public";
+import { loadAerialPostureInputsForProjects } from "@/lib/aerial/queries";
 import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
@@ -232,26 +232,8 @@ export default async function ProjectsPage({
     }
   }
 
-  const aerialMissionsResult = projectIds.length
-    ? await supabase
-        .from("aerial_missions")
-        .select("id, project_id, status")
-        .in("project_id", projectIds)
-    : { data: [], error: null };
-  const aerialMissions = looksLikePendingSchema(aerialMissionsResult.error?.message)
-    ? []
-    : ((aerialMissionsResult.data ?? []) as Array<{ id: string; project_id: string; status: string }>);
-
-  const aerialMissionIds = aerialMissions.map((m) => m.id);
-  const aerialPackagesResult = aerialMissionIds.length
-    ? await supabase
-        .from("aerial_evidence_packages")
-        .select("mission_id, project_id, status, verification_readiness")
-        .in("mission_id", aerialMissionIds)
-    : { data: [], error: null };
-  const aerialPackages = looksLikePendingSchema(aerialPackagesResult.error?.message)
-    ? []
-    : ((aerialPackagesResult.data ?? []) as Array<{ mission_id: string; project_id: string; status: string; verification_readiness: string }>);
+  const { missions: aerialMissions, packages: aerialPackages } =
+    await loadAerialPostureInputsForProjects(supabase, projectIds);
 
   const aerialPostureByProjectId = new Map<string, AerialProjectPosture>();
   for (const projectId of projectIds) {

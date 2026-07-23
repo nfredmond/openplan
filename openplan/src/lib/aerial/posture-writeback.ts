@@ -71,14 +71,20 @@ export async function rebuildAerialProjectPosture({
   const posture = buildAerialProjectPosture(missions, packages);
   const updatedAt = now().toISOString();
 
+  // Aerial posture lives in its own aerial-owned table (aerial_project_posture),
+  // not as a column on the shared `projects` table. Upsert keyed on project_id so
+  // repeated rebuilds refresh in place.
   const updateResult = await supabase
-    .from("projects")
-    .update({
-      aerial_posture: posture,
-      aerial_posture_updated_at: updatedAt,
-    })
-    .eq("id", projectId)
-    .eq("workspace_id", workspaceId);
+    .from("aerial_project_posture")
+    .upsert(
+      {
+        project_id: projectId,
+        workspace_id: workspaceId,
+        posture,
+        updated_at: updatedAt,
+      },
+      { onConflict: "project_id" }
+    );
 
   if (updateResult.error) {
     return {

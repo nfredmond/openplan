@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
-import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
+import { isAoiPolygonGeoJson } from "@/lib/aerial/public";
 
 type AerialMissionRow = {
   id: string;

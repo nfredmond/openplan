@@ -10,7 +10,7 @@ import {
   formatAerialVerificationReadinessLabel,
   type AerialMissionStatus,
   type AerialProjectPosture,
-} from "@/lib/aerial/catalog";
+} from "@/lib/aerial/public";
 import { fmtDateTime, titleize, toneForDatasetStatus } from "./_helpers";
 import type {
   AerialMission,

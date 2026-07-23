@@ -5,7 +5,7 @@ import {
   describeAerialProjectPosture,
   formatAerialVerificationReadinessLabel,
   type AerialProjectPosture,
-} from "@/lib/aerial/catalog";
+} from "@/lib/aerial/public";
 import type { ProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
 import { fmtCurrency, fmtDateTime, type Tone } from "./_helpers";
 

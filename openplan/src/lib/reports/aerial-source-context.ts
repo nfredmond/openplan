@@ -2,7 +2,7 @@ import {
   summarizeAerialEvidenceAttachmentReadiness,
   type AerialEvidenceAttachmentReadiness,
   type AerialEvidenceAttachmentUse,
-} from "@/lib/aerial/catalog";
+} from "@/lib/aerial/public";
 
 export type ReportAerialMissionSourceRow = {
   id: string;

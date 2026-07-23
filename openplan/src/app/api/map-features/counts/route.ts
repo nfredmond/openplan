@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { aerialMissionsWithAoiCountQuery } from "@/lib/aerial/queries";
 
 export type MapFeatureCounts = {
   projects: number | null;
@@ -58,11 +59,7 @@ export async function GET(request: NextRequest) {
           .eq("workspace_id", workspaceId)
           .not("latitude", "is", null)
           .not("longitude", "is", null),
-        supabase
-          .from("aerial_missions")
-          .select("id", { count: "exact", head: true })
-          .eq("workspace_id", workspaceId)
-          .not("aoi_geojson", "is", null),
+        aerialMissionsWithAoiCountQuery(supabase, workspaceId),
         supabase
           .from("project_corridors")
           .select("id", { count: "exact", head: true })

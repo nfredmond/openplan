@@ -25,9 +25,9 @@ import {
   summarizeAerialMissionPackagePosture,
   type AerialMissionStatus,
   type AerialPackageStatus,
-  type AerialProjectPosture,
   type AerialVerificationReadiness,
 } from "@/lib/aerial/catalog";
+import { loadAerialProjectPosture } from "@/lib/aerial/queries";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -66,18 +66,6 @@ function formatDateTime(value: string | null): string {
   });
 }
 
-function isAerialProjectPosture(value: unknown): value is AerialProjectPosture {
-  if (value === null || typeof value !== "object") return false;
-  const v = value as Record<string, unknown>;
-  return (
-    typeof v.missionCount === "number" &&
-    typeof v.activeMissionCount === "number" &&
-    typeof v.completeMissionCount === "number" &&
-    typeof v.readyPackageCount === "number" &&
-    typeof v.verificationReadiness === "string"
-  );
-}
-
 type AerialMissionDetailPageProps = {
   params: Promise<{ missionId: string }>;
 };
@@ -110,7 +98,7 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   const { data: mission, error: missionErr } = await supabase
     .from("aerial_missions")
     .select(
-      "id, workspace_id, project_id, title, status, mission_type, geography_label, collected_at, notes, aoi_geojson, created_at, updated_at, projects:projects!aerial_missions_project_id_fkey(id, name, aerial_posture, aerial_posture_updated_at)"
+      "id, workspace_id, project_id, title, status, mission_type, geography_label, collected_at, notes, aoi_geojson, created_at, updated_at, projects:projects!aerial_missions_project_id_fkey(id, name)"
     )
     .eq("id", missionId)
     .eq("workspace_id", workspaceId)
@@ -121,9 +109,11 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   }
 
   const project = Array.isArray(mission.projects) ? mission.projects[0] : mission.projects;
-  const projectAerialPosture = isAerialProjectPosture(project?.aerial_posture) ? project.aerial_posture : null;
-  const projectAerialPostureUpdatedAt =
-    typeof project?.aerial_posture_updated_at === "string" ? project.aerial_posture_updated_at : null;
+  // Cached project posture now lives in the aerial-owned aerial_project_posture
+  // table (not a column on projects).
+  const { posture: projectAerialPosture, updatedAt: projectAerialPostureUpdatedAt } = mission.project_id
+    ? await loadAerialProjectPosture(supabase, mission.project_id)
+    : { posture: null, updatedAt: null };
   const projectAerialPostureDetail = projectAerialPosture
     ? describeAerialProjectPosture(projectAerialPosture)
     : null;

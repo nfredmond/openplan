@@ -17,7 +17,8 @@ import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSup
 import {
   buildAerialProjectPosture,
   describeAerialProjectPosture,
-} from "@/lib/aerial/catalog";
+} from "@/lib/aerial/public";
+import { loadAerialMissionsAndPackagesForProject, loadAerialProjectPosture } from "@/lib/aerial/queries";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { buildProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-crosslinks";
@@ -153,7 +154,7 @@ export default async function ProjectDetailPage({
   const { data: projectData } = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at, aerial_posture, aerial_posture_updated_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at"
     )
     .eq("id", projectId)
     .single();
@@ -825,45 +826,17 @@ export default async function ProjectDetailPage({
     now
   );
 
-  const aerialMissionsResult = await supabase
-    .from("aerial_missions")
-    .select("id, title, status, mission_type, geography_label, collected_at, updated_at")
-    .eq("project_id", project.id)
-    .order("updated_at", { ascending: false });
-  const aerialMissionsPending = looksLikePendingSchema(aerialMissionsResult.error?.message);
-  const aerialMissions = aerialMissionsPending
-    ? []
-    : ((aerialMissionsResult.data ?? []) as Array<{
-        id: string;
-        title: string;
-        status: string;
-        mission_type: string;
-        geography_label: string | null;
-        collected_at: string | null;
-        updated_at: string;
-      }>);
-  const aerialMissionIds = aerialMissions.map((m) => m.id);
-  const aerialPackagesResult = aerialMissionIds.length
-    ? await supabase
-        .from("aerial_evidence_packages")
-        .select("id, mission_id, title, package_type, status, verification_readiness, updated_at")
-        .in("mission_id", aerialMissionIds)
-        .order("updated_at", { ascending: false })
-    : { data: [], error: null };
-  const aerialPackagesPending = looksLikePendingSchema(aerialPackagesResult.error?.message);
-  const aerialPackages = aerialPackagesPending
-    ? []
-    : ((aerialPackagesResult.data ?? []) as Array<{
-        id: string;
-        mission_id: string;
-        title: string;
-        package_type: string;
-        status: string;
-        verification_readiness: string;
-        updated_at: string;
-      }>);
+  const {
+    missions: aerialMissions,
+    packages: aerialPackages,
+    pending: aerialEvidencePending,
+  } = await loadAerialMissionsAndPackagesForProject(supabase, project.id);
   const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
   const aerialProjectPostureDetail = describeAerialProjectPosture(aerialProjectPosture);
+  // Cached posture now lives in the aerial-owned aerial_project_posture table
+  // (no longer a column on projects).
+  const { posture: aerialCachedPosture, updatedAt: aerialCachedPostureUpdatedAt } =
+    await loadAerialProjectPosture(supabase, project.id);
   const projectSpineCrosslinkSummary = buildProjectSpineCrosslinkSummary({
     projectId: project.id,
     linkedRtpCycleCount,
@@ -912,7 +885,7 @@ export default async function ProjectDetailPage({
         projectFundingProfilePending || fundingAwardsPending || fundingOpportunitiesPending || projectInvoicesPending,
       engagement_evidence: projectReportsPending || reportArtifactsPending,
       analysis_modeling: recentRunsPending || projectReportsPending || reportArtifactsPending,
-      aerial_evidence: aerialMissionsPending || aerialPackagesPending,
+      aerial_evidence: aerialEvidencePending,
     },
   });
 
@@ -1128,8 +1101,8 @@ export default async function ProjectDetailPage({
       <ProjectPostureUnified
         rtpPosture={project.rtp_posture}
         rtpPostureUpdatedAt={project.rtp_posture_updated_at}
-        aerialPosture={project.aerial_posture}
-        aerialPostureUpdatedAt={project.aerial_posture_updated_at}
+        aerialPosture={aerialCachedPosture}
+        aerialPostureUpdatedAt={aerialCachedPostureUpdatedAt}
       />
 
       <ProjectSpineCrosslinkBoard summary={projectSpineCrosslinkSummary} />
