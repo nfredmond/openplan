@@ -39,12 +39,56 @@ COUNT_SOURCES: dict[str, dict[str, Any]] = {
             "back_aadt": "BACK_AADT", "ahead_aadt": "AHEAD_AADT",
         },
     },
-    # To add a state: append its AADT FeatureServer /query URL + field map, e.g.
-    #   "WA": {"name": "WSDOT AADT", "query_url": ".../FeatureServer/0/query",
-    #          "geometry": "point", "fields": {"route": "StateRouteNumber",
-    #          "description": "LocationDescription", "aadt": "AADT"}},
-    # then `fetch_aadt_geojson(bbox, "WA")`. Segment (linework) sources also work
-    # — the normalizer takes the geometry centroid.
+    # Washington — WSDOT "Traffic Counts" AADT point stations. Single total AADT
+    # (per-record, one value). Point layer; f=geojson works. Live-verified.
+    "WA": {
+        "name": "WSDOT Traffic Counts AADT",
+        "query_url": (
+            "https://data.wsdot.wa.gov/arcgis/rest/services/Shared/TrafficData/"
+            "FeatureServer/0/query"
+        ),
+        "geometry": "point",
+        "fields": {
+            "route": "RouteIdentifier", "postmile": "AccumulatedRouteMile",
+            "description": "Location", "aadt": "AADT",
+        },
+    },
+    # Colorado — CDOT "Highways: Traffic Counts" AADT segments (latest year).
+    # Linework → the normalizer takes each segment's centroid. Single total AADT.
+    # No free-text location field, so description = the count-station id. Live-verified.
+    "CO": {
+        "name": "CDOT Highways Traffic Counts AADT",
+        "query_url": (
+            "https://dtdapps.codot.gov/server/rest/services/Webapps/open_data_sde/"
+            "FeatureServer/13/query"
+        ),
+        "geometry": "line",
+        "fields": {
+            "route": "ROUTE", "postmile": "REFPT",
+            "description": "COUNTSTATIONID", "aadt": "AADT",
+        },
+    },
+    # Oregon — ODOT TransGIS "AADT - State" point stations. Single total AADT.
+    # NOTE: this ArcGIS Server advertises GeoJSON but 400s when geometry is
+    # serialized; fetch_aadt_geojson falls back to Esri JSON (handled by the
+    # normalizer's x/y path). Live-verified via that fallback.
+    "OR": {
+        "name": "ODOT TransGIS AADT - State",
+        "query_url": (
+            "https://gis.odot.state.or.us/arcgis1006/rest/services/transgis/catalog/"
+            "MapServer/155/query"
+        ),
+        "geometry": "point",
+        "fields": {
+            "route": "HWYNUMB", "postmile": "MP",
+            "description": "LOCATION", "aadt": "AADT",
+        },
+    },
+    # To add a state: append its AADT FeatureServer /query URL + field map. A
+    # single-total AADT source uses "aadt"; one that splits back/ahead (Caltrans)
+    # uses "back_aadt"/"ahead_aadt". Segment (linework) sources work too — the
+    # normalizer takes the geometry centroid. Also add the state's bbox to
+    # workers/aequilibrae_worker/main.py::_REGION_BOUNDS so auto-ingest recognizes it.
 }
 
 
@@ -108,7 +152,15 @@ def fetch_aadt_geojson(bbox: tuple[float, float, float, float], region: str, out
                        timeout: int = 60) -> int:
     """Query the region's AADT FeatureServer for `bbox` (minlon,minlat,maxlon,
     maxlat, WGS84) and write a normalized Point GeoJSON to out_path. Returns the
-    feature count. Real DOT data only — never synthesized."""
+    feature count. Real DOT data only — never synthesized.
+
+    Requests GeoJSON first (native for most ArcGIS servers). Some servers (e.g.
+    ODOT's ArcGIS Server 10.6) advertise GeoJSON but return HTTP 400 whenever
+    geometry must be serialized — so on a failed/errored GeoJSON response this
+    retries Esri JSON, which normalize_features handles equally (its x/y path).
+    A clean response is authoritative even if it holds zero stations, so the
+    JSON retry only runs when GeoJSON did not respond cleanly. If BOTH formats
+    fail, the underlying error is raised (never a silent empty result)."""
     import requests  # lazy so the module imports without requests
 
     if region not in COUNT_SOURCES:
@@ -117,19 +169,33 @@ def fetch_aadt_geojson(bbox: tuple[float, float, float, float], region: str, out
     src = COUNT_SOURCES[region]
     fields = src["fields"]
     out_fields = ",".join(sorted({v for v in fields.values()}))
-    params = {
+    base_params = {
         "where": "1=1",
         "geometry": ",".join(str(v) for v in bbox),
         "geometryType": "esriGeometryEnvelope",
         "inSR": "4326", "outSR": "4326",
         "spatialRel": "esriSpatialRelIntersects",
         "outFields": out_fields,
-        "f": "geojson",
     }
-    res = requests.get(src["query_url"], params=params, timeout=timeout)
-    res.raise_for_status()
-    data = res.json()
-    feats = normalize_features(data.get("features", []), fields)
+    feats: list[dict[str, Any]] = []
+    last_error: Exception | None = None
+    for fmt in ("geojson", "json"):
+        try:
+            res = requests.get(src["query_url"], params={**base_params, "f": fmt}, timeout=timeout)
+            res.raise_for_status()
+            data = res.json()
+        except Exception as exc:  # network / HTTP error (e.g. the GeoJSON-geometry 400)
+            last_error = exc
+            continue
+        # Some servers answer HTTP 200 with an {"error": {...}} envelope.
+        if isinstance(data, dict) and data.get("error"):
+            last_error = RuntimeError(f"ArcGIS query error (f={fmt}): {data['error']}")
+            continue
+        feats = normalize_features(data.get("features", []), fields)
+        last_error = None
+        break  # a clean response is authoritative — no need to try the other format
+    if last_error is not None and not feats:
+        raise last_error
     with open(out_path, "w") as fh:
         json.dump({"type": "FeatureCollection", "features": feats}, fh)
     return len(feats)

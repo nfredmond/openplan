@@ -14,6 +14,16 @@ def test_region_for_bbox_detects_california():
     assert main._region_for_bbox((-121.06, 39.21, -121.04, 39.23)) == "CA"  # Nevada County
 
 
+def test_region_for_bbox_detects_registered_states():
+    # Multi-state count adapters: each state's AADT FeatureServer is picked up by
+    # an in-state study bbox (verify_bbox from the live source discovery).
+    assert main._region_for_bbox((-122.35, 47.55, -122.30, 47.65)) == "WA"  # Seattle / I-5
+    assert main._region_for_bbox((-105.02, 39.70, -104.95, 39.78)) == "CO"  # Denver / I-25
+    assert main._region_for_bbox((-122.75, 45.40, -122.55, 45.60)) == "OR"  # Portland
+    # Denver is east of California's eastern edge, so CA does NOT swallow it.
+    assert main._region_for_bbox((-105.02, 39.70, -104.95, 39.78)) != "CA"
+
+
 def test_region_for_bbox_returns_none_outside_registered_regions():
     assert main._region_for_bbox((-74.02, 40.70, -73.90, 40.80)) is None  # NYC (no registered source)
 
@@ -135,6 +145,7 @@ def test_auto_ingest_runs_for_per_run_calibrate_even_when_deployment_off():
 if __name__ == "__main__":
     tests = [
         test_region_for_bbox_detects_california,
+        test_region_for_bbox_detects_registered_states,
         test_region_for_bbox_returns_none_outside_registered_regions,
         test_auto_ingest_is_off_by_default,
         test_auto_ingest_passes_bbox_as_equals_form,

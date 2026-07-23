@@ -151,9 +151,16 @@ COUNT_AUTO_INGEST = os.getenv("COUNT_AUTO_INGEST", "0") in ("1", "true", "True")
 _active_counts_path = VALIDATION_COUNTS_PATH
 
 # Rough bounds per registered count-source region (only registered regions can
-# auto-ingest). CA = Caltrans, the one wired source.
+# auto-ingest). Each maps to a state-DOT AADT source in
+# scripts/modeling/count_sources.py::COUNT_SOURCES (CA=Caltrans, WA=WSDOT,
+# CO=CDOT, OR=ODOT). Bbox detection is coarse: a study bbox straddling a state
+# line resolves to the first registered region it intersects; where the fetched
+# counts don't match the network, calibration finds nothing and stays screening.
 _REGION_BOUNDS = {
     "CA": (-124.6, 32.4, -114.0, 42.1),
+    "OR": (-124.57, 41.99, -116.46, 46.29),
+    "WA": (-124.85, 45.54, -116.92, 49.0),
+    "CO": (-109.06, 36.99, -102.04, 41.0),
 }
 
 
