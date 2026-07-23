@@ -19,6 +19,19 @@ type ShareControlsCampaign = {
   demographics_enabled: boolean;
 };
 
+// The embed snippet is HTML SOURCE the operator pastes into their own site, so
+// any value interpolated into an attribute must be HTML-attribute-escaped — an
+// unescaped `"` in a campaign title (set by any workspace member) would otherwise
+// break out of title="..." and inject markup into the operator's page. Escape &
+// first so already-safe entities aren't double-decoded.
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function generateShareToken(): string {
   const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
 
@@ -48,6 +61,7 @@ export function EngagementShareControls({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [browserOrigin, setBrowserOrigin] = useState("");
 
   useEffect(() => {
@@ -69,6 +83,10 @@ export function EngagementShareControls({
     submissions_closed_at: campaign.submissions_closed_at,
   });
   const shareUrl = portalState.portalPath ? `${browserOrigin}${portalState.portalPath}` : null;
+  const embedUrl = portalState.isPubliclyReachable && shareToken ? `${browserOrigin}/embed/${shareToken}` : null;
+  const embedSnippet = embedUrl
+    ? `<iframe src="${escapeHtmlAttribute(embedUrl)}" width="100%" height="720" style="border:0" loading="lazy" title="${escapeHtmlAttribute(campaign.title)}"></iframe>`
+    : null;
 
   const handleCopy = useCallback(async () => {
     if (shareUrl) {
@@ -77,6 +95,14 @@ export function EngagementShareControls({
       setTimeout(() => setCopied(false), 2000);
     }
   }, [shareUrl]);
+
+  const handleCopyEmbed = useCallback(async () => {
+    if (embedSnippet) {
+      await navigator.clipboard.writeText(embedSnippet);
+      setCopiedEmbed(true);
+      setTimeout(() => setCopiedEmbed(false), 2000);
+    }
+  }, [embedSnippet]);
 
   async function handleSave() {
     setError(null);
@@ -193,6 +219,25 @@ export function EngagementShareControls({
             </div>
           ) : null}
         </div>
+
+        {embedSnippet ? (
+          <div className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-semibold text-foreground">Embed on your website</p>
+              <Button type="button" variant="ghost" size="sm" onClick={() => void handleCopyEmbed()} className="shrink-0">
+                {copiedEmbed ? <Check className="h-3.5 w-3.5 text-[color:var(--pine)]" /> : <Copy className="h-3.5 w-3.5" />}
+                {copiedEmbed ? "Copied" : "Copy"}
+              </Button>
+            </div>
+            <p className="mt-1 text-muted-foreground">
+              Paste this iframe into your site. Anyone who can see your page can submit — the same moderation, rate limits,
+              and anti-abuse checks apply as on the hosted portal.
+            </p>
+            <pre className="mt-2 overflow-x-auto rounded-lg border border-border/60 bg-background/80 px-3 py-2 font-mono text-xs text-foreground">
+              {embedSnippet}
+            </pre>
+          </div>
+        ) : null}
 
         <div className="rounded-xl border border-border/70 bg-muted/30 p-3 text-sm">
           <div className="flex flex-wrap items-center justify-between gap-2">
