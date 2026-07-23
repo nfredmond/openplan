@@ -127,4 +127,28 @@ describe("ModelRunEvidencePanel run-honesty header", () => {
     expect(block).toHaveTextContent("Screening-grade");
     expect(block).toHaveTextContent("Uncalibrated by default");
   });
+
+  it("renders a real claim_grade_passed tier without the uncalibrated badge", async () => {
+    mockEvidenceFetch(AEQUILIBRAE_PACKET);
+    renderPanel("aequilibrae", "claim_grade_passed");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-run-honesty");
+    expect(block).toHaveTextContent("Claim-grade passed");
+    expect(block).not.toHaveTextContent("Uncalibrated by default");
+    expect(block).not.toHaveTextContent("Screening-grade");
+  });
+
+  it("lets a real prototype_only claim override a launchable engine's screening default", async () => {
+    mockEvidenceFetch(AEQUILIBRAE_PACKET);
+    // aequilibrae is launchable (availability → screening_grade), but a real
+    // prototype_only claim row must win and NOT show "Uncalibrated by default".
+    renderPanel("aequilibrae", "prototype_only");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-run-honesty");
+    expect(block).toHaveTextContent("Prototype-only");
+    expect(block).not.toHaveTextContent("Uncalibrated by default");
+    expect(block).not.toHaveTextContent("Screening-grade");
+  });
 });

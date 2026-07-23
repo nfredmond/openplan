@@ -1,7 +1,8 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ModelRunManager } from "@/components/models/model-run-manager";
+import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/components/models/model-run-manager";
+import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -87,5 +88,55 @@ describe("ModelRunManager per-run calibration toggle", () => {
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, { body: string }];
     const body = JSON.parse(init.body) as { calibrate?: boolean };
     expect(body.calibrate).toBe(false);
+  });
+
+  // Integration guard for the honesty fix (commit 3c51b609): the run's REAL claim
+  // tier must survive the page → manager → panel prop threading, not just render
+  // when injected straight into the panel.
+  it("threads a run's real claim tier through to the evidence panel badge", async () => {
+    // The evidence panel fetches its packet on "Inspect evidence".
+    const packet = {
+      engine: "behavioral_demand",
+      provenance: { engine_version: "aeq-1.6.2" },
+      inputs: { zone_count: 42 },
+      assumptions: {},
+      caveats: [],
+    };
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => packet })));
+
+    const run = {
+      id: "33333333-3333-4333-8333-333333333333",
+      status: "succeeded",
+      run_title: "Davis calibrated run",
+      // behavioral_demand (not aequilibrae) so no sibling CEQA/map panels mount.
+      engine_key: "behavioral_demand",
+      source_analysis_run_id: null,
+      scenario_entry_id: null,
+      result_summary_json: null,
+      error_message: null,
+      started_at: null,
+      completed_at: null,
+      created_at: null,
+      stages: [] as ModelRunStage[],
+      artifacts: [] as ModelRunArtifact[],
+      claimStatus: "calibrated_to_counts" as ModelingClaimStatus,
+    };
+
+    render(
+      <ModelRunManager
+        modelId={MODEL_ID}
+        modelTitle="Davis screening"
+        defaultQueryText="Screening run"
+        defaultCorridorText=""
+        scenarioEntries={[]}
+        modelRuns={[run]}
+        schemaPending={false}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /inspect evidence/i }));
+    const block = await screen.findByTestId("evidence-run-honesty");
+    expect(block).toHaveTextContent("Calibrated to counts");
+    expect(block).not.toHaveTextContent("Uncalibrated by default");
   });
 });

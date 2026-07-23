@@ -509,6 +509,15 @@ def resolve_calibration_enabled(run_row: dict | None) -> bool:
     return bool(requested)
 
 
+def should_run_calibration(calibrate_requested: bool, counts_path: str) -> bool:
+    """Whether stage_assignment actually runs count calibration: the run opted in
+    (per-run flag / env), count validation is enabled, and a count set exists on
+    disk. Extracted from the stage gate so the decision is unit-testable without a
+    full AequilibraE assignment. Where no counts match, calibration is skipped and
+    the run honestly stays screening-grade."""
+    return bool(calibrate_requested) and COUNT_VALIDATION_ENABLED and os.path.exists(counts_path)
+
+
 def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = None) -> dict:
     run_row = run_row or sb_get_run(run_id)
     corridor_geojson, bbox = resolve_run_study_area(run_row)
@@ -1643,7 +1652,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
     # touched; calibrated outputs get distinct KPI names.
     calibration_result = None
-    if calibrate_requested and COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path):
+    if should_run_calibration(calibrate_requested, _active_counts_path):
         try:
             def _make_resident_mat(demand_array):
                 m = AequilibraeMatrix()

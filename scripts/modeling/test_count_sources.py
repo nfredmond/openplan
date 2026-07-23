@@ -168,6 +168,43 @@ def test_fetch_raises_when_both_formats_fail():
     assert fake.formats == ["geojson", "json"]
 
 
+def test_fetch_falls_back_when_geojson_returns_http200_error_envelope():
+    # Some ArcGIS servers answer HTTP 200 with an {"error": {...}} body instead of
+    # a 4xx. That must NOT be read as "zero stations" — it must fall back to Esri
+    # JSON, not silently drop the run to screening-grade.
+    fake = _FakeRequests({
+        "geojson": _FakeResp(200, {"error": {"code": 400, "message": "Failed to execute query."}}),
+        "json": _FakeResp(200, {"features": [
+            {"attributes": {"HWYNUMB": "002", "LOCATION": "I-84", "MP": 4.17, "AADT": 3257},
+             "geometry": {"x": -122.59, "y": 45.53}},
+        ]}),
+    })
+    out = _tmp_out()
+    n = _with_fake_requests(fake, lambda: cs.fetch_aadt_geojson(
+        (-122.75, 45.40, -122.55, 45.60), "OR", out))
+    assert fake.formats == ["geojson", "json"], fake.formats
+    assert n == 1
+    import json as _json
+    assert _json.load(open(out))["features"][0]["properties"]["BACK_AADT"] == 3257
+
+
+def test_fetch_raises_on_http200_error_envelope_from_both_formats():
+    # A 200 {"error"} from BOTH formats must raise (never write a silent empty
+    # FeatureCollection that reads as "no counts here").
+    fake = _FakeRequests({
+        "geojson": _FakeResp(200, {"error": {"code": 400}}),
+        "json": _FakeResp(200, {"error": {"code": 400}}),
+    })
+    out = _tmp_out()
+    try:
+        _with_fake_requests(fake, lambda: cs.fetch_aadt_geojson(
+            (-122.75, 45.40, -122.55, 45.60), "OR", out))
+        assert False, "expected an error when both formats return a 200 error envelope"
+    except Exception:
+        pass
+    assert fake.formats == ["geojson", "json"]
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in sorted(globals().items()) if name.startswith("test_")]
     try:

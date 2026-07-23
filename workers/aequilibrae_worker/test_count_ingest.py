@@ -22,6 +22,11 @@ def test_region_for_bbox_detects_registered_states():
     assert main._region_for_bbox((-122.75, 45.40, -122.55, 45.60)) == "OR"  # Portland
     # Denver is east of California's eastern edge, so CA does NOT swallow it.
     assert main._region_for_bbox((-105.02, 39.70, -104.95, 39.78)) != "CA"
+    # Border coarseness is first-match by registry order. A bbox on the CA/OR line
+    # (lat ~42.0, where CA's 42.1 top overlaps OR's 41.99 bottom) resolves to CA
+    # because CA is registered first — pin it so a reorder can't silently reroute
+    # a far-NorCal study to ODOT. (OR-before-WA is already pinned by Portland.)
+    assert main._region_for_bbox((-122.00, 41.95, -121.90, 42.05)) == "CA"
 
 
 def test_region_for_bbox_returns_none_outside_registered_regions():
@@ -142,6 +147,32 @@ def test_auto_ingest_runs_for_per_run_calibrate_even_when_deployment_off():
     assert captured.get("argv"), "a fetch subprocess should have run for the opt-in path"
 
 
+def test_should_run_calibration_gate():
+    """The stage-assignment gate predicate: calibration runs only when opted in
+    AND count validation is enabled AND a count set exists on disk. This is the
+    decision the per-run toggle ultimately controls, extracted so it is testable
+    without a full AequilibraE run."""
+    import os
+    import tempfile
+
+    orig = main.COUNT_VALIDATION_ENABLED
+    try:
+        with tempfile.NamedTemporaryFile() as tf:
+            main.COUNT_VALIDATION_ENABLED = True
+            assert main.should_run_calibration(True, tf.name) is True
+            # Not opted in → skip, even with counts present.
+            assert main.should_run_calibration(False, tf.name) is False
+            # Count validation disabled → skip, even when opted in with counts.
+            main.COUNT_VALIDATION_ENABLED = False
+            assert main.should_run_calibration(True, tf.name) is False
+        # Opted in + validation on, but no count set on disk → skip (honest
+        # fallback: no counts → stays screening).
+        main.COUNT_VALIDATION_ENABLED = True
+        assert main.should_run_calibration(True, "/nonexistent/auto_aadt_counts.csv") is False
+    finally:
+        main.COUNT_VALIDATION_ENABLED = orig
+
+
 if __name__ == "__main__":
     tests = [
         test_region_for_bbox_detects_california,
@@ -151,6 +182,7 @@ if __name__ == "__main__":
         test_auto_ingest_passes_bbox_as_equals_form,
         test_resolve_calibration_enabled_snapshot_over_env,
         test_auto_ingest_runs_for_per_run_calibrate_even_when_deployment_off,
+        test_should_run_calibration_gate,
     ]
     try:
         for t in tests:
