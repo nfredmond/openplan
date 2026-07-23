@@ -16,6 +16,7 @@ import {
   splitEngagementPhotoPath,
 } from "@/lib/engagement/photo";
 import { validateSurveyAnswer, type SurveyQuestionContext } from "@/lib/engagement/survey";
+import { recordOperatorNotification } from "@/lib/notifications/engagement";
 import {
   loadSurveyDefinition,
   loadRecentFingerprintSessions,
@@ -62,7 +63,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: campaign, error: campaignError } = await supabase
       .from("engagement_campaigns")
-      .select("id, status, allow_public_submissions, submissions_closed_at, survey_one_response_per_fingerprint")
+      .select("id, workspace_id, title, status, allow_public_submissions, submissions_closed_at, survey_one_response_per_fingerprint")
       .eq("share_token", parsedParams.data.shareToken)
       .eq("status", "active")
       .maybeSingle();
@@ -191,6 +192,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       audit.error("survey_response_insert_failed", { campaignId: campaign.id, message: inserted.error });
       return NextResponse.json({ error: "Failed to submit your response" }, { status: 500 });
     }
+
+    // Best-effort operator notification — the response is already saved.
+    await recordOperatorNotification(supabase, {
+      workspaceId: campaign.workspace_id,
+      campaignId: campaign.id,
+      type: "survey_response",
+      title: `New survey response on “${campaign.title}”`,
+      body: `${collected.length} answer${collected.length === 1 ? "" : "s"} submitted for review.`,
+      payload: { sessionId: inserted.sessionId, reviewStatus: status, answered: collected.length },
+    }).catch(() => {});
 
     audit.info("survey_response_accepted", { campaignId: campaign.id, sessionId: inserted.sessionId, reviewStatus: status, answered: collected.length });
     return NextResponse.json(

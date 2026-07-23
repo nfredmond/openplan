@@ -84,6 +84,10 @@ const fromMock = vi.fn((table: string) => {
   if (table === "engagement_closeloop_entries") {
     return { select: () => ({ eq: () => ({ order: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) }) };
   }
+  // Operator notifications (loadOperatorNotifications) — select → eq → order → limit.
+  if (table === "engagement_notifications") {
+    return { select: () => ({ eq: () => ({ order: () => ({ limit: () => Promise.resolve({ data: [], error: null }) }) }) }) };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });

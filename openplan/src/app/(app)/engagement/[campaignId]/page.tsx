@@ -10,6 +10,7 @@ import { EngagementItemRegistry } from "@/components/engagement/engagement-item-
 import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
 import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
 import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
+import { EngagementNotificationsInbox } from "@/components/engagement/notifications-inbox";
 import { EngagementShareControls } from "@/components/engagement/engagement-share-controls";
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
@@ -20,6 +21,7 @@ import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-ma
 import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
 import { loadSurveyBuilderDefinition, aggregateCampaignSurvey } from "@/lib/engagement/survey-responses";
 import { loadCloseLoopEntries } from "@/lib/engagement/close-loop";
+import { loadOperatorNotifications } from "@/lib/notifications/engagement";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   formatReportStatusLabel,
@@ -168,6 +170,13 @@ export default async function EngagementCampaignDetailPage({
   const surveyResults = await aggregateCampaignSurvey(createServiceRoleClient(), campaign.id);
   // Close-loop entries are operator-authored (RLS client is fine — membership proven above).
   const closeLoopEntries = await loadCloseLoopEntries(supabase, campaign.id);
+  // Operator inbox — engagement_notifications has a member SELECT policy, so the
+  // RLS client reads it directly (defense-in-depth with the membership proof above).
+  const notifications = await loadOperatorNotifications(supabase, campaign.id, { limit: 30 });
+  const builderCategories = ((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
+    id: category.id,
+    label: category.label,
+  }));
 
   const counts = summarizeEngagementItems(categories ?? [], items ?? []);
   const categoryColorById = new Map(
@@ -862,6 +871,7 @@ export default async function EngagementCampaignDetailPage({
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
         <div className="space-y-6">
+          <EngagementNotificationsInbox campaignId={campaign.id} initialNotifications={notifications} />
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
@@ -1243,28 +1253,19 @@ export default async function EngagementCampaignDetailPage({
         <div className="grid gap-6 xl:grid-cols-1">
           <EngagementItemComposer
             campaignId={campaign.id}
-            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
-              id: category.id,
-              label: category.label,
-            }))}
+            categories={builderCategories}
           />
         </div>
 
         <div className="grid gap-6 xl:grid-cols-1">
           <EngagementSurveyBuilder
             campaignId={campaign.id}
-            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
-              id: category.id,
-              label: category.label,
-            }))}
+            categories={builderCategories}
             initialQuestions={surveyQuestions}
           />
           <EngagementCloseLoopBuilder
             campaignId={campaign.id}
-            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
-              id: category.id,
-              label: category.label,
-            }))}
+            categories={builderCategories}
             initialEntries={closeLoopEntries}
           />
         </div>

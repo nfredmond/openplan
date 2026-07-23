@@ -5,12 +5,14 @@ const loadCampaignAccess = vi.fn();
 const validateCampaignCategoryAccess = vi.fn();
 const getUser = vi.fn();
 const generateEngagementSynthesis = vi.fn();
+const createServiceRoleClientMock = vi.hoisted(() => vi.fn());
 
 // Terminal resolvers for the engagement_closeloop_entries chains.
 const entryInsertSingle = vi.fn();
 const entryUpdateMaybeSingle = vi.fn();
 const entryDelete = vi.fn();
 const entryListResolve = vi.fn();
+const entryPriorStatus = vi.fn(); // pre-update status read on publish
 // Draft route reads.
 const itemsResolve = vi.fn();
 const categoriesResolve = vi.fn();
@@ -23,7 +25,9 @@ const fakeSupabase = {
         insert: () => ({ select: () => ({ single: entryInsertSingle }) }),
         update: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle: entryUpdateMaybeSingle }) }) }) }),
         delete: () => ({ eq: () => ({ eq: () => entryDelete() }) }),
-        select: () => ({ eq: () => ({ order: () => ({ order: entryListResolve }) }) }),
+        // select() serves BOTH the GET list (eq -> order -> order) and the
+        // pre-publish status read (eq -> eq -> maybeSingle).
+        select: () => ({ eq: () => ({ order: () => ({ order: entryListResolve }), eq: () => ({ maybeSingle: entryPriorStatus }) }) }),
       };
     }
     if (table === "engagement_items") {
@@ -36,9 +40,17 @@ const fakeSupabase = {
   }),
 };
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: vi.fn(async () => fakeSupabase) }));
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: vi.fn(async () => fakeSupabase),
+  createServiceRoleClient: createServiceRoleClientMock,
+}));
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn() }),
+}));
+// On publish the route fires best-effort notifications/subscriber emails — no-op them.
+vi.mock("@/lib/notifications/engagement", () => ({
+  recordOperatorNotification: vi.fn(async () => ({ ok: true })),
+  enqueueCampaignSubscriberEmails: vi.fn(async () => ({ enqueued: 0 })),
 }));
 vi.mock("@/lib/engagement/api", () => ({
   loadCampaignAccess: (...args: unknown[]) => loadCampaignAccess(...args),
@@ -68,9 +80,11 @@ const entryCtx = { params: Promise.resolve({ campaignId: CAMPAIGN_ID, entryId: E
 
 beforeEach(() => {
   vi.clearAllMocks();
+  createServiceRoleClientMock.mockReturnValue(fakeSupabase);
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+  entryPriorStatus.mockResolvedValue({ data: { status: "draft" }, error: null }); // draft -> published transition
   loadCampaignAccess.mockResolvedValue({
-    campaign: { id: CAMPAIGN_ID, workspace_id: "ws-1" },
+    campaign: { id: CAMPAIGN_ID, workspace_id: "ws-1", title: "Campaign" },
     membership: { role: "editor" },
     error: null,
     allowed: true,
@@ -130,6 +144,22 @@ describe("close-loop operator routes", () => {
     });
     const res = await PATCH(req, entryCtx);
     expect(res.status).toBe(200);
+    expect((await res.json()).entry.status).toBe("published");
+  });
+
+  it("still returns 200 on publish when the best-effort notify path throws (e.g. missing service-role key)", async () => {
+    entryUpdateMaybeSingle.mockResolvedValue({ data: { id: ENTRY_ID, status: "published", theme_title: "T", you_said: "", we_did: "" }, error: null });
+    // Simulate createServiceRoleClient() throwing synchronously AFTER the publish committed.
+    createServiceRoleClientMock.mockImplementation(() => {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set");
+    });
+    const req = new NextRequest("http://localhost/x", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "published" }),
+    });
+    const res = await PATCH(req, entryCtx);
+    expect(res.status).toBe(200); // the committed publish is NOT turned into a false 500
     expect((await res.json()).entry.status).toBe("published");
   });
 

@@ -2,6 +2,7 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { ENGAGEMENT_PHOTO_BUCKET, ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS } from "@/lib/engagement/photo";
 import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import { loadPublishedCloseLoopEntries } from "@/lib/engagement/close-loop";
+import { isEmailTransportConfigured } from "@/lib/notifications/email";
 import type { PortalSurveyQuestion } from "@/components/engagement/public-survey-form";
 import type { PublicCloseLoopEntry } from "@/components/engagement/public-close-loop";
 
@@ -68,6 +69,9 @@ export type PublicPortalProps = {
   projectContext: { name: string; summary: string | null } | null;
   surveyQuestions: PortalSurveyQuestion[];
   closeLoopEntries: PublicCloseLoopEntry[];
+  // Only true when an email transport is actually configured — the "notify me"
+  // affordance is hidden otherwise so the UI never promises email it can't send.
+  emailUpdatesAvailable: boolean;
 };
 
 export type PublicPortalBundle = {
@@ -187,6 +191,7 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
     projectContext: project ? { name: project.name, summary: project.summary } : null,
     surveyQuestions,
     closeLoopEntries,
+    emailUpdatesAvailable: isEmailTransportConfigured(),
   };
 
   return { campaign, project, acceptingSubmissions, portalProps };

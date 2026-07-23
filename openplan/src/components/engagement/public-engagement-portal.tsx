@@ -28,6 +28,7 @@ import { GeometryPickerMap } from "./geometry-picker-map";
 import { LocationDisplayMap } from "./location-display-map";
 import { PublicSurveyForm, type PortalSurveyQuestion } from "./public-survey-form";
 import { PublicCloseLoop, type PublicCloseLoopEntry } from "./public-close-loop";
+import { PublicSubscribeForm } from "./public-subscribe-form";
 
 const PUBLIC_SELECT_CLASS =
   "flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20";
@@ -663,6 +664,7 @@ export function PublicEngagementPortal({
   projectContext,
   surveyQuestions = [],
   closeLoopEntries = [],
+  emailUpdatesAvailable = false,
 }: {
   shareToken: string;
   acceptingSubmissions: boolean;
@@ -676,6 +678,7 @@ export function PublicEngagementPortal({
   } | null;
   surveyQuestions?: PortalSurveyQuestion[];
   closeLoopEntries?: PublicCloseLoopEntry[];
+  emailUpdatesAvailable?: boolean;
 }) {
   const hasSurvey = surveyQuestions.length > 0;
   const hasCloseLoop = closeLoopEntries.length > 0;
@@ -1093,6 +1096,11 @@ export function PublicEngagementPortal({
       </div>
 
       <div className="space-y-5">
+        {emailUpdatesAvailable ? (
+          <article className="public-surface">
+            <PublicSubscribeForm shareToken={shareToken} />
+          </article>
+        ) : null}
         {categories.length > 0 ? (
           <article className="public-surface">
             <div className="public-section-header">

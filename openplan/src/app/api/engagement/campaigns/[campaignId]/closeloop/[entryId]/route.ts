@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess, validateCampaignCategoryAccess } from "@/lib/engagement/api";
 import { CLOSE_LOOP_ENTRY_COLUMNS } from "@/lib/engagement/close-loop";
+import { enqueueCampaignSubscriberEmails, recordOperatorNotification } from "@/lib/notifications/engagement";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid(), entryId: z.string().uuid() });
@@ -62,6 +63,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;
     if (parsed.data.sortOrder !== undefined) updates.sort_order = parsed.data.sortOrder;
 
+    // Detect a genuine draft->published transition (this handler doesn't read the
+    // prior status otherwise), so notify + enqueue emails exactly once.
+    let priorStatus: string | null = null;
+    if (parsed.data.status === "published") {
+      const { data: prior } = await supabase
+        .from("engagement_closeloop_entries")
+        .select("status")
+        .eq("id", routeParams.data.entryId)
+        .eq("campaign_id", access.campaign.id)
+        .maybeSingle();
+      priorStatus = (prior?.status as string | undefined) ?? null;
+    }
+
     // Double-scope the write: the row id AND its campaign_id must match, so a
     // member of one workspace can never patch another campaign's entry by id.
     const { data: entry, error: updateError } = await supabase
@@ -77,6 +91,36 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to update close-loop entry" }, { status: 500 });
     }
     if (!entry) return NextResponse.json({ error: "Close-loop entry not found" }, { status: 404 });
+
+    // On a real publish: operator inbox + subscriber emails. These touch the
+    // service-role-only notification/subscription/outbox tables, so use a
+    // service-role client. Best-effort — the publish ALREADY succeeded, so the
+    // whole block is wrapped: even a synchronous createServiceRoleClient() throw
+    // (e.g. a missing service-role key) must not turn a committed publish into a 500.
+    if (parsed.data.status === "published" && priorStatus !== "published") {
+      try {
+        const serviceClient = createServiceRoleClient();
+        const campaignTitle = (access.campaign as { title?: string }).title ?? "your campaign";
+        const workspaceId = (access.campaign as { workspace_id?: string }).workspace_id;
+        if (workspaceId) {
+          await recordOperatorNotification(serviceClient, {
+            workspaceId,
+            campaignId: access.campaign.id,
+            type: "closeloop_published",
+            title: `Published a “You said / We did” update on “${campaignTitle}”`,
+            body: entry.theme_title,
+            payload: { entryId: entry.id },
+          }).catch(() => {});
+        }
+        await enqueueCampaignSubscriberEmails(serviceClient, access.campaign.id, {
+          subject: `Update on ${campaignTitle}`,
+          text: `The project team posted an update: "${entry.theme_title}".\n\nYou said: ${entry.you_said}\n\nWe did: ${entry.we_did}`,
+          template: "closeloop_published",
+        }).catch(() => {});
+      } catch (notifyError) {
+        audit.warn("closeloop_publish_notify_failed", { campaignId: access.campaign.id, entryId: entry.id, message: notifyError instanceof Error ? notifyError.message : String(notifyError) });
+      }
+    }
 
     audit.info("entry_updated", { userId: user.id, campaignId: access.campaign.id, entryId: entry.id });
     return NextResponse.json({ entry });

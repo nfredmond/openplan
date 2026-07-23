@@ -9,6 +9,7 @@ import {
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { recordOperatorNotification } from "@/lib/notifications/engagement";
 import {
   computeEngagementGeometryRepresentativePoint,
   parseEngagementGeometry,
@@ -129,7 +130,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: campaign, error: campaignError } = await supabase
       .from("engagement_campaigns")
-      .select("id, status, allow_public_submissions, submissions_closed_at, demographics_enabled")
+      .select("id, workspace_id, title, status, allow_public_submissions, submissions_closed_at, demographics_enabled")
       .eq("share_token", parsedParams.data.shareToken)
       .eq("status", "active")
       .maybeSingle();
@@ -339,6 +340,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
       }
     }
+
+    // Best-effort operator notification — the submission is already saved, so a
+    // failure here never fails the request (mirrors the demographics insert).
+    const flagged = Boolean(safety.autoFlagReason);
+    await recordOperatorNotification(supabase, {
+      workspaceId: campaign.workspace_id,
+      campaignId: campaign.id,
+      type: flagged ? "comment_flagged" : "comment_submitted",
+      title: flagged
+        ? `Flagged submission needs review on “${campaign.title}”`
+        : `New public submission on “${campaign.title}”`,
+      body: parsed.data.title?.trim() || parsed.data.body.trim().slice(0, 140),
+      payload: { itemId: item.id, isReply: parentItemId !== null, reviewStatus: flagged ? "flagged" : "pending" },
+    }).catch(() => {});
 
     audit.info("engagement_public_submission_accepted", {
       campaignId: campaign.id,
