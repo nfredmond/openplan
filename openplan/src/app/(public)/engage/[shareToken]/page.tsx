@@ -3,7 +3,9 @@ import { Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
 import type { PortalSurveyQuestion } from "@/components/engagement/public-survey-form";
+import type { PublicCloseLoopEntry } from "@/components/engagement/public-close-loop";
 import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
+import { loadPublishedCloseLoopEntries } from "@/lib/engagement/close-loop";
 import {
   ENGAGEMENT_PHOTO_BUCKET,
   ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS,
@@ -88,7 +90,7 @@ export default async function PublicEngagementPage({
 
   const campaign = campaignData as CampaignRow;
 
-  const [{ data: projectData }, { data: categoriesData }, { data: approvedItemsData }, surveyDefinition] = await Promise.all([
+  const [{ data: projectData }, { data: categoriesData }, { data: approvedItemsData }, surveyDefinition, closeLoopRows] = await Promise.all([
     campaign.project_id
       ? supabase.from("projects").select("id, name, summary").eq("id", campaign.project_id).maybeSingle()
       : Promise.resolve({ data: null }),
@@ -108,6 +110,8 @@ export default async function PublicEngagementPage({
     // Active survey definition (definition tables only; response tables stay
     // confined to survey-responses.ts). Folded into the portal props below.
     loadSurveyDefinition(supabase, campaign.id),
+    // Published "You said / We did" entries only (drafts never leave the operator).
+    loadPublishedCloseLoopEntries(supabase, campaign.id),
   ]);
 
   const project = (projectData ?? null) as PublicProjectRow | null;
@@ -129,6 +133,15 @@ export default async function PublicEngagementPage({
       label: option.label,
       value: option.value,
     })),
+  }));
+
+  const categoryLabelById = new Map(categories.map((category) => [category.id, category.label]));
+  const closeLoopEntries: PublicCloseLoopEntry[] = closeLoopRows.map((entry) => ({
+    id: entry.id,
+    themeTitle: entry.theme_title,
+    youSaid: entry.you_said,
+    weDid: entry.we_did,
+    categoryLabel: entry.category_id ? categoryLabelById.get(entry.category_id) ?? null : null,
   }));
 
   // Photos live in a PRIVATE service-role-only bucket. Short-TTL signed URLs
@@ -255,6 +268,7 @@ export default async function PublicEngagementPage({
         demographicsEnabled={campaign.demographics_enabled}
         projectContext={project ? { name: project.name, summary: project.summary } : null}
         surveyQuestions={surveyQuestions}
+        closeLoopEntries={closeLoopEntries}
       />
     </section>
   );

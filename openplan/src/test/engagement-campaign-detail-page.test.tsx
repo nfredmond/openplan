@@ -80,6 +80,10 @@ const fromMock = vi.fn((table: string) => {
   if (table === "engagement_survey_question_options") {
     return { select: () => ({ eq: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) };
   }
+  // Close-loop entries (loadCloseLoopEntries) — empty in these tests.
+  if (table === "engagement_closeloop_entries") {
+    return { select: () => ({ eq: () => ({ order: () => ({ order: () => Promise.resolve({ data: [], error: null }) }) }) }) };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });

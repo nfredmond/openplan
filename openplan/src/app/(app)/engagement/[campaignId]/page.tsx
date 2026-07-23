@@ -9,6 +9,7 @@ import { EngagementItemComposer } from "@/components/engagement/engagement-item-
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
 import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
 import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
+import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
 import { EngagementShareControls } from "@/components/engagement/engagement-share-controls";
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
@@ -18,6 +19,7 @@ import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/
 import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
 import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
 import { loadSurveyBuilderDefinition, aggregateCampaignSurvey } from "@/lib/engagement/survey-responses";
+import { loadCloseLoopEntries } from "@/lib/engagement/close-loop";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
   formatReportStatusLabel,
@@ -164,6 +166,8 @@ export default async function EngagementCampaignDetailPage({
   // Survey RESULTS read the sensitive response tables → service-role (RLS proven
   // by the campaign membership check above). Reads stay confined to survey-responses.ts.
   const surveyResults = await aggregateCampaignSurvey(createServiceRoleClient(), campaign.id);
+  // Close-loop entries are operator-authored (RLS client is fine — membership proven above).
+  const closeLoopEntries = await loadCloseLoopEntries(supabase, campaign.id);
 
   const counts = summarizeEngagementItems(categories ?? [], items ?? []);
   const categoryColorById = new Map(
@@ -1254,6 +1258,14 @@ export default async function EngagementCampaignDetailPage({
               label: category.label,
             }))}
             initialQuestions={surveyQuestions}
+          />
+          <EngagementCloseLoopBuilder
+            campaignId={campaign.id}
+            categories={((categories ?? []) as Array<{ id: string; label: string }>).map((category) => ({
+              id: category.id,
+              label: category.label,
+            }))}
+            initialEntries={closeLoopEntries}
           />
         </div>
       </div>

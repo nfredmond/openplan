@@ -39,6 +39,13 @@ const surveyOptionsEqActiveMock = vi.fn(() => ({ order: surveyOptionsOrderMock }
 const surveyOptionsEqCampaignMock = vi.fn(() => ({ eq: surveyOptionsEqActiveMock }));
 const surveyOptionsSelectMock = vi.fn(() => ({ eq: surveyOptionsEqCampaignMock }));
 
+// loadPublishedCloseLoopEntries — select → eq(campaign) → eq(status) → order → order.
+const closeLoopOrderCreatedMock = vi.fn().mockResolvedValue({ data: [], error: null });
+const closeLoopOrderSortMock = vi.fn(() => ({ order: closeLoopOrderCreatedMock }));
+const closeLoopEqStatusMock = vi.fn(() => ({ order: closeLoopOrderSortMock }));
+const closeLoopEqCampaignMock = vi.fn(() => ({ eq: closeLoopEqStatusMock }));
+const closeLoopSelectMock = vi.fn(() => ({ eq: closeLoopEqCampaignMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
@@ -57,6 +64,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "engagement_survey_question_options") {
     return { select: surveyOptionsSelectMock };
+  }
+  if (table === "engagement_closeloop_entries") {
+    return { select: closeLoopSelectMock };
   }
   throw new Error(`Unexpected table: ${table}`);
 });

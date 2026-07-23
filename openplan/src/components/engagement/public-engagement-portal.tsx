@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { CheckCircle2, ClipboardList, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, ClipboardList, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +27,7 @@ import {
 import { GeometryPickerMap } from "./geometry-picker-map";
 import { LocationDisplayMap } from "./location-display-map";
 import { PublicSurveyForm, type PortalSurveyQuestion } from "./public-survey-form";
+import { PublicCloseLoop, type PublicCloseLoopEntry } from "./public-close-loop";
 
 const PUBLIC_SELECT_CLASS =
   "flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20";
@@ -661,6 +662,7 @@ export function PublicEngagementPortal({
   demographicsEnabled = false,
   projectContext,
   surveyQuestions = [],
+  closeLoopEntries = [],
 }: {
   shareToken: string;
   acceptingSubmissions: boolean;
@@ -673,9 +675,11 @@ export function PublicEngagementPortal({
     summary: string | null;
   } | null;
   surveyQuestions?: PortalSurveyQuestion[];
+  closeLoopEntries?: PublicCloseLoopEntry[];
 }) {
   const hasSurvey = surveyQuestions.length > 0;
-  const [activeTab, setActiveTab] = useState<"submit" | "feedback" | "survey">(
+  const hasCloseLoop = closeLoopEntries.length > 0;
+  const [activeTab, setActiveTab] = useState<"submit" | "feedback" | "survey" | "closeloop">(
     acceptingSubmissions ? "submit" : "feedback"
   );
   const [sortOrder, setSortOrder] = useState<"newest" | "most_supported">("newest");
@@ -923,7 +927,13 @@ export function PublicEngagementPortal({
           <div>
             <p className="public-section-label">Public participation</p>
             <h2 className="public-section-title">
-              {activeTab === "submit" ? "Share your input" : activeTab === "survey" ? "Survey" : "Community feedback"}
+              {activeTab === "submit"
+                ? "Share your input"
+                : activeTab === "survey"
+                  ? "Survey"
+                  : activeTab === "closeloop"
+                    ? "You said / We did"
+                    : "Community feedback"}
             </h2>
           </div>
           <p className="public-section-description max-w-2xl">
@@ -931,7 +941,9 @@ export function PublicEngagementPortal({
               ? "Share a specific observation, issue, or idea related to this campaign. A short clear note is enough."
               : activeTab === "survey"
                 ? "Answer the project team's survey questions. Your responses are reviewed before they inform summaries or reporting."
-                : "Review approved community feedback that has already cleared project-team moderation for this campaign."}
+                : activeTab === "closeloop"
+                  ? "What the project team heard from the community, and how they responded."
+                  : "Review approved community feedback that has already cleared project-team moderation for this campaign."}
           </p>
         </div>
 
@@ -951,6 +963,15 @@ export function PublicEngagementPortal({
               label="Survey"
               count={surveyQuestions.length}
               onClick={() => setActiveTab("survey")}
+            />
+          ) : null}
+          {hasCloseLoop ? (
+            <PortalTabButton
+              active={activeTab === "closeloop"}
+              icon={<ClipboardCheck className="h-3.5 w-3.5" />}
+              label="You said / We did"
+              count={closeLoopEntries.length}
+              onClick={() => setActiveTab("closeloop")}
             />
           ) : null}
           <PortalTabButton
@@ -1015,6 +1036,8 @@ export function PublicEngagementPortal({
               </div>
             )
           ) : null}
+
+          {activeTab === "closeloop" && hasCloseLoop ? <PublicCloseLoop entries={closeLoopEntries} /> : null}
 
           {activeTab === "feedback" ? (
             <>
