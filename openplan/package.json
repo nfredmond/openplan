@@ -48,6 +48,7 @@
     "clsx": "^2.1.1",
     "csv-parse": "^6.2.0",
     "lucide-react": "^0.575.0",
+    "mammoth": "^1.12.0",
     "mapbox-gl": "^3.20.0",
     "marked": "^14.1.4",
     "next": "16.2.11",
@@ -59,6 +60,7 @@
     "sonner": "^2.0.7",
     "stripe": "^18.5.0",
     "tailwind-merge": "^3.5.0",
+    "unpdf": "^1.6.2",
     "zod": "^4.3.6"
   },
   "devDependencies": {

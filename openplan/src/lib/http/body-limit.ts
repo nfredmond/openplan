@@ -10,6 +10,9 @@ export const BODY_LIMITS = {
   // Public engagement photo upload: 5 MB image payload (matches the
   // engagement-photos bucket file_size_limit) plus small headroom.
   publicPhotoRaw: 5 * 1024 * 1024,
+  // Knowledge Base document upload: 25 MiB raw bytes (matches the kb-documents
+  // bucket file_size_limit in 20260723000001_knowledge_base.sql).
+  kbDocumentRaw: 25 * 1024 * 1024,
 } as const;
 
 export type ReadJsonWithLimitResult<T> =

@@ -83,6 +83,10 @@ const EMBED_SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Heavy, Node-only document parsers used by the Knowledge Base extraction path
+  // (src/lib/knowledge-base/extract.ts). Keep them external so the webpack server
+  // build require()s them at runtime instead of bundling pdf.js / mammoth internals.
+  serverExternalPackages: ["unpdf", "mammoth"],
   async headers() {
     return [
       {

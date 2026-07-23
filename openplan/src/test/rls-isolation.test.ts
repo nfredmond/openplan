@@ -22,6 +22,7 @@ type SeedContext = {
   rtpCycleBId: string;
   countyRunBId: string;
   aerialMissionBId: string;
+  kbDocumentBId: string;
   dataConnectorBId: string;
   dataDatasetBId: string;
   modelBId: string;
@@ -246,6 +247,31 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       workspace_id: workspaceBId,
       model_id: modelBId,
       run_title: `RLS model run ${suffix}`,
+    }),
+  },
+  {
+    // Knowledge Base document — must be inserted before kb_document_chunks (FK).
+    table: "kb_documents",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, kbDocumentBId, suffix }) => ({
+      id: kbDocumentBId,
+      workspace_id: workspaceBId,
+      title: `RLS document ${suffix}`,
+      source_kind: "pasted_text",
+      status: "ready",
+    }),
+  },
+  {
+    table: "kb_document_chunks",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, kbDocumentBId, suffix }) => ({
+      id: randomUUID(),
+      document_id: kbDocumentBId,
+      workspace_id: workspaceBId,
+      chunk_index: 0,
+      content: `RLS knowledge base chunk ${suffix}`,
     }),
   },
   {
@@ -594,7 +620,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(38);
+    expect(tables).toHaveLength(40);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -613,6 +639,8 @@ describe("workspace RLS isolation inventory", () => {
       "funding_awards",
       "funding_opportunities",
       "gtfs_feeds",
+      "kb_document_chunks",
+      "kb_documents",
       "model_runs",
       "modeling_claim_decisions",
       "modeling_source_manifests",
@@ -686,6 +714,7 @@ liveDescribe("workspace RLS live isolation", () => {
       rtpCycleBId: randomUUID(),
       countyRunBId: randomUUID(),
       aerialMissionBId: randomUUID(),
+      kbDocumentBId: randomUUID(),
       dataConnectorBId: randomUUID(),
       dataDatasetBId: randomUUID(),
       modelBId: randomUUID(),
