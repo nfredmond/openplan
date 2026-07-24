@@ -15,10 +15,11 @@ import { fetchCensusForCorridor } from "@/lib/data-sources/census";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
 import { runABM, DEFAULT_ABM_SEED } from "@/lib/models/sketch-abm/abm-runner";
 import {
-  DEFAULT_SKETCH_REFERENCE_BENCHMARKS,
   computeBenchmarkFit,
+  deriveReferenceBenchmarksFromCensus,
   type SketchModeSplitPct,
 } from "@/lib/models/sketch-abm/benchmark-fit";
+import { DEFAULT_REFERENCE_VMT_PER_CAPITA } from "@/lib/planner-pack/ceqa";
 import { buildSketchAbmInputs, seedFromRunId } from "@/lib/models/sketch-abm/sketch-abm-inputs";
 import {
   ITE_TRIP_GEN_SCREENING_CAVEAT,
@@ -892,14 +893,31 @@ export async function POST(request: NextRequest, context: RouteContext) {
           bike: abmOutputs.summary.mode_split.bike ?? 0,
           shared: abmOutputs.summary.mode_split.shared ?? 0,
         };
+        // Reference derived from THIS study area's own ACS commute shares, not a
+        // hardcoded California constant. When the area has no usable commute base
+        // (e.g. no Census key, or no reported commuters), no reference can be
+        // built and no fit score is emitted — an honest "not scored" beats a
+        // score against a substituted geography.
+        const studyAreaReference = deriveReferenceBenchmarksFromCensus(
+          {
+            pctTransit: census.pctTransit,
+            pctWalk: census.pctWalk,
+            pctBike: census.pctBike,
+            pctWfh: census.pctWfh,
+          },
+          DEFAULT_REFERENCE_VMT_PER_CAPITA,
+          { acsYearLabel: "ACS 5-year" }
+        );
         const benchmarkFit =
-          modeledVmtPerCapita !== null && Number.isFinite(modeledVmtPerCapita)
+          studyAreaReference !== null &&
+          modeledVmtPerCapita !== null &&
+          Number.isFinite(modeledVmtPerCapita)
             ? computeBenchmarkFit({
                 modeled: {
                   vmt_per_capita: modeledVmtPerCapita,
                   mode_split_pct: modeledModeSplitPct,
                 },
-                reference: DEFAULT_SKETCH_REFERENCE_BENCHMARKS,
+                reference: studyAreaReference,
               })
             : null;
 

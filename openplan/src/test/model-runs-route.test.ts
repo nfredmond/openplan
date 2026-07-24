@@ -113,6 +113,16 @@ const SKETCH_CENSUS_FIXTURE = {
   ],
   totalPopulation: 6800,
   totalCommuters: 2900,
+  // Commute shares (of all commuters) — a real CensusSummary always carries
+  // these, and the benchmark-fit reference is now derived from them.
+  pctTransit: 2,
+  pctWalk: 4,
+  pctBike: 1,
+  pctWfh: 8,
+  pctZeroVehicle: 6,
+  pctMinority: 30,
+  pctBelowPoverty: 12,
+  medianIncomeWeighted: 62000,
 };
 
 const SKETCH_FIXTURE_REAL_HOUSEHOLDS = SKETCH_CENSUS_FIXTURE.tracts.reduce(

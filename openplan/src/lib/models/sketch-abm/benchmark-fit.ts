@@ -43,10 +43,16 @@ export type SketchReferenceBenchmarks = {
 };
 
 /**
- * Default screening reference benchmarks for a rural/small-urban California
- * context. Every value is a reference point for screening comparison, not a
- * local observation — a run scored against these has been compared to
- * generic benchmarks only, never to counts or surveys from its study area.
+ * A rural/small-urban California-shaped reference, kept as an ILLUSTRATIVE
+ * example and test fixture — NOT applied at runtime.
+ *
+ * It used to be the universal default: every sketch run, anywhere in the
+ * country, was scored against these California mode shares, and that fit score
+ * was reported as evidence. That is a jurisdiction baked into a diagnostic, and
+ * it made the score meaningless (and quietly wrong) outside rural California.
+ * The runtime now derives the reference from the study area's OWN ACS commute
+ * data via `deriveReferenceBenchmarksFromCensus`, and emits no fit score when
+ * that data is unavailable rather than substituting these numbers.
  */
 export const DEFAULT_SKETCH_REFERENCE_BENCHMARKS: SketchReferenceBenchmarks = {
   // Same operator-default the CEQA §15064.3 screen uses
@@ -74,6 +80,66 @@ export const DEFAULT_SKETCH_REFERENCE_BENCHMARKS: SketchReferenceBenchmarks = {
     "Mode-split reference — ACS B08301-shaped commute mode shares for a rural/small-urban California context, renormalized over auto/transit/walk/bike/shared; screening reference points, not local observations.",
   ],
 };
+
+/** The study area's own ACS commute shares, as fractions of ALL commuters. */
+export type CensusCommuteShares = {
+  pctTransit: number;
+  pctWalk: number;
+  pctBike: number;
+  pctWfh: number;
+};
+
+/**
+ * Build a screening reference from the study area's OWN ACS commute mode shares
+ * — national and honest, replacing the one-size-fits-California constant.
+ *
+ * The five benchmark modes exclude work-from-home, so the ACS shares are
+ * renormalized over the non-WFH commute base. `auto` absorbs the remainder
+ * (drive-alone + carpool + taxi/other): our ACS summary does not separate a
+ * shared-ride share, so `shared` is 0 in the reference — the model earns no
+ * credit for matching a share we cannot observe, and any modeled shared trips
+ * count honestly as deviation.
+ *
+ * Returns null when there is no usable commute base (e.g. ACS unavailable, or an
+ * area with no reported commuters). The caller then emits NO fit score rather
+ * than scoring against a substituted geography.
+ *
+ * VMT per capita has no per-area ACS observation, so `vmtPerCapitaReference` is
+ * passed in — the operator-configurable screening default, labelled as such,
+ * never a local measurement.
+ */
+export function deriveReferenceBenchmarksFromCensus(
+  shares: CensusCommuteShares,
+  vmtPerCapitaReference: number,
+  options: { acsYearLabel?: string } = {}
+): SketchReferenceBenchmarks | null {
+  const nonWfh = 100 - shares.pctWfh;
+  if (!(nonWfh > 0) || !Number.isFinite(nonWfh)) return null;
+
+  const clampShare = (value: number) => (Number.isFinite(value) && value > 0 ? value : 0);
+  const transit = (clampShare(shares.pctTransit) / nonWfh) * 100;
+  const walk = (clampShare(shares.pctWalk) / nonWfh) * 100;
+  const bike = (clampShare(shares.pctBike) / nonWfh) * 100;
+  const nonAuto = transit + walk + bike;
+  if (nonAuto > 100) return null; // ACS shares inconsistent; do not fabricate a fit.
+  const auto = 100 - nonAuto;
+
+  const yearLabel = options.acsYearLabel ? ` (${options.acsYearLabel})` : "";
+  return {
+    vmt_per_capita: vmtPerCapitaReference,
+    mode_split_pct: {
+      auto: Math.round(auto * 10) / 10,
+      transit: Math.round(transit * 10) / 10,
+      walk: Math.round(walk * 10) / 10,
+      bike: Math.round(bike * 10) / 10,
+      shared: 0,
+    },
+    sources: [
+      `VMT per capita reference ${vmtPerCapitaReference} vehicle-miles/person/day — an operator-configurable screening default, not a local observation.`,
+      `Mode-split reference derived from the study area's own ACS B08301 commute shares${yearLabel}, renormalized over non-work-from-home commute trips; shared-ride is not separately observed in ACS and is treated as 0.`,
+    ],
+  };
+}
 
 export type ComputeBenchmarkFitParams = {
   modeled: {

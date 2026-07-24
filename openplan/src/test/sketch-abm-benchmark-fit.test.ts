@@ -4,6 +4,7 @@ import {
   SKETCH_BENCHMARK_MODES,
   benchmarkFitRecommendation,
   computeBenchmarkFit,
+  deriveReferenceBenchmarksFromCensus,
   type SketchModeSplitPct,
 } from "@/lib/models/sketch-abm/benchmark-fit";
 import { DEFAULT_REFERENCE_VMT_PER_CAPITA } from "@/lib/planner-pack/ceqa";
@@ -142,7 +143,63 @@ describe("benchmarkFitRecommendation", () => {
   });
 });
 
-describe("DEFAULT_SKETCH_REFERENCE_BENCHMARKS", () => {
+describe("deriveReferenceBenchmarksFromCensus", () => {
+  const VMT_REF = DEFAULT_REFERENCE_VMT_PER_CAPITA;
+
+  it("builds the reference from the study area's OWN ACS commute shares", () => {
+    // A transit-heavy urban area must not be scored against rural-California
+    // numbers. transit 25 / walk 10 / bike 3 / wfh 12 of all commuters.
+    const ref = deriveReferenceBenchmarksFromCensus(
+      { pctTransit: 25, pctWalk: 10, pctBike: 3, pctWfh: 12 },
+      VMT_REF
+    );
+    expect(ref).not.toBeNull();
+    // Renormalized over the non-WFH base (88): transit 25/88*100 ~= 28.4.
+    expect(ref!.mode_split_pct.transit).toBeCloseTo(28.4, 1);
+    expect(ref!.mode_split_pct.walk).toBeCloseTo(11.4, 1);
+    // auto is the remainder; shared is 0 (not separately observed in ACS).
+    expect(ref!.mode_split_pct.shared).toBe(0);
+    const sum = SKETCH_BENCHMARK_MODES.reduce((t, m) => t + ref!.mode_split_pct[m], 0);
+    expect(sum).toBeCloseTo(100, 6);
+    expect(ref!.vmt_per_capita).toBe(VMT_REF);
+  });
+
+  it("produces an auto-dominant reference for a car-dependent area", () => {
+    const ref = deriveReferenceBenchmarksFromCensus(
+      { pctTransit: 1, pctWalk: 2, pctBike: 0.5, pctWfh: 6 },
+      VMT_REF
+    );
+    expect(ref!.mode_split_pct.auto).toBeGreaterThan(90);
+  });
+
+  it("returns null when there is no usable commute base, so no fit is scored", () => {
+    // Everyone works from home, or ACS returned nothing — a reference cannot be
+    // built, and the caller must emit no score rather than substitute a place.
+    expect(deriveReferenceBenchmarksFromCensus({ pctTransit: 0, pctWalk: 0, pctBike: 0, pctWfh: 100 }, VMT_REF)).toBeNull();
+    expect(deriveReferenceBenchmarksFromCensus({ pctTransit: 0, pctWalk: 0, pctBike: 0, pctWfh: 120 }, VMT_REF)).toBeNull();
+  });
+
+  it("refuses to fabricate a fit from inconsistent ACS shares", () => {
+    // Shares that exceed 100% of the non-WFH base are not trustworthy.
+    expect(
+      deriveReferenceBenchmarksFromCensus({ pctTransit: 60, pctWalk: 40, pctBike: 20, pctWfh: 5 }, VMT_REF)
+    ).toBeNull();
+  });
+
+  it("labels the reference as study-area ACS and an operator VMT default, not a local VMT measurement", () => {
+    const ref = deriveReferenceBenchmarksFromCensus(
+      { pctTransit: 5, pctWalk: 5, pctBike: 1, pctWfh: 10 },
+      VMT_REF,
+      { acsYearLabel: "ACS 5-year" }
+    );
+    const sources = ref!.sources.join(" ");
+    expect(sources).toContain("study area's own ACS");
+    expect(sources).toContain("operator-configurable screening default");
+    expect(sources).not.toContain("California");
+  });
+});
+
+describe("DEFAULT_SKETCH_REFERENCE_BENCHMARKS (illustrative fixture, not applied at runtime)", () => {
   it("reuses the CEQA screen's operator-default VMT reference (22.0)", () => {
     expect(REFERENCE.vmt_per_capita).toBe(22.0);
     expect(REFERENCE.vmt_per_capita).toBe(DEFAULT_REFERENCE_VMT_PER_CAPITA);

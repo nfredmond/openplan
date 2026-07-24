@@ -234,9 +234,15 @@ vi.mock("@/lib/geographies/place-resolver", () => ({
   resolvePlaceBoundary: (...args: unknown[]) => resolvePlaceBoundaryMock(...args),
 }));
 
-const tractIngestMock = vi.fn(async () => ({ status: "ingested", tractsUpserted: 328 }));
+const tractIngestMock = vi.fn(
+  async (_service: unknown, _ref: { stateFips: string; countyFips: string }) => ({
+    status: "ingested",
+    tractsUpserted: 328,
+  })
+);
 vi.mock("@/lib/data-sources/census-tract-ingest", () => ({
-  ingestCensusTractsForCounty: (...args: unknown[]) => tractIngestMock(...args),
+  ingestCensusTractsForCounty: (service: unknown, ref: { stateFips: string; countyFips: string }) =>
+    tractIngestMock(service, ref),
 }));
 
 // Run the after() callback synchronously so the background tract load is
