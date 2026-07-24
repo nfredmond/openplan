@@ -4,8 +4,6 @@ import { NextRequest } from "next/server";
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
-const createStripeCheckoutSessionMock = vi.fn();
-const logBillingEventMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -64,16 +62,8 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
-vi.mock("@/lib/billing/checkout", () => ({
-  createStripeCheckoutSession: (...args: unknown[]) => createStripeCheckoutSessionMock(...args),
-}));
-
-vi.mock("@/lib/billing/events", () => ({
-  logBillingEvent: (...args: unknown[]) => logBillingEventMock(...args),
-}));
-
 import { POST as postBootstrap } from "@/app/api/workspaces/bootstrap/route";
-import { POST as postCheckout } from "@/app/api/billing/checkout/route";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 
 function setAuthUser(user: AuthUser) {
   state.authUser = user;
@@ -227,14 +217,6 @@ function bootstrapRequest(payload: unknown) {
   });
 }
 
-function checkoutRequest(payload: unknown) {
-  return new NextRequest("http://localhost/api/billing/checkout", {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-}
-
 describe("OP-001 lifecycle regression: signup -> invite -> role-update", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -355,12 +337,6 @@ describe("OP-001 lifecycle regression: signup -> invite -> role-update", () => {
         throw new Error(`Unexpected table: ${table}`);
       },
     }));
-
-    createStripeCheckoutSessionMock.mockResolvedValue({
-      id: "cs_test_lifecycle",
-      url: "https://checkout.stripe.com/c/pay/cs_test_lifecycle",
-    });
-    logBillingEventMock.mockResolvedValue(undefined);
   });
 
   it("keeps API authorization aligned across signup/bootstrap, invite, and role update", async () => {
@@ -389,37 +365,27 @@ describe("OP-001 lifecycle regression: signup -> invite -> role-update", () => {
 
     setAuthUser({ id: INVITED_USER_ID, email: INVITED_EMAIL });
 
-    const memberCheckoutAttempt = await postCheckout(
-      checkoutRequest({
-        workspaceId,
-        plan: "starter",
-      })
-    );
+    // The owner/admin-scoped action this step used to exercise was
+    // `billing.checkout`, which is gone with the Stripe subsystem. The rule it
+    // demonstrated is the one that matters and still exists: a workspace
+    // CONFIGURATION action is owner/admin only, and the answer must follow the
+    // role the invite + role-update path actually wrote.
+    const roleOf = (userId: string) =>
+      state.workspaceMembers.find(
+        (member) => member.workspace_id === workspaceId && member.user_id === userId
+      )?.role ?? null;
 
-    expect(memberCheckoutAttempt.status).toBe(403);
-    expect(await memberCheckoutAttempt.json()).toMatchObject({
-      error: "Owner/admin access is required",
-    });
+    expect(roleOf(INVITED_USER_ID)).toBe("member");
+    expect(canAccessWorkspaceAction("workspace.configure", roleOf(INVITED_USER_ID))).toBe(false);
+    expect(canAccessWorkspaceAction("workspace.configure", roleOf(OWNER_USER_ID))).toBe(true);
 
     // Simulate role update from member -> admin.
     updateMemberRole(workspaceId, INVITED_USER_ID, "admin");
 
-    const adminCheckoutAttempt = await postCheckout(
-      checkoutRequest({
-        workspaceId,
-        plan: "starter",
-      })
-    );
-
-    expect(adminCheckoutAttempt.status).toBe(200);
-    const adminCheckoutPayload = await adminCheckoutAttempt.json();
-    expect(adminCheckoutPayload).toMatchObject({
-      product: "openplan",
-      tier: "starter",
-      mode: "fit_review_redirect",
-      checkoutDisabled: true,
-    });
-    expect(adminCheckoutPayload.intakeUrl).toContain(`workspaceId=${workspaceId}`);
-    expect(createStripeCheckoutSessionMock).not.toHaveBeenCalled();
+    expect(roleOf(INVITED_USER_ID)).toBe("admin");
+    expect(canAccessWorkspaceAction("workspace.configure", roleOf(INVITED_USER_ID))).toBe(true);
+    // Read access is unchanged by the promotion — members already had it.
+    expect(canAccessWorkspaceAction("invoices.read", "member")).toBe(true);
+    expect(canAccessWorkspaceAction("invoices.write", "member")).toBe(false);
   });
 });

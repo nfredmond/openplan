@@ -7,7 +7,6 @@ const authGetUserMock = vi.fn();
 const auditInfoMock = vi.fn();
 const auditWarnMock = vi.fn();
 const auditErrorMock = vi.fn();
-const applyBillingSubscriptionMutationMock = vi.fn();
 const createWorkspaceInvitationMock = vi.fn();
 
 const accessMaybeSingleMock = vi.fn();
@@ -46,10 +45,6 @@ vi.mock("@/lib/observability/audit", () => ({
     warn: auditWarnMock,
     error: auditErrorMock,
   }),
-}));
-
-vi.mock("@/lib/billing/subscriptions", () => ({
-  applyBillingSubscriptionMutation: (...args: unknown[]) => applyBillingSubscriptionMutationMock(...args),
 }));
 
 vi.mock("@/lib/workspaces/invitations", () => ({
@@ -135,7 +130,6 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
     memberDeleteEqMock.mockResolvedValue({ error: null });
     invitationDeleteEqMock.mockResolvedValue({ error: null });
 
-    applyBillingSubscriptionMutationMock.mockResolvedValue({ error: null, ledgerMissing: false });
     createWorkspaceInvitationMock.mockResolvedValue({
       invitation: {
         id: "33333333-3333-4333-8333-333333333333",
@@ -201,18 +195,6 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
         name: "NCTC Pilot Workspace",
         slug: "nctc-pilot-workspace",
         plan: "pilot",
-      }),
-    );
-    expect(applyBillingSubscriptionMutationMock).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        workspaceId: "11111111-1111-4111-8111-111111111111",
-        subscriptionPlan: "pilot",
-        subscriptionStatus: "pilot",
-        metadata: {
-          source: "access_request_provisioning",
-          accessRequestId: "44444444-4444-4444-8444-444444444444",
-        },
       }),
     );
     expect(createWorkspaceInvitationMock).toHaveBeenCalledWith(
@@ -360,11 +342,10 @@ describe("POST /api/admin/access-requests/[accessRequestId]/provision", () => {
     expect(workspaceInsertMock).not.toHaveBeenCalled();
   });
 
-  it("cleans up a partially provisioned workspace when billing fails", async () => {
-    applyBillingSubscriptionMutationMock.mockResolvedValueOnce({
-      error: { message: "billing insert failed" },
-      ledgerMissing: false,
-    });
+  it("cleans up a partially provisioned workspace when the owner invite fails", async () => {
+    // The billing-ledger write that used to fail here is gone; the rollback it
+    // proved is not. Any post-insert failure must still leave no orphan.
+    createWorkspaceInvitationMock.mockRejectedValueOnce(new Error("invitation insert failed"));
 
     const response = await POST(provisionRequest(acknowledgedPayload({ workspaceName: "NCTC Pilot" })), routeContext());
 

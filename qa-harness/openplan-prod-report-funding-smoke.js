@@ -176,7 +176,7 @@ async function main() {
     ids.awardId = awardResult.data.awardId ?? null;
     notes.push(`Created committed funding award ${awardTitle}.`);
 
-    const invoiceResult = await appFetch('/api/billing/invoices', {
+    const invoiceResult = await appFetch('/api/invoicing/invoices', {
       workspaceId: ids.workspaceId,
       projectId: ids.projectId,
       fundingAwardId: ids.awardId,
@@ -247,7 +247,7 @@ async function main() {
 
     await screenshot('prod-report-funding-03-reports-registry');
 
-    const invoicePatchResult = await appFetch(`/api/billing/invoices/${ids.invoiceId}`, {
+    const invoicePatchResult = await appFetch(`/api/invoicing/invoices/${ids.invoiceId}`, {
       workspaceId: ids.workspaceId,
       status: 'paid',
     }, 'PATCH');

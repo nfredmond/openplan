@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { rebuildProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
-import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const awardIdSchema = z.object({

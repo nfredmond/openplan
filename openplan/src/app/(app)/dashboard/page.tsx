@@ -72,7 +72,6 @@ export default async function DashboardPage() {
   }
 
   const workspaceName = workspace?.name ?? "Your workspace";
-  const workspacePlan = workspace?.plan ?? "pilot";
   const workspaceCreatedAt = workspace?.created_at ?? null;
   const workspaceRole = membership?.role ?? "member";
   const workspaceId = membership?.workspace_id ?? "";
@@ -290,7 +289,6 @@ export default async function DashboardPage() {
         <DashboardWorkspaceIntro
           workspaceName={workspaceName}
           workspaceRole={workspaceRole}
-          workspacePlan={workspacePlan}
         >
           <DashboardKpiGrid cards={kpiCards} />
         </DashboardWorkspaceIntro>

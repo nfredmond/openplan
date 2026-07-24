@@ -6,7 +6,6 @@ const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const fetchCensusForCorridorMock = vi.fn();
 const fetchLODESForCorridorMock = vi.fn();
-const recordUsageEventBestEffortMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -94,10 +93,6 @@ vi.mock("@/lib/data-sources/census", () => ({
 
 vi.mock("@/lib/data-sources/lodes", () => ({
   fetchLODESForCorridor: (...args: unknown[]) => fetchLODESForCorridorMock(...args),
-}));
-
-vi.mock("@/lib/billing/usage-recording", () => ({
-  recordUsageEventBestEffort: (...args: unknown[]) => recordUsageEventBestEffortMock(...args),
 }));
 
 import { POST as postModelRun } from "@/app/api/models/[modelId]/runs/route";
@@ -191,7 +186,6 @@ describe("/api/models/[modelId]/runs", () => {
     modelUpdateEqMock.mockResolvedValue({ error: null });
     modelRunKpisInsertMock.mockResolvedValue({ error: null });
     modelRunQuotaGteMock.mockResolvedValue({ count: 0, error: null });
-    recordUsageEventBestEffortMock.mockResolvedValue(undefined);
 
     workspaceMaybeSingleMock.mockResolvedValue({
       data: { plan: "pilot", subscription_plan: "pilot", subscription_status: "active" },
@@ -464,17 +458,6 @@ describe("/api/models/[modelId]/runs", () => {
     expect(JSON.stringify(benchmarkFit)).not.toMatch(/validat|calibrat|forecast/i);
 
     // Successful sketch launch records a quota-weighted usage event.
-    expect(recordUsageEventBestEffortMock).toHaveBeenCalledTimes(1);
-    expect(recordUsageEventBestEffortMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        workspaceId: WORKSPACE_ID,
-        eventKey: "model_run.launch",
-        bucketKey: "runs",
-        weight: 5,
-        idempotencyKey: expect.stringMatching(/^model_run:.+:launch$/),
-      }),
-      expect.anything()
-    );
   });
 
   it("marks the run failed and returns 500 when sketch input fetch fails", async () => {
@@ -560,19 +543,16 @@ describe("/api/models/[modelId]/runs", () => {
       "Artifact Extraction",
     ]);
     expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
-    expect(recordUsageEventBestEffortMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        metadata: expect.objectContaining({ engineKey: "aequilibrae", reroutedFrom: "sketch_abm" }),
-      }),
-      expect.anything()
-    );
     expect(mockAudit.info).toHaveBeenCalledWith(
       "sketch_abm_rerouted_to_worker",
       expect.objectContaining({ modelId: MODEL_ID, tractCount: 151 })
     );
   });
 
-  it("gates the sketch branch behind an active subscription with 402", async () => {
+  it("runs the sketch branch regardless of any legacy subscription column", async () => {
+    // This branch used to answer 402 when subscription_status was not active.
+    // OpenPlan is free with no paid tier, so a stale column on the row must not
+    // refuse a run.
     workspaceMaybeSingleMock.mockResolvedValue({
       data: { plan: "pilot", subscription_plan: "pilot", subscription_status: "canceled" },
       error: null,
@@ -583,16 +563,7 @@ describe("/api/models/[modelId]/runs", () => {
       { params: Promise.resolve({ modelId: MODEL_ID }) }
     );
 
-    expect(response.status).toBe(402);
-    expect(await response.json()).toEqual({
-      error: "Workspace subscription is not active. Start or resume billing to run analyses.",
-    });
-
-    // Gated before any run row, upstream fetch, or usage recording.
-    expect(modelRunInsertMock).not.toHaveBeenCalled();
-    expect(fetchCensusForCorridorMock).not.toHaveBeenCalled();
-    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
-    expect(recordUsageEventBestEffortMock).not.toHaveBeenCalled();
+    expect(response.status).not.toBe(402);
   });
 
   const TRIP_GEN_PROGRAM = {
@@ -662,12 +633,6 @@ describe("/api/models/[modelId]/runs", () => {
       })
     );
 
-    expect(recordUsageEventBestEffortMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        metadata: expect.objectContaining({ engineKey: "ite_trip_generation" }),
-      }),
-      mockAudit
-    );
   });
 
   it("fails the run with 422 when no land-use program is available", async () => {
@@ -686,7 +651,6 @@ describe("/api/models/[modelId]/runs", () => {
       expect.objectContaining({ status: "failed", error_message: expect.stringContaining("No land-use program") })
     );
     expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
-    expect(recordUsageEventBestEffortMock).not.toHaveBeenCalled();
   });
 
   it("rejects an invalid program (negative quantity) with 422, never a silent zero", async () => {
@@ -852,20 +816,21 @@ describe("/api/models/[modelId]/runs", () => {
     expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
   });
 
-  it("gates the trip-generation branch behind an active subscription with 402", async () => {
+  it("runs the trip-generation branch regardless of any legacy subscription column", async () => {
+    // This branch used to answer 402 when subscription_status was not active.
+    // OpenPlan is free with no paid tier, so a stale column on the row must not
+    // refuse a run.
     workspaceMaybeSingleMock.mockResolvedValue({
       data: { plan: "pilot", subscription_plan: "pilot", subscription_status: "canceled" },
       error: null,
     });
 
     const response = await postModelRun(
-      launchRequest({ engineKey: "ite_trip_generation", tripGenProgram: TRIP_GEN_PROGRAM }),
+      launchRequest({ engineKey: "ite_trip_generation" }),
       { params: Promise.resolve({ modelId: MODEL_ID }) }
     );
 
-    expect(response.status).toBe(402);
-    expect(modelRunInsertMock).not.toHaveBeenCalled();
-    expect(modelRunKpisInsertMock).not.toHaveBeenCalled();
+    expect(response.status).not.toBe(402);
   });
 
   it("queues an aequilibrae run and stamps zoneGeography into the input snapshot", async () => {

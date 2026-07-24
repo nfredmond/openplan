@@ -268,7 +268,7 @@ async function main() {
     await page.getByText(/No reimbursement requests yet/i).first().waitFor({ timeout: 20000 });
     await screenshot('local-grants-flow-01-award-posture');
 
-    const invoiceResult = await appFetch('/api/billing/invoices', {
+    const invoiceResult = await appFetch('/api/invoicing/invoices', {
       workspaceId: ids.workspaceId,
       projectId: ids.projectId,
       fundingAwardId: ids.awardId,

@@ -3,7 +3,6 @@ import { NextRequest } from "next/server";
 
 const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
-const applyBillingSubscriptionMutationMock = vi.fn();
 const createWorkspaceInvitationMock = vi.fn();
 
 const workspaceInsertMock = vi.fn();
@@ -32,11 +31,6 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) =>
     createApiAuditLoggerMock(...args),
-}));
-
-vi.mock("@/lib/billing/subscriptions", () => ({
-  applyBillingSubscriptionMutation: (...args: unknown[]) =>
-    applyBillingSubscriptionMutationMock(...args),
 }));
 
 vi.mock("@/lib/workspaces/invitations", () => ({
@@ -103,10 +97,6 @@ describe("POST /api/admin/workspaces/provision", () => {
     });
 
     createServiceRoleClientMock.mockReturnValue({ from: fromMock });
-    applyBillingSubscriptionMutationMock.mockResolvedValue({
-      error: null,
-      ledgerMissing: false,
-    });
     createWorkspaceInvitationMock.mockResolvedValue({
       invitation: {
         id: "33333333-3333-4333-8333-333333333333",
@@ -170,19 +160,16 @@ describe("POST /api/admin/workspaces/provision", () => {
     });
     expect(createServiceRoleClientMock).not.toHaveBeenCalled();
     expect(workspaceInsertMock).not.toHaveBeenCalled();
-    expect(applyBillingSubscriptionMutationMock).not.toHaveBeenCalled();
     expect(createWorkspaceInvitationMock).not.toHaveBeenCalled();
   });
 
-  it("provisions a workspace with a direct owner membership and billing snapshot", async () => {
+  it("provisions a workspace with a direct owner membership", async () => {
     const response = await postProvisionWorkspace(
       provisionRequest(
         acknowledgedProvisionPayload({
           workspaceName: "Nevada County Transportation Commission",
           ownerUserId: "22222222-2222-4222-8222-222222222222",
           plan: "professional",
-          subscriptionStatus: "trialing",
-          stripeCustomerId: "cus_123",
         }),
       ),
     );
@@ -193,10 +180,8 @@ describe("POST /api/admin/workspaces/provision", () => {
       ownerMembershipCreated: true,
       ownerInvitation: null,
       plan: "professional",
-      subscriptionStatus: "trialing",
       sideEffects: {
         workspaceProvisioned: true,
-        billingLedgerMutated: true,
         outboundEmailSent: false,
         ownerInvitationDelivery: "manual",
       },
@@ -206,21 +191,6 @@ describe("POST /api/admin/workspaces/provision", () => {
       user_id: "22222222-2222-4222-8222-222222222222",
       role: "owner",
     });
-    expect(applyBillingSubscriptionMutationMock).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.objectContaining({
-        workspaceId: "11111111-1111-4111-8111-111111111111",
-        subscriptionPlan: "professional",
-        subscriptionStatus: "trialing",
-        stripeCustomerId: "cus_123",
-        metadata: expect.objectContaining({
-          source: "workspace_provisioning",
-          operatorAcknowledgement:
-            ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
-          manualDeliveryOnly: true,
-        }),
-      }),
-    );
     expect(mockAudit.info).toHaveBeenCalledWith(
       "workspace_provisioned",
       expect.objectContaining({
@@ -269,17 +239,17 @@ describe("POST /api/admin/workspaces/provision", () => {
     );
   });
 
-  it("cleans up a partially provisioned workspace when billing snapshot creation fails", async () => {
-    applyBillingSubscriptionMutationMock.mockResolvedValue({
-      error: { message: "billing insert failed" },
-      ledgerMissing: false,
-    });
+  it("cleans up a partially provisioned workspace when a post-insert step fails", async () => {
+
+    // The billing-ledger write that used to fail here is gone; the rollback it
+    // proved is not. Any post-insert failure must still leave no orphan.
+    createWorkspaceInvitationMock.mockRejectedValue(new Error("invitation insert failed"));
 
     const response = await postProvisionWorkspace(
       provisionRequest(
         acknowledgedProvisionPayload({
           workspaceName: "Nevada County Transportation Commission",
-          ownerUserId: "22222222-2222-4222-8222-222222222222",
+          ownerEmail: "owner@agency.gov",
         }),
       ),
     );

@@ -23,7 +23,7 @@ import {
   buildBillingInvoicePriorityQueue,
   resolveExactBillingInvoiceAwardMatch,
   summarizeBillingInvoiceRecords,
-} from "@/lib/billing/invoice-records";
+} from "@/lib/invoicing/invoice-records";
 import {
   isGrantsAwardCommand,
   isGrantsCommand,
@@ -106,7 +106,7 @@ export default async function GrantsPage({
   }
 
   const { membership, workspace } = await loadCurrentWorkspaceMembership(supabase, user.id);
-  const canWriteInvoices = canAccessWorkspaceAction("billing.invoices.write", membership?.role);
+  const canWriteInvoices = canAccessWorkspaceAction("invoices.write", membership?.role);
 
   if (!membership || !workspace) {
     return (

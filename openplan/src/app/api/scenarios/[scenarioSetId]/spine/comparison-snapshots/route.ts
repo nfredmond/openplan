@@ -3,17 +3,11 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
-  checkMonthlyRunQuota,
-  isQuotaExceeded,
-  isQuotaLookupError,
-  QUOTA_WEIGHTS,
-} from "@/lib/billing/quota";
-import {
-  isWorkspaceSubscriptionActive,
-  resolveWorkspaceEntitlements,
-  subscriptionGateMessage,
-} from "@/lib/billing/subscription";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+  checkMonthlyRunCap,
+  isRunCapExceeded,
+  isRunCapLookupError,
+  RUN_WEIGHTS,
+} from "@/lib/config/run-cap";
 import {
   markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
@@ -179,59 +173,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const { data: workspaceBilling, error: workspaceBillingError } = await supabase
-      .from("workspaces")
-      .select("plan, subscription_plan, subscription_status")
-      .eq("id", access.scenarioSet.workspace_id)
-      .maybeSingle();
-
-    if (workspaceBillingError) {
-      audit.error("workspace_billing_lookup_failed", {
-        workspaceId: access.scenarioSet.workspace_id,
-        userId: user.id,
-        message: workspaceBillingError.message,
-        code: workspaceBillingError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to verify workspace billing" }, { status: 500 });
-    }
-
-    if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
-      const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
-      audit.warn("subscription_inactive", {
-        workspaceId: access.scenarioSet.workspace_id,
-        userId: user.id,
-        subscriptionStatus: workspaceBilling?.subscription_status ?? null,
-      });
-      return NextResponse.json({ error: gateMessage }, { status: 402 });
-    }
-
-    const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
-    const quota = await checkMonthlyRunQuota(supabase, {
+    // The workspace billing lookup and subscription gate that stood here are
+    // gone with the plan concept: OpenPlan is free, so there is no state in
+    // which a member may not do this. Only an operator-set cap can refuse.
+    const runCap = await checkMonthlyRunCap(supabase, {
       workspaceId: access.scenarioSet.workspace_id,
-      plan,
       tableName: "runs",
-      weight: QUOTA_WEIGHTS.DEFAULT,
+      weight: RUN_WEIGHTS.DEFAULT,
     });
 
-    if (isQuotaLookupError(quota)) {
-      audit.error("run_limit_count_failed", {
+    if (isRunCapLookupError(runCap)) {
+      audit.error("run_cap_count_failed", {
         workspaceId: access.scenarioSet.workspace_id,
         userId: user.id,
-        message: quota.message,
-        code: quota.code,
+        message: runCap.message,
+        code: runCap.code,
       });
-      return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to validate the run limit" }, { status: 500 });
     }
 
-    if (isQuotaExceeded(quota)) {
-      audit.warn("run_limit_reached", {
+    if (isRunCapExceeded(runCap)) {
+      audit.warn("run_cap_reached", {
         workspaceId: access.scenarioSet.workspace_id,
         userId: user.id,
-        plan: quota.plan,
-        usedRuns: quota.usedRuns,
-        monthlyLimit: quota.monthlyLimit,
+        usedRuns: runCap.usedRuns,
+        cap: runCap.cap,
       });
-      return NextResponse.json({ error: quota.message }, { status: 429 });
+      return NextResponse.json({ error: runCap.message }, { status: 429 });
     }
 
     const [baselineEntryResult, candidateEntryResult, assumptionSetResult, dataPackageResult] = await Promise.all([
@@ -448,22 +416,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       staleReportCount: staleWriteback.staleReportIds.length,
       durationMs: Date.now() - startedAt,
     });
-
-    await recordUsageEventBestEffort(
-      {
-        workspaceId: access.scenarioSet.workspace_id,
-        eventKey: "scenario.comparison_snapshot",
-        bucketKey: "runs",
-        weight: QUOTA_WEIGHTS.DEFAULT,
-        sourceRoute: "/api/scenarios/[scenarioSetId]/spine/comparison-snapshots",
-        idempotencyKey: `scenario:${access.scenarioSet.id}:comparison:${comparisonSnapshot.id}`,
-        metadata: {
-          scenarioSetId: access.scenarioSet.id,
-          comparisonSnapshotId: comparisonSnapshot.id,
-        },
-      },
-      audit
-    );
 
     return NextResponse.json(
       {

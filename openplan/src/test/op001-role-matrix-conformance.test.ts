@@ -19,9 +19,9 @@ describe("OP-001 role-matrix conformance (deny-by-default)", () => {
         { action: "runs.update", allowedRoles: ["owner", "admin", "member"] },
         { action: "runs.delete", allowedRoles: ["owner", "admin", "member"] },
         { action: "report.generate", allowedRoles: ["owner", "admin", "member"] },
-        { action: "billing.checkout", allowedRoles: ["owner", "admin"] },
-        { action: "billing.invoices.read", allowedRoles: ["owner", "admin", "member"] },
-        { action: "billing.invoices.write", allowedRoles: ["owner", "admin"] },
+        { action: "workspace.configure", allowedRoles: ["owner", "admin"] },
+        { action: "invoices.read", allowedRoles: ["owner", "admin", "member"] },
+        { action: "invoices.write", allowedRoles: ["owner", "admin"] },
         { action: "stage_gates.decisions.read", allowedRoles: ["owner", "admin", "member"] },
         { action: "stage_gates.decisions.write", allowedRoles: ["owner", "admin", "member"] },
       ])
@@ -31,7 +31,7 @@ describe("OP-001 role-matrix conformance (deny-by-default)", () => {
   });
 
   it("enforces deny-by-default for unknown actions and unsupported roles", () => {
-    expect(canAccessWorkspaceAction("billing.checkout", "viewer")).toBe(false);
+    expect(canAccessWorkspaceAction("workspace.configure", "viewer")).toBe(false);
     expect(canAccessWorkspaceAction("runs.list", "auditor")).toBe(false);
     expect(canAccessWorkspaceAction("stage_gates.decisions.read", "")).toBe(false);
     expect(canAccessWorkspaceAction("unknown.action", "owner")).toBe(false);
@@ -39,15 +39,15 @@ describe("OP-001 role-matrix conformance (deny-by-default)", () => {
   });
 
   it("allows only owner/admin for billing checkout", () => {
-    expect(canAccessWorkspaceAction("billing.checkout", "owner")).toBe(true);
-    expect(canAccessWorkspaceAction("billing.checkout", "admin")).toBe(true);
-    expect(canAccessWorkspaceAction("billing.checkout", "member")).toBe(false);
+    expect(canAccessWorkspaceAction("workspace.configure", "owner")).toBe(true);
+    expect(canAccessWorkspaceAction("workspace.configure", "admin")).toBe(true);
+    expect(canAccessWorkspaceAction("workspace.configure", "member")).toBe(false);
   });
 
   it("allows members to read invoice records but not write them", () => {
-    expect(canAccessWorkspaceAction("billing.invoices.read", "member")).toBe(true);
-    expect(canAccessWorkspaceAction("billing.invoices.write", "owner")).toBe(true);
-    expect(canAccessWorkspaceAction("billing.invoices.write", "admin")).toBe(true);
-    expect(canAccessWorkspaceAction("billing.invoices.write", "member")).toBe(false);
+    expect(canAccessWorkspaceAction("invoices.read", "member")).toBe(true);
+    expect(canAccessWorkspaceAction("invoices.write", "owner")).toBe(true);
+    expect(canAccessWorkspaceAction("invoices.write", "admin")).toBe(true);
+    expect(canAccessWorkspaceAction("invoices.write", "member")).toBe(false);
   });
 });

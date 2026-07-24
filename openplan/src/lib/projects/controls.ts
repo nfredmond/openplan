@@ -2,7 +2,7 @@ import {
   summarizeBillingInvoiceRecords,
   type BillingInvoiceRecordLike,
   type BillingInvoiceSummary,
-} from "@/lib/billing/invoice-records";
+} from "@/lib/invoicing/invoice-records";
 import type { StatusTone } from "@/lib/ui/status";
 
 export type ProjectMilestoneRecordLike = {

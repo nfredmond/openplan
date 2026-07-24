@@ -25,7 +25,6 @@
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",
     "ops:log-prod-health-evidence": "node scripts/ops/log-prod-health-evidence.mjs",
     "ops:check-public-demo-preflight": "node scripts/ops/check-public-demo-preflight.mjs",
-    "ops:webhook-proof": "tsx scripts/verify-webhook-ingestion.ts",
     "qa:gate": "npm run lint && npm test && COREPACK_ENABLE_STRICT=0 corepack pnpm@10.33.0 audit --prod --audit-level=moderate && npm run build",
     "qa:gate:log": "mkdir -p ../docs/ops/2026-03-01-test-output && (npm run qa:gate) | tee ../docs/ops/2026-03-01-test-output/2026-03-01-clean-gate.log",
     "ops:check-local-supabase-status": "node scripts/ops/check-local-supabase-status.mjs",

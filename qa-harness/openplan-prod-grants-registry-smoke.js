@@ -472,13 +472,13 @@ async function main() {
     notes.push('Advanced the reimbursement queue item in place from draft to internal review directly from `/grants`.');
 
     const grantsCommandQueueSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /What should move next on the grants lane/i }) }).first();
-    const grantsQueueTriageLink = grantsCommandQueueSection.locator('a[href*="/billing?"][href*="focusInvoiceId="]').first();
+    const grantsQueueTriageLink = grantsCommandQueueSection.locator('a[href*="/invoicing?"][href*="focusInvoiceId="]').first();
     if (!(await grantsQueueTriageLink.isVisible().catch(() => false))) {
       const queueText = await grantsCommandQueueSection.innerText().catch(() => '(queue text unavailable)');
       throw new Error(`No exact billing triage link was visible in the grants workspace queue after reimbursement advanced. Queue text:\n${queueText}`);
     }
     await Promise.all([
-      page.waitForURL(/\/billing\?.*focusInvoiceId=/i, { timeout: 30000 }),
+      page.waitForURL(/\/invoicing\?.*focusInvoiceId=/i, { timeout: 30000 }),
       grantsQueueTriageLink.click(),
     ]);
     await page.waitForLoadState('networkidle');
@@ -491,7 +491,7 @@ async function main() {
     const awardStackTriageLink = refreshedAwardStackAfterQueueSection.getByRole('link', { name: /Review in-flight reimbursement in billing triage/i }).first();
     await awardStackTriageLink.waitFor({ timeout: 30000 });
     await Promise.all([
-      page.waitForURL(/\/billing\?.*focusInvoiceId=/i, { timeout: 30000 }),
+      page.waitForURL(/\/invoicing\?.*focusInvoiceId=/i, { timeout: 30000 }),
       awardStackTriageLink.click(),
     ]);
     await page.waitForLoadState('networkidle');
@@ -503,7 +503,7 @@ async function main() {
     const refreshedAwardStackSection = page.locator('article').filter({ has: page.getByRole('heading', { name: /Workspace award stack and reimbursement posture/i }) }).first();
     await refreshedAwardStackSection.getByRole('heading', { name: projectName, exact: false }).waitFor({ timeout: 30000 });
 
-    const unlinkedInvoiceResult = await appFetch('/api/billing/invoices', {
+    const unlinkedInvoiceResult = await appFetch('/api/invoicing/invoices', {
       workspaceId: ids.workspaceId,
       projectId: ids.projectId,
       invoiceNumber: unlinkedInvoiceNumber,
@@ -528,7 +528,7 @@ async function main() {
     const relinkQueueTriageLink = refreshedGrantsCommandQueueSection.locator(`a[href*="focusInvoiceId=${ids.unlinkedInvoiceId}"]`).first();
     await relinkQueueTriageLink.waitFor({ timeout: 30000 });
     await Promise.all([
-      page.waitForURL(new RegExp(`/billing\?.*focusInvoiceId=${ids.unlinkedInvoiceId}`, 'i'), { timeout: 30000 }),
+      page.waitForURL(new RegExp(`/invoicing\?.*focusInvoiceId=${ids.unlinkedInvoiceId}`, 'i'), { timeout: 30000 }),
       relinkQueueTriageLink.click(),
     ]);
     await page.waitForLoadState('networkidle');
@@ -571,7 +571,7 @@ async function main() {
     const triageLink = relinkedRow.getByRole('link', { name: /Open billing triage/i }).first();
     await triageLink.waitFor({ timeout: 30000 });
     await Promise.all([
-      page.waitForURL(new RegExp(`/billing\?.*focusInvoiceId=${ids.unlinkedInvoiceId}`, 'i'), { timeout: 30000 }),
+      page.waitForURL(new RegExp(`/invoicing\?.*focusInvoiceId=${ids.unlinkedInvoiceId}`, 'i'), { timeout: 30000 }),
       triageLink.click(),
     ]);
     await page.waitForLoadState('networkidle');

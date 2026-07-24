@@ -1,6 +1,6 @@
 import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/public";
 import { loadWorkspaceAerialPostureInputs } from "@/lib/aerial/queries";
-import { computeNetInvoiceAmount } from "@/lib/billing/invoice-records";
+import { computeNetInvoiceAmount } from "@/lib/invoicing/invoice-records";
 import {
   GRANT_MODELING_PLANNING_CAVEAT,
   buildGrantDecisionModelingSupport,

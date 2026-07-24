@@ -11,8 +11,7 @@ import {
   buildAssistantChatSystemPrompt,
 } from "@/lib/assistant/chat-context";
 import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
-import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
+import { checkAiUsageRateLimit } from "@/lib/runtime/ai-rate-limit";
 
 const ASSISTANT_CHAT_MAX_BODY_BYTES = BODY_LIMITS.normalJson;
 const ASSISTANT_CHAT_DEFAULT_MODEL = "claude-opus-4-8";
@@ -144,19 +143,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (context.workspace.id) {
-      await recordUsageEventBestEffort(
-        {
-          workspaceId: context.workspace.id,
-          eventKey: "assistant_chat",
-          bucketKey: "assistant_chat",
-          sourceRoute: "/api/assistant/chat",
-          metadata: {
-            kind: context.kind,
-            model: modelId,
-          },
-        },
-        audit
-      );
     }
 
     const result = streamText({

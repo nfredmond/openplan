@@ -105,19 +105,19 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
   };
 });
 
-vi.mock("@/components/billing/billing-triage-link-copy", () => ({
-  BillingTriageLinkCopy: () => <div data-testid="billing-triage-link-copy" />,
+vi.mock("@/components/invoicing/invoice-triage-link-copy", () => ({
+  InvoiceTriageLinkCopy: () => <div data-testid="billing-triage-link-copy" />,
 }));
 
-vi.mock("@/components/billing/invoice-funding-award-linker", () => ({
+vi.mock("@/components/invoicing/invoice-funding-award-linker", () => ({
   InvoiceFundingAwardLinker: () => <div data-testid="invoice-funding-award-linker" />,
 }));
 
-vi.mock("@/components/billing/invoice-record-composer", () => ({
+vi.mock("@/components/invoicing/invoice-record-composer", () => ({
   InvoiceRecordComposer: () => <div data-testid="invoice-record-composer" />,
 }));
 
-vi.mock("@/components/billing/invoice-status-advance-button", () => ({
+vi.mock("@/components/invoicing/invoice-status-advance-button", () => ({
   InvoiceStatusAdvanceButton: () => <div data-testid="invoice-status-advance-button" />,
 }));
 

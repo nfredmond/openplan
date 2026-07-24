@@ -355,7 +355,7 @@ async function main() {
       { name: 'layout-audit-05-program-detail', url: `${productionBaseUrl}/programs/${summary.ids.programId}` },
       { name: 'layout-audit-06-county-runs-list', url: `${productionBaseUrl}/county-runs` },
       { name: 'layout-audit-07-county-run-detail', url: `${productionBaseUrl}/county-runs/${summary.ids.countyRunId}` },
-      { name: 'layout-audit-08-billing', url: `${productionBaseUrl}/billing` },
+      { name: 'layout-audit-08-invoicing', url: `${productionBaseUrl}/invoicing` },
     ];
 
     for (const entry of pagesToAudit) {

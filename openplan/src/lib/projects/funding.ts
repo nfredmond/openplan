@@ -1,4 +1,4 @@
-import { summarizeBillingInvoiceRecords, type BillingInvoiceRecordLike } from "@/lib/billing/invoice-records";
+import { summarizeBillingInvoiceRecords, type BillingInvoiceRecordLike } from "@/lib/invoicing/invoice-records";
 
 export type ProjectFundingProfileLike = {
   funding_need_amount?: number | string | null;

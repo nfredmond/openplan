@@ -3,17 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import {
-  checkMonthlyRunQuota,
-  isQuotaExceeded,
-  isQuotaLookupError,
-  QUOTA_WEIGHTS,
-} from "@/lib/billing/quota";
-import {
-  isWorkspaceSubscriptionActive,
-  resolveWorkspaceEntitlements,
-  subscriptionGateMessage,
-} from "@/lib/billing/subscription";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+  checkMonthlyRunCap,
+  isRunCapExceeded,
+  isRunCapLookupError,
+  RUN_WEIGHTS,
+} from "@/lib/config/run-cap";
 
 type QaCheck = {
   name: string;
@@ -150,59 +144,33 @@ export async function POST(
     return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
   }
 
-  const { data: workspaceBilling, error: workspaceBillingError } = await supabase
-    .from("workspaces")
-    .select("plan, subscription_plan, subscription_status")
-    .eq("id", pkg.workspace_id)
-    .maybeSingle();
-
-  if (workspaceBillingError) {
-    audit.error("workspace_billing_lookup_failed", {
-      workspaceId: pkg.workspace_id,
-      userId: user.id,
-      message: workspaceBillingError.message,
-      code: workspaceBillingError.code ?? null,
-    });
-    return NextResponse.json({ error: "Failed to verify workspace billing" }, { status: 500 });
-  }
-
-  if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
-    const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
-    audit.warn("subscription_inactive", {
-      workspaceId: pkg.workspace_id,
-      userId: user.id,
-      subscriptionStatus: workspaceBilling?.subscription_status ?? null,
-    });
-    return NextResponse.json({ error: gateMessage }, { status: 402 });
-  }
-
-  const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
-  const quota = await checkMonthlyRunQuota(supabase, {
+  // The workspace billing lookup and subscription gate that stood here are
+  // gone with the plan concept: OpenPlan is free, so there is no state in
+  // which a member may not do this. Only an operator-set cap can refuse.
+  const runCap = await checkMonthlyRunCap(supabase, {
     workspaceId: pkg.workspace_id,
-    plan,
     tableName: "runs",
-    weight: QUOTA_WEIGHTS.DEFAULT,
+    weight: RUN_WEIGHTS.DEFAULT,
   });
 
-  if (isQuotaLookupError(quota)) {
-    audit.error("run_limit_count_failed", {
+  if (isRunCapLookupError(runCap)) {
+    audit.error("run_cap_count_failed", {
       workspaceId: pkg.workspace_id,
       userId: user.id,
-      message: quota.message,
-      code: quota.code,
+      message: runCap.message,
+      code: runCap.code,
     });
-    return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to validate the run limit" }, { status: 500 });
   }
 
-  if (isQuotaExceeded(quota)) {
-    audit.warn("run_limit_reached", {
+  if (isRunCapExceeded(runCap)) {
+    audit.warn("run_cap_reached", {
       workspaceId: pkg.workspace_id,
       userId: user.id,
-      plan: quota.plan,
-      usedRuns: quota.usedRuns,
-      monthlyLimit: quota.monthlyLimit,
+      usedRuns: runCap.usedRuns,
+      cap: runCap.cap,
     });
-    return NextResponse.json({ error: quota.message }, { status: 429 });
+    return NextResponse.json({ error: runCap.message }, { status: 429 });
   }
 
   const nodesGeojson = body.nodes ?? null;
@@ -326,18 +294,6 @@ export async function POST(
   });
 
   if (overallStatus !== "fail") {
-    await recordUsageEventBestEffort(
-      {
-        workspaceId: pkg.workspace_id,
-        eventKey: "network_package.ingest",
-        bucketKey: "runs",
-        weight: QUOTA_WEIGHTS.DEFAULT,
-        sourceRoute: "/api/network-packages/[packageId]/versions/[versionId]/ingest",
-        idempotencyKey: `network_package:${packageId}:${versionId}:ingest`,
-        metadata: { packageId, versionId, overallStatus, totalChecks, warnings, failures },
-      },
-      audit
-    );
   }
 
   return NextResponse.json({

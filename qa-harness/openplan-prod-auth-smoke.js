@@ -235,7 +235,7 @@ async function main() {
     notes.push('Program detail loaded and surfaced model continuity inherited from linked plan/project context.');
     await screenshot('prod-auth-smoke-07-program-detail');
 
-    await page.goto(`${productionBaseUrl}/billing`, { waitUntil: 'networkidle' });
+    await page.goto(`${productionBaseUrl}/invoicing`, { waitUntil: 'networkidle' });
     await page.getByText(/Starter|Professional|billing|subscription/i).first().waitFor({ timeout: 20000 });
     notes.push('Billing page loaded in an authenticated, provisioned state.');
     await screenshot('prod-auth-smoke-08-billing');

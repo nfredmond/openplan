@@ -37,8 +37,7 @@ import {
   type ProjectFundingStackSummary,
 } from "@/lib/projects/funding";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
-import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+import { checkAiUsageRateLimit } from "@/lib/runtime/ai-rate-limit";
 import {
   buildNarrativeFactList,
   factClaimTextMap,
@@ -487,17 +486,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const inputTokens = nullIfUndefined(usage?.inputTokens);
     const outputTokens = nullIfUndefined(usage?.outputTokens);
-
-    await recordUsageEventBestEffort(
-      {
-        workspaceId: opportunity.workspace_id,
-        eventKey: "grant_narrative_draft",
-        bucketKey: "grant_narrative_draft",
-        sourceRoute: "/api/funding-opportunities/[opportunityId]/narrative-draft",
-        metadata: { opportunityId: opportunity.id, model: modelId },
-      },
-      audit
-    );
 
     audit.info("narrative_draft_created", {
       opportunityId: opportunity.id,

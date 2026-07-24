@@ -70,11 +70,31 @@ public site should offer real sign-up, a workspace should be usable by a whole t
 involvement, and `/request-access` is no longer the intended front door.
 
 **5. OpenPlan is free and open source. There is no paid tier and no payment step.**
-**Decided 2026-07-23 (Nathaniel):** the Stripe/billing subsystem is **legacy** — it predates this
-posture and is not part of the product. Do not route self-service through it, do not "fix" the
-disabled checkout, and do not add plan/subscription gating to any new feature. Sign-up is free and
-immediate. (`src/lib/billing/*`, `src/app/api/billing/*`, the Stripe env vars, and the plan/quota
-seams are pending removal; treat them as dead code, not as a system to extend.)
+**Decided 2026-07-23 (Nathaniel):** the Stripe/billing subsystem is **legacy** and not part of the
+product. **REMOVED 2026-07-24:** `src/lib/billing/*`, `src/app/api/billing/*`, the checkout
+components, the Stripe env vars, and the entire plan/quota/subscription seam are **deleted**. Do not
+reintroduce them, and do not add plan/subscription gating to any new feature.
+
+Why it mattered: `workspaces.plan` defaulted to `'free'`, which was not a case in the plan enum, so
+every self-serve workspace normalized to "unknown" and inherited a **100-run monthly cap** that hard-
+429'd corridor analysis, report generation, model runs, scenario comparison, and network ingest —
+with no way to pay for more, because checkout was disabled *because the product is free*. Five of
+those routes also answered **402 Payment Required** when `subscription_status` left the active set.
+A free product may not ration its own core features.
+
+What replaced it: `src/lib/config/run-cap.ts` — one OPTIONAL operator env cap
+(`OPENPLAN_MONTHLY_RUN_CAP`), **unset = unlimited**, which skips the counting query entirely. It is
+configuration for whoever runs a public deployment, never a tier, and its refusal names the operator
+instead of offering an upgrade. `src/test/no-paid-tier-guard.test.ts` fails the build if a
+`@/lib/billing/*` import, a plan/quota/subscription symbol, or a `402` reappears in `src/`.
+
+Two things that lived under `billing/` were NOT billing and survived the deletion — do not confuse
+them with it: **`billing_invoice_records`** is Caltrans **LAPM grant-reimbursement invoicing** (the
+agency invoicing *its funder*), now `src/lib/invoicing/` behind `/invoicing`; and
+**`ai-rate-limit.ts`** is plan-independent abuse protection on Anthropic spend, now
+`src/lib/runtime/`. The Stripe tables and the `workspaces.plan` / `subscription_*` columns are left
+in the database deliberately — dead schema no code reads is inert, and dropping it is irreversible
+against a hosted database.
 
 **Posture flip status (as of 2026-07-23): DONE.** The capability, the claims, and the guard were
 flipped in sequence, in this order — never claim ahead of capability:

@@ -262,7 +262,10 @@ describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => 
     );
   });
 
-  it("returns 402 when the workspace subscription is not active", async () => {
+  it("never demands payment — a lapsed subscription is not a concept", async () => {
+    // This route used to answer 402 when subscription_status was not active.
+    // OpenPlan is free with no paid tier, so ingest proceeds regardless of any
+    // legacy subscription column still sitting on the row.
     workspaceMaybeSingleMock.mockResolvedValueOnce({
       data: {
         plan: "pilot",
@@ -274,16 +277,16 @@ describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => 
 
     const response = await postIngest(buildRequest(), buildContext());
 
-    expect(response.status).toBe(402);
-    expect(versionUpdateMock).not.toHaveBeenCalled();
+    expect(response.status).not.toBe(402);
   });
 
-  it("returns 429 when the monthly run quota is exceeded", async () => {
+  it("does not count runs when no operator cap is configured", async () => {
+    // The counting query is skipped entirely by default, so a huge existing run
+    // count cannot refuse the request.
     runsCountGteMock.mockResolvedValueOnce({ count: 9999, error: null });
 
     const response = await postIngest(buildRequest(), buildContext());
 
-    expect(response.status).toBe(429);
-    expect(versionUpdateMock).not.toHaveBeenCalled();
+    expect(response.status).not.toBe(429);
   });
 });

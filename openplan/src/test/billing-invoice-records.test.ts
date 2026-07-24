@@ -7,7 +7,7 @@ import {
   filterBillingInvoiceRecordsByOverdueStatus,
   summarizeBillingInvoiceLinkage,
   summarizeBillingInvoiceRecords,
-} from "@/lib/billing/invoice-records";
+} from "@/lib/invoicing/invoice-records";
 
 describe("billing invoice record helpers", () => {
   it("computes retention and net amount from percentage", () => {

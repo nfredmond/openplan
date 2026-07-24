@@ -56,17 +56,17 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
-import { POST as postInvoice } from "@/app/api/billing/invoices/route";
+import { POST as postInvoice } from "@/app/api/invoicing/invoices/route";
 
 function jsonRequest(payload: unknown) {
-  return new NextRequest("http://localhost/api/billing/invoices", {
+  return new NextRequest("http://localhost/api/invoicing/invoices", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload),
   });
 }
 
-describe("POST /api/billing/invoices", () => {
+describe("POST /api/invoicing/invoices", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     createApiAuditLoggerMock.mockReturnValue(mockAudit);

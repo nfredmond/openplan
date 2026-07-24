@@ -7,14 +7,12 @@ import { CommandPalette } from "./command-palette";
 
 type CartographicHeaderProps = {
   workspaceName: string;
-  workspacePlan: string;
   workspaceUpdatedLabel?: string | null;
   onNewRun?: () => void;
 };
 
 export function CartographicHeader({
   workspaceName,
-  workspacePlan,
   workspaceUpdatedLabel,
   onNewRun,
 }: CartographicHeaderProps) {
@@ -29,10 +27,9 @@ export function CartographicHeader({
     router.push("/explore");
   }
 
-  const meta =
-    workspaceUpdatedLabel && workspaceUpdatedLabel.length > 0
-      ? `${workspacePlan} · ${workspaceUpdatedLabel}`
-      : workspacePlan;
+  // No plan chip: OpenPlan is free with no tiers, so the only honest metadata
+  // here is when the workspace was last touched.
+  const meta = workspaceUpdatedLabel && workspaceUpdatedLabel.length > 0 ? workspaceUpdatedLabel : null;
 
   return (
     <>

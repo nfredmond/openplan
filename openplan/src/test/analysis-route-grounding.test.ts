@@ -130,7 +130,6 @@ const mockAudit = {
 };
 
 const checkMonthlyRunQuotaMock = vi.fn();
-const recordUsageEventBestEffortMock = vi.fn();
 const generateGrantInterpretationMock = vi.fn();
 const fetchCensusForCorridorMock = vi.fn();
 const bboxFromGeojsonMock = vi.fn();
@@ -152,18 +151,6 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => mockAudit,
-}));
-
-vi.mock("@/lib/billing/quota", () => ({
-  checkMonthlyRunQuota: (...args: unknown[]) => checkMonthlyRunQuotaMock(...args),
-  isQuotaLookupError: (result: { ok: boolean; lookupError?: boolean }) =>
-    result.ok === false && result.lookupError === true,
-  isQuotaExceeded: (result: { ok: boolean; lookupError?: boolean }) =>
-    result.ok === false && result.lookupError !== true,
-}));
-
-vi.mock("@/lib/billing/usage-recording", () => ({
-  recordUsageEventBestEffort: (...args: unknown[]) => recordUsageEventBestEffortMock(...args),
 }));
 
 vi.mock("@/lib/ai/interpret", () => ({
@@ -275,7 +262,6 @@ describe("/api/analysis grounding provenance contract", () => {
       remaining: null,
       unlimited: true,
     });
-    recordUsageEventBestEffortMock.mockResolvedValue(undefined);
     runsInsertMock.mockResolvedValue({ error: null });
 
     validateCorridorGeometryMock.mockReturnValue({ ok: true });

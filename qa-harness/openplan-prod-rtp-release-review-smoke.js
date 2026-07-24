@@ -238,7 +238,7 @@ async function main() {
     }
     ids.awardId = awardResult.data.awardId ?? null;
 
-    const invoiceResult = await appFetch('/api/billing/invoices', {
+    const invoiceResult = await appFetch('/api/invoicing/invoices', {
       workspaceId: ids.workspaceId,
       projectId: ids.projectId,
       fundingAwardId: ids.awardId,
@@ -464,7 +464,7 @@ async function main() {
     notes.push('Production registry current-packet link landed on the packet release-review anchor in report detail.');
     await screenshot('prod-rtp-release-review-03-report-detail');
 
-    const invoicePatchResult = await appFetch(`/api/billing/invoices/${ids.invoiceId}`, {
+    const invoicePatchResult = await appFetch(`/api/invoicing/invoices/${ids.invoiceId}`, {
       workspaceId: ids.workspaceId,
       status: 'paid',
     }, 'PATCH');

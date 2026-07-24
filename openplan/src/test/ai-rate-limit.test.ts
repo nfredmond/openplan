@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   AI_RATE_LIMIT_MAX_PER_WINDOW,
   checkAiUsageRateLimit,
-} from "@/lib/billing/ai-rate-limit";
+} from "@/lib/runtime/ai-rate-limit";
 
 function supabaseReturning(result: { count?: number | null; error?: unknown }) {
   const gte = vi.fn(async () => result);

@@ -7,17 +7,11 @@ import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-s
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import {
-  checkMonthlyRunQuota,
-  isQuotaExceeded,
-  isQuotaLookupError,
-  QUOTA_WEIGHTS,
-} from "@/lib/billing/quota";
-import {
-  isWorkspaceSubscriptionActive,
-  resolveWorkspaceEntitlements,
-  subscriptionGateMessage,
-} from "@/lib/billing/subscription";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+  checkMonthlyRunCap,
+  isRunCapExceeded,
+  isRunCapLookupError,
+  RUN_WEIGHTS,
+} from "@/lib/config/run-cap";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
@@ -524,59 +518,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const { data: workspaceBilling, error: workspaceBillingError } = await supabase
-      .from("workspaces")
-      .select("plan, subscription_plan, subscription_status")
-      .eq("id", report.workspace_id)
-      .maybeSingle();
-
-    if (workspaceBillingError) {
-      audit.error("workspace_billing_lookup_failed", {
-        workspaceId: report.workspace_id,
-        userId: user.id,
-        message: workspaceBillingError.message,
-        code: workspaceBillingError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to verify workspace billing" }, { status: 500 });
-    }
-
-    if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
-      const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
-      audit.warn("subscription_inactive", {
-        workspaceId: report.workspace_id,
-        userId: user.id,
-        subscriptionStatus: workspaceBilling?.subscription_status ?? null,
-      });
-      return NextResponse.json({ error: gateMessage }, { status: 402 });
-    }
-
-    const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
-    const quota = await checkMonthlyRunQuota(supabase, {
+    // The workspace billing lookup that stood here is gone with the plan
+    // concept: report generation is free, so there was nothing for it to
+    // decide and it cost a round trip on every export.
+    const runCap = await checkMonthlyRunCap(supabase, {
       workspaceId: report.workspace_id,
-      plan,
       tableName: "runs",
-      weight: QUOTA_WEIGHTS.DEFAULT,
+      weight: RUN_WEIGHTS.DEFAULT,
     });
 
-    if (isQuotaLookupError(quota)) {
-      audit.error("run_limit_count_failed", {
+    if (isRunCapLookupError(runCap)) {
+      audit.error("run_cap_count_failed", {
         workspaceId: report.workspace_id,
         userId: user.id,
-        message: quota.message,
-        code: quota.code,
+        message: runCap.message,
+        code: runCap.code,
       });
-      return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to validate the run limit" }, { status: 500 });
     }
 
-    if (isQuotaExceeded(quota)) {
-      audit.warn("run_limit_reached", {
+    if (isRunCapExceeded(runCap)) {
+      audit.warn("run_cap_reached", {
         workspaceId: report.workspace_id,
         userId: user.id,
-        plan: quota.plan,
-        usedRuns: quota.usedRuns,
-        monthlyLimit: quota.monthlyLimit,
+        usedRuns: runCap.usedRuns,
+        cap: runCap.cap,
       });
-      return NextResponse.json({ error: quota.message }, { status: 429 });
+      return NextResponse.json({ error: runCap.message }, { status: 429 });
     }
 
     if (report.rtp_cycle_id) {
@@ -981,19 +949,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         modelingEvidenceClaimStatuses,
         durationMs: Date.now() - startedAt,
       });
-
-      await recordUsageEventBestEffort(
-        {
-          workspaceId: report.workspace_id,
-          eventKey: "report.generate",
-          bucketKey: "runs",
-          weight: QUOTA_WEIGHTS.DEFAULT,
-          sourceRoute: "/api/reports/[reportId]/generate",
-          idempotencyKey: `report:${report.id}:generate:${artifact.id}`,
-          metadata: { reportId: report.id, artifactId: artifact.id, format, reportType: "rtp_packet" },
-        },
-        audit
-      );
 
       return NextResponse.json(
         {
@@ -1661,19 +1616,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
         code: executionAuditError.code ?? null,
       });
     }
-
-    await recordUsageEventBestEffort(
-      {
-        workspaceId: report.workspace_id,
-        eventKey: "report.generate",
-        bucketKey: "runs",
-        weight: QUOTA_WEIGHTS.DEFAULT,
-        sourceRoute: "/api/reports/[reportId]/generate",
-        idempotencyKey: `report:${report.id}:generate:${artifact.id}`,
-        metadata: { reportId: report.id, artifactId: artifact.id, format, reportType: report.report_type },
-      },
-      audit
-    );
 
     return NextResponse.json(
       {

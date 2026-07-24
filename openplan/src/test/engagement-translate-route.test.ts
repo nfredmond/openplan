@@ -5,7 +5,6 @@ const campaignMaybeSingle = vi.fn();
 const itemMaybeSingle = vi.fn();
 const rpcMock = vi.fn();
 const checkAiUsageRateLimit = vi.fn();
-const recordUsageEventBestEffort = vi.fn();
 const translateEngagementTextMock = vi.fn();
 
 const fakeSupabase = {
@@ -28,12 +27,11 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn() }),
 }));
-vi.mock("@/lib/billing/ai-rate-limit", () => ({
+vi.mock("@/lib/runtime/ai-rate-limit", () => ({
   checkAiUsageRateLimit: (...a: unknown[]) => checkAiUsageRateLimit(...a),
   PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS: ["engagement_public_translation"],
   PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW: 30,
 }));
-vi.mock("@/lib/billing/usage-recording", () => ({ recordUsageEventBestEffort: (...a: unknown[]) => recordUsageEventBestEffort(...a) }));
 vi.mock("@/lib/engagement/translation", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return { ...actual, translateEngagementText: (...a: unknown[]) => translateEngagementTextMock(...a) };
@@ -64,7 +62,6 @@ beforeEach(() => {
   itemMaybeSingle.mockResolvedValue({ data: approvedItem(null), error: null });
   rpcMock.mockResolvedValue({ error: null });
   checkAiUsageRateLimit.mockResolvedValue({ allowed: true });
-  recordUsageEventBestEffort.mockResolvedValue(undefined);
   translateEngagementTextMock.mockResolvedValue({ source: "ai", translated: "Necesita una señal.", model: "m", caveat: "c" });
 });
 
@@ -99,7 +96,7 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
     expect(rpcMock).not.toHaveBeenCalled();
   });
 
-  it("translates, caches via the atomic merge RPC, and records usage", async () => {
+  it("translates, caches via the atomic merge RPC, and meters the public AI bucket", async () => {
     const res = await POST(req("es"), ctx);
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -116,11 +113,6 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
     expect(checkAiUsageRateLimit).toHaveBeenCalledWith(
       "ws-1",
       expect.objectContaining({ bucketKeys: ["engagement_public_translation"] })
-    );
-    expect(recordUsageEventBestEffort).toHaveBeenCalledTimes(1);
-    expect(recordUsageEventBestEffort).toHaveBeenCalledWith(
-      expect.objectContaining({ bucketKey: "engagement_public_translation" }),
-      expect.anything()
     );
   });
 

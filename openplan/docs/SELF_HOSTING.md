@@ -104,12 +104,16 @@ A Census API key is **free** and issued instantly at
 | `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to a worker. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted. |
 | `OPENPLAN_AERIAL_PROCESSING_*` | Aerial Ops integration with an external processing platform. |
 | `LODES_YEAR` | Pins the LEHD LODES vintage used for commute flows. |
+| `OPENPLAN_MONTHLY_RUN_CAP` | An optional per-workspace monthly cap on expensive runs. **Unset means unlimited**, which is the default and the right setting for a self-hosted deployment. Set it only if you run a public deployment and need to protect your own compute. It is an operator limit, not a tier — model-run launches count 5×, everything else 1×, and the refusal names you rather than offering an upgrade. |
 
-### Legacy — do not set
+### Removed
 
-`OPENPLAN_STRIPE_*`, `STRIPE_SECRET_KEY`, `OPENPLAN_BILLING_*`. OpenPlan is free and has no paid
-tier; the billing subsystem predates that decision and is pending removal. Do not configure it and
-do not route anything through it.
+`OPENPLAN_STRIPE_*`, `STRIPE_SECRET_KEY`, `OPENPLAN_BILLING_*` no longer do anything — the
+Stripe/subscription/plan subsystem has been deleted. OpenPlan has no plans, no tiers, no per-plan
+quotas, and no payment step. If these are set in an existing deployment, remove them.
+
+**Nothing in OpenPlan is gated behind payment.** If you find a surface that refuses an action for a
+billing-shaped reason, that is a bug — please report it.
 
 ---
 

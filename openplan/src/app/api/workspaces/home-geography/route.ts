@@ -16,7 +16,7 @@ import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { ingestCensusTractsForCounty } from "@/lib/data-sources/census-tract-ingest";
-import { normalizeWorkspaceRole } from "@/lib/auth/role-matrix";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
 import {
@@ -37,10 +37,16 @@ export const runtime = "nodejs";
 /**
  * Stating where the agency works is workspace configuration, not day-to-day
  * work: it re-frames maps and can re-bind the jurisdiction rules everyone in the
- * workspace then sees. The repo's role matrix scopes configuration actions
- * (billing.checkout) to owner/admin, and this follows that convention.
+ * workspace then sees.
+ *
+ * This now goes through the role matrix's `workspace.configure` action rather
+ * than a local role Set. The Set was written when the only configuration-shaped
+ * action in the matrix was `billing.checkout` — a Stripe action that has since
+ * been deleted along with the rest of the paid-tier subsystem. Configuration is
+ * a first-class action now, so scoping reads from one table instead of being
+ * re-decided per route.
  */
-const HOME_GEOGRAPHY_WRITE_ROLES = new Set(["owner", "admin"]);
+const HOME_GEOGRAPHY_WRITE_ACTION = "workspace.configure";
 
 const clearHomeGeographySchema = z.object({
   workspaceId: z.string().uuid(),
@@ -177,8 +183,7 @@ export async function PATCH(request: NextRequest) {
       return membershipErrorResponse(membership);
     }
 
-    const role = normalizeWorkspaceRole(membership.role);
-    if (!role || !HOME_GEOGRAPHY_WRITE_ROLES.has(role)) {
+    if (!canAccessWorkspaceAction(HOME_GEOGRAPHY_WRITE_ACTION, membership.role)) {
       return NextResponse.json(
         { error: "Only a workspace owner or admin can set the home geography" },
         { status: 403 }
@@ -338,8 +343,7 @@ export async function DELETE(request: NextRequest) {
     // Clearing re-frames every map in the workspace and unbinds its
     // jurisdiction rules, so it is the same configuration action as setting —
     // and carries the same role requirement.
-    const role = normalizeWorkspaceRole(membership.role);
-    if (!role || !HOME_GEOGRAPHY_WRITE_ROLES.has(role)) {
+    if (!canAccessWorkspaceAction(HOME_GEOGRAPHY_WRITE_ACTION, membership.role)) {
       return NextResponse.json(
         { error: "Only a workspace owner or admin can clear the home geography" },
         { status: 403 }

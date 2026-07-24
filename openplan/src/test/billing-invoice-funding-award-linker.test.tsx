@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-import { InvoiceFundingAwardLinker } from "@/components/billing/invoice-funding-award-linker";
+import { InvoiceFundingAwardLinker } from "@/components/invoicing/invoice-funding-award-linker";
 
 describe("InvoiceFundingAwardLinker", () => {
   beforeEach(() => {
@@ -46,7 +46,7 @@ describe("InvoiceFundingAwardLinker", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save funding link" }));
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith("/api/billing/invoices/invoice-1", {
+      expect(fetchMock).toHaveBeenCalledWith("/api/invoicing/invoices/invoice-1", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ workspaceId: "workspace-1", fundingAwardId: "award-1" }),

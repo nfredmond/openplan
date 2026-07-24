@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
-import { applyBillingSubscriptionMutation } from "@/lib/billing/subscriptions";
 import { createWorkspaceInvitation } from "@/lib/workspaces/invitations";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -25,21 +24,8 @@ const provisioningSchema = z
       .enum(["pilot", "starter", "professional", "enterprise"])
       .optional()
       .default("pilot"),
-    subscriptionStatus: z
-      .enum([
-        "pilot",
-        "inactive",
-        "checkout_pending",
-        "active",
-        "trialing",
-        "past_due",
-      ])
-      .optional()
-      .default("pilot"),
     ownerUserId: z.string().uuid().optional(),
     ownerEmail: z.string().trim().email().optional(),
-    stripeCustomerId: z.string().trim().min(1).max(120).optional(),
-    stripeSubscriptionId: z.string().trim().min(1).max(120).optional(),
     stageGateTemplateId: z.string().trim().min(1).max(80).optional(),
     operatorAcknowledgement: z.literal(
       ACCESS_REQUEST_MANUAL_PROVISIONING_ACKNOWLEDGEMENT,
@@ -304,28 +290,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const billingResult = await applyBillingSubscriptionMutation(
-      serviceSupabase,
-      {
-        workspaceId: workspace.id,
-        subscriptionPlan: input.plan,
-        subscriptionStatus: input.subscriptionStatus,
-        stripeCustomerId: input.stripeCustomerId,
-        stripeSubscriptionId: input.stripeSubscriptionId,
-        metadata: {
-          source: "workspace_provisioning",
-          operatorAcknowledgement: input.operatorAcknowledgement,
-          manualDeliveryOnly: true,
-        },
-      },
-    );
-
-    if (billingResult.error || billingResult.ledgerMissing) {
-      throw new Error(
-        billingResult.error?.message ??
-          "Billing ledger schema is unavailable for workspace provisioning",
-      );
-    }
 
     const ownerInvitation =
       input.ownerEmail && !input.ownerUserId
@@ -344,13 +308,9 @@ export async function POST(request: NextRequest) {
       slug: workspace.slug,
       ownerMembershipCreated: Boolean(input.ownerUserId),
       ownerInvitationCreated: Boolean(ownerInvitation),
-      subscriptionStatus: input.subscriptionStatus,
-      subscriptionPlan: input.plan,
-      stripeCustomerAttached: Boolean(input.stripeCustomerId),
       operatorAcknowledgement: input.operatorAcknowledgement,
       sideEffects: {
         workspaceProvisioned: true,
-        billingLedgerMutated: true,
         outboundEmailSent: false,
         ownerInvitationDelivery: "manual",
       },
@@ -363,12 +323,10 @@ export async function POST(request: NextRequest) {
         slug: workspace.slug,
         name: workspace.name,
         plan: input.plan,
-        subscriptionStatus: input.subscriptionStatus,
         ownerMembershipCreated: Boolean(input.ownerUserId),
         sideEffects: {
           workspaceProvisioned: true,
-          billingLedgerMutated: true,
-          outboundEmailSent: false,
+            outboundEmailSent: false,
           ownerInvitationDelivery: "manual",
         },
         ownerInvitation: ownerInvitation

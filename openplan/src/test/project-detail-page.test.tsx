@@ -329,7 +329,7 @@ vi.mock("@/lib/projects/controls", () => ({
   buildProjectControlsSummary: (...args: unknown[]) => buildProjectControlsSummaryMock(...args),
 }));
 
-vi.mock("@/lib/billing/invoice-records", () => ({
+vi.mock("@/lib/invoicing/invoice-records", () => ({
   summarizeBillingInvoiceRecords: (...args: unknown[]) => summarizeBillingInvoiceRecordsMock(...args),
 }));
 

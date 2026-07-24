@@ -4,17 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import {
-  checkMonthlyRunQuota,
-  isQuotaExceeded,
-  isQuotaLookupError,
-  QUOTA_WEIGHTS,
-} from "@/lib/billing/quota";
-import {
-  isWorkspaceSubscriptionActive,
-  resolveWorkspaceEntitlements,
-  subscriptionGateMessage,
-} from "@/lib/billing/subscription";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+  checkMonthlyRunCap,
+  isRunCapExceeded,
+  isRunCapLookupError,
+  RUN_WEIGHTS,
+} from "@/lib/config/run-cap";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -52,59 +46,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const workspaceId = access.model.workspace_id;
 
-    const { data: workspaceBilling, error: billingError } = await supabase
-      .from("workspaces")
-      .select("plan, subscription_plan, subscription_status")
-      .eq("id", workspaceId)
-      .maybeSingle();
-
-    if (billingError) {
-      audit.error("workspace_billing_lookup_failed", {
-        workspaceId,
-        userId: user.id,
-        message: billingError.message,
-        code: billingError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to verify workspace billing" }, { status: 500 });
-    }
-
-    if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
-      const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
-      audit.warn("subscription_inactive", {
-        workspaceId,
-        userId: user.id,
-        subscriptionStatus: workspaceBilling?.subscription_status ?? null,
-      });
-      return NextResponse.json({ error: gateMessage }, { status: 402 });
-    }
-
-    const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
-    const quota = await checkMonthlyRunQuota(supabase, {
+    // The workspace billing lookup and subscription gate that stood here are
+    // gone with the plan concept: OpenPlan is free, so there is no state in
+    // which a member may not launch a run. Only an operator-set cap can refuse.
+    const runCap = await checkMonthlyRunCap(supabase, {
       workspaceId,
-      plan,
       tableName: "model_runs",
-      weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
+      weight: RUN_WEIGHTS.MODEL_RUN_LAUNCH,
     });
 
-    if (isQuotaLookupError(quota)) {
-      audit.error("run_limit_count_failed", {
+    if (isRunCapLookupError(runCap)) {
+      audit.error("run_cap_count_failed", {
         workspaceId,
         userId: user.id,
-        message: quota.message,
-        code: quota.code,
+        message: runCap.message,
+        code: runCap.code,
       });
-      return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to validate the run limit" }, { status: 500 });
     }
 
-    if (isQuotaExceeded(quota)) {
-      audit.warn("run_limit_reached", {
+    if (isRunCapExceeded(runCap)) {
+      audit.warn("run_cap_reached", {
         workspaceId,
         userId: user.id,
-        plan: quota.plan,
-        usedRuns: quota.usedRuns,
-        monthlyLimit: quota.monthlyLimit,
+        usedRuns: runCap.usedRuns,
+        cap: runCap.cap,
       });
-      return NextResponse.json({ error: quota.message }, { status: 429 });
+      return NextResponse.json({ error: runCap.message }, { status: 429 });
     }
 
     // Load the model run
@@ -240,19 +208,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelRunId: modelRun.id,
       durationMs: Date.now() - startedAt,
     });
-
-    await recordUsageEventBestEffort(
-      {
-        workspaceId,
-        eventKey: "model_run.launch",
-        bucketKey: "runs",
-        weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
-        sourceRoute: "/api/models/[modelId]/runs/[modelRunId]/launch",
-        idempotencyKey: `model_run:${modelRun.id}:launch`,
-        metadata: { modelId: access.model.id, modelRunId: modelRun.id },
-      },
-      audit
-    );
 
     return NextResponse.json({ success: true, status: "queued" }, { status: 200 });
   } catch (error) {

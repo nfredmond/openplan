@@ -9,7 +9,7 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
+import { InvoiceRecordComposer } from "@/components/invoicing/invoice-record-composer";
 
 describe("InvoiceRecordComposer", () => {
   beforeEach(() => {

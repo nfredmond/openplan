@@ -362,7 +362,7 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
     );
   });
 
-  it("returns 402 when the workspace subscription is not active", async () => {
+  it("never demands payment — a lapsed subscription is not a concept", async () => {
     workspaceMaybeSingleMock.mockResolvedValueOnce({
       data: {
         plan: "pilot",
@@ -385,11 +385,10 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
       { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) }
     );
 
-    expect(response.status).toBe(402);
-    expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+    expect(response.status).not.toBe(402);
   });
 
-  it("returns 429 when the monthly run quota is exceeded", async () => {
+  it("does not count runs when no operator cap is configured", async () => {
     runsCountGteMock.mockResolvedValueOnce({ count: 9999, error: null });
 
     const response = await postComparisonSnapshot(
@@ -405,7 +404,6 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
       { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) }
     );
 
-    expect(response.status).toBe(429);
-    expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+    expect(response.status).not.toBe(429);
   });
 });

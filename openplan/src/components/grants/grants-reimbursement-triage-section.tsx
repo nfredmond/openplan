@@ -1,16 +1,16 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { BillingTriageLinkCopy } from "@/components/billing/billing-triage-link-copy";
-import { InvoiceFundingAwardLinker } from "@/components/billing/invoice-funding-award-linker";
-import { InvoiceStatusAdvanceButton } from "@/components/billing/invoice-status-advance-button";
+import { InvoiceTriageLinkCopy } from "@/components/invoicing/invoice-triage-link-copy";
+import { InvoiceFundingAwardLinker } from "@/components/invoicing/invoice-funding-award-linker";
+import { InvoiceStatusAdvanceButton } from "@/components/invoicing/invoice-status-advance-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import {
   invoiceNeedsAwardRelink,
   resolveExactBillingInvoiceAwardMatch,
-} from "@/lib/billing/invoice-records";
-import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
+} from "@/lib/invoicing/invoice-records";
+import { buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
 import type { BillingInvoiceRow, FundingAwardRow } from "@/lib/grants/page-helpers";
 import {
   formatCurrency,
@@ -136,7 +136,7 @@ export function GrantsReimbursementTriageSection({
             const exactMatchFundingAward = resolveExactBillingInvoiceAwardMatch(invoice, fundingInvoices, fundingAwardProjectRows);
             const isFocusedRow = activeFocusedInvoiceId === invoice.id;
             const isJustRelinkedRow = activeRelinkedInvoiceId === invoice.id;
-            const triageHref = buildBillingInvoiceTriageHref({
+            const triageHref = buildInvoiceTriageHref({
               workspaceId,
               invoiceId: invoice.id,
               linkage: invoice.funding_award_id ? "linked" : "unlinked",
@@ -209,7 +209,7 @@ export function GrantsReimbursementTriageSection({
                       Open billing triage
                       <ArrowRight className="h-4 w-4" />
                     </Link>
-                    <BillingTriageLinkCopy href={triageHref} />
+                    <InvoiceTriageLinkCopy href={triageHref} />
                     {invoice.project_id ? (
                       <Link href={`/projects/${invoice.project_id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
                         Open funding lane

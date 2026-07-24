@@ -66,23 +66,6 @@ vi.mock("@/lib/models/api", () => ({
   loadModelAccess: (...args: unknown[]) => loadModelAccessMock(...args),
 }));
 
-vi.mock("@/lib/billing/quota", () => ({
-  checkMonthlyRunQuota: vi.fn(async () => ({ ok: true })),
-  isQuotaLookupError: vi.fn(() => false),
-  isQuotaExceeded: vi.fn(() => false),
-  QUOTA_WEIGHTS: { MODEL_RUN_LAUNCH: 1 },
-}));
-
-vi.mock("@/lib/billing/subscription", () => ({
-  isWorkspaceSubscriptionActive: vi.fn(() => true),
-  resolveWorkspaceEntitlements: vi.fn(() => ({ plan: "pilot" })),
-  subscriptionGateMessage: vi.fn(() => "inactive"),
-}));
-
-vi.mock("@/lib/billing/usage-recording", () => ({
-  recordUsageEventBestEffort: vi.fn(async () => undefined),
-}));
-
 import { POST as relaunchRun } from "@/app/api/models/[modelId]/runs/[modelRunId]/launch/route";
 
 function request() {

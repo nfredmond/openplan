@@ -17,7 +17,7 @@ import {
   resolveRtpPacketWorkPostureFromCounts,
   resolveRtpPacketWorkPostureFromFreshnessLabel,
 } from "@/lib/assistant/rtp-packet-posture";
-import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
+import { buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import {
   buildRtpReleaseReviewSummary,
@@ -412,7 +412,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           "workspace-open-billing-reimbursement-triage",
           "Open billing reimbursement triage",
           reimbursementAdvanceCommand.targetInvoiceId
-            ? buildBillingInvoiceTriageHref({
+            ? buildInvoiceTriageHref({
                 workspaceId: context.workspace.id,
                 invoiceId: reimbursementAdvanceCommand.targetInvoiceId,
                 linkage: "linked",

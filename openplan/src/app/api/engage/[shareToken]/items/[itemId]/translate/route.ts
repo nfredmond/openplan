@@ -8,8 +8,7 @@ import {
   checkAiUsageRateLimit,
   PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS,
   PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW,
-} from "@/lib/billing/ai-rate-limit";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+} from "@/lib/runtime/ai-rate-limit";
 import {
   isTranslationLanguage,
   translateEngagementText,
@@ -168,19 +167,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (cacheError) {
       audit.warn("engagement_translation_cache_write_failed", { itemId: item.id, message: cacheError.message });
     }
-
-    await recordUsageEventBestEffort(
-      {
-        workspaceId: item.workspaceId,
-        eventKey: "engagement_translation",
-        // Dedicated public bucket — NOT the staff engagement_synthesis bucket —
-        // so this metering stays isolated from staff AI rate limits.
-        bucketKey: PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS[0],
-        sourceRoute: "/api/engage/[shareToken]/items/[itemId]/translate",
-        metadata: { itemId: item.id, language, model: result.model },
-      },
-      audit
-    );
 
     return NextResponse.json({ source: "ai", language, translated: result.translated, caveat: result.caveat }, { status: 200 });
   } catch (error) {

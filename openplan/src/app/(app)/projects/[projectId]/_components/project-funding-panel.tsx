@@ -4,7 +4,7 @@ import { FundingOpportunityDecisionControls } from "@/components/programs/fundin
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
 import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
 import { StatusBadge } from "@/components/ui/status-badge";
-import type { BillingInvoiceSummary } from "@/lib/billing/invoice-records";
+import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
 import {
   formatFundingAwardMatchPostureLabel,
   formatFundingAwardRiskFlagLabel,

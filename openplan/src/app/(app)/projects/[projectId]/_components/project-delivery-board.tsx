@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
-import type { BillingInvoiceSummary } from "@/lib/billing/invoice-records";
+import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
 import type { ProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectControlHref,

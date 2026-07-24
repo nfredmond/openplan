@@ -34,8 +34,7 @@ describe("PricingPage", () => {
     expect(screen.getByText(/Managed hosting \+ support/i)).toBeInTheDocument();
     expect(screen.getByText(/Implementation \+ planning services/i)).toBeInTheDocument();
     expect(screen.getByText(/Signed-in planning workspace, Analysis Studio access/i)).toBeInTheDocument();
-    expect(screen.getByText(/Stripe handles payments for hosted workspace support and service retainers/i)).toBeInTheDocument();
-    expect(screen.getByText(/Hosted billing runs on Stripe/i)).toBeInTheDocument();
+    expect(screen.getByText(/Billing for managed hosting runs outside the product/i)).toBeInTheDocument();
     expect(screen.getByText(/Managed-hosting billing starts only after the account is attached to the intended workspace/i)).toBeInTheDocument();
     expect(screen.queryByText(/Operator-grade app shell/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/commercial proof waiver/i)).not.toBeInTheDocument();

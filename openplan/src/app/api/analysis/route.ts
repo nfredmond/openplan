@@ -1,16 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  checkMonthlyRunQuota,
-  isQuotaExceeded,
-  isQuotaLookupError,
-} from "@/lib/billing/quota";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
-import {
-  isWorkspaceSubscriptionActive,
-  resolveWorkspaceEntitlements,
-  subscriptionGateMessage,
-} from "@/lib/billing/subscription";
+  checkMonthlyRunCap,
+  isRunCapExceeded,
+  isRunCapLookupError,
+} from "@/lib/config/run-cap";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { fetchCensusForCorridor, bboxFromGeojson } from "@/lib/data-sources/census";
 import { fetchTractOverlayFeatures } from "@/lib/data-sources/census-geometry";
@@ -208,7 +202,7 @@ export async function POST(request: NextRequest) {
 
     const { data: membership, error: membershipError } = await userSupabase
       .from("workspace_members")
-      .select("workspace_id, role, workspaces(plan, subscription_plan, subscription_status)")
+      .select("workspace_id, role")
       .eq("workspace_id", workspaceId)
       .eq("user_id", user.id)
       .maybeSingle();
@@ -243,47 +237,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const workspaceBilling = Array.isArray(membership.workspaces)
-      ? membership.workspaces[0] ?? null
-      : membership.workspaces;
-
-    if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
-      const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
-      audit.warn("subscription_inactive", {
-        workspaceId,
-        userId: user.id,
-        subscriptionStatus: workspaceBilling?.subscription_status ?? null,
-      });
-
-      return NextResponse.json({ error: gateMessage }, { status: 402 });
-    }
-
-    const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
-    const quota = await checkMonthlyRunQuota(userSupabase, {
+    // No subscription gate: OpenPlan is free and has no paid tier, so there is
+    // no state in which a member of this workspace may not run an analysis.
+    // Only an operator-set cap (unset by default) can refuse one.
+    const runCap = await checkMonthlyRunCap(userSupabase, {
       workspaceId,
-      plan,
       tableName: "runs",
     });
 
-    if (isQuotaLookupError(quota)) {
-      audit.error("run_limit_count_failed", {
+    if (isRunCapLookupError(runCap)) {
+      audit.error("run_cap_count_failed", {
         workspaceId,
         userId: user.id,
-        message: quota.message,
-        code: quota.code,
+        message: runCap.message,
+        code: runCap.code,
       });
-      return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+      return NextResponse.json({ error: "Failed to validate the run limit" }, { status: 500 });
     }
 
-    if (isQuotaExceeded(quota)) {
-      audit.warn("run_limit_reached", {
+    if (isRunCapExceeded(runCap)) {
+      audit.warn("run_cap_reached", {
         workspaceId,
         userId: user.id,
-        plan: quota.plan,
-        usedRuns: quota.usedRuns,
-        monthlyLimit: quota.monthlyLimit,
+        usedRuns: runCap.usedRuns,
+        cap: runCap.cap,
       });
-      return NextResponse.json({ error: quota.message }, { status: 429 });
+      return NextResponse.json({ error: runCap.message }, { status: 429 });
     }
 
     runId = crypto.randomUUID();
@@ -573,19 +552,6 @@ export async function POST(request: NextRequest) {
       aiTotalTokens: aiInterpretationResult.totalTokens,
       aiEstimatedCostUsd: aiInterpretationResult.estimatedCostUsd,
     });
-
-    await recordUsageEventBestEffort(
-      {
-        workspaceId,
-        eventKey: "analysis.run",
-        bucketKey: "runs",
-        weight: 1,
-        sourceRoute: "/api/analysis",
-        idempotencyKey: `analysis:${runId}`,
-        metadata: { runId },
-      },
-      audit
-    );
 
     const costWarning = buildAnalysisCostThresholdWarning(
       aiInterpretationResult.estimatedCostUsd,

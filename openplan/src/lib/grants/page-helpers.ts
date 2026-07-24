@@ -8,7 +8,7 @@ import {
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
 import type { buildProjectFundingStackSummary } from "@/lib/projects/funding";
-import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
+import { buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
 
 export type GrantsPageSearchParams = Promise<{
   status?: string;
@@ -515,7 +515,7 @@ export function resolveGrantsQueueHref(
   ) {
     const targetInvoice = invoiceById.get(item.targetInvoiceId) ?? null;
     if (targetInvoice) {
-      return buildBillingInvoiceTriageHref({
+      return buildInvoiceTriageHref({
         workspaceId,
         invoiceId: targetInvoice.id,
         linkage: "unlinked",
@@ -528,7 +528,7 @@ export function resolveGrantsQueueHref(
   if (item.key === "advance-project-reimbursement-invoicing" && item.targetProjectId) {
     const targetInvoice = exactBillingTriageInvoiceByProjectId.get(item.targetProjectId) ?? null;
     if (targetInvoice) {
-      return buildBillingInvoiceTriageHref({
+      return buildInvoiceTriageHref({
         workspaceId,
         invoiceId: targetInvoice.id,
         linkage: "linked",

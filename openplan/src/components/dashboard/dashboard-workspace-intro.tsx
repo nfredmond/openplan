@@ -3,13 +3,11 @@ import type { ReactNode } from "react";
 export function DashboardWorkspaceIntro({
   workspaceName,
   workspaceRole,
-  workspacePlan,
   description,
   children,
 }: {
   workspaceName: string;
   workspaceRole: string;
-  workspacePlan: string;
   description?: string;
   children?: ReactNode;
 }) {
@@ -21,10 +19,6 @@ export function DashboardWorkspaceIntro({
           <div className="module-record-chip">
             <span>Role</span>
             <strong>{workspaceRole}</strong>
-          </div>
-          <div className="module-record-chip">
-            <span>Plan</span>
-            <strong>{workspacePlan}</strong>
           </div>
         </div>
         <h1 className="module-intro-title">{workspaceName}</h1>

@@ -61,17 +61,17 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
-import { PATCH as patchInvoice } from "@/app/api/billing/invoices/[invoiceId]/route";
+import { PATCH as patchInvoice } from "@/app/api/invoicing/invoices/[invoiceId]/route";
 
 function jsonRequest(payload: unknown) {
-  return new NextRequest("http://localhost/api/billing/invoices/invoice-1", {
+  return new NextRequest("http://localhost/api/invoicing/invoices/invoice-1", {
     method: "PATCH",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload),
   });
 }
 
-describe("PATCH /api/billing/invoices/[invoiceId]", () => {
+describe("PATCH /api/invoicing/invoices/[invoiceId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     createApiAuditLoggerMock.mockReturnValue(mockAudit);

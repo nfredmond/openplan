@@ -43,18 +43,19 @@ describe("DashboardKpiGrid", () => {
 });
 
 describe("DashboardWorkspaceIntro", () => {
-  it("shows workspace name, role, plan, and the default description", () => {
+  it("shows workspace name, role, and the default description — but no plan", () => {
     render(
       <DashboardWorkspaceIntro
         workspaceName="Nevada County RTPA"
         workspaceRole="owner"
-        workspacePlan="pilot"
       />
     );
 
     expect(screen.getByRole("heading", { name: "Nevada County RTPA" })).toBeInTheDocument();
     expect(screen.getByText("owner")).toBeInTheDocument();
-    expect(screen.getByText("pilot")).toBeInTheDocument();
+    // No plan chip: OpenPlan is free with no tiers, so showing one was
+    // meaningless at best and implied a paid product at worst.
+    expect(screen.queryByText("Plan")).not.toBeInTheDocument();
     expect(
       screen.getByText(/Use this overview to see current work/)
     ).toBeInTheDocument();
@@ -65,7 +66,6 @@ describe("DashboardWorkspaceIntro", () => {
       <DashboardWorkspaceIntro
         workspaceName="Test"
         workspaceRole="member"
-        workspacePlan="pilot"
       >
         <div data-testid="slot">slot content</div>
       </DashboardWorkspaceIntro>
@@ -79,7 +79,6 @@ describe("DashboardWorkspaceIntro", () => {
       <DashboardWorkspaceIntro
         workspaceName="Test"
         workspaceRole="member"
-        workspacePlan="pilot"
         description="Custom intro copy for the test workspace."
       />
     );

@@ -7,7 +7,6 @@ const authGetUserMock = vi.fn();
 const loadAssistantContextMock = vi.fn();
 const streamTextMock = vi.fn();
 const anthropicMock = vi.fn((modelId: string) => ({ __modelId: modelId }));
-const recordUsageEventBestEffortMock = vi.fn();
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -40,10 +39,6 @@ vi.mock("ai", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (...args: unknown[]) => anthropicMock(...(args as [string])),
-}));
-
-vi.mock("@/lib/billing/usage-recording", () => ({
-  recordUsageEventBestEffort: (...args: unknown[]) => recordUsageEventBestEffortMock(...args),
 }));
 
 import { POST as postAssistantChat } from "@/app/api/assistant/chat/route";
@@ -122,7 +117,6 @@ describe("/api/assistant/chat", () => {
       auth: { getUser: (...args: unknown[]) => authGetUserMock(...args) },
     });
     loadAssistantContextMock.mockResolvedValue(workspaceContextFixture());
-    recordUsageEventBestEffortMock.mockResolvedValue(undefined);
     streamTextMock.mockReturnValue({
       toTextStreamResponse: () =>
         new Response("Grounded reply", {
@@ -188,7 +182,6 @@ describe("/api/assistant/chat", () => {
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: "Assistant context not found" });
     expect(streamTextMock).not.toHaveBeenCalled();
-    expect(recordUsageEventBestEffortMock).not.toHaveBeenCalled();
   });
 
   it("streams a grounded reply on the happy path", async () => {
@@ -237,16 +230,6 @@ describe("/api/assistant/chat", () => {
       jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })
     );
 
-    expect(recordUsageEventBestEffortMock).toHaveBeenCalledTimes(1);
-    expect(recordUsageEventBestEffortMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        workspaceId: WORKSPACE_ID,
-        eventKey: "assistant_chat",
-        bucketKey: "assistant_chat",
-        sourceRoute: "/api/assistant/chat",
-      }),
-      mockAudit
-    );
   });
 
   it("respects the OPENPLAN_ASSISTANT_MODEL override", async () => {

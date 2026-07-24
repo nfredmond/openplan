@@ -40,6 +40,7 @@ function buildNavGroups(isOperator: boolean): CartographicRailGroup[] {
         { href: "/programs", label: "Programs", icon: "programs" },
         { href: "/grants", label: "Grants", icon: "grants" },
         { href: "/reports", label: "Reports", icon: "reports" },
+        { href: "/invoicing", label: "Invoicing", icon: "billing" },
       ],
     },
     {
@@ -56,13 +57,17 @@ function buildNavGroups(isOperator: boolean): CartographicRailGroup[] {
         { href: "/aerial", label: "Aerial Ops", icon: "aerial" },
       ],
     },
-    {
-      title: "Govern",
-      items: [
-        { href: "/billing", label: "Billing", icon: "billing" },
-        ...(isOperator ? [{ href: "/admin", label: "Admin", icon: "admin" as const }] : []),
-      ],
-    },
+    // Govern holds only the operator console now that Billing is gone, so the
+    // whole group is omitted for everyone else rather than rendering an empty
+    // section heading.
+    ...(isOperator
+      ? [
+          {
+            title: "Govern",
+            items: [{ href: "/admin", label: "Admin", icon: "admin" as const }],
+          },
+        ]
+      : []),
   ];
 }
 
@@ -117,7 +122,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
   const homeMapView = deriveHomeMapView(parseWorkspaceHomeGeography(homeGeographyRow));
 
   const workspaceUpdatedLabel =
-    formatUpdatedLabel(workspace?.billing_updated_at ?? workspace?.created_at ?? null) ?? null;
+    formatUpdatedLabel(workspace?.created_at ?? null) ?? null;
   const membershipPending = shellState.membershipStatus === "not_provisioned";
   const isOperator = canReviewAccessRequests(user?.email);
   // A first-run user with no workspace gets a focused self-serve onboarding
@@ -144,7 +149,6 @@ export async function CartographicShell({ children }: { children: React.ReactNod
 
         <CartographicHeader
           workspaceName={shellState.workspaceName}
-          workspacePlan={shellState.workspacePlan}
           workspaceUpdatedLabel={workspaceUpdatedLabel}
         />
 

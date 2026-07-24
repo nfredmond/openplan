@@ -132,7 +132,7 @@ const LINK_BILLING_INVOICE_FUNDING_AWARD: ActionRecord<"link_billing_invoice_fun
   kind: "link_billing_invoice_funding_award",
   effect: async (action, context) => {
     await patchJson(
-      `/api/billing/invoices/${action.invoiceId}`,
+      `/api/invoicing/invoices/${action.invoiceId}`,
       {
         workspaceId: action.workspaceId,
         fundingAwardId: action.fundingAwardId,

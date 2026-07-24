@@ -47,7 +47,7 @@ const serviceLanes = [
       "Workspace setup, payment records, backups, and support handled as part of the managed service",
       "Signed-in planning workspace, Analysis Studio access, engagement, reporting, and support-led payment records",
       "Email support with a 2-business-day target for baseline managed hosting",
-      "Stripe handles payments for hosted workspace support and service retainers",
+      "Invoicing for hosted support and service retainers is handled outside the app — OpenPlan itself has no payment step",
     ],
     cta: "Request managed hosting",
     fit: "Good for a small agency, tribe, RTPA, or consultant team that wants the open-source product operated for them with clear support boundaries.",
@@ -72,8 +72,8 @@ const serviceLanes = [
 const implementationNotes = [
   "The OpenPlan codebase is intended to be open-source first under Apache-2.0. Managed hosting, onboarding, support, planning services, and custom extensions are the commercial lanes.",
   "Prices shown are service baselines, not proprietary software-license fees. Final managed-hosting or implementation scope may vary by agency complexity, data requirements, support level, and procurement path.",
-  "Payment and entitlement records remain in the product because hosted workspaces need a reliable support ledger. That infrastructure does not turn the open-source core into a proprietary software license.",
-  "Hosted billing runs on Stripe. Invoices, payment records, and support history stay attached to the workspace they belong to, so agencies always have a clear ledger of what was paid and why.",
+  "The software has no plans, tiers, usage quotas, or payment step of any kind. Paying for managed hosting or implementation buys operator time and service commitments; it does not turn the open-source core into a proprietary software license, and it unlocks no features.",
+  "Billing for managed hosting runs outside the product, so an agency can always take the software and its data elsewhere. Nothing an agency does or does not pay changes what the application will do for them.",
   "No hidden fees, punitive change orders, black-box scoring claims, or unsupported planning-grade promises.",
 ];
 

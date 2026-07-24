@@ -22,7 +22,7 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn() }),
 }));
 vi.mock("@/lib/engagement/api", () => ({ loadCampaignAccess: (...a: unknown[]) => loadCampaignAccess(...a) }));
-vi.mock("@/lib/billing/ai-rate-limit", () => ({ checkAiUsageRateLimit: (...a: unknown[]) => checkAiUsageRateLimit(...a) }));
+vi.mock("@/lib/runtime/ai-rate-limit", () => ({ checkAiUsageRateLimit: (...a: unknown[]) => checkAiUsageRateLimit(...a) }));
 
 import { POST } from "@/app/api/engagement/campaigns/[campaignId]/moderation-scan/route";
 

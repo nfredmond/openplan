@@ -9,7 +9,6 @@ import {
   canReviewAccessRequests,
   type AccessRequestStatus,
 } from "@/lib/access-requests";
-import { applyBillingSubscriptionMutation } from "@/lib/billing/subscriptions";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
@@ -21,7 +20,6 @@ export const runtime = "nodejs";
 const ACCESS_REQUEST_PROVISION_MAX_BODY_BYTES = BODY_LIMITS.smallJson;
 const DUPLICATE_KEY_CODE = "23505";
 const PROVISIONED_PLAN = "pilot";
-const PROVISIONED_SUBSCRIPTION_STATUS = "pilot";
 
 const paramsSchema = z.object({
   accessRequestId: z.string().uuid(),
@@ -328,22 +326,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const billingResult = await applyBillingSubscriptionMutation(serviceSupabase, {
-      workspaceId: workspace.id,
-      subscriptionPlan: PROVISIONED_PLAN,
-      subscriptionStatus: PROVISIONED_SUBSCRIPTION_STATUS,
-      metadata: {
-        source: "access_request_provisioning",
-        accessRequestId: accessRequest.id,
-      },
-    });
-
-    if (billingResult.error || billingResult.ledgerMissing) {
-      throw new Error(
-        billingResult.error?.message ?? "Billing ledger schema is unavailable for access request provisioning",
-      );
-    }
-
     const ownerInvitation = await createWorkspaceInvitation({
       supabase: serviceSupabase,
       workspaceId: workspace.id,

@@ -1,14 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { BillingTriageLinkCopy } from "@/components/billing/billing-triage-link-copy";
-import { InvoiceRecordComposer } from "@/components/billing/invoice-record-composer";
+import { InvoiceTriageLinkCopy } from "@/components/invoicing/invoice-triage-link-copy";
+import { InvoiceRecordComposer } from "@/components/invoicing/invoice-record-composer";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import {
   projectFundingReimbursementTone,
   type ProjectFundingReimbursementStatus,
 } from "@/lib/projects/funding";
-import { buildBillingInvoiceTriageHref } from "@/lib/billing/triage-links";
+import { buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
 import type { BillingInvoiceRow, FundingAwardRow } from "@/lib/grants/page-helpers";
 import {
   formatCurrency,
@@ -185,7 +185,7 @@ export function GrantsAwardsReimbursementSection({
             {fundingProjectStacks.map((item) => {
               const exactBillingTriageInvoice = resolveProjectExactBillingTriageTarget(item.linkedInvoices);
               const exactBillingTriageHref = exactBillingTriageInvoice
-                ? buildBillingInvoiceTriageHref({
+                ? buildInvoiceTriageHref({
                     workspaceId,
                     invoiceId: exactBillingTriageInvoice.id,
                     linkage: "linked",
@@ -247,7 +247,7 @@ export function GrantsAwardsReimbursementSection({
                           : getReimbursementActionLabel(item.summary.reimbursementStatus)}
                         <ArrowRight className="h-4 w-4" />
                       </Link>
-                      {exactBillingTriageHref ? <BillingTriageLinkCopy href={exactBillingTriageHref} /> : null}
+                      {exactBillingTriageHref ? <InvoiceTriageLinkCopy href={exactBillingTriageHref} /> : null}
                       <Link href={`/projects/${item.project.id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
                         Open project funding lane
                         <ArrowRight className="h-4 w-4" />

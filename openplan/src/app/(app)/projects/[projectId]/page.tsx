@@ -8,7 +8,7 @@ import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-c
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ProjectRecordComposer } from "@/components/projects/project-record-composer";
 import { ProjectStageGateBoard } from "@/components/projects/project-stage-gate-board";
-import { summarizeBillingInvoiceRecords } from "@/lib/billing/invoice-records";
+import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
 import {
   buildGrantDecisionModelingSupport,
   describeProjectGrantModelingReadiness,

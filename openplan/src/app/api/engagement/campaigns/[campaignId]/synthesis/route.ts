@@ -9,8 +9,7 @@ import {
   SYNTHESIS_MAX_ITEMS,
   type SynthesisItem,
 } from "@/lib/engagement/ai-synthesis";
-import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+import { checkAiUsageRateLimit } from "@/lib/runtime/ai-rate-limit";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
 
@@ -109,16 +108,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const synthesis = await generateEngagementSynthesis(items);
 
     if (synthesis.source === "ai") {
-      await recordUsageEventBestEffort(
-        {
-          workspaceId,
-          eventKey: "engagement_synthesis",
-          bucketKey: "engagement_synthesis",
-          sourceRoute: "/api/engagement/campaigns/[campaignId]/synthesis",
-          metadata: { campaignId, model: synthesis.model, itemCount: synthesis.item_count },
-        },
-        audit
-      );
     }
 
     const synthesizedAt = new Date().toISOString();

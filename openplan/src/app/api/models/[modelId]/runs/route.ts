@@ -31,17 +31,11 @@ import {
 import { TRIP_GEN_UNIT_BASES } from "@/lib/models/ite-rates";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
-  checkMonthlyRunQuota,
-  isQuotaExceeded,
-  isQuotaLookupError,
-  QUOTA_WEIGHTS,
-} from "@/lib/billing/quota";
-import {
-  isWorkspaceSubscriptionActive,
-  resolveWorkspaceEntitlements,
-  subscriptionGateMessage,
-} from "@/lib/billing/subscription";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+  checkMonthlyRunCap,
+  isRunCapExceeded,
+  isRunCapLookupError,
+  RUN_WEIGHTS,
+} from "@/lib/config/run-cap";
 import {
   markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
@@ -518,64 +512,35 @@ export async function POST(request: NextRequest, context: RouteContext) {
         : {}),
     };
 
-    // Subscription + quota gate for the synchronous in-process branches only —
-    // mirrors /runs/[modelRunId]/launch. The deterministic path is gated by
+    // Operator run-cap check for the synchronous in-process branches only —
+    // mirrors /runs/[modelRunId]/launch. The deterministic path is checked by
     // /api/analysis downstream and the aequilibrae path by the launch route,
-    // so neither is re-gated here.
+    // so neither is re-checked here.
     if (isSketchAbmRun || isIteTripGenRun) {
-      const { data: workspaceBilling, error: billingError } = await supabase
-        .from("workspaces")
-        .select("plan, subscription_plan, subscription_status")
-        .eq("id", access.model.workspace_id)
-        .maybeSingle();
-
-      if (billingError) {
-        audit.error("workspace_billing_lookup_failed", {
-          workspaceId: access.model.workspace_id,
-          userId: user.id,
-          message: billingError.message,
-          code: billingError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to verify workspace billing" }, { status: 500 });
-      }
-
-      if (!isWorkspaceSubscriptionActive(workspaceBilling ?? {})) {
-        const gateMessage = subscriptionGateMessage(workspaceBilling ?? {});
-        audit.warn("subscription_inactive", {
-          workspaceId: access.model.workspace_id,
-          userId: user.id,
-          subscriptionStatus: workspaceBilling?.subscription_status ?? null,
-        });
-        return NextResponse.json({ error: gateMessage }, { status: 402 });
-      }
-
-      const { plan } = resolveWorkspaceEntitlements(workspaceBilling ?? {});
-      const quota = await checkMonthlyRunQuota(supabase, {
+      const runCap = await checkMonthlyRunCap(supabase, {
         workspaceId: access.model.workspace_id,
-        plan,
         tableName: "model_runs",
-        weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
+        weight: RUN_WEIGHTS.MODEL_RUN_LAUNCH,
       });
 
-      if (isQuotaLookupError(quota)) {
-        audit.error("run_limit_count_failed", {
+      if (isRunCapLookupError(runCap)) {
+        audit.error("run_cap_count_failed", {
           workspaceId: access.model.workspace_id,
           userId: user.id,
-          message: quota.message,
-          code: quota.code,
+          message: runCap.message,
+          code: runCap.code,
         });
-        return NextResponse.json({ error: "Failed to validate plan limits" }, { status: 500 });
+        return NextResponse.json({ error: "Failed to validate the run limit" }, { status: 500 });
       }
 
-      if (isQuotaExceeded(quota)) {
-        audit.warn("run_limit_reached", {
+      if (isRunCapExceeded(runCap)) {
+        audit.warn("run_cap_reached", {
           workspaceId: access.model.workspace_id,
           userId: user.id,
-          plan: quota.plan,
-          usedRuns: quota.usedRuns,
-          monthlyLimit: quota.monthlyLimit,
+          usedRuns: runCap.usedRuns,
+          cap: runCap.cap,
         });
-        return NextResponse.json({ error: quota.message }, { status: 429 });
+        return NextResponse.json({ error: runCap.message }, { status: 429 });
       }
     }
 
@@ -804,24 +769,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
             durationMs: Date.now() - startedAt,
           });
 
-          await recordUsageEventBestEffort(
-            {
-              workspaceId: access.model.workspace_id,
-              eventKey: "model_run.launch",
-              bucketKey: "runs",
-              weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
-              sourceRoute: "/api/models/[modelId]/runs",
-              idempotencyKey: `model_run:${modelRunId}:launch`,
-              metadata: {
-                modelId: access.model.id,
-                modelRunId,
-                engineKey: "aequilibrae",
-                reroutedFrom: "sketch_abm",
-              },
-            },
-            audit
-          );
-
           return NextResponse.json(
             {
               modelRunId,
@@ -984,19 +931,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
           sampleTrips: abmOutputs.summary.total_trips,
           durationMs: Date.now() - startedAt,
         });
-
-        await recordUsageEventBestEffort(
-          {
-            workspaceId: access.model.workspace_id,
-            eventKey: "model_run.launch",
-            bucketKey: "runs",
-            weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
-            sourceRoute: "/api/models/[modelId]/runs",
-            idempotencyKey: `model_run:${modelRunId}:launch`,
-            metadata: { modelId: access.model.id, modelRunId, engineKey: "sketch_abm" },
-          },
-          audit
-        );
 
         // scenario_attach is honest surface metadata: the sketch branch
         // records the run only — attach-as-evidence wiring does not run here.
@@ -1162,19 +1096,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
           comparisonBasis: result.comparisonBasis,
           durationMs: Date.now() - startedAt,
         });
-
-        await recordUsageEventBestEffort(
-          {
-            workspaceId: access.model.workspace_id,
-            eventKey: "model_run.launch",
-            bucketKey: "runs",
-            weight: QUOTA_WEIGHTS.MODEL_RUN_LAUNCH,
-            sourceRoute: "/api/models/[modelId]/runs",
-            idempotencyKey: `model_run:${modelRunId}:launch`,
-            metadata: { modelId: access.model.id, modelRunId, engineKey: "ite_trip_generation" },
-          },
-          audit
-        );
 
         // Mirrors the sketch branch: the run is recorded only — comparison
         // snapshots are saved explicitly through the scenario spine routes.

@@ -4,8 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
-import { checkAiUsageRateLimit } from "@/lib/billing/ai-rate-limit";
-import { recordUsageEventBestEffort } from "@/lib/billing/usage-recording";
+import { checkAiUsageRateLimit } from "@/lib/runtime/ai-rate-limit";
 import { MODERATION_MAX_ITEMS, moderateEngagementItems, type ModerationInputItem } from "@/lib/engagement/ai-moderation";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
@@ -114,16 +113,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     if (result.source === "ai") {
-      await recordUsageEventBestEffort(
-        {
-          workspaceId,
-          eventKey: "engagement_moderation",
-          bucketKey: "engagement_synthesis",
-          sourceRoute: "/api/engagement/campaigns/[campaignId]/moderation-scan",
-          metadata: { campaignId, model: result.model, itemCount: result.item_count },
-        },
-        audit
-      );
     }
 
     return NextResponse.json({ moderation: result, scannedAt: assessmentAt });
