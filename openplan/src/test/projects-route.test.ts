@@ -1,23 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
-const createClientMock = vi.fn();
-const createServiceRoleClientMock = vi.fn();
-const createApiAuditLoggerMock = vi.fn();
-
 const authGetUserMock = vi.fn();
-const workspaceInsertMock = vi.fn();
-const workspaceSelectMock = vi.fn();
-const workspaceSingleMock = vi.fn();
-const workspaceDeleteEqMock = vi.fn();
-const workspaceDeleteMock = vi.fn();
-const memberInsertMock = vi.fn();
-const memberDeleteEqMock = vi.fn();
-const memberDeleteMock = vi.fn();
 const projectInsertMock = vi.fn();
 const projectSelectMock = vi.fn();
 const projectSingleMock = vi.fn();
 const fromMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
+const checkWorkspaceMembershipMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -26,15 +16,33 @@ const mockAudit = {
 };
 
 vi.mock("@/lib/supabase/server", () => ({
-  createClient: (...args: unknown[]) => createClientMock(...args),
-  createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
+  createClient: async () => ({ auth: { getUser: authGetUserMock }, from: fromMock }),
+  // A project no longer provisions a workspace, so the route no longer uses the
+  // service-role client at all. Mock it as a throw so a regression that
+  // reintroduces the fork fails loudly instead of silently.
+  createServiceRoleClient: () => {
+    throw new Error("projects.create must not use the service-role client");
+  },
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
-  createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
+  createApiAuditLogger: () => mockAudit,
+}));
+
+vi.mock("@/lib/workspaces/current", () => ({
+  loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+}));
+
+vi.mock("@/lib/workspaces/membership", () => ({
+  checkWorkspaceMembership: (...args: unknown[]) => checkWorkspaceMembershipMock(...args),
 }));
 
 import { POST as postProject } from "@/app/api/projects/route";
+
+const CURRENT_WORKSPACE = "11111111-1111-4111-8111-111111111111";
+const OTHER_WORKSPACE = "44444444-4444-4444-8444-444444444444";
+const USER_ID = "22222222-2222-4222-8222-222222222222";
+const PROJECT_RECORD_ID = "33333333-3333-4333-8333-333333333333";
 
 function jsonRequest(payload: unknown) {
   return new NextRequest("http://localhost/api/projects", {
@@ -48,22 +56,9 @@ describe("POST /api/projects", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    createApiAuditLoggerMock.mockReturnValue(mockAudit);
-
-    workspaceSingleMock.mockResolvedValue({
-      data: {
-        id: "11111111-1111-4111-8111-111111111111",
-        slug: "ca-safety-delivery-pilot",
-        plan: "pilot",
-        stage_gate_template_id: "ca_stage_gates_v0_1",
-        stage_gate_template_version: "0.1.0",
-      },
-      error: null,
-    });
-
     projectSingleMock.mockResolvedValue({
       data: {
-        id: "33333333-3333-4333-8333-333333333333",
+        id: PROJECT_RECORD_ID,
         name: "CA Safety Delivery Pilot",
         status: "active",
         plan_type: "corridor_plan",
@@ -71,178 +66,108 @@ describe("POST /api/projects", () => {
       },
       error: null,
     });
-
-    workspaceSelectMock.mockReturnValue({ single: workspaceSingleMock });
-    workspaceInsertMock.mockReturnValue({ select: workspaceSelectMock });
-    workspaceDeleteEqMock.mockResolvedValue({ error: null });
-    workspaceDeleteMock.mockReturnValue({ eq: workspaceDeleteEqMock });
     projectSelectMock.mockReturnValue({ single: projectSingleMock });
     projectInsertMock.mockReturnValue({ select: projectSelectMock });
-    memberInsertMock.mockResolvedValue({ error: null });
-    memberDeleteEqMock.mockResolvedValue({ error: null });
-    memberDeleteMock.mockReturnValue({ eq: memberDeleteEqMock });
 
     fromMock.mockImplementation((table: string) => {
-      if (table === "workspaces") {
-        return { insert: workspaceInsertMock, delete: workspaceDeleteMock };
-      }
-
-      if (table === "workspace_members") {
-        return { insert: memberInsertMock, delete: memberDeleteMock };
-      }
-
       if (table === "projects") {
         return { insert: projectInsertMock };
       }
-
+      // A workspace/member insert here would be the reintroduced fork.
       throw new Error(`Unexpected table: ${table}`);
     });
 
-    authGetUserMock.mockResolvedValue({
-      data: {
-        user: {
-          id: "22222222-2222-4222-8222-222222222222",
-        },
-      },
-    });
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
 
-    createClientMock.mockResolvedValue({
-      auth: { getUser: authGetUserMock },
-      from: fromMock,
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: CURRENT_WORKSPACE, role: "owner" },
+      workspace: { name: "My Workspace" },
     });
-
-    createServiceRoleClientMock.mockReturnValue({
-      from: fromMock,
-    });
+    checkWorkspaceMembershipMock.mockResolvedValue({ ok: true, role: "owner" });
   });
 
   it("returns 400 for invalid payload", async () => {
-    const response = await postProject(jsonRequest({ plan: "pilot" }));
-
+    const response = await postProject(jsonRequest({ summary: "no name" }));
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "Invalid input" });
   });
 
   it("returns 401 when unauthenticated", async () => {
     authGetUserMock.mockResolvedValue({ data: { user: null } });
-
-    const response = await postProject(
-      jsonRequest({
-        projectName: "CA Safety Delivery Pilot",
-      })
-    );
-
+    const response = await postProject(jsonRequest({ projectName: "CA Safety Delivery Pilot" }));
     expect(response.status).toBe(401);
     expect(await response.json()).toMatchObject({ error: "Unauthorized" });
   });
 
-  it("returns 201 with canonical project-create stage-gate binding", async () => {
-    const response = await postProject(
-      jsonRequest({
-        projectName: "CA Safety Delivery Pilot",
-      })
-    );
+  it("creates the project in the caller's current workspace, without forking a workspace", async () => {
+    const response = await postProject(jsonRequest({ projectName: "CA Safety Delivery Pilot" }));
 
     expect(response.status).toBe(201);
     const payload = (await response.json()) as {
-      projectId: string;
-      workspaceId: string;
       projectRecordId: string;
-      slug: string;
-      plan: string;
-      projectRecord: {
-        id: string;
-        name: string;
-        status: string;
-        planType: string;
-        deliveryPhase: string;
-      };
-      stageGateTemplate: {
-        id: string;
-        version: string;
-        jurisdiction: string;
-        bindingMode: string;
-        lapmFormIdsStatus: string;
-      };
+      workspaceId: string;
+      projectRecord: { id: string; name: string; status: string; planType: string; deliveryPhase: string };
     };
 
-    expect(payload.projectId).toBeDefined();
-    expect(payload.workspaceId).toBe(payload.projectId);
-    expect(payload.projectRecordId).toBe("33333333-3333-4333-8333-333333333333");
+    expect(payload.projectRecordId).toBe(PROJECT_RECORD_ID);
+    // The project belongs to the CALLER's workspace — it is not a new one.
+    expect(payload.workspaceId).toBe(CURRENT_WORKSPACE);
     expect(payload.projectRecord).toMatchObject({
-      id: "33333333-3333-4333-8333-333333333333",
+      id: PROJECT_RECORD_ID,
       name: "CA Safety Delivery Pilot",
       status: "active",
       planType: "corridor_plan",
       deliveryPhase: "scoping",
     });
-    expect(payload.slug).toBe("ca-safety-delivery-pilot");
-    expect(payload.plan).toBe("pilot");
-    expect(payload.stageGateTemplate).toMatchObject({
-      id: "ca_stage_gates_v0_1",
-      version: "0.1.0",
-      jurisdiction: "CA",
-      bindingMode: "project_create_v0_2",
-      lapmFormIdsStatus: "deferred_to_v0_2",
-    });
 
-    expect(workspaceInsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        stage_gate_template_id: "ca_stage_gates_v0_1",
-        stage_gate_template_version: "0.1.0",
-        stage_gate_binding_source: "project_create_v0_2",
-      })
-    );
-
+    // The insert targets the current workspace and never touches workspaces /
+    // workspace_members (the fromMock throws on those tables).
     expect(projectInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        workspace_id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: CURRENT_WORKSPACE,
         name: "CA Safety Delivery Pilot",
         status: "active",
         plan_type: "corridor_plan",
         delivery_phase: "scoping",
-        created_by: "22222222-2222-4222-8222-222222222222",
+        created_by: USER_ID,
       })
     );
+    expect(fromMock).not.toHaveBeenCalledWith("workspaces");
+    expect(fromMock).not.toHaveBeenCalledWith("workspace_members");
   });
 
-  it("returns 400 when unsupported stage-gate template is requested", async () => {
-    const response = await postProject(
-      jsonRequest({
-        projectName: "CA Safety Delivery Pilot",
-        stageGateTemplateId: "unsupported_template",
-      })
-    );
-
-    expect(response.status).toBe(400);
-    expect(await response.json()).toMatchObject({ error: "Unsupported stage-gate template" });
-    expect(workspaceInsertMock).not.toHaveBeenCalled();
+  it("returns 409 when the account has no workspace attached", async () => {
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({ membership: null, workspace: null });
+    const response = await postProject(jsonRequest({ projectName: "CA Safety Delivery Pilot" }));
+    expect(response.status).toBe(409);
+    expect(projectInsertMock).not.toHaveBeenCalled();
   });
 
-  it("cleans up the provisioned workspace when project-record creation fails", async () => {
-    projectSingleMock.mockResolvedValue({
-      data: null,
-      error: {
-        message: "project insert failed",
-        code: "XX002",
-      },
-    });
-
+  it("honors an explicit workspaceId the caller belongs to", async () => {
     const response = await postProject(
-      jsonRequest({
-        projectName: "CA Safety Delivery Pilot",
-      })
+      jsonRequest({ projectName: "CA Safety Delivery Pilot", workspaceId: OTHER_WORKSPACE })
     );
 
+    expect(response.status).toBe(201);
+    expect(checkWorkspaceMembershipMock).toHaveBeenCalledWith(expect.anything(), USER_ID, OTHER_WORKSPACE);
+    // Explicit target skips the current-workspace resolver.
+    expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
+    expect(projectInsertMock.mock.calls[0]![0]).toMatchObject({ workspace_id: OTHER_WORKSPACE });
+  });
+
+  it("returns 404 when targeting a workspace the caller is not a member of", async () => {
+    checkWorkspaceMembershipMock.mockResolvedValue({ ok: false, kind: "not_member", message: "Workspace not found" });
+    const response = await postProject(
+      jsonRequest({ projectName: "CA Safety Delivery Pilot", workspaceId: OTHER_WORKSPACE })
+    );
+    expect(response.status).toBe(404);
+    expect(projectInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 500 when the project insert fails", async () => {
+    projectSingleMock.mockResolvedValue({ data: null, error: { message: "project insert failed", code: "XX002" } });
+    const response = await postProject(jsonRequest({ projectName: "CA Safety Delivery Pilot" }));
     expect(response.status).toBe(500);
-    expect(await response.json()).toMatchObject({ error: "Failed to create project record" });
-    expect(memberDeleteEqMock).toHaveBeenCalledWith(
-      "workspace_id",
-      "11111111-1111-4111-8111-111111111111"
-    );
-    expect(workspaceDeleteEqMock).toHaveBeenCalledWith(
-      "id",
-      "11111111-1111-4111-8111-111111111111"
-    );
+    expect(await response.json()).toMatchObject({ error: "Failed to create project" });
   });
 });

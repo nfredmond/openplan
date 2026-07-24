@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 type CreateResponse = {
-  projectId: string;
   projectRecordId?: string;
+  workspaceId?: string;
 };
 
 const projectTypeOptions = [
@@ -53,7 +53,7 @@ export function ProjectWorkspaceCreator() {
       const payload = (await response.json()) as CreateResponse & { error?: string; details?: string };
 
       if (!response.ok) {
-        throw new Error(payload.details || payload.error || "Failed to create project workspace");
+        throw new Error(payload.details || payload.error || "Failed to create project");
       }
 
       setProjectName("");
@@ -68,7 +68,7 @@ export function ProjectWorkspaceCreator() {
         return;
       }
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create project workspace");
+      setError(submitError instanceof Error ? submitError.message : "Failed to create project");
     } finally {
       setIsSubmitting(false);
     }
@@ -83,14 +83,14 @@ export function ProjectWorkspaceCreator() {
           </span>
           <div className="module-section-heading">
             <p className="module-section-label">Create</p>
-            <h2 className="module-section-title">Start a project workspace</h2>
+            <h2 className="module-section-title">Start a project</h2>
           </div>
         </div>
       </div>
 
       <p className="module-section-description">
-        This lane creates a real project record and its attached workspace shell so planning, reporting, and analysis can
-        evolve inside a stable container.
+        This creates a project in your current workspace so planning, reporting, and analysis can evolve inside a
+        stable container. It does not create a separate workspace.
       </p>
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>
@@ -190,10 +190,10 @@ export function ProjectWorkspaceCreator() {
           {isSubmitting ? (
             <span className="inline-flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
-              Creating project workspace…
+              Creating project…
             </span>
           ) : (
-            "Create project workspace"
+            "Create project"
           )}
         </Button>
       </form>

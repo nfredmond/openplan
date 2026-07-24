@@ -652,11 +652,29 @@ describe("ProjectDetailPage", () => {
   });
 
 
-  it("blocks project detail access when the selected workspace does not own the project", async () => {
+  it("renders a project that lives outside the newest-first current workspace", async () => {
+    // The FIX: access is membership of the project's OWN workspace (enforced by
+    // the projects_read RLS policy — here, the project select returning a row),
+    // not equality with whichever workspace resolved as "current" newest-first.
+    // The old equality gate stranded every project a member could read but that
+    // was not their current workspace. project-1 lives in workspace-1; the
+    // caller's current workspace is a different one they also belong to.
     loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
       membership: { workspace_id: "workspace-other", role: "member" },
       workspace: { id: "workspace-other", name: "Other workspace", plan: "pilot" },
     });
+
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+
+    // It renders (no notFound), and the page scopes to the PROJECT's workspace.
+    expect(notFoundMock).not.toHaveBeenCalled();
+    expect(workspaceEqMock).toHaveBeenCalledWith("id", "workspace-1");
+  });
+
+  it("notFounds when the project is not readable (RLS blocks a non-member)", async () => {
+    // A caller who is not a member of the project's workspace gets no row back
+    // from the RLS-scoped select, which is the only access gate that remains.
+    projectSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
     await expect(
       ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })

@@ -1,29 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { checkWorkspaceMembership } from "@/lib/workspaces/membership";
 
 const createProjectSchema = z.object({
   projectName: z.string().trim().min(1).max(120),
-  plan: z.string().trim().min(1).max(40).optional(),
   summary: z.string().trim().max(2000).optional(),
   planType: z.string().trim().min(1).max(80).optional(),
   deliveryPhase: z.string().trim().min(1).max(40).optional(),
   status: z.string().trim().min(1).max(40).optional(),
-  stageGateTemplateId: z.string().trim().min(1).max(80).optional(),
+  /**
+   * Which workspace the project belongs to. Optional and defaults to the
+   * caller's current workspace; the workspace switcher passes it explicitly.
+   * A project NEVER creates a workspace (see the POST handler).
+   */
+  workspaceId: z.string().uuid().optional(),
 });
-
-const DUPLICATE_KEY_CODE = "23505";
-
-type InsertWorkspaceResult = {
-  id: string;
-  slug: string;
-  plan: string;
-  stage_gate_template_id: string;
-  stage_gate_template_version: string;
-};
 
 type InsertProjectRecordResult = {
   id: string;
@@ -32,71 +27,6 @@ type InsertProjectRecordResult = {
   plan_type: string;
   delivery_phase: string;
 };
-
-function normalizeSlug(value: string): string {
-  const normalized = value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 48);
-
-  return normalized || "workspace";
-}
-
-function slugWithSuffix(baseSlug: string, attempt: number): string {
-  if (attempt === 0) {
-    return baseSlug;
-  }
-
-  const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 4);
-  const maxBaseLength = 48 - 1 - suffix.length;
-  const trimmedBase = baseSlug.slice(0, Math.max(1, maxBaseLength));
-  return `${trimmedBase}-${suffix}`;
-}
-
-function isDuplicateSlugError(error: { code?: string | null; message?: string } | null): boolean {
-  if (!error) {
-    return false;
-  }
-
-  if (error.code === DUPLICATE_KEY_CODE) {
-    return true;
-  }
-
-  return /duplicate key/i.test(error.message ?? "") && /slug/i.test(error.message ?? "");
-}
-
-async function cleanupProvisionedProjectWorkspace(
-  serviceSupabase: ReturnType<typeof createServiceRoleClient>,
-  workspaceId: string,
-  audit: ReturnType<typeof createApiAuditLogger>
-) {
-  const { error: memberCleanupError } = await serviceSupabase
-    .from("workspace_members")
-    .delete()
-    .eq("workspace_id", workspaceId);
-
-  if (memberCleanupError) {
-    audit.warn("project_cleanup_members_failed", {
-      workspaceId,
-      message: memberCleanupError.message,
-      code: memberCleanupError.code ?? null,
-    });
-  }
-
-  const { error: workspaceCleanupError } = await serviceSupabase
-    .from("workspaces")
-    .delete()
-    .eq("id", workspaceId);
-
-  if (workspaceCleanupError) {
-    audit.warn("project_cleanup_workspace_failed", {
-      workspaceId,
-      message: workspaceCleanupError.message,
-      code: workspaceCleanupError.code ?? null,
-    });
-  }
-}
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("projects.list", request);
@@ -171,98 +101,58 @@ export async function POST(request: NextRequest) {
     }
 
     const projectName = parsed.data.projectName.trim();
-    const plan = parsed.data.plan ?? "pilot";
     const summary = parsed.data.summary?.trim() || null;
     const planType = parsed.data.planType?.trim() || "corridor_plan";
     const deliveryPhase = parsed.data.deliveryPhase?.trim() || "scoping";
     const status = parsed.data.status?.trim() || "active";
-    const baseSlug = normalizeSlug(projectName);
-    const serviceSupabase = createServiceRoleClient();
 
-    let stageGateBinding: ReturnType<typeof resolveStageGateTemplateBinding>;
-    try {
-      stageGateBinding = resolveStageGateTemplateBinding(parsed.data.stageGateTemplateId, {
-        bindingMode: "project_create_v0_2",
-      });
-    } catch {
-      audit.warn("unsupported_stage_gate_template", {
-        requestedTemplateId: parsed.data.stageGateTemplateId ?? null,
-      });
-      return NextResponse.json({ error: "Unsupported stage-gate template" }, { status: 400 });
-    }
-
-    let workspace: InsertWorkspaceResult | null = null;
-    for (let attempt = 0; attempt <= 3; attempt += 1) {
-      const slug = slugWithSuffix(baseSlug, attempt);
-
-      const { data, error } = await serviceSupabase
-        .from("workspaces")
-        .insert({
-          name: projectName,
-          slug,
-          plan,
-          stage_gate_template_id: stageGateBinding.templateId,
-          stage_gate_template_version: stageGateBinding.templateVersion,
-          stage_gate_binding_source: stageGateBinding.bindingMode,
-        })
-        .select("id, slug, plan, stage_gate_template_id, stage_gate_template_version")
-        .single();
-
-      if (!error && data) {
-        workspace = data as InsertWorkspaceResult;
-        break;
+    // A project lives INSIDE the caller's workspace; it never creates one. The
+    // prior behavior inserted a new `workspaces` row per project, which — with
+    // "current workspace" resolving newest-first — silently relocated the caller
+    // and 404'd every earlier project the moment a new one was made. The project
+    // inherits the workspace's existing stage-gate binding.
+    let workspaceId: string;
+    if (parsed.data.workspaceId) {
+      // Explicit target (the workspace switcher passes this). Verify membership
+      // for a clean 403/503 rather than leaning only on the RLS insert guard.
+      const membership = await checkWorkspaceMembership(supabase, user.id, parsed.data.workspaceId);
+      if (!membership.ok) {
+        if (membership.kind === "schema_pending") {
+          return NextResponse.json(
+            { error: "Workspace schema is not available yet" },
+            { status: 503 }
+          );
+        }
+        if (membership.kind === "not_member") {
+          return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+        }
+        audit.error("project_workspace_membership_failed", {
+          workspaceId: parsed.data.workspaceId,
+          message: membership.message,
+        });
+        return NextResponse.json({ error: "Failed to verify workspace access" }, { status: 500 });
       }
-
-      if (isDuplicateSlugError(error) && attempt < 3) {
-        audit.warn("project_slug_conflict", { baseSlug, retryAttempt: attempt + 1 });
-        continue;
+      workspaceId = parsed.data.workspaceId;
+    } else {
+      const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
+      if (!membership) {
+        audit.warn("project_create_no_workspace", { userId: user.id });
+        return NextResponse.json(
+          { error: "No workspace is attached to this account yet." },
+          { status: 409 }
+        );
       }
-
-      audit.error("project_insert_failed", {
-        message: error?.message ?? "unknown",
-        code: error?.code ?? null,
-      });
-
-      return NextResponse.json(
-        {
-          error: "Failed to create project",
-          details: error?.message ?? "Unknown project insert failure",
-        },
-        { status: 500 }
-      );
+      workspaceId = membership.workspace_id;
     }
 
-    if (!workspace) {
-      audit.error("project_insert_exhausted", { baseSlug });
-      return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
-    }
-
-    const { error: memberError } = await serviceSupabase
-      .from("workspace_members")
-      .insert({ workspace_id: workspace.id, user_id: user.id, role: "owner" });
-
-    if (memberError) {
-      audit.error("project_owner_member_insert_failed", {
-        workspaceId: workspace.id,
-        message: memberError.message,
-        code: memberError.code ?? null,
-      });
-
-      await cleanupProvisionedProjectWorkspace(serviceSupabase, workspace.id, audit);
-
-      return NextResponse.json(
-        {
-          error: "Failed to create project",
-          details: memberError.message,
-        },
-        { status: 500 }
-      );
-    }
-
+    // User (RLS) client: the projects_insert policy (20260717000082) enforces
+    // membership of `workspace_id`, so a forged workspaceId cannot plant a
+    // project in a workspace the caller does not belong to — defense in depth
+    // behind the explicit check above.
     const { data: projectRecord, error: projectRecordError } = await supabase
       .from("projects")
       .insert({
-        workspace_id: workspace.id,
+        workspace_id: workspaceId,
         name: projectName,
         summary,
         status,
@@ -273,54 +163,40 @@ export async function POST(request: NextRequest) {
       .select("id, name, status, plan_type, delivery_phase")
       .single();
 
-    if (projectRecordError) {
+    if (projectRecordError || !projectRecord) {
       audit.error("project_record_insert_failed", {
-        workspaceId: workspace.id,
-        message: projectRecordError.message,
-        code: projectRecordError.code ?? null,
+        workspaceId,
+        message: projectRecordError?.message ?? "unknown",
+        code: projectRecordError?.code ?? null,
       });
-
-      await cleanupProvisionedProjectWorkspace(serviceSupabase, workspace.id, audit);
-
       return NextResponse.json(
         {
-          error: "Failed to create project record",
-          details: projectRecordError.message,
+          error: "Failed to create project",
+          details: projectRecordError?.message ?? "Unknown project insert failure",
         },
         { status: 500 }
       );
     }
 
+    const record = projectRecord as InsertProjectRecordResult;
+
     audit.info("project_created", {
-      projectId: workspace.id,
-      projectRecordId: (projectRecord as InsertProjectRecordResult).id,
+      projectRecordId: record.id,
+      workspaceId,
       userId: user.id,
-      slug: workspace.slug,
-      stageGateTemplateId: workspace.stage_gate_template_id,
-      stageGateTemplateVersion: workspace.stage_gate_template_version,
       durationMs: Date.now() - startedAt,
     });
 
     return NextResponse.json(
       {
-        projectId: workspace.id,
-        workspaceId: workspace.id,
-        projectRecordId: (projectRecord as InsertProjectRecordResult).id,
+        projectRecordId: record.id,
+        workspaceId,
         projectRecord: {
-          id: (projectRecord as InsertProjectRecordResult).id,
-          name: (projectRecord as InsertProjectRecordResult).name,
-          status: (projectRecord as InsertProjectRecordResult).status,
-          planType: (projectRecord as InsertProjectRecordResult).plan_type,
-          deliveryPhase: (projectRecord as InsertProjectRecordResult).delivery_phase,
-        },
-        slug: workspace.slug,
-        plan: workspace.plan,
-        stageGateTemplate: {
-          id: workspace.stage_gate_template_id,
-          version: workspace.stage_gate_template_version,
-          jurisdiction: stageGateBinding.jurisdiction,
-          bindingMode: stageGateBinding.bindingMode,
-          lapmFormIdsStatus: stageGateBinding.lapmFormIdsStatus,
+          id: record.id,
+          name: record.name,
+          status: record.status,
+          planType: record.plan_type,
+          deliveryPhase: record.delivery_phase,
         },
       },
       { status: 201 }

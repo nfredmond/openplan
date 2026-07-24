@@ -143,14 +143,23 @@ export default async function ProjectDetailPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Project workbench"
-        title="Project access needs a provisioned pilot workspace"
-        description="This project control room is only available to accounts attached to the owning supervised pilot workspace. Ask an owner/admin to add you through the operator-reviewed intake flow."
+        title="Project access needs a workspace"
+        description="Project control rooms are workspace-scoped. You are signed in, but this account is not attached to a workspace yet. Reload your workspace, or ask an owner/admin to add you to the one that owns this project."
         primaryHref="/projects"
         primaryLabel="Back to projects"
       />
     );
   }
 
+  // Read through the caller's RLS client: the projects_read policy already
+  // restricts this SELECT to workspaces the caller is a member of, so a
+  // non-member gets no row and falls through to notFound() below. There is no
+  // separate "must equal my CURRENT workspace" check — that older gate stranded
+  // every project outside the newest-first current workspace (all of a
+  // multi-workspace member's other projects, and every project created before
+  // the workspace-per-project fork was removed). Access = membership of the
+  // project's own workspace, which RLS enforces; the page scopes every
+  // subsequent query to project.workspace_id, not the current one.
   const { data: projectData } = await supabase
     .from("projects")
     .select(
@@ -164,10 +173,6 @@ export default async function ProjectDetailPage({
   }
 
   const project = projectData as ProjectRow;
-
-  if (membership.workspace_id !== project.workspace_id) {
-    notFound();
-  }
 
   const { data: workspaceData } = await supabase
     .from("workspaces")
