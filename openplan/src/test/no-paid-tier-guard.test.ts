@@ -79,6 +79,43 @@ describe("the paid-tier subsystem stays deleted", () => {
     expect(offenders.map((f) => path.relative(process.cwd(), f))).toEqual([]);
   });
 
+  it("has no pricing route, request-access funnel, or link to either", () => {
+    // The whole commercial funnel was deleted: /pricing, /request-access, and
+    // /contact/openplan-fit. /contact survives as a plain, non-commercial page.
+    const offenders: string[] = [];
+    for (const file of sourceFiles()) {
+      const source = readFileSync(file, "utf8");
+      // Quoted/imported references only — a prose comment explaining why the
+      // route was removed is not a reinstatement of it.
+      for (const pattern of [
+        /href="\/pricing/,
+        /href="\/request-access/,
+        /["'`]\/contact\/openplan-fit/,
+        /from "[^"]*openplan-fit/,
+      ]) {
+        if (pattern.test(source)) {
+          offenders.push(`${path.relative(process.cwd(), file)} → ${pattern}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("sells nothing on any public page", () => {
+    const publicDir = path.join(SRC, "app", "(public)");
+    const offenders: string[] = [];
+    for (const file of walk(publicDir)) {
+      const source = readFileSync(file, "utf8");
+      for (const pattern of [/managed hosting/i, /service lanes?\b/i, /\bretainer\b/i, /subscription/i]) {
+        if (pattern.test(source)) {
+          offenders.push(`${path.relative(process.cwd(), file)} → ${pattern}`);
+        }
+      }
+    }
+    expect(walk(publicDir).length).toBeGreaterThan(3);
+    expect(offenders).toEqual([]);
+  });
+
   it("guards the guard — the scan actually reaches the routes", () => {
     const files = sourceFiles();
     expect(files.length).toBeGreaterThan(100);

@@ -96,6 +96,24 @@ agency invoicing *its funder*), now `src/lib/invoicing/` behind `/invoicing`; an
 in the database deliberately — dead schema no code reads is inert, and dropping it is irreversible
 against a hosted database.
 
+**COMMERCIAL SURFACE REMOVED 2026-07-24 (Nathaniel: "No more pricing. No more stripe. that's all
+old. open source and free.").** `/pricing`, `/request-access`, and `/contact/openplan-fit` are
+**deleted**, along with the Stripe paid-canary scripts and every managed-hosting / service-lane /
+fit-review claim on the public site, in both READMEs, in CONTRIBUTING/SECURITY, and in the social
+preview image. `/contact` survives as a plain, non-commercial help page — it is NOT a way to get
+access, because nothing gates access. The assistant no longer announces a "plan tier" in its own
+system prompt. `src/test/no-paid-tier-guard.test.ts` fails the build if a pricing route, a
+request-access link, or managed-hosting/service-lane/subscription copy reappears on any public page.
+
+Two things that SOUND commercial are not, and must survive: **`src/lib/invoicing/`** is Caltrans
+LAPM grant-reimbursement invoicing (the agency invoicing *its funder*), and
+**`src/lib/runtime/ai-rate-limit.ts`** bounds Anthropic spend. Neither charges anyone for OpenPlan.
+
+**Dated records in `docs/` were NOT edited** — they were accurate when written, and rewriting one to
+match today's posture would falsify it. Where a live generator was previously pinned byte-for-byte to
+a dated packet, the test now asserts structure instead, so live copy can state today's truth while
+history stays intact.
+
 **Posture flip status (as of 2026-07-23): DONE.** The capability, the claims, and the guard were
 flipped in sequence, in this order — never claim ahead of capability:
 
@@ -104,8 +122,7 @@ flipped in sequence, in this order — never claim ahead of capability:
    GET/POST/DELETE) → password recovery (`/auth/callback`, `/forgot-password`, `/reset-password`).
    All free, no founder, no payment.
 2. **Claims changed:** the landing hero and header (`src/app/(public)/page.tsx`, `layout.tsx`) lead
-   with "Create your free workspace" → `/sign-up`. `/request-access` remains ONLY as a paid-services
-   inquiry path (hosting/implementation), never as the way to reach the software.
+   with "Create your free workspace" → `/sign-up`.
 3. **Guard rewritten to the NEW truth:** `src/test/public-page-claims-guardrails.test.ts` now asserts
    the front door leads with self-serve sign-up and that no founder gate is reinstated — while KEEPING
    the modeling-overclaim and no-paid-checkout prohibitions (the product is free and still

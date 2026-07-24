@@ -48,19 +48,6 @@ describe("SignUpPage", () => {
     expect(screen.queryByText(/establishes the operator account only/i)).not.toBeInTheDocument();
   });
 
-  it("preserves plan and redirect context on the sign-in link", async () => {
-    searchParamsValue.set("plan", "starter");
-    searchParamsValue.set("redirect", "/reports");
-    searchParamsValue.set("invite", "invite-token-123");
-
-    render(<SignUpPage />);
-
-    expect(await screen.findByRole("link", { name: /Sign in/i })).toHaveAttribute(
-      "href",
-      "/sign-in?plan=starter&redirect=%2Freports&invite=invite-token-123",
-    );
-  });
-
   it("returns new users to sign-in with the intended redirect preserved", async () => {
     searchParamsValue.set("plan", "starter");
     searchParamsValue.set("redirect", "/reports");
@@ -79,7 +66,7 @@ describe("SignUpPage", () => {
     });
 
     await waitFor(() => {
-      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Freports&plan=starter&invite=invite-token-123");
+      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Freports&invite=invite-token-123");
     });
   });
 });

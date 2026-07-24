@@ -158,7 +158,7 @@ describe("access request activity summary", () => {
     expect(readiness.blockers).toEqual(
       expect.arrayContaining([
         "Move status to Contacted or Invited; current status is Reviewing.",
-        "Select a service lane.",
+        "Select a topic.",
         "Confirm deployment posture.",
         "Record data sensitivity before pilot setup.",
         "Pick the first workflow to seed.",
@@ -183,7 +183,7 @@ describe("access request activity summary", () => {
     expect(screen.getByText("Pick the first workflow to seed.")).toBeInTheDocument();
   });
 
-  it("summarizes manual next steps, risk notes, and managed hosting source expectations", () => {
+  it("summarizes manual next steps, risk notes, and topic-derived source expectations", () => {
     const plan = summarizeAccessRequestOperatorActionPlan(
       buildRequest({
         status: "reviewing",
@@ -198,7 +198,7 @@ describe("access request activity summary", () => {
       }),
     );
 
-    expect(plan.headline).toContain("Managed hosting/admin");
+    expect(plan.headline).toContain("Account, workspace, or access problem");
     expect(plan.steps).toEqual(
       expect.arrayContaining([
         "Contact the prospect outside OpenPlan and record the status only after contact is complete.",
@@ -214,7 +214,7 @@ describe("access request activity summary", () => {
     expect(plan.sourceNotes).toEqual(
       expect.arrayContaining([
         "Pricing entry: verify paid tier expectations before any pilot setup.",
-        "Managed hosting signal is present; keep hosting activation supervised.",
+        "Reported an account, workspace, or access problem — check whether it is a real defect.",
       ]),
     );
   });

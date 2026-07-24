@@ -69,9 +69,6 @@ function assertPayload(payload) {
     if (checks.database !== "not_checked") {
       failures.push(`checks.database must stay "not_checked"; got ${JSON.stringify(checks.database)}`);
     }
-    if (checks.billing !== "not_checked") {
-      failures.push(`checks.billing must stay "not_checked"; got ${JSON.stringify(checks.billing)}`);
-    }
   }
 
   if (failures.length) {

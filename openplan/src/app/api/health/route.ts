@@ -21,7 +21,6 @@ function healthPayload() {
     checks: {
       app: "ok",
       database: "not_checked",
-      billing: "not_checked",
     },
   };
 }

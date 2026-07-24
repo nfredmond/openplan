@@ -7,20 +7,6 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-function normalizeSelectedPlan(value: string | null): "starter" | "professional" | null {
-  if (value === "starter" || value === "professional") {
-    return value;
-  }
-
-  return null;
-}
-
-function labelForPlan(value: "starter" | "professional" | null): string {
-  if (value === "starter") return "Starter managed hosting";
-  if (value === "professional") return "Professional managed hosting";
-  return "OpenPlan";
-}
-
 function noticeClass(tone: "info" | "danger") {
   const toneMap = {
     info: "border-sky-300/80 bg-sky-50/75 text-sky-950 dark:border-sky-900 dark:bg-sky-950/20 dark:text-sky-100",
@@ -39,14 +25,12 @@ function SignUpForm() {
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
   const inviteToken = searchParams.get("invite");
-  const selectedPlan = useMemo(() => normalizeSelectedPlan(searchParams.get("plan")), [searchParams]);
   const signInHref = useMemo(() => {
     const params = new URLSearchParams();
-    if (selectedPlan) params.set("plan", selectedPlan);
     if (redirectTarget) params.set("redirect", redirectTarget);
     if (inviteToken) params.set("invite", inviteToken);
     return `/sign-in?${params.toString()}`;
-  }, [inviteToken, redirectTarget, selectedPlan]);
+  }, [inviteToken, redirectTarget]);
   const [orgName, setOrgName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,9 +58,6 @@ function SignUpForm() {
     }
 
     const params = new URLSearchParams({ created: "1", redirect: redirectTarget });
-    if (selectedPlan) {
-      params.set("plan", selectedPlan);
-    }
     if (inviteToken) {
       params.set("invite", inviteToken);
     }
@@ -97,16 +78,6 @@ function SignUpForm() {
       </header>
 
       <div className="space-y-4 px-6 py-5 sm:px-7">
-        {selectedPlan ? (
-          <article className={noticeClass("info")}>
-            <p className="font-semibold">Interested in {labelForPlan(selectedPlan)} managed hosting?</p>
-            <p className="mt-1.5">
-              The software itself is free — sign up and your workspace is ready immediately. Managed
-              hosting and services are optional and handled separately; nothing here charges you.
-            </p>
-          </article>
-        ) : null}
-
         {inviteToken ? (
           <article className={noticeClass("info")}>
             <p className="font-semibold">Workspace invitation link detected.</p>

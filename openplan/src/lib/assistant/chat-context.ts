@@ -52,8 +52,9 @@ function compactJson(value: Record<string, unknown>, maxChars: number): string {
 }
 
 function workspaceLine(workspace: AssistantContext["workspace"]): string {
+  // No plan tier: OpenPlan has none, and stating one put a paid-product framing
+  // into the assistant's own output ("plan tier pro").
   const parts = [`Workspace: ${workspace.name ?? "(unnamed workspace)"}`];
-  if (workspace.plan) parts.push(`plan tier ${workspace.plan}`);
   if (workspace.role) parts.push(`your role ${workspace.role}`);
   return parts.join(" · ");
 }

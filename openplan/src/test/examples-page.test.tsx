@@ -13,7 +13,7 @@ vi.mock("next/link", () => ({
 import ExamplesEvidenceCatalogPage from "@/app/(public)/examples/page";
 
 describe("ExamplesEvidenceCatalogPage", () => {
-  it("positions examples as open-source proof with service paths instead of SaaS promises", () => {
+  it("positions examples as open-source proof, not a product tour or a sales path", () => {
     render(<ExamplesEvidenceCatalogPage />);
 
     expect(
@@ -22,15 +22,15 @@ describe("ExamplesEvidenceCatalogPage", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Inspect the proof trail/i)).toBeInTheDocument();
-    expect(screen.getByText(/Request implementation help/i)).toBeInTheDocument();
-    expect(screen.getByText(/No instant checkout demo claim/i)).toBeInTheDocument();
+    expect(screen.getByText(/Run it yourself/i)).toBeInTheDocument();
+    expect(screen.getByText(/One example is not a guarantee/i)).toBeInTheDocument();
     expect(screen.queryByText(/Truth-state lock/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Clone the proof trail/i)).not.toBeInTheDocument();
     expect(screen.getByText(/One completed run, verbatim/i)).toBeInTheDocument();
     expect(screen.queryByText(/One live run, verbatim/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Guided demo fit check/i)).toBeInTheDocument();
-    expect(screen.getByText(/one scoped first workflow/i)).toBeInTheDocument();
-    expect(screen.getByText(/self-hosted, managed-hosted, implementation-only, or a mix/i)).toBeInTheDocument();
+    expect(screen.getByText(/one concrete workflow/i)).toBeInTheDocument();
+    expect(screen.getByText(/a clear read on what your data does and does not support/i)).toBeInTheDocument();
     expect(screen.getByText(/Command Center handoff cue/i)).toBeInTheDocument();
     expect(screen.getByText(/name the proof boundary, show the internal prototype gate/i)).toBeInTheDocument();
     expect(screen.getByText(/preserve the Max APE caveat/i)).toBeInTheDocument();
@@ -52,13 +52,13 @@ describe("ExamplesEvidenceCatalogPage", () => {
     expect(document.body).not.toHaveTextContent(/production data seeded/i);
     expect(document.body).not.toHaveTextContent(/automatic workspace provisioning/i);
     expect(document.body).not.toHaveTextContent(/instant customer activation/i);
-    expect(screen.getByRole("link", { name: "Review service lanes" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Create your free workspace" })).toHaveAttribute(
       "href",
-      "/pricing#service-lanes",
+      "/sign-up",
     );
-    expect(screen.getByRole("link", { name: /Request supervised access/i })).toHaveAttribute(
-      "href",
-      "/request-access?lane=implementation",
-    );
+    // The page offers more than one route to contact; all must point at /contact.
+    for (const link of screen.getAllByRole("link", { name: /Ask a question/i })) {
+      expect(link).toHaveAttribute("href", "/contact");
+    }
   });
 });

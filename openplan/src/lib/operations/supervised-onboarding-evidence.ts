@@ -98,7 +98,7 @@ export const supervisedOnboardingEvidenceFlow = {
       label: "Public request intake captured",
       appSurface: "/request-access → service-role-only access_requests rows",
       operatorCheckpoint:
-        "Confirm the request has a named owner, agency/workspace intent, service lane, deployment posture, first workflow, and data-sensitivity classification before review.",
+        "Confirm the message has a named owner, agency/workspace intent, topic, deployment posture, first workflow, and data-sensitivity classification before review.",
       proofArtifact: "openplan/src/test/access-request-route.test.ts",
       buyerSafeCaveat:
         "A stored request is a prospect signal only; it does not create a workspace, send email, or imply acceptance.",

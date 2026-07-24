@@ -18,7 +18,7 @@ describe("ReleaseProofPacketPanel", () => {
     render(<ReleaseProofPacketPanel />);
 
     expect(screen.getByRole("heading", { name: /Proof posture for supervised release review/i })).toBeInTheDocument();
-    expect(screen.getByText(/Apache-2\.0 planning workbench plus Nat Ford managed hosting/i)).toBeInTheDocument();
+    expect(screen.getByText(/free, Apache-2\.0 planning workbench with no paid tier/i)).toBeInTheDocument();
     expect(screen.getByText(/not broad self-serve municipal SaaS/i)).toBeInTheDocument();
 
     expect(screen.getByText(/Release gates are collected and traceable/i)).toBeInTheDocument();

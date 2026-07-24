@@ -27,9 +27,21 @@ const requiredCaveatFragments = [
 
 const buyerSafeTermFragments = [
   "Apache-2.0 planning workbench",
-  "managed hosting",
   "supervised planning workbench",
 ] as const;
+
+/**
+ * Asserted against LIVE generated copy only, never against the dated static
+ * packets in docs/sales/. Those were accurate when generated and must not be
+ * rewritten to match today's posture; live copy must state today's truth.
+ */
+const liveOnlyPostureFragments = ["free, Apache-2.0 planning workbench with no paid tier"] as const;
+
+function expectLivePosture(text: string) {
+  for (const fragment of liveOnlyPostureFragments) {
+    expect(text).toContain(fragment);
+  }
+}
 
 const handoffNoWriteFragments = [
   "No production writes",
@@ -183,6 +195,9 @@ describe("release proof copy guards", () => {
     ].join("\n");
 
     expectBuyerSafeTerms(postureText);
+    // Live posture must state today's truth; the dated packets in docs/sales/
+    // are exempt because rewriting a dated record would falsify it.
+    expectLivePosture(postureText);
   });
 
   it("keeps buyer-safe terms across the reusable release proof copy block", () => {

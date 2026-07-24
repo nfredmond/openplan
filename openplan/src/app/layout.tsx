@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     template: "%s · OpenPlan",
   },
   description:
-    "Apache-2.0 planning software for agencies, tribes, RTPAs, counties, and consultants, backed by optional Nat Ford managed hosting, onboarding, support, and implementation services.",
+    "Free, open-source Apache-2.0 planning software for agencies, tribes, RTPAs, counties, cities, non-profits, and consultants.",
   creator: "Nat Ford Planning",
   publisher: "Nat Ford Planning",
   category: "civic planning software",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
         url: OPENPLAN_OG_IMAGE_PATH,
         width: 1200,
         height: 630,
-        alt: "OpenPlan: Apache-2.0 planning software with optional managed hosting and implementation services.",
+        alt: "OpenPlan: free, open-source planning software for agencies, tribes, counties, cities, and consultants.",
       },
     ],
   },

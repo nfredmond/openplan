@@ -11,41 +11,18 @@ vi.mock("next/link", () => ({
 }));
 
 import ContactPage from "@/app/(public)/contact/page";
-import OpenPlanFitPage from "@/app/(public)/contact/openplan-fit/page";
 
-describe("contact intake pages", () => {
-  it("renders the general contact route as implementation/support intake", async () => {
+describe("contact page", () => {
+  it("renders contact as a plain, non-commercial help route", async () => {
     render(await ContactPage({ searchParams: Promise.resolve({ lane: "managed-hosting" }) }));
 
     expect(
-      screen.getByRole("heading", {
-        name: /Request OpenPlan implementation, support, or managed deployment review/i,
-      }),
+      screen.getByRole("heading", { name: /Questions, bug reports, and feedback/i }),
     ).toBeInTheDocument();
-    expect(screen.getByLabelText(/Which service lane do you need/i)).toHaveValue("managed_hosting_admin");
+    // The topic selector survives (it sorts messages); its commercial framing does not.
+    expect(screen.getByLabelText(/What is this about/i)).toHaveValue("managed_hosting_admin");
+    // Nothing on this page may read as a sales motion.
+    expect(document.body.textContent).not.toMatch(/managed hosting|pricing|subscription|service lane/i);
   });
 
-  it("renders OpenPlan fit review with legacy checkout context prefilled", async () => {
-    render(
-      await OpenPlanFitPage({
-        searchParams: Promise.resolve({
-          product: "openplan",
-          tier: "openplan-starter",
-          checkout: "disabled",
-          legacyCheckout: "1",
-        }),
-      }),
-    );
-
-    expect(
-      screen.getByRole("heading", {
-        name: /Review OpenPlan implementation and support fit before checkout/i,
-      }),
-    ).toBeInTheDocument();
-    expect(screen.getByLabelText(/Which service lane do you need/i)).toHaveValue("implementation_onboarding");
-    expect(screen.getByLabelText(/First workflow to stand up/i)).toHaveValue("other");
-    expect((screen.getByLabelText(/Onboarding needs/i) as HTMLTextAreaElement).value).toContain(
-      "Legacy tier/reference: openplan-starter.",
-    );
-  });
 });

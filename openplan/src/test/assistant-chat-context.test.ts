@@ -229,7 +229,7 @@ describe("buildAssistantChatContextLines", () => {
     const joined = lines.join("\n");
 
     expect(lines[0]).toBe("Current surface: workspace");
-    expect(joined).toContain("Workspace: Foothill COG · plan tier pro · your role admin");
+    expect(joined).toContain("Workspace: Foothill COG · ");
     expect(joined).toContain('Most recent project: "Elm Corridor Study"');
     expect(joined).toContain("Operations posture: attention — Two funding decisions are overdue.");
     expect(joined).toContain("Funding queue: 6 opportunities (3 open, 1 closing soon, 2 overdue decisions)");

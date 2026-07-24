@@ -1,11 +1,13 @@
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 /**
- * Per-workspace rate limit for paid AI calls (assistant chat, grant narrative
- * drafts). This bounds Anthropic spend against a scripted loop regardless of
- * the workspace's monthly plan allotment — the monthly run-count quota does not
- * bound pure-AI usage because AI calls don't insert into the runs table. The
- * window is generous enough that a human clicking through a demo never trips it.
+ * Per-workspace rate limit on AI calls (assistant chat, grant narrative drafts).
+ *
+ * This bounds Anthropic spend against a scripted loop. It is independent of the
+ * optional operator run cap (src/lib/config/run-cap.ts) and always applies,
+ * because AI calls don't insert into the runs table and so are not counted
+ * there at all. The window is generous enough that a human clicking through the
+ * app never trips it.
  */
 export const AI_RATE_LIMIT_BUCKET_KEYS = ["assistant_chat", "grant_narrative_draft", "engagement_synthesis"] as const;
 export const AI_RATE_LIMIT_WINDOW_SECONDS = 300;

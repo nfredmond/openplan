@@ -151,7 +151,7 @@ export function summarizeAccessRequestProvisioningReadiness(
     blockers.push("Confirm the owner email for the initial invitation.");
   }
 
-  if (!request.service_lane) blockers.push("Select a service lane.");
+  if (!request.service_lane) blockers.push("Select a topic.");
   if (!request.deployment_posture) blockers.push("Confirm deployment posture.");
   if (!request.data_sensitivity) blockers.push("Record data sensitivity before pilot setup.");
   if (!request.desired_first_workflow) blockers.push("Pick the first workflow to seed.");
@@ -232,7 +232,7 @@ export function summarizeAccessRequestOperatorActionPlan(
   if (sourceText.includes("pricing")) sourceNotes.push("Pricing entry: verify paid tier expectations before any pilot setup.");
   if (sourceText.includes("examples")) sourceNotes.push("Examples entry: tie follow-up to the showcased workflow they likely saw.");
   if (sourceText.includes("github") || sourceText.includes("source")) sourceNotes.push("Source-repo entry: treat as open-source support or self-host evaluation until scoped.");
-  if (sourceText.includes("managed-hosting") || sourceText.includes("managed hosting") || request.service_lane === "managed_hosting_admin") sourceNotes.push("Managed hosting signal is present; keep hosting activation supervised.");
+  if (request.service_lane === "managed_hosting_admin") sourceNotes.push("Reported an account, workspace, or access problem — check whether it is a real defect.");
   if (sourceNotes.length === 0) {
     sourceNotes.push(`Source context: ${sourceProof.sourcePath}. Confirm whether this came from pricing, examples, source repo, or managed-hosting copy.`);
   }

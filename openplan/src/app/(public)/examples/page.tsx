@@ -79,7 +79,7 @@ export default function ExamplesEvidenceCatalogPage() {
           </div>
           <p className="public-rail-copy">
             A marketing PDF that softened the max APE (237.62%) or hid the caveats would violate
-            the Nat Ford covenant. This page is the opposite: it puts the hardest numbers on top
+            a vendor promise. This page is the opposite: it puts the hardest numbers on top
             and preserves the screening gate as written.
           </p>
           <div className="public-rail-list">
@@ -329,43 +329,38 @@ export default function ExamplesEvidenceCatalogPage() {
             <div className="public-ledger-row">
               <div className="public-ledger-index">02</div>
               <div className="public-ledger-body">
-                <p className="public-ledger-label">Request implementation help</p>
+                <p className="public-ledger-label">Run it yourself</p>
                 <p className="public-ledger-copy text-foreground">
-                  Request-access routes lead to service conversations — managed hosting, self-hosting
-                  readiness, workflow setup, or planning analysis — rather than instant unsupervised
-                  checkout.
+                  Nothing here is a demo you have to be shown. Create a free workspace and run the
+                  same screening against your own geography — the caveats travel with the output.
                 </p>
               </div>
             </div>
             <div className="public-ledger-row">
               <div className="public-ledger-index">03</div>
               <div className="public-ledger-body">
-                <p className="public-ledger-label">No instant checkout demo claim</p>
+                <p className="public-ledger-label">One example is not a guarantee</p>
                 <p className="public-ledger-copy text-foreground">
-                  A public example is not a promise that every workspace will reproduce these results.
-                  Production commitments belong in scoped services with human review.
+                  A public example is not a promise that every study area reproduces these results.
+                  Data coverage varies by place, and the page says so where it does.
                 </p>
               </div>
             </div>
           </div>
           <div className="mt-5 flex flex-wrap gap-3">
-            <Link href="/pricing#service-lanes" className="public-primary-link">
-              Review service lanes
+            <Link href="/sign-up" className="public-primary-link">
+              Create your free workspace
             </Link>
-            <Link
-              href="/request-access?lane=implementation"
-              className="public-secondary-link"
-            >
-              Request supervised access
+            <Link href="/contact" className="public-secondary-link">
+              Ask a question
             </Link>
           </div>
           <div className="mt-5 space-y-4 rounded-xl border border-border/60 bg-muted/20 p-4">
             <div>
               <p className="public-ledger-label">Guided demo fit check</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                A useful buyer walkthrough should end with one scoped first workflow, a named review
-                owner, known data-sensitivity constraints, and the right delivery lane: self-hosted,
-                managed-hosted, implementation-only, or a mix.
+                A useful first session ends with one concrete workflow, a named owner on your side,
+                and a clear read on what your data does and does not support.
               </p>
             </div>
             <div className="border-t border-border/60 pt-4">
@@ -421,14 +416,10 @@ export default function ExamplesEvidenceCatalogPage() {
                     create a free workspace
                   </Link>{" "}
                   and run this for their own geography, or{" "}
-                  <Link href="/pricing" className="underline underline-offset-4 hover:text-foreground">
-                    review service lanes
+                  <Link href="/contact" className="underline underline-offset-4 hover:text-foreground">
+                    ask a question
                   </Link>{" "}
-                  and{" "}
-                  <Link href="/request-access" className="underline underline-offset-4 hover:text-foreground">
-                    request a supervised walk-through
-                  </Link>{" "}
-                  if they want hands-on help.
+                  if something does not behave the way this page describes.
                 </p>
               </div>
             </div>

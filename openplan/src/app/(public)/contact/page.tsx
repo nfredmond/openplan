@@ -6,7 +6,8 @@ import { buildRequestAccessPrefill } from "@/lib/access-request-query";
 
 export const metadata = {
   title: "Contact | OpenPlan",
-  description: "Contact Nat Ford Planning for OpenPlan implementation, support, managed deployment, or custom-fork review.",
+  description:
+    "Get in touch about OpenPlan — questions, bug reports, and feedback from planners using the software.",
 };
 
 export default async function ContactPage({
@@ -24,19 +25,22 @@ export default async function ContactPage({
         <article className="public-hero">
           <p className="public-kicker">Contact</p>
           <div className="public-headline-block">
-            <h1 className="public-title">Request OpenPlan implementation, support, or managed deployment review.</h1>
+            <h1 className="public-title">Questions, bug reports, and feedback.</h1>
             <p className="public-lead max-w-4xl">
-              Share the agency context, first workflow, and deployment question so Nat Ford can route the request to fit review before any hosted workspace, services scope, or custom fork is created.
+              You do not need to contact anyone to use OpenPlan — it is free and open source, and
+              signing up provisions your workspace immediately. Use this if something is broken,
+              something is unclear, or you want to tell us what planners in your agency actually
+              need.
             </p>
           </div>
 
           <div className="public-actions">
-            <Link href="#contact-form" className="public-primary-link">
-              Open contact form
+            <Link href="/sign-up" className="public-primary-link">
+              Create your free workspace
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/pricing" className="public-secondary-link">
-              Review service lanes
+            <Link href="#contact-form" className="public-secondary-link">
+              Open contact form
             </Link>
           </div>
         </article>
@@ -47,12 +51,14 @@ export default async function ContactPage({
               <ClipboardCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="public-rail-kicker">Fit review first</p>
-              <h2 className="public-rail-title">No automatic checkout or workspace creation.</h2>
+              <p className="public-rail-kicker">Nothing is gated</p>
+              <h2 className="public-rail-title">This is not a way to get access.</h2>
             </div>
           </div>
           <p className="public-rail-copy">
-            Contact requests become internal intake rows. The next step is a human review of implementation/support fit, deployment posture, and responsibility boundaries.
+            There is no access queue, no approval step, and no payment. Sign up and the software is
+            yours to use. OpenPlan is open source — issues and pull requests on the repository are
+            welcome too, and are often the fastest route for a bug.
           </p>
         </aside>
       </section>

@@ -8,7 +8,6 @@ const DEFAULT_HEALTH_PAYLOAD = {
   checks: {
     app: "ok",
     database: "not_checked",
-    billing: "not_checked",
   },
 };
 const DEFAULT_REQUEST_ACCESS_HTML = [
@@ -102,21 +101,6 @@ function responseForExamples() {
   });
 }
 
-function responseForBillingReadiness() {
-  const status = readNumberEnv("OPENPLAN_PUBLIC_DEMO_MOCK_BILLING_READINESS_STATUS", 405);
-  const headers = {
-    "Content-Type": "application/json",
-  };
-  const allow = process.env.OPENPLAN_PUBLIC_DEMO_MOCK_BILLING_READINESS_ALLOW ?? "POST";
-  if (allow) headers.Allow = allow;
-
-  return new Response(JSON.stringify({ error: status === 200 ? "public" : "Method Not Allowed" }), {
-    status,
-    statusText: status === 405 ? "Method Not Allowed" : status === 200 ? "OK" : "Unauthorized",
-    headers,
-  });
-}
-
 function responseForRoot(method) {
   const headStatus = readNumberEnv("OPENPLAN_PUBLIC_DEMO_MOCK_ROOT_HEAD_STATUS", 200);
   const status = method === "HEAD" ? headStatus : readNumberEnv("OPENPLAN_PUBLIC_DEMO_MOCK_ROOT_STATUS", 200);
@@ -145,7 +129,6 @@ globalThis.fetch = async function mockPublicDemoPreflightFetch(url, init = {}) {
   if (parsed.pathname === "/api/health") return responseForHealth(method);
   if (parsed.pathname === "/request-access") return responseForRequestAccess();
   if (parsed.pathname === "/examples") return responseForExamples();
-  if (parsed.pathname === "/api/billing/readiness") return responseForBillingReadiness();
   if (parsed.pathname === "/") return responseForRoot(method);
 
   return new Response("not found", { status: 404, statusText: "Not Found" });

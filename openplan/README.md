@@ -2,11 +2,11 @@
 
 OpenPlan is Apache-2.0 open-source transportation and land-use planning software for small agencies, tribes, counties, RTPAs, transportation commissions, and consultancies that need credible planning workflows without black-box enterprise software.
 
-Nat Ford Planning's commercial model is services around the open-source core: managed hosting, onboarding, implementation, support, planning services, and custom extensions.
+OpenPlan is free. There is no paid tier, no plan, no usage quota, and no payment step — sign up and every feature is available. Run it hosted or on your own infrastructure (`docs/SELF_HOSTING.md`).
 
 ## Current product truth
 
-OpenPlan is currently strongest as a **supervised planning workbench with optional Nat Ford managed hosting**, not a broad self-serve municipal SaaS.
+OpenPlan is **self-serve and free**: sign up and a workspace is provisioned immediately. Its depth is uneven by module, and the honest claim boundaries below matter more than the feature list.
 
 What is real now:
 - authenticated planning workspace flows,
@@ -14,15 +14,15 @@ What is real now:
 - engagement campaigns and public/share intake,
 - geospatial analysis surfaces and report traceability,
 - county-run onboarding/scaffold workflows,
-- bounded billing/admin and managed-hosting/support operations.
+- self-serve sign-up, auto-provisioned workspaces, and teammate invitations,
+- Caltrans LAPM grant-reimbursement invoicing and admin operations.
 
 What is **not** currently an honest broad claim:
 - validated forecasting,
 - behavioral-demand readiness,
 - full LAPM/legal-grade compliance automation,
-- fully autonomous self-serve onboarding,
 - a finished all-in-one planning suite across the entire original vision,
-- or a proprietary subscription-first software whose core value is hidden from agencies.
+- or uniform depth across all ~16 modules.
 
 For the canonical April 2026 product boundary, start here:
 - `../docs/ops/2026-04-07-openplan-v1-status-memo-refresh.md`

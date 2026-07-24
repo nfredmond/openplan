@@ -62,17 +62,17 @@ const WORKFLOW_ALIASES: Record<string, AccessRequestFirstWorkflow> = {
 
 const INTENT_NOTES: Record<string, string> = {
   "open-source-services-review":
-    "CTA intent: review the Apache-2.0 open-source core alongside optional Nat Ford managed hosting, onboarding, implementation, support, and planning services.",
+    "CTA intent: learn about the Apache-2.0 open-source core.",
   "modeling-workspace-review":
-    "CTA intent: review a supervised modeling or Analysis Studio workspace before any hosted access, billing, or support commitment is created.",
+    "CTA intent: question about the modeling or Analysis Studio surfaces.",
   "engagement-workspace-review":
-    "CTA intent: review a supervised engagement workspace before any campaign administration access, public launch, or support commitment is created.",
+    "CTA intent: question about running an engagement campaign.",
   "self-hosting-review":
-    "CTA intent: evaluate self-hosting the Apache-2.0 OpenPlan core without creating a Nat Ford-hosted workspace or billing record from this request alone.",
+    "CTA intent: running their own OpenPlan deployment.",
   "managed-hosting-review":
-    "CTA intent: review Nat Ford managed hosting/admin support around the open-source core before workspace activation, billing, or support terms are confirmed.",
+    "CTA intent: account, workspace, or access problem.",
   "implementation-review":
-    "CTA intent: scope implementation, onboarding, or planning-services support around the open-source core before any paid services commitment is created.",
+    "CTA intent: getting started with OpenPlan.",
 };
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -95,11 +95,6 @@ function cleanToken(value: string | null | undefined, maxLength = 80): string | 
 function cleanWorkspaceId(value: string | null | undefined): string | undefined {
   const trimmed = value?.trim();
   return trimmed && UUID_PATTERN.test(trimmed) ? trimmed : undefined;
-}
-
-function cleanBoolean(value: string | null | undefined): boolean {
-  const normalized = value?.trim().toLowerCase();
-  return normalized === "1" || normalized === "true" || normalized === "yes";
 }
 
 function resolveServiceLane(value: string | null | undefined): AccessRequestServiceLane | undefined {
@@ -165,25 +160,18 @@ export function buildRequestAccessPrefill(
   pathname: string,
   searchParams: SearchParamsLike = {},
 ): RequestAccessPrefill {
+  // The legacy Stripe checkout deep-link params (tier / plan / checkout /
+  // legacyCheckout / checkoutDisabled) and the /contact/openplan-fit route that
+  // absorbed them are gone with the paid tier — nothing can generate such a
+  // link any more, so nothing needs to parse one.
   const product = cleanToken(firstParam(searchParams, "product"));
-  const tier = cleanToken(firstParam(searchParams, "tier") ?? firstParam(searchParams, "plan"));
-  const checkout = cleanToken(firstParam(searchParams, "checkout"));
   const source = cleanToken(firstParam(searchParams, "source"), 120);
   const intent = cleanToken(firstParam(searchParams, "intent"), 120);
   const workspaceId = cleanWorkspaceId(firstParam(searchParams, "workspaceId"));
-  const legacyCheckout = cleanBoolean(firstParam(searchParams, "legacyCheckout"));
-  const checkoutDisabled = cleanBoolean(firstParam(searchParams, "checkoutDisabled")) || checkout === "disabled";
   const isOpenPlanProduct = product === "openplan";
-  const isLegacyOpenPlanFit =
-    pathname.endsWith("/openplan-fit") ||
-    Boolean(tier || checkout || legacyCheckout || checkoutDisabled || workspaceId);
 
   const sourceContext = compactContext({
-    product: product ?? (isLegacyOpenPlanFit ? "openplan" : undefined),
-    tier,
-    checkout,
-    legacyCheckout,
-    checkoutDisabled,
+    product,
     workspaceId,
     source,
     intent,
@@ -199,23 +187,13 @@ export function buildRequestAccessPrefill(
     desiredFirstWorkflow,
   };
 
-  if (isOpenPlanProduct && isLegacyOpenPlanFit) {
-    initialValues.serviceLane ??= "implementation_onboarding";
-    initialValues.deploymentPosture ??= "undecided";
+  if (isOpenPlanProduct && workspaceId) {
     initialValues.desiredFirstWorkflow ??= "other";
-    initialValues.onboardingNeeds = [
-      "OpenPlan fit review requested before any managed deployment, support commitment, direct checkout, or custom fork is scoped.",
-      tier ? `Legacy tier/reference: ${tier}.` : null,
-      workspaceId ? `Workspace context: ${workspaceId}.` : null,
-    ]
-      .filter(Boolean)
-      .join(" ");
-    initialValues.useCase =
-      "Review fit for OpenPlan implementation/support before any managed deployment, checkout, or custom fork is created.";
+    initialValues.onboardingNeeds = `Workspace context: ${workspaceId}.`;
   } else if (intent && INTENT_NOTES[intent]) {
     initialValues.onboardingNeeds = [
       INTENT_NOTES[intent],
-      "Review only: do not create a workspace, send email, start billing, or scope paid services from this request without explicit human follow-up.",
+      "Review only: do not create a workspace or send email from this message without explicit human follow-up.",
     ].join(" ");
   }
 

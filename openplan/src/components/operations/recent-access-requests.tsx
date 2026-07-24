@@ -57,7 +57,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
           <p className="module-section-label">Access request intake</p>
           <h2 className="module-section-title">Service lane intake queue</h2>
           <p className="module-section-description">
-            This lane reads service-role-only request rows and routes each prospect by service lane, deployment posture, data sensitivity, and first workflow.
+            Service-role-only message rows, sorted by topic, deployment posture, data sensitivity, and first workflow.
           </p>
         </div>
         <StatusBadge tone={!enabled ? "neutral" : error ? "warning" : "info"}>

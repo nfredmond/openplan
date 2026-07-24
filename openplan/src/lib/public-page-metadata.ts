@@ -5,7 +5,7 @@ export const OPENPLAN_OG_IMAGE_PATH = "/openplan-og.svg";
 export const OPENPLAN_SITE_NAME = "OpenPlan";
 
 const defaultOgAlt =
-  "OpenPlan: Apache-2.0 planning software with optional Nat Ford managed hosting, support, and implementation services.";
+  "OpenPlan: free, open-source planning software for agencies, tribes, counties, cities, and consultants.";
 
 type PublicPageMetadataInput = {
   title: string;

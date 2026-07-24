@@ -22,7 +22,6 @@ describe("GET /api/health", () => {
       checks: {
         app: "ok",
         database: "not_checked",
-        billing: "not_checked",
       },
     });
   });

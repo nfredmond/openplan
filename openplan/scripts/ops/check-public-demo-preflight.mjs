@@ -8,7 +8,6 @@ const DEFAULT_ORIGIN = "https://openplan-natford.vercel.app";
 const REQUEST_TIMEOUT_MS = 10_000;
 const EXPECTED_HEALTH_CACHE_CONTROL = "no-store, max-age=0";
 const MAPBOX_PUBLIC_ENV_NAMES = ["NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "NEXT_PUBLIC_MAPBOX_TOKEN"];
-const BILLING_READINESS_PUBLIC_DENIAL_STATUSES = new Set([401, 403, 405]);
 const REQUIRED_MAPBOX_CSP_FRAGMENTS = [
   { label: "Mapbox API connect-src", fragment: "https://api.mapbox.com" },
   { label: "Mapbox events connect-src", fragment: "https://events.mapbox.com" },
@@ -35,8 +34,8 @@ function usage() {
     "  --mapbox-env-file <path>    Inspect only NEXT_PUBLIC_MAPBOX_* values from a local env file",
     "  --require-mapbox-token      Fail when no public Mapbox token is visible locally",
     "",
-    "This script does not accept cookies, auth headers, service-role keys, Vercel tokens, Supabase tokens, Stripe tokens,",
-    "or billing readiness secrets. Against public origins it only performs GET/HEAD requests and never prints token values.",
+    "This script does not accept cookies, auth headers, service-role keys, Vercel tokens, or Supabase tokens.",
+    "Against public origins it only performs GET/HEAD requests and never prints token values.",
   ].join("\n");
 }
 
@@ -180,9 +179,6 @@ function assertHealthPayload(payload) {
     if (checks.database !== "not_checked") {
       failures.push(`checks.database must stay "not_checked"; got ${JSON.stringify(checks.database)}`);
     }
-    if (checks.billing !== "not_checked") {
-      failures.push(`checks.billing must stay "not_checked"; got ${JSON.stringify(checks.billing)}`);
-    }
   }
 
   if (failures.length) {
@@ -226,16 +222,6 @@ async function assertHtmlRouteMarkers(origin, pathname, routeLabel, requiredMark
   }
 }
 
-async function checkRequestAccess(origin) {
-  await assertHtmlRouteMarkers(origin, "/request-access", "services-intake", [
-    "Start an OpenPlan self-hosting, managed-hosting, or implementation review.",
-    "request-access-form",
-    "No auto-send",
-  ]);
-
-  return "GET /request-access returns the services intake page without submitting a request";
-}
-
 async function checkExamples(origin) {
   await assertHtmlRouteMarkers(origin, "/examples", "examples evidence-catalog", [
     "Evidence catalog: screening proof with caveats intact",
@@ -256,31 +242,6 @@ async function checkExamples(origin) {
   ]);
 
   return "GET /examples returns the evidence catalog, buyer evidence brief, and screening-grade caveats without stale overclaim copy";
-}
-
-async function checkBillingReadinessPublicPosture(origin) {
-  const readinessPath = "/api/billing/readiness";
-  const response = await request(pathUrl(origin, readinessPath), { method: "GET" });
-
-  if (response.status >= 200 && response.status < 300) {
-    fail("GET /api/billing/readiness must not be publicly readable", [responseSummary(response)]);
-  }
-
-  if (response.status === 404) {
-    fail("GET /api/billing/readiness returned 404; expected the protected readiness route to be deployed");
-  }
-
-  if (!BILLING_READINESS_PUBLIC_DENIAL_STATUSES.has(response.status)) {
-    fail("GET /api/billing/readiness returned an unexpected public posture", [
-      responseSummary(response),
-      "expected one of 401, 403, or 405 without sending a billing readiness secret",
-    ]);
-  }
-
-  const allow = response.headers.get("allow");
-  return allow
-    ? `GET /api/billing/readiness is not publicly readable (${response.status}; allow=${allow})`
-    : `GET /api/billing/readiness is not publicly readable (${response.status})`;
 }
 
 async function checkMapboxCsp(origin) {
@@ -417,7 +378,7 @@ export function formatResult(result) {
     "",
     "Limitations:",
     "  - Billing readiness facts require the existing secret-backed POST dry run; this preflight only verifies the route is not public.",
-    "  - Request-access submission, billing readiness POST, Stripe writes, Supabase writes, and outbound email were not attempted.",
+    "  - Supabase writes and outbound email were not attempted.",
     "  - Token values are never printed.",
   );
 
@@ -441,9 +402,7 @@ export async function runPreflight(argv = process.argv.slice(2)) {
     warnings.push("network checks skipped by --skip-network");
   } else {
     checks.push(await checkHealth(origin));
-    checks.push(await checkRequestAccess(origin));
     checks.push(await checkExamples(origin));
-    checks.push(await checkBillingReadinessPublicPosture(origin));
     checks.push(await checkMapboxCsp(origin));
   }
 

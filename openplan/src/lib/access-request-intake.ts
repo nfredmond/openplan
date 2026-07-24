@@ -8,12 +8,22 @@ export const ACCESS_REQUEST_SERVICE_LANE_VALUES = [
 
 export type AccessRequestServiceLane = (typeof ACCESS_REQUEST_SERVICE_LANE_VALUES)[number];
 
+/**
+ * What the message is about.
+ *
+ * The stored KEYS are deliberately unchanged — they are plain TEXT with no
+ * CHECK constraint and existing rows carry them, so renaming would orphan
+ * history for no user-visible gain. Only the LABELS changed: these used to be
+ * commercial service lanes ("Managed hosting/admin", "Planning services") from
+ * a paid-services funnel that no longer exists. OpenPlan is free and open
+ * source; there is nothing to route a sale to.
+ */
 export const ACCESS_REQUEST_SERVICE_LANE_LABELS: Record<AccessRequestServiceLane, string> = {
-  self_host_evaluation: "Self-host evaluation",
-  managed_hosting_admin: "Managed hosting/admin",
-  implementation_onboarding: "Implementation/onboarding",
-  planning_services: "Planning services",
-  custom_software_ai_systems: "Custom software/AI systems",
+  self_host_evaluation: "Running my own deployment",
+  managed_hosting_admin: "Account, workspace, or access problem",
+  implementation_onboarding: "Getting started / how do I…",
+  planning_services: "Feedback or a feature request",
+  custom_software_ai_systems: "Bug report",
 };
 
 export const ACCESS_REQUEST_FIRST_WORKFLOW_VALUES = [
@@ -46,7 +56,7 @@ export const ACCESS_REQUEST_DEPLOYMENT_POSTURE_VALUES = [
 export type AccessRequestDeploymentPosture = (typeof ACCESS_REQUEST_DEPLOYMENT_POSTURE_VALUES)[number];
 
 export const ACCESS_REQUEST_DEPLOYMENT_POSTURE_LABELS: Record<AccessRequestDeploymentPosture, string> = {
-  nat_ford_managed: "Nat Ford managed",
+  nat_ford_managed: "Hosted for us",
   self_hosted: "Self-hosted",
   agency_cloud: "Agency cloud/vendor environment",
   undecided: "Undecided",

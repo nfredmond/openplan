@@ -20,9 +20,9 @@ const operatingPosture = [
       "OpenPlan source code is made available under the Apache License, Version 2.0, unless a file says otherwise. That source license does not grant rights to Nat Ford trademarks, private credentials, client confidential information, third-party datasets, third-party media, or client-specific deliverables.",
   },
   {
-    title: "Managed hosting and services",
+    title: "No paid tier",
     description:
-      "Nat Ford commercial terms cover managed hosting, onboarding, support, planning services, and custom implementation work around the open-source core. Workspace setup, service scope, and payment setup are gated and reviewed individually.",
+      "OpenPlan is free to use and free to self-host. There is no plan, seat count, usage quota, or payment step in the software, and no feature is withheld pending an upgrade. Because the code is Apache-2.0, you can always run your own deployment with your own data.",
   },
   {
     title: "Screening-grade boundary",
@@ -45,9 +45,9 @@ const modelLimits = [
 
 const covenant = [
   "Truth without spin: assumptions, limitations, and uncertainty are labeled rather than smoothed over. Regulatory and technical claims are cited.",
-  "Fair exchange: managed-hosting and service pricing aim to be sustainable, transparent, and non-predatory. Published service baselines are not proprietary software-license fees.",
+  "No paywall: the software is free and Apache-2.0. Capability is never withheld to create leverage, and no planning outcome depends on an agency's budget.",
   "Community protection: analysis and recommendations do not shift burden onto disadvantaged or tribal communities for convenience or optics. This is a standing constraint, not a soft preference.",
-  "Rapid repair: when something is wrong, the operator communicates early and makes it right through rework, credits, or refunds as appropriate.",
+  "Rapid repair: when something is wrong, the operator communicates early, says so plainly, and fixes it.",
   "Responsible AI use: AI accelerates drafting and QA; it does not replace qualified review on client-critical outputs.",
   "Accountability: final deliverables pass gates for truthfulness, citation support, equity impact, confidentiality, and client-safe readability.",
 ];

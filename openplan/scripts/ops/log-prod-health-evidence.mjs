@@ -207,7 +207,7 @@ function evidenceMarkdown({ healthResult, git, vercelUrl, vercelState }) {
     `- Health URL: ${healthResult.url}`,
     `- Checked at: ${healthResult.checkedAt}`,
     "- Result: PASS — public `/api/health` returned HTTP 200 for GET and HEAD, disabled caching, and matched the shallow health payload contract.",
-    "- Dependency posture: database and billing checks remain intentionally `not_checked` in this shallow endpoint.",
+    "- Dependency posture: the database check remains intentionally `not_checked` in this shallow endpoint.",
     "",
     "## Closure decision",
     "",

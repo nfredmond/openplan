@@ -13,13 +13,11 @@ export async function TopNav() {
     ? [
         { href: "/dashboard", label: "Overview" },
         { href: "/explore", label: "Analysis Studio" },
-        { href: "/pricing", label: "Services" },
-        { href: "/billing", label: "Billing" },
+        { href: "/invoicing", label: "Invoicing" },
       ]
     : [
         { href: "/", label: "Home" },
         { href: "/examples", label: "Evidence catalog" },
-        { href: "/pricing", label: "Services" },
       ];
 
   async function handleSignOut() {
@@ -76,8 +74,8 @@ export async function TopNav() {
               </form>
             ) : (
               <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-l border-border/60 pl-4">
-                <Link href="/request-access" className="top-nav-primary-link">
-                  Request access
+                <Link href="/sign-up" className="top-nav-primary-link">
+                  Create free workspace
                 </Link>
                 <Link
                   href="/sign-in"

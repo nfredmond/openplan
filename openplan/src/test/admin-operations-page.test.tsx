@@ -315,11 +315,11 @@ describe("AdminOperationsPage", () => {
     expect(screen.getByText("Nevada County Transportation Commission")).toBeInTheDocument();
     expect(screen.getByText(/Nat Ford, Planning lead/i)).toBeInTheDocument();
     expect(screen.getByText(/nat@example.gov/i)).toBeInTheDocument();
-    expect(screen.getByText(/Managed hosting\/admin · RTP/i)).toBeInTheDocument();
+    expect(screen.getByText(/Account, workspace, or access problem · RTP/i)).toBeInTheDocument();
     expect(screen.getByText(/Screen rural transit corridors/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/Managed hosting\/admin/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Account, workspace, or access problem/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/RTP/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Nat Ford managed/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Hosted for us/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Internal planning data/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Request source and intent proof")).toBeInTheDocument();
     expect(screen.getByText(/Confirm this public intake context before triage or any manual invite/i)).toBeInTheDocument();

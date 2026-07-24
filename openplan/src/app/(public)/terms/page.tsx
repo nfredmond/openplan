@@ -5,19 +5,19 @@ import { ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Terms of Use — OpenPlan",
   description:
-    "Terms that govern Nat Ford managed hosting and services for OpenPlan, an Apache-2.0 civic-planning workbench.",
+    "Terms of use for OpenPlan, free and open-source Apache-2.0 civic-planning software.",
 };
 
 const accessBoundaries = [
   {
-    title: "Open-source software, hosted service when managed by Nat Ford",
+    title: "Apache-2.0 software, free to use and to self-host",
     description:
-      "OpenPlan source code is provided under the Apache License, Version 2.0, unless a file says otherwise. These terms govern Nat Ford-hosted workspaces and related services; they do not replace the Apache-2.0 license for self-hosted use of the open-source code.",
+      "OpenPlan source code is provided under the Apache License, Version 2.0, unless a file says otherwise. These terms cover use of a workspace on this deployment; they do not replace or narrow the Apache-2.0 license, which governs the code itself and your right to run your own copy.",
   },
   {
-    title: "Supervised managed hosting",
+    title: "No paid tier, no gated features",
     description:
-      "Managed workspace activation, billing, support, and production rollout are intentionally gated and individually reviewed before live use.",
+      "Sign-up is free and immediate, and every feature is available to every workspace. There are no plans, seats, usage quotas, or payment steps, and nothing is withheld pending an upgrade.",
   },
   {
     title: "Internal prototype posture",
@@ -44,8 +44,8 @@ const prohibitedUses = [
 ];
 
 const changeExpectations = [
-  "These terms may change as OpenPlan moves from supervised rollout toward broader availability. Material changes are announced to active managed-workspace owners.",
-  "Managed-hosting pricing posture, activation boundaries, and billing policies are published on the services lane and reflect the current supervised release, not a final commercial contract.",
+  "These terms may change as OpenPlan develops. Material changes are announced to workspace owners.",
+  "Because the software is Apache-2.0, you are never dependent on these terms to keep using OpenPlan: you can run your own deployment from the public source at any time, with your own data.",
 ];
 
 export default function TermsPage() {
@@ -57,9 +57,9 @@ export default function TermsPage() {
         <article className="public-hero">
           <p className="public-kicker">Terms of use</p>
           <div className="public-headline-block">
-            <h1 className="public-title">How OpenPlan is made available as open-source software and as a Nat Ford managed service.</h1>
+            <h1 className="public-title">How OpenPlan is made available as free, open-source software.</h1>
             <p className="public-lead max-w-4xl">
-              OpenPlan is built by Nat Ford Planning as Apache-2.0 planning software. These terms describe the hosted-service and support boundaries for Nat Ford-managed workspaces, plus the safeguards that protect clients and the communities their work serves.
+              OpenPlan is built by Nat Ford Planning as free, Apache-2.0 planning software. These terms describe how a workspace on this deployment may be used, plus the safeguards that protect agencies and the communities their work serves.
             </p>
           </div>
 
@@ -77,10 +77,10 @@ export default function TermsPage() {
         <aside className="public-rail">
           <div>
             <p className="public-rail-kicker">Operating posture</p>
-            <h2 className="public-rail-title">Open-source core, honest managed-service boundary.</h2>
+            <h2 className="public-rail-title">Open source, with honest limits stated.</h2>
           </div>
           <p className="public-rail-copy">
-            OpenPlan is in deliberate supervised release. The source license, hosted-service terms, and screening-grade limits are kept separate so agencies can understand what they may reuse, what Nat Ford operates, and what still requires review.
+            The source license, the terms for using this deployment, and the screening-grade limits on modeling output are kept separate, so an agency can see what it may reuse, what it is agreeing to here, and what still needs professional review.
           </p>
         </aside>
       </section>

@@ -52,7 +52,7 @@ export const adminPilotReadinessStaticPacket = {
   status: "Buyer-safe proof export for supervised pilot and managed-service review",
   audience: "rural RTPA, county, tribe, transportation commission, or consultant buyer diligence",
   buyerSafeSummary: [
-    "OpenPlan is ready to discuss as a supervised planning workbench with an Apache-2.0 open-source core and optional Nat Ford managed hosting, onboarding, implementation, support, and planning services.",
+    "OpenPlan is a free, Apache-2.0 planning workbench. Depth varies by module and screening-grade limits are labeled where they apply.",
     "This packet does not claim that OpenPlan is a fully self-serve municipal SaaS, a validated behavioral forecasting platform, a complete legal/compliance automation system, a grant award prediction product, or an autonomous AI planning product.",
     "The static sales packet and the Admin Pilot Readiness export now reuse the same final-checklist sync, release-proof artifacts, and caveat list so buyer-facing diligence does not drift from the operator surface.",
   ],
@@ -211,7 +211,7 @@ export const adminPilotReadinessStaticPacket = {
       whyItMatters: "The May 1/May 10 proof is platform/release evidence; each pilot still needs its own scoped acceptance check.",
     },
     {
-      validation: "Confirm Mapbox, Supabase, Vercel, Stripe, and model-provider posture for the chosen workflow.",
+      validation: "Confirm Mapbox, Supabase, Vercel, and model-provider posture for the chosen workflow.",
       whyItMatters: "Third-party dependencies are part of the hosted operating path and may affect procurement or availability expectations.",
     },
     {

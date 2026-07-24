@@ -123,7 +123,7 @@ export function RequestAccessForm({
       }
 
       setForm(buildInitialState(initialValues));
-      setSuccessMessage(payload.message ?? "Request received. The OpenPlan team will review it before any hosted workspace, support commitment, or implementation scope is created.");
+      setSuccessMessage(payload.message ?? "Message received. Thanks — we read these.");
     } catch {
       setError("The request could not be submitted. Please try again.");
     } finally {
@@ -140,7 +140,7 @@ export function RequestAccessForm({
             <div className="public-form-heading">
               <h3 className="public-section-label">Agency context</h3>
               <p className="text-sm text-muted-foreground">
-                Tell us who OpenPlan would support, whether you expect self-hosting or managed hosting, and where the first planning workflow should start.
+                Tell us who you are and what you are working on, so the answer is useful rather than generic.
               </p>
             </div>
 
@@ -266,16 +266,16 @@ export function RequestAccessForm({
 
           <section className="public-form-section">
             <div className="public-form-heading">
-              <h3 className="public-section-label">Service lane</h3>
+              <h3 className="public-section-label">What it is about</h3>
               <p className="text-sm text-muted-foreground">
-                Route the request to the right Nat Ford delivery lane before anyone creates a workspace.
+                This just helps sort the message. You do not need to contact anyone to use OpenPlan.
               </p>
             </div>
 
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="space-y-1.5">
                 <label htmlFor="request-service-lane" className="text-sm font-medium">
-                  Which service lane do you need? <span aria-hidden="true" className="text-[color:var(--accent)]">*</span>
+                  What is this about? <span aria-hidden="true" className="text-[color:var(--accent)]">*</span>
                   <span className="sr-only"> required</span>
                 </label>
                 <select
@@ -285,7 +285,7 @@ export function RequestAccessForm({
                   onChange={(event) => setForm((current) => updateField(current, "serviceLane", event.target.value))}
                   required
                 >
-                  <option value="">Select a service lane</option>
+                  <option value="">Select a topic</option>
                   {ACCESS_REQUEST_SERVICE_LANE_VALUES.map((value) => (
                     <option key={value} value={value}>
                       {ACCESS_REQUEST_SERVICE_LANE_LABELS[value]}
@@ -374,7 +374,7 @@ export function RequestAccessForm({
             <div className="public-form-heading">
               <h3 className="public-section-label">Use case detail</h3>
               <p className="text-sm text-muted-foreground">
-                A focused first use case makes it easier to decide whether the right path is self-hosted software, managed hosting, or implementation help.
+                A concrete example makes it much easier to give you a useful answer.
               </p>
             </div>
 
@@ -386,7 +386,7 @@ export function RequestAccessForm({
               <Textarea
                 id="request-use-case"
                 rows={7}
-                placeholder="Example: self-host OpenPlan for RTP project evidence, ask Nat Ford to host a grant-support workspace, configure engagement intake for an ATP update, or scope a custom reporting extension."
+                placeholder="Example: the equity layer is empty for my county, the RTP packet export drops a section, or I want to know whether OpenPlan can model a corridor this size."
                 value={form.useCase}
                 onChange={(event) => setForm((current) => updateField(current, "useCase", event.target.value))}
                 maxLength={2400}
@@ -415,7 +415,7 @@ export function RequestAccessForm({
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-muted-foreground">
-                Submitting creates an internal intake record only; it does not create an account, hosted workspace, subscription, or services contract.
+                Submitting records the message only. It does not create an account — sign up for that, it is free and takes a moment.
               </p>
               <Button type="submit" disabled={isSubmitting} className="min-w-[13rem] justify-center">
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
@@ -429,13 +429,13 @@ export function RequestAccessForm({
           <div>
             <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <ArrowRight className="h-4 w-4 text-[color:var(--accent)]" />
-              Service lane review
+              What happens next
             </h3>
             <ul className="public-bullet-list public-bullet-list--compact mt-3 text-sm text-muted-foreground">
-              <li>Requests are triaged by service lane before a hosted workspace, implementation scope, or support commitment is created.</li>
-              <li>The Apache-2.0 core stays separate from Nat Ford managed hosting, onboarding, support, billing, and planning-services commitments.</li>
+              <li>Messages are read and sorted by topic. There is no queue you have to get through to use OpenPlan.</li>
+              <li>OpenPlan is Apache-2.0 and free — nothing here leads to a quote, a plan, or an invoice.</li>
               <li>No outbound message is sent automatically from this form.</li>
-              <li>Self-hosting, managed-hosting billing, onboarding, and paid implementation remain separate supervised steps.</li>
+              <li>For a bug, an issue on the public repository is often the fastest route.</li>
             </ul>
           </div>
 

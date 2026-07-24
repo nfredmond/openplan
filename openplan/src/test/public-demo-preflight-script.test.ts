@@ -80,18 +80,14 @@ describe("public demo preflight script", () => {
     expect(result.stderr).toBe("");
     expect(result.stdout).toContain("OpenPlan public demo preflight passed");
     expect(result.stdout).toContain("GET/HEAD /api/health");
-    expect(result.stdout).toContain("GET /request-access");
     expect(result.stdout).toContain("GET /examples");
     expect(result.stdout).toContain("buyer evidence brief");
-    expect(result.stdout).toContain("GET /api/billing/readiness is not publicly readable");
     expect(result.stdout).toContain("CSP includes Mapbox");
     expect(result.stdout).not.toContain("pk.test-public-token");
     expect(result.calls).toEqual([
       "GET /api/health",
       "HEAD /api/health",
-      "GET /request-access",
       "GET /examples",
-      "GET /api/billing/readiness",
       "HEAD /",
     ]);
   });
@@ -107,34 +103,6 @@ describe("public demo preflight script", () => {
     expect(result.status).toBe(0);
     expect(result.stdout).toContain("passed with warnings");
     expect(result.stdout).toContain("No NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN or NEXT_PUBLIC_MAPBOX_TOKEN value was visible locally");
-  });
-
-  it("fails if billing readiness becomes publicly readable", async () => {
-    await expect(
-      runPreflight({
-        env: {
-          OPENPLAN_PUBLIC_DEMO_MOCK_BILLING_READINESS_STATUS: "200",
-        },
-      }),
-    ).rejects.toMatchObject({
-      status: 1,
-      stderr: expect.stringContaining("GET /api/billing/readiness must not be publicly readable"),
-      calls: expect.arrayContaining(["GET /api/billing/readiness"]),
-    });
-  });
-
-  it("fails if the request-access page loses services intake markers", async () => {
-    await expect(
-      runPreflight({
-        env: {
-          OPENPLAN_PUBLIC_DEMO_MOCK_REQUEST_ACCESS_HTML: "<!doctype html><html><body>Request access</body></html>",
-        },
-      }),
-    ).rejects.toMatchObject({
-      status: 1,
-      stderr: expect.stringContaining("expected services-intake markers"),
-      calls: expect.arrayContaining(["GET /request-access"]),
-    });
   });
 
   it("fails if the examples page loses evidence-catalog caveat markers", async () => {

@@ -142,7 +142,7 @@ export const finalPilotReadinessChecklistSync = {
     {
       label: "Managed support diligence",
       artifact: "docs/sales/2026-05-10-openplan-managed-support-proof-map.md",
-      role: "Connects managed hosting, onboarding, support, backup/restore, billing, and pilot closeout claims to proof.",
+      role: "Connects support, backup/restore, and pilot closeout claims to proof.",
       caveat: "Buyer-specific reliance checks and per-engagement operations terms still need operator completion before contracting.",
     },
     {
@@ -371,7 +371,7 @@ export const buyerDemoRehearsalChecklist = [
     key: "open-proof-packet",
     label: "Open proof packet",
     instruction: "Open the current buyer-demo proof packet and keep the caveat sheet attached to the conversation.",
-    stopCondition: "the packet does not cover the workflow, geography, data source, or service lane being discussed.",
+    stopCondition: "the packet does not cover the workflow, geography, or data source being discussed.",
   },
   {
     key: "rehearse-caveats",
@@ -422,7 +422,7 @@ export const releaseProofPosture = {
   label: "Release proof packet",
   title: "Proof posture for supervised release review",
   summary:
-    "OpenPlan is inspectable as an Apache-2.0 planning workbench plus Nat Ford managed hosting, onboarding, implementation, support, and planning services.",
+    "OpenPlan is inspectable as a free, Apache-2.0 planning workbench with no paid tier.",
   wedge:
     "Sell the current wedge as supervised planning workbench support for rural RTPA/county workflows, not broad self-serve municipal SaaS.",
   proofItems: [

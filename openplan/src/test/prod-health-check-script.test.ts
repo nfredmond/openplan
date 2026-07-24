@@ -26,7 +26,6 @@ const healthyPayload = {
   checks: {
     app: "ok",
     database: "not_checked",
-    billing: "not_checked",
   },
 };
 
@@ -132,7 +131,6 @@ describe("production health check script", () => {
           checks: {
             app: "ok",
             database: "ok",
-            billing: "not_checked",
           },
         },
       }),

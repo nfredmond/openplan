@@ -46,7 +46,7 @@ describe("RequestAccessForm", () => {
     fireEvent.change(screen.getByLabelText(/Role or title/i), {
       target: { value: "Planning lead" },
     });
-    fireEvent.change(screen.getByLabelText(/Which service lane do you need/i), {
+    fireEvent.change(screen.getByLabelText(/What is this about/i), {
       target: { value: "managed_hosting_admin" },
     });
     fireEvent.change(screen.getByLabelText(/First workflow to stand up/i), {
@@ -95,7 +95,7 @@ describe("RequestAccessForm", () => {
       }),
     );
     expect(screen.getByText(/move from evaluation to a deployment decision/i)).toBeInTheDocument();
-    expect(screen.getByText(/Apache-2.0 core stays separate from Nat Ford managed hosting/i)).toBeInTheDocument();
+    expect(screen.getByText(/Apache-2\.0 and free/i)).toBeInTheDocument();
     expect(screen.queryByText(/get from evaluation to production use/i)).not.toBeInTheDocument();
     expect(await screen.findByText(/Request received/i)).toBeInTheDocument();
   });
@@ -111,7 +111,7 @@ describe("RequestAccessForm", () => {
     fireEvent.change(screen.getByLabelText(/Agency or organization/i), { target: { value: "Agency" } });
     fireEvent.change(screen.getByLabelText(/Contact name/i), { target: { value: "Planner" } });
     fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "planner@example.gov" } });
-    fireEvent.change(screen.getByLabelText(/Which service lane do you need/i), {
+    fireEvent.change(screen.getByLabelText(/What is this about/i), {
       target: { value: "planning_services" },
     });
     fireEvent.change(screen.getByLabelText(/First workflow to stand up/i), {

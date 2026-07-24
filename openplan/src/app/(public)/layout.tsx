@@ -23,8 +23,8 @@ export default function PublicLayout({
               <Link href="/sign-up" className="transition hover:text-foreground">
                 Sign up
               </Link>
-              <Link href="/pricing" className="transition hover:text-foreground">
-                Services
+              <Link href="/examples" className="transition hover:text-foreground">
+                Evidence catalog
               </Link>
               <Link href="/sign-in" className="transition hover:text-foreground">
                 Sign in

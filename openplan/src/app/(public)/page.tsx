@@ -3,9 +3,9 @@ import { ArrowRight, FileText, Map, MessageSquareText, ShieldCheck } from "lucid
 import { buildOpenPlanPublicMetadata } from "@/lib/public-page-metadata";
 
 export const metadata = buildOpenPlanPublicMetadata({
-  title: "Open-source planning workbench with managed services",
+  title: "Free, open-source planning software",
   description:
-    "Apache-2.0 planning software for agencies, tribes, RTPAs, counties, and consultants, backed by optional Nat Ford hosting, onboarding, support, and implementation services.",
+    "Apache-2.0 planning software for agencies, tribes, RTPAs, counties, cities, non-profits, and consultants anywhere in the United States. Free to use, free to self-host, no paid tier.",
   path: "/",
 });
 
@@ -55,18 +55,6 @@ const publicSurfaces = [
       "Analysis Studio is a signed-in workspace. Create a free account and work with corridor maps, overlays, run history, and map-ready outputs for your own geography.",
   },
   {
-    href: "/pricing",
-    label: "Services lane",
-    title: "Review open-source, hosting, and implementation options",
-    description: "See how Apache-2.0 software, optional managed hosting, onboarding, support, planning services, and custom extensions fit together.",
-  },
-  {
-    href: "/examples",
-    label: "Evidence catalog",
-    title: "See a screening run with its caveats first",
-    description: "A real screening run with its validation metrics and caveats shown verbatim, so you can judge the boundaries before you sign up.",
-  },
-  {
     href: "/sign-up?source=landing&intent=engagement",
     label: "Engagement workspace",
     title: "Open the engagement workspace",
@@ -82,20 +70,20 @@ const releaseFacts = [
     detail: "OpenPlan is inspectable planning software, not a closed black-box SaaS dependency.",
   },
   {
-    label: "Commercial model",
-    value: "Free software, paid services",
-    detail: "Hosting, support, onboarding, implementation, and custom extensions are the paid services around the open-source core.",
+    label: "Cost",
+    value: "Free, with no paid tier",
+    detail: "No plans, no seats, no usage quotas, and no payment step anywhere in the software. Nothing is held back behind an upgrade.",
   },
   {
     label: "Getting started",
     value: "Sign up, workspace ready",
-    detail: "OpenPlan is live and self-serve: create a free account and your workspace is ready immediately. Optional managed hosting starts with a reviewed setup, but nothing gates the free software.",
+    detail: "Self-serve: create an account and your workspace is provisioned immediately. No access queue, no approval, no one to talk to first.",
   },
 ];
 
 const operatingCommitments = [
   "The source-first stance is intentional: public agencies should be able to inspect the software behind their planning work.",
-  "Managed hosting and billing start with a reviewed setup because support obligations, data handling, and workspace ownership matter.",
+  "Every feature is available to every workspace: there is no tier that unlocks more of the software, and no limit you have to pay to lift.",
   "Public engagement portals preserve review and moderation before feedback enters formal reporting or summaries.",
   "The platform is built for agencies and consulting teams that need traceable planning work, not another static status page.",
 ];
@@ -132,7 +120,7 @@ export default function PublicLandingPage() {
           <div className="public-headline-block">
             <h1 className="public-title">Open-source planning software that keeps maps, engagement, and delivery in one record.</h1>
             <p className="public-lead max-w-4xl">
-              OpenPlan is Apache-2.0 planning software for agencies, tribes, RTPAs, counties, and consulting teams. Nat Ford Planning supports it through managed hosting, onboarding, planning services, and custom implementation work.
+              OpenPlan is free, Apache-2.0 planning software for agencies, tribes, RTPAs, counties, cities, non-profits, and consulting teams. Run it hosted or on your own infrastructure — the software, the schema, and your data are yours.
             </p>
           </div>
 
@@ -150,16 +138,13 @@ export default function PublicLandingPage() {
               Create your free workspace
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/pricing" className="public-secondary-link">
-              Review optional services
-            </Link>
             <Link href="/sign-in" className="public-secondary-link">
               Sign in to existing workspace
             </Link>
           </div>
           <p className="public-fine-print mt-2 text-sm text-muted-foreground">
-            Free and open source. Sign up and your workspace is ready immediately — no founder
-            involvement, no access queue, no payment. Managed hosting and services are optional.
+            Free and open source. Sign up and your workspace is ready immediately — no access
+            queue, no approval step, and no payment at any point.
           </p>
 
           <div className="public-fact-grid public-fact-grid--three">
@@ -184,14 +169,14 @@ export default function PublicLandingPage() {
             </div>
           </div>
           <p className="public-rail-copy">
-            OpenPlan is meant to feel like a serious planning workspace for agencies and consulting teams: inspectable software when transparency matters, managed hosting and support when a team needs someone accountable to run it.
+            OpenPlan is meant to feel like a serious planning workspace for agencies and consulting teams — and to stay inspectable, so the software behind a public planning decision can be read by the public it serves.
           </p>
           <div className="public-rail-list">
             <div className="public-rail-item">
               Public engagement stays connected to project context, moderation, and report generation.
             </div>
             <div className="public-rail-item">
-              Services language is explicit about the difference between open-source code and paid hosting, support, onboarding, and planning implementation.
+              Claims stay inside what the software actually does: screening-grade results are labeled as such, and limits are stated rather than hidden.
             </div>
             <div className="public-rail-item">
               The product language stays practical and civic because the work itself is.

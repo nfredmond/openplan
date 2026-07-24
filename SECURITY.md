@@ -1,6 +1,6 @@
 # Security Policy
 
-OpenPlan handles planning records, engagement inputs, workspace membership, billing events, and operational logs. Treat security issues as client-trust issues, not just code defects.
+OpenPlan handles planning records, engagement inputs, workspace membership, and operational logs. Treat security issues as client-trust issues, not just code defects.
 
 ## Reporting a vulnerability
 
@@ -11,7 +11,7 @@ Include, when safe:
 - affected route, package, or workflow;
 - reproduction steps using non-sensitive data;
 - observed impact;
-- whether workspace data, authentication, billing, storage, or public engagement surfaces are involved.
+- whether workspace data, authentication, storage, or public engagement surfaces are involved.
 
 ## Scope
 
@@ -20,7 +20,6 @@ Security review should cover:
 - authentication and workspace isolation;
 - Supabase row-level security and service-role boundaries;
 - public engagement submissions and moderation flows;
-- hosted workspace billing/webhook infrastructure;
 - file uploads, exports, generated reports, and storage buckets;
 - AI-assisted workflows where prompts or outputs may contain client data.
 

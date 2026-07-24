@@ -27,11 +27,11 @@ vi.mock("@/lib/supabase/server", () => ({
 import { TopNav } from "@/components/top-nav";
 
 describe("TopNav public conversion posture", () => {
-  it("uses request access as the public primary action and does not link gated previews from the unauthenticated nav", async () => {
+  it("uses free sign-up as the public primary action and does not link gated previews from the unauthenticated nav", async () => {
     render(await TopNav());
 
-    expect(screen.getByRole("link", { name: /Request access/i })).toHaveAttribute("href", "/request-access");
-    expect(screen.getByRole("link", { name: /Request access/i })).toHaveClass("top-nav-primary-link");
+    expect(screen.getByRole("link", { name: /Create free workspace/i })).toHaveAttribute("href", "/sign-up");
+    expect(screen.getByRole("link", { name: /Create free workspace/i })).toHaveClass("top-nav-primary-link");
     expect(screen.getByRole("link", { name: /Sign in/i })).toHaveAttribute("href", "/sign-in");
     expect(screen.getByRole("link", { name: /Evidence catalog/i })).toHaveAttribute("href", "/examples");
     expect(screen.getByText(/Open planning workspace/i)).toBeInTheDocument();

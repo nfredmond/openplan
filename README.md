@@ -13,15 +13,21 @@ OpenPlan is Apache-2.0 open-source planning software for transportation and land
 - **RTP & programming** — RTP cycle workrooms with chapter drafting, linked project portfolios, funding rollups, and board-packet exports; RTIP/STIP program registries.
 - **Planner Agent** — a copilot grounded in workspace data (streaming AI chat with a deterministic fallback), executable actions behind hash-verified, single-use, time-limited approvals, and a visible audit ledger of every action.
 
-Nat Ford Planning builds and maintains the project. The commercial model is services around the open-source core:
+Nat Ford Planning builds and maintains the project.
 
-- managed hosting and workspace administration;
-- implementation, onboarding, and staff training;
-- support retainers and operational QA;
-- planning services for RTP, ATP, grants, engagement, and project-list workflows;
-- custom extensions, integrations, reports, and AI-assisted workflow buildouts.
+**OpenPlan is free.** There is no paid tier, no plan, no seat count, no usage quota, and no payment
+step anywhere in the software — sign up and every feature is available. There is no Stripe or
+billing integration in the codebase; the subscription subsystem that once existed was deleted, and
+`src/test/no-paid-tier-guard.test.ts` fails the build if it comes back.
 
-Stripe/billing code remains in the repository because Nat Ford-operated hosted workspaces need payment, entitlement, usage, and support infrastructure. That infrastructure is for managed hosting and services; it is not intended to turn the Apache-2.0 core into a closed source license.
+Two things that sound commercial are not: the **invoice register** is Caltrans LAPM
+grant-reimbursement invoicing — an agency invoicing *its funder* — and the **AI rate limit** bounds
+Anthropic spend against runaway loops. Both are planning/operations features, unrelated to charging
+anyone for OpenPlan.
+
+Run it on your own infrastructure whenever you like: see
+[`openplan/docs/SELF_HOSTING.md`](openplan/docs/SELF_HOSTING.md). The software, the schema, and your
+data are yours.
 
 ## Repository layout
 

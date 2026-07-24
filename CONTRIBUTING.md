@@ -4,13 +4,13 @@ OpenPlan welcomes contributions that improve transparent, practical planning sof
 
 ## Positioning rule
 
-Keep the project open-source first. Do not introduce copy or product behavior that frames OpenPlan as a proprietary, subscription-first software. Paid Nat Ford lanes are managed hosting, implementation, onboarding, support, planning services, and custom extensions.
+Keep the project open-source first. Do not introduce copy or product behavior that frames OpenPlan as a proprietary, subscription-first software. OpenPlan itself is free and open source, with no paid tier and no payment step.
 
 ## Before opening a change
 
 1. Work from the relevant app directory: `openplan/`.
 2. Keep public claims evidence-bound and planner-facing.
-3. Preserve billing/Stripe infrastructure when it supports managed hosting or support operations.
+3. Do not reintroduce plans, tiers, usage quotas, paid gating, or Stripe. OpenPlan is free; `src/test/no-paid-tier-guard.test.ts` enforces this.
 4. Avoid committing secrets, client confidential material, private datasets, or third-party media without explicit rights.
 5. Run the smallest meaningful validation gate for your change.
 

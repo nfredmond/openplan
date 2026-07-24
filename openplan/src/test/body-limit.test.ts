@@ -8,7 +8,6 @@ describe("readJsonWithLimit", () => {
     expect(BODY_LIMITS.normalJson).toBe(64 * 1024);
     expect(BODY_LIMITS.documentJson).toBe(256 * 1024);
     expect(BODY_LIMITS.networkGeoJson).toBe(2 * 1024 * 1024);
-    expect(BODY_LIMITS.stripeWebhookRaw).toBe(256 * 1024);
   });
 
   it("parses JSON bodies under the byte limit", async () => {

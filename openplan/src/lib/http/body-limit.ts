@@ -6,7 +6,6 @@ export const BODY_LIMITS = {
   normalJson: 64 * 1024,
   documentJson: 256 * 1024,
   networkGeoJson: 2 * 1024 * 1024,
-  stripeWebhookRaw: 256 * 1024,
   // Public engagement photo upload: 5 MB image payload (matches the
   // engagement-photos bucket file_size_limit) plus small headroom.
   publicPhotoRaw: 5 * 1024 * 1024,

@@ -29,11 +29,8 @@ import { describe, expect, it } from "vitest";
 
 const PUBLIC_PAGE_FILES = [
   "src/app/(public)/page.tsx",
-  "src/app/(public)/pricing/page.tsx",
   "src/app/(public)/examples/page.tsx",
-  "src/app/(public)/request-access/page.tsx",
   "src/app/(public)/contact/page.tsx",
-  "src/app/(public)/contact/openplan-fit/page.tsx",
   "src/app/(public)/legal/page.tsx",
   "src/app/(public)/privacy/page.tsx",
   "src/app/(public)/terms/page.tsx",
