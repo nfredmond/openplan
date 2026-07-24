@@ -34,7 +34,7 @@
  * ability to cite a crash figure at all when there is no crash source.
  */
 
-import { resolveCrashSource } from "@/lib/safety/sources/registry";
+import { resolveCrashSources } from "@/lib/safety/sources/registry";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 import type {
   CrashFetchResult,
@@ -98,6 +98,14 @@ export interface CrashSummary {
   checkedSources: string[];
   /** Why the source could not answer, when it could not. */
   unavailableReason: string | null;
+  /**
+   * When more than one source contributed (a regional primary plus a national
+   * backstop merged for the out-of-jurisdiction remainder), the sources in
+   * merge order. Present only for a genuine merge; a single-source read leaves
+   * it undefined. Fatal counts then cover the full study area while injury/severe
+   * counts cover only the primary source's jurisdiction — see `describeCrashSafety`.
+   */
+  contributingSources?: Array<{ id: string; label: string }>;
   /**
    * The run's `sourceSnapshots.crashes` entry and the safety line of its
    * narrative, built here rather than at the call site.
@@ -295,8 +303,10 @@ export async function fetchCrashesForBbox(
 ): Promise<CrashSummary> {
   // "read_only": the scorecard reports crash figures but never writes crash
   // rows, so it may use sources the `safety_crashes` CHECK domain has not been
-  // widened for yet.
-  const resolution = resolveCrashSource(bbox, "read_only");
+  // widened for yet. Multi-source so a coarse regional envelope (CCRS = the whole
+  // California rectangle) cannot shadow the national FARS backstop for a study
+  // area that overlaps the rectangle but lies partly or wholly out of state.
+  const resolution = resolveCrashSources(bbox, "read_only");
 
   if (resolution.kind === "out_of_coverage") {
     return withDisclosure(
@@ -309,29 +319,124 @@ export async function fetchCrashesForBbox(
     );
   }
 
-  const adapter = resolution.adapter;
-  const years = recentCrashYears(options.now).filter((year) => year >= adapter.earliestYear);
+  const sources = [resolution.primary, ...resolution.backstops];
 
-  try {
-    const fetched = await adapter.fetch({
-      bbox,
-      years,
-      maxRecords: ANALYSIS_MAX_RECORDS,
-      signal: options.signal,
-    });
-    return withDisclosure(summarizeCrashFetch(adapter, fetched, bbox, years));
-  } catch (error) {
-    // An outage is a state, not a number. Every count stays zero-by-schema and
-    // `observed:false` is what callers read.
+  // Fetch every covering source in parallel; each may fail independently.
+  const settled = await Promise.all(
+    sources.map(async (adapter) => {
+      const years = recentCrashYears(options.now).filter((year) => year >= adapter.earliestYear);
+      try {
+        const fetched = await adapter.fetch({
+          bbox,
+          years,
+          maxRecords: ANALYSIS_MAX_RECORDS,
+          signal: options.signal,
+        });
+        return { adapter, years, fetched, error: null as Error | null };
+      } catch (error) {
+        return {
+          adapter,
+          years,
+          fetched: null,
+          error: error instanceof Error ? error : new Error("Unknown crash source failure"),
+        };
+      }
+    })
+  );
+
+  const successes = settled.filter(
+    (entry): entry is typeof entry & { fetched: CrashFetchResult } => entry.fetched !== null
+  );
+
+  if (successes.length === 0) {
+    // Every covering source was down. An outage is a state, not a number.
     return withDisclosure(
       emptySummary({
         source: "source-unavailable",
-        sourceLabel: adapter.label,
-        checkedSources: [adapter.id],
-        unavailableReason: error instanceof Error ? error.message : "Unknown crash source failure",
+        sourceLabel: resolution.primary.label,
+        checkedSources: sources.map((adapter) => adapter.id),
+        unavailableReason: settled[0]?.error?.message ?? "Unknown crash source failure",
       })
     );
   }
+
+  // The richest source that actually answered drives the summary (registry order
+  // is richest-first, so a failed CCRS gracefully promotes FARS to primary).
+  const primary = successes[0];
+  const excludedStates = new Set(primary.adapter.coversStateFips ?? []);
+
+  const mergedRecords: CrashRecord[] = [...primary.fetched.records];
+  let backstopMatched = 0;
+  let backstopGeocoded = 0;
+  const contributingBackstops: CrashSourceAdapter[] = [];
+
+  for (const backstop of successes.slice(1)) {
+    // A national backstop only fills states the regional primary does not cover.
+    // If the primary is itself national (no coversStateFips), it already covers
+    // everything and no backstop can add non-redundant records.
+    if (excludedStates.size === 0) break;
+    const included = backstop.fetched.records.filter(
+      (record) => record.stateFips !== undefined && !excludedStates.has(record.stateFips)
+    );
+    if (included.length === 0) continue;
+    mergedRecords.push(...included);
+    // FARS geocodes every returned record, so matched ≈ geocoded ≈ included here.
+    backstopMatched += included.length;
+    backstopGeocoded += included.length;
+    contributingBackstops.push(backstop.adapter);
+  }
+
+  const mergedYears = Array.from(
+    new Set(successes.flatMap((entry) => entry.fetched.yearsCovered))
+  ).sort((a, b) => a - b);
+
+  const mergedFetch: CrashFetchResult = {
+    records: mergedRecords,
+    matchedTotal: primary.fetched.matchedTotal + backstopMatched,
+    geocodedTotal: primary.fetched.geocodedTotal + backstopGeocoded,
+    yearsCovered: mergedYears.length > 0 ? mergedYears : primary.fetched.yearsCovered,
+    truncated: successes.some((entry) => entry.fetched.truncated),
+  };
+
+  const core = summarizeCrashFetch(primary.adapter, mergedFetch, bbox, primary.years);
+
+  if (contributingBackstops.length === 0) {
+    return withDisclosure(core);
+  }
+  return withDisclosure(mergeBackstopDisclosure(core, primary.adapter, contributingBackstops, bbox));
+}
+
+/**
+ * Re-frame a summary whose records were merged from a regional primary plus a
+ * national backstop. Fatal counts already cover the full study area (fatal is
+ * comparable across both sources); injury/severe counts, however, came only from
+ * the primary's jurisdiction, so density is switched to the fatal basis (the only
+ * one comparable over the whole bbox) and provenance records every source.
+ */
+function mergeBackstopDisclosure(
+  core: CrashSummaryCore,
+  primary: CrashSourceAdapter,
+  backstops: CrashSourceAdapter[],
+  bbox: StudyAreaBbox
+): CrashSummaryCore {
+  const sources = [primary, ...backstops];
+  const area = bboxAreaSquareMiles(bbox);
+  const annualBasis = Math.max(1, core.yearsQueried.length);
+  // Fatal is the only measure that covers the full merged area, so density is
+  // reported on the fatal basis regardless of the primary's richer severity.
+  const fatalDensity = Math.round((core.totalFatalCrashes / annualBasis / area) * 10) / 10;
+
+  return {
+    ...core,
+    sourceLabel: sources.map((adapter) => adapter.label).join(" + "),
+    attribution: [core.attribution, ...backstops.map((adapter) => adapter.attribution)]
+      .filter((value): value is string => Boolean(value))
+      .join(" "),
+    crashesPerSquareMile: fatalDensity,
+    crashDensityBasis: "fatal_only",
+    checkedSources: sources.map((adapter) => adapter.id),
+    contributingSources: sources.map((adapter) => ({ id: adapter.id, label: adapter.label })),
+  };
 }
 
 /**
@@ -388,6 +493,14 @@ export function buildCrashSourceSnapshot(
       ? ` ${crashes.reportedTotal.toLocaleString()} crashes matched, ${crashes.mappedTotal.toLocaleString()} carried coordinates and are mappable.`
       : "";
 
+  const merged = crashes.contributingSources ?? [];
+  const mergeNote =
+    merged.length >= 2
+      ? ` Merged sources: ${merged
+          .map((s) => s.label)
+          .join(" + ")}. Fatal crashes cover the full study area; injury/severe figures cover only the ${merged[0].label} portion, and density is reported on the fatal basis.`
+      : "";
+
   return {
     ...shared,
     source: crashes.source,
@@ -396,7 +509,8 @@ export function buildCrashSourceSnapshot(
     reportedTotal: crashes.reportedTotal,
     mappedTotal: crashes.mappedTotal,
     truncated: crashes.truncated,
-    note: `Observed crash records from ${crashes.sourceLabel}.${severityNote}${mappingNote}`,
+    ...(merged.length >= 2 ? { contributingSources: merged } : {}),
+    note: `Observed crash records from ${crashes.sourceLabel}.${severityNote}${mappingNote}${mergeNote}`,
   };
 }
 
@@ -415,10 +529,21 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
   const densityLabel =
     crashes.crashDensityBasis === "fatal_only" ? "Fatal crash density" : "Reportable crash density";
 
+  // When a national backstop was merged in, fatal counts cover the whole study
+  // area but injury/severe came only from the regional primary — say so, or a
+  // planner reads a mixed-coverage figure as uniform.
+  const merged = crashes.contributingSources ?? [];
+  const mergeNote =
+    merged.length >= 2
+      ? ` Fatal crashes cover the full study area (${merged
+          .map((s) => s.label)
+          .join(" + ")}); injury figures, where shown, cover only the ${merged[0].label} portion.`
+      : "";
+
   return (
     `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
     `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
     `${crashes.bicyclistFatalities} involving a bicyclist). ${densityLabel}: ` +
-    `${crashes.crashesPerSquareMile}/sq mi/yr.`
+    `${crashes.crashesPerSquareMile}/sq mi/yr.${mergeNote}`
   );
 }

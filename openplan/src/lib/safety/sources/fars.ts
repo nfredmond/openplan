@@ -137,6 +137,23 @@ function toCount(value: unknown): number {
   return 0;
 }
 
+/**
+ * FARS `STATE` is a numeric state FIPS (6 = California, 32 = Nevada). Normalize
+ * to the 2-digit zero-padded string used everywhere else so a backstop record
+ * can be deduped against a regional source by state. Returns undefined for a
+ * missing or out-of-range value rather than a guessed "00".
+ */
+export function toStateFips(value: unknown): string | undefined {
+  const parsed =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+        ? Number.parseInt(value.trim(), 10)
+        : Number.NaN;
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 99) return undefined;
+  return String(Math.trunc(parsed)).padStart(2, "0");
+}
+
 /** FARS sentinel values for "unknown", in both the lat and lon magnitudes. */
 const COORDINATE_SENTINELS = [77.7777, 88.8888, 99.9999, 777.7777, 888.8888, 999.9999];
 
@@ -214,6 +231,7 @@ export function toFarsCrashRecord(row: Record<string, unknown>, year: number): C
 
   const collisionDate = toFarsCollisionDate(pick(fields, "CRASH_DT", "CrashDate", "CRASHDATE", "DATE"));
   const killedCount = Math.max(1, toCount(pick(fields, "FATALS", "TOTALFATALS")));
+  const stateFips = toStateFips(pick(fields, "STATE", "STATECODE", "STATEFIPS"));
 
   return {
     externalId: `${caseYear}-${String(caseId).trim()}`,
@@ -230,6 +248,7 @@ export function toFarsCrashRecord(row: Record<string, unknown>, year: number): C
     bicyclistInvolved: toCount(pick(fields, "BICYCLISTS", "PEDALCYCLISTS", "BIKES")) > 0,
     latitude,
     longitude,
+    stateFips,
   };
 }
 

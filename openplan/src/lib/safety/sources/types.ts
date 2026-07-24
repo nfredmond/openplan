@@ -75,6 +75,14 @@ export type CrashRecord = {
   bicyclistInvolved: boolean;
   latitude: number;
   longitude: number;
+  /**
+   * 2-digit state FIPS ("06" = California), when the source carries it. Used to
+   * dedup a national backstop against a regional primary: a FARS fatal in
+   * California is already in CCRS, so the multi-source read drops backstop
+   * records whose state the primary already covers. Undefined when the source
+   * does not expose state.
+   */
+  stateFips?: string;
 };
 
 /**
@@ -139,6 +147,14 @@ export type CrashSourceAdapter = {
    * of letting an ingest discover the mismatch as a constraint violation.
    */
   persistable: boolean;
+  /**
+   * The state FIPS codes this source AUTHORITATIVELY covers, when it is a
+   * regional source. Used by the multi-source read to dedup a national backstop:
+   * backstop records whose state is in a regional primary's `coversStateFips` are
+   * already represented by the primary and are dropped. Undefined means the
+   * source is national (a backstop, e.g. FARS) and claims no exclusive state.
+   */
+  coversStateFips?: readonly string[];
   /** True when this adapter can serve the given study area. */
   covers: (bbox: StudyAreaBbox) => boolean;
   fetch: (params: CrashFetchParams) => Promise<CrashFetchResult>;

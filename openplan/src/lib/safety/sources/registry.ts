@@ -68,3 +68,42 @@ export function resolveCrashSource(
 export function getCrashSourceById(id: string): CrashSourceAdapter | null {
   return CRASH_SOURCE_ADAPTERS.find((adapter) => adapter.id === id) ?? null;
 }
+
+/**
+ * Multi-source resolution for the read path.
+ *
+ * `resolveCrashSource` returns a SINGLE adapter — correct for ingest, but a
+ * hazard for reads: CCRS's coverage envelope is the coarse California rectangle,
+ * so a study area in western Nevada or Arizona that merely overlaps that box
+ * resolves to CCRS, which then returns zero California crashes and reads as a
+ * safe corridor while the FARS national backstop — which HAS those states'
+ * fatal crashes — is never consulted.
+ *
+ * This returns every covering adapter, richest-coverage-first: a `primary` and
+ * an ordered list of `backstops`. The caller fetches all of them and keeps
+ * backstop records only OUTSIDE the primary's state jurisdiction, so a
+ * border-straddling or out-of-state study area gets real fatal coverage without
+ * double-counting the crashes the primary already reports.
+ */
+export type MultiCrashSourceResolution =
+  | { kind: "resolved"; primary: CrashSourceAdapter; backstops: CrashSourceAdapter[] }
+  | { kind: "out_of_coverage"; checked: Array<{ id: string; label: string }> };
+
+export function resolveCrashSources(
+  bbox: StudyAreaBbox,
+  use: CrashSourceUse = "read_only"
+): MultiCrashSourceResolution {
+  const candidates =
+    use === "ingest" ? CRASH_SOURCE_ADAPTERS.filter((adapter) => adapter.persistable) : CRASH_SOURCE_ADAPTERS;
+
+  const covering = candidates.filter((adapter) => adapter.covers(bbox));
+
+  if (covering.length === 0) {
+    return {
+      kind: "out_of_coverage",
+      checked: candidates.map((adapter) => ({ id: adapter.id, label: adapter.label })),
+    };
+  }
+
+  return { kind: "resolved", primary: covering[0], backstops: covering.slice(1) };
+}

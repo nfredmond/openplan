@@ -314,6 +314,9 @@ async function fetchYearRecords(
         ...deriveInvolvement(row["MotorVehicleInvolvedWithDesc"]),
         latitude,
         longitude,
+        // CCRS is a California-only system, so every record is state 06. This
+        // lets the multi-source read dedup a national backstop (FARS) against it.
+        stateFips: "06",
       });
     }
 
@@ -394,6 +397,9 @@ export const ccrsAdapter: CrashSourceAdapter = {
   severityCompleteness: "fatal_injury_only",
   earliestYear: CCRS_EARLIEST_YEAR,
   persistable: true,
+  // California only — a national backstop's records in state 06 are redundant
+  // with CCRS and must be dropped when the two are merged.
+  coversStateFips: ["06"],
   covers: overlapsCalifornia,
   fetch: fetchCcrsCrashes,
 };
