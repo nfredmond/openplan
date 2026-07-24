@@ -29,6 +29,9 @@ function SignInForm() {
   const activationState = searchParams.get("activation");
   const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
   const createdState = searchParams.get("created");
+  // Set by /auth/callback when an emailed link could not be redeemed (expired,
+  // already used). Without this the user is bounced here with no explanation.
+  const authError = searchParams.get("auth_error");
   const selectedPlan = searchParams.get("plan") ?? "starter";
   const inviteToken = searchParams.get("invite");
   const signUpHref = useMemo(() => {
@@ -113,6 +116,19 @@ function SignInForm() {
           </article>
         ) : null}
 
+        {authError ? (
+          <article className={noticeClass("warning")} role="alert">
+            <p className="font-semibold">That link could not be used.</p>
+            <p className="mt-1.5">{authError}</p>
+            <p className="mt-1.5">
+              <Link href="/forgot-password" className="font-semibold underline underline-offset-4">
+                Request a new reset link
+              </Link>
+              .
+            </p>
+          </article>
+        ) : null}
+
         {inviteToken && createdState !== "1" ? (
           <article className={noticeClass("info")}>
             <p className="font-semibold">Workspace invitation link detected.</p>
@@ -158,9 +174,17 @@ function SignInForm() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-foreground">
-                Password
-              </label>
+              <div className="flex items-baseline justify-between">
+                <label htmlFor="password" className="text-sm font-medium text-foreground">
+                  Password
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs font-medium text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                >
+                  Forgot password?
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
