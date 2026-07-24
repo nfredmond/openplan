@@ -6,9 +6,12 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@/components/ui/button";
 import { StateBlock } from "@/components/ui/state-block";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 
-const MAPBOX_ACCESS_TOKEN =
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
 
 /** Zoom for an existing AOI's first paint, before fitBounds frames its ring. */
 const EXISTING_AOI_ZOOM = 10;

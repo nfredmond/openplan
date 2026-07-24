@@ -25,6 +25,7 @@ import {
   type WorkspaceMembershipResult,
 } from "@/lib/workspaces/membership";
 import {
+  clearedHomeGeographyRow,
   HOME_GEOGRAPHY_COLUMNS,
   homeGeographyFromPlaceBoundary,
   parseWorkspaceHomeGeography,
@@ -40,6 +41,10 @@ export const runtime = "nodejs";
  * (billing.checkout) to owner/admin, and this follows that convention.
  */
 const HOME_GEOGRAPHY_WRITE_ROLES = new Set(["owner", "admin"]);
+
+const clearHomeGeographySchema = z.object({
+  workspaceId: z.string().uuid(),
+});
 
 const setHomeGeographySchema = z.object({
   workspaceId: z.string().uuid(),
@@ -277,6 +282,111 @@ export async function PATCH(request: NextRequest) {
     });
     return NextResponse.json(
       { error: "Unexpected error while setting the home geography" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Return the workspace to "no stated geography".
+ *
+ * This is the counterpart PATCH needs to be honest. Without it, a workspace that
+ * recorded the wrong place could only ever overwrite it with another place —
+ * there would be no way back to null, and null is the one answer this subsystem
+ * treats as always truthful. Every reader already handles it (neutral camera,
+ * unbound jurisdiction, "not set"), so clearing degrades cleanly rather than
+ * falling back to somebody else's county.
+ *
+ * Deliberately NOT symmetrical with PATCH in one respect: no census-tract
+ * `after()` load. Tracts already ingested stay — they are public reference data
+ * keyed by county, useful to every workspace, and deleting them because one
+ * workspace changed its mind would be destructive far outside this request's
+ * scope.
+ */
+export async function DELETE(request: NextRequest) {
+  const audit = createApiAuditLogger("workspaces.home_geography.clear", request);
+  const startedAt = Date.now();
+
+  try {
+    const bodyResult = await readJsonWithLimit(request, BODY_LIMITS.smallJson);
+    if (!bodyResult.ok) {
+      return bodyResult.response;
+    }
+    if (bodyResult.parseError) {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const parsed = clearHomeGeographySchema.safeParse(bodyResult.data);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "A valid workspaceId is required" }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const membership = await checkWorkspaceMembership(supabase, user.id, parsed.data.workspaceId);
+    if (!membership.ok) {
+      return membershipErrorResponse(membership);
+    }
+
+    // Clearing re-frames every map in the workspace and unbinds its
+    // jurisdiction rules, so it is the same configuration action as setting —
+    // and carries the same role requirement.
+    const role = normalizeWorkspaceRole(membership.role);
+    if (!role || !HOME_GEOGRAPHY_WRITE_ROLES.has(role)) {
+      return NextResponse.json(
+        { error: "Only a workspace owner or admin can clear the home geography" },
+        { status: 403 }
+      );
+    }
+
+    const { error } = await createServiceRoleClient()
+      .from("workspaces")
+      .update(clearedHomeGeographyRow())
+      .eq("id", parsed.data.workspaceId);
+
+    if (error) {
+      if (looksLikePendingSchema(error.message)) {
+        return NextResponse.json(
+          {
+            error: "Workspace home geography is not available yet",
+            hint: "Apply the latest Supabase migrations before clearing a home geography.",
+          },
+          { status: 503 }
+        );
+      }
+      audit.error("home_geography_clear_failed", {
+        workspaceId: parsed.data.workspaceId,
+        error,
+      });
+      return NextResponse.json({ error: "Failed to clear the home geography" }, { status: 500 });
+    }
+
+    audit.info("home_geography_cleared", {
+      workspaceId: parsed.data.workspaceId,
+      userId: user.id,
+      durationMs: Date.now() - startedAt,
+    });
+
+    // `homeGeography: null` is the same shape GET returns for an unset
+    // workspace, so a caller can use one code path for both.
+    return NextResponse.json(
+      { workspaceId: parsed.data.workspaceId, homeGeography: null },
+      { status: 200 }
+    );
+  } catch (error) {
+    audit.error("home_geography_clear_unhandled_error", {
+      durationMs: Date.now() - startedAt,
+      error,
+    });
+    return NextResponse.json(
+      { error: "Unexpected error while clearing the home geography" },
       { status: 500 }
     );
   }

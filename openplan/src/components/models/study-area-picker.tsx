@@ -30,15 +30,23 @@ type PickerMode = "search" | "draw";
  * e.g. Safety derives a state-specific county code from the GEOID. It fires only
  * for a searched place, never for a hand-drawn area, because a drawn polygon has
  * no place identity.
+ *
+ * `showRunEngineHint` exists because not every caller is choosing an area to RUN
+ * a model over. Workspace configuration picks a place of record — no run follows
+ * it — so telling that caller which engine a large area routes to would be
+ * advice about something that is not going to happen. Defaults to true so every
+ * modeling caller keeps the warning it has today.
  */
 export function StudyAreaPicker({
   corridorText,
   onCorridorChange,
   onPlaceResolved,
+  showRunEngineHint = true,
 }: {
   corridorText: string;
   onCorridorChange: (text: string) => void;
   onPlaceResolved?: (place: PlaceBoundaryResponse | null) => void;
+  showRunEngineHint?: boolean;
 }) {
   const [mode, setMode] = useState<PickerMode>("search");
   const [query, setQuery] = useState("");
@@ -237,7 +245,7 @@ export function StudyAreaPicker({
             </button>
           </div>
 
-          {summary.areaKm2 !== null && summary.areaKm2 > LARGE_AREA_KM2 ? (
+          {showRunEngineHint && summary.areaKm2 !== null && summary.areaKm2 > LARGE_AREA_KM2 ? (
             <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
               Large study area — best run on the <strong>AequilibraE (Fast Screening)</strong> engine. A metro-scale

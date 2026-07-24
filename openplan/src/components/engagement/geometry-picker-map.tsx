@@ -4,13 +4,17 @@ import { useEffect, useId, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { cn } from "@/lib/utils";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import {
   ENGAGEMENT_GEOMETRY_MAX_VERTICES,
   type EngagementGeometry,
 } from "@/lib/engagement/geometry";
 
-const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
 
 export type EngagementDrawMode = "point" | "line" | "area";
 

@@ -3,9 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+// Both accepted env names, resolved through the shared helper — see the note in
+// safety-crash-map.tsx. Reading one name while the rest of the app reads either
+// makes token configuration silently partial.
+const MAPBOX_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
 
 // The assignment network is fetched asynchronously, so the map has to exist
 // before its extent is known. It opens on the shared neutral view and then

@@ -5,9 +5,12 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { HotspotFeatureCollection } from "@/lib/engagement/hotspots";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 
-const MAPBOX_ACCESS_TOKEN =
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
 
 // First-paint zoom before the load handler fits to the full extent.
 const SEEDED_ZOOM = 10.5;

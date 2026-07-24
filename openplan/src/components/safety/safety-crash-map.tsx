@@ -4,9 +4,17 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import type { SafetyCrashCollection } from "@/lib/safety/client-types";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "";
+// Both accepted env names, resolved through the shared helper so this map has
+// the same token story as every other one. Reading only the newer name meant an
+// operator who had set the legacy `NEXT_PUBLIC_MAPBOX_TOKEN` got a working shell
+// map and a blank crash map, with nothing saying why.
+const MAPBOX_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
 
 // Crashes are only queried once a study area exists, so the constructed view
 // is strictly the "no study area chosen yet" state — the bbox effect below

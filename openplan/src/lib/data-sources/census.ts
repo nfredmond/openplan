@@ -23,6 +23,7 @@
  *   - B17001_002E  Below poverty level
  */
 
+import { withCensusApiKey } from "./census-api-key";
 import { fetchJsonWithRetry } from "./http";
 import { pointInPolygon } from "@/lib/engagement/representativeness";
 
@@ -75,7 +76,8 @@ interface BBox {
 const CENSUS_BASE = "https://api.census.gov/data";
 const ACS_YEAR = "2023"; // latest 5-year ACS
 const ACS_DATASET = "acs/acs5";
-const CENSUS_API_KEY = process.env.CENSUS_API_KEY;
+// The key itself is attached by `withCensusApiKey` — the single place that
+// knows how, so a new call site cannot omit it (see census-api-key.ts).
 
 // TIGERweb tract/block-group layer used to corridor-clip the tract set. Layer 8
 // returns 12-digit block-group-like GEOIDs + centroids; truncating to 11 digits
@@ -202,10 +204,10 @@ export async function fetchAcsForCounties(
 ): Promise<CensusTractData[]> {
   const countyResults = await Promise.all(
     counties.map(async ({ state, county }) => {
-      const url =
+      const url = withCensusApiKey(
         `${CENSUS_BASE}/${ACS_YEAR}/${ACS_DATASET}?get=NAME,${VARIABLES}` +
-        `&for=tract:*&in=state:${state}%20county:${county}` +
-        (CENSUS_API_KEY ? `&key=${encodeURIComponent(CENSUS_API_KEY)}` : "");
+          `&for=tract:*&in=state:${state}%20county:${county}`
+      );
 
       const rows = await fetchJsonWithRetry<string[][]>(url, undefined, {
         timeoutMs: 14000,

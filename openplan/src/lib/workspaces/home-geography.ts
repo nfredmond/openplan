@@ -55,10 +55,17 @@ export type WorkspaceHomeGeography = {
 };
 
 /**
- * Select list for the home-geography columns, so consumers do not each retype
- * the column names and drift when one is added.
+ * The home-geography column names — the single source of truth for "which
+ * columns make up a home geography".
+ *
+ * Both the select list and the clear-to-unset row are DERIVED from this array
+ * rather than retyped, because the two must never disagree: a column added to
+ * the select but forgotten by the clear path would leave a half-erased
+ * geography behind, which the migration's coherence CHECK would then reject.
+ * `satisfies` ties the array to the row type, so adding a field to
+ * `WorkspaceHomeGeography` without listing it here is a type error.
  */
-export const HOME_GEOGRAPHY_COLUMNS = [
+export const HOME_GEOGRAPHY_COLUMN_NAMES = [
   "home_geography_source",
   "home_geography_kind",
   "home_geography_ref",
@@ -71,7 +78,29 @@ export const HOME_GEOGRAPHY_COLUMNS = [
   "home_max_lat",
   "home_geometry_geojson",
   "home_geography_set_at",
-].join(", ");
+] as const satisfies ReadonlyArray<keyof WorkspaceHomeGeography>;
+
+/**
+ * Select list for the home-geography columns, so consumers do not each retype
+ * the column names and drift when one is added.
+ */
+export const HOME_GEOGRAPHY_COLUMNS = HOME_GEOGRAPHY_COLUMN_NAMES.join(", ");
+
+/**
+ * The row that returns a workspace to "no stated geography".
+ *
+ * Clearing is a legitimate operation, not a repair: the migration states that
+ * "an entirely unset workspace satisfies all of them", and an agency that
+ * recorded the wrong place must be able to get back to an honest null rather
+ * than being stuck with a plausible-looking wrong one. Every column is nulled —
+ * a partial clear would leave, say, a bbox with no source, which reads as
+ * trustworthy and is not.
+ */
+export function clearedHomeGeographyRow(): WorkspaceHomeGeography {
+  return Object.fromEntries(
+    HOME_GEOGRAPHY_COLUMN_NAMES.map((column) => [column, null])
+  ) as WorkspaceHomeGeography;
+}
 
 export type HomeGeographyBbox = {
   minLon: number;

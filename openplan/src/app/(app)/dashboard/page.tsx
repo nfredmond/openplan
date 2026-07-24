@@ -4,10 +4,12 @@ import { DashboardKpiGrid } from "@/components/dashboard/dashboard-kpi-grid";
 import { DashboardOperatorGuidance } from "@/components/dashboard/dashboard-operator-guidance";
 import { DashboardPilotWorkflowSpine } from "@/components/dashboard/dashboard-pilot-workflow-spine";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
+import { DeploymentHealthPanel } from "@/components/dashboard/deployment-health-panel";
 import { OnboardingGoals } from "@/components/onboarding/onboarding-goals";
 import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-workspace-intro";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
+import { WorkspaceGeographyPanel } from "@/components/workspaces/workspace-geography-panel";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
@@ -17,6 +19,11 @@ import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
+import { evaluateDeploymentHealth } from "@/lib/config/deployment-health";
+import {
+  loadModelingWorkerFacts,
+  readDeploymentEnvFacts,
+} from "@/lib/config/deployment-health-facts";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
@@ -69,6 +76,9 @@ export default async function DashboardPage() {
   const workspaceCreatedAt = workspace?.created_at ?? null;
   const workspaceRole = membership?.role ?? "member";
   const workspaceId = membership?.workspace_id ?? "";
+  // Workspace configuration (geography, team) is owner/admin work; every API it
+  // calls enforces the same rule server-side.
+  const canManageWorkspace = workspaceRole === "owner" || workspaceRole === "admin";
 
   const [runsResult, operationsSummary] = workspaceId
     ? await Promise.all([
@@ -95,6 +105,19 @@ export default async function DashboardPage() {
       ];
 
   const runsData = runsResult.data ?? [];
+
+  // What this deployment cannot currently do, and why. Only owners and admins
+  // see it — it is operator information, and a member cannot act on it. Silent
+  // when everything is configured.
+  const deploymentHealth = canManageWorkspace
+    ? evaluateDeploymentHealth({
+        ...readDeploymentEnvFacts(),
+        modelingWorker: await loadModelingWorkerFacts(
+          supabase as unknown as Parameters<typeof loadModelingWorkerFacts>[0],
+          workspaceId
+        ),
+      })
+    : null;
 
   const kpis = buildWorkspaceKpis({
     workspaceCreatedAt,
@@ -249,10 +272,19 @@ export default async function DashboardPage() {
         </div>
       ) : null}
 
-      <WorkspaceTeamPanel
-        workspaceId={workspaceId}
-        canManage={workspaceRole === "owner" || workspaceRole === "admin"}
-      />
+      {deploymentHealth ? <DeploymentHealthPanel health={deploymentHealth} /> : null}
+
+      {/* Workspace configuration: where this agency works, and who works here.
+          Geography comes first because it is what the rest of the app reads —
+          maps, jurisdiction rules, equity data, and study-area defaults are all
+          downstream of it. The two-column layout only applies to owners and
+          admins: the team panel renders nothing for a member, which would
+          otherwise leave a lone half-width card. */}
+      <div className={canManageWorkspace ? "grid gap-6 xl:grid-cols-2" : undefined}>
+        <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
+
+        <WorkspaceTeamPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
+      </div>
 
       <header className="module-header-grid">
         <DashboardWorkspaceIntro

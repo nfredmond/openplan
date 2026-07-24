@@ -5,8 +5,12 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import type { HomeMapView } from "@/lib/workspaces/home-geography";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 
-const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
 
 // Wide enough that a planner anywhere can see their region and zoom in, rather
 // than opening a thousand miles from the pin they came here to drop.

@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import {
+  clearedHomeGeographyRow,
   deriveHomeMapView,
+  HOME_GEOGRAPHY_COLUMN_NAMES,
+  HOME_GEOGRAPHY_COLUMNS,
   homeGeographyBbox,
   homeGeographyFromPlaceBoundary,
   homeGeographyLabel,
@@ -126,6 +129,27 @@ describe("home geography — jurisdiction", () => {
   });
 });
 
+describe("home geography — column list is one source of truth", () => {
+  it("derives the select list from the column names", () => {
+    // The select list and the clear-to-unset row must never disagree: a column
+    // in one but not the other leaves a half-erased geography that the
+    // migration's coherence CHECK would reject.
+    expect(HOME_GEOGRAPHY_COLUMNS).toBe(HOME_GEOGRAPHY_COLUMN_NAMES.join(", "));
+  });
+
+  it("clears to an all-null row covering every column", () => {
+    const cleared = clearedHomeGeographyRow();
+    expect(Object.keys(cleared).sort()).toEqual([...HOME_GEOGRAPHY_COLUMN_NAMES].sort());
+    expect(Object.values(cleared).every((value) => value === null)).toBe(true);
+    // An all-null row is a legitimate unset workspace, and every accessor must
+    // read it as "no geography" rather than as a broken one.
+    expect(parseWorkspaceHomeGeography(cleared)).toBeNull();
+    expect(deriveHomeMapView(cleared)).toBeNull();
+    expect(resolveJurisdiction(cleared)).toBeNull();
+    expect(homeGeographyLabel(cleared)).toBeNull();
+  });
+});
+
 describe("home geography — row parsing", () => {
   it("treats a row without a source as unset", () => {
     expect(parseWorkspaceHomeGeography(null)).toBeNull();
@@ -198,6 +222,7 @@ const membershipMaybeSingleMock = vi.fn();
 const workspaceSelectMaybeSingleMock = vi.fn();
 const serviceUpdateMock = vi.fn();
 const serviceUpdateMaybeSingleMock = vi.fn();
+const serviceUpdateEqMock = vi.fn(() => ({ error: null }) as { error: { message: string } | null });
 const resolvePlaceBoundaryMock = vi.fn();
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -223,7 +248,16 @@ vi.mock("@/lib/supabase/server", () => ({
       update: (row: unknown) => {
         serviceUpdateMock(row);
         return {
-          eq: () => ({ select: () => ({ maybeSingle: serviceUpdateMaybeSingleMock }) }),
+          // PATCH chains `.select().maybeSingle()` to read the row back; DELETE
+          // awaits the update directly because it has nothing to read back. One
+          // mock serves both: a promise that also carries the select chain.
+          eq: () => {
+            const chain = Promise.resolve(serviceUpdateEqMock()) as Promise<unknown> & {
+              select: () => { maybeSingle: typeof serviceUpdateMaybeSingleMock };
+            };
+            chain.select = () => ({ maybeSingle: serviceUpdateMaybeSingleMock });
+            return chain;
+          },
         };
       },
     }),
@@ -252,13 +286,21 @@ vi.mock("next/server", async (importActual) => {
   return { ...actual, after: (cb: () => unknown) => cb() };
 });
 
-const { GET, PATCH } = await import("@/app/api/workspaces/home-geography/route");
+const { DELETE, GET, PATCH } = await import("@/app/api/workspaces/home-geography/route");
 
 const WORKSPACE_ID = "550e8400-e29b-41d4-a716-446655440000";
 
 function patchRequest(body: unknown) {
   return new NextRequest("http://localhost/api/workspaces/home-geography", {
     method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: typeof body === "string" ? body : JSON.stringify(body),
+  });
+}
+
+function deleteRequest(body: unknown) {
+  return new NextRequest("http://localhost/api/workspaces/home-geography", {
+    method: "DELETE",
     headers: { "content-type": "application/json" },
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
@@ -271,6 +313,9 @@ describe("/api/workspaces/home-geography", () => {
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
     workspaceSelectMaybeSingleMock.mockResolvedValue({ data: geography(), error: null });
     serviceUpdateMaybeSingleMock.mockResolvedValue({ data: geography(), error: null });
+    // clearAllMocks() resets calls but keeps implementations, so a test that
+    // stubs an error must not leak it into the next one.
+    serviceUpdateEqMock.mockReturnValue({ error: null });
     resolvePlaceBoundaryMock.mockResolvedValue({
       kind: "county",
       geoid: "39049",
@@ -390,5 +435,69 @@ describe("/api/workspaces/home-geography", () => {
   it("400s a read without a valid workspaceId", async () => {
     const res = await GET(new NextRequest("http://localhost/api/workspaces/home-geography?workspaceId=nope"));
     expect(res.status).toBe(400);
+  });
+
+  // -------------------------------------------------------------------------
+  // Clearing. The counterpart PATCH needs to be honest: without it a workspace
+  // that recorded the wrong place could only overwrite it with another place,
+  // never return to the null that this subsystem treats as always truthful.
+  // -------------------------------------------------------------------------
+
+  it("clears every home-geography column, leaving no half-erased geography", async () => {
+    const res = await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }));
+
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ workspaceId: WORKSPACE_ID, homeGeography: null });
+
+    const written = serviceUpdateMock.mock.calls[0][0] as Record<string, unknown>;
+    // A partial clear would leave, say, a bbox with no source — which reads as
+    // trustworthy and is not. Every column must be nulled.
+    expect(Object.keys(written).sort()).toEqual([...HOME_GEOGRAPHY_COLUMN_NAMES].sort());
+    expect(Object.values(written).every((value) => value === null)).toBe(true);
+  });
+
+  it("does not delete already-ingested census tracts when a geography is cleared", async () => {
+    // Tracts are public reference data keyed by county and useful to every
+    // workspace; dropping them because one workspace changed its mind would be
+    // destructive far outside this request's scope.
+    await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }));
+    expect(tractIngestMock).not.toHaveBeenCalled();
+  });
+
+  it("403s a plain member clearing — clearing is the same configuration action as setting", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
+    const res = await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }));
+    expect(res.status).toBe(403);
+    expect(serviceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("allows an admin to clear", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "admin" }, error: null });
+    expect((await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }))).status).toBe(200);
+  });
+
+  it("401s an unauthenticated clear and 404s a non-member", async () => {
+    getUserMock.mockResolvedValue({ data: { user: null } });
+    expect((await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }))).status).toBe(401);
+
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    expect((await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }))).status).toBe(404);
+    expect(serviceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("400s a malformed clear and 503s before the migration is applied", async () => {
+    expect((await DELETE(deleteRequest("{not json"))).status).toBe(400);
+    expect((await DELETE(deleteRequest({}))).status).toBe(400);
+
+    // The message PostgREST actually returns when the migration has not been
+    // applied — `looksLikePendingSchema` recognizes it by "schema cache".
+    serviceUpdateEqMock.mockReturnValue({
+      error: {
+        message:
+          "Could not find the 'home_geography_source' column of 'workspaces' in the schema cache",
+      },
+    });
+    expect((await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }))).status).toBe(503);
   });
 });

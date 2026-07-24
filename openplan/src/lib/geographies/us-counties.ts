@@ -1,3 +1,4 @@
+import { withCensusApiKey } from "@/lib/data-sources/census-api-key";
 import { fetchJsonWithRetry } from "@/lib/data-sources/http";
 import {
   abbreviateCountyLabel,
@@ -7,7 +8,21 @@ import {
   normalizeCountySearchText,
 } from "@/lib/geographies/county-utils";
 
-const CENSUS_COUNTIES_URL = "https://api.census.gov/data/2023/acs/acs5?get=NAME&for=county:*";
+const CENSUS_COUNTIES_ENDPOINT = "https://api.census.gov/data/2023/acs/acs5?get=NAME&for=county:*";
+
+/**
+ * The catalog URL, built at call time so the key is read from the environment
+ * rather than frozen at import.
+ *
+ * It MUST carry the API key. Without one the Census API answers 302 -> an HTML
+ * "missing key" page; the JSON parse then fails, the catalog resolves empty,
+ * and county search returns nothing — which is what happened on every
+ * deployment, including ones that had a key configured, because this URL was
+ * hand-built without it.
+ */
+function censusCountiesUrl(): string {
+  return withCensusApiKey(CENSUS_COUNTIES_ENDPOINT);
+}
 
 export interface CountySearchItem {
   geographyId: string;
@@ -59,7 +74,7 @@ function parseCountyCatalog(rows: string[][] | null): CountyCatalogRow[] {
 
 async function getCountyCatalog(): Promise<CountyCatalogRow[]> {
   if (!countyCatalogPromise) {
-    countyCatalogPromise = fetchJsonWithRetry<string[][]>(CENSUS_COUNTIES_URL, undefined, {
+    countyCatalogPromise = fetchJsonWithRetry<string[][]>(censusCountiesUrl(), undefined, {
       timeoutMs: 15000,
       retries: 1,
       cacheTtlMs: 24 * 60 * 60 * 1000,

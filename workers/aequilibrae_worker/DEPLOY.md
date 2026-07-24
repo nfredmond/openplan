@@ -4,10 +4,23 @@
 This is a background Python worker that continuously polls Supabase for queued model runs, executes AequilibraE traffic assignment (downloading OSM road networks, running BFW equilibrium assignment), and uploads the results (GeoJSON volumes, evidence packets, KPIs) back to Supabase.
 
 ## Required Environment Variables
+
+Both values come from **your own** Supabase project — the same one the OpenPlan app points at.
+Find them in the Supabase dashboard under *Project Settings → API*.
+
 ```
-SUPABASE_URL=https://aggphdqkanxsfzzoxlbk.supabase.co
+SUPABASE_URL=https://<your-project-ref>.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
 ```
+
+> **Substitute your own project ref before running anything below.** `<your-project-ref>` is the
+> subdomain of your Supabase project URL (it also appears as the `NEXT_PUBLIC_SUPABASE_URL` in your
+> app's environment). A worker pointed at someone else's project will authenticate against their
+> database, not yours.
+>
+> The service-role key bypasses Row Level Security by design — the worker needs it to write results
+> on behalf of every workspace. Treat it as a secret: set it through your host's secret store (as
+> the commands below do), never commit it, and never expose it to a browser.
 
 ## Option A: Fly.io (Recommended — $3-5/month)
 
@@ -23,7 +36,7 @@ cd workers/aequilibrae_worker
 fly launch --copy-config --yes
 
 # 4. Set secrets
-fly secrets set SUPABASE_URL="https://aggphdqkanxsfzzoxlbk.supabase.co"
+fly secrets set SUPABASE_URL="https://<your-project-ref>.supabase.co"
 fly secrets set SUPABASE_SERVICE_ROLE_KEY="<your-key-from-.env.local>"
 
 # 5. Verify
@@ -45,7 +58,7 @@ railway init
 railway up
 
 # 4. Set env vars in Railway dashboard or CLI
-railway variables set SUPABASE_URL="https://aggphdqkanxsfzzoxlbk.supabase.co"
+railway variables set SUPABASE_URL="https://<your-project-ref>.supabase.co"
 railway variables set SUPABASE_SERVICE_ROLE_KEY="<your-key>"
 ```
 
@@ -57,7 +70,7 @@ docker build -t openplan-aeq-worker .
 
 # Run
 docker run -d --restart=always \
-  -e SUPABASE_URL="https://aggphdqkanxsfzzoxlbk.supabase.co" \
+  -e SUPABASE_URL="https://<your-project-ref>.supabase.co" \
   -e SUPABASE_SERVICE_ROLE_KEY="<your-key>" \
   openplan-aeq-worker
 ```

@@ -15,9 +15,19 @@ const runsOrderMock = vi.fn(() => ({ limit: runsLimitMock }));
 const runsEqMock = vi.fn(() => ({ order: runsOrderMock }));
 const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 
+const modelRunsRowsMock = vi.fn(() => ({ data: [] as unknown[], error: null }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return { select: runsSelectMock };
+  }
+
+  // Deployment health observes this workspace's in-flight model runs to say
+  // whether the modeling worker is picking work up.
+  if (table === "model_runs") {
+    return {
+      select: () => ({ eq: () => ({ in: async () => modelRunsRowsMock() }) }),
+    };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -70,6 +80,30 @@ vi.mock("@/components/runs/RunHistory", () => ({
 
 vi.mock("@/components/workspaces/workspace-membership-required", () => ({
   WorkspaceMembershipRequired: () => <div data-testid="workspace-membership-required" />,
+}));
+
+// Reachability guard. The workspace home geography had a schema, an API, and
+// four readers before it had any way to be SET — see
+// src/test/workspace-geography-panel.test.tsx. Recording the props here means a
+// future refactor cannot quietly unmount the setter and re-dark that spine.
+vi.mock("@/components/workspaces/workspace-geography-panel", () => ({
+  WorkspaceGeographyPanel: ({ workspaceId, canManage }: { workspaceId: string; canManage: boolean }) => (
+    <div
+      data-testid="workspace-geography-panel"
+      data-workspace-id={workspaceId}
+      data-can-manage={String(canManage)}
+    />
+  ),
+}));
+
+vi.mock("@/components/workspaces/workspace-team-panel", () => ({
+  WorkspaceTeamPanel: ({ workspaceId, canManage }: { workspaceId: string; canManage: boolean }) => (
+    <div
+      data-testid="workspace-team-panel"
+      data-workspace-id={workspaceId}
+      data-can-manage={String(canManage)}
+    />
+  ),
 }));
 
 import DashboardPage from "@/app/(app)/dashboard/page";
@@ -409,5 +443,46 @@ describe("DashboardPage", () => {
       "href",
       "/grants?focusOpportunityId=opp-1#funding-opportunity-opp-1"
     );
+  });
+
+  it("mounts a home-geography setter so the geography spine is reachable", async () => {
+    await renderPage();
+
+    const panel = screen.getByTestId("workspace-geography-panel");
+    expect(panel).toHaveAttribute("data-workspace-id", "workspace-1");
+    expect(panel).toHaveAttribute("data-can-manage", "true");
+  });
+
+  it("tells an owner which capabilities configuration has switched off", async () => {
+    // The test environment sets no Mapbox token, so maps are unavailable — the
+    // panel must say so rather than leaving blank maps unexplained.
+    await renderPage();
+
+    expect(screen.getByLabelText(/deployment configuration/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/settings of this OpenPlan deployment, not limits of your data or your area/i)
+    ).toBeInTheDocument();
+  });
+
+  it("does not offer geography or team management to a plain member", async () => {
+    loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
+      membership: { workspace_id: "workspace-1", role: "member" },
+      workspace: {
+        id: "workspace-1",
+        name: "OpenPlan QA",
+        plan: "pilot",
+        created_at: "2026-04-01T18:00:00.000Z",
+      },
+    });
+
+    await renderPage();
+
+    // The panel is still rendered — a member must be able to SEE the workspace's
+    // geography, because an unset one changes every map they look at — but the
+    // write affordance is withheld here and refused by the API.
+    expect(screen.getByTestId("workspace-geography-panel")).toHaveAttribute("data-can-manage", "false");
+    expect(screen.getByTestId("workspace-team-panel")).toHaveAttribute("data-can-manage", "false");
+    // Deployment configuration is operator information a member cannot act on.
+    expect(screen.queryByLabelText(/deployment configuration/i)).not.toBeInTheDocument();
   });
 });

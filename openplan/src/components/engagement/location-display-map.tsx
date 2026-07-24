@@ -5,8 +5,12 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 
-const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
+  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
+);
 
 // Zoom for the first paint before the load handler fits to the full extent.
 const SEEDED_ZOOM = 11;
