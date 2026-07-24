@@ -197,11 +197,11 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
                       Request source and intent proof
                     </p>
                     <p className="mt-1 text-sm text-foreground">
-                      Confirm this public intake context before triage or any manual invite. This panel is read-only and does not create billing, email, workspace, or deployment side effects.
+                      Confirm the source of this message before replying. This panel is read-only and creates no email, workspace, or deployment side effects.
                     </p>
                   </div>
-                  <StatusBadge tone={sourceProof.sourcePath === "/request-access" ? "success" : "warning"}>
-                    {sourceProof.sourcePath === "/request-access" ? "Public intake" : "Source check"}
+                  <StatusBadge tone={sourceProof.sourcePath === "/contact" ? "success" : "warning"}>
+                    {sourceProof.sourcePath === "/contact" ? "Contact form" : "Source check"}
                   </StatusBadge>
                 </div>
                 <dl className="mt-3 grid gap-2 text-sm md:grid-cols-2 xl:grid-cols-4">
@@ -254,7 +254,7 @@ export function RecentAccessRequests({ enabled, requests, error }: RecentAccessR
         </div>
       ) : (
         <div className="module-note mt-4 text-sm leading-relaxed text-muted-foreground">
-          No access requests have been stored yet. The first request submitted through /request-access will appear here for
+          No messages have been stored yet. The first message submitted through the /contact form will appear here for
           allowlisted operators.
         </div>
       )}

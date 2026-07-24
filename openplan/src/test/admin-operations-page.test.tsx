@@ -274,7 +274,7 @@ describe("AdminOperationsPage", () => {
           use_case: "Screen rural transit corridors for a managed-hosting workflow.",
           expected_workspace_name: "NCTC Pilot",
           status: "new",
-          source_path: "/request-access",
+          source_path: "/contact",
           metadata_json: {
             submitted_via: "request_access_form",
             source_fingerprint: "abcdef1234567890abcdef12",
@@ -322,8 +322,8 @@ describe("AdminOperationsPage", () => {
     expect(screen.getAllByText(/Hosted for us/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Internal planning data/i)).toBeInTheDocument();
     expect(screen.getByLabelText("Request source and intent proof")).toBeInTheDocument();
-    expect(screen.getByText(/Confirm this public intake context before triage or any manual invite/i)).toBeInTheDocument();
-    expect(screen.getByText("Public intake")).toBeInTheDocument();
+    expect(screen.getByText(/Confirm the source of this message before replying/i)).toBeInTheDocument();
+    expect(screen.getByText("Contact form")).toBeInTheDocument();
     expect(screen.getByText("request_access_form")).toBeInTheDocument();
     expect(screen.getByText("pilot evaluation")).toBeInTheDocument();
     expect(screen.getByText("public landing")).toBeInTheDocument();
@@ -369,7 +369,7 @@ describe("AdminOperationsPage", () => {
           use_case: "Screen rural transit corridors for a managed-hosting workflow.",
           expected_workspace_name: "NCTC Pilot",
           status: "provisioned",
-          source_path: "/request-access",
+          source_path: "/contact",
           metadata_json: {
             submitted_via: "request_access_form",
             source_context: {

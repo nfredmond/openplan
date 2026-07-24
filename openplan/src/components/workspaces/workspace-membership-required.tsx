@@ -5,10 +5,10 @@ export function WorkspaceMembershipRequired({
   moduleLabel,
   title,
   description,
-  primaryHref = "/request-access",
-  primaryLabel = "Request workspace access",
-  secondaryHref = "/dashboard",
-  secondaryLabel = "Back to overview",
+  primaryHref = "/dashboard",
+  primaryLabel = "Go to your workspace",
+  secondaryHref = "/contact",
+  secondaryLabel = "Get help",
 }: {
   moduleLabel: string;
   title?: string;
@@ -29,7 +29,7 @@ export function WorkspaceMembershipRequired({
           <h1 className="module-intro-title">{title ?? `${moduleLabel} needs a provisioned workspace`}</h1>
           <p className="module-intro-description">
             {description ??
-              `${moduleLabel} records are workspace-scoped. You are signed in, but this account is not attached to a workspace yet. Request access or ask an owner/admin to add you to the correct workspace.`}
+              `${moduleLabel} records are workspace-scoped. You are signed in, but this account is not attached to a workspace yet — sign-up normally provisions one automatically. Reload your workspace, or ask an owner/admin to add you to the correct one.`}
           </p>
         </div>
         <div className="mt-5 flex flex-wrap gap-5 border-t border-white/10 pt-4 text-sm">

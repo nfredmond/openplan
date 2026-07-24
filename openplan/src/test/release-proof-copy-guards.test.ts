@@ -51,7 +51,7 @@ const handoffNoWriteFragments = [
   "self-serve activation",
 ] as const;
 
-const handoffStepHrefs = ["/admin/pilot-readiness", "/request-access", "/examples"] as const;
+const handoffStepHrefs = ["/admin/pilot-readiness", "/examples"] as const;
 
 const caveatContextPattern = /\b(no|not|never|without|avoid|unsupported|boundary|caveat|waiver|supervised|stop-list|behind explicit proof gates|not sold as|not broad|not instant|no validated|no .* claim|do not|before external use|current proof boundary|historical|non-money-moving)\b/i;
 
@@ -211,8 +211,7 @@ describe("release proof copy guards", () => {
 
     expect(buyerDemoCommandCenterHandoff.steps.map((step) => step.href)).toEqual(handoffStepHrefs);
     expect(buyerDemoCommandCenterHandoff.steps[0]?.detail).toContain("caveat sheet before demo language");
-    expect(buyerDemoCommandCenterHandoff.steps[1]?.detail).toContain("triaged/supervised");
-    expect(buyerDemoCommandCenterHandoff.steps[2]?.detail).toContain("Use examples only after the proof boundary is clean");
+    expect(buyerDemoCommandCenterHandoff.steps[1]?.detail).toContain("Use examples only after the proof boundary is clean");
     expect(buyerDemoCommandCenterHandoff.preflightCommand).toBe("npm run ops:check-buyer-demo-preflight -- --live-reads");
     expect(buyerDemoCommandCenterHandoff.currentProofPacket).toBe(CURRENT_BUYER_DEMO_PROOF_PACKET_ARTIFACT);
     expect(buyerDemoCommandCenterHandoff.operatorStopRule).toContain("Stop the demo");

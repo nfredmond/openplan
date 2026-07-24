@@ -10,7 +10,6 @@ import {
   PlaneTakeoff,
   Radar,
   ShieldCheck,
-  UserRoundPlus,
 } from "lucide-react";
 
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
@@ -134,13 +133,6 @@ export default async function CommandCenterPage() {
   ];
 
   const buyerDemoLinks = [
-    {
-      href: "/request-access",
-      title: "Open the buyer intake",
-      description: "Use the public request-access flow when a county, RTPA, or consultant asks for a supervised pilot.",
-      meta: "Public handoff",
-      icon: UserRoundPlus,
-    },
     {
       href: "/admin/operations",
       title: "Review access queue",

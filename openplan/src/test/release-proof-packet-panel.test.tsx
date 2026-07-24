@@ -40,7 +40,6 @@ describe("ReleaseProofPacketPanel", () => {
       "href",
       "/admin/pilot-readiness"
     );
-    expect(screen.getByRole("link", { name: /Review request access/i })).toHaveAttribute("href", "/request-access");
     expect(screen.getByRole("link", { name: /Review examples/i })).toHaveAttribute("href", "/examples");
   });
 

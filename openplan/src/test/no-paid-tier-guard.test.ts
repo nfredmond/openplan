@@ -79,17 +79,23 @@ describe("the paid-tier subsystem stays deleted", () => {
     expect(offenders.map((f) => path.relative(process.cwd(), f))).toEqual([]);
   });
 
-  it("has no pricing route, request-access funnel, or link to either", () => {
+  it("has no link to the deleted /pricing or /request-access page routes", () => {
     // The whole commercial funnel was deleted: /pricing, /request-access, and
     // /contact/openplan-fit. /contact survives as a plain, non-commercial page.
+    //
+    // Match the ROUTE AS A QUOTED STRING — `"/request-access"`, `'/pricing'` —
+    // regardless of which attribute or key precedes it. The earlier version keyed
+    // on a literal `href="` and so sailed past `primaryHref="…"` (capital H),
+    // `primaryHref = "…"` (spaces), and `href: "…"` (object form) — which is
+    // exactly how ~17 dead links shipped green. A quote immediately before the
+    // path also spares the STILL-LIVE `/api/request-access` endpoint (there the
+    // char before `/request-access` is `i`, not a quote) and any prose mention.
     const offenders: string[] = [];
     for (const file of sourceFiles()) {
       const source = readFileSync(file, "utf8");
-      // Quoted/imported references only — a prose comment explaining why the
-      // route was removed is not a reinstatement of it.
       for (const pattern of [
-        /href="\/pricing/,
-        /href="\/request-access/,
+        /["'`]\/pricing(?:[/?#"'`]|$)/m,
+        /["'`]\/request-access(?:[/?#"'`]|$)/m,
         /["'`]\/contact\/openplan-fit/,
         /from "[^"]*openplan-fit/,
       ]) {
@@ -99,6 +105,18 @@ describe("the paid-tier subsystem stays deleted", () => {
       }
     }
     expect(offenders).toEqual([]);
+  });
+
+  it("guards the link guard — it would catch a primaryHref-style dead link", () => {
+    // The regression that motivated the fix above used `primaryHref="…"`, not
+    // `href="…"`. Prove the pattern now catches every attribute/key shape while
+    // still sparing the live /api/request-access endpoint.
+    const pat = /["'`]\/request-access(?:[/?#"'`]|$)/m;
+    expect(pat.test('primaryHref="/request-access"')).toBe(true);
+    expect(pat.test('primaryHref = "/request-access"')).toBe(true);
+    expect(pat.test('href: "/request-access"')).toBe(true);
+    expect(pat.test('fetch("/api/request-access")')).toBe(false);
+    expect(pat.test("// the request-access flow was removed")).toBe(false);
   });
 
   it("sells nothing on any public page", () => {

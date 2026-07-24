@@ -18,9 +18,11 @@ describe("WorkspaceMembershipRequired", () => {
 
     expect(screen.getByText("Workspace membership required")).toBeInTheDocument();
     expect(screen.getByText(/records are workspace-scoped/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /request workspace access/i })).toHaveAttribute(
+    // The default must not point at the deleted /request-access route (a 404).
+    expect(screen.getByRole("link", { name: /go to your workspace/i })).toHaveAttribute(
       "href",
-      "/request-access"
+      "/dashboard"
     );
+    expect(screen.queryByRole("link", { name: /request/i })).not.toBeInTheDocument();
   });
 });

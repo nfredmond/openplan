@@ -140,8 +140,7 @@ describe("WorkspaceCommandBoard", () => {
       "href",
       "/admin/pilot-readiness"
     );
-    expect(screen.getByRole("link", { name: /2\. Request access/i })).toHaveAttribute("href", "/request-access");
-    expect(screen.getByRole("link", { name: /3\. Examples/i })).toHaveAttribute("href", "/examples");
+    expect(screen.getByRole("link", { name: /2\. Examples/i })).toHaveAttribute("href", "/examples");
     expect(screen.getByText("Release proof drilldown")).toBeInTheDocument();
     expect(screen.getByText("Release proof drilldown").closest("section")?.className).toContain("lg:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1fr)]");
     expect(screen.getByRole("navigation", { name: /Release proof drilldown actions/i })).toBeInTheDocument();
@@ -152,7 +151,6 @@ describe("WorkspaceCommandBoard", () => {
       "href",
       "/admin/pilot-readiness"
     );
-    expect(screen.getByRole("link", { name: /Review request access/i })).toHaveAttribute("href", "/request-access");
     expect(screen.getByRole("link", { name: /Review examples/i })).toHaveAttribute("href", "/examples");
     expect(screen.getByText(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT)).toBeInTheDocument();
     expect(screen.getByText(WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT)).toBeInTheDocument();

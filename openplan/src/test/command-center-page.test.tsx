@@ -296,7 +296,6 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText(/instant activation, checkout, provisioning, or current runtime proof/i)).toBeInTheDocument();
     expect(screen.getByText("Buyer demo handoff")).toBeInTheDocument();
     expect(screen.getByText(/verify the proof packet first, then review supervised intake and examples before presenting/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open the buyer intake/i })).toHaveAttribute("href", "/request-access");
     expect(screen.getByRole("link", { name: /Review access queue/i })).toHaveAttribute("href", "/admin/operations");
     expect(screen.getByRole("link", { name: /Confirm pilot readiness/i })).toHaveAttribute(
       "href",
@@ -314,8 +313,7 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText("docs/sales/2026-05-17-openplan-90-second-buyer-demo-talk-track.md")).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: /Buyer demo proof sequence/i })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /1\. Readiness packet/i })).toHaveAttribute("href", "/admin/pilot-readiness");
-    expect(screen.getByRole("link", { name: /2\. Request access/i })).toHaveAttribute("href", "/request-access");
-    expect(screen.getByRole("link", { name: /3\. Examples/i })).toHaveAttribute("href", "/examples");
+    expect(screen.getByRole("link", { name: /2\. Examples/i })).toHaveAttribute("href", "/examples");
     expect(screen.getByText("Handoff boundary:")).toBeInTheDocument();
     expect(screen.getByText(/No production writes, provisioning, outbound email, checkout, or self-serve activation/i)).toBeInTheDocument();
     expect(screen.getByText("Stop rule:")).toBeInTheDocument();

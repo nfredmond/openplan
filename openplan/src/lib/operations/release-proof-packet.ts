@@ -406,12 +406,7 @@ export const buyerDemoCommandCenterHandoff = {
       detail: "Confirm final checklist, latest preflight proof, and caveat sheet before demo language leaves the room.",
     },
     {
-      label: "2. Request access",
-      href: "/request-access",
-      detail: "Verify intake copy still says triaged/supervised and does not promise automatic access, billing, or support.",
-    },
-    {
-      label: "3. Examples",
+      label: "2. Examples",
       href: "/examples",
       detail: "Use examples only after the proof boundary is clean; keep claims scoped to the current rural planning workbench wedge.",
     },
@@ -492,11 +487,6 @@ export const releaseProofPosture = {
       label: "Open readiness packet",
       href: ADMIN_PILOT_READINESS_ROUTE,
       detail: "Check smoke evidence and missing proof rows before external use.",
-    },
-    {
-      label: "Review request access",
-      href: "/request-access",
-      detail: "Confirm service-intake language still matches supervised onboarding.",
     },
     {
       label: "Review examples",

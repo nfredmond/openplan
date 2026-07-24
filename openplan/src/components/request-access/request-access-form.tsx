@@ -88,7 +88,7 @@ function buildInitialState(initialValues: RequestAccessFormProps["initialValues"
 
 export function RequestAccessForm({
   initialValues,
-  sourcePath = "/request-access",
+  sourcePath = "/contact",
   sourceContext,
 }: RequestAccessFormProps = {}) {
   const [form, setForm] = useState<RequestAccessFormState>(() => buildInitialState(initialValues));
@@ -419,7 +419,7 @@ export function RequestAccessForm({
               </p>
               <Button type="submit" disabled={isSubmitting} className="min-w-[13rem] justify-center">
                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                Request access
+                Send message
               </Button>
             </div>
           </div>

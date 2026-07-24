@@ -178,10 +178,8 @@ export default async function ProjectsPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Projects"
-        title="Projects need a provisioned pilot workspace"
-        description="The project workbench is available after an operator attaches this account to a supervised pilot workspace. This screen does not create autonomous workspaces or bypass intake review."
-        primaryHref="/request-access"
-        primaryLabel="Request workspace access"
+        title="Projects need a workspace"
+        description="The project workbench is workspace-scoped. You are signed in, but this account is not attached to a workspace yet — sign-up normally provisions one automatically. Reload your workspace, or ask an owner/admin to add you to the correct one."
       />
     );
   }
