@@ -1,12 +1,44 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const readActiveWorkspaceIdMock = vi.fn(async (): Promise<string | null> => null);
+vi.mock("@/lib/workspaces/active-workspace", () => ({
+  readActiveWorkspaceId: () => readActiveWorkspaceIdMock(),
+  writeActiveWorkspaceId: vi.fn(),
+  ACTIVE_WORKSPACE_COOKIE: "openplan_active_workspace",
+}));
 
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
   loadCurrentWorkspaceMembership,
+  loadWorkspaceContext,
   resolveWorkspaceMembershipSelection,
   resolveWorkspaceShellState,
   unwrapWorkspaceRecord,
 } from "@/lib/workspaces/current";
+
+beforeEach(() => {
+  readActiveWorkspaceIdMock.mockResolvedValue(null);
+});
+
+const TWO_MEMBERSHIPS = [
+  {
+    workspace_id: "workspace-older",
+    role: "admin",
+    workspaces: [{ name: "Foothills MPO", plan: "starter", created_at: "2026-03-01T12:00:00.000Z" }],
+  },
+  {
+    workspace_id: "workspace-1",
+    role: "owner",
+    workspaces: [{ name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" }],
+  },
+];
+
+function membershipClient(rows: unknown[]) {
+  const eqMock = vi.fn().mockResolvedValue({ data: rows, error: null });
+  const selectMock = vi.fn(() => ({ eq: eqMock }));
+  const fromMock = vi.fn(() => ({ select: selectMock }));
+  return { from: fromMock } as unknown as Parameters<typeof loadWorkspaceContext>[0];
+}
 
 describe("workspace membership helpers", () => {
   it("unwraps joined workspace rows consistently", () => {
@@ -150,5 +182,30 @@ describe("workspace membership helpers", () => {
       },
       workspace: { name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" },
     });
+  });
+
+  it("honors the persisted active-workspace selection over newest-first", async () => {
+    // The cookie names the OLDER workspace; without honoring it, newest-first
+    // would pick workspace-1.
+    readActiveWorkspaceIdMock.mockResolvedValue("workspace-older");
+
+    const ctx = await loadWorkspaceContext(membershipClient(TWO_MEMBERSHIPS), "user-1");
+
+    expect(ctx.membership?.workspace_id).toBe("workspace-older");
+    expect(ctx.workspace).toMatchObject({ name: "Foothills MPO" });
+    // The switcher list carries every membership, sorted.
+    expect(ctx.options).toEqual([
+      { id: "workspace-1", name: "Nevada County" },
+      { id: "workspace-older", name: "Foothills MPO" },
+    ]);
+  });
+
+  it("falls back to newest-first when the selection cookie is stale", async () => {
+    // The cookie points at a workspace the user no longer belongs to.
+    readActiveWorkspaceIdMock.mockResolvedValue("workspace-deleted");
+
+    const ctx = await loadWorkspaceContext(membershipClient(TWO_MEMBERSHIPS), "user-1");
+
+    expect(ctx.membership?.workspace_id).toBe("workspace-1");
   });
 });

@@ -6,7 +6,7 @@ import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { canReviewAccessRequests } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/server";
 import {
-  loadCurrentWorkspaceMembership,
+  loadWorkspaceContext,
   resolveWorkspaceShellState,
 } from "@/lib/workspaces/current";
 import {
@@ -90,9 +90,9 @@ export async function CartographicShell({ children }: { children: React.ReactNod
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { membership, workspace } = user
-    ? await loadCurrentWorkspaceMembership(supabase, user.id)
-    : { membership: undefined, workspace: null };
+  const { membership, workspace, options: workspaceOptions } = user
+    ? await loadWorkspaceContext(supabase, user.id)
+    : { membership: undefined, workspace: null, options: [] };
 
   const shellState = resolveWorkspaceShellState({
     membership,
@@ -150,6 +150,8 @@ export async function CartographicShell({ children }: { children: React.ReactNod
         <CartographicHeader
           workspaceName={shellState.workspaceName}
           workspaceUpdatedLabel={workspaceUpdatedLabel}
+          workspaces={workspaceOptions}
+          currentWorkspaceId={membership?.workspace_id ?? null}
         />
 
         <CartographicOverviewSurface>

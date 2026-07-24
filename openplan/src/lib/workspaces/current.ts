@@ -1,4 +1,5 @@
 import { type SupabaseClient } from "@supabase/supabase-js";
+import { readActiveWorkspaceId } from "./active-workspace";
 
 export type WorkspaceRecord = {
   name?: string | null;
@@ -129,10 +130,36 @@ export function resolveWorkspaceMembershipSelection(
   };
 }
 
-export async function loadCurrentWorkspaceMembership(
+/** A workspace a user can switch into: id + display name, sorted for the picker. */
+export type WorkspaceOption = { id: string; name: string };
+
+export function workspaceOptionsFromMemberships(
+  memberships: WorkspaceMembershipRow[] | null | undefined
+): WorkspaceOption[] {
+  return [...(memberships ?? [])].sort(compareWorkspaceMemberships).map((membership) => ({
+    id: membership.workspace_id,
+    name: unwrapWorkspaceRecord(membership.workspaces)?.name ?? "Workspace",
+  }));
+}
+
+/**
+ * The full active-workspace context for a user: the resolved current
+ * membership/workspace AND the list of workspaces they can switch to.
+ *
+ * The current workspace honors the persisted selection cookie
+ * (active-workspace.ts) when it still names a workspace the user belongs to;
+ * otherwise it falls back to the newest-first default, so a stale cookie never
+ * strands the user. This is the one place that reads the selection, so every
+ * caller of loadCurrentWorkspaceMembership inherits it for free.
+ */
+export async function loadWorkspaceContext(
   supabase: WorkspaceMembershipClient,
   userId: string
-): Promise<{ membership: WorkspaceMembershipRow | undefined; workspace: WorkspaceRecord | null }> {
+): Promise<{
+  membership: WorkspaceMembershipRow | undefined;
+  workspace: WorkspaceRecord | null;
+  options: WorkspaceOption[];
+}> {
   const { data, error } = await supabase
     .from("workspace_members")
     .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
@@ -142,14 +169,30 @@ export async function loadCurrentWorkspaceMembership(
     throw new Error(error.message ?? "Failed to load workspace membership");
   }
 
-  const selection = resolveWorkspaceMembershipSelection(data as WorkspaceMembershipRow[] | null | undefined);
-  const membership = selection.membership;
-  const workspace = selection.workspace;
+  const memberships = (data as WorkspaceMembershipRow[] | null | undefined) ?? [];
+  const activeWorkspaceId = await readActiveWorkspaceId();
+  // Only honor the cookie when it is still a real membership; a deleted or
+  // revoked workspace resolves to the default rather than to nothing.
+  const requestedWorkspaceId =
+    activeWorkspaceId && memberships.some((membership) => membership.workspace_id === activeWorkspaceId)
+      ? activeWorkspaceId
+      : null;
+
+  const selection = resolveWorkspaceMembershipSelection(memberships, { requestedWorkspaceId });
 
   return {
-    membership,
-    workspace,
+    membership: selection.membership,
+    workspace: selection.workspace,
+    options: workspaceOptionsFromMemberships(memberships),
   };
+}
+
+export async function loadCurrentWorkspaceMembership(
+  supabase: WorkspaceMembershipClient,
+  userId: string
+): Promise<{ membership: WorkspaceMembershipRow | undefined; workspace: WorkspaceRecord | null }> {
+  const { membership, workspace } = await loadWorkspaceContext(supabase, userId);
+  return { membership, workspace };
 }
 
 export function resolveWorkspaceShellState({

@@ -3,17 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search } from "lucide-react";
+import type { WorkspaceOption } from "@/lib/workspaces/current";
+import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
 import { CommandPalette } from "./command-palette";
 
 type CartographicHeaderProps = {
   workspaceName: string;
   workspaceUpdatedLabel?: string | null;
+  workspaces?: WorkspaceOption[];
+  currentWorkspaceId?: string | null;
   onNewRun?: () => void;
 };
 
 export function CartographicHeader({
   workspaceName,
   workspaceUpdatedLabel,
+  workspaces = [],
+  currentWorkspaceId = null,
   onNewRun,
 }: CartographicHeaderProps) {
   const router = useRouter();
@@ -37,7 +43,13 @@ export function CartographicHeader({
         <div className="op-cart-pill">
           <div className="op-cart-ws-mark" aria-hidden />
           <div className="op-cart-ws-body">
-            <div className="op-cart-ws-name">{workspaceName}</div>
+            <div className="op-cart-ws-name">
+              <WorkspaceSwitcher
+                workspaces={workspaces}
+                currentWorkspaceId={currentWorkspaceId}
+                currentWorkspaceName={workspaceName}
+              />
+            </div>
             <div className="op-cart-ws-meta">{meta}</div>
           </div>
         </div>

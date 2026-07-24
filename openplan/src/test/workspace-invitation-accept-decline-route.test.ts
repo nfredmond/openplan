@@ -39,6 +39,11 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
+const writeActiveWorkspaceIdMock = vi.fn(async () => {});
+vi.mock("@/lib/workspaces/active-workspace", () => ({
+  writeActiveWorkspaceId: (...args: unknown[]) => writeActiveWorkspaceIdMock(...args),
+}));
+
 vi.mock("@/lib/workspaces/invitations", async () => {
   const actual = await vi.importActual<typeof import("@/lib/workspaces/invitations")>(
     "@/lib/workspaces/invitations"
@@ -118,6 +123,9 @@ describe("workspace invitation accept/decline routes", () => {
       p_role: "member",
     });
     expect(invitationUpdateMock).not.toHaveBeenCalled();
+    // 1b: the teammate is landed IN the workspace they accepted, not their own
+    // newest-first personal one.
+    expect(writeActiveWorkspaceIdMock).toHaveBeenCalledWith("11111111-1111-4111-8111-111111111111");
   });
 
   it("upgrades an existing lower-role membership when accepting a higher invitation", async () => {

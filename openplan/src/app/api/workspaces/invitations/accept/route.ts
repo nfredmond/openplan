@@ -9,6 +9,7 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { type WorkspaceRole } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { writeActiveWorkspaceId } from "@/lib/workspaces/active-workspace";
 
 export const runtime = "nodejs";
 
@@ -116,6 +117,18 @@ export async function POST(request: NextRequest) {
     const acceptanceResult = Array.isArray(data) ? data[0] : data;
     const finalRole = (acceptanceResult?.final_role as WorkspaceRole | undefined) ?? invitedRole;
     const membershipChanged = Boolean(acceptanceResult?.membership_changed);
+
+    // Land the teammate IN the workspace they were invited to. Without this the
+    // newest-first default selects their own auto-provisioned workspace (created
+    // at sign-up, so always newest), and the invited workspace stays out of
+    // reach until they find the switcher.
+    await writeActiveWorkspaceId(invitation.workspace_id).catch((error) => {
+      audit.warn("workspace_invitation_active_set_failed", {
+        invitationId: invitation.id,
+        workspaceId: invitation.workspace_id,
+        message: error instanceof Error ? error.message : "unknown",
+      });
+    });
 
     audit.info("workspace_invitation_accepted", {
       invitationId: invitation.id,
