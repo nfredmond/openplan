@@ -92,6 +92,19 @@ function generateSummary(
     `**Corridor Analysis Summary** (${census.tracts.length} census tracts, ` +
       `population: ${census.totalPopulation.toLocaleString()})`
   );
+  // The corridor centroid-clip can be unavailable (a TIGERweb hiccup) or match no
+  // tract (a corridor smaller than any tract centroid). When it does, the figures
+  // below cover the whole overlapping county set — never let that read as
+  // study-area scale.
+  if (census.clip.status === "unclipped_county_fallback") {
+    const countyWord = census.clip.counties === 1 ? "county" : "counties";
+    lines.push(
+      `> ⚠️ **County-scale demographics, not corridor-scale.** The corridor clip was ` +
+        `unavailable, so population, income, commute, and equity figures below cover the ` +
+        `whole of the ${census.clip.counties} overlapping ${countyWord} ` +
+        `(${census.clip.countyTracts} tracts). Do not read them as study-area totals.`
+    );
+  }
   lines.push("");
 
   // Demographics
@@ -448,6 +461,19 @@ export async function POST(request: NextRequest) {
           vintage: "2023",
           geography: "tract",
           tractCount: census.tracts.length,
+          // Corridor vs whole-county provenance travels with the snapshot so a
+          // report can never present county-scale demographics as study-area scale.
+          clipStatus: census.clip.status,
+          clipScale: census.clip.status === "clipped" ? "corridor" : "county",
+          corridorTracts: census.clip.corridorTracts,
+          countyTracts: census.clip.countyTracts,
+          overlappingCounties: census.clip.counties,
+          note:
+            census.clip.status === "unclipped_county_fallback"
+              ? `Corridor centroid-clip unavailable; figures cover the whole overlapping county set (${census.clip.countyTracts} tracts across ${census.clip.counties} ${census.clip.counties === 1 ? "county" : "counties"}), not just the drawn corridor.`
+              : census.clip.status === "empty"
+                ? "No resolvable study-area geography or ACS data; demographic figures are empty."
+                : "Figures are clipped to tracts whose centroid falls inside the drawn corridor.",
           retrievalUrl: "https://api.census.gov/data/2023/acs/acs5",
           fetchedAt: analysisGeneratedAt,
         },

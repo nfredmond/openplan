@@ -37,6 +37,7 @@ const CENSUS_FIXTURE = {
   pctBike: 1.1,
   pctWfh: 8.6,
   pctZeroVehicle: 6.2,
+  clip: { status: "clipped" as const, corridorTracts: 3, countyTracts: 12, counties: 1 },
 };
 
 const LODES_FIXTURE = {

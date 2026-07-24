@@ -52,6 +52,32 @@ export interface CensusTractData {
   popBelowPoverty: number;
 }
 
+/**
+ * Whether the returned demographics actually describe the drawn corridor or fell
+ * back to the whole overlapping county set. This provenance MUST travel with the
+ * numbers: a whole-county denominator read as if it were corridor-clipped is the
+ * exact "confidently wrong" failure — the population/equity figures would be for
+ * an area orders of magnitude larger than the study area, with nothing downstream
+ * able to tell the difference.
+ *
+ * - `clipped`               — TIGER centroid clip succeeded; figures are corridor-scale.
+ * - `unclipped_county_fallback` — clip was unavailable (TIGERweb hiccup) or matched
+ *                             no tract (a corridor smaller than any tract centroid),
+ *                             so figures cover the WHOLE overlapping county set.
+ * - `empty`                 — no resolvable geography or no ACS data; figures are zero.
+ */
+export type CensusClipStatus = "clipped" | "unclipped_county_fallback" | "empty";
+
+export interface CensusClipProvenance {
+  status: CensusClipStatus;
+  /** Tracts whose TIGER centroid falls inside the corridor (0 unless clipped). */
+  corridorTracts: number;
+  /** Tracts in the overlapping counties — the size of the fallback set. */
+  countyTracts: number;
+  /** Number of counties the corridor bbox overlaps. */
+  counties: number;
+}
+
 export interface CensusSummary {
   tracts: CensusTractData[];
   totalPopulation: number;
@@ -64,7 +90,16 @@ export interface CensusSummary {
   pctZeroVehicle: number;
   pctMinority: number;
   pctBelowPoverty: number;
+  /** How faithfully these figures describe the drawn corridor — see the type doc. */
+  clip: CensusClipProvenance;
 }
+
+const EMPTY_CLIP: CensusClipProvenance = {
+  status: "empty",
+  corridorTracts: 0,
+  countyTracts: 0,
+  counties: 0,
+};
 
 interface BBox {
   minLon: number;
@@ -275,7 +310,10 @@ export async function fetchAcsForCounties(
 /**
  * Summarize tract-level data into corridor-level statistics.
  */
-function summarizeTracts(tracts: CensusTractData[]): CensusSummary {
+function summarizeTracts(
+  tracts: CensusTractData[],
+  clip: CensusClipProvenance = EMPTY_CLIP
+): CensusSummary {
   if (tracts.length === 0) {
     return {
       tracts: [],
@@ -289,6 +327,7 @@ function summarizeTracts(tracts: CensusTractData[]): CensusSummary {
       pctZeroVehicle: 0,
       pctMinority: 0,
       pctBelowPoverty: 0,
+      clip,
     };
   }
 
@@ -346,6 +385,7 @@ function summarizeTracts(tracts: CensusTractData[]): CensusSummary {
     pctZeroVehicle: pct(totalZeroVeh, totalHH),
     pctMinority: weightedMinority,
     pctBelowPoverty: weightedPoverty,
+    clip,
   };
 }
 
@@ -433,12 +473,30 @@ export async function fetchCensusForCorridor(
     new Map(tracts.map((tract) => [tract.geoid, tract])).values()
   );
 
-  const clipped =
+  // Tracts whose TIGER centroid falls inside the drawn corridor. Empty when the
+  // clip was unavailable (TIGERweb hiccup → clipGeoids null) OR matched nothing
+  // (a corridor smaller than any tract centroid, or a GEOID mismatch).
+  const corridorTracts =
     clipGeoids && clipGeoids.size > 0
       ? dedupedTracts.filter((tract) => clipGeoids.has(tract.geoid))
-      : dedupedTracts;
+      : [];
 
-  // If the clip matched nothing (id mismatch or a sub-tract corridor), keep the
-  // county set so the run still executes.
-  return summarizeTracts(clipped.length > 0 ? clipped : dedupedTracts);
+  // Keep the county set when the clip yields nothing so a run never errors — but
+  // record that fallback honestly so downstream disclosure can say the figures
+  // cover the whole county, not the corridor. Never present a fallback as a clip.
+  const isClipped = corridorTracts.length > 0;
+  const resultTracts = isClipped ? corridorTracts : dedupedTracts;
+  const clip: CensusClipProvenance = {
+    status:
+      dedupedTracts.length === 0
+        ? "empty"
+        : isClipped
+          ? "clipped"
+          : "unclipped_county_fallback",
+    corridorTracts: corridorTracts.length,
+    countyTracts: dedupedTracts.length,
+    counties: counties.length,
+  };
+
+  return summarizeTracts(resultTracts, clip);
 }

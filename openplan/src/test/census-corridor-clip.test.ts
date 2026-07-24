@@ -64,6 +64,13 @@ describe("fetchCensusForCorridor — corridor clip", () => {
     expect(geoids).toEqual(["06113000100", "06113000200"]);
     // Population denominator is corridor-scale (1000 + 2000), not county-scale (6000).
     expect(summary.totalPopulation).toBe(3000);
+    // Provenance says the figures are corridor-clipped — the honest happy path.
+    expect(summary.clip).toEqual({
+      status: "clipped",
+      corridorTracts: 2,
+      countyTracts: 3,
+      counties: 1,
+    });
   });
 
   it("falls back to the unclipped county set when TIGERweb fails (never errors a run)", async () => {
@@ -72,6 +79,10 @@ describe("fetchCensusForCorridor — corridor clip", () => {
 
     expect(summary.tracts).toHaveLength(3);
     expect(summary.totalPopulation).toBe(6000);
+    // Critical: the county-scale fallback is labeled as such, never as a clip.
+    expect(summary.clip.status).toBe("unclipped_county_fallback");
+    expect(summary.clip.corridorTracts).toBe(0);
+    expect(summary.clip.countyTracts).toBe(3);
   });
 
   it("falls back to the unclipped set when the clip matches no tract (sub-tract corridor)", async () => {
@@ -86,5 +97,7 @@ describe("fetchCensusForCorridor — corridor clip", () => {
 
     expect(summary.tracts).toHaveLength(3);
     expect(summary.totalPopulation).toBe(6000);
+    expect(summary.clip.status).toBe("unclipped_county_fallback");
+    expect(summary.clip.corridorTracts).toBe(0);
   });
 });
