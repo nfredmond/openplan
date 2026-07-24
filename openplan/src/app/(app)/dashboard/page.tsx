@@ -9,6 +9,7 @@ import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-worksp
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import {
@@ -247,6 +248,11 @@ export default async function DashboardPage() {
           </div>
         </div>
       ) : null}
+
+      <WorkspaceTeamPanel
+        workspaceId={workspaceId}
+        canManage={workspaceRole === "owner" || workspaceRole === "admin"}
+      />
 
       <header className="module-header-grid">
         <DashboardWorkspaceIntro
