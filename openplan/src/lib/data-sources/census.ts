@@ -42,6 +42,13 @@ export interface CensusTractData {
   totalHouseholds: number;
   pctMinority: number;
   pctBelowPoverty: number;
+  // Raw counts retained alongside the derived percentages, because the
+  // census_tracts table stores counts and its computed view derives the
+  // percentages itself. Tract ingestion needs the counts; the corridor
+  // scorecard uses the percentages. Keeping both means one ACS fetch serves
+  // both rather than two parallel readers of the same endpoint.
+  popWhiteNonHispanic: number;
+  popBelowPoverty: number;
 }
 
 export interface CensusSummary {
@@ -186,8 +193,11 @@ async function resolveCountiesFromBbox(bbox: BBox): Promise<Array<{ state: strin
 
 /**
  * Fetch ACS data for all tracts in the given counties.
+ *
+ * Exported so census-tract ingestion reuses the exact same national ACS query
+ * (any US county, keyless-optional) rather than standing up a parallel fetcher.
  */
-async function fetchAcsForCounties(
+export async function fetchAcsForCounties(
   counties: Array<{ state: string; county: string }>
 ): Promise<CensusTractData[]> {
   const countyResults = await Promise.all(
@@ -250,6 +260,8 @@ async function fetchAcsForCounties(
           totalHouseholds: totalHH,
           pctMinority: totalPopRace > 0 ? Math.round(((totalPopRace - whiteNonHisp) / totalPopRace) * 1000) / 10 : 0,
           pctBelowPoverty: povertyTotal > 0 ? Math.round((belowPoverty / povertyTotal) * 1000) / 10 : 0,
+          popWhiteNonHispanic: whiteNonHisp,
+          popBelowPoverty: belowPoverty,
         } satisfies CensusTractData;
       });
     })

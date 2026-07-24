@@ -29,6 +29,8 @@ function tract(geoid: string, overrides: Partial<CensusTractData>): CensusTractD
     totalHouseholds: 400,
     pctMinority: 0,
     pctBelowPoverty: 0,
+    popWhiteNonHispanic: 1000,
+    popBelowPoverty: 0,
     ...overrides,
   };
 }

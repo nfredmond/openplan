@@ -10,11 +10,12 @@
  * provenance — the failure this codebase refuses.
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { z } from "zod";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { ingestCensusTractsForCounty } from "@/lib/data-sources/census-tract-ingest";
 import { normalizeWorkspaceRole } from "@/lib/auth/role-matrix";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
@@ -221,6 +222,34 @@ export async function PATCH(request: NextRequest) {
         error,
       });
       return NextResponse.json({ error: "Failed to set the home geography" }, { status: 500 });
+    }
+
+    // When the workspace's home geography is a US county, load that county's
+    // census tracts so the equity choropleth is populated for it — the table is
+    // otherwise empty for every non-seeded county. `after()` runs this AFTER the
+    // response so setting geography stays fast; it is best-effort and public
+    // data (any workspace's county benefits every viewer), so a failure only
+    // means the layer stays empty until something loads it, never a wrong write.
+    // A GEOID for a US TIGERweb county is 5 digits: 2-digit state + 3-digit county.
+    const countyGeoid = row.home_geography_kind === "county" ? (row.home_geography_ref ?? "") : "";
+    if (row.home_country_code === "US" && /^\d{5}$/.test(countyGeoid)) {
+      // Registering the task is itself wrapped: `after()` throws when called
+      // outside a request scope (e.g. a unit test), and a best-effort tract load
+      // must never turn a successful geography write into a 500.
+      try {
+        after(async () => {
+          try {
+            await ingestCensusTractsForCounty(createServiceRoleClient(), {
+              stateFips: countyGeoid.slice(0, 2),
+              countyFips: countyGeoid.slice(2, 5),
+            });
+          } catch {
+            // Best-effort: the equity layer simply stays empty until re-triggered.
+          }
+        });
+      } catch {
+        // No request scope available; skip the background load.
+      }
     }
 
     audit.info("home_geography_set", {

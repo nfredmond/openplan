@@ -234,6 +234,18 @@ vi.mock("@/lib/geographies/place-resolver", () => ({
   resolvePlaceBoundary: (...args: unknown[]) => resolvePlaceBoundaryMock(...args),
 }));
 
+const tractIngestMock = vi.fn(async () => ({ status: "ingested", tractsUpserted: 328 }));
+vi.mock("@/lib/data-sources/census-tract-ingest", () => ({
+  ingestCensusTractsForCounty: (...args: unknown[]) => tractIngestMock(...args),
+}));
+
+// Run the after() callback synchronously so the background tract load is
+// observable in a unit test (real Next runs it post-response).
+vi.mock("next/server", async (importActual) => {
+  const actual = await importActual<typeof import("next/server")>();
+  return { ...actual, after: (cb: () => unknown) => cb() };
+});
+
 const { GET, PATCH } = await import("@/app/api/workspaces/home-geography/route");
 
 const WORKSPACE_ID = "550e8400-e29b-41d4-a716-446655440000";
@@ -284,6 +296,32 @@ describe("/api/workspaces/home-geography", () => {
     const res = await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "39049" }));
     expect(res.status).toBe(403);
     expect(serviceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("loads the county's census tracts after a US county geography is set", async () => {
+    // Setting a county populates its equity choropleth — the table is otherwise
+    // empty for every non-seeded county. GEOID 39049 -> state 39, county 049.
+    const res = await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "39049" }));
+    expect(res.status).toBe(200);
+    expect(tractIngestMock).toHaveBeenCalledTimes(1);
+    expect(tractIngestMock.mock.calls[0]![1]).toEqual({ stateFips: "39", countyFips: "049" });
+  });
+
+  it("does not load tracts for a non-county geography (a city has no single county)", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValue({
+      kind: "city",
+      geoid: "3918000",
+      label: "Columbus, OH",
+      geojson: { type: "Polygon", coordinates: [[[-83.1, 39.9], [-82.9, 39.9], [-82.9, 40.1], [-83.1, 39.9]]] },
+      bbox: { minLon: -83.1, minLat: 39.9, maxLon: -82.9, maxLat: 40.1 },
+    });
+    serviceUpdateMaybeSingleMock.mockResolvedValue({
+      data: geography({ home_geography_kind: "city", home_geography_ref: "3918000" }),
+      error: null,
+    });
+    const res = await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "city", geoid: "3918000" }));
+    expect(res.status).toBe(200);
+    expect(tractIngestMock).not.toHaveBeenCalled();
   });
 
   it("503s when the migration has not been applied", async () => {
