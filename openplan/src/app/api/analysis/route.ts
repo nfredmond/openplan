@@ -6,7 +6,12 @@ import {
   isRunCapLookupError,
 } from "@/lib/config/run-cap";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { fetchCensusForCorridor, bboxFromGeojson } from "@/lib/data-sources/census";
+import {
+  fetchCensusForCorridor,
+  bboxFromGeojson,
+  ACS_YEAR,
+  ACS_RETRIEVAL_URL,
+} from "@/lib/data-sources/census";
 import { fetchTractOverlayFeatures } from "@/lib/data-sources/census-geometry";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
 import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
@@ -456,9 +461,9 @@ export async function POST(request: NextRequest) {
       decisionUseStatus: "concept-level",
       sourceSnapshots: {
         census: {
-          source: "census-acs5-2023",
+          source: `census-acs5-${ACS_YEAR}`,
           dataset: "ACS 5-Year",
-          vintage: "2023",
+          vintage: ACS_YEAR,
           geography: "tract",
           tractCount: census.tracts.length,
           // Corridor vs whole-county provenance travels with the snapshot so a
@@ -474,7 +479,7 @@ export async function POST(request: NextRequest) {
               : census.clip.status === "empty"
                 ? "No resolvable study-area geography or ACS data; demographic figures are empty."
                 : "Figures are clipped to tracts whose centroid falls inside the drawn corridor.",
-          retrievalUrl: "https://api.census.gov/data/2023/acs/acs5",
+          retrievalUrl: ACS_RETRIEVAL_URL,
           fetchedAt: analysisGeneratedAt,
         },
         lodes: {

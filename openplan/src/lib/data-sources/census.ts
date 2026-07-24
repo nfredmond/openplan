@@ -109,8 +109,18 @@ interface BBox {
 }
 
 const CENSUS_BASE = "https://api.census.gov/data";
-const ACS_YEAR = "2023"; // latest 5-year ACS
+/**
+ * The ACS 5-year vintage this module actually queries. Exported as the single
+ * source of truth so provenance a consumer stamps on results (source id,
+ * vintage, retrieval URL) is DERIVED from the year we fetched — never a separate
+ * literal that can silently drift and claim the wrong vintage. Bump this one
+ * place when a newer 5-year release lands.
+ */
+export const ACS_YEAR = "2023";
 const ACS_DATASET = "acs/acs5";
+
+/** Canonical ACS retrieval URL base for the vintage above (no key, no query). */
+export const ACS_RETRIEVAL_URL = `${CENSUS_BASE}/${ACS_YEAR}/${ACS_DATASET}`;
 // The key itself is attached by `withCensusApiKey` — the single place that
 // knows how, so a new call site cannot omit it (see census-api-key.ts).
 

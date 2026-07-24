@@ -161,6 +161,8 @@ vi.mock("@/lib/ai/interpret", () => ({
 vi.mock("@/lib/data-sources/census", () => ({
   fetchCensusForCorridor: (...args: unknown[]) => fetchCensusForCorridorMock(...args),
   bboxFromGeojson: (...args: unknown[]) => bboxFromGeojsonMock(...args),
+  ACS_YEAR: "2023",
+  ACS_RETRIEVAL_URL: "https://api.census.gov/data/2023/acs/acs5",
 }));
 
 vi.mock("@/lib/data-sources/census-geometry", () => ({
