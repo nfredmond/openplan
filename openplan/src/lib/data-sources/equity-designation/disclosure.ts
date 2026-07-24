@@ -14,9 +14,14 @@ import type { Justice40Determination } from "./types";
 export const PROGRAM_DISCONTINUED_CAVEAT =
   "The federal Justice40 Initiative and CEJST were rescinded (Executive Order 14008 revoked 2025-01-20; the tool was taken offline ~2025-01-22) — this is a frozen historical snapshot, NOT a current federal eligibility or funding determination.";
 
-/** Why some tracts have no record: CEJST keys on 2010 tracts; the app uses 2020 tracts. */
+/**
+ * Why a residual set of tracts still has no record: CEJST keys on 2010 tracts and
+ * the app uses 2020 tracts. Renumbered tracts are resolved through a 2020→2010
+ * crosswalk, so this now affects only the few tracts with no 2010 equivalent
+ * (e.g. new 2020 tracts).
+ */
 const VINTAGE_NOTE =
-  "CEJST keys on 2010-vintage census tracts while this analysis uses 2020-vintage tracts, so a renumbered tract has no CEJST record.";
+  "CEJST keys on 2010-vintage census tracts; renumbered tracts are matched via a 2020→2010 crosswalk, so this affects only tracts with no 2010 equivalent (e.g. new 2020 tracts).";
 
 function label(det: Justice40Determination): string {
   return det.datasetLabel ?? `CEJST v${det.version ?? "1.0"}`;

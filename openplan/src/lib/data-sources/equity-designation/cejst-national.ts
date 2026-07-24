@@ -26,6 +26,7 @@
 
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 import cejstV1 from "./data/cejst-v1.0-communities.json";
+import tractCrosswalk from "./data/tract-2020-to-2010-crosswalk.json";
 import {
   DesignationSourceUnavailableError,
   type EquityDesignationAdapter,
@@ -52,6 +53,17 @@ interface CejstAsset {
 
 const asset = cejstV1 as unknown as CejstAsset;
 
+interface CrosswalkAsset {
+  crosswalk: Record<string, string[]>;
+}
+
+// Maps a 2020-vintage tract GEOID to the 2010-vintage GEOID(s) it overlaps.
+// CEJST v1.0 keys on 2010 tracts; OpenPlan's ACS uses 2020 tracts. Without this,
+// a tract renumbered in the 2020 redistricting had no CEJST record and returned
+// not_determined. Only non-identity (changed) 2020 tracts appear here — an
+// unchanged tract keeps its GEOID and is found by direct membership below.
+const crosswalkAsset = tractCrosswalk as unknown as CrosswalkAsset;
+
 /**
  * Coarse US envelopes — the same geography FARS uses (CONUS, Alaska incl. the
  * Aleutian antimeridian tail, Hawaii, Puerto Rico). This is only a pre-filter to
@@ -76,12 +88,17 @@ export function coversCejstGeography(bbox: StudyAreaBbox): boolean {
 }
 
 // Lazily materialize the lookup sets so importing this module (e.g. for the
-// descriptor) never pays to build two 30–74k-entry Sets until a lookup runs.
+// descriptor) never pays to build the Sets/Map until a lookup runs.
 let coveredSet: Set<string> | null = null;
 let disadvantagedSet: Set<string> | null = null;
+let crosswalkMap: Map<string, string[]> | null = null;
 
-function ensureSets(): { covered: Set<string>; disadvantaged: Set<string> } {
-  if (!coveredSet || !disadvantagedSet) {
+function ensureSets(): {
+  covered: Set<string>;
+  disadvantaged: Set<string>;
+  crosswalk: Map<string, string[]>;
+} {
+  if (!coveredSet || !disadvantagedSet || !crosswalkMap) {
     if (!Array.isArray(asset?.coveredGeoids) || !Array.isArray(asset?.disadvantagedGeoids)) {
       throw new DesignationSourceUnavailableError(
         CEJST_NATIONAL_SOURCE_ID,
@@ -90,21 +107,47 @@ function ensureSets(): { covered: Set<string>; disadvantaged: Set<string> } {
     }
     coveredSet = new Set(asset.coveredGeoids);
     disadvantagedSet = new Set(asset.disadvantagedGeoids);
+    crosswalkMap = new Map(Object.entries(crosswalkAsset?.crosswalk ?? {}));
   }
-  return { covered: coveredSet, disadvantaged: disadvantagedSet };
+  return { covered: coveredSet, disadvantaged: disadvantagedSet, crosswalk: crosswalkMap };
+}
+
+/**
+ * Resolve one (2020-vintage) GEOID to a CEJST determination.
+ * - A CHANGED 2020 tract (in the crosswalk) resolves through its 2010 parent(s):
+ *   determined if any parent is in CEJST; disadvantaged if ANY parent is
+ *   disadvantaged (the conservative, benefit-of-the-doubt rule for a tract that
+ *   straddles a disadvantaged and a non-disadvantaged 2010 tract).
+ * - An UNCHANGED 2020 tract keeps its GEOID and is found by direct membership.
+ * - Anything else has no CEJST record → undetermined (left out of the map).
+ */
+function resolveGeoid(
+  geoid: string,
+  covered: Set<string>,
+  disadvantaged: Set<string>,
+  crosswalk: Map<string, string[]>
+): boolean | undefined {
+  const parents = crosswalk.get(geoid);
+  if (parents) {
+    const matched = parents.filter((parent) => covered.has(parent));
+    if (matched.length === 0) return undefined;
+    return matched.some((parent) => disadvantaged.has(parent));
+  }
+  if (covered.has(geoid)) return disadvantaged.has(geoid);
+  return undefined;
 }
 
 async function lookupCejst(geoids: string[]): Promise<EquityDesignationLookup> {
-  const { covered, disadvantaged } = ensureSets();
+  const { covered, disadvantaged, crosswalk } = ensureSets();
   const byGeoid = new Map<string, boolean>();
 
   for (const raw of geoids) {
     const geoid = String(raw).trim();
-    // Only tracts the snapshot actually holds are "determined". A geoid absent
-    // from the covered set (e.g. a 2020-vintage tract renumbered since 2010) is
+    // A geoid with no CEJST record (directly OR via the 2020→2010 crosswalk) is
     // left out of the map entirely → the caller reports it not_determined.
-    if (!covered.has(geoid)) continue;
-    byGeoid.set(geoid, disadvantaged.has(geoid));
+    const result = resolveGeoid(geoid, covered, disadvantaged, crosswalk);
+    if (result === undefined) continue;
+    byGeoid.set(geoid, result);
   }
 
   // Counts derive from the DEDUPED map, so a duplicate or whitespace-variant

@@ -69,6 +69,24 @@ describe("cejstNationalAdapter.lookup", () => {
     expect(cejstNationalAdapter.covers(OCEAN_BBOX)).toBe(false);
   });
 
+  it("resolves a renumbered 2020 tract through the 2010 crosswalk", async () => {
+    // 01003011503 is a 2020 tract not in the (2010-keyed) CEJST list; it splits
+    // from 2010 tract 01003011502, which IS disadvantaged.
+    const SPLIT_FROM_DISADVANTAGED = "01003011503";
+    // 01001020501 splits from 2010 tract 01001020500, which is NOT disadvantaged.
+    const SPLIT_FROM_NOT_DISADVANTAGED = "01001020501";
+
+    const result = await cejstNationalAdapter.lookup([
+      SPLIT_FROM_DISADVANTAGED,
+      SPLIT_FROM_NOT_DISADVANTAGED,
+    ]);
+    // Both are now DETERMINED (they used to be not_determined vintage gaps).
+    expect(result.determinedTotal).toBe(2);
+    expect(result.byGeoid.get(SPLIT_FROM_DISADVANTAGED)).toBe(true);
+    expect(result.byGeoid.get(SPLIT_FROM_NOT_DISADVANTAGED)).toBe(false);
+    expect(result.disadvantagedTotal).toBe(1);
+  });
+
   it("keeps disadvantaged ≤ determined even with duplicate / whitespace geoids", async () => {
     const result = await cejstNationalAdapter.lookup([
       DISADVANTAGED_GEOID,
