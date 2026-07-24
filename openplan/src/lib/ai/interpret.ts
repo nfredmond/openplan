@@ -80,10 +80,37 @@ function fallback(
  * model uses is traceable; summary sentences become `s_<n>` facts so the model
  * can cite the deterministic interpretation for qualitative statements.
  */
-function buildInterpretationFacts(metrics: Record<string, unknown>, summaryText: string): NarrativeFact[] {
+/**
+ * Equity / Justice40 metric scalars that must NOT become bare `m_<key>` facts.
+ *
+ * The grounding contract enforces citation-presence + numeric faithfulness, not
+ * semantic framing, so a bare fact like `federalJustice40Status: disadvantaged`
+ * or `disadvantagedTracts: 5` lets the model assert CURRENT federal Justice40
+ * eligibility, or present the ACS income PROXY as a federal designation, with a
+ * valid citation and no caveat. The deterministic summary already contains the
+ * caveated proxy line and the discontinued-program federal line as `s_<n>`
+ * sentence facts — so excluding these scalars makes the ONLY citable equity
+ * claims the ones that carry their own caveat. This does not make the narrative
+ * perfectly safe (the model can still paraphrase a sentence fact), but it
+ * removes the caveat-free hooks the model would otherwise cite verbatim.
+ */
+const NON_CITABLE_METRIC_KEYS: ReadonlySet<string> = new Set([
+  "federalJustice40Status",
+  "federalJustice40Source",
+  "federalJustice40DatasetLabel",
+  "federalJustice40DeterminedTracts",
+  "federalJustice40UndeterminedTracts",
+  "federalJustice40DisadvantagedTracts",
+  "proxyDisadvantagedFlag",
+  "disadvantagedTracts",
+  "pctDisadvantaged",
+]);
+
+export function buildInterpretationFacts(metrics: Record<string, unknown>, summaryText: string): NarrativeFact[] {
   const facts: NarrativeFact[] = [];
   for (const [key, value] of Object.entries(metrics)) {
     if (value === null || value === undefined || typeof value === "object") continue;
+    if (NON_CITABLE_METRIC_KEYS.has(key)) continue;
     facts.push({ fact_id: `m_${key}`, claim_text: `${key}: ${String(value)}` });
   }
   splitSentences(summaryText).forEach((sentence, index) => {
@@ -111,7 +138,8 @@ export async function generateGrantInterpretation(
       temperature: 0.2,
       maxOutputTokens: 600,
       system:
-        "You are a transportation planning analyst writing grant-ready corridor narratives for U.S. public funding applications. Every factual sentence you write MUST end with one or more [fact:<id>] citations drawn only from the numbered fact list. Never state a number that does not appear in a fact you cite.",
+        "You are a transportation planning analyst writing grant-ready corridor narratives for U.S. public funding applications. Every factual sentence you write MUST end with one or more [fact:<id>] citations drawn only from the numbered fact list. Never state a number that does not appear in a fact you cite. " +
+        "EQUITY CLAIMS: never assert that a corridor is a currently federally designated Justice40 / disadvantaged community or that a project 'qualifies' for a specific federal program — the federal Justice40 Initiative and CEJST were rescinded in 2025. If a fact reports a CEJST designation, describe it only as a frozen historical CEJST v1.0 (2022) snapshot of a discontinued program, not a current eligibility. Describe any income/burden 'proxy' flag as a screening proxy, never as a federal designation.",
       prompt: [
         "Write 2-3 concise paragraphs interpreting corridor need and opportunity for a grant application.",
         "Every sentence must end with one or more [fact:<id>] citations for the facts it relies on. Cite only ids from the list below.",

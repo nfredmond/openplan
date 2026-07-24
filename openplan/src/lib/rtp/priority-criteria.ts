@@ -69,7 +69,8 @@ export const RTP_PRIORITY_CRITERIA: RtpPriorityCriterion[] = [
   {
     key: "equity",
     label: "Serves disadvantaged communities",
-    description: "Delivers benefits to underserved / disadvantaged communities.",
+    description:
+      "Delivers benefits to underserved / disadvantaged communities. Planner attestation; not a system-verified CEJST/Justice40 or SB 535 designation.",
     level: "federal",
     weight: 2,
     evidence: "equity_overlay",

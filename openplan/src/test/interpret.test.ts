@@ -11,7 +11,33 @@ vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (...args: unknown[]) => anthropicMock(...(args as [string])),
 }));
 
-import { generateGrantInterpretation } from "@/lib/ai/interpret";
+import { generateGrantInterpretation, buildInterpretationFacts } from "@/lib/ai/interpret";
+
+describe("buildInterpretationFacts — equity claim safety", () => {
+  it("excludes federal-Justice40 and proxy scalars from citable facts, keeps normal metrics", () => {
+    const facts = buildInterpretationFacts(
+      {
+        totalPopulation: 5000,
+        federalJustice40Status: "disadvantaged",
+        federalJustice40DisadvantagedTracts: 5,
+        proxyDisadvantagedFlag: true,
+        disadvantagedTracts: 5,
+        pctDisadvantaged: 50,
+      },
+      "**Federal Justice40 / CEJST determination:** frozen historical snapshot, not current."
+    );
+    const ids = facts.map((f) => f.fact_id);
+    // A bare, caveat-free "disadvantaged" fact must NOT be citable.
+    expect(ids).not.toContain("m_federalJustice40Status");
+    expect(ids).not.toContain("m_federalJustice40DisadvantagedTracts");
+    expect(ids).not.toContain("m_proxyDisadvantagedFlag");
+    expect(ids).not.toContain("m_disadvantagedTracts");
+    expect(ids).not.toContain("m_pctDisadvantaged");
+    // Normal metrics stay citable; the caveated summary sentence becomes an s_ fact.
+    expect(ids).toContain("m_totalPopulation");
+    expect(ids.some((id) => id.startsWith("s_"))).toBe(true);
+  });
+});
 
 const SUMMARY = "A corridor with moderate density and limited transit.";
 const METRICS = { jobs: 1000, population: 5000 };

@@ -605,7 +605,7 @@ export function DataHubRecordComposer({
                       <option value="pctMinority">Minority share</option>
                       <option value="pctBelowPoverty">Poverty share</option>
                       <option value="medianIncome">Median income</option>
-                      <option value="isDisadvantaged">Disadvantaged flag</option>
+                      <option value="isDisadvantaged">Proxy disadvantaged flag</option>
                       <option value="zeroVehiclePct">Zero-vehicle households</option>
                       <option value="transitCommutePct">Transit commute share</option>
                     </>

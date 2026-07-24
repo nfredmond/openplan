@@ -12,6 +12,11 @@ import {
   ACS_YEAR,
   ACS_RETRIEVAL_URL,
 } from "@/lib/data-sources/census";
+import { resolveJustice40ForTracts } from "@/lib/data-sources/equity-designation/registry";
+import {
+  federalJustice40NarrativeLine,
+  proxyEquityNarrativeLine,
+} from "@/lib/data-sources/equity-designation/disclosure";
 import { fetchTractOverlayFeatures } from "@/lib/data-sources/census-geometry";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
 import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
@@ -141,12 +146,16 @@ function generateSummary(
   // narrated here as "0 fatal crashes".
   lines.push(crashes.narrativeLine ?? "");
 
-  // Equity
+  // Equity — the ACS income+burden PROXY and the real federal CEJST/Justice40
+  // determination are stated as two separate things. The proxy never wears the
+  // word "Justice40"; the federal line carries the discontinued-program caveat.
   lines.push(
-    `**Equity:** ${equity.disadvantagedTracts} of ${equity.totalTracts} tracts are disadvantaged ` +
-      `(${equity.pctDisadvantaged}%). Justice40 eligible: ${equity.justice40Eligible ? "Yes" : "No"}. ` +
-      `Method: ${equity.source}.`
+    proxyEquityNarrativeLine({
+      disadvantagedTracts: equity.disadvantagedTracts,
+      totalTracts: equity.totalTracts,
+    })
   );
+  lines.push(federalJustice40NarrativeLine(equity.federalJustice40));
   if (equity.title6Flags.length > 0) {
     lines.push(`Title VI considerations: ${equity.title6Flags.join("; ")}.`);
   }
@@ -325,8 +334,16 @@ export async function POST(request: NextRequest) {
       census.totalCommuters
     );
 
-    // Equity screening from census data
-    const equity = screenEquity(census);
+    // Real federal Justice40 / CEJST determination, resolved from the designation
+    // registry against the study-area tract GEOIDs — NEVER synthesized from the
+    // income proxy. Falls to an honest not_determined out of coverage.
+    const federalJustice40 = await resolveJustice40ForTracts(
+      bbox,
+      census.tracts.map((tract) => tract.geoid)
+    );
+
+    // Equity screening from census data (proxy), with the real determination injected.
+    const equity = screenEquity(census, federalJustice40);
 
     // Compute composite scores
     const scores = computeCorridorScores(census, lodes, transit, crashes, equity);
@@ -446,7 +463,19 @@ export async function POST(request: NextRequest) {
       highTransitDependencyTracts: equity.highTransitDependencyTracts,
       burdenedLowIncomeTracts: equity.burdenedLowIncomeTracts,
       equitySource: equity.source,
-      justice40Eligible: equity.justice40Eligible,
+      // Honestly-named proxy signal (was justice40Eligible). These flat scalars
+      // are PERSISTED for the report to reconstruct the determination, but the
+      // equity/Justice40 keys are excluded from the AI's citable fact list
+      // (see NON_CITABLE_METRIC_KEYS in interpret.ts) so the grounded narrative
+      // can't cite a bare "disadvantaged" fact without the caveat; the caveated
+      // summary sentences are the only citable equity claims.
+      proxyDisadvantagedFlag: equity.proxyDisadvantagedFlag,
+      federalJustice40Status: equity.federalJustice40.status,
+      federalJustice40Source: equity.federalJustice40.source,
+      federalJustice40DatasetLabel: equity.federalJustice40.datasetLabel,
+      federalJustice40DeterminedTracts: equity.federalJustice40.coverage.determinedTracts,
+      federalJustice40UndeterminedTracts: equity.federalJustice40.coverage.undeterminedTracts,
+      federalJustice40DisadvantagedTracts: equity.federalJustice40.coverage.disadvantagedTracts,
       title6Flags: equity.title6Flags,
 
       // Data quality
@@ -501,7 +530,22 @@ export async function POST(request: NextRequest) {
         crashes: crashes.sourceSnapshot,
         equity: {
           source: equity.source,
-          note: "Equity screening is computed from census-derived tract indicators and proxy thresholds.",
+          note: "Equity flags are an ACS income + burden proxy (corridor-level tract indicators) — a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.",
+          fetchedAt: analysisGeneratedAt,
+        },
+        equityDesignation: {
+          source: equity.federalJustice40.source,
+          status: equity.federalJustice40.status,
+          datasetLabel: equity.federalJustice40.datasetLabel,
+          version: equity.federalJustice40.version,
+          vintage: equity.federalJustice40.vintage,
+          determinedTracts: equity.federalJustice40.coverage.determinedTracts,
+          undeterminedTracts: equity.federalJustice40.coverage.undeterminedTracts,
+          disadvantagedTracts: equity.federalJustice40.coverage.disadvantagedTracts,
+          note:
+            equity.federalJustice40.source === null
+              ? "No official disadvantaged-community designation source covered this study area; Justice40 status is not determined."
+              : "Federal CEJST/Justice40 is a DISCONTINUED program (rescinded 2025-01-20); this is a frozen historical v1.0 snapshot keyed on 2010 tracts, not a current federal determination.",
           fetchedAt: analysisGeneratedAt,
         },
       },

@@ -7,8 +7,41 @@ import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
+import {
+  federalJustice40ShortStatus,
+  PROGRAM_DISCONTINUED_CAVEAT,
+} from "@/lib/data-sources/equity-designation/disclosure";
+import type { Justice40Determination, Justice40Status } from "@/lib/data-sources/equity-designation/types";
 
 const REPORT_REQUEST_MAX_BODY_BYTES = BODY_LIMITS.documentJson;
+
+/**
+ * Rebuild the federal Justice40 determination from the flat metric scalars an
+ * analysis run persisted. Returns null for LEGACY runs (persisted before this
+ * feature, which only carried a `justice40Eligible` boolean) so the report
+ * renders a proxy-only note rather than resurrecting the old fabricated federal
+ * claim from an income proxy.
+ */
+function reconstructFederalJustice40(m: Record<string, unknown>): Justice40Determination | null {
+  const status = m.federalJustice40Status;
+  if (status !== "disadvantaged" && status !== "not_disadvantaged" && status !== "not_determined") {
+    return null;
+  }
+  const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+  return {
+    status: status as Justice40Status,
+    source: typeof m.federalJustice40Source === "string" ? m.federalJustice40Source : null,
+    datasetLabel: typeof m.federalJustice40DatasetLabel === "string" ? m.federalJustice40DatasetLabel : null,
+    version: null,
+    vintage: null,
+    coverage: {
+      totalTracts: num(m.tractCount),
+      determinedTracts: num(m.federalJustice40DeterminedTracts),
+      undeterminedTracts: num(m.federalJustice40UndeterminedTracts),
+      disadvantagedTracts: num(m.federalJustice40DisadvantagedTracts),
+    },
+  };
+}
 
 const mapViewStateSchema = z.object({
   tractMetric: z.enum(["minority", "poverty", "income", "disadvantaged"]).optional(),
@@ -208,7 +241,7 @@ function buildMapViewSummary(
   const rows = [
     `Tract theme: ${titleize(typeof mapViewState.tractMetric === "string" ? mapViewState.tractMetric : "unknown")}`,
     `Census tracts: ${mapViewState.showTracts === false ? "Hidden" : "Visible"}`,
-    `SWITRS lane: ${mapViewState.showCrashes === false ? "Hidden" : "Visible when available"}`,
+    `Crash layer: ${mapViewState.showCrashes === false ? "Hidden" : "Visible when available"}`,
     `Crash severity filter: ${titleize(typeof mapViewState.crashSeverityFilter === "string" ? mapViewState.crashSeverityFilter : "all")}`,
     `Crash user filter: ${formatCrashUserFilterLabel(typeof mapViewState.crashUserFilter === "string" ? mapViewState.crashUserFilter : "all")}`,
     `Project overlay: ${overlayValue}`,
@@ -253,7 +286,13 @@ function buildPdf(
     ["Total Population", metrics.totalPopulation],
     ["Transit Stops", metrics.totalTransitStops],
     ["Fatal Crashes", metrics.totalFatalCrashes],
-    ["Justice40 Eligible", metrics.justice40Eligible],
+    [
+      "Federal Justice40 / CEJST",
+      (() => {
+        const det = reconstructFederalJustice40(metrics);
+        return det ? federalJustice40ShortStatus(det) : "Not recorded (legacy run — ACS proxy only)";
+      })(),
+    ],
     ["AI Interpretation Source", metrics.aiInterpretationSource ?? (metrics.dataQuality as { aiInterpretationSource?: string } | undefined)?.aiInterpretationSource ?? "unknown"],
   ];
 
@@ -349,6 +388,8 @@ function buildHtml(
 
   const confidence = (m.confidence as string) ?? "unknown";
   const title6Flags = (m.title6Flags ?? []) as string[];
+  // Real federal Justice40 determination for this run, or null for a legacy run.
+  const federalJ40 = reconstructFederalJustice40(m);
   const sourceTransparency = buildSourceTransparency(
     m,
     (m.aiInterpretationSource as string | undefined) ?? undefined
@@ -508,15 +549,19 @@ ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
 <h2>Equity &amp; Environmental Justice</h2>
 <table>
   <tr><th>Metric</th><th>Value</th></tr>
-  <tr><td>Disadvantaged Tracts (CEJST-aligned)</td><td>${fmt(m.disadvantagedTracts as number)} of ${fmt(m.tractCount as number)} (${pct(m.pctDisadvantaged as number)})</td></tr>
+  <tr><td>Disadvantaged Tracts (proxy screening — not CEJST)</td><td>${fmt(m.disadvantagedTracts as number)} of ${fmt(m.tractCount as number)} (${pct(m.pctDisadvantaged as number)})</td></tr>
   <tr><td>Low-Income Tracts</td><td>${fmt(m.lowIncomeTracts as number)}</td></tr>
   <tr><td>High-Poverty Tracts (&ge;30%)</td><td>${fmt(m.highPovertyTracts as number)}</td></tr>
   <tr><td>High-Minority Tracts (&ge;50%)</td><td>${fmt(m.highMinorityTracts as number)}</td></tr>
   <tr><td>Low Vehicle Access Tracts (&ge;10% zero-vehicle households)</td><td>${fmt(m.lowVehicleAccessTracts as number)}</td></tr>
   <tr><td>Transit Dependency Tracts (&ge;15% transit commute share)</td><td>${fmt(m.highTransitDependencyTracts as number)}</td></tr>
   <tr><td>Burdened Low-Income Tracts</td><td>${fmt(m.burdenedLowIncomeTracts as number)}</td></tr>
-  <tr><td>Screening Method</td><td>${esc(String(m.equitySource ?? "cejst-proxy-census"))}</td></tr>
-  <tr><td>Justice40 Eligible</td><td>${(m.justice40Eligible as boolean) ? "✅ Yes" : "No"}</td></tr>
+  <tr><td>Proxy screening method</td><td>${esc(String(m.equitySource ?? "proxy-census"))} (ACS income + burden — not a federal designation)</td></tr>
+  <tr><td>Federal Justice40 / CEJST determination</td><td>${
+    federalJ40
+      ? esc(federalJustice40ShortStatus(federalJ40))
+      : "Not recorded (legacy run — equity shown is an ACS proxy, not CEJST)"
+  }</td></tr>
 </table>
 
 ${title6Flags.length > 0 ? `
@@ -524,11 +569,13 @@ ${title6Flags.length > 0 ? `
 ${title6Flags.map((f: string) => `<div class="flag">${esc(f)}</div>`).join("\n")}
 ` : ""}
 
-${(m.justice40Eligible as boolean) ? `
+${federalJ40?.status === "disadvantaged" ? `
 <div class="flag green">
-  This corridor includes disadvantaged communities per the Justice40 Initiative,
-  which may qualify projects for priority consideration under federal programs
-  including RAISE, SS4A, and Reconnecting Communities.
+  This corridor includes tract(s) designated disadvantaged in the Climate and
+  Economic Justice Screening Tool (${esc(federalJ40.datasetLabel ?? "CEJST v1.0")}).
+  <strong>Important:</strong> ${esc(PROGRAM_DISCONTINUED_CAVEAT)}
+  Verify any program eligibility (e.g. RAISE, SS4A, Reconnecting Communities)
+  against current agency guidance.
 </div>
 ` : ""}
 

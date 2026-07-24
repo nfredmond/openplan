@@ -84,6 +84,10 @@ export async function fetchTractOverlayFeatures(
 
     const zeroVehiclePct = pct(tract.zeroVehicleHouseholds, tract.totalHouseholds);
     const transitCommutePct = pct(tract.transitCommuters ?? 0, tract.totalCommuters ?? 0);
+    // The ACS income + burden PROXY (same thresholds as screenEquity) — a
+    // screening heuristic, NOT the federal CEJST/Justice40 designation. The
+    // property key stays `isDisadvantaged` (wide paint/test blast radius); the
+    // map legend and hover label carry the "proxy" qualifier.
     const isDisadvantaged =
       tract.medianIncome !== null &&
       tract.medianIncome < 50000 &&

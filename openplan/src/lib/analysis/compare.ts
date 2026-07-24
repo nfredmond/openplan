@@ -14,7 +14,7 @@ const COMPARISON_METRICS: Array<{ key: string; label: string }> = [
   { key: "equityScore", label: "Equity Score" },
   { key: "totalTransitStops", label: "Transit Stops" },
   { key: "totalFatalCrashes", label: "Fatal Crashes" },
-  { key: "pctDisadvantaged", label: "Disadvantaged Tracts (%)" },
+  { key: "pctDisadvantaged", label: "Disadvantaged Tracts (%) — ACS proxy" },
   { key: "pctZeroVehicle", label: "Zero-Vehicle Households (%)" },
 ];
 

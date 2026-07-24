@@ -66,7 +66,7 @@ export function buildSourceTransparency(
     typeof dataQuality.crashDataAvailable === "boolean";
   const equitySource = normalizeText(
     dataQuality.equitySource ?? metrics.equitySource,
-    "cejst-proxy-census"
+    "proxy-census"
   );
   const aiSource = resolveAiSource(dataQuality, explicitAiSource).toLowerCase();
 
@@ -129,7 +129,7 @@ export function buildSourceTransparency(
       key: "equity",
       label: "Equity Screening",
       status: formatSourceToken(equitySource),
-      detail: `Equity flags were generated using ${formatSourceToken(equitySource)} with corridor-level proxy aggregation.`,
+      detail: `Equity flags are an ACS income + burden PROXY (${formatSourceToken(equitySource)}, corridor-level tract aggregation) — a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.`,
       tone: "info",
     },
     {

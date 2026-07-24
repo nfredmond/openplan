@@ -1,11 +1,23 @@
 /**
- * CEJST-aligned equity screening.
+ * ACS income + burden equity PROXY screening.
  *
- * This module uses tract-level ACS inputs we already fetch and applies
- * transparent proxy thresholds aligned with CEJST/Justice40 concepts:
- * low income + burden indicators (poverty, minority concentration,
- * low vehicle access, and transit dependency).
+ * This module applies transparent proxy thresholds to the tract-level ACS inputs
+ * we already fetch (low income + burden indicators: poverty, minority
+ * concentration, low vehicle access, transit dependency). It is a SCREENING
+ * PROXY that runs anywhere ACS exists — it is deliberately NOT a federal
+ * Justice40 / CEJST or California SB 535 designation.
+ *
+ * The real, official disadvantaged-community determination is a separate,
+ * looked-up value: `federalJustice40` is injected by the caller from
+ * `@/lib/data-sources/equity-designation`, and defaults to `not_determined` so
+ * this module can never fabricate a designation from the income proxy. Keeping
+ * the two apart is the whole point — the field name used to be `justice40Eligible`
+ * and asserted a federal designation the code never actually computed.
  */
+
+import { notDeterminedJustice40, type Justice40Determination } from "./equity-designation/types";
+
+export type { Justice40Determination, Justice40Status } from "./equity-designation/types";
 
 export interface EquityScreening {
   totalTracts: number;
@@ -26,9 +38,19 @@ export interface EquityScreening {
     transitDependent: boolean;
   };
   title6Flags: string[];
-  justice40Eligible: boolean;
+  /**
+   * Did ANY study-area tract trip the ACS income + burden proxy? This is the
+   * honestly-named successor to the old `justice40Eligible` boolean: a proxy
+   * signal, NOT a federal Justice40 designation.
+   */
+  proxyDisadvantagedFlag: boolean;
+  /**
+   * The real, looked-up federal Justice40 / CEJST determination (or an honest
+   * `not_determined`). Never derived from the proxy above.
+   */
+  federalJustice40: Justice40Determination;
   equityScore: number;
-  source: "cejst-proxy-census";
+  source: "proxy-census";
 }
 
 interface CensusTractForEquity {
@@ -63,7 +85,11 @@ export function screenEquity(
     pctTransit: number;
     medianIncomeWeighted: number | null;
     tracts: CensusTractForEquity[];
-  }
+  },
+  // The real federal determination is INJECTED — resolved from the
+  // equity-designation registry by the caller. Defaults to not_determined so a
+  // caller that forgets it can never accidentally publish the proxy as Justice40.
+  federalJustice40: Justice40Determination = notDeterminedJustice40(censusData.tracts.length)
 ): EquityScreening {
   const tracts = censusData.tracts;
 
@@ -133,7 +159,9 @@ export function screenEquity(
     title6Flags.push("Transit-dependent households indicate strong multimodal investment need");
   }
 
-  const justice40Eligible = disadvantagedTracts > 0;
+  // Honest name: "did any tract trip the income+burden proxy", NOT a Justice40
+  // designation. The real determination lives in `federalJustice40`.
+  const proxyDisadvantagedFlag = disadvantagedTracts > 0;
 
   const equityScore = Math.min(
     100,
@@ -157,8 +185,9 @@ export function screenEquity(
     burdenedLowIncomeTracts,
     ejIndicators,
     title6Flags,
-    justice40Eligible,
+    proxyDisadvantagedFlag,
+    federalJustice40,
     equityScore,
-    source: "cejst-proxy-census",
+    source: "proxy-census",
   };
 }

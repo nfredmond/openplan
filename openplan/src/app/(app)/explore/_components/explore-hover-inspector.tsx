@@ -54,8 +54,8 @@ function buildTractLegend(tractMetric: TractMetric): {
 
   if (tractMetric === "disadvantaged") {
     return {
-      label: "Disadvantaged flag",
-      note: "Binary flag based on lower income plus elevated poverty, minority share, zero-vehicle, or transit dependence.",
+      label: "Proxy disadvantaged flag",
+      note: "ACS income + burden screening proxy (lower income plus elevated poverty, minority share, zero-vehicle, or transit dependence). Runs anywhere ACS is available — NOT the federal CEJST/Justice40 designation.",
       items: [
         { label: "Flagged", color: "#ef4444" },
         { label: "Not flagged", color: "#1f2937" },
