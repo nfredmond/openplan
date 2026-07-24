@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 
 const getUserMock = vi.fn();
 const checkWorkspaceMembershipMock = vi.fn();
-const writeActiveWorkspaceIdMock = vi.fn(async () => {});
+const writeActiveWorkspaceIdMock = vi.fn(async (..._args: unknown[]) => {});
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({ auth: { getUser: getUserMock } }),

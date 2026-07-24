@@ -39,7 +39,7 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
-const writeActiveWorkspaceIdMock = vi.fn(async () => {});
+const writeActiveWorkspaceIdMock = vi.fn(async (..._args: unknown[]) => {});
 vi.mock("@/lib/workspaces/active-workspace", () => ({
   writeActiveWorkspaceId: (...args: unknown[]) => writeActiveWorkspaceIdMock(...args),
 }));

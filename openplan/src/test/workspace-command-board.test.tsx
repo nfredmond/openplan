@@ -1,12 +1,6 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import {
-  FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT,
-  PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT,
-  WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT,
-} from "@/lib/operations/pilot-readiness-proof-paths";
-import { releaseProofPosture } from "@/lib/operations/release-proof-packet";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 
 const summary: WorkspaceOperationsSummary = {
@@ -116,45 +110,10 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getByText("Engagement")).toBeInTheDocument();
     expect(screen.getByText("Analysis / modeling")).toBeInTheDocument();
     expect(screen.getByText("Aerial")).toBeInTheDocument();
-    expect(screen.getByText("Admin / release proof")).toBeInTheDocument();
     expect(screen.getByText("Inspect engagement handoff readiness")).toBeInTheDocument();
-    expect(screen.getByText(/1 total command · 1 proof-linked action/i)).toBeInTheDocument();
-    expect(screen.getByText(/1 queued action · 1 open opportunity · 1 queued check/i)).toBeInTheDocument();
     expect(screen.getByText(/standing check · handoff check/i)).toBeInTheDocument();
     expect(screen.getByText(/Standing check: handoff/i)).toBeInTheDocument();
     expect(screen.getByText("Funding follow-through")).toBeInTheDocument();
-    expect(screen.getByText(/1 current RTP packet still carries linked-project funding follow-through/i)).toBeInTheDocument();
-    expect(screen.getByText("Proof review needed")).toBeInTheDocument();
-    expect(screen.getByText("Pilot proof reference")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /readiness packet \+ preflight proof/i })).toHaveAttribute(
-      "href",
-      "/admin/pilot-readiness"
-    );
-    expect(screen.getAllByText(/docs\/ops\/2026-05-10-openplan-pilot-preflight-operator-proof\.md/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Keep claims inside the supervised-pilot caveats before external use\./i)).toBeInTheDocument();
-    expect(screen.getByText("Buyer demo handoff")).toBeInTheDocument();
-    expect(screen.getByText(/Run the buyer demo from proof, then intake, then examples\./i)).toBeInTheDocument();
-    expect(screen.getByText(/No production writes, provisioning, outbound email, checkout, or self-serve activation are implied by this handoff\./i)).toBeInTheDocument();
-    expect(screen.getByRole("navigation", { name: /Buyer demo handoff steps/i })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /1\. Readiness packet/i })).toHaveAttribute(
-      "href",
-      "/admin/pilot-readiness"
-    );
-    expect(screen.getByRole("link", { name: /2\. Examples/i })).toHaveAttribute("href", "/examples");
-    expect(screen.getByText("Release proof drilldown")).toBeInTheDocument();
-    expect(screen.getByText("Release proof drilldown").closest("section")?.className).toContain("lg:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1fr)]");
-    expect(screen.getByRole("navigation", { name: /Release proof drilldown actions/i })).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: /Release proof supporting artifacts/i })).toBeInTheDocument();
-    expect(screen.getByText(releaseProofPosture.title)).toBeInTheDocument();
-    expect(screen.getByText(/supervised planning workbench support for rural RTPA\/county workflows/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open readiness packet/i })).toHaveAttribute(
-      "href",
-      "/admin/pilot-readiness"
-    );
-    expect(screen.getByRole("link", { name: /Review examples/i })).toHaveAttribute("href", "/examples");
-    expect(screen.getByText(FINAL_PILOT_READINESS_CHECKLIST_ARTIFACT)).toBeInTheDocument();
-    expect(screen.getByText(WAVE6_RELEASE_READINESS_SUMMARY_ARTIFACT)).toBeInTheDocument();
-    expect(screen.getAllByText(PILOT_PREFLIGHT_OPERATOR_PROOF_ARTIFACT).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Grants OS").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Funding review: 1/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Primary next action")).toBeInTheDocument();
@@ -235,7 +194,6 @@ describe("WorkspaceCommandBoard", () => {
       expect(screen.getByText(/0 regenerate · 0 generate · 0 review/i)).toBeInTheDocument();
       expect(screen.getByText(/0 open opportunities · 0 queued checks/i)).toBeInTheDocument();
       expect(screen.getByText(/0 comparison-backed reports/i)).toBeInTheDocument();
-      expect(screen.getByText(/0 total commands · 0 proof-linked actions/i)).toBeInTheDocument();
       expect(screen.getByText("No linked analysis evidence")).toBeInTheDocument();
       expect(document.body).not.toHaveTextContent(/NaN/);
       expect(
@@ -353,9 +311,7 @@ describe("WorkspaceCommandBoard", () => {
 
     expect(screen.getAllByText("Stale modeling evidence").length).toBeGreaterThan(0);
     expect(screen.getByText("Stale evidence refresh")).toBeInTheDocument();
-    expect(screen.getByText("Proof packet has stale inputs")).toBeInTheDocument();
     expect(screen.getAllByText(/Stale modeling: 1/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Stale evidence: 1/i).length).toBeGreaterThan(0);
   });
 
   it("shows Grants OS lane metadata and routes grants commands to the shared lane", () => {

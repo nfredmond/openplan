@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-let pathnameValue = "/admin/pilot-readiness";
+let pathnameValue = "/reports";
 
 vi.mock("next/navigation", () => ({
   usePathname: () => pathnameValue,
@@ -20,7 +20,7 @@ import { AppSecondaryNav } from "@/components/nav/app-secondary-nav";
 
 describe("AppSecondaryNav", () => {
   beforeEach(() => {
-    pathnameValue = "/admin/pilot-readiness";
+    pathnameValue = "/reports";
   });
 
   it("keeps the operations section free of operator-only admin routes", () => {

@@ -21,7 +21,6 @@
     "worker:aequilibrae": "bash ../workers/aequilibrae_worker/run.sh",
     "worker:activitysim": "bash ../workers/activitysim_worker/run.sh",
     "modeling:local": "bash ../scripts/run-local-modeling.sh",
-    "ops:check-admin-operations-smoke": "node scripts/ops/check-admin-operations-smoke-prereqs.mjs",
     "ops:check-prod-health": "node scripts/ops/check-prod-health.mjs",
     "ops:log-prod-health-evidence": "node scripts/ops/log-prod-health-evidence.mjs",
     "ops:check-public-demo-preflight": "node scripts/ops/check-public-demo-preflight.mjs",
@@ -30,8 +29,6 @@
     "ops:check-local-supabase-status": "node scripts/ops/check-local-supabase-status.mjs",
     "ops:check-migration-inventory": "node scripts/ops/check-migration-inventory.mjs",
     "ops:check-pilot-preflight": "node scripts/ops/check-pilot-preflight.mjs",
-    "ops:generate-admin-pilot-readiness-proof-packet": "tsx scripts/ops/generate-admin-pilot-readiness-proof-packet.ts",
-    "ops:check-admin-pilot-readiness-proof-packet-drift": "node scripts/ops/check-admin-pilot-readiness-proof-packet-drift.mjs",
     "test:sales-proof-claim-boundaries": "vitest run src/test/sales-proof-claim-boundaries.test.ts src/test/current-buyer-demo-proof-packet.test.ts",
     "test:guardrail-suite": "vitest run src/test/public-page-metadata-canonical-url.test.ts src/test/request-access-copy-to-admin-guard-trace.test.ts src/test/access-request-manual-provisioning-doc-index.test.ts src/test/billing-checkout-route.test.ts src/test/workspace-provision-route.test.ts src/test/workspace-membership-current.test.ts src/test/workspace-membership-required.test.tsx",
     "ops:check-buyer-demo-preflight": "node scripts/ops/check-buyer-demo-preflight.mjs"

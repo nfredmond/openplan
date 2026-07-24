@@ -17,12 +17,11 @@ const managedSupportDocs = [
   path.join(repoRoot, "docs/sales/2026-05-01-openplan-managed-hosting-service-description.md"),
   path.join(repoRoot, "docs/sales/2026-05-01-openplan-managed-hosting-service-schedule.md"),
   path.join(repoRoot, "docs/sales/2026-05-01-openplan-buyer-safe-caveat-sheet.md"),
-  path.join(repoRoot, "docs/sales/2026-05-01-openplan-demo-workspace-script.md"),
 ];
 
 const requiredClaims = [
   "Nat Ford can operate a hosted OpenPlan workspace with a clear support path.",
-  "Request-access, reviewer triage, provisioning, and owner invitation have proof, but onboarding remains supervised.",
+  "Request-access intake and owner/teammate invitation have proof, and onboarding remains supervised.",
   "Backup and restore posture can be discussed as an operator procedure plus completed staging drill.",
   "Billing/support ledger posture is available for managed hosting conversations.",
   "A supervised first workflow can be packaged for pilot diligence and closeout.",

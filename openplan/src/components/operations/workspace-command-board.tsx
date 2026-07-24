@@ -2,12 +2,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
-import { ADMIN_PILOT_READINESS_ROUTE } from "@/lib/operations/pilot-readiness-proof-paths";
-import {
-  buyerDemoCommandCenterHandoff,
-  getAdminPilotReadinessProofArtifactIndex,
-  releaseProofPosture,
-} from "@/lib/operations/release-proof-packet";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { buildWorkflowNextActionGroups, type WorkflowNextActionEntry } from "@/lib/operations/workflow-next-action-groups";
 
@@ -58,12 +52,6 @@ function groupCountLabel(group: ReturnType<typeof buildWorkflowNextActionGroups>
   }
   return pluralize(group.queuedActionCount, "queued action");
 }
-
-const commandBoardReleaseProofArtifacts = getAdminPilotReadinessProofArtifactIndex().filter((item) =>
-  ["final-checklist", "wave6-release-readiness-summary", "pilot-preflight-proof"].includes(item.key),
-);
-const pilotPreflightProofArtifact = commandBoardReleaseProofArtifacts.find((item) => item.key === "pilot-preflight-proof");
-const commandBoardReleaseProofActions = releaseProofPosture.actions.slice(0, 3);
 
 export function WorkspaceCommandBoard({
   summary,
@@ -245,16 +233,10 @@ export function WorkspaceCommandBoard({
         </div>
         <div className="divide-y divide-border/60">
           {workflowGroups.map((group) => {
-            const isReleaseProofGroup = group.key === "admin-release-proof";
-
             return (
               <section
                 key={group.key}
-                className={
-                  isReleaseProofGroup
-                    ? "grid gap-3 px-4 py-3 lg:grid-cols-[minmax(18rem,0.9fr)_minmax(0,1fr)]"
-                    : "grid gap-3 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)]"
-                }
+                className="grid gap-3 px-4 py-3 sm:grid-cols-[12rem_minmax(0,1fr)]"
               >
               <div>
                 <div className="flex items-center gap-2">
@@ -278,80 +260,6 @@ export function WorkspaceCommandBoard({
                     </p>
                   ) : null}
                 </div>
-                {group.key === "admin-release-proof" ? (
-                  <div className="mt-3 space-y-3 border-l border-primary/35 pl-3">
-                    <div>
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
-                        Pilot proof reference
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        Start with the{" "}
-                        <Link href={ADMIN_PILOT_READINESS_ROUTE} className="font-semibold text-primary hover:underline">
-                          readiness packet + preflight proof
-                        </Link>
-                        {pilotPreflightProofArtifact
-                          ? `; latest preflight note: ${pilotPreflightProofArtifact.artifact}.`
-                          : "."} Keep claims inside the supervised-pilot caveats before external use.
-                      </p>
-                    </div>
-
-                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-3">
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
-                        {buyerDemoCommandCenterHandoff.label}
-                      </p>
-                      <p className="mt-1 text-xs font-semibold leading-5 text-foreground">{buyerDemoCommandCenterHandoff.headline}</p>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{buyerDemoCommandCenterHandoff.detail}</p>
-                      <nav aria-label="Buyer demo handoff steps" className="mt-2 grid gap-1.5">
-                        {buyerDemoCommandCenterHandoff.steps.map((step) => (
-                          <Link
-                            key={step.label}
-                            href={step.href}
-                            className="rounded-lg border border-border/60 bg-background/70 px-2.5 py-2 text-xs transition-colors hover:border-primary/35 hover:bg-background"
-                          >
-                            <span className="font-semibold text-foreground">{step.label}</span>
-                            <span className="block pt-0.5 leading-5 text-muted-foreground">{step.detail}</span>
-                          </Link>
-                        ))}
-                      </nav>
-                      <p className="mt-2 text-[0.72rem] leading-5 text-muted-foreground">{buyerDemoCommandCenterHandoff.boundary}</p>
-                    </div>
-
-                    <div>
-                      <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
-                        Release proof drilldown
-                      </p>
-                      <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                        Readiness: <span className="font-medium text-foreground">{releaseProofPosture.title}</span>.{" "}
-                        {releaseProofPosture.wedge}
-                      </p>
-                      <nav aria-label="Release proof drilldown actions" className="mt-2 grid gap-1.5">
-                        {commandBoardReleaseProofActions.map((action) => (
-                          <Link
-                            key={action.label}
-                            href={action.href}
-                            className="group rounded-lg border border-border/60 px-2.5 py-2 text-xs transition-colors hover:border-primary/35 hover:bg-muted/30"
-                          >
-                            <span className="font-semibold text-foreground group-hover:text-primary">{action.label}</span>
-                            <span className="block pt-0.5 leading-5 text-muted-foreground">{action.detail}</span>
-                          </Link>
-                        ))}
-                      </nav>
-                      <ul
-                        aria-label="Release proof supporting artifacts"
-                        className="mt-2 space-y-1 text-xs leading-5 text-muted-foreground"
-                      >
-                        {commandBoardReleaseProofArtifacts.map((artifact) => (
-                          <li key={artifact.key}>
-                            <span className="font-medium text-foreground">{artifact.label}:</span>{" "}
-                            <code className="break-all rounded bg-muted/60 px-1 py-0.5 text-[0.7rem] text-muted-foreground">
-                              {artifact.artifact}
-                            </code>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                ) : null}
               </div>
               <div className="space-y-2">
                 {group.actions.map((action) => (

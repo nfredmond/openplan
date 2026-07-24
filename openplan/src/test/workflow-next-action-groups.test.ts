@@ -101,7 +101,7 @@ function summary(overrides: Partial<WorkspaceOperationsSummary> = {}): Workspace
 }
 
 describe("workflow next-action groups", () => {
-  it("classifies report, grants/modeling, engagement, aerial, and release-proof actions", () => {
+  it("classifies report, grants/modeling, engagement, and aerial actions", () => {
     expect(
       classifyWorkflowNextAction(
         command({
@@ -110,7 +110,7 @@ describe("workflow next-action groups", () => {
           badges: [{ label: "Review loop open", value: 2 }],
         })
       )
-    ).toEqual(expect.arrayContaining(["rtp", "engagement", "admin-release-proof"]));
+    ).toEqual(expect.arrayContaining(["rtp", "engagement"]));
 
     expect(
       classifyWorkflowNextAction(
@@ -134,9 +134,6 @@ describe("workflow next-action groups", () => {
     expect(groups.find((group) => group.key === "engagement")?.actions[0]?.detail).toMatch(/review loop open/i);
     expect(groups.find((group) => group.key === "analysis-modeling")?.actions[0]?.detail).toMatch(/modeling posture/i);
     expect(groups.find((group) => group.key === "aerial")?.actions[0]?.title).toBe("Review aerial evidence posture");
-    expect(groups.find((group) => group.key === "admin-release-proof")?.actions[0]?.title).toBe(
-      "Run release review on current packets"
-    );
     expect(groups.find((group) => group.key === "analysis-modeling")?.readiness).toMatchObject({
       label: "Stale evidence refresh",
       tone: "warning",
@@ -145,10 +142,6 @@ describe("workflow next-action groups", () => {
         { label: "Refresh", value: 1 },
         { label: "Thin/none", value: 1 },
       ],
-    });
-    expect(groups.find((group) => group.key === "admin-release-proof")?.readiness).toMatchObject({
-      label: "Proof packet has stale inputs",
-      metrics: expect.arrayContaining([{ label: "Stale evidence", value: 1 }]),
     });
     expect(groups.find((group) => group.key === "grants")).toMatchObject({
       queuedActionCount: 1,
@@ -172,12 +165,6 @@ describe("workflow next-action groups", () => {
       source: "standing-check",
       href: "/engagement",
       badges: [{ label: "Standing check", value: "handoff" }],
-    });
-    expect(groups.find((group) => group.key === "admin-release-proof")?.actions[0]).toMatchObject({
-      title: "Check release proof packet",
-      source: "standing-check",
-      href: "/admin/pilot-readiness",
-      badges: [{ label: "Total commands", value: 0 }],
     });
     expect(groups.find((group) => group.key === "rtp")?.actions[0]?.badges).toEqual([
       { label: "Regenerate", value: 0 },

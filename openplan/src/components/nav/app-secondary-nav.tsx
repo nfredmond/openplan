@@ -97,7 +97,7 @@ const sectionMap: Array<{
     },
   },
   {
-    match: ["/reports", "/billing", "/admin", "/assistant-activity"],
+    match: ["/reports", "/billing", "/assistant-activity"],
     section: {
       title: "Operations",
       items: [

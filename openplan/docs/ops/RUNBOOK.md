@@ -182,10 +182,8 @@ Symptoms:
 
 Actions:
 
-1. For proof-only checks, use the root [Admin Operations Smoke Runbook](../../../docs/ops/2026-05-10-openplan-admin-operations-smoke-runbook.md). It is intentionally non-mutating and must not click triage or provisioning controls. After an admin-affecting production deploy, pair it with the root [Admin Ops → Production Health Evidence Bridge](../../../docs/ops/2026-05-10-openplan-admin-ops-to-prod-health-evidence-bridge.md) before calling the proof current.
 2. Treat successful owner-invite provisioning as a production write. Do not run it unless Nathaniel has approved the exact request row and recipient context.
 3. Confirm the reviewer is allowlisted through `OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS`; do not broaden the allowlist for convenience during a smoke.
-4. Preserve the current manual guard: the access-request provisioning route requires `manual_provisioning_no_email` before any service-role lookup, workspace insert, owner-invite creation, billing mutation, or provisioning RPC. See [Access request manual provisioning guard proof](2026-05-10-access-request-manual-provisioning-guard-proof.md).
 5. When citing the public onboarding promise, use the [Request access copy to admin guard trace](2026-05-10-request-access-copy-to-admin-guard-trace.md): `/request-access` review-first/no-auto-send copy must stay aligned to the Admin Operations no-email manual provisioning guard. This trace is docs/tests only, not production proof permission.
 6. Never paste invitation URLs, tokens, cookies, service-role keys, or raw prospect PII into docs, chat, screenshots, or buyer materials.
 

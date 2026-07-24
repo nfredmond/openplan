@@ -10,10 +10,6 @@ const salesProofDocuments = readdirSync(salesDir)
   .map((filename) => path.join(salesDir, filename));
 
 const anchorProofDocuments = [
-  "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
-  "docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md",
-  "docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md",
-  "openplan/docs/ops/2026-05-10-access-request-manual-provisioning-guard-proof.md",
   "openplan/docs/ops/2026-05-10-openplan-modeling-evidence-export-proof.md",
   "openplan/docs/ops/2026-05-10-pilot-readiness-export-proof-tightening.md",
   "openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md",
@@ -22,11 +18,7 @@ const anchorProofDocuments = [
 const monitoredDocuments = [...salesProofDocuments, ...anchorProofDocuments];
 
 const claimBoundaryDocs = [
-  "docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.md",
   "docs/sales/2026-05-10-openplan-managed-support-proof-map.md",
-  "docs/ops/2026-05-10-openplan-final-pilot-readiness-smoke-checklist.md",
-  "docs/ops/2026-05-10-openplan-pilot-preflight-operator-proof.md",
-  "docs/ops/2026-05-10-openplan-wave6-release-readiness-summary.md",
 ].map((relativePath) => path.join(repoRoot, relativePath));
 
 const boundaryMatchers = [

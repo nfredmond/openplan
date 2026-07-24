@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 
 import { AppCopilot } from "@/components/assistant/app-copilot";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
-import { canReviewAccessRequests } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadWorkspaceContext,
@@ -27,7 +26,7 @@ import {
   type CartographicRailGroup,
 } from "./cartographic-rail";
 
-function buildNavGroups(isOperator: boolean): CartographicRailGroup[] {
+function buildNavGroups(): CartographicRailGroup[] {
   return [
     {
       title: "Operate",
@@ -57,17 +56,6 @@ function buildNavGroups(isOperator: boolean): CartographicRailGroup[] {
         { href: "/aerial", label: "Aerial Ops", icon: "aerial" },
       ],
     },
-    // Govern holds only the operator console now that Billing is gone, so the
-    // whole group is omitted for everyone else rather than rendering an empty
-    // section heading.
-    ...(isOperator
-      ? [
-          {
-            title: "Govern",
-            items: [{ href: "/admin", label: "Admin", icon: "admin" as const }],
-          },
-        ]
-      : []),
   ];
 }
 
@@ -124,12 +112,9 @@ export async function CartographicShell({ children }: { children: React.ReactNod
   const workspaceUpdatedLabel =
     formatUpdatedLabel(workspace?.created_at ?? null) ?? null;
   const membershipPending = shellState.membershipStatus === "not_provisioned";
-  const isOperator = canReviewAccessRequests(user?.email);
   // A first-run user with no workspace gets a focused self-serve onboarding
-  // wizard in place of the empty page. Operators keep full access to every
-  // (app) route (e.g. /admin) even without a workspace, so the wizard never
-  // hijacks their surface.
-  const showOnboarding = membershipPending && !isOperator;
+  // wizard in place of the empty page.
+  const showOnboarding = membershipPending;
   const orgNameHint =
     typeof user?.user_metadata?.org_name === "string" ? user.user_metadata.org_name : "";
 
@@ -145,7 +130,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
       <div className="op-cart-shell">
         <CartographicMapBackdrop homeMapView={homeMapView} />
 
-        <CartographicRail groups={buildNavGroups(isOperator)} />
+        <CartographicRail groups={buildNavGroups()} />
 
         <CartographicHeader
           workspaceName={shellState.workspaceName}

@@ -6,14 +6,13 @@ import {
   FolderKanban,
   Map,
   Megaphone,
-  ShieldCheck,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 import { PilotWorkflowActionButton } from "@/components/operations/pilot-workflow-action-button";
 import { StatusBadge } from "@/components/ui/status-badge";
 
-type PilotWorkflowStepKey = "context" | "analysis" | "engagement" | "packet" | "readiness";
+type PilotWorkflowStepKey = "context" | "analysis" | "engagement" | "packet";
 
 type PilotWorkflowStep = {
   key: PilotWorkflowStepKey;
@@ -103,15 +102,6 @@ function buildPilotWorkflowSteps(input: {
           }
         : undefined,
     },
-    {
-      key: "readiness",
-      label: "5",
-      title: "Readiness proof",
-      detail: "Check smoke evidence and operational warnings before using the packet externally.",
-      href: "/admin/pilot-readiness",
-      cta: "Open readiness",
-      icon: ShieldCheck,
-    },
   ];
 }
 
@@ -122,7 +112,7 @@ export function PilotWorkflowHandoff({
   engagementCampaignId,
   publicEngagementHref,
   title = "Pilot story handoff",
-  description = "Use this path to keep one planning story moving from local context through evidence, engagement, packet assembly, and readiness proof.",
+  description = "Use this path to keep one planning story moving from local context through evidence, engagement, and packet assembly.",
 }: PilotWorkflowHandoffProps) {
   const steps = buildPilotWorkflowSteps({
     projectId,

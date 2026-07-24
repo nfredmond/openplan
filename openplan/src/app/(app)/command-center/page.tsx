@@ -2,18 +2,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
-  ClipboardCheck,
   Compass,
   FileText,
   FolderKanban,
   Landmark,
   PlaneTakeoff,
   Radar,
-  ShieldCheck,
 } from "lucide-react";
 
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
-import { ReleaseProofPacketPanel } from "@/components/operations/release-proof-packet-panel";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StateBlock } from "@/components/ui/state-block";
@@ -27,17 +24,6 @@ import {
   loadRecentActionExecutionsForWorkspace,
   type RecentActionActivitySupabaseLike,
 } from "@/lib/operations/action-activity";
-import {
-  NEVADA_COUNTY_CAVEATS_VERBATIM,
-  NEVADA_COUNTY_DEMO_STORY_BEATS,
-  NEVADA_COUNTY_FACILITY_RANKING,
-  NEVADA_COUNTY_PROOF_DOC_PATH,
-  NEVADA_COUNTY_RUN_CONTEXT,
-  NEVADA_COUNTY_SCREENING_GATE,
-  nevadaCountyMaxApeRow,
-} from "@/lib/examples/nevada-county-2026-03-24";
-import { buyerDemoCommandCenterHandoff, buyerDemoRehearsalChecklist } from "@/lib/operations/release-proof-packet";
-import { canReviewAccessRequests } from "@/lib/access-requests";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
@@ -72,9 +58,6 @@ export default async function CommandCenterPage() {
     );
   }
 
-  // Buyer-demo / sales-rehearsal scaffolding on this page is for operators only
-  // (people who provision pilots), not for the planners who use the workspace.
-  const isOperator = canReviewAccessRequests(user.email);
   const workspaceId = membership.workspace_id;
   const summary = await loadWorkspaceOperationsSummaryForWorkspace(
     supabase as unknown as WorkspaceOperationsSupabaseLike,
@@ -87,7 +70,6 @@ export default async function CommandCenterPage() {
 
   const activeReimbursement = summary.counts.projectFundingReimbursementActiveProjects;
   const openOpportunities = summary.counts.openFundingOpportunities;
-  const sampleDemoMetric = nevadaCountyMaxApeRow();
 
   const domainLinks = [
     {
@@ -132,59 +114,9 @@ export default async function CommandCenterPage() {
     },
   ];
 
-  const buyerDemoLinks = [
-    {
-      href: "/admin/operations",
-      title: "Review access queue",
-      description: "Triage new requests, check review history, and keep provisioning evidence attached to the workspace.",
-      meta: "Operator review",
-      icon: ShieldCheck,
-    },
-    {
-      href: "/admin/pilot-readiness",
-      title: "Confirm pilot readiness",
-      description: "Export the proof snapshot before a demo so the story stays grounded in visible, current capability.",
-      meta: "Demo preflight",
-      icon: ClipboardCheck,
-    },
-  ];
 
-  const sampleDemoNarrationSteps = [
-    {
-      title: "Start with the proof boundary",
-      detail:
-        "This is a static Nevada County sample for narration. It does not alter the buyer workspace or create operational records.",
-    },
-    {
-      title: "Explain the validation gate",
-      detail:
-        "Call out the internal prototype status first, then explain why failed validation blocks stronger forecasting claims.",
-    },
-    {
-      title: "Show caveat-preserving evidence",
-      detail:
-        "Use the Max APE row and proof note to demonstrate that OpenPlan carries uncomfortable evidence forward instead of smoothing it away.",
-    },
-    {
-      title: "Open the public evidence catalog",
-      detail:
-        "Move to Examples only after the caveats are visible, so the buyer sees completed artifacts as proof posture rather than a sales promise.",
-    },
-  ];
 
-  const sampleDemoTalkTrack = {
-    say:
-      "Say: OpenPlan can organize a supervised, proof-first planning workflow where evidence, caveats, and readiness checks stay visible before buyer reliance.",
-    avoid:
-      "Do not say: this is a self-serve launch, a certified forecast, an automatic activation path, or a completed compliance determination.",
-  };
 
-  const buyerDemoOpeningScript = [
-    "OpenPlan is Apache-2.0 open-source planning software with Nat Ford implementation, hosting, onboarding, support, and planning services around it.",
-    "This walkthrough is proof-first: the claim, evidence, and caveat stay together before anyone relies on an output.",
-    "For the Nevada County screening example, the run remains internal prototype only; the 237.62% Max APE means we treat it as screening evidence, not production model validation.",
-    "If this is useful, the next step is to scope one supervised first workflow: geography, data owner, review owner, hosting lane, and evidence standard.",
-  ];
 
   return (
     <section className="module-page">
@@ -227,250 +159,6 @@ export default async function CommandCenterPage() {
         emptyDescription="No audited operator actions have run in this workspace yet. Packet generation, funding decisions, and project-record operations will appear here after completion."
       />
 
-      {isOperator ? (
-        <>
-          <div className="mt-6">
-            <ReleaseProofPacketPanel />
-          </div>
-
-      <section className="mt-6 module-section-surface">
-        <div className="module-section-header">
-          <div className="module-section-heading">
-            <p className="module-section-label">Demo rehearsal checklist</p>
-            <h2 className="module-section-title">Operator readiness before the buyer sees anything</h2>
-            <p className="module-section-description">
-              A fast rehearsal strip for the supervised buyer walkthrough. It keeps the demo in proof-first order and gives the operator explicit stop conditions before reliance.
-            </p>
-          </div>
-          <StatusBadge tone="neutral">Read-only</StatusBadge>
-        </div>
-        <ol className="grid gap-3 px-4 pb-4 md:grid-cols-2 xl:grid-cols-4">
-          {buyerDemoRehearsalChecklist.map((item, index) => (
-            <li key={item.key} className="rounded-md border border-border bg-background/70 p-3 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground">{index + 1}. {item.label}</p>
-              <p className="mt-2">{item.instruction}</p>
-              <p className="mt-2 border-t border-border/60 pt-2">
-                <span className="font-medium text-foreground">Stop if: </span>
-                {item.stopCondition}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </section>
-
-      <section className="mt-6 module-section-surface">
-        <div className="module-section-header">
-          <div className="module-section-heading">
-            <p className="module-section-label">Read-only sample cue</p>
-            <h2 className="module-section-title">Demo story without changing this workspace</h2>
-            <p className="module-section-description">
-              If the active workspace is empty, use this static Nevada County example to narrate the buyer-demo path.
-              It is labeled sample context and does not seed data, run checkout, provision accounts, or write production records.
-            </p>
-          </div>
-          <StatusBadge tone="neutral">Sample only</StatusBadge>
-        </div>
-        <div className="grid gap-3 px-4 pb-4 sm:grid-cols-3">
-          <div className="module-subpanel">
-            <p className="module-summary-label">Sample run</p>
-            <p className="module-summary-value text-base">Nevada County</p>
-            <p className="module-summary-detail">
-              {NEVADA_COUNTY_RUN_CONTEXT.engine} · {NEVADA_COUNTY_RUN_CONTEXT.countsSource}
-            </p>
-          </div>
-          <div className="module-subpanel">
-            <p className="module-summary-label">Validation gate</p>
-            <p className="module-summary-value text-base">{NEVADA_COUNTY_SCREENING_GATE.statusLabel}</p>
-            <p className="module-summary-detail">{NEVADA_COUNTY_SCREENING_GATE.reason}</p>
-          </div>
-          <div className="module-subpanel">
-            <p className="module-summary-label">Buyer-safe claim</p>
-            <p className="module-summary-value text-base">{sampleDemoMetric.value} {sampleDemoMetric.label}</p>
-            <p className="module-summary-detail">
-              Show how OpenPlan preserves caveats and blocks outward modeling claims when validation fails.
-            </p>
-          </div>
-        </div>
-        <div className="border-t border-border/60 px-4 py-4">
-          <div className="mb-4 rounded-md border border-border/70 bg-background/70 p-3">
-            <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Sample story beats</p>
-            <div className="mt-3 grid gap-3 md:grid-cols-3">
-              {NEVADA_COUNTY_DEMO_STORY_BEATS.map((beat) => (
-                <div key={beat.label} className="text-xs text-muted-foreground">
-                  <p className="font-medium text-foreground">{beat.label}</p>
-                  <p className="mt-1 font-semibold text-foreground">{beat.title}</p>
-                  <p className="mt-1">{beat.detail}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="mb-4 rounded-md border border-border/70 bg-background/70 p-3">
-            <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Rural screening evidence table</p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  This table is sample screening evidence from the static Nevada County proof catalog. It shows why the run is useful for explanation but not valid for outward forecasting claims.
-                </p>
-              </div>
-              <span className="text-xs font-medium text-muted-foreground">Read-only sample</span>
-            </div>
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full min-w-[38rem] text-left text-xs">
-                <thead className="border-b border-border/60 text-muted-foreground">
-                  <tr>
-                    <th scope="col" className="py-2 pr-4 font-medium">Station</th>
-                    <th scope="col" className="px-4 py-2 font-medium">Observed</th>
-                    <th scope="col" className="px-4 py-2 font-medium">Modeled daily PCE</th>
-                    <th scope="col" className="px-4 py-2 font-medium">Obs rank</th>
-                    <th scope="col" className="py-2 pl-4 font-medium">Mod rank</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/50 text-foreground">
-                  {NEVADA_COUNTY_FACILITY_RANKING.map((row) => (
-                    <tr key={row.station}>
-                      <th scope="row" className="py-2 pr-4 font-medium">{row.station}</th>
-                      <td className="px-4 py-2 tabular-nums">{row.observed}</td>
-                      <td className="px-4 py-2 tabular-nums">{row.modeled}</td>
-                      <td className="px-4 py-2 tabular-nums">{row.obsRank}</td>
-                      <td className="py-2 pl-4 tabular-nums">{row.modRank}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(18rem,0.65fr)]">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">Demo narration rail</p>
-              <ol className="mt-3 space-y-3">
-                {sampleDemoNarrationSteps.map((step, index) => (
-                  <li key={step.title} className="flex gap-3 text-xs text-muted-foreground">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-border bg-background font-semibold text-foreground">
-                      {index + 1}
-                    </span>
-                    <div>
-                      <p className="font-medium text-foreground">{step.title}</p>
-                      <p className="mt-0.5">{step.detail}</p>
-                    </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="space-y-3">
-              <div className="rounded-md border border-border bg-muted/30 p-3 text-xs text-muted-foreground">
-                <p className="font-medium text-foreground">What to say / what not to say</p>
-                <p className="mt-2">{sampleDemoTalkTrack.say}</p>
-                <p className="mt-2">{sampleDemoTalkTrack.avoid}</p>
-              </div>
-              <div className="rounded-md border border-border bg-background/70 p-3 text-xs text-muted-foreground">
-                <p className="font-medium text-foreground">Caveats to say out loud</p>
-                <ul className="mt-2 space-y-1">
-                  {NEVADA_COUNTY_CAVEATS_VERBATIM.map((caveat) => (
-                    <li key={caveat}>• {caveat}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
-          <p>
-            <span className="font-medium text-foreground">Proof note:</span>{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{NEVADA_COUNTY_PROOF_DOC_PATH}</code>
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/examples" className="font-medium text-foreground underline-offset-4 hover:underline">
-              Open public evidence catalog
-            </Link>
-            <Link href="/examples#nevada-county-buyer-evidence-brief" className="font-medium text-foreground underline-offset-4 hover:underline">
-              Open buyer evidence brief
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="mt-6 module-section-surface">
-        <div className="module-section-header">
-          <div className="module-section-heading">
-            <p className="module-section-label">Buyer demo handoff</p>
-            <h2 className="module-section-title">Move from interest to supervised pilot</h2>
-            <p className="module-section-description">
-              A short operator path for demos: verify the proof packet first, then review supervised intake and examples before presenting.
-            </p>
-          </div>
-        </div>
-        <ul className="module-list divide-y divide-border/60">
-          {buyerDemoLinks.map((item) => {
-            const Icon = item.icon;
-            return (
-              <li key={item.href}>
-                <Link href={item.href} className="flex flex-col gap-3 px-4 py-3 transition hover:bg-muted/40 sm:flex-row sm:items-start sm:gap-4">
-                  <span className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground">
-                    <Icon className="h-4 w-4" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-foreground">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
-                    <span className="mt-2 inline-flex text-xs text-muted-foreground sm:hidden">{item.meta}</span>
-                  </div>
-                  <span className="hidden whitespace-nowrap text-xs text-muted-foreground sm:inline">{item.meta}</span>
-                  <ArrowRight className="hidden mt-1 h-4 w-4 text-muted-foreground sm:block" aria-hidden="true" />
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-        <div className="border-t border-border/60 px-4 py-3 text-xs text-muted-foreground">
-          <p className="font-medium text-foreground">Final pre-demo check</p>
-          <p className="mt-1">
-            Run <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{buyerDemoCommandCenterHandoff.preflightCommand}</code>{" "}
-            before a live buyer walkthrough. This keeps Command Center handoff notes aligned with current production
-            health and Vercel read posture.
-          </p>
-          <p className="mt-2">
-            Proof packet: <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">{buyerDemoCommandCenterHandoff.currentProofPacket}</code>
-          </p>
-          <div className="mt-3 rounded-md border border-border bg-background/70 p-3">
-            <p className="font-medium text-foreground">90-second opening script</p>
-            <ol className="mt-2 space-y-1.5">
-              {buyerDemoOpeningScript.map((line, index) => (
-                <li key={line} className="flex gap-2">
-                  <span className="font-semibold text-foreground">{index + 1}.</span>
-                  <span>{line}</span>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-2">
-              Script source: <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[0.72rem]">docs/sales/2026-05-17-openplan-90-second-buyer-demo-talk-track.md</code>
-            </p>
-          </div>
-        </div>
-        <nav aria-label="Buyer demo proof sequence" className="border-t border-border/60 px-4 py-3">
-          <p className="text-xs font-medium text-foreground">Proof sequence before buyer reliance</p>
-          <ol className="mt-2 space-y-2">
-            {buyerDemoCommandCenterHandoff.steps.map((step) => (
-              <li key={step.href} className="text-xs text-muted-foreground">
-                <Link href={step.href} className="font-medium text-foreground underline-offset-4 hover:underline">
-                  {step.label}
-                </Link>{" "}
-                — {step.detail}
-              </li>
-            ))}
-          </ol>
-          <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-            <p>
-              <span className="font-medium text-foreground">Handoff boundary:</span>{" "}
-              {buyerDemoCommandCenterHandoff.boundary}
-            </p>
-            <p>
-              <span className="font-medium text-foreground">Stop rule:</span>{" "}
-              {buyerDemoCommandCenterHandoff.operatorStopRule}
-            </p>
-          </div>
-        </nav>
-      </section>
-        </>
-      ) : null}
 
       <section className="mt-6 module-section-surface">
         <div className="module-section-header">

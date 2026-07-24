@@ -6,8 +6,7 @@ export type WorkflowNextActionGroupKey =
   | "grants"
   | "engagement"
   | "analysis-modeling"
-  | "aerial"
-  | "admin-release-proof";
+  | "aerial";
 
 export const COMMAND_CENTER_ROADMAP_WORKFLOW_LANE_KEYS = [
   "rtp",
@@ -15,7 +14,6 @@ export const COMMAND_CENTER_ROADMAP_WORKFLOW_LANE_KEYS = [
   "engagement",
   "analysis-modeling",
   "aerial",
-  "admin-release-proof",
 ] as const satisfies readonly WorkflowNextActionGroupKey[];
 
 export type WorkflowNextActionEntry = {
@@ -112,10 +110,6 @@ export function classifyWorkflowNextAction(item: WorkspaceCommandQueueItem): Wor
     groups.add("aerial");
   }
 
-  if (includesAny(text, ["admin", "proof", "release", "pilot readiness", "packet", "artifact", "regenerate"])) {
-    groups.add("admin-release-proof");
-  }
-
   return [...groups];
 }
 
@@ -137,11 +131,6 @@ function groupTone(actions: WorkflowNextActionEntry[]): StatusTone {
   if (actions.some((action) => action.tone === "warning")) return "warning";
   if (actions.some((action) => action.source === "queue")) return "info";
   return "neutral";
-}
-
-function staleEvidenceCount(summary: WorkspaceOperationsSummary) {
-  return safeCount(summary.counts.reportRefreshRecommended) +
-    safeCount(summary.grantModelingSummary?.breakdown.refreshRecommended);
 }
 
 function rtpReadiness(summary: WorkspaceOperationsSummary): WorkflowReadinessRollup {
@@ -316,26 +305,6 @@ function aerialReadiness(summary: WorkspaceOperationsSummary): WorkflowReadiness
   };
 }
 
-function adminReadiness(summary: WorkspaceOperationsSummary, queuedActionCount: number): WorkflowReadinessRollup {
-  const totalCommands = safeCount(summary.counts.queueDepth);
-  const staleEvidence = staleEvidenceCount(summary);
-
-  return {
-    label: staleEvidence > 0 ? "Proof packet has stale inputs" : totalCommands > 0 ? "Proof review needed" : "Proof packet standing check",
-    detail: staleEvidence > 0
-      ? `${pluralize(staleEvidence, "stale evidence item")} should be refreshed before external demo, pilot-readiness, or sale-motion language.`
-      : totalCommands > 0
-        ? `${pluralize(totalCommands, "command")} remain in the workspace queue; review proof posture after the lane work is resolved.`
-        : "No queue pressure is visible, but readiness proof and caveat checks still need a supervised pass before external use.",
-    tone: staleEvidence > 0 ? "warning" : totalCommands > 0 ? "info" : "neutral",
-    metrics: [
-      { label: "Commands", value: totalCommands },
-      { label: "Proof-linked", value: queuedActionCount },
-      { label: "Stale evidence", value: staleEvidence },
-    ],
-  };
-}
-
 const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
   {
     key: "rtp",
@@ -418,19 +387,6 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     cue: (summary) =>
       `${pluralize(safeCount(summary.counts.aerialMissions), "mission")} · ${pluralize(safeCount(summary.counts.aerialReadyPackages), "ready package")}`,
     readiness: (summary) => aerialReadiness(summary),
-  },
-  {
-    key: "admin-release-proof",
-    title: "Admin / release proof",
-    description: "Pilot readiness, caveat checks, artifacts, and release-proof packet evidence.",
-    href: "/admin/pilot-readiness",
-    fallbackTitle: "Check release proof packet",
-    fallbackDetail:
-      "Check release proof, pilot readiness evidence, billing-waiver language, and known caveats before any external demo or sale motion.",
-    fallbackBadges: (summary) => [{ label: "Total commands", value: summary.counts.queueDepth }],
-    cue: (summary, queuedActionCount) =>
-      `${pluralize(safeCount(summary.counts.queueDepth), "total command")} · ${pluralize(queuedActionCount, "proof-linked action")}`,
-    readiness: (summary, queuedActionCount) => adminReadiness(summary, queuedActionCount),
   },
 ];
 
