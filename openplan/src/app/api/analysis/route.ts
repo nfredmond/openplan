@@ -15,7 +15,7 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { fetchCensusForCorridor, bboxFromGeojson } from "@/lib/data-sources/census";
 import { fetchTractOverlayFeatures } from "@/lib/data-sources/census-geometry";
 import { fetchLODESForCorridor } from "@/lib/data-sources/lodes";
-import { fetchCrashPointFeaturesForBbox, fetchCrashesForBbox } from "@/lib/data-sources/crashes";
+import { fetchCrashesForBbox } from "@/lib/data-sources/crashes";
 import { fetchTransitAccessForBbox } from "@/lib/data-sources/transit";
 import { screenEquity } from "@/lib/data-sources/equity";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
@@ -125,13 +125,9 @@ function generateSummary(
   );
   lines.push(`**Walk/Bike Access (baseline):** Tier ${walkBikeAccess.tier}. ${walkBikeAccess.rationale}`);
 
-  // Safety
-  const yearsStr = crashes.yearsQueried.join(", ");
-  lines.push(
-    `**Safety (${yearsStr || "estimated"}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
-      `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} pedestrian, ` +
-      `${crashes.bicyclistFatalities} bicyclist). Crash density: ${crashes.crashesPerSquareMile}/sq mi.`
-  );
+  // Safety — the crash lane writes its own line so an unobserved run cannot be
+  // narrated here as "0 fatal crashes".
+  lines.push(crashes.narrativeLine ?? "");
 
   // Equity
   lines.push(
@@ -345,7 +341,9 @@ export async function POST(request: NextRequest) {
     });
 
     const tractOverlayFeatures = await fetchTractOverlayFeatures(bbox, census.tracts);
-    const crashPointFeatures = crashes.source === "switrs-local" ? await fetchCrashPointFeaturesForBbox(bbox) : [];
+    // Points come from the same fetch that produced the counts, so the map and
+    // the scorecard cannot describe different data.
+    const crashPointFeatures = crashes.points ?? [];
 
     // Build result GeoJSON
     const geojson = {
@@ -378,6 +376,17 @@ export async function POST(request: NextRequest) {
     const summary = generateSummary(census, lodes, transit, crashes, equity, scores, walkBikeAccess);
     const analysisGeneratedAt = new Date().toISOString();
 
+    // Crash provenance drives three separate disclosures below, so resolve it
+    // once. `scores.dataQuality.crashDataAvailable` is derived in scoring.ts
+    // from a substring test on the old source-id vocabulary ("...-estimate"),
+    // which no longer describes anything now that the registry supplies real
+    // adapter ids — the summary's own `observed` flag is the fact.
+    const crashDataAvailable = crashes.observed === true;
+    // A run that could not observe any crash history cannot be a high-confidence
+    // run, whatever the rest of the inputs looked like.
+    const confidence =
+      crashDataAvailable || scores.confidence !== "high" ? scores.confidence : "medium";
+
     // Build metrics object
     const metrics = {
       // Scores
@@ -385,7 +394,7 @@ export async function POST(request: NextRequest) {
       safetyScore: scores.safetyScore,
       equityScore: scores.equityScore,
       overallScore: scores.overallScore,
-      confidence: scores.confidence,
+      confidence,
 
       // Census demographics
       totalPopulation: census.totalPopulation,
@@ -416,14 +425,18 @@ export async function POST(request: NextRequest) {
       walkBikeAccessScoreBoost: walkBikeAccess.scoreBoost,
       walkBikeAccessRationale: walkBikeAccess.rationale,
 
-      // Safety
-      totalFatalCrashes: crashes.totalFatalCrashes,
-      totalFatalities: crashes.totalFatalities,
-      pedestrianFatalities: crashes.pedestrianFatalities,
-      bicyclistFatalities: crashes.bicyclistFatalities,
-      severeInjuryCrashes: crashes.severeInjuryCrashes,
-      totalInjuryCrashes: crashes.totalInjuryCrashes,
-      crashesPerSquareMile: crashes.crashesPerSquareMile,
+      // Safety. null (not 0) whenever no source answered: consumers render null
+      // as "N/A", and `buildInterpretationFacts` drops null metrics, so the AI
+      // narrative physically cannot cite a crash figure that was never measured.
+      totalFatalCrashes: crashDataAvailable ? crashes.totalFatalCrashes : null,
+      totalFatalities: crashDataAvailable ? crashes.totalFatalities : null,
+      pedestrianFatalities: crashDataAvailable ? crashes.pedestrianFatalities : null,
+      bicyclistFatalities: crashDataAvailable ? crashes.bicyclistFatalities : null,
+      severeInjuryCrashes: crashDataAvailable ? crashes.severeInjuryCrashes : null,
+      totalInjuryCrashes: crashDataAvailable ? crashes.totalInjuryCrashes : null,
+      crashesPerSquareMile: crashDataAvailable ? crashes.crashesPerSquareMile : null,
+      crashReportedTotal: crashDataAvailable ? crashes.reportedTotal : null,
+      crashMappedTotal: crashDataAvailable ? crashes.mappedTotal : null,
       crashPointCount: crashPointFeatures.length,
 
       // Equity
@@ -440,7 +453,10 @@ export async function POST(request: NextRequest) {
       title6Flags: equity.title6Flags,
 
       // Data quality
-      dataQuality: scores.dataQuality,
+      dataQuality: {
+        ...scores.dataQuality,
+        crashDataAvailable,
+      },
 
       // Traceability metadata
       methodsVersion: "openplan-gis-methods-v0.2",
@@ -472,17 +488,7 @@ export async function POST(request: NextRequest) {
               : "Transit stop density is using estimated fallback values.",
           fetchedAt: analysisGeneratedAt,
         },
-        crashes: {
-          source: crashes.source,
-          yearsQueried: crashes.yearsQueried,
-          note:
-            crashes.source === "switrs-local"
-              ? "Crash safety metrics are coming from local SWITRS CSV coverage for California." 
-              : crashes.source === "fars-api"
-                ? "Crash safety metrics are coming from FARS fatal crash API coverage."
-                : "Crash safety metrics are using estimated fallback values and require validation.",
-          fetchedAt: analysisGeneratedAt,
-        },
+        crashes: crashes.sourceSnapshot,
         equity: {
           source: equity.source,
           note: "Equity screening is computed from census-derived tract indicators and proxy thresholds.",
@@ -497,7 +503,9 @@ export async function POST(request: NextRequest) {
       ...metrics,
       aiInterpretationSource: aiInterpretationResult.source,
       dataQuality: {
-        ...(scores.dataQuality ?? {}),
+        // Spread the already-corrected block, not `scores.dataQuality`, or the
+        // crash-availability correction above is silently undone here.
+        ...metrics.dataQuality,
         aiInterpretationSource: aiInterpretationResult.source,
         // Provenance disclosure: >0 means the stored narrative is the grounded
         // subset of the model's draft, not the full draft.

@@ -1,171 +1,303 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { fetchCrashPointFeaturesForBbox, fetchCrashesForBbox } from "@/lib/data-sources/crashes";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  buildCrashSourceSnapshot,
+  describeCrashSafety,
+  fetchCrashesForBbox,
+  recentCrashYears,
+} from "@/lib/data-sources/crashes";
+import { resolveEstimatedDomains } from "@/lib/analysis/estimated-source";
+import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
+import { __clearFetchJsonResponseCacheForTests } from "@/lib/data-sources/http";
 
-describe("fetchCrashesForBbox", () => {
-  const originalAbortSignalTimeout = AbortSignal.timeout;
-  const originalSwitrsPath = process.env.SWITRS_CSV_PATH;
+const NEVADA_COUNTY_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
+const DETROIT_BBOX = { minLon: -83.2, minLat: 42.2, maxLon: -83.0, maxLat: 42.4 };
+const BERLIN_BBOX = { minLon: 13.2, minLat: 52.4, maxLon: 13.6, maxLat: 52.6 };
 
-  afterEach(async () => {
+const NOW = new Date("2026-07-23T00:00:00Z");
+
+function jsonResponse(body: unknown) {
+  return {
+    ok: true,
+    status: 200,
+    headers: new Headers({ "content-type": "application/json" }),
+    json: async () => body,
+    text: async () => JSON.stringify(body),
+  } as unknown as Response;
+}
+
+function errorResponse(status: number) {
+  return {
+    ok: false,
+    status,
+    headers: new Headers(),
+    json: async () => ({}),
+    text: async () => "",
+  } as unknown as Response;
+}
+
+const CCRS_PACKAGE_BODY = {
+  result: {
+    resources: [
+      { id: "res-2025", name: "Crashes_2025" },
+      { id: "res-2024", name: "Crashes_2024" },
+    ],
+  },
+};
+
+describe("recentCrashYears", () => {
+  it("derives a rolling window instead of pinning a vintage", () => {
+    // The retired implementation hardcoded 2022/2021/2020, which quietly became
+    // "no crashes found" as the calendar moved on.
+    expect(recentCrashYears(new Date("2026-07-23T00:00:00Z"))).toEqual([2025, 2024, 2023, 2022]);
+    expect(recentCrashYears(new Date("2031-01-01T00:00:00Z"))).toEqual([2030, 2029, 2028, 2027]);
+  });
+});
+
+describe("fetchCrashesForBbox — the single crash lane", () => {
+  beforeEach(() => {
+    __clearFetchJsonResponseCacheForTests();
+  });
+
+  afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
-    process.env.SWITRS_CSV_PATH = originalSwitrsPath;
-
-    Object.defineProperty(AbortSignal, "timeout", {
-      configurable: true,
-      writable: true,
-      value: originalAbortSignalTimeout,
-    });
+    __clearFetchJsonResponseCacheForTests();
   });
 
-  it("supports FARS responses with a top-level Results array of crash records", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        Results: [
-          {
-            FATALS: 2,
-            PEDS: "1",
-            BICYCLISTS: "0",
+  it("reports out-of-coverage without contacting anything or inventing a figure", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+
+    const result = await fetchCrashesForBbox(BERLIN_BBOX, { now: NOW });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.observed).toBe(false);
+    expect(result.source).toBe("out-of-coverage");
+    expect(result.checkedSources).toEqual(expect.arrayContaining(["ccrs-ca", "fars-national"]));
+    expect(result.points).toEqual([]);
+    // The retired fars-estimate tier produced fatalities from bbox area alone.
+    expect(result.totalFatalities).toBe(0);
+    expect(result.severeInjuryCrashes).toBeNull();
+    expect(result.totalInjuryCrashes).toBeNull();
+  });
+
+  it("summarizes observed CCRS records for a California study area", async () => {
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("package_show")) return jsonResponse(CCRS_PACKAGE_BODY);
+      if (url.includes("count(*)")) return jsonResponse({ result: { records: [{ n: "3" }] } });
+      if (url.includes("res-2025")) {
+        return jsonResponse({
+          result: {
+            records: [
+              {
+                "Collision Id": 1,
+                "Crash Date Time": "2025-04-01T08:00:00",
+                Latitude: "39.2",
+                Longitude: "-121.0",
+                NumberKilled: "1",
+                NumberInjured: 0,
+                MotorVehicleInvolvedWithDesc: "PEDESTRIAN",
+              },
+              {
+                "Collision Id": 2,
+                "Crash Date Time": "2025-04-02T08:00:00",
+                Latitude: "39.25",
+                Longitude: "-121.05",
+                NumberKilled: "0",
+                NumberInjured: 2,
+                MotorVehicleInvolvedWithDesc: "BICYCLE",
+              },
+              {
+                "Collision Id": 3,
+                "Crash Date Time": "2025-04-03T08:00:00",
+                Latitude: "39.26",
+                Longitude: "-121.06",
+                NumberKilled: "0",
+                NumberInjured: 0,
+              },
+            ],
           },
-        ],
-      }),
+        });
+      }
+      return jsonResponse({ result: { records: [] } });
     });
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
-    vi.stubGlobal("fetch", fetchMock as typeof fetch);
-    delete process.env.SWITRS_CSV_PATH;
+    const result = await fetchCrashesForBbox(NEVADA_COUNTY_BBOX, { now: NOW });
 
-    const result = await fetchCrashesForBbox({
-      minLon: -83.2,
-      maxLon: -83.0,
-      minLat: 42.2,
-      maxLat: 42.4,
-    });
-
-    expect(result.source).toBe("fars-api");
-    expect(result.totalFatalCrashes).toBe(3);
-    expect(result.totalFatalities).toBe(6);
-    expect(result.pedestrianFatalities).toBe(3);
-    expect(result.bicyclistFatalities).toBe(0);
-    expect(result.yearsQueried).toEqual([2022, 2021, 2020]);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(result.observed).toBe(true);
+    expect(result.source).toBe("ccrs-ca");
+    expect(result.totalFatalCrashes).toBe(1);
+    expect(result.totalFatalities).toBe(1);
+    expect(result.pedestrianFatalities).toBe(1);
+    expect(result.totalInjuryCrashes).toBe(1);
+    // CCRS Crashes_* cannot separate KABCO A, so this must be "unknown", not 0.
+    expect(result.severeInjuryCrashes).toBeNull();
+    expect(result.crashDensityBasis).toBe("injury_and_fatal");
+    // The property-damage-only crash is counted but not plotted.
+    expect(result.points.map((point) => point.properties.severityBucket)).toEqual([
+      "fatal",
+      "injury",
+    ]);
+    expect(result.points[0]?.properties.source).toBe("ccrs-ca");
   });
 
-  it("falls back to estimate when FARS returns an unexpected payload shape", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
-        status: "ok",
-      }),
-    });
+  it("reports an unreachable source as unavailable rather than as zero crashes", async () => {
+    // The distinction this test protects: a 403/500 from data.ca.gov used to be
+    // indistinguishable from "this corridor had no crashes", which reads as a
+    // safe corridor and inflates the safety score.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => errorResponse(403)) as unknown as typeof fetch
+    );
 
-    vi.stubGlobal("fetch", fetchMock as typeof fetch);
-    delete process.env.SWITRS_CSV_PATH;
+    const result = await fetchCrashesForBbox(NEVADA_COUNTY_BBOX, { now: NOW });
 
-    const result = await fetchCrashesForBbox({
-      minLon: -83.2,
-      maxLon: -83.0,
-      minLat: 42.2,
-      maxLat: 42.4,
-    });
-
-    expect(result.source).toBe("fars-estimate");
-    // Zero years were successfully queried, so none may be reported. Claiming
-    // the requested years here would present an area-based estimate as three
-    // specific years of observed crash data.
-    expect(result.yearsQueried).toEqual([]);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(result.observed).toBe(false);
+    expect(result.source).toBe("source-unavailable");
+    expect(result.unavailableReason).toBeTruthy();
+    expect(result.totalFatalCrashes).toBe(0);
+    expect(result.crashesPerSquareMile).toBe(0);
   });
 
-  it("uses a manual timeout fallback when AbortSignal.timeout is unavailable", async () => {
-    Object.defineProperty(AbortSignal, "timeout", {
-      configurable: true,
-      writable: true,
-      value: undefined,
-    });
-
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: vi.fn().mockResolvedValue({
+  it("falls through to FARS for a US study area outside any state adapter", async () => {
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (!url.includes("fromCaseYear=2023")) return jsonResponse({ Results: [] });
+      return jsonResponse({
         Results: [
           [
             {
-              FATALS: "1",
-              PEDS: "0",
-              BICYCLISTS: "0",
+              ST_CASE: 261234,
+              CaseYear: 2023,
+              CRASH_DT: "2023-06-04T00:00:00",
+              LATITUDE: 42.331,
+              LONGITUD: -83.045,
+              FATALS: 2,
+              PEDS: 1,
+              BICYCLISTS: 0,
+            },
+            {
+              // Unknown-coordinate sentinels: must never be plotted.
+              ST_CASE: 261235,
+              CaseYear: 2023,
+              LATITUDE: 77.7777,
+              LONGITUD: 777.7777,
+              FATALS: 1,
             },
           ],
         ],
-      }),
+      });
     });
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
 
-    vi.stubGlobal("fetch", fetchMock as typeof fetch);
-    delete process.env.SWITRS_CSV_PATH;
+    const result = await fetchCrashesForBbox(DETROIT_BBOX, { now: NOW });
 
-    const result = await fetchCrashesForBbox({
-      minLon: -83.2,
-      maxLon: -83.0,
-      minLat: 42.2,
-      maxLat: 42.4,
-    });
-
-    expect(result.source).toBe("fars-api");
-    expect(result.totalFatalCrashes).toBe(3);
-    expect(result.totalFatalities).toBe(3);
-    expect(result.yearsQueried).toEqual([2022, 2021, 2020]);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(result.observed).toBe(true);
+    expect(result.source).toBe("fars-national");
+    expect(result.totalFatalCrashes).toBe(1);
+    expect(result.totalFatalities).toBe(2);
+    expect(result.pedestrianFatalities).toBe(1);
+    // Fatal-only census: injury counts are unavailable, not zero.
+    expect(result.totalInjuryCrashes).toBeNull();
+    expect(result.crashDensityBasis).toBe("fatal_only");
+    expect(result.reportedTotal).toBe(2);
+    expect(result.mappedTotal).toBe(1);
+    expect(result.points).toHaveLength(1);
+    expect(result.points[0]?.properties.severityBucket).toBe("fatal");
   });
 
-  it("builds SWITRS crash summaries and point features from a local CSV", async () => {
-    const tempDir = await mkdtemp(join(tmpdir(), "openplan-switrs-"));
-    const csvPath = join(tempDir, "switrs.csv");
-
-    await writeFile(
-      csvPath,
-      [
-        "LATITUDE,LONGITUDE,COLLISION_YEAR,COLLISION_SEVERITY,COUNT_FATALITY,COUNT_INJURED,PEDESTRIAN_ACCIDENT,BICYCLE_ACCIDENT",
-        "39.1000,-121.6000,2023,1,1,0,Y,N",
-        "39.1100,-121.6100,2023,2,0,2,N,Y",
-        "39.1200,-121.6200,2022,4,0,1,N,N",
-        "38.0000,-120.0000,2023,1,1,0,Y,N",
-      ].join("\n"),
-      "utf8"
+  it("reports FARS unavailable when every requested year fails", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => errorResponse(403)) as unknown as typeof fetch
     );
 
-    process.env.SWITRS_CSV_PATH = csvPath;
+    const result = await fetchCrashesForBbox(DETROIT_BBOX, { now: NOW });
 
-    try {
-      const bbox = {
-        minLon: -121.7,
-        maxLon: -121.5,
-        minLat: 39.05,
-        maxLat: 39.2,
-      };
+    expect(result.observed).toBe(false);
+    expect(result.source).toBe("source-unavailable");
+    expect(result.sourceLabel).toContain("FARS");
+  });
+});
 
-      const summary = await fetchCrashesForBbox(bbox);
-      const features = await fetchCrashPointFeaturesForBbox(bbox);
+describe("crash disclosure reaches the existing Explore seam", () => {
+  const unobserved = {
+    observed: false as const,
+    source: "out-of-coverage" as const,
+    sourceLabel: "No covering crash source",
+    attribution: null,
+    severityCompleteness: null,
+    totalFatalCrashes: 0,
+    totalFatalities: 0,
+    pedestrianFatalities: 0,
+    bicyclistFatalities: 0,
+    severeInjuryCrashes: null,
+    totalInjuryCrashes: null,
+    yearsQueried: [],
+    crashesPerSquareMile: 0,
+    crashDensityBasis: "none" as const,
+    reportedTotal: 0,
+    mappedTotal: 0,
+    truncated: false,
+    points: [],
+    checkedSources: ["ccrs-ca", "fars-national"],
+    unavailableReason: null,
+  };
 
-      expect(summary.source).toBe("switrs-local");
-      expect(summary.totalFatalCrashes).toBe(1);
-      expect(summary.totalFatalities).toBe(1);
-      expect(summary.severeInjuryCrashes).toBe(1);
-      expect(summary.totalInjuryCrashes).toBe(2);
-      expect(summary.pedestrianFatalities).toBe(1);
-      expect(summary.bicyclistFatalities).toBe(0);
-      expect(summary.yearsQueried).toEqual([2022, 2023]);
+  it("omits the snapshot source when nothing was observed, so nothing renders 'Live'", () => {
+    const snapshot = buildCrashSourceSnapshot(unobserved, "2026-07-23T00:00:00.000Z");
 
-      expect(features).toHaveLength(3);
-      expect(features.map((feature) => feature.properties.severityBucket)).toEqual([
-        "fatal",
-        "severe_injury",
-        "injury",
-      ]);
-      expect(features[0]?.properties.pedestrianInvolved).toBe(true);
-      expect(features[1]?.properties.bicyclistInvolved).toBe(true);
-    } finally {
-      await rm(tempDir, { recursive: true, force: true });
-    }
+    // A source token here would satisfy `crashProvenanceKnown` AND fail
+    // `isEstimatedSource`, which is precisely how a run with no crash data ends
+    // up advertised as live crash coverage.
+    expect(snapshot.source).toBeUndefined();
+    expect(snapshot.state).toBe("out-of-coverage");
+    expect(String(snapshot.note)).toContain("No crash source covers this study area");
+    expect(String(snapshot.note)).toContain("were not estimated");
+
+    const metrics = {
+      sourceSnapshots: { crashes: snapshot },
+      dataQuality: { censusAvailable: true, crashDataAvailable: false },
+    };
+
+    expect(resolveEstimatedDomains(metrics).crashes).toBe(true);
+    const crashItem = buildSourceTransparency(metrics).find((item) => item.key === "crashes");
+    expect(crashItem?.status).not.toBe("Live");
+  });
+
+  it("carries the adapter id and its severity limits when a source did answer", () => {
+    const snapshot = buildCrashSourceSnapshot(
+      {
+        ...unobserved,
+        observed: true,
+        source: "fars-national",
+        sourceLabel: "NHTSA Fatality Analysis Reporting System (FARS)",
+        severityCompleteness: "fatal_only",
+        crashDensityBasis: "fatal_only",
+        reportedTotal: 9,
+        mappedTotal: 7,
+        yearsQueried: [2023],
+      },
+      "2026-07-23T00:00:00.000Z"
+    );
+
+    expect(snapshot.source).toBe("fars-national");
+    expect(String(snapshot.note)).toContain("Fatal crashes only");
+    // Ungeocoded crashes stay visible instead of quietly shrinking the total.
+    expect(String(snapshot.note)).toContain("9 crashes matched, 7 carried coordinates");
+
+    const metrics = {
+      sourceSnapshots: { crashes: snapshot },
+      dataQuality: { censusAvailable: true, crashDataAvailable: true },
+    };
+    expect(resolveEstimatedDomains(metrics).crashes).toBe(false);
+  });
+
+  it("narrates an unobserved study area without stating a crash count", () => {
+    const line = describeCrashSafety(unobserved);
+    expect(line).toContain("not available");
+    expect(line).not.toMatch(/\b0 fatal crashes\b/);
   });
 });

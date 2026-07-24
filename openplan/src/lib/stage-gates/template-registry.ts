@@ -43,6 +43,35 @@ export type StageGateJurisdiction = {
   label: string;
 };
 
+/**
+ * What a caller knows about a workspace's own jurisdiction when asking which
+ * template covers it.
+ *
+ * Deliberately looser than `StageGateJurisdiction`: it carries no label, and
+ * `subdivision` may be null, which is a meaningful state — "this workspace is in
+ * this country, but which subdivision is not established". It is the shape
+ * `resolveJurisdiction()` in src/lib/workspaces/home-geography.ts returns, so a
+ * workspace's home geography can be handed here without translation.
+ */
+export type StageGateJurisdictionQuery = {
+  country: string;
+  subdivision?: string | null;
+};
+
+/**
+ * Outcome of asking which template covers a jurisdiction.
+ *
+ * `ambiguous` exists so the registry never picks arbitrarily between two
+ * templates that cover the same place equally well. Two California packs
+ * authored by different agencies are a legitimate configuration; silently
+ * binding whichever was registered first would put one agency's checklist in
+ * front of the other's planners with nothing to indicate a choice was made.
+ */
+export type StageGateJurisdictionMatch =
+  | { kind: "matched"; entry: StageGateTemplateEntry }
+  | { kind: "ambiguous"; entries: readonly StageGateTemplateEntry[] }
+  | { kind: "no_template" };
+
 export type StageGateTemplateEvidence = {
   evidence_id: string;
   title: string;
@@ -90,6 +119,18 @@ export type StageGateTemplateDescriptor = {
    * jurisdiction a workspace operates in. See `INTERIM_DEFAULT_RATIONALE`.
    */
   isInterimDefault: boolean;
+  /**
+   * Caltrans LAPM form ids were deferred past v0.2, and the California pack says
+   * so on itself. It lives here, on the template, precisely so that a template
+   * from a jurisdiction with no LAPM does not declare it — it used to be stamped
+   * onto every binding, which told an Ohio agency the status of a California
+   * form set.
+   *
+   * The registry does not interpret this; it carries it. If a second
+   * jurisdiction-specific declaration ever appears, generalize to a declarations
+   * map rather than adding a second named field here.
+   */
+  lapmFormIdsStatus?: string;
 };
 
 export type StageGateTemplateEntry = {
@@ -103,12 +144,21 @@ export type StageGateTemplateRegistration = {
   artifact: unknown;
   jurisdiction: StageGateJurisdiction;
   isInterimDefault?: boolean;
+  /** See `StageGateTemplateDescriptor.lapmFormIdsStatus`. */
+  lapmFormIdsStatus?: string;
 };
 
 export type StageGateTemplateRegistry = {
   /** Every registered template, in registration order. */
   list: () => readonly StageGateTemplateDescriptor[];
   get: (templateId: string) => StageGateTemplateEntry | null;
+  /**
+   * Which registered template covers a jurisdiction — the lookup that lets a
+   * workspace's own geography choose its gates instead of inheriting whichever
+   * pack shipped first. Never returns the interim default as a consolation
+   * prize; "no template" is an answer the caller must disclose.
+   */
+  findByJurisdiction: (jurisdiction: StageGateJurisdictionQuery) => StageGateJurisdictionMatch;
   /** The interim default's id, or null when the registry declares none. */
   defaultTemplateId: string | null;
 };
@@ -116,15 +166,22 @@ export type StageGateTemplateRegistry = {
 /**
  * Why a default exists at all, in one place so the UI can quote it.
  *
- * There is currently no way to know a workspace's jurisdiction: workspaces have
- * no geography, and sign-up never asks. Until they do, a workspace that does not
- * name a template gets this one — and the binding says so, via
- * `templateSelection: "interim_unconfigured_default"`, so the product can
- * disclose the assumption instead of presenting California's gates as though the
- * workspace had chosen them.
+ * A workspace can now state where it works (its home geography), and
+ * `findByJurisdiction` binds it to a template authored for that jurisdiction
+ * when one is registered. The default covers what is left: a workspace that has
+ * not stated a geography, and a workspace whose jurisdiction OpenPlan has not
+ * authored a pack for yet. Neither is a reason to present another
+ * jurisdiction's gates as chosen — every binding that lands here is marked
+ * `templateSelection: "interim_unconfigured_default"` and carries the reason.
  */
 export const INTERIM_DEFAULT_RATIONALE =
-  "No workspace jurisdiction is recorded yet, so an explicitly-labeled interim default template is applied and disclosed.";
+  "No stage-gate template is registered for this workspace's jurisdiction, so an explicitly-labeled interim default template is applied and disclosed.";
+
+/** Trim-and-upcase a jurisdiction code, treating blank as absent. */
+function normalizeJurisdictionPart(value: string | null | undefined): string | null {
+  const trimmed = value?.trim().toUpperCase();
+  return trimmed && trimmed.length > 0 ? trimmed : null;
+}
 
 function requireString(raw: Record<string, unknown>, key: string): string {
   const value = raw[key];
@@ -212,15 +269,66 @@ export function createStageGateTemplateRegistry(
       jurisdictionCode: document.jurisdiction,
       jurisdiction: registration.jurisdiction,
       isInterimDefault: Boolean(registration.isInterimDefault),
+      ...(registration.lapmFormIdsStatus
+        ? { lapmFormIdsStatus: registration.lapmFormIdsStatus }
+        : {}),
     };
 
     descriptors.push(descriptor);
     entries.set(document.template_id, { descriptor, document });
   }
 
+  /**
+   * Templates that cover a jurisdiction, most specific tier only.
+   *
+   * Two rules, both load-bearing:
+   *
+   *   1. A subdivision-scoped template covers ONLY a workspace whose subdivision
+   *      it names. A nationwide template covers every workspace in its country,
+   *      so it is a real match — just a less specific one, used when no
+   *      subdivision pack exists.
+   *   2. When the caller cannot say which subdivision the workspace is in, only
+   *      nationwide templates are candidates. Picking a subdivision pack for a
+   *      workspace whose subdivision is unknown is the exact substitution this
+   *      registry exists to prevent.
+   */
+  function coveringEntries(query: StageGateJurisdictionQuery): readonly StageGateTemplateEntry[] {
+    const country = normalizeJurisdictionPart(query?.country);
+    if (!country) return [];
+    const subdivision = normalizeJurisdictionPart(query?.subdivision);
+
+    const inCountry = descriptors.filter(
+      (descriptor) => normalizeJurisdictionPart(descriptor.jurisdiction.country) === country
+    );
+
+    const subdivisionScoped = subdivision
+      ? inCountry.filter(
+          (descriptor) =>
+            normalizeJurisdictionPart(descriptor.jurisdiction.subdivision) === subdivision
+        )
+      : [];
+
+    const tier =
+      subdivisionScoped.length > 0
+        ? subdivisionScoped
+        : inCountry.filter(
+            (descriptor) => normalizeJurisdictionPart(descriptor.jurisdiction.subdivision) === null
+          );
+
+    return tier
+      .map((descriptor) => entries.get(descriptor.templateId))
+      .filter((entry): entry is StageGateTemplateEntry => Boolean(entry));
+  }
+
   return {
     list: () => descriptors,
     get: (templateId) => entries.get(templateId) ?? null,
+    findByJurisdiction: (jurisdiction) => {
+      const covering = coveringEntries(jurisdiction);
+      if (covering.length === 0) return { kind: "no_template" };
+      if (covering.length === 1) return { kind: "matched", entry: covering[0] };
+      return { kind: "ambiguous", entries: covering };
+    },
     defaultTemplateId,
   };
 }
@@ -237,9 +345,11 @@ export const BUILT_IN_STAGE_GATE_TEMPLATE_REGISTRATIONS: readonly StageGateTempl
     artifact: caStageGatesTemplate,
     jurisdiction: { country: "US", subdivision: "CA", label: "California, United States" },
     // First and (so far) only pack authored, so it carries the interim default
-    // until workspaces can state their own jurisdiction. Not a statement that
-    // California is OpenPlan's home jurisdiction.
+    // for workspaces whose jurisdiction has no pack of its own. Not a statement
+    // that California is OpenPlan's home jurisdiction.
     isInterimDefault: true,
+    // Caltrans-specific, and declared here rather than on every binding.
+    lapmFormIdsStatus: "deferred_to_v0_2",
   },
 ];
 

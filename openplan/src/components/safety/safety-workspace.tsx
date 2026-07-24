@@ -4,7 +4,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { summarizeCorridorText } from "@/lib/models/study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
-import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
+import { placeKindSchema, type PlaceBoundaryResponse } from "@/lib/api/place-geographies";
+import { corridorGeojsonSchema } from "@/lib/models/run-launch";
+import {
+  homeGeographyBbox,
+  homeGeographyLabel,
+  TIGERWEB_GEOGRAPHY_SOURCE,
+  type WorkspaceHomeGeography,
+} from "@/lib/workspaces/home-geography";
 import { SafetyCrashMap } from "./safety-crash-map";
 import {
   COVERAGE_STATE_COPY,
@@ -22,16 +29,71 @@ import type { CrashSeverity } from "@/lib/safety/sources/types";
 
 const SEVERITY_ORDER: CrashSeverity[] = ["fatal", "severe_injury", "injury", "pdo"];
 
+export type StudyAreaPrefill = {
+  corridorText: string;
+  place: PlaceBoundaryResponse | null;
+  label: string | null;
+};
+
+const EMPTY_PREFILL: StudyAreaPrefill = { corridorText: "", place: null, label: null };
+
+/**
+ * Turn a workspace's stated home geography back into a study-area selection.
+ *
+ * This is the inverse of `homeGeographyFromPlaceBoundary` — it exists so an
+ * agency that has already told the app where it works does not have to re-pick
+ * its own county on every visit. It is still a PRE-FILL, not a lock: the picker
+ * above it can change or clear it exactly as before.
+ *
+ * Two honesty rules:
+ *
+ *   - Without the stored boundary geometry there is no prefill at all. A bbox
+ *     rectangle drawn around a county is not that county, and quietly analyzing
+ *     the wrong shape is worse than asking the user to pick.
+ *   - `place` (the identity a lossless county filter is derived from) is only
+ *     reconstructed for a source whose refs really are Census GEOIDs. Another
+ *     resolver's ref would be a different namespace, so it stays bbox-only.
+ */
+export function studyAreaPrefillFromHomeGeography(
+  geo: WorkspaceHomeGeography | null | undefined
+): StudyAreaPrefill {
+  if (!geo) return EMPTY_PREFILL;
+
+  const geometry = corridorGeojsonSchema.safeParse(geo.home_geometry_geojson);
+  if (!geometry.success) return EMPTY_PREFILL;
+
+  const label = homeGeographyLabel(geo);
+  const corridorText = JSON.stringify(geometry.data);
+
+  const kind = placeKindSchema.safeParse(geo.home_geography_kind);
+  const bbox = homeGeographyBbox(geo);
+  const geoid = geo.home_geography_ref;
+  const place: PlaceBoundaryResponse | null =
+    geo.home_geography_source === TIGERWEB_GEOGRAPHY_SOURCE && kind.success && bbox && geoid
+      ? { kind: kind.data, geoid, label, geojson: geometry.data, bbox }
+      : null;
+
+  return { corridorText, place, label };
+}
+
 type SafetyWorkspaceProps = {
   workspaceId: string;
   latestIngest: SafetyIngestSummary | null;
+  /**
+   * The workspace's stated home geography, read on the server. `null` (or
+   * absent) keeps the original behavior: nothing is preselected and nothing is
+   * fetched until the user picks a study area.
+   */
+  homeGeography?: WorkspaceHomeGeography | null;
 };
 
-export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspaceProps) {
-  // The study area comes from the user, always. There is no default geography —
-  // see the "Product non-negotiables" section of CLAUDE.md.
-  const [corridorText, setCorridorText] = useState("");
-  const [place, setPlace] = useState<PlaceBoundaryResponse | null>(null);
+export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = null }: SafetyWorkspaceProps) {
+  // The study area is still the user's to choose. The only thing that changes
+  // when a workspace has stated a home geography is where the picker STARTS —
+  // no place is ever invented here, and clearing the area clears it fully.
+  const prefill = useMemo(() => studyAreaPrefillFromHomeGeography(homeGeography), [homeGeography]);
+  const [corridorText, setCorridorText] = useState(prefill.corridorText);
+  const [place, setPlace] = useState<PlaceBoundaryResponse | null>(prefill.place);
   const [ingest, setIngest] = useState<SafetyIngestSummary | null>(latestIngest);
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
   const [severities, setSeverities] = useState<CrashSeverity[]>([]);
@@ -199,6 +261,13 @@ export function SafetyWorkspace({ workspaceId, latestIngest }: SafetyWorkspacePr
           onCorridorChange={setCorridorText}
           onPlaceResolved={setPlace}
         />
+        {prefill.corridorText !== "" && corridorText === prefill.corridorText && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            Starting from this workspace&rsquo;s home geography
+            {prefill.label ? <> ({prefill.label})</> : null}. Search or draw above to analyze
+            somewhere else.
+          </p>
+        )}
         {bbox && countyCode === null && (
           <p className="mt-2 text-xs text-muted-foreground">
             Counts for this selection come from the mapped area only. Pick a California{" "}

@@ -19,7 +19,8 @@ import type { TransitAccessSummary } from "./transit";
 
 export interface CorridorScores {
   accessibilityScore: number;
-  safetyScore: number;
+  /** Null when no crash source answered — never a fabricated stand-in. */
+  safetyScore: number | null;
   equityScore: number;
   overallScore: number;
   confidence: "high" | "medium" | "low";
@@ -79,7 +80,19 @@ function computeAccessibility(
  * This represents how safe the corridor currently is.
  * A low safety score = strong justification for safety investment.
  */
-function computeSafety(crashes: CrashSummary): number {
+/**
+ * Safety score, or null when no crash source answered.
+ *
+ * Null is load-bearing. Every count on an unobserved summary is zero by schema,
+ * and zeros walk straight through this function's deductions and then EARN THE
+ * "no fatalities" BONUS — an area with no crash data scored 95/100, i.e. safer
+ * than almost anywhere with real data, and that number flowed into the overall
+ * composite and into grant narratives. Absence of evidence is not evidence of
+ * safety, so it must not produce a score at all.
+ */
+function computeSafety(crashes: CrashSummary): number | null {
+  if (!crashes.observed) return null;
+
   // Base: start at 85 (most corridors are reasonably safe)
   let score = 85;
 
@@ -120,14 +133,31 @@ export function computeCorridorScores(
   const safetyScore = computeSafety(crashes);
   const equityScore = computeEquity(equity);
 
-  // Overall: weighted average (accessibility 35%, safety 35%, equity 30%)
+  // Overall: weighted average over the components that EXIST. When no crash
+  // source answered there is no safety score, and its 35% is redistributed
+  // across accessibility and equity rather than filled with a fabricated value.
+  const weighted: Array<[number, number]> =
+    safetyScore === null
+      ? [
+          [accessibilityScore, 0.35],
+          [equityScore, 0.3],
+        ]
+      : [
+          [accessibilityScore, 0.35],
+          [safetyScore, 0.35],
+          [equityScore, 0.3],
+        ];
+  const weightTotal = weighted.reduce((sum, [, weight]) => sum + weight, 0);
   const overallScore = clamp(
-    accessibilityScore * 0.35 + safetyScore * 0.35 + equityScore * 0.30
+    weighted.reduce((sum, [value, weight]) => sum + value * weight, 0) / weightTotal
   );
 
   // Data quality assessment
   const censusAvailable = census.tracts.length > 0;
-  const crashDataAvailable = !crashes.source.includes("estimate");
+  // Ask the summary, not its source string. This used to test for "estimate",
+  // a tier that no longer exists — so it silently reported every study area as
+  // having crash data, including areas where no source covers them at all.
+  const crashDataAvailable = crashes.observed;
 
   const confidence =
     censusAvailable && crashDataAvailable

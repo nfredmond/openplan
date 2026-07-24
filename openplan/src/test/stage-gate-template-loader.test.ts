@@ -41,8 +41,27 @@ describe("resolveStageGateTemplateBinding", () => {
       bindingMode: "workspace_bootstrap_interim",
       templateSelection: "interim_unconfigured_default",
       lapmFormIdsStatus: "deferred_to_v0_2",
+      // The binding now carries WHY it fell back and what the workspace's own
+      // jurisdiction was. Without these an Ohio agency would receive California
+      // gates indistinguishable from ones it had chosen — the fallback has to
+      // announce itself, not just exist.
+      interimDefaultReason: "no_workspace_jurisdiction",
+      workspaceJurisdiction: null,
     });
     expect(DEFAULT_STAGE_GATE_TEMPLATE_ID).toBe("ca_stage_gates_v0_1");
+  });
+
+  it("names the workspace's own jurisdiction when it has one but no template matches", () => {
+    // The honesty case: an Ohio workspace still gets usable gates, but the
+    // binding records that they are an interim stand-in for OH rather than
+    // Ohio's actual delivery gates.
+    const result = resolveStageGateTemplateBinding(undefined, {
+      jurisdiction: { country: "US", subdivision: "OH" },
+    });
+
+    expect(result.templateSelection).toBe("interim_unconfigured_default");
+    expect(result.interimDefaultReason).toBe("no_template_for_jurisdiction");
+    expect(result.workspaceJurisdiction).toEqual({ country: "US", subdivision: "OH" });
   });
 
   it("supports canonical project-create binding mode", () => {

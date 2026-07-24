@@ -9,6 +9,10 @@ import {
   loadCurrentWorkspaceMembership,
   resolveWorkspaceShellState,
 } from "@/lib/workspaces/current";
+import {
+  deriveHomeMapView,
+  parseWorkspaceHomeGeography,
+} from "@/lib/workspaces/home-geography";
 
 import { CartographicProvider } from "./cartographic-context";
 import { CartographicZoomControls } from "./cartographic-zoom-controls";
@@ -91,6 +95,27 @@ export async function CartographicShell({ children }: { children: React.ReactNod
     isAuthenticated: Boolean(user),
   });
 
+  // Opening camera for the shell backdrop when the workspace has no mapped
+  // features to frame yet. Read here so the client backdrop never fetches
+  // geography ad hoc, and only the bbox columns are selected — the stored
+  // boundary geometry can be megabytes and would ride the RSC payload of every
+  // (app) page for a camera that needs four numbers. An error (column missing
+  // because the migration has not been applied) leaves `data` null, which
+  // parses to null, which frames neutrally.
+  const homeGeographyRow = membership
+    ? (
+        await supabase
+          .from("workspaces")
+          .select("home_geography_source, home_min_lon, home_min_lat, home_max_lon, home_max_lat")
+          .eq("id", membership.workspace_id)
+          .maybeSingle()
+      ).data
+    : null;
+  // Derived against the helper's reference viewport rather than the real
+  // backdrop size, which is unknowable on the server. It errs wide, so the
+  // whole home geography stays on screen instead of being cropped.
+  const homeMapView = deriveHomeMapView(parseWorkspaceHomeGeography(homeGeographyRow));
+
   const workspaceUpdatedLabel =
     formatUpdatedLabel(workspace?.billing_updated_at ?? workspace?.created_at ?? null) ?? null;
   const membershipPending = shellState.membershipStatus === "not_provisioned";
@@ -113,7 +138,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
   return (
     <CartographicProvider>
       <div className="op-cart-shell">
-        <CartographicMapBackdrop />
+        <CartographicMapBackdrop homeMapView={homeMapView} />
 
         <CartographicRail groups={buildNavGroups(isOperator)} />
 

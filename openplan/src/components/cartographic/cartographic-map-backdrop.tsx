@@ -14,6 +14,7 @@ import { engagementItemFeatureToSelection } from "@/lib/cartographic/engagement-
 import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import type { HomeMapView } from "@/lib/workspaces/home-geography";
 import { useTheme } from "@/components/theme-provider";
 
 import {
@@ -34,12 +35,19 @@ const HAS_INVALID_PUBLIC_MAPBOX_TOKEN = hasInvalidPublicMapboxToken(
 // Routes that own their own map and should suppress the shell backdrop.
 const MAP_OWNING_ROUTES = ["/explore"];
 
-// The shell backdrop has no study area of its own, so it opens on the shared
-// neutral view and then frames whatever the workspace actually contains (see
-// the initial-fit effect). A place-shaped default meant every workspace,
-// anywhere on earth, opened on one small California town.
-const INITIAL_CENTER = CONTINENTAL_US_CENTER;
-const INITIAL_ZOOM = 3.4;
+// Opening framing, in strict order of how much the map actually knows:
+//
+//   1. the workspace's own features — applied by the initial-fit effect below,
+//      once a payload carrying geometry arrives;
+//   2. the workspace's stated home geography — `homeMapView`, resolved on the
+//      server so this client component never guesses or fetches it;
+//   3. the shared neutral continental view.
+//
+// Only (3) is a constant, and it is deliberately not a place. A place-shaped
+// default meant every workspace, anywhere on earth, opened on one small
+// California town.
+const NEUTRAL_CENTER = CONTINENTAL_US_CENTER;
+const NEUTRAL_ZOOM = 3.4;
 
 const AOI_SOURCE_ID = "cartographic-aerial-mission-aois";
 const AOI_FILL_LAYER_ID = "cartographic-aerial-mission-aois-fill";
@@ -119,7 +127,7 @@ const POINT_FIT_ZOOM = 14;
 // as a street-level zoom onto one marker.
 const INITIAL_FIT_MAX_ZOOM = 11;
 
-type MissionAoiFeatureCollection = {
+export type MissionAoiFeatureCollection = {
   type: "FeatureCollection";
   features: Array<{
     type: "Feature";
@@ -140,13 +148,23 @@ function routeOwnsMap(pathname: string): boolean {
 }
 
 /**
+ * The only thing the bounds walker needs from a bounds object. Typing against
+ * this instead of `mapboxgl.LngLatBounds` keeps the walker testable without a
+ * live Mapbox instance — the framing rules are the part worth pinning, and they
+ * are pure.
+ */
+export type BoundsAccumulator = {
+  extend(position: [number, number]): unknown;
+};
+
+/**
  * Fold every feature of a collection into a bounds accumulator, reusing the
  * same geometry rules as fit-to-selection so the initial framing and a later
  * click agree on what a feature's extent is. Geometries the shared helper
  * rejects are skipped rather than guessed at.
  */
-function extendBoundsWithCollection(
-  bounds: mapboxgl.LngLatBounds,
+export function extendBoundsWithCollection(
+  bounds: BoundsAccumulator,
   collection: MissionAoiFeatureCollection | null,
 ): void {
   for (const feature of collection?.features ?? []) {
@@ -161,7 +179,17 @@ function extendBoundsWithCollection(
   }
 }
 
-export function CartographicMapBackdrop() {
+export function CartographicMapBackdrop({
+  homeMapView = null,
+}: {
+  /**
+   * The camera implied by the workspace's home geography, derived on the server
+   * by `deriveHomeMapView` and handed down by `CartographicShell`. `null` means
+   * the workspace has not stated a geography — the neutral view, never a
+   * substituted place.
+   */
+  homeMapView?: HomeMapView | null;
+} = {}) {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -187,6 +215,15 @@ export function CartographicMapBackdrop() {
   // the workspace instead of being stranded at the neutral continental view.
   const didInitialFitRef = useRef(false);
   const userMovedMapRef = useRef(false);
+  // The map is constructed once (and rebuilt only on a theme swap), so the
+  // opening camera has to be read through a ref rather than a dependency —
+  // putting `homeMapView` in the effect's dep list would tear the map down and
+  // rebuild it on every parent re-render, since the prop is a fresh object.
+  const homeMapViewRef = useRef(homeMapView);
+
+  useEffect(() => {
+    homeMapViewRef.current = homeMapView;
+  }, [homeMapView]);
 
   useEffect(() => {
     // One-shot mount gate so stored theme state can resolve without a hydration style diff.
@@ -235,11 +272,13 @@ export function CartographicMapBackdrop() {
         ? "mapbox://styles/mapbox/dark-v11"
         : "mapbox://styles/mapbox/light-v11";
 
+    const home = homeMapViewRef.current;
+
     const map = new mapboxgl.Map({
       container: containerRef.current,
       style: styleUrl,
-      center: INITIAL_CENTER,
-      zoom: INITIAL_ZOOM,
+      center: home?.center ?? NEUTRAL_CENTER,
+      zoom: home?.zoom ?? NEUTRAL_ZOOM,
       attributionControl: false,
       logoPosition: "bottom-left",
       interactive: true,
@@ -875,10 +914,10 @@ export function CartographicMapBackdrop() {
     }
   }, [ready, engagementItems, resolvedTheme]);
 
-  // Frame the workspace's own geography once, on the first payload that
-  // carries any. Without this the backdrop would sit at the neutral
-  // continental view forever; with it, the shell shows the planner their
-  // actual region regardless of where on earth that is.
+  // Frame the workspace's own features once, on the first payload that carries
+  // any. This outranks the home-geography camera on purpose: real data already
+  // in scope is a better answer than a stated boundary, and a stated boundary
+  // is a better answer than the neutral view.
   //
   // Census tracts are deliberately excluded: that payload is workspace-
   // agnostic reference data, so fitting to it would frame whatever the tract

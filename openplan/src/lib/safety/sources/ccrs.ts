@@ -3,9 +3,9 @@
  *
  * WHY THIS SOURCE. CHP shut down iSWITRS on 2025-01-08 and replaced it with
  * CCRS. SWITRS therefore receives no new records: every SWITRS artifact — the
- * legacy `SWITRS_CSV_PATH` reader in `src/lib/data-sources/crashes.ts`, the
- * public SWITRS mirrors, the regional ArcGIS republications — is frozen legacy
- * data by construction. CCRS is the live successor and CHP publishes it on
+ * public SWITRS mirrors, the regional ArcGIS republications, the operator-local
+ * CSV extract the corridor scorecard used to read — is frozen legacy data by
+ * construction. CCRS is the live successor and CHP publishes it on
  * data.ca.gov with the CKAN DataStore enabled, which gives us:
  *
  *   - record-level crashes WITH coordinates, statewide,
@@ -37,12 +37,13 @@
 
 import { fetchJsonWithRetry } from "@/lib/data-sources/http";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
-import type {
-  CrashFetchParams,
-  CrashFetchResult,
-  CrashRecord,
-  CrashSeverity,
-  CrashSourceAdapter,
+import {
+  CrashSourceUnavailableError,
+  type CrashFetchParams,
+  type CrashFetchResult,
+  type CrashRecord,
+  type CrashSeverity,
+  type CrashSourceAdapter,
 } from "./types";
 
 export const CCRS_SOURCE_ID = "ccrs-ca";
@@ -77,10 +78,10 @@ type CkanSqlResponse = { result?: { records?: Array<Record<string, unknown>> } }
 /**
  * Overlap, not containment.
  *
- * The legacy SWITRS reader used containment (`crashes.ts:115`), which silently
- * dropped any study area straddling a state line — a real problem for Truckee,
- * Tahoe, Yreka and Needles. Overlap is the correct test: a corridor that crosses
- * into Nevada still has California crashes worth returning.
+ * The retired SWITRS reader used containment, which silently dropped any study
+ * area straddling a state line — a real problem for Truckee, Tahoe, Yreka and
+ * Needles. Overlap is the correct test: a corridor that crosses into Nevada
+ * still has California crashes worth returning.
  */
 export function overlapsCalifornia(bbox: StudyAreaBbox): boolean {
   return (
@@ -170,6 +171,14 @@ export async function fetchCcrsResourceIds(signal?: AbortSignal): Promise<Map<nu
     }
   );
 
+  // A null payload means the request failed outright (fetchJsonWithRetry never
+  // throws). Returning an empty map here would make every downstream year
+  // resolve to "no crashes", which is how an outage becomes a safe-looking
+  // corridor. Fail loudly instead.
+  if (payload === null) {
+    throw new CrashSourceUnavailableError(CCRS_SOURCE_ID, "data.ca.gov package manifest unreachable");
+  }
+
   const byYear = new Map<number, string>();
   for (const resource of payload?.result?.resources ?? []) {
     const name = typeof resource?.name === "string" ? resource.name : "";
@@ -179,6 +188,17 @@ export async function fetchCcrsResourceIds(signal?: AbortSignal): Promise<Map<nu
       byYear.set(Number.parseInt(match[1], 10), id);
     }
   }
+
+  // The manifest answered but holds no Crashes_* resource at all: the dataset
+  // was restructured. That is an outage of our integration, not an absence of
+  // crashes in California.
+  if (byYear.size === 0) {
+    throw new CrashSourceUnavailableError(
+      CCRS_SOURCE_ID,
+      "data.ca.gov CCRS package lists no Crashes_<year> resources"
+    );
+  }
+
   return byYear;
 }
 
@@ -188,7 +208,14 @@ async function runSql<T = Record<string, unknown>>(sql: string, signal?: AbortSi
     signal ? { signal } : undefined,
     { timeoutMs: 30_000, retries: 1 }
   );
-  return (payload?.result?.records ?? []) as T[];
+
+  // Same reasoning as the manifest: `{ records: [] }` is "no matching crashes",
+  // `null` is "the query never succeeded". Only the first is a finding.
+  if (payload === null) {
+    throw new CrashSourceUnavailableError(CCRS_SOURCE_ID, "data.ca.gov DataStore query failed");
+  }
+
+  return (payload.result?.records ?? []) as T[];
 }
 
 /**
@@ -366,6 +393,7 @@ export const ccrsAdapter: CrashSourceAdapter = {
   coverageState: "ccrs_ca_statewide",
   severityCompleteness: "fatal_injury_only",
   earliestYear: CCRS_EARLIEST_YEAR,
+  persistable: true,
   covers: overlapsCalifornia,
   fetch: fetchCcrsCrashes,
 };

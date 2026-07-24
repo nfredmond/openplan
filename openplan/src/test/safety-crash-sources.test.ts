@@ -17,6 +17,15 @@ import {
   getCrashSourceById,
   resolveCrashSource,
 } from "@/lib/safety/sources/registry";
+import {
+  FARS_SOURCE_ID,
+  coversFarsGeography,
+  farsAdapter,
+  parseFarsResults,
+  toFarsCollisionDate,
+  toFarsCoordinate,
+} from "@/lib/safety/sources/fars";
+import { CrashSourceUnavailableError } from "@/lib/safety/sources/types";
 import { __clearFetchJsonResponseCacheForTests } from "@/lib/data-sources/http";
 
 const NEVADA_COUNTY_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
@@ -119,20 +128,54 @@ describe("crash source registry", () => {
     }
   });
 
-  it("returns an explicit out_of_coverage result instead of falling back to an estimate", () => {
+  it("keeps a non-persistable source out of the ingest lane, because the DB CHECK would reject it", () => {
+    // FARS covers Detroit for reads, but `safety_crashes.source_id` does not
+    // list it yet. Resolving it for an ingest would surface as a constraint
+    // violation mid-write; resolving it out is the fail-closed behaviour.
     const resolution = resolveCrashSource(DETROIT_BBOX);
     expect(resolution.kind).toBe("out_of_coverage");
     if (resolution.kind === "out_of_coverage") {
-      expect(resolution.checked.map((c) => c.id)).toContain(CCRS_SOURCE_ID);
+      expect(resolution.checked.map((c) => c.id)).toEqual([CCRS_SOURCE_ID]);
+    }
+  });
+
+  it("resolves FARS for the same study area on the read-only lane", () => {
+    const resolution = resolveCrashSource(DETROIT_BBOX, "read_only");
+    expect(resolution.kind).toBe("resolved");
+    if (resolution.kind === "resolved") {
+      expect(resolution.adapter.id).toBe(FARS_SOURCE_ID);
+    }
+  });
+
+  it("still reports out_of_coverage outside every registered geography", () => {
+    const berlin = { minLon: 13.2, minLat: 52.4, maxLon: 13.6, maxLat: 52.6 };
+    expect(resolveCrashSource(berlin, "read_only").kind).toBe("out_of_coverage");
+  });
+
+  it("prefers the richer state source over the fatal-only national backstop", () => {
+    const resolution = resolveCrashSource(NEVADA_COUNTY_BBOX, "read_only");
+    expect(resolution.kind).toBe("resolved");
+    if (resolution.kind === "resolved") {
+      expect(resolution.adapter.id).toBe(CCRS_SOURCE_ID);
     }
   });
 
   it("only registers observed sources — no estimate tier is reachable", () => {
     for (const adapter of CRASH_SOURCE_ADAPTERS) {
-      expect(OBSERVED_CRASH_SOURCE_IDS).toContain(adapter.id);
       expect(adapter.id).not.toMatch(/estimate/i);
       expect(adapter.coverageState).not.toBe("out_of_coverage");
     }
+  });
+
+  it("derives the persisted-source allowlist from the persistable adapters", () => {
+    // The DB allowlist is the narrow one; drift in either direction means an
+    // ingest either crashes on a CHECK or silently stores an unvetted source.
+    expect([...OBSERVED_CRASH_SOURCE_IDS].sort()).toEqual(
+      CRASH_SOURCE_ADAPTERS.filter((adapter) => adapter.persistable)
+        .map((adapter) => adapter.id)
+        .sort()
+    );
+    expect(OBSERVED_CRASH_SOURCE_IDS).not.toContain(FARS_SOURCE_ID);
   });
 
   it("requires every registered adapter to carry attribution and a license", () => {
@@ -358,6 +401,36 @@ describe("CCRS fetch", () => {
     expect(result.truncated).toBe(true);
   });
 
+  it("throws instead of reporting zero crashes when data.ca.gov cannot be reached", async () => {
+    // An outage that summarizes as "0 crashes" reads as a safe corridor. The
+    // throw is what lets callers record `source_unavailable` instead.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => ({
+        ok: false,
+        status: 403,
+        headers: new Headers(),
+        json: async () => ({}),
+        text: async () => "",
+      })) as unknown as typeof fetch
+    );
+
+    await expect(fetchCcrsCrashes({ bbox: NEVADA_COUNTY_BBOX, years: [2025] })).rejects.toBeInstanceOf(
+      CrashSourceUnavailableError
+    );
+  });
+
+  it("throws when the package manifest no longer lists any Crashes_<year> resource", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => jsonResponse({ result: { resources: [{ id: "x", name: "Something_Else" }] } })) as unknown as typeof fetch
+    );
+
+    await expect(fetchCcrsCrashes({ bbox: NEVADA_COUNTY_BBOX, years: [2025] })).rejects.toBeInstanceOf(
+      CrashSourceUnavailableError
+    );
+  });
+
   it("always excludes retracted (IsDeleted) reports", async () => {
     const fetchMock = vi.fn(async (input: unknown) => {
       const url = String(input);
@@ -375,6 +448,62 @@ describe("CCRS fetch", () => {
     expect(dataQueries.length).toBeGreaterThan(0);
     for (const query of dataQueries) {
       expect(query).toContain(`"IsDeleted" = 'False'`);
+    }
+  });
+});
+
+describe("FARS national adapter", () => {
+  it("covers the FARS reporting geography including the non-contiguous states", () => {
+    expect(coversFarsGeography(DETROIT_BBOX)).toBe(true);
+    // Anchorage, Honolulu, San Juan — a CONUS-only envelope would drop all three.
+    expect(coversFarsGeography({ minLon: -150.0, minLat: 61.0, maxLon: -149.7, maxLat: 61.3 })).toBe(true);
+    expect(coversFarsGeography({ minLon: -157.9, minLat: 21.2, maxLon: -157.8, maxLat: 21.4 })).toBe(true);
+    expect(coversFarsGeography({ minLon: -66.2, minLat: 18.3, maxLon: -66.0, maxLat: 18.5 })).toBe(true);
+  });
+
+  it("does not claim coverage outside the reporting geography", () => {
+    // Berlin and Mexico City. Note the deliberate limit of a rectangular
+    // envelope: southern Ontario sits inside any box that also contains
+    // northern Maine, so a Toronto study area still costs one request and gets
+    // an empty US answer attributed to NHTSA. Excluding it would require a real
+    // national boundary, which is not what a rejection filter is for.
+    expect(coversFarsGeography({ minLon: 13.2, minLat: 52.4, maxLon: 13.6, maxLat: 52.6 })).toBe(false);
+    expect(coversFarsGeography({ minLon: -99.2, minLat: 19.3, maxLon: -99.0, maxLat: 19.5 })).toBe(false);
+  });
+
+  it("advertises fatal_only completeness and stays out of the persisted allowlist", () => {
+    expect(farsAdapter.severityCompleteness).toBe("fatal_only");
+    expect(farsAdapter.coverageState).toBe("fars_fatal_only");
+    expect(farsAdapter.persistable).toBe(false);
+  });
+
+  it("unwraps both response envelopes the CrashAPI has shipped", () => {
+    expect(parseFarsResults({ Results: [{ ST_CASE: 1 }] })).toHaveLength(1);
+    expect(parseFarsResults({ Results: [[{ ST_CASE: 1 }, { ST_CASE: 2 }]] })).toHaveLength(2);
+    expect(parseFarsResults({ Results: [] })).toEqual([]);
+    // An unrecognized shape is not an empty result set.
+    expect(parseFarsResults({ status: "ok" })).toBeNull();
+    expect(parseFarsResults(null)).toBeNull();
+  });
+
+  it("rejects the FARS unknown-coordinate sentinels rather than plotting the Arctic", () => {
+    expect(toFarsCoordinate("42.331", "lat")).toBeCloseTo(42.331);
+    expect(toFarsCoordinate(-83.045, "lon")).toBeCloseTo(-83.045);
+    for (const sentinel of [77.7777, 88.8888, 99.9999]) {
+      expect(toFarsCoordinate(sentinel, "lat")).toBeNull();
+    }
+    for (const sentinel of [777.7777, 888.8888, 999.9999]) {
+      expect(toFarsCoordinate(sentinel, "lon")).toBeNull();
+    }
+    expect(toFarsCoordinate(0, "lat")).toBeNull();
+    expect(toFarsCoordinate("not-a-number", "lon")).toBeNull();
+  });
+
+  it("parses both date encodings and refuses to guess otherwise", () => {
+    expect(toFarsCollisionDate("2023-06-04T00:00:00")).toBe("2023-06-04");
+    expect(toFarsCollisionDate("/Date(1685836800000-0000)/")).toBe("2023-06-04");
+    for (const value of ["", "sometime", null, undefined, 20230604]) {
+      expect(toFarsCollisionDate(value)).toBeNull();
     }
   });
 });

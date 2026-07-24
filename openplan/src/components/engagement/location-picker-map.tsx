@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import type { HomeMapView } from "@/lib/workspaces/home-geography";
 
 const MAPBOX_ACCESS_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
 
@@ -24,10 +25,17 @@ export function LocationPickerMap({
   latitude,
   longitude,
   onLocationChange,
+  homeMapView = null,
 }: {
   latitude: string;
   longitude: string;
   onLocationChange: (lat: string, lng: string) => void;
+  /**
+   * The camera implied by the workspace's home geography, derived on the server
+   * by `deriveHomeMapView`. `null` means the workspace has not stated one, and
+   * the neutral continental view is the honest answer.
+   */
+  homeMapView?: HomeMapView | null;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -35,26 +43,34 @@ export function LocationPickerMap({
   // The map is created once, so the initial framing has to read the current
   // coordinates through a ref rather than a dependency.
   const positionRef = useRef<[number, number] | null>(parsePosition(latitude, longitude));
+  // Same reason: a fresh object identity in the dep list would rebuild the map.
+  const homeMapViewRef = useRef(homeMapView);
 
   useEffect(() => {
     positionRef.current = parsePosition(latitude, longitude);
   }, [latitude, longitude]);
 
   useEffect(() => {
+    homeMapViewRef.current = homeMapView;
+  }, [homeMapView]);
+
+  useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
-    // Editing an existing pin opens on that pin; a fresh one opens on the
-    // neutral continental view, because this component has no idea which
-    // agency, country, or continent the person filling the form works in.
+    // Framing, in order of what is actually known: an existing pin, then the
+    // workspace's stated home geography, then the neutral continental view.
+    // This component still never invents a place — the home view is passed in
+    // from a server component or it is null.
     const initialPosition = positionRef.current;
+    const home = homeMapViewRef.current;
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
       style: "mapbox://styles/mapbox/dark-v11",
-      center: initialPosition ?? CONTINENTAL_US_CENTER,
-      zoom: initialPosition ? PINNED_ZOOM : NEUTRAL_ZOOM,
+      center: initialPosition ?? home?.center ?? CONTINENTAL_US_CENTER,
+      zoom: initialPosition ? PINNED_ZOOM : (home?.zoom ?? NEUTRAL_ZOOM),
       attributionControl: false,
     });
 

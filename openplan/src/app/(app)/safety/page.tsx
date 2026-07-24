@@ -2,6 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import {
+  HOME_GEOGRAPHY_COLUMNS,
+  parseWorkspaceHomeGeography,
+} from "@/lib/workspaces/home-geography";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
 import type { SafetyIngestSummary } from "@/lib/safety/client-types";
 
@@ -43,6 +47,18 @@ export default async function SafetyPage() {
 
   const workspaceId = membership.workspace_id;
 
+  // The workspace's stated home geography pre-fills the study area, so an
+  // agency does not re-pick its own county on every visit. Read here rather
+  // than in the client component so no map surface fetches geography ad hoc.
+  // A missing column (migration not applied) yields an error and no row, which
+  // parses to `null` — the un-prefilled behavior, not a guessed place.
+  const { data: workspaceRow } = await supabase
+    .from("workspaces")
+    .select(HOME_GEOGRAPHY_COLUMNS)
+    .eq("id", workspaceId)
+    .maybeSingle();
+  const homeGeography = parseWorkspaceHomeGeography(workspaceRow);
+
   // The most recent ingest drives the coverage banner. A missing table (schema
   // not applied yet) is treated the same as "nothing retrieved" rather than
   // failing the page.
@@ -75,7 +91,11 @@ export default async function SafetyPage() {
 
   return (
     <section className="module-page">
-      <SafetyWorkspace workspaceId={workspaceId} latestIngest={latestIngest} />
+      <SafetyWorkspace
+        workspaceId={workspaceId}
+        latestIngest={latestIngest}
+        homeGeography={homeGeography}
+      />
     </section>
   );
 }

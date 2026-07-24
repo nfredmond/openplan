@@ -1,49 +1,118 @@
 /**
- * Crash data fetcher
+ * Crash data for the Explore corridor scorecard.
  *
- * Priority order:
- * 1) State/local crash CSV adapter when configured (e.g., SWITRS for California)
- * 2) FARS API (fatal-only, nationwide)
- * 3) Area-based estimate fallback
+ * ONE CRASH LANE (Wave 8.2). This module used to be a second, parallel crash
+ * implementation: a containment-tested local SWITRS CSV reader (which could not
+ * exist on Vercel and silently dropped any study area straddling a state line),
+ * a FARS tier that read no coordinates, and an `fars-estimate` tier that
+ * fabricated every field — fatalities, pedestrian deaths, crash density — from
+ * the bounding box's area. It is now a *summarizer* over the crash-source
+ * registry in `src/lib/safety/sources/`, which is the same lane the Safety
+ * module ingests from. The scorecard and the safety analysis can no longer
+ * disagree about a place's crash history.
+ *
+ * WHY THE ESTIMATE TIER IS GONE. It was disclosed (`isEstimatedSource()` flagged
+ * it), and disclosure is what made it defensible when there was no national
+ * alternative. Three things make it indefensible now:
+ *
+ *   1. Its numbers were manufactured from ratios that assume a US urban crash
+ *      profile (1.3 crashes/sq-mi/yr, 17% pedestrian, 4.5 injuries per fatal).
+ *      Those constants are a jurisdiction baked into core code, which is
+ *      exactly what the platform's non-negotiables forbid, and they are
+ *      meaningless outside the country they were fitted to.
+ *   2. The disclosure stopped at the badge. The fabricated crash density flowed
+ *      unlabeled into `computeSafety()`, into the overall score, and from there
+ *      into grant narratives — where a reviewer sees a number, not a badge.
+ *   3. A real national-capable registry now exists (CCRS + FARS), so the honest
+ *      answer for an uncovered area is "no crash source covers this study area",
+ *      and that answer is now *reachable*.
+ *
+ * Nothing renders blank as a result: an unobserved run reports `observed:false`
+ * and the analysis route emits null crash metrics, which every consumer already
+ * renders as "N/A" (see `explore-results-board`, `api/report`'s `fmt`). Because
+ * `buildInterpretationFacts` skips null metrics, the AI narrative loses the
+ * ability to cite a crash figure at all when there is no crash source.
  */
 
-import { readFile } from "node:fs/promises";
+import { resolveCrashSource } from "@/lib/safety/sources/registry";
+import type { StudyAreaBbox } from "@/lib/models/study-area";
+import type {
+  CrashFetchResult,
+  CrashRecord,
+  CrashSeverityCompleteness,
+  CrashSourceAdapter,
+} from "@/lib/safety/sources/types";
+
+/**
+ * What a crash figure on the scorecard is made of.
+ *
+ * `observed:false` is the honest state — either no adapter covers the study
+ * area, or the covering adapter's source could not be reached. In that state
+ * every count is zero-by-schema and MUST NOT be presented as a measurement;
+ * callers key off `observed`, not off the numbers.
+ */
+export type CrashSummarySourceState = "out-of-coverage" | "source-unavailable";
+
+/**
+ * What `crashesPerSquareMile` counts.
+ *
+ * Sources differ in what they even record, so the density basis has to travel
+ * with the number. `injury_and_fatal` is the reportable-crash density planners
+ * expect; `fatal_only` is all a fatality census can offer and is roughly two
+ * orders of magnitude smaller — comparing the two would be meaningless.
+ */
+export type CrashDensityBasis = "injury_and_fatal" | "fatal_only" | "none";
 
 export interface CrashSummary {
+  /** True only when a source actually answered. The gate for every figure below. */
+  observed: boolean;
+  /** Registry adapter id when observed; otherwise an explicit no-data state. */
+  source: string | CrashSummarySourceState;
+  sourceLabel: string;
+  attribution: string | null;
+  severityCompleteness: CrashSeverityCompleteness | null;
   totalFatalCrashes: number;
   totalFatalities: number;
+  /** Fatal crashes INVOLVING a pedestrian — not the number of pedestrians killed. */
   pedestrianFatalities: number;
   bicyclistFatalities: number;
-  severeInjuryCrashes: number;
-  totalInjuryCrashes: number;
+  /** null when the source cannot separate KABCO A (suspected serious injury). */
+  severeInjuryCrashes: number | null;
+  /** null when the source is fatal-only and therefore never saw an injury crash. */
+  totalInjuryCrashes: number | null;
   yearsQueried: number[];
   crashesPerSquareMile: number;
-  source: "switrs-local" | "fars-api" | "fars-estimate";
+  crashDensityBasis: CrashDensityBasis;
+  /** Crashes the source matched, geocoded or not. */
+  reportedTotal: number;
+  /** Of those, how many carried usable coordinates and could be mapped. */
+  mappedTotal: number;
+  truncated: boolean;
+  /**
+   * Mappable crash points from the SAME fetch that produced the counts above.
+   * They used to come from a second, independent read, so the map and the
+   * scorecard could describe different data.
+   */
+  points: CrashPointFeature[];
+  /** Adapters consulted when nothing covered the study area. */
+  checkedSources: string[];
+  /** Why the source could not answer, when it could not. */
+  unavailableReason: string | null;
+  /**
+   * The run's `sourceSnapshots.crashes` entry and the safety line of its
+   * narrative, built here rather than at the call site.
+   *
+   * Disclosure travels WITH the figures on purpose: a caller that renders crash
+   * numbers cannot forget to say where they came from, or fail to say that they
+   * do not exist. `buildCrashSourceSnapshot` / `describeCrashSafety` remain
+   * exported so the wording is unit-testable on its own.
+   */
+  sourceSnapshot: Record<string, unknown>;
+  narrativeLine: string;
 }
 
-interface BBox {
-  minLon: number;
-  minLat: number;
-  maxLon: number;
-  maxLat: number;
-}
-
-type FarsCrashRecord = {
-  FATALS?: unknown;
-  PEDS?: unknown;
-  BICYCLISTS?: unknown;
-};
-
-type SwitrsCrashRecord = {
-  lat: number;
-  lon: number;
-  year: number | null;
-  severityCode: number;
-  fatalCount: number;
-  injuryCount: number;
-  pedestrianInvolved: boolean;
-  bicyclistInvolved: boolean;
-};
+/** A summary before its own disclosure is attached. */
+type CrashSummaryCore = Omit<CrashSummary, "sourceSnapshot" | "narrativeLine">;
 
 export type CrashPointSeverityBucket = "fatal" | "severe_injury" | "injury";
 
@@ -51,7 +120,8 @@ export type CrashPointFeature = GeoJSON.Feature<
   GeoJSON.Point,
   {
     kind: "crash_point";
-    source: "switrs-local";
+    /** Registry adapter id, so a point always carries its provenance. */
+    source: string;
     severityBucket: CrashPointSeverityBucket;
     severityLabel: string;
     collisionYear: number | null;
@@ -62,392 +132,293 @@ export type CrashPointFeature = GeoJSON.Feature<
   }
 >;
 
-const FARS_TIMEOUT_MS = 10_000;
+/**
+ * How many recent calendar years the scorecard asks for.
+ *
+ * Deliberately a window rather than a vintage: national fatality files publish
+ * roughly two years in arrears while state files run closer to real time, so a
+ * hardcoded year list (the retired implementation pinned 2022/2021/2020) rots
+ * into "no crashes found". Adapters clamp this to what they actually hold.
+ */
+const ANALYSIS_YEAR_WINDOW = 4;
 
-type TimeoutSignalResult = {
-  signal: AbortSignal;
-  cleanup: () => void;
-};
+/** Cap on points returned to a single corridor run; truncation is disclosed. */
+const ANALYSIS_MAX_RECORDS = 5_000;
 
-function getSwitrsCsvPath(): string | undefined {
-  return process.env.SWITRS_CSV_PATH;
+export function recentCrashYears(now: Date = new Date()): number[] {
+  const mostRecentComplete = now.getUTCFullYear() - 1;
+  return Array.from({ length: ANALYSIS_YEAR_WINDOW }, (_, index) => mostRecentComplete - index);
 }
 
-function buildTimeoutSignal(timeoutMs: number): TimeoutSignalResult {
-  if (typeof AbortSignal.timeout === "function") {
-    return {
-      signal: AbortSignal.timeout(timeoutMs),
-      cleanup: () => {},
-    };
-  }
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    controller.abort(new Error("Request timed out"));
-  }, timeoutMs);
-
-  let cleanedUp = false;
-  const cleanup = () => {
-    if (cleanedUp) {
-      return;
-    }
-
-    cleanedUp = true;
-    clearTimeout(timeoutId);
-    controller.signal.removeEventListener("abort", cleanup);
-  };
-
-  controller.signal.addEventListener("abort", cleanup, { once: true });
-
-  return {
-    signal: controller.signal,
-    cleanup,
-  };
-}
-
-function bboxArea(bbox: BBox): number {
+function bboxAreaSquareMiles(bbox: StudyAreaBbox): number {
   const latMid = (bbox.minLat + bbox.maxLat) / 2;
   const latDist = Math.abs(bbox.maxLat - bbox.minLat) * 69.0;
   const lonDist = Math.abs(bbox.maxLon - bbox.minLon) * 69.0 * Math.cos((latMid * Math.PI) / 180);
   return Math.max(0.01, latDist * lonDist);
 }
 
-function isCaliforniaBBox(bbox: BBox): boolean {
-  return bbox.minLon >= -125 && bbox.maxLon <= -114 && bbox.minLat >= 32 && bbox.maxLat <= 43;
-}
-
-function parseNum(value: string | undefined): number {
-  if (!value) return 0;
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
-function parseCount(value: unknown): number {
-  if (typeof value === "number") {
-    return Number.isFinite(value) ? Math.max(0, Math.trunc(value)) : 0;
-  }
-
-  if (typeof value === "string") {
-    const parsed = Number.parseInt(value, 10);
-    return Number.isFinite(parsed) ? Math.max(0, parsed) : 0;
-  }
-
-  return 0;
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function parseFarsCrashesResponse(data: unknown): {
-  parsed: boolean;
-  crashes: FarsCrashRecord[];
-} {
-  const rawResults = isRecord(data) ? data["Results"] : undefined;
-  if (!Array.isArray(rawResults)) {
-    return { parsed: false, crashes: [] };
-  }
-
-  const results = rawResults;
-  if (results.length === 0) {
-    return { parsed: true, crashes: [] };
-  }
-
-  const first = results[0];
-  if (Array.isArray(first)) {
-    return {
-      parsed: true,
-      crashes: first.filter(isRecord) as FarsCrashRecord[],
-    };
-  }
-
-  return {
-    parsed: true,
-    crashes: results.filter(isRecord) as FarsCrashRecord[],
-  };
-}
-
-function splitCsvLine(line: string): string[] {
-  const out: string[] = [];
-  let cur = "";
-  let inQuotes = false;
-
-  for (let i = 0; i < line.length; i += 1) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') {
-        cur += '"';
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-    if (ch === "," && !inQuotes) {
-      out.push(cur);
-      cur = "";
-      continue;
-    }
-    cur += ch;
-  }
-  out.push(cur);
-  return out;
-}
-
-function classifySwitrsSeverity(record: SwitrsCrashRecord): CrashPointSeverityBucket | null {
-  if (record.severityCode === 1 || record.fatalCount > 0) {
-    return "fatal";
-  }
-
-  if (record.severityCode === 2) {
-    return "severe_injury";
-  }
-
-  if (record.injuryCount > 0 || record.severityCode === 3 || record.severityCode === 4) {
-    return "injury";
-  }
-
-  return null;
-}
-
 function labelForSeverityBucket(severity: CrashPointSeverityBucket): string {
-  if (severity === "fatal") {
-    return "Fatal";
-  }
-
-  if (severity === "severe_injury") {
-    return "Severe injury";
-  }
-
+  if (severity === "fatal") return "Fatal";
+  if (severity === "severe_injury") return "Severe injury";
   return "Injury";
 }
 
-async function loadSwitrsRecordsForBbox(bbox: BBox): Promise<SwitrsCrashRecord[] | null> {
-  const switrsCsvPath = getSwitrsCsvPath();
-  if (!switrsCsvPath || !isCaliforniaBBox(bbox)) {
-    return null;
-  }
+/**
+ * Property-damage-only crashes are dropped from the map layer: they are the
+ * bulk of any record-level file and would bury the KSI points the layer exists
+ * to show. They remain in `reportedTotal`.
+ */
+function toPointFeature(record: CrashRecord, sourceId: string): CrashPointFeature | null {
+  if (record.severity === "pdo") return null;
+  const severityBucket: CrashPointSeverityBucket = record.severity;
 
-  try {
-    const text = await readFile(switrsCsvPath, "utf8");
-    const lines = text.split(/\r?\n/).filter(Boolean);
-    if (lines.length < 2) {
-      return null;
-    }
-
-    const header = splitCsvLine(lines[0]).map((h) => h.trim().toUpperCase());
-    const idx = (name: string) => header.indexOf(name.toUpperCase());
-
-    const latIdx = idx("LATITUDE");
-    const lonIdx = idx("LONGITUDE");
-    const yearIdx = idx("COLLISION_YEAR");
-    const sevIdx = idx("COLLISION_SEVERITY");
-    const fatalCntIdx = idx("COUNT_FATALITY");
-    const injCntIdx = idx("COUNT_INJURED");
-    const pedIdx = idx("PEDESTRIAN_ACCIDENT");
-    const bikeIdx = idx("BICYCLE_ACCIDENT");
-
-    if (latIdx < 0 || lonIdx < 0) {
-      return null;
-    }
-
-    const records: SwitrsCrashRecord[] = [];
-
-    for (let i = 1; i < lines.length; i += 1) {
-      const cols = splitCsvLine(lines[i]);
-      const lat = parseNum(cols[latIdx]);
-      const lon = parseNum(cols[lonIdx]);
-      if (!lat || !lon) continue;
-      if (lat < bbox.minLat || lat > bbox.maxLat || lon < bbox.minLon || lon > bbox.maxLon) continue;
-
-      records.push({
-        lat,
-        lon,
-        year: yearIdx >= 0 ? parseNum(cols[yearIdx]) || null : null,
-        severityCode: sevIdx >= 0 ? parseNum(cols[sevIdx]) : 0,
-        fatalCount: fatalCntIdx >= 0 ? parseNum(cols[fatalCntIdx]) : 0,
-        injuryCount: injCntIdx >= 0 ? parseNum(cols[injCntIdx]) : 0,
-        pedestrianInvolved: (cols[pedIdx] ?? "").toUpperCase() === "Y",
-        bicyclistInvolved: (cols[bikeIdx] ?? "").toUpperCase() === "Y",
-      });
-    }
-
-    return records;
-  } catch {
-    return null;
-  }
+  return {
+    type: "Feature",
+    geometry: { type: "Point", coordinates: [record.longitude, record.latitude] },
+    properties: {
+      kind: "crash_point",
+      source: sourceId,
+      severityBucket,
+      severityLabel: labelForSeverityBucket(severityBucket),
+      collisionYear: record.collisionYear,
+      fatalCount: record.killedCount,
+      injuryCount: record.injuredCount,
+      pedestrianInvolved: record.pedestrianInvolved,
+      bicyclistInvolved: record.bicyclistInvolved,
+    },
+  };
 }
 
-function summarizeSwitrsRecords(records: SwitrsCrashRecord[], bbox: BBox): CrashSummary {
+function emptySummary(
+  base: Pick<CrashSummary, "source" | "sourceLabel" | "checkedSources" | "unavailableReason">
+): CrashSummaryCore {
+  return {
+    observed: false,
+    attribution: null,
+    severityCompleteness: null,
+    totalFatalCrashes: 0,
+    totalFatalities: 0,
+    pedestrianFatalities: 0,
+    bicyclistFatalities: 0,
+    severeInjuryCrashes: null,
+    totalInjuryCrashes: null,
+    yearsQueried: [],
+    crashesPerSquareMile: 0,
+    crashDensityBasis: "none",
+    reportedTotal: 0,
+    mappedTotal: 0,
+    truncated: false,
+    points: [],
+    ...base,
+  };
+}
+
+export function summarizeCrashFetch(
+  adapter: CrashSourceAdapter,
+  fetched: CrashFetchResult,
+  bbox: StudyAreaBbox,
+  requestedYears: number[]
+): CrashSummaryCore {
   let totalFatalCrashes = 0;
   let totalFatalities = 0;
-  let severeInjuryCrashes = 0;
-  let totalInjuryCrashes = 0;
   let pedestrianFatalities = 0;
   let bicyclistFatalities = 0;
-  const years = new Set<number>();
+  let severeInjuryCrashes = 0;
+  let injuryCrashes = 0;
 
-  for (const record of records) {
-    if (record.year) years.add(record.year);
+  const points: CrashPointFeature[] = [];
 
-    if (record.severityCode === 1 || record.fatalCount > 0) {
+  for (const record of fetched.records) {
+    if (record.severity === "fatal") {
       totalFatalCrashes += 1;
-      totalFatalities += Math.max(1, record.fatalCount);
+      totalFatalities += Math.max(1, record.killedCount);
       if (record.pedestrianInvolved) pedestrianFatalities += 1;
       if (record.bicyclistInvolved) bicyclistFatalities += 1;
     }
 
-    if (record.severityCode === 2) severeInjuryCrashes += 1;
-    if (record.injuryCount > 0 || record.severityCode === 2 || record.severityCode === 3 || record.severityCode === 4) {
-      totalInjuryCrashes += 1;
-    }
+    if (record.severity === "severe_injury") severeInjuryCrashes += 1;
+    if (record.severity === "severe_injury" || record.severity === "injury") injuryCrashes += 1;
+
+    const point = toPointFeature(record, adapter.id);
+    if (point) points.push(point);
   }
 
-  const yearsQueried = Array.from(years).sort();
-  const area = bboxArea(bbox);
-  const annualCrashBasis = yearsQueried.length > 0 ? yearsQueried.length : 1;
+  const fatalOnly = adapter.severityCompleteness === "fatal_only";
+  // A source that cannot separate KABCO A must report null, never 0: "0 serious
+  // injuries" and "serious injuries are not distinguishable here" are opposite
+  // findings, and the second one is the true one.
+  const severeInjury = adapter.severityCompleteness === "kabco_full" ? severeInjuryCrashes : null;
+  const totalInjuryCrashes = fatalOnly ? null : injuryCrashes;
+
+  const area = bboxAreaSquareMiles(bbox);
+  const yearsQueried = fetched.yearsCovered;
+  const annualBasis = Math.max(1, yearsQueried.length || requestedYears.length);
+  const densityCount = totalInjuryCrashes ?? totalFatalCrashes;
 
   return {
+    observed: true,
+    source: adapter.id,
+    sourceLabel: adapter.label,
+    attribution: adapter.attribution,
+    severityCompleteness: adapter.severityCompleteness,
     totalFatalCrashes,
     totalFatalities,
     pedestrianFatalities,
     bicyclistFatalities,
-    severeInjuryCrashes,
+    severeInjuryCrashes: severeInjury,
     totalInjuryCrashes,
     yearsQueried,
-    crashesPerSquareMile: Math.round((totalInjuryCrashes / annualCrashBasis / area) * 10) / 10,
-    source: "switrs-local",
+    crashesPerSquareMile: Math.round((densityCount / annualBasis / area) * 10) / 10,
+    crashDensityBasis: fatalOnly ? "fatal_only" : "injury_and_fatal",
+    reportedTotal: fetched.matchedTotal,
+    mappedTotal: fetched.geocodedTotal,
+    truncated: fetched.truncated,
+    points,
+    checkedSources: [adapter.id],
+    unavailableReason: null,
   };
 }
 
-async function fetchSwitrsFromCsv(bbox: BBox): Promise<CrashSummary | null> {
-  const records = await loadSwitrsRecordsForBbox(bbox);
-  if (!records) {
-    return null;
-  }
-
-  return summarizeSwitrsRecords(records, bbox);
+function withDisclosure(core: CrashSummaryCore): CrashSummary {
+  return {
+    ...core,
+    // The moment the source was read, which is what provenance actually means
+    // here — not the moment the surrounding analysis finished assembling.
+    sourceSnapshot: buildCrashSourceSnapshot(core, new Date().toISOString()),
+    narrativeLine: describeCrashSafety(core),
+  };
 }
 
-async function fetchFars(bbox: BBox): Promise<CrashSummary> {
-  const years = [2022, 2021, 2020];
-  let totalCrashes = 0;
-  let totalFatalities = 0;
-  let pedFatalities = 0;
-  let bikeFatalities = 0;
-  const queriedYears: number[] = [];
+export async function fetchCrashesForBbox(
+  bbox: StudyAreaBbox,
+  options: { now?: Date; signal?: AbortSignal } = {}
+): Promise<CrashSummary> {
+  // "read_only": the scorecard reports crash figures but never writes crash
+  // rows, so it may use sources the `safety_crashes` CHECK domain has not been
+  // widened for yet.
+  const resolution = resolveCrashSource(bbox, "read_only");
 
-  for (const year of years) {
-    try {
-      const url =
-        `https://crashviewer.nhtsa.dot.gov/CrashAPI/crashes/GetCrashesByLocation?` +
-        `fromCaseYear=${year}&toCaseYear=${year}` +
-        `&minLat=${bbox.minLat}&maxLat=${bbox.maxLat}` +
-        `&minLong=${bbox.minLon}&maxLong=${bbox.maxLon}` +
-        `&format=json`;
-
-      const requestTimeout = buildTimeoutSignal(FARS_TIMEOUT_MS);
-      try {
-        const resp = await fetch(url, { signal: requestTimeout.signal });
-        if (!resp.ok) continue;
-
-        const data = await resp.json();
-        const parsed = parseFarsCrashesResponse(data);
-        if (!parsed.parsed) {
-          continue;
-        }
-
-        queriedYears.push(year);
-
-        for (const crash of parsed.crashes) {
-          totalCrashes += 1;
-          totalFatalities += parseCount(crash.FATALS);
-          pedFatalities += parseCount(crash.PEDS);
-          bikeFatalities += parseCount(crash.BICYCLISTS);
-        }
-      } finally {
-        requestTimeout.cleanup();
-      }
-    } catch {
-      // ignore API failures per-year
-    }
+  if (resolution.kind === "out_of_coverage") {
+    return withDisclosure(
+      emptySummary({
+        source: "out-of-coverage",
+        sourceLabel: "No covering crash source",
+        checkedSources: resolution.checked.map((entry) => entry.id),
+        unavailableReason: null,
+      })
+    );
   }
 
-  const area = bboxArea(bbox);
+  const adapter = resolution.adapter;
+  const years = recentCrashYears(options.now).filter((year) => year >= adapter.earliestYear);
 
-  if (queriedYears.length === 0) {
-    const estCrashesPerYear = Math.round(area * 1.3);
-    const estYears = 3;
+  try {
+    const fetched = await adapter.fetch({
+      bbox,
+      years,
+      maxRecords: ANALYSIS_MAX_RECORDS,
+      signal: options.signal,
+    });
+    return withDisclosure(summarizeCrashFetch(adapter, fetched, bbox, years));
+  } catch (error) {
+    // An outage is a state, not a number. Every count stays zero-by-schema and
+    // `observed:false` is what callers read.
+    return withDisclosure(
+      emptySummary({
+        source: "source-unavailable",
+        sourceLabel: adapter.label,
+        checkedSources: [adapter.id],
+        unavailableReason: error instanceof Error ? error.message : "Unknown crash source failure",
+      })
+    );
+  }
+}
+
+/**
+ * The `sourceSnapshots.crashes` entry for a run's metrics.
+ *
+ * `source` is deliberately OMITTED when nothing was observed. That is not
+ * evasion — it is how the existing disclosure seam is wired:
+ * `resolveEstimatedDomains()` only trusts `dataQuality.crashDataAvailable` when
+ * the snapshot carries no source string, and leaving a non-source token there
+ * would make `buildSourceTransparency()` render the run's crash data as "Live".
+ * The honest identifier still travels, in `state`.
+ */
+export function buildCrashSourceSnapshot(
+  crashes: CrashSummaryCore,
+  fetchedAt: string
+): Record<string, unknown> {
+  const shared = {
+    state: crashes.source,
+    label: crashes.sourceLabel,
+    attribution: crashes.attribution,
+    yearsQueried: crashes.yearsQueried,
+    fetchedAt,
+  };
+
+  if (!crashes.observed) {
+    // Defensive: a summary can reach here from a persisted run or a partially
+    // shaped caller, and a snapshot builder must never be the thing that fails
+    // an analysis.
+    const checked = Array.isArray(crashes.checkedSources) ? crashes.checkedSources : [];
     return {
-      totalFatalCrashes: estCrashesPerYear * estYears,
-      totalFatalities: Math.round(estCrashesPerYear * estYears * 1.1),
-      pedestrianFatalities: Math.round(estCrashesPerYear * estYears * 0.17),
-      bicyclistFatalities: Math.round(estCrashesPerYear * estYears * 0.02),
-      severeInjuryCrashes: Math.round(estCrashesPerYear * estYears * 1.8),
-      totalInjuryCrashes: Math.round(estCrashesPerYear * estYears * 4.5),
-      // Zero years were successfully queried — every year either failed, timed
-      // out, or returned an unrecognized payload. Reporting the REQUESTED years
-      // here made the analysis narrative read
-      // "Safety (2022, 2021, 2020): 12 fatal crashes", dressing an area-based
-      // estimate in three specific years of observed data. Empty is the honest
-      // value and restores the `|| "estimated"` label the narrative already has
-      // (src/app/api/analysis/route.ts:129-131).
-      yearsQueried: [],
-      crashesPerSquareMile: Math.round((estCrashesPerYear / area) * 10) / 10,
-      source: "fars-estimate",
+      ...shared,
+      note:
+        crashes.source === "out-of-coverage"
+          ? `No crash source covers this study area. Checked: ${
+              checked.join(", ") || "none registered"
+            }. Crash metrics are not available for this run and were not estimated.`
+          : `${crashes.sourceLabel} could not be reached${
+              crashes.unavailableReason ? ` (${crashes.unavailableReason})` : ""
+            }. Crash metrics are not available for this run and were not estimated.`,
+      checkedSources: checked,
     };
   }
 
+  const severityNote =
+    crashes.severityCompleteness === "fatal_only"
+      ? " Fatal crashes only — this source records no injury or property-damage crashes, so injury figures are unavailable rather than zero."
+      : crashes.severityCompleteness === "fatal_injury_only"
+        ? " Fatal and injury crashes are separable; suspected serious injury (KABCO A) is not, so no KSI total is reported."
+        : "";
+
+  const ungeocoded = Math.max(0, crashes.reportedTotal - crashes.mappedTotal);
+  const mappingNote =
+    ungeocoded > 0
+      ? ` ${crashes.reportedTotal.toLocaleString()} crashes matched, ${crashes.mappedTotal.toLocaleString()} carried coordinates and are mappable.`
+      : "";
+
   return {
-    totalFatalCrashes: totalCrashes,
-    totalFatalities,
-    pedestrianFatalities: pedFatalities,
-    bicyclistFatalities: bikeFatalities,
-    severeInjuryCrashes: 0,
-    totalInjuryCrashes: totalCrashes,
-    yearsQueried: queriedYears,
-    crashesPerSquareMile: Math.round((totalCrashes / queriedYears.length / area) * 10) / 10,
-    source: "fars-api",
+    ...shared,
+    source: crashes.source,
+    severityCompleteness: crashes.severityCompleteness,
+    crashDensityBasis: crashes.crashDensityBasis,
+    reportedTotal: crashes.reportedTotal,
+    mappedTotal: crashes.mappedTotal,
+    truncated: crashes.truncated,
+    note: `Observed crash records from ${crashes.sourceLabel}.${severityNote}${mappingNote}`,
   };
 }
 
-export async function fetchCrashesForBbox(bbox: BBox): Promise<CrashSummary> {
-  const switrs = await fetchSwitrsFromCsv(bbox);
-  if (switrs) return switrs;
-  return fetchFars(bbox);
-}
-
-export async function fetchCrashPointFeaturesForBbox(bbox: BBox): Promise<CrashPointFeature[]> {
-  const records = await loadSwitrsRecordsForBbox(bbox);
-  if (!records) {
-    return [];
+/** The safety line of the deterministic corridor narrative. */
+export function describeCrashSafety(crashes: CrashSummaryCore): string {
+  if (!crashes.observed) {
+    const reason =
+      crashes.source === "out-of-coverage"
+        ? "no crash source covers this study area"
+        : `${crashes.sourceLabel} could not be reached`;
+    return `**Safety:** Crash data is not available for this study area (${reason}). No crash figures were estimated, and the safety score below is therefore not supported by observed crash data.`;
   }
 
-  return records
-    .map((record) => {
-      const severityBucket = classifySwitrsSeverity(record);
-      if (!severityBucket) {
-        return null;
-      }
+  const yearsStr =
+    crashes.yearsQueried.length > 0 ? crashes.yearsQueried.join(", ") : "no years with matching records";
+  const densityLabel =
+    crashes.crashDensityBasis === "fatal_only" ? "Fatal crash density" : "Reportable crash density";
 
-      return {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [record.lon, record.lat],
-        },
-        properties: {
-          kind: "crash_point",
-          source: "switrs-local",
-          severityBucket,
-          severityLabel: labelForSeverityBucket(severityBucket),
-          collisionYear: record.year,
-          fatalCount: record.fatalCount,
-          injuryCount: record.injuryCount,
-          pedestrianInvolved: record.pedestrianInvolved,
-          bicyclistInvolved: record.bicyclistInvolved,
-        },
-      } satisfies CrashPointFeature;
-    })
-    .filter((feature): feature is CrashPointFeature => Boolean(feature));
+  return (
+    `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
+    `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
+    `${crashes.bicyclistFatalities} involving a bicyclist). ${densityLabel}: ` +
+    `${crashes.crashesPerSquareMile}/sq mi/yr.`
+  );
 }

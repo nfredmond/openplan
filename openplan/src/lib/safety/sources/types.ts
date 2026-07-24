@@ -14,12 +14,17 @@
  *   `out_of_coverage` result and the caller shows that state — it never falls
  *   back to a synthesized figure.
  *
- * This is a deliberate departure from `src/lib/data-sources/crashes.ts`, whose
- * `fars-estimate` tier fabricates counts from bbox area for the Explore
- * *scorecard*. That tier is disclosed via `isEstimatedSource()` and is
- * defensible as a rough scorecard signal, but it must never reach a safety
- * analysis, a High-Injury Network, or an SS4A deliverable — so it is
- * structurally excluded from this contract and from the `safety_crashes` table.
+ * As of Wave 8.2 this is the ONLY crash lane in the platform.
+ * `src/lib/data-sources/crashes.ts` — which used to fabricate counts from bbox
+ * area for the Explore scorecard — is now a summarizer over this registry, so
+ * the Safety module and the corridor scorecard can no longer disagree about
+ * what a place's crash history is.
+ *
+ * Failure protocol: an adapter that cannot reach its source THROWS
+ * (`CrashSourceUnavailableError` is the canonical shape). Returning an empty
+ * `CrashFetchResult` means "the source answered, and there were no matching
+ * crashes" — a real finding. Conflating the two is the single most dangerous
+ * bug this module can have, because "0 fatalities" reads as a safe corridor.
  */
 
 import type { StudyAreaBbox } from "@/lib/models/study-area";
@@ -124,15 +129,51 @@ export type CrashSourceAdapter = {
   severityCompleteness: CrashSeverityCompleteness;
   /** Earliest year the source holds; used to clamp requested years honestly. */
   earliestYear: number;
+  /**
+   * May rows from this source be WRITTEN to `safety_crashes`?
+   *
+   * The table's `source_id` CHECK is a closed domain, so persistence coverage
+   * advances by migration while read coverage advances by registering an
+   * adapter. Marking an adapter non-persistable keeps it usable for read-only
+   * analysis (the Explore scorecard) while the DB allowlist catches up, instead
+   * of letting an ingest discover the mismatch as a constraint violation.
+   */
+  persistable: boolean;
   /** True when this adapter can serve the given study area. */
   covers: (bbox: StudyAreaBbox) => boolean;
   fetch: (params: CrashFetchParams) => Promise<CrashFetchResult>;
 };
 
+/**
+ * Why the caller wants a source.
+ *
+ * `ingest` (the default) only resolves adapters whose rows may legally be
+ * stored. `read_only` resolves the full registry — used by the corridor
+ * scorecard, which reports figures without persisting crash points.
+ */
+export type CrashSourceUse = "ingest" | "read_only";
+
 /** What the resolver returns when nothing covers the study area. */
 export type CrashSourceResolution =
   | { kind: "resolved"; adapter: CrashSourceAdapter }
   | { kind: "out_of_coverage"; checked: Array<{ id: string; label: string }> };
+
+/**
+ * Thrown by an adapter when its source could not be reached or answered in a
+ * shape it does not recognize.
+ *
+ * This exists so "unreachable" can never be silently summarized as "zero
+ * crashes". Callers translate it into an explicit unavailable state.
+ */
+export class CrashSourceUnavailableError extends Error {
+  readonly sourceId: string;
+
+  constructor(sourceId: string, message: string) {
+    super(message);
+    this.name = "CrashSourceUnavailableError";
+    this.sourceId = sourceId;
+  }
+}
 
 export function isCrashSeverity(value: unknown): value is CrashSeverity {
   return typeof value === "string" && (CRASH_SEVERITIES as readonly string[]).includes(value);
