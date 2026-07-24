@@ -25,22 +25,18 @@ function frameClassName() {
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const checkoutState = searchParams.get("checkout");
-  const activationState = searchParams.get("activation");
   const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
   const createdState = searchParams.get("created");
   // Set by /auth/callback when an emailed link could not be redeemed (expired,
   // already used). Without this the user is bounced here with no explanation.
   const authError = searchParams.get("auth_error");
-  const selectedPlan = searchParams.get("plan") ?? "starter";
   const inviteToken = searchParams.get("invite");
   const signUpHref = useMemo(() => {
     const params = new URLSearchParams();
-    params.set("plan", selectedPlan);
     params.set("redirect", redirectTarget);
     if (inviteToken) params.set("invite", inviteToken);
     return `/sign-up?${params.toString()}`;
-  }, [inviteToken, redirectTarget, selectedPlan]);
+  }, [inviteToken, redirectTarget]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -104,13 +100,7 @@ function SignInForm() {
               {inviteToken ? (
                 <li>OpenPlan will accept the workspace invitation before loading the dashboard.</li>
               ) : (
-                <>
-                  <li>Create or open the correct workspace from Projects.</li>
-                  <li>
-                    If you selected {selectedPlan === "starter" ? "Starter" : selectedPlan === "professional" ? "Professional" : "an early-access"} pricing,
-                    launch billing only after you are inside the correct workspace context.
-                  </li>
-                </>
+                <li>Your workspace is already provisioned — the dashboard opens straight into it.</li>
               )}
             </ol>
           </article>
@@ -133,27 +123,6 @@ function SignInForm() {
           <article className={noticeClass("info")}>
             <p className="font-semibold">Workspace invitation link detected.</p>
             <p className="mt-1.5">Sign in with the invited work email to join the workspace.</p>
-          </article>
-        ) : null}
-
-        {checkoutState === "success" ? (
-          <article className={noticeClass("success")}>
-            <p className="font-semibold">Payment received. Activation still needs the identity handoff.</p>
-            <ol className="mt-2 list-decimal space-y-1.5 pl-5">
-              <li>Check your email for “Activate your access.”</li>
-              <li>If needed, create an account with the same checkout email.</li>
-              <li>Activate access, then return here and sign in to the dashboard.</li>
-            </ol>
-          </article>
-        ) : null}
-
-        {checkoutState === "error" || activationState === "error" ? (
-          <article className={noticeClass("warning")}>
-            <p className="font-semibold">We could not confirm activation yet.</p>
-            <p className="mt-1.5">
-              If a payment attempt failed, no charge was made. If confirmation timed out, duplicate charges are still prevented.
-            </p>
-            <p className="mt-1.5">Next step: retry checkout once, or contact support if this persists.</p>
           </article>
         ) : null}
 

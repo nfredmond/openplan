@@ -69,4 +69,38 @@ describe("SignUpPage", () => {
       expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Freports&invite=invite-token-123");
     });
   });
+
+  it("shows an email-confirmation notice instead of routing when the project requires confirmation", async () => {
+    // Hosted Supabase with confirmations on: signUp returns a user but no
+    // session. The old flow routed to a sign-in screen telling the user to use
+    // a password that would not work yet.
+    signUpMock.mockResolvedValue({ data: { user: { id: "u1" }, session: null }, error: null });
+
+    render(<SignUpPage />);
+    fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "planner@example.com" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "OpenPlan!2026" } });
+    fireEvent.change(screen.getByLabelText(/^Organization$/i), { target: { value: "Nevada County TC" } });
+    fireEvent.click(screen.getByRole("button", { name: /Create account/i }));
+
+    expect(await screen.findByText(/Confirm your email to finish/i)).toBeInTheDocument();
+    expect(screen.getByText(/planner@example.com/)).toBeInTheDocument();
+    // It does NOT route to sign-in — the account cannot sign in yet.
+    expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("routes to sign-in when a session is returned (confirmations off)", async () => {
+    signUpMock.mockResolvedValue({ data: { user: { id: "u1" }, session: { access_token: "t" } }, error: null });
+    searchParamsValue.set("redirect", "/dashboard");
+
+    render(<SignUpPage />);
+    fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: "planner@example.com" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "OpenPlan!2026" } });
+    fireEvent.change(screen.getByLabelText(/^Organization$/i), { target: { value: "Nevada County TC" } });
+    fireEvent.click(screen.getByRole("button", { name: /Create account/i }));
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith("/sign-in?created=1&redirect=%2Fdashboard");
+    });
+    expect(screen.queryByText(/Confirm your email to finish/i)).not.toBeInTheDocument();
+  });
 });

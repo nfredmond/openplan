@@ -52,16 +52,17 @@ describe("SignInPage", () => {
 
   it("surfaces first-success guidance after account creation and preserves the redirect target", async () => {
     searchParamsValue.set("created", "1");
-    searchParamsValue.set("plan", "starter");
     searchParamsValue.set("redirect", "/reports");
 
     render(<SignInPage />);
 
     expect(await screen.findByText(/Account created — next step is your first workspace/i)).toBeInTheDocument();
-    expect(screen.getByText(/launch billing only after you are inside the correct workspace context/i)).toBeInTheDocument();
+    // No billing/pricing step: the workspace is already provisioned.
+    expect(screen.getByText(/workspace is already provisioned/i)).toBeInTheDocument();
+    expect(screen.queryByText(/billing|pricing/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Create an account/i })).toHaveAttribute(
       "href",
-      "/sign-up?plan=starter&redirect=%2Freports",
+      "/sign-up?redirect=%2Freports",
     );
   });
 
@@ -74,7 +75,7 @@ describe("SignInPage", () => {
     expect(await screen.findByText(/Workspace invitation link detected/i)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Create an account/i })).toHaveAttribute(
       "href",
-      "/sign-up?plan=starter&redirect=%2Fdashboard&invite=invite-token-123",
+      "/sign-up?redirect=%2Fdashboard&invite=invite-token-123",
     );
   });
 

@@ -60,6 +60,15 @@ Sign-up is self-serve and free. A database trigger (`handle_new_user`) provision
 each new account automatically, and the account owner can invite teammates from the dashboard. There
 is no access queue, no approval step, and no payment step to configure.
 
+**Configure Supabase Auth URLs for your domain.** Under *Authentication → URL Configuration* in the
+Supabase dashboard, set the **Site URL** to your deployment's origin and add
+`https://<your-domain>/auth/callback` to the **Redirect URLs** allowlist. This is what makes the
+email-confirmation link and the password-reset link (`/forgot-password` → `/auth/callback`) return to
+your app instead of being rejected. If you leave **Confirm email** enabled (the Supabase default on a
+hosted project), sign-up shows a "confirm your email to finish" step and the account activates when
+the emailed link is clicked; if you disable it, sign-up drops the user straight into their workspace.
+Either way the app handles it — but the redirect URL must be allowlisted first.
+
 ---
 
 ## 2. Environment variables

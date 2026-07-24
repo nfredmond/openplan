@@ -7,9 +7,10 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-function noticeClass(tone: "info" | "danger") {
+function noticeClass(tone: "info" | "success" | "danger") {
   const toneMap = {
     info: "border-sky-300/80 bg-sky-50/75 text-sky-950 dark:border-sky-900 dark:bg-sky-950/20 dark:text-sky-100",
+    success: "border-emerald-300/80 bg-emerald-50/75 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/20 dark:text-emerald-100",
     danger: "border-red-300/80 bg-red-50/75 text-red-800 dark:border-red-900 dark:bg-red-950/20 dark:text-red-200",
   } as const;
 
@@ -36,6 +37,7 @@ function SignUpForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -43,16 +45,32 @@ function SignUpForm() {
     setLoading(true);
 
     const supabase = createClient();
-    const { error: signUpError } = await supabase.auth.signUp({
+    const emailRedirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTarget)}`
+        : undefined;
+    const { data, error: signUpError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: { org_name: orgName.trim() },
+        emailRedirectTo,
       },
     });
 
     if (signUpError) {
       setError(signUpError.message);
+      setLoading(false);
+      return;
+    }
+
+    // A hosted Supabase project can require email confirmation. When it does,
+    // signUp returns a user but NO session, and the account cannot sign in until
+    // the emailed link is clicked. Detect that and say so, instead of routing to
+    // a sign-in screen that tells the user to use a password that won't work
+    // yet (the bug on any deployment with confirmations enabled).
+    if (data && data.user && !data.session) {
+      setAwaitingConfirmation(true);
       setLoading(false);
       return;
     }
@@ -78,7 +96,21 @@ function SignUpForm() {
       </header>
 
       <div className="space-y-4 px-6 py-5 sm:px-7">
-        {inviteToken ? (
+        {awaitingConfirmation ? (
+          <article className={noticeClass("success")} role="status">
+            <p className="font-semibold">Confirm your email to finish.</p>
+            <p className="mt-1.5">
+              This deployment requires email confirmation. We sent a link to{" "}
+              <span className="font-medium">{email}</span> — click it to activate your account, then{" "}
+              <Link href={signInHref} className="font-semibold underline underline-offset-4">
+                sign in
+              </Link>
+              . Your workspace is provisioned automatically once you confirm.
+            </p>
+          </article>
+        ) : null}
+
+        {inviteToken && !awaitingConfirmation ? (
           <article className={noticeClass("info")}>
             <p className="font-semibold">Workspace invitation link detected.</p>
             <p className="mt-1.5">
