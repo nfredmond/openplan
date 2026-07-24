@@ -91,16 +91,18 @@ function SignUpForm() {
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">Create account</p>
         <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Create your OpenPlan account.</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Set up your account to get into OpenPlan. You will create or open your workspace right after signing in — that is where projects, maps, engagement, and reporting come together.
+          Free and open source. Sign up and your workspace is ready immediately — that is where
+          projects, maps, engagement, and reporting come together. No payment, no access queue.
         </p>
       </header>
 
       <div className="space-y-4 px-6 py-5 sm:px-7">
         {selectedPlan ? (
           <article className={noticeClass("info")}>
-            <p className="font-semibold">Selected managed-hosting lane: {labelForPlan(selectedPlan)}</p>
+            <p className="font-semibold">Interested in {labelForPlan(selectedPlan)} managed hosting?</p>
             <p className="mt-1.5">
-              This step creates your account only. After sign-in, create or open the correct workspace, then launch managed-hosting billing from the in-app billing surface.
+              The software itself is free — sign up and your workspace is ready immediately. Managed
+              hosting and services are optional and handled separately; nothing here charges you.
             </p>
           </article>
         ) : null}

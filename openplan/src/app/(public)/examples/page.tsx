@@ -416,15 +416,19 @@ export default function ExamplesEvidenceCatalogPage() {
               <div className="public-ledger-index">03</div>
               <div className="public-ledger-body">
                 <p className="public-ledger-copy text-foreground">
-                  Agencies and consultants who want to see the methodology behind a run can{" "}
+                  Agencies and consultants can{" "}
+                  <Link href="/sign-up" className="underline underline-offset-4 hover:text-foreground">
+                    create a free workspace
+                  </Link>{" "}
+                  and run this for their own geography, or{" "}
                   <Link href="/pricing" className="underline underline-offset-4 hover:text-foreground">
                     review service lanes
                   </Link>{" "}
-                  or{" "}
+                  and{" "}
                   <Link href="/request-access" className="underline underline-offset-4 hover:text-foreground">
                     request a supervised walk-through
-                  </Link>
-                  .
+                  </Link>{" "}
+                  if they want hands-on help.
                 </p>
               </div>
             </div>

@@ -13,7 +13,7 @@ vi.mock("next/link", () => ({
 import PublicLandingPage from "@/app/(public)/page";
 
 describe("PublicLandingPage", () => {
-  it("prioritizes request access, keeps sign-in secondary, and shows source/license proof near the Apache claim", () => {
+  it("leads with self-serve sign-up, keeps sign-in secondary, and shows source/license proof near the Apache claim", () => {
     render(<PublicLandingPage />);
 
     expect(
@@ -22,12 +22,12 @@ describe("PublicLandingPage", () => {
       }),
     ).toBeInTheDocument();
 
-    const actions = screen.getAllByRole("link", { name: /Request access/i });
-    expect(actions[0]).toHaveAttribute(
-      "href",
-      "/request-access?product=openplan&source=landing&intent=open-source-services-review",
-    );
-    expect(actions[0]).toHaveClass("public-primary-link");
+    // Posture flip: the primary CTA is a free self-serve sign-up, not a
+    // founder access queue.
+    const primary = screen.getByRole("link", { name: /Create your free workspace/i });
+    expect(primary).toHaveAttribute("href", "/sign-up?source=landing");
+    expect(primary).toHaveClass("public-primary-link");
+    expect(screen.queryByRole("link", { name: /^Request access$/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Sign in to existing workspace/i })).toHaveClass("public-secondary-link");
 
     const proofPath = screen.getByLabelText(/Open-source proof path/i);
@@ -40,7 +40,7 @@ describe("PublicLandingPage", () => {
       "href",
       "https://github.com/nfredmond/openplan/blob/main/LICENSE",
     );
-    expect(screen.getByText(/Rollout status/i)).toBeInTheDocument();
+    expect(screen.getByText(/Getting started/i)).toBeInTheDocument();
     expect(screen.queryByText(/Current motion/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/dashboard theater/i)).not.toBeInTheDocument();
   });
@@ -49,14 +49,15 @@ describe("PublicLandingPage", () => {
     render(<PublicLandingPage />);
 
     expect(screen.queryByRole("link", { name: /^Analysis Studio preview$/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /^Engagement workspace$/i })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Request access to the map and scenario workspace/i })).toHaveAttribute(
+    // The workspace surfaces now route to self-serve sign-up, not a request
+    // queue, and carry the signed-in-workspace framing honestly.
+    expect(screen.getByRole("link", { name: /Open the map and scenario workspace/i })).toHaveAttribute(
       "href",
-      "/request-access?product=openplan&lane=managed-hosting&workflow=modeling&source=landing&intent=modeling-workspace-review",
+      "/sign-up?source=landing&intent=modeling",
     );
-    expect(screen.getByRole("link", { name: /Request access to the engagement workspace/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Open the engagement workspace/i })).toHaveAttribute(
       "href",
-      "/request-access?product=openplan&lane=implementation&workflow=engagement&source=landing&intent=engagement-workspace-review",
+      "/sign-up?source=landing&intent=engagement",
     );
     expect(screen.queryByText(/operator surface/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/operator review/i)).not.toBeInTheDocument();

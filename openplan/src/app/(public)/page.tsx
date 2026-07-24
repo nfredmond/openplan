@@ -45,33 +45,33 @@ const publicSurfaces = [
     label: "Evidence catalog",
     title: "See a real screening run with its caveats",
     description:
-      "Nevada County 2026-03-24 screening run against Caltrans counts — screening-grade evidence with caveats and validation metrics shown verbatim.",
+      "A real screening run validated against observed traffic counts — screening-grade evidence with caveats and validation metrics shown verbatim.",
   },
   {
-    href: "/request-access?product=openplan&lane=managed-hosting&workflow=modeling&source=landing&intent=modeling-workspace-review",
-    label: "Analysis Studio access",
-    title: "Request access to the map and scenario workspace",
+    href: "/sign-up?source=landing&intent=modeling",
+    label: "Analysis Studio",
+    title: "Open the map and scenario workspace",
     description:
-      "Analysis Studio is a signed-in workspace. Request access to work with corridor maps, overlays, run history, and map-ready outputs.",
+      "Analysis Studio is a signed-in workspace. Create a free account and work with corridor maps, overlays, run history, and map-ready outputs for your own geography.",
   },
   {
     href: "/pricing",
     label: "Services lane",
     title: "Review open-source, hosting, and implementation options",
-    description: "See how Apache-2.0 software, managed hosting, onboarding, support, planning services, and custom extensions fit together.",
+    description: "See how Apache-2.0 software, optional managed hosting, onboarding, support, planning services, and custom extensions fit together.",
   },
   {
-    href: "/request-access?product=openplan&source=landing&intent=open-source-services-review",
-    label: "Access intake",
-    title: "Request a workspace review",
-    description: "Submit agency context and a first workflow without triggering automatic provisioning or outbound messages.",
+    href: "/examples",
+    label: "Evidence catalog",
+    title: "See a screening run with its caveats first",
+    description: "A real screening run with its validation metrics and caveats shown verbatim, so you can judge the boundaries before you sign up.",
   },
   {
-    href: "/request-access?product=openplan&lane=implementation&workflow=engagement&source=landing&intent=engagement-workspace-review",
-    label: "Engagement workspace access",
-    title: "Request access to the engagement workspace",
+    href: "/sign-up?source=landing&intent=engagement",
+    label: "Engagement workspace",
+    title: "Open the engagement workspace",
     description:
-      "Public share links can be published, but campaign management stays in a signed-in workspace with moderation and human review.",
+      "Public share links can be published from a signed-in workspace with moderation and human review. Create a free account to run a campaign for your community.",
   },
 ];
 
@@ -87,9 +87,9 @@ const releaseFacts = [
     detail: "Hosting, support, onboarding, implementation, and custom extensions are the paid services around the open-source core.",
   },
   {
-    label: "Rollout status",
-    value: "Live, reviewed onboarding",
-    detail: "OpenPlan is live. New hosted workspaces start with a reviewed onboarding so hosting, billing, and support are set up correctly from day one.",
+    label: "Getting started",
+    value: "Sign up, workspace ready",
+    detail: "OpenPlan is live and self-serve: create a free account and your workspace is ready immediately. Optional managed hosting starts with a reviewed setup, but nothing gates the free software.",
   },
 ];
 
@@ -146,17 +146,21 @@ export default function PublicLandingPage() {
           </div>
 
           <div className="public-actions">
-            <Link href="/request-access?product=openplan&source=landing&intent=open-source-services-review" className="public-primary-link">
-              Request access
+            <Link href="/sign-up?source=landing" className="public-primary-link">
+              Create your free workspace
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link href="/pricing" className="public-secondary-link">
-              Review services
+              Review optional services
             </Link>
             <Link href="/sign-in" className="public-secondary-link">
               Sign in to existing workspace
             </Link>
           </div>
+          <p className="public-fine-print mt-2 text-sm text-muted-foreground">
+            Free and open source. Sign up and your workspace is ready immediately — no founder
+            involvement, no access queue, no payment. Managed hosting and services are optional.
+          </p>
 
           <div className="public-fact-grid public-fact-grid--three">
             {releaseFacts.map((fact) => (

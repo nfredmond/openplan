@@ -76,21 +76,24 @@ disabled checkout, and do not add plan/subscription gating to any new feature. S
 immediate. (`src/lib/billing/*`, `src/app/api/billing/*`, the Stripe env vars, and the plan/quota
 seams are pending removal; treat them as dead code, not as a system to extend.)
 
-**But flip the CLAIM last, not first.** `src/test/public-page-claims-guardrails.test.ts` and
-`sales-proof-claim-boundaries.test.ts` currently assert the site does NOT promise self-serve. Those
-guards exist to prevent overclaiming, and they are still doing their job while the capability is
-missing (as of this writing: no password-reset flow, no teammate-invite UI, and no Supabase auth
-callback route). Deleting them ahead of the capability would simply recreate the overclaim pointing
-the other way.
+**Posture flip status (as of 2026-07-23): DONE.** The capability, the claims, and the guard were
+flipped in sequence, in this order — never claim ahead of capability:
 
-The required order is:
+1. **Capability built:** sign up → workspace auto-provisioned by the `on_auth_user_created` trigger
+   (`handle_new_user`) → teammate invites (dashboard team panel, `/api/workspaces/invitations`
+   GET/POST/DELETE) → password recovery (`/auth/callback`, `/forgot-password`, `/reset-password`).
+   All free, no founder, no payment.
+2. **Claims changed:** the landing hero and header (`src/app/(public)/page.tsx`, `layout.tsx`) lead
+   with "Create your free workspace" → `/sign-up`. `/request-access` remains ONLY as a paid-services
+   inquiry path (hosting/implementation), never as the way to reach the software.
+3. **Guard rewritten to the NEW truth:** `src/test/public-page-claims-guardrails.test.ts` now asserts
+   the front door leads with self-serve sign-up and that no founder gate is reinstated — while KEEPING
+   the modeling-overclaim and no-paid-checkout prohibitions (the product is free and still
+   screening-grade). It was rewritten, not deleted.
 
-1. **Build the capability** — sign up → get a workspace → invite teammates → recover a lost
-   password, all without the founder and without paying.
-2. **Then change the public claims** to match what now actually works.
-3. **Then rewrite the guards to assert the NEW truth** — that self-serve works and no founder gate
-   remains. Update them; never just delete them. A module with no claim guard is how overclaiming
-   comes back.
+**Leave `sales-proof-claim-boundaries.test.ts` and the `docs/` proof packets alone.** That guard scans
+DATED proof documents that were accurate as of their date; editing a dated record to match today's
+posture would falsify it. It is not part of the live claim.
 
 ## Engineering Philosophy
 

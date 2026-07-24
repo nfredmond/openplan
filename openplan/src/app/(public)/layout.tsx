@@ -20,8 +20,8 @@ export default function PublicLayout({
           </div>
           <div className="grid gap-3 lg:justify-items-end">
             <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-semibold text-muted-foreground">
-              <Link href="/request-access" className="transition hover:text-foreground">
-                Request access
+              <Link href="/sign-up" className="transition hover:text-foreground">
+                Sign up
               </Link>
               <Link href="/pricing" className="transition hover:text-foreground">
                 Services
