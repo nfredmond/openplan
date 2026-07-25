@@ -82,18 +82,27 @@ export function ExploreGeospatialBriefing({
               </div>
               <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
                 <p className="text-sm font-medium text-foreground">Crash lane posture</p>
+                {/*
+                  This panel used to tell every planner that "SWITRS remains the
+                  preferred California-grade upgrade path" — a system retired on
+                  2025-01-08 — because it compared the snapshot against a token
+                  nothing emits. It now reports what actually answered, and says
+                  plainly when nothing did.
+                */}
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Current crash source: {formatSourceToken(sourceSnapshots?.crashes?.source)}.
-                  {sourceSnapshots?.crashes?.source !== "switrs-local"
-                    ? " SWITRS remains the preferred California-grade upgrade path for richer safety layers."
-                    : " SWITRS-backed safety coverage is active for this corridor run."}
+                  {sourceSnapshots?.crashes?.source
+                    ? `Crash coverage for this run came from ${
+                        sourceSnapshots.crashes.label ?? formatSourceToken(sourceSnapshots.crashes.source)
+                      }.`
+                    : "No crash source answered for this study area, so this run carries no crash figures. That is a gap in coverage, not a finding that no crashes occurred."}
+                  {sourceSnapshots?.crashes?.note ? ` ${sourceSnapshots.crashes.note}` : ""}
                 </p>
               </div>
               <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
                 <p className="text-sm font-medium text-foreground">Next layer buildout</p>
                 <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs text-muted-foreground">
                   <li>Census tract geometry + choropleth overlays</li>
-                  <li>SWITRS collision point layer + severity filters</li>
+                  <li>Crash point severity filters on the registered crash sources</li>
                   <li>Project and engagement overlays tied into the workspace</li>
                   <li>CARTO workflow lane for derived spatial products and scheduled refreshes</li>
                 </ul>

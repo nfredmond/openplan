@@ -11,7 +11,7 @@ type Props = {
   onToggleTracts: () => void;
   showCrashes: boolean;
   onToggleCrashes: () => void;
-  switrsPointLayerAvailable: boolean;
+  crashPointLayerAvailable: boolean;
   tractMetric: TractMetric;
   onChangeTractMetric: (value: TractMetric) => void;
 };
@@ -24,7 +24,7 @@ export function ExploreLayerVisibilityControls({
   onToggleTracts,
   showCrashes,
   onToggleCrashes,
-  switrsPointLayerAvailable,
+  crashPointLayerAvailable,
   tractMetric,
   onChangeTractMetric,
 }: Props) {
@@ -62,12 +62,12 @@ export function ExploreLayerVisibilityControls({
           <button
             type="button"
             onClick={onToggleCrashes}
-            className={["analysis-sidepanel-row is-interactive", showCrashes && switrsPointLayerAvailable ? "is-warning" : "is-muted"].join(" ")}
+            className={["analysis-sidepanel-row is-interactive", showCrashes && crashPointLayerAvailable ? "is-warning" : "is-muted"].join(" ")}
           >
             <div className="analysis-sidepanel-head">
               <p className="analysis-sidepanel-title">Crash data</p>
-              <StatusBadge tone={showCrashes && switrsPointLayerAvailable ? "warning" : "neutral"}>
-                {switrsPointLayerAvailable ? (showCrashes ? "Visible" : "Hidden") : "No data"}
+              <StatusBadge tone={showCrashes && crashPointLayerAvailable ? "warning" : "neutral"}>
+                {crashPointLayerAvailable ? (showCrashes ? "Visible" : "Hidden") : "No data"}
               </StatusBadge>
             </div>
           </button>

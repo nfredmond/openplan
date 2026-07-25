@@ -4,7 +4,7 @@ import {
   buildCurrentMapViewState,
   getCrashPointFeatures,
   getLinkedDatasetPreview,
-  hasSwitrsPointLayer,
+  hasCrashPointLayer,
   resolveActiveDatasetOverlay,
   resolveWorkspaceHelperText,
   resolveWorkspaceStatusLabel,
@@ -240,14 +240,22 @@ describe("explore page state helpers", () => {
     ).toBe("Connected to workspace (member).");
   });
 
-  it("filters crash point features and gates SWITRS point-layer availability", () => {
+  /**
+   * CORRECTED, not updated. The previous version asserted that a run whose
+   * crash source was anything other than `"switrs-local"` had NO crash point
+   * layer — pinning the defect as if it were intent. Since the crash lane moved
+   * to the adapter registry nothing emits that token, so live CCRS points
+   * fetched, mapped and returned in the run's GeoJSON could never be rendered.
+   * Availability is now a property of the data, not of one adapter's name.
+   */
+  it("gates the crash point layer on points existing, not on which adapter answered", () => {
     const result = buildAnalysisResult({
       metrics: {
         accessibilityScore: 81,
         safetyScore: 72,
         equityScore: 78,
         sourceSnapshots: {
-          crashes: { source: "switrs-local" },
+          crashes: { source: "ccrs-ca" },
         },
       },
     });
@@ -256,22 +264,27 @@ describe("explore page state helpers", () => {
     expect(crashPointFeatures).toHaveLength(1);
     expect(crashPointFeatures[0].properties).toMatchObject({ kind: "crash_point" });
     expect(getCrashPointFeatures(null)).toEqual([]);
-    expect(hasSwitrsPointLayer(result, crashPointFeatures.length)).toBe(true);
-    expect(hasSwitrsPointLayer(result, 0)).toBe(false);
-    expect(
-      hasSwitrsPointLayer(
-        buildAnalysisResult({
-          metrics: {
-            accessibilityScore: 81,
-            safetyScore: 72,
-            equityScore: 78,
-            sourceSnapshots: {
-              crashes: { source: "osm-overpass" },
+    expect(hasCrashPointLayer(result, crashPointFeatures.length)).toBe(true);
+
+    // No points -> no layer, whatever the source says.
+    expect(hasCrashPointLayer(result, 0)).toBe(false);
+
+    // Any registered adapter's points are renderable. Adding a crash source
+    // must never require editing this function.
+    for (const source of ["ccrs-ca", "fars-national", "some-future-state-adapter"]) {
+      expect(
+        hasCrashPointLayer(
+          buildAnalysisResult({
+            metrics: {
+              accessibilityScore: 81,
+              safetyScore: 72,
+              equityScore: 78,
+              sourceSnapshots: { crashes: { source } },
             },
-          },
-        }),
-        1
-      )
-    ).toBe(false);
+          }),
+          1
+        )
+      ).toBe(true);
+    }
   });
 });

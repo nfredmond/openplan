@@ -11,7 +11,7 @@ import type { HoveredCrash, HoveredTract, TractLegendItem, TractMetric } from ".
 
 type ExploreHoverInspectorProps = {
   showTracts: boolean;
-  switrsPointLayerAvailable: boolean;
+  crashPointLayerAvailable: boolean;
   tractMetric: TractMetric;
   hoveredTract: HoveredTract | null;
   hoveredCrash: HoveredCrash | null;
@@ -136,14 +136,14 @@ export function getActiveTractLegendLabel(hoveredTract: HoveredTract | null, tra
 
 export function ExploreHoverInspector({
   showTracts,
-  switrsPointLayerAvailable,
+  crashPointLayerAvailable,
   tractMetric,
   hoveredTract,
   hoveredCrash,
   crashSeverityFilter,
   crashUserFilter,
 }: ExploreHoverInspectorProps) {
-  if (!showTracts && !switrsPointLayerAvailable) {
+  if (!showTracts && !crashPointLayerAvailable) {
     return null;
   }
 
@@ -250,7 +250,7 @@ export function ExploreHoverInspector({
             </>
           ) : null}
 
-          {switrsPointLayerAvailable ? (
+          {crashPointLayerAvailable ? (
             <div className={["analysis-sidepanel-row", hoveredCrash ? "is-warning" : "is-muted"].join(" ")}>
               <div className="analysis-sidepanel-head">
                 <div className="analysis-sidepanel-main">
@@ -261,7 +261,7 @@ export function ExploreHoverInspector({
                   <p className="analysis-sidepanel-body">
                     {hoveredCrash
                       ? `${titleize(crashSeverityFilter)} / ${formatCrashUserFilterLabel(crashUserFilter)}`
-                      : "Hover a SWITRS collision point to inspect severity and VRU flags."}
+                      : "Hover a crash point to inspect severity and VRU flags."}
                   </p>
                 </div>
                 <StatusBadge tone={hoveredCrash ? "warning" : "neutral"}>

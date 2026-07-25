@@ -133,7 +133,7 @@ export function summarizeMapViewState(
       value: value.showTracts === false ? "Hidden" : "Visible",
     },
     {
-      label: "SWITRS lane",
+      label: "Crash layer",
       value: value.showCrashes === false ? "Hidden" : "Visible when available",
     },
     {

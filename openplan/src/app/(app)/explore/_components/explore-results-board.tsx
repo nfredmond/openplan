@@ -194,14 +194,17 @@ export function ExploreResultsBoard({
       },
       {
         label: "Crash safety",
-        status: formatSourceToken(sourceSnapshots?.crashes?.source),
+        // Prefer the adapter's own label; fall back to its id. Never name a
+        // specific adapter here — coverage advances by registering one.
+        status:
+          sourceSnapshots?.crashes?.label ??
+          formatSourceToken(sourceSnapshots?.crashes?.source ?? sourceSnapshots?.crashes?.state),
         detail: sourceSnapshots?.crashes?.note ?? "Crash metadata not available.",
-        tone:
-          sourceSnapshots?.crashes?.source === "switrs-local"
-            ? "success"
-            : sourceSnapshots?.crashes?.source === "fars-api"
-              ? "info"
-              : "warning",
+        // `source` is present only when a source actually answered, so it is
+        // the honest availability test. This previously compared against
+        // "switrs-local" — a retired token nothing emits — so every run with
+        // real, live crash data was rendered with a warning tone.
+        tone: sourceSnapshots?.crashes?.source ? "success" : "warning",
       },
       {
         label: "Employment / LODES",

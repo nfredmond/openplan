@@ -31,7 +31,7 @@ describe("ExploreHoverInspector", () => {
     const { container } = render(
       <ExploreHoverInspector
         showTracts={false}
-        switrsPointLayerAvailable={false}
+        crashPointLayerAvailable={false}
         tractMetric="minority"
         hoveredTract={null}
         hoveredCrash={null}
@@ -47,7 +47,7 @@ describe("ExploreHoverInspector", () => {
     render(
       <ExploreHoverInspector
         showTracts
-        switrsPointLayerAvailable={false}
+        crashPointLayerAvailable={false}
         tractMetric="poverty"
         hoveredTract={{
           name: "Nevada City Tract",
@@ -77,11 +77,11 @@ describe("ExploreHoverInspector", () => {
     expect(screen.getByText("hovered")).toBeInTheDocument();
   });
 
-  it("renders hovered crash attributes when SWITRS points are available", () => {
+  it("renders hovered crash attributes when crash points are available", () => {
     render(
       <ExploreHoverInspector
         showTracts={false}
-        switrsPointLayerAvailable
+        crashPointLayerAvailable
         tractMetric="minority"
         hoveredTract={null}
         hoveredCrash={{

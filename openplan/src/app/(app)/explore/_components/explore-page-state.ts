@@ -115,8 +115,22 @@ export function getCrashPointFeatures(analysisResult: AnalysisResult | null): Ge
   );
 }
 
-export function hasSwitrsPointLayer(analysisResult: AnalysisResult | null, crashPointCount: number): boolean {
-  return analysisResult?.metrics.sourceSnapshots?.crashes?.source === "switrs-local" && crashPointCount > 0;
+/**
+ * Whether there is a crash point layer to interact with.
+ *
+ * This used to require `crashes.source === "switrs-local"`. No code has emitted
+ * that token since the crash lane moved to the adapter registry — the snapshot
+ * now carries the adapter's own id (`ccrs-ca`, `fars-national`, ...) — so the
+ * test could never pass and the crash layer was permanently unreachable on
+ * Explore even when live crashes had been fetched and mapped.
+ *
+ * The honest test is simply whether points exist: `getCrashPointFeatures` reads
+ * them from the run's own GeoJSON, and points are only ever emitted for an
+ * observed source. Nothing here may name a specific adapter, or the next one
+ * registered breaks it again.
+ */
+export function hasCrashPointLayer(_analysisResult: AnalysisResult | null, crashPointCount: number): boolean {
+  return crashPointCount > 0;
 }
 
 export function getLinkedDatasetPreview(

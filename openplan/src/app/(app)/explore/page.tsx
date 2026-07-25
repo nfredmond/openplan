@@ -41,7 +41,7 @@ import { ExploreRunHistoryPanel } from "./_components/explore-run-history-panel"
 import {
   buildCurrentMapViewState,
   getCrashPointFeatures,
-  hasSwitrsPointLayer,
+  hasCrashPointLayer,
   resolveActiveDatasetOverlay,
   resolveWorkspaceHelperText,
   resolveWorkspaceStatusLabel,
@@ -438,7 +438,7 @@ export default function ExplorePage() {
 
   const crashPointCount = crashPointFeatures.length;
 
-  const switrsPointLayerAvailable = hasSwitrsPointLayer(analysisResult, crashPointCount);
+  const crashPointLayerAvailable = hasCrashPointLayer(analysisResult, crashPointCount);
 
   useEffect(() => {
     if (!analysisResult?.runId) {
@@ -778,14 +778,14 @@ export default function ExplorePage() {
               onToggleTracts={() => setShowTracts((v) => !v)}
               showCrashes={showCrashes}
               onToggleCrashes={() => setShowCrashes((v) => !v)}
-              switrsPointLayerAvailable={switrsPointLayerAvailable}
+              crashPointLayerAvailable={crashPointLayerAvailable}
               tractMetric={tractMetric}
               onChangeTractMetric={(value) => setTractMetric(value)}
             />
 
             <ExploreHoverInspector
               showTracts={showTracts}
-              switrsPointLayerAvailable={switrsPointLayerAvailable}
+              crashPointLayerAvailable={crashPointLayerAvailable}
               tractMetric={tractMetric}
               hoveredTract={hoveredTract}
               hoveredCrash={hoveredCrash}

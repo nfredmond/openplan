@@ -79,7 +79,7 @@ function buildAnalysisResult(overrides: Partial<AnalysisResult> = {}): AnalysisR
           fetchedAt: "2026-04-20T08:00:00.000Z",
         },
         transit: { source: "osm-overpass", note: "OpenStreetMap stop proxy." },
-        crashes: { source: "switrs-local", note: "SWITRS local extract." },
+        crashes: { source: "ccrs-ca", label: "CCRS (California)", note: "Observed CCRS crash records." },
         lodes: { source: "lodes-api", note: "LODES API extract." },
         equity: { source: "cejst-proxy-census", note: "Proxy equity screen." },
       },

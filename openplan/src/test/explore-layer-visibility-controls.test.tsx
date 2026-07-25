@@ -12,7 +12,7 @@ function renderControls(overrides: Partial<Parameters<typeof ExploreLayerVisibil
     onToggleTracts: vi.fn(),
     showCrashes: false,
     onToggleCrashes: vi.fn(),
-    switrsPointLayerAvailable: true,
+    crashPointLayerAvailable: true,
     tractMetric: "minority" as const,
     onChangeTractMetric: vi.fn(),
     ...overrides,
@@ -43,7 +43,7 @@ describe("ExploreLayerVisibilityControls", () => {
       showPolygonFill: false,
       showTracts: false,
       showCrashes: true,
-      switrsPointLayerAvailable: false,
+      crashPointLayerAvailable: false,
     });
 
     expect(screen.getByText("Init")).toBeInTheDocument();

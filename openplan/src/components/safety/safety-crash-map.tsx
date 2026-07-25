@@ -25,7 +25,7 @@ const INITIAL_ZOOM = 3.4;
 /**
  * Severity palette, matched to the Explore crash overlay
  * (explore-analysis-layer-install.ts) so the same crash reads the same colour
- * wherever it appears. PDO is the one addition — Explore's SWITRS lane drops
+ * wherever it appears. PDO is the one addition — Explore's crash layer drops
  * property-damage-only entirely, while CCRS reports it.
  */
 const SEVERITY_COLOR: mapboxgl.ExpressionSpecification = [

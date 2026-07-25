@@ -61,7 +61,21 @@ export type AnalysisResult = {
       };
       lodes?: { source?: string; note?: string; fetchedAt?: string };
       transit?: { source?: string; note?: string; fetchedAt?: string };
-      crashes?: { source?: string; yearsQueried?: number[]; note?: string; fetchedAt?: string };
+      crashes?: {
+        /**
+         * OMITTED when nothing was observed — see `buildCrashSourceSnapshot`.
+         * Its presence is therefore the honest test for "a crash source
+         * answered"; do not test for any particular adapter id.
+         */
+        source?: string;
+        /** The honest identifier, present whether or not anything was observed. */
+        state?: string;
+        /** Human label for the adapter that answered, e.g. "CCRS (California)". */
+        label?: string;
+        yearsQueried?: number[];
+        note?: string;
+        fetchedAt?: string;
+      };
       equity?: { source?: string; note?: string; fetchedAt?: string };
     };
     mapViewState?: Partial<MapViewState>;

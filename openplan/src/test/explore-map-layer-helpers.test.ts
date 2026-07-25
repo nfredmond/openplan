@@ -128,7 +128,7 @@ describe("explore map layer helpers", () => {
 
   it("formats source tokens and numeric display values for Explore side panels", () => {
     expect(formatSourceToken(undefined)).toBe("Unknown");
-    expect(formatSourceToken("switrs-local")).toBe("Switrs Local");
+    expect(formatSourceToken("ccrs-ca")).toBe("Ccrs Ca");
     expect(formatSourceToken("  census__acs---tracts  ")).toBe("Census Acs Tracts");
 
     expect(formatCurrency(1250000)).toBe("$1,250,000");

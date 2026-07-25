@@ -39,7 +39,7 @@ const MAP_CONTEXT_PRIORITY = [
   "Overlay mode",
   "Overlay geometry",
   "Census tracts",
-  "SWITRS lane",
+  "Crash layer",
 ] as const;
 
 function formatDate(value: string): string {
