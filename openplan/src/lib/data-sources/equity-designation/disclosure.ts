@@ -46,28 +46,36 @@ export function federalJustice40NarrativeLine(det: Justice40Determination): stri
     c.undeterminedTracts > 0
       ? ` ${c.undeterminedTracts} of ${c.totalTracts} tract(s) had no CEJST record (${VINTAGE_NOTE}).`
       : "";
+  // Crosswalk-resolved determinations are INFERENCES (a renumbered 2020 tract →
+  // its 2010 parent[s], disadvantaged if ANY parent is), not direct records —
+  // disclose it so a crosswalk inference is never read as a definitive record.
+  const inferredNote =
+    c.crosswalkInferredTracts > 0
+      ? ` ${c.crosswalkInferredTracts} determination(s) were matched via the 2020→2010 tract crosswalk (disadvantaged if any overlapping 2010 tract is), not a direct CEJST record.`
+      : "";
 
   switch (det.status) {
     case "disadvantaged":
       return (
         `**Federal Justice40 / CEJST determination:** ${c.disadvantagedTracts} of ${c.determinedTracts} matched ` +
-        `tract(s) are designated disadvantaged in ${label(det)}. ${PROGRAM_DISCONTINUED_CAVEAT}${undeterminedNote}`
+        `tract(s) are designated disadvantaged in ${label(det)}. ${PROGRAM_DISCONTINUED_CAVEAT}${undeterminedNote}${inferredNote}`
       );
     case "not_disadvantaged":
       return (
         `**Federal Justice40 / CEJST determination:** No study-area tract is designated disadvantaged in ` +
         `${label(det)} (${c.determinedTracts} of ${c.totalTracts} tract(s) matched a record). Historical ` +
-        `snapshot of a discontinued program; not a current federal determination.${undeterminedNote}`
+        `snapshot of a discontinued program; not a current federal determination.${undeterminedNote}${inferredNote}`
       );
     default: {
-      // A named source means it COVERED the area but held no record for these
-      // tracts — the true vintage gap. A null source means no designation source
-      // covered the area (or the dataset failed to load); attributing THAT to
-      // tract renumbering would be a false explanation.
+      // State the TRUE cause. Blaming the tract vintage when the source was
+      // unavailable, or when no source covered the area, would be a false
+      // explanation of the missing determination.
       const reason =
-        det.source === null
-          ? "No official disadvantaged-community designation source covered this study area."
-          : `No CEJST record matched the study-area tracts (${c.undeterminedTracts} of ${c.totalTracts} had no record). ${VINTAGE_NOTE}`;
+        det.notDeterminedCause === "source_unavailable"
+          ? "The CEJST dataset could not be loaded for this run."
+          : det.notDeterminedCause === "no_matching_record"
+            ? `No CEJST record matched the study-area tracts (${c.undeterminedTracts} of ${c.totalTracts} had no record). ${VINTAGE_NOTE}`
+            : "No official disadvantaged-community designation source covered this study area.";
       return `**Federal Justice40 / CEJST determination:** Not determined — ${reason} A proxy screening was computed instead.`;
     }
   }

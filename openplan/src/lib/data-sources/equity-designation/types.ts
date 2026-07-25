@@ -35,6 +35,16 @@ import type { StudyAreaBbox } from "@/lib/models/study-area";
 /** Tri-state federal/official disadvantaged-community determination for a study area. */
 export type Justice40Status = "disadvantaged" | "not_disadvantaged" | "not_determined";
 
+/**
+ * Why a `not_determined` result is not_determined — so disclosure never states a
+ * false cause (e.g. blaming the tract vintage when the real cause was that no
+ * source covered the area or the dataset failed to load).
+ */
+export type Justice40NotDeterminedCause =
+  | "out_of_coverage" // no designation source's envelope covers the study area
+  | "source_unavailable" // a covering source could not be loaded/reached
+  | "no_matching_record"; // a source covered the area but held no record for these tracts
+
 /** How the determination breaks down across the study-area tracts. */
 export interface Justice40Coverage {
   /** Study-area tracts screened. */
@@ -45,6 +55,13 @@ export interface Justice40Coverage {
   undeterminedTracts: number;
   /** Determined tracts the source flags as disadvantaged. */
   disadvantagedTracts: number;
+  /**
+   * Of the determined tracts, how many were resolved through the 2020→2010 tract
+   * crosswalk rather than a direct record match. These are inferences (a renumbered
+   * 2020 tract mapped to its 2010 parent[s], disadvantaged if ANY parent is), so a
+   * caller can disclose that a designation was crosswalk-inferred, not read directly.
+   */
+  crosswalkInferredTracts: number;
 }
 
 /**
@@ -62,6 +79,8 @@ export interface Justice40Determination {
   version: string | null;
   /** Tract-keying vintage (e.g. "2010"); null when none ran. */
   vintage: string | null;
+  /** For a `not_determined` status, the true cause; null otherwise. */
+  notDeterminedCause: Justice40NotDeterminedCause | null;
   coverage: Justice40Coverage;
 }
 
@@ -76,6 +95,8 @@ export interface EquityDesignationLookup {
   determinedTotal: number;
   /** Of those, how many are flagged disadvantaged. */
   disadvantagedTotal: number;
+  /** Of the determined geoids, how many were resolved by inference (e.g. a tract crosswalk). */
+  inferredTotal?: number;
 }
 
 /** What a resolved designation source can say about a study area. */
@@ -138,18 +159,23 @@ export class DesignationSourceUnavailableError extends Error {
  * The honest zero-value: no source ran, every tract undetermined. `screenEquity`
  * defaults to this so it can NEVER fabricate a designation from the proxy.
  */
-export function notDeterminedJustice40(totalTracts: number): Justice40Determination {
+export function notDeterminedJustice40(
+  totalTracts: number,
+  cause: Justice40NotDeterminedCause = "out_of_coverage"
+): Justice40Determination {
   return {
     status: "not_determined",
     source: null,
     datasetLabel: null,
     version: null,
     vintage: null,
+    notDeterminedCause: cause,
     coverage: {
       totalTracts,
       determinedTracts: 0,
       undeterminedTracts: totalTracts,
       disadvantagedTracts: 0,
+      crosswalkInferredTracts: 0,
     },
   };
 }

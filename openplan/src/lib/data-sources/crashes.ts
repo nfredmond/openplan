@@ -185,7 +185,9 @@ function toPointFeature(record: CrashRecord, sourceId: string): CrashPointFeatur
     geometry: { type: "Point", coordinates: [record.longitude, record.latitude] },
     properties: {
       kind: "crash_point",
-      source: sourceId,
+      // Prefer the record's OWN source so a merged backstop point (e.g. a FARS
+      // Nevada fatal) keeps its provenance instead of inheriting the primary.
+      source: record.sourceId ?? sourceId,
       severityBucket,
       severityLabel: labelForSeverityBucket(severityBucket),
       collisionYear: record.collisionYear,
@@ -368,7 +370,7 @@ export async function fetchCrashesForBbox(
   const mergedRecords: CrashRecord[] = [...primary.fetched.records];
   let backstopMatched = 0;
   let backstopGeocoded = 0;
-  const contributingBackstops: CrashSourceAdapter[] = [];
+  const contributing: Array<{ adapter: CrashSourceAdapter; fetched: CrashFetchResult }> = [];
 
   for (const backstop of successes.slice(1)) {
     // A national backstop only fills states the regional primary does not cover.
@@ -383,11 +385,15 @@ export async function fetchCrashesForBbox(
     // FARS geocodes every returned record, so matched ≈ geocoded ≈ included here.
     backstopMatched += included.length;
     backstopGeocoded += included.length;
-    contributingBackstops.push(backstop.adapter);
+    contributing.push({ adapter: backstop.adapter, fetched: backstop.fetched });
   }
 
+  // Years/truncated come ONLY from the sources that actually contributed records,
+  // so a backstop whose records were all deduped out cannot leak its years into
+  // the density denominator or a stray truncation flag.
+  const contributingFetches = [primary.fetched, ...contributing.map((entry) => entry.fetched)];
   const mergedYears = Array.from(
-    new Set(successes.flatMap((entry) => entry.fetched.yearsCovered))
+    new Set(contributingFetches.flatMap((fetched) => fetched.yearsCovered))
   ).sort((a, b) => a - b);
 
   const mergedFetch: CrashFetchResult = {
@@ -395,8 +401,10 @@ export async function fetchCrashesForBbox(
     matchedTotal: primary.fetched.matchedTotal + backstopMatched,
     geocodedTotal: primary.fetched.geocodedTotal + backstopGeocoded,
     yearsCovered: mergedYears.length > 0 ? mergedYears : primary.fetched.yearsCovered,
-    truncated: successes.some((entry) => entry.fetched.truncated),
+    truncated: contributingFetches.some((fetched) => fetched.truncated),
   };
+
+  const contributingBackstops = contributing.map((entry) => entry.adapter);
 
   const core = summarizeCrashFetch(primary.adapter, mergedFetch, bbox, primary.years);
 

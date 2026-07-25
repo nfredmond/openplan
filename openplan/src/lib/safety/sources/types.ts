@@ -83,6 +83,13 @@ export type CrashRecord = {
    * does not expose state.
    */
   stateFips?: string;
+  /**
+   * The adapter id that produced this record. Set so a MERGED result (a primary
+   * plus a national backstop) can carry per-point provenance — otherwise every
+   * merged crash point would inherit the primary source id and a FARS Nevada
+   * fatal would render as CCRS. Undefined falls back to the summarizing adapter.
+   */
+  sourceId?: string;
 };
 
 /**

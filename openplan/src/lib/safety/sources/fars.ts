@@ -249,6 +249,7 @@ export function toFarsCrashRecord(row: Record<string, unknown>, year: number): C
     latitude,
     longitude,
     stateFips,
+    sourceId: FARS_SOURCE_ID,
   };
 }
 

@@ -126,20 +126,22 @@ function resolveGeoid(
   covered: Set<string>,
   disadvantaged: Set<string>,
   crosswalk: Map<string, string[]>
-): boolean | undefined {
+): { disadvantaged: boolean; inferred: boolean } | undefined {
   const parents = crosswalk.get(geoid);
   if (parents) {
     const matched = parents.filter((parent) => covered.has(parent));
     if (matched.length === 0) return undefined;
-    return matched.some((parent) => disadvantaged.has(parent));
+    // Crosswalk resolution is an inference (renumbered tract → its 2010 parent[s]).
+    return { disadvantaged: matched.some((parent) => disadvantaged.has(parent)), inferred: true };
   }
-  if (covered.has(geoid)) return disadvantaged.has(geoid);
+  if (covered.has(geoid)) return { disadvantaged: disadvantaged.has(geoid), inferred: false };
   return undefined;
 }
 
 async function lookupCejst(geoids: string[]): Promise<EquityDesignationLookup> {
   const { covered, disadvantaged, crosswalk } = ensureSets();
   const byGeoid = new Map<string, boolean>();
+  const inferredGeoids = new Set<string>();
 
   for (const raw of geoids) {
     const geoid = String(raw).trim();
@@ -147,7 +149,8 @@ async function lookupCejst(geoids: string[]): Promise<EquityDesignationLookup> {
     // left out of the map entirely → the caller reports it not_determined.
     const result = resolveGeoid(geoid, covered, disadvantaged, crosswalk);
     if (result === undefined) continue;
-    byGeoid.set(geoid, result);
+    byGeoid.set(geoid, result.disadvantaged);
+    if (result.inferred) inferredGeoids.add(geoid);
   }
 
   // Counts derive from the DEDUPED map, so a duplicate or whitespace-variant
@@ -158,7 +161,13 @@ async function lookupCejst(geoids: string[]): Promise<EquityDesignationLookup> {
     if (isDisadvantaged) disadvantagedTotal += 1;
   }
 
-  return { byGeoid, determinedTotal: byGeoid.size, disadvantagedTotal };
+  // Only count inferences for geoids that actually landed in the deduped map.
+  let inferredTotal = 0;
+  for (const geoid of inferredGeoids) {
+    if (byGeoid.has(geoid)) inferredTotal += 1;
+  }
+
+  return { byGeoid, determinedTotal: byGeoid.size, disadvantagedTotal, inferredTotal };
 }
 
 export const cejstNationalAdapter: EquityDesignationAdapter = {

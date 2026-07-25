@@ -28,17 +28,25 @@ function reconstructFederalJustice40(m: Record<string, unknown>): Justice40Deter
     return null;
   }
   const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : 0);
+  const cause = m.federalJustice40NotDeterminedCause;
   return {
     status: status as Justice40Status,
     source: typeof m.federalJustice40Source === "string" ? m.federalJustice40Source : null,
     datasetLabel: typeof m.federalJustice40DatasetLabel === "string" ? m.federalJustice40DatasetLabel : null,
     version: null,
     vintage: null,
+    notDeterminedCause:
+      cause === "out_of_coverage" || cause === "source_unavailable" || cause === "no_matching_record"
+        ? cause
+        : status === "not_determined"
+          ? "no_matching_record"
+          : null,
     coverage: {
       totalTracts: num(m.tractCount),
       determinedTracts: num(m.federalJustice40DeterminedTracts),
       undeterminedTracts: num(m.federalJustice40UndeterminedTracts),
       disadvantagedTracts: num(m.federalJustice40DisadvantagedTracts),
+      crosswalkInferredTracts: num(m.federalJustice40CrosswalkInferredTracts),
     },
   };
 }

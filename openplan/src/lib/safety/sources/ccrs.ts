@@ -317,6 +317,7 @@ async function fetchYearRecords(
         // CCRS is a California-only system, so every record is state 06. This
         // lets the multi-source read dedup a national backstop (FARS) against it.
         stateFips: "06",
+        sourceId: CCRS_SOURCE_ID,
       });
     }
 

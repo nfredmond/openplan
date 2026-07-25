@@ -90,6 +90,9 @@ describe("fetchCrashesForBbox — multi-source merge", () => {
     // Fatal-basis density and an explicit merge disclosure.
     expect(result.crashDensityBasis).toBe("fatal_only");
     expect(result.narrativeLine).toMatch(/Fatal crashes cover the full study area/i);
+    // Each merged FARS point keeps its OWN provenance — not the primary's id.
+    expect(result.points.length).toBe(2);
+    expect(result.points.every((p) => p.properties.source === "fars-national")).toBe(true);
   });
 
   it("does not double-count: a FARS fatal already in CCRS's California is dropped", async () => {

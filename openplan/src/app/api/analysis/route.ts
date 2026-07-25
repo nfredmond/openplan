@@ -473,9 +473,11 @@ export async function POST(request: NextRequest) {
       federalJustice40Status: equity.federalJustice40.status,
       federalJustice40Source: equity.federalJustice40.source,
       federalJustice40DatasetLabel: equity.federalJustice40.datasetLabel,
+      federalJustice40NotDeterminedCause: equity.federalJustice40.notDeterminedCause,
       federalJustice40DeterminedTracts: equity.federalJustice40.coverage.determinedTracts,
       federalJustice40UndeterminedTracts: equity.federalJustice40.coverage.undeterminedTracts,
       federalJustice40DisadvantagedTracts: equity.federalJustice40.coverage.disadvantagedTracts,
+      federalJustice40CrosswalkInferredTracts: equity.federalJustice40.coverage.crosswalkInferredTracts,
       title6Flags: equity.title6Flags,
 
       // Data quality

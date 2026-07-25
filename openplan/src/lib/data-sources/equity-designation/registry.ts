@@ -42,15 +42,22 @@ export const DESIGNATION_SOURCE_IDS: readonly string[] = EQUITY_DESIGNATION_ADAP
   (adapter) => adapter.persistable
 ).map((adapter) => adapter.id);
 
-export function resolveEquityDesignation(bbox: StudyAreaBbox): EquityDesignationResolution {
-  for (const adapter of EQUITY_DESIGNATION_ADAPTERS) {
+export function resolveEquityDesignation(
+  bbox: StudyAreaBbox,
+  extraAdapters: readonly EquityDesignationAdapter[] = []
+): EquityDesignationResolution {
+  // Extra (e.g. DB-backed, richer/regional) adapters are checked FIRST so an
+  // ingested California SB 535 / CalEnviroScreen source outranks the national
+  // CEJST layer inside CA. Static registry adapters follow.
+  const adapters = [...extraAdapters, ...EQUITY_DESIGNATION_ADAPTERS];
+  for (const adapter of adapters) {
     if (adapter.covers(bbox)) {
       return { kind: "resolved", adapter };
     }
   }
   return {
     kind: "out_of_coverage",
-    checked: EQUITY_DESIGNATION_ADAPTERS.map((adapter) => ({ id: adapter.id, label: adapter.label })),
+    checked: adapters.map((adapter) => ({ id: adapter.id, label: adapter.label })),
   };
 }
 
@@ -70,10 +77,11 @@ export function getEquityDesignationById(id: string): EquityDesignationAdapter |
  */
 export async function resolveJustice40ForTracts(
   bbox: StudyAreaBbox,
-  geoids: string[]
+  geoids: string[],
+  extraAdapters: readonly EquityDesignationAdapter[] = []
 ): Promise<Justice40Determination> {
   const totalTracts = geoids.length;
-  const resolution = resolveEquityDesignation(bbox);
+  const resolution = resolveEquityDesignation(bbox, extraAdapters);
 
   if (resolution.kind === "out_of_coverage") {
     return notDeterminedJustice40(totalTracts);
@@ -85,9 +93,10 @@ export async function resolveJustice40ForTracts(
     lookup = await adapter.lookup(geoids);
   } catch (error) {
     // Unavailable must never read as "no disadvantaged tracts". Fall to an
-    // honest not_determined with no named source.
+    // honest not_determined — and say the cause was an unreachable source, NOT
+    // that no source covered the area (which would be a false explanation).
     if (error instanceof DesignationSourceUnavailableError) {
-      return notDeterminedJustice40(totalTracts);
+      return notDeterminedJustice40(totalTracts, "source_unavailable");
     }
     throw error;
   }
@@ -107,11 +116,15 @@ export async function resolveJustice40ForTracts(
     datasetLabel: adapter.datasetLabel,
     version: adapter.version,
     vintage: adapter.vintage,
+    // A covered source that matched nothing → the vintage-gap cause; a real
+    // determination has no not_determined cause.
+    notDeterminedCause: status === "not_determined" ? "no_matching_record" : null,
     coverage: {
       totalTracts,
       determinedTracts,
       undeterminedTracts: totalTracts - determinedTracts,
       disadvantagedTracts,
+      crosswalkInferredTracts: lookup.inferredTotal ?? 0,
     },
   };
 }

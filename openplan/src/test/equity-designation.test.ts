@@ -80,11 +80,13 @@ describe("cejstNationalAdapter.lookup", () => {
       SPLIT_FROM_DISADVANTAGED,
       SPLIT_FROM_NOT_DISADVANTAGED,
     ]);
-    // Both are now DETERMINED (they used to be not_determined vintage gaps).
+    // Both are now DETERMINED (they used to be not_determined vintage gaps),
+    // and both are flagged as crosswalk INFERENCES so disclosure can say so.
     expect(result.determinedTotal).toBe(2);
     expect(result.byGeoid.get(SPLIT_FROM_DISADVANTAGED)).toBe(true);
     expect(result.byGeoid.get(SPLIT_FROM_NOT_DISADVANTAGED)).toBe(false);
     expect(result.disadvantagedTotal).toBe(1);
+    expect(result.inferredTotal).toBe(2);
   });
 
   it("keeps disadvantaged ≤ determined even with duplicate / whitespace geoids", async () => {
@@ -108,10 +110,24 @@ describe("federalJustice40NarrativeLine — honest not_determined cause", () => 
       datasetLabel: "CEJST v1.0",
       version: "1.0",
       vintage: "2010",
-      coverage: { totalTracts: 3, determinedTracts: 0, undeterminedTracts: 3, disadvantagedTracts: 0 },
+      notDeterminedCause: "no_matching_record",
+      coverage: {
+        totalTracts: 3,
+        determinedTracts: 0,
+        undeterminedTracts: 3,
+        disadvantagedTracts: 0,
+        crosswalkInferredTracts: 0,
+      },
     });
     expect(line).toMatch(/2010-vintage/);
     expect(line).toMatch(/renumbered/);
+  });
+
+  it("says 'could not be loaded' when the cause is source_unavailable, not a vintage gap", () => {
+    const line = federalJustice40NarrativeLine(notDeterminedJustice40(3, "source_unavailable"));
+    expect(line).toMatch(/could not be loaded/i);
+    expect(line).not.toMatch(/renumbered/);
+    expect(line).not.toMatch(/no .*source covered/i);
   });
 
   it("does NOT invent a vintage cause when no source covered the area (source null)", () => {
@@ -132,6 +148,7 @@ describe("resolveJustice40ForTracts", () => {
       determinedTracts: 2,
       undeterminedTracts: 0,
       disadvantagedTracts: 1,
+      crosswalkInferredTracts: 0,
     });
   });
 
@@ -203,7 +220,14 @@ describe("screenEquity separates the proxy from the federal determination", () =
       datasetLabel: "CEJST v1.0 (2022-11-22) — discontinued-program snapshot",
       version: "1.0",
       vintage: "2010",
-      coverage: { totalTracts: 2, determinedTracts: 2, undeterminedTracts: 0, disadvantagedTracts: 2 },
+      notDeterminedCause: null,
+      coverage: {
+        totalTracts: 2,
+        determinedTracts: 2,
+        undeterminedTracts: 0,
+        disadvantagedTracts: 2,
+        crosswalkInferredTracts: 0,
+      },
     };
     const screen = screenEquity(census, det);
     expect(screen.federalJustice40).toEqual(det);
