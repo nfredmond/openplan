@@ -94,19 +94,33 @@ export function buildSourceTransparency(
     {
       key: "transit",
       label: "Transit Stop Inventory",
+      // Three states, and they are not interchangeable. "Estimated" survives
+      // only for runs stored while the area-based fallback existed; new runs
+      // report "Unavailable" and carry no stop counts at all.
       status:
         transitSource === "unknown"
           ? "Unknown"
-          : estimatedDomains.transit
-            ? "Estimated"
-            : formatSourceToken(transitSource),
+          : transitSource === "unavailable"
+            ? "Unavailable"
+            : estimatedDomains.transit
+              ? "Estimated"
+              : formatSourceToken(transitSource),
       detail:
         transitSource === "unknown"
           ? "Transit stop source could not be verified in this run metadata."
-          : estimatedDomains.transit
-            ? `${ESTIMATED_SOURCE_NOTES.transit} Stop counts and density are approximations.`
-            : `Transit stop counts were retrieved from ${formatSourceToken(transitSource)}.`,
-      tone: transitSource === "unknown" ? "neutral" : "info",
+          : transitSource === "unavailable"
+            ? "No transit source answered for this area, so stop counts and density were not measured and the accessibility score carries no transit term. This is not a finding that the area has no transit."
+            : estimatedDomains.transit
+              ? `${ESTIMATED_SOURCE_NOTES.transit} Stop counts and density are approximations.`
+              : `Transit stop counts were retrieved from ${formatSourceToken(transitSource)}.`,
+      tone:
+        transitSource === "unknown"
+          ? "neutral"
+          : transitSource === "unavailable"
+            ? "warning"
+            : estimatedDomains.transit
+              ? "warning"
+              : "info",
     },
     {
       key: "lodes",

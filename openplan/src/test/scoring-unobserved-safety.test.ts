@@ -51,7 +51,7 @@ const census = {
   pctZeroVehicle: 4,
 } as never;
 const lodes = { jobsPerResident: 0.4 } as never;
-const transit = { stopsPerSqMile: 3 } as never;
+const transit = { observed: true, stopsPerSqMile: 3 } as never;
 const equity = { equityScore: 50 } as never;
 
 function score(crashes: CrashSummary) {

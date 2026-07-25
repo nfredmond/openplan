@@ -134,11 +134,14 @@ function generateSummary(
       `(${lodes.jobsPerResident} jobs per resident). Source: ${lodes.source}.`
   );
 
-  // Transit access
+  // Transit access. An unobserved run says so rather than narrating nulls —
+  // and must never be summarized as an area with no transit.
   lines.push(
-    `**Transit Access:** ${transit.totalStops} stops/stations (${transit.stopsPerSqMile}/sq mi), ` +
-      `including ${transit.busStops} bus stops, ${transit.railStations} rail stations, ` +
-      `${transit.ferryStops} ferry terminals. Access tier: ${transit.accessTier}.`
+    transit.observed
+      ? `**Transit Access:** ${transit.totalStops} stops/stations (${transit.stopsPerSqMile}/sq mi), ` +
+          `including ${transit.busStops} bus stops, ${transit.railStations} rail stations, ` +
+          `${transit.ferryStops} ferry terminals. Access tier: ${transit.accessTier}.`
+      : `**Transit Access:** Not measured. ${transit.unavailableReason ?? ""} Do not state or imply a transit stop count, density, or access tier for this corridor.`
   );
   lines.push(`**Walk/Bike Access (baseline):** Tier ${walkBikeAccess.tier}. ${walkBikeAccess.rationale}`);
 
@@ -523,10 +526,11 @@ export async function POST(request: NextRequest) {
         },
         transit: {
           source: transit.source,
-          note:
-            transit.source === "osm-overpass"
-              ? "Transit stop density is currently approximated from OSM/Overpass transit stop inventory."
-              : "Transit stop density is using estimated fallback values.",
+          observed: transit.observed,
+          note: transit.observed
+            ? "Transit stop density is currently approximated from OSM/Overpass transit stop inventory."
+            : (transit.unavailableReason ??
+              "No transit source answered; stop counts and density were not measured."),
           fetchedAt: analysisGeneratedAt,
         },
         crashes: crashes.sourceSnapshot,

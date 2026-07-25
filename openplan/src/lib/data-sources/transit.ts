@@ -4,19 +4,44 @@
  * Uses OpenStreetMap Overpass API to count transit stops and stations
  * within the corridor bounding box. This provides a lightweight proxy
  * for GTFS accessibility until full GTFS feed ingestion lands.
+ *
+ * NO ESTIMATE TIER. When Overpass does not answer, this returns an unobserved
+ * summary and the accessibility score is computed without a transit term —
+ * it does not invent one.
+ *
+ * WHY THIS MATTERS MORE THAN IT LOOKS. The previous fallback manufactured
+ * `area x 2.5` stops with a fixed 85/10/5 bus/rail/ferry split, derived an
+ * `accessTier` from that constant, and fed `stopsPerSqMile` into
+ * `computeAccessibility` — up to 20 of the accessibility score's points — which
+ * then flowed into the corridor composite and out into grant-ready reports. A
+ * planner in a rural county with no Overpass coverage got a transit density
+ * indistinguishable from a measured one. `crashes.ts` refuses exactly this
+ * trade, and states why; transit now matches it.
  */
 
 import { fetchJsonWithRetry } from "./http";
 
 export interface TransitAccessSummary {
-  totalStops: number;
-  busStops: number;
-  railStations: number;
-  ferryStops: number;
-  stopsPerSqMile: number;
-  accessTier: "high" | "medium" | "low";
-  source: "osm-overpass" | "estimate";
+  /**
+   * True when a transit source answered. False means nothing was counted —
+   * which is not the same as counting zero stops, and must not read as it.
+   */
+  observed: boolean;
+  /** Null when unobserved. Zero is reserved for "we looked and found none". */
+  totalStops: number | null;
+  busStops: number | null;
+  railStations: number | null;
+  ferryStops: number | null;
+  stopsPerSqMile: number | null;
+  /** Null when unobserved: a tier derived from no measurement is not a finding. */
+  accessTier: "high" | "medium" | "low" | null;
+  source: "osm-overpass" | "unavailable";
+  /** Why nothing was counted, in planner terms. Null when observed. */
+  unavailableReason: string | null;
 }
+
+export const TRANSIT_UNAVAILABLE_REASON =
+  "The OpenStreetMap Overpass service did not respond, so transit stops could not be counted for this area. This is not a finding that the area has no transit.";
 
 interface BBox {
   minLon: number;
@@ -114,6 +139,7 @@ out tags center;
     const stopsPerSqMile = Math.round((totalStops / area) * 10) / 10;
 
     return {
+      observed: true,
       totalStops,
       busStops,
       railStations,
@@ -121,20 +147,20 @@ out tags center;
       stopsPerSqMile,
       accessTier: classifyTier(stopsPerSqMile),
       source: "osm-overpass",
+      unavailableReason: null,
     };
   }
 
-  // Fallback estimate for resilience
-  const estStops = Math.max(1, Math.round(area * 2.5));
-  const stopsPerSqMile = Math.round((estStops / area) * 10) / 10;
-
+  // No endpoint answered. Say so; do not synthesize a stop inventory.
   return {
-    totalStops: estStops,
-    busStops: Math.round(estStops * 0.85),
-    railStations: Math.round(estStops * 0.1),
-    ferryStops: Math.round(estStops * 0.05),
-    stopsPerSqMile,
-    accessTier: classifyTier(stopsPerSqMile),
-    source: "estimate",
+    observed: false,
+    totalStops: null,
+    busStops: null,
+    railStations: null,
+    ferryStops: null,
+    stopsPerSqMile: null,
+    accessTier: null,
+    source: "unavailable",
+    unavailableReason: TRANSIT_UNAVAILABLE_REASON,
   };
 }

@@ -27,6 +27,12 @@ export interface CorridorScores {
   dataQuality: {
     censusAvailable: boolean;
     crashDataAvailable: boolean;
+    /**
+     * False when no transit source answered, so the accessibility score carries
+     * no stop-density term. Recorded because the score alone cannot say which
+     * inputs it was built from.
+     */
+    transitDataAvailable: boolean;
     lodesSource: string;
     equitySource: string;
   };
@@ -36,6 +42,12 @@ function clamp(val: number, min = 0, max = 100): number {
   return Math.max(min, Math.min(max, Math.round(val)));
 }
 
+/** Component ceilings, named so the rescale below cannot drift from them. */
+const ACCESSIBILITY_STOP_DENSITY_MAX = 20;
+const ACCESSIBILITY_MAX_WITHOUT_STOP_DENSITY = 20 + 20 + 20 + 16; // multimodal, jobs, commute, vehicle independence
+const ACCESSIBILITY_MAX_WITH_STOP_DENSITY =
+  ACCESSIBILITY_MAX_WITHOUT_STOP_DENSITY + ACCESSIBILITY_STOP_DENSITY_MAX;
+
 /**
  * Compute accessibility score based on multimodal commute patterns
  * and employment density.
@@ -43,6 +55,13 @@ function clamp(val: number, min = 0, max = 100): number {
  * Higher transit/walk/bike mode share → higher score
  * Higher jobs-per-resident ratio → higher score
  * Lower zero-vehicle rate with good alternatives → higher score
+ *
+ * When no transit source answered, the stop-density term is DROPPED and the
+ * remaining components are rescaled onto the same footing — not filled with a
+ * fabricated stop count, and not left silently capped ~21 points lower, which
+ * would read as a genuinely less accessible corridor. This mirrors how
+ * `computeCorridorScores` redistributes the safety weight when no crash source
+ * answered.
  */
 function computeAccessibility(
   census: CensusSummary,
@@ -56,7 +75,6 @@ function computeAccessibility(
   const multimodalComponent = Math.min(20, multimodalShare * 0.7);
   const jobAccessComponent = Math.min(20, lodes.jobsPerResident * 32);
   const commuteTransitComponent = Math.min(20, census.pctTransit * 1.2);
-  const stopDensityComponent = Math.min(20, transit.stopsPerSqMile * 2.2);
 
   // Vehicle independence: areas where people CAN get around without a car
   const vehicleIndependence =
@@ -66,13 +84,21 @@ function computeAccessibility(
         ? 10
         : 4;
 
-  return clamp(
-    multimodalComponent +
-      jobAccessComponent +
-      commuteTransitComponent +
-      stopDensityComponent +
-      vehicleIndependence
+  const measured =
+    multimodalComponent + jobAccessComponent + commuteTransitComponent + vehicleIndependence;
+
+  if (!transit.observed || transit.stopsPerSqMile === null) {
+    return clamp(
+      (measured / ACCESSIBILITY_MAX_WITHOUT_STOP_DENSITY) * ACCESSIBILITY_MAX_WITH_STOP_DENSITY
+    );
+  }
+
+  const stopDensityComponent = Math.min(
+    ACCESSIBILITY_STOP_DENSITY_MAX,
+    transit.stopsPerSqMile * 2.2
   );
+
+  return clamp(measured + stopDensityComponent);
 }
 
 /**
@@ -158,9 +184,12 @@ export function computeCorridorScores(
   // a tier that no longer exists — so it silently reported every study area as
   // having crash data, including areas where no source covers them at all.
   const crashDataAvailable = crashes.observed;
+  const transitDataAvailable = transit.observed;
 
+  // A missing transit inventory cannot leave confidence at "high": the
+  // accessibility score was built from fewer inputs than it normally is.
   const confidence =
-    censusAvailable && crashDataAvailable
+    censusAvailable && crashDataAvailable && transitDataAvailable
       ? "high"
       : censusAvailable || crashDataAvailable
         ? "medium"
@@ -175,6 +204,7 @@ export function computeCorridorScores(
     dataQuality: {
       censusAvailable,
       crashDataAvailable,
+      transitDataAvailable,
       lodesSource: lodes.source,
       equitySource: equity.source,
     },

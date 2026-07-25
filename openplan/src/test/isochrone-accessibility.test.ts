@@ -65,4 +65,46 @@ describe("classifyWalkBikeAccess", () => {
     expect(low.scoreBoost).toBeLessThanOrEqual(medium.scoreBoost);
     expect(medium.scoreBoost).toBeLessThanOrEqual(high.scoreBoost);
   });
+
+  /**
+   * A null stop density means no transit source answered. Treating it as
+   * 0/sq mi would score an unmeasured area exactly as if it had been surveyed
+   * and found to have no service.
+   */
+  describe("when transit stop density was not measured", () => {
+    const measuredBare = {
+      pctWalk: 8,
+      pctBike: 4,
+      pctZeroVehicle: 8,
+      transitStopsPerSqMile: 0,
+    };
+    const unmeasured = { ...measuredBare, transitStopsPerSqMile: null };
+
+    it("scores higher than the same area measured and found to have no stops", () => {
+      expect(classifyWalkBikeAccess(unmeasured).rawScore).toBeGreaterThan(
+        classifyWalkBikeAccess(measuredBare).rawScore
+      );
+    });
+
+    it("rescales the measured signals onto the full range", () => {
+      // walk+bike 12% -> 16; zero-vehicle 8% -> 6; measured total 22.
+      // Ceilings: 44 without the stop-density term, 58 with it.
+      // 22 / 44 * 58 = 29.
+      expect(classifyWalkBikeAccess(unmeasured).rawScore).toBe(29);
+
+      // The measured-bare case keeps its lowest-bucket stop-density score of 2,
+      // which is exactly why it is NOT the same as omitting the term.
+      expect(classifyWalkBikeAccess(measuredBare).rawScore).toBe(24);
+    });
+
+    it("says the density was unavailable rather than reporting it as zero", () => {
+      const rationale = classifyWalkBikeAccess(unmeasured).rationale;
+      expect(rationale).toMatch(/not available/i);
+      expect(rationale).not.toMatch(/0\/sq mi/);
+    });
+
+    it("still reports a measured zero as zero", () => {
+      expect(classifyWalkBikeAccess(measuredBare).rationale).toMatch(/0\/sq mi/);
+    });
+  });
 });
