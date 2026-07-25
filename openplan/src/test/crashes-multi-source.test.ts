@@ -49,10 +49,12 @@ function stubFetch(opts: {
   ccrsCount: number;
   farsRecords: Array<Record<string, unknown>>;
   ccrsFails?: boolean;
+  farsFails?: boolean;
 }) {
   const fetchMock = vi.fn(async (input: unknown) => {
     const url = String(input);
     if (url.includes("crashviewer.nhtsa")) {
+      if (opts.farsFails) return jsonResponse({ nope: true }); // unrecognized → FARS throws
       return jsonResponse({ Results: url.includes("fromCaseYear=2025") ? opts.farsRecords : [] });
     }
     if (opts.ccrsFails) return jsonResponse({ nope: true }); // unrecognized → CCRS throws
@@ -144,6 +146,20 @@ describe("fetchCrashesForBbox — multi-source merge", () => {
     expect(result.contributingSources).toBeUndefined();
     // CCRS's injury coverage is preserved for a wholly-in-CA study area.
     expect(result.totalInjuryCrashes).toBe(1);
+  });
+
+  it("discloses when the FARS backstop is unreachable so an out-of-CA area isn't read as safe", async () => {
+    // CCRS answers (0 CA crashes for Reno) but FARS — which holds the NV fatals —
+    // is down. The result must NOT quietly read as a safe 0.
+    stubFetch({ ccrsRecords: [], ccrsCount: 0, farsRecords: [], farsFails: true });
+
+    const result = await fetchCrashesForBbox(RENO_BBOX, { now: NOW });
+
+    expect(result.observed).toBe(true);
+    expect(result.source).toBe("ccrs-ca");
+    expect(result.unavailableBackstops?.map((s) => s.id)).toEqual(["fars-national"]);
+    expect(result.narrativeLine).toMatch(/could not be reached this run/i);
+    expect(result.narrativeLine).toMatch(/treat a low count with caution/i);
   });
 
   it("promotes FARS to primary when CCRS is down for a CA-overlapping area", async () => {

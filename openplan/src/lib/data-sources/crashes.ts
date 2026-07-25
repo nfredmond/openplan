@@ -107,6 +107,13 @@ export interface CrashSummary {
    */
   contributingSources?: Array<{ id: string; label: string }>;
   /**
+   * Covering sources that were UNREACHABLE this run while a jurisdiction-limited
+   * primary DID answer. Present so an out-of-jurisdiction study area cannot read
+   * "0 crashes, safe" when the national backstop that would have covered the
+   * remainder simply failed — see `describeCrashSafety`.
+   */
+  unavailableBackstops?: Array<{ id: string; label: string }>;
+  /**
    * The run's `sourceSnapshots.crashes` entry and the safety line of its
    * narrative, built here rather than at the call site.
    *
@@ -406,7 +413,20 @@ export async function fetchCrashesForBbox(
 
   const contributingBackstops = contributing.map((entry) => entry.adapter);
 
-  const core = summarizeCrashFetch(primary.adapter, mergedFetch, bbox, primary.years);
+  // A covering source that FAILED while a jurisdiction-limited primary answered
+  // leaves the out-of-jurisdiction remainder uncovered. Surface it so an
+  // out-of-state area can't read "0, safe" just because the national backstop was
+  // down (the exact failure the multi-source read exists to prevent).
+  const primaryIsRegional = (primary.adapter.coversStateFips?.length ?? 0) > 0;
+  const unavailableBackstops = primaryIsRegional
+    ? settled
+        .filter((entry) => entry.fetched === null && entry.adapter.id !== primary.adapter.id)
+        .map((entry) => ({ id: entry.adapter.id, label: entry.adapter.label }))
+    : [];
+
+  const baseCore = summarizeCrashFetch(primary.adapter, mergedFetch, bbox, primary.years);
+  const core: CrashSummaryCore =
+    unavailableBackstops.length > 0 ? { ...baseCore, unavailableBackstops } : baseCore;
 
   if (contributingBackstops.length === 0) {
     return withDisclosure(core);
@@ -509,6 +529,12 @@ export function buildCrashSourceSnapshot(
           .join(" + ")}. Fatal crashes cover the full study area; injury/severe figures cover only the ${merged[0].label} portion, and density is reported on the fatal basis.`
       : "";
 
+  const unavailable = crashes.unavailableBackstops ?? [];
+  const backstopGapNote =
+    unavailable.length > 0
+      ? ` ${unavailable.map((s) => s.label).join(" and ")} could not be reached this run; crashes outside ${crashes.sourceLabel}'s coverage are not included.`
+      : "";
+
   return {
     ...shared,
     source: crashes.source,
@@ -518,7 +544,8 @@ export function buildCrashSourceSnapshot(
     mappedTotal: crashes.mappedTotal,
     truncated: crashes.truncated,
     ...(merged.length >= 2 ? { contributingSources: merged } : {}),
-    note: `Observed crash records from ${crashes.sourceLabel}.${severityNote}${mappingNote}${mergeNote}`,
+    ...(unavailable.length > 0 ? { unavailableBackstops: unavailable } : {}),
+    note: `Observed crash records from ${crashes.sourceLabel}.${severityNote}${mappingNote}${mergeNote}${backstopGapNote}`,
   };
 }
 
@@ -548,10 +575,21 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
           .join(" + ")}); injury figures, where shown, cover only the ${merged[0].label} portion.`
       : "";
 
+  // A backstop that could not be reached means the out-of-jurisdiction remainder
+  // is uncovered — say so, jurisdiction-neutrally, so a low count for an
+  // out-of-state area is not read as "safe".
+  const unavailable = crashes.unavailableBackstops ?? [];
+  const backstopGapNote =
+    unavailable.length > 0
+      ? ` ⚠️ ${unavailable
+          .map((s) => s.label)
+          .join(" and ")} could not be reached this run, so any crashes outside the coverage of ${crashes.sourceLabel} are not included — treat a low count with caution if this study area extends beyond that source.`
+      : "";
+
   return (
     `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
     `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
     `${crashes.bicyclistFatalities} involving a bicyclist). ${densityLabel}: ` +
-    `${crashes.crashesPerSquareMile}/sq mi/yr.${mergeNote}`
+    `${crashes.crashesPerSquareMile}/sq mi/yr.${mergeNote}${backstopGapNote}`
   );
 }
