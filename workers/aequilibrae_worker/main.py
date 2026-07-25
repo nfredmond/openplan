@@ -131,6 +131,11 @@ PASSTHROUGH_SHARE = min(max(PASSTHROUGH_SHARE, 0.0), 0.9)
 # Observed-count validation: match assigned link volumes to published traffic
 # counts and report screening-grade fit metrics + a gate. Default counts cover
 # the Nevada County pilot; VALIDATION_COUNTS_PATH overrides. Set to 0 to disable.
+#
+# The bundled default is only USED where it applies: `_run_count_validation`
+# checks the count set's own station extent against the study area first, so a
+# run outside that extent reports a coverage gap instead of matching another
+# jurisdiction's stations and reporting a failed gate.
 COUNT_VALIDATION_ENABLED = os.getenv("COUNT_VALIDATION_ENABLED", "1") not in ("0", "false", "False", "")
 VALIDATION_COUNTS_PATH = os.getenv(
     "VALIDATION_COUNTS_PATH",
@@ -150,27 +155,13 @@ COUNT_AUTO_INGEST = os.getenv("COUNT_AUTO_INGEST", "0") in ("1", "true", "True")
 # process at a time.
 _active_counts_path = VALIDATION_COUNTS_PATH
 
-# Rough bounds per registered count-source region (only registered regions can
-# auto-ingest). Each maps to a state-DOT AADT source in
+# The registered count-source regions now live in count_validation.py
+# (COUNT_REGION_BOUNDS) so the coverage rules are stdlib-testable without the
+# geo/modeling stack, and so the "which states are covered" answer has ONE
+# source. Each key maps to a state-DOT AADT source in
 # scripts/modeling/count_sources.py::COUNT_SOURCES (CA=Caltrans, WA=WSDOT,
-# CO=CDOT, OR=ODOT). Bbox detection is coarse: a study bbox straddling a state
-# line resolves to the first registered region it intersects; where the fetched
-# counts don't match the network, calibration finds nothing and stays screening.
-_REGION_BOUNDS = {
-    "CA": (-124.6, 32.4, -114.0, 42.1),
-    "OR": (-124.57, 41.99, -116.46, 46.29),
-    "WA": (-124.85, 45.54, -116.92, 49.0),
-    "CO": (-109.06, 36.99, -102.04, 41.0),
-}
-
-
-def _region_for_bbox(bbox: tuple) -> str | None:
-    """Registered count-source region whose bounds intersect the study bbox."""
-    min_lon, min_lat, max_lon, max_lat = bbox
-    for region, (r0, r1, r2, r3) in _REGION_BOUNDS.items():
-        if not (r0 > max_lon or r2 < min_lon or r1 > max_lat or r3 < min_lat):
-            return region
-    return None
+# CO=CDOT, OR=ODOT); test_count_coverage.py fails if the two drift apart.
+_region_for_bbox = count_validation.region_for_bbox
 
 
 def auto_ingest_counts(bbox, proj_dir: str, out_dir: str, calibrate_requested: bool = False) -> str | None:
@@ -433,6 +424,14 @@ def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, val
             claim_status, reason = "prototype_only", (
                 f"Observed-count validation did not meet the screening gate ({matched} stations, "
                 f"median APE {median_ape}%)."
+            )
+        elif (validation or {}).get("coverage") and not (validation or {})["coverage"].get("covered", True):
+            # A coverage gap is not a validation failure, and must not be
+            # reported as one. Name the gap so the planner knows it is about
+            # data availability in their state, not about their model.
+            claim_status, reason = "prototype_only", (
+                f"{(validation or {})['coverage'].get('reason', 'No observed-count source covers this study area.')} "
+                "Screening-grade claims require a validation pass against local counts."
             )
         else:
             claim_status, reason = "prototype_only", (
@@ -1781,10 +1780,17 @@ def compute_daily_vmt(db_path: str, link_volumes_csv: str) -> float | None:
     return vmt
 
 
-def _run_count_validation(db_path: str, link_volumes_csv: str) -> dict | None:
+def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None) -> dict | None:
     """Match assigned link volumes to observed traffic counts → screening-grade
     fit summary. Returns None when disabled or inputs are missing (never fails
-    the run)."""
+    the run).
+
+    COVERAGE FIRST. When the available count set does not cover the study area —
+    the case for any state with no registered count source, which falls back to
+    the bundled pilot file — this returns an explicit coverage summary and does
+    NOT match. Matching another jurisdiction's stations against this network
+    produced "Only 0 matched station(s); >= 3 required for a screening claim",
+    which reads as a failed model rather than an absent data source."""
     import csv as _csv
     if not (COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path)
             and os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
@@ -1793,6 +1799,10 @@ def _run_count_validation(db_path: str, link_volumes_csv: str) -> dict | None:
         stations = list(_csv.DictReader(f))
     if not stations:
         return None
+
+    coverage = count_validation.describe_count_coverage(stations, study_bbox)
+    if not coverage["covered"]:
+        return count_validation.uncovered_validation_summary(coverage)
     pce: dict[int, float] = {}
     with open(link_volumes_csv) as f:
         for row in _csv.DictReader(f):
@@ -2098,8 +2108,10 @@ def stage_artifacts(
     # ── Observed-count validation (screening-grade diagnostic, NOT calibration) ──
     validation = None
     try:
-        validation = _run_count_validation(db_path, link_volumes_csv)
-        if validation:
+        validation = _run_count_validation(db_path, link_volumes_csv, setup_result.get("bbox"))
+        if validation and not (validation.get("coverage") or {}).get("covered", True):
+            log += f"Count validation: not run. {(validation['coverage'] or {}).get('reason', '')}\n"
+        elif validation:
             log += (
                 f"Count validation: {validation['stations_matched']}/{validation['stations_total']} "
                 f"stations matched; median APE {validation['median_ape']}%, %RMSE "

@@ -23,6 +23,191 @@ from time_of_day import DEFAULT_PEAK_HOUR_FACTOR, PEAK_HOUR_FACTOR_NOTE, peak_ho
 # Screening gate thresholds (mirror the county lane defaults).
 DEFAULT_READY_MEDIAN_APE = 30.0
 DEFAULT_READY_CRITICAL_APE = 50.0
+
+# ---------------------------------------------------------------------------
+# Count-source COVERAGE
+#
+# A study area either has published counts to validate against or it does not,
+# and those are different findings from "the model disagreed with the counts".
+#
+# What went wrong before: when no count source is registered for a study area's
+# state, the worker fell back to the BUNDLED pilot count file — stations in
+# Grass Valley, California. An Ohio run then matched that California file
+# against its own network, matched nothing, and reported "Only 0 matched
+# station(s); >= 3 required for a screening claim." A planner reads that as
+# "my model failed validation". The truth was that no count source covers their
+# state, which is knowable, actionable, and was never said.
+#
+# Coverage is derived from the count set's OWN station bboxes, not from a place
+# literal, so it holds for the bundled pilot file, an auto-ingested state DOT
+# set, or an operator's own CSV, without any of them being named here.
+# ---------------------------------------------------------------------------
+
+# Registered observed-count regions -> rough bounds (min_lon, min_lat, max_lon,
+# max_lat). Each key MUST exist in scripts/modeling/count_sources.py::
+# COUNT_SOURCES; `test_count_coverage.py` fails if the two drift apart. Adding a
+# state is a registry entry in both places, never a change to a call site.
+#
+# Bbox detection is coarse: a study bbox straddling a state line resolves to the
+# first registered region it intersects. Where the fetched counts do not match
+# the network, calibration finds nothing and the run stays screening-grade.
+COUNT_REGION_BOUNDS: dict[str, tuple[float, float, float, float]] = {
+    "CA": (-124.6, 32.4, -114.0, 42.1),
+    "OR": (-124.57, 41.99, -116.46, 46.29),
+    "WA": (-124.85, 45.54, -116.92, 49.0),
+    "CO": (-109.06, 36.99, -102.04, 41.0),
+}
+
+
+def bboxes_intersect(a: Sequence[float], b: Sequence[float]) -> bool:
+    """True when two (min_lon, min_lat, max_lon, max_lat) boxes overlap."""
+    if not a or not b or len(a) != 4 or len(b) != 4:
+        return False
+    return not (a[0] > b[2] or a[2] < b[0] or a[1] > b[3] or a[3] < b[1])
+
+
+def region_for_bbox(bbox: Sequence[float] | None) -> str | None:
+    """Registered count-source region whose bounds intersect the study bbox."""
+    if not bbox or len(bbox) != 4:
+        return None
+    for region, bounds in COUNT_REGION_BOUNDS.items():
+        if bboxes_intersect(bounds, bbox):
+            return region
+    return None
+
+
+def station_set_extent(stations: Iterable[dict[str, Any]]) -> tuple[float, float, float, float] | None:
+    """Union of every station's declared bbox — where this count set applies.
+
+    Returns None when no station declares a usable bbox, in which case the
+    caller cannot conclude anything about coverage and must not pretend to.
+    """
+    min_lon = min_lat = max_lon = max_lat = None
+    for station in stations:
+        vals = [
+            parse_float(station.get("bbox_min_lon")),
+            parse_float(station.get("bbox_min_lat")),
+            parse_float(station.get("bbox_max_lon")),
+            parse_float(station.get("bbox_max_lat")),
+        ]
+        if any(v is None for v in vals):
+            continue
+        s_min_lon, s_min_lat, s_max_lon, s_max_lat = vals  # type: ignore[misc]
+        min_lon = s_min_lon if min_lon is None else min(min_lon, s_min_lon)
+        min_lat = s_min_lat if min_lat is None else min(min_lat, s_min_lat)
+        max_lon = s_max_lon if max_lon is None else max(max_lon, s_max_lon)
+        max_lat = s_max_lat if max_lat is None else max(max_lat, s_max_lat)
+
+    if min_lon is None or min_lat is None or max_lon is None or max_lat is None:
+        return None
+    return (min_lon, min_lat, max_lon, max_lat)
+
+
+def describe_count_coverage(
+    stations: Sequence[dict[str, Any]],
+    study_bbox: Sequence[float] | None,
+) -> dict[str, Any]:
+    """Whether this count set can say anything about this study area.
+
+    `covered` False means the run must NOT be reported as a failed validation:
+    nothing relevant was ever compared. `reason` names the specific gap, and
+    `registered_regions` tells the operator which states can auto-ingest counts
+    today, so "not covered" is actionable rather than a dead end.
+    """
+    registered = sorted(COUNT_REGION_BOUNDS)
+    region = region_for_bbox(study_bbox)
+    extent = station_set_extent(stations)
+
+    if not stations:
+        return {
+            "covered": False,
+            "status": "no_count_set",
+            "region": region,
+            "registered_regions": registered,
+            "reason": (
+                "No observed-count set was available for this run, so link volumes were not "
+                "compared against published counts. This is not a validation failure."
+            ),
+        }
+
+    if study_bbox is None or len(study_bbox) != 4:
+        # No study geometry to test against: proceed and let matching speak.
+        return {
+            "covered": True,
+            "status": "unknown_study_area",
+            "region": region,
+            "registered_regions": registered,
+            "reason": None,
+        }
+
+    if extent is None:
+        # The count set declares no geography; matching is the only test left.
+        return {
+            "covered": True,
+            "status": "count_set_without_geography",
+            "region": region,
+            "registered_regions": registered,
+            "reason": None,
+        }
+
+    if bboxes_intersect(extent, study_bbox):
+        return {
+            "covered": True,
+            "status": "covered",
+            "region": region,
+            "registered_regions": registered,
+            "reason": None,
+        }
+
+    detail = (
+        f"No observed-count source is registered for this study area. Counts can be "
+        f"auto-ingested today for: {', '.join(registered)}. The available count set covers a "
+        f"different area entirely, so it was NOT used — validating against another "
+        f"jurisdiction's stations would produce a meaningless fit."
+    )
+    if region:
+        detail = (
+            f"The available count set does not cover this study area, so it was NOT used — "
+            f"validating against another area's stations would produce a meaningless fit. "
+            f"{region} is a registered count-source region; enable count auto-ingest to fetch "
+            f"local counts for this run."
+        )
+
+    return {
+        "covered": False,
+        "status": "out_of_area",
+        "region": region,
+        "registered_regions": registered,
+        "reason": detail,
+    }
+
+
+def uncovered_validation_summary(coverage: dict[str, Any]) -> dict[str, Any]:
+    """A validation summary for a run that had nothing to validate against.
+
+    Deliberately carries `stations_matched: 0` with NO gate and NO error metrics:
+    a gate implies a comparison happened, and a median APE of None next to a
+    failed gate is exactly what read as "your model failed".
+    """
+    return {
+        "stations_total": 0,
+        "stations_matched": 0,
+        "median_ape": None,
+        "mean_ape": None,
+        "max_ape": None,
+        "percent_rmse": None,
+        "geh": None,
+        "peak_hour_geh": None,
+        "spearman_rho": None,
+        "screening_gate": None,
+        "gate_reasons": [],
+        "results": [],
+        "coverage": coverage,
+        "method": (
+            "Observed-count validation was not run: no count set covers this study area. "
+            "This is a coverage gap, not a validation result."
+        ),
+    }
 DEFAULT_REQUIRED_MATCHES = 3
 
 GEH_BASIS_NOTE = (
