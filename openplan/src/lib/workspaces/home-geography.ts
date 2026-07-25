@@ -87,6 +87,32 @@ export const HOME_GEOGRAPHY_COLUMN_NAMES = [
 export const HOME_GEOGRAPHY_COLUMNS = HOME_GEOGRAPHY_COLUMN_NAMES.join(", ");
 
 /**
+ * The identity columns only — everything needed to say WHICH place a workspace
+ * calls home, and nothing else.
+ *
+ * `home_geometry_geojson` holds the full TIGERweb boundary polygon and can be
+ * megabytes. Map-layer routes fire on every `(app)` page load and need a
+ * five-character ref, so selecting the full set there would drag the polygon
+ * out of Postgres on every navigation. `cartographic-shell.tsx` already refuses
+ * the same column for the same reason.
+ *
+ * Derived from the same array rather than retyped, so a renamed column cannot
+ * leave this list pointing at something that no longer exists.
+ * `parseWorkspaceHomeGeography` reads key-by-key and defaults absent keys to
+ * null, so a narrow row parses correctly.
+ */
+export const HOME_GEOGRAPHY_SCOPE_COLUMN_NAMES = HOME_GEOGRAPHY_COLUMN_NAMES.filter(
+  (column): column is (typeof HOME_GEOGRAPHY_COLUMN_NAMES)[number] =>
+    column === "home_geography_source" ||
+    column === "home_geography_kind" ||
+    column === "home_geography_ref" ||
+    column === "home_geography_label" ||
+    column === "home_country_code"
+);
+
+export const HOME_GEOGRAPHY_SCOPE_COLUMNS = HOME_GEOGRAPHY_SCOPE_COLUMN_NAMES.join(", ");
+
+/**
  * The row that returns a workspace to "no stated geography".
  *
  * Clearing is a legitimate operation, not a repair: the migration states that
@@ -363,4 +389,34 @@ export function homeGeographyFromPlaceBoundary(
     home_geometry_geojson: boundary.geojson,
     home_geography_set_at: (options?.setAt ?? new Date()).toISOString(),
   };
+}
+
+/**
+ * The state + county FIPS a US TIGERweb county home geography resolves to, or
+ * `null` for every other shape.
+ *
+ * WHY IT REFUSES EVERYTHING ELSE. Census tracts are ingested per COUNTY
+ * (`/api/workspaces/home-geography` triggers it only for `kind === "county"`),
+ * so a county is the only home geography whose tracts this deployment can be
+ * expected to hold. Falling back to a state-wide filter for a city, CDP or
+ * metro workspace would draw whichever counties some OTHER agency happened to
+ * ingest, in the same state, underneath this workspace's map — presenting
+ * another jurisdiction's tracts as your own. Returning null lets the caller say
+ * that plainly instead.
+ *
+ * A CBSA's 5-digit code is not state-prefixed and can straddle states, so
+ * metro/micro are refused on top of that.
+ */
+export function tigerwebCountyFipsFromHomeGeography(
+  geo: WorkspaceHomeGeography | null | undefined
+): { stateFips: string; countyFips: string } | null {
+  if (!geo) return null;
+  if (geo.home_geography_source !== TIGERWEB_GEOGRAPHY_SOURCE) return null;
+  if (geo.home_country_code !== "US") return null;
+  if (geo.home_geography_kind !== "county") return null;
+
+  const ref = geo.home_geography_ref ?? "";
+  if (!/^\d{5}$/.test(ref)) return null;
+
+  return { stateFips: ref.slice(0, 2), countyFips: ref.slice(2, 5) };
 }

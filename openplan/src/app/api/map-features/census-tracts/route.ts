@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import {
+  HOME_GEOGRAPHY_SCOPE_COLUMNS,
+  parseWorkspaceHomeGeography,
+} from "@/lib/workspaces/home-geography";
+import {
+  describeCensusTractCoverage,
+  MAP_FEATURE_LAYER_LIMIT,
+  resolveCensusTractScope,
+  type CensusTractScope,
+} from "@/lib/geographies/census-tract-scope";
 
 type TractMapRow = {
   geoid: string;
@@ -49,23 +60,82 @@ export async function GET(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    // Census tracts are public data — no workspace membership required.
-    // The auth gate just keeps the public-landing pages from firing an
-    // unnecessary fetch (they render no shell backdrop).
+    // Census tracts are public data — no workspace membership required to READ
+    // them. Membership is still resolved, because it is what says WHICH tracts
+    // belong on this map: the table is national and shared.
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // TODO(pagination): hard cap at 500 tracts so the GeoJSON payload stays
-    // under ~1MB. A real statewide choropleth needs tile-based delivery;
-    // revisit when we ship live TIGER ingestion beyond the hand-authored
-    // NCTC demo tracts.
-    const { data, error } = await supabase
+    const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
+
+    let scope: CensusTractScope;
+    if (!membership) {
+      scope = resolveCensusTractScope(null, { hasWorkspace: false });
+    } else {
+      // Identity columns only — the full set carries the boundary polygon, and
+      // this route fires on every (app) page load.
+      const { data: workspaceRow } = await supabase
+        .from("workspaces")
+        .select(HOME_GEOGRAPHY_SCOPE_COLUMNS)
+        .eq("id", membership.workspace_id)
+        .maybeSingle();
+      scope = resolveCensusTractScope(parseWorkspaceHomeGeography(workspaceRow), {
+        hasWorkspace: true,
+      });
+    }
+
+    // Nothing to scope to means nothing to draw. Returning a state-wide or
+    // unfiltered slice here is what put another jurisdiction's tracts under
+    // this workspace's map; the coverage notes say so instead.
+    if (scope.scopeState !== "home_geography") {
+      const notes = describeCensusTractCoverage({
+        scopeState: scope.scopeState,
+        scopeLabel: scope.scopeLabel,
+        unsupportedKind: scope.unsupportedKind,
+        matchedCount: 0,
+        returnedCount: 0,
+        droppedCount: 0,
+        limit: MAP_FEATURE_LAYER_LIMIT,
+      });
+
+      audit.info("census_tract_choropleth_unscoped", {
+        scopeState: scope.scopeState,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json(
+        {
+          type: "FeatureCollection",
+          features: [],
+          returnedCount: 0,
+          matchedCount: 0,
+          droppedCount: 0,
+          truncated: false,
+          limit: MAP_FEATURE_LAYER_LIMIT,
+          scopeState: scope.scopeState,
+          scopeLabel: scope.scopeLabel,
+          coverageNotes: notes,
+        },
+        { status: 200 }
+      );
+    }
+
+    // `count: "exact"` rides the same round trip: PostgREST reports the full
+    // matched total in Content-Range even under a LIMIT, so the disclosure and
+    // the drawn features can never come from differently-filtered queries.
+    // `.order()` makes a truncated payload a stable prefix rather than an
+    // arbitrary subset that changes between loads.
+    const { data, error, count } = await supabase
       .from("census_tracts_map")
       .select(
-        "geoid, state_fips, county_fips, name, geometry_geojson, pop_total, households, pct_nonwhite, pct_zero_vehicle, pct_poverty"
+        "geoid, state_fips, county_fips, name, geometry_geojson, pop_total, households, pct_nonwhite, pct_zero_vehicle, pct_poverty",
+        { count: "exact" }
       )
-      .limit(500);
+      .eq("state_fips", scope.stateFips)
+      .eq("county_fips", scope.countyFips)
+      .order("geoid", { ascending: true })
+      .limit(MAP_FEATURE_LAYER_LIMIT);
 
     if (error) {
       audit.error("census_tract_choropleth_query_failed", {
@@ -103,13 +173,38 @@ export async function GET(request: NextRequest) {
       ];
     });
 
+    const matchedCount = typeof count === "number" && Number.isFinite(count) ? count : rows.length;
+    const droppedCount = rows.length - features.length;
+
     audit.info("census_tract_choropleth_loaded", {
       count: features.length,
+      matchedCount,
+      droppedCount,
+      stateFips: scope.stateFips,
+      countyFips: scope.countyFips,
       durationMs: Date.now() - startedAt,
     });
 
     return NextResponse.json(
-      { type: "FeatureCollection" as const, features },
+      {
+        type: "FeatureCollection" as const,
+        features,
+        returnedCount: features.length,
+        matchedCount,
+        droppedCount,
+        truncated: features.length + droppedCount < matchedCount,
+        limit: MAP_FEATURE_LAYER_LIMIT,
+        scopeState: scope.scopeState,
+        scopeLabel: scope.scopeLabel,
+        coverageNotes: describeCensusTractCoverage({
+          scopeState: scope.scopeState,
+          scopeLabel: scope.scopeLabel,
+          matchedCount,
+          returnedCount: features.length,
+          droppedCount,
+          limit: MAP_FEATURE_LAYER_LIMIT,
+        }),
+      },
       { status: 200 }
     );
   } catch (error) {

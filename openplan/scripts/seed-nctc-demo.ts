@@ -1854,6 +1854,22 @@ async function main(): Promise<void> {
       subscription_plan: "pilot",
       subscription_status: "pilot",
       is_demo: true,
+      // The demo seeds public census tracts for Nevada County, CA (state 06,
+      // county 057 — the first five digits of the tract GEOIDs below). The
+      // equity choropleth scopes tracts to the workspace's HOME GEOGRAPHY, so
+      // without this the demo would seed tracts it then refuses to draw. No new
+      // hardcoding: this seed already knows which county it is seeding.
+      home_geography_source: "tigerweb",
+      home_geography_kind: "county",
+      home_geography_ref: DEMO_TRACT_GRASS_VALLEY_CORE_GEOID.slice(0, 5),
+      home_geography_label: "Nevada County, CA",
+      home_country_code: "US",
+      home_subdivision_code: "CA",
+      home_min_lon: -121.2,
+      home_min_lat: 39.1,
+      home_max_lon: -120.7,
+      home_max_lat: 39.5,
+      home_geography_set_at: new Date(0).toISOString(),
     },
     { onConflict: "id" }
   );

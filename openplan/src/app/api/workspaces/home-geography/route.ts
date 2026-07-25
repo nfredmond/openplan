@@ -29,6 +29,7 @@ import {
   HOME_GEOGRAPHY_COLUMNS,
   homeGeographyFromPlaceBoundary,
   parseWorkspaceHomeGeography,
+  tigerwebCountyFipsFromHomeGeography,
 } from "@/lib/workspaces/home-geography";
 
 // Resolving a boundary calls out to TIGERweb.
@@ -240,9 +241,10 @@ export async function PATCH(request: NextRequest) {
     // response so setting geography stays fast; it is best-effort and public
     // data (any workspace's county benefits every viewer), so a failure only
     // means the layer stays empty until something loads it, never a wrong write.
-    // A GEOID for a US TIGERweb county is 5 digits: 2-digit state + 3-digit county.
-    const countyGeoid = row.home_geography_kind === "county" ? (row.home_geography_ref ?? "") : "";
-    if (row.home_country_code === "US" && /^\d{5}$/.test(countyGeoid)) {
+    // One derivation, shared with the map layers that scope tracts to this same
+    // county — so what gets INGESTED and what gets DRAWN can never disagree.
+    const county = tigerwebCountyFipsFromHomeGeography(row);
+    if (county) {
       // Registering the task is itself wrapped: `after()` throws when called
       // outside a request scope (e.g. a unit test), and a best-effort tract load
       // must never turn a successful geography write into a 500.
@@ -250,8 +252,8 @@ export async function PATCH(request: NextRequest) {
         after(async () => {
           try {
             await ingestCensusTractsForCounty(createServiceRoleClient(), {
-              stateFips: countyGeoid.slice(0, 2),
-              countyFips: countyGeoid.slice(2, 5),
+              stateFips: county.stateFips,
+              countyFips: county.countyFips,
             });
           } catch {
             // Best-effort: the equity layer simply stays empty until re-triggered.

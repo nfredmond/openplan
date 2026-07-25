@@ -127,11 +127,86 @@ describe("CartographicLayersPanel", () => {
 
     renderPanel();
 
+    // The panel fetches counts AND the equity layer's coverage notes; assert the
+    // endpoint rather than a call tally, so adding a request cannot fail a test
+    // about chips.
     await waitFor(() => {
-      expect((global.fetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(1);
+      const urls = (global.fetch as unknown as { mock: { calls: [string][] } }).mock.calls.map(
+        (call) => call[0]
+      );
+      expect(urls).toContain("/api/map-features/counts");
     });
 
     // No chip nodes render on fetch failure.
     expect(document.querySelectorAll(".op-cart-layer-item__chip")).toHaveLength(0);
+  });
+
+  /**
+   * The equity chip renders for every row regardless of the checkbox, and the
+   * equity layer is OFF by default — so a number without its explanation is
+   * exactly the unexplained figure this disclosure exists to prevent. The note
+   * must therefore NOT be gated on the layer being toggled on.
+   */
+  describe("equity coverage notes", () => {
+    function mockByUrl(counts: unknown, tracts: unknown) {
+      global.fetch = vi.fn((url: string) =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => (String(url).includes("census-tracts") ? tracts : counts),
+        })
+      ) as unknown as typeof fetch;
+    }
+
+    it("shows why the equity layer is empty when no home geography is set", async () => {
+      mockByUrl(
+        { projects: 1, aerial: 0, corridors: 0, rtp: 0, equity: null, engagement: 0 },
+        {
+          scopeState: "geography_not_set",
+          coverageNotes: [
+            "Equity tracts are not shown because this workspace has not set a home geography, so there is nothing to scope them to.",
+          ],
+        }
+      );
+
+      renderPanel();
+
+      await waitFor(() => {
+        expect(screen.getByText(/has not set a home geography/)).toBeInTheDocument();
+      });
+      // The equity layer is off by default; the note appears anyway.
+      const equityCheckbox = screen.getByText("Equity priority").closest("label")?.querySelector("input");
+      expect((equityCheckbox as HTMLInputElement).checked).toBe(false);
+    });
+
+    it("shows the truncation note when the county has more tracts than the map draws", async () => {
+      mockByUrl(
+        { projects: 0, aerial: 0, corridors: 0, rtp: 0, equity: 2498, engagement: 0 },
+        {
+          scopeState: "home_geography",
+          coverageNotes: ["Showing 500 of 2,498 census tracts in Los Angeles County, CA — the first 500 by tract ID."],
+        }
+      );
+
+      renderPanel();
+
+      await waitFor(() => {
+        expect(screen.getByText(/Showing 500 of 2,498 census tracts/)).toBeInTheDocument();
+      });
+    });
+
+    it("renders no note block when the layer response carries none", async () => {
+      mockByUrl(
+        { projects: 0, aerial: 0, corridors: 0, rtp: 0, equity: 0, engagement: 0 },
+        { scopeState: "home_geography", coverageNotes: [] }
+      );
+
+      renderPanel();
+
+      await waitFor(() => {
+        expect(document.querySelectorAll(".op-cart-layer-item__chip").length).toBeGreaterThan(0);
+      });
+      expect(document.querySelector(".op-cart-layers__notes")).toBeNull();
+    });
   });
 });

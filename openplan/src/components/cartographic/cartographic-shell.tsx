@@ -143,7 +143,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
           {showOnboarding ? <OnboardingWizard defaultWorkspaceName={orgNameHint} /> : children}
         </CartographicOverviewSurface>
 
-        <CartographicLayersPanel />
+        <CartographicLayersPanel workspaceId={membership?.workspace_id ?? null} />
 
         <CartographicMapLegend />
 

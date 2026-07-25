@@ -438,6 +438,23 @@ html.dark .op-cart-layer-item:hover {
   font-size: 10px;
   color: var(--muted);
 }
+/*
+  Coverage notes for the equity layer. Rendered whether or not the layer is
+  toggled on: the chip beside "Equity priority" shows for every row regardless
+  of the checkbox, and a number without its explanation is the unexplained
+  figure this disclosure exists to prevent.
+*/
+.op-cart-layers__notes {
+  padding: 8px 14px 10px;
+  border-top: 1px solid var(--line);
+  font-size: 10.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+.op-cart-layers__notes p + p {
+  margin-top: 6px;
+}
+
 .op-cart-layers__ft {
   padding: 10px 14px 12px;
   border-top: 1px solid var(--line);

@@ -3,6 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { aerialMissionsWithAoiCountQuery } from "@/lib/aerial/queries";
+import {
+  HOME_GEOGRAPHY_SCOPE_COLUMNS,
+  parseWorkspaceHomeGeography,
+} from "@/lib/workspaces/home-geography";
+import { resolveCensusTractScope } from "@/lib/geographies/census-tract-scope";
 
 export type MapFeatureCounts = {
   projects: number | null;
@@ -18,7 +23,12 @@ const EMPTY_COUNTS: MapFeatureCounts = {
   aerial: 0,
   corridors: 0,
   rtp: 0,
-  equity: 0,
+  // NOT 0. With no membership there is no geography to scope tracts to, so
+  // nothing was counted — and census tracts are public data, so "no workspace"
+  // is not evidence that zero tracts exist. `null` is this route's existing
+  // "we don't know" signal, and the chip disappears rather than asserting a
+  // measurement that was never taken.
+  equity: null,
   engagement: 0,
 };
 
@@ -43,6 +53,18 @@ export async function GET(request: NextRequest) {
     }
 
     const workspaceId = membership.workspace_id;
+
+    // The equity chip must count the SAME tracts the choropleth can draw. It
+    // previously counted `census_tracts_map` with no filter at all — a national
+    // total presented beside this workspace's map.
+    const { data: workspaceRow } = await supabase
+      .from("workspaces")
+      .select(HOME_GEOGRAPHY_SCOPE_COLUMNS)
+      .eq("id", workspaceId)
+      .maybeSingle();
+    const tractScope = resolveCensusTractScope(parseWorkspaceHomeGeography(workspaceRow), {
+      hasWorkspace: true,
+    });
 
     const [
       projectsResult,
@@ -70,10 +92,17 @@ export async function GET(request: NextRequest) {
           .eq("workspace_id", workspaceId)
           .not("anchor_latitude", "is", null)
           .not("anchor_longitude", "is", null),
-        // Census tracts are public data — no workspace scoping. Count from
-        // the `census_tracts_map` view so the count mirrors what the
-        // /api/map-features/census-tracts route returns.
-        supabase.from("census_tracts_map").select("geoid", { count: "exact", head: true }),
+        // Scoped identically to /api/map-features/census-tracts. An unscoped
+        // workspace counts NOTHING rather than counting the nation: a chip
+        // reading "0" would assert a measurement, and one reading the national
+        // total would assert somebody else's.
+        tractScope.scopeState === "home_geography"
+          ? supabase
+              .from("census_tracts_map")
+              .select("geoid", { count: "exact", head: true })
+              .eq("state_fips", tractScope.stateFips)
+              .eq("county_fips", tractScope.countyFips)
+          : Promise.resolve({ count: null, error: null } as { count: number | null; error: null }),
         supabase
           .from("engagement_items")
           .select("id, engagement_campaigns!inner(id)", { count: "exact", head: true })
@@ -88,7 +117,9 @@ export async function GET(request: NextRequest) {
       aerial: aerialResult.error ? null : aerialResult.count ?? 0,
       corridors: corridorsResult.error ? null : corridorsResult.count ?? 0,
       rtp: rtpResult.error ? null : rtpResult.count ?? 0,
-      equity: equityResult.error ? null : equityResult.count ?? 0,
+      // `?? null`, not `?? 0`: the unscoped branch resolves a null count on
+      // purpose, and coercing it to 0 would put the fabricated zero back.
+      equity: equityResult.error ? null : equityResult.count ?? null,
       engagement: engagementResult.error ? null : engagementResult.count ?? 0,
     };
 

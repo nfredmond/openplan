@@ -42,7 +42,20 @@ const mockAudit = {
   error: vi.fn(),
 };
 
+const workspaceMaybeSingleMock = vi.fn();
+const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
+const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
+
+const NEVADA_COUNTY_ROW = {
+  home_geography_source: "tigerweb",
+  home_geography_kind: "county",
+  home_geography_ref: "06057",
+  home_geography_label: "Nevada County, CA",
+  home_country_code: "US",
+};
+
 const fromMock = vi.fn((table: string) => {
+  if (table === "workspaces") return { select: workspaceSelectMock };
   if (table === "projects") return { select: projectsSelectMock };
   if (table === "aerial_missions") return { select: aerialSelectMock };
   if (table === "project_corridors") return { select: corridorsSelectMock };
@@ -91,6 +104,7 @@ describe("GET /api/map-features/counts", () => {
     rtpChain = buildQueryChain({ count: 0, error: null });
     equityChain = buildQueryChain({ count: 0, error: null });
     engagementChain = buildQueryChain({ count: 0, error: null });
+    workspaceMaybeSingleMock.mockResolvedValue({ data: NEVADA_COUNTY_ROW, error: null });
   });
 
   it("returns 401 when the request is anonymous", async () => {
@@ -110,12 +124,15 @@ describe("GET /api/map-features/counts", () => {
 
     expect(response.status).toBe(200);
     const payload = await response.json();
+    // equity is NULL, not 0: with no workspace there is no geography to scope
+    // tracts to, so nothing was counted — and census tracts are public data, so
+    // "no workspace" is not evidence that zero tracts exist.
     expect(payload).toEqual({
       projects: 0,
       aerial: 0,
       corridors: 0,
       rtp: 0,
-      equity: 0,
+      equity: null,
       engagement: 0,
     });
     expect(projectsSelectMock).not.toHaveBeenCalled();
@@ -156,6 +173,11 @@ describe("GET /api/map-features/counts", () => {
     expect(corridorsSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(rtpSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(equitySelectMock).toHaveBeenCalledWith("geoid", { count: "exact", head: true });
+    // The chip must count the SAME tracts the choropleth can draw. It used to
+    // count census_tracts_map with no filter at all — a NATIONAL total rendered
+    // beside this workspace's own map.
+    expect(equityChain.eq).toHaveBeenCalledWith("state_fips", "06");
+    expect(equityChain.eq).toHaveBeenCalledWith("county_fips", "057");
     expect(engagementSelectMock).toHaveBeenCalledWith(
       "id, engagement_campaigns!inner(id)",
       { count: "exact", head: true }
@@ -352,12 +374,15 @@ describe("GET /api/map-features/counts", () => {
 
     expect(response.status).toBe(200);
     const payload = await response.json();
+    // equity is NULL, not 0: with no workspace there is no geography to scope
+    // tracts to, so nothing was counted — and census tracts are public data, so
+    // "no workspace" is not evidence that zero tracts exist.
     expect(payload).toEqual({
       projects: 0,
       aerial: 0,
       corridors: 0,
       rtp: 0,
-      equity: 0,
+      equity: null,
       engagement: 0,
     });
     expect(mockAudit.warn).not.toHaveBeenCalled();
