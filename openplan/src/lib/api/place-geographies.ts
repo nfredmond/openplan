@@ -9,6 +9,19 @@ import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 export const placeKindSchema = z.enum(["county", "city", "cdp", "metro", "micro"]);
 export type PlaceKind = z.infer<typeof placeKindSchema>;
 
+/**
+ * Plural, planner-facing names for each kind. Lives here (not in the resolver)
+ * because the picker has to name what could not be searched, and the picker is
+ * a client component that must not pull the server-side resolver into its bundle.
+ */
+export const PLACE_KIND_PLURAL_LABELS: Record<PlaceKind, string> = {
+  county: "counties",
+  city: "cities and towns",
+  cdp: "census-designated places",
+  metro: "metro areas",
+  micro: "micropolitan areas",
+};
+
 export const placeSearchItemSchema = z.object({
   kind: placeKindSchema,
   geoid: z.string().min(5).max(7),
@@ -17,8 +30,22 @@ export const placeSearchItemSchema = z.object({
   stateFips: z.string().nullable(),
 });
 
+/**
+ * A search response carries its own coverage.
+ *
+ * `items: []` alone cannot say whether nothing matched or nothing answered, and
+ * the picker has to tell a planner which it was — telling someone their county
+ * does not exist because a key is unset is the worst failure this front door
+ * has. Both extra fields default, so an older client keeps working.
+ */
 export const placeSearchResponseSchema = z.object({
   items: z.array(placeSearchItemSchema),
+  /** Place kinds whose lookup did not answer. */
+  unavailableKinds: z.array(placeKindSchema).default([]),
+  /** True when no lookup answered at all. */
+  searchUnavailable: z.boolean().default(false),
+  /** Why, in planner terms, when knowable. Never names a secret. */
+  unavailableReason: z.string().nullable().default(null),
 });
 
 export const placeBoundaryBboxSchema = z.object({

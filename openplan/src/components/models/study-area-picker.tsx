@@ -6,7 +6,12 @@ import { AlertTriangle, Loader2, MapPin, Pencil, Search, X } from "lucide-react"
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { cn } from "@/lib/utils";
-import type { PlaceBoundaryResponse, PlaceSearchItem } from "@/lib/api/place-geographies";
+import {
+  PLACE_KIND_PLURAL_LABELS,
+  type PlaceBoundaryResponse,
+  type PlaceKind,
+  type PlaceSearchItem,
+} from "@/lib/api/place-geographies";
 import type { EngagementGeometry } from "@/lib/engagement/geometry";
 import { CONTINENTAL_US_CENTER, LARGE_AREA_KM2, summarizeCorridorText } from "@/lib/models/study-area";
 
@@ -19,6 +24,27 @@ const GeometryPickerMap = dynamic(
 );
 
 type PickerMode = "search" | "draw";
+
+/**
+ * What the last search could not reach.
+ *
+ * `null` means every lookup answered, so an empty result really is "no such
+ * place". Anything else must be said out loud: an unset Census key or a
+ * TIGERweb outage previously rendered as "No matching places. Try a different
+ * spelling", which tells a planner their own county does not exist.
+ */
+type SearchCoverage = {
+  unavailableKinds: PlaceKind[];
+  searchUnavailable: boolean;
+  reason: string | null;
+};
+
+function describeUnavailableKinds(kinds: PlaceKind[]): string {
+  const labels = kinds.map((kind) => PLACE_KIND_PLURAL_LABELS[kind]);
+  if (labels.length === 1) return labels[0];
+  if (labels.length === 2) return `${labels[0]} and ${labels[1]}`;
+  return `${labels.slice(0, -1).join(", ")}, and ${labels[labels.length - 1]}`;
+}
 
 /**
  * The single geography front door for the whole app (any US county / city / CDP
@@ -55,6 +81,7 @@ export function StudyAreaPicker({
   const [resolvingGeoid, setResolvingGeoid] = useState<string | null>(null);
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [coverage, setCoverage] = useState<SearchCoverage | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
   const summary = useMemo(() => summarizeCorridorText(corridorText), [corridorText]);
@@ -64,6 +91,7 @@ export function StudyAreaPicker({
     const q = query.trim();
     if (q.length < 2) {
       setResults([]);
+      setCoverage(null);
       setSearching(false);
       return;
     }
@@ -78,13 +106,25 @@ export function StudyAreaPicker({
           signal: controller.signal,
         });
         if (!res.ok) throw new Error("search failed");
-        const data = (await res.json()) as { items?: PlaceSearchItem[] };
+        const data = (await res.json()) as {
+          items?: PlaceSearchItem[];
+          unavailableKinds?: PlaceKind[];
+          searchUnavailable?: boolean;
+          unavailableReason?: string | null;
+        };
         setResults(data.items ?? []);
+        setCoverage({
+          unavailableKinds: data.unavailableKinds ?? [],
+          searchUnavailable: data.searchUnavailable ?? false,
+          reason: data.unavailableReason ?? null,
+        });
         setError(null);
       } catch (searchError) {
         if ((searchError as Error).name === "AbortError") return;
         setResults([]);
-        setError("Place search is unavailable right now — draw the area or paste GeoJSON instead.");
+        // The request itself failed, so nothing was searched.
+        setCoverage({ unavailableKinds: [], searchUnavailable: true, reason: null });
+        setError(null);
       } finally {
         setSearching(false);
       }
@@ -106,6 +146,7 @@ export function StudyAreaPicker({
       onPlaceResolved?.(data);
       setSelectedLabel(data.label ?? item.label);
       setResults([]);
+      setCoverage(null);
       setQuery("");
     } catch {
       setError(`Couldn't load the boundary for ${item.label}. Try another result or draw the area.`);
@@ -129,6 +170,7 @@ export function StudyAreaPicker({
     onPlaceResolved?.(null);
     setSelectedLabel(null);
     setResults([]);
+    setCoverage(null);
     setQuery("");
   }
 
@@ -207,7 +249,39 @@ export function StudyAreaPicker({
             </ul>
           ) : null}
 
-          {query.trim().length >= 2 && !searching && results.length === 0 && !error ? (
+          {/*
+            Three distinct outcomes, never collapsed into one another:
+            nothing answered, some layers answered, everything answered but
+            matched nothing. Only the last one is a spelling problem.
+          */}
+          {query.trim().length >= 2 && !searching && coverage?.searchUnavailable ? (
+            <p className="flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+              <span>
+                Place search is unavailable right now, so this is not a result — nothing was searched.{" "}
+                {coverage.reason ?? "The US Census lookup services did not respond."} Draw the area instead, or try again
+                shortly.
+              </span>
+            </p>
+          ) : null}
+
+          {query.trim().length >= 2 && !searching && coverage && !coverage.searchUnavailable && coverage.unavailableKinds.length > 0 ? (
+            <p className="flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
+              <span>
+                These results are incomplete: {describeUnavailableKinds(coverage.unavailableKinds)} could not be searched.{" "}
+                {coverage.reason ?? ""}
+              </span>
+            </p>
+          ) : null}
+
+          {query.trim().length >= 2 &&
+          !searching &&
+          results.length === 0 &&
+          !error &&
+          coverage !== null &&
+          !coverage.searchUnavailable &&
+          coverage.unavailableKinds.length === 0 ? (
             <p className="text-xs text-muted-foreground">No matching places. Try a different spelling, or draw the area.</p>
           ) : null}
         </div>

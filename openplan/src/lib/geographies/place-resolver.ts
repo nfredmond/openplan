@@ -40,6 +40,12 @@ const LAYER_BY_KIND: Record<PlaceKind, number> = {
   micro: LAYER.micro,
 };
 
+/**
+ * Every kind `searchPlaces` consults. Derived from the layer map so the
+ * "nothing answered" test cannot drift from the lookups actually performed.
+ */
+const ALL_PLACE_KINDS = Object.keys(LAYER_BY_KIND) as PlaceKind[];
+
 // GEOID length by kind: county/CBSA are 5-digit, places are 7-digit.
 const GEOID_LENGTH_BY_KIND: Record<PlaceKind, number> = {
   county: 5,
@@ -63,6 +69,27 @@ export interface PlaceSearchResult {
   label: string;
   description: string;
   stateFips: string | null;
+}
+
+/**
+ * The result of a place search, including which lookups never answered.
+ *
+ * WHY THIS IS NOT JUST AN ARRAY. Every lookup here can fail silently:
+ * `fetchJsonWithRetry` returns `null` for a timeout, a non-OK status, or a body
+ * that would not parse, and the Census county catalog answers an unauthenticated
+ * request with a 302 to an HTML page. Collapsing all of that into `[]` made an
+ * outage — or an unset `CENSUS_API_KEY` — indistinguishable from "your county
+ * does not exist", which is what the study-area picker then told the planner.
+ * This is the front door of the whole product; it has to know the difference.
+ */
+export interface PlaceSearchOutcome {
+  items: PlaceSearchResult[];
+  /** Place kinds whose lookup did not answer. Empty when every lookup answered. */
+  unavailableKinds: PlaceKind[];
+  /** True when NOT ONE lookup answered: the search failed, it did not come back empty. */
+  searchUnavailable: boolean;
+  /** The most specific knowable cause, when there is one. */
+  unavailableReason: string | null;
 }
 
 // Internal: carries the lowercased key we rank matches against.
@@ -224,25 +251,64 @@ async function fetchTigerSearch(
 }
 
 /**
- * Search US places by name across counties, incorporated places, CDPs, and
- * metro/micro areas. Returns a single ranked, de-duplicated list.
+ * Did a TIGERweb layer actually answer?
+ *
+ * `null` is `fetchJsonWithRetry`'s single signal for timeout / non-OK status /
+ * unparseable body. A 200 that carries no `features` array is also not an answer
+ * — ArcGIS reports a rejected query that way, with an `error` object instead.
+ * Anything else, including `{ features: [] }`, is a real "nothing matched".
  */
-export async function searchPlaces(query: string, limit = 8): Promise<PlaceSearchResult[]> {
+function tigerLayerAnswered(json: TigerQueryJson | null): boolean {
+  return json !== null && Array.isArray(json.features);
+}
+
+const TIGERWEB_UNAVAILABLE_REASON =
+  "The US Census TIGERweb boundary service did not respond, so place names could not be searched.";
+
+/**
+ * Search US places by name across counties, incorporated places, CDPs, and
+ * metro/micro areas. Returns a ranked, de-duplicated list plus the coverage of
+ * the search itself — see `PlaceSearchOutcome` for why the second part matters.
+ */
+export async function searchPlaces(query: string, limit = 8): Promise<PlaceSearchOutcome> {
+  const answered: PlaceSearchOutcome = {
+    items: [],
+    unavailableKinds: [],
+    searchUnavailable: false,
+    unavailableReason: null,
+  };
+
   const trimmed = query.trim();
-  if (trimmed.length < 2) return [];
+  if (trimmed.length < 2) return answered;
   const like = sanitizeLikeQuery(trimmed);
-  if (!like) return [];
+  if (!like) return answered;
 
   const perLayer = Math.min(Math.max(Number.isFinite(limit) ? Math.trunc(limit) : 8, 1), 20);
   const queryLower = trimmed.toLowerCase();
 
-  const [counties, cityJson, cdpJson, metroJson, microJson] = await Promise.all([
-    searchUsCounties(trimmed, perLayer).catch(() => []),
+  // `.catch` guards remain because these are network calls; they are belt to the
+  // braces of the `null` contract, not the primary failure signal.
+  const [countyOutcome, cityJson, cdpJson, metroJson, microJson] = await Promise.all([
+    searchUsCounties(trimmed, perLayer).catch(() => null),
     fetchTigerSearch(LAYER.incorporatedPlace, like, perLayer, true).catch(() => null),
     fetchTigerSearch(LAYER.censusDesignatedPlace, like, perLayer, true).catch(() => null),
     fetchTigerSearch(LAYER.metro, like, perLayer, false).catch(() => null),
     fetchTigerSearch(LAYER.micro, like, perLayer, false).catch(() => null),
   ]);
+
+  const unavailableKinds: PlaceKind[] = [];
+  let countyReason: string | null = null;
+
+  if (countyOutcome === null || countyOutcome.availability === "unavailable") {
+    unavailableKinds.push("county");
+    countyReason = countyOutcome?.unavailableReason ?? TIGERWEB_UNAVAILABLE_REASON;
+  }
+  if (!tigerLayerAnswered(cityJson)) unavailableKinds.push("city");
+  if (!tigerLayerAnswered(cdpJson)) unavailableKinds.push("cdp");
+  if (!tigerLayerAnswered(metroJson)) unavailableKinds.push("metro");
+  if (!tigerLayerAnswered(microJson)) unavailableKinds.push("micro");
+
+  const counties = countyOutcome?.items ?? [];
 
   const countyResults: RankedPlace[] = counties.map((county) => ({
     kind: "county" as const,
@@ -263,7 +329,7 @@ export async function searchPlaces(query: string, limit = 8): Promise<PlaceSearc
   ];
 
   const seen = new Set<string>();
-  return all
+  const items = all
     .map((place) => ({ place, score: scorePlaceMatch(place.sortKey, queryLower) }))
     .sort((left, right) => {
       if (right.score !== left.score) return right.score - left.score;
@@ -283,6 +349,18 @@ export async function searchPlaces(query: string, limit = 8): Promise<PlaceSearc
       description: place.description,
       stateFips: place.stateFips,
     }));
+
+  const searchUnavailable = unavailableKinds.length === ALL_PLACE_KINDS.length;
+
+  return {
+    items,
+    unavailableKinds,
+    searchUnavailable,
+    // Prefer the county cause: it is the one that names a specific, fixable
+    // configuration gap rather than a generic upstream outage.
+    unavailableReason:
+      unavailableKinds.length === 0 ? null : (countyReason ?? TIGERWEB_UNAVAILABLE_REASON),
+  };
 }
 
 /**

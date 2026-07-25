@@ -24,16 +24,20 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Math.max(Number(searchParams.get("limit") ?? 8), 1), 20);
 
     if (q.length < 2) {
-      return NextResponse.json({ items: [] }, { status: 200 });
+      // Parsed through the schema so every response carries the same coverage
+      // fields — a client must never have to guess whether they were omitted.
+      return NextResponse.json(placeSearchResponseSchema.parse({ items: [] }), { status: 200 });
     }
 
-    const items = await searchPlaces(q, limit);
-    const response = placeSearchResponseSchema.parse({ items });
+    const outcome = await searchPlaces(q, limit);
+    const response = placeSearchResponseSchema.parse(outcome);
 
     audit.info("place_search_loaded", {
       userId: user.id,
       query: q,
       count: response.items.length,
+      unavailableKinds: response.unavailableKinds,
+      searchUnavailable: response.searchUnavailable,
       durationMs: Date.now() - startedAt,
     });
 

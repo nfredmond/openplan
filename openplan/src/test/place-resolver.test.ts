@@ -163,21 +163,34 @@ describe("resolvePlaceBoundary", () => {
   });
 });
 
+const YOLO_COUNTY = {
+  geographyId: "06113",
+  geographyLabel: "Yolo County, CA",
+  countyPrefix: "YOLO",
+  countySlug: "yolo-06113",
+  suggestedRunName: "yolo-06113-runtime",
+};
+
+/** An available county catalog that matched the query. */
+function countiesAnswered(items: Array<typeof YOLO_COUNTY> = [YOLO_COUNTY]) {
+  return { items, availability: "ok" as const, unavailableReason: null };
+}
+
 describe("searchPlaces", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("short-circuits queries under two characters without any lookup", async () => {
-    expect(await searchPlaces("d")).toEqual([]);
+    const outcome = await searchPlaces("d");
+    expect(outcome.items).toEqual([]);
+    expect(outcome.searchUnavailable).toBe(false);
     expect(fetchJsonWithRetryMock).not.toHaveBeenCalled();
     expect(searchUsCountiesMock).not.toHaveBeenCalled();
   });
 
   it("merges counties, places, and metros into one ranked, de-duplicated list", async () => {
-    searchUsCountiesMock.mockResolvedValue([
-      { geographyId: "06113", geographyLabel: "Yolo County, CA", countyPrefix: "YOLO", countySlug: "yolo-06113", suggestedRunName: "yolo-06113-runtime" },
-    ]);
+    searchUsCountiesMock.mockResolvedValue(countiesAnswered());
     fetchJsonWithRetryMock.mockImplementation((url: string) => {
       if (url.includes("/28/")) {
         return Promise.resolve({ features: [{ attributes: { GEOID: "0618100", NAME: "Davis city", BASENAME: "Davis", STATE: "06" } }] });
@@ -188,11 +201,72 @@ describe("searchPlaces", () => {
       return Promise.resolve({ features: [] });
     });
 
-    const results = await searchPlaces("davis");
+    const outcome = await searchPlaces("davis");
     // Exact base-name match ("davis") ranks first.
-    expect(results[0]).toMatchObject({ kind: "city", geoid: "0618100", label: "Davis, CA" });
-    const labels = results.map((r) => r.label);
+    expect(outcome.items[0]).toMatchObject({ kind: "city", geoid: "0618100", label: "Davis, CA" });
+    const labels = outcome.items.map((r) => r.label);
     expect(labels).toContain("Yolo County, CA");
     expect(labels).toContain("Sacramento, CA Metro Area");
+    // Everything answered, so an empty result would genuinely mean "no match".
+    expect(outcome.unavailableKinds).toEqual([]);
+    expect(outcome.searchUnavailable).toBe(false);
+    expect(outcome.unavailableReason).toBeNull();
+  });
+
+  /**
+   * The defect this contract exists to prevent: every lookup failing produced
+   * an empty list, which the picker rendered as "No matching places. Try a
+   * different spelling" — telling a planner their own county does not exist.
+   */
+  it("reports a total lookup failure as unavailable, never as an empty result", async () => {
+    searchUsCountiesMock.mockResolvedValue({
+      items: [],
+      availability: "unavailable",
+      unavailableReason: "County search needs a US Census API key, which this deployment has not configured.",
+    });
+    // fetchJsonWithRetry answers null for a timeout, a non-OK status, or a body
+    // that would not parse — it does not throw, which is how this stayed hidden.
+    fetchJsonWithRetryMock.mockResolvedValue(null);
+
+    const outcome = await searchPlaces("franklin");
+
+    expect(outcome.items).toEqual([]);
+    expect(outcome.searchUnavailable).toBe(true);
+    expect(outcome.unavailableKinds).toEqual(expect.arrayContaining(["county", "city", "cdp", "metro", "micro"]));
+    // The knowable, actionable cause wins over a generic outage message.
+    expect(outcome.unavailableReason).toMatch(/Census API key/i);
+  });
+
+  it("treats a 200 that carries no features array as an unanswered layer", async () => {
+    searchUsCountiesMock.mockResolvedValue(countiesAnswered());
+    // ArcGIS reports a rejected query with a 200 and an `error` object.
+    fetchJsonWithRetryMock.mockResolvedValue({ error: { code: 400, message: "Invalid query" } });
+
+    const outcome = await searchPlaces("davis");
+
+    expect(outcome.searchUnavailable).toBe(false);
+    expect(outcome.unavailableKinds).toEqual(["city", "cdp", "metro", "micro"]);
+    expect(outcome.unavailableReason).not.toBeNull();
+    // The county layer still answered, so its result is still returned.
+    expect(outcome.items.map((item) => item.label)).toContain("Yolo County, CA");
+  });
+
+  it("marks only the county layer unavailable when the catalog is the thing that failed", async () => {
+    searchUsCountiesMock.mockResolvedValue({
+      items: [],
+      availability: "unavailable",
+      unavailableReason: "The US Census county catalog did not respond, so county names could not be searched.",
+    });
+    fetchJsonWithRetryMock.mockImplementation((url: string) =>
+      url.includes("/28/")
+        ? Promise.resolve({ features: [{ attributes: { GEOID: "0618100", NAME: "Davis city", BASENAME: "Davis", STATE: "06" } }] })
+        : Promise.resolve({ features: [] }),
+    );
+
+    const outcome = await searchPlaces("davis");
+
+    expect(outcome.searchUnavailable).toBe(false);
+    expect(outcome.unavailableKinds).toEqual(["county"]);
+    expect(outcome.items.map((item) => item.kind)).toContain("city");
   });
 });

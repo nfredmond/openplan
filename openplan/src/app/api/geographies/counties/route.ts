@@ -24,16 +24,23 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Math.max(Number(searchParams.get("limit") ?? 8), 1), 20);
 
     if (!q || (q.length < 2 && !/^\d{5}$/.test(q))) {
-      return NextResponse.json({ items: [] }, { status: 200 });
+      // Parsed through the schema so every response carries the same coverage
+      // fields — a client must never have to guess whether they were omitted.
+      return NextResponse.json(countyGeographySearchResponseSchema.parse({ items: [] }), { status: 200 });
     }
 
-    const items = await searchUsCounties(q, limit);
-    const response = countyGeographySearchResponseSchema.parse({ items });
+    const outcome = await searchUsCounties(q, limit);
+    const response = countyGeographySearchResponseSchema.parse({
+      items: outcome.items,
+      catalogUnavailable: outcome.availability === "unavailable",
+      unavailableReason: outcome.unavailableReason,
+    });
 
     audit.info("county_search_loaded", {
       userId: user.id,
       query: q,
       count: response.items.length,
+      catalogUnavailable: response.catalogUnavailable,
       durationMs: Date.now() - startedAt,
     });
 
