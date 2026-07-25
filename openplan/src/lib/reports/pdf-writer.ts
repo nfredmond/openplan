@@ -125,6 +125,25 @@ const WIN_ANSI_SPECIALS: Record<string, { byte: number; width: number; boldWidth
   " ": { byte: 32, width: 278, boldWidth: 278 }, // nbsp -> space
 };
 
+/**
+ * Characters with no WinAnsi byte that have an unambiguous ASCII rendering.
+ *
+ * Preferred over the `?` fallback because these appear in real report copy —
+ * "≥30%" reading as "?30%" changes a threshold into nonsense, which is worse
+ * than a typographic downgrade.
+ */
+const ASCII_TRANSLITERATIONS: Record<string, string> = {
+  "≥": ">=",
+  "≤": "<=",
+  "≠": "!=",
+  "≈": "~=",
+  "→": "->",
+  "←": "<-",
+  "−": "-",
+  "\u2032": "'",
+  "\u2033": '"',
+};
+
 /** Latin-1 accented range renders directly under WinAnsi. */
 function latin1Width(code: number, bold: boolean): number {
   // Uppercase accented forms track their base letter closely enough for
@@ -148,6 +167,13 @@ function charWidth(char: string, font: FontKey): number {
   if (special) return bold ? special.boldWidth : special.width;
 
   if (code >= 0xa0 && code <= 0xff) return latin1Width(code, bold);
+
+  const ascii = ASCII_TRANSLITERATIONS[char];
+  if (ascii) {
+    let total = 0;
+    for (const replacement of ascii) total += charWidth(replacement, font);
+    return total;
+  }
 
   // Substituted with "?" — measure it as such.
   return bold ? 611 : 556;
@@ -186,6 +212,12 @@ export function toPdfLiteral(text: string, unsupported?: Set<string>): string {
 
     if (code >= 0xa0 && code <= 0xff) {
       out += `\\${code.toString(8).padStart(3, "0")}`;
+      continue;
+    }
+
+    const ascii = ASCII_TRANSLITERATIONS[char];
+    if (ascii) {
+      out += ascii;
       continue;
     }
 

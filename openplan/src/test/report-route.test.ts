@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -54,6 +54,7 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 import { POST as postReport } from "@/app/api/report/route";
+import { pdfDrawnText, pdfSource } from "./pdf-text-extraction-helpers";
 
 function jsonRequest(payload: unknown) {
   return new NextRequest("http://localhost/api/report", {
@@ -287,27 +288,88 @@ describe("POST /api/report", () => {
     );
   });
 
-  it("returns pdf bytes for format=pdf", async () => {
-    const response = await postReport(
-      jsonRequest({
-        runId,
-        format: "pdf",
-        mapViewState: {
-          crashSeverityFilter: "severe_injury",
-          crashUserFilter: "vru",
-        },
-      })
-    );
+  /**
+   * The PDF is the SAME document as the HTML export, rendered.
+   *
+   * It used to be a separate, thinner text document — ~9 labelled values
+   * against the HTML's 13 sections — cut to 48 lines on a single `/Count 1`
+   * page. These assertions are on the built-in typesetter, pinned by pointing
+   * CHROME_EXECUTABLE_PATH at nothing: Chrome's output is version- and
+   * font-dependent, and on a host that happens to have Chrome installed this
+   * test would otherwise launch a real browser.
+   */
+  describe("format=pdf", () => {
+    const ORIGINAL_CHROME_PATH = process.env.CHROME_EXECUTABLE_PATH;
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toContain("application/pdf");
+    beforeEach(() => {
+      process.env.CHROME_EXECUTABLE_PATH = "/nonexistent/chrome-for-tests";
+    });
 
-    const bytes = new Uint8Array(await response.arrayBuffer());
-    const decoded = new TextDecoder().decode(bytes);
-    expect(decoded.slice(0, 4)).toBe("%PDF");
-    // PDF content streams are uncompressed here — the stored [fact:N] tokens
-    // must not survive into the grant-facing artifact.
-    expect(decoded).toContain("12345 residents");
-    expect(decoded).not.toContain("[fact:");
+    afterEach(() => {
+      if (ORIGINAL_CHROME_PATH === undefined) delete process.env.CHROME_EXECUTABLE_PATH;
+      else process.env.CHROME_EXECUTABLE_PATH = ORIGINAL_CHROME_PATH;
+    });
+
+    async function pdfText() {
+      const response = await postReport(
+        jsonRequest({
+          runId,
+          format: "pdf",
+          mapViewState: { crashSeverityFilter: "severe_injury", crashUserFilter: "vru" },
+        })
+      );
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/pdf");
+      expect(response.headers.get("x-openplan-pdf-engine")).toBe("builtin");
+
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      const source = pdfSource(bytes);
+      expect(source.slice(0, 4)).toBe("%PDF");
+      return { source, drawn: pdfDrawnText(bytes) };
+    }
+
+    it("carries the run's figures and strips the grounding tokens", async () => {
+      const { drawn } = await pdfText();
+      expect(drawn).toContain("12345 residents");
+      // The stored [fact:N] tokens must not survive into a grant-facing artifact.
+      expect(drawn).not.toContain("[fact:");
+    });
+
+    it("declares as many pages as it emitted, never a hardcoded one", async () => {
+      const { source } = await pdfText();
+      const declared = Number(/\/Count (\d+)/.exec(source)?.[1]);
+      const pageObjects = [...source.matchAll(/\/Type \/Page[^s]/g)].length;
+      expect(declared).toBe(pageObjects);
+      expect(declared).toBeGreaterThanOrEqual(1);
+    });
+
+    it("carries every section heading the HTML export shows", async () => {
+      const htmlResponse = await postReport(
+        jsonRequest({
+          runId,
+          format: "html",
+          mapViewState: { crashSeverityFilter: "severe_injury", crashUserFilter: "vru" },
+        })
+      );
+      const html = await htmlResponse.text();
+      const headings = [...html.matchAll(/<h2>([^<]+)<\/h2>/g)].map((m) =>
+        m[1].replace(/&amp;/g, "&").trim()
+      );
+      expect(headings.length).toBeGreaterThan(5);
+
+      // Derived from the live HTML rather than a hardcoded list, so the parity
+      // cannot decay as sections are added.
+      const { drawn } = await pdfText();
+      for (const heading of headings) {
+        expect(drawn).toContain(heading);
+      }
+    });
+
+    it("discloses the typesetting tier inside the document", async () => {
+      const { drawn } = await pdfText();
+      expect(drawn).toContain("built-in PDF writer");
+      expect(drawn).toContain("no section has been shortened or dropped");
+    });
   });
 });

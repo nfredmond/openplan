@@ -2,15 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import {
-  formatRtpChapterStatusLabel,
-  formatRtpCycleStatusLabel,
-  formatRtpPortfolioRoleLabel,
-  titleizeRtpValue,
-} from "@/lib/rtp/catalog";
+import { renderReportPdf } from "@/lib/reports/pdf";
 import {
   buildRtpExportHtml,
-  formatRtpExportDate,
   normalizeRtpLinkedProjects,
   type RtpExportCampaign,
   type RtpExportChapter,
@@ -30,117 +24,6 @@ type RouteContext = {
   params: Promise<{ rtpCycleId: string }>;
 };
 
-function pdfEscape(text: string): string {
-  return text.replaceAll("\\", "\\\\").replaceAll("(", "\\(").replaceAll(")", "\\)");
-}
-
-function wrapText(line: string, max = 92): string[] {
-  if (!line || line.length <= max) return [line];
-  const words = line.split(" ");
-  const lines: string[] = [];
-  let current = "";
-  for (const word of words) {
-    const next = current ? `${current} ${word}` : word;
-    if (next.length <= max) {
-      current = next;
-      continue;
-    }
-    if (current) lines.push(current);
-    current = word;
-  }
-  if (current) lines.push(current);
-  return lines;
-}
-
-function buildPdf(lines: string[]): Uint8Array {
-  const encoder = new TextEncoder();
-  const wrappedLines = lines.flatMap((line) => wrapText(line)).slice(0, 60);
-  const commands = ["BT", "/F1 11 Tf", "45 760 Td", "13 TL"];
-  for (const line of wrappedLines) {
-    commands.push(`(${pdfEscape(line)}) Tj`);
-    commands.push("T*");
-  }
-  commands.push("ET");
-  const stream = commands.join("\n");
-  const length = encoder.encode(stream).length;
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    `<< /Length ${length} >>\nstream\n${stream}\nendstream`,
-  ];
-  const parts: string[] = [];
-  let cursor = 0;
-  const offsets = [0];
-  const push = (part: string) => {
-    parts.push(part);
-    cursor += encoder.encode(part).length;
-  };
-  push("%PDF-1.4\n%OpenPlan\n");
-  for (let i = 0; i < objects.length; i += 1) {
-    offsets.push(cursor);
-    push(`${i + 1} 0 obj\n${objects[i]}\nendobj\n`);
-  }
-  const xrefStart = cursor;
-  push(`xref\n0 ${objects.length + 1}\n`);
-  push("0000000000 65535 f \n");
-  for (let i = 1; i < offsets.length; i += 1) {
-    push(`${String(offsets[i]).padStart(10, "0")} 00000 n \n`);
-  }
-  push(`trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n`);
-  push(`startxref\n${xrefStart}\n%%EOF\n`);
-  return encoder.encode(parts.join(""));
-}
-
-function buildPdfLines(input: {
-  cycle: RtpExportCycle;
-  chapters: RtpExportChapter[];
-  linkedProjects: Array<
-    RtpExportLinkedProject & {
-      project: {
-        id: string;
-        name: string;
-        status: string | null;
-        delivery_phase: string | null;
-        summary: string | null;
-      } | null;
-    }
-  >;
-  campaigns: RtpExportCampaign[];
-}): string[] {
-  const { cycle, chapters, linkedProjects, campaigns } = input;
-  return [
-    "OpenPlan RTP Export",
-    `Cycle: ${cycle.title}`,
-    `Status: ${formatRtpCycleStatusLabel(cycle.status)}`,
-    `Geography: ${cycle.geography_label?.trim() || "Not set"}`,
-    `Horizon: ${typeof cycle.horizon_start_year === "number" && typeof cycle.horizon_end_year === "number" ? `${cycle.horizon_start_year}-${cycle.horizon_end_year}` : "Not set"}`,
-    `Adoption target: ${formatRtpExportDate(cycle.adoption_target_date)}`,
-    `Public review: ${cycle.public_review_open_at && cycle.public_review_close_at ? `${formatRtpExportDate(cycle.public_review_open_at)} to ${formatRtpExportDate(cycle.public_review_close_at)}` : "Not set"}`,
-    "",
-    "Summary:",
-    cycle.summary?.trim() || "No cycle summary recorded yet.",
-    "",
-    `Chapters (${chapters.length}):`,
-    ...chapters.flatMap((chapter) => [
-      `${chapter.title} - ${formatRtpChapterStatusLabel(chapter.status)} - ${titleizeRtpValue(chapter.section_type)}`,
-      chapter.summary?.trim() || "No working summary yet.",
-      chapter.content_markdown?.trim() || "No draft chapter content yet.",
-    ]),
-    "",
-    `Linked projects (${linkedProjects.length}):`,
-    ...linkedProjects.flatMap((link) => [
-      `${link.project?.name ?? "Linked project"} - ${formatRtpPortfolioRoleLabel(link.portfolio_role)}`,
-      link.priority_rationale?.trim() || link.project?.summary?.trim() || "No prioritization rationale recorded yet.",
-    ]),
-    "",
-    `Engagement targets (${campaigns.length}):`,
-    ...campaigns.map(
-      (campaign) => `${campaign.title} - ${titleizeRtpValue(campaign.status)} - ${titleizeRtpValue(campaign.engagement_type)}`
-    ),
-  ];
-}
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("rtp_cycles.export", request);
@@ -240,12 +123,36 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
 
     if (parsedFormat.data.format === "pdf") {
-      const pdf = Uint8Array.from(buildPdf(buildPdfLines(exportInput)));
-      return new NextResponse(pdf.buffer, {
+      // The board packet PDF is now the SAME document as the HTML export. The
+      // replaced builder assembled its own, much shorter line list — omitting
+      // the modeling-evidence claim posture, the funding source-context scans,
+      // the adoption-record checklist and the appendix outright — and then cut
+      // it to 60 lines on a single `/Count 1` page. A multi-chapter packet a
+      // planner spent hours on left the building as one clipped page.
+      const rendered = await renderReportPdf(buildRtpExportHtml(exportInput), {
+        title: cycle.title,
+        generatedAt: null,
+        footerLabel: "OpenPlan RTP board packet",
+      });
+
+      if (rendered.engine === "builtin") {
+        audit.warn("rtp_export_pdf_builtin_typesetter_used", {
+          rtpCycleId: cycle.id,
+          pageCount: rendered.pageCount,
+        });
+      }
+
+      const pdfBuffer = rendered.bytes.buffer.slice(
+        rendered.bytes.byteOffset,
+        rendered.bytes.byteOffset + rendered.bytes.byteLength
+      ) as ArrayBuffer;
+
+      return new NextResponse(pdfBuffer, {
         status: 200,
         headers: {
           "content-type": "application/pdf",
           "content-disposition": `inline; filename="${cycle.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-rtp-export.pdf"`,
+          "x-openplan-pdf-engine": rendered.engine,
         },
       });
     }

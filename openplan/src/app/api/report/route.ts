@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
+import { renderReportPdf } from "@/lib/reports/pdf";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
@@ -123,59 +124,6 @@ function scoreBar(score: number, label: string): string {
     </div>`;
 }
 
-function toAscii(value: string): string {
-  return value.replace(/[^\x20-\x7E]/g, "?");
-}
-
-function sanitizeText(value: unknown): string {
-  if (value === null || value === undefined) return "";
-  return toAscii(String(value).replace(/\s+/g, " ").trim());
-}
-
-function wrapText(line: string, max = 95): string[] {
-  if (!line || line.length <= max) {
-    return [line];
-  }
-
-  const words = line.split(" ");
-  const lines: string[] = [];
-  let current = "";
-
-  for (const word of words) {
-    const next = current ? `${current} ${word}` : word;
-    if (next.length <= max) {
-      current = next;
-      continue;
-    }
-
-    if (current) {
-      lines.push(current);
-      current = word;
-      continue;
-    }
-
-    let remainder = word;
-    while (remainder.length > max) {
-      lines.push(remainder.slice(0, max));
-      remainder = remainder.slice(max);
-    }
-    current = remainder;
-  }
-
-  if (current) {
-    lines.push(current);
-  }
-
-  return lines.length > 0 ? lines : [""];
-}
-
-function pdfEscape(text: string): string {
-  return text
-    .replaceAll("\\", "\\\\")
-    .replaceAll("(", "\\(")
-    .replaceAll(")", "\\)");
-}
-
 function getTemplateMeta(template: "atp" | "ss4a") {
   if (template === "ss4a") {
     return {
@@ -261,120 +209,6 @@ function buildMapViewSummary(
   }
 
   return rows;
-}
-
-function buildPdf(
-  run: Record<string, unknown>,
-  template: "atp" | "ss4a",
-  mapViewState?: Record<string, unknown> | null
-): Uint8Array {
-  const encoder = new TextEncoder();
-  const metrics = (run.metrics ?? {}) as Record<string, unknown>;
-  const templateMeta = getTemplateMeta(template);
-  const createdAtValue = typeof run.created_at === "string" ? run.created_at : null;
-  const createdAt = createdAtValue ? new Date(createdAtValue).toISOString() : "Unknown";
-  const title = sanitizeText(typeof run.title === "string" ? run.title : "Corridor Analysis Report");
-  const queryText = sanitizeText(run.query_text);
-  const summaryValue = typeof run.summary_text === "string" ? run.summary_text : "No summary available.";
-  const summaryText = sanitizeText(summaryValue);
-  const interpretation = sanitizeText(
-    typeof run.ai_interpretation === "string"
-      ? stripFactCitationTokens(run.ai_interpretation)
-      : typeof run.summary_text === "string"
-        ? run.summary_text
-        : "No interpretation available."
-  );
-  const mapViewSummary = buildMapViewSummary(mapViewState);
-
-  const selectedMetrics: Array<[string, unknown]> = [
-    ["Overall Score", metrics.overallScore],
-    ["Accessibility Score", metrics.accessibilityScore],
-    ["Safety Score", metrics.safetyScore],
-    ["Equity Score", metrics.equityScore],
-    ["Total Population", metrics.totalPopulation],
-    ["Transit Stops", metrics.totalTransitStops],
-    ["Fatal Crashes", metrics.totalFatalCrashes],
-    [
-      "Federal Justice40 / CEJST",
-      (() => {
-        const det = reconstructFederalJustice40(metrics);
-        return det ? federalJustice40ShortStatus(det) : "Not recorded (legacy run — ACS proxy only)";
-      })(),
-    ],
-    ["AI Interpretation Source", metrics.aiInterpretationSource ?? (metrics.dataQuality as { aiInterpretationSource?: string } | undefined)?.aiInterpretationSource ?? "unknown"],
-  ];
-
-  const lines: string[] = [
-    "OpenPlan Report",
-    `Template: ${templateMeta.label} (${templateMeta.subtitle})`,
-    `Focus: ${templateMeta.emphasis}`,
-    `Title: ${title}`,
-    `Run ID: ${sanitizeText(run.id)}`,
-    `Created At: ${createdAt}`,
-    "",
-    "Query:",
-    queryText || "N/A",
-    "",
-    "Summary:",
-    summaryText,
-    "",
-    "AI Interpretation:",
-    interpretation,
-    "",
-    "Selected Metrics:",
-    ...selectedMetrics.map(([label, value]) => `${label}: ${sanitizeText(value ?? "N/A") || "N/A"}`),
-    ...(mapViewSummary.length > 0 ? ["", "Active Map View:", ...mapViewSummary] : []),
-  ];
-
-  const wrappedLines = lines.flatMap((line) => wrapText(line));
-  const visibleLines = wrappedLines.slice(0, 48);
-
-  const contentCommands = ["BT", "/F1 12 Tf", "50 760 Td", "14 TL"];
-  for (const line of visibleLines) {
-    contentCommands.push(`(${pdfEscape(line)}) Tj`);
-    contentCommands.push("T*");
-  }
-  contentCommands.push("ET");
-
-  const contentStream = contentCommands.join("\n");
-  const contentLength = encoder.encode(contentStream).length;
-
-  const objects = [
-    "<< /Type /Catalog /Pages 2 0 R >>",
-    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-    `<< /Length ${contentLength} >>\nstream\n${contentStream}\nendstream`,
-  ];
-
-  const pdfParts: string[] = [];
-  let length = 0;
-  const offsets = [0];
-
-  const pushPart = (part: string) => {
-    pdfParts.push(part);
-    length += encoder.encode(part).length;
-  };
-
-  pushPart("%PDF-1.4\n%OpenPlan\n");
-
-  for (let index = 0; index < objects.length; index += 1) {
-    offsets.push(length);
-    pushPart(`${index + 1} 0 obj\n${objects[index]}\nendobj\n`);
-  }
-
-  const xrefStart = length;
-  pushPart(`xref\n0 ${objects.length + 1}\n`);
-  pushPart("0000000000 65535 f \n");
-
-  for (let index = 1; index < offsets.length; index += 1) {
-    pushPart(`${String(offsets[index]).padStart(10, "0")} 00000 n \n`);
-  }
-
-  pushPart(`trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\n`);
-  pushPart(`startxref\n${xrefStart}\n%%EOF\n`);
-
-  return encoder.encode(pdfParts.join(""));
 }
 
 function buildHtml(
@@ -852,10 +686,27 @@ export async function POST(request: NextRequest) {
     });
 
     if (format === "pdf") {
-      const pdfBytes = buildPdf(run, template, resolvedMapViewState);
-      const pdfBuffer = pdfBytes.buffer.slice(
-        pdfBytes.byteOffset,
-        pdfBytes.byteOffset + pdfBytes.byteLength
+      // The PDF is now the SAME document as the HTML export, rendered. The
+      // replaced builder emitted a separate, thinner text document — ~9
+      // labelled values against the HTML's 13 sections — and then cut it to 48
+      // lines on a single `/Count 1` page, so a corridor report left the
+      // building clipped with nothing saying so.
+      const rendered = await renderReportPdf(
+        buildHtml(run, template, resolvedMapViewState),
+        {
+          title: typeof run.title === "string" && run.title.trim() ? run.title.trim() : "Corridor Analysis Report",
+          generatedAt: typeof run.created_at === "string" ? run.created_at : null,
+          footerLabel: "OpenPlan corridor report",
+        }
+      );
+
+      if (rendered.engine === "builtin") {
+        audit.warn("report_pdf_builtin_typesetter_used", { runId, pageCount: rendered.pageCount });
+      }
+
+      const pdfBuffer = rendered.bytes.buffer.slice(
+        rendered.bytes.byteOffset,
+        rendered.bytes.byteOffset + rendered.bytes.byteLength
       ) as ArrayBuffer;
 
       return new NextResponse(pdfBuffer, {
@@ -863,6 +714,9 @@ export async function POST(request: NextRequest) {
         headers: {
           "Content-Type": "application/pdf",
           "Content-Disposition": `attachment; filename="openplan-report-${run.id}.pdf"`,
+          // So a caller can tell the viewer which tier produced the file
+          // without opening it.
+          "x-openplan-pdf-engine": rendered.engine,
         },
       });
     }
