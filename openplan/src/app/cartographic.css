@@ -833,10 +833,28 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
 /* ---------- Responsive: keep shell usable below 1024px ---------- */
 
 @media (max-width: 1100px) {
-  .op-cart-layers,
   .op-cart-legend,
   .op-cart-zoom {
     display: none;
+  }
+
+  /*
+    The layers panel collapses to its coverage notes rather than disappearing.
+    Hiding it outright hid the ONLY surface that says a map layer is truncated,
+    while the backdrop itself has no width rule and keeps drawing at every size
+    — so a planner on a 1024px laptop saw a partial map presented as complete.
+    The controls go (there is no room for them); the disclosure stays.
+  */
+  .op-cart-layers:not(:has(.op-cart-layers__notes)) {
+    display: none;
+  }
+  .op-cart-layers__hd,
+  .op-cart-layers__list,
+  .op-cart-layers__ft {
+    display: none;
+  }
+  .op-cart-layers__notes {
+    border-top: 0;
   }
   .op-cart-surface {
     right: calc(16px + var(--cp-reserved, 0px));

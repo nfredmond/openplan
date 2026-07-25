@@ -14,7 +14,8 @@ const PROJECT_C = "cccccccc-cccc-4ccc-8ccc-cccccccccccc";
 
 // Chain: .select().eq().not().not().limit()
 const projectsLimitMock = vi.fn();
-const projectsNotLngMock = vi.fn(() => ({ limit: projectsLimitMock }));
+const projectsOrderMock = vi.fn(() => ({ limit: projectsLimitMock }));
+const projectsNotLngMock = vi.fn(() => ({ order: projectsOrderMock }));
 const projectsNotLatMock = vi.fn(() => ({ not: projectsNotLngMock }));
 const projectsEqMock = vi.fn(() => ({ not: projectsNotLatMock }));
 const projectsSelectMock = vi.fn(() => ({ eq: projectsEqMock }));

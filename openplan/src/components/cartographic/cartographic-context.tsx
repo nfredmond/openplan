@@ -35,6 +35,27 @@ export type CartographicMapControls = {
   zoomOut: () => void;
 };
 
+/**
+ * What one layer's last fetch established.
+ *
+ * Registered by the map backdrop (which owns the fetches) and read by the
+ * layers panel (which owns the only text surface), so a layer's coverage is
+ * disclosed exactly once, from the request that actually happened, rather than
+ * re-fetched by whichever component wants to talk about it.
+ *
+ * `workspaceId` is carried so a status cannot outlive its scope: switching
+ * workspace is a soft RSC refresh that does not remount this tree, and a note
+ * naming the previous workspace's data under the new workspace's map would be
+ * an affirmatively false claim rather than merely stale pixels.
+ */
+export type MapLayerStatus = {
+  workspaceId: string | null;
+  /** Coverage sentences to show. Empty when the layer is complete. */
+  notes: string[];
+  /** True when the fetch itself failed — distinct from a layer that is empty. */
+  failed: boolean;
+};
+
 type CartographicContextValue = {
   selection: CartographicInspectorSelection | null;
   setSelection: (selection: CartographicInspectorSelection | null) => void;
@@ -44,6 +65,8 @@ type CartographicContextValue = {
   setLayer: (key: LayerKey, on: boolean) => void;
   mapControls: CartographicMapControls | null;
   registerMapControls: (controls: CartographicMapControls | null) => void;
+  layerStatus: Partial<Record<LayerKey, MapLayerStatus>>;
+  registerLayerStatus: (key: LayerKey, status: MapLayerStatus) => void;
 };
 
 const CartographicContext = createContext<CartographicContextValue | null>(null);
@@ -52,6 +75,11 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
   const [selection, setSelectionState] = useState<CartographicInspectorSelection | null>(null);
   const [layers, setLayersState] = useState<Record<LayerKey, boolean>>(DEFAULT_LAYERS);
   const [mapControls, setMapControls] = useState<CartographicMapControls | null>(null);
+  const [layerStatus, setLayerStatus] = useState<Partial<Record<LayerKey, MapLayerStatus>>>({});
+
+  const registerLayerStatus = useCallback((key: LayerKey, status: MapLayerStatus) => {
+    setLayerStatus((prev) => ({ ...prev, [key]: status }));
+  }, []);
 
   const registerMapControls = useCallback((controls: CartographicMapControls | null) => {
     setMapControls(controls);
@@ -83,8 +111,10 @@ export function CartographicProvider({ children }: { children: React.ReactNode }
       setLayer,
       mapControls,
       registerMapControls,
+      layerStatus,
+      registerLayerStatus,
     }),
-    [selection, setSelection, clearSelection, layers, toggleLayer, setLayer, mapControls, registerMapControls],
+    [selection, setSelection, clearSelection, layers, toggleLayer, setLayer, mapControls, registerMapControls, layerStatus, registerLayerStatus],
   );
 
   return <CartographicContext.Provider value={value}>{children}</CartographicContext.Provider>;
@@ -118,6 +148,14 @@ export function useCartographicLayers() {
     return { layers: DEFAULT_LAYERS, toggleLayer: NOOP, setLayer: NOOP };
   }
   return { layers: ctx.layers, toggleLayer: ctx.toggleLayer, setLayer: ctx.setLayer };
+}
+
+export function useCartographicLayerStatus() {
+  const ctx = useContext(CartographicContext);
+  if (!ctx) {
+    return { layerStatus: {} as Partial<Record<LayerKey, MapLayerStatus>>, registerLayerStatus: NOOP as (key: LayerKey, status: MapLayerStatus) => void };
+  }
+  return { layerStatus: ctx.layerStatus, registerLayerStatus: ctx.registerLayerStatus };
 }
 
 export function useCartographicMapControls() {

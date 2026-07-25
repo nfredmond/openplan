@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import {
+  buildMapLayerDisclosure,
+  MAP_FEATURE_LAYER_LIMIT,
+} from "@/lib/cartographic/layer-disclosure";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type EngagementCampaignRef = {
@@ -85,7 +89,11 @@ export async function GET(request: NextRequest) {
 
     if (!membership) {
       return NextResponse.json(
-        { type: "FeatureCollection" as const, features: [] },
+        {
+          type: "FeatureCollection" as const,
+          features: [],
+          ...buildMapLayerDisclosure({ returnedCount: 0, droppedCount: 0, matchedCount: 0 }),
+        },
         { status: 200 }
       );
     }
@@ -105,16 +113,18 @@ export async function GET(request: NextRequest) {
     // TODO(pagination): hard cap at 500 while the backdrop is a single
     // unpaginated fetch. Revisit when a demo-scale workspace routinely
     // exceeds that (unlikely until public comment surfaces are live).
-    const { data: rawRows, error } = await supabase
+    const { data: rawRows, error, count } = await supabase
       .from("engagement_items")
       .select(
-        "id, title, body, status, source_type, latitude, longitude, engagement_campaigns!inner(id, workspace_id), engagement_categories(label)"
+        "id, title, body, status, source_type, latitude, longitude, engagement_campaigns!inner(id, workspace_id), engagement_categories(label)",
+        { count: "exact" }
       )
       .eq("engagement_campaigns.workspace_id", membership.workspace_id)
       .eq("status", "approved")
       .not("latitude", "is", null)
       .not("longitude", "is", null)
-      .limit(500);
+      .order("id", { ascending: true })
+      .limit(MAP_FEATURE_LAYER_LIMIT);
 
     if (error) {
       audit.error("engagement_items_query_failed", {
@@ -166,7 +176,15 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { type: "FeatureCollection" as const, features },
+      {
+        type: "FeatureCollection" as const,
+        features,
+        ...buildMapLayerDisclosure({
+          returnedCount: features.length,
+          droppedCount: rows.length - features.length,
+          matchedCount: count,
+        }),
+      },
       { status: 200 }
     );
   } catch (error) {

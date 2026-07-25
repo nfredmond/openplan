@@ -13,7 +13,8 @@ const CYCLE_B = "d0000001-0000-4000-8000-000000000005";
 const CYCLE_C = "d0000001-0000-4000-8000-000000000006";
 
 const rtpLimitMock = vi.fn();
-const rtpNotLngMock = vi.fn(() => ({ limit: rtpLimitMock }));
+const rtpOrderMock = vi.fn(() => ({ limit: rtpLimitMock }));
+const rtpNotLngMock = vi.fn(() => ({ order: rtpOrderMock }));
 const rtpNotLatMock = vi.fn(() => ({ not: rtpNotLngMock }));
 const rtpEqMock = vi.fn(() => ({ not: rtpNotLatMock }));
 const rtpSelectMock = vi.fn(() => ({ eq: rtpEqMock }));

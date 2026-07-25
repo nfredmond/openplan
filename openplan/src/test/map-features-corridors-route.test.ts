@@ -15,7 +15,8 @@ const PROJECT_ID = "d0000001-0000-4000-8000-000000000003";
 
 // Chain: .select().eq().limit()
 const corridorsLimitMock = vi.fn();
-const corridorsEqMock = vi.fn(() => ({ limit: corridorsLimitMock }));
+const corridorsOrderMock = vi.fn(() => ({ limit: corridorsLimitMock }));
+const corridorsEqMock = vi.fn(() => ({ order: corridorsOrderMock }));
 const corridorsSelectMock = vi.fn(() => ({ eq: corridorsEqMock }));
 
 const mockAudit = {

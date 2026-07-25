@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import {
+  buildMapLayerDisclosure,
+  MAP_FEATURE_LAYER_LIMIT,
+} from "@/lib/cartographic/layer-disclosure";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type RtpCycleRow = {
@@ -52,7 +56,11 @@ export async function GET(request: NextRequest) {
 
     if (!membership) {
       return NextResponse.json(
-        { type: "FeatureCollection" as const, features: [] },
+        {
+          type: "FeatureCollection" as const,
+          features: [],
+          ...buildMapLayerDisclosure({ returnedCount: 0, droppedCount: 0, matchedCount: 0 }),
+        },
         { status: 200 }
       );
     }
@@ -61,15 +69,17 @@ export async function GET(request: NextRequest) {
     // single unpaginated fetch. Revisit when workspaces routinely hold >500
     // RTP cycles (unlikely — planning cycles are counted in single digits per
     // workspace).
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from("rtp_cycles")
       .select(
-        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, anchor_latitude, anchor_longitude"
+        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, anchor_latitude, anchor_longitude",
+        { count: "exact" }
       )
       .eq("workspace_id", membership.workspace_id)
       .not("anchor_latitude", "is", null)
       .not("anchor_longitude", "is", null)
-      .limit(500);
+      .order("id", { ascending: true })
+      .limit(MAP_FEATURE_LAYER_LIMIT);
 
     if (error) {
       audit.error("rtp_cycle_pins_query_failed", {
@@ -114,7 +124,15 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { type: "FeatureCollection" as const, features },
+      {
+        type: "FeatureCollection" as const,
+        features,
+        ...buildMapLayerDisclosure({
+          returnedCount: features.length,
+          droppedCount: rows.length - features.length,
+          matchedCount: count,
+        }),
+      },
       { status: 200 }
     );
   } catch (error) {

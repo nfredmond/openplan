@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import {
+  buildMapLayerDisclosure,
+  MAP_FEATURE_LAYER_LIMIT,
+} from "@/lib/cartographic/layer-disclosure";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { isCorridorLineGeoJson } from "@/lib/cartographic/corridor-line-geojson";
 
@@ -32,18 +36,23 @@ export async function GET(request: NextRequest) {
 
     if (!membership) {
       return NextResponse.json(
-        { type: "FeatureCollection" as const, features: [] },
+        {
+          type: "FeatureCollection" as const,
+          features: [],
+          ...buildMapLayerDisclosure({ returnedCount: 0, droppedCount: 0, matchedCount: 0 }),
+        },
         { status: 200 }
       );
     }
 
     // TODO(pagination): hard cap the result set while the backdrop is a single
     // unpaginated fetch. Revisit when workspaces routinely hold >500 corridors.
-    const { data, error } = await supabase
+    const { data, error, count } = await supabase
       .from("project_corridors")
-      .select("id, workspace_id, project_id, name, corridor_type, los_grade, geometry_geojson")
+      .select("id, workspace_id, project_id, name, corridor_type, los_grade, geometry_geojson", { count: "exact" })
       .eq("workspace_id", membership.workspace_id)
-      .limit(500);
+      .order("id", { ascending: true })
+      .limit(MAP_FEATURE_LAYER_LIMIT);
 
     if (error) {
       audit.error("project_corridors_query_failed", {
@@ -82,7 +91,15 @@ export async function GET(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { type: "FeatureCollection" as const, features },
+      {
+        type: "FeatureCollection" as const,
+        features,
+        ...buildMapLayerDisclosure({
+          returnedCount: features.length,
+          droppedCount: rows.length - features.length,
+          matchedCount: count,
+        }),
+      },
       { status: 200 }
     );
   } catch (error) {

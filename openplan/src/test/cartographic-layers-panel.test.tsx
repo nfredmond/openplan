@@ -1,8 +1,13 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CartographicLayersPanel } from "@/components/cartographic/cartographic-layers-panel";
-import { CartographicProvider } from "@/components/cartographic/cartographic-context";
+import {
+  CartographicProvider,
+  useCartographicLayerStatus,
+  type LayerKey,
+} from "@/components/cartographic/cartographic-context";
 
 const ORIGINAL_FETCH = global.fetch;
 
@@ -142,69 +147,84 @@ describe("CartographicLayersPanel", () => {
   });
 
   /**
-   * The equity chip renders for every row regardless of the checkbox, and the
-   * equity layer is OFF by default — so a number without its explanation is
-   * exactly the unexplained figure this disclosure exists to prevent. The note
-   * must therefore NOT be gated on the layer being toggled on.
+   * Coverage notes come from the map backdrop's own fetches via context, not a
+   * second request from the panel, and they render for EVERY layer regardless
+   * of its toggle — chips render regardless of the toggle, so a number without
+   * its explanation is the unexplained figure this disclosure exists to prevent.
    */
-  describe("equity coverage notes", () => {
-    function mockByUrl(counts: unknown, tracts: unknown) {
-      global.fetch = vi.fn((url: string) =>
-        Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => (String(url).includes("census-tracts") ? tracts : counts),
-        })
-      ) as unknown as typeof fetch;
+  describe("layer coverage notes", () => {
+    function renderWithStatus(
+      workspaceId: string | null,
+      statuses: Array<[LayerKey, { workspaceId: string | null; notes: string[]; failed: boolean }]>
+    ) {
+      function Seed() {
+        const { registerLayerStatus } = useCartographicLayerStatus();
+        useEffect(() => {
+          for (const [key, status] of statuses) registerLayerStatus(key, status);
+        }, [registerLayerStatus]);
+        return null;
+      }
+      return render(
+        <CartographicProvider>
+          <Seed />
+          <CartographicLayersPanel workspaceId={workspaceId} />
+        </CartographicProvider>
+      );
     }
 
-    it("shows why the equity layer is empty when no home geography is set", async () => {
-      mockByUrl(
-        { projects: 1, aerial: 0, corridors: 0, rtp: 0, equity: null, engagement: 0 },
-        {
-          scopeState: "geography_not_set",
-          coverageNotes: [
-            "Equity tracts are not shown because this workspace has not set a home geography, so there is nothing to scope them to.",
-          ],
-        }
-      );
+    it("shows a truncation note for a layer that is toggled OFF", async () => {
+      global.fetch = vi.fn(() => new Promise(() => {})) as unknown as typeof fetch;
 
-      renderPanel();
+      // equity defaults to off.
+      renderWithStatus("ws-1", [
+        ["equity", { workspaceId: "ws-1", notes: ["Showing 500 of 2,498 census tracts."], failed: false }],
+      ]);
 
       await waitFor(() => {
-        expect(screen.getByText(/has not set a home geography/)).toBeInTheDocument();
+        expect(screen.getByText(/Showing 500 of 2,498 census tracts\./)).toBeInTheDocument();
       });
-      // The equity layer is off by default; the note appears anyway.
-      const equityCheckbox = screen.getByText("Equity priority").closest("label")?.querySelector("input");
-      expect((equityCheckbox as HTMLInputElement).checked).toBe(false);
+      const equityCheckbox = screen
+        .getByText("Equity priority")
+        .closest("label")
+        ?.querySelector("input") as HTMLInputElement;
+      expect(equityCheckbox.checked).toBe(false);
     });
 
-    it("shows the truncation note when the county has more tracts than the map draws", async () => {
-      mockByUrl(
-        { projects: 0, aerial: 0, corridors: 0, rtp: 0, equity: 2498, engagement: 0 },
-        {
-          scopeState: "home_geography",
-          coverageNotes: ["Showing 500 of 2,498 census tracts in Los Angeles County, CA — the first 500 by tract ID."],
-        }
-      );
+    it("shows a failed layer as failed, not as empty", async () => {
+      global.fetch = vi.fn(() => new Promise(() => {})) as unknown as typeof fetch;
 
-      renderPanel();
+      renderWithStatus("ws-1", [
+        ["projects", { workspaceId: "ws-1", notes: ["Projects: this layer could not be loaded."], failed: true }],
+      ]);
 
       await waitFor(() => {
-        expect(screen.getByText(/Showing 500 of 2,498 census tracts/)).toBeInTheDocument();
+        expect(screen.getByText(/could not be loaded/)).toBeInTheDocument();
       });
     });
 
-    it("renders no note block when the layer response carries none", async () => {
-      mockByUrl(
-        { projects: 0, aerial: 0, corridors: 0, rtp: 0, equity: 0, engagement: 0 },
-        { scopeState: "home_geography", coverageNotes: [] }
-      );
+    it("drops a note recorded for a different workspace", async () => {
+      global.fetch = vi.fn(() => new Promise(() => {})) as unknown as typeof fetch;
 
-      renderPanel();
+      renderWithStatus("ws-2", [
+        ["equity", { workspaceId: "ws-1", notes: ["Scoped to the OLD workspace's county."], failed: false }],
+      ]);
 
       await waitFor(() => {
-        expect(document.querySelectorAll(".op-cart-layer-item__chip").length).toBeGreaterThan(0);
+        expect(screen.getByText("Equity priority")).toBeInTheDocument();
+      });
+      // A switch is a soft RSC refresh; a stale sentence would name the wrong
+      // jurisdiction under the new workspace's map.
+      expect(screen.queryByText(/OLD workspace/)).toBeNull();
+      expect(document.querySelector(".op-cart-layers__notes")).toBeNull();
+    });
+
+    it("renders no note block when every layer is complete", async () => {
+      global.fetch = vi.fn(() => new Promise(() => {})) as unknown as typeof fetch;
+
+      renderWithStatus("ws-1", [["projects", { workspaceId: "ws-1", notes: [], failed: false }]]);
+
+      await waitFor(() => {
+        expect(screen.getByText("Projects")).toBeInTheDocument();
       });
       expect(document.querySelector(".op-cart-layers__notes")).toBeNull();
     });

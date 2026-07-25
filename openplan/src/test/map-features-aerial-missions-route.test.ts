@@ -12,7 +12,8 @@ const MISSION_A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const MISSION_B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 
 const aerialMissionsLimitMock = vi.fn();
-const aerialMissionsNotMock = vi.fn(() => ({ limit: aerialMissionsLimitMock }));
+const aerialMissionsOrderMock = vi.fn(() => ({ limit: aerialMissionsLimitMock }));
+const aerialMissionsNotMock = vi.fn(() => ({ order: aerialMissionsOrderMock }));
 const aerialMissionsEqMock = vi.fn(() => ({ not: aerialMissionsNotMock }));
 const aerialMissionsSelectMock = vi.fn(() => ({ eq: aerialMissionsEqMock }));
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
@@ -19,9 +19,16 @@ import { useTheme } from "@/components/theme-provider";
 
 import {
   useCartographicLayers,
+  useCartographicLayerStatus,
   useCartographicMapControls,
   useCartographicSelection,
+  type LayerKey,
 } from "./cartographic-context";
+import {
+  describeMapLayerCoverage,
+  describeMapLayerFailure,
+  type MapLayerDisclosure,
+} from "@/lib/cartographic/layer-disclosure";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -181,6 +188,7 @@ export function extendBoundsWithCollection(
 
 export function CartographicMapBackdrop({
   homeMapView = null,
+  workspaceId = null,
 }: {
   /**
    * The camera implied by the workspace's home geography, derived on the server
@@ -189,9 +197,53 @@ export function CartographicMapBackdrop({
    * substituted place.
    */
   homeMapView?: HomeMapView | null;
+  /**
+   * The workspace these layers were fetched for. In the dep arrays below so a
+   * workspace switch — a soft RSC refresh that does not remount this tree —
+   * refetches instead of leaving the previous workspace's features, and its
+   * coverage notes, under the new workspace's map.
+   */
+  workspaceId?: string | null;
 } = {}) {
   const pathname = usePathname();
   const { resolvedTheme } = useTheme();
+  const { registerLayerStatus } = useCartographicLayerStatus();
+
+  /**
+   * Record what a layer's fetch established, so the layers panel can say it.
+   * A FAILED fetch is registered too: a layer that could not load and a layer
+   * that is genuinely empty look identical on a map, and only one of them is a
+   * finding about the workspace.
+   */
+  const noteLayer = useCallback(
+    (key: LayerKey, disclosure: MapLayerDisclosure | null, failed: boolean) => {
+      registerLayerStatus(key, {
+        workspaceId,
+        failed,
+        notes: failed
+          ? [describeMapLayerFailure(key)]
+          : disclosure
+            ? describeMapLayerCoverage(key, disclosure)
+            : [],
+      });
+    },
+    [registerLayerStatus, workspaceId],
+  );
+
+  /** Coerce the disclosure off an untyped payload; null when absent (older body). */
+  const disclosureOf = useCallback((payload: unknown): MapLayerDisclosure | null => {
+    if (!payload || typeof payload !== "object") return null;
+    const p = payload as Record<string, unknown>;
+    const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : null);
+    const returnedCount = num(p.returnedCount);
+    const matchedCount = num(p.matchedCount);
+    const droppedCount = num(p.droppedCount);
+    const limit = num(p.limit);
+    if (returnedCount === null || matchedCount === null || droppedCount === null || limit === null) {
+      return null;
+    }
+    return { returnedCount, matchedCount, droppedCount, limit, truncated: Boolean(p.truncated) };
+  }, []);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [themeMounted, setThemeMounted] = useState(false);
@@ -249,7 +301,7 @@ export function CartographicMapBackdrop({
         delete document.body.dataset.mapOwner;
       }
     };
-  }, [suppressed]);
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
 
   useEffect(() => {
     if (suppressed) return;
@@ -345,6 +397,7 @@ export function CartographicMapBackdrop({
             console.warn(
               `[cartographic-backdrop] aerial-missions fetch returned ${response.status}`,
             );
+            noteLayer("aerial", null, true);
           }
           return;
         }
@@ -352,17 +405,19 @@ export function CartographicMapBackdrop({
         if (cancelled) return;
         if (payload && payload.type === "FeatureCollection") {
           setAois(payload);
+          noteLayer("aerial", disclosureOf(payload), false);
         }
       } catch (error) {
         // Network failures render as "no AOIs" rather than surfacing error UI,
         // but still log so the failure is diagnosable.
         console.warn("[cartographic-backdrop] aerial-missions fetch failed", error);
+        noteLayer("aerial", null, true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [suppressed]);
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
 
   // Same pattern for project markers — separate source + circle layer.
   useEffect(() => {
@@ -379,6 +434,7 @@ export function CartographicMapBackdrop({
             console.warn(
               `[cartographic-backdrop] projects fetch returned ${response.status}`,
             );
+            noteLayer("projects", null, true);
           }
           return;
         }
@@ -386,15 +442,17 @@ export function CartographicMapBackdrop({
         if (cancelled) return;
         if (payload && payload.type === "FeatureCollection") {
           setProjectMarkers(payload);
+          noteLayer("projects", disclosureOf(payload), false);
         }
       } catch (error) {
         console.warn("[cartographic-backdrop] projects fetch failed", error);
+        noteLayer("projects", null, true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [suppressed]);
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
 
   // Same pattern for project corridors — separate source + line layer.
   useEffect(() => {
@@ -411,6 +469,7 @@ export function CartographicMapBackdrop({
             console.warn(
               `[cartographic-backdrop] corridors fetch returned ${response.status}`,
             );
+            noteLayer("corridors", null, true);
           }
           return;
         }
@@ -418,15 +477,17 @@ export function CartographicMapBackdrop({
         if (cancelled) return;
         if (payload && payload.type === "FeatureCollection") {
           setCorridors(payload);
+          noteLayer("corridors", disclosureOf(payload), false);
         }
       } catch (error) {
         console.warn("[cartographic-backdrop] corridors fetch failed", error);
+        noteLayer("corridors", null, true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [suppressed]);
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
 
   // Same pattern for RTP cycle pins — separate source + circle layer.
   useEffect(() => {
@@ -443,6 +504,7 @@ export function CartographicMapBackdrop({
             console.warn(
               `[cartographic-backdrop] rtp-cycles fetch returned ${response.status}`,
             );
+            noteLayer("rtp", null, true);
           }
           return;
         }
@@ -450,15 +512,17 @@ export function CartographicMapBackdrop({
         if (cancelled) return;
         if (payload && payload.type === "FeatureCollection") {
           setRtpCycles(payload);
+          noteLayer("rtp", disclosureOf(payload), false);
         }
       } catch (error) {
         console.warn("[cartographic-backdrop] rtp-cycles fetch failed", error);
+        noteLayer("rtp", null, true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [suppressed]);
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
 
   // Same pattern for the equity census-tract choropleth. Public data, but the
   // route still auth-gates so public landing pages don't pull a large GeoJSON
@@ -477,6 +541,7 @@ export function CartographicMapBackdrop({
             console.warn(
               `[cartographic-backdrop] census-tracts fetch returned ${response.status}`,
             );
+            noteLayer("equity", null, true);
           }
           return;
         }
@@ -484,15 +549,25 @@ export function CartographicMapBackdrop({
         if (cancelled) return;
         if (payload && payload.type === "FeatureCollection") {
           setCensusTracts(payload);
+          // The census-tracts route builds its own scope-aware sentences (it is
+          // the only layer whose scope is a geography rather than the
+          // workspace), so they are used verbatim instead of re-derived here.
+          const coverageNotes = (payload as unknown as { coverageNotes?: unknown }).coverageNotes;
+          registerLayerStatus("equity", {
+            workspaceId,
+            failed: false,
+            notes: Array.isArray(coverageNotes) ? coverageNotes.filter((n): n is string => typeof n === "string") : [],
+          });
         }
       } catch (error) {
         console.warn("[cartographic-backdrop] census-tracts fetch failed", error);
+        noteLayer("equity", null, true);
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [suppressed]);
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
 
   // Same pattern for approved engagement items — low-weight point features
   // that keep community input visible without overwhelming heavier geometry.
@@ -511,6 +586,7 @@ export function CartographicMapBackdrop({
             console.warn(
               `[cartographic-backdrop] engagement fetch returned ${response.status}`,
             );
+            noteLayer("engagement", null, true);
           }
           return;
         }
@@ -518,14 +594,16 @@ export function CartographicMapBackdrop({
         if (controller.signal.aborted) return;
         if (payload && payload.type === "FeatureCollection") {
           setEngagementItems(payload);
+          noteLayer("engagement", disclosureOf(payload), false);
         }
       } catch (error) {
         if ((error as { name?: string }).name === "AbortError") return;
         console.warn("[cartographic-backdrop] engagement fetch failed", error);
+        noteLayer("engagement", null, true);
       }
     })();
     return () => controller.abort();
-  }, [suppressed]);
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
 
   // Paint AOIs onto the map once both the map and the data are ready.
   // Runs again on style swaps because setStyle() wipes the source/layer registry.

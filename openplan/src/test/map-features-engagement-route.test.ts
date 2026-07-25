@@ -14,7 +14,8 @@ const ITEM_B = "e0000001-0000-4000-8000-000000000102";
 const ITEM_C = "e0000001-0000-4000-8000-000000000103";
 
 const engagementLimitMock = vi.fn();
-const engagementNotLngMock = vi.fn(() => ({ limit: engagementLimitMock }));
+const engagementOrderMock = vi.fn(() => ({ limit: engagementLimitMock }));
+const engagementNotLngMock = vi.fn(() => ({ order: engagementOrderMock }));
 const engagementNotLatMock = vi.fn(() => ({ not: engagementNotLngMock }));
 const engagementEqStatusMock = vi.fn(() => ({ not: engagementNotLatMock }));
 const engagementEqWorkspaceMock = vi.fn(() => ({ eq: engagementEqStatusMock }));

@@ -128,7 +128,10 @@ export async function CartographicShell({ children }: { children: React.ReactNod
   return (
     <CartographicProvider>
       <div className="op-cart-shell">
-        <CartographicMapBackdrop homeMapView={homeMapView} />
+        <CartographicMapBackdrop
+          homeMapView={homeMapView}
+          workspaceId={membership?.workspace_id ?? null}
+        />
 
         <CartographicRail groups={buildNavGroups()} />
 

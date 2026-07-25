@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 
-import { LAYER_KEYS, useCartographicLayers, type LayerKey } from "./cartographic-context";
+import {
+  LAYER_KEYS,
+  useCartographicLayers,
+  useCartographicLayerStatus,
+  type LayerKey,
+} from "./cartographic-context";
 import { useTheme } from "@/components/theme-provider";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import type { MapFeatureCounts } from "@/app/api/map-features/counts/route";
@@ -34,22 +39,11 @@ function formatChip(count: number | null | undefined): string | undefined {
   return count < 1000 ? String(count) : COMPACT_FORMATTER.format(count);
 }
 
-/**
- * The equity layer's coverage sentences.
- *
- * Fetched here rather than read from the backdrop's own request because the
- * note has to be visible whether or not the layer is toggled on: the chip is
- * rendered for every row regardless of the checkbox, so a number without its
- * explanation is exactly the unexplained figure this disclosure exists to
- * prevent.
- */
-type EquityCoverage = { scopeState: string; coverageNotes: string[] };
-
 export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: string | null }) {
   const { layers, toggleLayer } = useCartographicLayers();
+  const { layerStatus } = useCartographicLayerStatus();
   const { resolvedTheme } = useTheme();
   const [counts, setCounts] = useState<MapFeatureCounts | null>(null);
-  const [equityCoverage, setEquityCoverage] = useState<EquityCoverage | null>(null);
   const [themeMounted, setThemeMounted] = useState(false);
 
   useEffect(() => {
@@ -85,22 +79,20 @@ export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: 
     return () => controller.abort();
   }, [workspaceId]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    fetch("/api/map-features/census-tracts", { signal: controller.signal, credentials: "same-origin" })
-      .then((response) => (response.ok ? (response.json() as Promise<EquityCoverage>) : null))
-      .then((payload) => {
-        if (!payload || !Array.isArray(payload.coverageNotes)) return;
-        setEquityCoverage({ scopeState: payload.scopeState, coverageNotes: payload.coverageNotes });
-      })
-      .catch((error) => {
-        if ((error as { name?: string }).name === "AbortError") return;
-        if (process.env.NODE_ENV !== "production") {
-          console.warn("[cartographic-layers-panel] equity coverage fetch failed", error);
-        }
-      });
-    return () => controller.abort();
-  }, [workspaceId]);
+  /**
+   * Notes for every layer, not just the toggled-on ones: chips render for every
+   * row regardless of the checkbox, so a number without its explanation is the
+   * unexplained figure this disclosure exists to prevent. A status recorded for
+   * a DIFFERENT workspace is dropped rather than shown — a switch is a soft RSC
+   * refresh, and a note naming the previous workspace's data under the new
+   * workspace's map would be an affirmatively false claim.
+   */
+  const coverageNotes = LAYER_KEYS.flatMap((key) => {
+    const status = layerStatus[key];
+    if (!status) return [];
+    if (status.workspaceId !== workspaceId) return [];
+    return status.notes;
+  });
 
   return (
     <aside className="op-cart-layers" aria-label="Map layers">
@@ -125,9 +117,9 @@ export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: 
           );
         })}
       </ul>
-      {equityCoverage && equityCoverage.coverageNotes.length > 0 ? (
-        <div className="op-cart-layers__notes" role="note" aria-label="Equity layer coverage">
-          {equityCoverage.coverageNotes.map((note) => (
+      {coverageNotes.length > 0 ? (
+        <div className="op-cart-layers__notes" role="note" aria-label="Map layer coverage">
+          {coverageNotes.map((note) => (
             <p key={note}>{note}</p>
           ))}
         </div>
