@@ -15,6 +15,7 @@ import {
 } from "@/lib/mapbox/public-token";
 import { classifyRunLiveness, type LivenessRun } from "@/lib/models/run-liveness";
 import type { DeploymentHealthFacts } from "./deployment-health";
+import { detectPdfEngineAvailability } from "@/lib/reports/pdf";
 
 /** Minimal structural view of the client, so this is testable with a stub. */
 type RunsQueryClient = {
@@ -51,6 +52,9 @@ export function readDeploymentEnvFacts(): Omit<DeploymentHealthFacts, "modelingW
     },
     censusApiKeyPresent: Boolean(process.env.CENSUS_API_KEY?.trim()),
     anthropicApiKeyPresent: Boolean(process.env.ANTHROPIC_API_KEY?.trim()),
+    // Sourced from the renderer itself so the panel and the actual export can
+    // never disagree about which engine will be used.
+    pdfRendering: { browserEngineAvailable: detectPdfEngineAvailability().chromeAvailable },
   };
 }
 

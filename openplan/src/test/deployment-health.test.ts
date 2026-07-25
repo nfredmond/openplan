@@ -11,10 +11,44 @@ function facts(overrides: Partial<DeploymentHealthFacts> = {}): DeploymentHealth
     mapbox: { hasValidToken: true, hasInvalidToken: false },
     censusApiKeyPresent: true,
     anthropicApiKeyPresent: true,
+    pdfRendering: { browserEngineAvailable: true },
     modelingWorker: { nonTerminalRunCount: 0, stalledRunCount: 0 },
     ...overrides,
   };
 }
+
+describe("deployment health — PDF rendering tier", () => {
+  it("passes silently when a browser engine is available", () => {
+    const check = evaluateDeploymentHealth(facts()).checks.find((c) => c.key === "pdf-rendering");
+    expect(check?.status).toBe("pass");
+    expect(check?.remedy).toBeNull();
+  });
+
+  /**
+   * warn, not fail: a COMPLETE pdf still comes out either way — only the
+   * typesetting differs. The module's own line between the two statuses is
+   * whether a named capability stops working, and here none does.
+   */
+  it("warns — never blocks — when no browser engine is available", () => {
+    const health = evaluateDeploymentHealth(facts({ pdfRendering: { browserEngineAvailable: false } }));
+    const check = health.checks.find((c) => c.key === "pdf-rendering");
+
+    expect(check?.status).toBe("warn");
+    expect(health.status).toBe("degraded");
+    // The detail must not let an operator think the export is abridged.
+    expect(check?.detail).toMatch(/Every section is present and nothing is shortened/);
+    expect(check?.remedy).toMatch(/CHROME_EXECUTABLE_PATH/);
+    // Managed platforms need no action; say so rather than sending them looking.
+    expect(check?.remedy).toMatch(/Vercel or AWS Lambda/);
+  });
+
+  it("states a consequence, never a bare variable name, in the detail", () => {
+    const check = evaluateDeploymentHealth(
+      facts({ pdfRendering: { browserEngineAvailable: false } })
+    ).checks.find((c) => c.key === "pdf-rendering");
+    expect(check?.detail).not.toMatch(/CHROME_EXECUTABLE_PATH/);
+  });
+});
 
 describe("deployment health — overall posture", () => {
   it("is ready and silent when everything is configured", () => {

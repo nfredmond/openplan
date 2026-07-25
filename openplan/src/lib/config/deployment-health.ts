@@ -67,6 +67,10 @@ export type DeploymentHealthFacts = {
   };
   censusApiKeyPresent: boolean;
   anthropicApiKeyPresent: boolean;
+  pdfRendering: {
+    /** A browser rendering engine can be reached from this deployment. */
+    browserEngineAvailable: boolean;
+  };
   modelingWorker: {
     /** Runs currently queued or running for this workspace. */
     nonTerminalRunCount: number;
@@ -212,12 +216,44 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
   };
 }
 
+/**
+ * `warn`, not `fail`: a complete PDF still comes out either way. What changes
+ * is how it is typeset, and the module's own line between the two statuses is
+ * whether a named capability stops working — here it does not.
+ */
+function pdfRenderingCheck(facts: DeploymentHealthFacts): DeploymentCheck {
+  if (facts.pdfRendering.browserEngineAvailable) {
+    return {
+      key: "pdf-rendering",
+      label: "PDF exports",
+      status: "pass",
+      detail: "A browser rendering engine is available; PDF exports carry the styled layout.",
+      remedy: null,
+    };
+  }
+
+  return {
+    key: "pdf-rendering",
+    label: "PDF exports",
+    status: "warn",
+    detail:
+      "No browser rendering engine is available on this deployment, so PDF exports are produced by " +
+      "OpenPlan's built-in typesetter. Every section is present and nothing is shortened, but colours, " +
+      "charts and table rules are not reproduced and non-Latin scripts are not rendered. HTML exports " +
+      "are unaffected.",
+    remedy:
+      "Install Chrome or Chromium on the host and set CHROME_EXECUTABLE_PATH to its binary. " +
+      "Deployments on Vercel or AWS Lambda get a bundled engine automatically and need no setup.",
+  };
+}
+
 export function evaluateDeploymentHealth(facts: DeploymentHealthFacts): DeploymentHealth {
   const checks = [
     mapboxCheck(facts),
     censusCheck(facts),
     modelingWorkerCheck(facts),
     anthropicCheck(facts),
+    pdfRenderingCheck(facts),
   ];
 
   const problems = checks

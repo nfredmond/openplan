@@ -3,7 +3,16 @@
   "buildCommand": "npm run build",
   "functions": {
     "src/app/api/reports/[reportId]/generate/route.ts": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/report/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
+    },
+    "src/app/api/rtp-cycles/[rtpCycleId]/export/route.ts": {
+      "maxDuration": 60,
+      "memory": 1024
     }
   },
   "crons": [

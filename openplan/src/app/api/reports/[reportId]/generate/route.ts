@@ -35,7 +35,7 @@ import {
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
 import { buildReportHtml } from "@/lib/reports/html";
-import { renderHtmlToPdf } from "@/lib/reports/pdf";
+import { renderReportPdf, type ReportPdfEngine } from "@/lib/reports/pdf";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { loadSentimentHotspots, negativeItemIdsFromSyntheses } from "@/lib/engagement/hotspots";
@@ -794,17 +794,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const generatedAt = new Date().toISOString();
       const artifactId = crypto.randomUUID();
       let rtpPdfStoragePath: string | null = null;
+      let pdfEngine: ReportPdfEngine | null = null;
+      const reportTitleForPdf = typeof report.title === "string" && report.title.trim()
+        ? report.title.trim()
+        : "OpenPlan report";
       if (format === "pdf") {
-        let pdfBuffer: Buffer;
-        try {
-          pdfBuffer = await renderHtmlToPdf(html);
-        } catch (pdfError) {
-          audit.error("report_pdf_render_failed", {
+        // `renderReportPdf` falls back to the built-in typesetter rather than
+        // throwing, so a deployment with no browser engine still produces a
+        // COMPLETE packet. Only an upload failure below is fatal now — a
+        // missing Chrome is a typesetting tier, not a failed deliverable.
+        const rendered = await renderReportPdf(html, {
+          title: reportTitleForPdf,
+          generatedAt,
+          footerLabel: "OpenPlan",
+        });
+        pdfEngine = rendered.engine;
+        if (rendered.engine === "builtin") {
+          audit.warn("report_pdf_builtin_typesetter_used", {
             reportId: report.id,
-            message: pdfError instanceof Error ? pdfError.message : String(pdfError),
+            pageCount: rendered.pageCount,
           });
-          return NextResponse.json({ error: "Failed to render PDF" }, { status: 500 });
         }
+        const pdfBuffer = Buffer.from(rendered.bytes);
         const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
         const { error: uploadError } = await supabase.storage
           .from("report-artifacts")
@@ -821,6 +832,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const artifactMetadata = {
         htmlContent: html,
         generatedAt,
+        // Which typesetting tier produced the stored file, so the record can
+        // answer "why does this PDF look different" without re-rendering it.
+        pdfEngine,
         auditability: {
           posture: "rtp_packet_v1",
           note: "This output assembles RTP cycle narrative, portfolio posture, and engagement targets into a packet record artifact.",
@@ -1400,17 +1414,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const generatedAt = new Date().toISOString();
     const artifactId = crypto.randomUUID();
     let projectPdfStoragePath: string | null = null;
+    let pdfEngine: ReportPdfEngine | null = null;
+    const reportTitleForPdf = typeof report.title === "string" && report.title.trim()
+      ? report.title.trim()
+      : "OpenPlan report";
     if (format === "pdf") {
-      let pdfBuffer: Buffer;
-      try {
-        pdfBuffer = await renderHtmlToPdf(html);
-      } catch (pdfError) {
-        audit.error("report_pdf_render_failed", {
+      // See the RTP branch above: a missing browser engine is a typesetting
+      // tier, not a failed deliverable.
+      const rendered = await renderReportPdf(html, {
+        title: reportTitleForPdf,
+        generatedAt,
+        footerLabel: "OpenPlan",
+      });
+      pdfEngine = rendered.engine;
+      if (rendered.engine === "builtin") {
+        audit.warn("report_pdf_builtin_typesetter_used", {
           reportId: report.id,
-          message: pdfError instanceof Error ? pdfError.message : String(pdfError),
+          pageCount: rendered.pageCount,
         });
-        return NextResponse.json({ error: "Failed to render PDF" }, { status: 500 });
       }
+      const pdfBuffer = Buffer.from(rendered.bytes);
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
       const { error: uploadError } = await supabase.storage
         .from("report-artifacts")
@@ -1428,6 +1451,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       metadata_schema_version: "2026-04",
       htmlContent: html,
       generatedAt,
+      // Which typesetting tier produced the stored file, so the record can
+      // answer "why does this PDF look different" without re-rendering it.
+      pdfEngine,
       auditability: {
         posture: "structured_packet_v1",
         note: "This output assembles structured records and linked run evidence as a review packet with explicit provenance.",

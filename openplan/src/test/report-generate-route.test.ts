@@ -170,7 +170,7 @@ const artifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select
 
 const storageUploadMock = vi.fn();
 const storageFromMock = vi.fn(() => ({ upload: storageUploadMock }));
-const renderHtmlToPdfMock = vi.fn();
+const renderReportPdfMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -379,7 +379,7 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 vi.mock("@/lib/reports/pdf", () => ({
-  renderHtmlToPdf: (...args: unknown[]) => renderHtmlToPdfMock(...args),
+  renderReportPdf: (...args: unknown[]) => renderReportPdfMock(...args),
 }));
 
 import { POST as postGenerate } from "@/app/api/reports/[reportId]/generate/route";
@@ -681,7 +681,12 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
 
     storageUploadMock.mockResolvedValue({ error: null });
-    renderHtmlToPdfMock.mockResolvedValue(Buffer.from("fake-pdf-bytes"));
+    renderReportPdfMock.mockResolvedValue({
+      bytes: new Uint8Array([37, 80, 68, 70]),
+      engine: "chrome",
+      pageCount: null,
+      disclosure: null,
+    });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -713,7 +718,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(renderHtmlToPdfMock).toHaveBeenCalledTimes(1);
+    expect(renderReportPdfMock).toHaveBeenCalledTimes(1);
     expect(storageFromMock).toHaveBeenCalledWith("report-artifacts");
     expect(storageUploadMock).toHaveBeenCalledTimes(1);
     const uploadArgs = storageUploadMock.mock.calls[0];
@@ -761,8 +766,22 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
 
-  it("returns 500 when PDF rendering throws", async () => {
-    renderHtmlToPdfMock.mockRejectedValueOnce(new Error("chromium boom"));
+  /**
+   * CORRECTED, not updated. This previously asserted that a rendering failure
+   * returns 500 — describing the code rather than the intent. A deployment
+   * without a browser engine (the $0/self-host case) would then have had NO
+   * working PDF export at all, and "requires operator setup" is a defect here.
+   * `renderReportPdf` falls back to the built-in typesetter, so a COMPLETE
+   * packet still leaves the building; only the typesetting differs, and the
+   * tier is recorded on the artifact.
+   */
+  it("still produces a packet when no browser engine is available, recording the tier", async () => {
+    renderReportPdfMock.mockResolvedValueOnce({
+      bytes: new Uint8Array([37, 80, 68, 70]),
+      engine: "builtin",
+      pageCount: 4,
+      disclosure: "Typeset by OpenPlan's built-in PDF writer",
+    });
 
     const response = await postGenerate(
       new NextRequest("http://localhost/api/reports/1/generate", {
@@ -775,9 +794,13 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }
     );
 
-    expect(response.status).toBe(500);
-    expect(storageUploadMock).not.toHaveBeenCalled();
-    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(storageUploadMock).toHaveBeenCalled();
+    expect(artifactsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata_json: expect.objectContaining({ pdfEngine: "builtin" }),
+      })
+    );
   });
 
   it("returns 500 when PDF storage upload fails", async () => {
@@ -795,7 +818,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
 
     expect(response.status).toBe(500);
-    expect(renderHtmlToPdfMock).toHaveBeenCalledTimes(1);
+    expect(renderReportPdfMock).toHaveBeenCalledTimes(1);
     expect(artifactsInsertMock).not.toHaveBeenCalled();
   });
 
