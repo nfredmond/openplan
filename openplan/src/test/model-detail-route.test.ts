@@ -10,6 +10,8 @@ const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
 const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
 const SCENARIO_SET_ID = "55555555-5555-4555-8555-555555555555";
 const PLAN_ID = "66666666-6666-4666-8666-666666666666";
+const NETWORK_PACKAGE_VERSION_ID = "77777777-7777-4777-8777-777777777777";
+const OTHER_WORKSPACE_ID = "88888888-8888-4888-8888-888888888888";
 
 const modelMaybeSingleMock = vi.fn();
 const modelEqMock = vi.fn(() => ({ maybeSingle: modelMaybeSingleMock }));
@@ -43,6 +45,10 @@ const modelLinksSelectMock = vi.fn(() => ({ eq: modelLinksEqMock }));
 const modelLinksDeleteEqMock = vi.fn().mockResolvedValue({ error: null });
 const modelLinksDeleteMock = vi.fn(() => ({ eq: modelLinksDeleteEqMock }));
 const modelLinksInsertMock = vi.fn().mockResolvedValue({ error: null });
+
+const networkVersionMaybeSingleMock = vi.fn();
+const networkVersionEqMock = vi.fn(() => ({ maybeSingle: networkVersionMaybeSingleMock }));
+const networkVersionSelectMock = vi.fn(() => ({ eq: networkVersionEqMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -82,6 +88,11 @@ const fromMock = vi.fn((table: string) => {
       select: modelLinksSelectMock,
       delete: modelLinksDeleteMock,
       insert: modelLinksInsertMock,
+    };
+  }
+  if (table === "network_package_versions") {
+    return {
+      select: networkVersionSelectMock,
     };
   }
 
@@ -175,6 +186,14 @@ describe("/api/models/[modelId]", () => {
       error: null,
     });
 
+    networkVersionMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: NETWORK_PACKAGE_VERSION_ID,
+        package: { id: "99999999-9999-4999-8999-999999999999", workspace_id: WORKSPACE_ID },
+      },
+      error: null,
+    });
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
@@ -205,6 +224,85 @@ describe("/api/models/[modelId]", () => {
       expect.objectContaining({
         title: "Countywide ABM setup v2",
         status: "configuring",
+      })
+    );
+  });
+
+  it("PATCH links a network package version that belongs to the model's workspace", async () => {
+    const response = await patchModelDetail(
+      new NextRequest(`http://localhost/api/models/${MODEL_ID}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ networkPackageVersionId: NETWORK_PACKAGE_VERSION_ID }),
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(networkVersionEqMock).toHaveBeenCalledWith("id", NETWORK_PACKAGE_VERSION_ID);
+    expect(modelUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        network_package_version_id: NETWORK_PACKAGE_VERSION_ID,
+      })
+    );
+  });
+
+  it("PATCH rejects a network package version owned by another workspace", async () => {
+    networkVersionMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: NETWORK_PACKAGE_VERSION_ID,
+        package: { id: "99999999-9999-4999-8999-999999999999", workspace_id: OTHER_WORKSPACE_ID },
+      },
+      error: null,
+    });
+
+    const response = await patchModelDetail(
+      new NextRequest(`http://localhost/api/models/${MODEL_ID}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ networkPackageVersionId: NETWORK_PACKAGE_VERSION_ID }),
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: "Network package version not found in this workspace",
+    });
+    expect(modelUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH rejects a network package version that does not exist", async () => {
+    networkVersionMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchModelDetail(
+      new NextRequest(`http://localhost/api/models/${MODEL_ID}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ networkPackageVersionId: NETWORK_PACKAGE_VERSION_ID }),
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(modelUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH unlinks the network basis with an explicit null and skips the lookup", async () => {
+    const response = await patchModelDetail(
+      new NextRequest(`http://localhost/api/models/${MODEL_ID}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ networkPackageVersionId: null }),
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(networkVersionSelectMock).not.toHaveBeenCalled();
+    expect(modelUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        network_package_version_id: null,
       })
     );
   });

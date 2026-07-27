@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { ArrowRight, Database, FolderKanban, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
+import { NetworkPackagesPanel } from "@/app/(app)/models/_components/network-packages-panel";
 import { ModelCreator } from "@/components/models/model-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -414,6 +415,8 @@ export default async function ModelsPage({
           )}
         </article>
       </div>
+
+      <NetworkPackagesPanel workspaceId={membership.workspace_id} />
     </section>
   );
 }

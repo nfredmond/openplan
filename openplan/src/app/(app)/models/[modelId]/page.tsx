@@ -63,6 +63,21 @@ function titleForRecord(record: { title?: string | null; name?: string | null })
   return record.title ?? record.name ?? "Untitled";
 }
 
+// Column-level variant of looksLikePendingSchema: the models table exists, but
+// network_package_version_id may predate migration 20260727000001 on this
+// deployment, and its absence must not take down the whole detail page.
+function looksLikePendingNetworkLinkColumn(message: string | null | undefined) {
+  return /column .* does not exist|schema cache/i.test(message ?? "");
+}
+
+type NetworkBasisVersionRow = {
+  id: string;
+  version_name: string;
+  status: string;
+  updated_at: string | null;
+  package: { id: string; name: string } | Array<{ id: string; name: string }> | null;
+};
+
 export default async function ModelDetailPage({ params }: { params: RouteParams }) {
   const { modelId } = await params;
   const supabase = await createClient();
@@ -149,6 +164,34 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     .from("county_runs")
     .select("stage, status_label")
     .eq("workspace_id", model.workspace_id);
+
+  const networkBasisResult = await supabase
+    .from("models")
+    .select("network_package_version_id")
+    .eq("id", model.id)
+    .maybeSingle();
+
+  const networkBasisSchemaPending = Boolean(
+    networkBasisResult.error && looksLikePendingNetworkLinkColumn(networkBasisResult.error.message)
+  );
+  const networkPackageVersionId =
+    ((networkBasisResult.data ?? null) as { network_package_version_id?: string | null } | null)
+      ?.network_package_version_id ?? null;
+
+  const networkBasisVersionResult = networkPackageVersionId
+    ? await supabase
+        .from("network_package_versions")
+        .select("id, version_name, status, updated_at, package:network_packages(id, name)")
+        .eq("id", networkPackageVersionId)
+        .maybeSingle()
+    : { data: null, error: null };
+
+  const networkBasisVersion = (networkBasisVersionResult.data ?? null) as NetworkBasisVersionRow | null;
+  const networkBasisPackage = networkBasisVersion
+    ? Array.isArray(networkBasisVersion.package)
+      ? networkBasisVersion.package[0] ?? null
+      : networkBasisVersion.package
+    : null;
 
   const countyRunRows = (workspaceCountyRuns ?? []) as Array<{
     stage: string | null;
@@ -647,6 +690,42 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
                           </>
                         )
                       ) : null}
+                    </MetaList>
+                  ) : null}
+                </div>
+
+                <div className="module-record-row md:col-span-2">
+                  <div className="module-record-head">
+                    <div className="module-record-main">
+                      <p className="module-section-label">Network basis</p>
+                      {networkBasisSchemaPending ? (
+                        <p className="module-record-summary">
+                          Network link schema pending — apply the latest migrations to record which network package
+                          version this model runs against.
+                        </p>
+                      ) : networkBasisVersion ? (
+                        <>
+                          <Link href="/models#network-packages" className="module-record-title hover:text-primary">
+                            {networkBasisPackage?.name ?? "Untitled package"} · {networkBasisVersion.version_name}
+                          </Link>
+                          <p className="module-record-summary">
+                            Ingested network bundle this model&apos;s runs are read against.
+                          </p>
+                        </>
+                      ) : networkPackageVersionId ? (
+                        <p className="module-record-summary">
+                          A network package version is linked but could not be loaded. It may have been deleted or
+                          belong to a package this account cannot read.
+                        </p>
+                      ) : (
+                        <p className="module-record-summary">No network package version linked.</p>
+                      )}
+                    </div>
+                  </div>
+                  {networkBasisVersion ? (
+                    <MetaList>
+                      <MetaItem>{networkBasisVersion.status}</MetaItem>
+                      <MetaItem>Updated {formatModelDateTime(networkBasisVersion.updated_at)}</MetaItem>
                     </MetaList>
                   ) : null}
                 </div>

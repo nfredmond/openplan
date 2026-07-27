@@ -45,6 +45,7 @@ const patchModelSchema = z
     configJson: z.record(z.string(), z.unknown()).optional(),
     lastValidatedAt: z.union([z.string().datetime(), z.null()]).optional(),
     lastRunRecordedAt: z.union([z.string().datetime(), z.null()]).optional(),
+    networkPackageVersionId: z.union([z.string().uuid(), z.null()]).optional(),
     links: z.array(modelLinkInputSchema).max(60).optional(),
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
@@ -76,6 +77,11 @@ type ModelLinkRow = {
   link_type: ModelLinkType;
   linked_id: string;
   label: string | null;
+};
+
+type NetworkPackageVersionLookupRow = {
+  id: string;
+  package: { id: string; workspace_id: string } | Array<{ id: string; workspace_id: string }> | null;
 };
 
 const LINK_TARGET_CONFIG: Record<ModelLinkType, { table: string; select: string; labelField: "title" | "name" }> = {
@@ -477,6 +483,35 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: anchorResolution.reason }, { status: 400 });
     }
 
+    if (parsed.data.networkPackageVersionId) {
+      const { data: versionRow, error: versionError } = await supabase
+        .from("network_package_versions")
+        .select("id, package:network_packages(id, workspace_id)")
+        .eq("id", parsed.data.networkPackageVersionId)
+        .maybeSingle();
+
+      if (versionError) {
+        audit.error("model_network_package_version_lookup_failed", {
+          modelId: access.model.id,
+          networkPackageVersionId: parsed.data.networkPackageVersionId,
+          message: versionError.message,
+          code: versionError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to validate network package version" }, { status: 500 });
+      }
+
+      const lookupRow = (versionRow ?? null) as NetworkPackageVersionLookupRow | null;
+      const versionPackage = lookupRow
+        ? Array.isArray(lookupRow.package)
+          ? lookupRow.package[0] ?? null
+          : lookupRow.package
+        : null;
+
+      if (!lookupRow || !versionPackage || versionPackage.workspace_id !== workspaceId) {
+        return NextResponse.json({ error: "Network package version not found in this workspace" }, { status: 400 });
+      }
+    }
+
     let preparedLinks: PreparedModelLink[] | undefined;
     if (parsed.data.links !== undefined) {
       const validatedLinks = await validateModelLinks(supabase, workspaceId, parsed.data.links);
@@ -513,6 +548,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.configJson !== undefined) updatePayload.config_json = parsed.data.configJson;
     if (parsed.data.lastValidatedAt !== undefined) updatePayload.last_validated_at = parsed.data.lastValidatedAt;
     if (parsed.data.lastRunRecordedAt !== undefined) updatePayload.last_run_recorded_at = parsed.data.lastRunRecordedAt;
+    if (parsed.data.networkPackageVersionId !== undefined) updatePayload.network_package_version_id = parsed.data.networkPackageVersionId;
 
     const linkReplacement =
       preparedLinks !== undefined
@@ -550,12 +586,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
+    // The network-basis column joins the returned row only when this request
+    // touched it — a write to it already requires the migration, while every
+    // other PATCH keeps working against a pre-migration database.
+    const touchedNetworkBasis = parsed.data.networkPackageVersionId !== undefined;
     const { data: model, error: updateError } = await supabase
       .from("models")
       .update(updatePayload)
       .eq("id", access.model.id)
       .select(
-        "id, workspace_id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, horizon_label, assumptions_summary, input_summary, output_summary, summary, config_json, last_validated_at, last_run_recorded_at, created_at, updated_at"
+        `id, workspace_id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, horizon_label, assumptions_summary, input_summary, output_summary, summary, config_json, last_validated_at, last_run_recorded_at, created_at, updated_at${touchedNetworkBasis ? ", network_package_version_id" : ""}`
       )
       .single();
 
