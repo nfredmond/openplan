@@ -1,43 +1,46 @@
 # OpenPlan
 
-OpenPlan is Apache-2.0 open-source transportation and land-use planning software for small agencies, tribes, counties, RTPAs, transportation commissions, and consultancies that need credible planning workflows without black-box enterprise software.
+OpenPlan is Apache-2.0 open-source transportation and land-use planning software for agencies,
+tribes, counties, cities, RTPAs/MPOs, transportation commissions, and consultancies that need
+credible planning workflows without black-box enterprise software.
 
-OpenPlan is free. There is no paid tier, no plan, no usage quota, and no payment step — sign up and every feature is available. Run it hosted or on your own infrastructure (`docs/SELF_HOSTING.md`).
+OpenPlan is free. There is no paid tier, no plan, no usage quota, and no payment step — sign up
+and every feature is available. Anyone can run it locally or self-host it; see
+`docs/SELF_HOSTING.md`.
 
 ## Current product truth
 
-OpenPlan is **self-serve and free**: sign up and a workspace is provisioned immediately. Its depth is uneven by module, and the honest claim boundaries below matter more than the feature list.
+OpenPlan is **self-serve and free**: sign up and a workspace is provisioned immediately, teammates
+join by invitation, and no operator is involved. Its depth is uneven by module, and the honest
+claim boundaries below matter more than the feature list.
 
 What is real now:
-- authenticated planning workspace flows,
+
+- authenticated multi-tenant workspaces with row-level security,
 - projects, plans, programs, models, reports, and scenarios,
-- engagement campaigns and public/share intake,
+- engagement campaigns with a public comment map, surveys, and share/embed intake,
+- screening-grade travel demand modeling with disclosed evidence tiers,
+- grant opportunity tracking with grounded AI narrative drafting,
+- RTP cycle tracking with priority scoring and a public share view,
+- Caltrans LAPM grant-reimbursement invoicing,
 - geospatial analysis surfaces and report traceability,
-- county-run onboarding/scaffold workflows,
-- self-serve sign-up, auto-provisioned workspaces, and teammate invitations,
-- Caltrans LAPM grant-reimbursement invoicing and admin operations.
+- county-run validation workflows.
 
-What is **not** currently an honest broad claim:
-- validated forecasting,
-- behavioral-demand readiness,
+What is **not** an honest claim:
+
+- validated forecasting (modeling outputs are screening-grade and say so),
 - full LAPM/legal-grade compliance automation,
-- a finished all-in-one planning suite across the entire original vision,
-- or uniform depth across all ~16 modules.
-
-For the canonical April 2026 product boundary, start here:
-- `../docs/ops/2026-04-07-openplan-v1-status-memo-refresh.md`
-- `../docs/ops/2026-04-05-openplan-supervised-external-pilot-packet.md`
-- `../docs/ops/README.md`
+- a finished all-in-one planning suite — several modules are deliberately deeper than others.
 
 ## Repository structure
 
-This repo has multiple layers. The main Next.js product app lives in `openplan/`.
+The main Next.js product app lives in `openplan/` (this directory). From the repo root:
 
 - `openplan/` — main Next.js application
-- `docs/` — product, ops, governance, proof, and planning docs
+- `docs/` — documentation (see `docs/README.md` at the repo root for the map)
 - `qa-harness/` — production/local smoke and UX review harnesses
 - `scripts/` — modeling, validation, and support utilities
-- `workers/` — supporting worker deployment paths where applicable
+- `workers/` — Python modeling workers (AequilibraE screening, county onramp, ActivitySim)
 
 ## App stack
 
@@ -46,23 +49,19 @@ This repo has multiple layers. The main Next.js product app lives in `openplan/`
 - Supabase (Postgres, Auth, Storage, PostGIS)
 - Mapbox GL JS + deck.gl
 - Tailwind CSS
-- Vercel
+- Vercel-compatible deployment (self-hosting supported; see `docs/SELF_HOSTING.md`)
 
 ## Main product surfaces
 
-Current authenticated product surfaces include:
-- Dashboard
-- Projects
-- Plans
-- Programs
-- Models
-- Reports
-- Scenarios
-- Data Hub
-- Engagement
-- Billing
-- County Runs
-- Admin / pilot-readiness tools
+- Dashboard and Command Center
+- Projects (the hub — everything links back here)
+- Plans, Programs, RTP Cycles
+- Grants and funding awards
+- Reports (board packets, PDF pipeline)
+- Invoicing (Caltrans LAPM reimbursement)
+- Engagement (public comment mapping, surveys)
+- Models, Scenarios, County Validation, Analysis Studio
+- Safety, Data Hub, Knowledge Base, Aerial Ops
 
 ## Development
 
@@ -74,8 +73,8 @@ npm install
 npm run dev
 ```
 
-Then open:
-- `http://localhost:3000`
+Then open `http://localhost:3000`. Full local setup (Supabase, env vars, seeding) is in
+`docs/SELF_HOSTING.md`.
 
 Useful commands:
 
@@ -84,40 +83,23 @@ npm run dev
 npm run build
 npm test
 npm run lint
+npm run qa:gate   # lint + tests + dependency audit + build — the pre-ship gate
 ```
 
-Package commands use npm as the operator baseline because `package-lock.json` is canonical for installs and CI. The release gate still runs `COREPACK_ENABLE_STRICT=0 corepack pnpm@10.33.0 audit --prod --audit-level=moderate` through `npm run qa:gate`, so keep `pnpm-lock.yaml` current when dependencies change.
+Package commands use npm because `package-lock.json` is canonical for installs and CI. The release
+gate still runs `COREPACK_ENABLE_STRICT=0 corepack pnpm@10.33.0 audit --prod --audit-level=moderate`
+through `npm run qa:gate`, so keep `pnpm-lock.yaml` current when dependencies change.
 
-## Documentation guide
+## Claim discipline
 
-If you need current truth instead of historical aspiration, prefer the ops docs over older design docs.
+Public copy stays inside the evidence boundary:
 
-Recommended reading order:
-1. `../docs/ops/README.md`
-2. `../docs/ops/2026-04-07-openplan-v1-status-memo-refresh.md`
-3. `../docs/ops/2026-04-05-openplan-supervised-external-pilot-packet.md`
-4. `../docs/ops/2026-04-08-openplan-user-md-alignment-memo.md`
-
-## Product positioning discipline
-
-Use disciplined language.
-
-Safe current posture:
-- production-backed,
-- supervised pilot ready,
-- planning-domain continuity,
-- evidence-accurate,
-- guided onboarding.
-
-Unsafe overclaims:
-- proprietary, subscription-first software,
-- fully launched self-serve SaaS,
-- validated forecasting platform,
-- complete LAPM automation,
-- universally proven modeling engine.
+- say `screening-grade` when evidence is screening-grade;
+- say `human-reviewed` when professional judgment is required;
+- never claim validated forecasting, complete compliance automation, or uniform module depth.
 
 ## Bottom line
 
-OpenPlan is a real planning product with real production-backed workflows and an open-source-first posture.
-
-It is not finished, but it is well beyond prototype theater. Treat it as serious Apache-2.0 planning software with optional Nat Ford managed services, and keep all external claims inside the current evidence boundary.
+OpenPlan is a real planning product with real production-backed workflows, free and open source,
+built to be used self-serve by anyone. It is not finished — and where it is not, it says so
+instead of pretending.

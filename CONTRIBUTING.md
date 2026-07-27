@@ -29,11 +29,22 @@ For focused changes, run the matching Vitest files first, then expand if feasibl
 
 Good OpenPlan copy is plain, grounded, and accountable:
 
-- say `open-source software + managed services`, not generic SaaS;
+- say `free and open source` — OpenPlan has no paid tier, no managed-service lane, and no
+  commercial offering to describe;
 - say `screening-grade` when evidence is screening-grade;
 - say `human-reviewed` when professional judgment is required;
-- separate source license, hosted service terms, and planning-service scope;
 - avoid black-box claims, unsupported forecasting promises, or vague AI productivity language.
+
+## Issues and pull requests
+
+- File bugs and feature requests as GitHub issues on this repository. Include reproduction steps
+  and your environment (local dev vs. self-hosted) where relevant.
+- Branch from `main`, keep changes focused, and open a pull request against `main`.
+- Before requesting review, run the full gate from `openplan/`: `npm run qa:gate` (lint + tests +
+  dependency audit + build). Python worker changes also run the matching
+  `workers/**/test_*.py` scripts directly (there is no pytest in this repo).
+- Migrations are additive: never `DROP` a table or column that a hosted deployment may hold data
+  in.
 
 ## Security and disclosure
 
