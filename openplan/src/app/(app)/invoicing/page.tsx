@@ -16,8 +16,12 @@ import {
   resolveExactBillingInvoiceAwardMatch,
   type BillingInvoiceOverdueFilter,
   type BillingInvoiceLinkageFilter,
+  summarizeAwardSubstantiation,
   summarizeBillingInvoiceLinkage,
   summarizeBillingInvoiceRecords,
+  type FundingAwardSubstantiationMilestoneLike,
+  type FundingAwardSubstantiationSubmittalLike,
+  type FundingAwardSubstantiationSummary,
 } from "@/lib/invoicing/invoice-records";
 import { buildInvoicingHref, buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
@@ -32,6 +36,7 @@ import {
 import {
   billingRowNoticeClass,
   billingRowRiskState,
+  describeAwardSubstantiation,
   formatCurrency,
   formatWorkspaceIdSnippet,
   insetClass,
@@ -45,8 +50,10 @@ import {
   normalizeRelinkedInvoiceId,
   noticeClass,
   panelClass,
+  substantiationReadinessLabel,
   titleCase,
   toneForInvoiceStatus,
+  toneForSubstantiationReadiness,
   toneForSupportingDocs,
   type FundingAwardListRow,
   type InvoiceRegisterRow,
@@ -190,6 +197,44 @@ export default async function InvoicingPage({
         ...invoice,
         fundingAward: normalizeJoin(invoice.funding_awards),
       }));
+  const substantiationAwardIds = workspaceFundingAwards.map((award) => award.id);
+  const substantiationAwardProjectIds = Array.from(
+    new Set(
+      workspaceFundingAwards
+        .map((award) => award.project_id)
+        .filter((projectId): projectId is string => Boolean(projectId))
+    )
+  );
+  const emptySubstantiationRead = {
+    data: [] as Array<Record<string, unknown>>,
+    error: null as { message?: string } | null,
+  };
+  const [awardMilestonesResult, awardSubmittalsResult] = await Promise.all([
+    substantiationAwardIds.length > 0
+      ? supabase
+          .from("project_milestones")
+          .select("funding_award_id, milestone_type, status")
+          .in("funding_award_id", substantiationAwardIds)
+      : Promise.resolve(emptySubstantiationRead),
+    substantiationAwardProjectIds.length > 0
+      ? supabase
+          .from("project_submittals")
+          .select("project_id, submitted_at")
+          .in("project_id", substantiationAwardProjectIds)
+      : Promise.resolve(emptySubstantiationRead),
+  ]);
+  const awardSubstantiationPending =
+    looksLikePendingSchema(awardMilestonesResult.error?.message) ||
+    looksLikePendingSchema(awardSubmittalsResult.error?.message);
+  const awardSubstantiationAvailable =
+    !awardSubstantiationPending && !awardMilestonesResult.error && !awardSubmittalsResult.error;
+  const awardSubstantiation = awardSubstantiationAvailable
+    ? summarizeAwardSubstantiation({
+        awards: workspaceFundingAwards,
+        milestones: (awardMilestonesResult.data ?? []) as FundingAwardSubstantiationMilestoneLike[],
+        submittals: (awardSubmittalsResult.data ?? []) as FundingAwardSubstantiationSubmittalLike[],
+      })
+    : new Map<string, FundingAwardSubstantiationSummary>();
   const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRecords);
   const invoiceLinkageSummary = summarizeBillingInvoiceLinkage(invoiceRecords);
   const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
@@ -670,6 +715,14 @@ export default async function InvoicingPage({
                 const isFocusedRow = activeFocusedInvoiceId === invoice.id;
                 const isJustRelinkedRow = activeRelinkedInvoiceId === invoice.id;
                 const exactMatchFundingAward = resolveExactBillingInvoiceAwardMatch(invoice, registerScopedInvoiceRecords, workspaceFundingAwards);
+                const awardSubstantiationSummary = invoice.funding_award_id
+                  ? awardSubstantiation.get(invoice.funding_award_id) ?? null
+                  : null;
+                const substantiationProjectId =
+                  invoice.project_id ??
+                  (invoice.funding_award_id
+                    ? workspaceFundingAwards.find((award) => award.id === invoice.funding_award_id)?.project_id ?? null
+                    : null);
                 const rowTriageHref = riskState.title
                   ? buildInvoiceTriageHref({
                       workspaceId,
@@ -751,6 +804,20 @@ export default async function InvoicingPage({
                       {invoice.consultant_name ? <span>Consultant {invoice.consultant_name}</span> : null}
                       {invoice.fundingAward ? <span>Funding award {invoice.fundingAward.title}</span> : null}
                     </div>
+
+                    {awardSubstantiationSummary ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">
+                        <StatusBadge tone={toneForSubstantiationReadiness(awardSubstantiationSummary.readiness)}>
+                          {substantiationReadinessLabel(awardSubstantiationSummary.readiness)}
+                        </StatusBadge>
+                        <span className="text-xs text-muted-foreground">{describeAwardSubstantiation(awardSubstantiationSummary)}</span>
+                        {substantiationProjectId ? (
+                          <Link href={`/projects/${substantiationProjectId}`} className="openplan-inline-label">
+                            Open project milestones and submittals
+                          </Link>
+                        ) : null}
+                      </div>
+                    ) : null}
 
                     {rowTriageHref ? (
                       <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/50 pt-3">

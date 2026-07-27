@@ -70,6 +70,33 @@ export type BillingInvoicePriorityQueueClassifierResult = {
   isExactRelink?: boolean;
 };
 
+export type FundingAwardSubstantiationReadiness = "substantiated" | "partial" | "none";
+
+export type FundingAwardSubstantiationAwardLike = {
+  id?: string | null;
+  project_id?: string | null;
+};
+
+export type FundingAwardSubstantiationMilestoneLike = {
+  funding_award_id?: string | null;
+  milestone_type?: string | null;
+  status?: string | null;
+};
+
+export type FundingAwardSubstantiationSubmittalLike = {
+  funding_award_id?: string | null;
+  project_id?: string | null;
+  submitted_at?: string | null;
+};
+
+export type FundingAwardSubstantiationSummary = {
+  obligationMilestoneStatus: string | null;
+  milestoneCount: number;
+  submittalCount: number;
+  latestSubmittalAt: string | null;
+  readiness: FundingAwardSubstantiationReadiness;
+};
+
 function roundCurrency(value: number): number {
   return Math.round(value * 100) / 100;
 }
@@ -224,6 +251,72 @@ export function summarizeBillingInvoiceLinkage(
     linkedOverdueNetAmount: linkedSummary.overdueNetAmount,
     unlinkedOverdueNetAmount: unlinkedSummary.overdueNetAmount,
   };
+}
+
+// project_submittals carries no funding_award_id column in the schema, so submittal
+// substantiation is attributed through the award's project; an explicit funding_award_id
+// on a submittal record (if a future schema adds the direct link) is authoritative and
+// excludes that record from project-level attribution.
+export function summarizeAwardSubstantiation({
+  awards,
+  milestones,
+  submittals,
+}: {
+  awards: FundingAwardSubstantiationAwardLike[] | null | undefined;
+  milestones?: FundingAwardSubstantiationMilestoneLike[] | null;
+  submittals?: FundingAwardSubstantiationSubmittalLike[] | null;
+}): Map<string, FundingAwardSubstantiationSummary> {
+  const summaries = new Map<string, FundingAwardSubstantiationSummary>();
+  const milestoneRecords = milestones ?? [];
+  const submittalRecords = submittals ?? [];
+
+  for (const award of awards ?? []) {
+    if (!award.id) {
+      continue;
+    }
+
+    const awardMilestones = milestoneRecords.filter((milestone) => milestone.funding_award_id === award.id);
+    const awardSubmittals = submittalRecords.filter((submittal) =>
+      submittal.funding_award_id
+        ? submittal.funding_award_id === award.id
+        : Boolean(award.project_id) && submittal.project_id === award.project_id
+    );
+
+    const obligationMilestone = awardMilestones.find((milestone) => milestone.milestone_type === "obligation") ?? null;
+
+    let latestSubmittalAt: string | null = null;
+    let latestSubmittalAtMs = Number.NEGATIVE_INFINITY;
+    for (const submittal of awardSubmittals) {
+      if (!submittal.submitted_at) {
+        continue;
+      }
+      const submittedAtMs = new Date(submittal.submitted_at).getTime();
+      if (Number.isNaN(submittedAtMs) || submittedAtMs <= latestSubmittalAtMs) {
+        continue;
+      }
+      latestSubmittalAt = submittal.submitted_at;
+      latestSubmittalAtMs = submittedAtMs;
+    }
+
+    const milestoneCount = awardMilestones.length;
+    const submittalCount = awardSubmittals.length;
+    const readiness: FundingAwardSubstantiationReadiness =
+      milestoneCount > 0 && submittalCount > 0
+        ? "substantiated"
+        : milestoneCount > 0 || submittalCount > 0
+          ? "partial"
+          : "none";
+
+    summaries.set(award.id, {
+      obligationMilestoneStatus: typeof obligationMilestone?.status === "string" ? obligationMilestone.status : null,
+      milestoneCount,
+      submittalCount,
+      latestSubmittalAt,
+      readiness,
+    });
+  }
+
+  return summaries;
 }
 
 export function filterBillingInvoiceRecordsByLinkage<T extends BillingInvoiceLinkageRecordLike>(

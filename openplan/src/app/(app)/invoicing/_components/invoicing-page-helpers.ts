@@ -2,6 +2,8 @@ import {
   invoiceNeedsAwardRelink,
   type BillingInvoiceLinkageFilter,
   type BillingInvoiceOverdueFilter,
+  type FundingAwardSubstantiationReadiness,
+  type FundingAwardSubstantiationSummary,
 } from "@/lib/invoicing/invoice-records";
 
 export function titleCase(input: string | null | undefined): string {
@@ -103,6 +105,32 @@ export function billingRowRiskState(invoice: InvoiceRegisterRow): {
     detail: null,
     rowClassName: "border-border/60 bg-background/70",
   };
+}
+
+export function toneForSubstantiationReadiness(
+  readiness: FundingAwardSubstantiationReadiness
+): "success" | "warning" | "danger" {
+  if (readiness === "substantiated") return "success";
+  if (readiness === "partial") return "warning";
+  return "danger";
+}
+
+export function substantiationReadinessLabel(readiness: FundingAwardSubstantiationReadiness): string {
+  if (readiness === "substantiated") return "Substantiated";
+  if (readiness === "partial") return "Partially substantiated";
+  return "No substantiation on record";
+}
+
+export function describeAwardSubstantiation(summary: FundingAwardSubstantiationSummary): string {
+  const obligationPart = summary.obligationMilestoneStatus
+    ? `Obligation milestone ${titleCase(summary.obligationMilestoneStatus).toLowerCase()}`
+    : "No obligation milestone yet";
+  const milestonePart = `${summary.milestoneCount} award milestone${summary.milestoneCount === 1 ? "" : "s"}`;
+  const submittalPart = `${summary.submittalCount} project submittal${summary.submittalCount === 1 ? "" : "s"}${
+    summary.latestSubmittalAt ? ` (latest submitted ${summary.latestSubmittalAt.slice(0, 10)})` : ""
+  }`;
+
+  return `${obligationPart} · ${milestonePart} · ${submittalPart}`;
 }
 
 export function formatWorkspaceIdSnippet(workspaceId: string): string {

@@ -5,6 +5,7 @@ import {
   computeRetentionAmount,
   filterBillingInvoiceRecordsByLinkage,
   filterBillingInvoiceRecordsByOverdueStatus,
+  summarizeAwardSubstantiation,
   summarizeBillingInvoiceLinkage,
   summarizeBillingInvoiceRecords,
 } from "@/lib/invoicing/invoice-records";
@@ -149,5 +150,82 @@ describe("billing invoice record helpers", () => {
       isExactRelink: true,
     });
     expect(queue[1]?.isExactRelink).toBe(false);
+  });
+});
+
+describe("summarizeAwardSubstantiation", () => {
+  const awards = [
+    { id: "award-1", project_id: "project-1" },
+    { id: "award-2", project_id: "project-2" },
+    { id: "award-3", project_id: null },
+  ];
+
+  const milestones = [
+    { funding_award_id: "award-1", milestone_type: "obligation", status: "in_progress" },
+    { funding_award_id: "award-1", milestone_type: "closeout", status: "not_started" },
+    { funding_award_id: "award-2", milestone_type: "invoice", status: "scheduled" },
+    { funding_award_id: null, milestone_type: "schedule", status: "complete" },
+  ];
+
+  const submittals = [
+    { project_id: "project-1", submitted_at: "2026-04-01T10:00:00.000Z" },
+    { project_id: "project-1", submitted_at: "2026-04-20T10:00:00.000Z" },
+    { project_id: "project-1", submitted_at: null },
+  ];
+
+  it("marks an award substantiated when it has an obligation milestone and project submittals", () => {
+    expect(summarizeAwardSubstantiation({ awards, milestones, submittals }).get("award-1")).toEqual({
+      obligationMilestoneStatus: "in_progress",
+      milestoneCount: 2,
+      submittalCount: 3,
+      latestSubmittalAt: "2026-04-20T10:00:00.000Z",
+      readiness: "substantiated",
+    });
+  });
+
+  it("marks an award partial when only milestones back it", () => {
+    expect(summarizeAwardSubstantiation({ awards, milestones, submittals }).get("award-2")).toEqual({
+      obligationMilestoneStatus: null,
+      milestoneCount: 1,
+      submittalCount: 0,
+      latestSubmittalAt: null,
+      readiness: "partial",
+    });
+  });
+
+  it("marks an award with no linked milestones and no project submittals as none", () => {
+    expect(summarizeAwardSubstantiation({ awards, milestones, submittals }).get("award-3")).toEqual({
+      obligationMilestoneStatus: null,
+      milestoneCount: 0,
+      submittalCount: 0,
+      latestSubmittalAt: null,
+      readiness: "none",
+    });
+  });
+
+  it("leaves unknown award ids absent from the map", () => {
+    const map = summarizeAwardSubstantiation({ awards, milestones, submittals });
+    expect(map.has("award-9")).toBe(false);
+    expect(map.get("award-9")).toBeUndefined();
+  });
+
+  it("lets an explicit submittal award link override project-level attribution", () => {
+    const map = summarizeAwardSubstantiation({
+      awards,
+      milestones: [],
+      submittals: [
+        { funding_award_id: "award-2", project_id: "project-1", submitted_at: "2026-05-01T09:00:00.000Z" },
+      ],
+    });
+
+    expect(map.get("award-1")?.submittalCount).toBe(0);
+    expect(map.get("award-1")?.readiness).toBe("none");
+    expect(map.get("award-2")).toEqual({
+      obligationMilestoneStatus: null,
+      milestoneCount: 0,
+      submittalCount: 1,
+      latestSubmittalAt: "2026-05-01T09:00:00.000Z",
+      readiness: "partial",
+    });
   });
 });
