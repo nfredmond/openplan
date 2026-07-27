@@ -174,6 +174,10 @@ const fromMock = vi.fn((table: string) => {
   if (table === "model_runs") {
     return { select: modelRunsSelectMock };
   }
+  if (table === "kb_documents") {
+    // Head-count of project-linked knowledge-base documents.
+    return { select: vi.fn(() => ({ eq: vi.fn(() => Promise.resolve({ count: 0, error: null })) })) };
+  }
   if (table === "model_run_kpis") {
     return { select: modelRunKpisSelectMock };
   }

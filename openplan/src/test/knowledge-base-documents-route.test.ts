@@ -3,6 +3,24 @@ import { NextRequest } from "next/server";
 
 const getUserMock = vi.fn();
 const membershipMaybeSingleMock = vi.fn();
+/** Every `.eq(column, value)` applied to the kb_documents list builder. */
+const kbListEqCalls: Array<[string, unknown]> = [];
+let kbListResponse: { data: unknown[]; error: null | { message: string } } = { data: [], error: null };
+
+/** Awaitable filter-recording builder standing in for the kb_documents list query. */
+function kbListBuilder() {
+  const builder = {
+    select: () => builder,
+    eq: (column: string, value: unknown) => {
+      kbListEqCalls.push([column, value]);
+      return builder;
+    },
+    order: () => builder,
+    limit: () => builder,
+    then: (resolve: (value: typeof kbListResponse) => unknown) => resolve(kbListResponse),
+  };
+  return builder;
+}
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
@@ -16,6 +34,9 @@ vi.mock("@/lib/supabase/server", () => ({
         return {
           select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
         };
+      }
+      if (table === "kb_documents") {
+        return kbListBuilder();
       }
       return {
         select: () => ({
@@ -78,6 +99,8 @@ describe("GET /api/knowledge-base/documents guards", () => {
   beforeEach(() => {
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+    kbListEqCalls.length = 0;
+    kbListResponse = { data: [], error: null };
   });
 
   it("400 when workspaceId is missing", async () => {
@@ -91,5 +114,38 @@ describe("GET /api/knowledge-base/documents guards", () => {
       new NextRequest(`http://localhost/api/knowledge-base/documents?workspaceId=${WORKSPACE_ID}`)
     );
     expect(res.status).toBe(401);
+  });
+
+  it("scopes the list to the workspace without a project filter by default", async () => {
+    const res = await GET(
+      new NextRequest(`http://localhost/api/knowledge-base/documents?workspaceId=${WORKSPACE_ID}`)
+    );
+    expect(res.status).toBe(200);
+    expect(kbListEqCalls).toContainEqual(["workspace_id", WORKSPACE_ID]);
+    expect(kbListEqCalls.map(([column]) => column)).not.toContain("project_id");
+  });
+
+  it("narrows the list to a project when projectId is supplied", async () => {
+    const projectId = "6f9619ff-8b86-4d01-b42d-00cf4fc964ff";
+    kbListResponse = { data: [{ id: "doc-1", project_id: projectId }], error: null };
+    const res = await GET(
+      new NextRequest(
+        `http://localhost/api/knowledge-base/documents?workspaceId=${WORKSPACE_ID}&projectId=${projectId}`
+      )
+    );
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { documents: Array<{ id: string }> };
+    expect(body.documents).toHaveLength(1);
+    expect(kbListEqCalls).toContainEqual(["workspace_id", WORKSPACE_ID]);
+    expect(kbListEqCalls).toContainEqual(["project_id", projectId]);
+  });
+
+  it("400 when projectId is not a UUID", async () => {
+    const res = await GET(
+      new NextRequest(
+        `http://localhost/api/knowledge-base/documents?workspaceId=${WORKSPACE_ID}&projectId=not-a-uuid`
+      )
+    );
+    expect(res.status).toBe(400);
   });
 });

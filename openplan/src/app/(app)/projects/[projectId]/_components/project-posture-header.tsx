@@ -67,6 +67,8 @@ type ProjectPostureHeaderProps = {
   deliverableCount: number;
   openRiskCount: number;
   openIssueCount: number;
+  /** Knowledge Base documents attached to this project; null when the count is unavailable (schema pending / read failed). */
+  kbDocumentCount: number | null;
   reportRecordCount: number;
   reportAttentionCount: number;
   evidenceBackedReportCount: number;
@@ -96,6 +98,7 @@ export function ProjectPostureHeader({
   deliverableCount,
   openRiskCount,
   openIssueCount,
+  kbDocumentCount,
   reportRecordCount,
   reportAttentionCount,
   evidenceBackedReportCount,
@@ -172,6 +175,24 @@ export function ProjectPostureHeader({
               <p className="module-summary-label">RTP cycles</p>
               <p className="module-summary-value">{linkedRtpCycleCount}</p>
               <p className="module-summary-detail">Regional plan cycles this project is now attached to.</p>
+            </div>
+            <div className="module-summary-card">
+              <p className="module-summary-label">Knowledge Base</p>
+              <p className="module-summary-value">{kbDocumentCount ?? "—"}</p>
+              <p className="module-summary-detail">
+                {kbDocumentCount === null ? (
+                  "Document count unavailable — apply the Knowledge Base migration, then reload."
+                ) : (
+                  <Link
+                    href={`/knowledge-base?projectId=${project.id}`}
+                    className="underline decoration-dotted underline-offset-2 transition hover:text-foreground"
+                  >
+                    {kbDocumentCount === 0
+                      ? "Attach plans, letters, and studies to this project"
+                      : "Open this project's documents in the Knowledge Base"}
+                  </Link>
+                )}
+              </p>
             </div>
           </div>
         </article>

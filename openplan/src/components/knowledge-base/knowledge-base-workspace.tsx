@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Loader2, Trash2, Upload } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { FolderKanban, Loader2, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -59,24 +60,79 @@ function FormError({ error }: { error: string | null }) {
   );
 }
 
+export type KnowledgeBaseProjectOption = {
+  id: string;
+  name: string;
+  status: string;
+};
+
 type KnowledgeBaseWorkspaceProps = {
   workspaceId: string;
   initialDocuments: KbDocumentRow[];
+  /** The workspace's projects, powering attach-on-upload and the list filter. */
+  projects?: KnowledgeBaseProjectOption[];
+  /** Deep-link filter (?projectId=), pre-validated against `projects` by the page. */
+  initialProjectId?: string | null;
 };
 
-export function KnowledgeBaseWorkspace({ workspaceId, initialDocuments }: KnowledgeBaseWorkspaceProps) {
+export function KnowledgeBaseWorkspace({
+  workspaceId,
+  initialDocuments,
+  projects = [],
+  initialProjectId = null,
+}: KnowledgeBaseWorkspaceProps) {
   const [documents, setDocuments] = useState<KbDocumentRow[]>(initialDocuments);
   const [mode, setMode] = useState<"upload" | "paste">("upload");
   const [docKind, setDocKind] = useState<KbDocKind>("other");
   const [title, setTitle] = useState("");
   const [pasteText, setPasteText] = useState("");
+  // One selector, two duties: new uploads attach to this project, and the
+  // document list narrows to it. "" means no attachment and no filter.
+  const [projectId, setProjectId] = useState(initialProjectId ?? "");
   const [busy, setBusy] = useState(false);
+  const [listLoading, setListLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const projectNameById = useMemo(
+    () => new Map(projects.map((project) => [project.id, project.name])),
+    [projects]
+  );
+  const selectedProjectName = projectId ? projectNameById.get(projectId) ?? null : null;
+
   function upsertDocument(document: KbDocumentRow) {
     setDocuments((prev) => [document, ...prev.filter((entry) => entry.id !== document.id)]);
+  }
+
+  async function changeProject(nextProjectId: string) {
+    setProjectId(nextProjectId);
+    setError(null);
+    setNotice(null);
+    setListLoading(true);
+    try {
+      // Refetch instead of filtering the loaded page client-side: the initial
+      // list is capped at 200 workspace-wide, so a client-side filter could
+      // silently miss a project's older documents.
+      const params = new URLSearchParams({ workspaceId });
+      if (nextProjectId) params.set("projectId", nextProjectId);
+      const response = await fetch(`/api/knowledge-base/documents?${params.toString()}`);
+      const payload = (await response.json()) as {
+        documents?: KbDocumentRow[];
+        error?: string;
+        hint?: string;
+      };
+      if (!response.ok) {
+        throw new Error(
+          [payload.error, payload.hint].filter(Boolean).join(" — ") || "Failed to load documents"
+        );
+      }
+      setDocuments(payload.documents ?? []);
+    } catch (loadError) {
+      setError(loadError instanceof Error ? loadError.message : "Failed to load documents");
+    } finally {
+      setListLoading(false);
+    }
   }
 
   async function uploadFile(file: File) {
@@ -90,6 +146,7 @@ export function KnowledgeBaseWorkspace({ workspaceId, initialDocuments }: Knowle
     try {
       const params = new URLSearchParams({ workspaceId, filename: file.name, docKind });
       if (title.trim()) params.set("title", title.trim());
+      if (projectId) params.set("projectId", projectId);
       const response = await fetch(`/api/knowledge-base/documents?${params.toString()}`, {
         method: "POST",
         headers: { "content-type": file.type || "application/octet-stream" },
@@ -140,7 +197,13 @@ export function KnowledgeBaseWorkspace({ workspaceId, initialDocuments }: Knowle
       const response = await fetch("/api/knowledge-base/documents/paste", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ workspaceId, title: title.trim(), text: pasteText, docKind }),
+        body: JSON.stringify({
+          workspaceId,
+          title: title.trim(),
+          text: pasteText,
+          docKind,
+          ...(projectId ? { projectId } : {}),
+        }),
       });
       const payload = (await response.json()) as { document?: KbDocumentRow; error?: string };
       if (!response.ok) {
@@ -229,6 +292,27 @@ export function KnowledgeBaseWorkspace({ workspaceId, initialDocuments }: Knowle
                 disabled={busy}
               />
             </label>
+            {projects.length > 0 ? (
+              <label className="grid gap-1 text-sm sm:col-span-2">
+                <span className="text-foreground/70">
+                  Project (optional — attaches new documents and filters the list below)
+                </span>
+                <select
+                  className="module-select"
+                  value={projectId}
+                  onChange={(event) => void changeProject(event.target.value)}
+                  disabled={busy || listLoading}
+                  aria-label="Project for Knowledge Base documents"
+                >
+                  <option value="">All documents · no project attachment</option>
+                  {projects.map((project) => (
+                    <option key={project.id} value={project.id}>
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            ) : null}
           </div>
 
           <TabsContent value="upload" className="mt-3">
@@ -276,14 +360,23 @@ export function KnowledgeBaseWorkspace({ workspaceId, initialDocuments }: Knowle
         <div className="module-section-header">
           <h2 className="module-section-title">Documents</h2>
           <p className="module-section-description">
-            {documents.length} document{documents.length === 1 ? "" : "s"} in this workspace.
+            {listLoading
+              ? "Loading documents…"
+              : `${documents.length} document${documents.length === 1 ? "" : "s"} ${
+                  selectedProjectName
+                    ? `linked to ${selectedProjectName}`
+                    : projectId
+                      ? "linked to the selected project"
+                      : "in this workspace"
+                }.`}
           </p>
         </div>
 
         {documents.length === 0 ? (
           <div className="module-empty-state">
-            No documents yet. Upload a plan or paste text above to start building this workspace&apos;s
-            corpus.
+            {projectId
+              ? "No documents are attached to this project yet. Pick it in the selector above and upload — or switch back to all documents. Other workspace documents may still exist."
+              : "No documents yet. Upload a plan or paste text above to start building this workspace's corpus."}
           </div>
         ) : (
           <ul className="module-record-list">
@@ -305,6 +398,16 @@ export function KnowledgeBaseWorkspace({ workspaceId, initialDocuments }: Knowle
                   </p>
                   <div className="module-record-meta">
                     <span className="module-record-stamp">{formatDate(doc.created_at)}</span>
+                    {doc.project_id ? (
+                      <Link
+                        href={`/projects/${doc.project_id}`}
+                        className="module-record-chip inline-flex items-center gap-1"
+                        aria-label={`Open project ${projectNameById.get(doc.project_id) ?? "linked to this document"}`}
+                      >
+                        <FolderKanban className="size-3" />
+                        {projectNameById.get(doc.project_id) ?? "Linked project"}
+                      </Link>
+                    ) : null}
                     {doc.original_filename ? (
                       <span className="module-record-chip">{doc.original_filename}</span>
                     ) : (

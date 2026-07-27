@@ -275,6 +275,17 @@ export default async function ProjectDetailPage({
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
+  // Cheap head-count of Knowledge Base documents attached to this project.
+  // Pending-schema tolerant: a missing kb_documents table reads as "count
+  // unavailable" (null), never as zero.
+  const kbDocumentCountResult = await supabase
+    .from("kb_documents")
+    .select("id", { count: "exact", head: true })
+    .eq("project_id", project.id);
+  const kbDocumentCount = kbDocumentCountResult.error
+    ? null
+    : kbDocumentCountResult.count ?? 0;
+
   // Prefer runs attributed to THIS project (run-provenance migration). A
   // deployment without the project_id column falls back to the workspace-wide
   // recency view this page always had — attribution is additive, not required.
@@ -1135,6 +1146,7 @@ export default async function ProjectDetailPage({
         deliverableCount={deliverables?.length ?? 0}
         openRiskCount={openRiskCount}
         openIssueCount={openIssueCount}
+        kbDocumentCount={kbDocumentCount}
         reportRecordCount={reportRecordCount}
         reportAttentionCount={reportAttentionCount}
         evidenceBackedReportCount={evidenceBackedReportCount}
