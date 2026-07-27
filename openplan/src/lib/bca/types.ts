@@ -123,6 +123,14 @@ export interface BcaAnalysisInputs {
   co2DiscountRatePct?: number;
   benefits: BcaBenefitInput[];
   costs: BcaCostInput[];
+  /**
+   * Provenance, not arithmetic: the safety_crash_ingests id whose observed
+   * severity mix informed the safety benefit inputs. The engine ignores it;
+   * it exists so a saved screening's inputs_json can name the crash-evidence
+   * source it drew on. Set only when the operator applied a crash-evidence
+   * prefill — never inferred.
+   */
+  crashEvidenceIngestId?: string;
 }
 
 export interface BcaYearValue {

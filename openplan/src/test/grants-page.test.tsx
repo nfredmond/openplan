@@ -52,6 +52,13 @@ const engagementCampaignsNotMock = vi.fn(() => ({ neq: engagementCampaignsNeqMoc
 const engagementCampaignsEqMock = vi.fn(() => ({ not: engagementCampaignsNotMock }));
 const engagementCampaignsSelectMock = vi.fn(() => ({ eq: engagementCampaignsEqMock }));
 
+// Crash-evidence chain: .eq(workspace).eq(status).not(project_id, is, null).order(...)
+const safetyIngestsOrderMock = vi.fn(async () => ({ data: [], error: null }));
+const safetyIngestsNotMock = vi.fn(() => ({ order: safetyIngestsOrderMock }));
+const safetyIngestsEqStatusMock = vi.fn(() => ({ not: safetyIngestsNotMock }));
+const safetyIngestsEqMock = vi.fn(() => ({ eq: safetyIngestsEqStatusMock }));
+const safetyIngestsSelectMock = vi.fn(() => ({ eq: safetyIngestsEqMock }));
+
 const scenarioSetsInMock = vi.fn(async () => ({ data: [], error: null }));
 const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
 const scenarioComparisonSummaryInMock = vi.fn(async () => ({ data: [], error: null }));
@@ -70,6 +77,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") return { select: engagementCampaignsSelectMock };
   if (table === "scenario_sets") return { select: scenarioSetsSelectMock };
   if (table === "scenario_comparison_summary") return { select: scenarioComparisonSummarySelectMock };
+  if (table === "safety_crash_ingests") return { select: safetyIngestsSelectMock };
   throw new Error(`Unexpected table: ${table}`);
 });
 

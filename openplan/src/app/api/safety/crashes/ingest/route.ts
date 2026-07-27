@@ -92,6 +92,25 @@ export async function POST(request: NextRequest) {
       return membershipErrorResponse(membership);
     }
 
+    // A project link must name a project of THIS workspace — same posture as
+    // the Knowledge Base upload route. RLS would hide a foreign project anyway;
+    // the explicit check turns that into an honest 404 instead of a silent
+    // null link.
+    if (parsed.data.projectId) {
+      const { data: project, error: projectError } = await supabase
+        .from("projects")
+        .select("id")
+        .eq("id", parsed.data.projectId)
+        .eq("workspace_id", parsed.data.workspaceId)
+        .maybeSingle();
+      if (projectError) {
+        return NextResponse.json({ error: "Failed to verify linked project" }, { status: 500 });
+      }
+      if (!project) {
+        return NextResponse.json({ error: "Linked project not found" }, { status: 404 });
+      }
+    }
+
     audit.info("safety_crash_ingest_started", {
       workspaceId: parsed.data.workspaceId,
       userId: user.id,

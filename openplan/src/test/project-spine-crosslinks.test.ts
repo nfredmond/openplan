@@ -39,12 +39,27 @@ const baseInput = {
     recentRunCount: 2,
     comparisonBackedReportCount: 1,
   },
+  safety: {
+    ingestCount: 1,
+    crashCount: 1180,
+    geocodedCount: 1089,
+    coverageLabel: "Statewide reported collisions from the source agency.",
+    sourceLabel: "Statewide crash reporting system",
+  },
   aerial: {
     missionCount: 1,
     activeMissionCount: 0,
     readyPackageCount: 1,
     verificationReadiness: "ready" as const,
   },
+};
+
+const emptySafety = {
+  ingestCount: 0,
+  crashCount: 0,
+  geocodedCount: 0,
+  coverageLabel: null,
+  sourceLabel: null,
 };
 
 describe("buildProjectSpineCrosslinkSummary", () => {
@@ -54,9 +69,9 @@ describe("buildProjectSpineCrosslinkSummary", () => {
       reportAttentionCount: 1,
     });
 
-    expect(summary.rows).toHaveLength(6);
+    expect(summary.rows).toHaveLength(7);
     expect(summary.attentionCount).toBe(3);
-    expect(summary.readyCount).toBe(3);
+    expect(summary.readyCount).toBe(4);
     expect(summary.missingCount).toBe(0);
     expect(summary.leadAction.id).toBe("rtp_packets");
     expect(summary.rows.find((row) => row.id === "engagement_evidence")?.statusLabel).toBe(
@@ -109,6 +124,7 @@ describe("buildProjectSpineCrosslinkSummary", () => {
         recentRunCount: 0,
         comparisonBackedReportCount: 0,
       },
+      safety: emptySafety,
       aerial: {
         missionCount: 0,
         activeMissionCount: 0,
@@ -119,11 +135,11 @@ describe("buildProjectSpineCrosslinkSummary", () => {
 
     expect(summary.readyCount).toBe(0);
     expect(summary.attentionCount).toBe(0);
-    expect(summary.missingCount).toBe(6);
+    expect(summary.missingCount).toBe(7);
     expect(summary.boardState).toBe("empty");
     expect(summary.stateHeadline).toMatch(/No downstream outputs/i);
     expect(summary.stateNextAction).toMatch(/attach this project to the right RTP cycle/i);
-    expect(summary.emptyCount).toBe(6);
+    expect(summary.emptyCount).toBe(7);
     expect(summary.leadAction.id).toBe("rtp_packets");
     expect(summary.rows.map((row) => row.statusLabel)).toContain("Funding target missing");
     expect(summary.rows.find((row) => row.id === "funding_profile")?.sourceLabel).toBe("No evidence yet");
@@ -197,6 +213,58 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(scenarioRow?.evidence).toMatch(/did not treat this as missing evidence/i);
     expect(scenarioRow?.nextAction).toMatch(/Apply the scenario spine tables/i);
     expect(fundingRow?.nextAction).toMatch(/funding profile, award, opportunity, and invoice tables/i);
+  });
+
+  it("renders safety evidence with the reported-vs-geocoded gap disclosed, never hidden", () => {
+    const summary = buildProjectSpineCrosslinkSummary(baseInput);
+    const safetyRow = summary.rows.find((row) => row.id === "safety_evidence");
+
+    expect(safetyRow?.readiness).toBe("ready");
+    expect(safetyRow?.statusLabel).toBe("Crash evidence linked");
+    // Both counts, always — 1,089 mapped points must never pass as the 1,180
+    // reported crashes.
+    expect(safetyRow?.headline).toContain("1,180 crashes ingested, 1,089 geocoded");
+    expect(safetyRow?.detail).toContain("1 acquisition");
+    expect(safetyRow?.detail).toContain("Statewide crash reporting system");
+    expect(safetyRow?.evidence).toContain("Statewide reported collisions");
+    expect(safetyRow?.caveat).toMatch(/none of this is an adopted safety plan/i);
+    expect(safetyRow?.href).toBe("/safety");
+  });
+
+  it("treats a zero-crash acquisition as review work, not proof of zero crashes", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      safety: { ...emptySafety, ingestCount: 1 },
+    });
+    const safetyRow = summary.rows.find((row) => row.id === "safety_evidence");
+
+    expect(safetyRow?.readiness).toBe("attention");
+    expect(safetyRow?.statusLabel).toBe("Acquisition needs review");
+    expect(safetyRow?.headline).toMatch(/check its coverage state/i);
+    expect(safetyRow?.headline).not.toMatch(/no crashes occurred/i);
+  });
+
+  it("marks an unlinked safety lane missing with an honest empty-evidence line", () => {
+    const summary = buildProjectSpineCrosslinkSummary({ ...baseInput, safety: emptySafety });
+    const safetyRow = summary.rows.find((row) => row.id === "safety_evidence");
+
+    expect(safetyRow?.readiness).toBe("missing");
+    expect(safetyRow?.statusLabel).toBe("No crash acquisition");
+    expect(safetyRow?.evidence).toMatch(/not evidence that no crashes occurred/i);
+    expect(safetyRow?.nextAction).toMatch(/Run a crash acquisition/i);
+  });
+
+  it("turns a pending safety schema into a setup action for the safety lane", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      safety: emptySafety,
+      pendingSchema: { safety_evidence: true },
+    });
+    const safetyRow = summary.rows.find((row) => row.id === "safety_evidence");
+
+    expect(safetyRow?.sourceState).toBe("schema_pending");
+    expect(safetyRow?.statusLabel).toBe("Schema setup pending");
+    expect(safetyRow?.nextAction).toMatch(/Apply the safety crash tables/i);
   });
 
   it("keeps scenario sets in review posture until baseline and ready alternative evidence exist", () => {

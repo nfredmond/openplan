@@ -7,7 +7,11 @@ import {
   parseWorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
-import type { SafetyIngestSummary } from "@/lib/safety/client-types";
+import type {
+  SafetyIngestHistoryEntry,
+  SafetyIngestSummary,
+  SafetyProjectOption,
+} from "@/lib/safety/client-types";
 
 export const metadata = {
   title: "Safety · OpenPlan",
@@ -59,19 +63,29 @@ export default async function SafetyPage() {
     .maybeSingle();
   const homeGeography = parseWorkspaceHomeGeography(workspaceRow);
 
-  // The most recent ingest drives the coverage banner. A missing table (schema
-  // not applied yet) is treated the same as "nothing retrieved" rather than
-  // failing the page.
-  const { data: ingestRow } = await supabase
-    .from("safety_crash_ingests")
-    .select(
-      "id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,fetch_error,created_at"
-    )
-    .eq("workspace_id", workspaceId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // Recent acquisitions drive the coverage banner (newest row) and the
+  // acquisition-history list, with the project each run was attached to. A
+  // missing table (schema not applied yet) is treated the same as "nothing
+  // retrieved" rather than failing the page. Projects power the attach-on-
+  // ingest selector — the same workspace projects list other modules offer.
+  const [{ data: ingestRows }, { data: projectRows }] = await Promise.all([
+    supabase
+      .from("safety_crash_ingests")
+      .select(
+        "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,fetch_error,created_at"
+      )
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(8),
+    supabase
+      .from("projects")
+      .select("id, name, status")
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(200),
+  ]);
 
+  const ingestRow = (ingestRows ?? [])[0] ?? null;
   const latestIngest: SafetyIngestSummary | null = ingestRow
     ? {
         id: ingestRow.id as string,
@@ -89,12 +103,30 @@ export default async function SafetyPage() {
       }
     : null;
 
+  const ingestHistory: SafetyIngestHistoryEntry[] = ((ingestRows ?? []) as Array<
+    Record<string, unknown>
+  >).map((row) => ({
+    id: row.id as string,
+    projectId: (row.project_id as string | null) ?? null,
+    sourceLabel: (row.source_label as string | null) ?? null,
+    coverageState: row.coverage_state as string,
+    status: row.status as string,
+    crashCount: Number(row.crash_count ?? 0),
+    geocodedCount: Number(row.geocoded_count ?? 0),
+    yearsRequested: (row.years_requested as number[] | null) ?? [],
+    createdAt: row.created_at as string,
+  }));
+
+  const projects = (projectRows ?? []) as SafetyProjectOption[];
+
   return (
     <section className="module-page">
       <SafetyWorkspace
         workspaceId={workspaceId}
         latestIngest={latestIngest}
         homeGeography={homeGeography}
+        projects={projects}
+        ingestHistory={ingestHistory}
       />
     </section>
   );

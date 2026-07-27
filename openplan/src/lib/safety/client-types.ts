@@ -53,6 +53,31 @@ export type SafetyIngestSummary = {
   createdAt: string;
 };
 
+/** A workspace project offered on the ingest launcher's attach selector. */
+export type SafetyProjectOption = {
+  id: string;
+  name: string;
+  status: string;
+};
+
+/**
+ * One acquisition-history row. The ingest — not the crash point — is the
+ * acquisition unit, so the project link lives here.
+ */
+export type SafetyIngestHistoryEntry = {
+  id: string;
+  projectId: string | null;
+  sourceLabel: string | null;
+  coverageState: string;
+  status: string;
+  /** Reported crashes — including any the source could not geolocate. */
+  crashCount: number;
+  /** Of those, how many carry coordinates and can therefore be mapped. */
+  geocodedCount: number;
+  yearsRequested: number[];
+  createdAt: string;
+};
+
 export const SEVERITY_LABELS: Record<CrashSeverity, string> = {
   fatal: "Fatal",
   severe_injury: "Serious injury",

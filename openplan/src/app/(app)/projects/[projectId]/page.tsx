@@ -35,6 +35,7 @@ import {
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { loadReportRunCitationLinksForReports, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { RTP_EVIDENCE_KPI_NAMES, summarizeRtpModelingEvidence, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
+import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
@@ -863,6 +864,29 @@ export default async function ProjectDetailPage({
     now
   );
 
+  // Safety evidence lane: crash acquisitions linked to this project, newest
+  // first. The ingest row already carries the honest reported-vs-geocoded
+  // counts, so no crash-point rows are read here.
+  const safetyIngestResult = await supabase
+    .from("safety_crash_ingests")
+    .select("id, status, source_label, coverage_state, crash_count, geocoded_count, created_at")
+    .eq("project_id", project.id)
+    .order("created_at", { ascending: false })
+    .limit(8);
+  const safetyIngestsPending = looksLikePendingSchema(safetyIngestResult.error?.message);
+  const projectSafetyIngests = safetyIngestsPending
+    ? []
+    : ((safetyIngestResult.data ?? []) as Array<{
+        id: string;
+        status: string;
+        source_label: string | null;
+        coverage_state: string;
+        crash_count: number | null;
+        geocoded_count: number | null;
+        created_at: string;
+      }>);
+  const latestProjectSafetyIngest = projectSafetyIngests[0] ?? null;
+
   const {
     missions: aerialMissions,
     packages: aerialPackages,
@@ -919,6 +943,16 @@ export default async function ProjectDetailPage({
           : (recentRuns?.length ?? 0),
       comparisonBackedReportCount,
     },
+    safety: {
+      ingestCount: projectSafetyIngests.length,
+      crashCount: Number(latestProjectSafetyIngest?.crash_count ?? 0),
+      geocodedCount: Number(latestProjectSafetyIngest?.geocoded_count ?? 0),
+      coverageLabel: latestProjectSafetyIngest
+        ? COVERAGE_STATE_COPY[latestProjectSafetyIngest.coverage_state] ??
+          latestProjectSafetyIngest.coverage_state
+        : null,
+      sourceLabel: latestProjectSafetyIngest?.source_label ?? null,
+    },
     aerial: aerialProjectPosture,
     pendingSchema: {
       rtp_packets: projectRtpLinksPending || linkedRtpCyclesPending || workspaceRtpCyclesPending || projectReportsPending,
@@ -927,6 +961,7 @@ export default async function ProjectDetailPage({
         projectFundingProfilePending || fundingAwardsPending || fundingOpportunitiesPending || projectInvoicesPending,
       engagement_evidence: projectReportsPending || reportArtifactsPending,
       analysis_modeling: recentRunsPending || projectReportsPending || reportArtifactsPending,
+      safety_evidence: safetyIngestsPending,
       aerial_evidence: aerialEvidencePending,
     },
   });

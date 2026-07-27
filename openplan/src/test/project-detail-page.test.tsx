@@ -269,6 +269,26 @@ const fromMock = vi.fn((table: string) => {
       })),
     };
   }
+  if (table === "kb_documents") {
+    // Head-count of project-linked Knowledge Base documents.
+    return {
+      select: vi.fn(() => ({
+        eq: vi.fn(async () => ({ count: 0, error: null })),
+      })),
+    };
+  }
+  if (table === "safety_crash_ingests") {
+    // Project-linked crash acquisitions feeding the safety evidence lane.
+    return {
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          order: vi.fn(() => ({
+            limit: vi.fn(async () => ({ data: [], error: null })),
+          })),
+        })),
+      })),
+    };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });

@@ -50,6 +50,13 @@ const emptyInput: ProjectSpineCrosslinkInput = {
     recentRunCount: 0,
     comparisonBackedReportCount: 0,
   },
+  safety: {
+    ingestCount: 0,
+    crashCount: 0,
+    geocodedCount: 0,
+    coverageLabel: null,
+    sourceLabel: null,
+  },
   aerial: {
     missionCount: 0,
     activeMissionCount: 0,
@@ -64,6 +71,7 @@ const buyerSafeCaveatFragments = [
   "not an award commitment, eligibility opinion, or reimbursement approval",
   "not a substitute for adopted outreach findings or public agency response records",
   "does not certify travel behavior forecasts or prioritization outcomes",
+  "an adopted safety plan or an engineering study",
   "not a stamped survey, final engineering record, or autonomous verification",
 ] as const;
 
@@ -191,6 +199,6 @@ describe("ProjectSpineCrosslinkBoard", () => {
     expect(screen.getByText("Loading state")).toBeInTheDocument();
     expect(screen.getByText("Loading crosslink queue")).toBeInTheDocument();
     expect(screen.getByText(/Keep the board visible while source reads finish/i)).toBeInTheDocument();
-    expect(screen.getAllByLabelText("Loading crosslink row")).toHaveLength(6);
+    expect(screen.getAllByLabelText("Loading crosslink row")).toHaveLength(7);
   });
 });

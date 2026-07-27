@@ -8,6 +8,7 @@ export type ProjectSpineCrosslinkRowId =
   | "funding_profile"
   | "engagement_evidence"
   | "analysis_modeling"
+  | "safety_evidence"
   | "aerial_evidence";
 
 export type ProjectSpineCrosslinkRow = {
@@ -80,6 +81,18 @@ export type ProjectSpineCrosslinkInput = {
     recentRunCount: number;
     comparisonBackedReportCount: number;
   };
+  safety: {
+    /** Crash acquisitions linked to this project. */
+    ingestCount: number;
+    /** Reported crashes on the LATEST linked acquisition — including ungeocoded ones. */
+    crashCount: number;
+    /** Of those, how many carried coordinates and are mappable. */
+    geocodedCount: number;
+    /** Humanized coverage copy of the latest acquisition, when known. */
+    coverageLabel: string | null;
+    /** Source label of the latest acquisition, when known. */
+    sourceLabel: string | null;
+  };
   aerial: {
     missionCount: number;
     activeMissionCount: number;
@@ -115,6 +128,7 @@ const schemaSetupNextAction: Record<ProjectSpineCrosslinkRowId, string> = {
   funding_profile: "Apply the funding profile, award, opportunity, and invoice tables before deciding whether this project lacks a funding target.",
   engagement_evidence: "Restore report artifact evidence-chain reads, then confirm which moderated engagement excerpts belong in the packet trail.",
   analysis_modeling: "Restore run/report artifact reads, then bind the usable model run or comparison-backed packet to this project.",
+  safety_evidence: "Apply the safety crash tables, then attach the crash acquisition this project's safety evidence should cite.",
   aerial_evidence: "Apply the aerial mission and evidence package tables, then attach only material aerial context to the project spine.",
 };
 
@@ -229,6 +243,13 @@ export function buildProjectSpineCrosslinkSummary(
       : input.analysis.recentRunCount > 0
         ? "attention"
         : "missing";
+
+  const safetyReadiness: ProjectSpineCrosslinkReadiness =
+    input.safety.ingestCount === 0
+      ? "missing"
+      : input.safety.crashCount === 0
+        ? "attention"
+        : "ready";
 
   const aerialReadiness: ProjectSpineCrosslinkReadiness =
     input.aerial.missionCount === 0
@@ -389,6 +410,41 @@ export function buildProjectSpineCrosslinkSummary(
       caveat: "Modeling evidence must stay source-cited and supervised; this board does not certify travel behavior forecasts or prioritization outcomes.",
       href: "/models",
       actionLabel: "Open models",
+    },
+    {
+      id: "safety_evidence",
+      lane: "Safety evidence",
+      readiness: safetyReadiness,
+      statusLabel:
+        safetyReadiness === "ready"
+          ? "Crash evidence linked"
+          : safetyReadiness === "attention"
+            ? "Acquisition needs review"
+            : "No crash acquisition",
+      headline:
+        safetyReadiness === "ready"
+          ? `${input.safety.crashCount.toLocaleString("en-US")} crashes ingested, ${input.safety.geocodedCount.toLocaleString("en-US")} geocoded on the latest linked acquisition.`
+          : safetyReadiness === "attention"
+            ? "The latest linked acquisition returned no crash records — check its coverage state before reading that as zero crashes."
+            : "No crash acquisition is linked to this project yet.",
+      detail: `${pluralize(input.safety.ingestCount, "acquisition")}${
+        input.safety.sourceLabel ? ` · ${input.safety.sourceLabel}` : ""
+      } · latest: ${input.safety.crashCount.toLocaleString("en-US")} ingested / ${input.safety.geocodedCount.toLocaleString("en-US")} geocoded`,
+      evidence:
+        input.safety.ingestCount === 0
+          ? "No linked acquisition is visible; an empty lane is not evidence that no crashes occurred in the study area."
+          : input.safety.coverageLabel ??
+            "Coverage details for the latest acquisition are not available; open Safety to review the source before citing counts.",
+      nextAction:
+        safetyReadiness === "missing"
+          ? "Run a crash acquisition for this project's study area from the Safety module and attach it to this project."
+          : safetyReadiness === "attention"
+            ? "Open the acquisition and confirm whether the source covers this study area before citing the empty result."
+            : "Review the acquisition's coverage and geocoding gap, then reuse the counts in BCA screening or grant evidence with their caveats.",
+      caveat:
+        "Crash records are reported collisions retrieved from the source agency for screening-level review; ungeocoded crashes are counted but cannot be mapped, and none of this is an adopted safety plan or an engineering study.",
+      href: "/safety",
+      actionLabel: "Open safety",
     },
     {
       id: "aerial_evidence",

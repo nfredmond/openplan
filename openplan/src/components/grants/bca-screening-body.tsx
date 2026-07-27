@@ -33,6 +33,7 @@ import {
   summarizeTdmCombination,
 } from "@/lib/tdm";
 import { formatSavedDate } from "@/lib/grants/bca-evidence";
+import type { BcaCrashInputSuggestion } from "@/lib/safety/bca-evidence";
 
 /**
  * True when a saved analysis uses only fields this form can round-trip.
@@ -90,6 +91,12 @@ export type BcaScreeningProjectOption = {
   /** Cost-proxy prefill from project_funding_profiles; NUMERIC arrives as string. */
   fundingNeedAmount: number | string | null;
   latestScreening?: BcaScreeningSavedSummary | null;
+  /**
+   * Latest ready project-linked crash acquisition, offered as an operator
+   * prefill with citation and caveats. Null when the project has none — the
+   * screen simply offers nothing, it never invents crash counts.
+   */
+  crashEvidence?: { ingestId: string; suggestion: BcaCrashInputSuggestion } | null;
 };
 
 export type BcaScreeningBodyProps = {
@@ -148,6 +155,9 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
   const [tdmBaseVmtInput, setTdmBaseVmtInput] = useState("");
   const [tdmSelectedKeys, setTdmSelectedKeys] = useState<readonly string[]>([]);
   const [uncertaintyEnabled, setUncertaintyEnabled] = useState(false);
+  // Set only when the operator applies the crash-evidence prefill; recorded in
+  // the saved inputs_json so downstream evidence can name its source ingest.
+  const [crashEvidenceIngestId, setCrashEvidenceIngestId] = useState<string | null>(null);
 
   const selectedProject = projects.find((project) => project.id === selectedProjectId) ?? null;
   const savedInputs = selectedProject?.latestScreening?.inputs ?? null;
@@ -161,6 +171,18 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
     // Always reset so a project without a recorded need never inherits the
     // previous project's prefill (the memo would misattribute the cost).
     setCapitalCostInput(need !== null && need > 0 ? String(need) : "");
+    // Crash-evidence provenance never survives a project switch — the id names
+    // one project's acquisition and must not be attributed to another.
+    setCrashEvidenceIngestId(null);
+  }
+
+  function handleApplyCrashEvidence(ingestId: string, suggestion: BcaCrashInputSuggestion) {
+    const { fatal, injury, propertyDamageOnly } = suggestion.suggestedInputs;
+    setCrashesFatalInput(fatal > 0 ? String(fatal) : "");
+    setCrashesInjuryInput(injury > 0 ? String(injury) : "");
+    setCrashesPdoInput(propertyDamageOnly > 0 ? String(propertyDamageOnly) : "");
+    setCrashEvidenceIngestId(ingestId);
+    setSaveNotice(null);
   }
 
   function handleLoadSavedInputs(saved: BcaAnalysisInputs) {
@@ -204,6 +226,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
     setSpreadYearsInput(capital?.kind === "capital" ? String(capital.spreadYears ?? 1) : "1");
     const om = saved.costs.find((cost) => cost.kind === "operationsMaintenance");
     setAnnualOmInput(om?.kind === "operationsMaintenance" ? String(om.annualAmount) : "");
+    setCrashEvidenceIngestId(saved.crashEvidenceIngestId ?? null);
     setSaveNotice(null);
   }
 
@@ -367,6 +390,10 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
     }
 
     if (benefits.length === 0 && costs.length === 0) return { inputs: null, issues: [] };
+    // The evidence id travels only alongside an actual safety benefit — if the
+    // operator clears the crash inputs after a prefill, the saved screening
+    // must not keep citing an acquisition it no longer draws on.
+    const hasSafetyBenefit = benefits.some((benefit) => benefit.kind === "safety");
     return {
       inputs: {
         baseYear: baseYear as number,
@@ -374,6 +401,9 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
         discountRatePct: discountRate as number,
         benefits,
         costs,
+        ...(crashEvidenceIngestId && hasSafetyBenefit
+          ? { crashEvidenceIngestId }
+          : {}),
       },
       issues: [],
     };
@@ -390,6 +420,7 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
     capitalCostInput,
     spreadYearsInput,
     annualOmInput,
+    crashEvidenceIngestId,
   ]);
 
   const analysisInputs = derivation.inputs;
@@ -612,6 +643,64 @@ export function BcaScreeningBody({ projects, canSave }: BcaScreeningBodyProps) {
               re-enter the inputs.
             </p>
           ) : null}
+        </div>
+      ) : null}
+
+      {selectedProject?.crashEvidence ? (
+        <div
+          className="rounded-[0.75rem] border border-border/70 bg-background/60 px-5 py-4"
+          data-testid="bca-crash-evidence"
+        >
+          <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Observed crash evidence (linked acquisition)
+          </p>
+          <p className="mt-2 text-sm text-foreground/90" data-testid="bca-crash-evidence-citation">
+            {selectedProject.crashEvidence.suggestion.citationText}
+          </p>
+          <p className="mt-1 text-sm text-foreground/90">
+            Observed annual averages: fatal{" "}
+            <span className="tabular-nums">
+              {formatNumber(selectedProject.crashEvidence.suggestion.suggestedInputs.fatal, 2)}
+            </span>
+            , injury{" "}
+            <span className="tabular-nums">
+              {formatNumber(selectedProject.crashEvidence.suggestion.suggestedInputs.injury, 2)}
+            </span>
+            , property-damage-only{" "}
+            <span className="tabular-nums">
+              {formatNumber(
+                selectedProject.crashEvidence.suggestion.suggestedInputs.propertyDamageOnly,
+                2
+              )}
+            </span>{" "}
+            per year.
+          </p>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+            {selectedProject.crashEvidence.suggestion.caveats.map((caveat) => (
+              <li key={caveat}>{caveat}</li>
+            ))}
+          </ul>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                handleApplyCrashEvidence(
+                  selectedProject.crashEvidence!.ingestId,
+                  selectedProject.crashEvidence!.suggestion
+                )
+              }
+            >
+              Prefill crash inputs from observed frequencies
+            </Button>
+            {crashEvidenceIngestId === selectedProject.crashEvidence.ingestId ? (
+              <p className="text-xs text-muted-foreground" data-testid="bca-crash-evidence-applied">
+                A saved screening will record this acquisition as its crash-evidence source.
+                Adjust the prefilled figures to the crashes the project is expected to avoid.
+              </p>
+            ) : null}
+          </div>
         </div>
       ) : null}
 

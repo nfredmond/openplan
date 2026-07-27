@@ -3,6 +3,8 @@ import { NextRequest } from "next/server";
 
 const getUserMock = vi.fn();
 const membershipMaybeSingleMock = vi.fn();
+const projectMaybeSingleMock = vi.fn();
+const projectIngestListMock = vi.fn();
 const ingestMock = vi.fn();
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -12,9 +14,21 @@ vi.mock("@/lib/observability/audit", () => ({
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     auth: { getUser: getUserMock },
-    from: () => ({
-      select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
-    }),
+    from: (table: string) => {
+      if (table === "projects") {
+        return {
+          select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: projectMaybeSingleMock }) }) }),
+        };
+      }
+      if (table === "safety_crash_ingests") {
+        return {
+          select: () => ({ eq: () => ({ eq: projectIngestListMock }) }),
+        };
+      }
+      return {
+        select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
+      };
+    },
   }),
   createServiceRoleClient: () => ({}),
 }));
@@ -24,8 +38,10 @@ vi.mock("@/lib/safety/ingest", () => ({
 }));
 
 import { POST } from "@/app/api/safety/crashes/ingest/route";
+import { GET } from "@/app/api/safety/crashes/route";
 
 const WORKSPACE_ID = "550e8400-e29b-41d4-a716-446655440000";
+const PROJECT_ID = "6f9619ff-8b86-4d01-b42d-00cf4fc964ff";
 const BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
 
 function ingestRequest(body: unknown) {
@@ -41,6 +57,7 @@ describe("POST /api/safety/crashes/ingest guards", () => {
     vi.clearAllMocks();
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+    projectMaybeSingleMock.mockResolvedValue({ data: { id: PROJECT_ID }, error: null });
     ingestMock.mockResolvedValue({
       ingestId: "ingest-1",
       status: "ready",
@@ -166,5 +183,76 @@ describe("POST /api/safety/crashes/ingest guards", () => {
     const body = await res.json();
     expect(body.status).toBe("no_coverage");
     expect(body.coverageState).toBe("out_of_coverage");
+  });
+
+  it("accepts a workspace-owned projectId and passes it to the ingest", async () => {
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID })
+    );
+    expect(res.status).toBe(200);
+    expect(ingestMock).toHaveBeenCalledWith(
+      expect.objectContaining({ projectId: PROJECT_ID })
+    );
+  });
+
+  it("400 when projectId is not a UUID", async () => {
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: "not-a-uuid" })
+    );
+    expect(res.status).toBe(400);
+    expect(ingestMock).not.toHaveBeenCalled();
+  });
+
+  it("404 when the linked project does not belong to the workspace", async () => {
+    projectMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID })
+    );
+    expect(res.status).toBe(404);
+    expect(ingestMock).not.toHaveBeenCalled();
+  });
+
+  it("500 when the linked-project lookup fails", async () => {
+    projectMaybeSingleMock.mockResolvedValue({ data: null, error: { message: "boom" } });
+    const res = await POST(
+      ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025], projectId: PROJECT_ID })
+    );
+    expect(res.status).toBe(500);
+    expect(ingestMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /api/safety/crashes project filter", () => {
+  const crashQuery = (extra: string) =>
+    new NextRequest(
+      `http://localhost/api/safety/crashes?workspaceId=${WORKSPACE_ID}&minLon=-121.3&minLat=39.1&maxLon=-120&maxLat=39.6${extra}`
+    );
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+  });
+
+  it("400 when projectId is not a UUID", async () => {
+    const res = await GET(crashQuery("&projectId=nope"));
+    expect(res.status).toBe(400);
+  });
+
+  it("returns an honest empty collection when the project has no acquisitions", async () => {
+    projectIngestListMock.mockResolvedValue({ data: [], error: null });
+    const res = await GET(crashQuery(`&projectId=${PROJECT_ID}`));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.features).toEqual([]);
+    expect(body.returnedCount).toBe(0);
+    expect(body.matchedCount).toBe(0);
+    expect(body.truncated).toBe(false);
+  });
+
+  it("500 when the project's acquisitions cannot be resolved", async () => {
+    projectIngestListMock.mockResolvedValue({ data: null, error: { message: "boom" } });
+    const res = await GET(crashQuery(`&projectId=${PROJECT_ID}`));
+    expect(res.status).toBe(500);
   });
 });

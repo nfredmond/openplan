@@ -104,5 +104,8 @@ export const bcaAnalysisInputsSchema: z.ZodType<BcaAnalysisInputs> = z
     co2DiscountRatePct: z.number().finite().min(0).max(100).optional(),
     benefits: z.array(benefitInputSchema).max(20),
     costs: z.array(costInputSchema).max(20),
+    // Provenance only — the safety_crash_ingests id whose observed severity
+    // mix informed the safety inputs. The engine never reads it.
+    crashEvidenceIngestId: z.string().uuid().optional(),
   })
   .strict();

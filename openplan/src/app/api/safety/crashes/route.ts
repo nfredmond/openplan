@@ -25,6 +25,12 @@ const MAX_LIMIT = 5000;
 
 const querySchema = z.object({
   workspaceId: z.string().uuid(),
+  /**
+   * Optional project scope. Crashes carry no project link themselves — the
+   * INGEST is the acquisition unit — so this filter resolves the project's
+   * ingests first and returns only crashes stored by those acquisitions.
+   */
+  projectId: z.string().uuid().optional(),
   minLon: z.coerce.number().min(-180).max(180),
   minLat: z.coerce.number().min(-90).max(90),
   maxLon: z.coerce.number().min(-180).max(180),
@@ -92,6 +98,42 @@ export async function GET(request: NextRequest) {
 
     const limit = query.limit ?? DEFAULT_LIMIT;
 
+    // Project scope: resolve the project's acquisitions, then restrict crashes
+    // to those ingest ids. A project with no linked acquisitions returns an
+    // honest empty collection (0 of 0) rather than the whole workspace's data.
+    let projectIngestIds: string[] | null = null;
+    if (query.projectId) {
+      const { data: ingestRows, error: ingestError } = await supabase
+        .from("safety_crash_ingests")
+        .select("id")
+        .eq("workspace_id", query.workspaceId)
+        .eq("project_id", query.projectId);
+      if (ingestError) {
+        audit.warn("safety_crash_project_scope_failed", {
+          workspaceId: query.workspaceId,
+          error: ingestError.message,
+        });
+        return NextResponse.json(
+          { error: "Failed to resolve the project's crash acquisitions" },
+          { status: 500 }
+        );
+      }
+      projectIngestIds = (ingestRows ?? []).map((row) => row.id as string);
+      if (projectIngestIds.length === 0) {
+        return NextResponse.json(
+          {
+            type: "FeatureCollection",
+            features: [],
+            returnedCount: 0,
+            matchedCount: 0,
+            truncated: false,
+            limit,
+          },
+          { status: 200 }
+        );
+      }
+    }
+
     // RLS scopes reads to workspace members; the explicit workspace filter keeps
     // the query planner honest and the intent obvious. The two queries are built
     // separately so each `select()` stays a string literal — supabase-js infers
@@ -113,6 +155,7 @@ export async function GET(request: NextRequest) {
         .gte("latitude", query.minLat)
         .lte("latitude", query.maxLat);
 
+      if (projectIngestIds) q = q.in("ingest_id", projectIngestIds);
       if (query.severity?.length) q = q.in("severity", query.severity);
       if (query.yearFrom !== undefined) q = q.gte("collision_year", query.yearFrom);
       if (query.yearTo !== undefined) q = q.lte("collision_year", query.yearTo);

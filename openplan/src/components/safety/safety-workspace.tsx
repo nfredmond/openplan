@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { summarizeCorridorText } from "@/lib/models/study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
@@ -18,7 +19,9 @@ import {
   SEVERITY_LABELS,
   type SafetyCrashCollection,
   type SafetyCrashQueryResponse,
+  type SafetyIngestHistoryEntry,
   type SafetyIngestSummary,
+  type SafetyProjectOption,
 } from "@/lib/safety/client-types";
 import {
   SAFETY_CRASH_DATA_CAVEAT,
@@ -85,9 +88,19 @@ type SafetyWorkspaceProps = {
    * fetched until the user picks a study area.
    */
   homeGeography?: WorkspaceHomeGeography | null;
+  /** Workspace projects for the attach-on-ingest selector. */
+  projects?: SafetyProjectOption[];
+  /** Recent acquisitions, newest first, with their project links. */
+  ingestHistory?: SafetyIngestHistoryEntry[];
 };
 
-export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = null }: SafetyWorkspaceProps) {
+export function SafetyWorkspace({
+  workspaceId,
+  latestIngest,
+  homeGeography = null,
+  projects = [],
+  ingestHistory = [],
+}: SafetyWorkspaceProps) {
   // The study area is still the user's to choose. The only thing that changes
   // when a workspace has stated a home geography is where the picker STARTS —
   // no place is ever invented here, and clearing the area clears it fully.
@@ -95,6 +108,9 @@ export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = nul
   const [corridorText, setCorridorText] = useState(prefill.corridorText);
   const [place, setPlace] = useState<PlaceBoundaryResponse | null>(prefill.place);
   const [ingest, setIngest] = useState<SafetyIngestSummary | null>(latestIngest);
+  const [history, setHistory] = useState<SafetyIngestHistoryEntry[]>(ingestHistory);
+  // Optional project the NEXT acquisition is attached to. "" = unattached.
+  const [projectId, setProjectId] = useState("");
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
   const [severities, setSeverities] = useState<CrashSeverity[]>([]);
   const [mode, setMode] = useState<"all" | "pedestrian" | "bicyclist" | "vru">("all");
@@ -170,6 +186,7 @@ export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = nul
           bbox,
           years,
           ...(countyCode === null ? {} : { countyCode }),
+          ...(projectId === "" ? {} : { projectId }),
         }),
       });
       const body = await res.json();
@@ -179,7 +196,7 @@ export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = nul
       // malformed or unexpected response body must not be able to white-screen
       // the page (an absent count would throw on .toLocaleString()).
       const count = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
-      setIngest({
+      const summary: SafetyIngestSummary = {
         id: String(body.ingestId ?? ""),
         sourceLabel: typeof body.sourceLabel === "string" ? body.sourceLabel : null,
         attribution: null,
@@ -193,14 +210,29 @@ export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = nul
         yearsRequested: years,
         fetchError: typeof body.error === "string" ? body.error : null,
         createdAt: new Date().toISOString(),
-      });
+      };
+      setIngest(summary);
+      setHistory((current) => [
+        {
+          id: summary.id,
+          projectId: projectId === "" ? null : projectId,
+          sourceLabel: summary.sourceLabel,
+          coverageState: summary.coverageState,
+          status: summary.status,
+          crashCount: summary.crashCount,
+          geocodedCount: summary.geocodedCount,
+          yearsRequested: years,
+          createdAt: summary.createdAt,
+        },
+        ...current.filter((entry) => entry.id !== summary.id),
+      ]);
       await loadCrashes();
     } catch (ingestError) {
       setError(ingestError instanceof Error ? ingestError.message : "Crash ingest failed");
     } finally {
       setIngesting(false);
     }
-  }, [workspaceId, loadCrashes, bbox, countyCode]);
+  }, [workspaceId, loadCrashes, bbox, countyCode, projectId]);
 
   const severityCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -220,6 +252,11 @@ export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = nul
       current.includes(severity) ? current.filter((s) => s !== severity) : [...current, severity]
     );
   };
+
+  const projectNameById = useMemo(
+    () => new Map(projects.map((project) => [project.id, project.name])),
+    [projects]
+  );
 
   // The gap between reported and mappable crashes is the number this page must
   // never hide: an ungeocoded crash is a real crash that cannot be plotted.
@@ -243,14 +280,35 @@ export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = nul
             Reported crashes for the study area, retrieved from the source agency.
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void runIngest()}
-          disabled={ingesting || !bbox}
-          className="rounded-md border px-3 py-2 text-sm font-medium disabled:opacity-60"
-        >
-          {ingesting ? "Retrieving crashes…" : "Retrieve crash data"}
-        </button>
+        <div className="flex flex-wrap items-end gap-3">
+          {projects.length > 0 && (
+            <label className="flex flex-col gap-1 text-xs">
+              <span className="text-muted-foreground">Attach to project (optional)</span>
+              <select
+                value={projectId}
+                onChange={(event) => setProjectId(event.target.value)}
+                disabled={ingesting}
+                className="rounded-md border px-2 py-2 text-sm"
+                aria-label="Project for this crash acquisition"
+              >
+                <option value="">No project</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <button
+            type="button"
+            onClick={() => void runIngest()}
+            disabled={ingesting || !bbox}
+            className="rounded-md border px-3 py-2 text-sm font-medium disabled:opacity-60"
+          >
+            {ingesting ? "Retrieving crashes…" : "Retrieve crash data"}
+          </button>
+        </div>
       </header>
 
       {/* Study area — the app's single geography front door, reused, not reinvented. */}
@@ -372,6 +430,38 @@ export function SafetyWorkspace({ workspaceId, latestIngest, homeGeography = nul
       <div className="h-[520px] w-full overflow-hidden rounded-lg border">
         <SafetyCrashMap collection={collection} bbox={mapBbox} />
       </div>
+
+      {history.length > 0 && (
+        <section className="rounded-lg border p-4" aria-label="Acquisition history">
+          <h2 className="mb-2 text-sm font-medium">Acquisition history</h2>
+          <ul className="flex flex-col gap-2 text-sm">
+            {history.map((entry) => (
+              <li key={entry.id} className="flex flex-wrap items-center gap-2">
+                <span className="text-muted-foreground">{entry.createdAt.slice(0, 10)}</span>
+                <span>{entry.sourceLabel ?? "No source"}</span>
+                <span className="text-muted-foreground">
+                  {/* Reported vs geocoded, always both — an ungeocoded crash is
+                      a real crash that cannot be plotted. */}
+                  {entry.crashCount.toLocaleString()} crashes ingested,{" "}
+                  {entry.geocodedCount.toLocaleString()} geocoded
+                </span>
+                <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                  {entry.status}
+                </span>
+                {entry.projectId && (
+                  <Link
+                    href={`/projects/${entry.projectId}`}
+                    className="rounded-full border px-2 py-0.5 text-xs underline-offset-2 hover:underline"
+                    aria-label={`Open project ${projectNameById.get(entry.projectId) ?? "linked to this acquisition"}`}
+                  >
+                    {projectNameById.get(entry.projectId) ?? "Linked project"}
+                  </Link>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <p className="text-xs text-muted-foreground">
         {loading
