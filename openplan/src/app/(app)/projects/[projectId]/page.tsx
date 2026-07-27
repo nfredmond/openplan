@@ -33,6 +33,7 @@ import {
   parseStoredEvidenceChainSummary,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { loadReportRunCitationLinksForReports, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { RTP_EVIDENCE_KPI_NAMES, summarizeRtpModelingEvidence, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -673,21 +674,15 @@ export default async function ProjectDetailPage({
         .order("generated_at", { ascending: false })
     : { data: [], error: null };
   const reportArtifactsPending = looksLikePendingSchema(reportArtifactsResult.error?.message);
-  const reportRunsResult = projectReportIds.length
-    ? await supabase
-        .from("report_runs")
-        .select("report_id, run_id, created_at, updated_at")
-        .in("report_id", projectReportIds)
-    : { data: [], error: null };
-  const linkedReportRuns = looksLikePendingSchema(reportRunsResult.error?.message)
-    ? []
-    : ((reportRunsResult.data ?? []) as Array<{
-        report_id: string;
-        run_id: string;
-        created_at: string;
-        updated_at: string;
-      }>);
-  const linkedReportRunIds = Array.from(new Set(linkedReportRuns.map((item) => item.run_id)));
+  // Widened for typed evidence citations (legacy fallback inside); typed
+  // citations resolve so they render alongside legacy linked-run evidence with
+  // a kind label and an honest status.
+  const { links: linkedReportRuns } = await loadReportRunCitationLinksForReports(supabase, projectReportIds);
+  const linkedReportRunIds = Array.from(
+    new Set(linkedReportRuns.map((item) => item.run_id).filter((value): value is string => Boolean(value)))
+  );
+  const { citedModelRuns, citedCountyRuns } = await resolveCitedRuns(supabase, linkedReportRuns);
+  const typedCitationCount = citedModelRuns.length + citedCountyRuns.length;
   const linkedRunsResult = linkedReportRunIds.length
     ? await supabase
         .from("runs")
@@ -974,7 +969,9 @@ export default async function ProjectDetailPage({
       latestUpdatedAt: latestEngagementUpdatedAt,
     },
     analysis: {
-      count: linkedReportRunIds.length,
+      // Legacy linked runs plus typed model/county citations — all three are
+      // report-cited analysis evidence.
+      count: linkedReportRunIds.length + typedCitationCount,
       latestUpdatedAt: latestAnalysisUpdatedAt,
       evidenceBackedReportCount,
     },
@@ -1073,6 +1070,24 @@ export default async function ProjectDetailPage({
       at: item.created_at,
       badge: "Analysis Run",
       tone: "success" as const,
+    })),
+    ...citedModelRuns.map((item) => ({
+      id: `cited-model-run-${item.id}`,
+      type: "run",
+      title: item.run_title,
+      description: "Worker model run cited by a project report (screening-grade).",
+      at: item.created_at ?? null,
+      badge: `Cited Model Run · ${titleize(item.status)}`,
+      tone: "info" as const,
+    })),
+    ...citedCountyRuns.map((item) => ({
+      id: `cited-county-run-${item.id}`,
+      type: "run",
+      title: item.run_name ?? "County run",
+      description: "County validation run cited by a project report.",
+      at: item.updated_at ?? null,
+      badge: `Cited County Run · ${titleize(item.stage ?? "unknown")}`,
+      tone: "info" as const,
     })),
     ...(recentGateDecisions ?? []).map((item) => ({
       id: `gate-${item.id}`,

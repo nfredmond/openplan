@@ -6,6 +6,10 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadReportAccess as sharedLoadReportAccess } from "@/lib/reports/api";
 
+function looksLikePendingSchema(message: string | null | undefined) {
+  return /column .* does not exist|schema cache/i.test(message ?? "");
+}
+
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
 });
@@ -16,6 +20,10 @@ const patchReportSchema = z
     summary: z.union([z.string().trim().max(2000), z.null()]).optional(),
     status: z.enum(["draft", "generated", "archived"]).optional(),
     runIds: z.array(z.string().uuid()).max(20).optional(),
+    // Typed evidence citations (report_runs.model_run_id / county_run_id);
+    // each replaces only its own kind.
+    modelRunIds: z.array(z.string().uuid()).max(20).optional(),
+    countyRunIds: z.array(z.string().uuid()).max(20).optional(),
     sections: z
       .array(
         z.object({
@@ -121,11 +129,24 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load report sections" }, { status: 500 });
     }
 
-    const { data: reportRunLinks, error: reportRunsError } = await access.supabase
+    // Widened for typed evidence; a database without the typed-evidence
+    // migration answers with a missing-column error, so fall back to the
+    // legacy select and treat every citation as a legacy Analysis Studio run.
+    let reportRunsResult = await access.supabase
       .from("report_runs")
-      .select("id, report_id, run_id, sort_order, created_at, updated_at")
+      .select("id, report_id, run_id, model_run_id, county_run_id, sort_order, created_at, updated_at")
       .eq("report_id", access.report.id)
       .order("sort_order", { ascending: true });
+
+    if (reportRunsResult.error && looksLikePendingSchema(reportRunsResult.error.message)) {
+      reportRunsResult = (await access.supabase
+        .from("report_runs")
+        .select("id, report_id, run_id, sort_order, created_at, updated_at")
+        .eq("report_id", access.report.id)
+        .order("sort_order", { ascending: true })) as unknown as typeof reportRunsResult;
+    }
+
+    const { data: reportRunLinks, error: reportRunsError } = reportRunsResult;
 
     if (reportRunsError) {
       audit.error("report_runs_lookup_failed", {
@@ -136,33 +157,104 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load report runs" }, { status: 500 });
     }
 
-    const runIds = (reportRunLinks ?? []).map((item) => item.run_id);
-    const runsResult = runIds.length
-      ? await access.supabase
-          .from("runs")
-          .select("id, workspace_id, title, query_text, summary_text, ai_interpretation, metrics, created_at")
-          .in("id", runIds)
-      : { data: [], error: null };
+    const runLinks = (reportRunLinks ?? []) as Array<{
+      id: string;
+      report_id: string;
+      run_id: string | null;
+      model_run_id?: string | null;
+      county_run_id?: string | null;
+      sort_order: number;
+      created_at?: string | null;
+      updated_at?: string | null;
+    }>;
+    const runIds = runLinks.map((item) => item.run_id).filter((value): value is string => Boolean(value));
+    const citedModelRunIds = runLinks
+      .map((item) => item.model_run_id ?? null)
+      .filter((value): value is string => Boolean(value));
+    const citedCountyRunIds = runLinks
+      .map((item) => item.county_run_id ?? null)
+      .filter((value): value is string => Boolean(value));
+    const [runsResult, modelRunsResult, countyRunsResult] = await Promise.all([
+      runIds.length
+        ? access.supabase
+            .from("runs")
+            .select("id, workspace_id, title, query_text, summary_text, ai_interpretation, metrics, created_at")
+            .in("id", runIds)
+        : Promise.resolve({ data: [], error: null }),
+      citedModelRunIds.length
+        ? access.supabase.from("model_runs").select("id, run_title, engine_key, status").in("id", citedModelRunIds)
+        : Promise.resolve({ data: [], error: null }),
+      citedCountyRunIds.length
+        ? access.supabase.from("county_runs").select("id, run_name, stage").in("id", citedCountyRunIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
 
-    if (runsResult.error) {
+    if (runsResult.error || modelRunsResult.error || countyRunsResult.error) {
+      const firstError = runsResult.error ?? modelRunsResult.error ?? countyRunsResult.error;
       audit.error("runs_lookup_failed", {
         reportId: access.report.id,
-        message: runsResult.error.message,
-        code: runsResult.error.code ?? null,
+        message: firstError?.message ?? "unknown",
+        code: firstError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to load linked runs" }, { status: 500 });
     }
 
     const runMap = new Map((runsResult.data ?? []).map((run) => [run.id, run]));
-    const runs = (reportRunLinks ?? [])
+    const modelRunMap = new Map(
+      ((modelRunsResult.data ?? []) as Array<{ id: string; run_title: string; engine_key: string; status: string }>).map(
+        (run) => [run.id, run]
+      )
+    );
+    const countyRunMap = new Map(
+      ((countyRunsResult.data ?? []) as Array<{ id: string; run_name: string | null; stage: string | null }>).map(
+        (run) => [run.id, run]
+      )
+    );
+    // Legacy rows keep their exact shape (plus the kind discriminator); typed
+    // rows resolve to title/status so the UI can render all three kinds. A
+    // model run's honest status and engine always travel with it.
+    const runs = runLinks
       .map((link) => {
-        const run = runMap.get(link.run_id);
-        if (!run) return null;
-        return {
-          ...run,
-          report_run_id: link.id,
-          sort_order: link.sort_order,
-        };
+        if (link.run_id) {
+          const run = runMap.get(link.run_id);
+          if (!run) return null;
+          return {
+            ...run,
+            report_run_id: link.id,
+            sort_order: link.sort_order,
+            kind: "analysis" as const,
+          };
+        }
+
+        if (link.model_run_id) {
+          const modelRun = modelRunMap.get(link.model_run_id);
+          if (!modelRun) return null;
+          return {
+            kind: "model" as const,
+            id: modelRun.id,
+            title: modelRun.run_title,
+            engine_key: modelRun.engine_key,
+            status: modelRun.status,
+            report_run_id: link.id,
+            sort_order: link.sort_order,
+          };
+        }
+
+        if (link.county_run_id) {
+          const countyRun = countyRunMap.get(link.county_run_id);
+          if (!countyRun) return null;
+          return {
+            kind: "county" as const,
+            id: countyRun.id,
+            title: countyRun.run_name ?? "County run",
+            stage: countyRun.stage,
+            status: countyRun.stage,
+            report_run_id: link.id,
+            sort_order: link.sort_order,
+          };
+        }
+
+        return null;
       })
       .filter((run) => Boolean(run));
 
@@ -274,6 +366,48 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    if (parsed.data.modelRunIds && parsed.data.modelRunIds.length > 0) {
+      const { data: modelRunRows, error: modelRunError } = await access.supabase
+        .from("model_runs")
+        .select("id")
+        .eq("workspace_id", access.report.workspace_id)
+        .in("id", parsed.data.modelRunIds);
+
+      if (modelRunError) {
+        audit.error("model_runs_lookup_failed", {
+          reportId: access.report.id,
+          message: modelRunError.message,
+          code: modelRunError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify linked model runs" }, { status: 500 });
+      }
+
+      if ((modelRunRows ?? []).length !== new Set(parsed.data.modelRunIds).size) {
+        return NextResponse.json({ error: "One or more linked model runs are invalid" }, { status: 400 });
+      }
+    }
+
+    if (parsed.data.countyRunIds && parsed.data.countyRunIds.length > 0) {
+      const { data: countyRunRows, error: countyRunError } = await access.supabase
+        .from("county_runs")
+        .select("id")
+        .eq("workspace_id", access.report.workspace_id)
+        .in("id", parsed.data.countyRunIds);
+
+      if (countyRunError) {
+        audit.error("county_runs_lookup_failed", {
+          reportId: access.report.id,
+          message: countyRunError.message,
+          code: countyRunError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify linked county runs" }, { status: 500 });
+      }
+
+      if ((countyRunRows ?? []).length !== new Set(parsed.data.countyRunIds).size) {
+        return NextResponse.json({ error: "One or more linked county runs are invalid" }, { status: 400 });
+      }
+    }
+
     const reportUpdate: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) {
       reportUpdate.title = parsed.data.title;
@@ -311,7 +445,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (parsed.data.runIds) {
-      const { error: deleteRunsError } = await access.supabase.from("report_runs").delete().eq("report_id", access.report.id);
+      // Replace legacy rows only. Scoping the delete to run_id IS NOT NULL is
+      // observably identical on a pre-migration database (every row has a
+      // run_id there) while leaving typed model/county citations untouched.
+      const { error: deleteRunsError } = await access.supabase
+        .from("report_runs")
+        .delete()
+        .eq("report_id", access.report.id)
+        .not("run_id", "is", null);
 
       if (deleteRunsError) {
         audit.error("report_runs_delete_failed", {
@@ -338,6 +479,73 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             code: insertRunsError.code ?? null,
           });
           return NextResponse.json({ error: "Failed to replace linked runs" }, { status: 500 });
+        }
+      }
+    }
+
+    // Typed replacements touch only their own kind. Sort order is per kind —
+    // every reader groups citations by kind before ordering.
+    const typedReplacements = [
+      { column: "model_run_id" as const, ids: parsed.data.modelRunIds, label: "model" },
+      { column: "county_run_id" as const, ids: parsed.data.countyRunIds, label: "county" },
+    ];
+
+    for (const replacement of typedReplacements) {
+      if (!replacement.ids) continue;
+
+      const { error: deleteTypedError } = await access.supabase
+        .from("report_runs")
+        .delete()
+        .eq("report_id", access.report.id)
+        .not(replacement.column, "is", null);
+
+      if (deleteTypedError) {
+        if (looksLikePendingSchema(deleteTypedError.message)) {
+          return NextResponse.json(
+            {
+              error:
+                "Typed run evidence requires the report_runs typed-evidence migration. Apply the latest database migration first.",
+            },
+            { status: 503 }
+          );
+        }
+
+        audit.error("report_typed_runs_delete_failed", {
+          reportId: access.report.id,
+          kind: replacement.label,
+          message: deleteTypedError.message,
+          code: deleteTypedError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to replace linked run evidence" }, { status: 500 });
+      }
+
+      if (replacement.ids.length > 0) {
+        const { error: insertTypedError } = await access.supabase.from("report_runs").insert(
+          replacement.ids.map((citedRunId, index) => ({
+            report_id: access.report.id,
+            [replacement.column]: citedRunId,
+            sort_order: index,
+          }))
+        );
+
+        if (insertTypedError) {
+          if (looksLikePendingSchema(insertTypedError.message)) {
+            return NextResponse.json(
+              {
+                error:
+                  "Typed run evidence requires the report_runs typed-evidence migration. Apply the latest database migration first.",
+              },
+              { status: 503 }
+            );
+          }
+
+          audit.error("report_typed_runs_insert_failed", {
+            reportId: access.report.id,
+            kind: replacement.label,
+            message: insertTypedError.message,
+            code: insertTypedError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to replace linked run evidence" }, { status: 500 });
         }
       }
     }

@@ -124,7 +124,11 @@ const countyRunsEqMock = vi.fn((column?: string) => {
 
   return { order: countyRunsOrderMock };
 });
-const countyRunsSelectMock = vi.fn(() => ({ eq: countyRunsEqMock }));
+const countyRunsInMock = vi.fn();
+const countyRunsSelectMock = vi.fn(() => ({ eq: countyRunsEqMock, in: countyRunsInMock }));
+
+const modelRunsInMock = vi.fn();
+const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock }));
 
 const modelingClaimMaybeSingleMock = vi.fn();
 const modelingClaimEqTrackMock = vi.fn(() => ({ maybeSingle: modelingClaimMaybeSingleMock }));
@@ -318,6 +322,12 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "model_runs") {
+    return {
+      select: modelRunsSelectMock,
+    };
+  }
+
   if (table === "modeling_claim_decisions") {
     return {
       select: modelingClaimSelectMock,
@@ -491,6 +501,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
     rtpEngagementCampaignsOrderMock.mockResolvedValue({ data: [], error: null });
     countyRunsLimitMock.mockResolvedValue({ data: [], error: null });
     countyRunsMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    countyRunsInMock.mockResolvedValue({ data: [], error: null });
+    modelRunsInMock.mockResolvedValue({ data: [], error: null });
     modelingClaimMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     modelingSourcesOrderMock.mockResolvedValue({ data: [], error: null });
     modelingValidationsOrderMock.mockResolvedValue({ data: [], error: null });
@@ -907,6 +919,87 @@ describe("POST /api/reports/[reportId]/generate", () => {
         rtp_basis_stale_marked_at: null,
       })
     );
+  });
+
+  it("renders cited model and county runs with honest engine, status, and screening framing", async () => {
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "section-1", section_key: "project_overview", title: "Project overview", enabled: true, sort_order: 0, config_json: {} },
+        { id: "section-2", section_key: "run_summaries", title: "Run summaries", enabled: true, sort_order: 1, config_json: {} },
+      ],
+      error: null,
+    });
+    reportRunsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "report-run-1", run_id: "55555555-5555-4555-8555-555555555555", model_run_id: null, county_run_id: null, sort_order: 0 },
+        { id: "report-run-2", run_id: null, model_run_id: "model-run-1", county_run_id: null, sort_order: 1 },
+        { id: "report-run-3", run_id: null, model_run_id: null, county_run_id: "county-run-1", sort_order: 2 },
+      ],
+      error: null,
+    });
+    modelRunsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "model-run-1",
+          run_title: "SR-49 fast screening",
+          engine_key: "aequilibrae",
+          status: "succeeded",
+          result_summary_json: { overallScore: 63, accessibilityScore: 52 },
+        },
+      ],
+      error: null,
+    });
+    countyRunsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "county-run-1",
+          run_name: "County screening baseline",
+          stage: "validated-screening",
+          validation_summary_json: { passed: 3, warned: 1, failed: 0 },
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const htmlContent = String(generatedArtifact?.metadata_json?.htmlContent ?? "");
+    // The cited model run carries its title, engine, status, KPI line, and the
+    // run-mode caveat verbatim.
+    expect(htmlContent).toContain("SR-49 fast screening");
+    expect(htmlContent).toContain("Fast Screening");
+    expect(htmlContent).toContain("Succeeded");
+    expect(htmlContent).toContain("Overall score 63/100");
+    expect(htmlContent).toContain("Accessibility 52/100");
+    expect(htmlContent).toContain("Screening-grade prototype output.");
+    // The cited county run carries its name, stage, and validation posture.
+    expect(htmlContent).toContain("County screening baseline");
+    expect(htmlContent).toContain("Validated Screening");
+    expect(htmlContent).toContain("3 pass");
+    expect(htmlContent).toContain("1 warning");
+    expectProvenanceLanguageOnly(htmlContent);
+
+    const sourceContext = generatedArtifact?.metadata_json?.sourceContext as Record<string, unknown>;
+    expect(sourceContext).toMatchObject({
+      linkedRunCount: 1,
+      citedModelRunCount: 1,
+      citedCountyRunCount: 1,
+      citedModelRuns: [
+        { id: "model-run-1", runTitle: "SR-49 fast screening", engineKey: "aequilibrae", status: "succeeded" },
+      ],
+      citedCountyRuns: [{ id: "county-run-1", runName: "County screening baseline", stage: "validated-screening" }],
+    });
   });
 
   it("persists project funding profile scan and source-context readiness in artifact metadata", async () => {

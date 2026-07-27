@@ -25,9 +25,14 @@ const runsInMock = vi.fn();
 const runsEqMock = vi.fn(() => ({ in: runsInMock }));
 const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 
+const countyRunListInMock = vi.fn();
 const countyRunMaybeSingleMock = vi.fn();
-const countyRunEqMock = vi.fn(() => ({ maybeSingle: countyRunMaybeSingleMock }));
+const countyRunEqMock = vi.fn(() => ({ maybeSingle: countyRunMaybeSingleMock, in: countyRunListInMock }));
 const countyRunSelectMock = vi.fn(() => ({ eq: countyRunEqMock }));
+
+const modelRunsInMock = vi.fn();
+const modelRunsEqMock = vi.fn(() => ({ in: modelRunsInMock }));
+const modelRunsSelectMock = vi.fn(() => ({ eq: modelRunsEqMock }));
 
 const reportSectionsInsertMock = vi.fn();
 const reportRunsInsertMock = vi.fn();
@@ -67,6 +72,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "county_runs") {
     return {
       select: countyRunSelectMock,
+    };
+  }
+
+  if (table === "model_runs") {
+    return {
+      select: modelRunsSelectMock,
     };
   }
 
@@ -152,6 +163,14 @@ describe("/api/reports", () => {
 
     runsInMock.mockResolvedValue({
       data: [{ id: "55555555-5555-4555-8555-555555555555" }],
+      error: null,
+    });
+    modelRunsInMock.mockResolvedValue({
+      data: [{ id: "88888888-8888-4888-8888-888888888888" }],
+      error: null,
+    });
+    countyRunListInMock.mockResolvedValue({
+      data: [{ id: "77777777-7777-4777-8777-777777777777" }],
       error: null,
     });
     countyRunMaybeSingleMock.mockResolvedValue({
@@ -305,6 +324,80 @@ describe("/api/reports", () => {
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "Modeling county run not found" });
     expect(reportsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("POST creates typed model-run and county-run citations after the legacy runs", async () => {
+    const response = await postReports(
+      jsonRequest({
+        projectId: "33333333-3333-4333-8333-333333333333",
+        reportType: "project_status",
+        runIds: ["55555555-5555-4555-8555-555555555555"],
+        modelRunIds: ["88888888-8888-4888-8888-888888888888"],
+        countyRunIds: ["77777777-7777-4777-8777-777777777777"],
+      })
+    );
+
+    expect(response.status).toBe(201);
+    // Typed citations are validated against the target workspace.
+    expect(modelRunsEqMock).toHaveBeenCalledWith("workspace_id", "44444444-4444-4444-8444-444444444444");
+    expect(modelRunsInMock).toHaveBeenCalledWith("id", ["88888888-8888-4888-8888-888888888888"]);
+    expect(countyRunEqMock).toHaveBeenCalledWith("workspace_id", "44444444-4444-4444-8444-444444444444");
+    expect(countyRunListInMock).toHaveBeenCalledWith("id", ["77777777-7777-4777-8777-777777777777"]);
+    // Legacy rows insert first; typed rows continue the sort order.
+    expect(reportRunsInsertMock).toHaveBeenNthCalledWith(1, [
+      {
+        report_id: "66666666-6666-4666-8666-666666666666",
+        run_id: "55555555-5555-4555-8555-555555555555",
+        sort_order: 0,
+      },
+    ]);
+    expect(reportRunsInsertMock).toHaveBeenNthCalledWith(2, [
+      {
+        report_id: "66666666-6666-4666-8666-666666666666",
+        model_run_id: "88888888-8888-4888-8888-888888888888",
+        sort_order: 1,
+      },
+      {
+        report_id: "66666666-6666-4666-8666-666666666666",
+        county_run_id: "77777777-7777-4777-8777-777777777777",
+        sort_order: 2,
+      },
+    ]);
+  });
+
+  it("POST rejects a model run outside the target workspace before creating the report", async () => {
+    modelRunsInMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await postReports(
+      jsonRequest({
+        projectId: "33333333-3333-4333-8333-333333333333",
+        reportType: "project_status",
+        modelRunIds: ["88888888-8888-4888-8888-888888888888"],
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "One or more linked model runs are invalid" });
+    expect(reportsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("POST answers 503 when the typed-evidence migration is missing", async () => {
+    reportRunsInsertMock.mockResolvedValueOnce({
+      error: { message: 'column "model_run_id" of relation "report_runs" does not exist' },
+    });
+
+    const response = await postReports(
+      jsonRequest({
+        projectId: "33333333-3333-4333-8333-333333333333",
+        reportType: "project_status",
+        modelRunIds: ["88888888-8888-4888-8888-888888888888"],
+      })
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("typed-evidence migration"),
+    });
   });
 
   it("POST preserves engagement handoff provenance in seeded section config", async () => {

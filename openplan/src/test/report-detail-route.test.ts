@@ -30,13 +30,24 @@ const sectionsInsertMock = vi.fn().mockResolvedValue({ error: null });
 const reportRunsOrderMock = vi.fn();
 const reportRunsEqMock = vi.fn(() => ({ order: reportRunsOrderMock }));
 const reportRunsSelectMock = vi.fn(() => ({ eq: reportRunsEqMock }));
-const reportRunsDeleteEqMock = vi.fn().mockResolvedValue({ error: null });
+// delete().eq("report_id", …).not(column, "is", null) — replacements are
+// scoped to one citation kind.
+const reportRunsDeleteNotMock = vi.fn().mockResolvedValue({ error: null });
+const reportRunsDeleteEqMock = vi.fn(() => ({ not: reportRunsDeleteNotMock }));
 const reportRunsDeleteMock = vi.fn(() => ({ eq: reportRunsDeleteEqMock }));
 const reportRunsInsertMock = vi.fn().mockResolvedValue({ error: null });
 
 const runsInMock = vi.fn();
 const runsEqMock = vi.fn(() => ({ in: runsInMock }));
 const runsSelectMock = vi.fn(() => ({ in: runsInMock, eq: runsEqMock }));
+
+const modelRunsInMock = vi.fn();
+const modelRunsEqMock = vi.fn(() => ({ in: modelRunsInMock }));
+const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock, eq: modelRunsEqMock }));
+
+const countyRunsInMock = vi.fn();
+const countyRunsEqMock = vi.fn(() => ({ in: countyRunsInMock }));
+const countyRunsSelectMock = vi.fn(() => ({ in: countyRunsInMock, eq: countyRunsEqMock }));
 
 const mockAudit = {
   info: vi.fn(),
@@ -83,6 +94,18 @@ const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return {
       select: runsSelectMock,
+    };
+  }
+
+  if (table === "model_runs") {
+    return {
+      select: modelRunsSelectMock,
+    };
+  }
+
+  if (table === "county_runs") {
+    return {
+      select: countyRunsSelectMock,
     };
   }
 
@@ -168,6 +191,9 @@ describe("/api/reports/[reportId]", () => {
       error: null,
     });
 
+    modelRunsInMock.mockResolvedValue({ data: [], error: null });
+    countyRunsInMock.mockResolvedValue({ data: [], error: null });
+
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
@@ -198,6 +224,71 @@ describe("/api/reports/[reportId]", () => {
       runs: [expect.objectContaining({ id: "55555555-5555-4555-8555-555555555555" })],
       artifacts: [expect.objectContaining({ id: "artifact-1" })],
     });
+  });
+
+  it("GET resolves typed model-run and county-run citations with kind + status", async () => {
+    reportRunsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "report-run-1", run_id: "55555555-5555-4555-8555-555555555555", model_run_id: null, county_run_id: null, sort_order: 0 },
+        { id: "report-run-2", run_id: null, model_run_id: "88888888-8888-4888-8888-888888888888", county_run_id: null, sort_order: 1 },
+        { id: "report-run-3", run_id: null, model_run_id: null, county_run_id: "77777777-7777-4777-8777-777777777777", sort_order: 2 },
+      ],
+      error: null,
+    });
+    modelRunsInMock.mockResolvedValueOnce({
+      data: [
+        { id: "88888888-8888-4888-8888-888888888888", run_title: "Corridor screening run", engine_key: "aequilibrae", status: "succeeded" },
+      ],
+      error: null,
+    });
+    countyRunsInMock.mockResolvedValueOnce({
+      data: [{ id: "77777777-7777-4777-8777-777777777777", run_name: "County screening baseline", stage: "validated-screening" }],
+      error: null,
+    });
+
+    const response = await getReportDetail(new NextRequest("http://localhost/api/reports/1"), {
+      params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+    });
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { runs: Array<Record<string, unknown>> };
+    expect(payload.runs).toHaveLength(3);
+    expect(payload.runs[0]).toMatchObject({ kind: "analysis", id: "55555555-5555-4555-8555-555555555555" });
+    expect(payload.runs[1]).toMatchObject({
+      kind: "model",
+      id: "88888888-8888-4888-8888-888888888888",
+      title: "Corridor screening run",
+      engine_key: "aequilibrae",
+      status: "succeeded",
+    });
+    expect(payload.runs[2]).toMatchObject({
+      kind: "county",
+      id: "77777777-7777-4777-8777-777777777777",
+      title: "County screening baseline",
+      stage: "validated-screening",
+    });
+  });
+
+  it("GET falls back to the legacy report_runs select on a pre-migration database", async () => {
+    reportRunsOrderMock
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: "column report_runs.model_run_id does not exist" },
+      })
+      .mockResolvedValueOnce({
+        data: [{ id: "report-run-1", run_id: "55555555-5555-4555-8555-555555555555", sort_order: 0 }],
+        error: null,
+      });
+
+    const response = await getReportDetail(new NextRequest("http://localhost/api/reports/1"), {
+      params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+    });
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { runs: Array<Record<string, unknown>> };
+    expect(payload.runs).toEqual([
+      expect.objectContaining({ kind: "analysis", id: "55555555-5555-4555-8555-555555555555" }),
+    ]);
   });
 
   it("PATCH returns 403 when workspace role is unsupported", async () => {
@@ -257,6 +348,89 @@ describe("/api/reports/[reportId]", () => {
         sort_order: 0,
       },
     ]);
+  });
+
+  it("PATCH replaces only model-run citations when modelRunIds is provided", async () => {
+    modelRunsInMock.mockResolvedValueOnce({
+      data: [{ id: "88888888-8888-4888-8888-888888888888" }],
+      error: null,
+    });
+
+    const response = await patchReportDetail(
+      new NextRequest("http://localhost/api/reports/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          modelRunIds: ["88888888-8888-4888-8888-888888888888"],
+        }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    // Validated against the report's workspace.
+    expect(modelRunsEqMock).toHaveBeenCalledWith("workspace_id", "33333333-3333-4333-8333-333333333333");
+    // Deleted by kind, never by report_id alone.
+    expect(reportRunsDeleteNotMock).toHaveBeenCalledWith("model_run_id", "is", null);
+    expect(reportRunsDeleteNotMock).not.toHaveBeenCalledWith("run_id", "is", null);
+    expect(reportRunsInsertMock).toHaveBeenCalledWith([
+      {
+        report_id: "11111111-1111-4111-8111-111111111111",
+        model_run_id: "88888888-8888-4888-8888-888888888888",
+        sort_order: 0,
+      },
+    ]);
+  });
+
+  it("PATCH rejects a cross-workspace model run citation", async () => {
+    modelRunsInMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await patchReportDetail(
+      new NextRequest("http://localhost/api/reports/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          modelRunIds: ["88888888-8888-4888-8888-888888888888"],
+        }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "One or more linked model runs are invalid" });
+    expect(reportRunsDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH answers 503 on typed writes when the migration is missing", async () => {
+    modelRunsInMock.mockResolvedValueOnce({
+      data: [{ id: "88888888-8888-4888-8888-888888888888" }],
+      error: null,
+    });
+    reportRunsDeleteNotMock.mockResolvedValueOnce({
+      error: { message: "column report_runs.model_run_id does not exist" },
+    });
+
+    const response = await patchReportDetail(
+      new NextRequest("http://localhost/api/reports/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          modelRunIds: ["88888888-8888-4888-8888-888888888888"],
+        }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("typed-evidence migration"),
+    });
   });
 
   it("PATCH rejects generated status without an artifact", async () => {

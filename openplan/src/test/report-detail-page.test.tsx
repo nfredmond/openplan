@@ -37,6 +37,18 @@ const artifactsSelectMock = vi.fn(() => ({ eq: artifactsEqMock }));
 const runsInMock = vi.fn();
 const runsSelectMock = vi.fn(() => ({ in: runsInMock }));
 
+// model_runs: cited-run resolution (.in) and the attach-picker's succeeded-run
+// listing (.eq(...).eq(...).order(...).limit(...)).
+const modelRunsInMock = vi.fn(async () => ({ data: [], error: null }));
+const modelRunsLimitMock = vi.fn(async () => ({ data: [], error: null }));
+const modelRunsOrderMock = vi.fn(() => ({ limit: modelRunsLimitMock }));
+const modelRunsEqStatusMock = vi.fn(() => ({ order: modelRunsOrderMock }));
+const modelRunsEqMock = vi.fn(() => ({ eq: modelRunsEqStatusMock }));
+const modelRunsSelectMock = vi.fn(() => ({ eq: modelRunsEqMock, in: modelRunsInMock }));
+
+const countyRunsInMock = vi.fn(async () => ({ data: [], error: null }));
+const countyRunsSelectMock = vi.fn(() => ({ in: countyRunsInMock }));
+
 const campaignMaybeSingleMock = vi.fn();
 const campaignEqIdMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }));
 const campaignEqWorkspaceMock = vi.fn(() => ({ eq: campaignEqIdMock }));
@@ -142,6 +154,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "runs") {
     return { select: runsSelectMock };
+  }
+  if (table === "model_runs") {
+    return { select: modelRunsSelectMock };
+  }
+  if (table === "county_runs") {
+    return { select: countyRunsSelectMock };
   }
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };

@@ -47,6 +47,9 @@ export type LinkedRunRow = {
   created_at: string;
 };
 
+/** A resolved typed report citation (report_runs.model_run_id / county_run_id). */
+export type { TypedRunCitation } from "@/lib/reports/run-citations";
+
 export type ReportSectionRow = {
   id: string;
   section_key: string;

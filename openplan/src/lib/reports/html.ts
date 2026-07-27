@@ -1,4 +1,5 @@
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
+import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
 import { formatDateTime, formatReportTypeLabel, titleize } from "@/lib/reports/catalog";
@@ -38,6 +39,23 @@ type RunRecord = {
   ai_interpretation: string | null;
   metrics: Record<string, unknown> | null;
   created_at: string;
+};
+
+/** A worker model run cited by the report (report_runs.model_run_id). */
+export type ReportCitedModelRun = {
+  id: string;
+  run_title: string;
+  engine_key: string;
+  status: string;
+  result_summary_json: Record<string, unknown> | null;
+};
+
+/** A county validation run cited by the report (report_runs.county_run_id). */
+export type ReportCitedCountyRun = {
+  id: string;
+  run_name: string | null;
+  stage: string | null;
+  validation_summary_json: Record<string, unknown> | null;
 };
 
 type ProjectItem = {
@@ -96,6 +114,9 @@ export type ReportGenerationData = {
   };
   stageGateSnapshot: ProjectStageGateSnapshot;
   modelingEvidence: ReportModelingEvidence[];
+  /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
+  citedModelRuns?: ReportCitedModelRun[];
+  citedCountyRuns?: ReportCitedCountyRun[];
 };
 
 function esc(value: string): string {
@@ -206,6 +227,84 @@ function runMarkup(run: RunRecord): string {
       <summary>Analysis query</summary>
       <p>${esc(run.query_text)}</p>
     </details>
+  </article>`;
+}
+
+const MODEL_RUN_SCORECARD_KPI_LABELS: Array<{ key: string; label: string }> = [
+  { key: "overallScore", label: "Overall score" },
+  { key: "accessibilityScore", label: "Accessibility" },
+  { key: "safetyScore", label: "Safety" },
+  { key: "equityScore", label: "Equity" },
+];
+
+/** Compact KPI line from model_runs.result_summary_json: the managed scorecard
+ * keys when present, otherwise the first few finite numeric entries. */
+function compactModelRunKpiLine(resultSummary: Record<string, unknown> | null): string | null {
+  if (!resultSummary) {
+    return null;
+  }
+
+  const scorecardEntries = MODEL_RUN_SCORECARD_KPI_LABELS.map(({ key, label }) => {
+    const value = resultSummary[key];
+    return typeof value === "number" && Number.isFinite(value) ? `${label} ${value}/100` : null;
+  }).filter((entry): entry is string => Boolean(entry));
+
+  if (scorecardEntries.length > 0) {
+    return scorecardEntries.join(" • ");
+  }
+
+  const numericEntries: string[] = [];
+  for (const [key, value] of Object.entries(resultSummary)) {
+    if (typeof value === "number" && Number.isFinite(value)) {
+      numericEntries.push(`${titleize(key)} ${Math.round(value * 100) / 100}`);
+    }
+    if (numericEntries.length >= 4) break;
+  }
+
+  return numericEntries.length > 0 ? numericEntries.join(" • ") : null;
+}
+
+function citedModelRunMarkup(run: ReportCitedModelRun): string {
+  const runMode = getManagedRunModeDefinition(run.engine_key);
+  const kpiLine = compactModelRunKpiLine(run.result_summary_json);
+
+  return `<article class="run-card">
+    <div class="run-head">
+      <div>
+        <h3>${esc(run.run_title)}</h3>
+        <p class="meta">Worker model run • ${esc(runMode.engineLabel)}</p>
+      </div>
+      <span class="pill ${run.status === "succeeded" ? "pill-pass" : "pill-hold"}">${esc(titleize(run.status))}</span>
+    </div>
+    ${kpiLine ? `<p>${esc(kpiLine)}</p>` : `<p class="empty">No KPI summary is recorded for this run.</p>`}
+    <p class="meta">${esc(runMode.caveatSummary)}</p>
+  </article>`;
+}
+
+function citedCountyRunMarkup(run: ReportCitedCountyRun): string {
+  const validation =
+    run.validation_summary_json && typeof run.validation_summary_json === "object"
+      ? run.validation_summary_json
+      : null;
+  const validationParts = [
+    typeof validation?.passed === "number" ? `${validation.passed} pass` : null,
+    typeof validation?.warned === "number" ? `${validation.warned} warning` : null,
+    typeof validation?.failed === "number" ? `${validation.failed} fail` : null,
+  ].filter((part): part is string => Boolean(part));
+
+  return `<article class="run-card">
+    <div class="run-head">
+      <div>
+        <h3>${esc(run.run_name?.trim() || "County run")}</h3>
+        <p class="meta">County validation run</p>
+      </div>
+      <span class="pill ${run.stage === "validated-screening" ? "pill-pass" : "pill-hold"}">${esc(titleize(run.stage || "unknown"))}</span>
+    </div>
+    ${
+      validationParts.length > 0
+        ? `<p>Validation posture: ${esc(validationParts.join(" • "))}</p>`
+        : `<p class="empty">No validation summary is recorded for this run.</p>`
+    }
   </article>`;
 }
 
@@ -766,8 +865,16 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
   }
 
   if (sectionKey === "run_summaries" || sectionKey === "analysis_summaries") {
-    return data.runs.length > 0
-      ? data.runs.map((run) => runMarkup(run)).join("")
+    const citedModelRuns = data.citedModelRuns ?? [];
+    const citedCountyRuns = data.citedCountyRuns ?? [];
+    const runCards = [
+      ...data.runs.map((run) => runMarkup(run)),
+      ...citedModelRuns.map((run) => citedModelRunMarkup(run)),
+      ...citedCountyRuns.map((run) => citedCountyRunMarkup(run)),
+    ];
+
+    return runCards.length > 0
+      ? runCards.join("")
       : `<p class="empty">No analysis runs are attached to this report yet.</p>`;
   }
 

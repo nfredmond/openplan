@@ -37,6 +37,7 @@ import {
 } from "@/lib/reports/data-lineage-output-contexts";
 import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { buildReportGenerationReadiness } from "@/lib/reports/generation-readiness";
+import { buildTypedRunCitations, loadCiteableModelRuns, loadReportRunCitationLinks, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
   buildProjectStageGateSummary,
@@ -109,7 +110,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     { data: rtpCycle },
     { data: workspace },
     { data: sections },
-    { data: reportRunLinks },
+    reportRunCitationLinks,
     { data: artifacts },
     { data: rtpChapters },
     { data: rtpProjectLinks },
@@ -142,11 +143,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       .select("id, section_key, title, enabled, sort_order, config_json")
       .eq("report_id", report.id)
       .order("sort_order", { ascending: true }),
-    supabase
-      .from("report_runs")
-      .select("id, run_id, sort_order")
-      .eq("report_id", report.id)
-      .order("sort_order", { ascending: true }),
+    loadReportRunCitationLinks(supabase, report.id),
     supabase
       .from("report_artifacts")
       .select("id, artifact_kind, generated_at, storage_path, metadata_json")
@@ -274,13 +271,22 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           { data: [], error: null },
         ];
 
-  const runIds = (reportRunLinks ?? []).map((item) => item.run_id);
+  const reportRunLinks = reportRunCitationLinks.links;
+  const runIds = reportRunLinks.map((item) => item.run_id).filter((value): value is string => Boolean(value));
   const runsResult = runIds.length
     ? await supabase
         .from("runs")
         .select("id, title, summary_text, created_at")
         .in("id", runIds)
     : { data: [], error: null };
+  const { citedModelRuns, citedCountyRuns } = await resolveCitedRuns(supabase, reportRunLinks);
+  // The attach control offers the target project's succeeded model runs,
+  // falling back to workspace-scoped succeeded runs when project attribution
+  // is absent (mirrors the project workbench's availableModelRuns).
+  const citeableModelRuns =
+    !report.rtp_cycle_id && report.project_id
+      ? await loadCiteableModelRuns(supabase, { projectId: report.project_id, workspaceId: report.workspace_id })
+      : [];
 
   const sectionList = sections ?? [];
   const engagementCampaignId = extractEngagementCampaignId(sectionList);
@@ -298,9 +304,14 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const runMap = new Map(
     (runsResult.data ?? []).map((run) => [run.id, run])
   );
-  const runs = (reportRunLinks ?? [])
-    .map((link) => runMap.get(link.run_id) ?? null)
+  const runs = reportRunLinks
+    .map((link) => (link.run_id ? runMap.get(link.run_id) ?? null : null))
     .filter((item): item is LinkedRunRow => Boolean(item));
+  // Typed citations resolved for display: kind label + honest title/status.
+  const typedRunCitations = buildTypedRunCitations(reportRunLinks, citedModelRuns, citedCountyRuns);
+  const citedModelRunIdsInOrder = typedRunCitations
+    .filter((citation) => citation.kind === "model")
+    .map((citation) => citation.runId);
 
   const latestArtifact = ((artifacts ?? []) as ReportArtifact[])[0] ?? null;
   const latestHtml = asHtmlContent(latestArtifact?.metadata_json);
@@ -1194,11 +1205,14 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       generationReadiness={generationReadiness}
       currentReportComparisonAggregate={currentReportComparisonAggregate}
       currentReportComparisonDigest={currentReportComparisonDigest}
+      citeableModelRuns={citeableModelRuns}
+      citedModelRunIds={citedModelRunIdsInOrder}
       compositionAuditProps={{
         reportId: report.id,
         sectionList,
         enabledSectionsCount: enabledSections,
         runs,
+        typedCitations: typedRunCitations,
         artifactList,
       }}
       provenanceAuditProps={{

@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, FileCog, Loader2, Save, WandSparkles } from "lucide-react";
+import { AlertTriangle, Check, FileCog, Loader2, Save, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import type { ReportArtifactFormat } from "@/lib/reports/client";
+import { titleize } from "@/lib/reports/catalog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -12,6 +14,20 @@ import {
   formatDriftLabelList,
   type ReportSourceReviewPosture,
 } from "@/lib/reports/source-review-posture";
+
+/** A succeeded worker model run the report may cite as typed evidence. */
+export type ReportModelRunOption = {
+  id: string;
+  title: string;
+  engineKey: string;
+  status: string;
+};
+
+function sameIdSet(left: string[], right: string[]) {
+  if (left.length !== right.length) return false;
+  const rightSet = new Set(right);
+  return left.every((id) => rightSet.has(id));
+}
 
 export { describeReportSourceReviewPosture } from "@/lib/reports/source-review-posture";
 
@@ -31,6 +47,8 @@ export function ReportDetailControls({
   evidenceSummary,
   fundingSummary,
   reviewSummary,
+  modelRunOptions = [],
+  citedModelRunIds = [],
 }: {
   report: {
     id: string;
@@ -59,11 +77,14 @@ export function ReportDetailControls({
     detail: string;
     nextActionLabel?: string | null;
   } | null;
+  modelRunOptions?: ReportModelRunOption[];
+  citedModelRunIds?: string[];
 }) {
   const router = useRouter();
   const [title, setTitle] = useState(report.title);
   const [summary, setSummary] = useState(report.summary ?? "");
   const [status, setStatus] = useState(report.status);
+  const [selectedModelRunIds, setSelectedModelRunIds] = useState<string[]>(citedModelRunIds);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   // The generate route has accepted "pdf" since the module shipped; the UI
@@ -85,6 +106,11 @@ export function ReportDetailControls({
     setIsSaving(true);
 
     try {
+      // Only send modelRunIds when the citation set actually changed, so a
+      // deployment without the typed-evidence migration keeps saving metadata
+      // exactly as before.
+      const modelRunSelectionChanged = !sameIdSet(selectedModelRunIds, citedModelRunIds);
+
       const response = await fetch(`/api/reports/${report.id}`, {
         method: "PATCH",
         headers: {
@@ -94,6 +120,7 @@ export function ReportDetailControls({
           title,
           summary: summary.trim() ? summary : null,
           status,
+          ...(modelRunSelectionChanged ? { modelRunIds: selectedModelRunIds } : {}),
         }),
       });
 
@@ -230,6 +257,70 @@ export function ReportDetailControls({
               : ""}
           </p>
         </div>
+
+        {/* Cited model runs */}
+        {modelRunOptions.length > 0 ? (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <label className="text-[0.82rem] font-semibold">
+                Cited model runs
+              </label>
+              <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                {selectedModelRunIds.length} cited
+              </span>
+            </div>
+            <div className="max-h-56 space-y-1.5 overflow-y-auto rounded-xl border border-border/70 bg-background/70 p-2.5">
+              {modelRunOptions.map((option) => {
+                const isSelected = selectedModelRunIds.includes(option.id);
+                return (
+                  <label
+                    key={option.id}
+                    className={`flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors ${
+                      isSelected
+                        ? "border-primary/30 bg-primary/5"
+                        : "border-border/70 bg-card/70 hover:border-border hover:bg-card"
+                    }`}
+                  >
+                    <span
+                      className={`mt-0.5 flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded border transition-colors ${
+                        isSelected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-input bg-background"
+                      }`}
+                    >
+                      {isSelected && <Check className="h-3 w-3" />}
+                    </span>
+                    <input
+                      type="checkbox"
+                      className="sr-only"
+                      checked={isSelected}
+                      onChange={() =>
+                        setSelectedModelRunIds((current) =>
+                          current.includes(option.id)
+                            ? current.filter((id) => id !== option.id)
+                            : [...current, option.id]
+                        )
+                      }
+                    />
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium text-foreground">
+                        {option.title}
+                      </span>
+                      <span className="block text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+                        {getManagedRunModeDefinition(option.engineKey).engineLabel} · {titleize(option.status)}
+                      </span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Cited worker runs appear in the generated packet with their engine,
+              status, and screening-grade caveats. Save metadata to apply the
+              citation change.
+            </p>
+          </div>
+        ) : null}
 
         <div
           className={`rounded-xl border px-4 py-3 text-sm ${sourceReviewPostureClassName(

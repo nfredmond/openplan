@@ -49,6 +49,10 @@ type ReportStandardDetailProps = {
   project: ReportProjectRow | null;
   workspace: { name: string | null } | null;
   runs: LinkedRunRow[];
+  /** Succeeded worker model runs the attach control may cite (engine + status shown). */
+  citeableModelRuns?: Array<{ id: string; title: string; engineKey: string; status: string }>;
+  /** Model runs this report currently cites, in citation order. */
+  citedModelRunIds?: string[];
   latestArtifact: ReportArtifact | null;
   fundingSnapshot: ProjectFundingSnapshot | null;
   operationsSummary: WorkspaceOperationsSummary;
@@ -72,6 +76,8 @@ export function ReportStandardDetail({
   project,
   workspace,
   runs,
+  citeableModelRuns = [],
+  citedModelRunIds = [],
   latestArtifact,
   fundingSnapshot,
   operationsSummary,
@@ -247,6 +253,8 @@ export function ReportStandardDetail({
             }}
             evidenceSummary={evidenceSummaryDigest}
             fundingSummary={fundingSummaryDigest}
+            modelRunOptions={citeableModelRuns}
+            citedModelRunIds={citedModelRunIds}
           />
         </div>
       </header>

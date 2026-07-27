@@ -1,14 +1,16 @@
 import { Clock3, Hash, Sparkles } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
+import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import { formatDateTime, titleize } from "@/lib/reports/catalog";
-import type { LinkedRunRow, ReportArtifact, ReportSectionRow } from "./_types";
+import type { LinkedRunRow, ReportArtifact, ReportSectionRow, TypedRunCitation } from "./_types";
 
 type Props = {
   reportId: string;
   sectionList: ReportSectionRow[];
   enabledSectionsCount: number;
   runs: LinkedRunRow[];
+  typedCitations?: TypedRunCitation[];
   artifactList: ReportArtifact[];
 };
 
@@ -17,6 +19,7 @@ export function ReportCompositionAudit({
   sectionList,
   enabledSectionsCount,
   runs,
+  typedCitations = [],
   artifactList,
 }: Props) {
   return (
@@ -82,29 +85,51 @@ export function ReportCompositionAudit({
           </div>
         </div>
         <div className="mt-3 space-y-2">
-          {runs.length === 0 ? (
+          {runs.length === 0 && typedCitations.length === 0 ? (
             <EmptyState
               title="No linked runs"
               description="Attach analysis runs when creating a report to include their results in the generated packet."
               compact
             />
           ) : (
-            runs.map((run) => (
-              <div
-                key={run.id}
-                className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
-              >
-                <h4 className="text-sm font-semibold tracking-tight">
-                  {run.title}
-                </h4>
-                <p className="mt-1 line-clamp-2 text-[0.82rem] leading-relaxed text-muted-foreground">
-                  {run.summary_text || "No run summary available."}
-                </p>
-                <p className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
-                  Created {formatDateTime(run.created_at)}
-                </p>
-              </div>
-            ))
+            <>
+              {runs.map((run) => (
+                <div
+                  key={run.id}
+                  className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
+                >
+                  <h4 className="text-sm font-semibold tracking-tight">
+                    {run.title}
+                  </h4>
+                  <p className="mt-1 line-clamp-2 text-[0.82rem] leading-relaxed text-muted-foreground">
+                    {run.summary_text || "No run summary available."}
+                  </p>
+                  <p className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+                    Created {formatDateTime(run.created_at)}
+                  </p>
+                </div>
+              ))}
+              {typedCitations.map((citation) => (
+                <div
+                  key={citation.id}
+                  className="rounded-[0.5rem] border border-border/80 bg-background/80 px-4 py-3"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <h4 className="text-sm font-semibold tracking-tight">
+                      {citation.title}
+                    </h4>
+                    <StatusBadge tone="info" className="shrink-0">
+                      {citation.kind === "model" ? "Model run" : "County run"}
+                    </StatusBadge>
+                  </div>
+                  <p className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
+                    {citation.kind === "model" && citation.engineKey
+                      ? `${getManagedRunModeDefinition(citation.engineKey).engineLabel} · ${titleize(citation.status ?? "unknown")}`
+                      : titleize(citation.status ?? "unknown")}
+                  </p>
+                </div>
+              ))}
+            </>
           )}
         </div>
       </div>

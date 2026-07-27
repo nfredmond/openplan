@@ -1020,7 +1020,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .order("sort_order", { ascending: true }),
       supabase
         .from("report_runs")
-        .select("id, run_id, sort_order")
+        .select("id, run_id, model_run_id, county_run_id, sort_order")
         .eq("report_id", report.id)
         .order("sort_order", { ascending: true }),
       supabase
@@ -1097,11 +1097,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       ),
     ]);
 
+    // Typed-evidence fallback: a database without the report_runs typed-
+    // evidence migration answers the widened select with a missing-column
+    // error, so re-query with the legacy column set.
+    let reportRunLinksResult = reportRunsResult;
+    if (reportRunLinksResult.error && looksLikePendingSchema(reportRunLinksResult.error.message)) {
+      reportRunLinksResult = (await supabase
+        .from("report_runs")
+        .select("id, run_id, sort_order")
+        .eq("report_id", report.id)
+        .order("sort_order", { ascending: true })) as unknown as typeof reportRunLinksResult;
+    }
+
     const loadErrors = [
       workspaceResult.error,
       projectResult.error,
       sectionsResult.error,
-      reportRunsResult.error,
+      reportRunLinksResult.error,
       stageGateDecisionsResult.error,
       deliverablesResult.error,
       risksResult.error,
@@ -1207,27 +1219,90 @@ export async function POST(request: NextRequest, context: RouteContext) {
       ),
     });
 
-    const runIds = (reportRunsResult.data ?? []).map((item) => item.run_id);
-    const runsResult = runIds.length
-      ? await supabase
-          .from("runs")
-          .select("id, title, query_text, summary_text, ai_interpretation, metrics, created_at")
-          .in("id", runIds)
-      : { data: [], error: null };
+    const reportRunLinkRows = (reportRunLinksResult.data ?? []) as Array<{
+      id: string;
+      run_id: string | null;
+      model_run_id?: string | null;
+      county_run_id?: string | null;
+      sort_order: number;
+    }>;
+    const runIds = reportRunLinkRows
+      .map((item) => item.run_id)
+      .filter((value): value is string => Boolean(value));
+    const citedModelRunIds = reportRunLinkRows
+      .map((item) => item.model_run_id ?? null)
+      .filter((value): value is string => Boolean(value));
+    const citedCountyRunIds = reportRunLinkRows
+      .map((item) => item.county_run_id ?? null)
+      .filter((value): value is string => Boolean(value));
+    const [runsResult, citedModelRunsResult, citedCountyRunsResult] = await Promise.all([
+      runIds.length
+        ? supabase
+            .from("runs")
+            .select("id, title, query_text, summary_text, ai_interpretation, metrics, created_at")
+            .in("id", runIds)
+        : Promise.resolve({ data: [], error: null }),
+      citedModelRunIds.length
+        ? safeOptionalQuery(
+            () =>
+              supabase
+                .from("model_runs")
+                .select("id, run_title, engine_key, status, result_summary_json")
+                .in("id", citedModelRunIds),
+            [] as Array<Record<string, unknown>>
+          )
+        : Promise.resolve({ data: [] as Array<Record<string, unknown>>, error: null }),
+      citedCountyRunIds.length
+        ? safeOptionalQuery(
+            () =>
+              supabase
+                .from("county_runs")
+                .select("id, run_name, stage, validation_summary_json")
+                .in("id", citedCountyRunIds),
+            [] as Array<Record<string, unknown>>
+          )
+        : Promise.resolve({ data: [] as Array<Record<string, unknown>>, error: null }),
+    ]);
 
-    if (runsResult.error) {
+    if (runsResult.error || citedModelRunsResult.error || citedCountyRunsResult.error) {
+      const firstRunError = runsResult.error ?? citedModelRunsResult.error ?? citedCountyRunsResult.error;
       audit.error("report_runs_load_failed", {
         reportId: report.id,
-        message: runsResult.error.message,
-        code: runsResult.error.code ?? null,
+        message: firstRunError?.message ?? "unknown",
+        code: firstRunError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to load linked runs" }, { status: 500 });
     }
 
     const runMap = new Map((runsResult.data ?? []).map((run) => [run.id, run]));
-    const linkedRuns = (reportRunsResult.data ?? [])
-      .map((item) => runMap.get(item.run_id) ?? null)
+    const linkedRuns = reportRunLinkRows
+      .map((item) => (item.run_id ? runMap.get(item.run_id) ?? null : null))
       .filter((item): item is NonNullable<(typeof runsResult.data)[number]> => Boolean(item));
+    // Cited typed evidence, in citation order. The document renders these
+    // alongside legacy run cards with their honest engine/status framing.
+    const citedModelRunMap = new Map(
+      ((citedModelRunsResult.data ?? []) as Array<{
+        id: string;
+        run_title: string;
+        engine_key: string;
+        status: string;
+        result_summary_json: Record<string, unknown> | null;
+      }>).map((run) => [run.id, run])
+    );
+    const citedCountyRunMap = new Map(
+      ((citedCountyRunsResult.data ?? []) as Array<{
+        id: string;
+        run_name: string | null;
+        stage: string | null;
+        validation_summary_json: Record<string, unknown> | null;
+      }>).map((run) => [run.id, run])
+    );
+    const citedModelRuns = reportRunLinkRows
+      .map((item) => (item.model_run_id ? citedModelRunMap.get(item.model_run_id) ?? null : null))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+    const citedCountyRuns = reportRunLinkRows
+      .map((item) => (item.county_run_id ? citedCountyRunMap.get(item.county_run_id) ?? null : null))
+      .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
     const runAudit = linkedRuns.map((run) => ({
       runId: run.id,
@@ -1413,6 +1488,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       projectRecordsSnapshot,
       stageGateSnapshot,
       modelingEvidence,
+      citedModelRuns,
+      citedCountyRuns,
     });
 
     const format = parsed.data.format;
@@ -1468,6 +1545,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
         reportReason: engagementProvenance?.reason ?? null,
         projectUpdatedAt: projectResult.data.updated_at,
         linkedRunCount: linkedRuns.length,
+        citedModelRunCount: citedModelRuns.length,
+        citedCountyRunCount: citedCountyRuns.length,
+        citedModelRuns: citedModelRuns.map((run) => ({
+          id: run.id,
+          runTitle: run.run_title,
+          engineKey: run.engine_key,
+          status: run.status,
+        })),
+        citedCountyRuns: citedCountyRuns.map((run) => ({
+          id: run.id,
+          runName: run.run_name,
+          stage: run.stage,
+        })),
         scenarioSetLinkCount: scenarioSetLinks.length,
         scenarioSetLinks,
         scenarioSpineSummary,

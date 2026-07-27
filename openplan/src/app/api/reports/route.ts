@@ -31,6 +31,10 @@ const createReportSchema = z
     summary: z.string().trim().max(2000).optional(),
     modelingCountyRunId: z.string().uuid().optional(),
     runIds: z.array(z.string().uuid()).max(20).optional(),
+    // Typed evidence citations: worker model runs and county validation runs
+    // a packet cites directly (report_runs.model_run_id / county_run_id).
+    modelRunIds: z.array(z.string().uuid()).max(20).optional(),
+    countyRunIds: z.array(z.string().uuid()).max(20).optional(),
     sections: z
       .array(
         z.object({
@@ -62,6 +66,9 @@ const createReportSchema = z
       });
     }
 
+    // Legacy Analysis Studio runs stay project-only; typed model/county run
+    // citations are allowed on both targets (RTP packets already carry
+    // per-link modeling evidence, so citing runs there is coherent).
     if (value.rtpCycleId && (value.runIds?.length ?? 0) > 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -168,6 +175,8 @@ export async function POST(request: NextRequest) {
     }
 
     const runIds = parsed.data.runIds ?? [];
+    const modelRunIds = parsed.data.modelRunIds ?? [];
+    const countyRunIds = parsed.data.countyRunIds ?? [];
     const targetKind = parsed.data.projectId ? "project" : "rtp_cycle";
 
     let target:
@@ -267,6 +276,48 @@ export async function POST(request: NextRequest) {
 
       if ((runRows ?? []).length !== new Set(runIds).size) {
         return NextResponse.json({ error: "One or more linked runs are invalid" }, { status: 400 });
+      }
+    }
+
+    if (modelRunIds.length > 0) {
+      const { data: modelRunRows, error: modelRunError } = await supabase
+        .from("model_runs")
+        .select("id")
+        .eq("workspace_id", target.workspaceId)
+        .in("id", modelRunIds);
+
+      if (modelRunError) {
+        audit.error("model_run_lookup_failed", {
+          workspaceId: target.workspaceId,
+          message: modelRunError.message,
+          code: modelRunError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify linked model runs" }, { status: 500 });
+      }
+
+      if ((modelRunRows ?? []).length !== new Set(modelRunIds).size) {
+        return NextResponse.json({ error: "One or more linked model runs are invalid" }, { status: 400 });
+      }
+    }
+
+    if (countyRunIds.length > 0) {
+      const { data: countyRunRows, error: countyRunListError } = await supabase
+        .from("county_runs")
+        .select("id")
+        .eq("workspace_id", target.workspaceId)
+        .in("id", countyRunIds);
+
+      if (countyRunListError) {
+        audit.error("county_run_lookup_failed", {
+          workspaceId: target.workspaceId,
+          message: countyRunListError.message,
+          code: countyRunListError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify linked county runs" }, { status: 500 });
+      }
+
+      if ((countyRunRows ?? []).length !== new Set(countyRunIds).size) {
+        return NextResponse.json({ error: "One or more linked county runs are invalid" }, { status: 400 });
       }
     }
 
@@ -395,6 +446,42 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (modelRunIds.length > 0 || countyRunIds.length > 0) {
+      const typedEvidenceRows = [
+        ...modelRunIds.map((modelRunId, index) => ({
+          report_id: report.id,
+          model_run_id: modelRunId,
+          sort_order: runIds.length + index,
+        })),
+        ...countyRunIds.map((countyRunId, index) => ({
+          report_id: report.id,
+          county_run_id: countyRunId,
+          sort_order: runIds.length + modelRunIds.length + index,
+        })),
+      ];
+
+      const { error: typedEvidenceError } = await supabase.from("report_runs").insert(typedEvidenceRows);
+
+      if (typedEvidenceError) {
+        if (looksLikePendingSchema(typedEvidenceError.message)) {
+          return NextResponse.json(
+            {
+              error:
+                "Typed run evidence requires the report_runs typed-evidence migration. Apply the latest database migration first.",
+            },
+            { status: 503 }
+          );
+        }
+
+        audit.error("report_typed_evidence_insert_failed", {
+          reportId: report.id,
+          message: typedEvidenceError.message,
+          code: typedEvidenceError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to link run evidence" }, { status: 500 });
+      }
+    }
+
     audit.info("report_created", {
       reportId: report.id,
       targetKind,
@@ -402,6 +489,8 @@ export async function POST(request: NextRequest) {
       workspaceId: target.workspaceId,
       userId: user.id,
       linkedRunCount: runIds.length,
+      linkedModelRunCount: modelRunIds.length,
+      linkedCountyRunCount: countyRunIds.length,
       durationMs: Date.now() - startedAt,
     });
 
