@@ -30,6 +30,7 @@ data/pilot-nevada-county/caltrans_2023_aadt.xlsx
 data/pilot-nevada-county/run_output_v2/
 data/pilot-nevada-county/run_output_v3/
 data/pilot-nevada-county/validation/rerun_*/
+data/pilot-nevada-county/runs/
 
 # Superseded county-specific Placer pilot scratch/runtime artifacts
 # Keep the tracked validation scaffolds; park the exploratory county-local build assets.
