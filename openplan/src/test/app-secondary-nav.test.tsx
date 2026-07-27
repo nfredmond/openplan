@@ -28,8 +28,9 @@ describe("AppSecondaryNav", () => {
 
     expect(screen.getByText("Operations")).toBeInTheDocument();
     expect(screen.getByText("Reports")).toBeInTheDocument();
-    expect(screen.getByText("Billing")).toBeInTheDocument();
+    expect(screen.getByText("Invoicing")).toBeInTheDocument();
     expect(screen.getByText("Agent Activity")).toBeInTheDocument();
+    expect(screen.queryByText("Billing")).not.toBeInTheDocument();
     expect(screen.queryByText("Pilot Readiness")).not.toBeInTheDocument();
     expect(screen.queryByText("Admin")).not.toBeInTheDocument();
   });

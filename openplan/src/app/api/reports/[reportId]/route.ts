@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { loadReportAccess as sharedLoadReportAccess } from "@/lib/reports/api";
 
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
@@ -36,36 +37,16 @@ type RouteContext = {
   params: Promise<{ reportId: string }>;
 };
 
+/**
+ * Thin wrapper over the shared resolver in `@/lib/reports/api`, kept here so
+ * this route's handlers still get the client they mutate through. The lookup
+ * itself is shared with the artifact-download route — two routes authorizing
+ * the same resource two different ways is how one of them ends up laxer.
+ */
 async function loadReportAccess(reportId: string, userId: string) {
   const supabase = await createClient();
-  const { data: report, error: reportError } = await supabase
-    .from("reports")
-    .select(
-      "id, workspace_id, project_id, title, status, report_type, generated_at, latest_artifact_url, latest_artifact_kind"
-    )
-    .eq("id", reportId)
-    .maybeSingle();
-
-  if (reportError) {
-    return { supabase, report: null, membership: null, error: reportError };
-  }
-
-  if (!report) {
-    return { supabase, report: null, membership: null, error: null };
-  }
-
-  const { data: membership, error: membershipError } = await supabase
-    .from("workspace_members")
-    .select("workspace_id, role")
-    .eq("workspace_id", report.workspace_id)
-    .eq("user_id", userId)
-    .maybeSingle();
-
-  if (membershipError) {
-    return { supabase, report, membership: null, error: membershipError };
-  }
-
-  return { supabase, report, membership, error: null };
+  const access = await sharedLoadReportAccess(supabase, reportId, userId);
+  return { supabase, ...access };
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {

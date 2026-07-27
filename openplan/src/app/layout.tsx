@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { JetBrains_Mono, Space_Grotesk } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
-import { OPENPLAN_CANONICAL_ORIGIN, OPENPLAN_OG_IMAGE_PATH, OPENPLAN_SITE_NAME } from "@/lib/public-page-metadata";
+import { OPENPLAN_OG_IMAGE_PATH, OPENPLAN_SITE_NAME, resolveSiteOrigin } from "@/lib/public-page-metadata";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -19,10 +19,12 @@ const jetBrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(OPENPLAN_CANONICAL_ORIGIN),
+  // Undefined when unconfigured, so Next infers THIS deployment's origin rather
+  // than inheriting a hardcoded one. See resolveSiteOrigin.
+  metadataBase: resolveSiteOrigin(),
   applicationName: OPENPLAN_SITE_NAME,
   title: {
-    default: "OpenPlan | Open-source planning software with managed services",
+    default: "OpenPlan | Free, open-source planning software",
     template: "%s · OpenPlan",
   },
   description:
@@ -34,9 +36,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "OpenPlan | Open-source planning software with managed services",
+    title: "OpenPlan | Free, open-source planning software",
     description:
-      "Inspectable planning software for maps, engagement, project records, and delivery packets, with Nat Ford services available when teams need an accountable operator.",
+      "Inspectable planning software for maps, engagement, project records, and delivery packets. Every number carries its provenance.",
     url: "/",
     siteName: OPENPLAN_SITE_NAME,
     type: "website",
@@ -52,9 +54,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "OpenPlan | Open-source planning software with managed services",
+    title: "OpenPlan | Free, open-source planning software",
     description:
-      "Apache-2.0 planning workbench with optional Nat Ford hosting, onboarding, support, and implementation services.",
+      "An Apache-2.0 planning workbench for agencies, tribes, counties, cities, non-profits, and consultants. Free, with no paid tier.",
     images: [OPENPLAN_OG_IMAGE_PATH],
   },
   robots: {

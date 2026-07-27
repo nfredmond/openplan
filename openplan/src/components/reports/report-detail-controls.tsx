@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, FileCog, Loader2, Save, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import type { ReportArtifactFormat } from "@/lib/reports/client";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -65,6 +66,9 @@ export function ReportDetailControls({
   const [status, setStatus] = useState(report.status);
   const [isSaving, setIsSaving] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  // The generate route has accepted "pdf" since the module shipped; the UI
+  // hardcoded "html", so the PDF path was unreachable from the app.
+  const [artifactFormat, setArtifactFormat] = useState<ReportArtifactFormat>("pdf");
   const [error, setError] = useState<string | null>(null);
   const [warningCount, setWarningCount] = useState(0);
   const driftedSources = driftSummary?.labels ?? [];
@@ -122,7 +126,7 @@ export function ReportDetailControls({
           headers: {
             "content-type": "application/json",
           },
-          body: JSON.stringify({ format: "html" }),
+          body: JSON.stringify({ format: artifactFormat }),
         }
       );
 
@@ -354,6 +358,20 @@ export function ReportDetailControls({
             )}
           </Button>
 
+          <label className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+            <span>Format</span>
+            <select
+              className="module-select h-9 rounded-md border border-border bg-background px-2 text-sm text-foreground"
+              value={artifactFormat}
+              onChange={(event) => setArtifactFormat(event.target.value as ReportArtifactFormat)}
+              disabled={isGenerating}
+              aria-label="Packet format"
+            >
+              <option value="pdf">PDF (downloadable)</option>
+              <option value="html">HTML</option>
+            </select>
+          </label>
+
           <Button
             type="button"
             variant="secondary"
@@ -368,9 +386,8 @@ export function ReportDetailControls({
             ) : (
               <span className="inline-flex items-center gap-2">
                 <WandSparkles className="h-4 w-4" />
-                {hasDrift && report.hasGeneratedArtifact
-                  ? "Regenerate HTML packet"
-                  : "Generate HTML packet"}
+                {hasDrift && report.hasGeneratedArtifact ? "Regenerate" : "Generate"}{" "}
+                {artifactFormat === "pdf" ? "PDF" : "HTML"} packet
               </span>
             )}
           </Button>

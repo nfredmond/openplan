@@ -98,7 +98,9 @@ describe("ReportDetailControls", () => {
     expect(
       screen.getAllByText(/Engagement handoff, Project records, and Stage gates/i).length
     ).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: /Regenerate HTML packet/i })).toBeInTheDocument();
+    // The control now offers a format, defaulting to the sendable deliverable.
+    expect(screen.getByRole("button", { name: /Regenerate PDF packet/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Packet format")).toHaveValue("pdf");
   });
 
   it("does not show the drift banner when nothing has changed", () => {
@@ -122,7 +124,7 @@ describe("ReportDetailControls", () => {
     expect(screen.queryByText(/live source changes detected/i)).not.toBeInTheDocument();
     expect(screen.getByText(/Missing evidence/i)).toBeInTheDocument();
     expect(screen.getByText(/No evidence chain captured/i)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Generate HTML packet/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Generate PDF packet/i })).toBeInTheDocument();
   });
 
   it("shows current ready posture when linked evidence exists without source drift", () => {

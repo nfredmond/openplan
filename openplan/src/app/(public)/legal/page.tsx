@@ -12,7 +12,7 @@ const operatingPosture = [
   {
     title: "Internal prototype posture",
     description:
-      "OpenPlan is currently in supervised early access. Some modules — notably the behavioral modeling runtime — are labeled internal prototype only. Those outputs are shared with caveats, not as planning-grade conclusions.",
+      "Some OpenPlan modules — notably the behavioral modeling runtime — are labeled internal prototype only. Those outputs are shared with caveats, not as planning-grade conclusions.",
   },
   {
     title: "Open-source license boundary",
@@ -61,7 +61,7 @@ export default function LegalPage() {
         <article className="public-hero">
           <p className="public-kicker">Legal notice</p>
           <div className="public-headline-block">
-            <h1 className="public-title">Combined safety harbor: how OpenPlan is governed as open-source software and a managed service.</h1>
+            <h1 className="public-title">Combined safety harbor: how OpenPlan is governed as open-source software.</h1>
             <p className="public-lead max-w-4xl">
               This page consolidates the open-source license boundary, hosted-service posture, AI disclosures, and model-output limits that govern OpenPlan today.
               It is the authoritative source for the &ldquo;internal prototype only&rdquo; and screening-grade language that appears elsewhere in the platform.
@@ -85,7 +85,7 @@ export default function LegalPage() {
             <h2 className="public-rail-title">Screening-grade today, planning-grade only where promoted.</h2>
           </div>
           <p className="public-rail-copy">
-            OpenPlan distinguishes between open-source software, Nat Ford managed services, planning-grade outputs, and modules that are still labeled internal prototype only. The difference is surfaced on the screen, not hidden behind marketing copy.
+            OpenPlan distinguishes between planning-grade outputs and modules that are still labeled internal prototype only. The difference is surfaced on the screen, not hidden behind marketing copy.
           </p>
         </aside>
       </section>
@@ -95,7 +95,7 @@ export default function LegalPage() {
           <div className="public-section-header">
             <div>
               <p className="public-section-label">Operating posture</p>
-              <h2 className="public-section-title">What supervised early access means</h2>
+              <h2 className="public-section-title">What the prototype-only label means</h2>
             </div>
           </div>
           <div className="public-ledger">

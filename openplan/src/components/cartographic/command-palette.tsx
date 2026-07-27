@@ -30,7 +30,11 @@ const COMMANDS: CommandItem[] = [
   { label: "Data Hub", href: "/data-hub", group: "Analyze", keywords: "datasets geometry" },
   { label: "Aerial Ops", href: "/aerial", group: "Analyze", keywords: "drone mission imagery" },
   { label: "Agent Activity", href: "/assistant-activity", group: "Govern", keywords: "planner agent audit ledger" },
-  { label: "Billing", href: "/billing", group: "Govern", keywords: "subscription plan" },
+  // "Billing" is not a concept in OpenPlan — it is free, with no plan and no
+  // checkout. What is real here is the Caltrans LAPM grant-reimbursement
+  // invoice register: an agency invoicing ITS FUNDER. The old keywords are kept
+  // so a saved habit still finds the right surface.
+  { label: "Invoicing", href: "/invoicing", group: "Govern", keywords: "invoice reimbursement LAPM billing" },
 ];
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {

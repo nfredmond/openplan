@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
@@ -10,6 +11,48 @@ function fmtDateTime(value: string): string {
 
 function getEngagementLabel(value: string): string {
   return value.replaceAll("_", " ");
+}
+
+/**
+ * A shared engagement link is the most-forwarded URL this product produces —
+ * it goes into newsletters, social posts and agenda packets. Without its own
+ * metadata it inherited the root layout's title, description and
+ * `canonical: "/"`, so every campaign a county published described the OpenPlan
+ * site rather than the consultation, and pointed search engines and link
+ * previews at the site root.
+ *
+ * `robots: { index: false }` because a share token is a capability URL: it is
+ * unguessable on purpose, and indexing one would defeat that.
+ */
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ shareToken: string }>;
+}): Promise<Metadata> {
+  const { shareToken } = await params;
+  const bundle = await loadPublicPortalBundle(shareToken);
+
+  if (!bundle) {
+    return { title: "Engagement portal", robots: { index: false, follow: false } };
+  }
+
+  const title = bundle.campaign.title ?? "Community engagement";
+  const description =
+    bundle.campaign.summary?.trim() ||
+    "Share your input on this project. Comments are reviewed before they appear publicly.";
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/engage/${shareToken}` },
+    openGraph: {
+      title,
+      description,
+      url: `/engage/${shareToken}`,
+      type: "website",
+    },
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function PublicEngagementPage({

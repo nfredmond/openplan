@@ -149,7 +149,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       .order("sort_order", { ascending: true }),
     supabase
       .from("report_artifacts")
-      .select("id, artifact_kind, generated_at, metadata_json")
+      .select("id, artifact_kind, generated_at, storage_path, metadata_json")
       .eq("report_id", report.id)
       .order("generated_at", { ascending: false }),
     report.rtp_cycle_id
@@ -1195,6 +1195,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       currentReportComparisonAggregate={currentReportComparisonAggregate}
       currentReportComparisonDigest={currentReportComparisonDigest}
       compositionAuditProps={{
+        reportId: report.id,
         sectionList,
         enabledSectionsCount: enabledSections,
         runs,

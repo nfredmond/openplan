@@ -97,12 +97,12 @@ const sectionMap: Array<{
     },
   },
   {
-    match: ["/reports", "/billing", "/assistant-activity"],
+    match: ["/reports", "/invoicing", "/assistant-activity"],
     section: {
       title: "Operations",
       items: [
         { href: "/reports", label: "Reports" },
-        { href: "/billing", label: "Billing" },
+        { href: "/invoicing", label: "Invoicing" },
         { href: "/assistant-activity", label: "Agent Activity" },
       ],
     },

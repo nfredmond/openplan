@@ -5,6 +5,7 @@ import { formatDateTime, titleize } from "@/lib/reports/catalog";
 import type { LinkedRunRow, ReportArtifact, ReportSectionRow } from "./_types";
 
 type Props = {
+  reportId: string;
   sectionList: ReportSectionRow[];
   enabledSectionsCount: number;
   runs: LinkedRunRow[];
@@ -12,6 +13,7 @@ type Props = {
 };
 
 export function ReportCompositionAudit({
+  reportId,
   sectionList,
   enabledSectionsCount,
   runs,
@@ -126,7 +128,7 @@ export function ReportCompositionAudit({
           {artifactList.length === 0 ? (
             <EmptyState
               title="No artifacts yet"
-              description="Use the generation control to produce the first HTML packet for this report."
+              description="Use the generation control to produce the first packet for this report."
               compact
             />
           ) : (
@@ -144,9 +146,25 @@ export function ReportCompositionAudit({
                     Generated {formatDateTime(artifact.generated_at)}
                   </p>
                 </div>
-                <StatusBadge tone="info" className="shrink-0">
-                  {artifact.id.slice(0, 8)}
-                </StatusBadge>
+                <div className="flex shrink-0 items-center gap-3">
+                  {/*
+                    A real anchor, not a fetch: the download route answers with a
+                    307 to a short-lived signed URL, and the browser has to be
+                    the thing that follows it. Until this existed, a generated
+                    PDF sat in private storage with no way to retrieve it.
+                  */}
+                  <a
+                    className="text-xs font-medium underline underline-offset-2 hover:text-foreground"
+                    href={`/api/reports/${reportId}/artifacts/${artifact.id}/download`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Download {artifact.artifact_kind.toUpperCase()}
+                  </a>
+                  <StatusBadge tone="info" className="shrink-0">
+                    {artifact.id.slice(0, 8)}
+                  </StatusBadge>
+                </div>
               </div>
             ))
           )}

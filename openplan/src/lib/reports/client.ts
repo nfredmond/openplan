@@ -2,8 +2,17 @@ export type GenerateReportArtifactResult = {
   warningCount: number;
 };
 
+/** The artifact formats the generate route supports. */
+export type ReportArtifactFormat = "html" | "pdf";
+
 export type ReportActionClientOptions = {
   headers?: Record<string, string>;
+  /**
+   * Defaults to `html` to keep every existing caller's behaviour. The route has
+   * accepted `pdf` since the module shipped; nothing in the UI ever asked for
+   * it, so the PDF path was unreachable from the app.
+   */
+  format?: ReportArtifactFormat;
 };
 
 export async function generateReportArtifact(
@@ -13,7 +22,7 @@ export async function generateReportArtifact(
   const response = await fetch(`/api/reports/${reportId}/generate`, {
     method: "POST",
     headers: { "content-type": "application/json", ...(options.headers ?? {}) },
-    body: JSON.stringify({ format: "html" }),
+    body: JSON.stringify({ format: options.format ?? "html" }),
   });
 
   const payload = (await response.json().catch(() => null)) as

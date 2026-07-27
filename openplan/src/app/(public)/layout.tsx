@@ -42,7 +42,7 @@ export default function PublicLayout({
               </Link>
             </div>
             <p className="text-sm text-muted-foreground lg:text-right">
-              Open-source planning software with managed services for teams that need traceable work, not another static status page.
+              Free, open-source planning software for teams that need traceable work, not another static status page.
             </p>
           </div>
         </div>

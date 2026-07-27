@@ -119,19 +119,80 @@ describe("the paid-tier subsystem stays deleted", () => {
     expect(pat.test("// the request-access flow was removed")).toBe(false);
   });
 
-  it("sells nothing on any public page", () => {
-    const publicDir = path.join(SRC, "app", "(public)");
+  /**
+   * WIDENED, twice over, because this guard passed green while the copy it
+   * exists to forbid was shipping.
+   *
+   * 1. It walked only `src/app/(public)`. The browser-tab title of EVERY page
+   *    and the social-preview title of EVERY shared link come from
+   *    `src/app/layout.tsx` — the root layout, outside that directory — and it
+   *    read "OpenPlan | Open-source planning software with managed services".
+   *    `src/components/top-nav.tsx` said the same and was equally unscanned.
+   * 2. Its phrase list had `managed hosting` but not `managed services`, which
+   *    is the phrase that was actually in the product.
+   *
+   * The scan now covers every surface a visitor can read, and the phrase list
+   * covers the ways the same claim gets written.
+   */
+  it("sells nothing on any visitor-facing surface", () => {
+    const surfaces = [
+      path.join(SRC, "app", "(public)"),
+      path.join(SRC, "app", "(embed)"),
+      path.join(SRC, "app", "(auth)"),
+      path.join(SRC, "components"),
+    ];
+
+    const files = [
+      path.join(SRC, "app", "layout.tsx"),
+      ...surfaces.flatMap((dir) => walk(dir)),
+    ];
+
+    // Claims about buying something, wherever a visitor could read them.
+    const COMMERCIAL_CLAIMS = [
+      /managed hosting/i,
+      /managed services?\b/i,
+      /service lanes?\b/i,
+      /\bretainer\b/i,
+      /supervised early access/i,
+    ];
+
+    // "subscription" is deliberately NOT in the list above: the engagement
+    // module lets a resident subscribe to campaign updates by email, which is a
+    // participation feature and not a purchase. Only a PAID subscription is
+    // forbidden, so the pattern requires the commercial qualifier.
+    const PAID_SUBSCRIPTION = /\b(?:paid|billing|billed|plan|pricing|premium|upgrade)\b[^.\n]{0,40}\bsubscription/i;
+
     const offenders: string[] = [];
-    for (const file of walk(publicDir)) {
+    for (const file of files) {
       const source = readFileSync(file, "utf8");
-      for (const pattern of [/managed hosting/i, /service lanes?\b/i, /\bretainer\b/i, /subscription/i]) {
+      for (const pattern of [...COMMERCIAL_CLAIMS, PAID_SUBSCRIPTION]) {
         if (pattern.test(source)) {
           offenders.push(`${path.relative(process.cwd(), file)} → ${pattern}`);
         }
       }
     }
-    expect(walk(publicDir).length).toBeGreaterThan(3);
+
     expect(offenders).toEqual([]);
+
+    // Prove the narrowed subscription pattern still catches the real thing, and
+    // still spares the engagement feature.
+    expect(PAID_SUBSCRIPTION.test("Manage your billing subscription")).toBe(true);
+    expect(PAID_SUBSCRIPTION.test("Upgrade to a paid subscription")).toBe(true);
+    expect(PAID_SUBSCRIPTION.test("Subscribe to updates about this subscription form")).toBe(false);
+    expect(PAID_SUBSCRIPTION.test("engagement_subscriptions")).toBe(false);
+  });
+
+  it("guards the guard — the widened scan reaches the surfaces that shipped the claim", () => {
+    const files = [
+      path.join(SRC, "app", "layout.tsx"),
+      ...walk(path.join(SRC, "app", "(public)")),
+      ...walk(path.join(SRC, "components")),
+    ];
+
+    expect(files.length).toBeGreaterThan(50);
+    // The two files whose copy this guard missed for an entire release.
+    expect(files.some((f) => f.endsWith(path.join("app", "layout.tsx")))).toBe(true);
+    expect(files.some((f) => f.endsWith(path.join("components", "top-nav.tsx")))).toBe(true);
   });
 
   it("guards the guard — the scan actually reaches the routes", () => {

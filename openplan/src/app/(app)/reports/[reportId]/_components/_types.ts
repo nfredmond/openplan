@@ -35,6 +35,8 @@ export type ReportArtifact = {
   id: string;
   artifact_kind: string;
   generated_at: string;
+  /** Null for inline HTML artifacts; a bucket object path for stored files. */
+  storage_path: string | null;
   metadata_json: Record<string, unknown> | null;
 };
 

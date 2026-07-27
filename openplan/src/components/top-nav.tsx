@@ -40,7 +40,7 @@ export async function TopNav() {
             <span className="text-sm text-muted-foreground">Maps, engagement, reporting</span>
           </div>
           <span className="hidden max-w-3xl text-sm text-muted-foreground sm:block">
-            Public entry into the open-source planning workspace, managed services, and share-ready engagement portals.
+            Public entry into the open-source planning workspace and share-ready engagement portals.
           </span>
         </Link>
 

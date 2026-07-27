@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Privacy Practices — OpenPlan",
   description:
-    "How OpenPlan handles workspace data, client information, and AI-assisted content during supervised early access.",
+    "How OpenPlan handles workspace data, client information, and AI-assisted content.",
 };
 
 const dataHandling = [
@@ -57,7 +57,7 @@ export default function PrivacyPage() {
             <p className="public-lead max-w-4xl">
               OpenPlan is operated by Nat Ford Planning for agencies, RTPAs, counties, tribes, and consulting teams. This page
               describes what data the platform collects, how it is stored, who can see it, and how AI-assisted features are
-              governed during supervised early access.
+              governed.
             </p>
           </div>
 
@@ -174,7 +174,7 @@ export default function PrivacyPage() {
             </div>
             <p className="public-section-description max-w-2xl">
               Privacy questions, export requests, and deletion requests can be directed to the operator via the sign-in
-              surface&#39;s support channel once a workspace is active. During supervised early access, privacy posture is
+              surface&#39;s support channel once a workspace is active. Privacy posture is
               reviewed alongside terms and legal notices and may be updated as the platform matures.
             </p>
           </div>

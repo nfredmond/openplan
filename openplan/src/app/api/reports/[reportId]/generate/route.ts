@@ -894,7 +894,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Failed to persist report artifact" }, { status: 500 });
       }
 
-      const latestArtifactUrl = `/reports/${report.id}#artifact-${artifact.id}`;
+      // A link to the FILE when there is one. This was an in-app anchor to a
+      // row in the composition-audit table, which meant a generated PDF sat in
+      // private storage with nothing able to retrieve it.
+      const latestArtifactUrl = rtpPdfStoragePath
+        ? `/api/reports/${report.id}/artifacts/${artifact.id}/download`
+        : `/reports/${report.id}#artifact-${artifact.id}`;
       const artifactHistoryEntry = buildArtifactHistoryEntry({
         artifactId: artifact.id,
         artifactKind: format,
@@ -1531,7 +1536,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to persist report artifact" }, { status: 500 });
     }
 
-    const latestArtifactUrl = `/reports/${report.id}#artifact-${artifact.id}`;
+    // See the RTP branch: a link to the FILE when one was stored.
+    const latestArtifactUrl = projectPdfStoragePath
+      ? `/api/reports/${report.id}/artifacts/${artifact.id}/download`
+      : `/reports/${report.id}#artifact-${artifact.id}`;
     const artifactHistoryEntry = buildArtifactHistoryEntry({
       artifactId: artifact.id,
       artifactKind: format,
