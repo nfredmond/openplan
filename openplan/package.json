@@ -9,10 +9,6 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
-    "test:commerce-env": "vitest run src/test/billing-readiness.test.ts src/test/billing-webhook-utils.test.ts src/test/access-request-query.test.ts",
-    "test:commerce-delivery": "vitest run src/test/billing-checkout-route.test.ts src/test/billing-checkout-launcher.test.tsx src/test/request-access-form.test.tsx src/test/access-request-route.test.ts",
-    "test:public-catalog": "vitest run src/test/pricing-page.test.tsx src/test/request-access-page.test.tsx src/test/contact-page.test.tsx src/test/examples-page.test.tsx",
-    "test:ai-planning-workflows-launch-dry-run": "vitest run src/test/billing-checkout-route.test.ts src/test/billing-readiness-route.test.ts",
     "test:workspace-selection-hardening": "vitest run src/test/workspace-membership-current.test.ts src/test/workspace-membership-query-guard.test.ts src/test/plans-route.test.ts src/test/programs-route.test.ts src/test/funding-opportunities-route.test.ts src/test/models-route.test.ts src/test/rtp-cycles-route.test.ts src/test/engagement-campaigns-route.test.ts src/test/current-workspace-route.test.ts src/test/assistant-context-route.test.ts src/test/assistant-route.test.ts",
     "test:rls-live": "OPENPLAN_RLS_LIVE_TEST=1 vitest run src/test/rls-isolation.test.ts",
     "test:watch": "vitest",
@@ -29,9 +25,7 @@
     "ops:check-local-supabase-status": "node scripts/ops/check-local-supabase-status.mjs",
     "ops:check-migration-inventory": "node scripts/ops/check-migration-inventory.mjs",
     "ops:check-pilot-preflight": "node scripts/ops/check-pilot-preflight.mjs",
-    "test:sales-proof-claim-boundaries": "vitest run src/test/sales-proof-claim-boundaries.test.ts src/test/current-buyer-demo-proof-packet.test.ts",
-    "test:guardrail-suite": "vitest run src/test/public-page-metadata-canonical-url.test.ts src/test/request-access-copy-to-admin-guard-trace.test.ts src/test/access-request-manual-provisioning-doc-index.test.ts src/test/billing-checkout-route.test.ts src/test/workspace-provision-route.test.ts src/test/workspace-membership-current.test.ts src/test/workspace-membership-required.test.tsx",
-    "ops:check-buyer-demo-preflight": "node scripts/ops/check-buyer-demo-preflight.mjs"
+    "test:guardrail-suite": "vitest run src/test/no-paid-tier-guard.test.ts src/test/public-page-claims-guardrails.test.ts src/test/public-open-source-posture-guardrail.test.ts src/test/public-page-metadata-canonical-url.test.ts src/test/workspace-provision-route.test.ts src/test/workspace-membership-current.test.ts src/test/workspace-membership-required.test.tsx"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",

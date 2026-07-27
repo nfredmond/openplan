@@ -16,7 +16,6 @@ const PROTECTED_ROUTE_PREFIXES = [
   '/grants',
   '/engagement',
   '/billing',
-  '/admin',
   '/assistant-activity',
 ] as const
 
