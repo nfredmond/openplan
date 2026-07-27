@@ -148,12 +148,19 @@ describe("the paid-tier subsystem stays deleted", () => {
     ];
 
     // Claims about buying something, wherever a visitor could read them.
+    // `service[- ]lane` catches the hyphenated spelling that outlived the
+    // spaced one on /examples for a full release; `buyer` and `paid help`
+    // shipped there the same way. "supervised" alone is NOT banned — the
+    // assistant's human-in-the-loop action triage uses it legitimately —
+    // only the sales-era pairings are.
     const COMMERCIAL_CLAIMS = [
       /managed hosting/i,
       /managed services?\b/i,
-      /service lanes?\b/i,
+      /service[- ]lanes?\b/i,
       /\bretainer\b/i,
-      /supervised early access/i,
+      /\bbuyers?\b/i,
+      /\bpaid help\b/i,
+      /supervised (?:early access|access|request|conversations?|first workflow)/i,
     ];
 
     // "subscription" is deliberately NOT in the list above: the engagement

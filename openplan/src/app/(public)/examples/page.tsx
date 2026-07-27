@@ -2,25 +2,21 @@ import Link from "next/link";
 import { AlertTriangle, FileSearch, MapPin, ShieldCheck } from "lucide-react";
 import { buildOpenPlanPublicMetadata } from "@/lib/public-page-metadata";
 import {
-  NEVADA_COUNTY_BUYER_EVIDENCE_BRIEF as buyerEvidenceBrief,
   NEVADA_COUNTY_CAVEATS_VERBATIM as caveatsVerbatim,
   NEVADA_COUNTY_FACILITY_RANKING as facilityRanking,
   NEVADA_COUNTY_RUN_CONTEXT as runContext,
   NEVADA_COUNTY_SCREENING_GATE as screeningGate,
   NEVADA_COUNTY_VALIDATION_METRICS as validationMetrics,
-  buildNevadaCountyBuyerEvidenceBriefText,
 } from "@/lib/examples/nevada-county-2026-03-24";
 
 export const metadata = buildOpenPlanPublicMetadata({
   title: "Evidence catalog: screening proof with caveats intact",
   description:
-    "Inspect a real Nevada County screening run with validation metrics, caveats, and prototype-only limits preserved for buyer-safe review.",
+    "Inspect a real Nevada County screening run with validation metrics, caveats, and prototype-only limits preserved exactly as the platform recorded them.",
   path: "/examples",
 });
 
 export default function ExamplesEvidenceCatalogPage() {
-  const buyerEvidenceBriefText = buildNevadaCountyBuyerEvidenceBriefText();
-
   return (
     <div className="public-page">
       <div className="public-page-backdrop" />
@@ -78,8 +74,8 @@ export default function ExamplesEvidenceCatalogPage() {
             </div>
           </div>
           <p className="public-rail-copy">
-            A marketing PDF that softened the max APE (237.62%) or hid the caveats would violate
-            a vendor promise. This page is the opposite: it puts the hardest numbers on top
+            A marketing page that softened the max APE (237.62%) or hid the caveats would be
+            a lie. This page is the opposite: it puts the hardest numbers on top
             and preserves the screening gate as written.
           </p>
           <div className="public-rail-list">
@@ -261,58 +257,18 @@ export default function ExamplesEvidenceCatalogPage() {
         </article>
       </section>
 
-      <section id="nevada-county-buyer-evidence-brief" className="public-surface scroll-mt-24">
-        <div className="public-section-header">
-          <div>
-            <p className="public-section-label">Copyable buyer evidence brief</p>
-            <h2 className="public-section-title">{buyerEvidenceBrief.title}</h2>
-          </div>
-          <p className="public-section-description max-w-2xl">
-            {buyerEvidenceBrief.buyerUse} Keep this brief attached to the caveats; it is a static
-            screening-run snapshot for supervised review, not a broader capability claim.
-          </p>
-        </div>
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <div className="public-ledger">
-            <div className="public-ledger-row">
-              <div className="public-ledger-index">01</div>
-              <div className="public-ledger-body">
-                <p className="public-ledger-label">Posture</p>
-                <p className="public-ledger-copy text-foreground">{buyerEvidenceBrief.posture}</p>
-              </div>
-            </div>
-            <div className="public-ledger-row">
-              <div className="public-ledger-index">02</div>
-              <div className="public-ledger-body">
-                <p className="public-ledger-label">Not proof of</p>
-                <p className="public-ledger-copy text-foreground">{buyerEvidenceBrief.notProofOf}</p>
-              </div>
-            </div>
-            <div className="public-ledger-row">
-              <div className="public-ledger-index">03</div>
-              <div className="public-ledger-body">
-                <p className="public-ledger-label">Next step</p>
-                <p className="public-ledger-copy text-foreground">{buyerEvidenceBrief.nextStep}</p>
-              </div>
-            </div>
-          </div>
-          <pre className="max-h-[34rem] overflow-auto whitespace-pre-wrap rounded-xl border border-border/60 bg-muted/20 p-4 text-xs leading-relaxed text-muted-foreground">
-            {buyerEvidenceBriefText}
-          </pre>
-        </div>
-      </section>
-
       <section className="public-content-grid public-content-grid--balanced">
         <article className="public-surface">
           <div className="public-section-header">
             <div>
-              <p className="public-section-label">Open source + services</p>
-              <h2 className="public-section-title">Open-source proof, then supervised service paths</h2>
+              <p className="public-section-label">Open source, self-serve</p>
+              <h2 className="public-section-title">Open-source proof you can verify yourself</h2>
             </div>
             <p className="public-section-description max-w-2xl">
-              The examples catalog should convert careful agencies without pretending OpenPlan is a
-              closed SaaS black box. Public artifacts show the work; paid help starts when someone
-              needs implementation, hosting, review, or planning support.
+              The examples catalog exists so careful agencies can check the work, not take a tour.
+              OpenPlan is free and open source: the artifacts point back to the repository, and
+              anyone can reproduce the same screening in their own workspace without asking
+              permission.
             </p>
           </div>
           <div className="public-ledger">
@@ -354,30 +310,6 @@ export default function ExamplesEvidenceCatalogPage() {
             <Link href="/contact" className="public-secondary-link">
               Ask a question
             </Link>
-          </div>
-          <div className="mt-5 space-y-4 rounded-xl border border-border/60 bg-muted/20 p-4">
-            <div>
-              <p className="public-ledger-label">Guided demo fit check</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                A useful first session ends with one concrete workflow, a named owner on your side,
-                and a clear read on what your data does and does not support.
-              </p>
-            </div>
-            <div className="border-t border-border/60 pt-4">
-              <p className="public-ledger-label">Command Center handoff cue</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                If an operator arrives here from Command Center, keep the narration sequence intact:
-                name the proof boundary, show the internal prototype gate, preserve the Max APE caveat,
-                then route the next step to supervised access or service-lane review.
-              </p>
-              <p className="mt-3 text-xs text-muted-foreground">
-                Signed-in operators can return to the internal command surface; public visitors should use
-                the supervised request path instead.
-              </p>
-              <Link href="/command-center" className="public-secondary-link mt-3 inline-flex">
-                Open operator Command Center
-              </Link>
-            </div>
           </div>
         </article>
 
