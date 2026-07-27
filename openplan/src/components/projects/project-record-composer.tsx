@@ -62,6 +62,8 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
   const [deliverableOwner, setDeliverableOwner] = useState("");
   const [deliverableDueDate, setDeliverableDueDate] = useState("");
   const [deliverableStatus, setDeliverableStatus] = useState("not_started");
+  const [deliverableBudget, setDeliverableBudget] = useState("");
+  const [deliverablePercentComplete, setDeliverablePercentComplete] = useState("");
   const [deliverableError, setDeliverableError] = useState<string | null>(null);
   const [deliverableSaving, setDeliverableSaving] = useState(false);
 
@@ -190,12 +192,16 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
         ownerLabel: deliverableOwner,
         dueDate: deliverableDueDate,
         status: deliverableStatus,
+        budgetAmount: deliverableBudget.trim() ? Number.parseFloat(deliverableBudget) : undefined,
+        percentComplete: deliverablePercentComplete.trim() ? Number.parseFloat(deliverablePercentComplete) : undefined,
       });
       setDeliverableTitle("");
       setDeliverableSummary("");
       setDeliverableOwner("");
       setDeliverableDueDate("");
       setDeliverableStatus("not_started");
+      setDeliverableBudget("");
+      setDeliverablePercentComplete("");
     } catch (error) {
       setDeliverableError(error instanceof Error ? error.message : "Failed to save deliverable");
     } finally {
@@ -619,6 +625,37 @@ export function ProjectRecordComposer({ projectId }: ProjectRecordComposerProps)
                   <option value="blocked">Blocked</option>
                   <option value="complete">Complete</option>
                 </select>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <label htmlFor="deliverable-budget" className="text-sm font-medium">
+                  Budget (not to exceed)
+                </label>
+                <Input
+                  id="deliverable-budget"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={deliverableBudget}
+                  onChange={(e) => setDeliverableBudget(e.target.value)}
+                  placeholder="Optional — leave blank if not budgeted"
+                />
+              </div>
+              <div className="space-y-2">
+                <label htmlFor="deliverable-percent-complete" className="text-sm font-medium">
+                  Percent complete
+                </label>
+                <Input
+                  id="deliverable-percent-complete"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={deliverablePercentComplete}
+                  onChange={(e) => setDeliverablePercentComplete(e.target.value)}
+                  placeholder="Optional — 0 to 100"
+                />
               </div>
             </div>
             <FormError error={deliverableError} />

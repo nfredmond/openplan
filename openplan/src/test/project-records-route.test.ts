@@ -132,6 +132,8 @@ describe("POST /api/projects/[projectId]/records", () => {
         owner_label: "Elena",
         due_date: "2026-03-20",
         status: "in_progress",
+        budget_amount: 25000,
+        percent_complete: 40,
         created_at: "2026-03-13T07:00:00.000Z",
       },
       error: null,
@@ -263,6 +265,8 @@ describe("POST /api/projects/[projectId]/records", () => {
         ownerLabel: "Elena",
         dueDate: "2026-03-20",
         status: "in_progress",
+        budgetAmount: 25000,
+        percentComplete: 40,
       }),
       { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) }
     );
@@ -276,6 +280,8 @@ describe("POST /api/projects/[projectId]/records", () => {
         owner_label: "Elena",
         due_date: "2026-03-20",
         status: "in_progress",
+        budget_amount: 25000,
+        percent_complete: 40,
         created_by: "22222222-2222-4222-8222-222222222222",
       })
     );
@@ -287,6 +293,50 @@ describe("POST /api/projects/[projectId]/records", () => {
         title: "Draft board-ready safety memo",
       },
     });
+  });
+
+  it("omits budget columns entirely when the fields are not provided", async () => {
+    const response = await postRecord(
+      jsonRequest({
+        recordType: "deliverable",
+        title: "Draft board-ready safety memo",
+      }),
+      { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(201);
+    const insertPayload = (projectDeliverablesInsertMock.mock.calls[0] as unknown[])?.[0] as Record<string, unknown>;
+    // Absent means absent — never 0, and never a column the schema might not have yet.
+    expect("budget_amount" in insertPayload).toBe(false);
+    expect("percent_complete" in insertPayload).toBe(false);
+  });
+
+  it("rejects a percent complete above 100", async () => {
+    const response = await postRecord(
+      jsonRequest({
+        recordType: "deliverable",
+        title: "Draft board-ready safety memo",
+        percentComplete: 101,
+      }),
+      { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(projectDeliverablesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects a negative budget amount", async () => {
+    const response = await postRecord(
+      jsonRequest({
+        recordType: "deliverable",
+        title: "Draft board-ready safety memo",
+        budgetAmount: -1,
+      }),
+      { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(400);
+    expect(projectDeliverablesInsertMock).not.toHaveBeenCalled();
   });
 
   it("creates an issue for an accessible project", async () => {

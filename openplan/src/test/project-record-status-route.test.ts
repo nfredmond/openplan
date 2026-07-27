@@ -18,6 +18,12 @@ const projectSubmittalsEqProjectMock = vi.fn(() => ({ select: projectSubmittalsS
 const projectSubmittalsEqIdMock = vi.fn(() => ({ eq: projectSubmittalsEqProjectMock }));
 const projectSubmittalsUpdateMock = vi.fn(() => ({ eq: projectSubmittalsEqIdMock }));
 
+const projectDeliverablesMaybeSingleMock = vi.fn();
+const projectDeliverablesSelectMock = vi.fn(() => ({ maybeSingle: projectDeliverablesMaybeSingleMock }));
+const projectDeliverablesEqProjectMock = vi.fn(() => ({ select: projectDeliverablesSelectMock }));
+const projectDeliverablesEqIdMock = vi.fn(() => ({ eq: projectDeliverablesEqProjectMock }));
+const projectDeliverablesUpdateMock = vi.fn(() => ({ eq: projectDeliverablesEqIdMock }));
+
 const projectsSelectEqMock = vi.fn(() => ({ single: projectsSingleMock }));
 const projectsSelectMock = vi.fn(() => ({ eq: projectsSelectEqMock }));
 
@@ -32,6 +38,10 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "project_submittals") {
     return { update: projectSubmittalsUpdateMock };
+  }
+
+  if (table === "project_deliverables") {
+    return { update: projectDeliverablesUpdateMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -56,6 +66,7 @@ import { PATCH as patchRecord } from "@/app/api/projects/[projectId]/records/[re
 const PROJECT_ID = "11111111-1111-4111-8111-111111111111";
 const MILESTONE_ID = "aaaa1111-3333-4333-8333-333333333333";
 const SUBMITTAL_ID = "bbbb1111-3333-4333-8333-333333333333";
+const DELIVERABLE_ID = "cccc1111-3333-4333-8333-333333333333";
 
 function jsonRequest(recordId: string, payload: unknown) {
   return new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/records/${recordId}`, {
@@ -119,6 +130,22 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
         notes: null,
         created_at: "2026-03-13T07:05:00.000Z",
         updated_at: "2026-07-17T18:05:00.000Z",
+      },
+      error: null,
+    });
+
+    projectDeliverablesMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: DELIVERABLE_ID,
+        title: "Draft board-ready safety memo",
+        summary: null,
+        owner_label: "Elena",
+        due_date: "2026-03-20",
+        status: "in_progress",
+        budget_amount: 25000,
+        percent_complete: 40,
+        created_at: "2026-03-13T07:00:00.000Z",
+        updated_at: "2026-07-27T18:00:00.000Z",
       },
       error: null,
     });
@@ -221,6 +248,67 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
         status: "accepted",
       },
     });
+  });
+
+  it("updates a deliverable's status, budget, and percent complete", async () => {
+    const response = await patchRecord(
+      jsonRequest(DELIVERABLE_ID, {
+        recordType: "deliverable",
+        status: "in_progress",
+        budgetAmount: 25000,
+        percentComplete: 40,
+      }),
+      routeContext(DELIVERABLE_ID)
+    );
+
+    expect(response.status).toBe(200);
+    expect(projectDeliverablesUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "in_progress",
+        budget_amount: 25000,
+        percent_complete: 40,
+        updated_at: expect.any(String),
+      })
+    );
+    expect(projectDeliverablesEqIdMock).toHaveBeenCalledWith("id", DELIVERABLE_ID);
+    expect(projectDeliverablesEqProjectMock).toHaveBeenCalledWith("project_id", PROJECT_ID);
+
+    expect(await response.json()).toMatchObject({
+      recordType: "deliverable",
+      record: {
+        id: DELIVERABLE_ID,
+        title: "Draft board-ready safety memo",
+        status: "in_progress",
+        budget_amount: 25000,
+        percent_complete: 40,
+      },
+    });
+  });
+
+  it("leaves budget columns untouched when the fields are not provided", async () => {
+    const response = await patchRecord(
+      jsonRequest(DELIVERABLE_ID, { recordType: "deliverable", status: "complete" }),
+      routeContext(DELIVERABLE_ID)
+    );
+
+    expect(response.status).toBe(200);
+    const updatePayload = (projectDeliverablesUpdateMock.mock.calls[0] as unknown[])?.[0] as Record<string, unknown>;
+    expect("budget_amount" in updatePayload).toBe(false);
+    expect("percent_complete" in updatePayload).toBe(false);
+  });
+
+  it("rejects a deliverable percent complete above 100", async () => {
+    const response = await patchRecord(
+      jsonRequest(DELIVERABLE_ID, {
+        recordType: "deliverable",
+        status: "in_progress",
+        percentComplete: 101,
+      }),
+      routeContext(DELIVERABLE_ID)
+    );
+
+    expect(response.status).toBe(400);
+    expect(projectDeliverablesUpdateMock).not.toHaveBeenCalled();
   });
 
   it("returns 404 when the record does not belong to the project", async () => {

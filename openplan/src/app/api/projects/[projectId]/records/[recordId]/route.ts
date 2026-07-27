@@ -20,6 +20,13 @@ const updateRecordSchema = z.discriminatedUnion("recordType", [
     status: z.enum(["draft", "internal_review", "submitted", "accepted", "revise_and_resubmit"]),
     note: z.string().trim().max(4000).optional(),
   }),
+  z.object({
+    recordType: z.literal("deliverable"),
+    status: z.enum(["not_started", "in_progress", "blocked", "complete"]),
+    // NUMERIC(14,2) not-to-exceed budget; only written when provided.
+    budgetAmount: z.number().min(0).max(999_999_999_999.99).nullable().optional(),
+    percentComplete: z.number().min(0).max(100).nullable().optional(),
+  }),
 ]);
 
 type RouteContext = {
@@ -118,6 +125,50 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       });
 
       return NextResponse.json({ recordType: "milestone", record: data });
+    }
+
+    if (parsed.data.recordType === "deliverable") {
+      const { data, error } = await supabase
+        .from("project_deliverables")
+        .update({
+          status: parsed.data.status,
+          ...(parsed.data.budgetAmount !== undefined ? { budget_amount: parsed.data.budgetAmount } : {}),
+          ...(parsed.data.percentComplete !== undefined ? { percent_complete: parsed.data.percentComplete } : {}),
+          updated_at: updatedAt,
+        })
+        .eq("id", parsedParams.data.recordId)
+        .eq("project_id", project.id)
+        .select("id, title, summary, owner_label, due_date, status, budget_amount, percent_complete, created_at, updated_at")
+        .maybeSingle();
+
+      if (error) {
+        audit.error("project_record_update_failed", {
+          projectId: project.id,
+          recordId: parsedParams.data.recordId,
+          recordType: "deliverable",
+          message: error.message,
+        });
+        return NextResponse.json({ error: "Failed to update deliverable", details: error.message }, { status: 500 });
+      }
+
+      if (!data) {
+        audit.warn("record_not_found", {
+          projectId: project.id,
+          recordId: parsedParams.data.recordId,
+          recordType: "deliverable",
+        });
+        return NextResponse.json({ error: "Deliverable not found" }, { status: 404 });
+      }
+
+      audit.info("project_record_updated", {
+        projectId: project.id,
+        recordId: data.id,
+        recordType: "deliverable",
+        status: parsed.data.status,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json({ recordType: "deliverable", record: data });
     }
 
     const { data, error } = await supabase

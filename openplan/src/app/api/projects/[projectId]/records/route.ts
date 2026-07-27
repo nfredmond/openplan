@@ -42,6 +42,9 @@ const createRecordSchema = z.discriminatedUnion("recordType", [
     ownerLabel: z.string().trim().max(120).optional(),
     dueDate: z.string().trim().max(30).optional(),
     status: z.enum(["not_started", "in_progress", "blocked", "complete"]).optional(),
+    // NUMERIC(14,2): not-to-exceed budget for this deliverable.
+    budgetAmount: z.number().min(0).max(999_999_999_999.99).nullable().optional(),
+    percentComplete: z.number().min(0).max(100).nullable().optional(),
   }),
   z.object({
     recordType: z.literal("risk"),
@@ -184,9 +187,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
             owner_label: parsed.data.ownerLabel?.trim() || null,
             due_date: parsed.data.dueDate?.trim() || null,
             status: parsed.data.status ?? "not_started",
+            // Only sent when provided — an absent field must not become 0.
+            ...(parsed.data.budgetAmount !== undefined ? { budget_amount: parsed.data.budgetAmount } : {}),
+            ...(parsed.data.percentComplete !== undefined ? { percent_complete: parsed.data.percentComplete } : {}),
             created_by: user.id,
           })
-          .select("id, title, summary, owner_label, due_date, status, created_at")
+          .select("id, title, summary, owner_label, due_date, status, budget_amount, percent_complete, created_at")
           .single();
         if (error) throw new Error(error.message);
         return { recordType: "deliverable", record: data };
