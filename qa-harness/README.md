@@ -11,8 +11,6 @@ Purpose: keep one-off but reusable production QA scripts outside the app runtime
 - `openplan-local-analysis-report-linkage-smoke.js` — local browser/API smoke for the Analysis flow: corridor run-template model, managed run launch, persisted source analysis output, scenario attachment, Analysis Studio deep link, analysis-summary report linkage, generated artifact, and artifact source-context traceability.
 - `local-spine-smoke.js` — local-only NCTC seed/API/browser smoke proving one canonical project flows through RTP, grants, engagement, analysis/county-run, reports, map, Data Hub, and aerial evidence rows without duplicate project creation. Before creating its report, it removes prior harness-owned `NCTC Phase 1 Spine Smoke%` reports and dependent report rows in local Supabase.
 - `local-aerial-evidence-smoke.js` — local-only NCTC Aerial evidence spine smoke. It refuses Vercel and Supabase project URLs, seeds the NCTC fixture, cleans prior harness-owned mission/package rows in the deterministic NCTC project, scopes a deterministic QA user to that workspace, creates a project-linked mission, attaches AOI through mission PATCH, creates one ready evidence package, verifies exact seeded-plus-new aerial posture counts, renders `/aerial` and mission detail, and confirms the map AOI feature without creating a project.
-- `openplan-local-admin-support-flow-smoke.js` — local browser/API smoke for the supervised admin/support flow: public request-access intake, allowlisted reviewer triage, provision-only-after-contacted gating, pilot workspace creation, manual owner invite ledgering, review-event audit trail, and invited-owner acceptance.
-- `openplan-prod-admin-operations-auth-smoke.js` — production authenticated browser smoke for the Admin Operations page. It uses an admin-generated reviewer magic-link session, verifies `/admin/operations` renders with service-lane intake unlocked, and does not click triage/provision controls or print request rows.
 - `openplan-prod-auth-smoke.js` — creates a dedicated QA auth user plus QA records in production, verifies redirect continuity and authenticated route flow, and writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-authenticated-smoke.md`.
 - `openplan-prod-engagement-smoke.js` — creates a dedicated QA auth user, proves the unprovisioned `/engagement` state, bootstraps a workspace, and then drives the live engagement catalog/detail UI through campaign creation, category creation, intake item entry, moderation approval, and catalog refresh. Writes screenshots/report artifacts into `docs/ops/<date>-test-output/` and `docs/ops/<date>-openplan-production-engagement-smoke.md`.
 - `openplan-prod-engagement-report-handoff-smoke.js` — proves the engagement → report handoff flow on production and records screenshots/evidence markdown.
@@ -48,12 +46,6 @@ npm run local-engagement-report-handoff-smoke
 npm run local-analysis-report-linkage-smoke
 npm run local-spine-smoke
 npm run local-aerial-evidence-smoke
-# start the local app with OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS=openplan-local-admin-reviewer@natfordplanning.com
-OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS=openplan-local-admin-reviewer@natfordplanning.com npm run local-admin-support-flow-smoke
-OPENPLAN_PROD_ADMIN_OPERATIONS_ALLOW_MAGIC_LINK=1 \
-OPENPLAN_ADMIN_OPERATIONS_SMOKE_REVIEWER_EMAIL=<allowlisted-email> \
-OPENPLAN_ENV_PATH=/absolute/path/to/private-production-env \
-  npm run prod-admin-operations-auth-smoke
 npm run prod-auth-smoke
 npm run prod-managed-run-smoke
 npm run prod-report-funding-smoke
@@ -71,12 +63,11 @@ npm run prod-qa-cleanup:apply
 ## Notes
 - Uses `harness-env.js` for repo-root discovery, env loading, canonical base URL selection, mutating-local target guards, and optional Vercel protection bypass headers.
 - Reads OpenPlan env from `OPENPLAN_ENV_PATH`, `openplan/.env.local`, or repo-root `.env.local` (first match wins).
-- Defaults active proofs to the canonical production alias `https://openplan-natford.vercel.app`. Override with `OPENPLAN_BASE_URL` only when intentionally targeting another lane.
+- `OPENPLAN_BASE_URL` is REQUIRED for any proof that targets a deployment — OpenPlan has no canonical hosted instance, so you always name your own.
 - Mutating local smokes guard both the app URL and Supabase URL before any service-role auth/REST mutation. They allow loopback/local targets such as `localhost` and `127.0.0.1`, and refuse Vercel, `*.supabase.co`, and arbitrary remote hosts.
-- Mutating local smokes are safe to rerun only against local Supabase. The NCTC spine/aerial smokes clean their own deterministic harness rows before writing fresh proof rows; the timestamped RTP, Grants, Engagement, Analysis, and Admin/support smokes intentionally create fresh local QA users/workspaces/records unless the local database is reset or cleaned manually.
+- Mutating local smokes are safe to rerun only against local Supabase. The NCTC spine/aerial smokes clean their own deterministic harness rows before writing fresh proof rows; the timestamped RTP, Grants, Engagement, and Analysis smokes intentionally create fresh local QA users/workspaces/records unless the local database is reset or cleaned manually.
 - If Vercel Authentication is enabled, set `VERCEL_AUTOMATION_BYPASS_SECRET` (or one of the accepted bypass env aliases in `harness-env.js`) so Playwright contexts can reach the protected deployment.
 - OpenPlan also auto-loads `secrets/openplan_vercel_protection_bypass.env` from the workspace root when present, so canonical proof runs can use the secure local bypass path without copying the secret into app env files.
-- When the canonical alias is still protected and no bypass secret is available in the harness env, use `OPENPLAN_BASE_URL=https://openplan-zeta.vercel.app` deliberately for a fallback production proof run, and record that alias choice explicitly in the generated smoke memo.
 - Uses Playwright in headless mode.
 - The UI/UX settle capture harness never logs in, creates users, seeds data, writes Supabase rows, touches billing/email, or persists credentials/tokens. It consumes an existing local storage-state file only for the Playwright browser context.
 - The UI/UX settle capture harness accepts `BASE_URL` values on `localhost` or `127.0.0.1` by default. It always refuses Vercel URLs. Use `--allow-local-network` only for explicit private local URLs such as `192.168.x.x`, and record that choice in the generated ledger.
@@ -84,6 +75,4 @@ npm run prod-qa-cleanup:apply
 - The local workspace URL isolation fixture is a template: replace placeholder IDs/text with records from a local synthetic seed and export the password env vars before running it. Every check must include `allowedText` and `leakText`; every denied user must also have an own-workspace URL check so the harness can prove session continuity after a cross-workspace denial. When user entries include `workspaceName`, denied users must belong to a different workspace name than the allowed user.
 - Intended for controlled operator use, not CI.
 - Production smoke scripts create real production QA users/workspaces/records unless their description says read-only. Run cleanup after proof so production residue does not accumulate.
-- Before the production admin operations auth smoke, run `pnpm ops:check-admin-operations-smoke -- --origin https://openplan-natford.vercel.app --reviewer-email <allowlisted-email>` from `openplan/`. The `--reviewer-email` argument is required for reproducible admin/pilot-readiness evidence; `--skip-network` is safe only for local rehearsal/docs and must be recorded if used.
-- The production admin operations auth smoke creates a reviewer session only; it must not be used to click triage/provision controls or capture prospect rows.
 - `openplan-prod-qa-cleanup.js` is intentionally non-destructive by default; use `--apply` only after reviewing the printed plan.

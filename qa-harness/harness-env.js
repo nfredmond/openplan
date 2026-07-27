@@ -60,7 +60,13 @@ function getOutputDir(datePart) {
 }
 
 function getOpenplanBaseUrl() {
-  return process.env.OPENPLAN_BASE_URL || 'https://openplan-natford.vercel.app';
+  const configured = (process.env.OPENPLAN_BASE_URL || '').trim();
+  if (!configured) {
+    throw new Error(
+      'OPENPLAN_BASE_URL is required — OpenPlan has no canonical hosted instance, so proofs always target a deployment you name explicitly.',
+    );
+  }
+  return configured;
 }
 
 function parseTargetUrl(value, label = 'Target URL') {

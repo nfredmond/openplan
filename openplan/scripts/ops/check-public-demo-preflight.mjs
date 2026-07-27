@@ -4,7 +4,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const DEFAULT_ORIGIN = "https://openplan-natford.vercel.app";
+// No default origin: OpenPlan has no canonical hosted instance, so the origin
+// under test always belongs to whoever runs this.
 const REQUEST_TIMEOUT_MS = 10_000;
 const EXPECTED_HEALTH_CACHE_CONTROL = "no-store, max-age=0";
 const MAPBOX_PUBLIC_ENV_NAMES = ["NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "NEXT_PUBLIC_MAPBOX_TOKEN"];
@@ -21,12 +22,12 @@ function usage() {
     "OpenPlan public demo preflight",
     "",
     "Usage:",
-    "  pnpm ops:check-public-demo-preflight",
-    "  pnpm ops:check-public-demo-preflight -- --origin https://openplan-natford.vercel.app",
-    "  pnpm ops:check-public-demo-preflight -- --mapbox-env-file .env.local",
+    "  npm run ops:check-public-demo-preflight -- --origin https://<your-deployment>",
+    "  npm run ops:check-public-demo-preflight -- --mapbox-env-file .env.local",
     "",
     "Environment:",
-    `  OPENPLAN_PUBLIC_DEMO_ORIGIN  Defaults to ${DEFAULT_ORIGIN}`,
+    "  OPENPLAN_PUBLIC_DEMO_ORIGIN  REQUIRED unless --origin or --skip-network is given —",
+    "                               your own deployment's public origin.",
     "",
     "Options:",
     "  --origin <url>              Production/demo origin to check",
@@ -41,7 +42,7 @@ function usage() {
 
 function parseArgs(argv) {
   const args = {
-    origin: process.env.OPENPLAN_PUBLIC_DEMO_ORIGIN ?? DEFAULT_ORIGIN,
+    origin: process.env.OPENPLAN_PUBLIC_DEMO_ORIGIN ?? "",
     skipNetwork: false,
     mapboxEnvFile: "",
     requireMapboxToken: false,

@@ -1,5 +1,11 @@
 name: Production Health
 
+# Polls a deployment's /api/health on a schedule. OpenPlan has no canonical
+# hosted instance, so the URL comes from the repository variable
+# OPENPLAN_HEALTH_URL (Settings -> Secrets and variables -> Actions ->
+# Variables). When the variable is unset — every fresh fork — the job is
+# skipped instead of failing or polling somebody else's deployment.
+
 on:
   schedule:
     - cron: "7,22,37,52 * * * *"
@@ -12,6 +18,9 @@ jobs:
   health:
     name: health check
     runs-on: ubuntu-latest
+    if: ${{ vars.OPENPLAN_HEALTH_URL != '' }}
+    env:
+      OPENPLAN_HEALTH_URL: ${{ vars.OPENPLAN_HEALTH_URL }}
     defaults:
       run:
         working-directory: ./openplan

@@ -284,10 +284,12 @@ describe("pilot preflight script", () => {
       { execFile },
     );
 
+    // No scope given, no --scope sent: there is no default Vercel scope any
+    // more — every deployment target belongs to whoever runs the preflight.
     expect(calls).toEqual([
       {
         command: "mock-vercel",
-        args: ["inspect", "https://openplan-natford.vercel.app/", "--json", "--scope", "natford"],
+        args: ["inspect", "https://openplan-natford.vercel.app/", "--json"],
       },
     ]);
     expect(result).toMatchObject({

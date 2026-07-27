@@ -3,7 +3,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const DEFAULT_HEALTH_URL = "https://openplan-natford.vercel.app/api/health";
 const REQUEST_TIMEOUT_MS = 10_000;
 const EXPECTED_CACHE_CONTROL = "no-store, max-age=0";
 
@@ -12,10 +11,11 @@ function usage() {
     "OpenPlan production health check",
     "",
     "Usage:",
-    "  pnpm ops:check-prod-health",
+    "  OPENPLAN_HEALTH_URL=https://<your-deployment>/api/health npm run ops:check-prod-health",
     "",
     "Environment:",
-    `  OPENPLAN_HEALTH_URL  Defaults to ${DEFAULT_HEALTH_URL}`,
+    "  OPENPLAN_HEALTH_URL  REQUIRED. OpenPlan has no canonical hosted instance —",
+    "                       every deployment is somebody's own, so the URL must be yours.",
   ].join("\n");
 }
 
@@ -115,9 +115,11 @@ export async function runHealthCheck(argv = process.argv.slice(2)) {
     return { help: true, text: usage() };
   }
 
-  const url = (process.env.OPENPLAN_HEALTH_URL || DEFAULT_HEALTH_URL).trim();
+  const url = (process.env.OPENPLAN_HEALTH_URL ?? "").trim();
   if (!url) {
-    fail("OPENPLAN_HEALTH_URL cannot be empty");
+    fail(
+      "OPENPLAN_HEALTH_URL is required — set it to your own deployment's /api/health URL. OpenPlan has no canonical hosted instance to default to.",
+    );
   }
 
   let parsedUrl;

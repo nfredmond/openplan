@@ -10,10 +10,9 @@ import { runHealthCheck } from "./check-prod-health.mjs";
 
 const execFile = promisify(execFileCallback);
 
-const DEFAULT_HEALTH_URL = "https://openplan-natford.vercel.app/api/health";
-const DEFAULT_DEPLOYMENT_TARGET = "https://openplan-natford.vercel.app";
+// There is no default deployment: OpenPlan has no canonical hosted instance,
+// so the target URLs and Vercel scope always belong to whoever runs this.
 const DEFAULT_VERCEL_COMMAND = "vercel";
-const DEFAULT_VERCEL_SCOPE = "natford";
 const DEFAULT_TIMEOUT_MS = 15_000;
 const READY_STATES = new Set(["READY"]);
 const JSON_CONTRACT_VERSION = "pilot-preflight.v1";
@@ -56,7 +55,7 @@ function usage() {
     "  --health-url <url>         Production health URL; defaults to canonical production /api/health",
     "  --deployment-target <url>  Vercel deployment or alias to inspect; defaults to canonical production alias",
     "  --vercel-command <path>    Vercel CLI command path; defaults to vercel",
-    "  --vercel-scope <scope>      Vercel team/user scope for inspect; defaults to natford",
+    "  --vercel-scope <scope>      Vercel team/user scope for inspect; omit to use your CLI default",
     "  --skip-health              Skip the live production health fetch",
     "  --skip-vercel              Skip the read-only Vercel deployment inspection",
     "  --json                     Emit machine-readable summary",
@@ -71,10 +70,10 @@ export function parseArgs(argv) {
   const args = {
     envFile: ".env.local",
     migrationsDir: "supabase/migrations",
-    healthUrl: process.env.OPENPLAN_HEALTH_URL || DEFAULT_HEALTH_URL,
-    deploymentTarget: process.env.OPENPLAN_DEPLOYMENT_TARGET || DEFAULT_DEPLOYMENT_TARGET,
+    healthUrl: process.env.OPENPLAN_HEALTH_URL || "",
+    deploymentTarget: process.env.OPENPLAN_DEPLOYMENT_TARGET || "",
     vercelCommand: process.env.OPENPLAN_VERCEL_COMMAND || DEFAULT_VERCEL_COMMAND,
-    vercelScope: process.env.OPENPLAN_VERCEL_SCOPE || DEFAULT_VERCEL_SCOPE,
+    vercelScope: process.env.OPENPLAN_VERCEL_SCOPE || "",
     skipHealth: false,
     skipVercel: false,
     json: false,
@@ -187,7 +186,7 @@ function normalizeVercelInspectPayload(payload, target) {
   };
 }
 
-export async function inspectVercelDeployment({ target = DEFAULT_DEPLOYMENT_TARGET, command = DEFAULT_VERCEL_COMMAND, scope = DEFAULT_VERCEL_SCOPE } = {}, deps = {}) {
+export async function inspectVercelDeployment({ target, command = DEFAULT_VERCEL_COMMAND, scope } = {}, deps = {}) {
   const normalizedTarget = normalizeUrl(target, "deployment target");
   const runner = deps.execFile ?? execFile;
   const args = ["inspect", normalizedTarget, "--json"];
@@ -257,14 +256,14 @@ export async function buildPilotPreflight(options = {}, deps = {}) {
   const migrationInventory = await buildMigrationInventory({ migrationsDir: options.migrationsDir });
   const productionHealth = options.skipHealth
     ? skippedSection("production health check")
-    : await (deps.healthCheck ?? runHealthCheckForUrl)(options.healthUrl || DEFAULT_HEALTH_URL);
+    : await (deps.healthCheck ?? runHealthCheckForUrl)(options.healthUrl);
   const deploymentReadiness = options.skipVercel
     ? skippedSection("Vercel deployment inspection")
     : await (deps.vercelInspect ?? inspectVercelDeployment)(
         {
-          target: options.deploymentTarget || DEFAULT_DEPLOYMENT_TARGET,
+          target: options.deploymentTarget,
           command: options.vercelCommand || DEFAULT_VERCEL_COMMAND,
-          scope: options.vercelScope || DEFAULT_VERCEL_SCOPE,
+          scope: options.vercelScope || undefined,
         },
         deps,
       );

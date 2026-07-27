@@ -7,8 +7,9 @@ no involvement from anyone else.
 This is the deployment guide for the people who will operate it. It is written for a competent IT
 team or a technically-minded planner; it assumes no prior knowledge of the codebase.
 
-**You do not need to self-host to use OpenPlan.** Sign-up on a hosted deployment is free and
-immediate. Self-host when you want the data in your own database, under your own controls.
+**There is currently no hosted OpenPlan instance** — running your own copy (locally or deployed)
+is how you use it today. If a hosted deployment exists in the future it will be announced in the
+README; nothing in this guide changes either way.
 
 ---
 
@@ -25,6 +26,45 @@ immediate. Self-host when you want the data in your own database, under your own
 
 The app tells you, on the dashboard, which of these are missing and what each one costs you. That
 panel is the authoritative answer for a running deployment — this document is the setup path.
+
+---
+
+## 0. Local development (no cloud accounts needed except Mapbox)
+
+To run OpenPlan on your own machine with a local database — for development, evaluation, or a
+single-user workstation:
+
+1. Install [Docker](https://docs.docker.com/get-docker/) (the local Supabase stack runs in it)
+   and Node 20+.
+2. From `openplan/`:
+
+   ```bash
+   npm ci
+   npm exec -- supabase start
+   ```
+
+   `supabase start` prints the local **API URL**, **anon key**, and **service_role key** when the
+   stack is up.
+3. Copy `.env.example` to `.env.local` and set at minimum:
+   - `NEXT_PUBLIC_SUPABASE_URL` → the printed API URL (`http://127.0.0.1:54321`)
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → the printed anon key
+   - `SUPABASE_SERVICE_ROLE_KEY` → the printed service_role key
+   - `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` → your free Mapbox public token
+4. Apply the schema and (optionally) seed the demo workspace:
+
+   ```bash
+   npm exec -- supabase migration up
+   npm run seed:nctc        # optional demo data; set OPENPLAN_DEMO_USER_PASSWORD to sign into it
+   ```
+
+5. `npm run dev`, then open `http://localhost:3000` and sign up. Local email confirmation is
+   disabled, so the account activates immediately.
+
+One local quirk: the local Supabase config sets its auth site URL to `http://127.0.0.1:3000`, so
+the password-reset round-trip (`/forgot-password` → emailed link → `/auth/callback`) works from
+`127.0.0.1:3000` but not from `localhost:3000`. Normal sign-in works from either.
+
+Everything below this point is the production/deployment path.
 
 ---
 
@@ -107,7 +147,12 @@ A Census API key is **free** and issued instantly at
 
 | Variable | What it enables |
 |---|---|
-| `OPENPLAN_ACCESS_REQUEST_REVIEW_EMAILS` | Comma-separated emails that may reach `/admin` (the platform-operator console: watchboard, smoke evidence, readiness export). Gated by email, not workspace role — every self-signed-up user is an owner of their own workspace, so role cannot gate an operator console. Set this to your own address on a self-hosted deployment or `/admin` is unreachable. |
+| `NEXT_PUBLIC_SITE_URL` | The canonical public origin of your deployment (e.g. `https://plan.example.gov`) — governs the canonical URL and social-preview origin of every public page. On Vercel it falls back to the deployment URL; on other hosts, set it. |
+| `CHROME_EXECUTABLE_PATH` | Path to a Chrome/Chromium binary for report PDF typesetting on a non-serverless host. Falls back to `/usr/bin/google-chrome`; without any Chrome, PDFs use the built-in writer tier and disclose it in the document. |
+| `OPENPLAN_ASSISTANT_MODEL`, `OPENPLAN_GRANTS_AI_MODEL`, `OPENPLAN_ENGAGEMENT_{SYNTHESIS,TRANSLATION,MODERATION}_MODEL` | Override the Claude model each AI surface uses — cost/quality controls; unset uses the compiled defaults. |
+| `OPENPLAN_DEMO_USER_PASSWORD` | Password for the demo account `npm run seed:nctc` creates; without it the seed succeeds but the demo account cannot be signed into. |
+| `OPENPLAN_EQUITY_INGEST_TOKEN` | Bearer token gating the equity-designation tract ingest endpoint. |
+| `OPENPLAN_WORKER_LOCAL_ROOT` | Single-machine deployments only: filesystem root where a co-located modeling worker writes artifacts so the app reads them from disk. |
 | `CRON_SECRET` | Authorizes `/api/cron/reap-model-runs`, which marks crashed model runs as failed instead of leaving them queued forever. Vercel sets and sends this automatically; on another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Outbound email. Without them the app does not pretend to send: teammate invitations produce a link the inviter copies and sends themselves. |
 | `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to a worker. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted. |
