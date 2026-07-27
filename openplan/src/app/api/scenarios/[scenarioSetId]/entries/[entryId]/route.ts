@@ -7,8 +7,12 @@ import {
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
 import { SCENARIO_ENTRY_STATUSES, SCENARIO_ENTRY_TYPES, makeScenarioEntrySlug } from "@/lib/scenarios/catalog";
-import { loadScenarioSetAccess, validateRunAccess } from "@/lib/scenarios/api";
+import { loadScenarioSetAccess, validateModelRunAccess, validateRunAccess } from "@/lib/scenarios/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+
+function looksLikePendingSchema(message: string | null | undefined) {
+  return /column .* does not exist|schema cache/i.test(message ?? "");
+}
 
 const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),
@@ -21,6 +25,7 @@ const patchScenarioEntrySchema = z
     label: z.string().trim().min(1).max(160).optional(),
     summary: z.union([z.string().trim().max(2000), z.null()]).optional(),
     attachedRunId: z.union([z.string().uuid(), z.null()]).optional(),
+    attachedModelRunId: z.union([z.string().uuid(), z.null()]).optional(),
     assumptions: z.union([z.record(z.string(), z.unknown()), z.null()]).optional(),
     status: z.enum(SCENARIO_ENTRY_STATUSES).optional(),
     sortOrder: z.number().int().min(0).max(1000).optional(),
@@ -118,6 +123,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "This scenario set already has a baseline entry" }, { status: 400 });
     }
 
+    // An entry carries at most one evidence attachment (the
+    // scenario_entries_one_attachment CHECK): a legacy run or a model run,
+    // never both in one payload.
+    if (parsed.data.attachedRunId != null && parsed.data.attachedModelRunId != null) {
+      return NextResponse.json(
+        { error: "Attach either an analysis run or a model run, not both" },
+        { status: 400 }
+      );
+    }
+
     const nextRunId = parsed.data.attachedRunId === undefined ? existingEntry.attached_run_id : parsed.data.attachedRunId;
     const { run, error: runError } = await validateRunAccess(supabase, access.scenarioSet.workspace_id, nextRunId);
 
@@ -136,6 +151,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Attached run is invalid for this workspace" }, { status: 400 });
     }
 
+    const { modelRun, error: modelRunError } = await validateModelRunAccess(
+      supabase,
+      access.scenarioSet.workspace_id,
+      parsed.data.attachedModelRunId ?? null
+    );
+
+    if (modelRunError) {
+      audit.error("scenario_entry_model_run_lookup_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        entryId: existingEntry.id,
+        modelRunId: parsed.data.attachedModelRunId ?? null,
+        message: modelRunError.message,
+        code: modelRunError.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to verify attached model run" }, { status: 500 });
+    }
+
+    if (parsed.data.attachedModelRunId && !modelRun) {
+      return NextResponse.json({ error: "Attached model run is invalid for this workspace" }, { status: 400 });
+    }
+
     const updates: Record<string, unknown> = {};
     if (parsed.data.entryType !== undefined) {
       updates.entry_type = parsed.data.entryType;
@@ -149,6 +185,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     if (parsed.data.attachedRunId !== undefined) {
       updates.attached_run_id = parsed.data.attachedRunId;
+      // Setting one attachment clears the other — unless the same payload
+      // addresses the typed side explicitly (both non-null was rejected above).
+      if (parsed.data.attachedRunId !== null && parsed.data.attachedModelRunId === undefined) {
+        updates.attached_model_run_id = null;
+      }
+    }
+    if (parsed.data.attachedModelRunId !== undefined) {
+      updates.attached_model_run_id = parsed.data.attachedModelRunId;
+      if (parsed.data.attachedModelRunId !== null && parsed.data.attachedRunId === undefined) {
+        updates.attached_run_id = null;
+      }
     }
     if (parsed.data.assumptions !== undefined) {
       updates.assumptions_json = parsed.data.assumptions ?? {};
@@ -160,7 +207,33 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updates.sort_order = parsed.data.sortOrder;
     }
 
-    const { error: updateError } = await supabase.from("scenario_entries").update(updates).eq("id", existingEntry.id);
+    let updateResult = await supabase.from("scenario_entries").update(updates).eq("id", existingEntry.id);
+
+    if (
+      updateResult.error &&
+      looksLikePendingSchema(updateResult.error.message) &&
+      "attached_model_run_id" in updates
+    ) {
+      if (updates.attached_model_run_id !== null) {
+        // The caller asked for a typed attachment a pre-migration database
+        // cannot store — refuse loudly instead of silently dropping it.
+        return NextResponse.json(
+          {
+            error:
+              "Model-run attachment requires the scenario_entries model-run-attachment migration. Apply the latest database migration first.",
+          },
+          { status: 503 }
+        );
+      }
+
+      // The only typed write was a clear-to-null; on a database without the
+      // column that is a no-op, so retry the legacy update unchanged.
+      const { attached_model_run_id: _omitted, ...legacyUpdates } = updates;
+      void _omitted;
+      updateResult = await supabase.from("scenario_entries").update(legacyUpdates).eq("id", existingEntry.id);
+    }
+
+    const { error: updateError } = updateResult;
 
     if (updateError) {
       if (updateError.code === DUPLICATE_KEY_CODE && nextEntryType === "baseline") {

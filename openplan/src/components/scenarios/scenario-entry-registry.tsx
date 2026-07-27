@@ -8,7 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
-import { MANAGED_RUN_MODE_DEFINITIONS, type ManagedRunModeKey } from "@/lib/models/run-modes";
+import {
+  MANAGED_RUN_MODE_DEFINITIONS,
+  getManagedRunModeDefinition,
+  type ManagedRunModeKey,
+} from "@/lib/models/run-modes";
 import {
   SCENARIO_ENTRY_STATUSES,
   SCENARIO_ENTRY_TYPES,
@@ -36,6 +40,7 @@ type ScenarioEntry = {
   summary: string | null;
   assumptions_json: Record<string, unknown>;
   attached_run_id: string | null;
+  attached_model_run_id?: string | null;
   status: string;
   sort_order: number;
   updated_at: string;
@@ -45,7 +50,26 @@ type ScenarioEntry = {
     summary_text?: string | null;
     created_at?: string | null;
   } | null;
+  attachedModelRun?: {
+    id: string;
+    run_title: string;
+    engine_key: string;
+    status: string;
+  } | null;
 };
+
+/** A worker model run the attach picker can offer as entry evidence. */
+type ModelRunOption = {
+  id: string;
+  title: string;
+  engineKey: string;
+  status: string;
+  scenarioEntryId: string | null;
+};
+
+function formatModelRunOptionLabel(option: ModelRunOption): string {
+  return `${option.title} — ${getManagedRunModeDefinition(option.engineKey).engineLabel} · ${titleizeScenarioValue(option.status)}`;
+}
 
 type ModelOption = {
   id: string;
@@ -73,6 +97,7 @@ type ScenarioEntryRegistryProps = {
   entries: ScenarioEntry[];
   runs: RunOption[];
   models: ModelOption[];
+  modelRunOptions?: ModelRunOption[];
   baselineEntryId: string | null;
   linkedReports: ScenarioLinkedReport[];
 };
@@ -260,6 +285,7 @@ function ScenarioEntryCard({
   entry,
   runs,
   models,
+  modelRunOptions,
   baselineEntryId,
   baselineRunId,
   baselineLabel,
@@ -272,6 +298,7 @@ function ScenarioEntryCard({
   entry: ScenarioEntry;
   runs: RunOption[];
   models: ModelOption[];
+  modelRunOptions: ModelRunOption[];
   baselineEntryId: string | null;
   baselineRunId: string | null;
   baselineLabel: string | null;
@@ -282,13 +309,44 @@ function ScenarioEntryCard({
   const [label, setLabel] = useState(entry.label);
   const [summary, setSummary] = useState(entry.summary ?? "");
   const [status, setStatus] = useState<ScenarioEntryStatus>(entry.status as ScenarioEntryStatus);
-  const [attachedRunId, setAttachedRunId] = useState(entry.attached_run_id ?? "");
+  // One evidence attachment per entry: either a legacy Analysis Studio run
+  // ("run:<id>") or a worker model run ("model:<id>") — mirrored server-side by
+  // the scenario_entries_one_attachment CHECK.
+  const [attachedEvidence, setAttachedEvidence] = useState(
+    entry.attached_model_run_id
+      ? `model:${entry.attached_model_run_id}`
+      : entry.attached_run_id
+        ? `run:${entry.attached_run_id}`
+        : ""
+  );
   const [sortOrder, setSortOrder] = useState(String(entry.sort_order));
   const [assumptionsText, setAssumptionsText] = useState(JSON.stringify(entry.assumptions_json ?? {}, null, 2));
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const assumptions = Object.entries(entry.assumptions_json ?? {});
+  const hasAttachedEvidence = Boolean(entry.attached_run_id || entry.attached_model_run_id);
+  const attachedModelRunAsOption: ModelRunOption | null = entry.attachedModelRun
+    ? {
+        id: entry.attachedModelRun.id,
+        title: entry.attachedModelRun.run_title,
+        engineKey: entry.attachedModelRun.engine_key,
+        status: entry.attachedModelRun.status,
+        scenarioEntryId: entry.id,
+      }
+    : null;
+  const attachedEvidenceTitle = attachedModelRunAsOption
+    ? formatModelRunOptionLabel(attachedModelRunAsOption)
+    : entry.attachedRun?.title ?? null;
+  // Runs launched from this entry first, then the rest of the workspace's
+  // recent succeeded runs; the currently attached run always stays listed.
+  const entryModelRunOptions = [
+    ...modelRunOptions.filter((option) => option.scenarioEntryId === entry.id),
+    ...modelRunOptions.filter((option) => option.scenarioEntryId !== entry.id),
+  ];
+  if (attachedModelRunAsOption && !entryModelRunOptions.some((option) => option.id === attachedModelRunAsOption.id)) {
+    entryModelRunOptions.unshift(attachedModelRunAsOption);
+  }
   const comparisonReadiness =
     entry.entry_type === "alternative"
       ? getScenarioComparisonReadiness({
@@ -331,6 +389,9 @@ function ScenarioEntryCard({
         throw new Error("Sort order must be a non-negative integer");
       }
 
+      const attachedRunId = attachedEvidence.startsWith("run:") ? attachedEvidence.slice(4) : null;
+      const attachedModelRunId = attachedEvidence.startsWith("model:") ? attachedEvidence.slice(6) : null;
+
       const response = await fetch(`/api/scenarios/${scenarioSetId}/entries/${entry.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
@@ -339,7 +400,11 @@ function ScenarioEntryCard({
           label,
           summary: summary || null,
           status,
-          attachedRunId: attachedRunId || null,
+          attachedRunId,
+          // Only mention the typed attachment when it is in play, so a
+          // deployment without the model-run-attachment migration keeps the
+          // legacy payload byte-for-byte.
+          ...(attachedModelRunId || entry.attached_model_run_id ? { attachedModelRunId } : {}),
           sortOrder: nextSortOrder,
           assumptions: assumptionsPayload,
         }),
@@ -374,10 +439,13 @@ function ScenarioEntryCard({
             {comparisonReadiness ? (
               <StatusBadge tone={comparisonReadiness.tone}>{comparisonReadiness.label}</StatusBadge>
             ) : (
-              <StatusBadge tone={entry.attached_run_id ? "success" : "warning"}>
-                {entry.attached_run_id ? "Run attached" : "Run missing"}
+              <StatusBadge tone={hasAttachedEvidence ? "success" : "warning"}>
+                {hasAttachedEvidence ? "Run attached" : "Run missing"}
               </StatusBadge>
             )}
+            {entry.attached_model_run_id ? (
+              <StatusBadge tone="warning">Model run evidence (screening)</StatusBadge>
+            ) : null}
           </div>
 
           <div className="space-y-1.5">
@@ -393,7 +461,7 @@ function ScenarioEntryCard({
       </div>
 
       <div className="module-record-meta">
-        <span className="module-record-chip">Run {entry.attachedRun?.title ?? "Not attached"}</span>
+        <span className="module-record-chip">Run {attachedEvidenceTitle ?? "Not attached"}</span>
         <span className="module-record-chip">Assumptions {assumptions.length}</span>
         <span className="module-record-chip">Sort {entry.sort_order}</span>
         <span className="module-record-chip">Reports {entryLinkedReports.length}</span>
@@ -402,9 +470,13 @@ function ScenarioEntryCard({
       <div className="mt-4 grid gap-3 rounded-[0.5rem] border border-border/70 bg-background/75 p-4 lg:grid-cols-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Evidence</p>
-          <p className="mt-2 text-sm font-medium">{entry.attachedRun?.title ?? "No run attached"}</p>
+          <p className="mt-2 text-sm font-medium">{attachedEvidenceTitle ?? "No run attached"}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {entry.attachedRun?.created_at ? `Run saved ${fmtDateTime(entry.attachedRun.created_at)}` : "Comparison stays blocked until the needed run is attached."}
+            {attachedModelRunAsOption
+              ? getManagedRunModeDefinition(attachedModelRunAsOption.engineKey).caveatSummary
+              : entry.attachedRun?.created_at
+                ? `Run saved ${fmtDateTime(entry.attachedRun.created_at)}`
+                : "Comparison stays blocked until the needed run is attached."}
           </p>
         </div>
         <div>
@@ -424,7 +496,7 @@ function ScenarioEntryCard({
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">Audit note</p>
           <p className="mt-2 text-sm font-medium">
-            {comparisonReadiness ? comparisonReadiness.label : entry.attached_run_id ? "Evidence attached" : "Evidence incomplete"}
+            {comparisonReadiness ? comparisonReadiness.label : hasAttachedEvidence ? "Evidence attached" : "Evidence incomplete"}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             {comparisonReadiness?.reason || "Baseline entries still need an attached run if alternatives are going to compare against them."}
@@ -570,18 +642,33 @@ function ScenarioEntryCard({
             <select
               id={`entry-run-${entry.id}`}
               className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
-              value={attachedRunId}
-              onChange={(event) => setAttachedRunId(event.target.value)}
+              value={attachedEvidence}
+              onChange={(event) => setAttachedEvidence(event.target.value)}
             >
               <option value="">No run attached yet</option>
-              {runs.map((run) => (
-                <option key={run.id} value={run.id}>
-                  {run.title}
-                </option>
-              ))}
+              {runs.length > 0 ? (
+                <optgroup label="Analysis Studio runs">
+                  {runs.map((run) => (
+                    <option key={run.id} value={`run:${run.id}`}>
+                      {run.title}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
+              {entryModelRunOptions.length > 0 ? (
+                <optgroup label="Worker model runs (screening-grade)">
+                  {entryModelRunOptions.map((option) => (
+                    <option key={option.id} value={`model:${option.id}`}>
+                      {formatModelRunOptionLabel(option)}
+                      {option.scenarioEntryId === entry.id ? " · launched from this entry" : ""}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
             </select>
             <p className="text-xs text-muted-foreground">
-              Clear the attachment here if the evidence is stale or the wrong run was linked.
+              An entry carries exactly one attachment — an Analysis Studio run or a worker model run.
+              Clear it here if the evidence is stale or the wrong run was linked.
             </p>
           </div>
 
@@ -629,6 +716,7 @@ export function ScenarioEntryRegistry({
   entries,
   runs,
   models,
+  modelRunOptions = [],
   baselineEntryId,
   linkedReports,
 }: ScenarioEntryRegistryProps) {
@@ -668,6 +756,7 @@ export function ScenarioEntryRegistry({
               entry={baselineEntry}
               runs={runs}
               models={models}
+              modelRunOptions={modelRunOptions}
               baselineEntryId={baselineEntry.id}
               baselineRunId={baselineEntry.attached_run_id}
               baselineLabel={baselineEntry.label}
@@ -702,6 +791,7 @@ export function ScenarioEntryRegistry({
                 entry={entry}
                 runs={runs}
                 models={models}
+                modelRunOptions={modelRunOptions}
                 baselineEntryId={baselineEntry?.id ?? null}
                 baselineRunId={baselineEntry?.attached_run_id ?? null}
                 baselineLabel={baselineEntry?.label ?? null}

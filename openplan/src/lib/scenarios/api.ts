@@ -42,6 +42,14 @@ type RunRow = {
   created_at?: string | null;
 };
 
+type ModelRunRow = {
+  id: string;
+  workspace_id: string;
+  run_title?: string | null;
+  engine_key?: string | null;
+  status?: string | null;
+};
+
 export function looksLikePendingScenarioSpineSchema(message: string | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
 }
@@ -164,4 +172,26 @@ export async function validateRunAccess(
     .maybeSingle()) as Awaited<{ data: RunRow | null; error: QueryError }>;
 
   return { run, error };
+}
+
+/** Same shape as validateRunAccess, for worker model runs — a scenario entry
+ * may only attach a model run from its own workspace. */
+export async function validateModelRunAccess(
+  supabase: unknown,
+  workspaceId: string,
+  modelRunId: string | null | undefined
+) {
+  if (!modelRunId) {
+    return { modelRun: null, error: null };
+  }
+
+  const client = asQueryClient(supabase);
+  const { data: modelRun, error } = (await client
+    .from("model_runs")
+    .select("id, workspace_id, run_title, engine_key, status")
+    .eq("workspace_id", workspaceId)
+    .eq("id", modelRunId)
+    .maybeSingle()) as Awaited<{ data: ModelRunRow | null; error: QueryError }>;
+
+  return { modelRun, error };
 }

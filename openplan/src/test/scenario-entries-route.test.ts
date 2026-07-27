@@ -20,6 +20,11 @@ const runsEqIdMock = vi.fn(() => ({ maybeSingle: runsMaybeSingleMock }));
 const runsEqWorkspaceMock = vi.fn(() => ({ eq: runsEqIdMock }));
 const runsSelectMock = vi.fn(() => ({ eq: runsEqWorkspaceMock }));
 
+const modelRunsMaybeSingleMock = vi.fn();
+const modelRunsEqIdMock = vi.fn(() => ({ maybeSingle: modelRunsMaybeSingleMock }));
+const modelRunsEqWorkspaceMock = vi.fn(() => ({ eq: modelRunsEqIdMock }));
+const modelRunsSelectMock = vi.fn(() => ({ eq: modelRunsEqWorkspaceMock }));
+
 const entrySingleMock = vi.fn();
 const entryInsertSelectMock = vi.fn(() => ({ single: entrySingleMock }));
 const entryInsertMock = vi.fn(() => ({ select: entryInsertSelectMock }));
@@ -53,6 +58,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return {
       select: runsSelectMock,
+    };
+  }
+
+  if (table === "model_runs") {
+    return {
+      select: modelRunsSelectMock,
     };
   }
 
@@ -119,6 +130,17 @@ describe("scenario entry routes", () => {
         id: "55555555-5555-4555-8555-555555555555",
         workspace_id: "33333333-3333-4333-8333-333333333333",
         title: "Baseline run",
+      },
+      error: null,
+    });
+
+    modelRunsMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: "88888888-8888-4888-8888-888888888888",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        run_title: "Corridor screening run",
+        engine_key: "aequilibrae",
+        status: "succeeded",
       },
       error: null,
     });
@@ -259,6 +281,140 @@ describe("scenario entry routes", () => {
       "scenario_entry_updated",
       expect.objectContaining({ staleReportCount: 1 })
     );
+  });
+
+  it("PATCH attaches a workspace model run and clears the legacy attachment", async () => {
+    const response = await patchScenarioEntry(
+      new NextRequest("http://localhost/api/scenarios/1/entries/2", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          attachedModelRunId: "88888888-8888-4888-8888-888888888888",
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          scenarioSetId: "11111111-1111-4111-8111-111111111111",
+          entryId: "66666666-6666-4666-8666-666666666666",
+        }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(modelRunsEqWorkspaceMock).toHaveBeenCalledWith(
+      "workspace_id",
+      "33333333-3333-4333-8333-333333333333"
+    );
+    expect(entryUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attached_model_run_id: "88888888-8888-4888-8888-888888888888",
+        attached_run_id: null,
+      })
+    );
+  });
+
+  it("PATCH clears the model attachment when a legacy run is attached", async () => {
+    const response = await patchScenarioEntry(
+      new NextRequest("http://localhost/api/scenarios/1/entries/2", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          attachedRunId: "55555555-5555-4555-8555-555555555555",
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          scenarioSetId: "11111111-1111-4111-8111-111111111111",
+          entryId: "66666666-6666-4666-8666-666666666666",
+        }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(entryUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        attached_run_id: "55555555-5555-4555-8555-555555555555",
+        attached_model_run_id: null,
+      })
+    );
+  });
+
+  it("PATCH rejects attaching both a legacy run and a model run at once", async () => {
+    const response = await patchScenarioEntry(
+      new NextRequest("http://localhost/api/scenarios/1/entries/2", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          attachedRunId: "55555555-5555-4555-8555-555555555555",
+          attachedModelRunId: "88888888-8888-4888-8888-888888888888",
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          scenarioSetId: "11111111-1111-4111-8111-111111111111",
+          entryId: "66666666-6666-4666-8666-666666666666",
+        }),
+      }
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: "Attach either an analysis run or a model run, not both",
+    });
+    expect(entryUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH rejects a model run outside the workspace", async () => {
+    modelRunsMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchScenarioEntry(
+      new NextRequest("http://localhost/api/scenarios/1/entries/2", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          attachedModelRunId: "88888888-8888-4888-8888-888888888888",
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          scenarioSetId: "11111111-1111-4111-8111-111111111111",
+          entryId: "66666666-6666-4666-8666-666666666666",
+        }),
+      }
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({
+      error: "Attached model run is invalid for this workspace",
+    });
+    expect(entryUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH answers 503 when a model attachment hits a pre-migration database", async () => {
+    entryUpdateEqMock.mockResolvedValueOnce({
+      error: { message: 'column "attached_model_run_id" of relation "scenario_entries" does not exist' },
+    });
+
+    const response = await patchScenarioEntry(
+      new NextRequest("http://localhost/api/scenarios/1/entries/2", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          attachedModelRunId: "88888888-8888-4888-8888-888888888888",
+        }),
+      }),
+      {
+        params: Promise.resolve({
+          scenarioSetId: "11111111-1111-4111-8111-111111111111",
+          entryId: "66666666-6666-4666-8666-666666666666",
+        }),
+      }
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("model-run-attachment migration"),
+    });
   });
 
   it("PATCH rejects promoting an alternative when another baseline already exists", async () => {

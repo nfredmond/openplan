@@ -21,6 +21,13 @@ const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),
 });
 
+/** Column-aware pending-schema check for the attached_model_run_id read. */
+function looksLikePendingSchema(message: string | null | undefined) {
+  return /column .* does not exist|relation .* does not exist|could not find the table|schema cache/i.test(
+    message ?? ""
+  );
+}
+
 const patchScenarioSetSchema = z
   .object({
     title: z.string().trim().min(1).max(160).optional(),
@@ -93,14 +100,30 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load linked project" }, { status: 500 });
     }
 
-    const { data: entries, error: entriesError } = await supabase
+    let entriesResult = await supabase
       .from("scenario_entries")
       .select(
-        "id, scenario_set_id, entry_type, label, slug, summary, assumptions_json, attached_run_id, status, sort_order, created_at, updated_at"
+        "id, scenario_set_id, entry_type, label, slug, summary, assumptions_json, attached_run_id, attached_model_run_id, status, sort_order, created_at, updated_at"
       )
       .eq("scenario_set_id", access.scenarioSet.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
+
+    // A database without the model-run-attachment migration answers the
+    // widened select with a missing-column error; fall back to the legacy
+    // column set and treat every entry as legacy-run-backed.
+    if (entriesResult.error && looksLikePendingSchema(entriesResult.error.message)) {
+      entriesResult = (await supabase
+        .from("scenario_entries")
+        .select(
+          "id, scenario_set_id, entry_type, label, slug, summary, assumptions_json, attached_run_id, status, sort_order, created_at, updated_at"
+        )
+        .eq("scenario_set_id", access.scenarioSet.id)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true })) as unknown as typeof entriesResult;
+    }
+
+    const { data: entries, error: entriesError } = entriesResult;
 
     if (entriesError) {
       audit.error("scenario_entries_lookup_failed", {
@@ -131,11 +154,45 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load attached runs" }, { status: 500 });
     }
 
+    const attachedModelRunIds = (entries ?? [])
+      .map((entry) => (entry as { attached_model_run_id?: string | null }).attached_model_run_id ?? null)
+      .filter((value): value is string => Boolean(value));
+
+    const modelRunsResult = attachedModelRunIds.length
+      ? await supabase
+          .from("model_runs")
+          .select("id, workspace_id, run_title, engine_key, status")
+          .in("id", attachedModelRunIds)
+      : { data: [], error: null };
+
+    if (modelRunsResult.error) {
+      audit.error("scenario_model_runs_lookup_failed", {
+        scenarioSetId: access.scenarioSet.id,
+        message: modelRunsResult.error.message,
+        code: modelRunsResult.error.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load attached model runs" }, { status: 500 });
+    }
+
     const runMap = new Map((runsResult.data ?? []).map((run) => [run.id, run]));
-    const hydratedEntries = (entries ?? []).map((entry) => ({
-      ...entry,
-      attached_run: entry.attached_run_id ? runMap.get(entry.attached_run_id) ?? null : null,
-    }));
+    const modelRunMap = new Map(
+      ((modelRunsResult.data ?? []) as Array<{
+        id: string;
+        workspace_id: string;
+        run_title: string;
+        engine_key: string;
+        status: string;
+      }>).map((run) => [run.id, run])
+    );
+    const hydratedEntries = (entries ?? []).map((entry) => {
+      const attachedModelRunId = (entry as { attached_model_run_id?: string | null }).attached_model_run_id ?? null;
+      return {
+        ...entry,
+        attached_model_run_id: attachedModelRunId,
+        attached_run: entry.attached_run_id ? runMap.get(entry.attached_run_id) ?? null : null,
+        attached_model_run: attachedModelRunId ? modelRunMap.get(attachedModelRunId) ?? null : null,
+      };
+    });
     const baselineEntry =
       hydratedEntries.find((entry) => entry.id === access.scenarioSet?.baseline_entry_id) ??
       hydratedEntries.find((entry) => entry.entry_type === "baseline") ??

@@ -33,6 +33,9 @@ const entriesEqIdMock = vi.fn(() => ({
 const runsInMock = vi.fn();
 const runsSelectMock = vi.fn(() => ({ in: runsInMock }));
 
+const modelRunsInMock = vi.fn();
+const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock }));
+
 const reportsOrderMock = vi.fn();
 const reportsEqProjectMock = vi.fn(() => ({ order: reportsOrderMock }));
 const reportsSelectMock = vi.fn(() => ({ eq: reportsEqProjectMock }));
@@ -80,6 +83,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return {
       select: runsSelectMock,
+    };
+  }
+
+  if (table === "model_runs") {
+    return {
+      select: modelRunsSelectMock,
     };
   }
 
@@ -195,6 +204,8 @@ describe("/api/scenarios/[scenarioSetId]", () => {
       error: null,
     });
 
+    modelRunsInMock.mockResolvedValue({ data: [], error: null });
+
     reportsOrderMock.mockResolvedValue({
       data: [
         {
@@ -277,6 +288,99 @@ describe("/api/scenarios/[scenarioSetId]", () => {
         }),
       ],
     });
+  });
+
+  it("GET resolves a model-run-backed entry with its engine and status", async () => {
+    entriesOrderCreatedAtMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "55555555-5555-4555-8555-555555555555",
+          entry_type: "baseline",
+          label: "Existing conditions",
+          attached_run_id: "66666666-6666-4666-8666-666666666666",
+          attached_model_run_id: null,
+          assumptions_json: {},
+          sort_order: 0,
+        },
+        {
+          id: "77777777-7777-4777-8777-777777777777",
+          entry_type: "alternative",
+          label: "Screening alternative",
+          attached_run_id: null,
+          attached_model_run_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          assumptions_json: {},
+          sort_order: 1,
+        },
+      ],
+      error: null,
+    });
+    modelRunsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          run_title: "Fast screening run",
+          engine_key: "aequilibrae",
+          status: "succeeded",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await getScenarioDetail(new NextRequest("http://localhost/api/scenarios/1"), {
+      params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(modelRunsInMock).toHaveBeenCalledWith("id", ["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"]);
+    expect(await response.json()).toMatchObject({
+      alternativeEntries: [
+        expect.objectContaining({
+          id: "77777777-7777-4777-8777-777777777777",
+          attached_model_run_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          attached_model_run: expect.objectContaining({
+            run_title: "Fast screening run",
+            engine_key: "aequilibrae",
+            status: "succeeded",
+          }),
+        }),
+      ],
+    });
+  });
+
+  it("GET falls back to the legacy entries select on a pre-migration database", async () => {
+    entriesOrderCreatedAtMock
+      .mockResolvedValueOnce({
+        data: null,
+        error: { message: "column scenario_entries.attached_model_run_id does not exist" },
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            id: "55555555-5555-4555-8555-555555555555",
+            entry_type: "baseline",
+            label: "Existing conditions",
+            attached_run_id: "66666666-6666-4666-8666-666666666666",
+            assumptions_json: {},
+            sort_order: 0,
+          },
+        ],
+        error: null,
+      });
+
+    const response = await getScenarioDetail(new NextRequest("http://localhost/api/scenarios/1"), {
+      params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      baselineEntry: expect.objectContaining({
+        id: "55555555-5555-4555-8555-555555555555",
+        attached_model_run_id: null,
+        attached_model_run: null,
+      }),
+    });
+    expect(modelRunsInMock).not.toHaveBeenCalled();
   });
 
   it("PATCH returns 403 when workspace role is unsupported", async () => {

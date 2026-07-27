@@ -17,6 +17,7 @@ import {
   reportStatusTone,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import { buildScenarioComparisonBoard } from "@/lib/scenarios/comparison-board";
 import { scenarioComparisonSourceContextFromMetadata } from "@/lib/scenarios/comparison-source-context";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
@@ -51,10 +52,19 @@ type ScenarioEntryRow = {
   summary: string | null;
   assumptions_json: Record<string, unknown>;
   attached_run_id: string | null;
+  attached_model_run_id: string | null;
   status: string;
   sort_order: number;
   created_at: string;
   updated_at: string;
+};
+
+type ScenarioAttachedModelRunRow = {
+  id: string;
+  run_title: string;
+  engine_key: string;
+  status: string;
+  result_summary_json: Record<string, unknown> | null;
 };
 
 type ScenarioComparisonSnapshotRow = {
@@ -87,6 +97,14 @@ function formatStamp(value: string | null | undefined): string {
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
 }
 
+/** Column-aware pending-schema check for the attached_model_run_id read — the
+ * spine helper only matches missing relations, not a missing column. */
+function looksLikePendingSchema(message: string | null | undefined): boolean {
+  return /column .* does not exist|relation .* does not exist|could not find the table|schema cache/i.test(
+    message ?? ""
+  );
+}
+
 export default async function ScenarioSetDetailPage({
   params,
 }: {
@@ -114,7 +132,7 @@ export default async function ScenarioSetDetailPage({
 
   const scenarioSet = scenarioSetData as ScenarioSetRow;
 
-  const [{ data: project }, { data: entriesData }, { data: runsData }, { data: modelsData }] = await Promise.all([
+  const [{ data: project }, entriesResult, { data: runsData }, { data: modelsData }] = await Promise.all([
     supabase
       .from("projects")
       .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
@@ -123,7 +141,7 @@ export default async function ScenarioSetDetailPage({
     supabase
       .from("scenario_entries")
       .select(
-        "id, scenario_set_id, entry_type, label, slug, summary, assumptions_json, attached_run_id, status, sort_order, created_at, updated_at"
+        "id, scenario_set_id, entry_type, label, slug, summary, assumptions_json, attached_run_id, attached_model_run_id, status, sort_order, created_at, updated_at"
       )
       .eq("scenario_set_id", scenarioSet.id)
       .order("sort_order", { ascending: true })
@@ -142,18 +160,101 @@ export default async function ScenarioSetDetailPage({
       .order("updated_at", { ascending: false }),
   ]);
 
-  const runIds = (entriesData ?? [])
+  // A database without the model-run-attachment migration answers the widened
+  // select with a missing-column error; fall back to the legacy select and
+  // treat every entry as legacy-run-backed.
+  let entryRows = (entriesResult.data ?? []) as ScenarioEntryRow[];
+  if (entriesResult.error && looksLikePendingSchema(entriesResult.error.message)) {
+    const legacyEntriesResult = await supabase
+      .from("scenario_entries")
+      .select(
+        "id, scenario_set_id, entry_type, label, slug, summary, assumptions_json, attached_run_id, status, sort_order, created_at, updated_at"
+      )
+      .eq("scenario_set_id", scenarioSet.id)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true });
+    entryRows = ((legacyEntriesResult.data ?? []) as Array<Omit<ScenarioEntryRow, "attached_model_run_id">>).map(
+      (entry) => ({ ...entry, attached_model_run_id: null })
+    );
+  }
+
+  const runIds = entryRows
     .map((entry) => entry.attached_run_id)
+    .filter((value): value is string => Boolean(value));
+  const attachedModelRunIds = entryRows
+    .map((entry) => entry.attached_model_run_id)
     .filter((value): value is string => Boolean(value));
   const attachedRunsResult = runIds.length
     ? await supabase.from("runs").select("id, title, summary_text, metrics, created_at").in("id", runIds)
     : { data: [], error: null };
+  let attachedModelRuns: ScenarioAttachedModelRunRow[] = [];
+  if (attachedModelRunIds.length) {
+    try {
+      const { data: attachedModelRunsData } = await supabase
+        .from("model_runs")
+        .select("id, run_title, engine_key, status, result_summary_json")
+        .in("id", attachedModelRunIds);
+      attachedModelRuns = (attachedModelRunsData ?? []) as ScenarioAttachedModelRunRow[];
+    } catch {
+      attachedModelRuns = [];
+    }
+  }
 
   const runMap = new Map((attachedRunsResult.data ?? []).map((run) => [run.id, run]));
-  const entries = ((entriesData ?? []) as ScenarioEntryRow[]).map((entry) => ({
+  const attachedModelRunMap = new Map(attachedModelRuns.map((run) => [run.id, run]));
+  const entries = entryRows.map((entry) => ({
     ...entry,
     attachedRun: entry.attached_run_id ? runMap.get(entry.attached_run_id) ?? null : null,
+    attachedModelRun: entry.attached_model_run_id
+      ? attachedModelRunMap.get(entry.attached_model_run_id) ?? null
+      : null,
   }));
+
+  // Attach-picker model-run options: runs that already point back at one of
+  // this set's entries, plus the workspace's recent succeeded model runs.
+  // Succeeded only — an entry's evidence should be a completed run. Degrades
+  // to an empty list when the model_runs module is not migrated.
+  let modelRunOptionRows: Array<{
+    id: string;
+    run_title: string;
+    engine_key: string;
+    status: string;
+    scenario_entry_id: string | null;
+  }> = [];
+  try {
+    const [entryPointedRunsResult, workspaceModelRunsResult] = await Promise.all([
+      entries.length
+        ? supabase
+            .from("model_runs")
+            .select("id, run_title, engine_key, status, scenario_entry_id")
+            .in(
+              "scenario_entry_id",
+              entries.map((entry) => entry.id)
+            )
+            .eq("status", "succeeded")
+            .order("created_at", { ascending: false })
+        : Promise.resolve({ data: [], error: null }),
+      supabase
+        .from("model_runs")
+        .select("id, run_title, engine_key, status, scenario_entry_id")
+        .eq("workspace_id", scenarioSet.workspace_id)
+        .eq("status", "succeeded")
+        .order("created_at", { ascending: false })
+        .limit(30),
+    ]);
+    const mergedModelRunOptions = new Map<string, (typeof modelRunOptionRows)[number]>();
+    for (const run of [
+      ...(entryPointedRunsResult.data ?? []),
+      ...(workspaceModelRunsResult.data ?? []),
+    ] as typeof modelRunOptionRows) {
+      if (!mergedModelRunOptions.has(run.id)) {
+        mergedModelRunOptions.set(run.id, run);
+      }
+    }
+    modelRunOptionRows = Array.from(mergedModelRunOptions.values());
+  } catch {
+    modelRunOptionRows = [];
+  }
 
   const baselineEntry =
     entries.find((entry) => entry.id === scenarioSet.baseline_entry_id) ??
@@ -518,6 +619,9 @@ export default async function ScenarioSetDetailPage({
                         <div className="module-record-kicker">
                           <StatusBadge tone="success">Ready to compare</StatusBadge>
                           <StatusBadge tone="info">{card.changedMetricCount} metrics moved</StatusBadge>
+                          {card.evidenceSource === "model_run" || card.baselineEvidenceSource === "model_run" ? (
+                            <StatusBadge tone="warning">Worker model run evidence (screening)</StatusBadge>
+                          ) : null}
                         </div>
                         <div className="space-y-1.5">
                           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -527,7 +631,14 @@ export default async function ScenarioSetDetailPage({
                             </Link>
                           </div>
                           <p className="module-record-summary line-clamp-2">
-                            Alternative run: {card.candidateRunTitle} · Baseline run: {card.baselineRunTitle}
+                            Alternative run: {card.candidateRunTitle}
+                            {card.candidateModelRun
+                              ? ` (${getManagedRunModeDefinition(card.candidateModelRun.engineKey).engineLabel} · ${titleizeScenarioValue(card.candidateModelRun.status)})`
+                              : ""}{" "}
+                            · Baseline run: {card.baselineRunTitle}
+                            {card.baselineModelRun
+                              ? ` (${getManagedRunModeDefinition(card.baselineModelRun.engineKey).engineLabel} · ${titleizeScenarioValue(card.baselineModelRun.status)})`
+                              : ""}
                           </p>
                         </div>
                       </div>
@@ -766,6 +877,13 @@ export default async function ScenarioSetDetailPage({
               title: model.title ?? "Untitled model",
               status: model.status ?? "draft",
               lastRunRecordedAt: model.last_run_recorded_at,
+            }))}
+            modelRunOptions={modelRunOptionRows.map((run) => ({
+              id: run.id,
+              title: run.run_title,
+              engineKey: run.engine_key,
+              status: run.status,
+              scenarioEntryId: run.scenario_entry_id,
             }))}
             baselineEntryId={baselineEntry?.id ?? null}
             linkedReports={reportLinkage.linkedReports}
