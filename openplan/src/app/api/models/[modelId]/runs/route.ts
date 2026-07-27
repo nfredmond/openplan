@@ -562,6 +562,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       assumption_snapshot_json: launchPayload.assumptionSnapshot,
       started_at: isAequilibraeRun || isBehavioralDemandRun ? null : launchedAt,
       created_by: user.id,
+      // Provenance: a run launched from a project-bound model belongs to that
+      // project. Sent only when set, so a deployment that has not applied the
+      // run-provenance migration keeps launching runs untouched.
+      ...(access.model.project_id ? { project_id: access.model.project_id } : {}),
     });
 
     

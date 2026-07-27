@@ -29,7 +29,10 @@ const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 const modelRunsLimitMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
 const modelRunsOrderMock = vi.fn(() => ({ limit: modelRunsLimitMock }));
 const modelRunsStatusEqMock = vi.fn(() => ({ order: modelRunsOrderMock }));
-const modelRunsWsEqMock = vi.fn(() => ({ eq: modelRunsStatusEqMock }));
+// The evidence-picker chain is select→eq(ws)→eq(status)→order→limit; the
+// project-provenance count is select→eq(project_id)→limit.
+const modelRunsProjectLimitMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
+const modelRunsWsEqMock = vi.fn(() => ({ eq: modelRunsStatusEqMock, limit: modelRunsProjectLimitMock }));
 const modelRunsSelectMock = vi.fn(() => ({ eq: modelRunsWsEqMock }));
 const modelRunKpisInKpiMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
 const modelRunKpisInRunMock = vi.fn(() => ({ in: modelRunKpisInKpiMock }));

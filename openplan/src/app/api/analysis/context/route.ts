@@ -9,6 +9,9 @@ import {
 } from "@/lib/operations/workspace-summary";
 
 const workspaceIdSchema = z.string().uuid();
+const projectIdSchema = z.string().uuid();
+
+export type AnalysisProjectSelection = "explicit" | "defaulted" | "none";
 
 function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
@@ -140,14 +143,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    // An explicit projectId pins the context to the project the planner is
+    // actually working on. Without one we still fall back to the most
+    // recently updated project, but the response SAYS it was a fallback
+    // (projectSelection) so the UI can stop presenting a guess as a link.
+    const requestedProjectId = request.nextUrl.searchParams.get("projectId");
+    let explicitProjectId: string | null = null;
+    if (requestedProjectId !== null) {
+      const parsedProjectId = projectIdSchema.safeParse(requestedProjectId);
+      if (!parsedProjectId.success) {
+        audit.warn("validation_failed", { workspaceId: parsed.data, projectId: requestedProjectId });
+        return NextResponse.json({ error: "Invalid projectId" }, { status: 400 });
+      }
+      explicitProjectId = parsedProjectId.data;
+    }
+
+    const projectQuery = supabase
+      .from("projects")
+      .select("id, name, summary, status, plan_type, delivery_phase, updated_at")
+      .eq("workspace_id", parsed.data);
+
     const [projectResult, operationsSummary] = await Promise.all([
-      supabase
-        .from("projects")
-        .select("id, name, summary, status, plan_type, delivery_phase, updated_at")
-        .eq("workspace_id", parsed.data)
-        .order("updated_at", { ascending: false })
-        .limit(1)
-        .maybeSingle(),
+      explicitProjectId
+        ? projectQuery.eq("id", explicitProjectId).maybeSingle()
+        : projectQuery.order("updated_at", { ascending: false }).limit(1).maybeSingle(),
       loadWorkspaceOperationsSummarySafe(
         supabase as unknown as WorkspaceOperationsSupabaseLike,
         parsed.data,
@@ -156,6 +175,21 @@ export async function GET(request: NextRequest) {
     ]);
 
     const { data: projectData, error: projectError } = projectResult;
+
+    if (explicitProjectId && !projectError && !projectData) {
+      audit.warn("explicit_project_not_found", {
+        workspaceId: parsed.data,
+        projectId: explicitProjectId,
+        userId: user.id,
+      });
+      return NextResponse.json({ error: "Project not found in workspace" }, { status: 404 });
+    }
+
+    const projectSelection: AnalysisProjectSelection = projectData
+      ? explicitProjectId
+        ? "explicit"
+        : "defaulted"
+      : "none";
 
     if (projectError) {
       audit.error("project_lookup_failed", {
@@ -212,6 +246,7 @@ export async function GET(request: NextRequest) {
         {
           workspaceId: parsed.data,
           project: null,
+          projectSelection,
           linkedDatasets: [],
           migrationPending: false,
           counts: {
@@ -406,6 +441,7 @@ export async function GET(request: NextRequest) {
       workspaceId: parsed.data,
       userId: user.id,
       projectId: project.id,
+      projectSelection,
       linkedDatasetCount: linkedDatasets.length,
       migrationPending: finalMigrationPending,
       recentRunCount: recentRuns?.length ?? 0,
@@ -424,6 +460,7 @@ export async function GET(request: NextRequest) {
           deliveryPhase: project.delivery_phase,
           updatedAt: project.updated_at,
         },
+        projectSelection,
         linkedDatasets,
         migrationPending: finalMigrationPending,
         counts: {

@@ -101,6 +101,8 @@ export type WorkspaceBootstrapResponse = {
   onboardingChecklist: string[];
 };
 
+export type AnalysisProjectSelection = "explicit" | "defaulted" | "none";
+
 export type AnalysisContextResponse = {
   workspaceId: string;
   project: {
@@ -112,6 +114,7 @@ export type AnalysisContextResponse = {
     deliveryPhase: string;
     updatedAt: string;
   } | null;
+  projectSelection: AnalysisProjectSelection;
   linkedDatasets: Array<{
     datasetId: string;
     name: string;

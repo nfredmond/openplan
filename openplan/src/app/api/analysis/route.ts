@@ -54,6 +54,7 @@ const analysisRequestSchema = z.object({
   corridorGeojson: z.union([polygonSchema, multiPolygonSchema]),
   queryText: z.string().trim().min(1).max(ANALYSIS_QUERY_MAX_CHARS),
   workspaceId: z.string().uuid(),
+  projectId: z.string().uuid().nullable().optional(),
 });
 
 type CorridorGeoJSON = z.infer<typeof polygonSchema> | z.infer<typeof multiPolygonSchema>;
@@ -206,6 +207,7 @@ export async function POST(request: NextRequest) {
 
     const { corridorGeojson, queryText, workspaceId: parsedWorkspaceId } = parsed.data;
     workspaceId = parsedWorkspaceId;
+    const projectId = parsed.data.projectId ?? null;
 
     const geometryValidation = validateCorridorGeometry(corridorGeojson);
     if (!geometryValidation.ok) {
@@ -265,6 +267,34 @@ export async function POST(request: NextRequest) {
       });
 
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    // Provenance: a run may be attributed to a project the planner chose.
+    // The insert below runs with the service role, so the workspace check
+    // happens here (the DB CHECK constraint backstops it).
+    if (projectId) {
+      const { data: projectRow, error: projectLookupError } = await userSupabase
+        .from("projects")
+        .select("id")
+        .eq("id", projectId)
+        .eq("workspace_id", workspaceId)
+        .maybeSingle();
+
+      if (projectLookupError) {
+        audit.error("project_lookup_failed", {
+          workspaceId,
+          userId: user.id,
+          projectId,
+          message: projectLookupError.message,
+          code: projectLookupError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify project" }, { status: 500 });
+      }
+
+      if (!projectRow) {
+        audit.warn("forbidden_project", { workspaceId, userId: user.id, projectId });
+        return NextResponse.json({ error: "Project not found in workspace" }, { status: 403 });
+      }
     }
 
     // No subscription gate: OpenPlan is free and has no paid tier, so there is
@@ -585,6 +615,9 @@ export async function POST(request: NextRequest) {
       result_geojson: geojson,
       summary_text: summary,
       ai_interpretation: aiInterpretationResult.text,
+      // Only sent when the planner chose a project, so a deployment that has
+      // not applied the provenance migration keeps working untouched.
+      ...(projectId ? { project_id: projectId } : {}),
     });
 
     if (insertError) {

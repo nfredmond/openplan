@@ -130,7 +130,32 @@ export async function POST(request: NextRequest) {
     const geographyId = parsed.data.geographyId;
     const geographyLabel = parsed.data.geographyLabel;
     const runName = parsed.data.runName;
+    const projectId = parsed.data.projectId ?? null;
     const normalizedRequest = normalizeCountyOnrampRequest(parsed.data);
+
+    // Provenance: the chosen project must live in the same workspace. The
+    // projects select is RLS-scoped, so a foreign project reads as absent.
+    if (projectId) {
+      const { data: projectRow, error: projectLookupError } = await supabase
+        .from("projects")
+        .select("id, workspace_id")
+        .eq("id", projectId)
+        .maybeSingle();
+
+      if (projectLookupError) {
+        audit.error("project_lookup_failed", {
+          projectId,
+          message: projectLookupError.message,
+          code: projectLookupError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify project" }, { status: 500 });
+      }
+
+      if (!projectRow || (projectRow as { workspace_id: string }).workspace_id !== workspaceId) {
+        audit.warn("forbidden_project", { projectId, workspaceId });
+        return NextResponse.json({ error: "Project not found in workspace" }, { status: 403 });
+      }
+    }
 
     const { data, error } = await supabase
       .from("county_runs")
@@ -150,6 +175,9 @@ export async function POST(request: NextRequest) {
         run_summary_json: {},
         validation_summary_json: {},
         created_by: user.id,
+        // Sent only when the planner chose a project, so a deployment that has
+        // not applied the run-provenance migration keeps working untouched.
+        ...(projectId ? { project_id: projectId } : {}),
       })
       .select("id, run_name, stage")
       .single();

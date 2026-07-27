@@ -274,14 +274,40 @@ export default async function ProjectDetailPage({
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-  const recentRunsResult = await supabase
+  // Prefer runs attributed to THIS project (run-provenance migration). A
+  // deployment without the project_id column falls back to the workspace-wide
+  // recency view this page always had — attribution is additive, not required.
+  const projectRunsResult = await supabase
     .from("runs")
     .select("id, title, created_at, summary_text")
-    .eq("workspace_id", project.workspace_id)
+    .eq("project_id", project.id)
     .order("created_at", { ascending: false })
     .limit(5);
+  const projectRunsAvailable = !projectRunsResult.error;
+  const attributedRuns = projectRunsAvailable ? (projectRunsResult.data ?? []) : [];
+
+  const recentRunsResult =
+    attributedRuns.length > 0
+      ? projectRunsResult
+      : await supabase
+          .from("runs")
+          .select("id, title, created_at, summary_text")
+          .eq("workspace_id", project.workspace_id)
+          .order("created_at", { ascending: false })
+          .limit(5);
   const recentRunsPending = looksLikePendingSchema(recentRunsResult.error?.message);
-  const recentRuns = recentRunsPending ? [] : (recentRunsResult.data ?? []);
+  const recentRuns = recentRunsPending || recentRunsResult.error ? [] : (recentRunsResult.data ?? []);
+
+  // Worker model runs attributed to this project — counted for the spine
+  // readiness board. Absent column (pre-migration) reads as zero, silently.
+  const projectModelRunsResult = await supabase
+    .from("model_runs")
+    .select("id")
+    .eq("project_id", project.id)
+    .limit(50);
+  const projectModelRunCount = projectModelRunsResult.error
+    ? 0
+    : (projectModelRunsResult.data ?? []).length;
 
   const operationsSummaryPromise = loadWorkspaceOperationsSummaryForWorkspace(
     supabase as unknown as WorkspaceOperationsSupabaseLike,
@@ -879,7 +905,12 @@ export default async function ProjectDetailPage({
       handoffReadyCount: strongestEngagementEvidence?.engagementReadyForHandoffCount ?? 0,
     },
     analysis: {
-      recentRunCount: recentRuns?.length ?? 0,
+      // Project-attributed runs (analysis + worker) when provenance is
+      // available; the workspace-recency fallback otherwise.
+      recentRunCount:
+        attributedRuns.length > 0 || projectModelRunCount > 0
+          ? attributedRuns.length + projectModelRunCount
+          : (recentRuns?.length ?? 0),
       comparisonBackedReportCount,
     },
     aerial: aerialProjectPosture,

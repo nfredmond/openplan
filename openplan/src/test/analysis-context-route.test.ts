@@ -15,7 +15,10 @@ const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
 const projectMaybeSingleMock = vi.fn();
 const projectLimitMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
 const projectOrderMock = vi.fn(() => ({ limit: projectLimitMock }));
-const projectEqWorkspaceMock = vi.fn(() => ({ order: projectOrderMock }));
+// The explicit-projectId path chains a second .eq(id) then .maybeSingle();
+// the default path chains .order().limit().maybeSingle().
+const projectEqIdMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
+const projectEqWorkspaceMock = vi.fn(() => ({ order: projectOrderMock, eq: projectEqIdMock }));
 const projectSelectMock = vi.fn(() => ({ eq: projectEqWorkspaceMock }));
 
 const runsLimitMock = vi.fn();
@@ -236,6 +239,9 @@ describe("GET /api/analysis/context", () => {
       name: "Nevada County Safety Action Program",
       planType: "safety_plan",
     });
+    // No projectId param → the project is a recency fallback, and the
+    // response says so instead of presenting the guess as a choice.
+    expect((payload as { projectSelection?: string }).projectSelection).toBe("defaulted");
 
     expect(payload.counts).toMatchObject({
       linkedDatasets: 1,
@@ -342,5 +348,60 @@ describe("GET /api/analysis/context", () => {
     expect(payload.migrationPending).toBe(true);
     expect(payload.linkedDatasets).toEqual([]);
     expect(payload.counts).toMatchObject({ linkedDatasets: 0, overlayReadyDatasets: 0 });
+  });
+
+  it("pins the context to an explicitly requested project and says the choice was explicit", async () => {
+    const response = await getAnalysisContext(
+      new NextRequest(
+        "http://localhost/api/analysis/context?workspaceId=11111111-1111-4111-8111-111111111111&projectId=33333333-3333-4333-8333-333333333333"
+      )
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { project: { id: string } | null; projectSelection: string };
+
+    expect(payload.project?.id).toBe("33333333-3333-4333-8333-333333333333");
+    expect(payload.projectSelection).toBe("explicit");
+    // The explicit path filters by id instead of taking the most recent row.
+    // (projectOrderMock cannot be asserted un-called here: the operations
+    // summary loader also walks the mocked projects table.)
+    expect(projectEqIdMock).toHaveBeenCalledWith("id", "33333333-3333-4333-8333-333333333333");
+  });
+
+  it("404s when the explicitly requested project is not in the workspace", async () => {
+    projectMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await getAnalysisContext(
+      new NextRequest(
+        "http://localhost/api/analysis/context?workspaceId=11111111-1111-4111-8111-111111111111&projectId=99999999-9999-4999-8999-999999999999"
+      )
+    );
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ error: "Project not found in workspace" });
+  });
+
+  it("400s on a malformed projectId instead of silently falling back", async () => {
+    const response = await getAnalysisContext(
+      new NextRequest(
+        "http://localhost/api/analysis/context?workspaceId=11111111-1111-4111-8111-111111111111&projectId=not-a-uuid"
+      )
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "Invalid projectId" });
+  });
+
+  it("reports projectSelection none when the workspace has no projects", async () => {
+    projectMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await getAnalysisContext(
+      new NextRequest("http://localhost/api/analysis/context?workspaceId=11111111-1111-4111-8111-111111111111")
+    );
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { project: unknown; projectSelection: string };
+    expect(payload.project).toBeNull();
+    expect(payload.projectSelection).toBe("none");
   });
 });

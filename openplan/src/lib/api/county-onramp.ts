@@ -24,6 +24,8 @@ export const createCountyRunRequestSchema = z.object({
   runName: z.string().min(1).max(160),
   countyPrefix: z.string().min(1).max(32).optional(),
   runtimeOptions: countyRuntimeOptionsSchema.default({}),
+  // Provenance: attribute the validation run to a project in the workspace.
+  projectId: z.string().uuid().nullable().optional(),
 });
 
 export const createCountyRunResponseSchema = z.object({

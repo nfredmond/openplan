@@ -72,6 +72,8 @@ export default function ExplorePage() {
   const [bootstrapChecklist, setBootstrapChecklist] = useState<string[]>([]);
   const [analysisContext, setAnalysisContext] = useState<AnalysisContextResponse | null>(null);
   const [analysisContextLoadState, setAnalysisContextLoadState] = useState<AnalysisContextLoadState>("idle");
+  const [selectedProjectId, setSelectedProjectId] = useState("");
+  const [workspaceProjects, setWorkspaceProjects] = useState<Array<{ id: string; name: string }>>([]);
   const [activeDatasetOverlayId, setActiveDatasetOverlayId] = useState<string | null>(null);
   const [showPolygonFill, setShowPolygonFill] = useState(true);
   const [showPoints, _setShowPoints] = useState(true);
@@ -148,9 +150,13 @@ export default function ExplorePage() {
       setAnalysisContextLoadState("loading");
 
       try {
-        const response = await fetch(`/api/analysis/context?workspaceId=${encodeURIComponent(workspaceId)}`, {
-          method: "GET",
-        });
+        const projectParam = selectedProjectId
+          ? `&projectId=${encodeURIComponent(selectedProjectId)}`
+          : "";
+        const response = await fetch(
+          `/api/analysis/context?workspaceId=${encodeURIComponent(workspaceId)}${projectParam}`,
+          { method: "GET" },
+        );
 
         if (!response.ok) {
           throw new Error("Failed to load project context.");
@@ -172,6 +178,39 @@ export default function ExplorePage() {
     }
 
     void loadAnalysisContext();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [workspaceId, selectedProjectId]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    async function loadWorkspaceProjects() {
+      if (!workspaceId) {
+        setWorkspaceProjects([]);
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/projects", { method: "GET" });
+        if (!response.ok) return;
+        const payload = (await response.json()) as {
+          projects?: Array<{ id: string; name: string; workspace_id: string }>;
+        };
+        if (isCancelled) return;
+        setWorkspaceProjects(
+          (payload.projects ?? [])
+            .filter((project) => project.workspace_id === workspaceId)
+            .map((project) => ({ id: project.id, name: project.name })),
+        );
+      } catch {
+        // The picker is an attribution convenience; analysis works without it.
+      }
+    }
+
+    void loadWorkspaceProjects();
 
     return () => {
       isCancelled = true;
@@ -228,6 +267,7 @@ export default function ExplorePage() {
           workspaceId,
           queryText: trimmedQueryText,
           corridorGeojson,
+          ...(selectedProjectId ? { projectId: selectedProjectId } : {}),
         }),
       });
 
@@ -618,22 +658,39 @@ export default function ExplorePage() {
                     {analysisContextLoadState === "loading"
                       ? "Loading project and dataset context…"
                       : analysisContext?.project
-                        ? "Projects and Data Hub are now visible from Analysis Studio."
+                        ? analysisContext.projectSelection === "explicit"
+                          ? "Runs you save will be attributed to this project."
+                          : "Showing the most recently updated project — pick one to attribute your runs."
                         : analysisContextLoadState === "error"
                           ? "Project context is temporarily unavailable."
                           : "No project is attached to this workspace yet."}
                   </p>
                 </div>
-                {analysisContext?.project ? (
-                  <div className="module-record-actions">
+                <div className="module-record-actions">
+                  {workspaceProjects.length > 0 ? (
+                    <select
+                      className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                      aria-label="Attribute analysis to project"
+                      value={selectedProjectId}
+                      onChange={(event) => setSelectedProjectId(event.target.value)}
+                    >
+                      <option value="">No project selected</option>
+                      {workspaceProjects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : null}
+                  {analysisContext?.project && analysisContext.projectSelection === "explicit" ? (
                     <Button asChild size="sm" variant="outline">
                       <Link href={`/projects/${analysisContext.project.id}`}>Open Project</Link>
                     </Button>
-                    <Button asChild size="sm" variant="ghost">
-                      <Link href="/data-hub">Open Data Hub</Link>
-                    </Button>
-                  </div>
-                ) : null}
+                  ) : null}
+                  <Button asChild size="sm" variant="ghost">
+                    <Link href="/data-hub">Open Data Hub</Link>
+                  </Button>
+                </div>
               </div>
 
               {analysisContext?.project ? (
