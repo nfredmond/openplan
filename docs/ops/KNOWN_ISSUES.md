@@ -1,50 +1,41 @@
 # OpenPlan Known Issues Register
 
-**Last updated:** 2026-05-17
-**Status:** Active ship-quality register
-**Scope:** integrated OpenPlan release-to-sale and full-OS buildout
+**Last updated:** 2026-07-27
+**Status:** Active quality register
+**Scope:** the free, open-source, self-serve OpenPlan product
 
 ## Purpose
 
-This register turns known product, proof, and operating caveats into explicit tracked items. It is not a backlog replacement. It is the ship-quality gate named by the 2026-04-16 integrated deep-dive: flagship flows should have zero open blockers, and non-blocking risks should have an owner, severity, disposition, and proof reference.
+This register turns known product and operating caveats into explicit tracked items. It is not a
+backlog replacement: flagship flows should have zero open blockers, and non-blocking risks should
+have a severity, a disposition, and a source reference.
 
-## Current Gate
-
-**Open blockers:** 0
-
-The current release-to-sale posture remains PASS for a supervised planning workbench and managed-service motion, provided sales language stays inside the proof boundaries in `2026-05-01-openplan-release-to-sale-plan.md`.
+The pre-2026-07 register tracked commercial-era items (billing canaries, buyer proof packets,
+supervised-sales boundaries) against a product posture that no longer exists; those rows were
+retired when the commercial-era docs were deleted on 2026-07-27. Git history preserves them.
 
 ## Severity
 
 | Severity | Meaning |
 |---|---|
-| Blocker | Must stop external release, paid-pilot expansion, or production mutation until resolved. |
-| High | Not a full stop, but must be resolved before relying on the affected workflow in a buyer pilot. |
-| Medium | Buyer/operator caveat; acceptable only if disclosed and actively tracked. |
+| Blocker | Must stop a release or production mutation until resolved. |
+| High | Must be resolved before relying on the affected workflow. |
+| Medium | Operator/user caveat; acceptable only if disclosed and actively tracked. |
 | Low | Hygiene, future-proofing, or non-user-facing issue that should not be lost. |
 
 ## Open Watch Items
 
-| ID | Severity | Owner | Area | Issue | Disposition | Proof / Source |
-|---|---|---|---|---|---|---|
-| KI-2026-05-01-001 | Medium | CEO/Ops | Billing/commercial proof | No fresh same-cycle paid checkout canary is claimed. Direct OpenPlan tier checkout now routes to fit review instead of Stripe checkout. | Accepted boundary for supervised sales. If a procurement reviewer requires current money-moving proof, run a separately approved paid canary and update the billing proof packet. | `2026-05-01-openplan-billing-current-cycle-waiver-proof.md`; commit `ee29492` |
-| KI-2026-05-01-002 | Medium | Product/Ops | Modeling claims | Screening-grade county-run and behavioral-onramp evidence must not be described as calibrated or validated forecasting. | Keep buyer language in screening-grade / human-review posture. Require explicit consent paths for screening-grade evidence consumption. | `openplan/docs/ops/2026-04-16-caveat-gate-audit.md`; `openplan/docs/ops/2026-04-19-phase-s1-t16-reader-proof.md` |
-| KI-2026-05-01-003 | Medium | Ops | Recovery operations | First staging Supabase restore drill passed, but future restore confidence depends on quarterly repetition and per-engagement RPO/RTO fields. | Not a release blocker. Next non-production restore drill due by 2026-08-01; fill or explicitly defer per-engagement RPO/RTO fields before signature and before stronger recovery language or SLA commitments. | `2026-05-01-openplan-restore-drill-staging-supabase.md`; `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md` |
-
-## Closed / Recently Controlled
-
-| ID | Closed | Area | Resolution | Proof / Source |
-|---|---|---|---|---|
-| KI-2026-05-01-C01 | 2026-05-01 | Production admin access | Production authenticated smoke confirmed the configured reviewer can load `/admin/operations`, see service-lane intake unlocked, and avoid triage/provision actions or prospect row capture. | `2026-05-01-openplan-production-admin-operations-authenticated-smoke.md` |
-| KI-2026-05-01-C02 | 2026-05-01 | Buyer proof packet | Admin Pilot Readiness proof packet now includes production admin-ops auth proof and regenerated static PDF without stale page footer text. | `docs/sales/2026-05-01-openplan-admin-pilot-readiness-proof-packet.*`; commit `456657b` |
-| KI-2026-05-01-C03 | 2026-05-01 | UI/code hygiene | App pages are now capped at 1,200 lines by ESLint after Grants and Dashboard decomposition. | `2026-05-01-openplan-app-page-max-lines-guard.md`; commit `6a5c7b8` |
-| KI-2026-05-01-C04 | 2026-05-01 | Phase 1 spine | Local spine smoke proves one seeded NCTC project ID is reused across RTP, grants, engagement, analysis/county-run, reports, map, Data Hub, and aerial evidence rows without duplicate project creation. | `2026-05-01-openplan-local-spine-smoke.md` |
-| KI-2026-05-01-C05 | 2026-05-17 | Reports test hygiene | Report detail command-board count coercion now defaults missing/non-finite counts to zero, and the report-detail page regression test asserts that no React `Received NaN` warning fires. | commit `cac5f7b`; `npm exec vitest -- run src/test/report-detail-page.test.tsx` on 2026-05-17 |
-| KI-2026-05-01-C06 | 2026-05-17 | CI/tooling | GitHub Actions were updated from Node.js 20-based major versions to current Node.js 24-capable majors, and the explicit `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` CI override was removed. | `.github/workflows/ci.yml`; `.github/workflows/production-health.yml`; tag checks for `actions/checkout@v6`, `actions/setup-node@v6`, and `pnpm/action-setup@v6` on 2026-05-17 |
+| ID | Severity | Area | Issue | Disposition | Source |
+|---|---|---|---|---|---|
+| KI-2026-05-01-002 | Medium | Modeling claims | Screening-grade county-run and behavioral-onramp evidence must not be described as calibrated or validated forecasting. | Keep all product and public language in screening-grade / human-review posture. The claim guards (`no-paid-tier-guard`, `public-page-claims-guardrails`, `safety-claim-boundaries`, run-mode caveat strings) enforce this on live surfaces. | `openplan/docs/ops/2026-04-16-caveat-gate-audit.md` |
+| KI-2026-05-01-003 | Medium | Recovery operations | Restore confidence depends on quarterly non-production restore drills. | Not a release blocker. Any operator running a production deployment should drill per the procedure; next drill for the reference deployment was due by 2026-08-01. | `openplan/docs/ops/2026-05-01-openplan-backup-restore-procedure.md` |
+| KI-2026-07-27-001 | Medium | Hosted availability | No hosted OpenPlan deployment currently exists (the previous Vercel deployment is offline). Public copy must say self-host until a hosted URL is real. | Hosted deploy is an operator action item; do not claim a hosted option ahead of it. | this register |
 
 ## Update Rules
 
-- Add a row when a test, smoke, production proof, review, or buyer-facing packet reveals a real caveat.
-- Promote to **Blocker** when the issue invalidates a release gate, creates unsafe billing/customer/data behavior, weakens workspace isolation, or causes proof language to overclaim.
-- Close a row only when the linked proof or commit demonstrates the issue is controlled.
-- Do not hide product boundaries by deleting watch items; move them to closed only when the boundary is replaced by working, verified behavior.
+- Add a row when a test, smoke, review, or user report reveals a real caveat.
+- Promote to **Blocker** when the issue invalidates a release gate, risks user data, weakens
+  workspace isolation, or causes any surface to overclaim.
+- Close a row only when a linked commit or verified behavior demonstrates the issue is controlled.
+- Do not hide product boundaries by deleting watch items; close them only when the boundary is
+  replaced by working, verified behavior.

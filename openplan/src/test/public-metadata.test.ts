@@ -25,7 +25,7 @@ const publicMetadataCases: PublicMetadataCase[] = [
     route: "/examples",
     metadata: examplesMetadata,
     canonical: "/examples",
-    required: [/Nevada County/i, /validation metrics/i, /caveats/i, /prototype-only/i, /buyer-safe/i],
+    required: [/Nevada County/i, /validation metrics/i, /caveats/i, /prototype-only/i],
   },
 ];
 

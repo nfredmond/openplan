@@ -109,10 +109,16 @@ Two things that SOUND commercial are not, and must survive: **`src/lib/invoicing
 LAPM grant-reimbursement invoicing (the agency invoicing *its funder*), and
 **`src/lib/runtime/ai-rate-limit.ts`** bounds Anthropic spend. Neither charges anyone for OpenPlan.
 
-**Dated records in `docs/` were NOT edited** — they were accurate when written, and rewriting one to
-match today's posture would falsify it. Where a live generator was previously pinned byte-for-byte to
-a dated packet, the test now asserts structure instead, so live copy can state today's truth while
-history stays intact.
+**HISTORICAL COMMERCIAL-ERA DOCS DELETED 2026-07-27 (Nathaniel's explicit decision, reversing the
+earlier "leave dated records alone" rule).** `docs/sales/` (all of it), the three 2026-05-10 anchor
+proofs, the supervised-pilot/billing/launch-boundary memo clusters in `docs/ops/` and
+`openplan/docs/`, and `sales-proof-claim-boundaries.test.ts` + `managed-support-proof-map.test.ts`
+are **gone from the working tree — git history is the archive**. Do not restore them, and do not
+recreate a sales/proof-packet lane. What was KEPT: every technical record describing systems still
+in the code (modeling specs and validation evidence, county-onramp contracts, LAPM/stage-gate
+provenance, security/hardening proofs, current-era shipped handoffs) — see `docs/README.md` for the
+map. Rewriting a surviving dated technical record to say something it didn't say when written is
+still falsification; delete or supersede, never rewrite history.
 
 **Posture flip status (as of 2026-07-23): DONE.** The capability, the claims, and the guard were
 flipped in sequence, in this order — never claim ahead of capability:
@@ -128,9 +134,12 @@ flipped in sequence, in this order — never claim ahead of capability:
    the modeling-overclaim and no-paid-checkout prohibitions (the product is free and still
    screening-grade). It was rewritten, not deleted.
 
-**Leave `sales-proof-claim-boundaries.test.ts` and the `docs/` proof packets alone.** That guard scans
-DATED proof documents that were accurate as of their date; editing a dated record to match today's
-posture would falsify it. It is not part of the live claim.
+**`sales-proof-claim-boundaries.test.ts` is deleted (2026-07-27)** along with the dated proof
+packets it scanned. The honesty gates that matter now all scan LIVE surfaces:
+`no-paid-tier-guard.test.ts`, `public-page-claims-guardrails.test.ts`,
+`public-open-source-posture-guardrail.test.ts`, and the per-module claim guards (e.g.
+`safety-claim-boundaries.test.ts`). New modules add their own claim-boundary guard over `src/`,
+never a docs-scanning one.
 
 ## Engineering Philosophy
 

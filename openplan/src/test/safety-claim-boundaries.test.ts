@@ -1,12 +1,12 @@
 /**
  * Claim-boundary guard for the Safety module.
  *
- * WHY THIS FILE EXISTS. `sales-proof-claim-boundaries.test.ts` is often assumed
- * to be the honesty gate for new modules. It is not: it globs
- * `docs/sales/*.{md,html}` plus a fixed list of `docs/ops` paths and never reads
- * `src/`, and its four matchers cover self-serve SaaS, legal/LAPM automation,
- * grant prediction, and autonomous AI planning — no safety concept at all. A
- * page asserting a "certified High-Injury Network" would ship green under it.
+ * WHY THIS FILE EXISTS. The repo's honesty gates each scan live `src/`
+ * surfaces for their own module's overclaims (the old docs-scanning
+ * `sales-proof-claim-boundaries.test.ts` was deleted 2026-07-27 with the
+ * dated sales docs it read). No general guard knows safety vocabulary — a
+ * page asserting a "certified High-Injury Network" would ship green without
+ * this file.
  *
  * So the Safety module scans its own source, in the style of
  * `public-page-claims-guardrails.test.ts`.

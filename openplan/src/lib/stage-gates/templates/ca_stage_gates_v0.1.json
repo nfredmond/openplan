@@ -4,11 +4,6 @@
   "version": "0.1.0",
   "jurisdiction": "CA",
   "effective_date": "2026-03-05",
-  "source_lock": {
-    "requirements_lock_doc": "docs/ops/2026-03-05-openplan-blueprint-requirements-lock.md",
-    "epic_map_doc": "docs/ops/2026-03-05-blueprint-module-to-epic-map.md",
-    "blueprint_doc": "/home/nathaniel/.openclaw/workspace/openplan-blueprint.md"
-  },
   "decision_model": {
     "gate_states": [
       "not_started",

@@ -2,10 +2,10 @@
 
 **Date:** 2026-05-01
 **Status:** Operator procedure
-**Audience:** Nathaniel and trusted OpenPlan operators
-**Scope:** Supabase-backed managed-hosting posture for OpenPlan
+**Audience:** whoever operates an OpenPlan deployment
+**Scope:** any Supabase-backed OpenPlan deployment (self-hosted or otherwise)
 
-This procedure is intentionally conservative. A restore can destroy recent valid customer work while repairing older damage. Do not restore production data without Nathaniel's explicit approval, a written restore point, and a post-restore validation plan.
+This procedure is intentionally conservative. A restore can destroy recent valid work while repairing older damage. Do not restore production data without the deployment owner's explicit approval, a written restore point, and a post-restore validation plan.
 
 ## Durable State Inventory
 
@@ -14,18 +14,16 @@ OpenPlan durable state is split across these systems:
 1. **Supabase Postgres** — workspace records, memberships, project data, evidence logs, billing ledger tables, usage events, report metadata, modeling metadata, public-data ingest metadata, and RLS policies.
 2. **Supabase Storage** — uploaded or generated files in buckets such as `gtfs-uploads`, `network-packages`, and `report-artifacts`.
 3. **Vercel environment variables** — production configuration and integration keys. These are not database backups and must be snapshotted separately.
-4. **Vendor systems** — Stripe, Mapbox, GitHub, and model providers. Treat these as vendor-managed records, not OpenPlan restore targets.
+4. **Vendor systems** — Mapbox, GitHub, and model providers. Treat these as vendor-managed records, not OpenPlan restore targets.
 
 ## Backup Cadence
 
-Baseline posture before paid customer launch:
+Baseline posture:
 
 - Confirm Supabase automatic backups are enabled for the linked project.
-- For paid production hosting, prefer a Supabase tier with point-in-time recovery (PITR) enabled before customer data becomes material.
+- For production hosting, prefer a Supabase tier with point-in-time recovery (PITR) enabled before workspace data becomes material.
 - Capture offline Vercel env snapshots after any production env change.
-- Run a non-production restore drill quarterly and before any major paid rollout.
-- After every restore drill, record the next due quarter/month in the drill log follow-up section and in `docs/ops/KNOWN_ISSUES.md` while KI-2026-05-01-003 remains open.
-- Before any buyer engagement signs, confirm the managed-hosting service schedule has explicit RPO/RTO fields filled or explicitly marked "not separately promised."
+- Run a non-production restore drill quarterly and before any major rollout.
 
 ## Capture Vercel Environment Snapshot
 
@@ -78,7 +76,7 @@ A production restore requires:
 2. Current-state capture complete: database dump, storage manifest, relevant Vercel logs, and failing request evidence.
 3. Target restore point documented: backup id, timestamp, or PITR moment.
 4. Known post-restore data gap documented: anything created after the target restore point that may need replay.
-5. Nathaniel approval recorded in writing.
+5. Deployment-owner approval recorded in writing.
 
 Do not proceed on verbal memory alone. This is the sharp knife drawer.
 
@@ -88,9 +86,9 @@ Preferred order:
 
 1. Restore into a staging Supabase project first.
 2. Run validation queries and app smoke checks against staging.
-3. If staging validates, schedule/announce production maintenance if customers are active.
+3. If staging validates, schedule/announce production maintenance if other users are active.
 4. Restore production from the selected backup or PITR point.
-5. Re-run validation before reopening onboarding or customer workflows.
+5. Re-run validation before reopening onboarding or user workflows.
 
 ## Post-Restore Validation
 
@@ -145,12 +143,12 @@ Create a dated drill note under `docs/ops/`:
 
 ## Customer Communication Boundary
 
-If a paid customer is affected, use plain language:
+If other users of your deployment are affected, use plain language:
 
 - what happened,
 - what data/time window is affected,
-- what Nat Ford is doing,
-- what the customer should avoid doing until cleared,
+- what the operator is doing,
+- what users should avoid doing until cleared,
 - when the next update will arrive.
 
-Do not claim an SLA, RPO, RTO, or guaranteed recovery window beyond the signed managed-hosting service schedule.
+Do not claim an SLA, RPO, RTO, or guaranteed recovery window you have not verified on your own deployment.

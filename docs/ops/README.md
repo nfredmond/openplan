@@ -1,180 +1,69 @@
-# OpenPlan — docs/ops Index
+# docs/ops — technical records index
 
-**Last updated:** 2026-05-17
-**Maintainer:** Mateo Ruiz (Assistant Planner — package-control lane)
+**Last updated:** 2026-07-27
 
----
+These are dated technical records: accurate as of their dates, kept because they document systems
+still in the code. They are not current product claims — the live docs are the root `README.md`,
+`openplan/README.md`, and `openplan/docs/SELF_HOSTING.md`. The commercial-era records that used to
+live here (launch boundaries, pricing/positioning, pilot packets, billing proofs) were deleted
+2026-07-27; git history is the archive.
 
-## Start Here
+## Current-era shipped handoffs (July 2026) — read these first
 
-| Document | What it is |
+| Doc | What it records |
 |---|---|
-| [v1-command-board.md](2026-03-15-openplan-v1-command-board.md) | **Single-source status board** — GREEN / YELLOW / RED lanes |
-| [v1-proof-packet.md](2026-03-16-openplan-v1-proof-packet.md) | **Evidence index** — internal pre-close review |
-| [v1-status-memo.md](2026-03-17-openplan-v1-status-memo.md) | **Executive truth-state** — post-principal-adjudication |
-| [launch-truth-adr](2026-04-05-openplan-launch-readiness-truth-memo.md) | **Canonical April 2026 launch boundary** — supervised pilot / no broad self-serve launch |
-| [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) | **External pilot packet** — scope, onboarding, support, AI, billing truth |
-| [pricing-positioning decision](2026-04-05-openplan-pricing-positioning-decision-note.md) | **Canonical pricing/positioning note** — resolves public pricing drift |
-| [frontend master packet](2026-04-08-openplan-frontend-master-packet.md) | **Canonical entry point for OpenPlan UI work** — links constitution, checklist, and prompt template |
-| [frontend design constitution](2026-04-08-openplan-frontend-design-constitution.md) | **Canonical frontend anti-generic design rules** — worksurface, rails, low-card, low-pill UI posture |
-| [frontend execution checklist](2026-04-08-openplan-frontend-execution-checklist.md) | **Practical screen-by-screen UI implementation checklist** — use during redesign and QA |
-| [frontend agent prompt template](2026-04-08-openplan-frontend-agent-prompt-template.md) | **Reusable Codex/Claude prompt starter** — copy/paste for OpenPlan UI tasks |
-| [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) | **Canonical April 2026 architecture expansion memo** — four-system planning OS, standards-first data plane, scenario/evidence spine |
-| [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) | **Shared platform contract spec** — scenarios, assumptions, data packages, indicators, and comparisons |
-| [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) | **Next-wave AI north star** — app-wide operations copilot, internet-connected data gathering, and agent runtime |
-| [2026-04-16 integrated execution program](2026-04-16-openplan-integrated-execution-program.md) | **Canonical execution program** — exact epics, owners, build sequence, quality gates, and stop-rules for the next chapter |
-| [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) | **Active product roadmap** — 18-month finish plan for rural RTPA/county first buyer and full planning OS GA |
-| [2026-05-01 autonomous build protocol](2026-05-01-openplan-autonomous-build-protocol.md) | **COO execution protocol** — continuous AI-agent buildout toward the full saleable-v1 roadmap |
-| [2026-05-01 app page max-lines guard](2026-05-01-openplan-app-page-max-lines-guard.md) | **Current UI/code hygiene proof** — app page LOC cap is enforced by ESLint after Grants and Dashboard decomposition |
-| [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) | **Active release-to-sale checklist** — gates, owners, proof links, sales package tasks, commands, and stop conditions |
-| [2026-05-01 known issues register](2026-05-01-openplan-known-issues-register.md) | **Active known-issues register** — closes R1/R5 from the Feb 25 baseline, carries R2/R3/R4 forward, and tracks the May 1 modeling, ops, and billing caveats with proof links |
-| [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) | **Historical operator preflight** — superseded by the completed staging restore-drill proof; retained as the safe-prep and approval-gate pattern |
-| [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) | **Historical approval packet** — superseded by the completed staging restore-drill proof; retained for future written-approval shape, safeguards, mutation boundary, cleanup expectation, and evidence requirements |
-| [2026-05-01 restore drill approval intake](2026-05-01-openplan-restore-drill-approval-intake.md) | **Historical approval intake note** — records the initial incomplete approval intent before the later completed staging drill |
-| [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) | **Current restore-drill proof** — dedicated staging Supabase project created, migrated, restored from private production schema/public-data dumps, validated, and retired |
-| [2026-05-10 managed support proof map](../sales/2026-05-10-openplan-managed-support-proof-map.md) | **Buyer-facing support diligence map** — ties managed hosting, onboarding, support, backup/restore, billing, and pilot-closeout claims to proof artifacts and caveat boundaries |
-| [2026-05-10 supervised onboarding evidence flow proof](../../openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md) | **Current onboarding proof bridge** — connects request-access intake, `/admin/operations`, manual no-email provisioning, and Pilot Readiness caveats without self-serve activation |
-| [2026-05-01 Nevada County / NCTC demo outreach package](../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md) | **First buyer-specific release-to-sale package** — NCTC-geo demo posture, 30-minute walkthrough, outreach draft, pilot ask, and stop conditions |
-| [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) | **Current proof log** — public preflight, Pilot Readiness parser, Mapbox local env posture, and validation results |
-| [2026-05-01 UI/UX settle review](2026-05-01-openplan-ui-ux-settle-review.md) | **Current UI proof review** — route-by-route pass/watch table over the 2026-04-29 local screenshot pack |
-| [2026-05-01 UI/UX watch recapture](2026-05-01-openplan-ui-ux-watch-recapture.md) | **Current UI watch closure** — Data Hub and Pilot Readiness desktop/mobile recapture after proof repairs |
-| [2026-05-01 modeling caveat-gate proof](2026-05-01-openplan-modeling-caveat-gate-proof.md) | **Current modeling-safety proof** — locks screening-grade consent boundary on the county-run reader and proves scenario_comparison_summary does not silently consume behavioral_onramp KPIs |
-| [2026-05-10 request-access copy to admin guard trace](../../openplan/docs/ops/2026-05-10-request-access-copy-to-admin-guard-trace.md) | **Current public-copy/admin guard trace** — ties `/request-access` review-first/no-auto-send copy to the `/admin/operations` manual no-email provisioning acknowledgement without production writes or provisioning smoke |
-| [2026-05-01 workspace URL isolation smoke](2026-05-01-openplan-local-workspace-url-isolation-smoke.md) | **Current RLS/browser proof** — synthetic cross-workspace project URLs blocked with session continuity verified |
-| [2026-05-01 RC proof log](2026-05-01-openplan-rc-proof-log.md) | **Current release gate** — test, lint, build, audit, prod health, and public preflight proof |
-| [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) | **Current RTP workflow proof** — cycle creation, packet creation, artifact generation, and release-review anchor landing |
-| [2026-05-01 local Grants flow smoke](2026-05-01-openplan-local-grants-flow-smoke.md) | **Current Grants workflow proof** — funding need, awarded opportunity, committed award, RTP posture write-back, obligation milestone, paid reimbursement, and closeout |
-| [2026-05-01 local engagement report handoff smoke](2026-05-01-openplan-local-engagement-report-handoff-smoke.md) | **Current Engagement workflow proof** — public submission, moderation, public feedback publication, handoff report provenance, generated artifact, and source-context traceability |
-| [2026-05-01 local analysis report linkage smoke](2026-05-01-openplan-local-analysis-report-linkage-smoke.md) | **Current Analysis workflow proof** — corridor model run, source analysis output, scenario attachment, Analysis Studio deep link, report linkage, generated artifact, and source-context traceability |
-| [2026-05-02 local Phase 1 spine smoke](2026-05-02-openplan-local-spine-smoke.md) | **Current shared-spine proof** — one seeded NCTC project reused across RTP, grants, engagement, analysis/county-run, reports, map, Data Hub, and aerial evidence; local guard plus harness cleanup proven on rerun |
-| [2026-05-02 local Aerial evidence smoke](2026-05-02-openplan-local-aerial-evidence-smoke.md) | **Current local Aerial evidence spine proof** — project-linked mission, AOI PATCH, ready package, exact seeded-plus-new posture counts, Aerial surfaces, map AOI feature, local guard, and cleanup/idempotency posture |
-| [2026-05-01 billing current-cycle waiver proof](2026-05-01-openplan-billing-current-cycle-waiver-proof.md) | **Current Billing proof boundary** — historical live payment plus current non-money-moving proof; no fresh same-cycle paid canary claimed |
-| [2026-04-16 owner execution board](2026-04-16-openplan-owner-execution-board.md) | **Owner-by-owner board** — exact queues, dependencies, proof requirements, stop conditions, and phase gates |
-| [2026-04-16 RTP code-grounding note](2026-04-16-openplan-rtp-code-grounding-note.md) | **Implementation grounding note** — what RTP packet flow already proves in code, and the next real gap to close |
-| [2026-04-16 RTP review-loop implementation update](2026-04-16-openplan-rtp-review-loop-implementation-update.md) | **Implementation update** — shipped RTP review-loop semantics, export posture, control alignment, and remaining bounded gap |
-| [2026-04-16 RTP review-loop browser proof note](2026-04-16-openplan-rtp-review-loop-browser-proof-note.md) | **Browser proof note** — local authenticated smoke across reports, report detail, and RTP cycle review surfaces, plus the one bounded follow-up nuance |
-| [2026-04-13 canonical architecture/status/build plan](2026-04-13-openplan-canonical-architecture-status-and-build-plan.md) | **Canonical synthesis memo** — current state, integrated architecture, ruthless phase order, and acceptance criteria |
-| [2026-04-13 2-week integration sprint plan](2026-04-13-openplan-2-week-integration-sprint-plan.md) | **Canonical near-term sprint plan** — day-by-day sequence, owners, gates, and not-now enforcement |
-| [master product roadmap](2026-04-11-openplan-master-product-roadmap.md) | **Canonical execution roadmap** — integrated feature matrix, current maturity, acceptance criteria, and 4–8 week build order |
-| [integration master plan](2026-04-11-openplan-integration-master-plan.md) | **Canonical integration baseline** — architecture decision, cross-system dependencies, phased roadmap, acceptance criteria, and not-now list |
-| [ruthless execution board](2026-04-11-openplan-ruthless-execution-board.md) | **Active build board** — owners, top tickets, phase gates, dependencies, and not-now enforcement |
-| [Phase 1 RTP loop execution brief](2026-04-11-openplan-phase1-rtp-loop-execution-brief.md) | **Immediate implementation brief** — concrete code seams, acceptance criteria, and validation plan for RTP flagship closure |
-| [Grants foundation code-grounding brief](2026-04-12-openplan-grants-foundation-code-grounding-brief.md) | **Next implementation brief** — maps the existing funding spine, identifies the real Grants OS gap, and recommends the first shared `/grants` operating surface |
-| [v1-internal-ship-gate.md](2026-03-16-openplan-v1-internal-ship-gate.md) | Internal ship gate checklist |
-| [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) | **Canonical** Elena approval (2026-03-17) |
+| `2026-07-18-post-v1-plan.md` | The post-v1 direction at the v1 milestone |
+| `2026-07-18-v1-handoff-for-next-agent.md` | Full v1 state handoff |
+| `2026-07-17-v1-demo-runbook.md` | Running the seeded demo end-to-end (also linked from the root README) |
+| `2026-07-17/18/19-*-shipped*.md` | Grants BCA/screening, grants.gov sync, modeling 1.1 arc + roadmap E–G |
+| `2026-07-22/23-*-smoke.md` | ActivitySim behavioral lane, pilot hardening, aerial processing contract live smokes |
 
----
+## Modeling stack — specs and architecture (March 2026)
 
-## By Category
+`2026-03-15` engine options → `2026-03-16` roadmap → `2026-03-17` AequilibraE/ActivitySim/MATSim
+architecture memo + technical spec → `2026-03-18` phase-1 PRD and `p1a*/p1b*/p1c*` artifact specs
+(network package schema, zone/corridor/connector contract, ingestion QA, worker prototype, skims,
+extractors, run-mode UI, evidence packet) → `2026-03-19`/`2026-03-27` `p2*` ActivitySim behavioral
+lane specs.
 
-### Governance & Decisions
-- [2026-05-01 full OS roadmap](2026-05-01-openplan-full-os-roadmap.md) — active 18-month finish roadmap for the rural RTPA/county-first OpenPlan OS
-- [2026-05-01 release-to-sale plan](2026-05-01-openplan-release-to-sale-plan.md) — active release-to-sale operating checklist with gates, owners, exact proof links, sales-package tasks, commands, and stop conditions
-- [2026-05-01 known issues register](2026-05-01-openplan-known-issues-register.md) — active known-issues register that supersedes the 2026-02-25 release-risk baseline, closes R1/R5, carries R2/R3/R4 forward with proof links, and tracks new May 1 modeling, ops, billing, and UI caveats
-- [2026-05-01 app page max-lines guard](2026-05-01-openplan-app-page-max-lines-guard.md) — ESLint-enforced page LOC cap after Grants and Dashboard decomposition to prevent mega-page regression
-- [2026-05-01 restore drill preflight plan](2026-05-01-openplan-restore-drill-preflight-plan.md) — buyer/internal-safe preflight for the first staging Supabase restore drill; superseded by the completed staging drill log
-- [2026-05-01 restore drill approval packet](2026-05-01-openplan-restore-drill-approval-packet.md) — historical approval packet for the first staging restore drill, retained for safeguards, mutation boundary, cleanup expectation, evidence requirements, and approval phrase
-- [2026-05-01 restore drill approval intake](2026-05-01-openplan-restore-drill-approval-intake.md) — historical intake note for initial approval intent and missing required fields before the later completed staging drill
-- [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) — completed staging restore drill with migration/data replay, RLS/count/storage validation, and dedicated project cleanup
-- [2026-05-10 managed support proof map](../sales/2026-05-10-openplan-managed-support-proof-map.md) — buyer-facing diligence map that ties managed hosting, onboarding, support, backup/restore, billing, and pilot-closeout claims to proof artifacts and caveat boundaries
-- [2026-05-01 Nevada County / NCTC demo outreach package](../sales/2026-05-01-openplan-nevada-county-demo-outreach-package.md) — first buyer-specific release-to-sale package with demo posture, outreach draft, scoped pilot ask, and stop conditions
-- [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — canonical 2026-04-10 synthesis of the expanded planning-OS thesis
-- [scenario/data/indicator spine spec](2026-04-10-openplan-scenario-data-indicator-spine-spec.md) — concrete shared-platform contract for the next architecture-aligned implementation wave
-- [AI-enabled operations runtime spec](2026-04-11-openplan-ai-enabled-operations-runtime-spec.md) — app-wide operations copilot and agent-runtime north star for the next build wave
-- [2026-04-16 integrated execution program](2026-04-16-openplan-integrated-execution-program.md) — canonical execution program with exact epics, owners, build sequence, quality gates, and stop-rules for the next chapter
-- [2026-04-16 owner execution board](2026-04-16-openplan-owner-execution-board.md) — owner-by-owner board with exact queues, dependencies, proof requirements, stop conditions, and phase gates
-- [2026-04-16 RTP code-grounding note](2026-04-16-openplan-rtp-code-grounding-note.md) — implementation grounding note capturing what RTP packet flow already proves in code and the next real gap to close
-- [2026-04-16 RTP review-loop implementation update](2026-04-16-openplan-rtp-review-loop-implementation-update.md) — shipped RTP review-loop semantics, export posture, control alignment, validation, and remaining bounded gap
-- [2026-04-16 RTP review-loop browser proof note](2026-04-16-openplan-rtp-review-loop-browser-proof-note.md) — local authenticated smoke across reports, report detail, and RTP cycle review surfaces, with screenshots and the one bounded follow-up nuance
-- [2026-04-13 canonical architecture/status/build plan](2026-04-13-openplan-canonical-architecture-status-and-build-plan.md) — canonical synthesis of current truth, integrated architecture, ruthless phase order, and acceptance criteria
-- [2026-04-13 2-week integration sprint plan](2026-04-13-openplan-2-week-integration-sprint-plan.md) — canonical near-term sprint plan with day-by-day sequence, owners, proof gates, and not-now boundaries
-- [master product roadmap](2026-04-11-openplan-master-product-roadmap.md) — canonical integrated roadmap covering platform core, RTP, grants, aerial, modeling, runtime, dependencies, and sequencing
-- [integration master plan](2026-04-11-openplan-integration-master-plan.md) — canonical integration baseline covering architecture choice, shared-core rules, phased integration order, dependencies, acceptance criteria, and the explicit not-now list
-- [ruthless execution board](2026-04-11-openplan-ruthless-execution-board.md) — active build board with owners, immediate tickets, phase gates, critical dependencies, and not-now enforcement
-- [Phase 1 RTP loop execution brief](2026-04-11-openplan-phase1-rtp-loop-execution-brief.md) — immediate implementation brief for first-packet creation, create-and-generate flow closure, post-action re-grounding, and proof refresh
-- [Grants foundation code-grounding brief](2026-04-12-openplan-grants-foundation-code-grounding-brief.md) — code-grounded next-lane brief mapping current funding objects, assistant mutations, RTP write-back, and the missing shared `/grants` workspace lane
-- [PRINCIPAL_QA_APPROVAL.md](PRINCIPAL_QA_APPROVAL.md) — canonical principal approval
-- [launch-truth-adr](2026-04-05-openplan-launch-readiness-truth-memo.md) — current April launch boundary / supervised pilot posture
-- [supervised pilot packet](2026-04-05-openplan-supervised-external-pilot-packet.md) — external pilot scope and support path
-- [pricing-positioning decision](2026-04-05-openplan-pricing-positioning-decision-note.md) — canonical pricing / positioning resolution
-- [frontend master packet](2026-04-08-openplan-frontend-master-packet.md) — canonical entry point for all OpenPlan frontend redesign work
-- [frontend design constitution](2026-04-08-openplan-frontend-design-constitution.md) — canonical anti-generic UI rules for OpenPlan frontend work
-- [frontend execution checklist](2026-04-08-openplan-frontend-execution-checklist.md) — practical implementation and QA checklist for redesign slices
-- [frontend agent prompt template](2026-04-08-openplan-frontend-agent-prompt-template.md) — reusable prompt starter for Codex/Claude frontend lanes
-- [product-governance historian](2026-04-05-openplan-product-governance-historian-memo.md) — reconciled current-truth synthesis
-- [proof ops runbook](2026-04-05-openplan-proof-ops-runbook.md) — proof lane, canary monitor, cleanup
-- [multi-agent execution architecture](2026-04-05-openplan-multi-agent-execution-architecture.md) — lane orchestration and direct-to-main execution model
-- [principal-gate-decision.md](2026-03-17-openplan-principal-gate-decision.md) — scoped approval
-- [commercial-proof-waiver.md](2026-03-17-openplan-commercial-proof-waiver.md) — CEO paid-canary waiver
-- [coo-verification.md](2026-03-16-openplan-v1-coo-verification.md) — COO verification
-- [elena-review-packet.md](2026-03-16-openplan-v1-elena-review-packet.md) — Elena review packet
-- [client-safe-positioning.md](2026-03-17-openplan-client-safe-positioning-note.md) — external language guardrails
-- [branch-audit.md](2026-03-20-branch-audit-after-mainline-recovery.md) — mainline recovery audit
+## Modeling validation evidence (Nevada + Placer counties, March–April 2026)
 
-### Pilot Geography
-- [nevada-county-decision.md](2026-03-19-pilot-geography-decision-nevada-county.md) — pilot geography + rationale
+The screening-runtime validation record: pilot geography decision, truth memos, count-validation
+setup, rerun checkpoints, connector-bias and node-id breakthroughs, demand-scalar brackets,
+operating guardrails, Placer transfer/onramp/review packet, count inventory spec, and the
+`2026-04-05` county containment rerun. These numbers back the public `/examples` evidence catalog
+and the modeling caveat gates.
 
-### Modeling Stack
-- [research-driven platform expansion](2026-04-10-openplan-research-driven-platform-expansion.md) — shared platform implications for modeling, standards, and scenario architecture
-- [technical-spec.md](2026-03-17-openplan-modeling-stack-technical-spec.md) — AequilibraE + ActivitySim + MATSIM
-- [build-backlog.md](2026-03-17-openplan-modeling-stack-build-backlog-and-execution-plan.md) — execution plan
-- [phase1-prd.md](2026-03-18-modeling-stack-phase1-artifacts-prd.md) — Phase 1 PRD
-- [p1a1 network schema](2026-03-18-p1a1-canonical-network-package-schema.md) · [p1a2 zones](2026-03-18-p1a2-zone-corridor-connector-contract.md) · [p1a3 ingestion QA](2026-03-18-p1a3-ingestion-qa-pipeline.md)
-- [p1b2 AequilibraE worker](2026-03-18-p1b2-aequilibrae-worker-prototype.md) · [p1b3 skim artifacts](2026-03-18-p1b3-skim-artifact-generation.md) · [p1b4 KPI extractors](2026-03-18-p1b4-assignment-accessibility-extractors.md)
-- [p1c1 run mode UI](2026-03-18-p1c1-run-mode-surface-ui.md) · [p1c2 evidence packet](2026-03-18-p1c2-evidence-packet-output.md)
-- [p2 ActivitySim spec](2026-03-19-p2-activitysim-synthetic-population-spec.md)
-- [modeling-roadmap.md](2026-03-16-openplan-modeling-roadmap.md)
-- [model-engine-options.md](2026-03-15-openplan-model-engine-options-note.md)
+## Modeling claim honesty
 
-### Auth / Billing / Hardening
-- [auth-proxy-closure.md](2026-03-16-openplan-auth-proxy-closure-bundle.md)
-- [auth-access-evidence.md](2026-03-15-openplan-v1-auth-access-evidence.md)
-- [billing-identity-review.md](2026-03-16-billing-identity-review-hardening.md)
-- [provisioning-hardening.md](2026-03-16-v1-provisioning-hardening.md)
-- [2026-05-10 request-access copy to admin guard trace](../../openplan/docs/ops/2026-05-10-request-access-copy-to-admin-guard-trace.md) — current public-copy-to-admin trace: review-first/no-auto-send request-access language maps to the manual no-email provisioning guard without production writes or provisioning smoke
-- [live-billing-hold-canary.md](2026-03-16-openplan-live-billing-hold-canary.md)
-- [cancel-refund-closeout.md](2026-03-16-openplan-cancel-refund-operational-closeout.md)
-- [billing-reliability-evidence.md](2026-03-15-openplan-v1-billing-reliability-evidence.md)
-- [billing-chooser-verification.md](2026-03-16-openplan-live-billing-chooser-verification.md)
+`2026-03-22-openplan-modeling-status-language-pack.md`, plus the `2026-05-01`/`2026-05-08`
+caveat-gate proofs. The enforcement now lives in code (run-mode caveat strings, claim-boundary
+guard tests over `src/`).
 
-### Production Smoke Evidence
-- [2026-05-01 Phase 0 proof repair](2026-05-01-openplan-phase0-proof-repair.md) — public preflight, Pilot Readiness parser, Mapbox env posture, and validation proof
-- [2026-05-01 UI/UX settle review](2026-05-01-openplan-ui-ux-settle-review.md) — pass review over the local desktop/mobile screenshot pack and supplemental watch closure
-- [2026-05-01 UI/UX watch recapture](2026-05-01-openplan-ui-ux-watch-recapture.md) — local Data Hub and Pilot Readiness desktop/mobile recapture proof
-- [2026-05-10 supervised onboarding evidence flow proof](../../openplan/docs/ops/2026-05-10-supervised-onboarding-evidence-flow-proof.md) — current proof bridge connecting `/admin/operations` proof panels, manual `manual_provisioning_no_email` owner-invite guard, and Pilot Readiness caveats without adding production writes or outbound email
-- [2026-05-10 request-access copy to admin guard trace](../../openplan/docs/ops/2026-05-10-request-access-copy-to-admin-guard-trace.md) — no-write trace from public request-access copy to the Admin Operations manual provisioning guard; useful before citing onboarding posture in buyer/admin proof notes
-- [2026-05-01 workspace URL isolation smoke](2026-05-01-openplan-local-workspace-url-isolation-smoke.md) — local synthetic cross-workspace project URL isolation with session-continuity screenshots
-- [2026-05-01 RC proof log](2026-05-01-openplan-rc-proof-log.md) — current release-candidate gate across test, lint, build, audit, prod health, and public preflight
-- [2026-05-01 local RTP release-review smoke](2026-05-01-openplan-local-rtp-release-review-smoke.md) — first Phase 1 flagship workflow proof for RTP cycle, board packet, artifact generation, and release-review navigation
-- [2026-05-01 local Grants flow smoke](2026-05-01-openplan-local-grants-flow-smoke.md) — flagship Grants OS proof for awarded opportunity, committed award, project RTP posture write-back, obligation milestone, reimbursement invoice, and closeout milestone
-- [2026-05-01 local engagement report handoff smoke](2026-05-01-openplan-local-engagement-report-handoff-smoke.md) — flagship Engagement proof for public intake, moderation, public publication, handoff report provenance, generated artifact, and source-context traceability
-- [2026-05-01 local analysis report linkage smoke](2026-05-01-openplan-local-analysis-report-linkage-smoke.md) — flagship Analysis proof for corridor run output, scenario attachment, Analysis Studio deep link, report linkage, generated artifact, and source-context traceability
-- [2026-05-02 local Phase 1 spine smoke](2026-05-02-openplan-local-spine-smoke.md) — shared-spine proof that one NCTC project ID is reused across RTP, grants, engagement, analysis/county-run, report, map, Data Hub, and aerial evidence rows; rerun proved local target guard plus cleanup of prior spine-smoke reports and dependent rows
-- [2026-05-02 local Aerial evidence smoke](2026-05-02-openplan-local-aerial-evidence-smoke.md) — local Aerial evidence spine proof for mission creation, AOI PATCH, ready package creation, exact seeded-plus-new aerial posture counts, Aerial list/detail rendering, map AOI feature, local target guard, and cleanup of prior harness-owned mission/package rows
-- [2026-05-01 billing current-cycle waiver proof](2026-05-01-openplan-billing-current-cycle-waiver-proof.md) — current Billing proof boundary retaining the explicit no-fresh-paid-canary waiver in sales language
-- [2026-05-01 staging Supabase restore drill](2026-05-01-openplan-restore-drill-staging-supabase.md) — current backup/restore proof for a dedicated non-production Supabase restore, validation, and cleanup
-- Local mutating smokes are guarded for loopback/local app and Supabase URLs only. The deterministic NCTC spine/aerial smokes clean their own harness residue before rerun; the timestamped RTP, Grants, Engagement, Analysis, and Admin/support smokes create fresh local proof records unless local Supabase is reset or cleaned manually.
-- `2026-04-29-openplan-ui-ux-settle-checkpoint.md` — current UI/UX settle proof-pack checklist
-- `2026-04-28-openplan-local-workspace-url-isolation-smoke.md` — local workspace URL isolation smoke PASS
-- [2026-04-27 public demo preflight proof](../../openplan/docs/ops/2026-04-27-public-demo-preflight-proof.md) — public demo preflight proof and command reference
-- `2026-03-17-test-output/` — **current canonical** (auth, engagement, managed-run, report-traceability screenshots + QA cleanup)
-- `2026-03-16-test-output/` — prior cycle (auth, edit, billing hold canary, billing chooser)
-- `2026-03-18-test-output/` — scenario comparison
-- `2026-03-15-test-output/` — older auth + billing logs
-- `2026-03-01-test-output/` — oldest cycle (historical baseline)
+## County validation onramp (March 2026)
 
-### Module Plans (Future)
-- [reports-v1.md](2026-03-14-reports-v1-module-plan.md) · [engagement-v1.md](2026-03-14-engagement-v1-module-plan.md) · [scenarios-v1.md](2026-03-14-scenarios-v1-module-plan.md) · [plans-v1.md](2026-03-15-plans-v1-module-plan.md)
-- [engagement-report-handoff (shipped)](2026-03-17-engagement-report-handoff-slice.md) · [report-traceability-backlink (shipped)](2026-03-17-report-traceability-backlink-slice.md)
+`2026-03-24-openplan-county-*` — API outline, backend data model, manifest schema, worker
+contract, UI state model, onboarding workflow; plus `2026-05-10` manifest proof UI.
 
-### Package Control (this review)
-- [inventory-and-handoff-checklist.md](2026-03-20-package-control-inventory-and-handoff-checklist.md) — full inventory + grouped checklist + gaps
-- [dedup-stale-naming-log.md](2026-03-20-package-control-dedup-stale-naming-log.md) — superseded/canonical tags + naming fixes
-- [cross-verification-report.md](2026-03-21-proof-packet-cross-verification-report.md) — disk verification of all proof-packet references
+## LAPM / stage-gate provenance (March 2026)
 
----
+`2026-03-05` California stage-gate template pack + LAPM v0.2 review pack + review-decision-log and
+source-citation templates; `2026-03-22` LAPM PM+invoicing release checklist and validation
+runbook. Source docs for `openplan/src/lib/stage-gates/` and `openplan/src/lib/invoicing/`.
 
-## File Counts
-- Markdown docs in `docs/ops/`: **409**
-- Test output files (PNG/JSON/log/txt): **400**
-- Subdirectories: **38**
+## Crash / geospatial data lane (March 2026)
+
+`2026-03-13` SWITRS collision layer, VRU filter, and geospatial data fabric passes. See also
+`../ADRs/ADR-003-crash-data-acquisition.md` (CCRS is the live source; SWITRS is dead upstream).
+
+## Templates
+
+`templates/ca_stage_gates_v0.2_draft.json` (draft successor to the shipped v0.1 template),
+`templates/engagement_operator_seed_safe_routes_v0.1.json`.
+
+## Registers
+
+`KNOWN_ISSUES.md` — the active quality register.
+
+Deeper implementation proofs for the app itself (component decompositions, cartographic shell,
+evidence backbone, security hardening) live in `../../openplan/docs/ops/`.

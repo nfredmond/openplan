@@ -6,7 +6,6 @@
   "jurisdiction": "CA",
   "intent": "Low-risk planning/governance control pack for LAPM-style project control and consultant invoicing operations.",
   "source_docs": [
-    "docs/ops/2026-03-15-openplan-v1-execution-queue.md",
     "docs/ops/2026-03-05-california-stage-gate-template-pack.md",
     "docs/ops/2026-03-05-ca-stage-gate-lapm-v02-review-pack.md"
   ],
