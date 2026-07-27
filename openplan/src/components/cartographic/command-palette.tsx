@@ -4,38 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 
-type CommandItem = {
-  label: string;
-  href: string;
-  group: string;
-  keywords?: string;
-};
+import {
+  buildPaletteCommands,
+  type AppNavPaletteCommand,
+} from "@/components/nav/nav-registry";
 
-// The navigable modules, grouped like the rail. Operator-only surfaces (/admin)
-// are intentionally omitted — the palette is for everyone.
-const COMMANDS: CommandItem[] = [
-  { label: "Dashboard", href: "/dashboard", group: "Operate", keywords: "home overview" },
-  { label: "Command Center", href: "/command-center", group: "Operate", keywords: "operations cross-domain" },
-  { label: "Projects", href: "/projects", group: "Operate", keywords: "delivery control room milestones" },
-  { label: "RTP", href: "/rtp", group: "Operate", keywords: "regional transportation plan cycle" },
-  { label: "Plans", href: "/plans", group: "Operate" },
-  { label: "Programs", href: "/programs", group: "Operate", keywords: "rtip stip funding windows" },
-  { label: "Grants", href: "/grants", group: "Operate", keywords: "funding opportunities narrative bca" },
-  { label: "Reports", href: "/reports", group: "Operate", keywords: "packets exports provenance" },
-  { label: "Engagement", href: "/engagement", group: "Analyze", keywords: "community public map comments" },
-  { label: "Analysis Studio", href: "/explore", group: "Analyze", keywords: "corridor analysis explore" },
-  { label: "Scenarios", href: "/scenarios", group: "Analyze", keywords: "baseline comparison" },
-  { label: "Models", href: "/models", group: "Analyze", keywords: "travel demand model run any place" },
-  { label: "County Validation", href: "/county-runs", group: "Analyze", keywords: "onboarding screening" },
-  { label: "Data Hub", href: "/data-hub", group: "Analyze", keywords: "datasets geometry" },
-  { label: "Aerial Ops", href: "/aerial", group: "Analyze", keywords: "drone mission imagery" },
-  { label: "Agent Activity", href: "/assistant-activity", group: "Govern", keywords: "planner agent audit ledger" },
-  // "Billing" is not a concept in OpenPlan — it is free, with no plan and no
-  // checkout. What is real here is the Caltrans LAPM grant-reimbursement
-  // invoice register: an agency invoicing ITS FUNDER. The old keywords are kept
-  // so a saved habit still finds the right surface.
-  { label: "Invoicing", href: "/invoicing", group: "Govern", keywords: "invoice reimbursement LAPM billing" },
-];
+// Every navigable module, grouped like the rail — the shared nav registry is
+// the single source, so the palette can never drift out of sync with what the
+// rail and the auth proxy know about.
+const COMMANDS: AppNavPaletteCommand[] = buildPaletteCommands();
 
 export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const router = useRouter();
@@ -87,7 +64,7 @@ export function CommandPalette({ open, onOpenChange }: { open: boolean; onOpenCh
 
   if (!open) return null;
 
-  function go(item: CommandItem | undefined) {
+  function go(item: AppNavPaletteCommand | undefined) {
     if (!item) return;
     onOpenChange(false);
     router.push(item.href);

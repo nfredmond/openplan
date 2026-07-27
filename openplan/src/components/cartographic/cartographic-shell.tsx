@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { AppCopilot } from "@/components/assistant/app-copilot";
+import { buildRailGroups } from "@/components/nav/nav-registry";
 import { OnboardingWizard } from "@/components/onboarding/onboarding-wizard";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -24,39 +25,22 @@ import { CartographicOverviewSurface } from "./cartographic-overview-surface";
 import {
   CartographicRail,
   type CartographicRailGroup,
+  type CartographicRailItem,
 } from "./cartographic-rail";
 
+// The rail renders the shared nav registry. The registry stores icons as
+// NAMES (it must stay importable from the middleware runtime); the rail's own
+// ICONS map resolves them to components, and the nav-registry test asserts
+// every registered name resolves, which is what makes this cast safe.
 function buildNavGroups(): CartographicRailGroup[] {
-  return [
-    {
-      title: "Operate",
-      items: [
-        { href: "/dashboard", label: "Overview", icon: "overview" },
-        { href: "/command-center", label: "Command Center", icon: "command" },
-        { href: "/projects", label: "Projects", icon: "projects" },
-        { href: "/rtp", label: "RTP Cycles", icon: "rtp" },
-        { href: "/plans", label: "Plans", icon: "plans" },
-        { href: "/programs", label: "Programs", icon: "programs" },
-        { href: "/grants", label: "Grants", icon: "grants" },
-        { href: "/reports", label: "Reports", icon: "reports" },
-        { href: "/invoicing", label: "Invoicing", icon: "billing" },
-      ],
-    },
-    {
-      title: "Analyze",
-      items: [
-        { href: "/engagement", label: "Engagement", icon: "engagement" },
-        { href: "/safety", label: "Safety", icon: "safety" },
-        { href: "/explore", label: "Analysis Studio", icon: "analysis" },
-        { href: "/scenarios", label: "Scenarios", icon: "scenarios" },
-        { href: "/models", label: "Models", icon: "models" },
-        { href: "/county-runs", label: "County Validation", icon: "county" },
-        { href: "/data-hub", label: "Data Hub", icon: "data" },
-        { href: "/knowledge-base", label: "Knowledge Base", icon: "knowledge" },
-        { href: "/aerial", label: "Aerial Ops", icon: "aerial" },
-      ],
-    },
-  ];
+  return buildRailGroups().map((group) => ({
+    title: group.title,
+    items: group.items.map((item) => ({
+      href: item.href,
+      label: item.label,
+      icon: item.icon as CartographicRailItem["icon"],
+    })),
+  }));
 }
 
 function formatUpdatedLabel(iso?: string | null): string | null {

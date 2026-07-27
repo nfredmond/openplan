@@ -1,23 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server'
+import { protectedRoutePrefixes } from '@/components/nav/nav-registry'
 import { updateSession } from '@/lib/supabase/middleware'
 
-const PROTECTED_ROUTE_PREFIXES = [
-  '/dashboard',
-  '/workspace',
-  '/projects',
-  '/rtp',
-  '/plans',
-  '/programs',
-  '/models',
-  '/scenarios',
-  '/explore',
-  '/data-hub',
-  '/reports',
-  '/grants',
-  '/engagement',
-  '/billing',
-  '/assistant-activity',
-] as const
+// Every surface in the shared nav registry sits behind sign-in — a module
+// cannot be added to the nav without also being protected here.
+const PROTECTED_ROUTE_PREFIXES = protectedRoutePrefixes()
 
 const REQUEST_ID_HEADER = 'x-request-id'
 

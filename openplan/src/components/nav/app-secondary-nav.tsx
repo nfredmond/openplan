@@ -2,14 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { navLabel } from "@/components/nav/nav-registry";
 import { cn } from "@/lib/utils";
 
 type SecondarySection = {
   title: string;
   description?: string;
-  items: Array<{ href: string; label: string; description?: string }>;
+  items: Array<{ href: string; description?: string }>;
 };
 
+// The grouping here is contextual — which neighbors make sense from where the
+// planner is standing — but every label resolves through the shared nav
+// registry, so a surface is named the same thing in every nav.
 const sectionMap: Array<{
   match: string[];
   section: SecondarySection;
@@ -19,20 +23,21 @@ const sectionMap: Array<{
     section: {
       title: "Overview",
       items: [
-        { href: "/dashboard", label: "Workspace Dashboard" },
-        { href: "/command-center", label: "Command Center" },
-        { href: "/projects", label: "Projects" },
-        { href: "/reports", label: "Reports" },
+        { href: "/dashboard" },
+        { href: "/command-center" },
+        { href: "/projects" },
+        { href: "/reports" },
       ],
     },
   },
   {
-    match: ["/explore"],
+    match: ["/explore", "/safety"],
     section: {
       title: "Analysis Studio",
       items: [
-        { href: "/explore", label: "Corridor Analysis" },
-        { href: "/reports", label: "Reports" },
+        { href: "/explore" },
+        { href: "/safety" },
+        { href: "/reports" },
       ],
     },
   },
@@ -41,23 +46,24 @@ const sectionMap: Array<{
     section: {
       title: "Projects",
       items: [
-        { href: "/projects", label: "All Projects" },
-        { href: "/rtp", label: "RTP Cycles" },
-        { href: "/plans", label: "Plans" },
-        { href: "/programs", label: "Programs" },
+        { href: "/projects" },
+        { href: "/rtp" },
+        { href: "/plans" },
+        { href: "/programs" },
       ],
     },
   },
   {
-    match: ["/rtp", "/plans", "/programs"],
+    match: ["/rtp", "/plans", "/programs", "/knowledge-base"],
     section: {
       title: "Planning System",
       items: [
-        { href: "/rtp", label: "RTP Cycles" },
-        { href: "/plans", label: "Plans" },
-        { href: "/programs", label: "Programs & Cycles" },
-        { href: "/grants", label: "Grants" },
-        { href: "/engagement", label: "Engagement" },
+        { href: "/rtp" },
+        { href: "/plans" },
+        { href: "/programs" },
+        { href: "/grants" },
+        { href: "/engagement" },
+        { href: "/knowledge-base" },
       ],
     },
   },
@@ -66,10 +72,10 @@ const sectionMap: Array<{
     section: {
       title: "Funding",
       items: [
-        { href: "/grants", label: "Grant Pipeline" },
-        { href: "/programs", label: "Programs & Cycles" },
-        { href: "/projects", label: "Projects" },
-        { href: "/reports", label: "Reports" },
+        { href: "/grants" },
+        { href: "/programs" },
+        { href: "/projects" },
+        { href: "/reports" },
       ],
     },
   },
@@ -78,9 +84,9 @@ const sectionMap: Array<{
     section: {
       title: "Engagement",
       items: [
-        { href: "/engagement", label: "Campaigns" },
-        { href: "/reports", label: "Outreach Reports" },
-        { href: "/data-hub", label: "Imported Datasets" },
+        { href: "/engagement" },
+        { href: "/reports" },
+        { href: "/data-hub" },
       ],
     },
   },
@@ -89,10 +95,10 @@ const sectionMap: Array<{
     section: {
       title: "Transportation Modeling",
       items: [
-        { href: "/models", label: "Models" },
-        { href: "/scenarios", label: "Scenarios" },
-        { href: "/county-runs", label: "County Validation" },
-        { href: "/data-hub", label: "Data Hub" },
+        { href: "/models" },
+        { href: "/scenarios" },
+        { href: "/county-runs" },
+        { href: "/data-hub" },
       ],
     },
   },
@@ -101,9 +107,9 @@ const sectionMap: Array<{
     section: {
       title: "Operations",
       items: [
-        { href: "/reports", label: "Reports" },
-        { href: "/invoicing", label: "Invoicing" },
-        { href: "/assistant-activity", label: "Agent Activity" },
+        { href: "/reports" },
+        { href: "/invoicing" },
+        { href: "/assistant-activity" },
       ],
     },
   },
@@ -140,7 +146,7 @@ export function AppSecondaryNav() {
                 )}
               >
                 <span className="min-w-0">
-                  <span className="block">{item.label}</span>
+                  <span className="block">{navLabel(item.href)}</span>
                   {item.description ? (
                     <span className="mt-1 block text-[0.72rem] leading-5 text-muted-foreground">
                       {item.description}

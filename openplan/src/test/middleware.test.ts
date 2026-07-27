@@ -23,6 +23,27 @@ describe('proxy auth/session guard', () => {
     expect(response.headers.get('location')).toContain('redirect=%2Fdashboard')
   })
 
+  it('protects the routes the old hardcoded list missed — the registry is the proxy source now', async () => {
+    // /safety, /county-runs, /knowledge-base, /invoicing, /aerial, and
+    // /command-center were unprotected before the nav registry unified the
+    // prefix list. If the proxy ever reverts to a copied literal list, this
+    // is the test that goes red.
+    for (const path of ['/safety', '/county-runs', '/knowledge-base', '/invoicing', '/aerial', '/command-center']) {
+      updateSessionMock.mockResolvedValueOnce({
+        response: NextResponse.next(),
+        user: null,
+      })
+
+      const { proxy } = await import('@/proxy')
+      const request = new NextRequest(`http://localhost${path}`)
+      const response = await proxy(request)
+
+      expect(response.status).toBe(307)
+      expect(response.headers.get('location')).toContain('/sign-in')
+      expect(response.headers.get('location')).toContain(`redirect=${encodeURIComponent(path)}`)
+    }
+  })
+
   it('redirects unauthenticated planning routes and preserves the full target path', async () => {
     updateSessionMock.mockResolvedValueOnce({
       response: NextResponse.next(),

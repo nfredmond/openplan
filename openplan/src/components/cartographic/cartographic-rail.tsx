@@ -20,6 +20,7 @@ import {
   PlaneTakeoff,
   Radar,
   Route,
+  ScrollText,
   Settings2,
   ShieldAlert,
   type LucideIcon,
@@ -47,7 +48,16 @@ const ICONS = {
   aerial: PlaneTakeoff,
   billing: CreditCard,
   admin: Settings2,
+  activity: ScrollText,
 } satisfies Record<string, LucideIcon>;
+
+/**
+ * The icon names this rail can render. The nav registry stores icons as names
+ * (it must stay importable from the middleware runtime), and the registry test
+ * asserts every registered name appears here, so a typo fails in CI instead of
+ * crashing the rail.
+ */
+export const CARTOGRAPHIC_RAIL_ICON_NAMES = Object.keys(ICONS);
 
 export type CartographicRailItem = {
   href: string;

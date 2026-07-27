@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { NavLinkPill } from "@/components/nav/nav-link-pill";
+import { navLabel } from "@/components/nav/nav-registry";
 import { createClient } from "@/lib/supabase/server";
 
 export async function TopNav() {
@@ -9,12 +10,14 @@ export async function TopNav() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Authed links resolve through the shared nav registry so this header can
+  // never call a surface something the rail does not. The unauthenticated
+  // links are public pages outside the registry's scope.
   const navLinks = user
-    ? [
-        { href: "/dashboard", label: "Overview" },
-        { href: "/explore", label: "Analysis Studio" },
-        { href: "/invoicing", label: "Invoicing" },
-      ]
+    ? ["/dashboard", "/explore", "/invoicing"].map((href) => ({
+        href,
+        label: navLabel(href),
+      }))
     : [
         { href: "/", label: "Home" },
         { href: "/examples", label: "Evidence catalog" },
