@@ -2,9 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { computeNetInvoiceAmount, computeRetentionAmount } from "@/lib/invoicing/invoice-records";
+import { isValidPosture, resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
 
 const createBillingInvoiceSchema = z.object({
   workspaceId: z.string().uuid(),
@@ -22,9 +24,41 @@ const createBillingInvoiceSchema = z.object({
   retentionPercent: z.coerce.number().min(0).max(100).optional(),
   supportingDocsStatus: z.enum(["pending", "partial", "complete", "accepted"]).optional(),
   submittedTo: z.string().trim().max(160).optional(),
-  caltransPosture: z.enum(["local_agency_consulting", "federal_aid_candidate", "deferred_exact_forms"]).optional(),
+  // No enum here on purpose: the valid posture vocabulary belongs to the
+  // resolved reimbursement profile, not to a jurisdiction baked into a schema.
+  // The handler validates the posture against the profile's own options.
+  reimbursementProfileId: z.string().trim().min(1).max(120).optional(),
+  reimbursementPosture: z.string().trim().min(1).max(120).optional(),
   notes: z.string().trim().max(4000).optional(),
 });
+
+const INVOICE_SELECT_LEGACY =
+  "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at";
+
+// caltrans_posture stays selected as the legacy read fallback for rows that
+// predate the profile backfill.
+const INVOICE_SELECT =
+  `${INVOICE_SELECT_LEGACY}, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection`;
+
+/** PostgREST's shapes for "this deployment has not applied the profile-columns migration yet". */
+function looksLikePendingProfileSchema(message: string | null | undefined): boolean {
+  return /could not find the .* column|column .* does not exist|schema cache/i.test(message ?? "");
+}
+
+/**
+ * The CHECK vocabulary of the legacy caltrans_posture column (20260321000033).
+ * On a database that predates 20260727000009, that column is the ONLY place a
+ * posture can be recorded — so the pending-schema fallback writes the user's
+ * validated posture into it when the CHECK can store it, and refuses when it
+ * cannot. Letting the column's DEFAULT fill in would silently record a posture
+ * the user did not choose. This is a fact about the deployed schema, not a
+ * jurisdiction assumption: it goes away entirely once the migration is applied.
+ */
+const LEGACY_POSTURE_COLUMN_CHECK_VALUES = new Set([
+  "local_agency_consulting",
+  "federal_aid_candidate",
+  "deferred_exact_forms",
+]);
 
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("billing.invoices.create", request);
@@ -119,39 +153,132 @@ export async function POST(request: NextRequest) {
       effectiveProjectId = effectiveProjectId ?? fundingAward.project_id ?? null;
     }
 
+    // Which reimbursement profile governs this record: an explicit request
+    // outranks geography, the workspace's own home geography matches a
+    // registered profile, and only then does the labeled interim default
+    // apply. A failed geography read (e.g. columns pending on an older
+    // deployment) resolves as "jurisdiction unknown", which is a fallback
+    // reason — never a licence to guess.
+    const workspaceGeographyRead = await supabase
+      .from("workspaces")
+      .select("home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code")
+      .eq("id", parsed.data.workspaceId)
+      .maybeSingle();
+
+    const profileResolution = resolveReimbursementProfile({
+      requestedProfileId: parsed.data.reimbursementProfileId,
+      workspaceJurisdiction: resolveJurisdiction(
+        parseWorkspaceHomeGeography(workspaceGeographyRead.error ? null : workspaceGeographyRead.data)
+      ),
+    });
+
+    if (profileResolution.kind === "unknown_profile") {
+      audit.warn("unknown_reimbursement_profile", {
+        workspaceId: parsed.data.workspaceId,
+        requestedProfileId: profileResolution.requestedProfileId,
+      });
+      return NextResponse.json(
+        {
+          error: `Unknown reimbursement profile: ${profileResolution.requestedProfileId}`,
+          availableProfiles: profileResolution.available.map((profile) => profile.profileId),
+        },
+        { status: 400 }
+      );
+    }
+
+    const profileBinding = profileResolution.binding;
+    const requestedPosture = parsed.data.reimbursementPosture;
+
+    if (requestedPosture && !isValidPosture(profileBinding.postureOptions, requestedPosture)) {
+      audit.warn("reimbursement_posture_not_in_profile", {
+        workspaceId: parsed.data.workspaceId,
+        profileId: profileBinding.profileId,
+        requestedPosture,
+      });
+      return NextResponse.json(
+        {
+          error: `Reimbursement posture "${requestedPosture}" is not part of the ${profileBinding.profileName} profile`,
+          validPostures: profileBinding.postureOptions.map((option) => option.postureId),
+        },
+        { status: 400 }
+      );
+    }
+
+    const reimbursementPosture = requestedPosture ?? profileBinding.defaultPostureId;
+
     const amount = parsed.data.amount;
     const retentionPercent = parsed.data.retentionPercent ?? 0;
     const retentionAmount = computeRetentionAmount(amount, retentionPercent);
     const netAmount = computeNetInvoiceAmount(amount, retentionAmount, retentionPercent);
 
-    const { data, error } = await supabase
+    // caltrans_posture is deliberately not written on the primary path: its DB
+    // DEFAULT keeps the legacy column valid while the profile columns carry
+    // the real record. The pending-schema fallback below is the one exception,
+    // because there the legacy column is the only place the posture can live.
+    const legacyShapeInsert = {
+      workspace_id: parsed.data.workspaceId,
+      project_id: effectiveProjectId,
+      funding_award_id: parsed.data.fundingAwardId ?? null,
+      invoice_number: parsed.data.invoiceNumber,
+      consultant_name: parsed.data.consultantName?.trim() || null,
+      billing_basis: parsed.data.billingBasis ?? "time_and_materials",
+      status: parsed.data.status ?? "draft",
+      period_start: parsed.data.periodStart?.trim() || null,
+      period_end: parsed.data.periodEnd?.trim() || null,
+      invoice_date: parsed.data.invoiceDate?.trim() || null,
+      due_date: parsed.data.dueDate?.trim() || null,
+      amount,
+      retention_percent: retentionPercent,
+      retention_amount: retentionAmount,
+      net_amount: netAmount,
+      supporting_docs_status: parsed.data.supportingDocsStatus ?? "pending",
+      submitted_to: parsed.data.submittedTo?.trim() || null,
+      notes: parsed.data.notes?.trim() || null,
+      created_by: user.id,
+    };
+
+    let { data, error } = await supabase
       .from("billing_invoice_records")
       .insert({
-        workspace_id: parsed.data.workspaceId,
-        project_id: effectiveProjectId,
-        funding_award_id: parsed.data.fundingAwardId ?? null,
-        invoice_number: parsed.data.invoiceNumber,
-        consultant_name: parsed.data.consultantName?.trim() || null,
-        billing_basis: parsed.data.billingBasis ?? "time_and_materials",
-        status: parsed.data.status ?? "draft",
-        period_start: parsed.data.periodStart?.trim() || null,
-        period_end: parsed.data.periodEnd?.trim() || null,
-        invoice_date: parsed.data.invoiceDate?.trim() || null,
-        due_date: parsed.data.dueDate?.trim() || null,
-        amount,
-        retention_percent: retentionPercent,
-        retention_amount: retentionAmount,
-        net_amount: netAmount,
-        supporting_docs_status: parsed.data.supportingDocsStatus ?? "pending",
-        submitted_to: parsed.data.submittedTo?.trim() || null,
-        caltrans_posture: parsed.data.caltransPosture ?? "deferred_exact_forms",
-        notes: parsed.data.notes?.trim() || null,
-        created_by: user.id,
+        ...legacyShapeInsert,
+        reimbursement_profile_id: profileBinding.profileId,
+        reimbursement_posture: reimbursementPosture,
+        reimbursement_profile_selection: profileBinding.selection,
       })
-      .select(
-        "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
-      )
+      .select(INVOICE_SELECT)
       .single();
+
+    if (error && looksLikePendingProfileSchema(error.message)) {
+      // This deployment's database predates the profile columns. Keep the
+      // write working in the legacy shape — but only when the legacy column
+      // can store the posture the user actually validated. Recording a
+      // different posture than the one chosen is never acceptable, so a
+      // posture outside the legacy CHECK refuses with the migration to apply.
+      if (!LEGACY_POSTURE_COLUMN_CHECK_VALUES.has(reimbursementPosture)) {
+        audit.warn("reimbursement_profile_columns_pending_posture_unstorable", {
+          workspaceId: parsed.data.workspaceId,
+          profileId: profileBinding.profileId,
+          reimbursementPosture,
+          message: error.message,
+        });
+        return NextResponse.json(
+          {
+            error: `This deployment's database predates the reimbursement-profile columns, and its legacy posture column cannot store "${reimbursementPosture}". Apply migration 20260727000009_invoicing_reimbursement_profiles, then retry — the record was not saved under a posture you did not choose.`,
+          },
+          { status: 503 }
+        );
+      }
+
+      audit.warn("reimbursement_profile_columns_pending", {
+        workspaceId: parsed.data.workspaceId,
+        message: error.message,
+      });
+      ({ data, error } = await supabase
+        .from("billing_invoice_records")
+        .insert({ ...legacyShapeInsert, caltrans_posture: reimbursementPosture })
+        .select(INVOICE_SELECT_LEGACY)
+        .single());
+    }
 
     if (error) {
       audit.error("billing_invoice_insert_failed", {

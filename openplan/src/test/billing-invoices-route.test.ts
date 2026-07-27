@@ -22,6 +22,10 @@ const billingInvoicesSingleMock = vi.fn();
 const billingInvoicesSelectMock = vi.fn(() => ({ single: billingInvoicesSingleMock }));
 const billingInvoicesInsertMock = vi.fn(() => ({ select: billingInvoicesSelectMock }));
 
+const workspacesMaybeSingleMock = vi.fn();
+const workspacesEqMock = vi.fn(() => ({ maybeSingle: workspacesMaybeSingleMock }));
+const workspacesSelectMock = vi.fn(() => ({ eq: workspacesEqMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "workspace_members") {
     return { select: workspaceMembersSelectMock };
@@ -37,6 +41,10 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "funding_awards") {
     return { select: fundingAwardsSelectMock };
+  }
+
+  if (table === "workspaces") {
+    return { select: workspacesSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -55,6 +63,31 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
+
+// The real registry plus one future-shaped profile whose posture vocabulary
+// the legacy column's CHECK cannot store. Built with the REAL
+// createReimbursementProfileRegistry so registry semantics stay untouched;
+// only the registration list grows, exactly as a new jurisdiction would.
+vi.mock("@/lib/invoicing/reimbursement-profiles", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/invoicing/reimbursement-profiles")>(
+    "@/lib/invoicing/reimbursement-profiles"
+  );
+  return {
+    ...actual,
+    reimbursementProfileRegistry: actual.createReimbursementProfileRegistry([
+      ...actual.BUILT_IN_REIMBURSEMENT_PROFILE_REGISTRATIONS,
+      {
+        profileId: "test_beyond_legacy_check_v1",
+        profileName: "Test profile beyond the legacy CHECK",
+        version: "1.0.0",
+        jurisdiction: { country: "US", subdivision: "NV", label: "Nevada, United States" },
+        postureOptions: [{ postureId: "hourly_progress_billing", label: "Hourly progress billing" }],
+        defaultPostureId: "hourly_progress_billing",
+        isInterimDefault: false,
+      },
+    ]),
+  };
+});
 
 import { POST as postInvoice } from "@/app/api/invoicing/invoices/route";
 
@@ -106,6 +139,18 @@ describe("POST /api/invoicing/invoices", () => {
         invoice_number: "OP-2026-001",
         net_amount: 11400,
         status: "submitted",
+      },
+      error: null,
+    });
+
+    // No home geography stated → the labeled interim default profile applies.
+    workspacesMaybeSingleMock.mockResolvedValue({
+      data: {
+        home_geography_source: null,
+        home_geography_kind: null,
+        home_geography_ref: null,
+        home_country_code: null,
+        home_subdivision_code: null,
       },
       error: null,
     });
@@ -168,13 +213,16 @@ describe("POST /api/invoicing/invoices", () => {
         amount: 12000,
         retentionPercent: 5,
         supportingDocsStatus: "complete",
-        submittedTo: "Caltrans D3 Local Assistance",
-        caltransPosture: "deferred_exact_forms",
+        submittedTo: "District office, local assistance",
+        reimbursementProfileId: "us_ca_lapm_reimbursement_v1",
+        reimbursementPosture: "deferred_exact_forms",
         notes: "Exact exhibit/form IDs still deferred in v0.1.",
       })
     );
 
     expect(response.status).toBe(201);
+    // `explicitly_requested` is reserved for a request that actually carries a
+    // caller-chosen profile id, as this one does — the UI never sends one.
     expect(billingInvoicesInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         workspace_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -186,7 +234,15 @@ describe("POST /api/invoicing/invoices", () => {
         retention_amount: 600,
         net_amount: 11400,
         supporting_docs_status: "complete",
+        reimbursement_profile_id: "us_ca_lapm_reimbursement_v1",
+        reimbursement_posture: "deferred_exact_forms",
+        reimbursement_profile_selection: "explicitly_requested",
       })
+    );
+
+    // The legacy column is no longer written; its DB DEFAULT fills it.
+    expect(billingInvoicesInsertMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ caltrans_posture: expect.anything() })
     );
 
     expect(await response.json()).toMatchObject({
@@ -196,6 +252,171 @@ describe("POST /api/invoicing/invoices", () => {
         net_amount: 11400,
       },
     });
+  });
+
+  it("resolves the profile from the workspace's own home geography", async () => {
+    workspacesMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        home_geography_source: "tigerweb",
+        home_geography_kind: "county",
+        home_geography_ref: "06057",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
+      },
+      error: null,
+    });
+
+    const response = await postInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        invoiceNumber: "OP-2026-003",
+        amount: 1000,
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(billingInvoicesInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reimbursement_profile_id: "us_ca_lapm_reimbursement_v1",
+        reimbursement_posture: "deferred_exact_forms",
+        reimbursement_profile_selection: "jurisdiction_matched",
+      })
+    );
+  });
+
+  it("labels the no-geography fallback as the interim default, honestly", async () => {
+    const response = await postInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        invoiceNumber: "OP-2026-004",
+        amount: 1000,
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(billingInvoicesInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reimbursement_profile_selection: "interim_unconfigured_default",
+      })
+    );
+  });
+
+  it("records a UI-shaped payload (posture only, no profile id) with the TRUE selection, never explicitly_requested", async () => {
+    // The composer sends only the posture. On a workspace with no home
+    // geography, the honest provenance is interim_unconfigured_default — a
+    // profile id echoed from a page-resolved binding must never turn that
+    // into an explicit choice nobody made.
+    const response = await postInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        invoiceNumber: "OP-2026-010",
+        amount: 1000,
+        reimbursementPosture: "local_agency_consulting",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(billingInvoicesInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reimbursement_profile_id: "us_ca_lapm_reimbursement_v1",
+        reimbursement_posture: "local_agency_consulting",
+        reimbursement_profile_selection: "interim_unconfigured_default",
+      })
+    );
+    expect(billingInvoicesInsertMock).not.toHaveBeenCalledWith(
+      expect.objectContaining({ reimbursement_profile_selection: "explicitly_requested" })
+    );
+  });
+
+  it("rejects a posture the resolved profile does not declare", async () => {
+    const response = await postInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        invoiceNumber: "OP-2026-005",
+        amount: 1000,
+        reimbursementPosture: "not_in_any_profile",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    const payload = await response.json();
+    expect(payload.error).toMatch(/not part of the/);
+    expect(payload.validPostures).toContain("deferred_exact_forms");
+    expect(billingInvoicesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unknown profile id instead of substituting the default", async () => {
+    const response = await postInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        invoiceNumber: "OP-2026-006",
+        amount: 1000,
+        reimbursementProfileId: "not_a_profile",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    const payload = await response.json();
+    expect(payload.error).toMatch(/Unknown reimbursement profile/);
+    expect(payload.availableProfiles).toContain("us_ca_lapm_reimbursement_v1");
+    expect(billingInvoicesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the legacy insert shape when the profile columns are pending, carrying the validated posture", async () => {
+    billingInvoicesSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message:
+          "Could not find the 'reimbursement_profile_id' column of 'billing_invoice_records' in the schema cache",
+      },
+    });
+
+    const response = await postInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        invoiceNumber: "OP-2026-007",
+        amount: 1000,
+        reimbursementPosture: "federal_aid_candidate",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(billingInvoicesInsertMock).toHaveBeenCalledTimes(2);
+    const retryPayload = (billingInvoicesInsertMock.mock.calls[1] as unknown[])[0] as Record<string, unknown>;
+    expect(retryPayload).not.toHaveProperty("reimbursement_profile_id");
+    expect(retryPayload).not.toHaveProperty("reimbursement_posture");
+    expect(retryPayload).not.toHaveProperty("reimbursement_profile_selection");
+    // The legacy column is the only place a posture can live on this
+    // deployment, so the user's validated choice is written into it — the
+    // column DEFAULT must never silently overwrite what the user chose.
+    expect(retryPayload.caltrans_posture).toBe("federal_aid_candidate");
+  });
+
+  it("refuses (503, naming the migration) when the legacy column cannot store the chosen posture", async () => {
+    billingInvoicesSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message:
+          "Could not find the 'reimbursement_profile_id' column of 'billing_invoice_records' in the schema cache",
+      },
+    });
+
+    const response = await postInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        invoiceNumber: "OP-2026-011",
+        amount: 1000,
+        reimbursementProfileId: "test_beyond_legacy_check_v1",
+        reimbursementPosture: "hourly_progress_billing",
+      })
+    );
+
+    expect(response.status).toBe(503);
+    const payload = await response.json();
+    expect(payload.error).toMatch(/20260727000009/);
+    // Only the profile-shaped insert was attempted: the record was never
+    // silently saved under a posture the user did not choose.
+    expect(billingInvoicesInsertMock).toHaveBeenCalledTimes(1);
   });
 
   it("links an invoice to a funding award and inherits the award project when needed", async () => {

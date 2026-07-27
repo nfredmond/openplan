@@ -278,12 +278,11 @@ describe("jurisdiction literals stay inside profile descriptors", () => {
   const PROFILES_DIR = path.join(SRC, "lib", "invoicing", "profiles") + path.sep;
 
   /**
-   * TEMPORARY allowlist for the two commits that follow this one in the same
-   * wave: the API commit removes the route, the UI commit removes the rest and
-   * deletes this list. Nothing may ever be added to it.
+   * TEMPORARY allowlist for the commit that follows this one in the same
+   * wave: the UI commit removes the last literals and deletes this list.
+   * Nothing may ever be added to it.
    */
   const PENDING_MIGRATION_ALLOWLIST = [
-    path.join(SRC, "app", "api", "invoicing", "invoices", "route.ts"),
     path.join(SRC, "app", "(app)", "invoicing", "page.tsx"),
     path.join(SRC, "components", "invoicing", "invoice-record-composer.tsx"),
   ];

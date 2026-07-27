@@ -11,6 +11,19 @@ const paramsSchema = z.object({
   invoiceId: z.string().uuid(),
 });
 
+const INVOICE_SELECT_LEGACY =
+  "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at";
+
+// caltrans_posture stays selected as the legacy read fallback for rows that
+// predate the reimbursement-profile backfill (20260727000009).
+const INVOICE_SELECT =
+  `${INVOICE_SELECT_LEGACY}, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection`;
+
+/** PostgREST's shapes for "this deployment has not applied the profile-columns migration yet". */
+function looksLikePendingProfileSchema(message: string | null | undefined): boolean {
+  return /could not find the .* column|column .* does not exist|schema cache/i.test(message ?? "");
+}
+
 const patchBillingInvoiceSchema = z
   .object({
     workspaceId: z.string().uuid(),
@@ -128,18 +141,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const runUpdate = async () => {
-      const { data, error } = await supabase
+      const updatePayload = {
+        project_id: effectiveProjectId,
+        funding_award_id: effectiveFundingAwardId,
+        status: parsed.data.status ?? undefined,
+      };
+      let { data, error } = await supabase
         .from("billing_invoice_records")
-        .update({
-          project_id: effectiveProjectId,
-          funding_award_id: effectiveFundingAwardId,
-          status: parsed.data.status ?? undefined,
-        })
+        .update(updatePayload)
         .eq("id", invoice.id)
-        .select(
-          "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at"
-        )
+        .select(INVOICE_SELECT)
         .single();
+      if (error && looksLikePendingProfileSchema(error.message)) {
+        // This deployment's database predates the profile columns; the legacy
+        // select keeps the patch working.
+        ({ data, error } = await supabase
+          .from("billing_invoice_records")
+          .update(updatePayload)
+          .eq("id", invoice.id)
+          .select(INVOICE_SELECT_LEGACY)
+          .single());
+      }
       if (error || !data) {
         throw new Error(error?.message ?? "billing_invoice_update_returned_no_row");
       }
