@@ -88,11 +88,6 @@ export function EngagementReportCreateButton({
   const [error, setError] = useState<string | null>(null);
 
   async function handleCreateReport() {
-    if (!campaign.project_id) {
-      setError("Link this campaign to a project before creating a handoff report.");
-      return;
-    }
-
     setError(null);
     setIsSubmitting(true);
 
@@ -117,11 +112,56 @@ export function EngagementReportCreateButton({
         },
       });
 
+      // A campaign linked to a project produces a project-targeted packet;
+      // a standalone campaign targets the campaign itself so its comments can
+      // still become a packet without a placeholder project.
+      const target = campaign.project_id
+        ? { projectId: campaign.project_id }
+        : { engagementCampaignId: campaign.id };
+      const sections = [
+        ...(campaign.project_id
+          ? [
+              {
+                sectionKey: "project_overview",
+                title: "Project overview",
+                enabled: true,
+                sortOrder: 0,
+              },
+            ]
+          : []),
+        {
+          sectionKey: "status_snapshot",
+          title: campaign.project_id ? "Campaign and project snapshot" : "Campaign snapshot",
+          enabled: true,
+          sortOrder: 1,
+          configJson: {
+            campaignId: campaign.id,
+            provenance: handoffProvenance,
+          },
+        },
+        {
+          sectionKey: "engagement_summary",
+          title: "Engagement campaign summary",
+          enabled: true,
+          sortOrder: 2,
+          configJson: {
+            campaignId: campaign.id,
+            provenance: handoffProvenance,
+          },
+        },
+        {
+          sectionKey: "methods_assumptions",
+          title: "Methods and provenance",
+          enabled: true,
+          sortOrder: 3,
+        },
+      ];
+
       const response = await fetch("/api/reports", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          projectId: campaign.project_id,
+          ...target,
           reportType: "project_status",
           title: `${campaign.title} Engagement Handoff Packet`,
           summary: buildReportSummary({
@@ -131,40 +171,7 @@ export function EngagementReportCreateButton({
             actionableCount: counts.moderationQueue.actionableCount,
             uncategorizedItems: counts.uncategorizedItems,
           }),
-          sections: [
-            {
-              sectionKey: "project_overview",
-              title: "Project overview",
-              enabled: true,
-              sortOrder: 0,
-            },
-            {
-              sectionKey: "status_snapshot",
-              title: "Campaign and project snapshot",
-              enabled: true,
-              sortOrder: 1,
-              configJson: {
-                campaignId: campaign.id,
-                provenance: handoffProvenance,
-              },
-            },
-            {
-              sectionKey: "engagement_summary",
-              title: "Engagement campaign summary",
-              enabled: true,
-              sortOrder: 2,
-              configJson: {
-                campaignId: campaign.id,
-                provenance: handoffProvenance,
-              },
-            },
-            {
-              sectionKey: "methods_assumptions",
-              title: "Methods and provenance",
-              enabled: true,
-              sortOrder: 3,
-            },
-          ],
+          sections,
         }),
       });
 
@@ -187,7 +194,9 @@ export function EngagementReportCreateButton({
       <div className="rounded-[0.5rem] border border-border/60 bg-muted/35 p-3 text-xs text-muted-foreground">
         <p className="font-semibold text-foreground">What this creates</p>
         <p className="mt-1">
-          A project status packet with a frozen engagement handoff snapshot tied to this campaign.
+          {campaign.project_id
+            ? "A project status packet with a frozen engagement handoff snapshot tied to this campaign."
+            : "A campaign-targeted status packet with a frozen engagement handoff snapshot. This campaign has no linked project, so the report targets the campaign directly."}
         </p>
         <p className="mt-1">
           {buildSnapshotPreview({
@@ -224,13 +233,8 @@ export function EngagementReportCreateButton({
             </div>
           </div>
         ) : null}
-        {!campaign.project_id ? (
-          <p className="mt-1 text-red-600 dark:text-red-300">
-            Link this campaign to a project before creating a handoff report.
-          </p>
-        ) : null}
       </div>
-      <Button type="button" variant="outline" onClick={() => void handleCreateReport()} disabled={isSubmitting || !campaign.project_id}>
+      <Button type="button" variant="outline" onClick={() => void handleCreateReport()} disabled={isSubmitting}>
         {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileStack className="h-4 w-4" />}
         Create handoff report
       </Button>

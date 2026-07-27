@@ -3,8 +3,11 @@ import type { ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
 export type ReportRow = {
   id: string;
   workspace_id: string;
-  project_id: string;
+  /** Null for RTP-cycle and campaign-targeted reports. */
+  project_id: string | null;
   rtp_cycle_id: string | null;
+  /** Optional: absent until the campaign-target migration is applied. */
+  engagement_campaign_id?: string | null;
   title: string;
   report_type: string;
   status: string;

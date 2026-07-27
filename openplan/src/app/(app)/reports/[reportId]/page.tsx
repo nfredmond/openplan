@@ -58,6 +58,7 @@ import {
   buildCurrentProjectRecordEntry,
   formatCompactDateTime,
   formatCurrency,
+  loadReportDetailRow,
   maxTimestamp,
   summarizeProjectRecordDrift,
 } from "./_components/_helpers";
@@ -93,13 +94,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     redirect("/sign-in");
   }
 
-  const { data: report } = await supabase
-    .from("reports")
-    .select(
-      "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, rtp_basis_stale, rtp_basis_stale_reason, rtp_basis_stale_run_id, rtp_basis_stale_marked_at"
-    )
-    .eq("id", reportId)
-    .maybeSingle();
+  const { data: report } = await loadReportDetailRow(supabase, reportId);
 
   if (!report) {
     notFound();
@@ -289,7 +284,11 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       : [];
 
   const sectionList = sections ?? [];
-  const engagementCampaignId = extractEngagementCampaignId(sectionList);
+  // A campaign-targeted report names its campaign directly; handoff packets
+  // created against a project carry the campaign id inside section config.
+  const engagementCampaignId =
+    (typeof report.engagement_campaign_id === "string" ? report.engagement_campaign_id : null) ??
+    extractEngagementCampaignId(sectionList);
   const engagementCampaignResult = engagementCampaignId
     ? await supabase
         .from("engagement_campaigns")

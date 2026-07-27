@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import Link from "next/link";
 import { ScrollText } from "lucide-react";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
@@ -95,6 +96,7 @@ export function ReportStandardDetail({
   provenanceAuditProps,
   navigationPreviewProps,
 }: ReportStandardDetailProps) {
+  const isCampaignTarget = Boolean(report.engagement_campaign_id);
   const currentReportGrantModelingEvidence =
     project && currentReportComparisonAggregate && currentReportComparisonDigest
       ? {
@@ -169,6 +171,15 @@ export function ReportStandardDetail({
               <span>Type</span>
               <strong>{formatReportTypeLabel(report.report_type)}</strong>
             </span>
+            {isCampaignTarget && engagementCampaign ? (
+              <Link
+                href={`/engagement/${engagementCampaign.id}`}
+                className="module-record-chip transition hover:text-primary"
+              >
+                <span>Campaign</span>
+                <strong>{engagementCampaign.title}</strong>
+              </Link>
+            ) : null}
             {report.latest_artifact_kind ? (
               <span className="text-[0.73rem] text-muted-foreground">
                 {report.latest_artifact_kind.toUpperCase()}
@@ -178,9 +189,13 @@ export function ReportStandardDetail({
 
           <div className="module-summary-grid cols-4 mt-6">
             <div className="module-summary-card">
-              <p className="module-summary-label">Project</p>
+              <p className="module-summary-label">
+                {isCampaignTarget ? "Engagement campaign" : "Project"}
+              </p>
               <p className="module-summary-value truncate text-xl">
-                {project?.name ?? "Unknown"}
+                {isCampaignTarget
+                  ? engagementCampaign?.title ?? "Unknown campaign"
+                  : project?.name ?? "Unknown"}
               </p>
             </div>
             <div className="module-summary-card">

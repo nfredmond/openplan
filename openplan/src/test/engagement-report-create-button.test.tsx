@@ -105,6 +105,68 @@ describe("EngagementReportCreateButton", () => {
     );
   });
 
+  it("targets the campaign itself when no project is linked", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ reportId: "report-456" }), {
+        status: 201,
+        headers: { "content-type": "application/json" },
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <EngagementReportCreateButton
+        campaign={{
+          id: "campaign-standalone",
+          title: "Countywide listening tour",
+          summary: "Standalone campaign without a project.",
+          status: "active",
+          engagement_type: "comment_collection",
+          project_id: null,
+          created_at: "2026-03-01T00:00:00.000Z",
+          updated_at: "2026-03-28T18:30:00.000Z",
+        }}
+        counts={{
+          moderationQueue: {
+            actionableCount: 1,
+            readyForHandoffCount: 5,
+          },
+          uncategorizedItems: 0,
+          totalItems: 9,
+        }}
+      />
+    );
+
+    expect(
+      screen.getByText(/This campaign has no linked project, so the report targets the campaign directly\./i)
+    ).toBeInTheDocument();
+
+    const button = screen.getByRole("button", { name: /create handoff report/i });
+    expect(button).toBeEnabled();
+    fireEvent.click(button);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    const request = fetchMock.mock.calls[0] as [string, RequestInit];
+    const body = JSON.parse(String(request[1]?.body)) as {
+      projectId?: string;
+      engagementCampaignId?: string;
+      reportType?: string;
+      sections: Array<{ sectionKey: string }>;
+    };
+
+    expect(body.engagementCampaignId).toBe("campaign-standalone");
+    expect(body.projectId).toBeUndefined();
+    expect(body.reportType).toBe("project_status");
+    expect(body.sections.map((section) => section.sectionKey)).not.toContain("project_overview");
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith("/reports/report-456");
+    });
+  });
+
   it("submits seeded provenance when creating the handoff report", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ reportId: "report-123" }), {

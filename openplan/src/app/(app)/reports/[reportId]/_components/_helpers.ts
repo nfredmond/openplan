@@ -11,6 +11,7 @@ import type {
   DriftStatus,
   EngagementCampaignSnapshot,
   ProjectRecordSnapshotEntry,
+  ReportRow,
   RunAuditEntry,
   StageGateSnapshotControlHealth,
 } from "./_types";
@@ -306,4 +307,54 @@ export function summarizeProjectRecordDrift(changes: string[]): string {
   }
 
   return changes.join(" ");
+}
+
+const REPORT_DETAIL_COLUMNS =
+  "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, rtp_basis_stale, rtp_basis_stale_reason, rtp_basis_stale_run_id, rtp_basis_stale_marked_at";
+
+type ReportDetailQueryResult = {
+  data: ReportRow | null;
+  error: { message?: string | null } | null;
+};
+
+type ReportDetailClientLike = {
+  from: (table: string) => {
+    select: (columns: string) => {
+      eq: (
+        column: string,
+        value: string
+      ) => { maybeSingle: () => Promise<ReportDetailQueryResult> };
+    };
+  };
+};
+
+/**
+ * Load the report row for the detail page, preferring the campaign-target
+ * column. Until migration 20260727000008 is applied that column does not
+ * exist, and existing project/RTP reports must keep rendering — so a
+ * pending-schema error falls back to the legacy column list.
+ */
+export async function loadReportDetailRow(
+  supabase: unknown,
+  reportId: string
+): Promise<ReportDetailQueryResult> {
+  const client = supabase as ReportDetailClientLike;
+  const primary = await client
+    .from("reports")
+    .select(`${REPORT_DETAIL_COLUMNS}, engagement_campaign_id`)
+    .eq("id", reportId)
+    .maybeSingle();
+
+  if (
+    primary.error &&
+    /column .* does not exist|schema cache/i.test(primary.error.message ?? "")
+  ) {
+    return client
+      .from("reports")
+      .select(REPORT_DETAIL_COLUMNS)
+      .eq("id", reportId)
+      .maybeSingle();
+  }
+
+  return primary;
 }

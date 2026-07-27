@@ -29,6 +29,10 @@ import {
   parseStoredRtpFundingReview,
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
+import {
+  loadReportRegistryRows,
+  type ReportRegistryRow as ReportRow,
+} from "@/lib/reports/api";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
@@ -71,43 +75,6 @@ type ReportsPageSearchParams = Promise<{
   freshness?: string;
   posture?: string;
 }>;
-
-type ReportRow = {
-  id: string;
-  workspace_id: string;
-  project_id: string | null;
-  rtp_cycle_id: string | null;
-  title: string;
-  report_type: string;
-  status: string;
-  summary: string | null;
-  generated_at: string | null;
-  latest_artifact_kind: string | null;
-  created_at: string;
-  updated_at: string;
-  projects:
-    | {
-        id: string;
-        name: string;
-      }
-    | Array<{
-        id: string;
-        name: string;
-      }>
-    | null;
-  rtp_cycles:
-    | {
-        id: string;
-        title: string;
-        updated_at?: string | null;
-      }
-    | Array<{
-        id: string;
-        title: string;
-        updated_at?: string | null;
-      }>
-    | null;
-};
 
 type ReportArtifactRow = {
   report_id: string;
@@ -288,12 +255,7 @@ export default async function ReportsPage({
     operationsSummary,
   ] =
     await Promise.all([
-      supabase
-        .from("reports")
-        .select(
-          "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title, updated_at)"
-        )
-        .order("updated_at", { ascending: false }),
+      loadReportRegistryRows(supabase),
       supabase
         .from("projects")
         .select("id, workspace_id, name")
@@ -420,6 +382,9 @@ export default async function ReportsPage({
       const project = Array.isArray(report.projects)
         ? report.projects[0] ?? null
         : report.projects ?? null;
+      const engagementCampaign = Array.isArray(report.engagement_campaigns)
+        ? report.engagement_campaigns[0] ?? null
+        : report.engagement_campaigns ?? null;
       const comparisonSnapshotDigest = describeComparisonSnapshotAggregate(
         comparisonSnapshotAggregate
       );
@@ -451,6 +416,7 @@ export default async function ReportsPage({
         latestArtifact,
         project,
         rtpCycle,
+        engagementCampaign,
         packetFreshness,
         evidenceChainSummary,
         scenarioSpineSummary,
@@ -1022,6 +988,9 @@ export default async function ReportsPage({
                     avatarChar: report.title[0],
                     meta: [
                       ...(report.project?.name ? [{ label: "project", value: report.project.name }] : []),
+                      ...(report.engagementCampaign
+                        ? [{ label: "campaign", value: report.engagementCampaign.title }]
+                        : []),
                       { label: "next", value: actionLabel },
                     ],
                   }}
@@ -1043,7 +1012,11 @@ export default async function ReportsPage({
                           {report.summary || "No summary provided."}
                         </p>
                         <p className="text-[0.73rem] text-muted-foreground">
-                          {report.rtpCycle ? `RTP Cycle · ${report.rtpCycle.title}` : (report.project?.name ?? "No project")}
+                          {report.rtpCycle
+                            ? `RTP Cycle · ${report.rtpCycle.title}`
+                            : report.engagementCampaign
+                              ? `Campaign · ${report.engagementCampaign.title}`
+                              : (report.project?.name ?? "No project")}
                           {` · ${formatReportTypeLabel(report.report_type)}`}
                           {report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""}
                           {(report.latestArtifact?.generated_at ?? report.generated_at) ? ` · Generated ${formatDateTime(report.latestArtifact?.generated_at ?? report.generated_at)}` : ""}
@@ -1056,7 +1029,11 @@ export default async function ReportsPage({
 
                   <div className="module-record-meta">
                     <span className="module-record-chip">
-                      {report.rtpCycle ? `RTP Cycle ${report.rtpCycle.title}` : `Project ${report.project?.name ?? "Unknown project"}`}
+                      {report.rtpCycle
+                        ? `RTP Cycle ${report.rtpCycle.title}`
+                        : report.engagementCampaign
+                          ? `Campaign ${report.engagementCampaign.title}`
+                          : `Project ${report.project?.name ?? "Unknown project"}`}
                     </span>
                     <span className="module-record-chip">Next step {releaseReviewSummary?.label ?? packetWorkStatus.label}</span>
                     <span className="module-record-chip">Action {actionLabel}</span>

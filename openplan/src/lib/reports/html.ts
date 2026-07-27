@@ -119,6 +119,38 @@ export type ReportGenerationData = {
   citedCountyRuns?: ReportCitedCountyRun[];
 };
 
+/**
+ * The slice of report data the engagement markup reads. Narrowed so the
+ * campaign packet builder can reuse the exact same rendering as the project
+ * packet's engagement section.
+ */
+type EngagementMarkupContext = Pick<ReportGenerationData, "engagement" | "sections">;
+
+/**
+ * A campaign-targeted report (reports.engagement_campaign_id) renders from
+ * engagement records and cited typed runs only — there is no project row, so
+ * the packet never fabricates project content. Project-scoped sections render
+ * a disclosed not-applicable block instead.
+ */
+export type CampaignReportGenerationData = {
+  report: {
+    id: string;
+    title: string;
+    summary: string | null;
+    report_type: string;
+    created_at: string;
+  };
+  workspace: {
+    id: string;
+    name: string;
+  } | null;
+  /** Always present: the campaign is the report's target, not an attachment. */
+  engagement: ReportEngagementSummary;
+  sections: ReportSectionRecord[];
+  citedModelRuns?: ReportCitedModelRun[];
+  citedCountyRuns?: ReportCitedCountyRun[];
+};
+
 function esc(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -308,7 +340,7 @@ function citedCountyRunMarkup(run: ReportCitedCountyRun): string {
   </article>`;
 }
 
-function engagementSynthesisMarkup(data: ReportGenerationData): string {
+function engagementSynthesisMarkup(data: EngagementMarkupContext): string {
   const synthesis = data.engagement?.synthesis;
   if (!synthesis) {
     return "";
@@ -356,7 +388,7 @@ function engagementSynthesisMarkup(data: ReportGenerationData): string {
   </div>`;
 }
 
-function engagementHotspotsMarkup(data: ReportGenerationData): string {
+function engagementHotspotsMarkup(data: EngagementMarkupContext): string {
   const hotspots = data.engagement?.hotspots;
   if (!hotspots || hotspots.clusterCount === 0) {
     return "";
@@ -392,7 +424,7 @@ function engagementHotspotsMarkup(data: ReportGenerationData): string {
   </div>`;
 }
 
-function engagementRepresentativenessMarkup(data: ReportGenerationData): string {
+function engagementRepresentativenessMarkup(data: EngagementMarkupContext): string {
   const representativeness = data.engagement?.representativeness;
   if (!representativeness || representativeness.respondentCount === 0) {
     return "";
@@ -428,7 +460,7 @@ function engagementRepresentativenessMarkup(data: ReportGenerationData): string 
   </div>`;
 }
 
-function engagementHandoffMarkup(data: ReportGenerationData): string {
+function engagementHandoffMarkup(data: EngagementMarkupContext): string {
   const provenance = extractEngagementHandoffProvenance(data.sections);
   if (!provenance) {
     return "";
@@ -916,6 +948,18 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
   }
 
   if (sectionKey === "engagement_summary") {
+    return engagementSummaryMarkup(data);
+  }
+
+  return `<p class="empty">No renderer is available for section key ${esc(sectionKey)}.</p>`;
+}
+
+/**
+ * The full engagement-summary section body. Shared verbatim between the
+ * project packet (its `engagement_summary` section) and the campaign packet,
+ * where the campaign is the report's target rather than an attachment.
+ */
+function engagementSummaryMarkup(data: EngagementMarkupContext): string {
     if (!data.engagement) {
       return `<p class="empty">No engagement campaign is configured for this report section.</p>`;
     }
@@ -999,10 +1043,38 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
         }
       </div>
     </div>`;
-  }
-
-  return `<p class="empty">No renderer is available for section key ${esc(sectionKey)}.</p>`;
 }
+
+/** The one report stylesheet, shared by the project and campaign builders so
+ * both packet families stay visually coherent. */
+const REPORT_DOCUMENT_STYLES = `
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f3f0e8; color: #13222b; font-family: Georgia, "Times New Roman", serif; }
+      main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
+      .hero { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 28px; padding: 32px; background: linear-gradient(180deg, #fefcf7, #f5efe3); box-shadow: 0 30px 70px rgba(19, 34, 43, 0.08); }
+      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: #965c2a; }
+      h1, h2, h3 { margin: 0; }
+      h1 { margin-top: 12px; font-size: 42px; line-height: 1.05; }
+      .hero p { max-width: 760px; font-size: 17px; line-height: 1.6; }
+      section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }
+      .section-title { margin-bottom: 16px; font-size: 24px; }
+      .two-col { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+      .facts, .metrics-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+      .facts div, .metrics-grid div, .transparency-item, .metric-card { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }
+      dt, .metric-label, .meta { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #6d7479; }
+      dd, strong { margin: 6px 0 0; font-size: 18px; }
+      .record-list, .timeline { margin: 0; padding-left: 20px; display: grid; gap: 12px; }
+      .record-list li, .timeline li { padding-left: 4px; }
+      .run-card { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 22px; padding: 18px; background: #fffdf8; }
+      .run-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+      .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
+      .pill-pass { background: #d8f3df; color: #15653a; }
+      .pill-hold { background: #fde2d2; color: #9a3412; }
+      .warning-box { border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
+      .transparency-grid, .metrics-stack { display: grid; gap: 12px; margin-top: 14px; }
+      .empty { color: #6d7479; font-style: italic; }
+      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }`;
 
 export function buildReportHtml(data: ReportGenerationData): string {
   const enabledSections = data.sections
@@ -1033,34 +1105,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>${esc(data.report.title)}</title>
-    <style>
-      :root { color-scheme: light; }
-      * { box-sizing: border-box; }
-      body { margin: 0; background: #f3f0e8; color: #13222b; font-family: Georgia, "Times New Roman", serif; }
-      main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }
-      .hero { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 28px; padding: 32px; background: linear-gradient(180deg, #fefcf7, #f5efe3); box-shadow: 0 30px 70px rgba(19, 34, 43, 0.08); }
-      .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: #965c2a; }
-      h1, h2, h3 { margin: 0; }
-      h1 { margin-top: 12px; font-size: 42px; line-height: 1.05; }
-      .hero p { max-width: 760px; font-size: 17px; line-height: 1.6; }
-      section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }
-      .section-title { margin-bottom: 16px; font-size: 24px; }
-      .two-col { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-      .facts, .metrics-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-      .facts div, .metrics-grid div, .transparency-item, .metric-card { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }
-      dt, .metric-label, .meta { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #6d7479; }
-      dd, strong { margin: 6px 0 0; font-size: 18px; }
-      .record-list, .timeline { margin: 0; padding-left: 20px; display: grid; gap: 12px; }
-      .record-list li, .timeline li { padding-left: 4px; }
-      .run-card { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 22px; padding: 18px; background: #fffdf8; }
-      .run-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
-      .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
-      .pill-pass { background: #d8f3df; color: #15653a; }
-      .pill-hold { background: #fde2d2; color: #9a3412; }
-      .warning-box { border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }
-      .transparency-grid, .metrics-stack { display: grid; gap: 12px; margin-top: 14px; }
-      .empty { color: #6d7479; font-style: italic; }
-      @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }
+    <style>${REPORT_DOCUMENT_STYLES}
     </style>
   </head>
   <body>
@@ -1086,6 +1131,166 @@ export function buildReportHtml(data: ReportGenerationData): string {
           (section) => `<section id="${esc(section.section_key)}">
             <h2 class="section-title">${esc(section.title)}</h2>
             ${sectionMarkup(section.section_key, data)}
+          </section>`
+        )
+        .join("")}
+    </main>
+  </body>
+</html>`;
+}
+
+/**
+ * Section keys whose content lives on a project record, mapped to the subject
+ * named in the disclosure. A campaign packet renders these as disclosed
+ * not-applicable blocks; the generate route records the same keys in artifact
+ * metadata so the record can answer "why is this section a notice".
+ */
+const CAMPAIGN_PROJECT_SCOPED_SECTION_SUBJECTS: Record<string, string> = {
+  deliverables: "Deliverables",
+  risks_issues: "Project risks and issues",
+  decisions_meetings: "Project decisions and meetings",
+  project_records_digest: "Project decisions and meetings",
+  activity_timeline: "Project activity records",
+};
+
+export const CAMPAIGN_NOT_APPLICABLE_SECTION_KEYS: ReadonlySet<string> = new Set(
+  Object.keys(CAMPAIGN_PROJECT_SCOPED_SECTION_SUBJECTS)
+);
+
+/**
+ * A disclosed gap for a campaign packet: project-scoped content that a
+ * campaign-targeted report genuinely cannot carry is stated as not applicable
+ * — never a fabricated stand-in, never a silent omission, never a 500.
+ */
+function campaignNotApplicableMarkup(subject: string): string {
+  return `<div class="warning-box">
+      <strong>Not applicable to a campaign-scoped report</strong>
+      <p>${esc(subject)} live on a project record. This packet targets an engagement campaign directly and has no linked project, so this section is disclosed as empty rather than filled with placeholder content.</p>
+    </div>`;
+}
+
+function campaignSectionMarkup(sectionKey: string, data: CampaignReportGenerationData): string {
+  const { campaign, counts } = data.engagement;
+  const citedModelRuns = data.citedModelRuns ?? [];
+  const citedCountyRuns = data.citedCountyRuns ?? [];
+
+  if (sectionKey === "project_overview" || sectionKey === "cover_page") {
+    return `<div class="two-col">
+      <div>
+        <h3>${esc(campaign.title)}</h3>
+        <p>${esc(campaign.summary || "No campaign summary recorded yet.")}</p>
+        <p class="meta">This packet targets the engagement campaign directly; no project is attached.</p>
+      </div>
+      <dl class="facts">
+        <div><dt>Report type</dt><dd>${esc(formatReportTypeLabel(data.report.report_type))}</dd></div>
+        <div><dt>Workspace</dt><dd>${esc(data.workspace?.name ?? "Unknown")}</dd></div>
+        <div><dt>Campaign status</dt><dd>${esc(titleize(campaign.status))}</dd></div>
+        <div><dt>Engagement type</dt><dd>${esc(titleize(campaign.engagement_type))}</dd></div>
+        <div><dt>Generated basis</dt><dd>Engagement records + cited runs</dd></div>
+      </dl>
+    </div>`;
+  }
+
+  if (sectionKey === "status_snapshot" || sectionKey === "executive_summary") {
+    return `<div class="metrics-grid">
+      <div><span class="metric-label">Campaign status</span><strong>${esc(titleize(campaign.status))}</strong></div>
+      <div><span class="metric-label">Engagement type</span><strong>${esc(titleize(campaign.engagement_type))}</strong></div>
+      <div><span class="metric-label">Total items</span><strong>${counts.totalItems}</strong></div>
+      <div><span class="metric-label">Handoff-ready</span><strong>${counts.moderationQueue.readyForHandoffCount}</strong></div>
+    </div>
+    <p>${esc(data.report.summary || campaign.summary || "No executive summary has been authored yet. This packet reflects current engagement records and cited run evidence only.")}</p>
+    ${engagementHandoffMarkup(data)}`;
+  }
+
+  if (sectionKey === "engagement_summary") {
+    return engagementSummaryMarkup(data);
+  }
+
+  const projectScopedSubject = CAMPAIGN_PROJECT_SCOPED_SECTION_SUBJECTS[sectionKey];
+  if (projectScopedSubject) {
+    return campaignNotApplicableMarkup(projectScopedSubject);
+  }
+
+  if (sectionKey === "run_summaries" || sectionKey === "analysis_summaries") {
+    const runCards = [
+      ...citedModelRuns.map((run) => citedModelRunMarkup(run)),
+      ...citedCountyRuns.map((run) => citedCountyRunMarkup(run)),
+    ];
+
+    return runCards.length > 0
+      ? runCards.join("")
+      : `<p class="empty">No run citations are attached to this report. Legacy Analysis Studio runs are project-scoped and cannot attach to a campaign-scoped report.</p>`;
+  }
+
+  if (sectionKey === "key_metrics" || sectionKey === "artifacts_context") {
+    const kpiCards = citedModelRuns
+      .map((run) => {
+        const kpiLine = compactModelRunKpiLine(run.result_summary_json);
+        return kpiLine
+          ? `<article class="metric-card">
+              <h3>${esc(run.run_title)}</h3>
+              <p>${esc(kpiLine)}</p>
+            </article>`
+          : null;
+      })
+      .filter((card): card is string => Boolean(card));
+
+    return kpiCards.length > 0
+      ? `<div class="metrics-stack">${kpiCards.join("")}</div>`
+      : `<p class="empty">No cited model-run metrics are available on this campaign-scoped report.</p>`;
+  }
+
+  if (sectionKey === "methods_assumptions" || sectionKey === "assumptions_provenance" || sectionKey === "appendix_references") {
+    return `<div class="warning-box">
+      <strong>Auditability posture</strong>
+      <p>This report is a structured packet assembled from a single engagement campaign's current OpenPlan records and cited run evidence. Reviewers should treat it as evidence-backed output, not freeform narrative copy.</p>
+      <p>Generated on ${esc(formatDateTime(new Date().toISOString()))}. Campaign last updated ${esc(formatDateTime(campaign.updated_at))}. Review the moderation and synthesis caveats before external release.</p>
+    </div>`;
+  }
+
+  return `<p class="empty">No renderer is available for section key ${esc(sectionKey)}.</p>`;
+}
+
+/**
+ * The packet for a campaign-targeted report. Mirrors `buildReportHtml`'s
+ * document shell and styling, but everything it renders is engagement-scoped:
+ * campaign records, moderation counts, screening syntheses, and cited typed
+ * runs. Sections that require a project render a disclosed not-applicable
+ * block via `campaignSectionMarkup`.
+ */
+export function buildCampaignReportHtml(data: CampaignReportGenerationData): string {
+  const enabledSections = data.sections
+    .filter((section) => section.enabled)
+    .sort((left, right) => left.sort_order - right.sort_order);
+  const citedRunCount = (data.citedModelRuns?.length ?? 0) + (data.citedCountyRuns?.length ?? 0);
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${esc(data.report.title)}</title>
+    <style>${REPORT_DOCUMENT_STYLES}
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="hero">
+        <span class="eyebrow">OpenPlan Reports</span>
+        <h1>${esc(data.report.title)}</h1>
+        <p>${esc(data.report.summary || "Structured engagement packet with explicit provenance and source transparency.")}</p>
+        <div class="facts" style="margin-top: 18px;">
+          <div><dt>Engagement Campaign</dt><dd>${esc(data.engagement.campaign.title)}</dd></div>
+          <div><dt>Report Type</dt><dd>${esc(formatReportTypeLabel(data.report.report_type))}</dd></div>
+          <div><dt>Created</dt><dd>${esc(formatDateTime(data.report.created_at))}</dd></div>
+          <div><dt>Cited Runs</dt><dd>${citedRunCount}</dd></div>
+        </div>
+      </header>
+      ${enabledSections
+        .map(
+          (section) => `<section id="${esc(section.section_key)}">
+            <h2 class="section-title">${esc(section.title)}</h2>
+            ${campaignSectionMarkup(section.section_key, data)}
           </section>`
         )
         .join("")}

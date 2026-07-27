@@ -34,7 +34,11 @@ import {
   extractEngagementHandoffProvenance,
   extractEngagementCampaignId,
 } from "@/lib/reports/engagement";
-import { buildReportHtml } from "@/lib/reports/html";
+import {
+  buildCampaignReportHtml,
+  buildReportHtml,
+  CAMPAIGN_NOT_APPLICABLE_SECTION_KEYS,
+} from "@/lib/reports/html";
 import { renderReportPdf, type ReportPdfEngine } from "@/lib/reports/pdf";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
@@ -470,9 +474,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     let reportLookupResult = await supabase
       .from("reports")
-      .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
+      .select("id, workspace_id, project_id, rtp_cycle_id, engagement_campaign_id, modeling_county_run_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
       .eq("id", parsedParams.data.reportId)
       .maybeSingle();
+
+    if (reportLookupResult.error && looksLikePendingSchema(reportLookupResult.error.message)) {
+      // The campaign-target column (migration 20260727000008) is the newest;
+      // retry without it before falling back to the oldest column set.
+      reportLookupResult = await supabase
+        .from("reports")
+        .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
+        .eq("id", parsedParams.data.reportId)
+        .maybeSingle();
+    }
 
     if (reportLookupResult.error && looksLikePendingSchema(reportLookupResult.error.message)) {
       reportLookupResult = await supabase
@@ -979,6 +993,487 @@ export async function POST(request: NextRequest, context: RouteContext) {
           warnings: [],
         },
         { status: 200 }
+      );
+    }
+
+    // A campaign-targeted report (project_id and rtp_cycle_id both null)
+    // generates from the campaign's own engagement records and cited typed
+    // runs. Before this branch existed, every non-RTP report fell through to
+    // the project loader below and a standalone campaign packet answered 500.
+    const campaignTargetId: string | null =
+      !report.project_id && !report.rtp_cycle_id
+        ? ((report as { engagement_campaign_id?: string | null }).engagement_campaign_id ?? null)
+        : null;
+
+    if (campaignTargetId) {
+      const [workspaceResult, campaignResult, sectionsResult, campaignReportRunsResult] = await Promise.all([
+        supabase.from("workspaces").select("id, name").eq("id", report.workspace_id).maybeSingle(),
+        supabase
+          .from("engagement_campaigns")
+          .select(
+            "id, workspace_id, title, summary, status, engagement_type, share_token, updated_at, ai_synthesis_json, representativeness_json"
+          )
+          .eq("workspace_id", report.workspace_id)
+          .eq("id", campaignTargetId)
+          .maybeSingle(),
+        supabase
+          .from("report_sections")
+          .select("id, section_key, title, enabled, sort_order, config_json")
+          .eq("report_id", report.id)
+          .order("sort_order", { ascending: true }),
+        // Typed citations only: campaign targets refuse legacy runIds at
+        // create, so run_id is always null on these rows. safeOptionalQuery
+        // keeps a pre-typed-evidence database honest — no columns means no
+        // citations, not a failed packet.
+        safeOptionalQuery(
+          () =>
+            supabase
+              .from("report_runs")
+              .select("id, run_id, model_run_id, county_run_id, sort_order")
+              .eq("report_id", report.id)
+              .order("sort_order", { ascending: true }),
+          [] as Array<Record<string, unknown>>
+        ),
+      ]);
+
+      const campaignLoadErrors = [
+        workspaceResult.error,
+        campaignResult.error,
+        sectionsResult.error,
+        campaignReportRunsResult.error,
+      ].filter(Boolean);
+
+      if (campaignLoadErrors.length > 0) {
+        const firstError = campaignLoadErrors[0];
+        audit.error("report_generation_load_failed", {
+          reportId: report.id,
+          message: firstError?.message ?? "unknown",
+          code: firstError?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
+      }
+
+      if (!campaignResult.data) {
+        audit.error("report_campaign_target_missing", {
+          reportId: report.id,
+          engagementCampaignId: campaignTargetId,
+        });
+        return NextResponse.json({ error: "Engagement campaign not found for this report" }, { status: 404 });
+      }
+
+      const campaignRow = campaignResult.data as {
+        id: string;
+        workspace_id: string;
+        title: string;
+        summary: string | null;
+        status: string;
+        engagement_type: string;
+        share_token: string | null;
+        updated_at: string;
+        ai_synthesis_json?: unknown;
+        representativeness_json?: CampaignRepresentativeness | null;
+      };
+
+      const [campaignCategoriesResult, campaignItemsResult] = await Promise.all([
+        supabase
+          .from("engagement_categories")
+          .select("id, label, slug, description, sort_order, created_at, updated_at")
+          .eq("campaign_id", campaignRow.id)
+          .order("sort_order", { ascending: true })
+          .order("created_at", { ascending: true }),
+        supabase
+          .from("engagement_items")
+          .select(
+            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+          )
+          .eq("campaign_id", campaignRow.id)
+          .order("updated_at", { ascending: false }),
+      ]);
+
+      if (campaignCategoriesResult.error || campaignItemsResult.error) {
+        const firstError = campaignCategoriesResult.error ?? campaignItemsResult.error;
+        audit.error("report_engagement_load_failed", {
+          reportId: report.id,
+          campaignId: campaignRow.id,
+          message: firstError?.message ?? "unknown",
+          code: firstError?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to load engagement campaign records" }, { status: 500 });
+      }
+
+      // E3 spatial hotspots are screening-grade extras; a hotspot failure
+      // never blocks the packet (mirrors the project path).
+      let campaignHotspots = null;
+      try {
+        const storedSynthesis = (campaignRow.ai_synthesis_json ?? null) as EngagementSynthesis | null;
+        const { analysis } = await loadSentimentHotspots(supabase, {
+          workspaceId: report.workspace_id,
+          campaignId: campaignRow.id,
+          negativeItemIds: negativeItemIdsFromSyntheses([storedSynthesis]),
+        });
+        campaignHotspots = analysis;
+      } catch {
+        campaignHotspots = null;
+      }
+
+      const engagement = buildReportEngagementSummary({
+        campaign: campaignRow,
+        categories: campaignCategoriesResult.data ?? [],
+        items: campaignItemsResult.data ?? [],
+        hotspots: campaignHotspots,
+        // Cached E5b screening only (never recomputed in the report path).
+        representativeness: campaignRow.representativeness_json ?? null,
+        // E1 synthesis prose is export-gated inside the builder.
+        synthesis: buildReportEngagementSynthesis(campaignRow.ai_synthesis_json ?? null),
+      });
+
+      if (!engagement) {
+        // Unreachable with a loaded campaign row; kept for type narrowing.
+        return NextResponse.json({ error: "Failed to assemble engagement summary" }, { status: 500 });
+      }
+
+      const campaignRunLinkRows = (campaignReportRunsResult.data ?? []) as Array<{
+        id: string;
+        run_id?: string | null;
+        model_run_id?: string | null;
+        county_run_id?: string | null;
+        sort_order: number;
+      }>;
+      const campaignCitedModelRunIds = campaignRunLinkRows
+        .map((item) => item.model_run_id ?? null)
+        .filter((value): value is string => Boolean(value));
+      const campaignCitedCountyRunIds = campaignRunLinkRows
+        .map((item) => item.county_run_id ?? null)
+        .filter((value): value is string => Boolean(value));
+
+      const [campaignModelRunsResult, campaignCountyRunsResult] = await Promise.all([
+        campaignCitedModelRunIds.length
+          ? safeOptionalQuery(
+              () =>
+                supabase
+                  .from("model_runs")
+                  .select("id, run_title, engine_key, status, result_summary_json")
+                  .in("id", campaignCitedModelRunIds),
+              [] as Array<Record<string, unknown>>
+            )
+          : Promise.resolve({ data: [] as Array<Record<string, unknown>>, error: null }),
+        campaignCitedCountyRunIds.length
+          ? safeOptionalQuery(
+              () =>
+                supabase
+                  .from("county_runs")
+                  .select("id, run_name, stage, validation_summary_json")
+                  .in("id", campaignCitedCountyRunIds),
+              [] as Array<Record<string, unknown>>
+            )
+          : Promise.resolve({ data: [] as Array<Record<string, unknown>>, error: null }),
+      ]);
+
+      if (campaignModelRunsResult.error || campaignCountyRunsResult.error) {
+        const firstRunError = campaignModelRunsResult.error ?? campaignCountyRunsResult.error;
+        audit.error("report_runs_load_failed", {
+          reportId: report.id,
+          message: firstRunError?.message ?? "unknown",
+          code: firstRunError?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to load cited runs" }, { status: 500 });
+      }
+
+      const campaignModelRunMap = new Map(
+        ((campaignModelRunsResult.data ?? []) as Array<{
+          id: string;
+          run_title: string;
+          engine_key: string;
+          status: string;
+          result_summary_json: Record<string, unknown> | null;
+        }>).map((run) => [run.id, run])
+      );
+      const campaignCountyRunMap = new Map(
+        ((campaignCountyRunsResult.data ?? []) as Array<{
+          id: string;
+          run_name: string | null;
+          stage: string | null;
+          validation_summary_json: Record<string, unknown> | null;
+        }>).map((run) => [run.id, run])
+      );
+      const citedModelRuns = campaignRunLinkRows
+        .map((item) => (item.model_run_id ? campaignModelRunMap.get(item.model_run_id) ?? null : null))
+        .filter((item): item is NonNullable<typeof item> => Boolean(item));
+      const citedCountyRuns = campaignRunLinkRows
+        .map((item) => (item.county_run_id ? campaignCountyRunMap.get(item.county_run_id) ?? null : null))
+        .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+      const sections = (sectionsResult.data ?? []) as Array<{
+        id: string;
+        section_key: string;
+        title: string;
+        enabled: boolean;
+        sort_order: number;
+        config_json: Record<string, unknown> | null;
+      }>;
+      const engagementProvenance = extractEngagementHandoffProvenance(sections);
+      const enabledSectionKeys = sections
+        .filter((section) => section.enabled)
+        .map((section) => section.section_key);
+
+      const html = buildCampaignReportHtml({
+        report,
+        workspace: workspaceResult.data,
+        engagement,
+        sections,
+        citedModelRuns,
+        citedCountyRuns,
+      });
+
+      const format = parsed.data.format;
+      const generatedAt = new Date().toISOString();
+      const artifactId = crypto.randomUUID();
+      let campaignPdfStoragePath: string | null = null;
+      let pdfEngine: ReportPdfEngine | null = null;
+      const reportTitleForPdf = typeof report.title === "string" && report.title.trim()
+        ? report.title.trim()
+        : "OpenPlan report";
+      if (format === "pdf") {
+        // See the RTP branch above: a missing browser engine is a typesetting
+        // tier, not a failed deliverable.
+        const rendered = await renderReportPdf(html, {
+          title: reportTitleForPdf,
+          generatedAt,
+          footerLabel: "OpenPlan",
+        });
+        pdfEngine = rendered.engine;
+        if (rendered.engine === "builtin") {
+          audit.warn("report_pdf_builtin_typesetter_used", {
+            reportId: report.id,
+            pageCount: rendered.pageCount,
+          });
+        }
+        const pdfBuffer = Buffer.from(rendered.bytes);
+        const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
+        const { error: uploadError } = await supabase.storage
+          .from("report-artifacts")
+          .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
+        if (uploadError) {
+          audit.error("report_pdf_upload_failed", {
+            reportId: report.id,
+            message: uploadError.message,
+          });
+          return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
+        }
+        campaignPdfStoragePath = storagePath;
+      }
+
+      const artifactMetadata = {
+        metadata_schema_version: "2026-04",
+        htmlContent: html,
+        generatedAt,
+        // Which typesetting tier produced the stored file, so the record can
+        // answer "why does this PDF look different" without re-rendering it.
+        pdfEngine,
+        auditability: {
+          posture: "campaign_packet_v1",
+          note: "This output assembles a single engagement campaign's structured records and cited run evidence as a review packet with explicit provenance.",
+        },
+        sourceContext: {
+          reportOrigin: engagementProvenance?.origin ?? "report_builder",
+          reportReason: engagementProvenance?.reason ?? null,
+          engagementCampaignId: campaignRow.id,
+          engagementCampaignTitle: campaignRow.title,
+          engagementCampaignStatus: campaignRow.status,
+          engagementCampaignUpdatedAt: campaignRow.updated_at,
+          engagementItemCount: engagement.counts.totalItems,
+          engagementReadyForHandoffCount: engagement.counts.moderationQueue.readyForHandoffCount,
+          engagementActionableCount: engagement.counts.moderationQueue.actionableCount,
+          engagementUncategorizedCount: engagement.counts.uncategorizedItems,
+          engagementSnapshotCapturedAt: engagementProvenance?.capturedAt || null,
+          engagementCountsSnapshot: engagementProvenance?.counts ?? null,
+          citedModelRunCount: citedModelRuns.length,
+          citedCountyRunCount: citedCountyRuns.length,
+          citedModelRuns: citedModelRuns.map((run) => ({
+            id: run.id,
+            runTitle: run.run_title,
+            engineKey: run.engine_key,
+            status: run.status,
+          })),
+          citedCountyRuns: citedCountyRuns.map((run) => ({
+            id: run.id,
+            runName: run.run_name,
+            stage: run.stage,
+          })),
+          enabledSectionCount: enabledSectionKeys.length,
+          enabledSectionKeys,
+          // Sections the campaign packet disclosed as not applicable, so the
+          // record can answer "why is this section a notice" later.
+          notApplicableSectionKeys: enabledSectionKeys.filter((key) =>
+            CAMPAIGN_NOT_APPLICABLE_SECTION_KEYS.has(key)
+          ),
+        },
+        generationMode: format === "pdf" ? "campaign_pdf_packet" : "campaign_html_packet",
+      };
+
+      const { data: artifact, error: artifactError } = await supabase
+        .from("report_artifacts")
+        .insert({
+          id: artifactId,
+          report_id: report.id,
+          artifact_kind: format,
+          storage_path: campaignPdfStoragePath,
+          generated_by: user.id,
+          generated_at: generatedAt,
+          metadata_json: artifactMetadata,
+        })
+        .select("id, report_id, artifact_kind, generated_at, metadata_json")
+        .single();
+
+      if (artifactError || !artifact) {
+        audit.error("artifact_insert_failed", {
+          reportId: report.id,
+          message: artifactError?.message ?? "unknown",
+          code: artifactError?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to persist report artifact" }, { status: 500 });
+      }
+
+      // See the RTP branch: a link to the FILE when one was stored.
+      const latestArtifactUrl = campaignPdfStoragePath
+        ? `/api/reports/${report.id}/artifacts/${artifact.id}/download`
+        : `/reports/${report.id}#artifact-${artifact.id}`;
+      const artifactHistoryEntry = buildArtifactHistoryEntry({
+        artifactId: artifact.id,
+        artifactKind: format,
+        generatedAt,
+        generatedBy: user.id,
+        generationMode: artifactMetadata.generationMode,
+        sourceContext: artifactMetadata.sourceContext,
+      });
+      const nextMetadataJson = {
+        ...appendArtifactHistory(report.metadata_json, artifactHistoryEntry),
+        queueTrace: {
+          action: report.generated_at ? "refresh_artifact" : "generate_first_artifact",
+          actedAt: generatedAt,
+          actorUserId: user.id,
+          source: "reports.generate",
+          detail: report.generated_at
+            ? "Refreshed campaign packet artifact."
+            : "Generated first campaign packet artifact.",
+        },
+      };
+
+      let reportUpdateResult = await supabase
+        .from("reports")
+        .update({
+          status: "generated",
+          generated_at: generatedAt,
+          latest_artifact_kind: format,
+          latest_artifact_url: latestArtifactUrl,
+          metadata_json: nextMetadataJson,
+        })
+        .eq("id", report.id);
+
+      if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
+        reportUpdateResult = await supabase
+          .from("reports")
+          .update({
+            status: "generated",
+            generated_at: generatedAt,
+            latest_artifact_kind: format,
+            latest_artifact_url: latestArtifactUrl,
+          })
+          .eq("id", report.id);
+      }
+
+      const { error: reportUpdateError } = reportUpdateResult;
+
+      if (reportUpdateError) {
+        audit.error("report_update_failed", {
+          reportId: report.id,
+          message: reportUpdateError.message,
+          code: reportUpdateError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to update report generation status" }, { status: 500 });
+      }
+
+      audit.info("campaign_report_generated", {
+        reportId: report.id,
+        artifactId: artifact.id,
+        format,
+        storagePath: campaignPdfStoragePath,
+        userId: user.id,
+        engagementCampaignId: campaignRow.id,
+        engagementItemCount: engagement.counts.totalItems,
+        citedModelRunCount: citedModelRuns.length,
+        citedCountyRunCount: citedCountyRuns.length,
+        durationMs: Date.now() - startedAt,
+      });
+
+      const executionCompletedAt = new Date().toISOString();
+      const executionStartedAt = new Date(startedAt).toISOString();
+      const serviceSupabase = createServiceRoleClient();
+      const approval = await verifyAssistantActionApproval({
+        request,
+        serviceSupabase,
+        userId: user.id,
+        workspaceId: report.workspace_id,
+        action: {
+          kind: "generate_report_artifact",
+          reportId: report.id,
+        },
+      });
+      const { error: executionAuditError } = await recordAssistantActionExecution(serviceSupabase, {
+        workspaceId: report.workspace_id,
+        userId: user.id,
+        actionKind: "generate_report_artifact",
+        auditEvent: "planner_agent.generate_report_artifact",
+        approval: "safe",
+        regrounding: "refresh_preview",
+        outcome: "succeeded",
+        approvalId: approval.approvalId,
+        inputHash: approval.inputHash,
+        executionSource: approval.executionSource,
+        inputSummary: {
+          reportId: report.id,
+          artifactId: artifact.id,
+          engagementCampaignId: campaignRow.id,
+        },
+        startedAt: executionStartedAt,
+        completedAt: executionCompletedAt,
+      });
+
+      if (executionAuditError) {
+        audit.warn("assistant_action_execution_audit_failed", {
+          reportId: report.id,
+          artifactId: artifact.id,
+          message: executionAuditError.message,
+          code: executionAuditError.code ?? null,
+        });
+      }
+
+      return NextResponse.json(
+        {
+          reportId: report.id,
+          artifactId: artifact.id,
+          format,
+          latestArtifactUrl,
+          storagePath: campaignPdfStoragePath,
+          warnings: [],
+        },
+        { status: 200 }
+      );
+    }
+
+    if (!report.project_id) {
+      // Exactly one target exists per report (reports_target_presence), and
+      // the project and RTP branches did not claim this row — so it targets a
+      // campaign the lookup could not see: the campaign-target migration is
+      // pending or the schema cache is stale. Say so instead of failing on a
+      // project load that can never succeed.
+      audit.warn("report_campaign_target_schema_pending", { reportId: report.id });
+      return NextResponse.json(
+        {
+          error: "This report targets an engagement campaign, but the database does not expose campaign targets yet.",
+          hint: "Apply migration 20260727000008_reports_engagement_campaign_target (or wait for the schema cache to refresh), then generate again.",
+        },
+        { status: 503 }
       );
     }
 

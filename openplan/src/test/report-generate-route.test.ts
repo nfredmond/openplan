@@ -1930,4 +1930,257 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).not.toMatch(/public consensus|public approval|community endorsement/i);
     expectProvenanceLanguageOnly(generatedHtml);
   });
+
+  it("generates a campaign-targeted packet from engagement records", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: null,
+        engagement_campaign_id: "99999999-9999-4999-8999-999999999999",
+        title: "Downtown listening campaign Engagement Handoff Packet",
+        summary: "Campaign packet summary",
+        report_type: "project_status",
+        status: "draft",
+        created_at: "2026-03-14T00:00:00.000Z",
+      },
+      error: null,
+    });
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "section-1", section_key: "status_snapshot", title: "Campaign snapshot", enabled: true, sort_order: 0, config_json: {} },
+        { id: "section-2", section_key: "engagement_summary", title: "Engagement campaign summary", enabled: true, sort_order: 1, config_json: {} },
+        { id: "section-3", section_key: "methods_assumptions", title: "Methods and provenance", enabled: true, sort_order: 2, config_json: {} },
+      ],
+      error: null,
+    });
+    reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      reportId: "11111111-1111-4111-8111-111111111111",
+      artifactId: "artifact-1",
+      format: "html",
+    });
+    // No project table was ever queried: the packet is engagement-scoped.
+    expect(projectMaybeSingleMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        report_id: "11111111-1111-4111-8111-111111111111",
+        artifact_kind: "html",
+        generated_by: "22222222-2222-4222-8222-222222222222",
+        metadata_json: expect.objectContaining({
+          generationMode: "campaign_html_packet",
+          auditability: expect.objectContaining({ posture: "campaign_packet_v1" }),
+          sourceContext: expect.objectContaining({
+            engagementCampaignId: "99999999-9999-4999-8999-999999999999",
+            engagementCampaignTitle: "Downtown listening campaign",
+            engagementItemCount: 1,
+            engagementReadyForHandoffCount: 1,
+            citedModelRunCount: 0,
+            citedCountyRunCount: 0,
+            notApplicableSectionKeys: [],
+          }),
+        }),
+      })
+    );
+    expect(reportUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        status: "generated",
+        latest_artifact_kind: "html",
+      })
+    );
+
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const generatedHtml = String(generatedArtifact?.metadata_json?.htmlContent ?? "");
+    expect(generatedHtml).toContain("Downtown listening campaign");
+    expect(generatedHtml).toContain("Engagement Campaign");
+    expect(generatedHtml).toContain("Auditability posture");
+    expectProvenanceLanguageOnly(generatedHtml);
+  });
+
+  it("renders disclosed not-applicable blocks for project-scoped sections on a campaign packet", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: null,
+        engagement_campaign_id: "99999999-9999-4999-8999-999999999999",
+        title: "Campaign status packet",
+        summary: null,
+        report_type: "project_status",
+        status: "draft",
+        created_at: "2026-03-14T00:00:00.000Z",
+      },
+      error: null,
+    });
+    // The generic create path seeds the standard project_status templates on
+    // a campaign target; every enabled key must render, never 500.
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "section-1", section_key: "project_overview", title: "Project overview", enabled: true, sort_order: 0, config_json: {} },
+        { id: "section-2", section_key: "deliverables", title: "Deliverables", enabled: true, sort_order: 1, config_json: {} },
+        { id: "section-3", section_key: "risks_issues", title: "Risks and issues", enabled: true, sort_order: 2, config_json: {} },
+        { id: "section-4", section_key: "activity_timeline", title: "Recent activity timeline", enabled: true, sort_order: 3, config_json: {} },
+      ],
+      error: null,
+    });
+    reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const generatedHtml = String(generatedArtifact?.metadata_json?.htmlContent ?? "");
+    // The overview renders the campaign as the packet subject, disclosed.
+    expect(generatedHtml).toContain("This packet targets the engagement campaign directly; no project is attached.");
+    // Project-scoped sections are disclosed gaps, not fabricated content.
+    expect(generatedHtml).toContain("Not applicable to a campaign-scoped report");
+    expect(generatedHtml).not.toContain("No project activity is attached yet.");
+    const sourceContext = generatedArtifact?.metadata_json?.sourceContext as Record<string, unknown>;
+    expect(sourceContext).toMatchObject({
+      notApplicableSectionKeys: ["deliverables", "risks_issues", "activity_timeline"],
+    });
+  });
+
+  it("renders cited typed runs on a campaign packet", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: null,
+        engagement_campaign_id: "99999999-9999-4999-8999-999999999999",
+        title: "Campaign analysis packet",
+        summary: null,
+        report_type: "analysis_summary",
+        status: "draft",
+        created_at: "2026-03-14T00:00:00.000Z",
+      },
+      error: null,
+    });
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "section-1", section_key: "run_summaries", title: "Selected run summaries", enabled: true, sort_order: 0, config_json: {} },
+      ],
+      error: null,
+    });
+    reportRunsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "report-run-1", run_id: null, model_run_id: "model-run-1", county_run_id: null, sort_order: 0 },
+        { id: "report-run-2", run_id: null, model_run_id: null, county_run_id: "county-run-1", sort_order: 1 },
+      ],
+      error: null,
+    });
+    modelRunsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "model-run-1",
+          run_title: "SR-49 fast screening",
+          engine_key: "aequilibrae",
+          status: "succeeded",
+          result_summary_json: { overallScore: 63 },
+        },
+      ],
+      error: null,
+    });
+    countyRunsInMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "county-run-1",
+          run_name: "County screening baseline",
+          stage: "validated-screening",
+          validation_summary_json: { passed: 3, warned: 1, failed: 0 },
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    const generatedHtml = String(generatedArtifact?.metadata_json?.htmlContent ?? "");
+    expect(generatedHtml).toContain("SR-49 fast screening");
+    expect(generatedHtml).toContain("Overall score 63/100");
+    expect(generatedHtml).toContain("County screening baseline");
+    expect(generatedHtml).toContain("3 pass");
+    expectProvenanceLanguageOnly(generatedHtml);
+    const sourceContext = generatedArtifact?.metadata_json?.sourceContext as Record<string, unknown>;
+    expect(sourceContext).toMatchObject({
+      citedModelRunCount: 1,
+      citedCountyRunCount: 1,
+      citedModelRuns: [
+        { id: "model-run-1", runTitle: "SR-49 fast screening", engineKey: "aequilibrae", status: "succeeded" },
+      ],
+      citedCountyRuns: [{ id: "county-run-1", runName: "County screening baseline", stage: "validated-screening" }],
+    });
+  });
+
+  it("answers 503 with the migration hint when a targetless row hides a campaign target", async () => {
+    // A pre-campaign-column select can only produce this shape when the
+    // campaign-target migration is pending or the schema cache is stale.
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: null,
+        title: "Campaign status packet",
+        summary: null,
+        report_type: "project_status",
+        status: "draft",
+        created_at: "2026-03-14T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      hint: expect.stringContaining("20260727000008_reports_engagement_campaign_target"),
+    });
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
 });

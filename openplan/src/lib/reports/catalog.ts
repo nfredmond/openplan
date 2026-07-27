@@ -291,7 +291,14 @@ export type ReportSectionPresetComparable = {
   sortOrder: number;
 };
 
-export type ReportTargetKind = "project" | "rtp_cycle";
+/**
+ * Which record a report targets. Exactly one target exists per report
+ * (`reports_target_presence`): a project, an RTP cycle, or — for standalone
+ * campaigns with no linked project — an engagement campaign. Campaign targets
+ * use the standard section templates for their report type; only RTP cycles
+ * carry target-specific templates.
+ */
+export type ReportTargetKind = "project" | "rtp_cycle" | "engagement_campaign";
 export type RtpPacketPresetStage = "draft" | "public_review" | "adopted" | "archived" | "default";
 
 const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {

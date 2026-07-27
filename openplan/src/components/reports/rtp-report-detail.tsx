@@ -98,7 +98,7 @@ export function RtpReportDetail({
     latest_artifact_kind: string | null;
     generated_at: string | null;
     updated_at: string;
-    rtp_basis_stale: boolean;
+    rtp_basis_stale: boolean | null;
     rtp_basis_stale_reason: string | null;
     rtp_basis_stale_run_id: string | null;
     rtp_basis_stale_marked_at: string | null;

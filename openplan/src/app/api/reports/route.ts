@@ -18,6 +18,7 @@ function looksLikePendingSchema(message: string | null | undefined) {
 
 const reportsFilterSchema = z.object({
   projectId: z.string().uuid().optional(),
+  engagementCampaignId: z.string().uuid().optional(),
   reportType: z.enum(["project_status", "analysis_summary", "board_packet"]).optional(),
   status: z.enum(["draft", "generated", "archived"]).optional(),
 });
@@ -26,6 +27,7 @@ const createReportSchema = z
   .object({
     projectId: z.string().uuid().optional(),
     rtpCycleId: z.string().uuid().optional(),
+    engagementCampaignId: z.string().uuid().optional(),
     title: z.string().trim().min(1).max(160).optional(),
     reportType: z.enum(["project_status", "analysis_summary", "board_packet"]),
     summary: z.string().trim().max(2000).optional(),
@@ -49,7 +51,10 @@ const createReportSchema = z
       .optional(),
   })
   .superRefine((value, ctx) => {
-    const targetCount = Number(Boolean(value.projectId)) + Number(Boolean(value.rtpCycleId));
+    const targetCount =
+      Number(Boolean(value.projectId)) +
+      Number(Boolean(value.rtpCycleId)) +
+      Number(Boolean(value.engagementCampaignId));
     if (targetCount !== 1) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -66,13 +71,32 @@ const createReportSchema = z
       });
     }
 
+    if (value.engagementCampaignId && value.reportType === "board_packet") {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Engagement campaign reports support status and summary packets, not board packets",
+        path: ["reportType"],
+      });
+    }
+
     // Legacy Analysis Studio runs stay project-only; typed model/county run
-    // citations are allowed on both targets (RTP packets already carry
-    // per-link modeling evidence, so citing runs there is coherent).
+    // citations are allowed on every target (RTP packets already carry
+    // per-link modeling evidence, and a campaign packet may cite the runs
+    // that informed its engagement window, so citing runs there is coherent).
     if (value.rtpCycleId && (value.runIds?.length ?? 0) > 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Linked runs are not supported on RTP cycle packet records yet",
+        path: ["runIds"],
+      });
+    }
+
+    if (value.engagementCampaignId && (value.runIds?.length ?? 0) > 0) {
+      // Legacy linked runs are project-scoped records; a campaign target has
+      // no project to scope them to.
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Linked runs are project-scoped and are not supported on campaign reports",
         path: ["runIds"],
       });
     }
@@ -85,6 +109,7 @@ export async function GET(request: NextRequest) {
   try {
     const parsedFilters = reportsFilterSchema.safeParse({
       projectId: request.nextUrl.searchParams.get("projectId") ?? undefined,
+      engagementCampaignId: request.nextUrl.searchParams.get("engagementCampaignId") ?? undefined,
       reportType: request.nextUrl.searchParams.get("reportType") ?? undefined,
       status: request.nextUrl.searchParams.get("status") ?? undefined,
     });
@@ -104,26 +129,51 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let query = supabase
-      .from("reports")
-      .select(
-        "id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title), workspaces(name)"
-      )
-      .order("updated_at", { ascending: false });
+    const buildListQuery = (select: string, withCampaignFilter: boolean) => {
+      let query = supabase
+        .from("reports")
+        .select(select)
+        .order("updated_at", { ascending: false });
 
-    if (parsedFilters.data.projectId) {
-      query = query.eq("project_id", parsedFilters.data.projectId);
+      if (parsedFilters.data.projectId) {
+        query = query.eq("project_id", parsedFilters.data.projectId);
+      }
+
+      if (withCampaignFilter && parsedFilters.data.engagementCampaignId) {
+        query = query.eq("engagement_campaign_id", parsedFilters.data.engagementCampaignId);
+      }
+
+      if (parsedFilters.data.reportType) {
+        query = query.eq("report_type", parsedFilters.data.reportType);
+      }
+
+      if (parsedFilters.data.status) {
+        query = query.eq("status", parsedFilters.data.status);
+      }
+
+      return query;
+    };
+
+    let { data, error } = await buildListQuery(
+      "id, workspace_id, project_id, rtp_cycle_id, engagement_campaign_id, modeling_county_run_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title), engagement_campaigns(id, title), workspaces(name)",
+      true
+    );
+
+    if (error && looksLikePendingSchema(error.message)) {
+      if (parsedFilters.data.engagementCampaignId) {
+        // The campaign-target column does not exist yet, so no campaign-scoped
+        // report can exist either: an empty list is the truthful answer.
+        audit.warn("reports_list_campaign_filter_pending_schema", {
+          message: error.message,
+        });
+        return NextResponse.json({ reports: [], schemaPending: true }, { status: 200 });
+      }
+
+      ({ data, error } = await buildListQuery(
+        "id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, report_type, status, summary, generated_at, latest_artifact_url, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title), workspaces(name)",
+        false
+      ));
     }
-
-    if (parsedFilters.data.reportType) {
-      query = query.eq("report_type", parsedFilters.data.reportType);
-    }
-
-    if (parsedFilters.data.status) {
-      query = query.eq("status", parsedFilters.data.status);
-    }
-
-    const { data, error } = await query;
 
     if (error) {
       audit.error("reports_list_failed", {
@@ -177,11 +227,16 @@ export async function POST(request: NextRequest) {
     const runIds = parsed.data.runIds ?? [];
     const modelRunIds = parsed.data.modelRunIds ?? [];
     const countyRunIds = parsed.data.countyRunIds ?? [];
-    const targetKind = parsed.data.projectId ? "project" : "rtp_cycle";
+    const targetKind = parsed.data.projectId
+      ? "project"
+      : parsed.data.rtpCycleId
+        ? "rtp_cycle"
+        : "engagement_campaign";
 
     let target:
       | { kind: "project"; id: string; workspaceId: string; title: string }
       | { kind: "rtp_cycle"; id: string; workspaceId: string; title: string; status: string | null }
+      | { kind: "engagement_campaign"; id: string; workspaceId: string; title: string }
       | null = null;
 
     if (parsed.data.projectId) {
@@ -226,6 +281,32 @@ export async function POST(request: NextRequest) {
       }
 
       target = { kind: "rtp_cycle", id: cycle.id, workspaceId: cycle.workspace_id, title: cycle.title, status: cycle.status };
+    } else if (parsed.data.engagementCampaignId) {
+      const { data: campaign, error: campaignError } = await supabase
+        .from("engagement_campaigns")
+        .select("id, workspace_id, title")
+        .eq("id", parsed.data.engagementCampaignId)
+        .maybeSingle();
+
+      if (campaignError) {
+        audit.error("engagement_campaign_lookup_failed", {
+          engagementCampaignId: parsed.data.engagementCampaignId,
+          message: campaignError.message,
+          code: campaignError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify engagement campaign" }, { status: 500 });
+      }
+
+      if (!campaign) {
+        return NextResponse.json({ error: "Engagement campaign not found" }, { status: 404 });
+      }
+
+      target = {
+        kind: "engagement_campaign",
+        id: campaign.id,
+        workspaceId: campaign.workspace_id,
+        title: campaign.title,
+      };
     }
 
     if (!target) {
@@ -349,6 +430,7 @@ export async function POST(request: NextRequest) {
       workspace_id: target.workspaceId,
       project_id: target.kind === "project" ? target.id : null,
       rtp_cycle_id: target.kind === "rtp_cycle" ? target.id : null,
+      engagement_campaign_id: target.kind === "engagement_campaign" ? target.id : null,
       modeling_county_run_id: parsed.data.modelingCountyRunId ?? null,
       title: reportTitle,
       report_type: parsed.data.reportType,
@@ -371,10 +453,28 @@ export async function POST(request: NextRequest) {
     let reportInsertResult = await supabase
       .from("reports")
       .insert(reportInsertPayload)
-      .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, report_type, status, summary, metadata_json, created_at, updated_at")
+      .select("id, workspace_id, project_id, rtp_cycle_id, engagement_campaign_id, modeling_county_run_id, title, report_type, status, summary, metadata_json, created_at, updated_at")
       .single();
 
     if (reportInsertResult.error && looksLikePendingSchema(reportInsertResult.error.message)) {
+      if (target.kind === "engagement_campaign") {
+        // A campaign target cannot fall back to the legacy insert: without the
+        // engagement_campaign_id column the row would have no target at all,
+        // which the target-presence constraint rightly refuses.
+        audit.warn("report_insert_campaign_target_pending_schema", {
+          workspaceId: target.workspaceId,
+          message: reportInsertResult.error.message,
+        });
+        return NextResponse.json(
+          {
+            error: "Campaign-targeted reports need a database update",
+            details: reportInsertResult.error.message,
+            hint: "Apply migration 20260727000008_reports_engagement_campaign_target before creating campaign-scoped reports.",
+          },
+          { status: 503 }
+        );
+      }
+
       reportInsertResult = await supabase
         .from("reports")
         .insert({
