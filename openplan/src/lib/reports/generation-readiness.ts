@@ -103,8 +103,20 @@ function fundingCheck(
   };
 }
 
+function withRefreshLogNote(
+  check: ReportGenerationReadinessCheck,
+  refreshLogNote: string | null | undefined
+): ReportGenerationReadinessCheck {
+  if (!refreshLogNote) {
+    return check;
+  }
+
+  return { ...check, detail: `${check.detail} ${refreshLogNote}` };
+}
+
 function dataLineageCheck(
-  summary: ReportDataLineageReadinessSummary
+  summary: ReportDataLineageReadinessSummary,
+  refreshLogNote?: string | null
 ): ReportGenerationReadinessCheck {
   if (summary.datasetCount === 0) {
     return {
@@ -120,40 +132,49 @@ function dataLineageCheck(
   }
 
   if (summary.blockedCount > 0) {
-    return {
-      id: "data_lineage",
-      label: "Data lineage",
-      status: "blocked",
-      statusLabel: `${summary.blockedCount} dataset${summary.blockedCount === 1 ? "" : "s"} blocked`,
-      detail: `${summary.outputReadyCount}/${summary.datasetCount} project-linked dataset${summary.datasetCount === 1 ? " is" : "s are"} output-ready; blocked refresh or dataset error posture needs review before report reuse.`,
-      nextAction:
-        summary.firstNeed ??
-        "Repair blocked dataset refresh, lineage, or project linkage before relying on dataset-backed packet claims.",
-    };
+    return withRefreshLogNote(
+      {
+        id: "data_lineage",
+        label: "Data lineage",
+        status: "blocked",
+        statusLabel: `${summary.blockedCount} dataset${summary.blockedCount === 1 ? "" : "s"} blocked`,
+        detail: `${summary.outputReadyCount}/${summary.datasetCount} project-linked dataset${summary.datasetCount === 1 ? " is" : "s are"} output-ready; blocked refresh or dataset error posture needs review before report reuse.`,
+        nextAction:
+          summary.firstNeed ??
+          "Repair blocked dataset refresh, lineage, or project linkage before relying on dataset-backed packet claims.",
+      },
+      refreshLogNote
+    );
   }
 
   if (summary.outputReadyCount > 0 && summary.reviewReadyCount === 0) {
-    return {
-      id: "data_lineage",
-      label: "Data lineage",
-      status: "ready",
-      statusLabel: `${summary.outputReadyCount} output-ready`,
-      detail: `${summary.outputReadyCount}/${summary.datasetCount} project-linked dataset${summary.datasetCount === 1 ? " is" : "s are"} ready for supervised maps, overlays, or report appendices.`,
-      nextAction:
-        "Carry the linked dataset names and caveats into report review before external use.",
-    };
+    return withRefreshLogNote(
+      {
+        id: "data_lineage",
+        label: "Data lineage",
+        status: "ready",
+        statusLabel: `${summary.outputReadyCount} output-ready`,
+        detail: `${summary.outputReadyCount}/${summary.datasetCount} project-linked dataset${summary.datasetCount === 1 ? " is" : "s are"} ready for supervised maps, overlays, or report appendices.`,
+        nextAction:
+          "Carry the linked dataset names and caveats into report review before external use.",
+      },
+      refreshLogNote
+    );
   }
 
-  return {
-    id: "data_lineage",
-    label: "Data lineage",
-    status: "attention",
-    statusLabel: `${summary.outputReadyCount}/${summary.datasetCount} output-ready`,
-    detail: `${summary.reviewReadyCount} review-ready and ${summary.registryOnlyCount} registry-only dataset${summary.datasetCount === 1 ? "" : "s"} are visible in the project lineage check.`,
-    nextAction:
-      summary.firstNeed ??
-      "Close lineage, refresh, or project-linkage gaps before treating dataset-backed claims as appendix-ready.",
-  };
+  return withRefreshLogNote(
+    {
+      id: "data_lineage",
+      label: "Data lineage",
+      status: "attention",
+      statusLabel: `${summary.outputReadyCount}/${summary.datasetCount} output-ready`,
+      detail: `${summary.reviewReadyCount} review-ready and ${summary.registryOnlyCount} registry-only dataset${summary.datasetCount === 1 ? "" : "s"} are visible in the project lineage check.`,
+      nextAction:
+        summary.firstNeed ??
+        "Close lineage, refresh, or project-linkage gaps before treating dataset-backed claims as appendix-ready.",
+    },
+    refreshLogNote
+  );
 }
 
 function comparisonContextCheck(
@@ -207,6 +228,13 @@ export function buildReportGenerationReadiness(input: {
   comparisonAggregate?: ReportComparisonSnapshotAggregate | null;
   fundingSnapshot?: ProjectFundingSnapshot | null;
   datasetOutputContexts?: DatasetDependentOutputContext[];
+  /**
+   * Honest framing when the latest refresh-log entry for a linked dataset is
+   * recorded-but-unexecuted ("queued"/"running"): nothing in OpenPlan runs
+   * refresh jobs, so the lineage check must not imply an orchestrated refresh.
+   * Built by `buildReportRefreshLogNote` in data-lineage-output-contexts.
+   */
+  refreshLogNote?: string | null;
   now?: Date | string;
 }): ReportGenerationReadiness {
   const fundingProfileScan = input.fundingSnapshot
@@ -258,7 +286,7 @@ export function buildReportGenerationReadiness(input: {
     sourceContextCheck,
     comparisonContextCheck(input.comparisonAggregate),
     fundingCheck(fundingProfileScan),
-    dataLineageCheck(dataLineageSummary),
+    dataLineageCheck(dataLineageSummary, input.refreshLogNote ?? null),
   ];
   const firstAction = [...checks].sort(
     (left, right) => priority(left.status) - priority(right.status)

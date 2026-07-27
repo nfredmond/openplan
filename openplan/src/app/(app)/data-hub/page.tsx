@@ -24,6 +24,7 @@ import {
   toneForDatasetLineageReadiness,
 } from "@/lib/data-sources/dataset-lineage-readiness";
 import { resolveDatasetTrustLabel, toneForDatasetTrustLevel } from "@/lib/data-sources/dataset-provenance";
+import { describeRefreshJobStatus } from "@/lib/data-sources/refresh-log";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
@@ -135,15 +136,6 @@ function toneForDatasetStatus(status: string): "info" | "success" | "warning" | 
   if (status === "stale") return "warning";
   if (status === "error") return "danger";
   if (status === "archived") return "neutral";
-  return "neutral";
-}
-
-function toneForRefreshStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
-  if (status === "succeeded") return "success";
-  if (status === "running") return "info";
-  if (status === "queued") return "neutral";
-  if (status === "failed") return "danger";
-  if (status === "cancelled") return "warning";
   return "neutral";
 }
 
@@ -403,9 +395,11 @@ export default async function DataHubPage() {
               </p>
             </div>
             <div className="module-summary-card">
-              <p className="module-summary-label">Refresh jobs</p>
+              <p className="module-summary-label">Refresh log</p>
               <p className="module-summary-value">{refreshJobs.length}</p>
-              <p className="module-summary-detail">{runningJobs} queued or running right now.</p>
+              <p className="module-summary-detail">
+                {runningJobs} recorded as queued or running — no runner executes these.
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Needs attention</p>
@@ -767,28 +761,34 @@ export default async function DataHubPage() {
                 <RefreshCw className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Refresh activity</p>
-                <h2 className="module-section-title">Recent refresh jobs</h2>
+                <p className="module-section-label">Refresh log</p>
+                <h2 className="module-section-title">Operator-recorded refreshes</h2>
+                <p className="module-section-description">
+                  These rows document refreshes an operator performed or plans to perform. OpenPlan
+                  does not run them — there is no background worker or scheduler attached to this log.
+                </p>
               </div>
             </div>
           </div>
 
           {refreshJobs.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No refresh jobs logged yet. Use the job lane to make ingestion, validation, and backfill activity visible.
+              No refreshes logged yet. Use the job lane to document ingestion, validation, and backfill
+              work an operator performed or plans to perform.
             </div>
           ) : (
             <div className="mt-5 module-record-list">
               {refreshJobs.map((job) => {
                 const connector = job.connector_id ? connectorMap.get(job.connector_id) : null;
                 const dataset = job.dataset_id ? datasets.find((item) => item.id === job.dataset_id) : null;
+                const statusDescriptor = describeRefreshJobStatus(job.status, job.refresh_mode);
 
                 return (
                   <div key={job.id} className="module-record-row">
                     <div className="module-record-head">
                       <div className="module-record-main">
                         <div className="module-record-kicker">
-                          <StatusBadge tone={toneForRefreshStatus(job.status)}>{titleize(job.status)}</StatusBadge>
+                          <StatusBadge tone={statusDescriptor.tone}>{statusDescriptor.label}</StatusBadge>
                           <StatusBadge tone="neutral">{titleize(job.job_type)}</StatusBadge>
                           <StatusBadge tone="info">{titleize(job.refresh_mode)}</StatusBadge>
                         </div>
@@ -818,6 +818,8 @@ export default async function DataHubPage() {
                       ) : null}
                       {job.triggered_by_label ? <span className="module-record-chip">Triggered by {job.triggered_by_label}</span> : null}
                     </div>
+
+                    <p className="text-xs text-muted-foreground">{statusDescriptor.caveat}</p>
 
                     {job.error_summary ? (
                       <p className="text-sm text-amber-800 dark:text-amber-200">{job.error_summary}</p>

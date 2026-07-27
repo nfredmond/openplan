@@ -463,6 +463,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // The stored status vocabulary ("queued", "running", ...) is kept as-is:
+    // the schema is untouched and these rows are operator-authored records of
+    // refresh work, not commands to a runner — nothing in OpenPlan executes
+    // them. Honesty lives in the display layer:
+    // src/lib/data-sources/refresh-log.ts renders every status as recorded
+    // state ("Recorded — no runner attached"), never as orchestrated work.
     const { data: refreshJob, error: refreshJobError } = await supabase
       .from("data_refresh_jobs")
       .insert({

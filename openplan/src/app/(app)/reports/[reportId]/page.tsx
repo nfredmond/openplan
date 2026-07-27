@@ -31,6 +31,7 @@ import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
 import {
   buildReportDatasetOutputContexts,
+  buildReportRefreshLogNote,
   type ReportDataHubDatasetRow,
   type ReportDataHubProjectLinkRow,
   type ReportDataHubRefreshJobRow,
@@ -221,7 +222,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           .in("id", projectDatasetIds),
         supabase
           .from("data_refresh_jobs")
-          .select("dataset_id, status, started_at, completed_at, created_at")
+          .select("dataset_id, status, refresh_mode, started_at, completed_at, created_at")
           .in("dataset_id", projectDatasetIds)
           .order("created_at", { ascending: false }),
       ])
@@ -229,10 +230,11 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         { data: [], error: null },
         { data: [], error: null },
       ];
+  const projectDatasetRefreshJobs = (projectDatasetRefreshJobsResult.data ?? []) as ReportDataHubRefreshJobRow[];
   const datasetOutputContexts = buildReportDatasetOutputContexts({
     datasets: (projectDatasetsResult.data ?? []) as ReportDataHubDatasetRow[],
     links: projectDatasetLinks,
-    refreshJobs: (projectDatasetRefreshJobsResult.data ?? []) as ReportDataHubRefreshJobRow[],
+    refreshJobs: projectDatasetRefreshJobs,
   });
 
   const rtpLinkedProjectIds = report.rtp_cycle_id
@@ -1184,6 +1186,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     comparisonAggregate: currentReportComparisonAggregate,
     fundingSnapshot,
     datasetOutputContexts,
+    // Refresh-log rows are operator-recorded, never executed by OpenPlan; a
+    // latest entry still reading "queued"/"running" is said so in readiness.
+    refreshLogNote: buildReportRefreshLogNote(projectDatasetRefreshJobs),
   });
   return (
     <ReportStandardDetail
