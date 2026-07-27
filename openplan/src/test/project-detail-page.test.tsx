@@ -721,6 +721,73 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByTestId("workspace-membership-required")).toBeInTheDocument();
     expect(workspaceSingleMock).not.toHaveBeenCalled();
   });
+  it("labels each project invoice's posture from the row's OWN recorded profile, not the DB default", async () => {
+    invoicesLimitMock.mockResolvedValue({
+      data: [
+        {
+          // A row written through the profile seam: its own profile id selects
+          // the vocabulary that labels its recorded posture.
+          id: "invoice-1",
+          funding_award_id: null,
+          invoice_number: "INV-100",
+          consultant_name: null,
+          billing_basis: "time_and_materials",
+          status: "draft",
+          invoice_date: null,
+          due_date: null,
+          amount: 1000,
+          retention_percent: 0,
+          retention_amount: 0,
+          net_amount: 1000,
+          supporting_docs_status: "pending",
+          submitted_to: null,
+          caltrans_posture: "deferred_exact_forms",
+          reimbursement_profile_id: "us_ca_lapm_reimbursement_v1",
+          reimbursement_posture: "local_agency_consulting",
+          reimbursement_profile_selection: "jurisdiction_matched",
+          notes: null,
+          created_at: "2026-04-01T18:00:00.000Z",
+          funding_awards: null,
+        },
+        {
+          // An un-backfilled row (no profile columns — e.g. the legacy-select
+          // retry path): its raw legacy value is humanized, never read through
+          // a resolved profile's vocabulary.
+          id: "invoice-2",
+          funding_award_id: null,
+          invoice_number: "INV-101",
+          consultant_name: null,
+          billing_basis: "time_and_materials",
+          status: "draft",
+          invoice_date: null,
+          due_date: null,
+          amount: 2000,
+          retention_percent: 0,
+          retention_amount: 0,
+          net_amount: 2000,
+          supporting_docs_status: "pending",
+          submitted_to: null,
+          caltrans_posture: "federal_aid_candidate",
+          notes: null,
+          created_at: "2026-04-02T18:00:00.000Z",
+          funding_awards: null,
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    // The registered profile's own label for the recorded posture — the fix
+    // for every new invoice showing the DB default's vocabulary instead.
+    expect(screen.getByText(/Local-agency consulting/)).toBeInTheDocument();
+    // The un-backfilled row's legacy value, humanized via titleize.
+    expect(screen.getByText(/Federal Aid Candidate/)).toBeInTheDocument();
+    // Neither row shows the DB default's label.
+    expect(screen.queryByText(/Deferred Exact Forms/)).toBeNull();
+    expect(screen.queryByText(/Exact forms deferred/)).toBeNull();
+  });
+
   it("surfaces project-linked report freshness guidance", async () => {
     await renderPage();
 

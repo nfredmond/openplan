@@ -466,14 +466,32 @@ export default async function ProjectDetailPage({
         created_at: string;
       }>);
 
-  const invoiceResult = await supabase
-    .from("billing_invoice_records")
-    .select(
-      "id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)"
-    )
-    .eq("project_id", project.id)
-    .order("created_at", { ascending: false })
-    .limit(6);
+  // caltrans_posture stays selected as the legacy read fallback for rows that
+  // predate the reimbursement-profile backfill (20260727000009).
+  const projectInvoiceSelectLegacy =
+    "id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
+  const projectInvoiceSelect = projectInvoiceSelectLegacy.replace(
+    "caltrans_posture,",
+    "caltrans_posture, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection,"
+  );
+
+  // Cast to one loose shape: the two select strings would otherwise infer
+  // different structural types (Supabase clients are untyped by convention).
+  const selectProjectInvoices = async (columns: string) =>
+    (await supabase
+      .from("billing_invoice_records")
+      .select(columns)
+      .eq("project_id", project.id)
+      .order("created_at", { ascending: false })
+      .limit(6)) as { data: unknown[] | null; error: { message?: string } | null };
+
+  let invoiceResult = await selectProjectInvoices(projectInvoiceSelect);
+  if (invoiceResult.error && looksLikePendingSchema(invoiceResult.error.message)) {
+    // A database that has the register but not the profile columns yet still
+    // gets its invoices; rows from this path simply carry no profile fields.
+    invoiceResult = await selectProjectInvoices(projectInvoiceSelectLegacy);
+  }
+
   const projectInvoices = looksLikePendingSchema(invoiceResult.error?.message)
     ? []
     : ((invoiceResult.data ?? []) as BillingInvoiceRow[]).map((invoice) => ({

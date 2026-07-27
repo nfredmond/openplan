@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { computeNetInvoiceAmount, computeRetentionAmount } from "@/lib/invoicing/invoice-records";
+import type { ReimbursementProfileBinding } from "@/lib/invoicing/reimbursement-profile-binding";
 
 function formatCurrency(value: number): string {
   return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -34,6 +35,22 @@ type InvoiceRecordComposerProps = {
   defaultAmount?: string;
   titleLabel?: string;
   description?: string;
+  /**
+   * The workspace's resolved reimbursement profile — the registry-driven
+   * posture vocabulary, default posture, and submitted-to hint. When a caller
+   * cannot resolve one, the posture field is omitted entirely and the server
+   * records the workspace's resolved default; no jurisdiction is ever assumed
+   * client-side.
+   *
+   * Display-only for provenance purposes: the composer submits the chosen
+   * POSTURE but never this binding's profile id. The server re-resolves the
+   * profile from the workspace's own home geography and records how it was
+   * truly selected (`jurisdiction_matched` / `interim_unconfigured_default`).
+   * Echoing the page-resolved id back would stamp every UI write
+   * `explicitly_requested` — an explicit choice nobody made. That selection is
+   * reserved for API callers that genuinely pass a profile id of their own.
+   */
+  reimbursementProfile?: ReimbursementProfileBinding | null;
 };
 
 export function InvoiceRecordComposer({
@@ -47,6 +64,7 @@ export function InvoiceRecordComposer({
   defaultAmount,
   titleLabel = "Log a consulting invoice record",
   description = "Capture consulting invoice records with retention, backup posture, and workspace or project linkage.",
+  reimbursementProfile = null,
 }: InvoiceRecordComposerProps) {
   const router = useRouter();
   const [projectId, setProjectId] = useState(defaultProjectId ?? "");
@@ -63,7 +81,7 @@ export function InvoiceRecordComposer({
   const [retentionPercent, setRetentionPercent] = useState("0");
   const [supportingDocsStatus, setSupportingDocsStatus] = useState("pending");
   const [submittedTo, setSubmittedTo] = useState("");
-  const [caltransPosture, setCaltransPosture] = useState("deferred_exact_forms");
+  const [reimbursementPosture, setReimbursementPosture] = useState(reimbursementProfile?.defaultPostureId ?? "");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -119,7 +137,9 @@ export function InvoiceRecordComposer({
           retentionPercent: retentionPercentValue,
           supportingDocsStatus,
           submittedTo,
-          caltransPosture,
+          // Deliberately no reimbursementProfileId: see the prop doc — the
+          // server re-resolves the profile and records the true provenance.
+          reimbursementPosture: reimbursementProfile ? reimbursementPosture || undefined : undefined,
           notes,
         }),
       });
@@ -143,7 +163,7 @@ export function InvoiceRecordComposer({
       setRetentionPercent("0");
       setSupportingDocsStatus("pending");
       setSubmittedTo("");
-      setCaltransPosture("deferred_exact_forms");
+      setReimbursementPosture(reimbursementProfile?.defaultPostureId ?? "");
       setNotes("");
       setMessage("Invoice record saved.");
       router.refresh();
@@ -303,7 +323,12 @@ export function InvoiceRecordComposer({
                 <label htmlFor="submitted-to" className="text-sm font-medium">
                   Submitted to
                 </label>
-                <Input id="submitted-to" value={submittedTo} onChange={(event) => setSubmittedTo(event.target.value)} placeholder="Caltrans D3 Local Assistance" />
+                <Input
+                  id="submitted-to"
+                  value={submittedTo}
+                  onChange={(event) => setSubmittedTo(event.target.value)}
+                  placeholder={reimbursementProfile?.submittedToHint ?? "Funder or program office"}
+                />
               </div>
             </div>
 
@@ -319,16 +344,25 @@ export function InvoiceRecordComposer({
                   <option value="accepted">Accepted</option>
                 </select>
               </div>
-              <div className="space-y-2">
-                <label htmlFor="caltrans-posture" className="text-sm font-medium">
-                  CALTRANS posture
-                </label>
-                <select id="caltrans-posture" className="module-select" value={caltransPosture} onChange={(event) => setCaltransPosture(event.target.value)}>
-                  <option value="deferred_exact_forms">Exact forms deferred</option>
-                  <option value="local_agency_consulting">Local-agency consulting</option>
-                  <option value="federal_aid_candidate">Federal-aid candidate</option>
-                </select>
-              </div>
+              {reimbursementProfile ? (
+                <div className="space-y-2">
+                  <label htmlFor="reimbursement-posture" className="text-sm font-medium">
+                    Reimbursement posture — {reimbursementProfile.profileName}
+                  </label>
+                  <select
+                    id="reimbursement-posture"
+                    className="module-select"
+                    value={reimbursementPosture}
+                    onChange={(event) => setReimbursementPosture(event.target.value)}
+                  >
+                    {reimbursementProfile.postureOptions.map((option) => (
+                      <option key={option.postureId} value={option.postureId}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
             </div>
 
             <div className="space-y-2">
@@ -340,7 +374,7 @@ export function InvoiceRecordComposer({
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
                 rows={4}
-                placeholder="Capture supporting-doc gaps, reviewer comments, reimbursement caveats, or why exact LAPM exhibit/form numbers remain deferred."
+                placeholder="Capture supporting-doc gaps, reviewer comments, reimbursement caveats, or why exact exhibit/form numbers remain deferred."
               />
             </div>
 

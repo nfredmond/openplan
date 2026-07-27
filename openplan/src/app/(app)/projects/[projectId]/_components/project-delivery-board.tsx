@@ -9,6 +9,8 @@ import {
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
 import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
+import { postureLabel } from "@/lib/invoicing/reimbursement-profile-binding";
+import { reimbursementProfileRegistry } from "@/lib/invoicing/reimbursement-profiles";
 import type { ProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectControlHref,
@@ -32,6 +34,25 @@ type RecommendedReportRef = {
   id: string;
   title: string;
 } | null;
+
+/**
+ * Label the reimbursement posture with the row's OWN profile vocabulary —
+ * never another profile's. A row whose profile this deployment does not
+ * register gets its raw posture id humanized rather than another profile's
+ * label. An un-backfilled row (no profile id of its own — the legacy-select
+ * path, or a row written by a pre-profile deployment) falls back to its raw
+ * legacy caltrans_posture value, humanized; no resolved profile's vocabulary
+ * is ever applied to a row that did not record that profile.
+ */
+function invoicePostureLabel(invoice: BillingInvoice): string {
+  if (!invoice.reimbursement_profile_id) {
+    return titleize(invoice.caltrans_posture);
+  }
+  return postureLabel(
+    reimbursementProfileRegistry.get(invoice.reimbursement_profile_id)?.postureOptions ?? null,
+    invoice.reimbursement_posture ?? invoice.caltrans_posture
+  );
+}
 
 type ProjectDeliveryBoardProps = {
   project: ProjectRow;
@@ -543,7 +564,7 @@ export function ProjectDeliveryBoard({
                         <p className="module-record-stamp">{fmtCurrency(invoice.net_amount)}</p>
                       </div>
                       <p className="module-record-summary">
-                        {invoice.notes || `${titleize(invoice.caltrans_posture)}${invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}`}
+                        {invoice.notes || `${invoicePostureLabel(invoice)}${invoice.submitted_to ? ` · ${invoice.submitted_to}` : ""}`}
                       </p>
                     </div>
                     <p className="mt-1.5 text-[0.73rem] text-muted-foreground">

@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const refreshMock = vi.fn();
 
@@ -10,10 +10,25 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { InvoiceRecordComposer } from "@/components/invoicing/invoice-record-composer";
+import { resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
+
+function resolvedBinding() {
+  const resolution = resolveReimbursementProfile({
+    workspaceJurisdiction: { country: "US", subdivision: "CA" },
+  });
+  if (resolution.kind !== "resolved") {
+    throw new Error("expected the built-in registry to resolve a binding");
+  }
+  return resolution.binding;
+}
 
 describe("InvoiceRecordComposer", () => {
   beforeEach(() => {
     refreshMock.mockReset();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("updates the net request preview live from gross amount and retention", () => {
@@ -57,5 +72,81 @@ describe("InvoiceRecordComposer", () => {
 
     expect(screen.getByText("Retention (0.00%)")).toBeInTheDocument();
     expect(screen.getAllByText("$3,200.00")).toHaveLength(2);
+  });
+
+  it("drives the posture select and submitted-to hint from the resolved profile", () => {
+    const binding = resolvedBinding();
+
+    render(
+      <InvoiceRecordComposer
+        workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        canWrite
+        projects={[]}
+        reimbursementProfile={binding}
+      />
+    );
+
+    const postureSelect = screen.getByLabelText(
+      `Reimbursement posture — ${binding.profileName}`
+    ) as HTMLSelectElement;
+    expect(postureSelect.value).toBe(binding.defaultPostureId);
+    expect(Array.from(postureSelect.options).map((option) => option.value)).toEqual(
+      binding.postureOptions.map((option) => option.postureId)
+    );
+    expect(Array.from(postureSelect.options).map((option) => option.textContent)).toEqual(
+      binding.postureOptions.map((option) => option.label)
+    );
+    expect(screen.getByLabelText("Submitted to")).toHaveAttribute(
+      "placeholder",
+      binding.submittedToHint ?? ""
+    );
+  });
+
+  it("submits the chosen posture but never a profile id — provenance belongs to the server", async () => {
+    // If the composer echoed the page-resolved profile id back, the server
+    // would stamp the row `explicitly_requested` — an explicit choice nobody
+    // made. The UI payload carries the posture only; the server re-resolves
+    // the profile from workspace geography and records the true selection.
+    const binding = resolvedBinding();
+    const fetchMock = vi.fn(async () => ({
+      ok: true,
+      json: async () => ({}),
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <InvoiceRecordComposer
+        workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        canWrite
+        projects={[]}
+        reimbursementProfile={binding}
+      />
+    );
+
+    fireEvent.change(screen.getByLabelText("Invoice number"), { target: { value: "OP-2026-101" } });
+    fireEvent.change(screen.getByLabelText("Gross amount"), { target: { value: "1000" } });
+    fireEvent.click(screen.getByRole("button", { name: /Save invoice record/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, requestInit] = fetchMock.mock.calls[0] as unknown as [string, { body: string }];
+    const payload = JSON.parse(requestInit.body) as Record<string, unknown>;
+    expect(payload.reimbursementPosture).toBe(binding.defaultPostureId);
+    expect(payload).not.toHaveProperty("reimbursementProfileId");
+  });
+
+  it("omits the posture select and shows a neutral hint when no profile is resolved", () => {
+    render(
+      <InvoiceRecordComposer
+        workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        canWrite
+        projects={[]}
+      />
+    );
+
+    expect(screen.queryByLabelText(/Reimbursement posture/)).toBeNull();
+    expect(screen.getByLabelText("Submitted to")).toHaveAttribute(
+      "placeholder",
+      "Funder or program office"
+    );
   });
 });

@@ -120,7 +120,16 @@ export type BillingInvoiceRow = {
   net_amount: number | string | null;
   supporting_docs_status: string;
   submitted_to: string | null;
+  /** Legacy column, kept selected as the read fallback for rows that predate the profile backfill. */
   caltrans_posture: string;
+  /**
+   * Reimbursement-profile columns (20260727000009). Optional because the page
+   * retries with the legacy select on a database that has not applied the
+   * migration yet, and rows from that path do not carry them.
+   */
+  reimbursement_profile_id?: string | null;
+  reimbursement_posture?: string | null;
+  reimbursement_profile_selection?: string | null;
   notes: string | null;
   created_at: string;
   funding_awards:

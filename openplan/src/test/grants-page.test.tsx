@@ -64,6 +64,12 @@ const scenarioSetsSelectMock = vi.fn(() => ({ in: scenarioSetsInMock }));
 const scenarioComparisonSummaryInMock = vi.fn(async () => ({ data: [], error: null }));
 const scenarioComparisonSummarySelectMock = vi.fn(() => ({ in: scenarioComparisonSummaryInMock }));
 
+// The workspace home-geography read that drives the reimbursement-profile
+// resolution for the /grants composer.
+const workspacesMaybeSingleMock = vi.fn();
+const workspacesEqMock = vi.fn(() => ({ maybeSingle: workspacesMaybeSingleMock }));
+const workspacesSelectMock = vi.fn(() => ({ eq: workspacesEqMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "funding_opportunities") return { select: fundingOpportunitiesSelectMock };
   if (table === "projects") return { select: projectsSelectMock };
@@ -78,6 +84,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "scenario_sets") return { select: scenarioSetsSelectMock };
   if (table === "scenario_comparison_summary") return { select: scenarioComparisonSummarySelectMock };
   if (table === "safety_crash_ingests") return { select: safetyIngestsSelectMock };
+  if (table === "workspaces") return { select: workspacesSelectMock };
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -121,8 +128,12 @@ vi.mock("@/components/invoicing/invoice-funding-award-linker", () => ({
   InvoiceFundingAwardLinker: () => <div data-testid="invoice-funding-award-linker" />,
 }));
 
+const invoiceRecordComposerMock = vi.fn();
 vi.mock("@/components/invoicing/invoice-record-composer", () => ({
-  InvoiceRecordComposer: () => <div data-testid="invoice-record-composer" />,
+  InvoiceRecordComposer: (props: Record<string, unknown>) => {
+    invoiceRecordComposerMock(props);
+    return <div data-testid="invoice-record-composer" />;
+  },
 }));
 
 vi.mock("@/components/invoicing/invoice-status-advance-button", () => ({
@@ -175,9 +186,40 @@ vi.mock("@/components/operations/workspace-runtime-cue", () => ({
 }));
 
 import GrantsPage from "@/app/(app)/grants/page";
+import {
+  INTERIM_DEFAULT_RATIONALE,
+  resolveReimbursementProfile,
+} from "@/lib/invoicing/reimbursement-profile-binding";
 
 async function renderPage() {
   render(await GrantsPage({ searchParams: Promise.resolve({}) }));
+}
+
+/** One committed award with no invoices → a "not started" reimbursement stack, so the composer mounts. */
+function seedComposerStackAward() {
+  fundingAwardsOrderMock.mockResolvedValue({
+    data: [
+      {
+        id: "award-1",
+        funding_opportunity_id: null,
+        project_id: "project-1",
+        program_id: null,
+        title: "Safety corridor construction award",
+        awarded_amount: 250000,
+        match_amount: 0,
+        obligation_due_at: null,
+        spending_status: "not_started",
+        risk_flag: "none",
+        notes: null,
+        updated_at: "2026-04-14T18:00:00.000Z",
+        created_at: "2026-04-01T18:00:00.000Z",
+        funding_opportunities: null,
+        programs: null,
+        projects: { id: "project-1", name: "Main Street Safety" },
+      },
+    ],
+    error: null,
+  });
 }
 
 describe("GrantsPage", () => {
@@ -346,6 +388,18 @@ describe("GrantsPage", () => {
     fundingAwardsOrderMock.mockResolvedValue({ data: [], error: null });
     invoiceRecordsOrderMock.mockResolvedValue({ data: [], error: null });
     projectFundingProfilesEqMock.mockResolvedValue({ data: [], error: null });
+
+    // No home geography stated → the labeled interim default profile applies.
+    workspacesMaybeSingleMock.mockResolvedValue({
+      data: {
+        home_geography_source: null,
+        home_geography_kind: null,
+        home_geography_ref: null,
+        home_country_code: null,
+        home_subdivision_code: null,
+      },
+      error: null,
+    });
 
     reportsOrderMock.mockResolvedValue({
       data: [
@@ -518,5 +572,67 @@ describe("GrantsPage", () => {
       "CMAQ 2027",
       "RAISE 2027",
     ]);
+  });
+
+  it("threads the workspace-resolved reimbursement profile into the composer, disclosing the interim default", async () => {
+    // The /grants reimbursement composer must offer the same posture select as
+    // /invoicing: the binding is resolved server-side from the workspace's own
+    // home geography and handed to the composer, never assumed client-side.
+    seedComposerStackAward();
+
+    const expectedResolution = resolveReimbursementProfile({ workspaceJurisdiction: null });
+    if (expectedResolution.kind !== "resolved") {
+      throw new Error("expected the built-in registry to resolve an interim-default binding");
+    }
+
+    await renderPage();
+
+    expect(screen.getByTestId("invoice-record-composer")).toBeInTheDocument();
+    expect(invoiceRecordComposerMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reimbursementProfile: expect.objectContaining({
+          profileId: expectedResolution.binding.profileId,
+          selection: "interim_unconfigured_default",
+          postureOptions: expectedResolution.binding.postureOptions,
+        }),
+      })
+    );
+    // A posture vocabulary nobody chose is disclosed, never presented as chosen.
+    expect(screen.getByText(new RegExp(INTERIM_DEFAULT_RATIONALE.slice(0, 40)))).toBeInTheDocument();
+  });
+
+  it("resolves a jurisdiction-matched profile for the composer from the workspace's own home geography", async () => {
+    seedComposerStackAward();
+    workspacesMaybeSingleMock.mockResolvedValue({
+      data: {
+        home_geography_source: "tigerweb",
+        home_geography_kind: "county",
+        home_geography_ref: "06057",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
+      },
+      error: null,
+    });
+
+    const expectedResolution = resolveReimbursementProfile({
+      workspaceJurisdiction: { country: "US", subdivision: "CA" },
+    });
+    if (expectedResolution.kind !== "resolved") {
+      throw new Error("expected the built-in registry to resolve a jurisdiction-matched binding");
+    }
+
+    await renderPage();
+
+    expect(invoiceRecordComposerMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        reimbursementProfile: expect.objectContaining({
+          profileId: expectedResolution.binding.profileId,
+          selection: "jurisdiction_matched",
+        }),
+      })
+    );
+    // A profile the workspace's own geography selected is not an interim
+    // default, so no interim-default disclosure appears.
+    expect(screen.queryByText(new RegExp(INTERIM_DEFAULT_RATIONALE.slice(0, 40)))).toBeNull();
   });
 });

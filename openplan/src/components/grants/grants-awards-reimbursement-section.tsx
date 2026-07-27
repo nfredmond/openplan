@@ -5,6 +5,10 @@ import { InvoiceRecordComposer } from "@/components/invoicing/invoice-record-com
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import {
+  INTERIM_DEFAULT_RATIONALE,
+  type ReimbursementProfileBinding,
+} from "@/lib/invoicing/reimbursement-profile-binding";
+import {
   projectFundingReimbursementTone,
   type ProjectFundingReimbursementStatus,
 } from "@/lib/projects/funding";
@@ -59,6 +63,7 @@ export function GrantsAwardsReimbursementSection({
   reimbursementActiveCount,
   reimbursementPaidCount,
   reimbursementComposerStack,
+  reimbursementProfile,
   activeFocusedProjectId,
   workspaceId,
   canWriteInvoices,
@@ -74,6 +79,13 @@ export function GrantsAwardsReimbursementSection({
   reimbursementActiveCount: number;
   reimbursementPaidCount: number;
   reimbursementComposerStack: ReimbursementComposerStack | null;
+  /**
+   * The workspace's resolved reimbursement profile, resolved server-side where
+   * this section's data is loaded (the grants page). Required — not optional
+   * with a null default — so the composer's posture select cannot silently
+   * disappear from this surface again by a caller simply forgetting the prop.
+   */
+  reimbursementProfile: ReimbursementProfileBinding | null;
   activeFocusedProjectId: string | null;
   workspaceId: string;
   canWriteInvoices: boolean;
@@ -158,6 +170,12 @@ export function GrantsAwardsReimbursementSection({
                   <p className="mt-1">This reimbursement composer is pre-targeted to {reimbursementComposerStack.project.name} so the grants command board can start the exact packet it flagged next.</p>
                 </div>
               ) : null}
+              {reimbursementProfile?.selection === "interim_unconfigured_default" ? (
+                <div className="mb-3 rounded-2xl border-l-2 border-sky-300/80 bg-sky-50/80 px-4 py-3 text-sm text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/25 dark:text-sky-100">
+                  Reimbursement postures here come from the {reimbursementProfile.profileName} profile as an
+                  interim default — {INTERIM_DEFAULT_RATIONALE}
+                </div>
+              ) : null}
               <InvoiceRecordComposer
                 workspaceId={workspaceId}
                 projects={[reimbursementComposerStack.project]}
@@ -177,6 +195,7 @@ export function GrantsAwardsReimbursementSection({
                 }
                 titleLabel="Start the lead reimbursement record now"
                 description="Seed the first award-linked invoice directly from /grants so reimbursement work starts in the shared workspace lane before deeper billing follow-through moves into project detail."
+                reimbursementProfile={reimbursementProfile}
               />
             </div>
           ) : null}

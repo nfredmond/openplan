@@ -24,6 +24,8 @@ import {
   resolveExactBillingInvoiceAwardMatch,
   summarizeBillingInvoiceRecords,
 } from "@/lib/invoicing/invoice-records";
+import { resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
+import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
 import {
   isGrantsAwardCommand,
   isGrantsCommand,
@@ -131,6 +133,7 @@ export default async function GrantsPage({
     { data: projectFundingProfilesData },
     { data: projectBcaScreeningsData },
     { data: engagementCampaignsData },
+    workspaceGeographyRead,
     operationsSummary,
   ] = await Promise.all([
     supabase
@@ -184,11 +187,32 @@ export default async function GrantsPage({
       .not("project_id", "is", null)
       .neq("status", "archived")
       .order("updated_at", { ascending: false }),
+    // The workspace's home geography drives which reimbursement profile the
+    // /grants composer offers — same resolution as the /invoicing page, so
+    // the posture select renders identically on both surfaces.
+    supabase
+      .from("workspaces")
+      .select("home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code")
+      .eq("id", membership.workspace_id)
+      .maybeSingle(),
     loadWorkspaceOperationsSummaryForWorkspace(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       membership.workspace_id
     ),
   ]);
+
+  // Which reimbursement profile governs this workspace's composer: its own
+  // home geography when a registered profile covers it, otherwise the labeled
+  // interim default. A failed geography read (columns pending on an older
+  // deployment) resolves as "jurisdiction unknown" — a disclosed fallback,
+  // never a guess.
+  const reimbursementProfileResolution = resolveReimbursementProfile({
+    workspaceJurisdiction: resolveJurisdiction(
+      parseWorkspaceHomeGeography(workspaceGeographyRead.error ? null : workspaceGeographyRead.data)
+    ),
+  });
+  const reimbursementProfile =
+    reimbursementProfileResolution.kind === "resolved" ? reimbursementProfileResolution.binding : null;
 
   const projectOptions = (projectsData ?? []) as ProjectOption[];
   const programOptions = (programsData ?? []) as ProgramOption[];
@@ -807,6 +831,7 @@ export default async function GrantsPage({
             reimbursementActiveCount={reimbursementActiveCount}
             reimbursementPaidCount={reimbursementPaidCount}
             reimbursementComposerStack={reimbursementComposerStack}
+            reimbursementProfile={reimbursementProfile}
             activeFocusedProjectId={activeFocusedProjectId}
             workspaceId={membership.workspace_id}
             canWriteInvoices={canWriteInvoices}

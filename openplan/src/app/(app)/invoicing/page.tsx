@@ -23,6 +23,12 @@ import {
   type FundingAwardSubstantiationSubmittalLike,
   type FundingAwardSubstantiationSummary,
 } from "@/lib/invoicing/invoice-records";
+import {
+  INTERIM_DEFAULT_RATIONALE,
+  postureLabel,
+  resolveReimbursementProfile,
+} from "@/lib/invoicing/reimbursement-profile-binding";
+import { reimbursementProfileRegistry } from "@/lib/invoicing/reimbursement-profiles";
 import { buildInvoicingHref, buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
@@ -33,6 +39,7 @@ import {
   type WorkspaceMembershipRow,
   unwrapWorkspaceRecord,
 } from "@/lib/workspaces/current";
+import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
 import {
   billingRowNoticeClass,
   billingRowRiskState,
@@ -167,6 +174,25 @@ export default async function InvoicingPage({
   const workspaceId = membership.workspace_id;
   const canWriteInvoices = canAccessWorkspaceAction("invoices.write", membership.role);
 
+  // Which reimbursement profile governs this workspace's register: its own
+  // home geography when a registered profile covers it, otherwise the labeled
+  // interim default. A failed geography read (columns pending on an older
+  // deployment) resolves as "jurisdiction unknown" — a disclosed fallback,
+  // never a guess.
+  const workspaceGeographyRead = await supabase
+    .from("workspaces")
+    .select("home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code")
+    .eq("id", workspaceId)
+    .maybeSingle();
+
+  const reimbursementProfileResolution = resolveReimbursementProfile({
+    workspaceJurisdiction: resolveJurisdiction(
+      parseWorkspaceHomeGeography(workspaceGeographyRead.error ? null : workspaceGeographyRead.data)
+    ),
+  });
+  const reimbursementProfile =
+    reimbursementProfileResolution.kind === "resolved" ? reimbursementProfileResolution.binding : null;
+
   const { data: workspaceProjectsData } = await supabase
     .from("projects")
     .select("id, name, status, delivery_phase")
@@ -179,14 +205,37 @@ export default async function InvoicingPage({
     .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
 
-  const invoiceRecordsResult = await supabase
+  // caltrans_posture stays selected as the legacy read fallback for rows that
+  // predate the reimbursement-profile backfill (20260727000009).
+  const invoiceRegisterSelectLegacy =
+    "id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
+  const invoiceRegisterSelect = invoiceRegisterSelectLegacy.replace(
+    "caltrans_posture,",
+    "caltrans_posture, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection,"
+  );
+
+  // Cast to one loose shape: the two select strings would otherwise infer
+  // different structural types, and this codebase's Supabase reads are cast
+  // deliberately (clients are untyped by convention).
+  type InvoiceRegisterQueryResult = { data: unknown[] | null; error: { message?: string } | null };
+
+  let invoiceRecordsResult = (await supabase
     .from("billing_invoice_records")
-    .select(
-      "id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)"
-    )
+    .select(invoiceRegisterSelect)
     .eq("workspace_id", workspaceId)
     .order("created_at", { ascending: false })
-    .limit(20);
+    .limit(20)) as InvoiceRegisterQueryResult;
+
+  if (invoiceRecordsResult.error && looksLikePendingSchema(invoiceRecordsResult.error.message)) {
+    // A database that has the register but not the profile columns yet still
+    // gets its register; rows from this path simply carry no profile fields.
+    invoiceRecordsResult = (await supabase
+      .from("billing_invoice_records")
+      .select(invoiceRegisterSelectLegacy)
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(20)) as InvoiceRegisterQueryResult;
+  }
 
   const invoiceRegisterPending = looksLikePendingSchema(invoiceRecordsResult.error?.message);
   const fundingAwardsPending = looksLikePendingSchema(fundingAwardsResult.error?.message);
@@ -383,7 +432,7 @@ export default async function InvoicingPage({
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoicing</p>
           <h1 className="text-3xl font-semibold tracking-tight">{workspace.name ?? "Workspace"} invoicing</h1>
           <p className="text-sm text-muted-foreground sm:text-base">
-            Reimbursement invoices this agency submits against its funding awards — the LAPM draw cycle from
+            Reimbursement invoices this agency submits against its funding awards — the draw cycle from
             draft through submitted, approved for payment, and paid. Reads are workspace-wide; writes are
             owner/admin only. Nothing here bills you: OpenPlan is free and open source.
           </p>
@@ -413,10 +462,17 @@ export default async function InvoicingPage({
           <div className={`${insetClass()} px-4 py-4 text-sm text-muted-foreground`}>
             <p className="font-semibold text-foreground">Current scope</p>
             <p className="mt-1.5">
-              OpenPlan supports a workspace or project invoice register with supporting-doc posture, retention, and operator notes. It does <strong>not yet</strong> generate exact CALTRANS or LAPM exhibit packets, reimbursement claim forms, or agency-certified pay apps automatically.
+              OpenPlan supports a workspace or project invoice register with supporting-doc posture, retention, and operator notes. It does <strong>not yet</strong> generate a funder&apos;s exact exhibit packets, reimbursement claim forms, or agency-certified pay apps automatically.
             </p>
           </div>
         </div>
+
+        {reimbursementProfile?.selection === "interim_unconfigured_default" ? (
+          <article className={noticeClass("info")}>
+            Reimbursement postures here come from the {reimbursementProfile.profileName} profile as an
+            interim default — {INTERIM_DEFAULT_RATIONALE}
+          </article>
+        ) : null}
 
         <WorkspaceRuntimeCue summary={operationsSummary} />
         {operationsSummary.nextCommand?.key === "start-project-reimbursement-packets" ||
@@ -438,6 +494,7 @@ export default async function InvoicingPage({
             projects={workspaceProjects.map((project) => ({ id: project.id, name: project.name }))}
             fundingAwards={workspaceFundingAwards.map((award) => ({ id: award.id, title: award.title, projectId: award.project_id }))}
             canWrite={canWriteInvoices}
+            reimbursementProfile={reimbursementProfile}
           />
 
           <article className={panelClass()}>
@@ -732,6 +789,22 @@ export default async function InvoicingPage({
                       projectId: invoice.project_id,
                     })
                   : null;
+                // Label the posture with the row's OWN profile vocabulary —
+                // never another profile's. A row whose profile this deployment
+                // does not register gets the humanized raw value rather than
+                // another profile's label; an un-backfilled row (no profile id
+                // of its own — the legacy-select path) gets its raw legacy
+                // caltrans_posture value humanized. The workspace's RESOLVED
+                // profile vocabulary is deliberately not used in that fallback:
+                // it belongs to a profile the row never recorded, and its
+                // labels could misdescribe the stored value.
+                const rowPostureOptions = invoice.reimbursement_profile_id
+                  ? reimbursementProfileRegistry.get(invoice.reimbursement_profile_id)?.postureOptions ?? null
+                  : null;
+                const rowPostureLabel = postureLabel(
+                  rowPostureOptions,
+                  invoice.reimbursement_posture ?? invoice.caltrans_posture
+                );
 
                 return (
                   <li
@@ -796,7 +869,7 @@ export default async function InvoicingPage({
                     ) : null}
 
                     <p className="mt-3 text-xs text-muted-foreground">
-                      {invoice.notes || `CALTRANS posture: ${titleCase(invoice.caltrans_posture)}.`}
+                      {invoice.notes || `Reimbursement posture: ${rowPostureLabel}.`}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-border/50 pt-3 text-xs text-muted-foreground">
                       {invoice.invoice_date ? <span>Invoice date {invoice.invoice_date}</span> : null}

@@ -277,16 +277,6 @@ describe("jurisdiction literals stay inside profile descriptors", () => {
   ];
   const PROFILES_DIR = path.join(SRC, "lib", "invoicing", "profiles") + path.sep;
 
-  /**
-   * TEMPORARY allowlist for the commit that follows this one in the same
-   * wave: the UI commit removes the last literals and deletes this list.
-   * Nothing may ever be added to it.
-   */
-  const PENDING_MIGRATION_ALLOWLIST = [
-    path.join(SRC, "app", "(app)", "invoicing", "page.tsx"),
-    path.join(SRC, "components", "invoicing", "invoice-record-composer.tsx"),
-  ];
-
   /** The one file allowed to IMPORT a profile descriptor: the registration list. */
   const REGISTRY_FILE = path.join(SRC, "lib", "invoicing", "reimbursement-profiles.ts");
 
@@ -327,7 +317,6 @@ describe("jurisdiction literals stay inside profile descriptors", () => {
     for (const surface of INVOICING_SURFACES) {
       for (const file of walk(surface)) {
         if (file.startsWith(PROFILES_DIR)) continue;
-        if (PENDING_MIGRATION_ALLOWLIST.includes(file)) continue;
         let source = readFileSync(file, "utf8").replaceAll("caltrans_posture", "legacy_column");
         if (file === REGISTRY_FILE) source = scrubProfileRegistrations(source);
         if (/caltrans|lapm/i.test(source)) {
