@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
@@ -127,60 +128,62 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!resolved.ok) return resolved.response;
     const { item } = resolved;
 
-    // Cache hit: return without any model call or rate-limit charge.
-    const cached = readCachedTranslation(item.metadata, language);
-    if (cached !== null) {
-      return NextResponse.json({ source: "cache", language, translated: cached }, { status: 200 });
-    }
+    return await withWorkspaceIntegrationContext(item.workspaceId, async () => {
+      // Cache hit: return without any model call or rate-limit charge.
+      const cached = readCachedTranslation(item.metadata, language);
+      if (cached !== null) {
+        return NextResponse.json({ source: "cache", language, translated: cached }, { status: 200 });
+      }
 
-    // First (uncached) translation of this (item, language): guard cost against
-    // the DEDICATED public bucket, so this anonymous route can never drain — or
-    // 429-lock-out — the workspace's staff AI allowance.
-    const rateLimit = await checkAiUsageRateLimit(item.workspaceId, {
-      bucketKeys: PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS,
-      max: PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW,
+      // First (uncached) translation of this (item, language): guard cost against
+      // the DEDICATED public bucket, so this anonymous route can never drain — or
+      // 429-lock-out — the workspace's staff AI allowance.
+      const rateLimit = await checkAiUsageRateLimit(item.workspaceId, {
+        bucketKeys: PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS,
+        max: PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW,
+      });
+      if (!rateLimit.allowed) {
+        return NextResponse.json(
+          { error: "Too many translation requests right now. Please try again shortly." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds ?? 60) } }
+        );
+      }
+
+      const sourceText = item.title ? `${item.title}\n\n${item.body}` : item.body;
+      const result = await translateEngagementText({ text: sourceText, targetLanguage: language });
+
+      if (result.source !== "ai" || result.translated === null) {
+        // AI-offline / model error → the client keeps showing the original.
+        return NextResponse.json({ source: "unavailable", language, translated: null, caveat: result.caveat }, { status: 200 });
+      }
+
+      // Fire-and-forget spend metering into the DEDICATED public bucket the
+      // check above counts — cache hits returned earlier and are never charged.
+      void recordAiUsageEvent({
+        workspaceId: item.workspaceId,
+        bucketKey: "engagement_public_translation",
+        eventKey: "engagement_public_translation",
+        sourceRoute: "/api/engage/[shareToken]/items/[itemId]/translate",
+        metadataJson: { model: result.model, language },
+        serviceSupabase: supabase,
+      });
+
+      // Cache into metadata_json.ai_translations[lang] via an ATOMIC db-side jsonb
+      // merge (migration 098) rather than a client read-modify-write, so two
+      // concurrent translations of the same comment into different languages can't
+      // clobber each other's cache write. Non-fatal — we still return the
+      // translation the caller just paid for even if the cache write fails.
+      const { error: cacheError } = await supabase.rpc("engagement_cache_item_translation", {
+        p_item_id: item.id,
+        p_language: language,
+        p_translation: result.translated,
+      });
+      if (cacheError) {
+        audit.warn("engagement_translation_cache_write_failed", { itemId: item.id, message: cacheError.message });
+      }
+
+      return NextResponse.json({ source: "ai", language, translated: result.translated, caveat: result.caveat }, { status: 200 });
     });
-    if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: "Too many translation requests right now. Please try again shortly." },
-        { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds ?? 60) } }
-      );
-    }
-
-    const sourceText = item.title ? `${item.title}\n\n${item.body}` : item.body;
-    const result = await translateEngagementText({ text: sourceText, targetLanguage: language });
-
-    if (result.source !== "ai" || result.translated === null) {
-      // AI-offline / model error → the client keeps showing the original.
-      return NextResponse.json({ source: "unavailable", language, translated: null, caveat: result.caveat }, { status: 200 });
-    }
-
-    // Fire-and-forget spend metering into the DEDICATED public bucket the
-    // check above counts — cache hits returned earlier and are never charged.
-    void recordAiUsageEvent({
-      workspaceId: item.workspaceId,
-      bucketKey: "engagement_public_translation",
-      eventKey: "engagement_public_translation",
-      sourceRoute: "/api/engage/[shareToken]/items/[itemId]/translate",
-      metadataJson: { model: result.model, language },
-      serviceSupabase: supabase,
-    });
-
-    // Cache into metadata_json.ai_translations[lang] via an ATOMIC db-side jsonb
-    // merge (migration 098) rather than a client read-modify-write, so two
-    // concurrent translations of the same comment into different languages can't
-    // clobber each other's cache write. Non-fatal — we still return the
-    // translation the caller just paid for even if the cache write fails.
-    const { error: cacheError } = await supabase.rpc("engagement_cache_item_translation", {
-      p_item_id: item.id,
-      p_language: language,
-      p_translation: result.translated,
-    });
-    if (cacheError) {
-      audit.warn("engagement_translation_cache_write_failed", { itemId: item.id, message: cacheError.message });
-    }
-
-    return NextResponse.json({ source: "ai", language, translated: result.translated, caveat: result.caveat }, { status: 200 });
   } catch (error) {
     audit.error("engage_public_translate_unhandled_error", { error });
     return NextResponse.json({ error: "Unexpected error while translating" }, { status: 500 });

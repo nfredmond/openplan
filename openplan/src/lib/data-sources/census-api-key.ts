@@ -19,9 +19,16 @@
  *   the build if one hand-rolls the URL anyway.
  */
 
-/** The configured key, or null. Read at call time so tests can stub the env. */
+import { workspaceIntegrationKey } from "@/lib/integrations/context";
+
+/**
+ * The effective key, or null. Read at call time so tests can stub the env.
+ * A per-workspace key (set by `withWorkspaceIntegrationContext` at a route
+ * entry) wins over the deployment env; outside any integration context this
+ * is exactly the old env read.
+ */
 export function censusApiKey(): string | null {
-  return process.env.CENSUS_API_KEY?.trim() || null;
+  return workspaceIntegrationKey("census") ?? (process.env.CENSUS_API_KEY?.trim() || null);
 }
 
 /**

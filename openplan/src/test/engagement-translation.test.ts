@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const generateTextMock = vi.fn();
 vi.mock("ai", () => ({ generateText: (...args: unknown[]) => generateTextMock(...args) }));
-vi.mock("@ai-sdk/anthropic", () => ({ anthropic: () => "mock-model" }));
+vi.mock("@ai-sdk/anthropic", () => ({ anthropic: () => "mock-model", createAnthropic: () => () => "mock-model" }));
 
 import {
   TRANSLATION_CAVEAT,

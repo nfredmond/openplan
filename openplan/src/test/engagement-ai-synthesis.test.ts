@@ -8,6 +8,7 @@ vi.mock("ai", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (modelId: string) => ({ __modelId: modelId }),
+  createAnthropic: () => (modelId: string) => ({ __modelId: modelId }),
 }));
 
 import {

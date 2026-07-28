@@ -5,6 +5,7 @@ import {
   isRunCapExceeded,
   isRunCapLookupError,
 } from "@/lib/config/run-cap";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import {
   fetchCensusForCorridor,
@@ -325,377 +326,379 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: runCap.message }, { status: 429 });
     }
 
-    runId = crypto.randomUUID();
+    return await withWorkspaceIntegrationContext(workspaceId, async () => {
+      runId = crypto.randomUUID();
 
-    audit.info("analysis_started", {
-      runId,
-      workspaceId,
-      userId: user.id,
-      queryLength: queryText.length,
-    });
+      audit.info("analysis_started", {
+        runId,
+        workspaceId,
+        userId: user.id,
+        queryLength: queryText.length,
+      });
 
-    // --- Fetch real data from external sources ---
-    const corridorForApi = corridorGeojson as {
-      type: string;
-      coordinates: number[][][] | number[][][][];
-    };
-    const bbox = bboxFromGeojson(corridorForApi);
+      // --- Fetch real data from external sources ---
+      const corridorForApi = corridorGeojson as {
+        type: string;
+        coordinates: number[][][] | number[][][][];
+      };
+      const bbox = bboxFromGeojson(corridorForApi);
 
-    // A study area with no usable coordinates cannot be analyzed. Refuse it
-    // rather than substituting a geography — every fetch below (ACS, transit,
-    // crashes) would otherwise return real data for somewhere the user never
-    // chose, and nothing downstream could tell it was the wrong place.
-    if (!bbox) {
-      audit.warn("analysis_rejected_empty_study_area", { workspaceId, userId: user.id });
-      return NextResponse.json(
-        { error: "Study area has no usable coordinates. Draw or select an area and try again." },
-        { status: 400 }
+      // A study area with no usable coordinates cannot be analyzed. Refuse it
+      // rather than substituting a geography — every fetch below (ACS, transit,
+      // crashes) would otherwise return real data for somewhere the user never
+      // chose, and nothing downstream could tell it was the wrong place.
+      if (!bbox) {
+        audit.warn("analysis_rejected_empty_study_area", { workspaceId, userId: user.id });
+        return NextResponse.json(
+          { error: "Study area has no usable coordinates. Draw or select an area and try again." },
+          { status: 400 }
+        );
+      }
+
+      // Run Census, transit access, and crash fetches in parallel
+      const [census, transit, crashes] = await Promise.all([
+        fetchCensusForCorridor(corridorForApi),
+        fetchTransitAccessForBbox(bbox),
+        fetchCrashesForBbox(bbox),
+      ]);
+
+      // LODES depends on census population
+      const lodes = await fetchLODESForCorridor(
+        corridorForApi,
+        census.totalPopulation,
+        census.totalCommuters
       );
-    }
 
-    // Run Census, transit access, and crash fetches in parallel
-    const [census, transit, crashes] = await Promise.all([
-      fetchCensusForCorridor(corridorForApi),
-      fetchTransitAccessForBbox(bbox),
-      fetchCrashesForBbox(bbox),
-    ]);
+      // Real federal Justice40 / CEJST determination, resolved from the designation
+      // registry against the study-area tract GEOIDs — NEVER synthesized from the
+      // income proxy. Falls to an honest not_determined out of coverage.
+      const federalJustice40 = await resolveJustice40ForTracts(
+        bbox,
+        census.tracts.map((tract) => tract.geoid)
+      );
 
-    // LODES depends on census population
-    const lodes = await fetchLODESForCorridor(
-      corridorForApi,
-      census.totalPopulation,
-      census.totalCommuters
-    );
+      // Equity screening from census data (proxy), with the real determination injected.
+      const equity = screenEquity(census, federalJustice40);
 
-    // Real federal Justice40 / CEJST determination, resolved from the designation
-    // registry against the study-area tract GEOIDs — NEVER synthesized from the
-    // income proxy. Falls to an honest not_determined out of coverage.
-    const federalJustice40 = await resolveJustice40ForTracts(
-      bbox,
-      census.tracts.map((tract) => tract.geoid)
-    );
+      // Compute composite scores
+      const scores = computeCorridorScores(census, lodes, transit, crashes, equity);
+      const walkBikeAccess = classifyWalkBikeAccess({
+        pctWalk: census.pctWalk,
+        pctBike: census.pctBike,
+        pctZeroVehicle: census.pctZeroVehicle,
+        transitStopsPerSqMile: transit.stopsPerSqMile,
+      });
 
-    // Equity screening from census data (proxy), with the real determination injected.
-    const equity = screenEquity(census, federalJustice40);
+      const tractOverlayFeatures = await fetchTractOverlayFeatures(bbox, census.tracts);
+      // Points come from the same fetch that produced the counts, so the map and
+      // the scorecard cannot describe different data.
+      const crashPointFeatures = crashes.points ?? [];
 
-    // Compute composite scores
-    const scores = computeCorridorScores(census, lodes, transit, crashes, equity);
-    const walkBikeAccess = classifyWalkBikeAccess({
-      pctWalk: census.pctWalk,
-      pctBike: census.pctBike,
-      pctZeroVehicle: census.pctZeroVehicle,
-      transitStopsPerSqMile: transit.stopsPerSqMile,
-    });
+      // Build result GeoJSON
+      const geojson = {
+        type: "FeatureCollection" as const,
+        features: [
+          ...tractOverlayFeatures,
+          ...crashPointFeatures,
+          {
+            type: "Feature" as const,
+            geometry: corridorGeojson,
+            properties: {
+              kind: "analysis_corridor",
+              runId,
+              overallScore: scores.overallScore,
+              accessibilityScore: scores.accessibilityScore,
+              safetyScore: scores.safetyScore,
+              equityScore: scores.equityScore,
+            },
+          },
+          {
+            ...buildCentroidFeature(corridorGeojson),
+            properties: {
+              kind: "corridor_centroid",
+            },
+          },
+        ],
+      };
 
-    const tractOverlayFeatures = await fetchTractOverlayFeatures(bbox, census.tracts);
-    // Points come from the same fetch that produced the counts, so the map and
-    // the scorecard cannot describe different data.
-    const crashPointFeatures = crashes.points ?? [];
+      // Generate human-readable summary
+      const summary = generateSummary(census, lodes, transit, crashes, equity, scores, walkBikeAccess);
+      const analysisGeneratedAt = new Date().toISOString();
 
-    // Build result GeoJSON
-    const geojson = {
-      type: "FeatureCollection" as const,
-      features: [
-        ...tractOverlayFeatures,
-        ...crashPointFeatures,
-        {
-          type: "Feature" as const,
-          geometry: corridorGeojson,
-          properties: {
-            kind: "analysis_corridor",
-            runId,
-            overallScore: scores.overallScore,
-            accessibilityScore: scores.accessibilityScore,
-            safetyScore: scores.safetyScore,
-            equityScore: scores.equityScore,
+      // Crash provenance drives three separate disclosures below, so resolve it
+      // once. `scores.dataQuality.crashDataAvailable` is derived in scoring.ts
+      // from a substring test on the old source-id vocabulary ("...-estimate"),
+      // which no longer describes anything now that the registry supplies real
+      // adapter ids — the summary's own `observed` flag is the fact.
+      const crashDataAvailable = crashes.observed === true;
+      // A run that could not observe any crash history cannot be a high-confidence
+      // run, whatever the rest of the inputs looked like.
+      const confidence =
+        crashDataAvailable || scores.confidence !== "high" ? scores.confidence : "medium";
+
+      // Build metrics object
+      const metrics = {
+        // Scores
+        accessibilityScore: scores.accessibilityScore,
+        safetyScore: scores.safetyScore,
+        equityScore: scores.equityScore,
+        overallScore: scores.overallScore,
+        confidence,
+
+        // Census demographics
+        totalPopulation: census.totalPopulation,
+        medianIncome: census.medianIncomeWeighted,
+        pctMinority: census.pctMinority,
+        pctBelowPoverty: census.pctBelowPoverty,
+        tractCount: census.tracts.length,
+
+        // Commute patterns
+        pctTransit: census.pctTransit,
+        pctWalk: census.pctWalk,
+        pctBike: census.pctBike,
+        pctWfh: census.pctWfh,
+        pctZeroVehicle: census.pctZeroVehicle,
+
+        // Employment
+        totalJobs: lodes.totalJobs,
+        jobsPerResident: lodes.jobsPerResident,
+
+        // Transit access
+        totalTransitStops: transit.totalStops,
+        busStops: transit.busStops,
+        railStations: transit.railStations,
+        ferryStops: transit.ferryStops,
+        stopsPerSquareMile: transit.stopsPerSqMile,
+        transitAccessTier: transit.accessTier,
+        walkBikeAccessTier: walkBikeAccess.tier,
+        walkBikeAccessScoreBoost: walkBikeAccess.scoreBoost,
+        walkBikeAccessRationale: walkBikeAccess.rationale,
+
+        // Safety. null (not 0) whenever no source answered: consumers render null
+        // as "N/A", and `buildInterpretationFacts` drops null metrics, so the AI
+        // narrative physically cannot cite a crash figure that was never measured.
+        totalFatalCrashes: crashDataAvailable ? crashes.totalFatalCrashes : null,
+        totalFatalities: crashDataAvailable ? crashes.totalFatalities : null,
+        pedestrianFatalities: crashDataAvailable ? crashes.pedestrianFatalities : null,
+        bicyclistFatalities: crashDataAvailable ? crashes.bicyclistFatalities : null,
+        severeInjuryCrashes: crashDataAvailable ? crashes.severeInjuryCrashes : null,
+        totalInjuryCrashes: crashDataAvailable ? crashes.totalInjuryCrashes : null,
+        crashesPerSquareMile: crashDataAvailable ? crashes.crashesPerSquareMile : null,
+        crashReportedTotal: crashDataAvailable ? crashes.reportedTotal : null,
+        crashMappedTotal: crashDataAvailable ? crashes.mappedTotal : null,
+        crashPointCount: crashPointFeatures.length,
+
+        // Equity
+        disadvantagedTracts: equity.disadvantagedTracts,
+        pctDisadvantaged: equity.pctDisadvantaged,
+        lowIncomeTracts: equity.lowIncomeTracts,
+        highPovertyTracts: equity.highPovertyTracts,
+        highMinorityTracts: equity.highMinorityTracts,
+        lowVehicleAccessTracts: equity.lowVehicleAccessTracts,
+        highTransitDependencyTracts: equity.highTransitDependencyTracts,
+        burdenedLowIncomeTracts: equity.burdenedLowIncomeTracts,
+        equitySource: equity.source,
+        // Honestly-named proxy signal (was justice40Eligible). These flat scalars
+        // are PERSISTED for the report to reconstruct the determination, but the
+        // equity/Justice40 keys are excluded from the AI's citable fact list
+        // (see NON_CITABLE_METRIC_KEYS in interpret.ts) so the grounded narrative
+        // can't cite a bare "disadvantaged" fact without the caveat; the caveated
+        // summary sentences are the only citable equity claims.
+        proxyDisadvantagedFlag: equity.proxyDisadvantagedFlag,
+        federalJustice40Status: equity.federalJustice40.status,
+        federalJustice40Source: equity.federalJustice40.source,
+        federalJustice40DatasetLabel: equity.federalJustice40.datasetLabel,
+        federalJustice40NotDeterminedCause: equity.federalJustice40.notDeterminedCause,
+        federalJustice40DeterminedTracts: equity.federalJustice40.coverage.determinedTracts,
+        federalJustice40UndeterminedTracts: equity.federalJustice40.coverage.undeterminedTracts,
+        federalJustice40DisadvantagedTracts: equity.federalJustice40.coverage.disadvantagedTracts,
+        federalJustice40CrosswalkInferredTracts: equity.federalJustice40.coverage.crosswalkInferredTracts,
+        title6Flags: equity.title6Flags,
+
+        // Data quality
+        dataQuality: {
+          ...scores.dataQuality,
+          crashDataAvailable,
+        },
+
+        // Traceability metadata
+        methodsVersion: "openplan-gis-methods-v0.2",
+        analysisGeneratedAt,
+        decisionUseStatus: "concept-level",
+        sourceSnapshots: {
+          census: {
+            source: `census-acs5-${ACS_YEAR}`,
+            dataset: "ACS 5-Year",
+            vintage: ACS_YEAR,
+            geography: "tract",
+            tractCount: census.tracts.length,
+            // Corridor vs whole-county provenance travels with the snapshot so a
+            // report can never present county-scale demographics as study-area scale.
+            clipStatus: census.clip.status,
+            clipScale: census.clip.status === "clipped" ? "corridor" : "county",
+            corridorTracts: census.clip.corridorTracts,
+            countyTracts: census.clip.countyTracts,
+            overlappingCounties: census.clip.counties,
+            note:
+              census.clip.status === "unclipped_county_fallback"
+                ? `Corridor centroid-clip unavailable; figures cover the whole overlapping county set (${census.clip.countyTracts} tracts across ${census.clip.counties} ${census.clip.counties === 1 ? "county" : "counties"}), not just the drawn corridor.`
+                : census.clip.status === "empty"
+                  ? "No resolvable study-area geography or ACS data; demographic figures are empty."
+                  : "Figures are clipped to tracts whose centroid falls inside the drawn corridor.",
+            retrievalUrl: ACS_RETRIEVAL_URL,
+            fetchedAt: analysisGeneratedAt,
+          },
+          lodes: {
+            source: lodes.source,
+            note:
+              lodes.source === "acs-estimate"
+                ? "LODES bulk ingestion is not yet active; employment values use ACS-based estimation."
+                : "Employment values derived from direct LODES workflow.",
+            fetchedAt: analysisGeneratedAt,
+          },
+          transit: {
+            source: transit.source,
+            observed: transit.observed,
+            note: transit.observed
+              ? "Transit stop density is currently approximated from OSM/Overpass transit stop inventory."
+              : (transit.unavailableReason ??
+                "No transit source answered; stop counts and density were not measured."),
+            fetchedAt: analysisGeneratedAt,
+          },
+          crashes: crashes.sourceSnapshot,
+          equity: {
+            source: equity.source,
+            note: "Equity flags are an ACS income + burden proxy (corridor-level tract indicators) — a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.",
+            fetchedAt: analysisGeneratedAt,
+          },
+          equityDesignation: {
+            source: equity.federalJustice40.source,
+            status: equity.federalJustice40.status,
+            datasetLabel: equity.federalJustice40.datasetLabel,
+            version: equity.federalJustice40.version,
+            vintage: equity.federalJustice40.vintage,
+            determinedTracts: equity.federalJustice40.coverage.determinedTracts,
+            undeterminedTracts: equity.federalJustice40.coverage.undeterminedTracts,
+            disadvantagedTracts: equity.federalJustice40.coverage.disadvantagedTracts,
+            note:
+              equity.federalJustice40.source === null
+                ? "No official disadvantaged-community designation source covered this study area; Justice40 status is not determined."
+                : "Federal CEJST/Justice40 is a DISCONTINUED program (rescinded 2025-01-20); this is a frozen historical v1.0 snapshot keyed on 2010 tracts, not a current federal determination.",
+            fetchedAt: analysisGeneratedAt,
           },
         },
-        {
-          ...buildCentroidFeature(corridorGeojson),
-          properties: {
-            kind: "corridor_centroid",
-          },
-        },
-      ],
-    };
+      };
 
-    // Generate human-readable summary
-    const summary = generateSummary(census, lodes, transit, crashes, equity, scores, walkBikeAccess);
-    const analysisGeneratedAt = new Date().toISOString();
+      const aiInterpretationResult = await generateGrantInterpretation(metrics, summary);
 
-    // Crash provenance drives three separate disclosures below, so resolve it
-    // once. `scores.dataQuality.crashDataAvailable` is derived in scoring.ts
-    // from a substring test on the old source-id vocabulary ("...-estimate"),
-    // which no longer describes anything now that the registry supplies real
-    // adapter ids — the summary's own `observed` flag is the fact.
-    const crashDataAvailable = crashes.observed === true;
-    // A run that could not observe any crash history cannot be a high-confidence
-    // run, whatever the rest of the inputs looked like.
-    const confidence =
-      crashDataAvailable || scores.confidence !== "high" ? scores.confidence : "medium";
-
-    // Build metrics object
-    const metrics = {
-      // Scores
-      accessibilityScore: scores.accessibilityScore,
-      safetyScore: scores.safetyScore,
-      equityScore: scores.equityScore,
-      overallScore: scores.overallScore,
-      confidence,
-
-      // Census demographics
-      totalPopulation: census.totalPopulation,
-      medianIncome: census.medianIncomeWeighted,
-      pctMinority: census.pctMinority,
-      pctBelowPoverty: census.pctBelowPoverty,
-      tractCount: census.tracts.length,
-
-      // Commute patterns
-      pctTransit: census.pctTransit,
-      pctWalk: census.pctWalk,
-      pctBike: census.pctBike,
-      pctWfh: census.pctWfh,
-      pctZeroVehicle: census.pctZeroVehicle,
-
-      // Employment
-      totalJobs: lodes.totalJobs,
-      jobsPerResident: lodes.jobsPerResident,
-
-      // Transit access
-      totalTransitStops: transit.totalStops,
-      busStops: transit.busStops,
-      railStations: transit.railStations,
-      ferryStops: transit.ferryStops,
-      stopsPerSquareMile: transit.stopsPerSqMile,
-      transitAccessTier: transit.accessTier,
-      walkBikeAccessTier: walkBikeAccess.tier,
-      walkBikeAccessScoreBoost: walkBikeAccess.scoreBoost,
-      walkBikeAccessRationale: walkBikeAccess.rationale,
-
-      // Safety. null (not 0) whenever no source answered: consumers render null
-      // as "N/A", and `buildInterpretationFacts` drops null metrics, so the AI
-      // narrative physically cannot cite a crash figure that was never measured.
-      totalFatalCrashes: crashDataAvailable ? crashes.totalFatalCrashes : null,
-      totalFatalities: crashDataAvailable ? crashes.totalFatalities : null,
-      pedestrianFatalities: crashDataAvailable ? crashes.pedestrianFatalities : null,
-      bicyclistFatalities: crashDataAvailable ? crashes.bicyclistFatalities : null,
-      severeInjuryCrashes: crashDataAvailable ? crashes.severeInjuryCrashes : null,
-      totalInjuryCrashes: crashDataAvailable ? crashes.totalInjuryCrashes : null,
-      crashesPerSquareMile: crashDataAvailable ? crashes.crashesPerSquareMile : null,
-      crashReportedTotal: crashDataAvailable ? crashes.reportedTotal : null,
-      crashMappedTotal: crashDataAvailable ? crashes.mappedTotal : null,
-      crashPointCount: crashPointFeatures.length,
-
-      // Equity
-      disadvantagedTracts: equity.disadvantagedTracts,
-      pctDisadvantaged: equity.pctDisadvantaged,
-      lowIncomeTracts: equity.lowIncomeTracts,
-      highPovertyTracts: equity.highPovertyTracts,
-      highMinorityTracts: equity.highMinorityTracts,
-      lowVehicleAccessTracts: equity.lowVehicleAccessTracts,
-      highTransitDependencyTracts: equity.highTransitDependencyTracts,
-      burdenedLowIncomeTracts: equity.burdenedLowIncomeTracts,
-      equitySource: equity.source,
-      // Honestly-named proxy signal (was justice40Eligible). These flat scalars
-      // are PERSISTED for the report to reconstruct the determination, but the
-      // equity/Justice40 keys are excluded from the AI's citable fact list
-      // (see NON_CITABLE_METRIC_KEYS in interpret.ts) so the grounded narrative
-      // can't cite a bare "disadvantaged" fact without the caveat; the caveated
-      // summary sentences are the only citable equity claims.
-      proxyDisadvantagedFlag: equity.proxyDisadvantagedFlag,
-      federalJustice40Status: equity.federalJustice40.status,
-      federalJustice40Source: equity.federalJustice40.source,
-      federalJustice40DatasetLabel: equity.federalJustice40.datasetLabel,
-      federalJustice40NotDeterminedCause: equity.federalJustice40.notDeterminedCause,
-      federalJustice40DeterminedTracts: equity.federalJustice40.coverage.determinedTracts,
-      federalJustice40UndeterminedTracts: equity.federalJustice40.coverage.undeterminedTracts,
-      federalJustice40DisadvantagedTracts: equity.federalJustice40.coverage.disadvantagedTracts,
-      federalJustice40CrosswalkInferredTracts: equity.federalJustice40.coverage.crosswalkInferredTracts,
-      title6Flags: equity.title6Flags,
-
-      // Data quality
-      dataQuality: {
-        ...scores.dataQuality,
-        crashDataAvailable,
-      },
-
-      // Traceability metadata
-      methodsVersion: "openplan-gis-methods-v0.2",
-      analysisGeneratedAt,
-      decisionUseStatus: "concept-level",
-      sourceSnapshots: {
-        census: {
-          source: `census-acs5-${ACS_YEAR}`,
-          dataset: "ACS 5-Year",
-          vintage: ACS_YEAR,
-          geography: "tract",
-          tractCount: census.tracts.length,
-          // Corridor vs whole-county provenance travels with the snapshot so a
-          // report can never present county-scale demographics as study-area scale.
-          clipStatus: census.clip.status,
-          clipScale: census.clip.status === "clipped" ? "corridor" : "county",
-          corridorTracts: census.clip.corridorTracts,
-          countyTracts: census.clip.countyTracts,
-          overlappingCounties: census.clip.counties,
-          note:
-            census.clip.status === "unclipped_county_fallback"
-              ? `Corridor centroid-clip unavailable; figures cover the whole overlapping county set (${census.clip.countyTracts} tracts across ${census.clip.counties} ${census.clip.counties === 1 ? "county" : "counties"}), not just the drawn corridor.`
-              : census.clip.status === "empty"
-                ? "No resolvable study-area geography or ACS data; demographic figures are empty."
-                : "Figures are clipped to tracts whose centroid falls inside the drawn corridor.",
-          retrievalUrl: ACS_RETRIEVAL_URL,
-          fetchedAt: analysisGeneratedAt,
-        },
-        lodes: {
-          source: lodes.source,
-          note:
-            lodes.source === "acs-estimate"
-              ? "LODES bulk ingestion is not yet active; employment values use ACS-based estimation."
-              : "Employment values derived from direct LODES workflow.",
-          fetchedAt: analysisGeneratedAt,
-        },
-        transit: {
-          source: transit.source,
-          observed: transit.observed,
-          note: transit.observed
-            ? "Transit stop density is currently approximated from OSM/Overpass transit stop inventory."
-            : (transit.unavailableReason ??
-              "No transit source answered; stop counts and density were not measured."),
-          fetchedAt: analysisGeneratedAt,
-        },
-        crashes: crashes.sourceSnapshot,
-        equity: {
-          source: equity.source,
-          note: "Equity flags are an ACS income + burden proxy (corridor-level tract indicators) — a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.",
-          fetchedAt: analysisGeneratedAt,
-        },
-        equityDesignation: {
-          source: equity.federalJustice40.source,
-          status: equity.federalJustice40.status,
-          datasetLabel: equity.federalJustice40.datasetLabel,
-          version: equity.federalJustice40.version,
-          vintage: equity.federalJustice40.vintage,
-          determinedTracts: equity.federalJustice40.coverage.determinedTracts,
-          undeterminedTracts: equity.federalJustice40.coverage.undeterminedTracts,
-          disadvantagedTracts: equity.federalJustice40.coverage.disadvantagedTracts,
-          note:
-            equity.federalJustice40.source === null
-              ? "No official disadvantaged-community designation source covered this study area; Justice40 status is not determined."
-              : "Federal CEJST/Justice40 is a DISCONTINUED program (rescinded 2025-01-20); this is a frozen historical v1.0 snapshot keyed on 2010 tracts, not a current federal determination.",
-          fetchedAt: analysisGeneratedAt,
-        },
-      },
-    };
-
-    const aiInterpretationResult = await generateGrantInterpretation(metrics, summary);
-
-    const finalizedMetrics = {
-      ...metrics,
-      aiInterpretationSource: aiInterpretationResult.source,
-      dataQuality: {
-        // Spread the already-corrected block, not `scores.dataQuality`, or the
-        // crash-availability correction above is silently undone here.
-        ...metrics.dataQuality,
+      const finalizedMetrics = {
+        ...metrics,
         aiInterpretationSource: aiInterpretationResult.source,
-        // Provenance disclosure: >0 means the stored narrative is the grounded
-        // subset of the model's draft, not the full draft.
-        aiInterpretationDroppedSentences: aiInterpretationResult.droppedSentenceCount,
-      },
-    };
+        dataQuality: {
+          // Spread the already-corrected block, not `scores.dataQuality`, or the
+          // crash-availability correction above is silently undone here.
+          ...metrics.dataQuality,
+          aiInterpretationSource: aiInterpretationResult.source,
+          // Provenance disclosure: >0 means the stored narrative is the grounded
+          // subset of the model's draft, not the full draft.
+          aiInterpretationDroppedSentences: aiInterpretationResult.droppedSentenceCount,
+        },
+      };
 
-    // --- Persist run ---
-    const supabase = createServiceRoleClient();
-    const { error: insertError } = await supabase.from("runs").insert({
-      id: runId,
-      workspace_id: workspaceId,
-      title: queryText.length > 60 ? queryText.slice(0, 57) + "..." : queryText,
-      query_text: queryText,
-      corridor_geojson: corridorGeojson,
-      metrics: finalizedMetrics,
-      result_geojson: geojson,
-      summary_text: summary,
-      ai_interpretation: aiInterpretationResult.text,
-      // Only sent when the planner chose a project, so a deployment that has
-      // not applied the provenance migration keeps working untouched.
-      ...(projectId ? { project_id: projectId } : {}),
-    });
-
-    if (insertError) {
-      audit.error("persist_failed", {
-        runId,
-        workspaceId,
-        message: insertError.message,
-        code: insertError.code ?? null,
-        details: insertError.details ?? null,
+      // --- Persist run ---
+      const supabase = createServiceRoleClient();
+      const { error: insertError } = await supabase.from("runs").insert({
+        id: runId,
+        workspace_id: workspaceId,
+        title: queryText.length > 60 ? queryText.slice(0, 57) + "..." : queryText,
+        query_text: queryText,
+        corridor_geojson: corridorGeojson,
+        metrics: finalizedMetrics,
+        result_geojson: geojson,
+        summary_text: summary,
+        ai_interpretation: aiInterpretationResult.text,
+        // Only sent when the planner chose a project, so a deployment that has
+        // not applied the provenance migration keeps working untouched.
+        ...(projectId ? { project_id: projectId } : {}),
       });
 
-      return NextResponse.json(
-        { error: "Failed to persist run", details: insertError.message },
-        { status: 500 }
-      );
-    }
+      if (insertError) {
+        audit.error("persist_failed", {
+          runId,
+          workspaceId,
+          message: insertError.message,
+          code: insertError.code ?? null,
+          details: insertError.details ?? null,
+        });
 
-    const durationMs = Date.now() - startedAt;
+        return NextResponse.json(
+          { error: "Failed to persist run", details: insertError.message },
+          { status: 500 }
+        );
+      }
 
-    if (aiInterpretationResult.fallbackReason) {
-      audit.warn("analysis_ai_fallback", {
+      const durationMs = Date.now() - startedAt;
+
+      if (aiInterpretationResult.fallbackReason) {
+        audit.warn("analysis_ai_fallback", {
+          runId,
+          workspaceId,
+          reason: aiInterpretationResult.fallbackReason,
+        });
+      }
+
+      if (aiInterpretationResult.droppedSentenceCount > 0) {
+        audit.warn("analysis_ai_sentences_dropped", {
+          runId,
+          workspaceId,
+          droppedSentenceCount: aiInterpretationResult.droppedSentenceCount,
+          issues: aiInterpretationResult.droppedSentenceIssues.slice(0, 10),
+        });
+      }
+
+      audit.info("analysis_completed", {
         runId,
         workspaceId,
-        reason: aiInterpretationResult.fallbackReason,
-      });
-    }
-
-    if (aiInterpretationResult.droppedSentenceCount > 0) {
-      audit.warn("analysis_ai_sentences_dropped", {
-        runId,
-        workspaceId,
-        droppedSentenceCount: aiInterpretationResult.droppedSentenceCount,
-        issues: aiInterpretationResult.droppedSentenceIssues.slice(0, 10),
-      });
-    }
-
-    audit.info("analysis_completed", {
-      runId,
-      workspaceId,
-      durationMs,
-      confidence: scores.confidence,
-      aiSource: aiInterpretationResult.source,
-      aiModel: aiInterpretationResult.model,
-      aiInputTokens: aiInterpretationResult.inputTokens,
-      aiOutputTokens: aiInterpretationResult.outputTokens,
-      aiTotalTokens: aiInterpretationResult.totalTokens,
-      aiEstimatedCostUsd: aiInterpretationResult.estimatedCostUsd,
-    });
-
-    const costWarning = buildAnalysisCostThresholdWarning(
-      aiInterpretationResult.estimatedCostUsd,
-    );
-    if (costWarning) {
-      audit.warn("analysis_cost_threshold_exceeded", {
-        runId,
-        workspaceId,
+        durationMs,
+        confidence: scores.confidence,
+        aiSource: aiInterpretationResult.source,
         aiModel: aiInterpretationResult.model,
         aiInputTokens: aiInterpretationResult.inputTokens,
         aiOutputTokens: aiInterpretationResult.outputTokens,
         aiTotalTokens: aiInterpretationResult.totalTokens,
-        ...costWarning,
+        aiEstimatedCostUsd: aiInterpretationResult.estimatedCostUsd,
       });
-    }
 
-    return NextResponse.json(
-      {
-        runId,
-        metrics: finalizedMetrics,
-        geojson,
-        summary,
-        // The stored value keeps its [fact:N] provenance tokens; this response
-        // feeds the explore result card directly, so strip for display here
-        // just like use-explore-run-history does for the history path.
-        aiInterpretation: stripFactCitationTokens(aiInterpretationResult.text),
-        aiInterpretationSource: aiInterpretationResult.source,
-      },
-      { status: 200 }
-    );
+      const costWarning = buildAnalysisCostThresholdWarning(
+        aiInterpretationResult.estimatedCostUsd,
+      );
+      if (costWarning) {
+        audit.warn("analysis_cost_threshold_exceeded", {
+          runId,
+          workspaceId,
+          aiModel: aiInterpretationResult.model,
+          aiInputTokens: aiInterpretationResult.inputTokens,
+          aiOutputTokens: aiInterpretationResult.outputTokens,
+          aiTotalTokens: aiInterpretationResult.totalTokens,
+          ...costWarning,
+        });
+      }
+
+      return NextResponse.json(
+        {
+          runId,
+          metrics: finalizedMetrics,
+          geojson,
+          summary,
+          // The stored value keeps its [fact:N] provenance tokens; this response
+          // feeds the explore result card directly, so strip for display here
+          // just like use-explore-run-history does for the history path.
+          aiInterpretation: stripFactCitationTokens(aiInterpretationResult.text),
+          aiInterpretationSource: aiInterpretationResult.source,
+        },
+        { status: 200 }
+      );
+    });
   } catch (error) {
     audit.error("analysis_unhandled_error", {
       runId,

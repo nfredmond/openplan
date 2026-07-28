@@ -134,7 +134,7 @@ async function getCountyCatalog(): Promise<CountyCatalogRow[] | null> {
 function countyCatalogUnavailableReason(): string {
   return censusApiKey()
     ? "The US Census county catalog did not respond, so county names could not be searched."
-    : "County search needs a US Census API key, which this deployment has not configured.";
+    : "County search needs a US Census API key — set one for this deployment, or add your workspace's own key under Integration keys on the dashboard.";
 }
 
 /** Drop the process-level memo so a test can exercise a fresh catalog load. */

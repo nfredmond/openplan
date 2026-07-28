@@ -9,7 +9,7 @@
  */
 
 import { generateText } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 
 const TRANSLATION_MODEL_ID =
   process.env.OPENPLAN_ENGAGEMENT_TRANSLATION_MODEL?.trim() || "claude-haiku-4-5-20251001";
@@ -87,14 +87,14 @@ export async function translateEngagementText(input: {
     caveat: TRANSLATION_CAVEAT,
   });
 
-  if (!process.env.ANTHROPIC_API_KEY?.trim()) return unavailable();
+  if (!hasAnthropicAccess()) return unavailable();
   if (!text) {
     return { source: "ai", target_language: target, translated: "", model: TRANSLATION_MODEL_ID, caveat: TRANSLATION_CAVEAT };
   }
 
   try {
     const { text: out } = await generateText({
-      model: anthropic(TRANSLATION_MODEL_ID),
+      model: anthropicModel(TRANSLATION_MODEL_ID),
       temperature: 0,
       maxOutputTokens: 1500,
       system:

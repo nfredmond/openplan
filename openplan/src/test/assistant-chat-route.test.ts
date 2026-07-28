@@ -65,6 +65,7 @@ vi.mock("@/lib/assistant/chat-tools", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (...args: unknown[]) => anthropicMock(...(args as [string])),
+  createAnthropic: () => (...args: unknown[]) => anthropicMock(...(args as [string])),
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
@@ -210,7 +211,9 @@ describe("/api/assistant/chat", () => {
 
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ error: "ai_offline" });
-    expect(loadAssistantContextMock).not.toHaveBeenCalled();
+    // The context IS loaded first: the offline gate runs inside the
+    // workspace-integration scope so a workspace's own key counts as access.
+    expect(loadAssistantContextMock).toHaveBeenCalled();
     expect(streamTextMock).not.toHaveBeenCalled();
   });
 

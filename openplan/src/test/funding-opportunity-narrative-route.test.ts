@@ -46,6 +46,7 @@ vi.mock("ai", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (...args: unknown[]) => anthropicMock(...args),
+  createAnthropic: () => (...args: unknown[]) => anthropicMock(...args),
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
@@ -212,7 +213,9 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
 
     expect(response.status).toBe(503);
     expect(await response.json()).toEqual({ error: "ai_offline" });
-    expect(loadFundingOpportunityAccessMock).not.toHaveBeenCalled();
+    // Access IS resolved first: the offline gate runs inside the
+    // workspace-integration scope so a workspace's own key counts as access.
+    expect(loadFundingOpportunityAccessMock).toHaveBeenCalled();
     expect(generateTextMock).not.toHaveBeenCalled();
     expect(draftInsertMock).not.toHaveBeenCalled();
   });

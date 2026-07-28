@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { countyGeographySearchResponseSchema } from "@/lib/api/county-geographies";
 import { searchUsCounties } from "@/lib/geographies/us-counties";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("geographies.counties.search", request);
@@ -29,7 +31,19 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(countyGeographySearchResponseSchema.parse({ items: [] }), { status: 200 });
     }
 
-    const outcome = await searchUsCounties(q, limit);
+    // County search is the census front door, so the caller's workspace key
+    // must reach it. The route itself is workspace-less; the user's current
+    // workspace (active-workspace cookie, else sole membership) supplies the
+    // integration scope. Resolution is best-effort on purpose: a user with no
+    // workspace — or a failed lookup — searches with the deployment env key,
+    // never a new failure mode for search itself.
+    const workspaceId = await loadCurrentWorkspaceMembership(supabase, user.id)
+      .then(({ membership }) => membership?.workspace_id ?? null)
+      .catch(() => null);
+    const runSearch = () => searchUsCounties(q, limit);
+    const outcome = workspaceId
+      ? await withWorkspaceIntegrationContext(workspaceId, runSearch)
+      : await runSearch();
     const response = countyGeographySearchResponseSchema.parse({
       items: outcome.items,
       catalogUnavailable: outcome.availability === "unavailable",

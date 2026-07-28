@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { stepCountIs, streamText } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
@@ -87,15 +88,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (!process.env.ANTHROPIC_API_KEY?.trim()) {
-      audit.warn("ai_offline", {
-        kind: parsed.data.kind,
-        userId: user.id,
-        durationMs: Date.now() - startedAt,
-      });
-      return NextResponse.json({ error: "ai_offline" }, { status: 503 });
-    }
-
     const target = {
       kind: parsed.data.kind,
       id: parsed.data.id ?? parsed.data.runId ?? null,
@@ -116,141 +108,153 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Assistant context not found" }, { status: 404 });
     }
 
-    if (context.workspace.id) {
-      const rateLimit = await checkAiUsageRateLimit(context.workspace.id);
-      if (!rateLimit.allowed) {
-        audit.warn("assistant_chat_rate_limited", {
-          workspaceId: context.workspace.id,
+    return await withWorkspaceIntegrationContext(context.workspace.id ?? "", async () => {
+      // Inside the integration context on purpose: a workspace's own key
+      // counts as AI access, so the offline gate must see it.
+      if (!hasAnthropicAccess()) {
+        audit.warn("ai_offline", {
+          kind: parsed.data.kind,
           userId: user.id,
-          recentCount: rateLimit.count,
+          durationMs: Date.now() - startedAt,
         });
-        return NextResponse.json(
-          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
-        );
+        return NextResponse.json({ error: "ai_offline" }, { status: 503 });
       }
-    }
+      if (context.workspace.id) {
+        const rateLimit = await checkAiUsageRateLimit(context.workspace.id);
+        if (!rateLimit.allowed) {
+          audit.warn("assistant_chat_rate_limited", {
+            workspaceId: context.workspace.id,
+            userId: user.id,
+            recentCount: rateLimit.count,
+          });
+          return NextResponse.json(
+            { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+            { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+          );
+        }
+      }
 
-    const modelId = resolveAssistantChatModelId();
-    // Fold any matching uploaded-document excerpts into the grounding context
-    // (best-effort — retrieval returns [] if the KB is unavailable).
-    const knowledgeBaseExcerpts = await retrieveKnowledgeBaseExcerpts({
-      supabase,
-      workspaceId: context.workspace.id,
-      query: parsed.data.question,
-      limit: ASSISTANT_CHAT_MAX_KB_EXCERPTS,
-    });
-    const systemPrompt = buildAssistantChatSystemPrompt(context, { knowledgeBaseExcerpts });
-    // Drop any leading assistant turns so the forwarded conversation always
-    // starts with a user message — the Messages API 400s otherwise, and a
-    // dropped-reply history window can otherwise begin with an assistant entry.
-    let history = parsed.data.history ?? [];
-    while (history.length > 0 && history[0].role === "assistant") {
-      history = history.slice(1);
-    }
+      const modelId = resolveAssistantChatModelId();
+      // Fold any matching uploaded-document excerpts into the grounding context
+      // (best-effort — retrieval returns [] if the KB is unavailable).
+      const knowledgeBaseExcerpts = await retrieveKnowledgeBaseExcerpts({
+        supabase,
+        workspaceId: context.workspace.id,
+        query: parsed.data.question,
+        limit: ASSISTANT_CHAT_MAX_KB_EXCERPTS,
+      });
+      const systemPrompt = buildAssistantChatSystemPrompt(context, { knowledgeBaseExcerpts });
+      // Drop any leading assistant turns so the forwarded conversation always
+      // starts with a user message — the Messages API 400s otherwise, and a
+      // dropped-reply history window can otherwise begin with an assistant entry.
+      let history = parsed.data.history ?? [];
+      while (history.length > 0 && history[0].role === "assistant") {
+        history = history.slice(1);
+      }
 
-    // RLS-scoped read + proposal tools. They close over the USER-SESSION
-    // client, and the per-request budget bounds how many lookups one chat
-    // turn may spend. The budget's ledger is drained into audit events at
-    // each step boundary below.
-    const budget = createChatToolBudget();
-    const tools = buildAssistantChatTools({
-      supabase,
-      context,
-      userId: user.id,
-      audit,
-      budget,
-    });
+      // RLS-scoped read + proposal tools. They close over the USER-SESSION
+      // client, and the per-request budget bounds how many lookups one chat
+      // turn may spend. The budget's ledger is drained into audit events at
+      // each step boundary below.
+      const budget = createChatToolBudget();
+      const tools = buildAssistantChatTools({
+        supabase,
+        context,
+        userId: user.id,
+        audit,
+        budget,
+      });
 
-    const result = streamText({
-      model: anthropic(modelId),
-      system: systemPrompt,
-      messages: [...history, { role: "user" as const, content: parsed.data.question }],
-      tools,
-      stopWhen: stepCountIs(ASSISTANT_CHAT_MAX_STEPS),
-      maxOutputTokens: ASSISTANT_CHAT_MAX_OUTPUT_TOKENS,
-      onError: ({ error }) => {
-        audit.error("assistant_chat_stream_error", { error });
-      },
-      onStepFinish: () => {
-        // Steps run sequentially, so every tool execution recorded since the
-        // previous boundary belongs to the step that just finished.
-        const executed = budget.ledger.splice(0, budget.ledger.length);
-        for (const record of executed) {
-          audit.info("assistant_chat_tool_called", {
-            tool: record.tool,
-            ok: record.ok,
-            durationMs: record.durationMs,
+      const result = streamText({
+        model: anthropicModel(modelId),
+        system: systemPrompt,
+        messages: [...history, { role: "user" as const, content: parsed.data.question }],
+        tools,
+        stopWhen: stepCountIs(ASSISTANT_CHAT_MAX_STEPS),
+        maxOutputTokens: ASSISTANT_CHAT_MAX_OUTPUT_TOKENS,
+        onError: ({ error }) => {
+          audit.error("assistant_chat_stream_error", { error });
+        },
+        onStepFinish: () => {
+          // Steps run sequentially, so every tool execution recorded since the
+          // previous boundary belongs to the step that just finished.
+          const executed = budget.ledger.splice(0, budget.ledger.length);
+          for (const record of executed) {
+            audit.info("assistant_chat_tool_called", {
+              tool: record.tool,
+              ok: record.ok,
+              durationMs: record.durationMs,
+              kind: context.kind,
+              workspaceId: context.workspace.id,
+              userId: user.id,
+            });
+          }
+        },
+        onFinish: ({ usage }) => {
+          audit.info("assistant_chat_stream_finished", {
             kind: context.kind,
             workspaceId: context.workspace.id,
             userId: user.id,
+            model: modelId,
+            inputTokens: usage?.inputTokens ?? null,
+            outputTokens: usage?.outputTokens ?? null,
+            toolCallsUsed: budget.usedCalls,
+            durationMs: Date.now() - startedAt,
           });
-        }
-      },
-      onFinish: ({ usage }) => {
-        audit.info("assistant_chat_stream_finished", {
-          kind: context.kind,
-          workspaceId: context.workspace.id,
-          userId: user.id,
-          model: modelId,
-          inputTokens: usage?.inputTokens ?? null,
-          outputTokens: usage?.outputTokens ?? null,
-          toolCallsUsed: budget.usedCalls,
-          durationMs: Date.now() - startedAt,
-        });
-        // Fire-and-forget spend metering: the stream finished, so the model
-        // call succeeded — count it against the workspace's AI allowance.
-        if (context.workspace.id) {
-          void recordAiUsageEvent({
+          // Fire-and-forget spend metering: the stream finished, so the model
+          // call succeeded — count it against the workspace's AI allowance.
+          if (context.workspace.id) {
+            void recordAiUsageEvent({
+              workspaceId: context.workspace.id,
+              bucketKey: "assistant_chat",
+              eventKey: "assistant_chat_reply",
+              sourceRoute: "/api/assistant/chat",
+              metadataJson: { model: modelId },
+            });
+          }
+        },
+      });
+
+      audit.info("assistant_chat_stream_started", {
+        kind: context.kind,
+        workspaceId: context.workspace.id,
+        userId: user.id,
+        model: modelId,
+        historyLength: history.length,
+        durationMs: Date.now() - startedAt,
+      });
+
+      // UI-message protocol (SSE): carries tool activity, proposals, and an
+      // explicit error frame — an upstream failure can no longer surface as a
+      // silent empty body. Parsed client-side by consumeAssistantChatStream.
+      return result.toUIMessageStreamResponse({
+        // Attach the single-call cost-threshold warning (when exceeded) to the
+        // finish frame so the copilot can surface it as a final annotation.
+        messageMetadata: ({ part }) => {
+          if (part.type !== "finish") return undefined;
+          const costWarning = buildAnalysisCostThresholdWarning(
+            estimateAnthropicCostUsd(
+              modelId,
+              part.totalUsage?.inputTokens ?? null,
+              part.totalUsage?.outputTokens ?? null
+            )
+          );
+          if (!costWarning) return undefined;
+          audit.warn("assistant_chat_cost_threshold_exceeded", {
             workspaceId: context.workspace.id,
-            bucketKey: "assistant_chat",
-            eventKey: "assistant_chat_reply",
-            sourceRoute: "/api/assistant/chat",
-            metadataJson: { model: modelId },
+            userId: user.id,
+            model: modelId,
+            ...costWarning,
           });
-        }
-      },
-    });
-
-    audit.info("assistant_chat_stream_started", {
-      kind: context.kind,
-      workspaceId: context.workspace.id,
-      userId: user.id,
-      model: modelId,
-      historyLength: history.length,
-      durationMs: Date.now() - startedAt,
-    });
-
-    // UI-message protocol (SSE): carries tool activity, proposals, and an
-    // explicit error frame — an upstream failure can no longer surface as a
-    // silent empty body. Parsed client-side by consumeAssistantChatStream.
-    return result.toUIMessageStreamResponse({
-      // Attach the single-call cost-threshold warning (when exceeded) to the
-      // finish frame so the copilot can surface it as a final annotation.
-      messageMetadata: ({ part }) => {
-        if (part.type !== "finish") return undefined;
-        const costWarning = buildAnalysisCostThresholdWarning(
-          estimateAnthropicCostUsd(
-            modelId,
-            part.totalUsage?.inputTokens ?? null,
-            part.totalUsage?.outputTokens ?? null
-          )
-        );
-        if (!costWarning) return undefined;
-        audit.warn("assistant_chat_cost_threshold_exceeded", {
-          workspaceId: context.workspace.id,
-          userId: user.id,
-          model: modelId,
-          ...costWarning,
-        });
-        return { costWarning };
-      },
-      onError: (error) => {
-        audit.error("assistant_chat_stream_error_frame", {
-          message: error instanceof Error ? error.message : String(error),
-        });
-        return "The Planner Agent reply failed mid-stream — the model may be busy. Try again.";
-      },
+          return { costWarning };
+        },
+        onError: (error) => {
+          audit.error("assistant_chat_stream_error_frame", {
+            message: error instanceof Error ? error.message : String(error),
+          });
+          return "The Planner Agent reply failed mid-stream — the model may be busy. Try again.";
+        },
+      });
     });
   } catch (error) {
     audit.error("assistant_chat_unhandled_error", {

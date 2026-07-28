@@ -106,6 +106,22 @@ vi.mock("@/components/workspaces/workspace-team-panel", () => ({
   ),
 }));
 
+vi.mock("@/components/workspaces/workspace-integration-keys-panel", () => ({
+  WorkspaceIntegrationKeysPanel: ({
+    workspaceId,
+    canManage,
+  }: {
+    workspaceId: string;
+    canManage: boolean;
+  }) => (
+    <div
+      data-testid="workspace-integration-keys-panel"
+      data-workspace-id={workspaceId}
+      data-can-manage={String(canManage)}
+    />
+  ),
+}));
+
 import DashboardPage from "@/app/(app)/dashboard/page";
 
 async function renderPage() {
@@ -453,6 +469,14 @@ describe("DashboardPage", () => {
     expect(panel).toHaveAttribute("data-can-manage", "true");
   });
 
+  it("mounts the integration-keys setup panel so keys can actually be configured", async () => {
+    await renderPage();
+
+    const panel = screen.getByTestId("workspace-integration-keys-panel");
+    expect(panel).toHaveAttribute("data-workspace-id", "workspace-1");
+    expect(panel).toHaveAttribute("data-can-manage", "true");
+  });
+
   it("tells an owner which capabilities configuration has switched off", async () => {
     // The test environment sets no Mapbox token, so maps are unavailable — the
     // panel must say so rather than leaving blank maps unexplained.
@@ -482,6 +506,7 @@ describe("DashboardPage", () => {
     // write affordance is withheld here and refused by the API.
     expect(screen.getByTestId("workspace-geography-panel")).toHaveAttribute("data-can-manage", "false");
     expect(screen.getByTestId("workspace-team-panel")).toHaveAttribute("data-can-manage", "false");
+    expect(screen.getByTestId("workspace-integration-keys-panel")).toHaveAttribute("data-can-manage", "false");
     // Deployment configuration is operator information a member cannot act on.
     expect(screen.queryByLabelText(/deployment configuration/i)).not.toBeInTheDocument();
   });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
@@ -55,76 +56,78 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const workspaceId = access.campaign.workspace_id;
-    const rateLimit = await checkAiUsageRateLimit(workspaceId);
-    if (!rateLimit.allowed) {
-      audit.warn("engagement_moderation_rate_limited", { workspaceId, recentCount: rateLimit.count });
-      return NextResponse.json(
-        { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-        { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+    return await withWorkspaceIntegrationContext(workspaceId, async () => {
+      const rateLimit = await checkAiUsageRateLimit(workspaceId);
+      if (!rateLimit.allowed) {
+        audit.warn("engagement_moderation_rate_limited", { workspaceId, recentCount: rateLimit.count });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
+
+      // The moderation queue: items still awaiting a human decision.
+      const { data: itemRows, error: itemsError } = await supabase
+        .from("engagement_items")
+        .select("id, title, body, metadata_json")
+        .eq("campaign_id", campaignId)
+        .in("status", ["pending", "flagged"])
+        .order("created_at", { ascending: true })
+        .limit(MODERATION_MAX_ITEMS);
+      if (itemsError) {
+        return NextResponse.json({ error: "Failed to load engagement items" }, { status: 500 });
+      }
+
+      const rows = (itemRows ?? []) as ItemRow[];
+      const items: ModerationInputItem[] = rows.map((row) => ({ id: row.id, title: row.title, body: row.body }));
+      const result = await moderateEngagementItems(items);
+
+      // Persist the per-item assessment into metadata_json (merged, never
+      // overwriting other keys). Does NOT change status — a human still decides.
+      const assessmentAt = new Date().toISOString();
+      const byId = new Map(rows.map((row) => [row.id, row]));
+      const writeErrors = await Promise.all(
+        result.items.map(async (assessment) => {
+          const row = byId.get(assessment.item_id);
+          if (!row) return null;
+          const metadata = {
+            ...(row.metadata_json ?? {}),
+            ai_moderation: {
+              flags: assessment.flags,
+              severity: assessment.severity,
+              rationale: assessment.rationale,
+              suggested_action: assessment.suggested_action,
+              source: result.source,
+              model: result.model,
+              at: assessmentAt,
+            },
+          };
+          const { error } = await supabase
+            .from("engagement_items")
+            .update({ metadata_json: metadata })
+            .eq("id", assessment.item_id);
+          return error ? assessment.item_id : null;
+        })
       );
-    }
+      const failed = writeErrors.filter(Boolean);
+      if (failed.length > 0) {
+        audit.warn("engagement_moderation_persist_partial", { campaignId, failedCount: failed.length });
+      }
 
-    // The moderation queue: items still awaiting a human decision.
-    const { data: itemRows, error: itemsError } = await supabase
-      .from("engagement_items")
-      .select("id, title, body, metadata_json")
-      .eq("campaign_id", campaignId)
-      .in("status", ["pending", "flagged"])
-      .order("created_at", { ascending: true })
-      .limit(MODERATION_MAX_ITEMS);
-    if (itemsError) {
-      return NextResponse.json({ error: "Failed to load engagement items" }, { status: 500 });
-    }
+      // Fire-and-forget spend metering: `source === "ai"` means the model call
+      // succeeded (the deterministic heuristic fallback spends nothing).
+      if (result.source === "ai") {
+        void recordAiUsageEvent({
+          workspaceId,
+          bucketKey: "engagement_moderation",
+          eventKey: "engagement_moderation_scan",
+          sourceRoute: "/api/engagement/campaigns/[campaignId]/moderation-scan",
+          metadataJson: { model: result.model, itemCount: result.item_count },
+        });
+      }
 
-    const rows = (itemRows ?? []) as ItemRow[];
-    const items: ModerationInputItem[] = rows.map((row) => ({ id: row.id, title: row.title, body: row.body }));
-    const result = await moderateEngagementItems(items);
-
-    // Persist the per-item assessment into metadata_json (merged, never
-    // overwriting other keys). Does NOT change status — a human still decides.
-    const assessmentAt = new Date().toISOString();
-    const byId = new Map(rows.map((row) => [row.id, row]));
-    const writeErrors = await Promise.all(
-      result.items.map(async (assessment) => {
-        const row = byId.get(assessment.item_id);
-        if (!row) return null;
-        const metadata = {
-          ...(row.metadata_json ?? {}),
-          ai_moderation: {
-            flags: assessment.flags,
-            severity: assessment.severity,
-            rationale: assessment.rationale,
-            suggested_action: assessment.suggested_action,
-            source: result.source,
-            model: result.model,
-            at: assessmentAt,
-          },
-        };
-        const { error } = await supabase
-          .from("engagement_items")
-          .update({ metadata_json: metadata })
-          .eq("id", assessment.item_id);
-        return error ? assessment.item_id : null;
-      })
-    );
-    const failed = writeErrors.filter(Boolean);
-    if (failed.length > 0) {
-      audit.warn("engagement_moderation_persist_partial", { campaignId, failedCount: failed.length });
-    }
-
-    // Fire-and-forget spend metering: `source === "ai"` means the model call
-    // succeeded (the deterministic heuristic fallback spends nothing).
-    if (result.source === "ai") {
-      void recordAiUsageEvent({
-        workspaceId,
-        bucketKey: "engagement_moderation",
-        eventKey: "engagement_moderation_scan",
-        sourceRoute: "/api/engagement/campaigns/[campaignId]/moderation-scan",
-        metadataJson: { model: result.model, itemCount: result.item_count },
-      });
-    }
-
-    return NextResponse.json({ moderation: result, scannedAt: assessmentAt });
+      return NextResponse.json({ moderation: result, scannedAt: assessmentAt });
+    });
   } catch (error) {
     audit.error("engagement_moderation_unhandled", {
       message: error instanceof Error ? error.message : "unknown",
