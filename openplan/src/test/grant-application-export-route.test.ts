@@ -105,6 +105,8 @@ const finalOperatorSection = {
   status: "final",
   final_markdown: "Operator-approved text.",
   finalized_from_draft_id: null,
+  finalized_by: USER_ID,
+  finalized_at: "2026-07-27T02:00:00.000Z",
   updated_by: USER_ID,
   created_at: "2026-07-27T00:00:00.000Z",
   updated_at: "2026-07-27T02:00:00.000Z",
@@ -416,6 +418,88 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     const response = await exportApplication(postRequest(), postContext);
     expect(response.status).toBe(503);
     expect((await response.json()).error).toContain("20260727000014_grant_application_assembly");
+  });
+
+  it("names the FINALIZER in the provenance appendix — a reorder AFTER finalize cannot change it", async () => {
+    // The misattribution bug this pins: updated_by/updated_at are touch-latest
+    // and the reorder PATCH stamps them on every row. Here a teammate
+    // reordered the packet after USER finalized — the stored PDF must still
+    // credit the finalizer, never the last toucher.
+    const REORDERING_TEAMMATE_ID = "77777777-7777-4777-8777-777777777777";
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({
+          data: [
+            {
+              ...finalOperatorSection,
+              finalized_by: USER_ID,
+              finalized_at: "2026-07-27T02:00:00.000Z",
+              // The later reorder touch:
+              updated_by: REORDERING_TEAMMATE_ID,
+              updated_at: "2026-07-27T05:00:00.000Z",
+            },
+          ],
+          error: null,
+        }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () =>
+        makeQuery({ data: exportRowResult, error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+    expect(response.status).toBe(201);
+
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(html).toContain(USER_ID);
+    expect(html).not.toContain(REORDERING_TEAMMATE_ID);
+  });
+
+  it("discloses an unrecorded finalizer honestly instead of falling back to updated_by", async () => {
+    const LAST_TOUCHER_ID = "77777777-7777-4777-8777-777777777777";
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({
+          data: [
+            {
+              ...finalOperatorSection,
+              // Finalized before migration 20260727000016 added the columns.
+              finalized_by: null,
+              finalized_at: null,
+              updated_by: LAST_TOUCHER_ID,
+            },
+          ],
+          error: null,
+        }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () =>
+        makeQuery({ data: exportRowResult, error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+    expect(response.status).toBe(201);
+
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(html).toContain("finalized before finalizer tracking; not recorded");
+    expect(html).not.toContain(LAST_TOUCHER_ID);
+  });
+
+  it("answers 503 naming the finalizer migration when only those columns are missing", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({
+          data: null,
+          error: {
+            message:
+              "column funding_opportunity_application_sections.finalized_by does not exist",
+          },
+        }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("20260727000016_application_section_finalizer");
+    expect(renderReportPdfMock).not.toHaveBeenCalled();
   });
 });
 

@@ -43,7 +43,13 @@ export type GrantApplicationSectionProvenance = {
   model: string | null;
   groundedSentenceCount: number | null;
   totalSentenceCount: number | null;
-  /** The finalizing workspace member's id — an honest identifier, not a name lookup. */
+  /**
+   * The finalizing workspace member's id — an honest identifier, not a name
+   * lookup — sourced from the section's finalized_by EVENT column (never
+   * updated_by, which any later touch overwrites). For sections finalized
+   * before finalizer tracking existed, this carries the disclosure string
+   * "finalized before finalizer tracking; not recorded" instead of a guess.
+   */
   finalizedBy: string | null;
   finalizedAt: string | null;
 };
@@ -111,7 +117,11 @@ function esc(value: string): string {
 function formatDateTime(value: string | null | undefined): string {
   if (!value) return "Not set";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
+  // Locale pinned to en-US so the packaged document renders identically on
+  // every server, matching the report helpers (reports/catalog.ts
+  // formatDateTime), which format in the server's timezone without a
+  // timezone pin.
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
 }
 
 function formatAmount(value: number | string | null | undefined): string {

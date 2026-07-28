@@ -433,19 +433,19 @@ describe("GET /api/funding-opportunities/[opportunityId]/application", () => {
   it("returns sections, attachments, latest drafts, and attach-picker sources", async () => {
     const DRAFT_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
     const OLDER_DRAFT_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+    const draftsChain = makeQuery({
+      // Newest-first: the FIRST row per section wins as the working draft.
+      data: [
+        { id: DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Newest.", created_at: "2026-07-27T02:00:00.000Z" },
+        { id: OLDER_DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Older.", created_at: "2026-07-27T01:00:00.000Z" },
+      ],
+      error: null,
+    });
     installTables({
       funding_opportunity_application_sections: () =>
         makeQuery({ data: [baseSectionRow], error: null }),
       funding_opportunity_attachments: () => makeQuery({ data: [baseAttachmentRow], error: null }),
-      // Newest-first: the FIRST row per section wins as the working draft.
-      funding_opportunity_section_drafts: () =>
-        makeQuery({
-          data: [
-            { id: DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Newest.", created_at: "2026-07-27T02:00:00.000Z" },
-            { id: OLDER_DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Older.", created_at: "2026-07-27T01:00:00.000Z" },
-          ],
-          error: null,
-        }),
+      funding_opportunity_section_drafts: () => draftsChain,
       kb_documents: () =>
         makeQuery({ data: [{ id: KB_DOCUMENT_ID, title: "Adopted ATP plan" }], error: null }),
       reports: () => makeQuery({ data: [{ id: "report-1", title: "Corridor packet" }], error: null }),
@@ -471,6 +471,12 @@ describe("GET /api/funding-opportunities/[opportunityId]/application", () => {
     expect(body.schemaPending).toBe(false);
     expect(body.latestDraftsBySectionId[SECTION_ID]).toMatchObject({ id: DRAFT_ID });
     expect(body.latestDraftsUnavailable).toBe(false);
+    expect(body.draftsWindowTruncated).toBe(false);
+    // The window is SCOPED to the returned sections' ids with a generous
+    // limit — a flat newest-across-the-opportunity window could hide a
+    // section's latest draft behind other sections' churn.
+    expect(draftsChain.in).toHaveBeenCalledWith("section_id", [SECTION_ID]);
+    expect(draftsChain.limit).toHaveBeenCalledWith(1000);
     expect(body.kbDocumentOptions).toEqual([{ id: KB_DOCUMENT_ID, title: "Adopted ATP plan" }]);
     expect(body.reportArtifactOptions).toEqual([
       {
@@ -481,6 +487,33 @@ describe("GET /api/funding-opportunities/[opportunityId]/application", () => {
       },
     ]);
     expect(body.attachSourcesDegraded).toBe(false);
+  });
+
+  it("discloses a filled drafts window as truncated instead of presenting it as complete", async () => {
+    // Exactly the window limit came back: a section's latest draft could lie
+    // beyond it, so the response says so rather than presenting the map as
+    // authoritative.
+    const windowFull = Array.from({ length: 1000 }, (_, index) => ({
+      id: `draft-${index}`,
+      section_id: SECTION_ID,
+      draft_markdown: `Draft ${index}.`,
+      created_at: new Date(Date.UTC(2026, 6, 27, 0, 0, index)).toISOString(),
+    }));
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [baseSectionRow], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [baseAttachmentRow], error: null }),
+      funding_opportunity_section_drafts: () => makeQuery({ data: windowFull, error: null }),
+      kb_documents: () => makeQuery({ data: [], error: null }),
+      reports: () => makeQuery({ data: [], error: null }),
+    });
+
+    const response = await getApplication(new NextRequest(url), context);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.draftsWindowTruncated).toBe(true);
+    expect(body.latestDraftsUnavailable).toBe(false);
+    expect(body.latestDraftsBySectionId[SECTION_ID]).toMatchObject({ id: "draft-0" });
   });
 
   it("discloses degraded attach sources and unavailable draft history instead of faking emptiness", async () => {
@@ -550,6 +583,17 @@ describe("PATCH /api/funding-opportunities/[opportunityId]/application (reorder)
     expect(updateFirst.eq).toHaveBeenCalledWith("id", SECOND_SECTION_ID);
     expect(updateSecond.update.mock.calls[0][0]).toMatchObject({ sort_order: 1 });
     expect(updateSecond.eq).toHaveBeenCalledWith("id", SECTION_ID);
+
+    // A reorder is a TOUCH, never a finalization: it stamps updated_* on
+    // every row, so it must not write the finalizer-event columns (or the
+    // approved text) — that is exactly how exports once misattributed the
+    // finalizer.
+    for (const chain of [updateFirst, updateSecond]) {
+      const payload = chain.update.mock.calls[0][0] as Record<string, unknown>;
+      expect("finalized_by" in payload).toBe(false);
+      expect("finalized_at" in payload).toBe(false);
+      expect("final_markdown" in payload).toBe(false);
+    }
   });
 });
 
@@ -905,7 +949,12 @@ describe("PATCH sections/[sectionId] — finalization gates", () => {
       status: "final",
       final_markdown: "The award is documented. [fact:fact_1]",
       finalized_from_draft_id: DRAFT_ID,
+      // The finalization EVENT is stamped in its own columns — updated_* is
+      // touch-latest and cannot carry it.
+      finalized_by: USER_ID,
     });
+    const payload = updateChain.update.mock.calls[0][0] as Record<string, unknown>;
+    expect(payload.finalized_at).toBe(payload.updated_at);
   });
 
   it("refuses an unedited draft with flagged sentences and returns them for review", async () => {
@@ -986,7 +1035,60 @@ describe("PATCH sections/[sectionId] — finalization gates", () => {
       status: "final",
       final_markdown: "My reviewed and edited text.",
       finalized_from_draft_id: null,
+      finalized_by: USER_ID,
     });
+    const payload = updateChain.update.mock.calls[0][0] as Record<string, unknown>;
+    expect(typeof payload.finalized_at).toBe("string");
+    expect(payload.finalized_at).toBe(payload.updated_at);
+  });
+
+  it("does not restamp the finalizer on an idempotent status:'final' no-op", async () => {
+    // A PATCH that re-asserts 'final' without committing new text is a touch,
+    // not a finalization — restamping it would misattribute the finalizer to
+    // whoever sent the no-op.
+    const loadChain = makeQuery({
+      data: { ...baseSectionRow, status: "final", final_markdown: "Approved text." },
+      error: null,
+    });
+    const updateChain = makeQuery({
+      data: { ...baseSectionRow, status: "final", final_markdown: "Approved text." },
+      error: null,
+    });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+    });
+
+    const response = await patchSection(jsonRequest(url, "PATCH", { status: "final" }), context);
+
+    expect(response.status).toBe(200);
+    const payload = updateChain.update.mock.calls[0][0] as Record<string, unknown>;
+    expect("finalized_by" in payload).toBe(false);
+    expect("finalized_at" in payload).toBe(false);
+  });
+
+  it("answers 503 naming the finalizer migration when the stamp hits a pre-migration database", async () => {
+    // Provenance depends on the stamp, so omitting it when the column is
+    // missing is not an acceptable degradation — the finalize refuses and
+    // names the migration instead.
+    const loadChain = makeQuery({ data: { ...baseSectionRow, status: "drafting" }, error: null });
+    const updateChain = makeQuery({
+      data: null,
+      error: {
+        message:
+          "Could not find the 'finalized_by' column of 'funding_opportunity_application_sections' in the schema cache",
+      },
+    });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { status: "final", finalMarkdown: "My reviewed text." }),
+      context
+    );
+
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("20260727000016_application_section_finalizer");
   });
 
   it("rejects finalMarkdown outside a finalization", async () => {
@@ -1030,5 +1132,9 @@ describe("PATCH sections/[sectionId] — finalization gates", () => {
     const updatePayload = updateChain.update.mock.calls[0][0] as Record<string, unknown>;
     expect(updatePayload.status).toBe("operator_review");
     expect(updatePayload.final_markdown).toBeUndefined();
+    // Reverting clears the finalizer stamp: the old finalization no longer
+    // describes the section, and the next finalize will stamp its own event.
+    expect(updatePayload.finalized_by).toBeNull();
+    expect(updatePayload.finalized_at).toBeNull();
   });
 });

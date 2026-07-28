@@ -31,6 +31,8 @@ function section(overrides: Partial<ApplicationSectionRow> = {}): ApplicationSec
     status: "final",
     final_markdown: "This corridor **matters** to the region. [fact:fact_1]",
     finalized_from_draft_id: null,
+    finalized_by: "22222222-2222-4222-8222-222222222222",
+    finalized_at: "2026-07-27T02:00:00.000Z",
     updated_by: "22222222-2222-4222-8222-222222222222",
     created_at: "2026-07-27T00:00:00.000Z",
     updated_at: "2026-07-27T02:00:00.000Z",
@@ -118,6 +120,18 @@ describe("buildGrantApplicationHtml", () => {
     // No external assets — a strict offline document.
     expect(html).not.toMatch(/src="http/);
     expect(html).not.toMatch(/href="http/);
+  });
+
+  it("formats dates with a pinned en-US locale, independent of the server's locale", () => {
+    const html = buildGrantApplicationHtml(exportData());
+
+    // en-US renders month/day/year with slashes and a 12-hour clock. An
+    // unpinned toLocaleString() would follow the server's locale instead
+    // (e.g. "30.9.2026" under de-DE). No timezone is pinned — matching the
+    // report helpers — so the day may shift with the server's timezone, but
+    // the en-US SHAPE may not.
+    expect(html).toMatch(/9\/(?:29|30)\/2026, \d{1,2}:\d{2}:\d{2}\s?[AP]M/);
+    expect(html).not.toMatch(/\d{1,2}\.\d{1,2}\.2026/);
   });
 
   it("escapes hostile values instead of letting them into the markup", () => {

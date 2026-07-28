@@ -5,10 +5,12 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
+  APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR,
   APPLICATION_PENDING_SCHEMA_ERROR,
   APPLICATION_SECTION_SELECT,
   canTransitionSectionStatus,
   looksLikePendingAssemblySchema,
+  looksLikePendingFinalizerSchema,
   parseApplicationSectionRow,
   type ApplicationSectionStatus,
 } from "@/lib/grants/application";
@@ -261,6 +263,28 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    // Finalization is an EVENT, not a touch. updated_by/updated_at cannot
+    // carry "who finalized this" — any later edit (the reorder PATCH stamps
+    // every row of the opportunity) overwrites them, which misattributed the
+    // finalizer in stored export PDFs. finalized_by/finalized_at record the
+    // event itself: stamped when the section ENTERS 'final' or re-commits new
+    // final text, untouched by an idempotent status:"final" no-op, and
+    // cleared when a final section is reopened so the stamp only ever
+    // describes the CURRENT final text.
+    const commitsFinalText =
+      wantsFinal && (section.status !== "final" || updates.final_markdown !== undefined);
+    if (commitsFinalText) {
+      updates.finalized_by = userId;
+      updates.finalized_at = updates.updated_at;
+    } else if (
+      parsed.data.status !== undefined &&
+      parsed.data.status !== "final" &&
+      section.status === "final"
+    ) {
+      updates.finalized_by = null;
+      updates.finalized_at = null;
+    }
+
     const { data: updated, error: updateError } = await supabase
       .from("funding_opportunity_application_sections")
       .update(updates)
@@ -270,6 +294,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .single();
 
     if (updateError || !updated) {
+      // A finalize (or reopen) against a database that predates the finalizer
+      // columns must not silently drop the stamp — the export's provenance
+      // depends on it. Name the migration instead.
+      if (looksLikePendingFinalizerSchema(updateError?.message)) {
+        return NextResponse.json(
+          { error: APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR },
+          { status: 503 }
+        );
+      }
       audit.error("section_update_failed", {
         opportunityId: opportunity.id,
         sectionId: section.id,

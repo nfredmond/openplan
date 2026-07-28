@@ -6,9 +6,11 @@ import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import {
   APPLICATION_ATTACHMENT_SELECT,
+  APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR,
   APPLICATION_PENDING_SCHEMA_ERROR,
-  APPLICATION_SECTION_SELECT,
+  APPLICATION_SECTION_PROVENANCE_SELECT,
   looksLikePendingAssemblySchema,
+  looksLikePendingFinalizerSchema,
   parseApplicationAttachmentRow,
   parseApplicationSectionRow,
   type ApplicationAttachmentRow,
@@ -73,12 +75,24 @@ type OffendingSection = {
   flaggedSentences: FlaggedNarrativeSentence[];
 };
 
+/**
+ * The honest disclosure for a final section whose finalizer was never
+ * recorded (finalized before migration 20260727000016 added the columns).
+ * updated_by is NEVER an acceptable substitute: it is touch-latest, and the
+ * reorder PATCH stamps it on every row, so it can name the wrong person.
+ */
+export const FINALIZER_NOT_RECORDED_DISCLOSURE =
+  "finalized before finalizer tracking; not recorded";
+
 function resolveSectionProvenance(
   section: ApplicationSectionRow,
   draft: DraftRowLite | null
 ): GrantApplicationSectionProvenance {
-  const finalizedAt = section.status === "final" ? section.updated_at || null : null;
-  const finalizedBy = section.status === "final" ? section.updated_by : null;
+  const finalizedAt = section.status === "final" ? section.finalized_at : null;
+  const finalizedBy =
+    section.status === "final"
+      ? section.finalized_by ?? FINALIZER_NOT_RECORDED_DISCLOSURE
+      : null;
 
   if (!section.final_markdown) {
     return {
@@ -160,7 +174,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const [sectionsResult, attachmentsResult] = await Promise.all([
       supabase
         .from("funding_opportunity_application_sections")
-        .select(APPLICATION_SECTION_SELECT)
+        // The provenance select carries finalized_by/finalized_at — the
+        // export appendix names the FINALIZER, never the last toucher.
+        .select(APPLICATION_SECTION_PROVENANCE_SELECT)
         .eq("opportunity_id", opportunity.id)
         .order("sort_order", { ascending: true }),
       supabase
@@ -175,6 +191,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
     if (pendingMessage) {
       return NextResponse.json({ error: APPLICATION_PENDING_SCHEMA_ERROR }, { status: 503 });
+    }
+    // The tables exist but the finalizer columns do not: refuse with the
+    // migration to apply rather than exporting provenance without them.
+    if (looksLikePendingFinalizerSchema(sectionsResult.error?.message)) {
+      return NextResponse.json(
+        { error: APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR },
+        { status: 503 }
+      );
     }
     if (sectionsResult.error || attachmentsResult.error) {
       return NextResponse.json({ error: "Failed to load the application" }, { status: 500 });

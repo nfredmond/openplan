@@ -419,17 +419,26 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     // Latest stored AI draft per section, so the workspace panel can resume a
     // drafting session started earlier (the draft history is append-only, so
-    // newest-first per section is the operator's current working draft). A
-    // failed read is DISCLOSED as unavailable, never presented as "no drafts".
+    // newest-first per section is the operator's current working draft). The
+    // query is scoped to exactly the sections being returned, with a generous
+    // newest-first window; a prolific opportunity that fills the window is
+    // DISCLOSED as truncated (a section's latest draft could lie beyond it),
+    // and a failed read is DISCLOSED as unavailable — never "no drafts".
+    const DRAFTS_WINDOW_LIMIT = 1000;
     const latestDraftsBySectionId: Record<string, unknown> = {};
     let latestDraftsUnavailable = false;
-    if (sectionRows.length > 0) {
+    let draftsWindowTruncated = false;
+    const sectionIds = sectionRows
+      .map((row) => (typeof row.id === "string" ? row.id : null))
+      .filter((id): id is string => id !== null);
+    if (sectionIds.length > 0) {
       const { data: draftRows, error: draftsError } = await supabase
         .from("funding_opportunity_section_drafts")
         .select(APPLICATION_SECTION_DRAFT_SELECT)
         .eq("opportunity_id", opportunity.id)
+        .in("section_id", sectionIds)
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(DRAFTS_WINDOW_LIMIT);
 
       if (draftsError) {
         latestDraftsUnavailable = true;
@@ -439,7 +448,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
           message: draftsError.message,
         });
       } else {
-        for (const row of (draftRows ?? []) as Array<{ section_id?: unknown }>) {
+        const rows = (draftRows ?? []) as Array<{ section_id?: unknown }>;
+        draftsWindowTruncated = rows.length >= DRAFTS_WINDOW_LIMIT;
+        if (draftsWindowTruncated) {
+          audit.warn("application_draft_window_truncated", {
+            opportunityId: opportunity.id,
+            userId: user.id,
+            limit: DRAFTS_WINDOW_LIMIT,
+          });
+        }
+        for (const row of rows) {
           const sectionId = typeof row.section_id === "string" ? row.section_id : null;
           if (sectionId && !(sectionId in latestDraftsBySectionId)) {
             latestDraftsBySectionId[sectionId] = row;
@@ -541,6 +559,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       schemaPending: false,
       latestDraftsBySectionId,
       latestDraftsUnavailable,
+      draftsWindowTruncated,
       kbDocumentOptions,
       reportArtifactOptions,
       attachSourcesDegraded,

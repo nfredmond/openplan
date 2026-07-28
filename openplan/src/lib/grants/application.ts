@@ -59,6 +59,24 @@ export function looksLikePendingAssemblySchema(message: string | null | undefine
   return /could not find the table|relation .* does not exist|schema cache/i.test(message ?? "");
 }
 
+export const APPLICATION_FINALIZER_MIGRATION = "20260727000016_application_section_finalizer";
+
+export const APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR = `This deployment's database predates section finalizer tracking (finalized_by / finalized_at). Apply migration ${APPLICATION_FINALIZER_MIGRATION}, then retry.`;
+
+/**
+ * PostgREST/Postgres shapes for "the finalizer columns are not migrated yet":
+ * a SELECT gives `column … finalized_by does not exist` (42703); an UPDATE
+ * gives `Could not find the 'finalized_by' column … in the schema cache`
+ * (PGRST204). Both name the column, so this cannot false-positive on other
+ * failures. Omit-when-missing is NOT an acceptable degradation here — the
+ * export's provenance appendix depends on these columns, so the affected
+ * paths answer 503 naming the migration instead.
+ */
+export function looksLikePendingFinalizerSchema(message: string | null | undefined): boolean {
+  const text = message ?? "";
+  return /finalized_(?:by|at)/i.test(text) && /column|schema cache/i.test(text);
+}
+
 // ---------------------------------------------------------------------------
 // Row shapes (as read back through the untyped Supabase client)
 // ---------------------------------------------------------------------------
@@ -66,6 +84,18 @@ export function looksLikePendingAssemblySchema(message: string | null | undefine
 /** Canonical select column lists (the untyped client never checks these). */
 export const APPLICATION_SECTION_SELECT =
   "id, workspace_id, opportunity_id, section_key, title, guidance, sort_order, source, suggested_evidence, ai_drafting_enabled, status, final_markdown, finalized_from_draft_id, updated_by, created_at, updated_at";
+
+/**
+ * The section columns plus the finalizer-event columns (finalized_by /
+ * finalized_at, migration 20260727000016). Only the export's provenance
+ * appendix needs them; the base select deliberately omits them so every
+ * non-export surface keeps working against a database that predates the
+ * finalizer migration. A read through this select against such a database
+ * fails with a column error — answer 503 with
+ * APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR (see
+ * looksLikePendingFinalizerSchema), never a silent fallback to updated_by.
+ */
+export const APPLICATION_SECTION_PROVENANCE_SELECT = `${APPLICATION_SECTION_SELECT}, finalized_by, finalized_at`;
 
 export const APPLICATION_ATTACHMENT_SELECT =
   "id, workspace_id, opportunity_id, attachment_key, title, guidance, required, status, kb_document_id, report_artifact_id, note, sort_order, updated_by, created_at, updated_at";
@@ -88,6 +118,15 @@ export type ApplicationSectionRow = {
   status: ApplicationSectionStatus;
   final_markdown: string | null;
   finalized_from_draft_id: string | null;
+  /**
+   * The finalization EVENT (who committed the current final text, and when) —
+   * distinct from updated_by/updated_at, which any later touch (a reorder
+   * stamps every row) overwrites. Populated only when the row is read through
+   * APPLICATION_SECTION_PROVENANCE_SELECT; null via the base select, and null
+   * for rows finalized before finalizer tracking existed (20260727000016).
+   */
+  finalized_by: string | null;
+  finalized_at: string | null;
   updated_by: string | null;
   created_at: string;
   updated_at: string;
@@ -320,6 +359,8 @@ export function parseApplicationSectionRow(value: unknown): ApplicationSectionRo
     status: record.status,
     final_markdown: asOptionalString(record.final_markdown),
     finalized_from_draft_id: asOptionalString(record.finalized_from_draft_id),
+    finalized_by: asOptionalString(record.finalized_by),
+    finalized_at: asOptionalString(record.finalized_at),
     updated_by: asOptionalString(record.updated_by),
     created_at: typeof record.created_at === "string" ? record.created_at : "",
     updated_at: typeof record.updated_at === "string" ? record.updated_at : "",
