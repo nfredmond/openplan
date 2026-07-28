@@ -22,10 +22,34 @@ async function readCalls(callsPath: string) {
     .filter(Boolean);
 }
 
+/** A minimal HTML document containing exactly the given strings. */
+function htmlPageOf(markers: string[]) {
+  return ["<!doctype html><html><body>", ...markers.map((marker) => `<p>${marker}</p>`), "</body></html>"].join("");
+}
+
 async function makeTempPath(prefix: string) {
   const file = path.join(tmpdir(), `${prefix}-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`);
   tempFiles.push(file);
   return file;
+}
+
+type MockFetchModule = {
+  renderedExamplesPageApproximation: () => string;
+};
+
+async function importMockFetch(): Promise<MockFetchModule> {
+  return (await import(
+    `${pathToFileURL(mockFetchPath).href}?t=${Date.now()}-${Math.random()}`
+  )) as MockFetchModule;
+}
+
+type PreflightModule = {
+  EXAMPLES_REQUIRED_MARKERS: string[];
+  EXAMPLES_FORBIDDEN_MARKERS: string[];
+};
+
+async function importPreflight(): Promise<PreflightModule> {
+  return (await import(pathToFileURL(scriptPath).href)) as unknown as PreflightModule;
 }
 
 async function runPreflight(options: PublicDemoPreflightOptions = {}) {
@@ -38,7 +62,7 @@ async function runPreflight(options: PublicDemoPreflightOptions = {}) {
     vi.stubEnv(key, value);
   }
 
-  await import(`${pathToFileURL(mockFetchPath).href}?t=${Date.now()}-${Math.random()}`);
+  await importMockFetch();
   const importedPreflight = await import(pathToFileURL(scriptPath).href);
   const runPreflightModule = importedPreflight as {
     runPreflight: (argv?: string[]) => Promise<{ help?: boolean; text?: string; origin?: string; checks?: string[]; warnings?: string[] }>;
@@ -73,6 +97,37 @@ afterEach(async () => {
 });
 
 describe("public demo preflight script", () => {
+  /**
+   * THE CHECK MUST BE ABLE TO FAIL WHEN THE PAGE MOVES.
+   *
+   * This suite previously proved nothing about /examples: the script demanded
+   * nine markers, four of which had not existed in `src/` for months, and the
+   * mock fixture hand-wrote precisely those nine strings back. Every run was
+   * green; every run against a real deployment would have failed.
+   *
+   * These two assertions are the fix. The fixture now serves the page's own
+   * source, and this test reads the same source directly — so a marker the page
+   * stops rendering, or forbidden copy the page starts rendering, fails here
+   * with the marker named, rather than silently passing forever.
+   */
+  it("demands only markers the real /examples page still renders", async () => {
+    const { EXAMPLES_REQUIRED_MARKERS } = await importPreflight();
+    const { renderedExamplesPageApproximation } = await importMockFetch();
+    const page = renderedExamplesPageApproximation();
+
+    expect(EXAMPLES_REQUIRED_MARKERS.length).toBeGreaterThanOrEqual(6);
+    expect(EXAMPLES_REQUIRED_MARKERS.filter((marker) => !page.includes(marker))).toEqual([]);
+  });
+
+  it("forbids only copy the real /examples page does not render", async () => {
+    const { EXAMPLES_FORBIDDEN_MARKERS } = await importPreflight();
+    const { renderedExamplesPageApproximation } = await importMockFetch();
+    const page = renderedExamplesPageApproximation();
+
+    expect(EXAMPLES_FORBIDDEN_MARKERS.length).toBeGreaterThanOrEqual(3);
+    expect(EXAMPLES_FORBIDDEN_MARKERS.filter((marker) => page.includes(marker))).toEqual([]);
+  });
+
   it("passes the no-secret public demo checks without printing token values", async () => {
     const result = await runPreflight();
 
@@ -81,7 +136,7 @@ describe("public demo preflight script", () => {
     expect(result.stdout).toContain("OpenPlan public demo preflight passed");
     expect(result.stdout).toContain("GET/HEAD /api/health");
     expect(result.stdout).toContain("GET /examples");
-    expect(result.stdout).toContain("buyer evidence brief");
+    expect(result.stdout).toContain("verbatim caveats intact");
     expect(result.stdout).toContain("CSP includes Mapbox");
     expect(result.stdout).not.toContain("pk.test-public-token");
     expect(result.calls).toEqual([
@@ -119,49 +174,37 @@ describe("public demo preflight script", () => {
     });
   });
 
-  it("fails if the examples page loses the buyer evidence brief markers", async () => {
+  it("fails if the examples page drops any single required marker", async () => {
+    // Built FROM the contract rather than restating it, so this stays a real
+    // test of the check instead of a second copy of its expectations.
+    const { EXAMPLES_REQUIRED_MARKERS } = await importPreflight();
+    const dropped = EXAMPLES_REQUIRED_MARKERS[EXAMPLES_REQUIRED_MARKERS.length - 1];
+
     await expect(
       runPreflight({
         env: {
-          OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML: [
-            "<!doctype html>",
-            "<html><body>",
-            "<h1>Evidence catalog: screening proof with caveats intact</h1>",
-            "<p>internal prototype only</p>",
-            "<p>237.62%</p>",
-            "<p>screening-grade only</p>",
-            "<p>not a guarantee of current runtime state</p>",
-            "</body></html>",
-          ].join(""),
+          OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML: htmlPageOf(
+            EXAMPLES_REQUIRED_MARKERS.filter((marker) => marker !== dropped),
+          ),
         },
       }),
     ).rejects.toMatchObject({
       status: 1,
-      stderr: expect.stringContaining("nevada-county-buyer-evidence-brief"),
+      stderr: expect.stringContaining(dropped),
       calls: expect.arrayContaining(["GET /examples"]),
     });
   });
 
   it("fails if the examples page regresses to stale live-run or overclaim copy", async () => {
+    const { EXAMPLES_REQUIRED_MARKERS, EXAMPLES_FORBIDDEN_MARKERS } = await importPreflight();
+
     await expect(
       runPreflight({
         env: {
-          OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML: [
-            "<!doctype html>",
-            "<html><body>",
-            "<h1>Evidence catalog: screening proof with caveats intact</h1>",
-            "<p>One live run, verbatim</p>",
-            "<p>internal prototype only</p>",
-            "<p>237.62%</p>",
-            "<p>screening-grade only</p>",
-            "<section id=\"nevada-county-buyer-evidence-brief\">",
-            "<h2>Nevada County buyer evidence brief</h2>",
-            "<p>does not prove current runtime state</p>",
-            "<p>Scope one supervised first workflow</p>",
-            "</section>",
-            "<p>not a guarantee of current runtime state</p>",
-            "</body></html>",
-          ].join(""),
+          OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML: htmlPageOf([
+            ...EXAMPLES_REQUIRED_MARKERS,
+            EXAMPLES_FORBIDDEN_MARKERS[0],
+          ]),
         },
       }),
     ).rejects.toMatchObject({

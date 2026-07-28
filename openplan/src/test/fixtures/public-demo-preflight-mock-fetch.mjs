@@ -1,4 +1,5 @@
-import { appendFileSync } from "node:fs";
+import { appendFileSync, existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 
 const DEFAULT_HEALTH_CACHE_CONTROL = "no-store, max-age=0";
 const DEFAULT_HEALTH_PAYLOAD = {
@@ -10,43 +11,53 @@ const DEFAULT_HEALTH_PAYLOAD = {
     database: "not_checked",
   },
 };
-const DEFAULT_REQUEST_ACCESS_HTML = [
-  "<!doctype html>",
-  "<html>",
-  "<body>",
-  "<main>",
-  "<h1>Start an OpenPlan self-hosting, managed-hosting, or implementation review.</h1>",
-  '<section id="request-access-form">Request access form</section>',
-  "<p>No auto-send</p>",
-  "</main>",
-  "</body>",
-  "</html>",
-].join("");
-const DEFAULT_EXAMPLES_HTML = [
-  "<!doctype html>",
-  "<html>",
-  "<body>",
-  "<main>",
-  "<h1>Evidence catalog: screening proof with caveats intact</h1>",
-  "<p>internal prototype only</p>",
-  "<p>237.62% Max APE</p>",
-  "<p>screening-grade only</p>",
-  '<section id="nevada-county-buyer-evidence-brief">',
-  "<h2>Nevada County buyer evidence brief</h2>",
-  "<p>does not prove current runtime state</p>",
-  "<p>Scope one supervised first workflow</p>",
-  "</section>",
-  "<p>not a guarantee of current runtime state</p>",
-  "</main>",
-  "</body>",
-  "</html>",
-].join("");
 const DEFAULT_CSP = [
   "default-src 'self'",
   "img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com https://*.supabase.co",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.mapbox.com https://events.mapbox.com https://*.tiles.mapbox.com",
   "worker-src 'self' blob:",
 ].join("; ");
+
+const EXAMPLES_PAGE_FILE = path.join(process.cwd(), "src", "app", "(public)", "examples", "page.tsx");
+const EXAMPLES_DATA_DIR = path.join(process.cwd(), "src", "lib", "examples");
+
+/**
+ * The text a deployed /examples page could actually contain, read from the page
+ * itself.
+ *
+ * WHY THIS IS NOT A HAND-WRITTEN STRING. It used to be, and that was the bug:
+ * this fixture spelled out, by hand, exactly the markers
+ * `check-public-demo-preflight.mjs` asserts — including four that had not
+ * existed in the product for months. The check therefore passed forever in CI
+ * while being guaranteed to FAIL against any real deployment, because the only
+ * page it had ever been run against was this file. A mock that manufactures the
+ * assertion's own expected output does not test the assertion; it tests itself.
+ *
+ * So the fixture now serves the page's own source, plus the example data
+ * modules the page imports (found by following its imports rather than naming
+ * them, so a new or renamed example needs no edit here). Whitespace is collapsed
+ * because JSX collapses it too — source text wrapped across lines renders as one
+ * line, and the markers are written the way the page reads, not the way it is
+ * indented.
+ *
+ * This is deliberately an APPROXIMATION of the rendered page: it proves the
+ * strings the check demands are really in the product, which is the drift the
+ * check could not see before. It does not prove the deployment serves them —
+ * only running the preflight against a real origin does that.
+ */
+export function renderedExamplesPageApproximation() {
+  const page = readFileSync(EXAMPLES_PAGE_FILE, "utf8");
+  const importedExamples = [...page.matchAll(/from\s+"@\/lib\/examples\/([^"]+)"/g)]
+    .map((match) => path.join(EXAMPLES_DATA_DIR, `${match[1]}.ts`))
+    .filter((file) => existsSync(file))
+    .map((file) => readFileSync(file, "utf8"));
+
+  return [page, ...importedExamples].join("\n").replace(/\s+/g, " ");
+}
+
+function defaultExamplesHtml() {
+  return `<!doctype html><html><body><main>${renderedExamplesPageApproximation()}</main></body></html>`;
+}
 
 function readJsonEnv(name, fallback) {
   const value = process.env[name];
@@ -79,20 +90,9 @@ function responseForHealth(method) {
   });
 }
 
-function responseForRequestAccess() {
-  const status = readNumberEnv("OPENPLAN_PUBLIC_DEMO_MOCK_REQUEST_ACCESS_STATUS", 200);
-  return new Response(process.env.OPENPLAN_PUBLIC_DEMO_MOCK_REQUEST_ACCESS_HTML ?? DEFAULT_REQUEST_ACCESS_HTML, {
-    status,
-    statusText: status === 200 ? "OK" : "Not Found",
-    headers: {
-      "Content-Type": process.env.OPENPLAN_PUBLIC_DEMO_MOCK_REQUEST_ACCESS_CONTENT_TYPE ?? "text/html; charset=utf-8",
-    },
-  });
-}
-
 function responseForExamples() {
   const status = readNumberEnv("OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_STATUS", 200);
-  return new Response(process.env.OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML ?? DEFAULT_EXAMPLES_HTML, {
+  return new Response(process.env.OPENPLAN_PUBLIC_DEMO_MOCK_EXAMPLES_HTML ?? defaultExamplesHtml(), {
     status,
     statusText: status === 200 ? "OK" : "Not Found",
     headers: {
@@ -127,7 +127,6 @@ globalThis.fetch = async function mockPublicDemoPreflightFetch(url, init = {}) {
   await new Promise((resolve) => setTimeout(resolve, 0));
 
   if (parsed.pathname === "/api/health") return responseForHealth(method);
-  if (parsed.pathname === "/request-access") return responseForRequestAccess();
   if (parsed.pathname === "/examples") return responseForExamples();
   if (parsed.pathname === "/") return responseForRoot(method);
 

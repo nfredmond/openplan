@@ -223,26 +223,64 @@ async function assertHtmlRouteMarkers(origin, pathname, routeLabel, requiredMark
   }
 }
 
-async function checkExamples(origin) {
-  await assertHtmlRouteMarkers(origin, "/examples", "examples evidence-catalog", [
-    "Evidence catalog: screening proof with caveats intact",
-    "internal prototype only",
-    "237.62%",
-    "screening-grade only",
-    "not a guarantee of current runtime state",
-    "nevada-county-buyer-evidence-brief",
-    "Nevada County buyer evidence brief",
-    "does not prove current runtime state",
-    "Scope one supervised first workflow",
-  ], [
-    "One live run, verbatim",
-    "validated forecast",
-    "production data seeded",
-    "automatic workspace provisioning",
-    "instant customer activation",
-  ]);
+/**
+ * What a deployed /examples page must still say about itself.
+ *
+ * Every marker below is text the CURRENT page renders — its own title, the
+ * screening gate the run recorded, the worst validation number, the first
+ * verbatim caveat, and the disclaimer that one snapshot is not a live status.
+ * Together they are the page's honesty: soften any one of them and the evidence
+ * catalog becomes a brochure.
+ *
+ * THESE MUST TRACK THE REAL PAGE. This list used to demand four strings that
+ * had not existed in the product for months, and it looked healthy only because
+ * its unit test served it a hand-written fixture containing exactly the strings
+ * it asked for — a check that could never notice the page had moved. The test
+ * now derives its fixture from the page's own source and asserts every marker
+ * here appears there, so this list cannot drift again without failing.
+ */
+export const EXAMPLES_REQUIRED_MARKERS = [
+  // The page's own title.
+  "Evidence catalog: screening proof with caveats intact",
+  // Provenance: one finished run shown as-is, not a live feed and not a montage.
+  "One completed run, verbatim",
+  // The screening gate exactly as the run recorded it.
+  "internal prototype only",
+  // The worst number, on the page rather than buried.
+  "237.62%",
+  // …and why that number disqualifies the run from outward modeling claims.
+  "Above the 50% critical-facility threshold",
+  // The first caveat, quoted verbatim from the validation artifact.
+  "screening-grade only",
+  // The page's promise about its own method.
+  "Caveats are quoted verbatim from the validation artifact",
+  // A snapshot is not a live status.
+  "not a guarantee of current runtime state",
+];
 
-  return "GET /examples returns the evidence catalog, buyer evidence brief, and screening-grade caveats without stale overclaim copy";
+/**
+ * Copy that would turn the evidence catalog back into an overclaim. "One live
+ * run" is the specific softening this page already corrected (it shows one
+ * COMPLETED run); the rest are forecast/production claims a screening-grade
+ * artifact cannot support.
+ */
+export const EXAMPLES_FORBIDDEN_MARKERS = [
+  "One live run, verbatim",
+  "validated forecast",
+  "production data seeded",
+  "instant customer activation",
+];
+
+async function checkExamples(origin) {
+  await assertHtmlRouteMarkers(
+    origin,
+    "/examples",
+    "examples evidence-catalog",
+    EXAMPLES_REQUIRED_MARKERS,
+    EXAMPLES_FORBIDDEN_MARKERS,
+  );
+
+  return "GET /examples returns the evidence catalog with its screening gate, worst-case validation number, and verbatim caveats intact";
 }
 
 async function checkMapboxCsp(origin) {
@@ -378,7 +416,7 @@ export function formatResult(result) {
   lines.push(
     "",
     "Limitations:",
-    "  - Billing readiness facts require the existing secret-backed POST dry run; this preflight only verifies the route is not public.",
+    "  - Only anonymous GET/HEAD requests were made; nothing behind sign-in was exercised.",
     "  - Supabase writes and outbound email were not attempted.",
     "  - Token values are never printed.",
   );
