@@ -11,6 +11,7 @@ import {
   TIGERWEB_GEOGRAPHY_SOURCE,
   type WorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
+import type { PlaceOfRecord } from "@/lib/geographies/place-of-record";
 
 export type StudyAreaBbox = { minLon: number; minLat: number; maxLon: number; maxLat: number };
 
@@ -156,19 +157,136 @@ export function studyAreaPrefillFromHomeGeography(
 ): StudyAreaPrefill {
   if (!geo) return EMPTY_STUDY_AREA_PREFILL;
 
-  const geometry = corridorGeojsonSchema.safeParse(geo.home_geometry_geojson);
+  return studyAreaPrefillFrom({
+    source: geo.home_geography_source ?? null,
+    kind: geo.home_geography_kind ?? null,
+    ref: geo.home_geography_ref ?? null,
+    label: homeGeographyLabel(geo),
+    countryCode: geo.home_country_code ?? null,
+    subdivisionCode: geo.home_subdivision_code ?? null,
+    bbox: homeGeographyBbox(geo),
+    geometry: geo.home_geometry_geojson,
+  });
+}
+
+/**
+ * THE prefill builder, for any place of record — a workspace's home geography,
+ * a project's study area, or whatever adopts the shape next.
+ *
+ * Both honesty rules from the original workspace-only version are unchanged:
+ *
+ *   - Without the stored boundary geometry there is no prefill at all. A bbox
+ *     rectangle drawn around a county is not that county, and quietly analyzing
+ *     the wrong shape is worse than asking the user to pick.
+ *   - `place` — the identity a lossless county filter is derived from — is only
+ *     reconstructed for a source whose refs really are Census GEOIDs. Another
+ *     resolver's ref is a different namespace, and a drawn area has no ref at
+ *     all, so both stay boundary-only.
+ */
+export function studyAreaPrefillFrom(source: PlaceOfRecord | null | undefined): StudyAreaPrefill {
+  if (!source) return EMPTY_STUDY_AREA_PREFILL;
+
+  const geometry = corridorGeojsonSchema.safeParse(source.geometry);
   if (!geometry.success) return EMPTY_STUDY_AREA_PREFILL;
 
-  const label = homeGeographyLabel(geo);
+  const label = source.label?.trim() || null;
   const corridorText = JSON.stringify(geometry.data);
 
-  const kind = placeKindSchema.safeParse(geo.home_geography_kind);
-  const bbox = homeGeographyBbox(geo);
-  const geoid = geo.home_geography_ref;
+  const kind = placeKindSchema.safeParse(source.kind);
   const place: PlaceBoundaryResponse | null =
-    geo.home_geography_source === TIGERWEB_GEOGRAPHY_SOURCE && kind.success && bbox && geoid
-      ? { kind: kind.data, geoid, label, geojson: geometry.data, bbox }
+    source.source === TIGERWEB_GEOGRAPHY_SOURCE && kind.success && source.bbox && source.ref
+      ? { kind: kind.data, geoid: source.ref, label, geojson: geometry.data, bbox: source.bbox }
       : null;
 
   return { corridorText, geometry: geometry.data, place, label };
+}
+
+/** Where an inherited study area came from. `none` means nothing was inherited. */
+export type StudyAreaOrigin = "existing" | "project" | "workspace_home" | "previous_run" | "none";
+
+export type ResolvedStudyArea = StudyAreaPrefill & {
+  origin: StudyAreaOrigin;
+  /**
+   * What the planner is TOLD about where this area came from, for the picker's
+   * `externalLabel`. Null when nothing was inherited — never a place name
+   * standing in for an explanation.
+   */
+  originLabel: string | null;
+};
+
+const EMPTY_RESOLVED_STUDY_AREA: ResolvedStudyArea = {
+  ...EMPTY_STUDY_AREA_PREFILL,
+  origin: "none",
+  originLabel: null,
+};
+
+/**
+ * Decide which study area a surface should open with.
+ *
+ * Two invariants hold for every caller, and both are asserted in
+ * `study-area-precedence.test.ts`:
+ *
+ *   1. A prefill is applied ONCE, into an EMPTY field, and never over a user's
+ *      edit. This function is pure and does not know about edits, so the caller
+ *      owns that — the established pattern is `use-explore-home-geography.ts`'s
+ *      `prefillAppliedRef`.
+ *   2. The origin is always SHOWN. `StudyAreaPicker` has an `externalLabel` prop
+ *      for exactly this. An inherited study area that does not say where it came
+ *      from is a silent assumption about what is being analysed.
+ *
+ * No branch of this function can invent a place: with nothing to inherit it
+ * returns empty, never a continental default.
+ */
+export function resolveStudyArea(candidates: {
+  /** The area this record ALREADY carries — a model's launch template, a reloaded run. */
+  existing?: CorridorGeojson | null;
+  project?: PlaceOfRecord | null;
+  workspaceHome?: PlaceOfRecord | null;
+  /** What this surface ran last time. A habit, not a statement. */
+  previousRun?: CorridorGeojson | null;
+}): ResolvedStudyArea {
+  // The record's own value is not part of the chain — it OUTRANKS it. A corridor
+  // someone deliberately chose for this record must not be replaced by a
+  // project-wide area just because one exists.
+  if (candidates.existing) {
+    return {
+      corridorText: JSON.stringify(candidates.existing),
+      geometry: candidates.existing,
+      place: null,
+      label: null,
+      origin: "existing",
+      originLabel: "the area this record already uses",
+    };
+  }
+
+  const project = studyAreaPrefillFrom(candidates.project);
+  if (project.geometry) {
+    return {
+      ...project,
+      origin: "project",
+      originLabel: project.label ?? "this project's study area",
+    };
+  }
+
+  const workspaceHome = studyAreaPrefillFrom(candidates.workspaceHome);
+  if (workspaceHome.geometry) {
+    return {
+      ...workspaceHome,
+      origin: "workspace_home",
+      originLabel: workspaceHome.label ?? "this workspace's home geography",
+    };
+  }
+
+  if (candidates.previousRun) {
+    return {
+      corridorText: JSON.stringify(candidates.previousRun),
+      geometry: candidates.previousRun,
+      place: null,
+      label: null,
+      origin: "previous_run",
+      originLabel: "the area this surface last used",
+    };
+  }
+
+  return EMPTY_RESOLVED_STUDY_AREA;
 }

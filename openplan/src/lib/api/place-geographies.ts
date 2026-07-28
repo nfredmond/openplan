@@ -22,6 +22,22 @@ export const PLACE_KIND_PLURAL_LABELS: Record<PlaceKind, string> = {
   micro: "micropolitan areas",
 };
 
+/**
+ * Singular forms, for telling a planner what they picked.
+ *
+ * A surface that only works on one kind — county onboarding runs on a county —
+ * has to say "Columbus is a city, pick the county that contains it" rather than
+ * silently accepting a place it cannot use. The plural map above reads wrong in
+ * that sentence, and pluralizing by hand at each call site drifts.
+ */
+export const PLACE_KIND_LABELS: Record<PlaceKind, string> = {
+  county: "county",
+  city: "city or town",
+  cdp: "census-designated place",
+  metro: "metro area",
+  micro: "micropolitan area",
+};
+
 export const placeSearchItemSchema = z.object({
   kind: placeKindSchema,
   geoid: z.string().min(5).max(7),

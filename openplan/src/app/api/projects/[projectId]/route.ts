@@ -15,6 +15,15 @@ import {
   assessProjectDelete,
   PROJECT_DELETE_RELATIONS,
 } from "@/lib/projects/project-delete-preconditions";
+import { placeKindSchema } from "@/lib/api/place-geographies";
+import { corridorGeojsonSchema } from "@/lib/models/run-launch";
+import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
+import {
+  clearedProjectPlace,
+  PROJECT_PLACE_COLUMNS,
+  projectPlaceFromDrawnArea,
+  projectPlaceFromPlaceBoundary,
+} from "@/lib/projects/project-place";
 
 /**
  * The project record itself: edit it, or delete it.
@@ -40,6 +49,9 @@ import {
  * `project-delete-preconditions.ts`.
  */
 
+// Setting a searched place re-resolves the boundary through TIGERweb.
+export const runtime = "nodejs";
+
 const paramsSchema = z.object({ projectId: z.string().uuid() });
 
 /**
@@ -57,6 +69,31 @@ const patchProjectSchema = z
     status: projectStatusSchema.optional(),
     planType: projectPlanTypeSchema.optional(),
     deliveryPhase: projectDeliveryPhaseSchema.optional(),
+    /**
+     * The area this project studies (20260728000009) — not its map marker,
+     * which stays with `location/route.ts`.
+     *
+     * A searched place is sent as a REFERENCE and re-resolved here, following
+     * `/api/workspaces/home-geography`: a client-supplied bbox would be an
+     * unverifiable geography wearing trusted-looking provenance. A drawn area
+     * is sent as geometry, because there is nothing to look it up by.
+     */
+    place: z
+      .union([
+        z.object({
+          mode: z.literal("place"),
+          kind: placeKindSchema,
+          geoid: z.string().trim().min(5).max(7),
+          label: z.string().trim().min(1).max(200).optional(),
+        }),
+        z.object({
+          mode: z.literal("drawn"),
+          geometry: corridorGeojsonSchema,
+          label: z.string().trim().min(1).max(200).optional(),
+        }),
+        z.null(),
+      ])
+      .optional(),
   })
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
     message: "Provide at least one field to update.",
@@ -135,6 +172,47 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
     if (payload.data.planType !== undefined) updates.plan_type = payload.data.planType;
     if (payload.data.deliveryPhase !== undefined) updates.delivery_phase = payload.data.deliveryPhase;
 
+    if (payload.data.place !== undefined) {
+      if (payload.data.place === null) {
+        Object.assign(updates, clearedProjectPlace());
+      } else if (payload.data.place.mode === "place") {
+        const boundary = await resolvePlaceBoundary(payload.data.place.kind, payload.data.place.geoid);
+        if (!boundary) {
+          // Fail closed. Recording the id without a verified boundary would
+          // leave an area that renders as an empty or wrong extent everywhere
+          // it is inherited — and inheritance is the whole point of the column.
+          audit.warn("project_place_unresolved", {
+            projectId: routeParams.data.projectId,
+            kind: payload.data.place.kind,
+            geoid: payload.data.place.geoid,
+          });
+          return NextResponse.json(
+            {
+              error: "Could not resolve that place",
+              message:
+                "The boundary service did not return a boundary for that place. Search for it again and pick it from the list.",
+            },
+            { status: 404 }
+          );
+        }
+        Object.assign(
+          updates,
+          projectPlaceFromPlaceBoundary(boundary, { label: payload.data.place.label ?? null })
+        );
+      } else {
+        const drawn = projectPlaceFromDrawnArea(payload.data.place.geometry, {
+          label: payload.data.place.label ?? null,
+        });
+        if (!drawn) {
+          return NextResponse.json(
+            { error: "That drawn area has no usable coordinates." },
+            { status: 400 }
+          );
+        }
+        Object.assign(updates, drawn);
+      }
+    }
+
     // User (RLS) client: projects_update re-checks membership and, since
     // 20260728000006, the restrictive writer policy re-checks role — so the
     // explicit gate above is defence in depth rather than the only guard.
@@ -142,7 +220,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .from("projects")
       .update(updates)
       .eq("id", project.id)
-      .select("id, name, summary, status, plan_type, delivery_phase, updated_at")
+      .select(`id, name, summary, status, plan_type, delivery_phase, updated_at, ${PROJECT_PLACE_COLUMNS}`)
       .single();
 
     if (error || !data) {

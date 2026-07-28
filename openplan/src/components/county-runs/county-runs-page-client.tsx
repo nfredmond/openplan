@@ -15,10 +15,24 @@ import { buildCountyRunDetailHref } from "@/lib/ui/county-runs-navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { StudyAreaPicker } from "@/components/models/study-area-picker";
+import { PLACE_KIND_LABELS, type PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 
-export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
+export type CountyRunsInitialStudyArea = {
+  corridorText: string;
+  place: PlaceBoundaryResponse | null;
+  label: string | null;
+};
+
+export function CountyRunsPageClient({
+  workspaceId,
+  initialStudyArea,
+}: {
+  workspaceId: string;
+  initialStudyArea?: CountyRunsInitialStudyArea;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -28,9 +42,14 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     refreshMs: 15000,
   });
   const { create, loading: creating, error: createError } = useCountyRunMutations();
-  const [countyFips, setCountyFips] = useState("");
-  const [geographyLabel, setGeographyLabel] = useState("");
-  const [countyPrefix, setCountyPrefix] = useState("");
+
+  // The workspace's stated home geography, prefilled once. This page used to
+  // open with three empty boxes — County FIPS, Geography label, County prefix —
+  // and ask a planner to be the lookup table for their own county.
+  const [corridorText, setCorridorText] = useState(initialStudyArea?.corridorText ?? "");
+  const [resolvedPlace, setResolvedPlace] = useState<PlaceBoundaryResponse | null>(
+    initialStudyArea?.place ?? null
+  );
   const [runName, setRunName] = useState("");
 
   const currentViewHref = useMemo(() => {
@@ -38,31 +57,63 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
     return query ? `${pathname}?${query}` : pathname;
   }, [pathname, searchParams]);
 
+  /**
+   * County onboarding runs on a COUNTY. A resolved county's GEOID is its
+   * 5-digit FIPS; anything else — a city, a CDP, a metro, a drawn area — has no
+   * county to derive without guessing which one contains it.
+   *
+   * Non-negotiable #1: disclose the limit, never silently apply it.
+   */
+  const countySelection = useMemo(() => {
+    if (!resolvedPlace) {
+      return {
+        ready: false as const,
+        reason: corridorText.trim()
+          ? "A drawn area has no county identity. Search for the county by name so onboarding knows which one to run."
+          : null,
+      };
+    }
+    if (resolvedPlace.kind !== "county") {
+      return {
+        ready: false as const,
+        reason: `County onboarding runs on a county. ${
+          resolvedPlace.label ?? "That place"
+        } is a ${PLACE_KIND_LABELS[resolvedPlace.kind] ?? resolvedPlace.kind} — pick the county that contains it.`,
+      };
+    }
+    return {
+      ready: true as const,
+      geoid: resolvedPlace.geoid,
+      label: resolvedPlace.label ?? resolvedPlace.geoid,
+      reason: null,
+    };
+  }, [resolvedPlace, corridorText]);
+
   const suggestedRunName = useMemo(() => {
-    const prefix = geographyLabel
-      .trim()
+    if (!countySelection.ready) return "";
+    const slug = countySelection.label
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    if (!prefix || !countyFips.trim()) return "";
-    return `${prefix || "county"}-runtime`;
-  }, [geographyLabel, countyFips]);
+    return `${slug || "county"}-runtime`;
+  }, [countySelection]);
 
   const submitCreate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!countySelection.ready) return;
+
     const nextRunName = runName.trim() || suggestedRunName;
-    const nextPrefix = countyPrefix.trim().toUpperCase();
-    const nextLabel = geographyLabel.trim();
-    const nextFips = countyFips.trim();
-    if (!nextRunName || !nextPrefix || !nextLabel || !nextFips) return;
+    if (!nextRunName) return;
 
     const created = await create({
       workspaceId,
       geographyType: "county_fips",
-      geographyId: nextFips,
-      geographyLabel: nextLabel,
+      geographyId: countySelection.geoid,
+      geographyLabel: countySelection.label,
       runName: nextRunName,
-      countyPrefix: nextPrefix,
+      // countyPrefix is deliberately NOT sent. It is optional on the request
+      // schema and `defaultCountyPrefix` already derives it from the label, so
+      // the old input required a field the API never needed.
       runtimeOptions: { keepProject: true },
     });
 
@@ -114,33 +165,37 @@ export function CountyRunsPageClient({ workspaceId }: { workspaceId: string }) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form className="grid gap-3 md:grid-cols-2 xl:grid-cols-4" onSubmit={submitCreate}>
+          <form className="grid gap-4" onSubmit={submitCreate}>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">County FIPS</label>
-              <Input value={countyFips} onChange={(e) => setCountyFips(e.target.value)} placeholder="06061" />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Geography label</label>
-              <Input
-                value={geographyLabel}
-                onChange={(e) => setGeographyLabel(e.target.value)}
-                placeholder="Placer County, CA"
+              <label className="text-sm font-medium text-foreground">County</label>
+              <StudyAreaPicker
+                corridorText={corridorText}
+                onCorridorChange={setCorridorText}
+                onPlaceResolved={setResolvedPlace}
+                // No model run follows this choice, so the engine-routing hint
+                // would be advice about something that is not going to happen.
+                showRunEngineHint={false}
+                externalLabel={initialStudyArea?.label ?? null}
               />
+              {countySelection.reason ? (
+                <p className="text-sm text-[color:var(--copper)]">{countySelection.reason}</p>
+              ) : null}
+              {countySelection.ready ? (
+                <p className="text-sm text-muted-foreground">
+                  Onboarding will run on {countySelection.label} (FIPS {countySelection.geoid}).
+                </p>
+              ) : null}
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">County prefix</label>
-              <Input value={countyPrefix} onChange={(e) => setCountyPrefix(e.target.value)} placeholder="PLACER" />
-            </div>
-            <div className="space-y-2">
+            <div className="space-y-2 md:max-w-sm">
               <label className="text-sm font-medium text-foreground">Run name</label>
               <Input
                 value={runName}
                 onChange={(e) => setRunName(e.target.value)}
-                placeholder={suggestedRunName || "placer-county-runtime"}
+                placeholder={suggestedRunName || "Named after the county if left blank"}
               />
             </div>
-            <div className="flex flex-wrap items-center gap-3 pt-1 md:col-span-2 xl:col-span-4">
-              <Button type="submit" disabled={creating}>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <Button type="submit" disabled={creating || !countySelection.ready}>
                 Launch county run
               </Button>
               {createError ? <span className="text-sm text-destructive">{createError}</span> : null}
