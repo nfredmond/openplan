@@ -84,7 +84,6 @@ function buildWorkspaceContext(overrides?: OperationsSummaryOverrides): Workspac
     workspace: {
       id: "workspace-1",
       name: "Test Workspace",
-      plan: "pilot",
       role: "owner",
     },
     recentProject: {

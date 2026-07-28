@@ -74,9 +74,13 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
   }, [kpis]);
   const [useCalibratedInput, setUseCalibratedInput] = useState(false);
   const calibratedActive = useCalibratedInput && calibratedPerCapita !== null;
-  const activeInputs: CeqaVmtScreeningInputs = calibratedActive
-    ? { status: "per-capita", vmtPerCapita: calibratedPerCapita as number, vmtKpiName: "resident_vmt_per_capita_calibrated" }
-    : screeningInputs;
+  const activeInputs: CeqaVmtScreeningInputs = useMemo(
+    () =>
+      calibratedActive
+        ? { status: "per-capita", vmtPerCapita: calibratedPerCapita as number, vmtKpiName: "resident_vmt_per_capita_calibrated" }
+        : screeningInputs,
+    [calibratedActive, calibratedPerCapita, screeningInputs]
+  );
 
   const referenceVmtPerCapita = Number(referenceInput);
   const thresholdPct = Number(thresholdPctInput) / 100;

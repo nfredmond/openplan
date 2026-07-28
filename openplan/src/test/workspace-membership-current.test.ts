@@ -24,12 +24,12 @@ const TWO_MEMBERSHIPS = [
   {
     workspace_id: "workspace-older",
     role: "admin",
-    workspaces: [{ name: "Foothills MPO", plan: "starter", created_at: "2026-03-01T12:00:00.000Z" }],
+    workspaces: [{ name: "Foothills MPO", created_at: "2026-03-01T12:00:00.000Z" }],
   },
   {
     workspace_id: "workspace-1",
     role: "owner",
-    workspaces: [{ name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" }],
+    workspaces: [{ name: "Nevada County", created_at: "2026-03-02T12:00:00.000Z" }],
   },
 ];
 
@@ -56,7 +56,6 @@ describe("workspace membership helpers", () => {
       })
     ).toEqual({
       workspaceName: "No workspace provisioned",
-      workspacePlan: "Provisioning required",
       workspaceRole: "No membership",
       membershipStatus: "not_provisioned",
     });
@@ -69,13 +68,12 @@ describe("workspace membership helpers", () => {
         membership: {
           workspace_id: "workspace-1",
           role: "owner",
-          workspaces: { name: "Nevada County", plan: "pilot" },
+          workspaces: { name: "Nevada County" },
         },
-        workspace: { name: "Nevada County", plan: "pilot" },
+        workspace: { name: "Nevada County" },
       })
     ).toEqual({
       workspaceName: "Nevada County",
-      workspacePlan: "pilot",
       workspaceRole: "owner",
       membershipStatus: "provisioned",
     });
@@ -87,12 +85,12 @@ describe("workspace membership helpers", () => {
         {
           workspace_id: "workspace-b",
           role: "admin",
-          workspaces: { name: "Beta", created_at: "2026-03-10T12:00:00.000Z", plan: "starter" },
+          workspaces: { name: "Beta", created_at: "2026-03-10T12:00:00.000Z" },
         },
         {
           workspace_id: "workspace-a",
           role: "owner",
-          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z", plan: "pilot" },
+          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z" },
         },
       ],
       { requireExplicitSelectionForMultiWorkspace: true }
@@ -111,12 +109,12 @@ describe("workspace membership helpers", () => {
         {
           workspace_id: "workspace-a",
           role: "owner",
-          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z", plan: "pilot" },
+          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z" },
         },
         {
           workspace_id: "workspace-b",
           role: "admin",
-          workspaces: { name: "Beta", created_at: "2026-03-10T12:00:00.000Z", plan: "starter" },
+          workspaces: { name: "Beta", created_at: "2026-03-10T12:00:00.000Z" },
         },
       ],
       { requestedWorkspaceId: "workspace-b", requireExplicitSelectionForMultiWorkspace: true }
@@ -125,7 +123,7 @@ describe("workspace membership helpers", () => {
     expect(result.invalidWorkspaceId).toBe(false);
     expect(result.requiresExplicitSelection).toBe(false);
     expect(result.membership?.workspace_id).toBe("workspace-b");
-    expect(result.workspace).toEqual({ name: "Beta", created_at: "2026-03-10T12:00:00.000Z", plan: "starter" });
+    expect(result.workspace).toEqual({ name: "Beta", created_at: "2026-03-10T12:00:00.000Z" });
   });
 
   it("flags an invalid requested workspace id instead of silently falling back", () => {
@@ -134,7 +132,7 @@ describe("workspace membership helpers", () => {
         {
           workspace_id: "workspace-a",
           role: "owner",
-          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z", plan: "pilot" },
+          workspaces: { name: "Alpha", created_at: "2026-03-11T12:00:00.000Z" },
         },
       ],
       { requestedWorkspaceId: "workspace-missing", requireExplicitSelectionForMultiWorkspace: true }
@@ -151,12 +149,12 @@ describe("workspace membership helpers", () => {
         {
           workspace_id: "workspace-older",
           role: "admin",
-          workspaces: [{ name: "Foothills MPO", plan: "starter", created_at: "2026-03-01T12:00:00.000Z" }],
+          workspaces: [{ name: "Foothills MPO", created_at: "2026-03-01T12:00:00.000Z" }],
         },
         {
           workspace_id: "workspace-1",
           role: "owner",
-          workspaces: [{ name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" }],
+          workspaces: [{ name: "Nevada County", created_at: "2026-03-02T12:00:00.000Z" }],
         },
       ],
       error: null,
@@ -178,9 +176,9 @@ describe("workspace membership helpers", () => {
       membership: {
         workspace_id: "workspace-1",
         role: "owner",
-        workspaces: [{ name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" }],
+        workspaces: [{ name: "Nevada County", created_at: "2026-03-02T12:00:00.000Z" }],
       },
-      workspace: { name: "Nevada County", plan: "pilot", created_at: "2026-03-02T12:00:00.000Z" },
+      workspace: { name: "Nevada County", created_at: "2026-03-02T12:00:00.000Z" },
     });
   });
 

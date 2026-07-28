@@ -307,7 +307,7 @@ export default function ExplorePage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ workspaceName: trimmedName, plan: "pilot" }),
+        body: JSON.stringify({ workspaceName: trimmedName }),
       });
 
       if (!response.ok) {

@@ -13,7 +13,6 @@ function buildProjectContextWithOverdue(overdueDecisionCount: number): ProjectAs
     workspace: {
       id: "11111111-1111-4111-8111-111111111111",
       name: "Nevada County Vision Zero",
-      plan: "pilot",
       role: "member",
     },
     project: {
@@ -110,7 +109,6 @@ function buildProgramContextWithOverdue(overdueDecisionCount: number): ProgramAs
     workspace: {
       id: "11111111-1111-4111-8111-111111111111",
       name: "Nevada County Vision Zero",
-      plan: "pilot",
       role: "owner",
     },
     project: {
@@ -234,7 +232,6 @@ describe("assistant response builders", () => {
       workspace: {
         id: "11111111-1111-4111-8111-111111111111",
         name: "Nevada County Vision Zero",
-        plan: "pilot",
         role: "member",
       },
       project: {
@@ -347,7 +344,6 @@ describe("assistant response builders", () => {
       workspace: {
         id: "11111111-1111-4111-8111-111111111111",
         name: "Nevada County Vision Zero",
-        plan: "pilot",
         role: "member",
       },
       run: {
@@ -391,7 +387,6 @@ describe("assistant response builders", () => {
       workspace: {
         id: "11111111-1111-4111-8111-111111111111",
         name: "Nevada County Vision Zero",
-        plan: "pilot",
         role: "owner",
       },
       recentProject: {
@@ -505,7 +500,6 @@ describe("assistant response builders", () => {
       workspace: {
         id: "11111111-1111-4111-8111-111111111111",
         name: "Nevada County Vision Zero",
-        plan: "pilot",
         role: "owner",
       },
       recentProject: {

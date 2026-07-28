@@ -8,7 +8,6 @@ function buildProjectContext(): ProjectAssistantContext {
     workspace: {
       id: "workspace-1",
       name: "Test Workspace",
-      plan: "pilot",
       role: "owner",
     },
     project: {
@@ -83,7 +82,6 @@ function buildProgramContext(): ProgramAssistantContext {
     workspace: {
       id: "workspace-1",
       name: "Test Workspace",
-      plan: "pilot",
       role: "owner",
     },
     project: {

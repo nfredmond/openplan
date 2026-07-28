@@ -133,7 +133,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       : Promise.resolve({ data: null }),
     supabase
       .from("workspaces")
-      .select("id, name, plan, slug")
+      .select("id, name, slug")
       .eq("id", report.workspace_id)
       .maybeSingle(),
     supabase

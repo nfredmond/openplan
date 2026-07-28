@@ -239,7 +239,6 @@ export type BillingInvoice = BillingInvoiceRow & {
 export type WorkspaceRow = {
   id: string;
   name: string;
-  plan: string | null;
   slug: string | null;
   stage_gate_template_id: string | null;
   stage_gate_template_version: string | null;

@@ -186,6 +186,10 @@ function normalizeVercelInspectPayload(payload, target) {
   };
 }
 
+/**
+ * @param {{ target?: string, command?: string, scope?: string }} [options]
+ * @param {{ execFile?: (command: string, args: string[], opts?: object) => Promise<{ stdout: string }>, vercelInspect?: unknown }} [deps]
+ */
 export async function inspectVercelDeployment({ target, command = DEFAULT_VERCEL_COMMAND, scope } = {}, deps = {}) {
   const normalizedTarget = normalizeUrl(target, "deployment target");
   const runner = deps.execFile ?? execFile;

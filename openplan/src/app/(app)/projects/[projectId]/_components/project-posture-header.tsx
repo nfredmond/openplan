@@ -211,7 +211,6 @@ export function ProjectPostureHeader({
             OpenPlan now treats milestones, submittals, and invoice posture as first-class project controls instead of burying them inside generic notes.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Workspace tier: {titleize(workspaceData?.plan ?? "pilot")}</div>
             <div className="module-operator-item">
               Stage-gate template: {workspaceData?.stage_gate_template_id ?? "Not available"}
             </div>

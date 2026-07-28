@@ -19,22 +19,6 @@ export function titleCase(input: string | null | undefined): string {
     .join(" ");
 }
 
-export function toneForStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
-  if (["active", "trialing", "pilot"].includes(status)) {
-    return "success";
-  }
-
-  if (["checkout_pending", "past_due"].includes(status)) {
-    return "warning";
-  }
-
-  if (["canceled", "inactive"].includes(status)) {
-    return "danger";
-  }
-
-  return "neutral";
-}
-
 export function toneForInvoiceStatus(status: string): "info" | "success" | "warning" | "danger" | "neutral" {
   if (status === "paid") return "success";
   if (status === "submitted" || status === "approved_for_payment") return "info";
@@ -146,89 +130,6 @@ export function formatDateTime(value: string | null | undefined): string {
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return "N/A";
   return parsed.toLocaleString();
-}
-
-export function maskExternalId(value: string | null | undefined): string {
-  if (!value) return "Not linked";
-  const trimmed = value.trim();
-  if (trimmed.length <= 12) return trimmed;
-  return `${trimmed.slice(0, 7)}...${trimmed.slice(-4)}`;
-}
-
-export type BillingStatusFreshness = {
-  tone: "info" | "success" | "warning" | "danger" | "neutral";
-  label: string;
-  summary: string;
-};
-
-function parseTimestamp(value: string | null | undefined): number | null {
-  if (!value) return null;
-  const parsed = new Date(value).getTime();
-  return Number.isNaN(parsed) ? null : parsed;
-}
-
-export function summarizeBillingStatusFreshness({
-  status,
-  ledgerUpdatedAt,
-  currentPeriodEnd,
-  now = new Date(),
-}: {
-  status: string;
-  ledgerUpdatedAt: string | null | undefined;
-  currentPeriodEnd: string | null | undefined;
-  now?: Date;
-}): BillingStatusFreshness {
-  const normalizedStatus = status.toLowerCase();
-  const nowMs = now.getTime();
-  const ledgerUpdatedMs = parseTimestamp(ledgerUpdatedAt);
-  const periodEndMs = parseTimestamp(currentPeriodEnd);
-  const dayMs = 24 * 60 * 60 * 1000;
-
-  if (["active", "trialing"].includes(normalizedStatus) && periodEndMs !== null && periodEndMs < nowMs) {
-    return {
-      tone: "danger",
-      label: "Period stale",
-      summary: "This workspace is active-like, but the recorded subscription period has already ended. Confirm webhook delivery before promising access continuity.",
-    };
-  }
-
-  if (normalizedStatus === "checkout_pending" && ledgerUpdatedMs !== null && nowMs - ledgerUpdatedMs > 3 * dayMs) {
-    return {
-      tone: "warning",
-      label: "Pending over 3 days",
-      summary: "Checkout has been pending for more than three days. Review recent events and either resolve identity, retry checkout, or clear the abandoned pending state.",
-    };
-  }
-
-  if (ledgerUpdatedMs === null) {
-    return {
-      tone: "warning",
-      label: "No ledger timestamp",
-      summary: "OpenPlan does not have a billing update timestamp for this workspace yet. Treat the status as unverified until a checkout or webhook event lands.",
-    };
-  }
-
-  if (["active", "trialing", "pilot"].includes(normalizedStatus)) {
-    return {
-      tone: "success",
-      label: "Access current",
-      summary: "The workspace has an active-like billing state. Keep an eye on period dates and events before making account changes.",
-    };
-  }
-
-  if (["past_due", "canceled", "inactive"].includes(normalizedStatus)) {
-    return {
-      tone: normalizedStatus === "past_due" ? "warning" : "danger",
-      label: "Access attention needed",
-      summary: "Billing state is not active. Resolve payment or support posture before launching paid-workflow commitments for this workspace.",
-    };
-  }
-
-  return {
-    tone: "info",
-    label: "Status recorded",
-    summary: "Billing state is recorded. Confirm events and invoice posture before making operational commitments.",
-  };
 }
 
 export function looksLikePendingSchema(message: string | null | undefined): boolean {

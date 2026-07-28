@@ -40,12 +40,10 @@ type ProjectRow = {
   workspaces:
     | {
         name: string | null;
-        plan: string | null;
         created_at: string | null;
       }
     | Array<{
         name: string | null;
-        plan: string | null;
         created_at: string | null;
       }>
     | null;
@@ -189,7 +187,7 @@ export default async function ProjectsPage({
   const { data: projectsData } = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, workspaces(name, plan, created_at)"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, workspaces(name, created_at)"
     )
     .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
@@ -646,7 +644,6 @@ export default async function ProjectsPage({
 
                     <div className="module-record-meta">
                       <span className="module-record-chip"><span>Workspace</span><strong>{project.workspace?.name ?? "Unknown"}</strong></span>
-                      <span className="module-record-chip"><span>Tier</span><strong>{titleize(project.workspace?.plan ?? "pilot")}</strong></span>
                       <span className="module-record-chip"><span>Created</span><strong>{fmtDate(project.created_at)}</strong></span>
                       {project.rtpSummary.totalCount > 0 ? (
                         <span className="module-record-chip"><span>RTP cycles</span><strong>{project.rtpSummary.totalCount}</strong></span>

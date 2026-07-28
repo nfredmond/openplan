@@ -423,7 +423,6 @@ export default async function DataHubPage() {
             Keep datasets, linked projects, and source information organized so teams can find the right information quickly.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Workspace plan: {titleize(workspace?.plan ?? "pilot")}</div>
             <div className="module-operator-item">Datasets stay scoped to the current workspace.</div>
             <div className="module-operator-item">Projects can link directly to the data they rely on.</div>
           </div>

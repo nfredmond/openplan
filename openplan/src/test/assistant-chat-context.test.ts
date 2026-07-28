@@ -67,7 +67,7 @@ function buildOperationsSummary(
 function buildWorkspaceContext(): WorkspaceAssistantContext {
   return {
     kind: "workspace",
-    workspace: { id: "ws-1", name: "Foothill COG", plan: "pro", role: "admin" },
+    workspace: { id: "ws-1", name: "Foothill COG", role: "admin" },
     recentProject: {
       id: "proj-1",
       name: "Elm Corridor Study",
@@ -89,7 +89,7 @@ function buildWorkspaceContext(): WorkspaceAssistantContext {
 function buildProjectContext(): ProjectAssistantContext {
   return {
     kind: "project",
-    workspace: { id: "ws-1", name: "Foothill COG", plan: "pro", role: "member" },
+    workspace: { id: "ws-1", name: "Foothill COG", role: "member" },
     project: {
       id: "proj-1",
       name: "Elm Corridor Study",
@@ -167,7 +167,7 @@ function buildProjectContext(): ProjectAssistantContext {
 function buildRtpCycleContext(): RtpAssistantContext {
   return {
     kind: "rtp_cycle",
-    workspace: { id: "ws-1", name: "Foothill COG", plan: "pro", role: "admin" },
+    workspace: { id: "ws-1", name: "Foothill COG", role: "admin" },
     defaultModelingCountyRunId: null,
     rtpCycle: {
       id: "cycle-1",
@@ -205,7 +205,7 @@ function buildRtpCycleContext(): RtpAssistantContext {
 function buildRunContext(): RunAssistantContext {
   return {
     kind: "run",
-    workspace: { id: "ws-1", name: "Foothill COG", plan: "pro", role: "member" },
+    workspace: { id: "ws-1", name: "Foothill COG", role: "member" },
     run: {
       id: "run-1",
       title: "Elm St corridor scan",

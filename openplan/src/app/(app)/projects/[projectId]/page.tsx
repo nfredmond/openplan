@@ -172,7 +172,7 @@ export default async function ProjectDetailPage({
 
   const { data: workspaceData } = await supabase
     .from("workspaces")
-    .select("id, name, plan, slug, stage_gate_template_id, stage_gate_template_version, created_at")
+    .select("id, name, slug, stage_gate_template_id, stage_gate_template_version, created_at")
     .eq("id", project.workspace_id)
     .single();
 

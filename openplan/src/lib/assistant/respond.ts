@@ -856,7 +856,6 @@ function buildWorkspaceResponse(
         `Reimbursement follow-through active: ${reimbursementAdvanceCount}`,
         `Gap projects: ${gapProjectCount}`,
         `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
-        `Plan: ${context.workspace.plan ?? "Unknown"}`,
       ],
       quickLinks: buildAssistantOperations(context),
     };
@@ -912,7 +911,6 @@ function buildWorkspaceResponse(
       context.recentProject ? `Use ${context.recentProject.name} as the primary operator anchor for the next drill-down.` : "Create or attach a project record before expecting deeper assistant grounding.",
     ],
     evidence: [
-      `Plan: ${context.workspace.plan ?? "Unknown"}`,
       `Role: ${context.workspace.role ?? "Unknown"}`,
       `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
       `Packet pressure: ${context.operationsSummary.counts.reportRefreshRecommended + context.operationsSummary.counts.reportNoPacket}`,
@@ -1314,7 +1312,6 @@ function buildRtpRegistryResponse(context: RtpRegistryAssistantContext, workflow
         : "Keep chapter, packet, and queue trace posture aligned as cycles advance between draft, public review, and adopted states.",
     ],
     evidence: [
-      `Workspace plan: ${context.workspace.plan ?? "Unknown"}`,
       `Workspace role: ${context.workspace.role ?? "Unknown"}`,
       `Queue depth: ${context.operationsSummary.counts.queueDepth}`,
     ],

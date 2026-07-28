@@ -7,7 +7,6 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const bootstrapSchema = z.object({
   workspaceName: z.string().trim().min(1).max(120),
-  plan: z.string().trim().min(1).max(40).optional(),
   stageGateTemplateId: z.string().trim().min(1).max(80).optional(),
 });
 
@@ -25,7 +24,6 @@ const DUPLICATE_KEY_CODE = "23505";
 type InsertWorkspaceResult = {
   id: string;
   slug: string;
-  plan: string;
   stage_gate_template_id: string;
   stage_gate_template_version: string;
 };
@@ -121,7 +119,6 @@ export async function POST(request: NextRequest) {
     }
 
     const workspaceName = parsed.data.workspaceName.trim();
-    const plan = parsed.data.plan ?? "pilot";
     const baseSlug = normalizeSlug(workspaceName);
     const serviceSupabase = createServiceRoleClient();
 
@@ -144,12 +141,11 @@ export async function POST(request: NextRequest) {
         .insert({
           name: workspaceName,
           slug,
-          plan,
           stage_gate_template_id: stageGateBinding.templateId,
           stage_gate_template_version: stageGateBinding.templateVersion,
           stage_gate_binding_source: stageGateBinding.bindingMode,
         })
-        .select("id, slug, plan, stage_gate_template_id, stage_gate_template_version")
+        .select("id, slug, stage_gate_template_id, stage_gate_template_version")
         .single();
 
       if (!error && data) {
@@ -216,7 +212,6 @@ export async function POST(request: NextRequest) {
       {
         workspaceId: workspace.id,
         slug: workspace.slug,
-        plan: workspace.plan,
         stageGateTemplate: {
           id: workspace.stage_gate_template_id,
           version: workspace.stage_gate_template_version,

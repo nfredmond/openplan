@@ -42,7 +42,6 @@ export function ProjectWorkspaceCreator() {
         },
         body: JSON.stringify({
           projectName,
-          plan: "pilot",
           summary,
           planType,
           deliveryPhase,

@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await supabase
       .from("projects")
       .select(
-        "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, workspaces(name, plan, created_at)"
+        "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, workspaces(name, created_at)"
       )
       .order("updated_at", { ascending: false });
 

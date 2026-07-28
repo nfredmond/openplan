@@ -51,7 +51,6 @@ describe("POST /api/workspaces/bootstrap", () => {
       data: {
         id: "11111111-1111-4111-8111-111111111111",
         slug: "regional-planning-commission",
-        plan: "pilot",
         stage_gate_template_id: "ca_stage_gates_v0_1",
         stage_gate_template_version: "0.1.0",
       },
@@ -97,7 +96,7 @@ describe("POST /api/workspaces/bootstrap", () => {
   });
 
   it("returns 400 for invalid payload", async () => {
-    const response = await postBootstrap(jsonRequest({ plan: "pilot" }));
+    const response = await postBootstrap(jsonRequest({}));
 
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "Invalid input" });
@@ -127,7 +126,6 @@ describe("POST /api/workspaces/bootstrap", () => {
     const payload = (await response.json()) as {
       workspaceId: string;
       slug: string;
-      plan: string;
       stageGateTemplate: {
         id: string;
         version: string;
@@ -140,7 +138,6 @@ describe("POST /api/workspaces/bootstrap", () => {
 
     expect(payload.workspaceId).toBeDefined();
     expect(payload.slug).toBe("regional-planning-commission");
-    expect(payload.plan).toBe("pilot");
     expect(payload.stageGateTemplate).toMatchObject({
       id: "ca_stage_gates_v0_1",
       version: "0.1.0",

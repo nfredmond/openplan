@@ -3,11 +3,7 @@ import { readActiveWorkspaceId } from "./active-workspace";
 
 export type WorkspaceRecord = {
   name?: string | null;
-  plan?: string | null;
   created_at?: string | null;
-  subscription_plan?: string | null;
-  subscription_status?: string | null;
-  billing_updated_at?: string | null;
 };
 
 export type WorkspaceMembershipRow = {
@@ -18,13 +14,12 @@ export type WorkspaceMembershipRow = {
 
 export type WorkspaceShellState = {
   workspaceName: string;
-  workspacePlan: string;
   workspaceRole: string;
   membershipStatus: "provisioned" | "not_provisioned" | "guest";
 };
 
 export const CURRENT_WORKSPACE_MEMBERSHIP_SELECT =
-  "workspace_id, role, workspaces(name, plan, created_at, subscription_plan, subscription_status, billing_updated_at)";
+  "workspace_id, role, workspaces(name, created_at)";
 
 export function unwrapWorkspaceRecord<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) {
@@ -207,7 +202,6 @@ export function resolveWorkspaceShellState({
   if (!isAuthenticated) {
     return {
       workspaceName: "Planning Workspace",
-      workspacePlan: "Preview",
       workspaceRole: "Guest",
       membershipStatus: "guest",
     };
@@ -216,7 +210,6 @@ export function resolveWorkspaceShellState({
   if (!membership || !workspace) {
     return {
       workspaceName: "No workspace provisioned",
-      workspacePlan: "Provisioning required",
       workspaceRole: "No membership",
       membershipStatus: "not_provisioned",
     };
@@ -224,7 +217,6 @@ export function resolveWorkspaceShellState({
 
   return {
     workspaceName: workspace.name ?? "Planning Workspace",
-    workspacePlan: workspace.plan ?? "pilot",
     workspaceRole: membership.role,
     membershipStatus: "provisioned",
   };

@@ -89,7 +89,6 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
     workspace: {
       id: "workspace-1",
       name: "Test Workspace",
-      plan: "pilot",
       role: "owner",
     },
     recentProject: {

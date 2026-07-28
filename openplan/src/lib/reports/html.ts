@@ -110,7 +110,6 @@ export type ReportGenerationData = {
   workspace: {
     id: string;
     name: string;
-    plan: string | null;
   } | null;
   project: ProjectRecord;
   runs: RunRecord[];
@@ -923,7 +922,6 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <dl class="facts">
         <div><dt>Report type</dt><dd>${esc(formatReportTypeLabel(data.report.report_type))}</dd></div>
         <div><dt>Workspace</dt><dd>${esc(data.workspace?.name ?? "Unknown")}</dd></div>
-        <div><dt>Plan tier</dt><dd>${esc(titleize(data.workspace?.plan ?? "pilot"))}</dd></div>
         <div><dt>Generated basis</dt><dd>Project records + linked runs</dd></div>
         <div><dt>Scenario basis</dt><dd>${data.scenarioSetLinks.length > 0 ? `${data.scenarioSetLinks.length} linked set${data.scenarioSetLinks.length === 1 ? "" : "s"}` : "Not linked"}</dd></div>
         <div><dt>Scenario spine</dt><dd>${data.scenarioSetLinks.length > 0 ? (scenarioSpineAggregate.pendingCount > 0 ? `${scenarioSpineAggregate.pendingCount} pending` : `${scenarioSpineAggregate.assumptionSetCount} assumptions • ${scenarioSpineAggregate.dataPackageCount} packages • ${scenarioSpineAggregate.indicatorSnapshotCount} indicators`) : "No scenario spine captured"}</dd></div>

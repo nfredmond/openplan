@@ -579,7 +579,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         auditEventPrefix: "rtp_modeling",
       });
       const [workspaceResult, cycleResult, sectionsResult, chaptersResult, linksResult, campaignsResult] = await Promise.all([
-        supabase.from("workspaces").select("id, name, plan").eq("id", report.workspace_id).maybeSingle(),
+        supabase.from("workspaces").select("id, name").eq("id", report.workspace_id).maybeSingle(),
         supabase
           .from("rtp_cycles")
           .select(
@@ -1510,7 +1510,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       fundingOpportunitiesResult,
       billingInvoicesResult,
     ] = await Promise.all([
-      supabase.from("workspaces").select("id, name, plan").eq("id", report.workspace_id).maybeSingle(),
+      supabase.from("workspaces").select("id, name").eq("id", report.workspace_id).maybeSingle(),
       supabase
         .from("projects")
         .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")

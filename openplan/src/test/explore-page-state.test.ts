@@ -40,6 +40,7 @@ function buildAnalysisContext(datasets: LinkedDataset[] = []): AnalysisContextRe
   return {
     workspaceId: "workspace-1",
     project: null,
+    projectSelection: "none",
     linkedDatasets: datasets,
     migrationPending: false,
     counts: {

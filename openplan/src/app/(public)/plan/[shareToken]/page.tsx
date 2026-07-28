@@ -71,6 +71,27 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   const evidenceRunIds = Array.from(
     new Set(links.map((link) => link.evidence_model_run_id).filter((id): id is string => Boolean(id))),
   );
+  const linkedProjectIds = Array.from(
+    new Set(links.map((link) => normalizeProject(link.projects)?.id).filter((id): id is string => Boolean(id))),
+  );
+
+  // Committed award dollars per project — operator-entered award records only,
+  // so a project with none simply shows no funding line.
+  const { data: awardData } = linkedProjectIds.length
+    ? await supabase
+        .from("funding_awards")
+        .select("project_id, title, awarded_amount")
+        .in("project_id", linkedProjectIds)
+    : { data: [] };
+  const awardsByProject = new Map<string, Array<{ title: string; amount: number }>>();
+  for (const row of (awardData ?? []) as Array<{ project_id: string; title: string; awarded_amount: number | string | null }>) {
+    const amount = Number(row.awarded_amount ?? 0);
+    if (!Number.isFinite(amount)) continue;
+    const list = awardsByProject.get(row.project_id) ?? [];
+    list.push({ title: row.title, amount });
+    awardsByProject.set(row.project_id, list);
+  }
+  const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 
   const [kpiResult, runTitleResult] = evidenceRunIds.length
     ? await Promise.all([
@@ -91,7 +112,8 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
       const evidence = link.evidence_model_run_id
         ? summarizeRtpModelingEvidence(link.evidence_model_run_id, runTitleById.get(link.evidence_model_run_id) ?? null, kpiRows)
         : null;
-      return { id: link.id, project, portfolioRole: link.portfolio_role, priorityRationale: link.priority_rationale, priority, evidence };
+      const awards = project ? awardsByProject.get(project.id) ?? [] : [];
+      return { id: link.id, project, portfolioRole: link.portfolio_role, priorityRationale: link.priority_rationale, priority, evidence, awards };
     })
     .sort((a, b) => b.priority.summary.composite - a.priority.summary.composite);
 
@@ -151,6 +173,14 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
                   {entry.evidence.runTitle ? ` (${entry.evidence.runTitle})` : ""}: {formatRtpModelingEvidenceLine(entry.evidence)}
                 </p>
               ) : null}
+              {entry.awards.length > 0 ? (
+                <p className="mt-2 text-xs text-muted-foreground">
+                  <span className="font-medium text-foreground">Committed funding</span>:{" "}
+                  {currency.format(entry.awards.reduce((sum, award) => sum + award.amount, 0))} across{" "}
+                  {entry.awards.length === 1 ? "1 award" : `${entry.awards.length} awards`} ·{" "}
+                  {entry.awards.map((award) => award.title).join(" · ")}
+                </p>
+              ) : null}
             </article>
           ))
         )}
@@ -159,8 +189,9 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
       <footer className="mt-10 border-t border-border pt-4 text-xs text-muted-foreground">
         <p>
           This is a read-only public view published by the agency. Modeling figures are screening-grade and cited to a
-          specific model run; detailed funding and full documentation are in the adopted board packet. Priorities reflect
-          local, county, state, and federal goals (VMT/GHG reduction, safety, equity, and multimodal access).
+          specific model run; committed funding reflects award records the agency has entered, and full documentation is
+          in the adopted board packet. Priorities reflect local, county, state, and federal goals (VMT/GHG reduction,
+          safety, equity, and multimodal access).
         </p>
       </footer>
     </main>

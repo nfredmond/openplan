@@ -49,7 +49,6 @@ export type WorkspaceAssistantContext = {
   workspace: {
     id: string | null;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   recentProject: {
@@ -75,7 +74,6 @@ export type ProjectAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   project: {
@@ -187,7 +185,6 @@ export type RtpRegistryAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   defaultModelingCountyRunId: string | null;
@@ -217,7 +214,6 @@ export type PlanAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   project: {
@@ -251,7 +247,6 @@ export type RtpAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   defaultModelingCountyRunId: string | null;
@@ -296,7 +291,6 @@ export type ProgramAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   project: {
@@ -391,7 +385,6 @@ export type ScenarioAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   project: {
@@ -422,7 +415,6 @@ export type ModelAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   model: {
@@ -460,7 +452,6 @@ export type ReportAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   report: {
@@ -529,7 +520,6 @@ export type RunAssistantContext = {
   workspace: {
     id: string;
     name: string | null;
-    plan: string | null;
     role: string | null;
   };
   run: {
@@ -609,7 +599,6 @@ function resolveExactInvoiceAwardRelink(
 type WorkspaceEnvelope = {
   id: string;
   name: string | null;
-  plan: string | null;
   role: string | null;
 };
 
@@ -652,7 +641,6 @@ async function requireWorkspaceEnvelope(
     return {
       id: membership.workspace_id,
       name: workspace?.name ?? null,
-      plan: workspace?.plan ?? null,
       role: membership.role ?? null,
     };
   }
@@ -672,7 +660,6 @@ async function requireWorkspaceEnvelope(
   return {
     id: membership.workspace_id,
     name: workspace?.name ?? null,
-    plan: workspace?.plan ?? null,
     role: membership.role ?? null,
   };
 }

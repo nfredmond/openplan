@@ -8,7 +8,6 @@ function buildRtpRegistryContext(): RtpRegistryAssistantContext {
     workspace: {
       id: "workspace-1",
       name: "Test Workspace",
-      plan: "pilot",
       role: "owner",
     },
     defaultModelingCountyRunId: null,

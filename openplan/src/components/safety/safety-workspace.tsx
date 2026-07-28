@@ -110,7 +110,14 @@ export function SafetyWorkspace({
   const [ingest, setIngest] = useState<SafetyIngestSummary | null>(latestIngest);
   const [history, setHistory] = useState<SafetyIngestHistoryEntry[]>(ingestHistory);
   // Optional project the NEXT acquisition is attached to. "" = unattached.
-  const [projectId, setProjectId] = useState("");
+  // Defaults to the most recent acquisition's project (when it is still
+  // offered): a re-acquisition that silently dropped the project link would
+  // strand project-scoped crash counts on the older data. Visible in the
+  // selector, so clearing it stays a one-click choice.
+  const [projectId, setProjectId] = useState(() => {
+    const lastProjectId = ingestHistory[0]?.projectId ?? "";
+    return lastProjectId && projects.some((project) => project.id === lastProjectId) ? lastProjectId : "";
+  });
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
   const [severities, setSeverities] = useState<CrashSeverity[]>([]);
   const [mode, setMode] = useState<"all" | "pedestrian" | "bicyclist" | "vru">("all");

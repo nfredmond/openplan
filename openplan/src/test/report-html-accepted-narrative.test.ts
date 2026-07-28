@@ -29,7 +29,7 @@ function baseData(overrides?: Partial<ReportGenerationData>): ReportGenerationDa
       report_type: "board_packet",
       created_at: "2026-07-01T00:00:00.000Z",
     },
-    workspace: { id: "ws-1", name: "Test Workspace", plan: null },
+    workspace: { id: "ws-1", name: "Test Workspace" },
     project: {
       id: "project-1",
       name: "Main St Bridge",
