@@ -6,47 +6,21 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-import {
-  GRANT_MODELING_PLANNING_CAVEAT,
-  buildProjectGrantModelingEvidenceByProjectId,
-  describeProjectGrantModelingReadiness,
-  type ProjectGrantModelingArtifactRow,
-  type ProjectGrantModelingEvidence,
-  type ProjectGrantModelingReportRow,
-} from "@/lib/grants/modeling-evidence";
-import {
-  buildGrantEvidenceReadinessCues,
-  summarizeGrantEvidenceReadiness,
-} from "@/lib/grants/evidence-readiness";
+import { GRANT_MODELING_PLANNING_CAVEAT } from "@/lib/grants/modeling-evidence";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
-import {
-  buildBcaScreeningFactClaims,
-  buildLatestBcaScreeningByProjectId,
-  type ProjectBcaScreeningRowLike,
-  type ProjectBcaScreeningSummary,
-} from "@/lib/grants/bca-evidence";
-import {
-  ENGAGEMENT_NARRATIVE_CAVEAT,
-  buildEngagementFactClaims,
-  buildProjectEngagementEvidenceByProjectId,
-  type ProjectEngagementCampaignRowLike,
-  type ProjectEngagementEvidence,
-} from "@/lib/grants/engagement-evidence";
-import {
-  buildProjectFundingStackSummary,
-  type ProjectFundingStackSummary,
-} from "@/lib/projects/funding";
+import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 import {
-  buildNarrativeFactList,
   factClaimTextMap,
   renderNarrativeFactPromptLines,
   summarizeNarrativeGrounding,
-  type NarrativeFact,
 } from "@/lib/grants/narrative-grounding";
-import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
-import { KB_NARRATIVE_CAVEAT, buildKnowledgeBaseFactClaims } from "@/lib/grants/kb-evidence";
+import {
+  assembleOpportunityEvidence,
+  buildOpportunityFactList,
+} from "@/lib/grants/narrative-evidence";
+import { KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
 
 const DEFAULT_NARRATIVE_MODEL_ID = "claude-opus-4-8";
 
@@ -86,30 +60,6 @@ function estimateCostUsd(
     ((inputTokens ?? 0) / 1_000_000) * pricing.input +
     ((outputTokens ?? 0) / 1_000_000) * pricing.output;
   return Math.round(raw * 1_000_000) / 1_000_000;
-}
-
-function formatAmount(value: number): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function fundingSummaryClaims(summary: ProjectFundingStackSummary, projectName: string | null): string[] {
-  const projectLabel = projectName ?? "The linked project";
-  return [
-    `${projectLabel} funding posture: ${summary.label} — ${summary.reason}`,
-    `${projectLabel} pipeline posture: ${summary.pipelineLabel} — ${summary.pipelineReason}`,
-    summary.hasTargetNeed ? `${projectLabel} funding need: ${formatAmount(summary.fundingNeedAmount)}` : null,
-    summary.localMatchNeedAmount > 0
-      ? `${projectLabel} local match need: ${formatAmount(summary.localMatchNeedAmount)}`
-      : null,
-    `${projectLabel} committed award dollars: ${formatAmount(summary.committedFundingAmount)} across ${summary.awardCount} award record(s)`,
-    `${projectLabel} pursued (likely) opportunity dollars: ${formatAmount(summary.likelyFundingAmount)} across ${summary.pursuedOpportunityCount} pursued opportunit(ies)`,
-    `${projectLabel} remaining gap after committed + pursued dollars: ${formatAmount(summary.unfundedAfterLikelyAmount)}`,
-    `${projectLabel} reimbursement posture: ${summary.reimbursementLabel} — ${summary.reimbursementReason}`,
-  ].filter((claim): claim is string => claim !== null);
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -192,161 +142,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Load the linked project's funding summary + deterministic modeling
-    // evidence, mirroring what the grants page computes.
-    let projectName: string | null = null;
-    let fundingSummary: ProjectFundingStackSummary | null = null;
-    let modelingReadinessDetail: string | null = null;
-    let modelingHeadline: string | null = null;
-    let modelingEvidence: ProjectGrantModelingEvidence | null = null;
-    let bcaScreening: ProjectBcaScreeningSummary | null = null;
-    let engagementEvidence: ProjectEngagementEvidence | null = null;
-
-    if (opportunity.project_id) {
-      const [
-        projectResult,
-        profileResult,
-        awardsResult,
-        projectOpportunitiesResult,
-        invoicesResult,
-        reportsResult,
-        bcaScreeningsResult,
-        engagementCampaignsResult,
-      ] = await Promise.all([
-        supabase
-          .from("projects")
-          .select("id, name")
-          .eq("id", opportunity.project_id)
-          .maybeSingle(),
-        supabase
-          .from("project_funding_profiles")
-          .select("project_id, funding_need_amount, local_match_need_amount, notes, updated_at")
-          .eq("project_id", opportunity.project_id)
-          .maybeSingle(),
-        supabase
-          .from("funding_awards")
-          .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
-          .eq("project_id", opportunity.project_id),
-        supabase
-          .from("funding_opportunities")
-          .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
-          .eq("project_id", opportunity.project_id),
-        supabase
-          .from("billing_invoice_records")
-          .select("id, funding_award_id, status, due_date, amount, retention_percent, retention_amount, net_amount")
-          .eq("project_id", opportunity.project_id),
-        supabase
-          .from("reports")
-          .select("id, project_id, title, updated_at, generated_at, latest_artifact_kind")
-          .eq("project_id", opportunity.project_id)
-          .order("updated_at", { ascending: false }),
-        supabase
-          .from("project_bca_screenings")
-          .select("id, project_id, result_json, engine_version, created_at")
-          .eq("project_id", opportunity.project_id)
-          .order("created_at", { ascending: false })
-          .limit(5),
-        supabase
-          .from("engagement_campaigns")
-          .select(
-            "id, project_id, title, status, updated_at, ai_synthesis_json, ai_synthesized_at, representativeness_json, representativeness_computed_at"
-          )
-          .eq("project_id", opportunity.project_id)
-          .neq("status", "archived")
-          .order("updated_at", { ascending: false })
-          .limit(20),
-      ]);
-
-      projectName = (projectResult.data as { id: string; name: string } | null)?.name ?? null;
-
-      type NarrativeInvoiceRow = {
-        funding_award_id: string | null;
-        status: string | null;
-        due_date: string | null;
-        amount: number | string | null;
-        retention_percent: number | string | null;
-        retention_amount: number | string | null;
-        net_amount: number | string | null;
-      };
-      const awardLinkedInvoices = ((invoicesResult.data ?? []) as NarrativeInvoiceRow[]).filter(
-        (invoice) => Boolean(invoice.funding_award_id)
-      );
-
-      fundingSummary = buildProjectFundingStackSummary(
-        profileResult.data ?? null,
-        awardsResult.data ?? [],
-        projectOpportunitiesResult.data ?? [],
-        awardLinkedInvoices
-      );
-
-      const reports = (reportsResult.data ?? []) as ProjectGrantModelingReportRow[];
-      const reportIds = reports.map((report) => report.id);
-      const { data: artifactsData } = reportIds.length
-        ? await supabase
-            .from("report_artifacts")
-            .select("report_id, generated_at, metadata_json")
-            .in("report_id", reportIds)
-            .order("generated_at", { ascending: false })
-        : { data: [] };
-
-      modelingEvidence =
-        buildProjectGrantModelingEvidenceByProjectId(
-          reports,
-          (artifactsData ?? []) as ProjectGrantModelingArtifactRow[]
-        ).get(opportunity.project_id) ?? null;
-
-      const readiness = describeProjectGrantModelingReadiness(modelingEvidence);
-      modelingReadinessDetail = readiness ? `${readiness.label}: ${readiness.detail}` : null;
-      modelingHeadline = modelingEvidence
-        ? `${modelingEvidence.leadComparisonReport.title} — ${modelingEvidence.leadComparisonReport.comparisonDigest.headline}. ${modelingEvidence.leadComparisonReport.comparisonDigest.detail}`
-        : null;
-
-      bcaScreening =
-        buildLatestBcaScreeningByProjectId(
-          (bcaScreeningsResult.data ?? []) as ProjectBcaScreeningRowLike[]
-        ).get(opportunity.project_id) ?? null;
-
-      engagementEvidence =
-        buildProjectEngagementEvidenceByProjectId(
-          (engagementCampaignsResult.data ?? []) as ProjectEngagementCampaignRowLike[]
-        ).get(opportunity.project_id) ?? null;
-    }
-
-    const evidenceCues = buildGrantEvidenceReadinessCues(
-      {
-        fit_notes: opportunity.fit_notes ?? null,
-        readiness_notes: opportunity.readiness_notes ?? null,
-        decision_rationale: opportunity.decision_rationale ?? null,
-        expected_award_amount: opportunity.expected_award_amount ?? null,
-        project_id: opportunity.project_id ?? null,
-        program_id: opportunity.program_id ?? null,
-        closes_at: opportunity.closes_at ?? null,
-        decision_due_at: opportunity.decision_due_at ?? null,
-      },
-      modelingEvidence,
-      bcaScreening,
-      engagementEvidence
-    );
-    const evidenceReadinessSummary = summarizeGrantEvidenceReadiness(evidenceCues);
-
-    // Knowledge Base excerpts: keyword-match the opportunity + project context
-    // against the workspace's uploaded documents so the narrative can cite them.
-    // Best-effort — retrieval returns [] if the KB schema/RPC is unavailable.
-    const knowledgeBaseQuery = [
-      opportunity.title,
-      opportunity.summary,
-      opportunity.fit_notes,
-      projectName,
-    ]
-      .filter((part): part is string => Boolean(part && part.trim()))
-      .join(". ");
-    const kbExcerpts = await retrieveKnowledgeBaseExcerpts({
-      supabase,
-      workspaceId: opportunity.workspace_id,
-      projectId: opportunity.project_id ?? null,
-      query: knowledgeBaseQuery,
-      limit: 4,
-    });
+    // Load the linked project's funding summary + deterministic modeling /
+    // BCA / engagement / KB evidence, mirroring what the grants page computes
+    // (extracted to narrative-evidence.ts so the per-section drafting route
+    // rebuilds the same facts fresh on every call).
+    const evidence = await assembleOpportunityEvidence(supabase, opportunity);
+    const { fundingSummary, bcaScreening, engagementEvidence, kbExcerpts } = evidence;
 
     const modelId = process.env.OPENPLAN_GRANTS_AI_MODEL?.trim() || DEFAULT_NARRATIVE_MODEL_ID;
 
@@ -354,29 +155,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // model is allowed to state, in citable form. The generated narrative must
     // cite these with inline [fact:N] tokens; the citations are validated
     // deterministically after generation (planner-pack grounding contract).
-    const hasModelingEvidence = Boolean(modelingHeadline && modelingReadinessDetail);
-    const facts: NarrativeFact[] = buildNarrativeFactList([
-      `The funding opportunity is titled "${opportunity.title}"${opportunity.agency_name ? `, administered by ${opportunity.agency_name}` : ""}.`,
-      `The opportunity status is "${opportunity.opportunity_status}" and the workspace decision posture is "${opportunity.decision_state}".`,
-      opportunity.expected_award_amount != null
-        ? `The expected award amount recorded for this opportunity is ${formatAmount(Number(opportunity.expected_award_amount))}.`
-        : null,
-      opportunity.summary ? `Opportunity summary on record: ${opportunity.summary}` : null,
-      opportunity.fit_notes ? `Funding-source fit notes on record: ${opportunity.fit_notes}` : null,
-      opportunity.readiness_notes ? `Readiness notes on record: ${opportunity.readiness_notes}` : null,
-      opportunity.decision_rationale
-        ? `Decision rationale on record: ${opportunity.decision_rationale}`
-        : null,
-      ...(fundingSummary ? fundingSummaryClaims(fundingSummary, projectName) : []),
-      hasModelingEvidence ? `${modelingHeadline} ${GRANT_MODELING_PLANNING_CAVEAT}` : null,
-      hasModelingEvidence
-        ? `Modeling evidence readiness: ${modelingReadinessDetail} ${GRANT_MODELING_PLANNING_CAVEAT}`
-        : null,
-      ...(bcaScreening ? buildBcaScreeningFactClaims(bcaScreening, projectName) : []),
-      ...(engagementEvidence ? buildEngagementFactClaims(engagementEvidence, projectName) : []),
-      ...buildKnowledgeBaseFactClaims(kbExcerpts, projectName),
-      `Evidence readiness (deterministic guardrail summary): ${evidenceReadinessSummary}`,
-    ]);
+    const hasModelingEvidence = Boolean(evidence.modelingHeadline && evidence.modelingReadinessDetail);
+    const facts = buildOpportunityFactList(evidence);
     const factIds = facts.map((fact) => fact.fact_id);
 
     const promptSections = [
