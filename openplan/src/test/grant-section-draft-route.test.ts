@@ -9,6 +9,7 @@ const generateTextMock = vi.fn();
 const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
 const checkAiUsageRateLimitMock = vi.fn();
 const recordAiUsageEventMock = vi.fn();
+const loadOpportunityPursuitContextMock = vi.fn();
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -42,6 +43,14 @@ vi.mock("@/lib/runtime/ai-rate-limit", () => ({
   checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
   recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
 }));
+
+vi.mock("@/lib/grants/pursuit", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/grants/pursuit")>("@/lib/grants/pursuit");
+  return {
+    ...actual,
+    loadOpportunityPursuitContext: (...args: unknown[]) => loadOpportunityPursuitContextMock(...args),
+  };
+});
 
 import { POST as postSectionDraft } from "@/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft/route";
 
@@ -155,6 +164,16 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
     recordAiUsageEventMock.mockResolvedValue(undefined);
+    loadOpportunityPursuitContextMock.mockResolvedValue({
+      context: {
+        pursuitKind: "grant",
+        solicitationNumber: null,
+        submissionFormatNote: null,
+        questionsDueAt: null,
+        schemaPending: false,
+      },
+      error: null,
+    });
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
 
     loadFundingOpportunityAccessMock.mockResolvedValue({

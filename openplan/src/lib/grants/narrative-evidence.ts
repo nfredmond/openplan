@@ -76,6 +76,31 @@ export type NarrativeEvidenceOpportunity = {
   readiness_notes?: string | null;
   decision_rationale?: string | null;
   summary?: string | null;
+  /**
+   * Pursuit context (migration 20260727000015). Absent or 'grant' means the
+   * grant behavior that predates proposals — callers that never load the
+   * pursuit columns keep exactly their old fact lists.
+   */
+  pursuit_kind?: string | null;
+  solicitation_number?: string | null;
+  submission_format_note?: string | null;
+  questions_due_at?: string | null;
+};
+
+/** Linked-project stage/delivery detail (proposal schedule facts). */
+export type NarrativeLinkedProjectStage = {
+  name: string;
+  status: string | null;
+  deliveryPhase: string | null;
+};
+
+/** One completed project offered as past-performance evidence (proposals). */
+export type NarrativeCompletedProject = {
+  id: string;
+  name: string;
+  summary: string | null;
+  deliveryPhase: string | null;
+  updatedAt: string | null;
 };
 
 /** Everything the drafting prompts need, assembled from live workspace data. */
@@ -90,6 +115,14 @@ export type OpportunityEvidenceBundle = {
   engagementEvidence: ProjectEngagementEvidence | null;
   evidenceReadinessSummary: string;
   kbExcerpts: KnowledgeBaseExcerpt[];
+  /** Proposal pursuits only: the linked project's stage/delivery detail. */
+  linkedProjectStage: NarrativeLinkedProjectStage | null;
+  /**
+   * Proposal pursuits only: the workspace's completed-projects history, as
+   * past-performance evidence. Null for grant pursuits AND when the read
+   * failed — absence of facts is honest degradation, never an invented claim.
+   */
+  completedProjects: NarrativeCompletedProject[] | null;
 };
 
 export type OpportunityEvidenceOptions = {
@@ -155,6 +188,7 @@ export async function assembleOpportunityEvidence(
   options?: OpportunityEvidenceOptions
 ): Promise<OpportunityEvidenceBundle> {
   const client = supabase as SupabaseQueryClientLike;
+  const isProposal = opportunity.pursuit_kind === "proposal";
 
   let projectName: string | null = null;
   let fundingSummary: ProjectFundingStackSummary | null = null;
@@ -163,6 +197,8 @@ export async function assembleOpportunityEvidence(
   let modelingEvidence: ProjectGrantModelingEvidence | null = null;
   let bcaScreening: ProjectBcaScreeningSummary | null = null;
   let engagementEvidence: ProjectEngagementEvidence | null = null;
+  let linkedProjectStage: NarrativeLinkedProjectStage | null = null;
+  let completedProjects: NarrativeCompletedProject[] | null = null;
 
   if (opportunity.project_id) {
     const [
@@ -177,7 +213,7 @@ export async function assembleOpportunityEvidence(
     ] = await Promise.all([
       client
         .from("projects")
-        .select("id, name")
+        .select("id, name, status, delivery_phase")
         .eq("id", opportunity.project_id)
         .maybeSingle(),
       client
@@ -219,7 +255,21 @@ export async function assembleOpportunityEvidence(
         .limit(20),
     ]);
 
-    projectName = (projectResult.data as { id: string; name: string } | null)?.name ?? null;
+    const projectRow = projectResult.data as {
+      id: string;
+      name: string;
+      status?: unknown;
+      delivery_phase?: unknown;
+    } | null;
+    projectName = projectRow?.name ?? null;
+    if (isProposal && projectRow) {
+      linkedProjectStage = {
+        name: projectRow.name,
+        status: typeof projectRow.status === "string" ? projectRow.status : null,
+        deliveryPhase:
+          typeof projectRow.delivery_phase === "string" ? projectRow.delivery_phase : null,
+      };
+    }
 
     type NarrativeInvoiceRow = {
       funding_award_id: string | null;
@@ -274,6 +324,37 @@ export async function assembleOpportunityEvidence(
       ).get(opportunity.project_id) ?? null;
   }
 
+  // Proposal pursuits ground past-performance claims on the workspace's
+  // completed-projects history. A failed read leaves completedProjects null —
+  // the model then simply has no past-performance facts to cite.
+  if (isProposal) {
+    const { data: completedRows, error: completedError } = await client
+      .from("projects")
+      .select("id, name, summary, delivery_phase, updated_at")
+      .eq("workspace_id", opportunity.workspace_id)
+      .eq("status", "complete")
+      .order("updated_at", { ascending: false })
+      .limit(10);
+
+    if (!completedError) {
+      completedProjects = ((completedRows ?? []) as Array<Record<string, unknown>>).flatMap(
+        (row) =>
+          typeof row.id === "string" && typeof row.name === "string"
+            ? [
+                {
+                  id: row.id,
+                  name: row.name,
+                  summary: typeof row.summary === "string" && row.summary.trim() ? row.summary : null,
+                  deliveryPhase:
+                    typeof row.delivery_phase === "string" ? row.delivery_phase : null,
+                  updatedAt: typeof row.updated_at === "string" ? row.updated_at : null,
+                },
+              ]
+            : []
+      );
+    }
+  }
+
   const evidenceCues = buildGrantEvidenceReadinessCues(
     {
       fit_notes: opportunity.fit_notes ?? null,
@@ -322,6 +403,8 @@ export async function assembleOpportunityEvidence(
     engagementEvidence,
     evidenceReadinessSummary,
     kbExcerpts,
+    linkedProjectStage,
+    completedProjects,
   };
 }
 
@@ -353,11 +436,32 @@ export function buildOpportunityFactList(
   const include = (kind: GrantApplicationEvidenceKind) => scope.size === 0 || scope.has(kind);
 
   const { opportunity } = bundle;
+  const isProposal = opportunity.pursuit_kind === "proposal";
   const hasModelingEvidence = Boolean(bundle.modelingHeadline && bundle.modelingReadinessDetail);
 
   return buildNarrativeFactList([
     `The funding opportunity is titled "${opportunity.title}"${opportunity.agency_name ? `, administered by ${opportunity.agency_name}` : ""}.`,
     `The opportunity status is "${opportunity.opportunity_status}" and the workspace decision posture is "${opportunity.decision_state}".`,
+    // Proposal solicitation anchors: identity facts, always included for a
+    // proposal pursuit regardless of a section's evidence scope.
+    isProposal && opportunity.solicitation_number
+      ? `The solicitation number on record for this pursuit is "${opportunity.solicitation_number}".`
+      : null,
+    isProposal && opportunity.submission_format_note
+      ? `Submission format note on record (verify against the current solicitation): ${opportunity.submission_format_note}`
+      : null,
+    isProposal && opportunity.questions_due_at
+      ? `Written questions to the issuing agency are due ${String(opportunity.questions_due_at).slice(0, 10)}.`
+      : null,
+    isProposal && include("project") && bundle.linkedProjectStage
+      ? `The linked project ${bundle.linkedProjectStage.name} is recorded in status "${bundle.linkedProjectStage.status ?? "unknown"}"${bundle.linkedProjectStage.deliveryPhase ? ` and delivery phase "${bundle.linkedProjectStage.deliveryPhase}"` : ""}.`
+      : null,
+    ...(isProposal && include("project") && bundle.completedProjects
+      ? bundle.completedProjects.map(
+          (project) =>
+            `Completed project on record (past performance): ${project.name}${project.summary ? ` — ${project.summary}` : ""}${project.deliveryPhase ? ` (delivery phase: ${project.deliveryPhase})` : ""}.`
+        )
+      : []),
     include("funding") && opportunity.expected_award_amount != null
       ? `The expected award amount recorded for this opportunity is ${formatAmount(Number(opportunity.expected_award_amount))}.`
       : null,

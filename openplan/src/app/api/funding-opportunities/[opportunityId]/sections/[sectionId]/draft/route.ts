@@ -29,6 +29,7 @@ import {
   looksLikePendingAssemblySchema,
   parseApplicationSectionRow,
 } from "@/lib/grants/application";
+import { loadOpportunityPursuitContext } from "@/lib/grants/pursuit";
 import type { GrantApplicationEvidenceKind } from "@/lib/grants/program-catalog";
 
 const DEFAULT_NARRATIVE_MODEL_ID = "claude-opus-4-8";
@@ -236,15 +237,44 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const instructions = parsedBody.data?.instructions ?? null;
 
+    // Pursuit context decides which evidence a section can ground on: a
+    // proposal pursuit additionally grounds on its solicitation fields, the
+    // linked project's stage data, and the workspace's completed-projects
+    // history. A pending pursuit schema truthfully resolves to 'grant'.
+    const pursuit = await loadOpportunityPursuitContext(supabase, opportunity.id);
+    if (pursuit.error) {
+      audit.error("section_draft_pursuit_context_failed", {
+        opportunityId: opportunity.id,
+        sectionId: section.id,
+        userId: user.id,
+        message: pursuit.error.message,
+      });
+      return NextResponse.json(
+        { error: "Failed to load the opportunity's pursuit kind" },
+        { status: 500 }
+      );
+    }
+    const pursuitKind = pursuit.context.pursuitKind;
+
     // Facts are REBUILT FRESH from live workspace evidence on every call —
     // including revisions. The prior draft is style input only; if the
     // evidence changed since it was written, the new fact list (not the old
     // prose) is what the revision may cite.
-    const evidence = await assembleOpportunityEvidence(supabase, opportunity, {
-      knowledgeBaseQueryHint: [section.title, section.guidance]
-        .filter((part): part is string => Boolean(part && part.trim()))
-        .join(". "),
-    });
+    const evidence = await assembleOpportunityEvidence(
+      supabase,
+      {
+        ...opportunity,
+        pursuit_kind: pursuitKind,
+        solicitation_number: pursuit.context.solicitationNumber,
+        submission_format_note: pursuit.context.submissionFormatNote,
+        questions_due_at: pursuit.context.questionsDueAt,
+      },
+      {
+        knowledgeBaseQueryHint: [section.title, section.guidance]
+          .filter((part): part is string => Boolean(part && part.trim()))
+          .join(". "),
+      }
+    );
 
     const scopedKinds = section.suggested_evidence;
     const included = (kind: GrantApplicationEvidenceKind) =>
@@ -269,7 +299,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
     );
 
     const promptSections = [
-      `Write the "${section.title}" application section for the funding opportunity described below.`,
+      pursuitKind === "proposal"
+        ? `Write the "${section.title}" section of a proposal (RFP/RFQ response) for the pursuit described below.`
+        : `Write the "${section.title}" application section for the funding opportunity described below.`,
       "",
       ...(section.guidance
         ? [

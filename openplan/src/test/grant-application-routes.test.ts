@@ -6,6 +6,7 @@ const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadFundingOpportunityAccessMock = vi.fn();
+const loadOpportunityPursuitContextMock = vi.fn();
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -29,6 +30,14 @@ vi.mock("@/lib/observability/audit", () => ({
 vi.mock("@/lib/programs/api", () => ({
   loadFundingOpportunityAccess: (...args: unknown[]) => loadFundingOpportunityAccessMock(...args),
 }));
+
+vi.mock("@/lib/grants/pursuit", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/grants/pursuit")>("@/lib/grants/pursuit");
+  return {
+    ...actual,
+    loadOpportunityPursuitContext: (...args: unknown[]) => loadOpportunityPursuitContextMock(...args),
+  };
+});
 
 import { GET as getApplication, PATCH as reorderApplication, POST as initApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/route";
 import { POST as createSection } from "@/app/api/funding-opportunities/[opportunityId]/sections/route";
@@ -138,7 +147,30 @@ beforeEach(() => {
     error: null,
     allowed: true,
   });
+  loadOpportunityPursuitContextMock.mockResolvedValue({
+    context: {
+      pursuitKind: "grant",
+      solicitationNumber: null,
+      submissionFormatNote: null,
+      questionsDueAt: null,
+      schemaPending: false,
+    },
+    error: null,
+  });
 });
+
+function usePursuitKind(kind: "grant" | "proposal") {
+  loadOpportunityPursuitContextMock.mockResolvedValue({
+    context: {
+      pursuitKind: kind,
+      solicitationNumber: kind === "proposal" ? "RFP-2026-014" : null,
+      submissionFormatNote: null,
+      questionsDueAt: null,
+      schemaPending: false,
+    },
+    error: null,
+  });
+}
 
 describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
   const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/application`;
@@ -330,6 +362,46 @@ describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
     expect(response.status).toBe(201);
     expect(await response.json()).toEqual({ sections: [], attachments: [] });
     expect(existingChain.insert).not.toHaveBeenCalled();
+  });
+
+  it("seeds a proposal pursuit from the proposal response template", async () => {
+    usePursuitKind("proposal");
+    const existingChain = makeQuery({ data: [], error: null });
+    const sectionInsertChain = makeQuery({ data: [{ id: SECTION_ID }], error: null });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(existingChain, sectionInsertChain),
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", {}), context);
+    expect(response.status).toBe(201);
+
+    const inserted = sectionInsertChain.insert.mock.calls[0][0] as Array<Record<string, unknown>>;
+    expect(inserted.map((row) => row.section_key)).toEqual([
+      "approach",
+      "team_qualifications",
+      "past_performance",
+      "schedule",
+      "fee_placeholder",
+    ]);
+    // The fee section seeds never-AI-draftable; team qualifications ground on
+    // uploaded documents only — credentials never come from model memory.
+    const feeRow = inserted.find((row) => row.section_key === "fee_placeholder");
+    expect(feeRow?.ai_drafting_enabled).toBe(false);
+    const teamRow = inserted.find((row) => row.section_key === "team_qualifications");
+    expect(teamRow?.suggested_evidence).toEqual(["kb"]);
+    inserted.forEach((row) => {
+      expect(row.source).toBe("catalog");
+      expect(row.status).toBe("not_started");
+    });
+  });
+
+  it("refuses a catalog key on a proposal pursuit — proposals seed from the proposal template", async () => {
+    usePursuitKind("proposal");
+    installTables({});
+
+    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+    expect(response.status).toBe(422);
+    expect((await response.json()).error).toContain("proposal");
   });
 });
 

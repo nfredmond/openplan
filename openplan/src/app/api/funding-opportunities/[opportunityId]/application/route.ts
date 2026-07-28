@@ -14,6 +14,8 @@ import {
   findGrantProgramCatalogEntry,
   looksLikePendingAssemblySchema,
 } from "@/lib/grants/application";
+import { buildProposalSectionSeeds } from "@/lib/grants/proposal-template";
+import { loadOpportunityPursuitContext } from "@/lib/grants/pursuit";
 
 const paramsSchema = z.object({
   opportunityId: z.string().uuid(),
@@ -97,7 +99,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const opportunity = access.opportunity;
 
+    // Seeding is pursuit-kind-aware: proposal pursuits seed from the proposal
+    // response template; grant pursuits seed from the program catalog (by
+    // explicit key) or as a custom scaffold, exactly as before.
+    const pursuit = await loadOpportunityPursuitContext(supabase, opportunity.id);
+    if (pursuit.error) {
+      audit.error("application_pursuit_context_failed", {
+        opportunityId: opportunity.id,
+        userId: user.id,
+        message: pursuit.error.message,
+      });
+      return NextResponse.json({ error: "Failed to load the opportunity's pursuit kind" }, { status: 500 });
+    }
+    const isProposal = pursuit.context.pursuitKind === "proposal";
+
     const catalogKey = parsedBody.data?.catalogKey;
+    if (isProposal && catalogKey) {
+      return NextResponse.json(
+        {
+          error:
+            "This opportunity is a proposal pursuit — it seeds from the proposal response template, not a grant program catalog entry. Initialize without a catalogKey.",
+        },
+        { status: 422 }
+      );
+    }
     const catalogEntry = catalogKey ? findGrantProgramCatalogEntry(catalogKey) : null;
     if (catalogKey && !catalogEntry) {
       return NextResponse.json(
@@ -126,7 +151,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to check application state" }, { status: 500 });
     }
 
-    const sectionSeeds = catalogEntry ? buildCatalogSectionSeeds(catalogEntry) : [];
+    const sectionSeeds = isProposal
+      ? buildProposalSectionSeeds()
+      : catalogEntry
+        ? buildCatalogSectionSeeds(catalogEntry)
+        : [];
     const attachmentSeeds = catalogEntry ? buildCatalogAttachmentSeeds(catalogEntry) : [];
 
     if ((existingSections ?? []).length > 0) {
