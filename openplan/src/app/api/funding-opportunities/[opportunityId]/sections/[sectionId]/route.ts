@@ -12,6 +12,11 @@ import {
   parseApplicationSectionRow,
   type ApplicationSectionStatus,
 } from "@/lib/grants/application";
+import {
+  isNarrativeExportable,
+  listFlaggedNarrativeSentences,
+  parseStoredNarrativeGrounding,
+} from "@/lib/grants/narrative-grounding";
 import { GRANT_APPLICATION_EVIDENCE_KINDS } from "@/lib/grants/program-catalog";
 
 const paramsSchema = z.object({
@@ -21,17 +26,22 @@ const paramsSchema = z.object({
 
 const EVIDENCE_KINDS = GRANT_APPLICATION_EVIDENCE_KINDS as unknown as [string, ...string[]];
 
-// Status 'final' is deliberately absent here: finalization carries its own
-// gate (final markdown + the isNarrativeExportable check for unedited AI
-// drafts) and ships with the per-section drafting flow.
+// Finalization contract: status "final" requires the approved text. An
+// operator either supplies edited finalMarkdown (their text, their
+// responsibility), or commits an UNEDITED stored AI draft by id — and an
+// unedited draft may only be committed when its stored grounding passes
+// isNarrativeExportable (fully grounded AND faithfulness-checked); otherwise
+// the flagged sentences route to human review instead of shipping.
 const patchSectionSchema = z
   .object({
     title: z.string().trim().min(1).max(160).optional(),
     guidance: z.union([z.string().trim().max(4000), z.null()]).optional(),
     sortOrder: z.number().int().min(0).max(10000).optional(),
-    status: z.enum(["not_started", "drafting", "operator_review"]).optional(),
+    status: z.enum(["not_started", "drafting", "operator_review", "final"]).optional(),
     suggestedEvidence: z.array(z.enum(EVIDENCE_KINDS)).max(EVIDENCE_KINDS.length).optional(),
     aiDraftingEnabled: z.boolean().optional(),
+    finalMarkdown: z.string().trim().min(1).max(200000).optional(),
+    finalizedFromDraftId: z.string().uuid().optional(),
   })
   .strict()
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
@@ -176,6 +186,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       );
     }
 
+    // finalMarkdown / finalizedFromDraftId only mean something as part of a
+    // finalization — anywhere else they would silently rewrite approved text.
+    const wantsFinal = parsed.data.status === "final";
+    if (!wantsFinal && (parsed.data.finalMarkdown !== undefined || parsed.data.finalizedFromDraftId !== undefined)) {
+      return NextResponse.json(
+        { error: 'finalMarkdown and finalizedFromDraftId require status "final"' },
+        { status: 400 }
+      );
+    }
+
     const updates: Record<string, unknown> = {
       updated_by: userId,
       updated_at: new Date().toISOString(),
@@ -188,6 +208,58 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updates.suggested_evidence = parsed.data.suggestedEvidence;
     if (parsed.data.aiDraftingEnabled !== undefined)
       updates.ai_drafting_enabled = parsed.data.aiDraftingEnabled;
+
+    if (wantsFinal) {
+      if (parsed.data.finalMarkdown !== undefined) {
+        // Operator-edited text: the human wrote or reviewed-and-edited it, so
+        // the human — not a stored validation verdict — is the authority.
+        updates.final_markdown = parsed.data.finalMarkdown;
+        updates.finalized_from_draft_id = parsed.data.finalizedFromDraftId ?? null;
+      } else if (parsed.data.finalizedFromDraftId !== undefined) {
+        // UNEDITED stored AI draft: only an exportable draft (fully grounded
+        // AND faithfulness-checked) may be committed verbatim. Anything less
+        // returns the flagged sentences for human review instead of shipping.
+        const { data: draftRow, error: draftError } = await supabase
+          .from("funding_opportunity_section_drafts")
+          .select("id, section_id, draft_markdown, grounding_json")
+          .eq("id", parsed.data.finalizedFromDraftId)
+          .eq("section_id", section.id)
+          .maybeSingle();
+
+        if (draftError) {
+          return NextResponse.json({ error: "Failed to load draft to finalize" }, { status: 500 });
+        }
+        if (!draftRow) {
+          return NextResponse.json(
+            { error: "Draft to finalize not found for this section" },
+            { status: 422 }
+          );
+        }
+
+        const draft = draftRow as { draft_markdown: string; grounding_json: unknown };
+        const grounding = parseStoredNarrativeGrounding(draft.grounding_json);
+        if (!grounding || !isNarrativeExportable(grounding)) {
+          return NextResponse.json(
+            {
+              error:
+                "This draft cannot be finalized unedited: not every sentence is grounded and faithfulness-checked. Review the flagged sentences, edit the text, and finalize your edited version instead.",
+              flaggedSentences: grounding ? listFlaggedNarrativeSentences(grounding) : [],
+            },
+            { status: 422 }
+          );
+        }
+
+        updates.final_markdown = draft.draft_markdown;
+        updates.finalized_from_draft_id = parsed.data.finalizedFromDraftId;
+      } else if (!section.final_markdown) {
+        // Re-finalizing after a reopen keeps the existing approved text; a
+        // section with no text at all has nothing to finalize.
+        return NextResponse.json(
+          { error: "Finalizing requires finalMarkdown or finalizedFromDraftId" },
+          { status: 422 }
+        );
+      }
+    }
 
     const { data: updated, error: updateError } = await supabase
       .from("funding_opportunity_application_sections")

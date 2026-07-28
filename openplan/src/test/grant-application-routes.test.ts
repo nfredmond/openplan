@@ -635,3 +635,206 @@ describe("PATCH /api/funding-opportunities/[opportunityId]/attachments/[attachme
     expect(updateChain.update).not.toHaveBeenCalled();
   });
 });
+
+describe("PATCH sections/[sectionId] — finalization gates", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/sections/${SECTION_ID}`;
+  const context = {
+    params: Promise.resolve({ opportunityId: OPPORTUNITY_ID, sectionId: SECTION_ID }),
+  };
+  const DRAFT_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+
+  const exportableGrounding = {
+    mode: "annotated",
+    facts: [{ fact_id: "fact_1", claim_text: "The award is documented." }],
+    sentences: [
+      {
+        text: "The award is documented. [fact:fact_1]",
+        cited_fact_ids: ["fact_1"],
+        is_grounded: true,
+        unknown_fact_ids: [],
+        unfaithful_claims: [],
+      },
+    ],
+    dropped_sentences: [],
+    cited_fact_ids: ["fact_1"],
+    unknown_fact_ids: [],
+    grounded_sentence_count: 1,
+    total_sentence_count: 1,
+    is_fully_grounded: true,
+    faithfulness_checked: true,
+  };
+
+  const flaggedGrounding = {
+    ...exportableGrounding,
+    sentences: [
+      ...exportableGrounding.sentences,
+      {
+        text: "An uncited flourish about outcomes.",
+        cited_fact_ids: [],
+        is_grounded: false,
+        unknown_fact_ids: [],
+        unfaithful_claims: [],
+      },
+    ],
+    grounded_sentence_count: 1,
+    total_sentence_count: 2,
+    is_fully_grounded: false,
+  };
+
+  it("commits an UNEDITED draft only when its stored grounding is exportable", async () => {
+    const loadChain = makeQuery({ data: { ...baseSectionRow, status: "operator_review" }, error: null });
+    const updateChain = makeQuery({
+      data: { ...baseSectionRow, status: "final" },
+      error: null,
+    });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+      funding_opportunity_section_drafts: () =>
+        makeQuery({
+          data: {
+            id: DRAFT_ID,
+            section_id: SECTION_ID,
+            draft_markdown: "The award is documented. [fact:fact_1]",
+            grounding_json: exportableGrounding,
+          },
+          error: null,
+        }),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { status: "final", finalizedFromDraftId: DRAFT_ID }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateChain.update.mock.calls[0][0]).toMatchObject({
+      status: "final",
+      final_markdown: "The award is documented. [fact:fact_1]",
+      finalized_from_draft_id: DRAFT_ID,
+    });
+  });
+
+  it("refuses an unedited draft with flagged sentences and returns them for review", async () => {
+    const loadChain = makeQuery({ data: { ...baseSectionRow, status: "operator_review" }, error: null });
+    const updateChain = makeQuery({ data: baseSectionRow, error: null });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+      funding_opportunity_section_drafts: () =>
+        makeQuery({
+          data: {
+            id: DRAFT_ID,
+            section_id: SECTION_ID,
+            draft_markdown: "Mixed draft.",
+            grounding_json: flaggedGrounding,
+          },
+          error: null,
+        }),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { status: "final", finalizedFromDraftId: DRAFT_ID }),
+      context
+    );
+
+    expect(response.status).toBe(422);
+    const body = await response.json();
+    expect(body.flaggedSentences).toHaveLength(1);
+    expect(body.flaggedSentences[0]).toMatchObject({
+      text: "An uncited flourish about outcomes.",
+      reason: "missing_citation",
+    });
+    expect(updateChain.update).not.toHaveBeenCalled();
+  });
+
+  it("refuses a legacy citation-only draft (faithfulness never checked) unedited", async () => {
+    const loadChain = makeQuery({ data: { ...baseSectionRow, status: "operator_review" }, error: null });
+    const updateChain = makeQuery({ data: baseSectionRow, error: null });
+    const legacyGrounding = { ...exportableGrounding, faithfulness_checked: undefined };
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+      funding_opportunity_section_drafts: () =>
+        makeQuery({
+          data: {
+            id: DRAFT_ID,
+            section_id: SECTION_ID,
+            draft_markdown: "Legacy draft.",
+            grounding_json: legacyGrounding,
+          },
+          error: null,
+        }),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { status: "final", finalizedFromDraftId: DRAFT_ID }),
+      context
+    );
+
+    expect(response.status).toBe(422);
+    expect(updateChain.update).not.toHaveBeenCalled();
+  });
+
+  it("accepts operator-edited final text without consulting any stored draft", async () => {
+    const loadChain = makeQuery({ data: { ...baseSectionRow, status: "drafting" }, error: null });
+    const updateChain = makeQuery({ data: { ...baseSectionRow, status: "final" }, error: null });
+    // No drafts handler installed: touching the drafts table would throw,
+    // proving the operator's own text needs no stored-draft verdict.
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { status: "final", finalMarkdown: "My reviewed and edited text." }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateChain.update.mock.calls[0][0]).toMatchObject({
+      status: "final",
+      final_markdown: "My reviewed and edited text.",
+      finalized_from_draft_id: null,
+    });
+  });
+
+  it("rejects finalMarkdown outside a finalization", async () => {
+    installTables({
+      funding_opportunity_application_sections: () => makeQuery({ data: baseSectionRow, error: null }),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { finalMarkdown: "Sneaky rewrite." }),
+      context
+    );
+    expect(response.status).toBe(400);
+  });
+
+  it("has nothing to finalize when no text exists", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: { ...baseSectionRow, final_markdown: null }, error: null }),
+    });
+
+    const response = await patchSection(jsonRequest(url, "PATCH", { status: "final" }), context);
+    expect(response.status).toBe(422);
+  });
+
+  it("reopens a finalized section to operator review, keeping the text", async () => {
+    const loadChain = makeQuery({
+      data: { ...baseSectionRow, status: "final", final_markdown: "Approved text." },
+      error: null,
+    });
+    const updateChain = makeQuery({
+      data: { ...baseSectionRow, status: "operator_review", final_markdown: "Approved text." },
+      error: null,
+    });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+    });
+
+    const response = await patchSection(jsonRequest(url, "PATCH", { status: "operator_review" }), context);
+
+    expect(response.status).toBe(200);
+    const updatePayload = updateChain.update.mock.calls[0][0] as Record<string, unknown>;
+    expect(updatePayload.status).toBe("operator_review");
+    expect(updatePayload.final_markdown).toBeUndefined();
+  });
+});
