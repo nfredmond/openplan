@@ -2,10 +2,9 @@ import { redirect } from "next/navigation";
 import { FileText, FolderKanban, Landmark, Radar, ShieldCheck } from "lucide-react";
 import { DashboardKpiGrid } from "@/components/dashboard/dashboard-kpi-grid";
 import { DashboardOperatorGuidance } from "@/components/dashboard/dashboard-operator-guidance";
-import { DashboardPilotWorkflowSpine } from "@/components/dashboard/dashboard-pilot-workflow-spine";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
 import { DeploymentHealthPanel } from "@/components/dashboard/deployment-health-panel";
-import { OnboardingGoals } from "@/components/onboarding/onboarding-goals";
+import { FirstRunChecklist } from "@/components/onboarding/first-run-checklist";
 import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-workspace-intro";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
@@ -29,6 +28,11 @@ import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
 } from "@/lib/workspaces/current";
+import {
+  HOME_GEOGRAPHY_SCOPE_COLUMNS,
+  homeGeographyLabel,
+  parseWorkspaceHomeGeography,
+} from "@/lib/workspaces/home-geography";
 
 function fmtPct(value: number | null): string {
   return value === null ? "N/A" : `${value}%`;
@@ -80,7 +84,7 @@ export default async function DashboardPage() {
   // calls enforces the same rule server-side.
   const canManageWorkspace = workspaceRole === "owner" || workspaceRole === "admin";
 
-  const [runsResult, operationsSummary] = workspaceId
+  const [runsResult, operationsSummary, homeGeographyResult] = workspaceId
     ? await Promise.all([
         supabase
           .from("runs")
@@ -92,6 +96,19 @@ export default async function DashboardPage() {
           supabase as unknown as WorkspaceOperationsSupabaseLike,
           workspaceId
         ),
+        // Where this workspace works, read here so the first-run checklist can
+        // report real configuration instead of offering navigation. Only the
+        // identity columns are selected (HOME_GEOGRAPHY_SCOPE_COLUMN_NAMES
+        // deliberately omits `home_geometry_geojson`, which holds the full
+        // boundary polygon and can be megabytes) — the same read pattern
+        // cartographic-shell.tsx uses. An error, including the migration not
+        // being applied, leaves `data` null, which parses to null, which reads
+        // honestly as "not set".
+        supabase
+          .from("workspaces")
+          .select(HOME_GEOGRAPHY_SCOPE_COLUMNS)
+          .eq("id", workspaceId)
+          .maybeSingle(),
       ])
     : [
         { data: [] },
@@ -102,9 +119,12 @@ export default async function DashboardPage() {
           reports: [],
           fundingOpportunities: [],
         }),
+        { data: null },
       ];
 
   const runsData = runsResult.data ?? [];
+  const homeGeography = parseWorkspaceHomeGeography(homeGeographyResult.data);
+  const homeGeographyIsSet = homeGeography !== null;
 
   // What this deployment cannot currently do, and why. Only owners and admins
   // see it — it is operator information, and a member cannot act on it. Silent
@@ -236,18 +256,9 @@ export default async function DashboardPage() {
     },
   ];
 
-  const baselineItems = [
-    "Supabase auth flow is live for sign-up, sign-in, and protected routes.",
-    "Analysis API accepts schema-checked corridor scoring requests with persisted run output.",
-    "Runs persist and reload cleanly at workspace scope.",
-    "Report endpoint returns structured HTML / PDF-ready output.",
-    "Core layers now use GTFS, crashes, Census, and LODES inputs.",
-    "KPI instrumentation tracks completion, reporting, and time-to-first-result.",
-  ];
-
   // A brand-new user lands here on an auto-provisioned but empty workspace (the
   // handle_new_user trigger creates the workspace on sign-up). Guide them with a
-  // first-run goal picker until they have real activity in any core lane.
+  // stateful first-run checklist until they have real activity in any core lane.
   const isFirstRun =
     kpis.totalRuns === 0 &&
     operationsSummary.counts.projects === 0 &&
@@ -255,20 +266,39 @@ export default async function DashboardPage() {
     operationsSummary.counts.programs === 0 &&
     operationsSummary.counts.reports === 0;
 
+  // While the checklist's first step is outstanding, its control moves up next
+  // to it — the geography setter is what the step asks for, and it was
+  // previously buried mid-page where a first-run user never reached it. It is
+  // still mounted EXACTLY ONCE either way: the panel self-fetches, so a second
+  // mount would mean a second request and a second answer.
+  const hoistGeographyPanel = isFirstRun && !homeGeographyIsSet;
+  const geographyPanel = (
+    <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
+  );
+
   return (
     <section className="module-page">
       {isFirstRun ? (
         <div className="rounded-xl border border-primary/30 bg-primary/5 p-6 dark:bg-primary/10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Get started</p>
           <h2 className="mt-1 text-lg font-semibold text-foreground">
-            Welcome to {workspaceName} — what do you want to do first?
+            {/* `workspaceName` carries a generic fallback for the intro card;
+                reading "Set up Your workspace" would be worse than reading
+                "Set up your workspace", so the unnamed case is worded here. */}
+            {workspace?.name?.trim() ? `Set up ${workspace.name.trim()}` : "Set up your workspace"}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Your workspace is ready and empty. Pick a starting point — you can do all of it later.
+            Your workspace is ready and empty. These are the things that are actually configured — or
+            not — and what each one turns on.
           </p>
-          <div className="mt-4">
-            <OnboardingGoals />
-          </div>
+          <FirstRunChecklist
+            homeGeographyIsSet={homeGeographyIsSet}
+            homeGeographyLabel={homeGeographyLabel(homeGeography)}
+            hasRuns={kpis.totalRuns > 0}
+            canManageWorkspace={canManageWorkspace}
+          >
+            {hoistGeographyPanel ? geographyPanel : null}
+          </FirstRunChecklist>
         </div>
       ) : null}
 
@@ -277,13 +307,18 @@ export default async function DashboardPage() {
       {/* Workspace configuration: where this agency works, and who works here.
           Geography comes first because it is what the rest of the app reads —
           maps, jurisdiction rules, equity data, and study-area defaults are all
-          downstream of it. The two-column layout only applies to owners and
-          admins: the team panel renders nothing for a member, which would
-          otherwise leave a lone half-width card. */}
-      <div className={canManageWorkspace ? "grid gap-6 xl:grid-cols-2" : undefined}>
-        <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
+          downstream of it; while it is outstanding on a first run it sits in the
+          checklist above instead, and this row holds the team alone. The
+          two-column layout only applies to owners and admins with both panels
+          here: one panel in a two-column grid leaves a lone half-width card. */}
+      <div className={canManageWorkspace && !hoistGeographyPanel ? "grid gap-6 xl:grid-cols-2" : undefined}>
+        {hoistGeographyPanel ? null : geographyPanel}
 
-        <WorkspaceTeamPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
+        {/* Anchored so the checklist's team step can point at the control
+            rather than at another page. */}
+        <div id="workspace-team">
+          <WorkspaceTeamPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
+        </div>
       </div>
 
       {/* Integration keys take their own full-width row rather than a third
@@ -311,18 +346,24 @@ export default async function DashboardPage() {
         />
       </header>
 
-      <DashboardPilotWorkflowSpine />
+      {/* One next action, not four. Quick actions are the workspace's real
+          entry points — every item is derived from the operations summary, so
+          they name THIS workspace's lead grants command rather than reciting a
+          fixed tour. The static four-step "workflow spine" that used to sit
+          above them was that fixed tour, and its four destinations were the
+          same ones listed here; PilotWorkflowHandoff still renders on project
+          and report detail pages, where it carries a real project or report id
+          and the steps mean something specific.
 
-      <div className="grid gap-6 xl:grid-cols-[1.04fr_0.96fr]">
-        <DashboardQuickActions actions={actions} />
+          On a first run they are suppressed entirely: a workspace with nothing
+          in it has no lead action to derive, and the checklist above is the one
+          honest path. The command board stays either way — it reports workspace
+          state rather than offering a starting point, and on an empty workspace
+          it reports zeros and says so. */}
+      <div className={isFirstRun ? undefined : "grid gap-6 xl:grid-cols-[1.04fr_0.96fr]"}>
+        {isFirstRun ? null : <DashboardQuickActions actions={actions} />}
 
-        <WorkspaceCommandBoard summary={operationsSummary}>
-          {baselineItems.map((item) => (
-            <p key={item} className="text-[0.8rem] text-muted-foreground">
-              {item}
-            </p>
-          ))}
-        </WorkspaceCommandBoard>
+        <WorkspaceCommandBoard summary={operationsSummary} />
       </div>
 
       <RunHistory workspaceId={workspaceId} />

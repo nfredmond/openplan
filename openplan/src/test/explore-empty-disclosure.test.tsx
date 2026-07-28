@@ -31,7 +31,9 @@ describe("Explore empty and disclosure surfaces", () => {
     expect(screen.getByRole("heading", { level: 3, name: "No analysis selected" })).toBeInTheDocument();
     expect(screen.getByText("Run a corridor analysis or load a prior run to review metrics, narrative output, and comparisons.")).toBeInTheDocument();
     expect(screen.getByText("Next step")).toBeInTheDocument();
-    expect(screen.getByText("Upload a corridor, enter the planning question, and run the study to populate this board.")).toBeInTheDocument();
+    // Uploading a file is no longer the only way to define a study area, so the
+    // next step cannot be stated as one.
+    expect(screen.getByText("Set the study area, enter the planning question, and run the study to populate this board.")).toBeInTheDocument();
   });
 
   it("renders disclosure guardrails and classifies each disclosure item by tone", () => {

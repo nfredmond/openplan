@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -17,6 +17,17 @@ const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 
 const modelRunsRowsMock = vi.fn(() => ({ data: [] as unknown[], error: null }));
 
+// The workspace's home geography, as the page reads it server-side. `null` is
+// the honest unset state a fresh workspace is in.
+const homeGeographyRowMock = vi.fn<() => { data: unknown; error: unknown }>(() => ({
+  data: null,
+  error: null,
+}));
+const workspacesSelectMock = vi.fn((columns: string) => {
+  void columns;
+  return { eq: () => ({ maybeSingle: async () => homeGeographyRowMock() }) };
+});
+
 const fromMock = vi.fn((table: string) => {
   if (table === "runs") {
     return { select: runsSelectMock };
@@ -28,6 +39,10 @@ const fromMock = vi.fn((table: string) => {
     return {
       select: () => ({ eq: () => ({ in: async () => modelRunsRowsMock() }) }),
     };
+  }
+
+  if (table === "workspaces") {
+    return { select: workspacesSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -123,19 +138,44 @@ vi.mock("@/components/workspaces/workspace-integration-keys-panel", () => ({
 }));
 
 import DashboardPage from "@/app/(app)/dashboard/page";
+import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
 
 async function renderPage() {
   render(await DashboardPage());
 }
 
-function expectLinkByHref(name: RegExp, href: string) {
-  const link = screen
-    .getAllByRole("link", { name })
-    .find((element) => element.getAttribute("href") === href);
-
-  expect(link).toBeDefined();
-  expect(link).toHaveAttribute("href", href);
+/**
+ * The operations summary a workspace with exactly two rows produces — one
+ * `workspaces` row and one `workspace_members` row, which is what the
+ * handle_new_user trigger leaves behind at sign-up. Built by the real builder
+ * from empty source rows rather than hand-written zeros, so the fixture cannot
+ * drift from what an actually-empty workspace yields.
+ */
+function emptyWorkspaceSummary() {
+  return buildWorkspaceOperationsSummaryFromSourceRows({
+    projects: [],
+    plans: [],
+    programs: [],
+    reports: [],
+    fundingOpportunities: [],
+  });
 }
+
+/**
+ * Developer changelog lines that used to be rendered as workspace content under
+ * a "Baseline" heading. They described the repository, not the workspace, and
+ * at least one of them ("Core layers now use GTFS, crashes, Census, and LODES
+ * inputs.") was flatly untrue of an empty workspace with no Census key. They
+ * are deleted; this list keeps them deleted.
+ */
+const RETIRED_BASELINE_CHANGELOG_LINES = [
+  /Supabase auth flow is live for sign-up, sign-in, and protected routes/i,
+  /Analysis API accepts schema-checked corridor scoring requests/i,
+  /Runs persist and reload cleanly at workspace scope/i,
+  /Report endpoint returns structured HTML \/ PDF-ready output/i,
+  /Core layers now use GTFS, crashes, Census, and LODES inputs/i,
+  /KPI instrumentation tracks completion, reporting, and time-to-first-result/i,
+];
 
 describe("DashboardPage", () => {
   beforeEach(() => {
@@ -240,6 +280,7 @@ describe("DashboardPage", () => {
     });
 
     runsLimitMock.mockResolvedValue({ data: [], error: null });
+    homeGeographyRowMock.mockReturnValue({ data: null, error: null });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -254,15 +295,34 @@ describe("DashboardPage", () => {
     expect(quickAction).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
     expect(screen.getAllByText(/Grants OS follow-through/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Current RTP packet work is now a Grants OS follow-through lane/i)).toBeInTheDocument();
-    expect(screen.getByText(/Analysis API accepts schema-checked corridor scoring requests/i)).toBeInTheDocument();
-    expect(screen.queryByText(/validated corridor scoring requests/i)).not.toBeInTheDocument();
-    expect(screen.getByText("Workflow spine")).toBeInTheDocument();
-    expect(
-      screen.getByText("The shortest complete path through OpenPlan — from context to a board-ready packet.")
-    ).toBeInTheDocument();
     expect(screen.queryByText(/supervised pilot/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Project or county context/i })).toHaveAttribute("href", "/projects");
-    expectLinkByHref(/Packet assembly/i, "/reports");
+    expect(screen.getByRole("link", { name: /Open Projects Module/i })).toHaveAttribute("href", "/projects");
+  });
+
+  it("no longer renders the developer changelog lines as workspace content", async () => {
+    await renderPage();
+
+    for (const line of RETIRED_BASELINE_CHANGELOG_LINES) {
+      expect(screen.queryByText(line)).not.toBeInTheDocument();
+    }
+    expect(screen.queryByText("Baseline")).not.toBeInTheDocument();
+  });
+
+  it("no longer renders the static workflow-spine ladder alongside quick actions", async () => {
+    await renderPage();
+
+    // The four-step spine was a fixed tour whose destinations quick actions
+    // already cover, and unlike quick actions it could not name this
+    // workspace's real lead action. PilotWorkflowHandoff itself survives on
+    // project and report detail pages, where it carries a real record id.
+    expect(screen.queryByText("Workflow spine")).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("The shortest complete path through OpenPlan — from context to a board-ready packet.")
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Project or county context/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Packet assembly/i })).not.toBeInTheDocument();
+
+    expect(screen.getByText("Quick actions")).toBeInTheDocument();
   });
 
   it("surfaces comparison-backed report posture as planning support in dashboard copy", async () => {
@@ -509,5 +569,151 @@ describe("DashboardPage", () => {
     expect(screen.getByTestId("workspace-integration-keys-panel")).toHaveAttribute("data-can-manage", "false");
     // Deployment configuration is operator information a member cannot act on.
     expect(screen.queryByLabelText(/deployment configuration/i)).not.toBeInTheDocument();
+  });
+
+  /**
+   * First run: a workspace with exactly two rows — one `workspaces` row and one
+   * `workspace_members` row — which is what sign-up leaves behind. Everything
+   * the dashboard says in this state has to be true of it.
+   */
+  describe("first run", () => {
+    const SET_HOME_GEOGRAPHY_ROW = {
+      home_geography_source: "tigerweb",
+      home_geography_kind: "county",
+      home_geography_ref: "00000",
+      home_geography_label: "Example County, Example State",
+      home_country_code: "US",
+    };
+
+    async function renderFirstRun(options?: { role?: string; homeGeographyRow?: unknown }) {
+      loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValueOnce(emptyWorkspaceSummary());
+
+      if (options?.role) {
+        loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
+          membership: { workspace_id: "workspace-1", role: options.role },
+          workspace: {
+            id: "workspace-1",
+            name: "OpenPlan QA",
+            created_at: "2026-04-01T18:00:00.000Z",
+          },
+        });
+      }
+
+      if (options?.homeGeographyRow !== undefined) {
+        homeGeographyRowMock.mockReturnValueOnce({ data: options.homeGeographyRow, error: null });
+      }
+
+      await renderPage();
+    }
+
+    function firstRunHero(): HTMLElement {
+      const hero = screen.getByRole("heading", { name: /Set up OpenPlan QA/ }).closest("div");
+      expect(hero).not.toBeNull();
+      return hero as HTMLElement;
+    }
+
+    it("leads with the geography step and hoists its setter when no place is set", async () => {
+      await renderFirstRun();
+
+      // Step one is outstanding, says so, and is the emphasized action.
+      expect(screen.getByText("Tell OpenPlan where you work")).toBeInTheDocument();
+      expect(screen.getByText("Start here")).toBeInTheDocument();
+      expect(
+        screen.getByText(/Not set\. Choose the county, city, CDP, or metro area you plan for, below\./)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all read this one setting/)
+      ).toBeInTheDocument();
+
+      // The setter itself sits inside the first-run hero, next to the step that
+      // asks for it — and is mounted EXACTLY once, because it self-fetches.
+      const panels = screen.getAllByTestId("workspace-geography-panel");
+      expect(panels).toHaveLength(1);
+      expect(within(firstRunHero()).getByTestId("workspace-geography-panel")).toBe(panels[0]);
+    });
+
+    it("reads only the home-geography identity columns, never the stored boundary polygon", async () => {
+      await renderFirstRun();
+
+      expect(workspacesSelectMock).toHaveBeenCalled();
+      const columns = workspacesSelectMock.mock.calls[0]?.[0] ?? "";
+      expect(columns).toContain("home_geography_source");
+      expect(columns).toContain("home_geography_label");
+      // The polygon can be megabytes and nothing on this page draws it.
+      expect(columns).not.toContain("home_geometry_geojson");
+    });
+
+    it("marks the geography step done with the resolved label and returns the panel to the config row", async () => {
+      await renderFirstRun({ homeGeographyRow: SET_HOME_GEOGRAPHY_ROW });
+
+      expect(screen.getByText("Done")).toBeInTheDocument();
+      expect(screen.getByText("Set to Example County, Example State.")).toBeInTheDocument();
+      expect(screen.queryByText("Start here")).not.toBeInTheDocument();
+
+      // Still exactly one mount, and no longer inside the hero.
+      const panels = screen.getAllByTestId("workspace-geography-panel");
+      expect(panels).toHaveLength(1);
+      expect(within(firstRunHero()).queryByTestId("workspace-geography-panel")).toBeNull();
+    });
+
+    it("does not claim a geography is set when the row carries no resolvable source", async () => {
+      // A stray label with no source is not a geography — the migration's
+      // coherence CHECK says the same thing. It must read as unset.
+      await renderFirstRun({
+        homeGeographyRow: { home_geography_label: "Example County, Example State" },
+      });
+
+      expect(screen.getByText("Start here")).toBeInTheDocument();
+      expect(screen.queryByText(/^Set to /)).not.toBeInTheDocument();
+    });
+
+    it("points the screening step at Analysis Studio and reports that no runs exist", async () => {
+      await renderFirstRun();
+
+      expect(screen.getByText("Run your first screening")).toBeInTheDocument();
+      expect(screen.getByText("No analysis runs yet.")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Open Analysis Studio/ })).toHaveAttribute("href", "/explore");
+    });
+
+    it("offers the invite step to an owner only", async () => {
+      await renderFirstRun();
+
+      expect(screen.getByText("Invite your team")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Open the team panel/ })).toHaveAttribute(
+        "href",
+        "#workspace-team"
+      );
+      // The page cannot read who else is in the workspace (workspace_members
+      // RLS is own-row only), so the step must not carry a completion claim.
+      expect(screen.getByText("Optional")).toBeInTheDocument();
+    });
+
+    it("hides the invite step from a plain member, who cannot invite anyone", async () => {
+      await renderFirstRun({ role: "member" });
+
+      expect(screen.getByText("Tell OpenPlan where you work")).toBeInTheDocument();
+      expect(screen.queryByText("Invite your team")).not.toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Open the team panel/ })).not.toBeInTheDocument();
+      // A member still sees the state and is told who can change it.
+      expect(screen.getByText(/Not set\. A workspace owner or admin can set it\./)).toBeInTheDocument();
+    });
+
+    it("shows one path, not four: no goal cards, no quick actions, no changelog", async () => {
+      await renderFirstRun();
+
+      // The four navigation goal cards that only called router.push().
+      expect(screen.queryByText("Model any place")).not.toBeInTheDocument();
+      expect(screen.queryByText("Collect community input")).not.toBeInTheDocument();
+      expect(screen.queryByText("Find & write grants")).not.toBeInTheDocument();
+      expect(screen.queryByText("Build an RTP")).not.toBeInTheDocument();
+
+      // The second ladder and the third entry-point set.
+      expect(screen.queryByText("Workflow spine")).not.toBeInTheDocument();
+      expect(screen.queryByText("Quick actions")).not.toBeInTheDocument();
+
+      for (const line of RETIRED_BASELINE_CHANGELOG_LINES) {
+        expect(screen.queryByText(line)).not.toBeInTheDocument();
+      }
+    });
   });
 });

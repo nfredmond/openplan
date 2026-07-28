@@ -34,7 +34,23 @@ import { validateCorridorGeometry } from "@/lib/geo/corridor-geometry";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 
-const ANALYSIS_BODY_MAX_BYTES = BODY_LIMITS.normalJson;
+/**
+ * This body is a GeoJSON body, and it is sized like one.
+ *
+ * It used to be `normalJson` (64 KB), which is the right size for a form post
+ * and much too small for a real study-area boundary. An official US county
+ * boundary from TIGERweb runs from ~10 KB to ~230 KB, and a metro area past
+ * 300 KB, so a planner who picked their own county — the front door of this
+ * whole product — could have the request refused for being too large, with no
+ * boundary they could have chosen instead. A corridor file exported from GIS
+ * hit the same wall from the other direction, since the upload accepts 10 MB.
+ *
+ * `networkGeoJson` is the limit this codebase already uses for a route whose
+ * body is a boundary geometry (see the equity-designation ingest). It is a
+ * bound, not a budget: the geometry is still validated, and everything
+ * downstream reads a bbox and a centroid clip from it.
+ */
+const ANALYSIS_BODY_MAX_BYTES = BODY_LIMITS.networkGeoJson;
 
 type Position = [number, number] | [number, number, number];
 

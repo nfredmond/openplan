@@ -105,14 +105,45 @@ export type GrantProgramCatalogEntry = {
 };
 
 /**
+ * Where a bundle's programs are open to applicants, expressed so the core stays
+ * country-neutral: ISO 3166-1 alpha-2 for the country, ISO 3166-2 subdivision
+ * code (without the country prefix) when the bundle is subdivision-scoped.
+ *
+ * Deliberately the same shape as `StageGateJurisdiction` in
+ * src/lib/stage-gates/template-registry.ts, so a workspace's home geography
+ * matches a bundle the same way it matches a stage-gate pack, and so
+ * `resolveJurisdiction()` output can be handed to either without translation.
+ *
+ * OMITTING `subdivision` IS A CLAIM: it says the bundle's programs are open
+ * anywhere in that country. It belongs only on genuinely national programs.
+ *
+ * `label` is what a planner reads. It is carried rather than derived, because
+ * deriving "California" from "US-CA" would mean shipping a code-to-name table
+ * for the world in order to render one string.
+ */
+export type GrantProgramJurisdiction = {
+  country: string;
+  /** Omitted for bundles whose programs are open nationwide. */
+  subdivision?: string;
+  label: string;
+};
+
+/**
  * One jurisdiction's slice of the grant program catalog. Bundles are the unit
  * of registration: adding another state or country means authoring a sibling
  * bundle module and registering it in `./index.ts` — call sites never change.
+ *
+ * The bundle carries its OWN jurisdiction so coverage stays registry-driven:
+ * `describeGrantProgramCoverage` in ./coverage.ts asks each bundle where it
+ * applies rather than knowing a list of places, which is what lets a `us-oh.ts`
+ * be labeled correctly the moment it is registered.
  */
 export type GrantProgramBundle = {
   /** Stable registry key, jurisdiction-style: "us" (federal), "us-ca", … */
   key: string;
   /** Operator-facing label, e.g. "US federal programs". */
   label: string;
+  /** Where these programs are open to applicants. */
+  jurisdiction: GrantProgramJurisdiction;
   programs: readonly GrantProgramCatalogEntry[];
 };

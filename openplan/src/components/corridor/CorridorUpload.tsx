@@ -25,6 +25,17 @@ type GeoJsonInput = CorridorGeometry | Feature | FeatureCollection;
 
 type CorridorUploadProps = {
   onUpload: (geojson: CorridorGeometry) => void;
+  /**
+   * Whether the last uploaded file is still the study area.
+   *
+   * The upload is no longer the only way to set one — a place picked from
+   * search, an area drawn on the map, or a reloaded run all write the same
+   * boundary. When one of those replaces (or clears) the upload, this card must
+   * stop reporting the file as the loaded boundary; the file is then history.
+   * Defaults to true, which is the truth for a caller where upload is the only
+   * input.
+   */
+  isCurrentBoundary?: boolean;
 };
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
@@ -62,7 +73,7 @@ function extractCorridorGeometry(input: GeoJsonInput): CorridorGeometry | null {
   return null;
 }
 
-export function CorridorUpload({ onUpload }: CorridorUploadProps) {
+export function CorridorUpload({ onUpload, isCurrentBoundary = true }: CorridorUploadProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>("");
   const [error, setError] = useState<string>("");
@@ -108,10 +119,12 @@ export function CorridorUpload({ onUpload }: CorridorUploadProps) {
       <div className="analysis-studio-header">
         <div className="analysis-studio-heading">
           <p className="analysis-studio-label">Corridor geometry</p>
-          <h3 className="analysis-studio-title">Load the analysis boundary</h3>
-          <p className="analysis-studio-description">Upload a Polygon or MultiPolygon GeoJSON file to define the corridor footprint for this run.</p>
+          <h3 className="analysis-studio-title">Upload a boundary file</h3>
+          <p className="analysis-studio-description">Have the corridor as a Polygon or MultiPolygon GeoJSON already? Upload it and it becomes the study area, replacing whatever is currently set.</p>
         </div>
-        <StatusBadge tone={fileName ? "success" : "neutral"}>{fileName ? "Boundary loaded" : "Awaiting file"}</StatusBadge>
+        <StatusBadge tone={fileName && isCurrentBoundary ? "success" : "neutral"}>
+          {!fileName ? "Optional" : isCurrentBoundary ? "Boundary loaded" : "Not the current study area"}
+        </StatusBadge>
       </div>
 
       <div className="analysis-studio-body">
@@ -125,6 +138,10 @@ export function CorridorUpload({ onUpload }: CorridorUploadProps) {
             if (file) {
               void handleFile(file);
             }
+            // Clear the input so re-selecting the SAME file fires change again.
+            // Without this, a planner who picked a place after uploading could
+            // not get back to their file by choosing it a second time.
+            event.target.value = "";
           }}
         />
         <div className="analysis-studio-toolbar">
@@ -135,8 +152,15 @@ export function CorridorUpload({ onUpload }: CorridorUploadProps) {
         </div>
         {fileName ? (
           <div className="analysis-studio-inline-meta">
-            <p className="analysis-studio-inline-meta-label">Loaded file</p>
+            <p className="analysis-studio-inline-meta-label">
+              {isCurrentBoundary ? "Loaded file" : "Last uploaded file"}
+            </p>
             <p className="analysis-studio-inline-meta-value">{fileName}</p>
+            {isCurrentBoundary ? null : (
+              <p className="analysis-studio-note">
+                The study area now comes from somewhere else. Upload again to go back to this file.
+              </p>
+            )}
           </div>
         ) : null}
         {error ? <ErrorState compact title="Upload issue" description={error} /> : null}

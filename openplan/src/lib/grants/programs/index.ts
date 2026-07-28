@@ -1,14 +1,15 @@
-// Jurisdiction registry for the grant program catalog.
+// Jurisdiction registry for the grant program catalog — the barrel every call
+// site imports.
 //
-// Each bundle module carries one jurisdiction's curated programs. Adding
-// another state or country means adding a bundle module (e.g. `us-tx.ts`,
-// `ca-on.ts`) and registering it in GRANT_PROGRAM_BUNDLES below — call sites
-// never change: they keep importing GRANT_PROGRAM_CATALOG and see every
-// registered bundle flattened, in registration order.
+// Each bundle module carries one jurisdiction's curated programs and declares
+// where those programs apply. Registration lives in `./registry.ts` (adding a
+// state or country means adding a bundle module and one entry there); coverage
+// — which of the registered programs a given workspace can actually apply to,
+// and how the rest must be labeled — lives in `./coverage.ts`. Call sites never
+// change: they keep importing GRANT_PROGRAM_CATALOG and see every registered
+// bundle flattened, in registration order.
 
-import type { GrantProgramBundle, GrantProgramCatalogEntry } from "./types";
-import { usCaPrograms } from "./us-ca";
-import { usFederalPrograms } from "./us-federal";
+import type { GrantProgramCatalogEntry } from "./types";
 
 export type {
   GrantApplicationAttachmentTemplate,
@@ -16,21 +17,24 @@ export type {
   GrantApplicationSectionTemplate,
   GrantProgramBundle,
   GrantProgramCatalogEntry,
+  GrantProgramJurisdiction,
   GrantProgramLevel,
 } from "./types";
 export { GRANT_APPLICATION_EVIDENCE_KINDS } from "./types";
 export { usCaPrograms } from "./us-ca";
 export { usFederalPrograms } from "./us-federal";
-
-/** Every registered jurisdiction bundle, in registration order. */
-export const GRANT_PROGRAM_BUNDLES: readonly GrantProgramBundle[] = [
-  usFederalPrograms,
-  usCaPrograms,
-];
-
-/** The full catalog: every registered bundle's programs, flattened. */
-export const GRANT_PROGRAM_CATALOG: readonly GrantProgramCatalogEntry[] =
-  GRANT_PROGRAM_BUNDLES.flatMap((bundle) => bundle.programs);
+export { GRANT_PROGRAM_BUNDLES, GRANT_PROGRAM_CATALOG } from "./registry";
+export {
+  describeGrantProgramCoverage,
+  listGrantProgramsWithBundle,
+  type GrantProgramBundleCoverage,
+  type GrantProgramBundleScope,
+  type GrantProgramCoverage,
+  type GrantProgramCoverageDisclosure,
+  type GrantProgramCoverageEntry,
+  type GrantProgramCoverageGapReason,
+  type GrantProgramJurisdictionQuery,
+} from "./coverage";
 
 export function isGrantProgramTracked(
   program: Pick<GrantProgramCatalogEntry, "name">,

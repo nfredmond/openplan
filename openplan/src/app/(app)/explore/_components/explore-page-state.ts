@@ -3,14 +3,39 @@ import type {
   CrashUserFilter,
   MapViewState,
 } from "@/lib/analysis/map-view-state";
+import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import type {
   AnalysisContextResponse,
   AnalysisResult,
+  CorridorGeometry,
   TractMetric,
   WorkspaceLoadState,
 } from "./_types";
 
 type LinkedDataset = AnalysisContextResponse["linkedDatasets"][number];
+
+/**
+ * Whether the run gate is open.
+ *
+ * A study area is a study area whatever produced it — a place searched from the
+ * any-place picker, an area drawn on the map, an uploaded boundary file, or a
+ * reloaded run. This gate deliberately asks only whether one is SET, so no input
+ * path can become privileged over another.
+ */
+export function canRunAnalysis({
+  workspaceId,
+  queryText,
+  corridorGeojson,
+}: {
+  workspaceId: string;
+  queryText: string;
+  corridorGeojson: CorridorGeometry | null;
+}): boolean {
+  const trimmed = queryText.trim();
+  return Boolean(
+    workspaceId && trimmed.length > 0 && trimmed.length <= ANALYSIS_QUERY_MAX_CHARS && corridorGeojson
+  );
+}
 
 export function resolveActiveDatasetOverlay(
   analysisContext: AnalysisContextResponse | null,

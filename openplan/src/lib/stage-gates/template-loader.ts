@@ -18,6 +18,11 @@
  * Case 3 is not a silent fallback and must never be rendered as one. See
  * `describeStageGateBinding`, which produces the sentence a planner has to be
  * shown before they act on gates nobody chose for them.
+ *
+ * Surfaces reading an existing workspace should call
+ * `resolveWorkspaceStageGateBinding`, which reconciles the template id stored on
+ * the row against that workspace's geography — the stored id has a database
+ * default, so on its own it cannot tell a choice from an assumption.
  */
 
 import {
@@ -57,18 +62,24 @@ export type StageGateTemplateSelection =
   | "interim_unconfigured_default";
 
 /**
- * Why an interim default applied. The three cases need different things from the
+ * Why an interim default applied. Each case needs a different thing from the
  * user, so collapsing them into one message would waste the disclosure:
  *
  *   - `no_workspace_jurisdiction`  → tell us where you work.
  *   - `no_template_for_jurisdiction` → we know where you work and have not
  *     authored your pack yet. Nothing the user can do; OpenPlan owes them one.
  *   - `ambiguous_jurisdiction_templates` → more than one pack covers you; pick.
+ *   - `jurisdiction_template_not_bound` → a pack for your jurisdiction IS
+ *     registered, but this workspace is still holding the interim default it was
+ *     created with. Rebind it. (Reachable only once a second subdivision pack
+ *     exists; see `resolveWorkspaceStageGateBinding`, which is where the stored
+ *     binding and the workspace's geography are compared.)
  */
 export type StageGateInterimDefaultReason =
   | "no_workspace_jurisdiction"
   | "no_template_for_jurisdiction"
-  | "ambiguous_jurisdiction_templates";
+  | "ambiguous_jurisdiction_templates"
+  | "jurisdiction_template_not_bound";
 
 export type StageGateTemplateBinding = {
   templateId: string;
@@ -207,6 +218,101 @@ export function resolveStageGateTemplateForWorkspace(
 }
 
 /**
+ * The binding a workspace ROW actually has — the stored template id reconciled
+ * against the workspace's own jurisdiction. This is what a surface should call
+ * before it shows anyone a gate name.
+ *
+ * WHY THE RECONCILIATION EXISTS. `workspaces.stage_gate_template_id` carries a
+ * DATABASE DEFAULT (migration 20260305000009) and the sign-up trigger inserts
+ * only (name, slug), so a workspace in any jurisdiction is born holding the
+ * interim default's id — and at read time that stored id is indistinguishable
+ * from one an agency deliberately chose. Reading it as a choice would let the
+ * product present assumed gates as selected ones, which is the exact
+ * substitution `template-registry.ts` exists to prevent.
+ *
+ * So responsibility is split: the stored id decides WHICH template (it is the
+ * binding of record), and the workspace's home geography decides whether that
+ * template was matched to this workspace or merely assumed for it. The two agree
+ * in the ordinary case; where they diverge the binding says which, rather than
+ * choosing the comfortable story.
+ *
+ * A row with no stored id — a select that did not ask for the column, a
+ * deployment predating it — falls back to the geography answer alone, which is
+ * still a disclosed one.
+ */
+export function resolveWorkspaceStageGateBinding(
+  workspaceRow: unknown,
+  options?: Omit<StageGateTemplateResolveOptions, "jurisdiction">
+): StageGateTemplateResolution {
+  const registry = options?.registry ?? stageGateTemplateRegistry;
+  const bindingMode = options?.bindingMode ?? "workspace_bootstrap_interim";
+
+  // What this workspace's geography alone would bind it to.
+  const geographyResolution = resolveStageGateTemplateForWorkspace(workspaceRow, undefined, options);
+  const persistedTemplateId = readPersistedTemplateId(workspaceRow);
+
+  if (!persistedTemplateId) return geographyResolution;
+
+  // Stored and derived agree: keep the geography answer, which already carries
+  // the honest selection — `jurisdiction_matched`, or the interim default plus
+  // the reason it applied.
+  if (
+    geographyResolution.kind === "resolved" &&
+    geographyResolution.binding.templateId === persistedTemplateId
+  ) {
+    return geographyResolution;
+  }
+
+  const entry = registry.get(persistedTemplateId);
+  if (!entry) {
+    // Bound to a template this deployment does not register. Substituting any
+    // other one would render unrelated gates under the stored id, so the caller
+    // is told instead and can say so.
+    return {
+      kind: "unknown_template",
+      requestedTemplateId: persistedTemplateId,
+      available: registry.list(),
+    };
+  }
+
+  const jurisdiction = normalizeJurisdictionQuery(
+    resolveJurisdiction(parseWorkspaceHomeGeography(workspaceRow))
+  );
+
+  // Divergence, and only two shapes reach here. Either the row still holds the
+  // column's database default while a pack for its jurisdiction exists — assumed,
+  // and fixable by the planner — or it holds some other registered template,
+  // which nothing but a deliberate write could have put there.
+  if (persistedTemplateId === registry.defaultTemplateId) {
+    return {
+      kind: "resolved",
+      binding: toBinding(entry.descriptor, {
+        bindingMode,
+        templateSelection: "interim_unconfigured_default",
+        interimDefaultReason: "jurisdiction_template_not_bound",
+        workspaceJurisdiction: jurisdiction,
+      }),
+    };
+  }
+
+  return {
+    kind: "resolved",
+    binding: toBinding(entry.descriptor, {
+      bindingMode,
+      templateSelection: "explicitly_requested",
+      interimDefaultReason: null,
+      workspaceJurisdiction: jurisdiction,
+    }),
+  };
+}
+
+function readPersistedTemplateId(workspaceRow: unknown): string | null {
+  if (!workspaceRow || typeof workspaceRow !== "object") return null;
+  const value = (workspaceRow as Record<string, unknown>).stage_gate_template_id;
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
+
+/**
  * Throwing wrapper kept for the workspace-bootstrap, admin-provisioning, and
  * project-create routes, which already catch it and return 400. New callers
  * should use `resolveStageGateTemplate` and handle the unresolved cases
@@ -278,12 +384,13 @@ export function describeStageGateBinding(
   }
 
   const headline = `Interim default gates — not ${known ? `${known}'s` : "your jurisdiction's"}`;
+  const consequence = interimDefaultConsequence(binding.jurisdictionLabel);
 
   if (binding.interimDefaultReason === "no_template_for_jurisdiction") {
     return {
       isJurisdictionAssumed: true,
       headline,
-      detail: `OpenPlan has no stage-gate template for ${known} yet, so this workspace is showing the ${binding.jurisdictionLabel} template as an interim default. Its gates and evidence requirements are ${binding.jurisdictionLabel}'s, not this workspace's, and must not be treated as this jurisdiction's requirements.`,
+      detail: `OpenPlan has no stage-gate template registered for ${known} yet, so this workspace is showing the ${binding.templateName} (${binding.jurisdictionLabel}) as an explicitly-labeled interim default. ${consequence}`,
       action: `Choose a registered template that matches how this agency delivers, or track it as a gap until a ${known} pack exists.`,
     };
   }
@@ -292,17 +399,38 @@ export function describeStageGateBinding(
     return {
       isJurisdictionAssumed: true,
       headline,
-      detail: `More than one registered stage-gate template covers ${known}, so none was chosen automatically and this workspace is showing the ${binding.jurisdictionLabel} template as an interim default.`,
+      detail: `More than one registered stage-gate template covers ${known}, so none was chosen automatically and this workspace is showing the ${binding.templateName} (${binding.jurisdictionLabel}) as an explicitly-labeled interim default. ${consequence}`,
       action: "Pick the template this agency actually delivers under.",
+    };
+  }
+
+  if (binding.interimDefaultReason === "jurisdiction_template_not_bound") {
+    return {
+      isJurisdictionAssumed: true,
+      headline,
+      detail: `A stage-gate template IS registered for ${known}, but this workspace is still bound to the ${binding.templateName} (${binding.jurisdictionLabel}) it was created with, as an explicitly-labeled interim default. ${consequence}`,
+      action: `Rebind this workspace to the template registered for ${known}.`,
     };
   }
 
   return {
     isJurisdictionAssumed: true,
     headline,
-    detail: `This workspace has not stated where it works, so it is showing the ${binding.jurisdictionLabel} template as an interim default. Its gates and evidence requirements are ${binding.jurisdictionLabel}'s and were not chosen for this workspace.`,
+    detail: `This workspace has not stated where it works, so no jurisdiction-specific pack could be matched to it and it is showing the ${binding.templateName} (${binding.jurisdictionLabel}) as an explicitly-labeled interim default. ${consequence}`,
     action: "Set the workspace's home geography so its gates come from its own jurisdiction.",
   };
+}
+
+/**
+ * The consequence sentence every assumed binding carries.
+ *
+ * Naming the template's jurisdiction is not enough on its own: a planner reading
+ * a gate called "PS&E" or an evidence id that looks like a form number will
+ * reasonably assume it is the one their funder expects. The disclosure has to say
+ * that it is not, in the same breath.
+ */
+function interimDefaultConsequence(jurisdictionLabel: string): string {
+  return `Its gate names, evidence requirements, and exhibit/form ids are ${jurisdictionLabel}'s — they are not authoritative for this agency and must not be filed or cited as its own requirements.`;
 }
 
 /** "US-OH" / "US" — the readable form of what the resolver was told. */

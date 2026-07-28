@@ -6,12 +6,27 @@ import { BookMarked, Check, ExternalLink, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
-  GRANT_PROGRAM_CATALOG,
+  describeGrantProgramCoverage,
   isGrantProgramTracked,
   type GrantProgramCatalogEntry,
+  type GrantProgramJurisdictionQuery,
 } from "@/lib/grants/program-catalog";
 
-export function GrantsProgramCatalogSection({ trackedTitles }: { trackedTitles: string[] }) {
+export function GrantsProgramCatalogSection({
+  trackedTitles,
+  workspaceJurisdiction,
+}: {
+  trackedTitles: string[];
+  /**
+   * Where this workspace works, as `resolveJurisdiction()` reports it from the
+   * home geography. `null` means it has not said — which is disclosed above the
+   * list, never resolved into a guess, and never a reason to hide a program.
+   * Only the codes cross the boundary; the coverage answer is derived here from
+   * the static registry the catalog is already built from.
+   */
+  workspaceJurisdiction: GrantProgramJurisdictionQuery | null;
+}) {
+  const coverage = describeGrantProgramCoverage(workspaceJurisdiction);
   const router = useRouter();
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [locallyTrackedKeys, setLocallyTrackedKeys] = useState<readonly string[]>([]);
@@ -60,23 +75,37 @@ export function GrantsProgramCatalogSection({ trackedTitles }: { trackedTitles: 
           </span>
           <div className="module-section-heading">
             <p className="module-section-label">Discovery</p>
-            <h2 className="module-section-title">Program catalog for small and rural CA agencies</h2>
+            <h2 className="module-section-title">Program catalog for small and rural agencies</h2>
             <p className="module-section-description">
-              Curated federal and state funding programs worth watching. Track one to create a shared
-              opportunity record; cycle timing is guidance only — always verify the current call with
-              the administering agency.
+              Curated funding programs worth watching, each labeled with the jurisdiction it is
+              registered for. Track one to create a shared opportunity record; cycle timing is
+              guidance only — always verify the current call with the administering agency.
             </p>
           </div>
         </div>
         <span className="module-inline-item">
-          <strong>{GRANT_PROGRAM_CATALOG.length}</strong> programs
+          <strong>{coverage.programs.length}</strong> programs
+          {coverage.coveredProgramCount !== null && coverage.coveredProgramCount < coverage.programs.length
+            ? ` · ${coverage.coveredProgramCount} open to ${coverage.workspaceJurisdictionLabel}`
+            : ""}
         </span>
       </div>
+
+      {coverage.disclosure ? (
+        <div
+          data-testid="grants-program-coverage-disclosure"
+          className="mt-4 rounded-2xl border-l-2 border-amber-300/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-800/60 dark:bg-amber-950/25 dark:text-amber-100"
+        >
+          <p className="font-semibold tracking-tight">{coverage.disclosure.headline}</p>
+          <p className="mt-1">{coverage.disclosure.detail}</p>
+          {coverage.disclosure.action ? <p className="mt-1">{coverage.disclosure.action}</p> : null}
+        </div>
+      ) : null}
 
       {error ? <p className="mt-4 text-sm text-destructive">{error}</p> : null}
 
       <div className="mt-5 divide-y divide-border/60 rounded-2xl border border-border/60 bg-background/70">
-        {GRANT_PROGRAM_CATALOG.map((program) => {
+        {coverage.programs.map(({ program, bundle }) => {
           const isTracked =
             isGrantProgramTracked(program, trackedTitles) ||
             locallyTrackedKeys.includes(program.key);
@@ -89,6 +118,20 @@ export function GrantsProgramCatalogSection({ trackedTitles }: { trackedTitles: 
                   <p className="text-sm font-semibold text-foreground">{program.name}</p>
                   <StatusBadge tone={program.level === "federal" ? "info" : "success"}>
                     {program.level === "federal" ? "Federal" : "State"}
+                  </StatusBadge>
+                  {/* The jurisdiction badge is unconditional: a program that IS
+                      this workspace's still says whose it is, so the absence of a
+                      caveat is never mistaken for the absence of a limit. */}
+                  <StatusBadge
+                    tone={
+                      bundle.scope === "other_jurisdiction"
+                        ? "warning"
+                        : bundle.scope === "unknown_jurisdiction"
+                          ? "neutral"
+                          : "success"
+                    }
+                  >
+                    {bundle.scopeLabel}
                   </StatusBadge>
                 </div>
                 <p className="text-sm text-muted-foreground">{program.summary}</p>

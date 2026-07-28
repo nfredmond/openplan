@@ -5,6 +5,7 @@ import { POST as postReport } from '@/app/api/report/route'
 import { GET as getRuns } from '@/app/api/runs/route'
 import { GET as getStageGateDecisions } from '@/app/api/stage-gates/decisions/route'
 import { ANALYSIS_QUERY_MAX_CHARS } from '@/lib/analysis/query'
+import { BODY_LIMITS } from '@/lib/http/body-limit'
 
 function jsonRequest(url: string, payload: unknown) {
   return new NextRequest(url, {
@@ -51,10 +52,14 @@ describe('API smoke tests (validation + guard rails)', () => {
   })
 
   it('POST /api/analysis rejects oversized request bodies with HTTP 413', async () => {
+    // Sized off the shared limit rather than a literal: the analysis body is a
+    // GeoJSON body (an official county boundary runs to hundreds of kilobytes),
+    // so it is bounded by the GeoJSON limit. A hardcoded number here quietly
+    // stopped testing anything the day that limit moved.
     const request = jsonRequest('http://localhost/api/analysis', {
       workspaceId: '00000000-0000-0000-0000-000000000000',
       queryText: 'test corridor',
-      padding: 'x'.repeat(65 * 1024),
+      padding: 'x'.repeat(BODY_LIMITS.networkGeoJson + 1024),
       corridorGeojson: {
         type: 'Polygon',
         coordinates: [

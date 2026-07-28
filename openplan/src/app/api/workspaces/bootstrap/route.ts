@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { resolveStageGateTemplateBinding } from "@/lib/stage-gates/template-loader";
+import {
+  describeStageGateBinding,
+  resolveStageGateTemplateBinding,
+} from "@/lib/stage-gates/template-loader";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const bootstrapSchema = z.object({
@@ -124,6 +127,13 @@ export async function POST(request: NextRequest) {
 
     let stageGateBinding: ReturnType<typeof resolveStageGateTemplateBinding>;
     try {
+      // No jurisdiction is passed, and that is the truth rather than an omission:
+      // the workspace does not exist yet, so it has no home geography to match a
+      // pack against. Unless the caller named a template, this resolves to the
+      // labeled interim default with reason `no_workspace_jurisdiction` — which
+      // the response carries, so whoever bootstrapped can say so. Once the
+      // workspace has a geography, `resolveWorkspaceStageGateBinding` re-answers
+      // the question from the row.
       stageGateBinding = resolveStageGateTemplateBinding(parsed.data.stageGateTemplateId);
     } catch {
       audit.warn("unsupported_stage_gate_template", {
@@ -218,6 +228,12 @@ export async function POST(request: NextRequest) {
           jurisdiction: stageGateBinding.jurisdiction,
           bindingMode: stageGateBinding.bindingMode,
           lapmFormIdsStatus: stageGateBinding.lapmFormIdsStatus,
+          // Whether anyone chose this template, and why not when nobody did. A
+          // client that shows the new workspace its gates needs both to avoid
+          // presenting an assumed jurisdiction as a selected one.
+          templateSelection: stageGateBinding.templateSelection,
+          interimDefaultReason: stageGateBinding.interimDefaultReason,
+          disclosure: describeStageGateBinding(stageGateBinding),
         },
         onboardingChecklist,
       },
