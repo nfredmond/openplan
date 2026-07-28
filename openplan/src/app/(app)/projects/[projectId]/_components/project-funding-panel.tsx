@@ -18,6 +18,7 @@ import {
   fundingOpportunityStatusTone,
 } from "@/lib/programs/catalog";
 import {
+  buildAwardClaimProgress,
   buildProjectFundingProfileScan,
   buildProjectFundingStackSummary,
   projectFundingProfileScanTone,
@@ -106,6 +107,12 @@ export function ProjectFundingPanel({
     unlinkedInvoiceCount: unlinkedProjectInvoices.length,
     unlinkedInvoiceAmount: unlinkedProjectInvoiceSummary.totalNetAmount,
   });
+  // Per-award claim posture from the linked reimbursement invoices only —
+  // unlinked project invoices deliberately never count toward an award here.
+  const awardClaimProgress = buildAwardClaimProgress(
+    fundingAwards,
+    Array.from(invoiceRecordsByFundingAwardId.values()).flat()
+  );
 
   return (
     <article id="project-funding-opportunities" className="module-section-surface">
@@ -279,6 +286,7 @@ export function ProjectFundingPanel({
               {fundingAwards.map((award) => {
                 const awardInvoiceSummary = invoiceSummaryByFundingAwardId.get(award.id);
                 const awardInvoices = invoiceRecordsByFundingAwardId.get(award.id) ?? [];
+                const claimProgress = awardClaimProgress.get(award.id) ?? null;
 
                 return (
                   <div key={award.id} className="module-record-row">
@@ -307,6 +315,17 @@ export function ProjectFundingPanel({
                       <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
                         Awarded {fmtCurrency(award.awarded_amount)} · Match {fmtCurrency(award.match_amount)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
                       </p>
+
+                      {claimProgress ? (
+                        <p className="mt-1 text-[0.73rem] text-muted-foreground">
+                          Claim progress: awarded {claimProgress.awardedAmount !== null ? fmtCurrency(claimProgress.awardedAmount) : "not entered"} · claimed {fmtCurrency(claimProgress.claimedToDate)} · paid {fmtCurrency(claimProgress.paidToDate)}
+                          {claimProgress.remaining !== null
+                            ? claimProgress.remaining >= 0
+                              ? ` · ${fmtCurrency(claimProgress.remaining)} not yet claimed`
+                              : ` · claims exceed the award by ${fmtCurrency(Math.abs(claimProgress.remaining))}`
+                            : ""}
+                        </p>
+                      ) : null}
 
                       <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">
