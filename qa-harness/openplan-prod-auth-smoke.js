@@ -235,10 +235,21 @@ async function main() {
     notes.push('Program detail loaded and surfaced model continuity inherited from linked plan/project context.');
     await screenshot('prod-auth-smoke-07-program-detail');
 
+    // Invoicing here is Caltrans LAPM grant reimbursement and client invoicing —
+    // the agency invoicing its funder or its clients. It is not, and never was,
+    // a way to charge anyone for OpenPlan.
+    //
+    // This used to wait for the names of the two retired paid plan tiers.
+    // Deleting the paid tier moved this route from /billing to /invoicing and
+    // left the assertion behind, so it was waiting 20s for text that no longer
+    // exists anywhere in the app and then failing. The direction
+    // nav is the right anchor: it renders unconditionally for any provisioned
+    // workspace, including one with no invoices yet, and it is matched by role
+    // rather than by copy.
     await page.goto(`${productionBaseUrl}/invoicing`, { waitUntil: 'networkidle' });
-    await page.getByText(/Starter|Professional|billing|subscription/i).first().waitFor({ timeout: 20000 });
-    notes.push('Billing page loaded in an authenticated, provisioned state.');
-    await screenshot('prod-auth-smoke-08-billing');
+    await page.getByRole('navigation', { name: 'Invoicing direction' }).waitFor({ timeout: 20000 });
+    notes.push('Invoicing loaded in an authenticated, provisioned state.');
+    await screenshot('prod-auth-smoke-08-invoicing');
 
     const reportPath = path.join(repoRoot, `docs/ops/${datePart}-openplan-production-authenticated-smoke.md`);
     const lines = [
@@ -265,7 +276,7 @@ async function main() {
       '- Signed-in unprovisioned UX',
       '- Authenticated project creation via production API/session',
       '- Project → Plan → Model → Program continuity on deployed production routes',
-      '- Billing page authenticated load',
+      '- Invoicing authenticated load',
       '',
       '## Notes',
       '- This smoke used a dedicated QA auth user and created production QA records/workspace for continuity verification.',

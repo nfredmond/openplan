@@ -8,6 +8,11 @@ openplan-worktrees/
 # Generated local story-pack artifacts (non-canonical)
 openplan/.artifacts/
 
+# Playwright MCP browser session logs and page snapshots. Written into the repo
+# root by the MCP browser tools during local debugging; they are per-session
+# scratch, not evidence, and accumulate megabytes if left untracked.
+.playwright-mcp/
+
 # Supabase CLI local temp metadata
 openplan/supabase/.temp/
 

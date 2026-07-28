@@ -10,6 +10,7 @@ import {
   resolveMonthlyRunCap,
   RUN_WEIGHTS,
 } from "@/lib/config/run-cap";
+import { harnessTextFiles, locateHarnessDir } from "./qa-harness-location-helpers";
 
 /**
  * OpenPlan is free and open source with no paid tier. This guard exists because
@@ -24,6 +25,7 @@ import {
  */
 
 const SRC = path.join(process.cwd(), "src");
+const HARNESS_DIR = locateHarnessDir();
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
@@ -226,6 +228,112 @@ describe("the paid-tier subsystem stays deleted", () => {
     const files = sourceFiles();
     expect(files.length).toBeGreaterThan(100);
     expect(files.some((f) => f.includes(path.join("api", "analysis")))).toBe(true);
+  });
+});
+
+/**
+ * The same prohibition, applied to the QA harness.
+ *
+ * Everything above scans `openplan/src`. The harness is a sibling package, so
+ * for months after the paid tier was deleted `qa-harness/openplan-prod-qa-cleanup.js`
+ * still read a Stripe secret key, called `api.stripe.com/v1/checkout/sessions`,
+ * selected the retired plan/subscription columns, and DELETEd `billing_events` —
+ * while the root README asserted "There is no Stripe or billing integration in
+ * the codebase" and a guard enforced only that the sentence was still PRESENT.
+ *
+ * Three independent things hid it, and fixing any one alone would have caught
+ * nothing:
+ *   1. the scan root never left `openplan/src`;
+ *   2. the extension filter was `/\.tsx?$/`, and the harness is all CommonJS;
+ *   3. every banned pattern was TypeScript-import syntax or a camelCase symbol,
+ *      while the residue was a URL, a snake_case table name, and a PostgREST
+ *      `select=` string.
+ */
+describe("the paid tier stays deleted in the QA harness too", () => {
+  /**
+   * Spelled as the harness would spell them: URLs, env var names, table names,
+   * PostgREST column lists, and the retired tier labels.
+   */
+  const BANNED_IN_HARNESS: Array<{ pattern: RegExp; why: string }> = [
+    { pattern: /api\.stripe\.com/, why: "calls the Stripe API" },
+    { pattern: /\bSTRIPE_SECRET_KEY\b/, why: "reads a Stripe secret key" },
+    { pattern: /\bstripe[._-]?(?:key|token|session|customer|price|product)\b/i, why: "handles a Stripe object" },
+    { pattern: /\bcheckout[._-]?session/i, why: "handles a checkout session" },
+    { pattern: /\bbilling_events\b/, why: "reads or writes the retired billing_events table" },
+    { pattern: /\bsubscription_(?:plan|status|current_period_end)\b/, why: "reads a retired subscription column" },
+    { pattern: /\bstripe_(?:customer|subscription)_id\b/, why: "reads a retired Stripe column" },
+    { pattern: /\b(?:Starter|Professional)\b\s*\|/, why: "asserts on a retired paid plan tier label" },
+  ];
+
+  /**
+   * Grant-reimbursement and client invoicing are NOT billing for OpenPlan — the
+   * agency invoices its funder or its clients. CLAUDE.md protects these by name,
+   * so any pattern above that matched them would be the bug.
+   */
+  const PROTECTED_INVOICING = [
+    "billingBasis",
+    "billing_basis",
+    "billing_invoice_records",
+    "Open billing triage",
+    "billing_invoice_id",
+  ];
+
+  it("has no Stripe, checkout, or retired-tier code anywhere in the harness", () => {
+    const offenders: string[] = [];
+    for (const file of harnessTextFiles()) {
+      const source = readFileSync(file, "utf8");
+      for (const { pattern, why } of BANNED_IN_HARNESS) {
+        if (pattern.test(source)) {
+          offenders.push(`${path.relative(path.dirname(HARNESS_DIR), file)} → ${why} (${pattern})`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it("spares LAPM grant-reimbursement and client invoicing, which are not billing for OpenPlan", () => {
+    for (const protectedToken of PROTECTED_INVOICING) {
+      const tripped = BANNED_IN_HARNESS.filter(({ pattern }) => pattern.test(protectedToken));
+      expect(tripped.map(({ pattern }) => `${protectedToken} → ${pattern}`)).toEqual([]);
+    }
+  });
+
+  it("guards the guard — the patterns catch the residue that actually shipped", () => {
+    // Verbatim lines from the pre-fix openplan-prod-qa-cleanup.js. If a future
+    // rewrite of these patterns stops matching these, it is not a guard.
+    const KNOWN_RESIDUE = [
+      "const stripeKey = env.OPENPLAN_STRIPE_SECRET_KEY || env.STRIPE_SECRET_KEY;",
+      "await jsonFetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {",
+      "restSelect('workspaces', 'id,name,slug,plan,subscription_plan,subscription_status,created_at',",
+      "['billing_events', 'workspace_id', workspaceIds],",
+      "await page.getByText(/Starter|Professional|billing|subscription/i).first()",
+    ];
+
+    for (const line of KNOWN_RESIDUE) {
+      const matched = BANNED_IN_HARNESS.some(({ pattern }) => pattern.test(line));
+      expect(matched, `no pattern catches: ${line}`).toBe(true);
+    }
+  });
+
+  it("guards the guard — the scan reaches the whole harness, not a filtered slice of it", () => {
+    const files = harnessTextFiles();
+    const relative = files.map((file) => path.relative(HARNESS_DIR, file));
+
+    // The harness had 20 top-level scripts when this guard was written.
+    expect(files.length).toBeGreaterThanOrEqual(18);
+    // Non-.js files must be in scope: a retired script's npm entry point and a
+    // stale claim in the docs are both worth failing on.
+    expect(relative).toContain("package.json");
+    expect(relative).toContain("README.md");
+    // Nested helpers must be in scope — the flat readdir used elsewhere misses these.
+    expect(relative.some((file) => file.startsWith(`fixtures${path.sep}`))).toBe(true);
+    // And the vendored dependency tree must NOT be.
+    expect(relative.every((file) => !file.includes("node_modules"))).toBe(true);
+  });
+
+  it("guards the guard — the harness is located, never silently missed", () => {
+    expect(() => locateHarnessDir()).not.toThrow();
+    expect(path.basename(HARNESS_DIR)).toBe("qa-harness");
   });
 });
 

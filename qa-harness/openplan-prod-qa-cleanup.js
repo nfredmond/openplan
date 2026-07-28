@@ -15,7 +15,7 @@ const qaPatternSource =
 const qaPattern = new RegExp(qaPatternSource, 'i');
 
 if (helpMode) {
-  process.stdout.write(`OpenPlan production QA cleanup\n\nUsage:\n  node openplan-prod-qa-cleanup.js [--created-after YYYY-MM-DD] [--apply]\n\nBehavior:\n  - Without --apply: plan-only / dry-run. No production rows are deleted.\n  - With --apply: expires matching Stripe checkout sessions, deletes matching QA rows, and removes matching auth users.\n\nInputs:\n  --created-after YYYY-MM-DD   Lower bound for candidate records (default: today or CLEANUP_DATE)\n  OPENPLAN_QA_CLEANUP_PATTERN  Optional regex source for matching QA/test records\n  OPENPLAN_ENV_PATH            Optional env file override for Supabase/Stripe keys\n`);
+  process.stdout.write(`OpenPlan production QA cleanup\n\nUsage:\n  node openplan-prod-qa-cleanup.js [--created-after YYYY-MM-DD] [--apply]\n\nBehavior:\n  - Without --apply: plan-only / dry-run. No production rows are deleted.\n  - With --apply: deletes matching QA rows and removes matching auth users.\n\nInputs:\n  --created-after YYYY-MM-DD   Lower bound for candidate records (default: today or CLEANUP_DATE)\n  OPENPLAN_QA_CLEANUP_PATTERN  Optional regex source for matching QA/test records\n  OPENPLAN_ENV_PATH            Optional env file override for Supabase keys\n`);
   process.exit(0);
 }
 
@@ -26,7 +26,6 @@ if (!/^\d{4}-\d{2}-\d{2}$/.test(createdAfter)) {
 const { env, envPath } = loadEnv();
 const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY;
-const stripeKey = env.OPENPLAN_STRIPE_SECRET_KEY || env.STRIPE_SECRET_KEY;
 
 if (!supabaseUrl || !serviceRoleKey) {
   throw new Error('Missing Supabase environment keys');
@@ -125,51 +124,6 @@ async function deleteAuthUser(userId) {
   });
 }
 
-async function inspectCheckoutSession(sessionId) {
-  if (!stripeKey) {
-    return { sessionId, skipped: true, reason: 'Missing Stripe secret key' };
-  }
-
-  const getResult = await jsonFetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}`, {
-    headers: {
-      Authorization: `Bearer ${stripeKey}`,
-    },
-  });
-
-  if (!getResult.ok) {
-    return { sessionId, status: 'lookup_failed', detail: getResult.data };
-  }
-
-  const checkoutStatus = getResult.data?.status ?? null;
-  if (!applyMode) {
-    return {
-      sessionId,
-      status: checkoutStatus === 'open' ? 'would_expire' : 'already_not_open',
-      checkoutStatus,
-    };
-  }
-
-  if (checkoutStatus !== 'open') {
-    return { sessionId, status: 'already_not_open', checkoutStatus };
-  }
-
-  const expireResult = await jsonFetch(`https://api.stripe.com/v1/checkout/sessions/${sessionId}/expire`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${stripeKey}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: '',
-  });
-
-  return {
-    sessionId,
-    status: expireResult.ok ? 'expired' : 'expire_failed',
-    checkoutStatus,
-    detail: expireResult.data,
-  };
-}
-
 async function main() {
   fs.mkdirSync(outputDir, { recursive: true });
 
@@ -180,7 +134,6 @@ async function main() {
     createdAfter,
     envPath,
     qaPattern: qaPattern.toString(),
-    stripeSessionResults: [],
     deletePlan: [],
     deleteResults: [],
     authPlan: [],
@@ -188,9 +141,13 @@ async function main() {
     verification: {},
   };
 
+  // Only the columns this cleanup actually matches on. The retired paid-tier
+  // columns were being selected here and then serialized verbatim into a
+  // committed summary under docs/ops/ — dead schema leaking into the repo of a
+  // product that has no paid tier. OpenPlan is free; do not read them back.
   const workspacesResult = await restSelect(
     'workspaces',
-    'id,name,slug,plan,subscription_plan,subscription_status,created_at',
+    'id,name,slug,created_at',
     `&created_at=gte.${createdAtFilter()}&order=created_at.asc`
   );
   if (!workspacesResult.ok) throw new Error(`Failed to list workspaces: ${workspacesResult.status}`);
@@ -212,7 +169,6 @@ async function main() {
     projectDecisionsResult,
     projectMeetingsResult,
     workspaceMembersResult,
-    billingEventsResult,
     countyRunsResult,
   ] = await Promise.all([
     restSelect('projects', 'id,workspace_id,name,created_at', `&created_at=gte.${createdAtFilter()}&order=created_at.asc`),
@@ -227,7 +183,6 @@ async function main() {
     restSelect('project_decisions', 'id,workspace_id,project_id', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
     restSelect('project_meetings', 'id,workspace_id,project_id', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
     restSelect('workspace_members', 'workspace_id,user_id,role', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
-    restSelect('billing_events', 'id,workspace_id,event_type,payload,created_at', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
     restSelect('county_runs', 'id,workspace_id,run_name,created_at', workspaceIds.length ? `&${inFilter('workspace_id', workspaceIds)}` : '&limit=0'),
   ]);
 
@@ -270,14 +225,6 @@ async function main() {
   const issueIds = (Array.isArray(projectIssuesResult.data) ? projectIssuesResult.data : []).map((row) => row.id);
   const decisionIds = (Array.isArray(projectDecisionsResult.data) ? projectDecisionsResult.data : []).map((row) => row.id);
   const meetingIds = (Array.isArray(projectMeetingsResult.data) ? projectMeetingsResult.data : []).map((row) => row.id);
-  const billingEvents = Array.isArray(billingEventsResult.data) ? billingEventsResult.data : [];
-  const stripeSessionIds = Array.from(
-    new Set(
-      billingEvents
-        .map((event) => (event.payload && typeof event.payload === 'object' ? event.payload.sessionId : null))
-        .filter((value) => typeof value === 'string')
-    )
-  );
 
   const adminUsers = await listAdminUsers();
   const qaUsers = adminUsers.filter((user) => {
@@ -296,10 +243,6 @@ async function main() {
     workspaces: qaWorkspaces,
   };
 
-  for (const sessionId of stripeSessionIds) {
-    summary.stripeSessionResults.push(await inspectCheckoutSession(sessionId));
-  }
-
   const deleteSteps = [
     ['report_artifacts', 'id', reportArtifactIds],
     ['report_runs', 'id', reportRunIds],
@@ -316,7 +259,6 @@ async function main() {
     ['plans', 'id', planIds],
     ['models', 'id', modelIds],
     ['programs', 'id', programIds],
-    ['billing_events', 'workspace_id', workspaceIds],
     ['engagement_campaigns', 'id', campaignIds],
     ['reports', 'id', reportIds],
     ['projects', 'id', projectIds],
@@ -395,11 +337,6 @@ async function main() {
     `- Targeted workspaces: ${workspaceIds.length}`,
     `- Targeted county runs: ${countyRunIds.length}`,
     `- Targeted auth users: ${qaUsers.length}`,
-    '',
-    '## Stripe checkout sessions',
-    ...(summary.stripeSessionResults.length
-      ? summary.stripeSessionResults.map((item) => `- ${item.sessionId}: ${item.status || (item.skipped ? 'skipped' : 'unknown')}`)
-      : ['- No Stripe checkout sessions found for targeted workspaces.']),
     '',
     '## Delete plan',
     ...(summary.deletePlan.length

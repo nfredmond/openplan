@@ -2,6 +2,8 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { locateHarnessDir } from "./qa-harness-location-helpers";
+
 /**
  * REGRESSION GUARD — the qa-harness smokes and the app's API routes are one
  * contract, and nothing else checks it.
@@ -55,28 +57,8 @@ type HttpVerb = (typeof HTTP_VERBS)[number];
 
 const API_DIR = path.join(process.cwd(), "src", "app", "api");
 
-/**
- * The harness is a sibling package of `openplan/`, not a child of it. Walk up
- * from wherever vitest was invoked rather than hardcoding `../qa-harness`, so
- * the guard still finds it if the suite is ever run from a different depth.
- * Not finding it is a hard failure: a guard that quietly scans nothing is worse
- * than no guard.
- */
-function locateHarnessDir(): string {
-  let dir = process.cwd();
-  for (let depth = 0; depth < 6; depth += 1) {
-    const candidate = path.join(dir, "qa-harness");
-    if (existsSync(path.join(candidate, "package.json"))) return candidate;
-    const parent = path.dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
-  }
-  throw new Error(
-    `Could not locate the qa-harness package by walking up from ${process.cwd()}. ` +
-      "This guard exists to keep the harness and the API routes in step; it must not pass by finding nothing."
-  );
-}
-
+// Walk-up location lives in a shared helper so this guard and the paid-tier
+// guard cannot disagree about where the harness is.
 const HARNESS_DIR = locateHarnessDir();
 
 /** Top-level harness scripts. `fixtures/` holds shared helpers, not call sites. */
