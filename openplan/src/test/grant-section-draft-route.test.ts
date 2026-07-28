@@ -37,6 +37,7 @@ vi.mock("ai", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (...args: unknown[]) => anthropicMock(...args),
+  createAnthropic: () => (...args: unknown[]) => anthropicMock(...args),
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({

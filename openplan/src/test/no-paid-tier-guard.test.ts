@@ -70,6 +70,26 @@ describe("the paid-tier subsystem stays deleted", () => {
     expect(offenders).toEqual([]);
   });
 
+  it("renders no user-visible plan or tier label", () => {
+    // The Wave-4 lane deleted the "Workspace plan:", "Workspace tier:", and
+    // "Plan tier" renders (assistant context, report HTML, data-hub operator
+    // panel, project posture header) — surfaces that presented the dead
+    // `workspaces.plan` column to users as if tiers existed. A free product
+    // with no tiers must not label workspaces with one; these literals keep
+    // that class of copy from regressing.
+    const banned = ["Workspace plan:", "Workspace tier:", "Plan tier"];
+    const offenders: string[] = [];
+    for (const file of sourceFiles()) {
+      const source = readFileSync(file, "utf8");
+      for (const literal of banned) {
+        if (source.includes(literal)) {
+          offenders.push(`${path.relative(process.cwd(), file)} → ${literal}`);
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
   it("never answers 402 Payment Required", () => {
     // A free product demanding payment is the sharpest possible version of the
     // contradiction; the six core routes each used to have exactly this.

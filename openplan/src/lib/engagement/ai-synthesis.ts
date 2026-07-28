@@ -18,7 +18,7 @@
  */
 
 import { generateText } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 
 import {
   factClaimTextMap,
@@ -246,7 +246,7 @@ function coerceThemes(
 export async function generateEngagementSynthesis(
   items: SynthesisItem[]
 ): Promise<EngagementSynthesis> {
-  if (!process.env.ANTHROPIC_API_KEY?.trim()) {
+  if (!hasAnthropicAccess()) {
     return buildDeterministicSynthesis(items, "missing_api_key");
   }
   if (items.length === 0) {
@@ -259,7 +259,7 @@ export async function generateEngagementSynthesis(
 
   try {
     const { text } = await generateText({
-      model: anthropic(SYNTHESIS_MODEL_ID),
+      model: anthropicModel(SYNTHESIS_MODEL_ID),
       temperature: 0.2,
       maxOutputTokens: 1600,
       system:

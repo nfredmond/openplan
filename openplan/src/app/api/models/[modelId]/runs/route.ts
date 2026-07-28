@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
@@ -375,917 +376,919 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Model not found" }, { status: 404 });
     }
 
-    if (!access.membership || !access.allowed) {
-      return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
-    }
-
-    let scenarioEntry: ScenarioEntryRow | null = null;
-    if (parsed.data.scenarioEntryId) {
-      const { data: entry, error: entryError } = await supabase
-        .from("scenario_entries")
-        .select("id, scenario_set_id, label, entry_type, status, assumptions_json")
-        .eq("id", parsed.data.scenarioEntryId)
-        .maybeSingle();
-
-      if (entryError) {
-        audit.error("scenario_entry_lookup_failed", {
-          modelId: access.model.id,
-          scenarioEntryId: parsed.data.scenarioEntryId,
-          message: entryError.message,
-          code: entryError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to verify scenario entry" }, { status: 500 });
+    return await withWorkspaceIntegrationContext(access.model.workspace_id, async () => {
+      if (!access.model || !access.membership || !access.allowed) {
+        return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
       }
 
-      if (!entry) {
-        return NextResponse.json({ error: "Scenario entry not found" }, { status: 404 });
-      }
+      let scenarioEntry: ScenarioEntryRow | null = null;
+      if (parsed.data.scenarioEntryId) {
+        const { data: entry, error: entryError } = await supabase
+          .from("scenario_entries")
+          .select("id, scenario_set_id, label, entry_type, status, assumptions_json")
+          .eq("id", parsed.data.scenarioEntryId)
+          .maybeSingle();
 
-      if (access.model.scenario_set_id && entry.scenario_set_id !== access.model.scenario_set_id) {
-        return NextResponse.json({ error: "Scenario entry does not belong to the model's primary scenario set" }, { status: 400 });
-      }
-
-      scenarioEntry = entry as ScenarioEntryRow;
-    }
-
-    let assumptionSet: { id: string; assumptions_json: Record<string, unknown> | null } | null = null;
-    if (parsed.data.assumptionSetId) {
-      const { data: setRow, error: setError } = await supabase
-        .from("scenario_assumption_sets")
-        .select("id, scenario_set_id, assumptions_json, scenario_sets(workspace_id)")
-        .eq("id", parsed.data.assumptionSetId)
-        .maybeSingle();
-
-      if (setError) {
-        audit.error("assumption_set_lookup_failed", {
-          modelId: access.model.id,
-          assumptionSetId: parsed.data.assumptionSetId,
-          message: setError.message,
-          code: setError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to verify assumption set" }, { status: 500 });
-      }
-
-      if (!setRow) {
-        return NextResponse.json({ error: "Assumption set not found" }, { status: 404 });
-      }
-
-      if (access.model.scenario_set_id && setRow.scenario_set_id !== access.model.scenario_set_id) {
-        return NextResponse.json(
-          { error: "Assumption set does not belong to the model's primary scenario set" },
-          { status: 400 }
-        );
-      }
-
-      // RLS only proves the CALLER can read the set (any of their workspaces),
-      // and models without a primary scenario set skip the check above — so a
-      // member of two workspaces could otherwise execute workspace B's land-use
-      // program under workspace A's model. Always pin the set to the model's
-      // workspace.
-      const setWorkspace = Array.isArray(setRow.scenario_sets)
-        ? setRow.scenario_sets[0]
-        : setRow.scenario_sets;
-      if (!setWorkspace || setWorkspace.workspace_id !== access.model.workspace_id) {
-        return NextResponse.json(
-          { error: "Assumption set does not belong to the model's workspace" },
-          { status: 400 }
-        );
-      }
-
-      assumptionSet = { id: setRow.id, assumptions_json: setRow.assumptions_json ?? null };
-    }
-
-    const modelTemplate = extractModelLaunchTemplate(access.model.config_json ?? {});
-    const launchPayload = mergeScenarioLaunchPayload({
-      modelTemplate,
-      scenarioAssumptions: scenarioEntry?.assumptions_json,
-      overrideQueryText: parsed.data.queryText,
-      overrideCorridorGeojson: parsed.data.corridorGeojson,
-    });
-    launchPayload.engineKey = parsed.data.engineKey;
-    const runMode = getManagedRunModeDefinition(launchPayload.engineKey);
-    const isIteTripGenRun = launchPayload.engineKey === "ite_trip_generation";
-
-    // Trip generation runs on a land-use program, not a corridor — it is the
-    // one engine exempt from the query/corridor requirement.
-    if (!isIteTripGenRun && (!launchPayload.queryText || !launchPayload.corridorGeojson)) {
-      return NextResponse.json(
-        {
-          error:
-            "Launch configuration is incomplete. Provide query text and corridor GeoJSON, or store them in model.config_json.runTemplate.",
-        },
-        { status: 400 }
-      );
-    }
-
-    const modelRunId = crypto.randomUUID();
-    const launchTitle =
-      parsed.data.title?.trim() ||
-      scenarioEntry?.label?.trim() ||
-      `${access.model.title} run`;
-    const launchedAt = new Date().toISOString();
-    const isAequilibraeRun = launchPayload.engineKey === "aequilibrae";
-    const isBehavioralDemandRun = launchPayload.engineKey === "behavioral_demand";
-    const isSketchAbmRun = launchPayload.engineKey === "sketch_abm";
-
-    // Immutable input snapshot for the run row. Extracted so the sketch lane
-    // can reuse it verbatim when a large study area is rerouted to the worker.
-    const baseInputSnapshot: Record<string, unknown> = {
-      modelId: access.model.id,
-      modelTitle: access.model.title,
-      modelFamily: access.model.model_family ?? null,
-      configVersion: access.model.config_version ?? null,
-      launchedAt,
-      // The worker reads this to size the dynamic package's TAZs; stamped
-      // only for the engine that consumes it so other engines' snapshots
-      // don't carry a dead option.
-      ...(isAequilibraeRun && parsed.data.zoneGeography
-        ? { zoneGeography: parsed.data.zoneGeography }
-        : {}),
-      // Per-run count-calibration opt-in. Stamped for the worker-backed engines
-      // whose screening stages run in the AequilibraE worker (aequilibrae +
-      // behavioral_demand), and only when the caller sent it — an absent flag
-      // falls back to the worker's AEQ_CALIBRATE env. An explicit false is
-      // stamped too, so unchecking the box beats a calibrate-by-default env.
-      ...((isAequilibraeRun || isBehavioralDemandRun) && parsed.data.calibrate !== undefined
-        ? { calibrate: parsed.data.calibrate }
-        : {}),
-    };
-
-    // Operator run-cap check for the synchronous in-process branches only —
-    // mirrors /runs/[modelRunId]/launch. The deterministic path is checked by
-    // /api/analysis downstream and the aequilibrae path by the launch route,
-    // so neither is re-checked here.
-    if (isSketchAbmRun || isIteTripGenRun) {
-      const runCap = await checkMonthlyRunCap(supabase, {
-        workspaceId: access.model.workspace_id,
-        tableName: "model_runs",
-        weight: RUN_WEIGHTS.MODEL_RUN_LAUNCH,
-      });
-
-      if (isRunCapLookupError(runCap)) {
-        audit.error("run_cap_count_failed", {
-          workspaceId: access.model.workspace_id,
-          userId: user.id,
-          message: runCap.message,
-          code: runCap.code,
-        });
-        return NextResponse.json({ error: "Failed to validate the run limit" }, { status: 500 });
-      }
-
-      if (isRunCapExceeded(runCap)) {
-        audit.warn("run_cap_reached", {
-          workspaceId: access.model.workspace_id,
-          userId: user.id,
-          usedRuns: runCap.usedRuns,
-          cap: runCap.cap,
-        });
-        return NextResponse.json({ error: runCap.message }, { status: 429 });
-      }
-    }
-
-    const { error: createModelRunError } = await supabase.from("model_runs").insert({
-      id: modelRunId,
-      workspace_id: access.model.workspace_id,
-      model_id: access.model.id,
-      scenario_set_id: access.model.scenario_set_id,
-      scenario_entry_id: scenarioEntry?.id ?? null,
-      engine_key: launchPayload.engineKey || "deterministic_corridor_v1",
-      launch_source: scenarioEntry ? "scenario_entry" : "model_detail",
-      // Async worker-backed engines (aequilibrae + behavioral_demand preflight)
-      // enqueue as 'queued' with no started_at; the worker flips them to running.
-      status: isAequilibraeRun || isBehavioralDemandRun ? "queued" : "running",
-      run_title: launchTitle,
-      query_text: launchPayload.queryText,
-      corridor_geojson: launchPayload.corridorGeojson,
-      input_snapshot_json: baseInputSnapshot,
-      assumption_snapshot_json: launchPayload.assumptionSnapshot,
-      started_at: isAequilibraeRun || isBehavioralDemandRun ? null : launchedAt,
-      created_by: user.id,
-      // Provenance: a run launched from a project-bound model belongs to that
-      // project. Sent only when set, so a deployment that has not applied the
-      // run-provenance migration keeps launching runs untouched.
-      ...(access.model.project_id ? { project_id: access.model.project_id } : {}),
-    });
-
-    
-    if (createModelRunError) {
-      if (looksLikePendingSchema(createModelRunError.message)) {
-        return NextResponse.json(
-          { error: "model_runs migration is not applied yet. Apply the latest database migration first." },
-          { status: 503 }
-        );
-      }
-
-      audit.error("model_run_insert_failed", {
-        modelId: access.model.id,
-        userId: user.id,
-        message: createModelRunError.message,
-        code: createModelRunError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to create model run" }, { status: 500 });
-    }
-
-    if (isAequilibraeRun) {
-      // Async run. Create stages and return immediately.
-      const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
-        { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-        { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-        { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-      ]);
-
-      if (stageInsertError) {
-        await supabase
-          .from("model_runs")
-          .update({
-            status: "failed",
-            error_message: "Failed to initialize AequilibraE run stages",
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", modelRunId);
-
-        audit.error("model_run_stage_insert_failed", {
-          modelId: access.model.id,
-          modelRunId,
-          message: stageInsertError.message,
-          code: stageInsertError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
-      }
-
-      return NextResponse.json(
-        { modelRunId, status: "queued" },
-        { status: 201 }
-      );
-    }
-
-    if (isBehavioralDemandRun) {
-      // Async ActivitySim behavioral-demand PREFLIGHT. This is NOT a behavioral
-      // forecast: the AequilibraE worker runs a screening (network + skims), then
-      // the ActivitySim worker builds a real (uncalibrated, scaffold-population)
-      // ActivitySim input bundle and stages the runtime, recording an honest
-      // evidence packet. The three screening stages are owned by the AequilibraE
-      // worker (same names it already runs); the final stage by the ActivitySim
-      // worker. A calibrated run needs a dedicated modeling host + calibration
-      // (see workers/activitysim_worker/DEPLOY.md).
-      const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
-        { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-        { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-        { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-        { run_id: modelRunId, stage_name: "ActivitySim Bundle & Preflight", sort_order: 4, status: "queued" },
-      ]);
-
-      if (stageInsertError) {
-        await supabase
-          .from("model_runs")
-          .update({
-            status: "failed",
-            error_message: "Failed to initialize ActivitySim preflight stages",
-            completed_at: new Date().toISOString(),
-          })
-          .eq("id", modelRunId);
-
-        audit.error("model_run_stage_insert_failed", {
-          modelId: access.model.id,
-          modelRunId,
-          message: stageInsertError.message,
-          code: stageInsertError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
-      }
-
-      audit.info("behavioral_demand_preflight_enqueued", {
-        modelId: access.model.id,
-        userId: user.id,
-        modelRunId,
-        durationMs: Date.now() - startedAt,
-      });
-
-      return NextResponse.json(
-        { modelRunId, status: "queued", engineKey: "behavioral_demand", mode: "preflight" },
-        { status: 201 }
-      );
-    }
-
-    if (isSketchAbmRun) {
-      // Synchronous in-process sketch activity model run, mirroring the
-      // deterministic branch shape: run row is already inserted as running;
-      // execute, then update to succeeded/failed.
-      try {
-        const corridorForApi = launchPayload.corridorGeojson as {
-          type: string;
-          coordinates: number[][][] | number[][][][];
-        };
-        const census = await fetchCensusForCorridor(corridorForApi);
-        if (!census.tracts.length) {
-          throw new Error("Census returned no census tracts in the study-area counties; the sketch activity model has no zones to run.");
+        if (entryError) {
+          audit.error("scenario_entry_lookup_failed", {
+            modelId: access.model.id,
+            scenarioEntryId: parsed.data.scenarioEntryId,
+            message: entryError.message,
+            code: entryError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to verify scenario entry" }, { status: 500 });
         }
 
-        if (census.tracts.length > SKETCH_ABM_MAX_ZONES) {
-          // Metro-scale study area: the synchronous in-process sketch lane caps
-          // at SKETCH_ABM_MAX_ZONES zones (O(zones²) skim, runs inside the
-          // request cycle). Rather than refuse a real agency's own city, hand
-          // the run off to the async AequilibraE fast-screening worker, which
-          // builds its own corridor-scaled network and has no zone cap. The
-          // handoff is NOT silent — it is stamped into the run's input/result
-          // provenance, audit-logged, and echoed to the caller so the run
-          // history reads "requested sketch, ran on the worker (large area)".
-          const rerouteNotice =
-            `Study area resolves to ${census.tracts.length} census tracts; the fast in-process sketch lane caps at ${SKETCH_ABM_MAX_ZONES}. ` +
-            `This run was routed to the AequilibraE fast-screening worker (no zone cap) — expect a longer runtime.`;
-          const reroutedAt = new Date().toISOString();
+        if (!entry) {
+          return NextResponse.json({ error: "Scenario entry not found" }, { status: 404 });
+        }
 
-          const { error: rerouteUpdateError } = await supabase
+        if (access.model.scenario_set_id && entry.scenario_set_id !== access.model.scenario_set_id) {
+          return NextResponse.json({ error: "Scenario entry does not belong to the model's primary scenario set" }, { status: 400 });
+        }
+
+        scenarioEntry = entry as ScenarioEntryRow;
+      }
+
+      let assumptionSet: { id: string; assumptions_json: Record<string, unknown> | null } | null = null;
+      if (parsed.data.assumptionSetId) {
+        const { data: setRow, error: setError } = await supabase
+          .from("scenario_assumption_sets")
+          .select("id, scenario_set_id, assumptions_json, scenario_sets(workspace_id)")
+          .eq("id", parsed.data.assumptionSetId)
+          .maybeSingle();
+
+        if (setError) {
+          audit.error("assumption_set_lookup_failed", {
+            modelId: access.model.id,
+            assumptionSetId: parsed.data.assumptionSetId,
+            message: setError.message,
+            code: setError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to verify assumption set" }, { status: 500 });
+        }
+
+        if (!setRow) {
+          return NextResponse.json({ error: "Assumption set not found" }, { status: 404 });
+        }
+
+        if (access.model.scenario_set_id && setRow.scenario_set_id !== access.model.scenario_set_id) {
+          return NextResponse.json(
+            { error: "Assumption set does not belong to the model's primary scenario set" },
+            { status: 400 }
+          );
+        }
+
+        // RLS only proves the CALLER can read the set (any of their workspaces),
+        // and models without a primary scenario set skip the check above — so a
+        // member of two workspaces could otherwise execute workspace B's land-use
+        // program under workspace A's model. Always pin the set to the model's
+        // workspace.
+        const setWorkspace = Array.isArray(setRow.scenario_sets)
+          ? setRow.scenario_sets[0]
+          : setRow.scenario_sets;
+        if (!setWorkspace || setWorkspace.workspace_id !== access.model.workspace_id) {
+          return NextResponse.json(
+            { error: "Assumption set does not belong to the model's workspace" },
+            { status: 400 }
+          );
+        }
+
+        assumptionSet = { id: setRow.id, assumptions_json: setRow.assumptions_json ?? null };
+      }
+
+      const modelTemplate = extractModelLaunchTemplate(access.model.config_json ?? {});
+      const launchPayload = mergeScenarioLaunchPayload({
+        modelTemplate,
+        scenarioAssumptions: scenarioEntry?.assumptions_json,
+        overrideQueryText: parsed.data.queryText,
+        overrideCorridorGeojson: parsed.data.corridorGeojson,
+      });
+      launchPayload.engineKey = parsed.data.engineKey;
+      const runMode = getManagedRunModeDefinition(launchPayload.engineKey);
+      const isIteTripGenRun = launchPayload.engineKey === "ite_trip_generation";
+
+      // Trip generation runs on a land-use program, not a corridor — it is the
+      // one engine exempt from the query/corridor requirement.
+      if (!isIteTripGenRun && (!launchPayload.queryText || !launchPayload.corridorGeojson)) {
+        return NextResponse.json(
+          {
+            error:
+              "Launch configuration is incomplete. Provide query text and corridor GeoJSON, or store them in model.config_json.runTemplate.",
+          },
+          { status: 400 }
+        );
+      }
+
+      const modelRunId = crypto.randomUUID();
+      const launchTitle =
+        parsed.data.title?.trim() ||
+        scenarioEntry?.label?.trim() ||
+        `${access.model.title} run`;
+      const launchedAt = new Date().toISOString();
+      const isAequilibraeRun = launchPayload.engineKey === "aequilibrae";
+      const isBehavioralDemandRun = launchPayload.engineKey === "behavioral_demand";
+      const isSketchAbmRun = launchPayload.engineKey === "sketch_abm";
+
+      // Immutable input snapshot for the run row. Extracted so the sketch lane
+      // can reuse it verbatim when a large study area is rerouted to the worker.
+      const baseInputSnapshot: Record<string, unknown> = {
+        modelId: access.model.id,
+        modelTitle: access.model.title,
+        modelFamily: access.model.model_family ?? null,
+        configVersion: access.model.config_version ?? null,
+        launchedAt,
+        // The worker reads this to size the dynamic package's TAZs; stamped
+        // only for the engine that consumes it so other engines' snapshots
+        // don't carry a dead option.
+        ...(isAequilibraeRun && parsed.data.zoneGeography
+          ? { zoneGeography: parsed.data.zoneGeography }
+          : {}),
+        // Per-run count-calibration opt-in. Stamped for the worker-backed engines
+        // whose screening stages run in the AequilibraE worker (aequilibrae +
+        // behavioral_demand), and only when the caller sent it — an absent flag
+        // falls back to the worker's AEQ_CALIBRATE env. An explicit false is
+        // stamped too, so unchecking the box beats a calibrate-by-default env.
+        ...((isAequilibraeRun || isBehavioralDemandRun) && parsed.data.calibrate !== undefined
+          ? { calibrate: parsed.data.calibrate }
+          : {}),
+      };
+
+      // Operator run-cap check for the synchronous in-process branches only —
+      // mirrors /runs/[modelRunId]/launch. The deterministic path is checked by
+      // /api/analysis downstream and the aequilibrae path by the launch route,
+      // so neither is re-checked here.
+      if (isSketchAbmRun || isIteTripGenRun) {
+        const runCap = await checkMonthlyRunCap(supabase, {
+          workspaceId: access.model.workspace_id,
+          tableName: "model_runs",
+          weight: RUN_WEIGHTS.MODEL_RUN_LAUNCH,
+        });
+
+        if (isRunCapLookupError(runCap)) {
+          audit.error("run_cap_count_failed", {
+            workspaceId: access.model.workspace_id,
+            userId: user.id,
+            message: runCap.message,
+            code: runCap.code,
+          });
+          return NextResponse.json({ error: "Failed to validate the run limit" }, { status: 500 });
+        }
+
+        if (isRunCapExceeded(runCap)) {
+          audit.warn("run_cap_reached", {
+            workspaceId: access.model.workspace_id,
+            userId: user.id,
+            usedRuns: runCap.usedRuns,
+            cap: runCap.cap,
+          });
+          return NextResponse.json({ error: runCap.message }, { status: 429 });
+        }
+      }
+
+      const { error: createModelRunError } = await supabase.from("model_runs").insert({
+        id: modelRunId,
+        workspace_id: access.model.workspace_id,
+        model_id: access.model.id,
+        scenario_set_id: access.model.scenario_set_id,
+        scenario_entry_id: scenarioEntry?.id ?? null,
+        engine_key: launchPayload.engineKey || "deterministic_corridor_v1",
+        launch_source: scenarioEntry ? "scenario_entry" : "model_detail",
+        // Async worker-backed engines (aequilibrae + behavioral_demand preflight)
+        // enqueue as 'queued' with no started_at; the worker flips them to running.
+        status: isAequilibraeRun || isBehavioralDemandRun ? "queued" : "running",
+        run_title: launchTitle,
+        query_text: launchPayload.queryText,
+        corridor_geojson: launchPayload.corridorGeojson,
+        input_snapshot_json: baseInputSnapshot,
+        assumption_snapshot_json: launchPayload.assumptionSnapshot,
+        started_at: isAequilibraeRun || isBehavioralDemandRun ? null : launchedAt,
+        created_by: user.id,
+        // Provenance: a run launched from a project-bound model belongs to that
+        // project. Sent only when set, so a deployment that has not applied the
+        // run-provenance migration keeps launching runs untouched.
+        ...(access.model.project_id ? { project_id: access.model.project_id } : {}),
+      });
+
+    
+      if (createModelRunError) {
+        if (looksLikePendingSchema(createModelRunError.message)) {
+          return NextResponse.json(
+            { error: "model_runs migration is not applied yet. Apply the latest database migration first." },
+            { status: 503 }
+          );
+        }
+
+        audit.error("model_run_insert_failed", {
+          modelId: access.model.id,
+          userId: user.id,
+          message: createModelRunError.message,
+          code: createModelRunError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to create model run" }, { status: 500 });
+      }
+
+      if (isAequilibraeRun) {
+        // Async run. Create stages and return immediately.
+        const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
+          { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
+          { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
+          { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
+        ]);
+
+        if (stageInsertError) {
+          await supabase
             .from("model_runs")
             .update({
-              engine_key: "aequilibrae",
-              status: "queued",
-              started_at: null,
-              input_snapshot_json: {
-                ...baseInputSnapshot,
-                reroutedFromEngine: "sketch_abm",
-                rerouteReason: "large_study_area",
-                requestedTractCount: census.tracts.length,
-                sketchZoneCap: SKETCH_ABM_MAX_ZONES,
-                reroutedAt,
-              },
-              result_summary_json: {
-                engine: "aequilibrae",
-                rerouted_from: "sketch_abm",
-                reroute_reason: "large_study_area",
-                note: rerouteNotice,
-              },
+              status: "failed",
+              error_message: "Failed to initialize AequilibraE run stages",
+              completed_at: new Date().toISOString(),
             })
             .eq("id", modelRunId);
 
-          if (rerouteUpdateError) {
-            await supabase
+          audit.error("model_run_stage_insert_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            message: stageInsertError.message,
+            code: stageInsertError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+        }
+
+        return NextResponse.json(
+          { modelRunId, status: "queued" },
+          { status: 201 }
+        );
+      }
+
+      if (isBehavioralDemandRun) {
+        // Async ActivitySim behavioral-demand PREFLIGHT. This is NOT a behavioral
+        // forecast: the AequilibraE worker runs a screening (network + skims), then
+        // the ActivitySim worker builds a real (uncalibrated, scaffold-population)
+        // ActivitySim input bundle and stages the runtime, recording an honest
+        // evidence packet. The three screening stages are owned by the AequilibraE
+        // worker (same names it already runs); the final stage by the ActivitySim
+        // worker. A calibrated run needs a dedicated modeling host + calibration
+        // (see workers/activitysim_worker/DEPLOY.md).
+        const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
+          { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
+          { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
+          { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
+          { run_id: modelRunId, stage_name: "ActivitySim Bundle & Preflight", sort_order: 4, status: "queued" },
+        ]);
+
+        if (stageInsertError) {
+          await supabase
+            .from("model_runs")
+            .update({
+              status: "failed",
+              error_message: "Failed to initialize ActivitySim preflight stages",
+              completed_at: new Date().toISOString(),
+            })
+            .eq("id", modelRunId);
+
+          audit.error("model_run_stage_insert_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            message: stageInsertError.message,
+            code: stageInsertError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+        }
+
+        audit.info("behavioral_demand_preflight_enqueued", {
+          modelId: access.model.id,
+          userId: user.id,
+          modelRunId,
+          durationMs: Date.now() - startedAt,
+        });
+
+        return NextResponse.json(
+          { modelRunId, status: "queued", engineKey: "behavioral_demand", mode: "preflight" },
+          { status: 201 }
+        );
+      }
+
+      if (isSketchAbmRun) {
+        // Synchronous in-process sketch activity model run, mirroring the
+        // deterministic branch shape: run row is already inserted as running;
+        // execute, then update to succeeded/failed.
+        try {
+          const corridorForApi = launchPayload.corridorGeojson as {
+            type: string;
+            coordinates: number[][][] | number[][][][];
+          };
+          const census = await fetchCensusForCorridor(corridorForApi);
+          if (!census.tracts.length) {
+            throw new Error("Census returned no census tracts in the study-area counties; the sketch activity model has no zones to run.");
+          }
+
+          if (census.tracts.length > SKETCH_ABM_MAX_ZONES) {
+            // Metro-scale study area: the synchronous in-process sketch lane caps
+            // at SKETCH_ABM_MAX_ZONES zones (O(zones²) skim, runs inside the
+            // request cycle). Rather than refuse a real agency's own city, hand
+            // the run off to the async AequilibraE fast-screening worker, which
+            // builds its own corridor-scaled network and has no zone cap. The
+            // handoff is NOT silent — it is stamped into the run's input/result
+            // provenance, audit-logged, and echoed to the caller so the run
+            // history reads "requested sketch, ran on the worker (large area)".
+            const rerouteNotice =
+              `Study area resolves to ${census.tracts.length} census tracts; the fast in-process sketch lane caps at ${SKETCH_ABM_MAX_ZONES}. ` +
+              `This run was routed to the AequilibraE fast-screening worker (no zone cap) — expect a longer runtime.`;
+            const reroutedAt = new Date().toISOString();
+
+            const { error: rerouteUpdateError } = await supabase
               .from("model_runs")
               .update({
-                status: "failed",
-                error_message: "Failed to reroute large sketch study area to the AequilibraE worker",
-                completed_at: new Date().toISOString(),
+                engine_key: "aequilibrae",
+                status: "queued",
+                started_at: null,
+                input_snapshot_json: {
+                  ...baseInputSnapshot,
+                  reroutedFromEngine: "sketch_abm",
+                  rerouteReason: "large_study_area",
+                  requestedTractCount: census.tracts.length,
+                  sketchZoneCap: SKETCH_ABM_MAX_ZONES,
+                  reroutedAt,
+                },
+                result_summary_json: {
+                  engine: "aequilibrae",
+                  rerouted_from: "sketch_abm",
+                  reroute_reason: "large_study_area",
+                  note: rerouteNotice,
+                },
               })
               .eq("id", modelRunId);
 
-            audit.error("sketch_abm_reroute_update_failed", {
+            if (rerouteUpdateError) {
+              await supabase
+                .from("model_runs")
+                .update({
+                  status: "failed",
+                  error_message: "Failed to reroute large sketch study area to the AequilibraE worker",
+                  completed_at: new Date().toISOString(),
+                })
+                .eq("id", modelRunId);
+
+              audit.error("sketch_abm_reroute_update_failed", {
+                modelId: access.model.id,
+                modelRunId,
+                message: rerouteUpdateError.message,
+                code: rerouteUpdateError.code ?? null,
+              });
+              return NextResponse.json(
+                { error: "Failed to reroute large study area to the AequilibraE worker" },
+                { status: 500 }
+              );
+            }
+
+            const { error: rerouteStageError } = await supabase.from("model_run_stages").insert([
+              { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
+              { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
+              { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
+            ]);
+
+            if (rerouteStageError) {
+              await supabase
+                .from("model_runs")
+                .update({
+                  status: "failed",
+                  error_message: "Failed to initialize AequilibraE run stages after reroute",
+                  completed_at: new Date().toISOString(),
+                })
+                .eq("id", modelRunId);
+
+              audit.error("sketch_abm_reroute_stage_insert_failed", {
+                modelId: access.model.id,
+                modelRunId,
+                message: rerouteStageError.message,
+                code: rerouteStageError.code ?? null,
+              });
+              return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
+            }
+
+            audit.info("sketch_abm_rerouted_to_worker", {
               modelId: access.model.id,
               modelRunId,
-              message: rerouteUpdateError.message,
-              code: rerouteUpdateError.code ?? null,
+              tractCount: census.tracts.length,
+              maxZones: SKETCH_ABM_MAX_ZONES,
+              durationMs: Date.now() - startedAt,
+            });
+
+            return NextResponse.json(
+              {
+                modelRunId,
+                status: "queued",
+                engineKey: "aequilibrae",
+                reroutedFrom: "sketch_abm",
+                reason: "large_study_area",
+                notice: rerouteNotice,
+              },
+              { status: 201 }
+            );
+          }
+
+          const lodes = await fetchLODESForCorridor(
+            corridorForApi,
+            census.totalPopulation,
+            census.totalCommuters,
+            census.tracts.map((tract) => tract.geoid)
+          );
+
+          const {
+            inputs: abmInputs,
+            totalRealHouseholds,
+            syntheticHouseholds,
+          } = buildSketchAbmInputs({
+            censusTracts: census.tracts,
+            lodesJobs: lodes,
+            seed: seedFromRunId(modelRunId),
+          });
+          // Fixed seed → reproducible: the same package produces the same run.
+          const abmOutputs = await runABM(abmInputs, { seed: DEFAULT_ABM_SEED });
+
+          const populationTotal = abmInputs.zones.reduce((sum, zone) => sum + zone.population, 0);
+          // Sample-scale vehicle-km: person-trip distance weighted by the
+          // per-mode vehicle-mile factors (occupancy-adjusted; see
+          // SKETCH_VEHICLE_MILE_FACTORS for the documented assumptions).
+          const sampleVehicleKm = abmOutputs.trips.reduce(
+            (sum, trip) => sum + trip.distance_km * (SKETCH_VEHICLE_MILE_FACTORS[trip.mode] ?? 0),
+            0
+          );
+          const expansionFactor = sketchExpansionFactor(totalRealHouseholds, syntheticHouseholds);
+
+          const kpiRows = buildSketchAbmKpiRows({
+            modelRunId,
+            summary: abmOutputs.summary,
+            sampleVehicleKm,
+            populationTotal,
+            totalRealHouseholds,
+            syntheticHouseholds,
+            expansionFactor,
+          });
+
+          const { error: kpiInsertError } = await supabase.from("model_run_kpis").insert(kpiRows);
+          if (kpiInsertError) {
+            throw new Error(`Failed to record sketch activity model KPIs: ${kpiInsertError.message}`);
+          }
+
+          // Benchmark fit — screening diagnostic against reference benchmarks
+          // (not local observations). Modeled VMT per capita is the EXPANDED
+          // KPI value computed above (reused verbatim, never recomputed);
+          // modeled mode split is the runner's aggregate split, already in
+          // percentage points (0–100) as computeBenchmarkFit expects.
+          const modeledVmtPerCapita =
+            kpiRows.find((row) => row.kpi_name === "vmt_per_capita")?.value ?? null;
+          const modeledModeSplitPct: SketchModeSplitPct = {
+            auto: abmOutputs.summary.mode_split.auto ?? 0,
+            transit: abmOutputs.summary.mode_split.transit ?? 0,
+            walk: abmOutputs.summary.mode_split.walk ?? 0,
+            bike: abmOutputs.summary.mode_split.bike ?? 0,
+            shared: abmOutputs.summary.mode_split.shared ?? 0,
+          };
+          // Reference derived from THIS study area's own ACS commute shares, not a
+          // hardcoded California constant. When the area has no usable commute base
+          // (e.g. no Census key, or no reported commuters), no reference can be
+          // built and no fit score is emitted — an honest "not scored" beats a
+          // score against a substituted geography.
+          const studyAreaReference = deriveReferenceBenchmarksFromCensus(
+            {
+              pctTransit: census.pctTransit,
+              pctWalk: census.pctWalk,
+              pctBike: census.pctBike,
+              pctWfh: census.pctWfh,
+            },
+            DEFAULT_REFERENCE_VMT_PER_CAPITA,
+            { acsYearLabel: "ACS 5-year" }
+          );
+          const benchmarkFit =
+            studyAreaReference !== null &&
+            modeledVmtPerCapita !== null &&
+            Number.isFinite(modeledVmtPerCapita)
+              ? computeBenchmarkFit({
+                  modeled: {
+                    vmt_per_capita: modeledVmtPerCapita,
+                    mode_split_pct: modeledModeSplitPct,
+                  },
+                  reference: studyAreaReference,
+                })
+              : null;
+
+          const sketchCompletedAt = new Date().toISOString();
+          const { error: sketchRunUpdateError } = await supabase
+            .from("model_runs")
+            .update({
+              status: "succeeded",
+              result_summary_json: {
+                engine: "sketch_abm",
+                caveat: runMode.caveatSummary,
+                // Consumed by the evidence-packet normalizer so the packet for
+                // a sketch run always carries the sketch-grade caveats.
+                caveats: [runMode.caveatSummary],
+                synthetic_households: abmOutputs.summary.total_households,
+                synthetic_persons: abmOutputs.summary.total_persons,
+                total_real_households: totalRealHouseholds,
+                expansion_factor: expansionFactor,
+                total_tours: Math.round(abmOutputs.summary.total_tours * expansionFactor),
+                total_trips: Math.round(abmOutputs.summary.total_trips * expansionFactor),
+                zone_count: abmInputs.zones.length,
+                // Screening diagnostic against reference benchmarks; null when
+                // the run had no finite VMT-per-capita KPI to score.
+                benchmark_fit: benchmarkFit,
+              },
+              completed_at: sketchCompletedAt,
+            })
+            .eq("id", modelRunId);
+
+          if (sketchRunUpdateError) {
+            audit.error("sketch_abm_run_update_failed", {
+              modelId: access.model.id,
+              modelRunId,
+              message: sketchRunUpdateError.message,
+              code: sketchRunUpdateError.code ?? null,
             });
             return NextResponse.json(
-              { error: "Failed to reroute large study area to the AequilibraE worker" },
+              { error: "Sketch activity model run completed, but provenance update failed" },
               { status: 500 }
             );
           }
 
-          const { error: rerouteStageError } = await supabase.from("model_run_stages").insert([
-            { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-            { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-            { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-          ]);
+          const { error: sketchModelTouchError } = await supabase
+            .from("models")
+            .update({ last_run_recorded_at: sketchCompletedAt })
+            .eq("id", access.model.id);
 
-          if (rerouteStageError) {
-            await supabase
-              .from("model_runs")
-              .update({
-                status: "failed",
-                error_message: "Failed to initialize AequilibraE run stages after reroute",
-                completed_at: new Date().toISOString(),
-              })
-              .eq("id", modelRunId);
-
-            audit.error("sketch_abm_reroute_stage_insert_failed", {
+          if (sketchModelTouchError) {
+            audit.warn("model_last_run_touch_failed", {
               modelId: access.model.id,
               modelRunId,
-              message: rerouteStageError.message,
-              code: rerouteStageError.code ?? null,
+              message: sketchModelTouchError.message,
+              code: sketchModelTouchError.code ?? null,
             });
-            return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
           }
 
-          audit.info("sketch_abm_rerouted_to_worker", {
+          audit.info("sketch_abm_model_run_succeeded", {
             modelId: access.model.id,
             modelRunId,
-            tractCount: census.tracts.length,
-            maxZones: SKETCH_ABM_MAX_ZONES,
+            zoneCount: abmInputs.zones.length,
+            syntheticHouseholds,
+            totalRealHouseholds,
+            expansionFactor,
+            sampleTrips: abmOutputs.summary.total_trips,
             durationMs: Date.now() - startedAt,
           });
 
+          // scenario_attach is honest surface metadata: the sketch branch
+          // records the run only — attach-as-evidence wiring does not run here.
           return NextResponse.json(
-            {
-              modelRunId,
-              status: "queued",
-              engineKey: "aequilibrae",
-              reroutedFrom: "sketch_abm",
-              reason: "large_study_area",
-              notice: rerouteNotice,
-            },
+            { modelRunId, status: "succeeded", scenario_attach: "recorded-only" },
             { status: 201 }
           );
-        }
-
-        const lodes = await fetchLODESForCorridor(
-          corridorForApi,
-          census.totalPopulation,
-          census.totalCommuters,
-          census.tracts.map((tract) => tract.geoid)
-        );
-
-        const {
-          inputs: abmInputs,
-          totalRealHouseholds,
-          syntheticHouseholds,
-        } = buildSketchAbmInputs({
-          censusTracts: census.tracts,
-          lodesJobs: lodes,
-          seed: seedFromRunId(modelRunId),
-        });
-        // Fixed seed → reproducible: the same package produces the same run.
-        const abmOutputs = await runABM(abmInputs, { seed: DEFAULT_ABM_SEED });
-
-        const populationTotal = abmInputs.zones.reduce((sum, zone) => sum + zone.population, 0);
-        // Sample-scale vehicle-km: person-trip distance weighted by the
-        // per-mode vehicle-mile factors (occupancy-adjusted; see
-        // SKETCH_VEHICLE_MILE_FACTORS for the documented assumptions).
-        const sampleVehicleKm = abmOutputs.trips.reduce(
-          (sum, trip) => sum + trip.distance_km * (SKETCH_VEHICLE_MILE_FACTORS[trip.mode] ?? 0),
-          0
-        );
-        const expansionFactor = sketchExpansionFactor(totalRealHouseholds, syntheticHouseholds);
-
-        const kpiRows = buildSketchAbmKpiRows({
-          modelRunId,
-          summary: abmOutputs.summary,
-          sampleVehicleKm,
-          populationTotal,
-          totalRealHouseholds,
-          syntheticHouseholds,
-          expansionFactor,
-        });
-
-        const { error: kpiInsertError } = await supabase.from("model_run_kpis").insert(kpiRows);
-        if (kpiInsertError) {
-          throw new Error(`Failed to record sketch activity model KPIs: ${kpiInsertError.message}`);
-        }
-
-        // Benchmark fit — screening diagnostic against reference benchmarks
-        // (not local observations). Modeled VMT per capita is the EXPANDED
-        // KPI value computed above (reused verbatim, never recomputed);
-        // modeled mode split is the runner's aggregate split, already in
-        // percentage points (0–100) as computeBenchmarkFit expects.
-        const modeledVmtPerCapita =
-          kpiRows.find((row) => row.kpi_name === "vmt_per_capita")?.value ?? null;
-        const modeledModeSplitPct: SketchModeSplitPct = {
-          auto: abmOutputs.summary.mode_split.auto ?? 0,
-          transit: abmOutputs.summary.mode_split.transit ?? 0,
-          walk: abmOutputs.summary.mode_split.walk ?? 0,
-          bike: abmOutputs.summary.mode_split.bike ?? 0,
-          shared: abmOutputs.summary.mode_split.shared ?? 0,
-        };
-        // Reference derived from THIS study area's own ACS commute shares, not a
-        // hardcoded California constant. When the area has no usable commute base
-        // (e.g. no Census key, or no reported commuters), no reference can be
-        // built and no fit score is emitted — an honest "not scored" beats a
-        // score against a substituted geography.
-        const studyAreaReference = deriveReferenceBenchmarksFromCensus(
-          {
-            pctTransit: census.pctTransit,
-            pctWalk: census.pctWalk,
-            pctBike: census.pctBike,
-            pctWfh: census.pctWfh,
-          },
-          DEFAULT_REFERENCE_VMT_PER_CAPITA,
-          { acsYearLabel: "ACS 5-year" }
-        );
-        const benchmarkFit =
-          studyAreaReference !== null &&
-          modeledVmtPerCapita !== null &&
-          Number.isFinite(modeledVmtPerCapita)
-            ? computeBenchmarkFit({
-                modeled: {
-                  vmt_per_capita: modeledVmtPerCapita,
-                  mode_split_pct: modeledModeSplitPct,
-                },
-                reference: studyAreaReference,
-              })
-            : null;
-
-        const sketchCompletedAt = new Date().toISOString();
-        const { error: sketchRunUpdateError } = await supabase
-          .from("model_runs")
-          .update({
-            status: "succeeded",
-            result_summary_json: {
-              engine: "sketch_abm",
-              caveat: runMode.caveatSummary,
-              // Consumed by the evidence-packet normalizer so the packet for
-              // a sketch run always carries the sketch-grade caveats.
-              caveats: [runMode.caveatSummary],
-              synthetic_households: abmOutputs.summary.total_households,
-              synthetic_persons: abmOutputs.summary.total_persons,
-              total_real_households: totalRealHouseholds,
-              expansion_factor: expansionFactor,
-              total_tours: Math.round(abmOutputs.summary.total_tours * expansionFactor),
-              total_trips: Math.round(abmOutputs.summary.total_trips * expansionFactor),
-              zone_count: abmInputs.zones.length,
-              // Screening diagnostic against reference benchmarks; null when
-              // the run had no finite VMT-per-capita KPI to score.
-              benchmark_fit: benchmarkFit,
-            },
-            completed_at: sketchCompletedAt,
-          })
-          .eq("id", modelRunId);
-
-        if (sketchRunUpdateError) {
-          audit.error("sketch_abm_run_update_failed", {
-            modelId: access.model.id,
-            modelRunId,
-            message: sketchRunUpdateError.message,
-            code: sketchRunUpdateError.code ?? null,
-          });
-          return NextResponse.json(
-            { error: "Sketch activity model run completed, but provenance update failed" },
-            { status: 500 }
-          );
-        }
-
-        const { error: sketchModelTouchError } = await supabase
-          .from("models")
-          .update({ last_run_recorded_at: sketchCompletedAt })
-          .eq("id", access.model.id);
-
-        if (sketchModelTouchError) {
-          audit.warn("model_last_run_touch_failed", {
-            modelId: access.model.id,
-            modelRunId,
-            message: sketchModelTouchError.message,
-            code: sketchModelTouchError.code ?? null,
-          });
-        }
-
-        audit.info("sketch_abm_model_run_succeeded", {
-          modelId: access.model.id,
-          modelRunId,
-          zoneCount: abmInputs.zones.length,
-          syntheticHouseholds,
-          totalRealHouseholds,
-          expansionFactor,
-          sampleTrips: abmOutputs.summary.total_trips,
-          durationMs: Date.now() - startedAt,
-        });
-
-        // scenario_attach is honest surface metadata: the sketch branch
-        // records the run only — attach-as-evidence wiring does not run here.
-        return NextResponse.json(
-          { modelRunId, status: "succeeded", scenario_attach: "recorded-only" },
-          { status: 201 }
-        );
-      } catch (error) {
-        const message =
-          error instanceof Error && error.message
-            ? error.message
-            : "Sketch activity model run failed";
-
-        await supabase
-          .from("model_runs")
-          .update({ status: "failed", error_message: message, completed_at: new Date().toISOString() })
-          .eq("id", modelRunId);
-
-        audit.error("sketch_abm_model_run_failed", {
-          modelId: access.model.id,
-          modelRunId,
-          message,
-          durationMs: Date.now() - startedAt,
-        });
-
-        return NextResponse.json({ error: message }, { status: 500 });
-      }
-    }
-
-    if (isIteTripGenRun) {
-      // Synchronous in-process trip-generation worksheet, mirroring the sketch
-      // branch shape: run row is already inserted as running; resolve the
-      // land-use program, compute, then update to succeeded/failed. No
-      // corridor and no external fetches — pure rate-table arithmetic.
-      const failRun = async (message: string) => {
-        await supabase
-          .from("model_runs")
-          .update({ status: "failed", error_message: message, completed_at: new Date().toISOString() })
-          .eq("id", modelRunId);
-      };
-
-      // Program source priority: inline (API/tests) → assumption set → the
-      // scenario entry's assumptions_json.tripGenProgram (the primary UX path;
-      // the entry's full assumptions already ride in assumption_snapshot_json).
-      // The resolved source is recorded so provenance never claims a program
-      // origin that was not actually used.
-      const setCandidate = (assumptionSet?.assumptions_json ?? {})["tripGenProgram"];
-      const entryCandidate = (scenarioEntry?.assumptions_json ?? {})["tripGenProgram"];
-
-      let program: TripGenProgramInput | null = parsed.data.tripGenProgram ?? null;
-      let programSource: "inline" | "assumption_set" | "scenario_entry" | null = program ? "inline" : null;
-      if (!program) {
-        const storedCandidate = setCandidate !== undefined ? setCandidate : entryCandidate;
-        const storedSource = setCandidate !== undefined ? ("assumption_set" as const) : ("scenario_entry" as const);
-        if (storedCandidate !== undefined) {
-          const parsedProgram = tripGenProgramSchema.safeParse(storedCandidate);
-          if (!parsedProgram.success) {
-            const message =
-              "Stored land-use program (assumptions_json.tripGenProgram) is malformed for the trip-generation engine.";
-            await failRun(message);
-            audit.warn("ite_trip_gen_program_invalid", {
-              modelId: access.model.id,
-              modelRunId,
-              issues: parsedProgram.error.issues.slice(0, 5),
-            });
-            return NextResponse.json({ error: message, issues: parsedProgram.error.issues }, { status: 422 });
-          }
-          program = parsedProgram.data;
-          programSource = storedSource;
-        }
-      }
-
-      if (!program) {
-        const message =
-          "No land-use program found. Provide tripGenProgram inline, reference an assumptionSetId, or store one at the scenario entry's assumptions_json.tripGenProgram.";
-        await failRun(message);
-        return NextResponse.json({ error: message }, { status: 422 });
-      }
-
-      try {
-        let result: ReturnType<typeof computeTripGeneration>;
-        try {
-          result = computeTripGeneration(program);
-        } catch (computeError) {
-          // computeTripGeneration throws only on invalid input — operator-fixable.
+        } catch (error) {
           const message =
-            computeError instanceof Error ? computeError.message : "Invalid trip-generation program";
-          await failRun(message);
-          audit.warn("ite_trip_gen_program_rejected", {
+            error instanceof Error && error.message
+              ? error.message
+              : "Sketch activity model run failed";
+
+          await supabase
+            .from("model_runs")
+            .update({ status: "failed", error_message: message, completed_at: new Date().toISOString() })
+            .eq("id", modelRunId);
+
+          audit.error("sketch_abm_model_run_failed", {
             modelId: access.model.id,
             modelRunId,
             message,
+            durationMs: Date.now() - startedAt,
           });
+
+          return NextResponse.json({ error: message }, { status: 500 });
+        }
+      }
+
+      if (isIteTripGenRun) {
+        // Synchronous in-process trip-generation worksheet, mirroring the sketch
+        // branch shape: run row is already inserted as running; resolve the
+        // land-use program, compute, then update to succeeded/failed. No
+        // corridor and no external fetches — pure rate-table arithmetic.
+        const failRun = async (message: string) => {
+          await supabase
+            .from("model_runs")
+            .update({ status: "failed", error_message: message, completed_at: new Date().toISOString() })
+            .eq("id", modelRunId);
+        };
+
+        // Program source priority: inline (API/tests) → assumption set → the
+        // scenario entry's assumptions_json.tripGenProgram (the primary UX path;
+        // the entry's full assumptions already ride in assumption_snapshot_json).
+        // The resolved source is recorded so provenance never claims a program
+        // origin that was not actually used.
+        const setCandidate = (assumptionSet?.assumptions_json ?? {})["tripGenProgram"];
+        const entryCandidate = (scenarioEntry?.assumptions_json ?? {})["tripGenProgram"];
+
+        let program: TripGenProgramInput | null = parsed.data.tripGenProgram ?? null;
+        let programSource: "inline" | "assumption_set" | "scenario_entry" | null = program ? "inline" : null;
+        if (!program) {
+          const storedCandidate = setCandidate !== undefined ? setCandidate : entryCandidate;
+          const storedSource = setCandidate !== undefined ? ("assumption_set" as const) : ("scenario_entry" as const);
+          if (storedCandidate !== undefined) {
+            const parsedProgram = tripGenProgramSchema.safeParse(storedCandidate);
+            if (!parsedProgram.success) {
+              const message =
+                "Stored land-use program (assumptions_json.tripGenProgram) is malformed for the trip-generation engine.";
+              await failRun(message);
+              audit.warn("ite_trip_gen_program_invalid", {
+                modelId: access.model.id,
+                modelRunId,
+                issues: parsedProgram.error.issues.slice(0, 5),
+              });
+              return NextResponse.json({ error: message, issues: parsedProgram.error.issues }, { status: 422 });
+            }
+            program = parsedProgram.data;
+            programSource = storedSource;
+          }
+        }
+
+        if (!program) {
+          const message =
+            "No land-use program found. Provide tripGenProgram inline, reference an assumptionSetId, or store one at the scenario entry's assumptions_json.tripGenProgram.";
+          await failRun(message);
           return NextResponse.json({ error: message }, { status: 422 });
         }
 
-        const iteKpiRows = buildIteTripGenerationKpiRows(modelRunId, result);
-        const { error: kpiInsertError } = await supabase.from("model_run_kpis").insert(iteKpiRows);
-        if (kpiInsertError) {
-          throw new Error(`Failed to record trip-generation KPIs: ${kpiInsertError.message}`);
-        }
+        try {
+          let result: ReturnType<typeof computeTripGeneration>;
+          try {
+            result = computeTripGeneration(program);
+          } catch (computeError) {
+            // computeTripGeneration throws only on invalid input — operator-fixable.
+            const message =
+              computeError instanceof Error ? computeError.message : "Invalid trip-generation program";
+            await failRun(message);
+            audit.warn("ite_trip_gen_program_rejected", {
+              modelId: access.model.id,
+              modelRunId,
+              message,
+            });
+            return NextResponse.json({ error: message }, { status: 422 });
+          }
 
-        const iteCompletedAt = new Date().toISOString();
-        const { error: iteRunUpdateError } = await supabase
+          const iteKpiRows = buildIteTripGenerationKpiRows(modelRunId, result);
+          const { error: kpiInsertError } = await supabase.from("model_run_kpis").insert(iteKpiRows);
+          if (kpiInsertError) {
+            throw new Error(`Failed to record trip-generation KPIs: ${kpiInsertError.message}`);
+          }
+
+          const iteCompletedAt = new Date().toISOString();
+          const { error: iteRunUpdateError } = await supabase
+            .from("model_runs")
+            .update({
+              status: "succeeded",
+              result_summary_json: {
+                engine: "ite_trip_generation",
+                // The engine module's full screening caveat is the single source
+                // of truth here (the run-mode caveatSummary is its short form).
+                // Consumed by the evidence-packet normalizer via `caveats`.
+                caveat: ITE_TRIP_GEN_SCREENING_CAVEAT,
+                caveats: [ITE_TRIP_GEN_SCREENING_CAVEAT],
+                comparison_basis: result.comparisonBasis,
+                avg_trip_length_miles: result.avgTripLengthMiles,
+                net_daily_trip_ends: result.totals.netDailyTrips,
+                am_peak_trip_ends: result.totals.amPeakTrips,
+                pm_peak_trip_ends: result.totals.pmPeakTrips,
+                daily_vmt_screen: result.totals.dailyVmt,
+                line_item_count: result.lineItems.length,
+                program_source: programSource,
+                // Only stamped when the program actually CAME from the set —
+                // never a pointer to a set that was loaded but unused.
+                assumption_set_id: programSource === "assumption_set" ? (assumptionSet?.id ?? null) : null,
+              },
+              completed_at: iteCompletedAt,
+            })
+            .eq("id", modelRunId);
+
+          if (iteRunUpdateError) {
+            audit.error("ite_trip_gen_run_update_failed", {
+              modelId: access.model.id,
+              modelRunId,
+              message: iteRunUpdateError.message,
+              code: iteRunUpdateError.code ?? null,
+            });
+            return NextResponse.json(
+              { error: "Trip-generation run completed, but provenance update failed" },
+              { status: 500 }
+            );
+          }
+
+          const { error: iteModelTouchError } = await supabase
+            .from("models")
+            .update({ last_run_recorded_at: iteCompletedAt })
+            .eq("id", access.model.id);
+
+          if (iteModelTouchError) {
+            audit.warn("model_last_run_touch_failed", {
+              modelId: access.model.id,
+              modelRunId,
+              message: iteModelTouchError.message,
+              code: iteModelTouchError.code ?? null,
+            });
+          }
+
+          audit.info("ite_trip_gen_model_run_succeeded", {
+            modelId: access.model.id,
+            modelRunId,
+            lineItemCount: result.lineItems.length,
+            netDailyTrips: result.totals.netDailyTrips,
+            comparisonBasis: result.comparisonBasis,
+            durationMs: Date.now() - startedAt,
+          });
+
+          // Mirrors the sketch branch: the run is recorded only — comparison
+          // snapshots are saved explicitly through the scenario spine routes.
+          return NextResponse.json(
+            { modelRunId, status: "succeeded", scenario_attach: "recorded-only" },
+            { status: 201 }
+          );
+        } catch (error) {
+          const message =
+            error instanceof Error && error.message ? error.message : "Trip-generation run failed";
+
+          await failRun(message);
+
+          audit.error("ite_trip_gen_model_run_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            message,
+            durationMs: Date.now() - startedAt,
+          });
+
+          return NextResponse.json({ error: message }, { status: 500 });
+        }
+      }
+
+      const analysisResponse = await fetch(new URL("/api/analysis", request.nextUrl.origin), {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          cookie: request.headers.get("cookie") ?? "",
+        },
+        body: JSON.stringify({
+          workspaceId: access.model.workspace_id,
+          queryText: launchPayload.queryText,
+          corridorGeojson: launchPayload.corridorGeojson,
+        }),
+        cache: "no-store",
+      });
+
+      const analysisPayload = (await analysisResponse.json().catch(() => null)) as {
+        error?: string;
+        runId?: string;
+        metrics?: Record<string, unknown>;
+        summary?: string;
+      } | null;
+
+      if (!analysisResponse.ok || !analysisPayload?.runId) {
+        const errorMessage = analysisPayload?.error || "Analysis launch failed";
+        await supabase
           .from("model_runs")
-          .update({
-            status: "succeeded",
-            result_summary_json: {
-              engine: "ite_trip_generation",
-              // The engine module's full screening caveat is the single source
-              // of truth here (the run-mode caveatSummary is its short form).
-              // Consumed by the evidence-packet normalizer via `caveats`.
-              caveat: ITE_TRIP_GEN_SCREENING_CAVEAT,
-              caveats: [ITE_TRIP_GEN_SCREENING_CAVEAT],
-              comparison_basis: result.comparisonBasis,
-              avg_trip_length_miles: result.avgTripLengthMiles,
-              net_daily_trip_ends: result.totals.netDailyTrips,
-              am_peak_trip_ends: result.totals.amPeakTrips,
-              pm_peak_trip_ends: result.totals.pmPeakTrips,
-              daily_vmt_screen: result.totals.dailyVmt,
-              line_item_count: result.lineItems.length,
-              program_source: programSource,
-              // Only stamped when the program actually CAME from the set —
-              // never a pointer to a set that was loaded but unused.
-              assumption_set_id: programSource === "assumption_set" ? (assumptionSet?.id ?? null) : null,
-            },
-            completed_at: iteCompletedAt,
-          })
+          .update({ status: "failed", error_message: errorMessage, completed_at: new Date().toISOString() })
           .eq("id", modelRunId);
 
-        if (iteRunUpdateError) {
-          audit.error("ite_trip_gen_run_update_failed", {
-            modelId: access.model.id,
-            modelRunId,
-            message: iteRunUpdateError.message,
-            code: iteRunUpdateError.code ?? null,
-          });
-          return NextResponse.json(
-            { error: "Trip-generation run completed, but provenance update failed" },
-            { status: 500 }
-          );
-        }
-
-        const { error: iteModelTouchError } = await supabase
-          .from("models")
-          .update({ last_run_recorded_at: iteCompletedAt })
-          .eq("id", access.model.id);
-
-        if (iteModelTouchError) {
-          audit.warn("model_last_run_touch_failed", {
-            modelId: access.model.id,
-            modelRunId,
-            message: iteModelTouchError.message,
-            code: iteModelTouchError.code ?? null,
-          });
-        }
-
-        audit.info("ite_trip_gen_model_run_succeeded", {
-          modelId: access.model.id,
-          modelRunId,
-          lineItemCount: result.lineItems.length,
-          netDailyTrips: result.totals.netDailyTrips,
-          comparisonBasis: result.comparisonBasis,
-          durationMs: Date.now() - startedAt,
-        });
-
-        // Mirrors the sketch branch: the run is recorded only — comparison
-        // snapshots are saved explicitly through the scenario spine routes.
-        return NextResponse.json(
-          { modelRunId, status: "succeeded", scenario_attach: "recorded-only" },
-          { status: 201 }
-        );
-      } catch (error) {
-        const message =
-          error instanceof Error && error.message ? error.message : "Trip-generation run failed";
-
-        await failRun(message);
-
-        audit.error("ite_trip_gen_model_run_failed", {
-          modelId: access.model.id,
-          modelRunId,
-          message,
-          durationMs: Date.now() - startedAt,
-        });
-
-        return NextResponse.json({ error: message }, { status: 500 });
+        return NextResponse.json({ error: errorMessage }, { status: analysisResponse.status || 500 });
       }
-    }
 
-    const analysisResponse = await fetch(new URL("/api/analysis", request.nextUrl.origin), {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        cookie: request.headers.get("cookie") ?? "",
-      },
-      body: JSON.stringify({
-        workspaceId: access.model.workspace_id,
-        queryText: launchPayload.queryText,
-        corridorGeojson: launchPayload.corridorGeojson,
-      }),
-      cache: "no-store",
-    });
+      const completedAt = new Date().toISOString();
+      const resultSummary = buildModelRunResultSummary({
+        runId: analysisPayload.runId,
+        metrics: analysisPayload.metrics,
+        summary: analysisPayload.summary,
+      });
 
-    const analysisPayload = (await analysisResponse.json().catch(() => null)) as {
-      error?: string;
-      runId?: string;
-      metrics?: Record<string, unknown>;
-      summary?: string;
-    } | null;
-
-    if (!analysisResponse.ok || !analysisPayload?.runId) {
-      const errorMessage = analysisPayload?.error || "Analysis launch failed";
-      await supabase
+      const { error: modelRunUpdateError } = await supabase
         .from("model_runs")
-        .update({ status: "failed", error_message: errorMessage, completed_at: new Date().toISOString() })
+        .update({
+          status: "succeeded",
+          source_analysis_run_id: analysisPayload.runId,
+          result_summary_json: resultSummary,
+          completed_at: completedAt,
+        })
         .eq("id", modelRunId);
 
-      return NextResponse.json({ error: errorMessage }, { status: analysisResponse.status || 500 });
-    }
+      if (modelRunUpdateError) {
+        audit.error("model_run_update_failed", {
+          modelId: access.model.id,
+          modelRunId,
+          message: modelRunUpdateError.message,
+          code: modelRunUpdateError.code ?? null,
+        });
+        return NextResponse.json({ error: "Managed run launched, but provenance update failed" }, { status: 500 });
+      }
 
-    const completedAt = new Date().toISOString();
-    const resultSummary = buildModelRunResultSummary({
-      runId: analysisPayload.runId,
-      metrics: analysisPayload.metrics,
-      summary: analysisPayload.summary,
-    });
+      const { error: modelTouchError } = await supabase
+        .from("models")
+        .update({ last_run_recorded_at: completedAt })
+        .eq("id", access.model.id);
 
-    const { error: modelRunUpdateError } = await supabase
-      .from("model_runs")
-      .update({
-        status: "succeeded",
-        source_analysis_run_id: analysisPayload.runId,
-        result_summary_json: resultSummary,
-        completed_at: completedAt,
-      })
-      .eq("id", modelRunId);
+      if (modelTouchError) {
+        audit.warn("model_last_run_touch_failed", {
+          modelId: access.model.id,
+          modelRunId,
+          message: modelTouchError.message,
+          code: modelTouchError.code ?? null,
+        });
+      }
 
-    if (modelRunUpdateError) {
-      audit.error("model_run_update_failed", {
+      const { data: existingRunLink } = await supabase
+        .from("model_links")
+        .select("id")
+        .eq("model_id", access.model.id)
+        .eq("link_type", "run")
+        .eq("linked_id", analysisPayload.runId)
+        .maybeSingle();
+
+      if (!existingRunLink) {
+        const { error: insertLinkError } = await supabase.from("model_links").insert({
+          model_id: access.model.id,
+          link_type: "run",
+          linked_id: analysisPayload.runId,
+          label: launchTitle,
+          created_by: user.id,
+        });
+
+        if (insertLinkError) {
+          audit.warn("model_run_link_insert_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            runId: analysisPayload.runId,
+            message: insertLinkError.message,
+            code: insertLinkError.code ?? null,
+          });
+        }
+      }
+
+      if (parsed.data.attachToScenarioEntry && scenarioEntry) {
+        const nextScenarioStatus = scenarioEntry.status === "draft" ? "ready" : scenarioEntry.status;
+        const { error: attachError } = await supabase
+          .from("scenario_entries")
+          .update({ attached_run_id: analysisPayload.runId, status: nextScenarioStatus })
+          .eq("id", scenarioEntry.id);
+
+        if (attachError) {
+          audit.warn("scenario_entry_attach_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            scenarioEntryId: scenarioEntry.id,
+            runId: analysisPayload.runId,
+            message: attachError.message,
+            code: attachError.code ?? null,
+          });
+        }
+
+        const staleReason = `Linked model run ${launchTitle} succeeded`;
+        const { staleReportIds, error: staleError } = await markScenarioLinkedReportsBasisStale({
+          supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
+          scenarioSetId: scenarioEntry.scenario_set_id,
+          workspaceId: access.model.workspace_id,
+          runId: modelRunId,
+          reason: staleReason,
+          markedAt: completedAt,
+        });
+
+        if (staleError) {
+          audit.warn("scenario_report_basis_stale_failed", {
+            modelId: access.model.id,
+            modelRunId,
+            scenarioEntryId: scenarioEntry.id,
+            message: staleError.message,
+            code: staleError.code ?? null,
+          });
+        } else if (staleReportIds.length > 0) {
+          audit.info("scenario_report_basis_stale_marked", {
+            modelId: access.model.id,
+            modelRunId,
+            scenarioEntryId: scenarioEntry.id,
+            staleReportCount: staleReportIds.length,
+          });
+        }
+      }
+
+      audit.info("model_run_succeeded", {
         modelId: access.model.id,
-        modelRunId,
-        message: modelRunUpdateError.message,
-        code: modelRunUpdateError.code ?? null,
-      });
-      return NextResponse.json({ error: "Managed run launched, but provenance update failed" }, { status: 500 });
-    }
-
-    const { error: modelTouchError } = await supabase
-      .from("models")
-      .update({ last_run_recorded_at: completedAt })
-      .eq("id", access.model.id);
-
-    if (modelTouchError) {
-      audit.warn("model_last_run_touch_failed", {
-        modelId: access.model.id,
-        modelRunId,
-        message: modelTouchError.message,
-        code: modelTouchError.code ?? null,
-      });
-    }
-
-    const { data: existingRunLink } = await supabase
-      .from("model_links")
-      .select("id")
-      .eq("model_id", access.model.id)
-      .eq("link_type", "run")
-      .eq("linked_id", analysisPayload.runId)
-      .maybeSingle();
-
-    if (!existingRunLink) {
-      const { error: insertLinkError } = await supabase.from("model_links").insert({
-        model_id: access.model.id,
-        link_type: "run",
-        linked_id: analysisPayload.runId,
-        label: launchTitle,
-        created_by: user.id,
-      });
-
-      if (insertLinkError) {
-        audit.warn("model_run_link_insert_failed", {
-          modelId: access.model.id,
-          modelRunId,
-          runId: analysisPayload.runId,
-          message: insertLinkError.message,
-          code: insertLinkError.code ?? null,
-        });
-      }
-    }
-
-    if (parsed.data.attachToScenarioEntry && scenarioEntry) {
-      const nextScenarioStatus = scenarioEntry.status === "draft" ? "ready" : scenarioEntry.status;
-      const { error: attachError } = await supabase
-        .from("scenario_entries")
-        .update({ attached_run_id: analysisPayload.runId, status: nextScenarioStatus })
-        .eq("id", scenarioEntry.id);
-
-      if (attachError) {
-        audit.warn("scenario_entry_attach_failed", {
-          modelId: access.model.id,
-          modelRunId,
-          scenarioEntryId: scenarioEntry.id,
-          runId: analysisPayload.runId,
-          message: attachError.message,
-          code: attachError.code ?? null,
-        });
-      }
-
-      const staleReason = `Linked model run ${launchTitle} succeeded`;
-      const { staleReportIds, error: staleError } = await markScenarioLinkedReportsBasisStale({
-        supabase: supabase as unknown as ScenarioReportWritebackSupabaseLike,
-        scenarioSetId: scenarioEntry.scenario_set_id,
-        workspaceId: access.model.workspace_id,
-        runId: modelRunId,
-        reason: staleReason,
-        markedAt: completedAt,
-      });
-
-      if (staleError) {
-        audit.warn("scenario_report_basis_stale_failed", {
-          modelId: access.model.id,
-          modelRunId,
-          scenarioEntryId: scenarioEntry.id,
-          message: staleError.message,
-          code: staleError.code ?? null,
-        });
-      } else if (staleReportIds.length > 0) {
-        audit.info("scenario_report_basis_stale_marked", {
-          modelId: access.model.id,
-          modelRunId,
-          scenarioEntryId: scenarioEntry.id,
-          staleReportCount: staleReportIds.length,
-        });
-      }
-    }
-
-    audit.info("model_run_succeeded", {
-      modelId: access.model.id,
-      modelRunId,
-      runId: analysisPayload.runId,
-      scenarioEntryId: scenarioEntry?.id ?? null,
-      durationMs: Date.now() - startedAt,
-    });
-
-    return NextResponse.json(
-      {
         modelRunId,
         runId: analysisPayload.runId,
-        attachedScenarioEntryId: parsed.data.attachToScenarioEntry ? scenarioEntry?.id ?? null : null,
-      },
-      { status: 201 }
-    );
+        scenarioEntryId: scenarioEntry?.id ?? null,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json(
+        {
+          modelRunId,
+          runId: analysisPayload.runId,
+          attachedScenarioEntryId: parsed.data.attachToScenarioEntry ? scenarioEntry?.id ?? null : null,
+        },
+        { status: 201 }
+      );
+    });
   } catch (error) {
     audit.error("model_run_launch_unhandled_error", {
       durationMs: Date.now() - startedAt,

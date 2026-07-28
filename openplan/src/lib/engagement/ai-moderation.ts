@@ -8,7 +8,7 @@
  */
 
 import { generateText } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 
 const MODERATION_MODEL_ID =
   process.env.OPENPLAN_ENGAGEMENT_MODERATION_MODEL?.trim() || "claude-haiku-4-5-20251001";
@@ -165,7 +165,7 @@ function buildResult(
 export async function moderateEngagementItems(items: ModerationInputItem[]): Promise<ModerationResult> {
   const capped = items.slice(0, MODERATION_MAX_ITEMS);
 
-  if (!process.env.ANTHROPIC_API_KEY?.trim()) {
+  if (!hasAnthropicAccess()) {
     return buildResult(capped.map(deterministicItemModeration), "deterministic-fallback", null, "missing_api_key");
   }
   if (capped.length === 0) {
@@ -179,7 +179,7 @@ export async function moderateEngagementItems(items: ModerationInputItem[]): Pro
 
   try {
     const { text } = await generateText({
-      model: anthropic(MODERATION_MODEL_ID),
+      model: anthropicModel(MODERATION_MODEL_ID),
       temperature: 0.1,
       maxOutputTokens: 1800,
       system:

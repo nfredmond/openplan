@@ -31,6 +31,19 @@ export const AI_RATE_LIMIT_MAX_PER_WINDOW = 20;
 export const PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS = ["engagement_public_translation"] as const;
 export const PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW = 30;
 
+/**
+ * Integration-key live probes (the validate-before-save checks in the
+ * integration-keys routes) meter into their OWN bucket, outside
+ * AI_RATE_LIMIT_BUCKET_KEYS, for the same isolation reason as public
+ * translation: probe traffic relays caller-supplied keys to external
+ * providers, and throttling it must never consume — or be consumed by — the
+ * workspace's staff AI allowance. The cap bounds how fast the probe endpoints
+ * can be used to spray keys at providers; a human configuring a workspace's
+ * providers never approaches it.
+ */
+export const INTEGRATION_KEY_PROBE_BUCKET_KEYS = ["integration_key_probe"] as const;
+export const INTEGRATION_KEY_PROBE_MAX_PER_WINDOW = 20;
+
 export type AiRateLimitResult = {
   allowed: boolean;
   count: number;

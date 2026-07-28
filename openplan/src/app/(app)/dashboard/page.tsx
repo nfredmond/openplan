@@ -10,6 +10,7 @@ import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-worksp
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceGeographyPanel } from "@/components/workspaces/workspace-geography-panel";
+import { WorkspaceIntegrationKeysPanel } from "@/components/workspaces/workspace-integration-keys-panel";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
@@ -284,6 +285,13 @@ export default async function DashboardPage() {
 
         <WorkspaceTeamPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
       </div>
+
+      {/* Integration keys take their own full-width row rather than a third
+          slot in the pair above: three items in a two-column grid leave a lone
+          half-width card, and this panel's per-provider rows want the width.
+          Like the team panel, it renders nothing for a member — key management
+          is operator/owner work — so the row collapses cleanly for them. */}
+      <WorkspaceIntegrationKeysPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
 
       <header className="module-header-grid">
         <DashboardWorkspaceIntro

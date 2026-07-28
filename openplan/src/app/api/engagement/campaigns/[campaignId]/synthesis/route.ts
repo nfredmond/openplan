@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
@@ -63,73 +64,75 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const workspaceId = access.campaign.workspace_id;
-    const rateLimit = await checkAiUsageRateLimit(workspaceId);
-    if (!rateLimit.allowed) {
-      audit.warn("engagement_synthesis_rate_limited", { workspaceId, recentCount: rateLimit.count });
-      return NextResponse.json(
-        { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-        { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+    return await withWorkspaceIntegrationContext(workspaceId, async () => {
+      const rateLimit = await checkAiUsageRateLimit(workspaceId);
+      if (!rateLimit.allowed) {
+        audit.warn("engagement_synthesis_rate_limited", { workspaceId, recentCount: rateLimit.count });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
+
+      // Approved items only (the public-facing corpus), bounded. RLS scopes to the
+      // member's workspace; the campaign filter narrows to this campaign.
+      const { data: itemRows, error: itemsError } = await supabase
+        .from("engagement_items")
+        .select("id, body, title, category_id, latitude, longitude")
+        .eq("campaign_id", campaignId)
+        .eq("status", "approved")
+        .order("created_at", { ascending: true })
+        .limit(SYNTHESIS_MAX_ITEMS);
+      if (itemsError) {
+        return NextResponse.json({ error: "Failed to load engagement items" }, { status: 500 });
+      }
+
+      const { data: categoryRows, error: categoriesError } = await supabase
+        .from("engagement_categories")
+        .select("id, label")
+        .eq("campaign_id", campaignId);
+      if (categoriesError) {
+        return NextResponse.json({ error: "Failed to load categories" }, { status: 500 });
+      }
+
+      const labelById = new Map<string, string | null>(
+        (categoryRows ?? []).map((c: CategoryRow) => [c.id, c.label])
       );
-    }
+      const items: SynthesisItem[] = (itemRows ?? []).map((row: ItemRow) => ({
+        id: row.id,
+        body: row.body,
+        title: row.title,
+        category_label: row.category_id ? labelById.get(row.category_id) ?? null : null,
+        latitude: row.latitude,
+        longitude: row.longitude,
+      }));
 
-    // Approved items only (the public-facing corpus), bounded. RLS scopes to the
-    // member's workspace; the campaign filter narrows to this campaign.
-    const { data: itemRows, error: itemsError } = await supabase
-      .from("engagement_items")
-      .select("id, body, title, category_id, latitude, longitude")
-      .eq("campaign_id", campaignId)
-      .eq("status", "approved")
-      .order("created_at", { ascending: true })
-      .limit(SYNTHESIS_MAX_ITEMS);
-    if (itemsError) {
-      return NextResponse.json({ error: "Failed to load engagement items" }, { status: 500 });
-    }
+      const synthesis = await generateEngagementSynthesis(items);
 
-    const { data: categoryRows, error: categoriesError } = await supabase
-      .from("engagement_categories")
-      .select("id, label")
-      .eq("campaign_id", campaignId);
-    if (categoriesError) {
-      return NextResponse.json({ error: "Failed to load categories" }, { status: 500 });
-    }
+      // Fire-and-forget spend metering: `source === "ai"` means the model call
+      // succeeded (the lib's deterministic fallback spends nothing and is free).
+      if (synthesis.source === "ai") {
+        void recordAiUsageEvent({
+          workspaceId,
+          bucketKey: "engagement_synthesis",
+          eventKey: "engagement_synthesis",
+          sourceRoute: "/api/engagement/campaigns/[campaignId]/synthesis",
+          metadataJson: { model: synthesis.model, analyzedItemCount: synthesis.analyzed_item_count },
+        });
+      }
 
-    const labelById = new Map<string, string | null>(
-      (categoryRows ?? []).map((c: CategoryRow) => [c.id, c.label])
-    );
-    const items: SynthesisItem[] = (itemRows ?? []).map((row: ItemRow) => ({
-      id: row.id,
-      body: row.body,
-      title: row.title,
-      category_label: row.category_id ? labelById.get(row.category_id) ?? null : null,
-      latitude: row.latitude,
-      longitude: row.longitude,
-    }));
+      const synthesizedAt = new Date().toISOString();
+      const { error: updateError } = await supabase
+        .from("engagement_campaigns")
+        .update({ ai_synthesis_json: synthesis, ai_synthesized_at: synthesizedAt })
+        .eq("id", campaignId);
+      if (updateError) {
+        // Persist failure shouldn't lose the computed synthesis — return it anyway.
+        audit.warn("engagement_synthesis_persist_failed", { campaignId, message: updateError.message });
+      }
 
-    const synthesis = await generateEngagementSynthesis(items);
-
-    // Fire-and-forget spend metering: `source === "ai"` means the model call
-    // succeeded (the lib's deterministic fallback spends nothing and is free).
-    if (synthesis.source === "ai") {
-      void recordAiUsageEvent({
-        workspaceId,
-        bucketKey: "engagement_synthesis",
-        eventKey: "engagement_synthesis",
-        sourceRoute: "/api/engagement/campaigns/[campaignId]/synthesis",
-        metadataJson: { model: synthesis.model, analyzedItemCount: synthesis.analyzed_item_count },
-      });
-    }
-
-    const synthesizedAt = new Date().toISOString();
-    const { error: updateError } = await supabase
-      .from("engagement_campaigns")
-      .update({ ai_synthesis_json: synthesis, ai_synthesized_at: synthesizedAt })
-      .eq("id", campaignId);
-    if (updateError) {
-      // Persist failure shouldn't lose the computed synthesis — return it anyway.
-      audit.warn("engagement_synthesis_persist_failed", { campaignId, message: updateError.message });
-    }
-
-    return NextResponse.json({ synthesis, synthesizedAt });
+      return NextResponse.json({ synthesis, synthesizedAt });
+    });
   } catch (error) {
     audit.error("engagement_synthesis_unhandled", {
       message: error instanceof Error ? error.message : "unknown",

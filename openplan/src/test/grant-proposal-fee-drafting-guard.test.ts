@@ -45,6 +45,7 @@ vi.mock("ai", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: vi.fn(() => "mock-anthropic-model"),
+  createAnthropic: () => () => "mock-anthropic-model",
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({

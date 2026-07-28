@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import { anthropic } from "@ai-sdk/anthropic";
+import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { splitSentences, validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import {
   factClaimTextMap,
@@ -125,9 +125,7 @@ export async function generateGrantInterpretation(
   metrics: Record<string, unknown>,
   summaryText: string
 ): Promise<InterpretationResult> {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  if (!apiKey) {
+  if (!hasAnthropicAccess()) {
     return fallback(summaryText, "missing_api_key");
   }
 
@@ -136,7 +134,7 @@ export async function generateGrantInterpretation(
 
   try {
     const { text, usage } = await generateText({
-      model: anthropic(HAIKU_MODEL_ID),
+      model: anthropicModel(HAIKU_MODEL_ID),
       temperature: 0.2,
       maxOutputTokens: 600,
       system:

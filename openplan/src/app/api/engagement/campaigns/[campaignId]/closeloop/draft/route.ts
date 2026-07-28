@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
@@ -40,69 +41,71 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const access = await loadCampaignAccess(supabase, routeParams.data.campaignId, user.id, "engagement.write");
     if (access.error) return NextResponse.json({ error: "Failed to verify engagement campaign access" }, { status: 500 });
     if (!access.campaign) return NextResponse.json({ error: "Engagement campaign not found" }, { status: 404 });
-    if (!access.allowed) return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    return await withWorkspaceIntegrationContext(access.campaign.workspace_id, async () => {
+      if (!access.campaign || !access.allowed) return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
 
-    // Same guard as the sibling synthesis route — this endpoint drives the same
-    // model spend through the same engine, so it meters the same staff buckets.
-    const workspaceId = access.campaign.workspace_id;
-    const rateLimit = await checkAiUsageRateLimit(workspaceId);
-    if (!rateLimit.allowed) {
-      audit.warn("closeloop_draft_rate_limited", { workspaceId, recentCount: rateLimit.count });
-      return NextResponse.json(
-        { error: "Too many AI requests in a short window. Please wait a moment and try again." },
-        { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
-      );
-    }
+      // Same guard as the sibling synthesis route — this endpoint drives the same
+      // model spend through the same engine, so it meters the same staff buckets.
+      const workspaceId = access.campaign.workspace_id;
+      const rateLimit = await checkAiUsageRateLimit(workspaceId);
+      if (!rateLimit.allowed) {
+        audit.warn("closeloop_draft_rate_limited", { workspaceId, recentCount: rateLimit.count });
+        return NextResponse.json(
+          { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+          { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+        );
+      }
 
-    const [{ data: itemsData }, { data: categoriesData }] = await Promise.all([
-      supabase
-        .from("engagement_items")
-        .select("id, body, title, category_id, latitude, longitude")
-        .eq("campaign_id", access.campaign.id)
-        .eq("status", "approved")
-        .order("created_at", { ascending: false })
-        .limit(SYNTHESIS_MAX_ITEMS),
-      supabase.from("engagement_categories").select("id, label").eq("campaign_id", access.campaign.id),
-    ]);
+      const [{ data: itemsData }, { data: categoriesData }] = await Promise.all([
+        supabase
+          .from("engagement_items")
+          .select("id, body, title, category_id, latitude, longitude")
+          .eq("campaign_id", access.campaign.id)
+          .eq("status", "approved")
+          .order("created_at", { ascending: false })
+          .limit(SYNTHESIS_MAX_ITEMS),
+        supabase.from("engagement_categories").select("id, label").eq("campaign_id", access.campaign.id),
+      ]);
 
-    const categoryLabelById = new Map<string, string>();
-    for (const category of (categoriesData ?? []) as { id: string; label: string }[]) {
-      categoryLabelById.set(category.id, category.label);
-    }
+      const categoryLabelById = new Map<string, string>();
+      for (const category of (categoriesData ?? []) as { id: string; label: string }[]) {
+        categoryLabelById.set(category.id, category.label);
+      }
 
-    const items: SynthesisItem[] = ((itemsData ?? []) as ApprovedItemRow[]).map((item) => ({
-      id: item.id,
-      body: item.body,
-      title: item.title,
-      category_label: item.category_id ? categoryLabelById.get(item.category_id) ?? null : null,
-      latitude: item.latitude,
-      longitude: item.longitude,
-    }));
+      const items: SynthesisItem[] = ((itemsData ?? []) as ApprovedItemRow[]).map((item) => ({
+        id: item.id,
+        body: item.body,
+        title: item.title,
+        category_label: item.category_id ? categoryLabelById.get(item.category_id) ?? null : null,
+        latitude: item.latitude,
+        longitude: item.longitude,
+      }));
 
-    const synthesis = await generateEngagementSynthesis(items);
+      const synthesis = await generateEngagementSynthesis(items);
 
-    // Fire-and-forget spend metering: `source === "ai"` means the model call
-    // succeeded (the deterministic fallback spends nothing and is free).
-    if (synthesis.source === "ai") {
-      void recordAiUsageEvent({
-        workspaceId,
-        bucketKey: "engagement_synthesis",
-        eventKey: "engagement_closeloop_draft",
-        sourceRoute: "/api/engagement/campaigns/[campaignId]/closeloop/draft",
-        metadataJson: { model: synthesis.model, analyzedItemCount: synthesis.analyzed_item_count },
+      // Fire-and-forget spend metering: `source === "ai"` means the model call
+      // succeeded (the deterministic fallback spends nothing and is free).
+      if (synthesis.source === "ai") {
+        void recordAiUsageEvent({
+          workspaceId,
+          bucketKey: "engagement_synthesis",
+          eventKey: "engagement_closeloop_draft",
+          sourceRoute: "/api/engagement/campaigns/[campaignId]/closeloop/draft",
+          metadataJson: { model: synthesis.model, analyzedItemCount: synthesis.analyzed_item_count },
+        });
+      }
+
+      const drafts = buildCloseLoopDraftsFromSynthesis(synthesis);
+
+      return NextResponse.json({
+        drafts,
+        source: synthesis.source, // "ai" | "deterministic-fallback"
+        model: synthesis.model,
+        fallbackReason: synthesis.fallback_reason,
+        itemCount: synthesis.item_count,
+        analyzedItemCount: synthesis.analyzed_item_count,
+        caveat: synthesis.caveat,
       });
-    }
-
-    const drafts = buildCloseLoopDraftsFromSynthesis(synthesis);
-
-    return NextResponse.json({
-      drafts,
-      source: synthesis.source, // "ai" | "deterministic-fallback"
-      model: synthesis.model,
-      fallbackReason: synthesis.fallback_reason,
-      itemCount: synthesis.item_count,
-      analyzedItemCount: synthesis.analyzed_item_count,
-      caveat: synthesis.caveat,
     });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });

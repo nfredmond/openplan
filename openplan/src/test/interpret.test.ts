@@ -9,6 +9,7 @@ vi.mock("ai", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (...args: unknown[]) => anthropicMock(...(args as [string])),
+  createAnthropic: () => (...args: unknown[]) => anthropicMock(...(args as [string])),
 }));
 
 import { generateGrantInterpretation, buildInterpretationFacts } from "@/lib/ai/interpret";
