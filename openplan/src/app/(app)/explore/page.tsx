@@ -633,7 +633,7 @@ export default function ExplorePage() {
                       <Input
                         value={bootstrapWorkspaceName}
                         onChange={(event) => setBootstrapWorkspaceName(event.target.value)}
-                        placeholder="Example: Nevada County Workspace"
+                        placeholder="Your agency or firm's name"
                       />
                       <div className="analysis-studio-action-row">
                         <Button

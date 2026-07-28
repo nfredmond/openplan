@@ -2,12 +2,13 @@
  * Census-tract ingestion — populate `census_tracts` for ANY US county on demand.
  *
  * WHY THIS EXISTS. The `census_tracts` table (and the equity choropleth that
- * reads it) had exactly one writer: the NCTC demo seed, four hand-authored fake
- * Nevada County tracts. For every other agency in the country the equity layer
- * rendered nothing, with no explanation — the read route's own TODO said so.
- * This closes that: tract geometry (TIGERweb) joined to tract demographics (ACS,
- * reusing `fetchAcsForCounties`) and upserted through the existing
- * `seed_public_census_tract` RPC, for any state+county.
+ * reads it) once had exactly one writer: a demo seed, with four hand-authored
+ * fake tracts for a single pilot county. For every other agency in the country
+ * the equity layer rendered nothing, with no explanation — the read route's own
+ * TODO said so. This closes that: tract geometry (TIGERweb) joined to tract
+ * demographics (ACS, reusing `fetchAcsForCounties`) and upserted through the
+ * existing `seed_public_census_tract` RPC, for any state+county. That seed is
+ * now deleted; this is the only writer.
  *
  * The data is PUBLIC (the table is anon-readable), so ingestion is not
  * workspace-scoped — loading Franklin County, OH once benefits every user
