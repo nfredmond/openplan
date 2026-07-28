@@ -70,6 +70,10 @@ export const APPLICATION_SECTION_SELECT =
 export const APPLICATION_ATTACHMENT_SELECT =
   "id, workspace_id, opportunity_id, attachment_key, title, guidance, required, status, kb_document_id, report_artifact_id, note, sort_order, updated_by, created_at, updated_at";
 
+/** Draft columns as returned to clients (workspace_id stays server-side). */
+export const APPLICATION_SECTION_DRAFT_SELECT =
+  "id, opportunity_id, section_id, draft_markdown, model, grounding_json, grounded_sentence_count, total_sentence_count, revision_of, revision_instructions, created_at";
+
 export type ApplicationSectionRow = {
   id: string;
   workspace_id: string;

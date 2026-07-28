@@ -24,6 +24,7 @@ import {
 } from "@/lib/grants/narrative-evidence";
 import {
   APPLICATION_PENDING_SCHEMA_ERROR,
+  APPLICATION_SECTION_DRAFT_SELECT,
   APPLICATION_SECTION_SELECT,
   looksLikePendingAssemblySchema,
   parseApplicationSectionRow,
@@ -395,9 +396,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         revision_instructions: instructions,
         created_by: user.id,
       })
-      .select(
-        "id, opportunity_id, section_id, draft_markdown, model, grounding_json, grounded_sentence_count, total_sentence_count, revision_of, revision_instructions, created_at"
-      )
+      .select(APPLICATION_SECTION_DRAFT_SELECT)
       .single();
 
     if (insertError || !draft) {

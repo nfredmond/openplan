@@ -358,11 +358,37 @@ describe("GET /api/funding-opportunities/[opportunityId]/application", () => {
     expect(body.error).toContain("20260727000014_grant_application_assembly");
   });
 
-  it("returns sections and attachments in sort order", async () => {
+  it("returns sections, attachments, latest drafts, and attach-picker sources", async () => {
+    const DRAFT_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd";
+    const OLDER_DRAFT_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
     installTables({
       funding_opportunity_application_sections: () =>
         makeQuery({ data: [baseSectionRow], error: null }),
       funding_opportunity_attachments: () => makeQuery({ data: [baseAttachmentRow], error: null }),
+      // Newest-first: the FIRST row per section wins as the working draft.
+      funding_opportunity_section_drafts: () =>
+        makeQuery({
+          data: [
+            { id: DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Newest.", created_at: "2026-07-27T02:00:00.000Z" },
+            { id: OLDER_DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Older.", created_at: "2026-07-27T01:00:00.000Z" },
+          ],
+          error: null,
+        }),
+      kb_documents: () =>
+        makeQuery({ data: [{ id: KB_DOCUMENT_ID, title: "Adopted ATP plan" }], error: null }),
+      reports: () => makeQuery({ data: [{ id: "report-1", title: "Corridor packet" }], error: null }),
+      report_artifacts: () =>
+        makeQuery({
+          data: [
+            {
+              id: REPORT_ARTIFACT_ID,
+              report_id: "report-1",
+              artifact_kind: "pdf",
+              generated_at: "2026-07-20T00:00:00.000Z",
+            },
+          ],
+          error: null,
+        }),
     });
 
     const response = await getApplication(new NextRequest(url), context);
@@ -371,6 +397,38 @@ describe("GET /api/funding-opportunities/[opportunityId]/application", () => {
     expect(body.sections).toHaveLength(1);
     expect(body.attachments).toHaveLength(1);
     expect(body.schemaPending).toBe(false);
+    expect(body.latestDraftsBySectionId[SECTION_ID]).toMatchObject({ id: DRAFT_ID });
+    expect(body.latestDraftsUnavailable).toBe(false);
+    expect(body.kbDocumentOptions).toEqual([{ id: KB_DOCUMENT_ID, title: "Adopted ATP plan" }]);
+    expect(body.reportArtifactOptions).toEqual([
+      {
+        id: REPORT_ARTIFACT_ID,
+        reportTitle: "Corridor packet",
+        artifactKind: "pdf",
+        generatedAt: "2026-07-20T00:00:00.000Z",
+      },
+    ]);
+    expect(body.attachSourcesDegraded).toBe(false);
+  });
+
+  it("discloses degraded attach sources and unavailable draft history instead of faking emptiness", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [baseSectionRow], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [baseAttachmentRow], error: null }),
+      funding_opportunity_section_drafts: () =>
+        makeQuery({ data: null, error: { message: "draft read failed" } }),
+      kb_documents: () => makeQuery({ data: null, error: { message: "kb read failed" } }),
+      reports: () => makeQuery({ data: [], error: null }),
+    });
+
+    const response = await getApplication(new NextRequest(url), context);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.latestDraftsUnavailable).toBe(true);
+    expect(body.latestDraftsBySectionId).toEqual({});
+    expect(body.attachSourcesDegraded).toBe(true);
+    expect(body.kbDocumentOptions).toEqual([]);
   });
 });
 

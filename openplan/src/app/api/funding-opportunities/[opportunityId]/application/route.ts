@@ -7,6 +7,7 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   APPLICATION_ATTACHMENT_SELECT,
   APPLICATION_PENDING_SCHEMA_ERROR,
+  APPLICATION_SECTION_DRAFT_SELECT,
   APPLICATION_SECTION_SELECT,
   buildCatalogAttachmentSeeds,
   buildCatalogSectionSeeds,
@@ -379,10 +380,135 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load application" }, { status: 500 });
     }
 
+    const sectionRows = (sectionsResult.data ?? []) as Array<Record<string, unknown>>;
+
+    // Latest stored AI draft per section, so the workspace panel can resume a
+    // drafting session started earlier (the draft history is append-only, so
+    // newest-first per section is the operator's current working draft). A
+    // failed read is DISCLOSED as unavailable, never presented as "no drafts".
+    const latestDraftsBySectionId: Record<string, unknown> = {};
+    let latestDraftsUnavailable = false;
+    if (sectionRows.length > 0) {
+      const { data: draftRows, error: draftsError } = await supabase
+        .from("funding_opportunity_section_drafts")
+        .select(APPLICATION_SECTION_DRAFT_SELECT)
+        .eq("opportunity_id", opportunity.id)
+        .order("created_at", { ascending: false })
+        .limit(200);
+
+      if (draftsError) {
+        latestDraftsUnavailable = true;
+        audit.warn("application_draft_history_unavailable", {
+          opportunityId: opportunity.id,
+          userId: user.id,
+          message: draftsError.message,
+        });
+      } else {
+        for (const row of (draftRows ?? []) as Array<{ section_id?: unknown }>) {
+          const sectionId = typeof row.section_id === "string" ? row.section_id : null;
+          if (sectionId && !(sectionId in latestDraftsBySectionId)) {
+            latestDraftsBySectionId[sectionId] = row;
+          }
+        }
+      }
+    }
+
+    // Attach-picker sources: workspace Knowledge Base documents and generated
+    // report artifacts the checklist can link as fulfillment. Best-effort —
+    // a failed source read degrades to an empty option list with a DISCLOSED
+    // flag, so the panel can say "could not be loaded" instead of "none exist".
+    let kbDocumentOptions: Array<{ id: string; title: string }> = [];
+    let reportArtifactOptions: Array<{
+      id: string;
+      reportTitle: string;
+      artifactKind: string | null;
+      generatedAt: string | null;
+    }> = [];
+    let attachSourcesDegraded = false;
+
+    const kbResult = await supabase
+      .from("kb_documents")
+      .select("id, title")
+      .eq("workspace_id", opportunity.workspace_id)
+      .order("created_at", { ascending: false })
+      .limit(100);
+    if (kbResult.error) {
+      attachSourcesDegraded = true;
+      audit.warn("application_kb_options_unavailable", {
+        opportunityId: opportunity.id,
+        message: kbResult.error.message,
+      });
+    } else {
+      kbDocumentOptions = ((kbResult.data ?? []) as Array<{ id?: unknown; title?: unknown }>)
+        .filter((row): row is { id: string; title: string } =>
+          typeof row.id === "string" && typeof row.title === "string"
+        )
+        .map((row) => ({ id: row.id, title: row.title }));
+    }
+
+    const reportsResult = await supabase
+      .from("reports")
+      .select("id, title")
+      .eq("workspace_id", opportunity.workspace_id)
+      .order("updated_at", { ascending: false })
+      .limit(50);
+    if (reportsResult.error) {
+      attachSourcesDegraded = true;
+      audit.warn("application_report_options_unavailable", {
+        opportunityId: opportunity.id,
+        message: reportsResult.error.message,
+      });
+    } else {
+      const reportRows = ((reportsResult.data ?? []) as Array<{ id?: unknown; title?: unknown }>)
+        .filter((row): row is { id: string; title: string } =>
+          typeof row.id === "string" && typeof row.title === "string"
+        );
+      const reportTitleById = new Map(reportRows.map((row) => [row.id, row.title]));
+      if (reportRows.length > 0) {
+        const artifactsResult = await supabase
+          .from("report_artifacts")
+          .select("id, report_id, artifact_kind, generated_at")
+          .in("report_id", reportRows.map((row) => row.id))
+          .order("generated_at", { ascending: false })
+          .limit(100);
+        if (artifactsResult.error) {
+          attachSourcesDegraded = true;
+          audit.warn("application_report_options_unavailable", {
+            opportunityId: opportunity.id,
+            message: artifactsResult.error.message,
+          });
+        } else {
+          reportArtifactOptions = (
+            (artifactsResult.data ?? []) as Array<{
+              id?: unknown;
+              report_id?: unknown;
+              artifact_kind?: unknown;
+              generated_at?: unknown;
+            }>
+          )
+            .filter(
+              (row): row is { id: string; report_id: string; artifact_kind: unknown; generated_at: unknown } =>
+                typeof row.id === "string" && typeof row.report_id === "string"
+            )
+            .map((row) => ({
+              id: row.id,
+              reportTitle: reportTitleById.get(row.report_id) ?? "Untitled report",
+              artifactKind: typeof row.artifact_kind === "string" ? row.artifact_kind : null,
+              generatedAt: typeof row.generated_at === "string" ? row.generated_at : null,
+            }));
+        }
+      }
+    }
+
     return NextResponse.json({
-      sections: sectionsResult.data ?? [],
+      sections: sectionRows,
       attachments: attachmentsResult.data ?? [],
       schemaPending: false,
+      latestDraftsBySectionId,
+      latestDraftsUnavailable,
+      kbDocumentOptions,
+      reportArtifactOptions,
+      attachSourcesDegraded,
     });
   } catch (error) {
     audit.error("application_get_unhandled_error", { error, durationMs: Date.now() - startedAt });

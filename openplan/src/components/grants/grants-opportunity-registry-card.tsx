@@ -5,6 +5,7 @@ import {
   FundingOpportunityNarrativeDraftPanel,
   type FundingOpportunityNarrativeDraftRow,
 } from "@/components/grants/funding-opportunity-narrative-draft-panel";
+import { FundingOpportunityApplicationWorkspace } from "@/components/grants/funding-opportunity-application-workspace";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { ProjectBcaScreeningSummary } from "@/lib/grants/bca-evidence";
 import type { ProjectEngagementEvidence } from "@/lib/grants/engagement-evidence";
@@ -225,6 +226,8 @@ export function GrantsOpportunityRegistryCard({
             initialDraft={latestNarrativeDraft}
           />
         ) : null}
+
+        <FundingOpportunityApplicationWorkspace opportunityId={opportunity.id} />
 
         {projectHref || programHref || projectGrantModelingEvidence ? (
           <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
