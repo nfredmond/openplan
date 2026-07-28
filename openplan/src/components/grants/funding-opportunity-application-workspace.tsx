@@ -187,6 +187,18 @@ export function FundingOpportunityApplicationWorkspace({ opportunityId }: { oppo
   const [newAttachmentRequired, setNewAttachmentRequired] = useState(false);
   const [isAddingAttachment, setIsAddingAttachment] = useState(false);
 
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [exportOffenders, setExportOffenders] = useState<
+    Array<{ title: string; flaggedSentences: FlaggedSentencePayload[] }>
+  >([]);
+  const [exportResult, setExportResult] = useState<{
+    exportId: string;
+    engineDisclosure: string | null;
+    isDraftStamped: boolean;
+    outstandingRequiredCount: number;
+  } | null>(null);
+
   const catalogTemplateOptions = useMemo(
     () =>
       GRANT_PROGRAM_CATALOG.filter((entry) => (entry.applicationSections?.length ?? 0) > 0).map(
@@ -459,6 +471,48 @@ export function FundingOpportunityApplicationWorkspace({ opportunityId }: { oppo
     }
   }
 
+  async function handleExport() {
+    setIsExporting(true);
+    setExportError(null);
+    setExportOffenders([]);
+    setExportResult(null);
+    try {
+      const response = await fetch(
+        `/api/funding-opportunities/${opportunityId}/application/export`,
+        { method: "POST" }
+      );
+      const payload = (await response.json()) as Record<string, unknown>;
+      if (!response.ok) {
+        if (Array.isArray(payload.offendingSections)) {
+          setExportOffenders(
+            (payload.offendingSections as Array<Record<string, unknown>>).map((section) => ({
+              title: typeof section.title === "string" ? section.title : "Untitled section",
+              flaggedSentences: Array.isArray(section.flaggedSentences)
+                ? (section.flaggedSentences as FlaggedSentencePayload[])
+                : [],
+            }))
+          );
+        }
+        throw new Error(
+          typeof payload.error === "string" ? payload.error : "Failed to export the application"
+        );
+      }
+      const exportRow = payload.export as { id?: unknown } | undefined;
+      setExportResult({
+        exportId: typeof exportRow?.id === "string" ? exportRow.id : "",
+        engineDisclosure:
+          typeof payload.engineDisclosure === "string" ? payload.engineDisclosure : null,
+        isDraftStamped: payload.isDraftStamped === true,
+        outstandingRequiredCount:
+          typeof payload.outstandingRequiredCount === "number" ? payload.outstandingRequiredCount : 0,
+      });
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : "Failed to export the application");
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   const isEmptyApplication = hasLoaded && sections.length === 0 && attachments.length === 0;
 
   return (
@@ -636,6 +690,67 @@ export function FundingOpportunityApplicationWorkspace({ opportunityId }: { oppo
                     onPatch={(body) => void patchAttachment(attachment.id, body)}
                   />
                 ))}
+
+                <div className="rounded-xl border border-border/70 bg-background/70 px-3 py-3" data-testid="application-export">
+                  <p className="font-semibold text-foreground">Export application packet</p>
+                  <p className="mt-1 text-muted-foreground">
+                    Assembles the cover, every section (final text, or a disclosed outstanding
+                    item), the attachment checklist, and a provenance appendix into one PDF.
+                    Missing required attachments stamp the document DRAFT; they never disappear.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    disabled={isExporting}
+                    onClick={() => void handleExport()}
+                  >
+                    {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
+                    Export application packet (PDF)
+                  </Button>
+                  {exportError ? (
+                    <div className="mt-2" data-testid="export-refusal">
+                      <p className="text-destructive">{exportError}</p>
+                      {exportOffenders.map((offender, index) => (
+                        <div key={index} className="mt-1.5 text-xs text-muted-foreground">
+                          <p className="font-semibold text-foreground/80">{offender.title}</p>
+                          <ul className="mt-1 space-y-1 border-l-2 border-[color:var(--copper)]/40 pl-3">
+                            {offender.flaggedSentences.map((sentence, sentenceIndex) => (
+                              <li key={sentenceIndex}>
+                                {stripFactCitationTokens(sentence.text)}{" "}
+                                <span className="uppercase tracking-wide">
+                                  — {sentence.reason.replace(/_/g, " ")}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  {exportResult ? (
+                    <div className="mt-2 space-y-1" data-testid="export-result">
+                      {exportResult.isDraftStamped ? (
+                        <p className="font-semibold text-[color:var(--copper)]">
+                          Stamped DRAFT — {exportResult.outstandingRequiredCount} required
+                          attachment(s) outstanding.
+                        </p>
+                      ) : null}
+                      {exportResult.engineDisclosure ? (
+                        <p className="text-muted-foreground">{exportResult.engineDisclosure}</p>
+                      ) : null}
+                      {exportResult.exportId ? (
+                        <a
+                          className="font-semibold text-[color:var(--pine)] underline-offset-2 hover:underline"
+                          href={`/api/funding-opportunities/${opportunityId}/application/export/${exportResult.exportId}/download`}
+                        >
+                          Download PDF
+                        </a>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
 
                 <div className="rounded-xl border border-dashed border-border/70 px-3 py-3">
                   <p className="font-semibold text-foreground">Add a checklist item</p>
