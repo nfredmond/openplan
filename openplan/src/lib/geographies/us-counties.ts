@@ -7,8 +7,18 @@ import {
   buildCountySlug,
   normalizeCountySearchText,
 } from "@/lib/geographies/county-utils";
+import { splitStateQualifier } from "@/lib/geographies/state-fips";
 
-const CENSUS_COUNTIES_ENDPOINT = "https://api.census.gov/data/2023/acs/acs5?get=NAME&for=county:*";
+/**
+ * `B01003_001E` is total population. It rides along on the catalog request that
+ * already happens — same endpoint, same key, same 24h cache entry, no second
+ * round trip — and exists solely to break ranking ties between counties that
+ * share a name. Without it, ~25 counties named "Franklin" all scored
+ * identically and were cut alphabetically at 8, so Ohio's (pop. 1.3M) was
+ * discarded before any caller could see it.
+ */
+const CENSUS_COUNTIES_ENDPOINT =
+  "https://api.census.gov/data/2023/acs/acs5?get=NAME,B01003_001E&for=county:*";
 
 /**
  * The catalog URL, built at call time so the key is read from the environment
@@ -30,11 +40,27 @@ export interface CountySearchItem {
   countyPrefix: string;
   countySlug: string;
   suggestedRunName: string;
+  /**
+   * Total population, or null when unknown. Exposed so a caller that merges
+   * counties with other geography kinds — the place resolver — can break ties
+   * on the same basis this module already uses internally. It is deliberately
+   * NOT part of `countyGeographySearchResponseSchema`: it is a ranking input,
+   * not something any client renders.
+   */
+  population: number | null;
 }
 
 interface CountyCatalogRow extends CountySearchItem {
   searchText: string;
 }
+
+/**
+ * A Census API tabular response. Cells are strings, EXCEPT that a suppressed or
+ * unavailable estimate comes back as a JSON null — which is why this is not
+ * `string[][]`, and why `Number(cell)` is never called without a null check
+ * first (`Number(null)` is 0, not NaN).
+ */
+type CensusTable = Array<Array<string | null>>;
 
 /**
  * Whether the catalog could be read at all.
@@ -63,7 +89,7 @@ let countyCatalogPromise: Promise<CountyCatalogRow[] | null> | null = null;
  * unauthenticated request with a 302 to an HTML page rather than an error.
  * An empty array is reserved for a well-formed answer that carried no rows.
  */
-function parseCountyCatalog(rows: string[][] | null): CountyCatalogRow[] | null {
+function parseCountyCatalog(rows: CensusTable | null): CountyCatalogRow[] | null {
   if (!Array.isArray(rows) || rows.length < 2) return null;
 
   const header = rows[0] ?? [];
@@ -72,12 +98,30 @@ function parseCountyCatalog(rows: string[][] | null): CountyCatalogRow[] | null 
   const countyIndex = header.indexOf("county");
   if (nameIndex === -1 || stateIndex === -1 || countyIndex === -1) return null;
 
+  // Population is looked up by column NAME and is deliberately OPTIONAL: a
+  // deployment pointed at a vintage that does not carry B01003_001E still gets
+  // a working catalog, just without the population tiebreak. Ranking degrades;
+  // county search does not break.
+  const populationIndex = header.indexOf("B01003_001E");
+
   return rows.slice(1).flatMap((row) => {
     const rawName = String(row[nameIndex] ?? "").trim();
     const state = String(row[stateIndex] ?? "").trim();
     const county = String(row[countyIndex] ?? "").trim();
     const geographyId = `${state}${county}`;
     if (!rawName || geographyId.length !== 5) return [];
+
+    // Two ways this reads as a real number when it is not: the Census API
+    // reports suppressed estimates as negative sentinels (e.g. -666666666), and
+    // `Number(null)` is 0 rather than NaN, so a null estimate would otherwise
+    // become a county with a population of zero.
+    const rawPopulation = populationIndex === -1 ? null : row[populationIndex];
+    const parsedPopulation =
+      rawPopulation === null || rawPopulation === undefined || rawPopulation === ""
+        ? Number.NaN
+        : Number(rawPopulation);
+    const population =
+      Number.isFinite(parsedPopulation) && parsedPopulation >= 0 ? parsedPopulation : null;
 
     const geographyLabel = abbreviateCountyLabel(rawName);
     const countyPrefix = buildCountyPrefix(geographyLabel, geographyId);
@@ -91,6 +135,7 @@ function parseCountyCatalog(rows: string[][] | null): CountyCatalogRow[] | null 
         countyPrefix,
         countySlug,
         suggestedRunName,
+        population,
         searchText: normalizeCountySearchText(`${geographyLabel} ${rawName} ${geographyId} ${countyPrefix}`),
       },
     ];
@@ -109,11 +154,13 @@ function parseCountyCatalog(rows: string[][] | null): CountyCatalogRow[] | null 
 async function getCountyCatalog(): Promise<CountyCatalogRow[] | null> {
   if (countyCatalogPromise) return countyCatalogPromise;
 
-  const attempt = fetchJsonWithRetry<string[][]>(censusCountiesUrl(), undefined, {
+  const attempt = fetchJsonWithRetry<CensusTable>(censusCountiesUrl(), undefined, {
     timeoutMs: 15000,
     retries: 1,
     cacheTtlMs: 24 * 60 * 60 * 1000,
-    cacheKey: "us-counties-catalog:v1",
+    // v2 adds the population column. The key must change with the `get=` list,
+    // or a warm v1 entry would keep serving population-less rows for 24h.
+    cacheKey: "us-counties-catalog:v2",
   }).then(parseCountyCatalog);
 
   countyCatalogPromise = attempt;
@@ -167,7 +214,11 @@ function scoreCountyMatch(row: CountyCatalogRow, query: string): number {
  * look empty instead of broken.
  */
 export async function searchUsCounties(query: string, limit = 8): Promise<CountySearchOutcome> {
-  const normalizedQuery = normalizeCountySearchText(query);
+  // A trailing state qualifier ("Franklin County, OH") narrows the search
+  // instead of being matched as literal text. Both call sites — the place
+  // resolver and /api/geographies/counties — get this without passing anything.
+  const { name: bareQuery, stateFips } = splitStateQualifier(query);
+  const normalizedQuery = normalizeCountySearchText(bareQuery);
   if (!normalizedQuery || (normalizedQuery.length < 2 && !/^\d{5}$/.test(normalizedQuery))) {
     return { items: [], availability: "ok", unavailableReason: null };
   }
@@ -179,11 +230,26 @@ export async function searchUsCounties(query: string, limit = 8): Promise<County
     return { items: [], availability: "unavailable", unavailableReason: countyCatalogUnavailableReason() };
   }
 
-  const items = counties
+  const inScope = stateFips
+    ? counties.filter((row) => row.geographyId.slice(0, 2) === stateFips)
+    : counties;
+
+  const items = inScope
     .map((row) => ({ row, score: scoreCountyMatch(row, normalizedQuery) }))
     .filter((entry) => entry.score > 0)
     .sort((left, right) => {
       if (right.score !== left.score) return right.score - left.score;
+      // Population breaks ties WITHIN an equal match score only — it never
+      // promotes a worse-matching county over a better-matching one. Unknown
+      // population sorts after known, then alphabetically, so the order stays
+      // deterministic whatever the catalog vintage carried.
+      const leftPopulation = left.row.population;
+      const rightPopulation = right.row.population;
+      if (leftPopulation !== rightPopulation) {
+        if (leftPopulation === null) return 1;
+        if (rightPopulation === null) return -1;
+        return rightPopulation - leftPopulation;
+      }
       return left.row.geographyLabel.localeCompare(right.row.geographyLabel);
     })
     .slice(0, boundedLimit)
@@ -193,6 +259,7 @@ export async function searchUsCounties(query: string, limit = 8): Promise<County
       countyPrefix: entry.row.countyPrefix,
       countySlug: entry.row.countySlug,
       suggestedRunName: entry.row.suggestedRunName,
+      population: entry.row.population,
     }));
 
   return { items, availability: "ok", unavailableReason: null };

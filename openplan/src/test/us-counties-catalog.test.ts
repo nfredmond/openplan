@@ -20,9 +20,24 @@ import { __resetCountyCatalogForTests, searchUsCounties } from "@/lib/geographie
  */
 
 const CATALOG_RESPONSE = [
-  ["NAME", "state", "county"],
-  ["Nevada County, California", "06", "057"],
-  ["Franklin County, Ohio", "39", "049"],
+  ["NAME", "B01003_001E", "state", "county"],
+  ["Nevada County, California", "102241", "06", "057"],
+  ["Franklin County, Ohio", "1323807", "39", "049"],
+];
+
+/**
+ * Every county named "Franklin", smallest first, so an alphabetical or
+ * insertion-order tiebreak cannot accidentally produce the right answer. Ohio's
+ * is by far the largest and is deliberately NOT first in either ordering.
+ */
+const FRANKLIN_COLLISION_RESPONSE = [
+  ["NAME", "B01003_001E", "state", "county"],
+  ["Franklin County, Alabama", "31362", "01", "059"],
+  ["Franklin County, Arkansas", "17097", "05", "047"],
+  ["Franklin County, Idaho", "14194", "16", "041"],
+  ["Franklin County, Illinois", "37804", "17", "055"],
+  ["Franklin County, Ohio", "1323807", "39", "049"],
+  ["Franklin County, Pennsylvania", "155932", "42", "055"],
 ];
 
 describe("searchUsCounties", () => {
@@ -126,5 +141,74 @@ describe("searchUsCounties", () => {
     expect(outcome.availability).toBe("ok");
     expect(outcome.items).toEqual([]);
     expect(fetchJsonWithRetryMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The reported defect. ~25 US counties are named "Franklin"; they all match
+   * "Franklin County" equally well, so the ranking was decided entirely by an
+   * alphabetical tiebreak and then cut at 8. Ohio's — the largest by an order of
+   * magnitude — fell off the end, and no amount of downstream re-ranking could
+   * recover a row that had already been discarded.
+   */
+  it("ranks same-named counties by population, largest first", async () => {
+    fetchJsonWithRetryMock.mockResolvedValue(FRANKLIN_COLLISION_RESPONSE);
+
+    const outcome = await searchUsCounties("Franklin County");
+
+    expect(outcome.items[0].geographyId).toBe("39049");
+    expect(outcome.items[1].geographyId).toBe("42055");
+  });
+
+  it("still surfaces the largest match when the caller asks for fewer results than there are matches", async () => {
+    fetchJsonWithRetryMock.mockResolvedValue(FRANKLIN_COLLISION_RESPONSE);
+
+    const outcome = await searchUsCounties("Franklin County", 2);
+
+    // Alphabetically this would have been Alabama and Arkansas.
+    expect(outcome.items.map((item) => item.geographyId)).toEqual(["39049", "42055"]);
+  });
+
+  it("narrows to one state when the query names one, by abbreviation or by name", async () => {
+    fetchJsonWithRetryMock.mockResolvedValue(FRANKLIN_COLLISION_RESPONSE);
+
+    const abbreviated = await searchUsCounties("Franklin County, ID");
+    expect(abbreviated.items.map((item) => item.geographyId)).toEqual(["16041"]);
+
+    const spelledOut = await searchUsCounties("Franklin County, Idaho");
+    expect(spelledOut.items.map((item) => item.geographyId)).toEqual(["16041"]);
+  });
+
+  /**
+   * Population ranks ties; it must never be load-bearing. A deployment pointed
+   * at a vintage without the column has to keep working.
+   */
+  it("still searches when the catalog carries no population column", async () => {
+    fetchJsonWithRetryMock.mockResolvedValue([
+      ["NAME", "state", "county"],
+      ["Franklin County, Ohio", "39", "049"],
+      ["Franklin County, Idaho", "16", "041"],
+    ]);
+
+    const outcome = await searchUsCounties("Franklin County");
+
+    expect(outcome.availability).toBe("ok");
+    // Falls back to the previous alphabetical ordering rather than failing.
+    expect(outcome.items.map((item) => item.geographyId)).toEqual(["16041", "39049"]);
+  });
+
+  it("treats a suppressed or null population estimate as unknown, not as zero", async () => {
+    fetchJsonWithRetryMock.mockResolvedValue([
+      ["NAME", "B01003_001E", "state", "county"],
+      ["Franklin County, Alabama", null, "01", "059"],
+      ["Franklin County, Idaho", "-666666666", "16", "041"],
+      ["Franklin County, Ohio", "1323807", "39", "049"],
+    ]);
+
+    const outcome = await searchUsCounties("Franklin County");
+
+    expect(outcome.items[0].geographyId).toBe("39049");
+    expect(outcome.items[0].population).toBe(1323807);
+    // Unknown sorts after known, then alphabetically — deterministically.
+    expect(outcome.items.slice(1).map((item) => item.population)).toEqual([null, null]);
   });
 });

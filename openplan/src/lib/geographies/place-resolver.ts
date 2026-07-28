@@ -15,13 +15,33 @@ import { fetchJsonWithRetry } from "@/lib/data-sources/http";
 import { bboxFromGeojson } from "@/lib/data-sources/census";
 import { corridorGeojsonSchema, type CorridorGeojson } from "@/lib/models/run-launch";
 import { searchUsCounties } from "@/lib/geographies/us-counties";
-import { stateUspsFromFips } from "@/lib/geographies/state-fips";
+import { splitStateQualifier, stateUspsFromFips } from "@/lib/geographies/state-fips";
 import type { PlaceKind } from "@/lib/api/place-geographies";
 
 export type { PlaceKind } from "@/lib/api/place-geographies";
 
-const TIGERWEB_BASE =
-  "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Current/MapServer";
+const TIGERWEB_ROOT = "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb";
+const TIGERWEB_BASE = `${TIGERWEB_ROOT}/tigerWMS_Current/MapServer`;
+
+/**
+ * The 2020 Census vintage, consulted ONLY for population.
+ *
+ * WHY A SECOND SERVICE. Ranking same-named places needs population, and
+ * `tigerWMS_Current` does not carry it: its county/place/CDP layers have no
+ * POP100 field at all, and its CBSA layers have the field but leave every value
+ * null. `tigerWMS_Census2020` has real values on all four.
+ *
+ * WHY NOT JUST SEARCH THE 2020 SERVICE. Because it would silently shrink the
+ * country. Measured against the live services: CDPs 12,902 -> 12,454, and 54
+ * CBSAs present today are absent from the 2020 vintage. Moving search there
+ * would make ~500 real US geographies unfindable with no message explaining
+ * why — the exact place-specific failure the product forbids.
+ *
+ * So search stays on Current (authoritative coverage) and population is joined
+ * in from Census2020 by GEOID. A geography the 2020 vintage never knew about
+ * keeps its full search behavior and simply ranks as unknown-population.
+ */
+const TIGERWEB_POPULATION_BASE = `${TIGERWEB_ROOT}/tigerWMS_Census2020/MapServer`;
 
 // TIGERweb layer ids (tigerWMS_Current), verified against the live service.
 const LAYER = {
@@ -31,6 +51,27 @@ const LAYER = {
   metro: 93,
   micro: 91,
 } as const;
+
+/**
+ * Matching layer ids on `tigerWMS_Census2020` — they differ from Current and
+ * must not be assumed equal. Counties are absent on purpose: they never touch
+ * TIGERweb search, they come from the ACS catalog in `us-counties`, which
+ * carries its own population column.
+ */
+const POPULATION_LAYER_BY_KIND: Partial<Record<PlaceKind, number>> = {
+  city: 26,
+  cdp: 28,
+  metro: 76,
+  micro: 78,
+};
+
+/**
+ * How many rows each layer returns before ranking. Deliberately larger than any
+ * caller's result limit: the server truncates by BASENAME, so a limit-sized
+ * fetch would discard the highest-population match before we ever got to rank
+ * it — precisely the bug this change exists to fix, one level down.
+ */
+const CANDIDATE_POOL_PER_LAYER = 40;
 
 const LAYER_BY_KIND: Record<PlaceKind, number> = {
   county: LAYER.county,
@@ -92,8 +133,9 @@ export interface PlaceSearchOutcome {
   unavailableReason: string | null;
 }
 
-// Internal: carries the lowercased key we rank matches against.
-type RankedPlace = PlaceSearchResult & { sortKey: string };
+// Internal: carries the lowercased key we rank matches against, plus the
+// population used only to break ties between equally good name matches.
+type RankedPlace = PlaceSearchResult & { sortKey: string; population: number | null };
 
 export interface ResolvedBoundary {
   kind: PlaceKind;
@@ -108,6 +150,7 @@ interface TigerAttributes {
   NAME?: string;
   BASENAME?: string;
   STATE?: string | number;
+  POP100?: number | string | null;
 }
 
 interface TigerQueryJson {
@@ -134,9 +177,36 @@ export function sanitizeLikeQuery(raw: string): string {
     .replace(/'/g, "''");
 }
 
-export function buildPlaceSearchUrl(layerId: number, sanitizedLike: string, limit: number, hasStateField: boolean): string {
+export interface PlaceSearchUrlOptions {
+  layerId: number;
+  sanitizedLike: string;
+  limit: number;
+  hasStateField: boolean;
+  /**
+   * Restrict to one state FIPS. Only meaningful on layers that carry a STATE
+   * field — CBSA layers do not, and pass null: a metro area legitimately spans
+   * states, and its own BASENAME already names them ("Columbus, GA-AL").
+   */
+  stateFips?: string | null;
+}
+
+export function buildPlaceSearchUrl({
+  layerId,
+  sanitizedLike,
+  limit,
+  hasStateField,
+  stateFips = null,
+}: PlaceSearchUrlOptions): string {
+  const clauses = [`UPPER(BASENAME) LIKE UPPER('${sanitizedLike}%')`];
+  // Digits only — `stateFips` reaches here from user input via the state-name
+  // lookup, so it can only ever be a table value, but the LIKE clause next to it
+  // is escaped and this one should not be the weak link.
+  if (hasStateField && stateFips && /^\d{2}$/.test(stateFips)) {
+    clauses.push(`STATE='${stateFips}'`);
+  }
+
   const params = new URLSearchParams({
-    where: `UPPER(BASENAME) LIKE UPPER('${sanitizedLike}%')`,
+    where: clauses.join(" AND "),
     outFields: hasStateField ? "GEOID,NAME,BASENAME,STATE" : "GEOID,NAME,BASENAME",
     returnGeometry: "false",
     orderByFields: "BASENAME",
@@ -144,6 +214,52 @@ export function buildPlaceSearchUrl(layerId: number, sanitizedLike: string, limi
     f: "json",
   });
   return `${TIGERWEB_BASE}/${layerId}/query?${params.toString()}`;
+}
+
+/**
+ * Population-only companion query against the 2020 vintage. Same LIKE predicate
+ * as the search so the two result sets line up, but it returns just GEOID and
+ * POP100 — it is a join table, not a second source of truth about what exists.
+ */
+export function buildPlacePopulationUrl(layerId: number, sanitizedLike: string, limit: number): string {
+  const params = new URLSearchParams({
+    where: `UPPER(BASENAME) LIKE UPPER('${sanitizedLike}%')`,
+    outFields: "GEOID,POP100",
+    returnGeometry: "false",
+    orderByFields: "POP100 DESC",
+    resultRecordCount: String(limit),
+    f: "json",
+  });
+  return `${TIGERWEB_POPULATION_BASE}/${layerId}/query?${params.toString()}`;
+}
+
+/**
+ * Build a GEOID -> population map from a companion query. A missing, malformed,
+ * or negative value is simply absent from the map: unknown population must rank
+ * as unknown, never as zero.
+ */
+export function parsePlacePopulationResponse(json: TigerQueryJson | null): Map<string, number> {
+  const populations = new Map<string, number>();
+  const features = json?.features;
+  if (!Array.isArray(features)) return populations;
+
+  for (const feature of features) {
+    const attrs = feature.attributes ?? {};
+    const geoid = attrs.GEOID != null ? String(attrs.GEOID) : "";
+    if (!geoid) continue;
+
+    // `Number(null)` is 0, not NaN — and the Current CBSA layers really do
+    // answer `POP100: null`. Without this guard an unknown population would be
+    // recorded as a real zero and sort dead last among knowns instead of being
+    // treated as unknown.
+    const raw = attrs.POP100;
+    if (raw === null || raw === undefined || raw === "") continue;
+
+    const population = Number(raw);
+    if (!Number.isFinite(population) || population < 0) continue;
+    populations.set(geoid, population);
+  }
+  return populations;
 }
 
 export function buildPlaceBoundaryUrl(layerId: number, geoid: string): string {
@@ -163,7 +279,11 @@ export function buildPlaceBoundaryUrl(layerId: number, geoid: string): string {
  * Parse a TIGERweb attribute query response into ranked place results. `kind`
  * must match the layer queried (city/cdp = places, metro/micro = CBSAs).
  */
-export function parsePlaceSearchResponse(json: TigerQueryJson | null, kind: PlaceKind): RankedPlace[] {
+export function parsePlaceSearchResponse(
+  json: TigerQueryJson | null,
+  kind: PlaceKind,
+  populations?: Map<string, number>
+): RankedPlace[] {
   const features = json?.features;
   if (!Array.isArray(features)) return [];
 
@@ -176,8 +296,12 @@ export function parsePlaceSearchResponse(json: TigerQueryJson | null, kind: Plac
     const basename = String(attrs.BASENAME ?? attrs.NAME ?? "").trim();
     if (!basename) continue;
 
+    const population = populations?.get(geoid) ?? null;
+
     if (kind === "metro" || kind === "micro") {
-      // CBSA layers carry a fully-formed NAME ("Reno, NV Metro Area") and no STATE.
+      // CBSA layers carry a fully-formed NAME ("Reno, NV Metro Area") and no
+      // STATE. Their BASENAME already ends in the state(s) — "Columbus, OH" —
+      // which is why they are ranked against the caller's full query too.
       const label = String(attrs.NAME ?? basename).trim();
       results.push({
         kind,
@@ -186,6 +310,7 @@ export function parsePlaceSearchResponse(json: TigerQueryJson | null, kind: Plac
         description: KIND_DESCRIPTION[kind],
         stateFips: null,
         sortKey: basename.toLowerCase(),
+        population,
       });
       continue;
     }
@@ -200,6 +325,7 @@ export function parsePlaceSearchResponse(json: TigerQueryJson | null, kind: Plac
       description: KIND_DESCRIPTION[kind],
       stateFips,
       sortKey: basename.toLowerCase(),
+      population,
     });
   }
   return results;
@@ -236,18 +362,44 @@ function labelFromBoundaryGeojson(json: TigerGeojson | null, kind: PlaceKind): s
   return usps ? `${basename}, ${usps}` : basename;
 }
 
-async function fetchTigerSearch(
-  layerId: number,
-  sanitizedLike: string,
-  limit: number,
-  hasStateField: boolean,
-): Promise<TigerQueryJson | null> {
-  return fetchJsonWithRetry<TigerQueryJson>(buildPlaceSearchUrl(layerId, sanitizedLike, limit, hasStateField), undefined, {
+async function fetchTigerSearch(options: PlaceSearchUrlOptions): Promise<TigerQueryJson | null> {
+  const { layerId, sanitizedLike, limit, stateFips = null } = options;
+  return fetchJsonWithRetry<TigerQueryJson>(buildPlaceSearchUrl(options), undefined, {
     timeoutMs: 8000,
     retries: 1,
     cacheTtlMs: 24 * 60 * 60 * 1000,
-    cacheKey: `tigerweb:search:${layerId}:${sanitizedLike.toLowerCase()}:${limit}`,
+    // The state filter is part of the query, so it must be part of the key —
+    // otherwise a state-qualified search would serve the unfiltered answer.
+    cacheKey: `tigerweb:search:${layerId}:${sanitizedLike.toLowerCase()}:${limit}:${stateFips ?? "all"}`,
   });
+}
+
+/**
+ * Fetch populations for a kind, or an empty map when that kind has no 2020
+ * companion layer. Never throws and never reports unavailability: population is
+ * a ranking refinement, so losing it must degrade the ORDER of results, never
+ * the results themselves or the coverage report.
+ */
+async function fetchTigerPopulations(
+  kind: PlaceKind,
+  sanitizedLike: string,
+  limit: number
+): Promise<Map<string, number>> {
+  const layerId = POPULATION_LAYER_BY_KIND[kind];
+  if (layerId === undefined) return new Map();
+
+  const json = await fetchJsonWithRetry<TigerQueryJson>(
+    buildPlacePopulationUrl(layerId, sanitizedLike, limit),
+    undefined,
+    {
+      timeoutMs: 8000,
+      retries: 1,
+      cacheTtlMs: 24 * 60 * 60 * 1000,
+      cacheKey: `tigerweb:population:${layerId}:${sanitizedLike.toLowerCase()}:${limit}`,
+    }
+  ).catch(() => null);
+
+  return parsePlacePopulationResponse(json);
 }
 
 /**
@@ -280,20 +432,64 @@ export async function searchPlaces(query: string, limit = 8): Promise<PlaceSearc
 
   const trimmed = query.trim();
   if (trimmed.length < 2) return answered;
-  const like = sanitizeLikeQuery(trimmed);
+
+  // "Franklin County, OH" means the name AND the state. The LIKE predicate runs
+  // against the bare name — TIGERweb BASENAMEs for counties and places carry no
+  // state, and `sanitizeLikeQuery` would turn the comma into a space and match
+  // nothing — while the state becomes a real filter.
+  const { name: bareQuery, stateFips: qualifiedStateFips } = splitStateQualifier(trimmed);
+  const like = sanitizeLikeQuery(bareQuery);
   if (!like) return answered;
 
   const perLayer = Math.min(Math.max(Number.isFinite(limit) ? Math.trunc(limit) : 8, 1), 20);
+  const pool = Math.max(CANDIDATE_POOL_PER_LAYER, perLayer);
   const queryLower = trimmed.toLowerCase();
+  const bareQueryLower = bareQuery.toLowerCase();
 
   // `.catch` guards remain because these are network calls; they are belt to the
   // braces of the `null` contract, not the primary failure signal.
-  const [countyOutcome, cityJson, cdpJson, metroJson, microJson] = await Promise.all([
-    searchUsCounties(trimmed, perLayer).catch(() => null),
-    fetchTigerSearch(LAYER.incorporatedPlace, like, perLayer, true).catch(() => null),
-    fetchTigerSearch(LAYER.censusDesignatedPlace, like, perLayer, true).catch(() => null),
-    fetchTigerSearch(LAYER.metro, like, perLayer, false).catch(() => null),
-    fetchTigerSearch(LAYER.micro, like, perLayer, false).catch(() => null),
+  const [
+    countyOutcome,
+    cityJson,
+    cdpJson,
+    metroJson,
+    microJson,
+    cityPopulations,
+    cdpPopulations,
+    metroPopulations,
+    microPopulations,
+  ] = await Promise.all([
+    searchUsCounties(trimmed, pool).catch(() => null),
+    fetchTigerSearch({
+      layerId: LAYER.incorporatedPlace,
+      sanitizedLike: like,
+      limit: pool,
+      hasStateField: true,
+      stateFips: qualifiedStateFips,
+    }).catch(() => null),
+    fetchTigerSearch({
+      layerId: LAYER.censusDesignatedPlace,
+      sanitizedLike: like,
+      limit: pool,
+      hasStateField: true,
+      stateFips: qualifiedStateFips,
+    }).catch(() => null),
+    fetchTigerSearch({
+      layerId: LAYER.metro,
+      sanitizedLike: like,
+      limit: pool,
+      hasStateField: false,
+    }).catch(() => null),
+    fetchTigerSearch({
+      layerId: LAYER.micro,
+      sanitizedLike: like,
+      limit: pool,
+      hasStateField: false,
+    }).catch(() => null),
+    fetchTigerPopulations("city", like, pool),
+    fetchTigerPopulations("cdp", like, pool),
+    fetchTigerPopulations("metro", like, pool),
+    fetchTigerPopulations("micro", like, pool),
   ]);
 
   const unavailableKinds: PlaceKind[] = [];
@@ -318,21 +514,47 @@ export async function searchPlaces(query: string, limit = 8): Promise<PlaceSearc
     stateFips: county.geographyId.slice(0, 2),
     // Rank counties on their bare name (strip a trailing ", XX").
     sortKey: county.geographyLabel.replace(/,\s*[A-Z]{2}$/, "").toLowerCase(),
+    // Normalized to null rather than trusted: an absent value must compare as
+    // "unknown", because `undefined - number` is NaN and a comparator that
+    // returns NaN silently corrupts the whole sort order.
+    population: county.population ?? null,
   }));
 
   const all: RankedPlace[] = [
     ...countyResults,
-    ...parsePlaceSearchResponse(cityJson, "city"),
-    ...parsePlaceSearchResponse(cdpJson, "cdp"),
-    ...parsePlaceSearchResponse(metroJson, "metro"),
-    ...parsePlaceSearchResponse(microJson, "micro"),
+    ...parsePlaceSearchResponse(cityJson, "city", cityPopulations),
+    ...parsePlaceSearchResponse(cdpJson, "cdp", cdpPopulations),
+    ...parsePlaceSearchResponse(metroJson, "metro", metroPopulations),
+    ...parsePlaceSearchResponse(microJson, "micro", microPopulations),
   ];
 
   const seen = new Set<string>();
   const items = all
-    .map((place) => ({ place, score: scorePlaceMatch(place.sortKey, queryLower) }))
+    .map((place) => ({
+      place,
+      // Two label conventions coexist here: county and place sort keys are bare
+      // names ("columbus"), while a CBSA's is "columbus, oh". Scoring against
+      // both forms and keeping the better one lets "Columbus, OH" match the
+      // metro area exactly without penalizing the city, and needs no per-kind
+      // branching that would drift as kinds are added.
+      score: Math.max(
+        scorePlaceMatch(place.sortKey, queryLower),
+        scorePlaceMatch(place.sortKey, bareQueryLower)
+      ),
+    }))
     .sort((left, right) => {
       if (right.score !== left.score) return right.score - left.score;
+      // Population breaks ties between equally good name matches, and nothing
+      // more: it can never lift a weaker match above a stronger one. Unknown
+      // population sorts last, then alphabetically, so ordering stays stable
+      // whether or not the 2020 companion layer answered.
+      const leftPopulation = left.place.population;
+      const rightPopulation = right.place.population;
+      if (leftPopulation !== rightPopulation) {
+        if (leftPopulation === null) return 1;
+        if (rightPopulation === null) return -1;
+        return rightPopulation - leftPopulation;
+      }
       return left.place.label.localeCompare(right.place.label);
     })
     .filter(({ place }) => {

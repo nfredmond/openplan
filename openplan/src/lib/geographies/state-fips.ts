@@ -1,3 +1,5 @@
+import { STATE_ABBREVIATIONS } from "@/lib/geographies/county-utils";
+
 /**
  * State/territory FIPS (2-digit) → USPS postal abbreviation.
  *
@@ -74,4 +76,71 @@ export function stateUspsFromFips(fips: string | null | undefined): string | nul
   if (!fips) return null;
   const key = fips.padStart(2, "0").slice(0, 2);
   return STATE_FIPS_TO_USPS[key] ?? null;
+}
+
+/**
+ * USPS abbreviation → state FIPS, and full state name → state FIPS.
+ *
+ * Derived from the two tables that already exist rather than hand-written a
+ * third time: `STATE_FIPS_TO_USPS` above, and `STATE_ABBREVIATIONS`
+ * (name → USPS) in `county-utils`. A hand-copied third list would be one
+ * territory away from disagreeing with the other two.
+ */
+const USPS_TO_STATE_FIPS: Record<string, string> = Object.fromEntries(
+  Object.entries(STATE_FIPS_TO_USPS).map(([fips, usps]) => [usps, fips])
+);
+
+const STATE_NAME_TO_FIPS: Record<string, string> = Object.fromEntries(
+  Object.entries(STATE_ABBREVIATIONS).flatMap(([name, usps]) => {
+    const fips = USPS_TO_STATE_FIPS[usps];
+    return fips ? [[name.toLowerCase(), fips] as [string, string]] : [];
+  })
+);
+
+/** Resolve a state FIPS from a USPS abbreviation ("OH" → "39"). Case-insensitive. */
+export function stateFipsFromUsps(usps: string | null | undefined): string | null {
+  if (!usps) return null;
+  return USPS_TO_STATE_FIPS[usps.trim().toUpperCase()] ?? null;
+}
+
+/** Resolve a state FIPS from a full state name ("Ohio" → "39"). Case-insensitive. */
+export function stateFipsFromName(name: string | null | undefined): string | null {
+  if (!name) return null;
+  return STATE_NAME_TO_FIPS[name.trim().toLowerCase()] ?? null;
+}
+
+export interface StateQualifiedQuery {
+  /** The place name with any trailing state qualifier removed. */
+  name: string;
+  /** The state FIPS the query named, or null when it named none. */
+  stateFips: string | null;
+}
+
+/**
+ * Split a trailing state qualifier off a place query: "Franklin County, OH" →
+ * `{ name: "Franklin County", stateFips: "39" }`.
+ *
+ * WHY THIS EXISTS. Before this, no caller parsed the ", XX" form at all. It
+ * appeared to work for counties purely by accident — the county catalog ranks
+ * against a label that already ends in ", OH", so the comma survived
+ * normalization into an exact-string match. It did NOT work for anything served
+ * by TIGERweb: `sanitizeLikeQuery` rewrites the comma to a space, so
+ * "Columbus, OH" became `LIKE 'COLUMBUS OH%'` and matched nothing at all.
+ *
+ * Both the abbreviation and the spelled-out name are accepted, because a planner
+ * typing their own state usually spells it. A trailing fragment that names no
+ * state is left alone rather than silently dropped — "Lake, Charles" must keep
+ * searching for that text, not become a search for "Lake".
+ */
+export function splitStateQualifier(raw: string): StateQualifiedQuery {
+  const trimmed = raw.trim();
+  const commaIndex = trimmed.lastIndexOf(",");
+  if (commaIndex === -1) return { name: trimmed, stateFips: null };
+
+  const head = trimmed.slice(0, commaIndex).trim();
+  const tail = trimmed.slice(commaIndex + 1).trim();
+  if (!head || !tail) return { name: trimmed, stateFips: null };
+
+  const stateFips = stateFipsFromUsps(tail) ?? stateFipsFromName(tail);
+  return stateFips ? { name: head, stateFips } : { name: trimmed, stateFips: null };
 }
