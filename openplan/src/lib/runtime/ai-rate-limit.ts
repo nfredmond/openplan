@@ -1,7 +1,8 @@
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 /**
- * Per-workspace rate limit on AI calls (assistant chat, grant narrative drafts).
+ * Per-workspace rate limit on AI calls (assistant chat, grant narrative drafts,
+ * engagement synthesis, engagement moderation scans).
  *
  * This bounds Anthropic spend against a scripted loop. It is independent of the
  * optional operator run cap (src/lib/config/run-cap.ts) and always applies,
@@ -9,7 +10,12 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
  * there at all. The window is generous enough that a human clicking through the
  * app never trips it.
  */
-export const AI_RATE_LIMIT_BUCKET_KEYS = ["assistant_chat", "grant_narrative_draft", "engagement_synthesis"] as const;
+export const AI_RATE_LIMIT_BUCKET_KEYS = [
+  "assistant_chat",
+  "grant_narrative_draft",
+  "engagement_synthesis",
+  "engagement_moderation",
+] as const;
 export const AI_RATE_LIMIT_WINDOW_SECONDS = 300;
 export const AI_RATE_LIMIT_MAX_PER_WINDOW = 20;
 
@@ -78,5 +84,51 @@ export async function checkAiUsageRateLimit(
     };
   } catch {
     return { allowed: true, count: 0, retryAfterSeconds: 0 };
+  }
+}
+
+/**
+ * Records one AI usage event into `usage_events` — the row
+ * `checkAiUsageRateLimit` counts. This is ABUSE METERING for a free product,
+ * not billing: OpenPlan has no paid tier, and the only consumer of these rows
+ * is the per-workspace spend limiter above. (The table itself is retained from
+ * migration 20260424000072; its stripe_* columns stay NULL forever.)
+ *
+ * BEST-EFFORT by design: call sites fire this after a successful model call
+ * and must never fail the user's request because metering hiccuped, so any
+ * insert error is swallowed with a single console warning. The asymmetry is
+ * deliberate — the limiter fails open on lookup errors, and recording fails
+ * silent on insert errors; a broken usage_events table can only ever mean
+ * "unmetered", never "AI offline".
+ */
+export async function recordAiUsageEvent(params: {
+  workspaceId: string;
+  bucketKey: string;
+  eventKey: string;
+  sourceRoute?: string;
+  metadataJson?: Record<string, unknown>;
+  serviceSupabase?: CountSupabaseLike;
+}): Promise<void> {
+  try {
+    const supabase = params.serviceSupabase ?? createServiceRoleClient();
+    const { error } = await supabase.from("usage_events").insert({
+      workspace_id: params.workspaceId,
+      bucket_key: params.bucketKey,
+      event_key: params.eventKey,
+      weight: 1,
+      source_route: params.sourceRoute ?? null,
+      metadata_json: params.metadataJson ?? {},
+    });
+    if (error) {
+      console.warn(
+        `[ai-rate-limit] usage event insert failed (${params.bucketKey}): ${error.message}`
+      );
+    }
+  } catch (error) {
+    console.warn(
+      `[ai-rate-limit] usage event insert failed (${params.bucketKey}): ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
   }
 }

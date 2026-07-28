@@ -5,6 +5,7 @@ const campaignMaybeSingle = vi.fn();
 const itemMaybeSingle = vi.fn();
 const rpcMock = vi.fn();
 const checkAiUsageRateLimit = vi.fn();
+const recordAiUsageEvent = vi.fn();
 const translateEngagementTextMock = vi.fn();
 
 const fakeSupabase = {
@@ -29,6 +30,7 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
   checkAiUsageRateLimit: (...a: unknown[]) => checkAiUsageRateLimit(...a),
+  recordAiUsageEvent: (...a: unknown[]) => recordAiUsageEvent(...a),
   PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS: ["engagement_public_translation"],
   PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW: 30,
 }));
@@ -94,6 +96,7 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
     expect(checkAiUsageRateLimit).not.toHaveBeenCalled();
     expect(translateEngagementTextMock).not.toHaveBeenCalled();
     expect(rpcMock).not.toHaveBeenCalled();
+    expect(recordAiUsageEvent).not.toHaveBeenCalled();
   });
 
   it("translates, caches via the atomic merge RPC, and meters the public AI bucket", async () => {
@@ -114,6 +117,17 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
       "ws-1",
       expect.objectContaining({ bucketKeys: ["engagement_public_translation"] })
     );
+
+    // The successful model call is RECORDED into the same public bucket the
+    // check counts — the limiter's read loop closes.
+    expect(recordAiUsageEvent).toHaveBeenCalledTimes(1);
+    expect(recordAiUsageEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: "ws-1",
+        bucketKey: "engagement_public_translation",
+        serviceSupabase: fakeSupabase,
+      })
+    );
   });
 
   it("429 when the workspace AI rate limit is exhausted (no model call)", async () => {
@@ -130,5 +144,7 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
     const body = await res.json();
     expect(body).toMatchObject({ source: "unavailable", translated: null });
     expect(rpcMock).not.toHaveBeenCalled();
+    // No model call happened, so nothing is metered.
+    expect(recordAiUsageEvent).not.toHaveBeenCalled();
   });
 });

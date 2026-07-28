@@ -8,6 +8,7 @@ import {
   checkAiUsageRateLimit,
   PUBLIC_ENGAGEMENT_AI_BUCKET_KEYS,
   PUBLIC_ENGAGEMENT_AI_MAX_PER_WINDOW,
+  recordAiUsageEvent,
 } from "@/lib/runtime/ai-rate-limit";
 import {
   isTranslationLanguage,
@@ -153,6 +154,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // AI-offline / model error → the client keeps showing the original.
       return NextResponse.json({ source: "unavailable", language, translated: null, caveat: result.caveat }, { status: 200 });
     }
+
+    // Fire-and-forget spend metering into the DEDICATED public bucket the
+    // check above counts — cache hits returned earlier and are never charged.
+    void recordAiUsageEvent({
+      workspaceId: item.workspaceId,
+      bucketKey: "engagement_public_translation",
+      eventKey: "engagement_public_translation",
+      sourceRoute: "/api/engage/[shareToken]/items/[itemId]/translate",
+      metadataJson: { model: result.model, language },
+      serviceSupabase: supabase,
+    });
 
     // Cache into metadata_json.ai_translations[lang] via an ATOMIC db-side jsonb
     // merge (migration 098) rather than a client read-modify-write, so two

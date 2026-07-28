@@ -11,7 +11,7 @@ import {
   buildAssistantChatSystemPrompt,
 } from "@/lib/assistant/chat-context";
 import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
-import { checkAiUsageRateLimit } from "@/lib/runtime/ai-rate-limit";
+import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 
 const ASSISTANT_CHAT_MAX_BODY_BYTES = BODY_LIMITS.normalJson;
 const ASSISTANT_CHAT_DEFAULT_MODEL = "claude-opus-4-8";
@@ -142,9 +142,6 @@ export async function POST(request: NextRequest) {
       history = history.slice(1);
     }
 
-    if (context.workspace.id) {
-    }
-
     const result = streamText({
       model: anthropic(modelId),
       system: systemPrompt,
@@ -163,6 +160,17 @@ export async function POST(request: NextRequest) {
           outputTokens: usage?.outputTokens ?? null,
           durationMs: Date.now() - startedAt,
         });
+        // Fire-and-forget spend metering: the stream finished, so the model
+        // call succeeded — count it against the workspace's AI allowance.
+        if (context.workspace.id) {
+          void recordAiUsageEvent({
+            workspaceId: context.workspace.id,
+            bucketKey: "assistant_chat",
+            eventKey: "assistant_chat_reply",
+            sourceRoute: "/api/assistant/chat",
+            metadataJson: { model: modelId },
+          });
+        }
       },
     });
 

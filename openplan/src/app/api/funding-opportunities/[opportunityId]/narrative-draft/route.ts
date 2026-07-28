@@ -37,7 +37,7 @@ import {
   type ProjectFundingStackSummary,
 } from "@/lib/projects/funding";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
-import { checkAiUsageRateLimit } from "@/lib/runtime/ai-rate-limit";
+import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 import {
   buildNarrativeFactList,
   factClaimTextMap,
@@ -439,6 +439,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "narrative_generation_failed" }, { status: 502 });
     }
+
+    // Fire-and-forget spend metering: the model call succeeded (a thrown
+    // generation returned 502 above without recording, so a user retry after a
+    // failure is never double-counted).
+    void recordAiUsageEvent({
+      workspaceId: opportunity.workspace_id,
+      bucketKey: "grant_narrative_draft",
+      eventKey: "grant_narrative_draft",
+      sourceRoute: "/api/funding-opportunities/[opportunityId]/narrative-draft",
+      metadataJson: { model: modelId },
+    });
 
     if (!draftText) {
       audit.error("narrative_generation_empty", {

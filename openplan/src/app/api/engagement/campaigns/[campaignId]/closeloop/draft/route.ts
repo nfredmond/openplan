@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { generateEngagementSynthesis, SYNTHESIS_MAX_ITEMS, type SynthesisItem } from "@/lib/engagement/ai-synthesis";
 import { buildCloseLoopDraftsFromSynthesis } from "@/lib/engagement/close-loop";
+import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
 
@@ -41,6 +42,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!access.campaign) return NextResponse.json({ error: "Engagement campaign not found" }, { status: 404 });
     if (!access.allowed) return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
 
+    // Same guard as the sibling synthesis route — this endpoint drives the same
+    // model spend through the same engine, so it meters the same staff buckets.
+    const workspaceId = access.campaign.workspace_id;
+    const rateLimit = await checkAiUsageRateLimit(workspaceId);
+    if (!rateLimit.allowed) {
+      audit.warn("closeloop_draft_rate_limited", { workspaceId, recentCount: rateLimit.count });
+      return NextResponse.json(
+        { error: "Too many AI requests in a short window. Please wait a moment and try again." },
+        { status: 429, headers: { "retry-after": String(rateLimit.retryAfterSeconds) } }
+      );
+    }
+
     const [{ data: itemsData }, { data: categoriesData }] = await Promise.all([
       supabase
         .from("engagement_items")
@@ -67,6 +80,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }));
 
     const synthesis = await generateEngagementSynthesis(items);
+
+    // Fire-and-forget spend metering: `source === "ai"` means the model call
+    // succeeded (the deterministic fallback spends nothing and is free).
+    if (synthesis.source === "ai") {
+      void recordAiUsageEvent({
+        workspaceId,
+        bucketKey: "engagement_synthesis",
+        eventKey: "engagement_closeloop_draft",
+        sourceRoute: "/api/engagement/campaigns/[campaignId]/closeloop/draft",
+        metadataJson: { model: synthesis.model, analyzedItemCount: synthesis.analyzed_item_count },
+      });
+    }
+
     const drafts = buildCloseLoopDraftsFromSynthesis(synthesis);
 
     return NextResponse.json({

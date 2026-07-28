@@ -7,6 +7,8 @@ const authGetUserMock = vi.fn();
 const loadAssistantContextMock = vi.fn();
 const streamTextMock = vi.fn();
 const anthropicMock = vi.fn((modelId: string) => ({ __modelId: modelId }));
+const checkAiUsageRateLimitMock = vi.fn();
+const recordAiUsageEventMock = vi.fn();
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -39,6 +41,11 @@ vi.mock("ai", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (...args: unknown[]) => anthropicMock(...(args as [string])),
+}));
+
+vi.mock("@/lib/runtime/ai-rate-limit", () => ({
+  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
+  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
 }));
 
 import { POST as postAssistantChat } from "@/app/api/assistant/chat/route";
@@ -117,6 +124,8 @@ describe("/api/assistant/chat", () => {
       auth: { getUser: (...args: unknown[]) => authGetUserMock(...args) },
     });
     loadAssistantContextMock.mockResolvedValue(workspaceContextFixture());
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    recordAiUsageEventMock.mockResolvedValue(undefined);
     streamTextMock.mockReturnValue({
       toTextStreamResponse: () =>
         new Response("Grounded reply", {
@@ -225,11 +234,42 @@ describe("/api/assistant/chat", () => {
     expect(callArgs.maxOutputTokens).toBeGreaterThan(0);
   });
 
-  it("records an assistant_chat usage event before streaming", async () => {
+  it("records an assistant_chat usage event when the stream finishes (not before)", async () => {
     await postAssistantChat(
       jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })
     );
 
+    // Nothing recorded yet — the model call has not completed, so an aborted
+    // or failed stream is never counted against the workspace.
+    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+
+    const callArgs = streamTextMock.mock.calls[0][0] as {
+      onFinish: (event: { usage?: { inputTokens?: number; outputTokens?: number } }) => void;
+    };
+    callArgs.onFinish({ usage: { inputTokens: 10, outputTokens: 20 } });
+
+    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
+    expect(recordAiUsageEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        bucketKey: "assistant_chat",
+        eventKey: "assistant_chat_reply",
+        sourceRoute: "/api/assistant/chat",
+      })
+    );
+  });
+
+  it("returns 429 with retry-after when the workspace AI allowance is exhausted", async () => {
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+
+    const response = await postAssistantChat(
+      jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })
+    );
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("retry-after")).toBe("300");
+    expect(streamTextMock).not.toHaveBeenCalled();
+    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
   });
 
   it("respects the OPENPLAN_ASSISTANT_MODEL override", async () => {

@@ -9,7 +9,7 @@ import {
   SYNTHESIS_MAX_ITEMS,
   type SynthesisItem,
 } from "@/lib/engagement/ai-synthesis";
-import { checkAiUsageRateLimit } from "@/lib/runtime/ai-rate-limit";
+import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
 
@@ -107,7 +107,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const synthesis = await generateEngagementSynthesis(items);
 
+    // Fire-and-forget spend metering: `source === "ai"` means the model call
+    // succeeded (the lib's deterministic fallback spends nothing and is free).
     if (synthesis.source === "ai") {
+      void recordAiUsageEvent({
+        workspaceId,
+        bucketKey: "engagement_synthesis",
+        eventKey: "engagement_synthesis",
+        sourceRoute: "/api/engagement/campaigns/[campaignId]/synthesis",
+        metadataJson: { model: synthesis.model, analyzedItemCount: synthesis.analyzed_item_count },
+      });
     }
 
     const synthesizedAt = new Date().toISOString();

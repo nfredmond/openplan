@@ -4,7 +4,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
-import { checkAiUsageRateLimit } from "@/lib/runtime/ai-rate-limit";
+import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 import { MODERATION_MAX_ITEMS, moderateEngagementItems, type ModerationInputItem } from "@/lib/engagement/ai-moderation";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
@@ -112,7 +112,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       audit.warn("engagement_moderation_persist_partial", { campaignId, failedCount: failed.length });
     }
 
+    // Fire-and-forget spend metering: `source === "ai"` means the model call
+    // succeeded (the deterministic heuristic fallback spends nothing).
     if (result.source === "ai") {
+      void recordAiUsageEvent({
+        workspaceId,
+        bucketKey: "engagement_moderation",
+        eventKey: "engagement_moderation_scan",
+        sourceRoute: "/api/engagement/campaigns/[campaignId]/moderation-scan",
+        metadataJson: { model: result.model, itemCount: result.item_count },
+      });
     }
 
     return NextResponse.json({ moderation: result, scannedAt: assessmentAt });

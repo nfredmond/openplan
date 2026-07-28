@@ -10,6 +10,8 @@ const authGetUserMock = vi.fn();
 const loadFundingOpportunityAccessMock = vi.fn();
 const generateTextMock = vi.fn();
 const anthropicMock = vi.fn((..._args: unknown[]) => "mock-anthropic-model");
+const checkAiUsageRateLimitMock = vi.fn();
+const recordAiUsageEventMock = vi.fn();
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -44,6 +46,11 @@ vi.mock("ai", () => ({
 
 vi.mock("@ai-sdk/anthropic", () => ({
   anthropic: (...args: unknown[]) => anthropicMock(...args),
+}));
+
+vi.mock("@/lib/runtime/ai-rate-limit", () => ({
+  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
+  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
 }));
 
 import { POST as postNarrativeDraft } from "@/app/api/funding-opportunities/[opportunityId]/narrative-draft/route";
@@ -91,6 +98,8 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    recordAiUsageEventMock.mockResolvedValue(undefined);
     authGetUserMock.mockResolvedValue({
       data: { user: { id: USER_ID } },
     });
@@ -185,6 +194,17 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     expect(generateTextMock).not.toHaveBeenCalled();
   });
 
+  it("returns 429 without a model call when the workspace AI allowance is exhausted", async () => {
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("retry-after")).toBe("300");
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+  });
+
   it("returns a typed 503 ai_offline error when ANTHROPIC_API_KEY is empty", async () => {
     vi.stubEnv("ANTHROPIC_API_KEY", "   ");
 
@@ -217,6 +237,16 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
         estimatedCostUsd: 0.026,
       },
     });
+
+    // The successful generation is metered against the workspace's AI allowance.
+    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
+    expect(recordAiUsageEventMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        bucketKey: "grant_narrative_draft",
+        eventKey: "grant_narrative_draft",
+      })
+    );
 
     // The generation call uses the configured default model and a grounded prompt.
     expect(anthropicMock).toHaveBeenCalledWith("claude-opus-4-8");
@@ -382,6 +412,8 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     expect(response.status).toBe(502);
     expect(await response.json()).toEqual({ error: "narrative_generation_failed" });
     expect(draftInsertMock).not.toHaveBeenCalled();
+    // A failed model call is never metered, so a retry can't double-count.
+    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
   });
 
   it("returns 502 without persisting when generation produces empty text", async () => {

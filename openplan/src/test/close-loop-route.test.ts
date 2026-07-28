@@ -6,6 +6,8 @@ const validateCampaignCategoryAccess = vi.fn();
 const getUser = vi.fn();
 const generateEngagementSynthesis = vi.fn();
 const createServiceRoleClientMock = vi.hoisted(() => vi.fn());
+const checkAiUsageRateLimit = vi.fn();
+const recordAiUsageEvent = vi.fn();
 
 // Terminal resolvers for the engagement_closeloop_entries chains.
 const entryInsertSingle = vi.fn();
@@ -60,6 +62,10 @@ vi.mock("@/lib/engagement/ai-synthesis", () => ({
   generateEngagementSynthesis: (...args: unknown[]) => generateEngagementSynthesis(...args),
   SYNTHESIS_MAX_ITEMS: 300,
 }));
+vi.mock("@/lib/runtime/ai-rate-limit", () => ({
+  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimit(...args),
+  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEvent(...args),
+}));
 
 import { GET, POST } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/route";
 import { PATCH, DELETE } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/[entryId]/route";
@@ -82,6 +88,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   createServiceRoleClientMock.mockReturnValue(fakeSupabase);
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
+  checkAiUsageRateLimit.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
   entryPriorStatus.mockResolvedValue({ data: { status: "draft" }, error: null }); // draft -> published transition
   loadCampaignAccess.mockResolvedValue({
     campaign: { id: CAMPAIGN_ID, workspace_id: "ws-1", title: "Campaign" },
@@ -194,6 +201,41 @@ describe("close-loop draft route", () => {
     expect(body.source).toBe("deterministic-fallback");
     expect(body.fallbackReason).toBe("missing_api_key");
     expect(body.drafts).toEqual([{ themeTitle: "Crossings", youSaid: "safer crossings", sourceItemIds: ["a1"] }]);
+    // The deterministic fallback made no model call, so nothing is metered.
+    expect(recordAiUsageEvent).not.toHaveBeenCalled();
+  });
+
+  it("meters a successful AI synthesis into the engagement_synthesis bucket", async () => {
+    itemsResolve.mockResolvedValue({ data: [{ id: "a1", body: "x", title: null, category_id: null, latitude: null, longitude: null }], error: null });
+    categoriesResolve.mockResolvedValue({ data: [], error: null });
+    generateEngagementSynthesis.mockResolvedValue({
+      source: "ai",
+      model: "claude-haiku-4-5-20251001",
+      fallback_reason: null,
+      item_count: 1,
+      analyzed_item_count: 1,
+      overall_sentiment: "neutral",
+      themes: [{ label: "Crossings", sentiment: "negative", item_count: 1, fact_ids: ["item_a1"], summary: "safer crossings" }],
+      narrative: "…",
+      grounding: { facts: [], claims: [] },
+      caveat: "c",
+    });
+
+    const res = await DRAFT_POST(new NextRequest("http://localhost/x", { method: "POST" }), listCtx);
+    expect(res.status).toBe(200);
+    expect(recordAiUsageEvent).toHaveBeenCalledTimes(1);
+    expect(recordAiUsageEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ workspaceId: "ws-1", bucketKey: "engagement_synthesis" })
+    );
+  });
+
+  it("draft route 429 without a model call when the workspace AI allowance is exhausted", async () => {
+    checkAiUsageRateLimit.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+    const res = await DRAFT_POST(new NextRequest("http://localhost/x", { method: "POST" }), listCtx);
+    expect(res.status).toBe(429);
+    expect(res.headers.get("retry-after")).toBe("300");
+    expect(generateEngagementSynthesis).not.toHaveBeenCalled();
+    expect(recordAiUsageEvent).not.toHaveBeenCalled();
   });
 
   it("draft route 403 without write access", async () => {

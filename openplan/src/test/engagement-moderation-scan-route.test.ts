@@ -7,6 +7,7 @@ const itemsLimit = vi.fn();
 const updateEq = vi.fn();
 const updateFn = vi.fn((_payload: Record<string, unknown>) => ({ eq: updateEq }));
 const checkAiUsageRateLimit = vi.fn();
+const recordAiUsageEvent = vi.fn();
 
 const fakeSupabase = {
   auth: { getUser },
@@ -22,7 +23,10 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn() }),
 }));
 vi.mock("@/lib/engagement/api", () => ({ loadCampaignAccess: (...a: unknown[]) => loadCampaignAccess(...a) }));
-vi.mock("@/lib/runtime/ai-rate-limit", () => ({ checkAiUsageRateLimit: (...a: unknown[]) => checkAiUsageRateLimit(...a) }));
+vi.mock("@/lib/runtime/ai-rate-limit", () => ({
+  checkAiUsageRateLimit: (...a: unknown[]) => checkAiUsageRateLimit(...a),
+  recordAiUsageEvent: (...a: unknown[]) => recordAiUsageEvent(...a),
+}));
 
 import { POST } from "@/app/api/engagement/campaigns/[campaignId]/moderation-scan/route";
 
@@ -89,5 +93,9 @@ describe("POST /api/engagement/campaigns/[campaignId]/moderation-scan", () => {
     for (const payload of payloads) {
       expect(payload.status).toBeUndefined();
     }
+
+    // The deterministic fallback made no model call, so nothing is metered
+    // against the workspace's AI allowance.
+    expect(recordAiUsageEvent).not.toHaveBeenCalled();
   });
 });
