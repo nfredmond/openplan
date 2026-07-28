@@ -151,6 +151,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to check application state" }, { status: 500 });
     }
 
+    // Seeding is where drafting autonomy would eventually deepen. The
+    // documented path — none of it built here — is: re-ingest the operator's
+    // own approved boilerplate into the Knowledge Base, distill an org
+    // profile from it, feed submission outcomes back as evidence, and only
+    // then consider changing the approval class of drafting. Today every
+    // draft stays operator-reviewed, and seeding stays a static template.
     const sectionSeeds = isProposal
       ? buildProposalSectionSeeds()
       : catalogEntry

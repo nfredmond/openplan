@@ -13,6 +13,7 @@ import {
   type FundingOpportunityDecision,
   type FundingOpportunityStatus,
 } from "@/lib/programs/catalog";
+import { PURSUIT_MIGRATION, looksLikePendingPursuitSchema } from "@/lib/grants/pursuit";
 
 const FUNDING_OPPORTUNITY_STATUSES = FUNDING_OPPORTUNITY_STATUS_OPTIONS.map((option) => option.value) as [
   string,
@@ -48,6 +49,13 @@ const createFundingOpportunitySchema = z.object({
   decisionRationale: z.string().trim().max(4000).optional(),
   decidedAt: z.string().datetime().optional(),
   summary: z.string().trim().max(4000).optional(),
+  // Pursuit fields (migration 20260727000015). 'grant' is the default and is
+  // omitted from the insert, so a pre-migration deployment keeps working for
+  // grants; a proposal on that schema answers 503 naming the migration.
+  pursuitKind: z.enum(["grant", "proposal"]).optional(),
+  solicitationNumber: z.string().trim().max(160).optional(),
+  submissionFormatNote: z.string().trim().max(4000).optional(),
+  questionsDueAt: z.string().datetime().optional(),
 });
 
 type ProgramRow = {
@@ -419,6 +427,16 @@ export async function POST(request: NextRequest) {
               decision_rationale: parsed.data.decisionRationale?.trim() || null,
               decided_at: parsed.data.decidedAt ?? null,
               summary: parsed.data.summary?.trim() || null,
+              // Only non-default pursuit values are written, so a grant insert
+              // stays valid on a deployment that predates the pursuit columns.
+              ...(parsed.data.pursuitKind === "proposal" ? { pursuit_kind: "proposal" } : {}),
+              ...(parsed.data.solicitationNumber?.trim()
+                ? { solicitation_number: parsed.data.solicitationNumber.trim() }
+                : {}),
+              ...(parsed.data.submissionFormatNote?.trim()
+                ? { submission_format_note: parsed.data.submissionFormatNote.trim() }
+                : {}),
+              ...(parsed.data.questionsDueAt ? { questions_due_at: parsed.data.questionsDueAt } : {}),
               created_by: user.id,
             })
             .select(
@@ -433,10 +451,27 @@ export async function POST(request: NextRequest) {
         }
       );
     } catch (insertError) {
+      const message = insertError instanceof Error ? insertError.message : String(insertError);
+      // A proposal against a pre-pursuit schema is a disclosed missing
+      // migration, never a generic failure.
+      if (
+        (parsed.data.pursuitKind === "proposal" ||
+          parsed.data.solicitationNumber ||
+          parsed.data.submissionFormatNote ||
+          parsed.data.questionsDueAt) &&
+        looksLikePendingPursuitSchema(message)
+      ) {
+        return NextResponse.json(
+          {
+            error: `This deployment's database predates proposal pursuits. Apply migration ${PURSUIT_MIGRATION}, then retry.`,
+          },
+          { status: 503 }
+        );
+      }
       audit.error("funding_opportunity_insert_failed", {
         userId: user.id,
         workspaceId: context.workspaceId,
-        message: insertError instanceof Error ? insertError.message : String(insertError),
+        message,
       });
       return NextResponse.json({ error: "Failed to create funding opportunity" }, { status: 500 });
     }

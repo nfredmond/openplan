@@ -49,6 +49,8 @@ export function FundingOpportunityCreator({
   const [programId, setProgramId] = useState(defaultProgramId ?? "");
   const [projectId, setProjectId] = useState(defaultProjectId ?? "");
   const [opportunityTitle, setOpportunityTitle] = useState("");
+  const [pursuitKind, setPursuitKind] = useState<"grant" | "proposal">("grant");
+  const [solicitationNumber, setSolicitationNumber] = useState("");
   const [status, setStatus] = useState<(typeof FUNDING_OPPORTUNITY_STATUS_OPTIONS)[number]["value"]>("upcoming");
   const [agencyName, setAgencyName] = useState("");
   const [ownerLabel, setOwnerLabel] = useState("");
@@ -84,6 +86,11 @@ export function FundingOpportunityCreator({
           programId: programId || undefined,
           projectId: projectId || undefined,
           title: opportunityTitle,
+          pursuitKind,
+          solicitationNumber:
+            pursuitKind === "proposal" && solicitationNumber.trim()
+              ? solicitationNumber.trim()
+              : undefined,
           status,
           agencyName: agencyName || undefined,
           ownerLabel: ownerLabel || undefined,
@@ -102,6 +109,8 @@ export function FundingOpportunityCreator({
       }
 
       setOpportunityTitle("");
+      setPursuitKind("grant");
+      setSolicitationNumber("");
       setStatus("upcoming");
       setAgencyName("");
       setOwnerLabel("");
@@ -147,6 +156,37 @@ export function FundingOpportunityCreator({
             onChange={(event) => setOpportunityTitle(event.target.value)}
             required
           />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5">
+            <label htmlFor="funding-opportunity-pursuit-kind" className="text-[0.82rem] font-semibold">
+              Pursuit kind
+            </label>
+            <select
+              id="funding-opportunity-pursuit-kind"
+              className="flex h-11 w-full rounded-xl border border-input bg-background px-3.5 text-sm shadow-xs transition-[color,box-shadow,border-color] outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+              value={pursuitKind}
+              onChange={(event) => setPursuitKind(event.target.value === "proposal" ? "proposal" : "grant")}
+            >
+              <option value="grant">Grant application</option>
+              <option value="proposal">Proposal (RFP/RFQ response)</option>
+            </select>
+          </div>
+          {pursuitKind === "proposal" ? (
+            <div className="space-y-1.5">
+              <label htmlFor="funding-opportunity-solicitation" className="text-[0.82rem] font-semibold">
+                Solicitation number
+                <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+              </label>
+              <Input
+                id="funding-opportunity-solicitation"
+                placeholder="As issued on the RFP/RFQ"
+                value={solicitationNumber}
+                onChange={(event) => setSolicitationNumber(event.target.value)}
+              />
+            </div>
+          ) : null}
         </div>
 
         {defaultProgramId ? null : (

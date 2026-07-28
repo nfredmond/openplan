@@ -160,6 +160,30 @@ describe("FundingOpportunityApplicationWorkspace", () => {
     expect(initCall?.body).toEqual({ catalogKey: "atp" });
   });
 
+  it("speaks the proposal language for a proposal pursuit and hides the grant catalog picker", async () => {
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      if ((init?.method ?? "GET") === "GET") {
+        return jsonResponse(
+          200,
+          applicationPayload({ sections: [], attachments: [], kbDocumentOptions: [], reportArtifactOptions: [] })
+        );
+      }
+      throw new Error(`Unexpected fetch: ${init?.method} ${url}`);
+    });
+
+    render(
+      <FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} pursuitKind="proposal" />
+    );
+    fireEvent.click(screen.getByRole("button", { name: /open application workspace/i }));
+
+    expect(screen.getByText("Proposal workspace")).toBeInTheDocument();
+    expect(await screen.findByTestId("application-init")).toBeInTheDocument();
+    // Proposals seed from the proposal template — no grant catalog picker.
+    expect(screen.queryByLabelText("Application template")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /initialize proposal/i })).toBeInTheDocument();
+    expect(screen.getByText(/never AI-drafted/)).toBeInTheDocument();
+  });
+
   it("discloses a pending schema instead of presenting an empty application", async () => {
     await openWorkspace({
       sections: [],

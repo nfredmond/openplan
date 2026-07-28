@@ -15,11 +15,13 @@ import {
   type ApplicationSectionRow,
 } from "@/lib/grants/application";
 import {
+  applicationExportPacketLabel,
   buildGrantApplicationHtml,
   countOutstandingRequiredAttachments,
   type GrantApplicationExportSection,
   type GrantApplicationSectionProvenance,
 } from "@/lib/grants/application-html";
+import { loadOpportunityPursuitContext } from "@/lib/grants/pursuit";
 import {
   isNarrativeExportable,
   listFlaggedNarrativeSentences,
@@ -275,6 +277,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       typeof opportunity.title === "string" && opportunity.title.trim()
         ? opportunity.title
         : "Funding opportunity";
+
+    // The cover keys on the pursuit kind: a proposal packet leads with the
+    // solicitation number, issuing agency, and due date. A pending pursuit
+    // schema truthfully labels the packet a grant application.
+    const pursuit = await loadOpportunityPursuitContext(supabase, opportunity.id);
+    if (pursuit.error) {
+      audit.error("application_export_pursuit_context_failed", {
+        opportunityId: opportunity.id,
+        userId: user.id,
+        message: pursuit.error.message,
+      });
+      return NextResponse.json(
+        { error: "Failed to load the opportunity's pursuit kind" },
+        { status: 500 }
+      );
+    }
+    const packetLabel = applicationExportPacketLabel(pursuit.context.pursuitKind);
     const exportSections: GrantApplicationExportSection[] = sections.map((section) => ({
       section,
       provenance: resolveSectionProvenance(
@@ -293,6 +312,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         closes_at: opportunity.closes_at ?? null,
         opportunity_status: opportunity.opportunity_status ?? null,
         decision_state: opportunity.decision_state ?? null,
+        pursuit_kind: pursuit.context.pursuitKind,
+        solicitation_number: pursuit.context.solicitationNumber,
       },
       programTitle,
       sections: exportSections,
@@ -301,7 +322,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
 
     const pdf = await renderReportPdf(html, {
-      title: `${opportunityTitle} — Application packet`,
+      title: `${opportunityTitle} — ${packetLabel}`,
       generatedAt,
       footerLabel: opportunityTitle,
     });

@@ -10,10 +10,13 @@ import type { ProjectGrantModelingEvidence } from "@/lib/grants/modeling-evidenc
 import {
   type DecisionFilter,
   type FundingOpportunityRow,
+  type KindFilter,
   type StatusFilter,
   buildGrantsFilterHref,
   DECISION_FILTERS,
   formatFilterLabel,
+  KIND_FILTERS,
+  PURSUIT_KIND_LABELS,
   STATUS_FILTERS,
 } from "@/lib/grants/page-helpers";
 
@@ -27,6 +30,7 @@ export function GrantsOpportunityRegistrySection({
   opportunitiesCount,
   selectedStatus,
   selectedDecision,
+  selectedKind = "all",
   showModelingCaveat,
   activeFocusedOpportunityId,
   projectGrantModelingEvidenceByProjectId,
@@ -39,6 +43,7 @@ export function GrantsOpportunityRegistrySection({
   opportunitiesCount: number;
   selectedStatus: StatusFilter;
   selectedDecision: DecisionFilter;
+  selectedKind?: KindFilter;
   showModelingCaveat: boolean;
   activeFocusedOpportunityId: string | null;
   projectGrantModelingEvidenceByProjectId: Map<string, ProjectGrantModelingEvidence>;
@@ -77,7 +82,7 @@ export function GrantsOpportunityRegistrySection({
             return (
               <Link
                 key={`status-${status}`}
-                href={buildGrantsFilterHref({ status, decision: selectedDecision })}
+                href={buildGrantsFilterHref({ status, decision: selectedDecision, kind: selectedKind })}
                 className={[
                   "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
                   active
@@ -96,7 +101,7 @@ export function GrantsOpportunityRegistrySection({
             return (
               <Link
                 key={`decision-${decision}`}
-                href={buildGrantsFilterHref({ status: selectedStatus, decision })}
+                href={buildGrantsFilterHref({ status: selectedStatus, decision, kind: selectedKind })}
                 className={[
                   "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
                   active
@@ -105,6 +110,25 @@ export function GrantsOpportunityRegistrySection({
                 ].join(" ")}
               >
                 Decision: {formatFilterLabel(decision)}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {KIND_FILTERS.map((kind) => {
+            const active = kind === selectedKind;
+            return (
+              <Link
+                key={`kind-${kind}`}
+                href={buildGrantsFilterHref({ status: selectedStatus, decision: selectedDecision, kind })}
+                className={[
+                  "rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors",
+                  active
+                    ? "border-[color:var(--pine)] bg-[color:var(--pine)]/10 text-[color:var(--pine-deep)]"
+                    : "border-border/70 bg-background text-muted-foreground hover:border-primary/35 hover:text-foreground",
+                ].join(" ")}
+              >
+                Pursuit: {kind === "all" ? "All" : PURSUIT_KIND_LABELS[kind]}
               </Link>
             );
           })}

@@ -157,7 +157,14 @@ function formatDate(value: string | null): string {
   return parsed.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
-export function FundingOpportunityApplicationWorkspace({ opportunityId }: { opportunityId: string }) {
+export function FundingOpportunityApplicationWorkspace({
+  opportunityId,
+  pursuitKind = "grant",
+}: {
+  opportunityId: string;
+  /** Drives the per-kind copy; the server decides seeding independently. */
+  pursuitKind?: "grant" | "proposal";
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -519,11 +526,13 @@ export function FundingOpportunityApplicationWorkspace({ opportunityId }: { oppo
     <div className="module-note mt-4 text-sm" data-testid="application-workspace">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="font-semibold text-foreground">Application workspace</p>
+          <p className="font-semibold text-foreground">
+            {pursuitKind === "proposal" ? "Proposal workspace" : "Grant application workspace"}
+          </p>
           <p className="mt-1 text-muted-foreground">
-            Assemble this opportunity&apos;s application section by section: seed the structure from a
-            catalog template or build it custom, draft narrative sections against workspace evidence,
-            and track the attachment checklist. Every section is operator-reviewed before it is final.
+            {pursuitKind === "proposal"
+              ? "Assemble this RFP/RFQ response section by section: the proposal template seeds the structure, sections draft against workspace evidence (team qualifications only from uploaded documents), and the checklist tracks what the submission must carry. Every section is operator-reviewed before it is final."
+              : "Assemble this opportunity's application section by section: seed the structure from a catalog template or build it custom, draft narrative sections against workspace evidence, and track the attachment checklist. Every section is operator-reviewed before it is final."}
           </p>
         </div>
         <Button type="button" variant="outline" size="sm" onClick={handleToggle}>
@@ -560,29 +569,40 @@ export function FundingOpportunityApplicationWorkspace({ opportunityId }: { oppo
 
           {isEmptyApplication && !schemaPendingMessage ? (
             <div className="space-y-3" data-testid="application-init">
-              <p className="text-muted-foreground">
-                No application is set up for this opportunity yet. Seed it from a catalog program
-                template (matched by explicit key only, and always verify against the current
-                NOFO/guidelines) or start a custom scaffold — any funder anywhere works without a
-                template.
-              </p>
+              {pursuitKind === "proposal" ? (
+                <p className="text-muted-foreground">
+                  No proposal response is set up yet. Initializing seeds the proposal template —
+                  approach, team and qualifications, past performance, schedule, and the fee
+                  placeholder (never AI-drafted). The current solicitation always controls the real
+                  structure; add custom sections to match it.
+                </p>
+              ) : (
+                <p className="text-muted-foreground">
+                  No application is set up for this opportunity yet. Seed it from a catalog program
+                  template (matched by explicit key only, and always verify against the current
+                  NOFO/guidelines) or start a custom scaffold — any funder anywhere works without a
+                  template.
+                </p>
+              )}
               <div className="flex flex-wrap items-center gap-2">
-                <select
-                  aria-label="Application template"
-                  className="flex h-9 rounded-xl border border-input bg-background px-3 text-sm"
-                  value={initCatalogKey}
-                  onChange={(event) => setInitCatalogKey(event.target.value)}
-                >
-                  <option value="">Custom scaffold (no template)</option>
-                  {catalogTemplateOptions.map((option) => (
-                    <option key={option.key} value={option.key}>
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
+                {pursuitKind === "proposal" ? null : (
+                  <select
+                    aria-label="Application template"
+                    className="flex h-9 rounded-xl border border-input bg-background px-3 text-sm"
+                    value={initCatalogKey}
+                    onChange={(event) => setInitCatalogKey(event.target.value)}
+                  >
+                    <option value="">Custom scaffold (no template)</option>
+                    {catalogTemplateOptions.map((option) => (
+                      <option key={option.key} value={option.key}>
+                        {option.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
                 <Button type="button" size="sm" disabled={isInitializing} onClick={() => void handleInitialize()}>
                   {isInitializing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
-                  Initialize application
+                  {pursuitKind === "proposal" ? "Initialize proposal" : "Initialize application"}
                 </Button>
               </div>
             </div>

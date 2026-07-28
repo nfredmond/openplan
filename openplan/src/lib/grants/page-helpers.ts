@@ -13,6 +13,7 @@ import { buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
 export type GrantsPageSearchParams = Promise<{
   status?: string;
   decision?: string;
+  kind?: string;
   focusProjectId?: string;
   focusOpportunityId?: string;
   focusInvoiceId?: string;
@@ -39,6 +40,9 @@ export type FundingOpportunityRow = {
   decision_rationale: string | null;
   decided_at: string | null;
   summary: string | null;
+  /** Pursuit fields (migration 20260727000015); absent on older deployments = grant. */
+  pursuit_kind?: string | null;
+  solicitation_number?: string | null;
   updated_at: string;
   created_at: string;
   programs:
@@ -158,6 +162,7 @@ export type ReportArtifactRow = {
 
 export type StatusFilter = "all" | FundingOpportunityStatus;
 export type DecisionFilter = "all" | FundingOpportunityDecision;
+export type KindFilter = "all" | "grant" | "proposal";
 
 export const STATUS_FILTERS: StatusFilter[] = [
   "all",
@@ -168,6 +173,20 @@ export const STATUS_FILTERS: StatusFilter[] = [
   "archived",
 ];
 export const DECISION_FILTERS: DecisionFilter[] = ["all", "pursue", "monitor", "skip"];
+export const KIND_FILTERS: KindFilter[] = ["all", "grant", "proposal"];
+
+/** Per-kind display copy: what the pursuit is, as an operator names it. */
+export const PURSUIT_KIND_LABELS: Record<"grant" | "proposal", string> = {
+  grant: "Grant application",
+  proposal: "Proposal",
+};
+
+/** A row's pursuit kind; rows predating migration 20260727000015 are grants. */
+export function resolveOpportunityPursuitKind(
+  opportunity: Pick<FundingOpportunityRow, "pursuit_kind">
+): "grant" | "proposal" {
+  return opportunity.pursuit_kind === "proposal" ? "proposal" : "grant";
+}
 
 export function normalizeJoinedRecord<T>(value: T | T[] | null | undefined): T | null {
   if (Array.isArray(value)) {
@@ -182,6 +201,10 @@ export function normalizeStatusFilter(value: string | undefined): StatusFilter {
 
 export function normalizeDecisionFilter(value: string | undefined): DecisionFilter {
   return DECISION_FILTERS.includes(value as DecisionFilter) ? (value as DecisionFilter) : "all";
+}
+
+export function normalizeKindFilter(value: string | undefined): KindFilter {
+  return KIND_FILTERS.includes(value as KindFilter) ? (value as KindFilter) : "all";
 }
 
 export function normalizeFocusedProjectId(value: string | undefined): string | null {
@@ -200,13 +223,20 @@ export function normalizeRelinkedInvoiceId(value: string | undefined): string | 
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
-export function buildGrantsFilterHref(filters: { status: StatusFilter; decision: DecisionFilter }) {
+export function buildGrantsFilterHref(filters: {
+  status: StatusFilter;
+  decision: DecisionFilter;
+  kind?: KindFilter;
+}) {
   const params = new URLSearchParams();
   if (filters.status !== "all") {
     params.set("status", filters.status);
   }
   if (filters.decision !== "all") {
     params.set("decision", filters.decision);
+  }
+  if (filters.kind && filters.kind !== "all") {
+    params.set("kind", filters.kind);
   }
 
   const query = params.toString();

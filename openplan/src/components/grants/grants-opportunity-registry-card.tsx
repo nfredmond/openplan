@@ -26,11 +26,13 @@ import {
 } from "@/lib/grants/evidence-readiness";
 import {
   type FundingOpportunityRow,
+  PURSUIT_KIND_LABELS,
   formatCurrency,
   formatDateTime,
   formatDeadline,
   isClosingSoon,
   isDecisionSoon,
+  resolveOpportunityPursuitKind,
 } from "@/lib/grants/page-helpers";
 
 type NormalizedOpportunity = FundingOpportunityRow & {
@@ -75,6 +77,7 @@ export function GrantsOpportunityRegistryCard({
     : null;
   const closesSoon = isClosingSoon(opportunity.closes_at);
   const decisionSoon = isDecisionSoon(opportunity.decision_due_at);
+  const pursuitKind = resolveOpportunityPursuitKind(opportunity);
   const modelingReadiness = describeProjectGrantModelingReadiness(projectGrantModelingEvidence);
   const decisionModelingSupport = buildGrantDecisionModelingSupport(
     projectGrantModelingEvidence,
@@ -101,6 +104,9 @@ export function GrantsOpportunityRegistryCard({
     >
       <div className="module-record-main">
         <div className="module-record-kicker">
+          <StatusBadge tone={pursuitKind === "proposal" ? "info" : "neutral"}>
+            {PURSUIT_KIND_LABELS[pursuitKind]}
+          </StatusBadge>
           <StatusBadge tone={fundingOpportunityStatusTone(opportunity.opportunity_status)}>
             {formatFundingOpportunityStatusLabel(opportunity.opportunity_status)}
           </StatusBadge>
@@ -125,6 +131,9 @@ export function GrantsOpportunityRegistryCard({
         </div>
 
         <div className="module-record-meta">
+          {pursuitKind === "proposal" && opportunity.solicitation_number ? (
+            <span className="module-record-chip">Solicitation {opportunity.solicitation_number}</span>
+          ) : null}
           <span className="module-record-chip">Agency {opportunity.agency_name ?? "Not set"}</span>
           <span className="module-record-chip">Owner {opportunity.owner_label ?? "Unassigned"}</span>
           <span className="module-record-chip">Cadence {opportunity.cadence_label ?? "Not set"}</span>
@@ -227,7 +236,10 @@ export function GrantsOpportunityRegistryCard({
           />
         ) : null}
 
-        <FundingOpportunityApplicationWorkspace opportunityId={opportunity.id} />
+        <FundingOpportunityApplicationWorkspace
+          opportunityId={opportunity.id}
+          pursuitKind={pursuitKind}
+        />
 
         {projectHref || programHref || projectGrantModelingEvidence ? (
           <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">

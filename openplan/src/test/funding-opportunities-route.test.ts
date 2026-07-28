@@ -262,6 +262,55 @@ describe("/api/funding-opportunities", () => {
       })
     );
     expect(loadCurrentWorkspaceMembershipMock).not.toHaveBeenCalled();
+    // A grant insert writes no pursuit columns, so it stays valid on a
+    // deployment that predates migration 20260727000015.
+    const grantInsert = (fundingOpportunitiesInsertMock.mock.calls[0] as unknown[])[0] as Record<
+      string,
+      unknown
+    >;
+    expect(grantInsert).not.toHaveProperty("pursuit_kind");
+    expect(grantInsert).not.toHaveProperty("solicitation_number");
+  });
+
+  it("POST creates a proposal pursuit with its solicitation fields", async () => {
+    const response = await postFundingOpportunities(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "On-call planning services RFP response",
+        pursuitKind: "proposal",
+        solicitationNumber: "RFP-2026-014",
+        submissionFormatNote: "Portal upload, 20-page limit.",
+        questionsDueAt: "2026-08-15T00:00:00.000Z",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(fundingOpportunitiesInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pursuit_kind: "proposal",
+        solicitation_number: "RFP-2026-014",
+        submission_format_note: "Portal upload, 20-page limit.",
+        questions_due_at: "2026-08-15T00:00:00.000Z",
+      })
+    );
+  });
+
+  it("POST answers 503 naming the pursuit migration when a proposal hits a pre-pursuit schema", async () => {
+    fundingOpportunitiesSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'column "pursuit_kind" of relation "funding_opportunities" does not exist' },
+    });
+
+    const response = await postFundingOpportunities(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "On-call planning services RFP response",
+        pursuitKind: "proposal",
+      })
+    );
+
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("20260727000015_pursuit_kind_and_solicitation");
   });
 
   it("POST without programId or projectId uses the helper-selected current workspace", async () => {

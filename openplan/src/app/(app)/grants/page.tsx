@@ -84,8 +84,10 @@ import {
   normalizeFocusedOpportunityId,
   normalizeFocusedProjectId,
   normalizeJoinedRecord,
+  normalizeKindFilter,
   normalizeRelinkedInvoiceId,
   normalizeStatusFilter,
+  resolveOpportunityPursuitKind,
   resolveGrantsQueueHref,
   resolveProjectExactBillingTriageTarget,
 } from "@/lib/grants/page-helpers";
@@ -98,6 +100,7 @@ export default async function GrantsPage({
   const filters = await searchParams;
   const selectedStatus = normalizeStatusFilter(filters.status);
   const selectedDecision = normalizeDecisionFilter(filters.decision);
+  const selectedKind = normalizeKindFilter(filters.kind);
   const activeFocusedProjectId = normalizeFocusedProjectId(filters.focusProjectId);
   const activeFocusedOpportunityId = normalizeFocusedOpportunityId(filters.focusOpportunityId);
   const activeFocusedInvoiceId = normalizeFocusedInvoiceId(filters.focusInvoiceId);
@@ -125,7 +128,7 @@ export default async function GrantsPage({
   }
 
   const [
-    { data: opportunitiesData },
+    opportunitiesRead,
     { data: projectsData },
     { data: programsData },
     { data: fundingAwardsData },
@@ -139,7 +142,7 @@ export default async function GrantsPage({
     supabase
       .from("funding_opportunities")
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title, funding_classification), projects(id, name)"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, pursuit_kind, solicitation_number, updated_at, created_at, programs(id, title, funding_classification), projects(id, name)"
       )
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
@@ -200,6 +203,26 @@ export default async function GrantsPage({
       membership.workspace_id
     ),
   ]);
+
+  // Pursuit-column tolerance: a deployment that predates migration
+  // 20260727000015 rejects the extended select. Fall back to the legacy
+  // column list — on that schema every opportunity is truthfully a grant.
+  let opportunitiesData: unknown = opportunitiesRead.data;
+  if (
+    opportunitiesRead.error &&
+    /column .* does not exist|could not find the .* column|schema cache/i.test(
+      opportunitiesRead.error.message ?? ""
+    )
+  ) {
+    const legacyRead = await supabase
+      .from("funding_opportunities")
+      .select(
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title, funding_classification), projects(id, name)"
+      )
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false });
+    opportunitiesData = legacyRead.data;
+  }
 
   // Which reimbursement profile governs this workspace's composer: its own
   // home geography when a registered profile covers it, otherwise the labeled
@@ -624,6 +647,9 @@ export default async function GrantsPage({
     if (selectedDecision !== "all" && opportunity.decision_state !== selectedDecision) {
       return false;
     }
+    if (selectedKind !== "all" && resolveOpportunityPursuitKind(opportunity) !== selectedKind) {
+      return false;
+    }
     return true;
   });
 
@@ -843,6 +869,7 @@ export default async function GrantsPage({
           opportunitiesCount={opportunities.length}
           selectedStatus={selectedStatus}
           selectedDecision={selectedDecision}
+          selectedKind={selectedKind}
           showModelingCaveat={opportunityLinkedModelingProjects.length > 0}
           activeFocusedOpportunityId={activeFocusedOpportunityId}
           projectGrantModelingEvidenceByProjectId={projectGrantModelingEvidenceByProjectId}

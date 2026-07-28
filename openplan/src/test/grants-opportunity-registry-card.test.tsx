@@ -99,6 +99,41 @@ describe("GrantsOpportunityRegistryCard", () => {
     expect(screen.queryByText("Modeling-backed")).not.toBeInTheDocument();
   });
 
+  it("labels a grant pursuit as a grant application (rows without pursuit_kind included)", () => {
+    render(
+      <GrantsOpportunityRegistryCard
+        opportunity={baseOpportunity}
+        activeFocusedOpportunityId={null}
+        projectGrantModelingEvidence={null}
+      />
+    );
+
+    expect(screen.getByText("Grant application")).toBeInTheDocument();
+    expect(screen.queryByText("Proposal")).not.toBeInTheDocument();
+  });
+
+  it("labels a proposal pursuit and surfaces its solicitation number", () => {
+    const proposal = {
+      ...baseOpportunity,
+      pursuit_kind: "proposal",
+      solicitation_number: "RFP-2026-014",
+    } as Opportunity;
+
+    render(
+      <GrantsOpportunityRegistryCard
+        opportunity={proposal}
+        activeFocusedOpportunityId={null}
+        projectGrantModelingEvidence={null}
+      />
+    );
+
+    expect(screen.getByText("Proposal")).toBeInTheDocument();
+    expect(screen.getByText(/Solicitation RFP-2026-014/)).toBeInTheDocument();
+    expect(screen.queryByText("Grant application")).not.toBeInTheDocument();
+    // The application workspace panel speaks the proposal language.
+    expect(screen.getByText("Proposal workspace")).toBeInTheDocument();
+  });
+
   it("shows focus ring + badge when the opportunity is the focused one and not awarded", () => {
     const { container } = render(
       <GrantsOpportunityRegistryCard

@@ -63,12 +63,20 @@ export type GrantApplicationExportData = {
     closes_at: string | null;
     opportunity_status: string | null;
     decision_state: string | null;
+    /** 'proposal' switches the cover to solicitation framing; absent = grant. */
+    pursuit_kind?: string | null;
+    solicitation_number?: string | null;
   };
   programTitle: string | null;
   sections: GrantApplicationExportSection[];
   attachments: ApplicationAttachmentRow[];
   generatedAt: string;
 };
+
+/** The document label per pursuit kind, used in the title and cover eyebrow. */
+export function applicationExportPacketLabel(pursuitKind: string | null | undefined): string {
+  return pursuitKind === "proposal" ? "Proposal packet" : "Application packet";
+}
 
 const SECTION_STATUS_LABELS: Record<string, string> = {
   not_started: "Not started",
@@ -158,22 +166,34 @@ const DOCUMENT_STYLES = `
 
 function coverMarkup(data: GrantApplicationExportData, outstandingRequiredCount: number): string {
   const { opportunity } = data;
+  const isProposal = opportunity.pursuit_kind === "proposal";
   const finalCount = data.sections.filter((entry) => entry.section.status === "final").length;
 
-  return `<header class="hero">
-    <span class="eyebrow">OpenPlan Grants — Application packet</span>
-    <h1>${esc(opportunity.title)}</h1>
-    <p>${esc(
-      opportunity.summary ||
-        "Assembled from operator-approved section texts and the application attachment checklist."
-    )}</p>
-    <div class="facts" style="margin-top: 18px;">
+  const coverFacts = isProposal
+    ? `
+      <div><dt>Issuing agency</dt><dd>${esc(opportunity.agency_name ?? "Not set")}</dd></div>
+      <div><dt>Solicitation number</dt><dd>${esc(opportunity.solicitation_number ?? "Not set")}</dd></div>
+      <div><dt>Proposals due</dt><dd>${esc(formatDateTime(opportunity.closes_at))}</dd></div>
+      <div><dt>Sections final</dt><dd>${finalCount} of ${data.sections.length}</dd></div>
+      <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt))}</dd></div>`
+    : `
       <div><dt>Funder / agency</dt><dd>${esc(opportunity.agency_name ?? "Not set")}</dd></div>
       <div><dt>Program</dt><dd>${esc(data.programTitle ?? "Not linked")}</dd></div>
       <div><dt>Expected award</dt><dd>${esc(formatAmount(opportunity.expected_award_amount))}</dd></div>
       <div><dt>Closes</dt><dd>${esc(formatDateTime(opportunity.closes_at))}</dd></div>
       <div><dt>Sections final</dt><dd>${finalCount} of ${data.sections.length}</dd></div>
-      <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt))}</dd></div>
+      <div><dt>Assembled</dt><dd>${esc(formatDateTime(data.generatedAt))}</dd></div>`;
+
+  return `<header class="hero">
+    <span class="eyebrow">OpenPlan Grants — ${esc(applicationExportPacketLabel(opportunity.pursuit_kind))}</span>
+    <h1>${esc(opportunity.title)}</h1>
+    <p>${esc(
+      opportunity.summary ||
+        (isProposal
+          ? "Assembled from operator-approved section texts for this solicitation response."
+          : "Assembled from operator-approved section texts and the application attachment checklist.")
+    )}</p>
+    <div class="facts" style="margin-top: 18px;">${coverFacts}
     </div>
     ${
       outstandingRequiredCount > 0
@@ -293,7 +313,7 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>${esc(data.opportunity.title)} — Application packet</title>
+    <title>${esc(data.opportunity.title)} — ${esc(applicationExportPacketLabel(data.opportunity.pursuit_kind))}</title>
     <style>${DOCUMENT_STYLES}
     </style>
   </head>

@@ -207,6 +207,36 @@ describe("buildGrantApplicationHtml", () => {
     expect(html).toContain("no approved text exists for it yet");
   });
 
+  it("keys the cover on pursuit kind: a proposal packet leads with the solicitation", () => {
+    const html = buildGrantApplicationHtml(
+      exportData({
+        opportunity: {
+          ...exportData().opportunity,
+          pursuit_kind: "proposal",
+          solicitation_number: "RFP-2026-014",
+        },
+      })
+    );
+
+    expect(html).toContain("Proposal packet");
+    expect(html).toContain("Solicitation number");
+    expect(html).toContain("RFP-2026-014");
+    expect(html).toContain("Issuing agency");
+    expect(html).toContain("Proposals due");
+    // Grant framing does not leak onto a proposal cover.
+    expect(html).not.toContain("Expected award");
+    expect(html).not.toContain("Application packet");
+  });
+
+  it("keeps the grant cover for rows without a pursuit kind (pre-migration deployments)", () => {
+    const html = buildGrantApplicationHtml(exportData());
+
+    expect(html).toContain("Application packet");
+    expect(html).toContain("Funder / agency");
+    expect(html).not.toContain("Proposal packet");
+    expect(html).not.toContain("Solicitation number");
+  });
+
   it("discloses AI-draft provenance with model and grounding verdict", () => {
     const html = buildGrantApplicationHtml(
       exportData({

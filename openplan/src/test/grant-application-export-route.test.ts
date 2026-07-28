@@ -37,6 +37,15 @@ vi.mock("@/lib/reports/pdf", () => ({
   renderReportPdf: (...args: unknown[]) => renderReportPdfMock(...args),
 }));
 
+const loadOpportunityPursuitContextMock = vi.fn();
+vi.mock("@/lib/grants/pursuit", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/grants/pursuit")>("@/lib/grants/pursuit");
+  return {
+    ...actual,
+    loadOpportunityPursuitContext: (...args: unknown[]) => loadOpportunityPursuitContextMock(...args),
+  };
+});
+
 import { POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
 import { GET as downloadExport } from "@/app/api/funding-opportunities/[opportunityId]/application/export/[exportId]/download/route";
 
@@ -183,6 +192,16 @@ beforeEach(() => {
     engine: "builtin",
     pageCount: 3,
     disclosure: "Typeset by OpenPlan's built-in PDF writer.",
+  });
+  loadOpportunityPursuitContextMock.mockResolvedValue({
+    context: {
+      pursuitKind: "grant",
+      solicitationNumber: null,
+      submissionFormatNote: null,
+      questionsDueAt: null,
+      schemaPending: false,
+    },
+    error: null,
   });
   uploadMock.mockResolvedValue({ error: null });
   createSignedUrlMock.mockResolvedValue({
@@ -335,6 +354,39 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     const body = await response.json();
     expect(body.export).toMatchObject({ id: EXPORT_ID, pdf_engine: "builtin" });
     expect(body.engineDisclosure).toContain("built-in PDF writer");
+  });
+
+  it("keys the cover on the pursuit kind: a proposal packet leads with the solicitation", async () => {
+    loadOpportunityPursuitContextMock.mockResolvedValue({
+      context: {
+        pursuitKind: "proposal",
+        solicitationNumber: "RFP-2026-014",
+        submissionFormatNote: null,
+        questionsDueAt: null,
+        schemaPending: false,
+      },
+      error: null,
+    });
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [finalOperatorSection], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () =>
+        makeQuery({ data: exportRowResult, error: null }),
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+    expect(response.status).toBe(201);
+
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(html).toContain("Proposal packet");
+    expect(html).toContain("RFP-2026-014");
+    expect(html).toContain("Issuing agency");
+    expect(html).toContain("Proposals due");
+    expect(html).not.toContain("Expected award");
+
+    const pdfOptions = renderReportPdfMock.mock.calls[0][1] as { title: string };
+    expect(pdfOptions.title).toBe("Corridor safety package — Proposal packet");
   });
 
   it("refuses an uninitialized application rather than exporting an empty shell", async () => {
