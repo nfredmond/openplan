@@ -26,6 +26,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // A nested checkout is not this checkout. A `git worktree` created from
+    // this directory rather than the repo root lands at
+    // `.claude/worktrees/<name>/`, and lint would then walk that tree —
+    // including its build output — and report errors from a branch nobody is
+    // running. Mirrors the same exclusion in vitest.config.ts.
+    ".claude/**",
   ]),
 ]);
 

@@ -339,7 +339,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invalid model id" }, { status: 400 });
     }
 
-    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    // This body carries `corridorGeojson` straight from the any-place study-area
+    // picker, so it is a boundary payload, not a normal JSON form. Real TIGERweb
+    // county boundaries run from ~10 KB to well over 200 KB, and metro areas
+    // exceed 300 KB — under the 64 KB normalJson cap, launching a run for a
+    // large county 413'd, which is exactly the geography this product promises
+    // to serve. Same limit the other boundary-accepting routes use.
+    const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.networkGeoJson);
 
     if (!payloadBody.ok) return payloadBody.response;
 

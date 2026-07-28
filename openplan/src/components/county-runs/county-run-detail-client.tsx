@@ -16,12 +16,10 @@ import {
   getCountyRunMetricHighlights,
 } from "@/lib/ui/county-onramp";
 import { getCountyRunsBackContextLabel, getSafeCountyRunsBackHref } from "@/lib/ui/county-runs-navigation";
-import { isValidatedNevadaCountyRun } from "@/lib/examples/nevada-county-2026-03-24";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { NevadaCountyValidatedEvidence } from "@/components/county-runs/nevada-county-validated-evidence";
 import { CountyRunModelingEvidence } from "@/components/county-runs/county-run-modeling-evidence";
 
 const COUNTY_RUN_STUCK_THRESHOLD_MS = 10 * 60 * 1000;
@@ -237,7 +235,6 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         compact
       />
 
-      {isValidatedNevadaCountyRun(data.runName) ? <NevadaCountyValidatedEvidence /> : null}
       <CountyRunModelingEvidence evidence={data.modelingEvidence} />
 
       <Card className="mt-4">

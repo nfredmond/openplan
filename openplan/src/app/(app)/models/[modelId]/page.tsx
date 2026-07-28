@@ -8,7 +8,7 @@ import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/co
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { NEVADA_COUNTY_SCREENING_GATE } from "@/lib/examples/nevada-county-2026-03-24";
+import { isPassingCountyRunGateStatus } from "@/lib/models/county-onramp";
 import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { reconcileStaleModelRuns } from "@/lib/models/run-reconcile";
 import type { ReaperRun } from "@/lib/models/run-reaper";
@@ -198,11 +198,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     status_label: string | null;
   }>;
   const hasWorkspacePassingCountyRun = countyRunRows.some(
-    (row) =>
-      row.stage === "validated-screening" &&
-      row.status_label !== null &&
-      row.status_label.trim() !== "" &&
-      row.status_label !== NEVADA_COUNTY_SCREENING_GATE.statusLabel
+    (row) => row.stage === "validated-screening" && isPassingCountyRunGateStatus(row.status_label)
   );
 
   const links = (linksResult.data ?? []) as ModelLinkRow[];

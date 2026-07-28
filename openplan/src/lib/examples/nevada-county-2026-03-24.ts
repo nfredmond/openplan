@@ -15,8 +15,6 @@
  * cross-check both consumers before shipping.
  */
 
-export const NEVADA_COUNTY_RUN_NAME =
-  "nevada-county-runtime-norenumber-freeze-20260324";
 
 export const NEVADA_COUNTY_SCREENING_GATE = {
   statusLabel: "internal prototype only",
@@ -69,34 +67,11 @@ export const NEVADA_COUNTY_FACILITY_RANKING: readonly NevadaCountyFacilityRankin
 ];
 
 export const NEVADA_COUNTY_RUN_CONTEXT = {
-  runId: NEVADA_COUNTY_RUN_NAME,
+  runId: "nevada-county-runtime-norenumber-freeze-20260324",
   engine: "AequilibraE screening runtime",
   createdAt: "2026-03-24T19:42:28Z",
   countsSource: "Caltrans 2023 priority counts (five-station subset)",
 } as const;
 
-export const NEVADA_COUNTY_PROOF_DOC_PATH =
-  "docs/ops/2026-04-18-modeling-nevada-county-live-proof.md";
 
-/**
- * Convenience selector: the single validation row to surface when only one
- * headline metric can fit (e.g. authed workspace detail where the full table
- * would be visually heavy).
- */
-export function nevadaCountyMaxApeRow(): NevadaCountyValidationMetric {
-  const row = NEVADA_COUNTY_VALIDATION_METRICS.find((m) => m.label === "Max APE");
-  if (!row) {
-    throw new Error(
-      "Nevada County evidence catalog is missing the Max APE row — update the validation metric list."
-    );
-  }
-  return row;
-}
 
-/**
- * True when the given county-run name corresponds to the validated Nevada
- * County artifact whose full evidence block should be surfaced verbatim.
- */
-export function isValidatedNevadaCountyRun(runName: string | null | undefined): boolean {
-  return typeof runName === "string" && runName === NEVADA_COUNTY_RUN_NAME;
-}

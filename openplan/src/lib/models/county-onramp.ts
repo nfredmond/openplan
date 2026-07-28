@@ -114,6 +114,30 @@ export type CountyOnrampScaffoldSummary = z.infer<typeof countyOnrampScaffoldSum
 export type CountyOnrampValidationSummary = z.infer<typeof countyOnrampValidationSummarySchema>;
 export type CountyOnrampManifest = z.infer<typeof countyOnrampManifestSchema>;
 
+/**
+ * Screening-gate statuses that mean a county run must NOT be treated as
+ * passing modeling evidence, even once it reaches `validated-screening`.
+ *
+ * Reaching the validated-screening stage says the validation slice RAN, not
+ * that it passed: a run whose worst matched facility blows past the
+ * critical-facility error threshold is still stamped validated-screening, with
+ * a gate status recording that it is prototype-grade. Treating that as
+ * evidence would let a failed validation strengthen a claim.
+ *
+ * Matching is case-insensitive and trims, because this value is recorded by
+ * whatever produced the run's validation summary rather than by a Postgres
+ * enum. It is a jurisdiction-neutral rule: it keys on the gate the run
+ * recorded about itself, never on which county was run.
+ */
+export const COUNTY_RUN_NON_PASSING_GATE_STATUSES: readonly string[] = ["internal prototype only"];
+
+/** Whether a recorded screening-gate status counts as passing evidence. */
+export function isPassingCountyRunGateStatus(statusLabel: string | null | undefined): boolean {
+  const normalized = statusLabel?.trim().toLowerCase();
+  if (!normalized) return false;
+  return !COUNTY_RUN_NON_PASSING_GATE_STATUSES.includes(normalized);
+}
+
 export function getCountyRunStageLabel(stage: CountyRunStage): string {
   switch (stage) {
     case "bootstrap-incomplete":
