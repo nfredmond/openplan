@@ -23,7 +23,7 @@ import {
   TRANSLATION_LANGUAGES,
   TRANSLATION_LANGUAGE_LABELS,
   type TranslationLanguage,
-} from "@/lib/engagement/translation";
+} from "@/lib/engagement/translation-languages";
 import { GeometryPickerMap } from "./geometry-picker-map";
 import { LocationDisplayMap } from "./location-display-map";
 import { PublicSurveyForm, type PortalSurveyQuestion } from "./public-survey-form";

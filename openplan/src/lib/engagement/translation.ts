@@ -17,47 +17,17 @@ const TRANSLATION_MODEL_ID =
 /** Input cap mirrors the public submission body cap so nothing partial leaks. */
 const TRANSLATION_INPUT_CAP = 4000;
 
-/**
- * Languages a participant can translate INTO — the demographics language set,
- * minus the non-language sentinels ("other" / "prefer_not_to_say"). Kept as an
- * explicit list (not derived) so adding a translation language is a deliberate,
- * reviewed change with a matching display label below.
- */
-export const TRANSLATION_LANGUAGES = [
-  "en",
-  "es",
-  "zh",
-  "vi",
-  "tl",
-  "ko",
-  "ar",
-  "hy",
-  "fa",
-  "ru",
-  "pa",
-] as const;
-export type TranslationLanguage = (typeof TRANSLATION_LANGUAGES)[number];
-
-export const TRANSLATION_LANGUAGE_LABELS: Record<TranslationLanguage, string> = {
-  en: "English",
-  es: "Spanish",
-  zh: "Chinese",
-  vi: "Vietnamese",
-  tl: "Tagalog",
-  ko: "Korean",
-  ar: "Arabic",
-  hy: "Armenian",
-  fa: "Farsi",
-  ru: "Russian",
-  pa: "Punjabi",
-};
-
-export function isTranslationLanguage(value: unknown): value is TranslationLanguage {
-  return typeof value === "string" && (TRANSLATION_LANGUAGES as readonly string[]).includes(value);
-}
-
-export const TRANSLATION_CAVEAT =
-  "Machine translation, provided for convenience. The original comment is the authoritative record of what was said.";
+// The language list, labels, guard, and caveat live in
+// translation-languages.ts (client-safe); re-exported here so server callers
+// keep one import path.
+export {
+  TRANSLATION_CAVEAT,
+  TRANSLATION_LANGUAGES,
+  TRANSLATION_LANGUAGE_LABELS,
+  isTranslationLanguage,
+  type TranslationLanguage,
+} from "./translation-languages";
+import { TRANSLATION_CAVEAT, TRANSLATION_LANGUAGE_LABELS, type TranslationLanguage } from "./translation-languages";
 
 export type TranslationResult = {
   source: "ai" | "unavailable";

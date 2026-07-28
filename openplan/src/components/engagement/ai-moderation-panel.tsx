@@ -4,8 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ItemModeration, ModerationSeverity } from "@/lib/engagement/ai-moderation";
-import { MODERATION_CAVEAT } from "@/lib/engagement/ai-moderation";
+import type { ItemModeration, ModerationSeverity } from "@/lib/engagement/ai-moderation-shared";
+import { MODERATION_CAVEAT } from "@/lib/engagement/ai-moderation-shared";
 
 const SEVERITY_TONE: Record<ModerationSeverity, string> = {
   high: "text-red-700 dark:text-red-300",

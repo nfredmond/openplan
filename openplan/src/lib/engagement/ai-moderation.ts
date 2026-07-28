@@ -19,39 +19,34 @@ const BODY_PROMPT_CAP = 1200;
 
 const SEVERITY_RANK: Record<ModerationSeverity, number> = { none: 0, low: 1, medium: 2, high: 3 };
 
-export const MODERATION_CATEGORIES = ["toxicity", "pii", "off_topic", "spam"] as const;
-export type ModerationCategory = (typeof MODERATION_CATEGORIES)[number];
-
-export const MODERATION_SEVERITIES = ["none", "low", "medium", "high"] as const;
-export type ModerationSeverity = (typeof MODERATION_SEVERITIES)[number];
-
-export const MODERATION_ACTIONS = ["approve", "review"] as const;
-export type ModerationAction = (typeof MODERATION_ACTIONS)[number];
-
-export type ModerationInputItem = { id: string; title?: string | null; body: string };
-
-export type ItemModeration = {
-  item_id: string;
-  flags: ModerationCategory[];
-  severity: ModerationSeverity;
-  rationale: string;
-  suggested_action: ModerationAction;
-};
-
-export type ModerationFallbackReason = "missing_api_key" | "generation_error" | "empty_output" | "invalid_output";
-
-export type ModerationResult = {
-  source: "ai" | "deterministic-fallback";
-  model: string | null;
-  fallback_reason: ModerationFallbackReason | null;
-  item_count: number;
-  flagged_count: number;
-  items: ItemModeration[];
-  caveat: string;
-};
-
-export const MODERATION_CAVEAT =
-  "AI moderation is a screening ASSIST: it flags possible toxicity, personal information, off-topic, or spam with a rationale to help a human moderator triage. It NEVER auto-rejects — a person decides — and is not a definitive content judgment.";
+// Categories, severities, actions, result types, and the caveat live in
+// ai-moderation-shared.ts (client-safe); re-exported here so server callers
+// keep one import path.
+export {
+  MODERATION_ACTIONS,
+  MODERATION_CATEGORIES,
+  MODERATION_CAVEAT,
+  MODERATION_SEVERITIES,
+  type ItemModeration,
+  type ModerationAction,
+  type ModerationCategory,
+  type ModerationFallbackReason,
+  type ModerationInputItem,
+  type ModerationResult,
+  type ModerationSeverity,
+} from "./ai-moderation-shared";
+import {
+  MODERATION_CATEGORIES,
+  MODERATION_CAVEAT,
+  MODERATION_SEVERITIES,
+  type ItemModeration,
+  type ModerationAction,
+  type ModerationCategory,
+  type ModerationFallbackReason,
+  type ModerationInputItem,
+  type ModerationResult,
+  type ModerationSeverity,
+} from "./ai-moderation-shared";
 
 // ── deterministic (AI-offline) heuristics: PII + spam only ──────────────────
 const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]{2,}/;
