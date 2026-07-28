@@ -19,6 +19,24 @@ import {
   formatModelingValidationStatusLabel,
   type ReportModelingEvidence,
 } from "@/lib/reports/modeling-evidence";
+// Type-only import: keeps the narrative-drafts <-> html module edge one-way at
+// runtime (narrative-drafts imports compactModelRunKpiLine from here).
+import type { AcceptedSectionNarrative } from "@/lib/reports/narrative-drafts";
+
+/**
+ * The disclosure label rendered over every included AI narrative block.
+ * Verbatim, always — an AI-assisted block is never presented as unassisted
+ * prose, and the label only ever appears on operator-ACCEPTED drafts.
+ */
+export const AI_NARRATIVE_ACCEPTED_LABEL = "Drafted with AI assistance — reviewed and accepted";
+
+/**
+ * The disclosure rendered when the fact list recomputed at generation time no
+ * longer matches the one the accepted draft was grounded against. Disclosed,
+ * never silently dropped, never silently regenerated.
+ */
+export const AI_NARRATIVE_STALE_NOTICE =
+  "Underlying data changed since acceptance — the workspace facts this narrative was grounded against no longer match the current records. Re-review or regenerate the draft before relying on this block.";
 
 type ProjectRecord = {
   id: string;
@@ -117,6 +135,12 @@ export type ReportGenerationData = {
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   citedCountyRuns?: ReportCitedCountyRun[];
+  /**
+   * Operator-ACCEPTED AI narrative blocks, resolved by the generate route
+   * (status='accepted' rows only, staleness recomputed against the live fact
+   * list). Absent reads as none — the packet stays fully deterministic.
+   */
+  acceptedNarratives?: AcceptedSectionNarrative[];
 };
 
 /**
@@ -825,6 +849,67 @@ function scenarioBasisMarkup(data: ReportGenerationData): string {
   </section>`;
 }
 
+/** Grounding-stats line for one accepted narrative block. */
+function acceptedNarrativeStatsLine(narrative: AcceptedSectionNarrative): string {
+  return [
+    `${narrative.groundedSentenceCount} of ${narrative.totalSentenceCount} draft sentences cited verifiable workspace facts`,
+    narrative.operatorEdited ? "operator-edited before acceptance" : null,
+    `model ${narrative.model}`,
+    narrative.acceptedAt ? `accepted ${formatDateTime(narrative.acceptedAt)}` : null,
+  ]
+    .filter((part): part is string => Boolean(part))
+    .join(" • ");
+}
+
+/**
+ * The rendered form of one operator-accepted AI narrative block: the
+ * disclosure label, a VISIBLE staleness notice when the underlying facts
+ * moved after acceptance, the token-stripped prose, and the grounding stats.
+ */
+function acceptedNarrativeMarkup(narrative: AcceptedSectionNarrative): string {
+  const paragraphs = narrative.bodyMarkdown
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter((paragraph) => paragraph.length > 0)
+    .map((paragraph) => `<p>${esc(paragraph)}</p>`)
+    .join("");
+
+  return `<div class="ai-narrative" style="margin-top: 18px;">
+    <p class="meta">${esc(AI_NARRATIVE_ACCEPTED_LABEL)}</p>
+    ${
+      narrative.stale
+        ? `<div class="warning-box"><strong>Underlying data changed since acceptance.</strong><p>${esc(AI_NARRATIVE_STALE_NOTICE)}</p></div>`
+        : ""
+    }
+    ${paragraphs}
+    <p class="meta">${esc(acceptedNarrativeStatsLine(narrative))}</p>
+  </div>`;
+}
+
+/**
+ * The provenance/methods entry disclosing every AI-assisted block in the
+ * packet with its grounding stats — reviewers see at a glance which sections
+ * carry accepted narrative and how grounded each draft was.
+ */
+function acceptedNarrativeProvenanceMarkup(narratives: AcceptedSectionNarrative[]): string {
+  if (narratives.length === 0) {
+    return "";
+  }
+
+  return `<div style="margin-top: 14px;">
+    <strong>AI-assisted narrative blocks</strong>
+    <p>${esc(AI_NARRATIVE_ACCEPTED_LABEL)} applies to ${narratives.length} section${narratives.length === 1 ? "" : "s"} in this packet. Each block was drafted against a numbered workspace fact list, validated sentence-by-sentence, and included only after operator acceptance.</p>
+    <ul class="record-list">${narratives
+      .map(
+        (narrative) => `<li>
+          <strong>${esc(titleize(narrative.sectionKey))}</strong>
+          <p>${esc(acceptedNarrativeStatsLine(narrative))}${narrative.stale ? " • UNDERLYING DATA CHANGED SINCE ACCEPTANCE" : ""}</p>
+        </li>`
+      )
+      .join("")}</ul>
+  </div>`;
+}
+
 function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
   const scenarioSpineAggregate = buildScenarioSpineAggregate(data);
 
@@ -945,6 +1030,7 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <p>Generated on ${esc(formatDateTime(new Date().toISOString()))}. Project last updated ${esc(formatDateTime(data.project.updated_at))}. Review run-level transparency notes before external release.</p>
       ${data.scenarioSetLinks.length > 0 ? `<p>Scenario basis at generation: ${data.scenarioSetLinks.length} linked set${data.scenarioSetLinks.length === 1 ? "" : "s"} • ${scenarioSpineAggregate.pendingCount > 0 ? `${scenarioSpineAggregate.pendingCount} shared-spine pending` : `${scenarioSpineAggregate.assumptionSetCount} assumption set${scenarioSpineAggregate.assumptionSetCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.dataPackageCount} data package${scenarioSpineAggregate.dataPackageCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.indicatorSnapshotCount} indicator snapshot${scenarioSpineAggregate.indicatorSnapshotCount === 1 ? "" : "s"}`}</p>` : ""}
       ${(scenarioSpineAggregate.latestAssumptionSetUpdatedAt || scenarioSpineAggregate.latestDataPackageUpdatedAt || scenarioSpineAggregate.latestIndicatorSnapshotAt) ? `<p>Latest scenario spine timing: ${scenarioSpineAggregate.latestAssumptionSetUpdatedAt ? `assumptions ${esc(formatDateTime(scenarioSpineAggregate.latestAssumptionSetUpdatedAt))}` : "assumptions unavailable"}${scenarioSpineAggregate.latestDataPackageUpdatedAt ? ` • packages ${esc(formatDateTime(scenarioSpineAggregate.latestDataPackageUpdatedAt))}` : ""}${scenarioSpineAggregate.latestIndicatorSnapshotAt ? ` • indicators ${esc(formatDateTime(scenarioSpineAggregate.latestIndicatorSnapshotAt))}` : ""}</p>` : ""}
+      ${acceptedNarrativeProvenanceMarkup(data.acceptedNarratives ?? [])}
     </div>`;
   }
 
@@ -1081,6 +1167,12 @@ export function buildReportHtml(data: ReportGenerationData): string {
   const enabledSections = data.sections
     .filter((section) => section.enabled)
     .sort((left, right) => left.sort_order - right.sort_order);
+  const acceptedNarrativeBySection = new Map(
+    (data.acceptedNarratives ?? []).map((narrative) => [
+      narrative.sectionKey,
+      acceptedNarrativeMarkup(narrative),
+    ])
+  );
   const evidenceChainSummary = buildEvidenceChainSummary({
     linkedRunCount: data.runs.length,
     scenarioSetLinks: data.scenarioSetLinks,
@@ -1132,6 +1224,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           (section) => `<section id="${esc(section.section_key)}">
             <h2 class="section-title">${esc(section.title)}</h2>
             ${sectionMarkup(section.section_key, data)}
+            ${acceptedNarrativeBySection.get(section.section_key) ?? ""}
           </section>`
         )
         .join("")}

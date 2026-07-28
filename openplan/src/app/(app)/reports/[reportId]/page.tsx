@@ -59,6 +59,8 @@ import {
   buildCurrentProjectRecordEntry,
   formatCompactDateTime,
   formatCurrency,
+  loadAiNarrativeDraftPanelInputs,
+  loadProjectFundingSourceRows,
   loadReportDetailRow,
   maxTimestamp,
   summarizeProjectRecordDrift,
@@ -170,36 +172,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     ),
   ]);
 
-  const [fundingProfileResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] =
-    report.project_id
-      ? await Promise.all([
-          supabase
-            .from("project_funding_profiles")
-            .select("id, funding_need_amount, local_match_need_amount, notes, updated_at")
-            .eq("project_id", report.project_id)
-            .maybeSingle(),
-          supabase
-            .from("funding_awards")
-            .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
-            .eq("project_id", report.project_id)
-            .order("updated_at", { ascending: false }),
-          supabase
-            .from("funding_opportunities")
-            .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
-            .eq("project_id", report.project_id)
-            .order("updated_at", { ascending: false }),
-          supabase
-            .from("billing_invoice_records")
-            .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
-            .eq("project_id", report.project_id)
-            .order("created_at", { ascending: false }),
-        ])
-      : [
-          { data: null, error: null },
-          { data: [], error: null },
-          { data: [], error: null },
-          { data: [], error: null },
-        ];
+  const projectFundingRows = await loadProjectFundingSourceRows(supabase, report.project_id);
 
   const projectDatasetLinksResult = report.project_id
     ? await supabase
@@ -338,10 +311,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   );
   const liveFundingSnapshot = project
     ? buildProjectFundingSnapshot({
-        profile: fundingProfileResult.data,
-        awards: fundingAwardsResult.data ?? [],
-        opportunities: fundingOpportunitiesResult.data ?? [],
-        invoices: billingInvoicesResult.data ?? [],
+        ...projectFundingRows,
         capturedAt: latestArtifact?.generated_at ?? null,
         projectUpdatedAt: project.updated_at,
       })
@@ -1190,6 +1160,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     // latest entry still reading "queued"/"running" is said so in readiness.
     refreshLogNote: buildReportRefreshLogNote(projectDatasetRefreshJobs),
   });
+
+  const narrativeDraftPanelProps = await loadAiNarrativeDraftPanelInputs(supabase, report, sectionList);
+
   return (
     <ReportStandardDetail
       report={report}
@@ -1211,6 +1184,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       currentReportComparisonDigest={currentReportComparisonDigest}
       citeableModelRuns={citeableModelRuns}
       citedModelRunIds={citedModelRunIdsInOrder}
+      narrativeDraftPanelProps={narrativeDraftPanelProps}
       compositionAuditProps={{
         reportId: report.id,
         sectionList,

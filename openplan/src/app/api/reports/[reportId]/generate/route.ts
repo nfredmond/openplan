@@ -54,6 +54,14 @@ import {
   summarizeReportModelingEvidenceForMetadata,
   type ReportModelingEvidence,
 } from "@/lib/reports/modeling-evidence";
+import {
+  buildAcceptedSectionNarratives,
+  buildReportSectionFacts,
+  factsHash,
+  type ReportSectionFactsInput,
+  type ReportSectionFactsRun,
+} from "@/lib/reports/narrative-drafts";
+import type { ReportCitedCountyRun, ReportCitedModelRun } from "@/lib/reports/html";
 
 function looksLikePendingSchema(message: string | null | undefined) {
   return /column .* does not exist|schema cache/i.test(message ?? "");
@@ -1937,6 +1945,52 @@ export async function POST(request: NextRequest, context: RouteContext) {
       fundingScanStatus: projectFundingProfileScan.status,
     });
 
+    // Operator-ACCEPTED AI narrative blocks. Generation stays deterministic:
+    // only status='accepted' rows are read (drafts and dismissed rows are
+    // ignored), staleness is recomputed against the LIVE fact list via
+    // facts_hash, and a mismatch renders a visible disclosure in the packet —
+    // never a silent drop and never a silent regeneration. safeOptionalQuery
+    // keeps a pre-20260727000013 database honest: no table means no blocks.
+    const acceptedNarrativeRowsResult = await safeOptionalQuery(
+      () =>
+        supabase
+          .from("document_narrative_drafts")
+          .select(
+            "id, workspace_id, target_kind, target_id, section_key, draft_markdown, model, grounding_json, grounded_sentence_count, total_sentence_count, facts_hash, status, accepted_markdown, accepted_by, accepted_at, created_by, created_at"
+          )
+          .eq("target_kind", "report_section")
+          .eq("target_id", report.id)
+          .eq("status", "accepted")
+          .order("accepted_at", { ascending: true }),
+      [] as Array<Record<string, unknown>>
+    );
+
+    if (acceptedNarrativeRowsResult.error) {
+      audit.error("report_narrative_drafts_load_failed", {
+        reportId: report.id,
+        message: acceptedNarrativeRowsResult.error.message,
+        code: acceptedNarrativeRowsResult.error.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to load accepted narrative drafts" }, { status: 500 });
+    }
+
+    const sectionFactsInput: ReportSectionFactsInput = {
+      report: {
+        title: report.title,
+        summary: report.summary ?? null,
+        report_type: report.report_type,
+      },
+      project: projectResult.data,
+      runs: linkedRuns as ReportSectionFactsRun[],
+      citedModelRuns: citedModelRuns as ReportCitedModelRun[],
+      citedCountyRuns: citedCountyRuns as ReportCitedCountyRun[],
+      projectFundingSnapshot,
+    };
+    const acceptedNarratives = buildAcceptedSectionNarratives(
+      acceptedNarrativeRowsResult.data ?? [],
+      (sectionKey) => factsHash(buildReportSectionFacts(sectionFactsInput, sectionKey))
+    );
+
     const html = buildReportHtml({
       report,
       workspace: workspaceResult.data,
@@ -1985,6 +2039,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelingEvidence,
       citedModelRuns,
       citedCountyRuns,
+      acceptedNarratives,
     });
 
     const format = parsed.data.format;
@@ -2070,6 +2125,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
         modelingEvidence: modelingEvidenceMetadata,
         modelingEvidenceCount: modelingEvidenceMetadata.length,
         modelingEvidenceClaimStatuses,
+        // Which sections carry an operator-accepted AI narrative, with the
+        // grounding stats and the staleness verdict computed at THIS
+        // generation — the artifact record can answer "was that block
+        // AI-assisted, and was it current?" without re-deriving anything.
+        acceptedAiNarratives: acceptedNarratives.map((narrative) => ({
+          draftId: narrative.draftId,
+          sectionKey: narrative.sectionKey,
+          model: narrative.model,
+          groundedSentenceCount: narrative.groundedSentenceCount,
+          totalSentenceCount: narrative.totalSentenceCount,
+          acceptedAt: narrative.acceptedAt,
+          operatorEdited: narrative.operatorEdited,
+          staleAtGeneration: narrative.stale,
+        })),
+        acceptedAiNarrativeCount: acceptedNarratives.length,
         engagementCampaignId:
           engagement?.campaign.id ?? engagementProvenance?.campaign.id ?? null,
         engagementCampaignSnapshot: engagementProvenance?.campaign ?? null,

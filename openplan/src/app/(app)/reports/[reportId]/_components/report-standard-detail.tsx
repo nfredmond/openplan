@@ -5,6 +5,7 @@ import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-
 import { PilotWorkflowHandoff } from "@/components/operations/pilot-workflow-handoff";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
+import { ReportNarrativeDraftPanel } from "@/components/reports/report-narrative-draft-panel";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildGrantDecisionModelingSupport,
@@ -67,6 +68,9 @@ type ReportStandardDetailProps = {
   generationReadiness: ReportPacketReviewProps["generationReadiness"];
   currentReportComparisonAggregate: ReportComparisonSnapshotAggregate | null;
   currentReportComparisonDigest: ReportComparisonSnapshotDigest | null;
+  /** AI narrative assist for the whitelisted section(s); null hides the panel
+   * (RTP/campaign targets, or no whitelisted section enabled). */
+  narrativeDraftPanelProps?: ComponentProps<typeof ReportNarrativeDraftPanel> | null;
   compositionAuditProps: ReportCompositionAuditProps;
   provenanceAuditProps: StandardReportProvenanceProps;
   navigationPreviewProps: ReportNavigationPreviewProps;
@@ -92,6 +96,7 @@ export function ReportStandardDetail({
   generationReadiness,
   currentReportComparisonAggregate,
   currentReportComparisonDigest,
+  narrativeDraftPanelProps = null,
   compositionAuditProps,
   provenanceAuditProps,
   navigationPreviewProps,
@@ -301,6 +306,8 @@ export function ReportStandardDetail({
         grantModelingEvidence={currentReportGrantModelingEvidence}
         comparisonDigest={currentReportComparisonDigest}
       />
+
+      {narrativeDraftPanelProps ? <ReportNarrativeDraftPanel {...narrativeDraftPanelProps} /> : null}
 
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
         <ReportCompositionAudit {...compositionAuditProps} />

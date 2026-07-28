@@ -1,5 +1,6 @@
+import type { ReportNarrativeDraftRow } from "@/components/reports/report-narrative-draft-panel";
 import type { PortfolioFundingSnapshot } from "@/lib/projects/funding";
-import { formatDateTime } from "@/lib/reports/catalog";
+import { formatDateTime, sectionSupportsAiNarrative } from "@/lib/reports/catalog";
 import type { ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import type {
   ProjectStageGateSnapshot,
@@ -327,6 +328,156 @@ type ReportDetailClientLike = {
     };
   };
 };
+
+type ProjectFundingQueryClientLike = {
+  from: (table: string) => {
+    select: (columns: string) => {
+      eq: (
+        column: string,
+        value: string
+      ) => {
+        maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
+        order: (
+          column: string,
+          options: { ascending: boolean }
+        ) => Promise<{ data: unknown; error: unknown }>;
+      };
+    };
+  };
+};
+
+/**
+ * The project's live funding source rows (profile, awards, opportunities,
+ * award-linked invoices) in the exact shape `buildProjectFundingSnapshot`
+ * consumes. A report without a project target resolves to the empty posture.
+ */
+export async function loadProjectFundingSourceRows(
+  supabase: unknown,
+  projectId: string | null
+): Promise<{
+  profile: { id: string; funding_need_amount: number | null; local_match_need_amount: number | null; notes?: string | null; updated_at: string | null } | null;
+  awards: Array<Record<string, unknown>>;
+  opportunities: Array<Record<string, unknown>>;
+  invoices: Array<Record<string, unknown>>;
+}> {
+  if (!projectId) {
+    return { profile: null, awards: [], opportunities: [], invoices: [] };
+  }
+
+  const client = supabase as ProjectFundingQueryClientLike;
+  const [profileResult, awardsResult, opportunitiesResult, invoicesResult] = await Promise.all([
+    client
+      .from("project_funding_profiles")
+      .select("id, funding_need_amount, local_match_need_amount, notes, updated_at")
+      .eq("project_id", projectId)
+      .maybeSingle(),
+    client
+      .from("funding_awards")
+      .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false }),
+    client
+      .from("funding_opportunities")
+      .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false }),
+    client
+      .from("billing_invoice_records")
+      .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: false }),
+  ]);
+
+  return {
+    profile: (profileResult.data ?? null) as Awaited<
+      ReturnType<typeof loadProjectFundingSourceRows>
+    >["profile"],
+    awards: (awardsResult.data ?? []) as Array<Record<string, unknown>>,
+    opportunities: (opportunitiesResult.data ?? []) as Array<Record<string, unknown>>,
+    invoices: (invoicesResult.data ?? []) as Array<Record<string, unknown>>,
+  };
+}
+
+type NarrativeDraftQueryClientLike = {
+  from: (table: string) => {
+    select: (columns: string) => {
+      eq: (
+        column: string,
+        value: string
+      ) => {
+        eq: (
+          column: string,
+          value: string
+        ) => {
+          order: (
+            column: string,
+            options: { ascending: boolean }
+          ) => Promise<{ data: unknown; error: { message?: string | null } | null }>;
+        };
+      };
+    };
+  };
+};
+
+/**
+ * AI narrative assist props for the report detail page: which enabled sections
+ * are on the AI-narrative whitelist for this report type, seeded with the
+ * latest stored draft per section. Project-targeted reports only; returns
+ * null when the panel should not render at all, and a pre-20260727000013
+ * database simply seeds no drafts.
+ */
+export async function loadAiNarrativeDraftPanelInputs(
+  supabase: unknown,
+  report: { id: string; report_type: string | null; project_id: string | null; engagement_campaign_id?: string | null },
+  sectionList: Array<{ section_key: string; title: string; enabled: boolean }>
+): Promise<{
+  reportId: string;
+  sections: Array<{ sectionKey: string; title: string }>;
+  initialDrafts: Record<string, ReportNarrativeDraftRow | null>;
+} | null> {
+  const sections =
+    !report.engagement_campaign_id && report.project_id
+      ? sectionList
+          .filter(
+            (section) =>
+              section.enabled && sectionSupportsAiNarrative(report.report_type, section.section_key)
+          )
+          .map((section) => ({ sectionKey: section.section_key, title: section.title }))
+      : [];
+
+  if (sections.length === 0) {
+    return null;
+  }
+
+  const client = supabase as NarrativeDraftQueryClientLike;
+  const result = await client
+    .from("document_narrative_drafts")
+    .select(
+      "id, section_key, draft_markdown, model, status, grounding_json, grounded_sentence_count, total_sentence_count, accepted_markdown, accepted_at, created_at"
+    )
+    .eq("target_kind", "report_section")
+    .eq("target_id", report.id)
+    .order("created_at", { ascending: false });
+
+  const rows =
+    result.error &&
+    /relation .* does not exist|column .* does not exist|schema cache/i.test(
+      result.error.message ?? ""
+    )
+      ? []
+      : ((result.data ?? []) as ReportNarrativeDraftRow[]);
+
+  return {
+    reportId: report.id,
+    sections,
+    initialDrafts: Object.fromEntries(
+      sections.map((section) => [
+        section.sectionKey,
+        rows.find((row) => row.section_key === section.sectionKey) ?? null,
+      ])
+    ),
+  };
+}
 
 /**
  * Load the report row for the detail page, preferring the campaign-target

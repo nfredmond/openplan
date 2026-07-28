@@ -25,6 +25,7 @@ import {
 } from "@/lib/reports/html";
 import {
   buildNarrativeFactList,
+  stripFactCitationTokens,
   type NarrativeFact,
 } from "@/lib/grants/narrative-grounding";
 
@@ -289,4 +290,85 @@ export function buildReportSectionFacts(
   }
 
   return [];
+}
+
+/**
+ * One accepted narrative block, resolved for inclusion in a generated
+ * document. `bodyMarkdown` is the accepted text with `[fact:N]` tokens
+ * stripped (the stored row keeps them as provenance); `stale` means the fact
+ * list recomputed at generation time no longer matches the one the draft was
+ * grounded against — the block still renders, with a VISIBLE disclosure,
+ * never a silent drop or a silent regeneration.
+ */
+export type AcceptedSectionNarrative = {
+  draftId: string;
+  sectionKey: string;
+  bodyMarkdown: string;
+  model: string;
+  groundedSentenceCount: number;
+  totalSentenceCount: number;
+  acceptedAt: string | null;
+  /** True when the operator's accepted text differs from the raw draft. */
+  operatorEdited: boolean;
+  /** True when the underlying fact list changed after acceptance. */
+  stale: boolean;
+};
+
+/**
+ * Resolve the accepted narrative per section from stored draft rows.
+ *
+ * Deterministic inclusion filter for the generate route: rows that are not
+ * `status = 'accepted'` (drafts, dismissed) are ignored; when several accepted
+ * rows exist for one section the LATEST acceptance wins; and staleness is
+ * decided by recomputing the section's fact-list hash via
+ * `computeCurrentFactsHash` and comparing it with the hash stored at draft
+ * time.
+ */
+export function buildAcceptedSectionNarratives(
+  rows: unknown[],
+  computeCurrentFactsHash: (sectionKey: string) => string
+): AcceptedSectionNarrative[] {
+  const latestBySection = new Map<string, DocumentNarrativeDraft>();
+
+  for (const row of rows) {
+    const draft = parseStoredDraft(row);
+    if (!draft) continue;
+    if (draft.target_kind !== "report_section" || !draft.section_key) continue;
+    if (draft.status !== "accepted") continue;
+
+    const existing = latestBySection.get(draft.section_key);
+    const draftAcceptedAt = draft.accepted_at ? new Date(draft.accepted_at).getTime() : 0;
+    const existingAcceptedAt = existing?.accepted_at ? new Date(existing.accepted_at).getTime() : -1;
+    if (!existing || draftAcceptedAt >= existingAcceptedAt) {
+      latestBySection.set(draft.section_key, draft);
+    }
+  }
+
+  const hashCache = new Map<string, string>();
+  const currentHashFor = (sectionKey: string): string => {
+    const cached = hashCache.get(sectionKey);
+    if (cached !== undefined) return cached;
+    const computed = computeCurrentFactsHash(sectionKey);
+    hashCache.set(sectionKey, computed);
+    return computed;
+  };
+
+  return Array.from(latestBySection.values()).map((draft) => {
+    const sectionKey = draft.section_key as string;
+    const acceptedText = draft.accepted_markdown ?? draft.draft_markdown;
+    return {
+      draftId: draft.id,
+      sectionKey,
+      bodyMarkdown: stripFactCitationTokens(acceptedText),
+      model: draft.model,
+      groundedSentenceCount: draft.grounded_sentence_count,
+      totalSentenceCount: draft.total_sentence_count,
+      acceptedAt: draft.accepted_at,
+      operatorEdited:
+        draft.accepted_markdown !== null &&
+        draft.accepted_markdown.trim() !== draft.draft_markdown.trim() &&
+        draft.accepted_markdown.trim() !== stripFactCitationTokens(draft.draft_markdown),
+      stale: currentHashFor(sectionKey) !== draft.facts_hash,
+    };
+  });
 }
