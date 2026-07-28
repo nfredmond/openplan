@@ -41,6 +41,7 @@ import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
+import { resolveWorkspaceStageGateBinding } from "@/lib/stage-gates/template-loader";
 import { buildProjectTimelineItems } from "./_components/_timeline";
 import { ProjectPostureHeader } from "./_components/project-posture-header";
 import { ProjectPostureUnified } from "./_components/project-posture-unified";
@@ -65,6 +66,7 @@ import type {
   RtpCycleRow,
   SubmittalRow,
   TimelineItem,
+  WorkspaceRow,
 } from "./_components/_types";
 
 function parseSortableDate(value: string | null | undefined): number {
@@ -170,11 +172,33 @@ export default async function ProjectDetailPage({
 
   const project = projectData as ProjectRow;
 
-  const { data: workspaceData } = await supabase
+  // The home-geography columns come along because the stage-gate binding is only
+  // honest next to them: the stored template id has a database default, so
+  // whether it was matched to this agency or merely assumed for it can be told
+  // apart only by asking where the workspace works. A deployment that predates
+  // those columns rejects the extended select, so the read falls back to the
+  // original list — the binding then resolves as "jurisdiction unknown", a
+  // disclosed fallback rather than a guess.
+  const workspaceCoreColumns = "id, name, slug, stage_gate_template_id, stage_gate_template_version, created_at";
+  const workspaceRead = await supabase
     .from("workspaces")
-    .select("id, name, slug, stage_gate_template_id, stage_gate_template_version, created_at")
+    .select(
+      `${workspaceCoreColumns}, home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code`
+    )
     .eq("id", project.workspace_id)
     .single();
+  const workspaceFallbackRead = workspaceRead.error
+    ? await supabase.from("workspaces").select(workspaceCoreColumns).eq("id", project.workspace_id).single()
+    : null;
+  const workspaceData = (workspaceRead.error ? workspaceFallbackRead?.data : workspaceRead.data) as
+    | WorkspaceRow
+    | null;
+
+  // Which stage-gate template this workspace is actually on, and whether anyone
+  // chose it. Everything gate-shaped below renders from this one answer so the
+  // board and the disclosure above it can never describe different templates.
+  const stageGateResolution = resolveWorkspaceStageGateBinding(workspaceData);
+  const stageGateBinding = stageGateResolution.kind === "resolved" ? stageGateResolution.binding : null;
 
   const projectRtpLinkResult = await supabase
     .from("project_rtp_cycle_links")
@@ -636,13 +660,20 @@ export default async function ProjectDetailPage({
 
   const dataHubMigrationPending = looksLikePendingSchema(datasetLinksResult.error?.message);
 
-  const stageGateSummary = buildProjectStageGateSummary(recentGateDecisions as Array<{
-    gate_id: string;
-    decision: string;
-    rationale: string | null;
-    decided_at: string | null;
-    missing_artifacts?: string[] | null;
-  }>);
+  const stageGateSummary = buildProjectStageGateSummary(
+    recentGateDecisions as Array<{
+      gate_id: string;
+      decision: string;
+      rationale: string | null;
+      decided_at: string | null;
+      missing_artifacts?: string[] | null;
+    }>,
+    // Render the template this workspace is bound to, not whichever one the
+    // registry happens to hold as its interim default. They are the same today;
+    // registering a second pack must not silently make the board disagree with
+    // the binding disclosed beside it.
+    stageGateBinding ? { templateId: stageGateBinding.templateId } : undefined
+  );
 
   const now = new Date();
   const prioritizedMilestones = [...milestones].sort((left, right) => {
@@ -1120,6 +1151,7 @@ export default async function ProjectDetailPage({
       <ProjectPostureHeader
         project={project}
         workspaceData={workspaceData}
+        stageGateBinding={stageGateBinding}
         projectControlsSummary={projectControlsSummary}
         linkedRtpCycleCount={linkedRtpCycleCount}
         constrainedRtpLinkCount={constrainedRtpLinkCount}

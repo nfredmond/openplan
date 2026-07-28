@@ -2,16 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { OnboardingGoals } from "@/components/onboarding/onboarding-goals";
 
 /**
  * No-workspace fallback: normally the handle_new_user DB trigger auto-provisions
  * a workspace on sign-up, so a new user lands on the dashboard already provisioned
  * (see the dashboard first-run hero). This wizard only appears in the rare
  * not-provisioned case (e.g. a revoked membership), and lets the user self-create.
+ *
+ * IT CREATES A WORKSPACE, THEN HANDS OFF. It used to end on four goal cards that
+ * only navigated — a second, weaker copy of the dashboard's first-run guidance,
+ * and one that could not report what was configured because nothing had been.
+ * There is now exactly one first-run path (`FirstRunChecklist` on the
+ * dashboard), and this step's whole job is to deliver the user to it.
  */
 export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspaceName?: string }) {
   const router = useRouter();
@@ -94,21 +99,23 @@ export function OnboardingWizard({ defaultWorkspaceName = "" }: { defaultWorkspa
               <h1 className="text-xl font-semibold text-foreground">
                 {createdName ? `“${createdName}” is ready.` : "Your workspace is ready."}
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">What do you want to do first? You can do all of it later.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                It is empty, and it does not know where you work yet. Your workspace overview lists what
+                is set up so far and what each remaining step turns on — starting with the place you
+                plan for, which every map, jurisdiction rule, and equity layer in OpenPlan reads.
+              </p>
             </div>
 
-            <OnboardingGoals />
-
-            <button
+            <Button
               type="button"
               onClick={() => {
                 router.push("/dashboard");
                 router.refresh();
               }}
-              className="text-sm font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
             >
-              Or just explore the dashboard →
-            </button>
+              Open your workspace
+              <ArrowRight className="h-4 w-4" />
+            </Button>
           </div>
         )}
       </div>

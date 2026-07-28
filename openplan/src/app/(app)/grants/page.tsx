@@ -224,15 +224,19 @@ export default async function GrantsPage({
     opportunitiesData = legacyRead.data;
   }
 
-  // Which reimbursement profile governs this workspace's composer: its own
-  // home geography when a registered profile covers it, otherwise the labeled
-  // interim default. A failed geography read (columns pending on an older
+  // Where this workspace works, as one answer for every jurisdiction-aware lane
+  // on the page. A failed geography read (columns pending on an older
   // deployment) resolves as "jurisdiction unknown" — a disclosed fallback,
   // never a guess.
+  const workspaceJurisdiction = resolveJurisdiction(
+    parseWorkspaceHomeGeography(workspaceGeographyRead.error ? null : workspaceGeographyRead.data)
+  );
+
+  // Which reimbursement profile governs this workspace's composer: its own
+  // home geography when a registered profile covers it, otherwise the labeled
+  // interim default.
   const reimbursementProfileResolution = resolveReimbursementProfile({
-    workspaceJurisdiction: resolveJurisdiction(
-      parseWorkspaceHomeGeography(workspaceGeographyRead.error ? null : workspaceGeographyRead.data)
-    ),
+    workspaceJurisdiction,
   });
   const reimbursementProfile =
     reimbursementProfileResolution.kind === "resolved" ? reimbursementProfileResolution.binding : null;
@@ -788,7 +792,10 @@ export default async function GrantsPage({
             />
           </div>
 
-          <GrantsProgramCatalogSection trackedTitles={trackedOpportunityTitles} />
+          <GrantsProgramCatalogSection
+            trackedTitles={trackedOpportunityTitles}
+            workspaceJurisdiction={workspaceJurisdiction}
+          />
 
           <GrantsGovLiveSection trackedTitles={trackedOpportunityTitles} />
 

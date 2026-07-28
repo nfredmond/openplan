@@ -151,6 +151,17 @@ export type AnalysisContextResponse = {
 
 export type WorkspaceLoadState = "loading" | "loaded" | "signedOut" | "noMembership" | "error";
 export type AnalysisContextLoadState = "idle" | "loading" | "loaded" | "error";
+
+/**
+ * Whether the workspace's home geography has been read yet.
+ *
+ * `"loaded"` means the question was answered — the workspace may still have no
+ * home geography, which is a real answer and not a failure. `"unavailable"`
+ * means it could not be asked, and must never be presented as "none set": one
+ * of those states preselects nothing on purpose, the other preselects nothing
+ * because it does not know.
+ */
+export type HomeGeographyLoadState = "idle" | "loading" | "loaded" | "unavailable";
 export type ReportTemplate = "atp" | "ss4a";
 export type TractMetric = "minority" | "poverty" | "income" | "disadvantaged";
 

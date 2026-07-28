@@ -3,16 +3,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
-import { summarizeCorridorText } from "@/lib/models/study-area";
-import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
-import { placeKindSchema, type PlaceBoundaryResponse } from "@/lib/api/place-geographies";
-import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import {
-  homeGeographyBbox,
-  homeGeographyLabel,
-  TIGERWEB_GEOGRAPHY_SOURCE,
-  type WorkspaceHomeGeography,
-} from "@/lib/workspaces/home-geography";
+  studyAreaPrefillFromHomeGeography,
+  summarizeCorridorText,
+} from "@/lib/models/study-area";
+import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
+import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
+import { type WorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
 import { SafetyCrashMap } from "./safety-crash-map";
 import {
   COVERAGE_STATE_COPY,
@@ -31,53 +28,6 @@ import {
 import type { CrashSeverity } from "@/lib/safety/sources/types";
 
 const SEVERITY_ORDER: CrashSeverity[] = ["fatal", "severe_injury", "injury", "pdo"];
-
-export type StudyAreaPrefill = {
-  corridorText: string;
-  place: PlaceBoundaryResponse | null;
-  label: string | null;
-};
-
-const EMPTY_PREFILL: StudyAreaPrefill = { corridorText: "", place: null, label: null };
-
-/**
- * Turn a workspace's stated home geography back into a study-area selection.
- *
- * This is the inverse of `homeGeographyFromPlaceBoundary` — it exists so an
- * agency that has already told the app where it works does not have to re-pick
- * its own county on every visit. It is still a PRE-FILL, not a lock: the picker
- * above it can change or clear it exactly as before.
- *
- * Two honesty rules:
- *
- *   - Without the stored boundary geometry there is no prefill at all. A bbox
- *     rectangle drawn around a county is not that county, and quietly analyzing
- *     the wrong shape is worse than asking the user to pick.
- *   - `place` (the identity a lossless county filter is derived from) is only
- *     reconstructed for a source whose refs really are Census GEOIDs. Another
- *     resolver's ref would be a different namespace, so it stays bbox-only.
- */
-export function studyAreaPrefillFromHomeGeography(
-  geo: WorkspaceHomeGeography | null | undefined
-): StudyAreaPrefill {
-  if (!geo) return EMPTY_PREFILL;
-
-  const geometry = corridorGeojsonSchema.safeParse(geo.home_geometry_geojson);
-  if (!geometry.success) return EMPTY_PREFILL;
-
-  const label = homeGeographyLabel(geo);
-  const corridorText = JSON.stringify(geometry.data);
-
-  const kind = placeKindSchema.safeParse(geo.home_geography_kind);
-  const bbox = homeGeographyBbox(geo);
-  const geoid = geo.home_geography_ref;
-  const place: PlaceBoundaryResponse | null =
-    geo.home_geography_source === TIGERWEB_GEOGRAPHY_SOURCE && kind.success && bbox && geoid
-      ? { kind: kind.data, geoid, label, geojson: geometry.data, bbox }
-      : null;
-
-  return { corridorText, place, label };
-}
 
 type SafetyWorkspaceProps = {
   workspaceId: string;

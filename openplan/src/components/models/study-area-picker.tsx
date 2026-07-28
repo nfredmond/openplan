@@ -62,17 +62,26 @@ function describeUnavailableKinds(kinds: PlaceKind[]): string {
  * it — so telling that caller which engine a large area routes to would be
  * advice about something that is not going to happen. Defaults to true so every
  * modeling caller keeps the warning it has today.
+ *
+ * `externalLabel` names an area this picker did NOT choose. Because the picker is
+ * controlled, its text can be set by something else entirely — a workspace home
+ * geography prefill, an uploaded boundary file, a reloaded run — and the caller
+ * is the only one who knows what that area is. The picker's own selection always
+ * wins over it, and when no caller supplies one an outside area is still
+ * described honestly as a custom one rather than given a borrowed name.
  */
 export function StudyAreaPicker({
   corridorText,
   onCorridorChange,
   onPlaceResolved,
   showRunEngineHint = true,
+  externalLabel = null,
 }: {
   corridorText: string;
   onCorridorChange: (text: string) => void;
   onPlaceResolved?: (place: PlaceBoundaryResponse | null) => void;
   showRunEngineHint?: boolean;
+  externalLabel?: string | null;
 }) {
   const [mode, setMode] = useState<PickerMode>("search");
   const [query, setQuery] = useState("");
@@ -83,8 +92,25 @@ export function StudyAreaPicker({
   const [error, setError] = useState<string | null>(null);
   const [coverage, setCoverage] = useState<SearchCoverage | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // The last text this picker itself emitted. Anything else arriving on the
+  // `corridorText` prop came from outside (see `externalLabel`), and the label
+  // this picker is holding then describes an area that is no longer set.
+  const emittedTextRef = useRef<string | null>(null);
 
   const summary = useMemo(() => summarizeCorridorText(corridorText), [corridorText]);
+
+  useEffect(() => {
+    if (emittedTextRef.current === corridorText) return;
+    // Not ours. Drop our label rather than let a previously picked place keep
+    // its name on somebody else's boundary.
+    setSelectedLabel(null);
+  }, [corridorText]);
+
+  /** Publish a new area, remembering it so the reset above does not fire. */
+  function emitCorridorText(text: string) {
+    emittedTextRef.current = text;
+    onCorridorChange(text);
+  }
 
   // Debounced place search.
   useEffect(() => {
@@ -142,7 +168,7 @@ export function StudyAreaPicker({
       );
       if (!res.ok) throw new Error("boundary failed");
       const data = (await res.json()) as PlaceBoundaryResponse;
-      onCorridorChange(JSON.stringify(data.geojson));
+      emitCorridorText(JSON.stringify(data.geojson));
       onPlaceResolved?.(data);
       setSelectedLabel(data.label ?? item.label);
       setResults([]);
@@ -157,7 +183,7 @@ export function StudyAreaPicker({
 
   function handleDraw(geometry: EngagementGeometry | null) {
     if (geometry && geometry.type === "Polygon") {
-      onCorridorChange(JSON.stringify(geometry));
+      emitCorridorText(JSON.stringify(geometry));
       // A drawn polygon has no place identity, so any place-derived context
       // (county codes, labels) must be cleared rather than left stale.
       onPlaceResolved?.(null);
@@ -166,7 +192,7 @@ export function StudyAreaPicker({
   }
 
   function clearArea() {
-    onCorridorChange("");
+    emitCorridorText("");
     onPlaceResolved?.(null);
     setSelectedLabel(null);
     setResults([]);
@@ -303,7 +329,9 @@ export function StudyAreaPicker({
             <div className="flex items-start gap-2">
               <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-emerald-700 dark:text-emerald-300" />
               <div>
-                <p className="font-medium text-foreground">{selectedLabel ?? "Custom study area"}</p>
+                <p className="font-medium text-foreground">
+                  {selectedLabel ?? externalLabel ?? "Custom study area"}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {summary.areaKm2 !== null ? `≈ ${summary.areaKm2.toLocaleString()} km² bounding extent` : "Study area set"}
                 </p>

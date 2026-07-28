@@ -441,5 +441,8 @@ const programs: readonly GrantProgramCatalogEntry[] = [
 export const usCaPrograms: GrantProgramBundle = {
   key: "us-ca",
   label: "California state programs",
+  // Subdivision-scoped: an agency outside California cannot apply to these, so
+  // the catalog must say so rather than list them as if it could.
+  jurisdiction: { country: "US", subdivision: "CA", label: "California" },
   programs,
 };

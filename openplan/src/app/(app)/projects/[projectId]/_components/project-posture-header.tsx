@@ -12,6 +12,10 @@ import {
 } from "@/lib/grants/modeling-evidence";
 import type { ProjectControlsSummary } from "@/lib/projects/controls";
 import {
+  describeStageGateBinding,
+  type StageGateTemplateBinding,
+} from "@/lib/stage-gates/template-loader";
+import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
   formatReportStatusLabel,
@@ -55,6 +59,13 @@ type ProjectGrantModelingEvidence = {
 type ProjectPostureHeaderProps = {
   project: ProjectRow;
   workspaceData: WorkspaceRow | null;
+  /**
+   * The workspace's stage-gate binding, already reconciled against its home
+   * geography by `resolveWorkspaceStageGateBinding`. `null` means the stored
+   * template id resolves to nothing this deployment registers — a state the
+   * header states outright rather than dressing up as a template.
+   */
+  stageGateBinding: StageGateTemplateBinding | null;
   projectControlsSummary: ProjectControlsSummary;
   linkedRtpCycleCount: number;
   constrainedRtpLinkCount: number;
@@ -86,6 +97,7 @@ type ProjectPostureHeaderProps = {
 export function ProjectPostureHeader({
   project,
   workspaceData,
+  stageGateBinding,
   projectControlsSummary,
   linkedRtpCycleCount,
   constrainedRtpLinkCount,
@@ -112,6 +124,9 @@ export function ProjectPostureHeader({
   projectGrantModelingReadiness,
   projectGrantModelingSupport,
 }: ProjectPostureHeaderProps) {
+  // Rendered unconditionally when a binding exists, so the disclosure cannot be
+  // lost by forgetting a branch; `isJurisdictionAssumed` decides how loudly.
+  const stageGateDisclosure = stageGateBinding ? describeStageGateBinding(stageGateBinding) : null;
   const recommendedReportGovernanceHold = recommendedReport?.evidenceChainDigest?.blockedGateDetail ?? null;
   const recommendedReportPacketActionLabel = recommendedReport
     ? getReportPacketActionLabel(recommendedReport.packetFreshness.label)
@@ -204,7 +219,7 @@ export function ProjectPostureHeader({
             </span>
             <div>
               <p className="module-operator-eyebrow">Project control room</p>
-              <h2 className="module-operator-title">LAPM-oriented controls are now visible, not implied</h2>
+              <h2 className="module-operator-title">Delivery controls are now visible, not implied</h2>
             </div>
           </div>
           <p className="module-operator-copy">
@@ -212,12 +227,34 @@ export function ProjectPostureHeader({
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
-              Stage-gate template: {workspaceData?.stage_gate_template_id ?? "Not available"}
+              Stage-gate template:{" "}
+              {stageGateBinding
+                ? `${stageGateBinding.templateName} (${stageGateBinding.templateId})`
+                : workspaceData?.stage_gate_template_id ?? "Not available"}
             </div>
             <div className="module-operator-item">
-              Template version: {workspaceData?.stage_gate_template_version ?? "Not available"} · Workspace slug: {workspaceData?.slug ?? "Unknown"}
+              Template version: {stageGateBinding?.templateVersion ?? workspaceData?.stage_gate_template_version ?? "Not available"} · Workspace slug: {workspaceData?.slug ?? "Unknown"}
             </div>
-            <div className="module-operator-item">CALTRANS posture is aligned to gate domains and invoice/submittal workflow, while exact exhibit/form IDs remain deferred in v0.1.</div>
+            {stageGateDisclosure ? (
+              <div className="module-operator-item">
+                <strong>{stageGateDisclosure.headline}.</strong> {stageGateDisclosure.detail}
+                {stageGateDisclosure.action ? ` ${stageGateDisclosure.action}` : ""}
+              </div>
+            ) : (
+              <div className="module-operator-item">
+                This workspace is bound to stage-gate template
+                {" "}&ldquo;{workspaceData?.stage_gate_template_id ?? "unknown"}&rdquo;, which this deployment
+                does not register — no gate names, evidence requirements, or exhibit ids can be shown for it
+                here, and none should be inferred from the board below.
+              </div>
+            )}
+            {stageGateBinding?.lapmFormIdsStatus ? (
+              <div className="module-operator-item">
+                Gate domains map to invoice and submittal workflow, but the {stageGateBinding.jurisdictionLabel} pack
+                declares its own exhibit/form ids &ldquo;{stageGateBinding.lapmFormIdsStatus}&rdquo; — the ids shown
+                in this board are not the funder&apos;s.
+              </div>
+            ) : null}
           </div>
         </article>
       </header>

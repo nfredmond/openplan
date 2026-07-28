@@ -699,5 +699,9 @@ const programs: readonly GrantProgramCatalogEntry[] = [
 export const usFederalPrograms: GrantProgramBundle = {
   key: "us",
   label: "US federal programs",
+  // No subdivision: these programs are open to eligible applicants anywhere in
+  // the United States. Several are administered through a state pass-through,
+  // which changes who you apply TO, not who may apply.
+  jurisdiction: { country: "US", label: "United States" },
   programs,
 };

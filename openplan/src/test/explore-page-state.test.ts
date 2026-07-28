@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildCurrentMapViewState,
+  canRunAnalysis,
   getCrashPointFeatures,
   getLinkedDatasetPreview,
   hasCrashPointLayer,
@@ -9,9 +10,11 @@ import {
   resolveWorkspaceHelperText,
   resolveWorkspaceStatusLabel,
 } from "@/app/(app)/explore/_components/explore-page-state";
+import { ANALYSIS_QUERY_MAX_CHARS } from "@/lib/analysis/query";
 import type {
   AnalysisContextResponse,
   AnalysisResult,
+  CorridorGeometry,
   WorkspaceLoadState,
 } from "@/app/(app)/explore/_components/_types";
 
@@ -286,6 +289,64 @@ describe("explore page state helpers", () => {
           1
         )
       ).toBe(true);
+    }
+  });
+});
+
+describe("canRunAnalysis", () => {
+  const WORKSPACE_ID = "11111111-1111-4111-8111-111111111111";
+  const QUERY = "Assess safety, access, and equity conditions for this study area.";
+  const AREA: CorridorGeometry = {
+    type: "Polygon",
+    coordinates: [
+      [
+        [-83.2, 39.8],
+        [-82.8, 39.8],
+        [-82.8, 40.1],
+        [-83.2, 40.1],
+        [-83.2, 39.8],
+      ],
+    ],
+  };
+
+  it("opens once a workspace, a question, and a study area are all present", () => {
+    expect(canRunAnalysis({ workspaceId: WORKSPACE_ID, queryText: QUERY, corridorGeojson: AREA })).toBe(
+      true
+    );
+  });
+
+  it("stays shut while any one of them is missing", () => {
+    expect(canRunAnalysis({ workspaceId: "", queryText: QUERY, corridorGeojson: AREA })).toBe(false);
+    expect(canRunAnalysis({ workspaceId: WORKSPACE_ID, queryText: "   ", corridorGeojson: AREA })).toBe(
+      false
+    );
+    expect(canRunAnalysis({ workspaceId: WORKSPACE_ID, queryText: QUERY, corridorGeojson: null })).toBe(
+      false
+    );
+  });
+
+  it("stays shut for a question the analysis API would reject as too long", () => {
+    expect(
+      canRunAnalysis({
+        workspaceId: WORKSPACE_ID,
+        queryText: "x".repeat(ANALYSIS_QUERY_MAX_CHARS + 1),
+        corridorGeojson: AREA,
+      })
+    ).toBe(false);
+  });
+
+  it("does not care which input produced the study area", () => {
+    // A searched place, a drawn area, and an uploaded file are the same thing
+    // here — a boundary. Privileging one would put the old file-only dead end
+    // back in a different place.
+    const drawn: CorridorGeometry = {
+      type: "MultiPolygon",
+      coordinates: [AREA.coordinates as [number, number][][]],
+    };
+    for (const area of [AREA, drawn]) {
+      expect(canRunAnalysis({ workspaceId: WORKSPACE_ID, queryText: QUERY, corridorGeojson: area })).toBe(
+        true
+      );
     }
   });
 });

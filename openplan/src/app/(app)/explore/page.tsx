@@ -4,7 +4,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { Button } from "@/components/ui/button";
@@ -40,6 +39,7 @@ import { ExploreResultsBoard } from "./_components/explore-results-board";
 import { ExploreRunHistoryPanel } from "./_components/explore-run-history-panel";
 import {
   buildCurrentMapViewState,
+  canRunAnalysis,
   getCrashPointFeatures,
   hasCrashPointLayer,
   resolveActiveDatasetOverlay,
@@ -47,7 +47,9 @@ import {
   resolveWorkspaceStatusLabel,
 } from "./_components/explore-page-state";
 import { buildLinkedDatasetQueueState } from "./_components/explore-linked-dataset-state";
+import { ExploreStudyAreaPanel } from "./_components/explore-study-area-panel";
 import { ExploreStudyBriefControls } from "./_components/explore-study-brief-controls";
+import { useExploreHomeGeography } from "./_components/use-explore-home-geography";
 import { useExploreMapInstance } from "./_components/use-explore-map-instance";
 import { useExploreMapLayerEffects } from "./_components/use-explore-map-layer-effects";
 import { useExploreRunHistory } from "./_components/use-explore-run-history";
@@ -217,6 +219,14 @@ export default function ExplorePage() {
     };
   }, [workspaceId]);
 
+  // Where this agency works, so a planner who has already stated it does not
+  // re-pick their own county on arrival. An unset or unreachable geography
+  // preselects nothing — never a guessed place.
+  const { prefill: studyAreaPrefill, loadState: homeGeographyLoadState } = useExploreHomeGeography({
+    workspaceId,
+    setCorridorGeojson,
+  });
+
   useExploreMapLayerEffects({
     mapRef,
     mapReady,
@@ -239,9 +249,10 @@ export default function ExplorePage() {
   const trimmedQueryText = queryText.trim();
   const isQueryTooLong = trimmedQueryText.length > ANALYSIS_QUERY_MAX_CHARS;
 
-  const canSubmit = useMemo(() => {
-    return Boolean(workspaceId && trimmedQueryText.length > 0 && corridorGeojson && !isQueryTooLong);
-  }, [workspaceId, trimmedQueryText, corridorGeojson, isQueryTooLong]);
+  const canSubmit = useMemo(
+    () => canRunAnalysis({ workspaceId, queryText, corridorGeojson }),
+    [workspaceId, queryText, corridorGeojson]
+  );
 
   const runAnalysis = async () => {
     if (!corridorGeojson || !workspaceId || !trimmedQueryText) {
@@ -554,10 +565,11 @@ export default function ExplorePage() {
               Analysis Studio
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight text-white">
-              Upload a corridor to begin.
+              Start with your study area.
             </h2>
             <p className="mt-1.5 text-[0.82rem] leading-relaxed text-slate-300/80">
-              Upload a study boundary, frame the planning question, and run the analysis.
+              Search for your county, city, or metro area — or draw it, or upload a boundary file. Then
+              frame the planning question and run the analysis.
             </p>
           </div>
         ) : null}
@@ -576,7 +588,7 @@ export default function ExplorePage() {
                 <div className="analysis-studio-heading">
                   <p className="analysis-studio-label">Study setup</p>
                   <h3 className="analysis-studio-title">Workspace and intake</h3>
-                  <p className="analysis-studio-description">Connect the workspace, confirm membership, and prepare the corridor boundary before running analysis.</p>
+                  <p className="analysis-studio-description">Connect the workspace and confirm membership. The study area is set below — pick a place, draw one, or upload a boundary file.</p>
                 </div>
                 <StatusBadge tone={resolveStatusTone(workspaceLoadState)}>{workspaceStatusLabel}</StatusBadge>
               </div>
@@ -823,9 +835,12 @@ export default function ExplorePage() {
                 <p className="mt-3 text-xs text-muted-foreground">Could not load project context from the workspace right now.</p>
               ) : null}
             </div>
-            <div className="analysis-studio-surface-slot">
-              <CorridorUpload onUpload={(geojson) => setCorridorGeojson(geojson)} />
-            </div>
+            <ExploreStudyAreaPanel
+              corridorGeojson={corridorGeojson}
+              onCorridorChange={setCorridorGeojson}
+              prefill={studyAreaPrefill}
+              homeGeographyLoadState={homeGeographyLoadState}
+            />
 
             <ExploreLayerVisibilityControls
               mapReady={mapReady}

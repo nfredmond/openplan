@@ -732,6 +732,45 @@ describe("ProjectDetailPage", () => {
     expect(workspaceEqMock).toHaveBeenCalledWith("id", "workspace-1");
   });
 
+  it("says the stage-gate template was assumed when the workspace has stated no geography", async () => {
+    // The default fixture is a trigger-provisioned workspace: it holds the
+    // stage_gate_template_id the migration's DEFAULT gave it and has no home
+    // geography. The header must not present that as a choice.
+    await renderPage();
+
+    expect(
+      screen.getByText(/Interim default gates — not your jurisdiction's/)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/has not stated where it works/)).toBeInTheDocument();
+    expect(screen.getByText(/not authoritative for this agency/)).toBeInTheDocument();
+  });
+
+  it("does not cry assumption when the workspace's own jurisdiction registered the template", async () => {
+    workspaceSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "workspace-1",
+        name: "OpenPlan QA",
+        slug: "openplan-qa",
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+        created_at: "2026-03-28T18:00:00.000Z",
+        home_geography_source: "tigerweb",
+        home_geography_kind: "county",
+        home_geography_ref: "06057",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
+      },
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.queryByText(/Interim default gates/)).toBeNull();
+    expect(
+      screen.getByText(/template registered for this workspace's own jurisdiction/)
+    ).toBeInTheDocument();
+  });
+
   it("notFounds when the project is not readable (RLS blocks a non-member)", async () => {
     // A caller who is not a member of the project's workspace gets no row back
     // from the RLS-scoped select, which is the only access gate that remains.

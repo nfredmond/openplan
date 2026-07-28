@@ -31,6 +31,33 @@ describe("grant program jurisdiction registry", () => {
     }
   });
 
+  it("makes every bundle declare where its programs are open", () => {
+    // The coverage resolver asks each bundle where it applies rather than
+    // knowing a list of places. A bundle registered without a jurisdiction — or
+    // one that omits `subdivision` when it is not genuinely nationwide — would
+    // be presented to every workspace in the country as if it were theirs.
+    for (const bundle of GRANT_PROGRAM_BUNDLES) {
+      expect(bundle.jurisdiction, `jurisdiction for bundle "${bundle.key}"`).toBeDefined();
+      expect(bundle.jurisdiction.country, `country for bundle "${bundle.key}"`).toMatch(/^[A-Z]{2}$/);
+      expect(bundle.jurisdiction.label.trim().length, `label for bundle "${bundle.key}"`).toBeGreaterThan(0);
+      if (bundle.jurisdiction.subdivision !== undefined) {
+        expect(
+          bundle.jurisdiction.subdivision.trim().length,
+          `subdivision for bundle "${bundle.key}"`
+        ).toBeGreaterThan(0);
+      }
+      // A bundle of state-level programs cannot be nationwide, and a nationwide
+      // bundle cannot carry state-level ones.
+      const isNationwide = bundle.jurisdiction.subdivision === undefined;
+      for (const program of bundle.programs) {
+        expect(
+          program.level === "federal",
+          `program "${program.key}" level vs bundle "${bundle.key}" scope`
+        ).toBe(isNationwide);
+      }
+    }
+  });
+
   it("has unique program keys across ALL bundles", () => {
     const keys = GRANT_PROGRAM_BUNDLES.flatMap((bundle) =>
       bundle.programs.map((program) => program.key)

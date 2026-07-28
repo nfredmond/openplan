@@ -243,6 +243,15 @@ export type WorkspaceRow = {
   stage_gate_template_id: string | null;
   stage_gate_template_version: string | null;
   created_at: string;
+  // Home-geography identity columns, carried so the stage-gate binding can say
+  // whether the template above was matched to this workspace's jurisdiction or
+  // assumed for it. Optional because a deployment predating those columns falls
+  // back to a narrower select — see the page's workspace read.
+  home_geography_source?: string | null;
+  home_geography_kind?: string | null;
+  home_geography_ref?: string | null;
+  home_country_code?: string | null;
+  home_subdivision_code?: string | null;
 };
 
 export type ExistingRtpLink = {

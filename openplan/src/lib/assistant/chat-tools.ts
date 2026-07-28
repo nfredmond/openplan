@@ -7,7 +7,10 @@ import { loadAssistantContext } from "@/lib/assistant/context";
 import { buildAssistantChatContextLines } from "@/lib/assistant/chat-context";
 import { buildAssistantOperations } from "@/lib/assistant/operations";
 import { excerptPageLabel, retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
-import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
+import {
+  GRANT_PROGRAM_BUNDLES,
+  listGrantProgramsWithBundle,
+} from "@/lib/grants/program-catalog";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import {
   ACTION_METADATA,
@@ -597,7 +600,10 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
 
   const getGrantProgramCatalog = tool({
     description:
-      "Read OpenPlan's static reference catalog of transportation funding programs (federal and California state). This is orientation guidance, not a live opportunity feed — every entry says where to verify the current cycle.",
+      // The registered bundles name themselves rather than being spelled out
+      // here, so a new jurisdiction's programs are described accurately the
+      // moment it is registered instead of the day someone remembers this string.
+      `Read OpenPlan's static reference catalog of transportation funding programs. Registered bundles: ${GRANT_PROGRAM_BUNDLES.map((bundle) => bundle.label).join("; ")}. Each program carries the jurisdiction it is open in — a jurisdiction-scoped program is NOT available to an agency outside it, so always check the program's jurisdiction against where the workspace actually works before recommending it. This is orientation guidance, not a live opportunity feed — every entry says where to verify the current cycle.`,
     inputSchema: z.object({
       level: z.enum(["federal", "state"]).optional().describe("Optionally narrow to federal or state programs."),
     }),
@@ -606,21 +612,27 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
       budget,
       audit,
       run: async (input) => {
-        const entries = GRANT_PROGRAM_CATALOG.filter((entry) => !input.level || entry.level === input.level);
+        const entries = listGrantProgramsWithBundle().filter(
+          ({ program }) => !input.level || program.level === input.level
+        );
         return {
           status: "ok",
           programCount: entries.length,
-          note: "Static reference data. Cycle timing shifts — always tell the planner to verify against the official program page.",
-          programs: entries.map((entry) => ({
-            key: entry.key,
-            name: entry.name,
-            administeringAgency: entry.administeringAgency,
-            level: entry.level,
-            typicalApplicants: entry.typicalApplicants,
-            eligibleProjectTypes: entry.eligibleProjectTypes,
-            cycleNote: entry.cycleNote,
-            matchRequirement: entry.matchRequirement,
-            url: entry.url,
+          note: "Static reference data. Cycle timing shifts — always tell the planner to verify against the official program page. The catalog is not filtered to this workspace's geography: name each program's jurisdiction when you cite it, and say plainly when a program is scoped somewhere the workspace does not work.",
+          programs: entries.map(({ program, bundle }) => ({
+            key: program.key,
+            name: program.name,
+            administeringAgency: program.administeringAgency,
+            level: program.level,
+            // Where the program is open, from the bundle's own declaration.
+            jurisdiction: bundle.jurisdiction.label,
+            jurisdictionCountry: bundle.jurisdiction.country,
+            jurisdictionSubdivision: bundle.jurisdiction.subdivision ?? null,
+            typicalApplicants: program.typicalApplicants,
+            eligibleProjectTypes: program.eligibleProjectTypes,
+            cycleNote: program.cycleNote,
+            matchRequirement: program.matchRequirement,
+            url: program.url,
           })),
         };
       },

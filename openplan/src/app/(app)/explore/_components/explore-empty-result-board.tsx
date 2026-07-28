@@ -8,7 +8,7 @@ export function ExploreEmptyResultBoard() {
       </div>
       <div className="analysis-studio-inline-meta">
         <p className="analysis-studio-inline-meta-label">Next step</p>
-        <p className="analysis-studio-inline-meta-value">Upload a corridor, enter the planning question, and run the study to populate this board.</p>
+        <p className="analysis-studio-inline-meta-value">Set the study area, enter the planning question, and run the study to populate this board.</p>
       </div>
     </section>
   );
