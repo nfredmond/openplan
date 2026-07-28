@@ -14,7 +14,9 @@ const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const projectSingleMock = vi.fn();
-const projectEqMock = vi.fn(() => ({ single: projectSingleMock }));
+// maybeSingle serves the budget loader's tolerant projects.budget_amount read.
+const projectBudgetMaybeSingleMock = vi.fn();
+const projectEqMock = vi.fn(() => ({ single: projectSingleMock, maybeSingle: projectBudgetMaybeSingleMock }));
 const projectSelectMock = vi.fn(() => ({ eq: projectEqMock }));
 
 const workspaceSingleMock = vi.fn();
@@ -87,6 +89,17 @@ const deliverablesLimitMock = vi.fn();
 const deliverablesOrderMock = vi.fn(() => ({ limit: deliverablesLimitMock }));
 const deliverablesEqMock = vi.fn(() => ({ order: deliverablesOrderMock }));
 const deliverablesSelectMock = vi.fn(() => ({ eq: deliverablesEqMock }));
+
+const spendEntriesLimitMock = vi.fn();
+const spendEntriesOrderMock = vi.fn(() => ({ limit: spendEntriesLimitMock }));
+const spendEntriesEqMock = vi.fn(() => ({ order: spendEntriesOrderMock }));
+const spendEntriesSelectMock = vi.fn(() => ({ eq: spendEntriesEqMock }));
+
+// Budget loader chain: select→eq(project)→in(status sent/paid)→limit.
+const clientInvoicesLimitMock = vi.fn();
+const clientInvoicesInMock = vi.fn(() => ({ limit: clientInvoicesLimitMock }));
+const clientInvoicesEqMock = vi.fn(() => ({ in: clientInvoicesInMock }));
+const clientInvoicesSelectMock = vi.fn(() => ({ eq: clientInvoicesEqMock }));
 
 const risksLimitMock = vi.fn();
 const risksOrderMock = vi.fn(() => ({ limit: risksLimitMock }));
@@ -214,6 +227,12 @@ const fromMock = vi.fn((table: string) => {
   if (table === "project_deliverables") {
     return { select: deliverablesSelectMock };
   }
+  if (table === "project_spend_entries") {
+    return { select: spendEntriesSelectMock };
+  }
+  if (table === "client_invoices") {
+    return { select: clientInvoicesSelectMock };
+  }
   if (table === "project_risks") {
     return { select: risksSelectMock };
   }
@@ -334,6 +353,10 @@ vi.mock("@/components/projects/project-funding-award-creator", () => ({
   ProjectFundingAwardCreator: () => <div data-testid="project-funding-award-creator" />,
 }));
 
+vi.mock("@/components/projects/project-spend-entry-form", () => ({
+  ProjectSpendEntryForm: () => <div data-testid="project-spend-entry-form" />,
+}));
+
 vi.mock("@/components/aerial/aerial-mission-creator", () => ({
   AerialMissionCreator: () => <div data-testid="aerial-mission-creator" />,
 }));
@@ -356,9 +379,17 @@ vi.mock("@/lib/projects/controls", () => ({
   buildProjectControlsSummary: (...args: unknown[]) => buildProjectControlsSummaryMock(...args),
 }));
 
-vi.mock("@/lib/invoicing/invoice-records", () => ({
-  summarizeBillingInvoiceRecords: (...args: unknown[]) => summarizeBillingInvoiceRecordsMock(...args),
-}));
+vi.mock("@/lib/invoicing/invoice-records", async () => {
+  // Partial mock: the budget lib pulls parseCurrencyAmount from this module
+  // and must get the real one; only the invoice summarizer is stubbed.
+  const actual = await vi.importActual<typeof import("@/lib/invoicing/invoice-records")>(
+    "@/lib/invoicing/invoice-records"
+  );
+  return {
+    ...actual,
+    summarizeBillingInvoiceRecords: (...args: unknown[]) => summarizeBillingInvoiceRecordsMock(...args),
+  };
+});
 
 vi.mock("@/lib/stage-gates/summary", () => ({
   buildProjectStageGateSummary: (...args: unknown[]) => buildProjectStageGateSummaryMock(...args),
@@ -509,6 +540,9 @@ describe("ProjectDetailPage", () => {
     milestonesLimitMock.mockResolvedValue({ data: [], error: null });
     submittalsLimitMock.mockResolvedValue({ data: [], error: null });
     deliverablesLimitMock.mockResolvedValue({ data: [], error: null });
+    projectBudgetMaybeSingleMock.mockResolvedValue({ data: { budget_amount: null }, error: null });
+    spendEntriesLimitMock.mockResolvedValue({ data: [], error: null });
+    clientInvoicesLimitMock.mockResolvedValue({ data: [], error: null });
     risksLimitMock.mockResolvedValue({ data: [], error: null });
     issuesLimitMock.mockResolvedValue({ data: [], error: null });
     decisionsLimitMock.mockResolvedValue({ data: [], error: null });
@@ -996,6 +1030,61 @@ describe("ProjectDetailPage", () => {
     expect(boardPacketCard).not.toBeNull();
     expect(boardPacketCard).toHaveAttribute("href", "/reports/report-2#packet-release-review");
     expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
+  });
+
+  it("surfaces deliverable budget chips and honest coverage copy", async () => {
+    deliverablesLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "deliverable-1",
+          title: "Existing Conditions Memo",
+          summary: null,
+          owner_label: null,
+          due_date: null,
+          status: "in_progress",
+          created_at: "2026-03-28T18:00:00.000Z",
+          budget_amount: 1000,
+          percent_complete: 50,
+        },
+        {
+          id: "deliverable-2",
+          title: "Corridor Map Set",
+          summary: null,
+          owner_label: null,
+          due_date: null,
+          status: "not_started",
+          created_at: "2026-03-28T18:00:00.000Z",
+          budget_amount: null,
+          percent_complete: null,
+        },
+      ],
+      error: null,
+    });
+    spendEntriesLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "spend-1",
+          deliverable_id: "deliverable-1",
+          entry_date: "2026-07-01",
+          amount: 500,
+          description: "Traffic counts subconsultant",
+          vendor_label: null,
+          created_at: "2026-07-01T18:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    // Chip on the deliverable row AND the budget panel row: burn 50% at 50%
+    // complete is on pace; the unbudgeted deliverable gets the honest refusal.
+    expect(screen.getAllByText("On pace").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("No budget entered").length).toBeGreaterThan(0);
+    // Coverage copy names the partial basis instead of implying a total.
+    expect(screen.getByText(/1 of 2 deliverables budgeted\./i)).toBeInTheDocument();
+    expect(screen.getByText(/Burn against entered budgets/i)).toBeInTheDocument();
+    expect(screen.getByTestId("project-spend-entry-form")).toBeInTheDocument();
   });
 
   it("shows an empty reporting state when no reports are linked", async () => {

@@ -19,6 +19,8 @@ import {
   describeAerialProjectPosture,
 } from "@/lib/aerial/public";
 import { loadAerialMissionsAndPackagesForProject, loadAerialProjectPosture } from "@/lib/aerial/queries";
+import { buildProjectBudgetSnapshot, type DeliverableBudgetSummary } from "@/lib/projects/budget";
+import { loadProjectBudgetInputs, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { buildProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-crosslinks";
@@ -39,24 +41,16 @@ import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
+import { buildProjectTimelineItems } from "./_components/_timeline";
 import { ProjectPostureHeader } from "./_components/project-posture-header";
 import { ProjectPostureUnified } from "./_components/project-posture-unified";
 import { ProjectSpineReadinessRollup } from "./_components/project-spine-readiness-rollup";
+import { ProjectBudgetPanel } from "./_components/project-budget-panel";
 import { ProjectFundingPanel } from "./_components/project-funding-panel";
 import { ProjectDeliveryBoard } from "./_components/project-delivery-board";
 import { ProjectRiskAndDecisionLog } from "./_components/project-risk-decision-log";
 import { ProjectEvidenceAndActivity } from "./_components/project-evidence-activity";
 import { ProjectSpineCrosslinkBoard } from "./_components/project-spine-crosslink-board";
-import {
-  fmtCurrency,
-  titleize,
-  toneForDecision,
-  toneForDeliverableStatus,
-  toneForInvoiceStatus,
-  toneForMilestoneStatus,
-  toneForRiskSeverity,
-  toneForSubmittalStatus,
-} from "./_components/_helpers";
 import type {
   BillingInvoiceRow,
   FundingAwardRow,
@@ -399,12 +393,27 @@ export default async function ProjectDetailPage({
   const submittals = looksLikePendingSchema(submittalResult.error?.message) ? [] : ((submittalResult.data ?? []) as SubmittalRow[]);
   const projectSubmittalsPending = looksLikePendingSchema(submittalResult.error?.message);
 
-  const { data: deliverables } = await supabase
-    .from("project_deliverables")
-    .select("id, title, summary, owner_label, due_date, status, created_at")
-    .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
+  // Budget & pace inputs: ALL deliverables (with their budget columns), the
+  // stated project budget, the spend ledger, and billed client-invoice lines —
+  // each read pending-schema tolerant inside the loader.
+  const budgetInputs = await loadProjectBudgetInputs(
+    supabase as unknown as ProjectBudgetQuerySupabaseLike,
+    project.id
+  );
+  const projectBudgetSnapshot = buildProjectBudgetSnapshot({
+    project: { budget_amount: budgetInputs.statedBudgetAmount },
+    deliverables: budgetInputs.deliverables,
+    spendEntries: budgetInputs.spendEntries,
+    billedLines: budgetInputs.billedLines,
+  });
+  const budgetSummaryByDeliverableId = new Map<string, DeliverableBudgetSummary>(
+    projectBudgetSnapshot.deliverables
+      .filter((summary): summary is DeliverableBudgetSummary & { deliverableId: string } => Boolean(summary.deliverableId))
+      .map((summary) => [summary.deliverableId, summary])
+  );
+  // The board and timeline keep their original six-row recency window; the
+  // budget snapshot above deliberately sees the full deliverable list.
+  const deliverables = budgetInputs.deliverables.slice(0, 6);
 
   const { data: risks } = await supabase
     .from("project_risks")
@@ -1051,124 +1060,20 @@ export default async function ProjectDetailPage({
 
   const operationsSummary = await operationsSummaryPromise;
 
-  const timelineItems: TimelineItem[] = [
-    ...milestones.map((item) => ({
-      id: `milestone-${item.id}`,
-      type: "milestone",
-      title: item.title,
-      description: item.summary || item.notes || "Milestone added to the project control room.",
-      at: item.actual_date || item.target_date || item.created_at,
-      badge: `Milestone · ${titleize(item.status)}`,
-      tone: toneForMilestoneStatus(item.status),
-    })),
-    ...submittals.map((item) => ({
-      id: `submittal-${item.id}`,
-      type: "submittal",
-      title: item.title,
-      description:
-        item.notes ||
-        `${titleize(item.submittal_type)}${item.agency_label ? ` · ${item.agency_label}` : ""}`,
-      at: item.submitted_at || item.due_date || item.created_at,
-      badge: `Submittal · ${titleize(item.status)}`,
-      tone: toneForSubmittalStatus(item.status),
-    })),
-    ...projectInvoices.map((item) => ({
-      id: `invoice-${item.id}`,
-      type: "invoice",
-      title: item.invoice_number,
-      description: `${fmtCurrency(item.net_amount)} net${item.submitted_to ? ` · ${item.submitted_to}` : ""}`,
-      at: item.invoice_date || item.created_at,
-      badge: `Invoice · ${titleize(item.status)}`,
-      tone: toneForInvoiceStatus(item.status),
-    })),
-    ...(deliverables ?? []).map((item) => ({
-      id: `deliverable-${item.id}`,
-      type: "deliverable",
-      title: item.title,
-      description: item.summary || "Deliverable added to project.",
-      at: item.created_at,
-      badge: `Deliverable · ${titleize(item.status)}`,
-      tone: toneForDeliverableStatus(item.status),
-    })),
-    ...(risks ?? []).map((item) => ({
-      id: `risk-${item.id}`,
-      type: "risk",
-      title: item.title,
-      description: item.description || "Risk recorded for this project.",
-      at: item.created_at,
-      badge: `Risk · ${titleize(item.severity)}`,
-      tone: toneForRiskSeverity(item.severity),
-    })),
-    ...(issues ?? []).map((item) => ({
-      id: `issue-${item.id}`,
-      type: "issue",
-      title: item.title,
-      description: item.description || "Issue logged for this project.",
-      at: item.created_at,
-      badge: `Issue · ${titleize(item.status)}`,
-      tone: toneForRiskSeverity(item.severity),
-    })),
-    ...(decisions ?? []).map((item) => ({
-      id: `decision-${item.id}`,
-      type: "decision",
-      title: item.title,
-      description: item.rationale,
-      at: item.decided_at || item.created_at,
-      badge: `Decision · ${titleize(item.status)}`,
-      tone: toneForDecision(item.status),
-    })),
-    ...(meetings ?? []).map((item) => ({
-      id: `meeting-${item.id}`,
-      type: "meeting",
-      title: item.title,
-      description: item.notes || item.attendees_summary || "Meeting logged for this project.",
-      at: item.meeting_at || item.created_at,
-      badge: "Meeting",
-      tone: "info" as const,
-    })),
-    ...(recentRuns ?? []).map((item) => ({
-      id: `run-${item.id}`,
-      type: "run",
-      title: item.title,
-      description: item.summary_text || "Analysis run created.",
-      at: item.created_at,
-      badge: "Analysis Run",
-      tone: "success" as const,
-    })),
-    ...citedModelRuns.map((item) => ({
-      id: `cited-model-run-${item.id}`,
-      type: "run",
-      title: item.run_title,
-      description: "Worker model run cited by a project report (screening-grade).",
-      at: item.created_at ?? null,
-      badge: `Cited Model Run · ${titleize(item.status)}`,
-      tone: "info" as const,
-    })),
-    ...citedCountyRuns.map((item) => ({
-      id: `cited-county-run-${item.id}`,
-      type: "run",
-      title: item.run_name ?? "County run",
-      description: "County validation run cited by a project report.",
-      at: item.updated_at ?? null,
-      badge: `Cited County Run · ${titleize(item.stage ?? "unknown")}`,
-      tone: "info" as const,
-    })),
-    ...(recentGateDecisions ?? []).map((item) => ({
-      id: `gate-${item.id}`,
-      type: "gate",
-      title: item.gate_id,
-      description: item.rationale,
-      at: item.decided_at,
-      badge: `Stage Gate · ${item.decision}`,
-      tone: toneForDecision(item.decision),
-    })),
-  ]
-    .sort((a, b) => {
-      const aTime = a.at ? new Date(a.at).getTime() : 0;
-      const bTime = b.at ? new Date(b.at).getTime() : 0;
-      return bTime - aTime;
-    })
-    .slice(0, 12);
+  const timelineItems: TimelineItem[] = buildProjectTimelineItems({
+    milestones,
+    submittals,
+    projectInvoices,
+    deliverables,
+    risks,
+    issues,
+    decisions,
+    meetings,
+    recentRuns,
+    citedModelRuns,
+    citedCountyRuns,
+    recentGateDecisions,
+  });
 
   const openRiskCount = (risks ?? []).filter((risk) => risk.status !== "closed" && risk.status !== "mitigated").length;
   const openIssueCount = (issues ?? []).filter((issue) => issue.status !== "resolved").length;
@@ -1196,7 +1101,7 @@ export default async function ProjectDetailPage({
         workspaceRtpCycles={workspaceRtpCycles}
         existingRtpLinks={existingRtpLinks}
         availableModelRuns={availableModelRuns}
-        deliverableCount={deliverables?.length ?? 0}
+        deliverableCount={budgetInputs.deliverables.length}
         openRiskCount={openRiskCount}
         openIssueCount={openIssueCount}
         kbDocumentCount={kbDocumentCount}
@@ -1293,6 +1198,21 @@ export default async function ProjectDetailPage({
         projectInvoices={projectInvoices}
         prioritizedProjectInvoices={prioritizedProjectInvoices}
         deliverables={deliverables}
+        budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
+      />
+
+      <ProjectBudgetPanel
+        projectId={project.id}
+        snapshot={projectBudgetSnapshot}
+        pendingSchema={{
+          deliverableBudgetColumns: budgetInputs.pending.deliverableBudgetColumns,
+          spendEntries: budgetInputs.pending.spendEntries,
+          clientInvoices: budgetInputs.pending.clientInvoices,
+        }}
+        deliverableOptions={budgetInputs.deliverables.map((deliverable) => ({
+          id: deliverable.id,
+          title: deliverable.title,
+        }))}
       />
 
       <ProjectRiskAndDecisionLog

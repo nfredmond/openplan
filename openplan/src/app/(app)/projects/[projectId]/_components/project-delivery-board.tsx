@@ -11,6 +11,11 @@ import { RecordStatusAdvanceButton } from "@/components/projects/record-status-a
 import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
 import { postureLabel } from "@/lib/invoicing/reimbursement-profile-binding";
 import { reimbursementProfileRegistry } from "@/lib/invoicing/reimbursement-profiles";
+import {
+  DELIVERABLE_PACE_LABELS,
+  deliverableBudgetPaceTone,
+  type DeliverableBudgetSummary,
+} from "@/lib/projects/budget";
 import type { ProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectControlHref,
@@ -73,6 +78,8 @@ type ProjectDeliveryBoardProps = {
   projectInvoices: BillingInvoice[];
   prioritizedProjectInvoices: BillingInvoice[];
   deliverables: DeliverableRow[] | null;
+  /** Per-deliverable budget/burn summaries keyed by deliverable id (may be empty pre-migration). */
+  budgetSummaryByDeliverableId: Map<string, DeliverableBudgetSummary>;
 };
 
 export function ProjectDeliveryBoard({
@@ -94,6 +101,7 @@ export function ProjectDeliveryBoard({
   projectInvoices,
   prioritizedProjectInvoices,
   deliverables,
+  budgetSummaryByDeliverableId,
 }: ProjectDeliveryBoardProps) {
   return (
     <>
@@ -596,23 +604,40 @@ export function ProjectDeliveryBoard({
           <div className="module-empty-state mt-5 text-sm">No deliverables yet. Add the first required output in the creation lane.</div>
         ) : (
           <div className="mt-5 module-record-list">
-            {deliverables.map((deliverable) => (
-              <div key={deliverable.id} className="module-record-row">
-                <div className="module-record-main">
-                  <div className="module-record-kicker">
-                    <StatusBadge tone={toneForDeliverableStatus(deliverable.status)}>{titleize(deliverable.status)}</StatusBadge>
-                    {deliverable.owner_label ? <StatusBadge tone="neutral">{deliverable.owner_label}</StatusBadge> : null}
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <h3 className="module-record-title">{deliverable.title}</h3>
-                      {deliverable.due_date ? <p className="module-record-stamp">Due {fmtDateTime(deliverable.due_date)}</p> : null}
+            {deliverables.map((deliverable) => {
+              const budgetSummary = budgetSummaryByDeliverableId.get(deliverable.id) ?? null;
+
+              return (
+                <div key={deliverable.id} className="module-record-row">
+                  <div className="module-record-main">
+                    <div className="module-record-kicker">
+                      <StatusBadge tone={toneForDeliverableStatus(deliverable.status)}>{titleize(deliverable.status)}</StatusBadge>
+                      {deliverable.owner_label ? <StatusBadge tone="neutral">{deliverable.owner_label}</StatusBadge> : null}
+                      {budgetSummary ? (
+                        <>
+                          <StatusBadge tone={deliverableBudgetPaceTone(budgetSummary.paceStatus)}>
+                            {DELIVERABLE_PACE_LABELS[budgetSummary.paceStatus]}
+                          </StatusBadge>
+                          {budgetSummary.budgetAmount !== null ? (
+                            <StatusBadge tone="neutral">Budget {fmtCurrency(budgetSummary.budgetAmount)}</StatusBadge>
+                          ) : null}
+                          {budgetSummary.actualToDate > 0 ? (
+                            <StatusBadge tone="info">Billed + spend {fmtCurrency(budgetSummary.actualToDate)}</StatusBadge>
+                          ) : null}
+                        </>
+                      ) : null}
                     </div>
-                    <p className="module-record-summary">{deliverable.summary || "No summary yet."}</p>
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
+                        <h3 className="module-record-title">{deliverable.title}</h3>
+                        {deliverable.due_date ? <p className="module-record-stamp">Due {fmtDateTime(deliverable.due_date)}</p> : null}
+                      </div>
+                      <p className="module-record-summary">{deliverable.summary || "No summary yet."}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </article>

@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   buildDeliverableBudgetSummary,
   buildProjectBudgetSnapshot,
+  DELIVERABLE_PACE_LABELS,
+  deliverableBudgetPaceTone,
   PACE_TOLERANCE_POINTS,
   type BilledLineLike,
   type SpendEntryLike,
@@ -158,6 +160,18 @@ describe("buildDeliverableBudgetSummary — billed vs spend decomposition", () =
     expect(summary.paceStatus).toBe("on_pace");
   });
 
+  it("counts client-invoice 'sent' lines as billed — both invoicing vocabularies are covered", () => {
+    const summary = buildDeliverableBudgetSummary(
+      { id: D1, budget_amount: 1000, percent_complete: 40 },
+      [],
+      [sentLine(D1, 250, "sent"), sentLine(D1, 150, "paid")]
+    );
+
+    expect(summary.billedToDate).toBe(400);
+    expect(summary.actualToDate).toBe(400);
+    expect(summary.paceStatus).toBe("on_pace");
+  });
+
   it("keeps draft and internal-review lines out of billed, disclosed as draftedAmount", () => {
     const summary = buildDeliverableBudgetSummary(
       { id: D1, budget_amount: 1000, percent_complete: 10 },
@@ -293,6 +307,18 @@ describe("buildProjectBudgetSnapshot", () => {
     expect(snapshot.attention).toContainEqual(
       expect.stringContaining("more than the stated project budget")
     );
+  });
+
+  it("maps pace statuses to chip tones and honest labels", () => {
+    expect(deliverableBudgetPaceTone("over_budget")).toBe("warning");
+    expect(deliverableBudgetPaceTone("billed_ahead_of_progress")).toBe("warning");
+    expect(deliverableBudgetPaceTone("on_pace")).toBe("success");
+    expect(deliverableBudgetPaceTone("billed_behind_progress")).toBe("info");
+    // The refusals stay neutral — a missing basis is not an alarm.
+    expect(deliverableBudgetPaceTone("no_budget")).toBe("neutral");
+    expect(deliverableBudgetPaceTone("no_progress_basis")).toBe("neutral");
+    expect(DELIVERABLE_PACE_LABELS.no_budget).toBe("No budget entered");
+    expect(DELIVERABLE_PACE_LABELS.no_progress_basis).toBe("No progress basis");
   });
 
   it("handles empty inputs without inventing anything", () => {

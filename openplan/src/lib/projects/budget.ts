@@ -25,8 +25,13 @@ import { parseCurrencyAmount } from "@/lib/invoicing/invoice-records";
 /** Burn may drift this many percentage points from recorded progress and still count as on pace. */
 export const PACE_TOLERANCE_POINTS = 10;
 
-/** Invoice statuses that count as billed (sent to the client or already paid). */
-export const BILLED_LINE_SENT_STATUSES = ["submitted", "approved_for_payment", "paid"] as const;
+/**
+ * Invoice statuses that count as billed (sent to the client or already paid).
+ * Covers both invoicing vocabularies: the reimbursement register
+ * (billing_invoice_records: submitted / approved_for_payment / paid) and the
+ * receivable register (client_invoices: sent / paid).
+ */
+export const BILLED_LINE_SENT_STATUSES = ["sent", "submitted", "approved_for_payment", "paid"] as const;
 
 /** Invoice statuses that are still drafts — tracked separately, never counted as billed. */
 export const BILLED_LINE_DRAFT_STATUSES = ["draft", "internal_review"] as const;
@@ -60,6 +65,30 @@ export type DeliverablePaceStatus =
   | "billed_ahead_of_progress"
   | "billed_behind_progress"
   | "over_budget";
+
+/** Honest short labels for each pace status — refusals stay refusals. */
+export const DELIVERABLE_PACE_LABELS: Record<DeliverablePaceStatus, string> = {
+  no_budget: "No budget entered",
+  no_progress_basis: "No progress basis",
+  on_pace: "On pace",
+  billed_ahead_of_progress: "Burn ahead of progress",
+  billed_behind_progress: "Billing behind progress",
+  over_budget: "Over budget",
+};
+
+/**
+ * Tone mapping for pace chips. The two refusal states are deliberately
+ * neutral — a missing basis is not an alarm, and dressing it as one would
+ * pressure planners to invent numbers.
+ */
+export function deliverableBudgetPaceTone(
+  status: DeliverablePaceStatus
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (status === "over_budget" || status === "billed_ahead_of_progress") return "warning";
+  if (status === "on_pace") return "success";
+  if (status === "billed_behind_progress") return "info";
+  return "neutral";
+}
 
 export type DeliverableBudgetSummary = {
   deliverableId: string | null;
