@@ -1,0 +1,637 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
+import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
+
+const createClientMock = vi.fn();
+const createApiAuditLoggerMock = vi.fn();
+const authGetUserMock = vi.fn();
+const loadFundingOpportunityAccessMock = vi.fn();
+
+const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
+const OTHER_WORKSPACE_ID = "99999999-9999-4999-8999-999999999999";
+const USER_ID = "22222222-2222-4222-8222-222222222222";
+const SECTION_ID = "55555555-5555-4555-8555-555555555555";
+const ATTACHMENT_ID = "66666666-6666-4666-8666-666666666666";
+const KB_DOCUMENT_ID = "77777777-7777-4777-8777-777777777777";
+const REPORT_ARTIFACT_ID = "88888888-8888-4888-8888-888888888888";
+
+const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: (...args: unknown[]) => createClientMock(...args),
+}));
+
+vi.mock("@/lib/observability/audit", () => ({
+  createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
+}));
+
+vi.mock("@/lib/programs/api", () => ({
+  loadFundingOpportunityAccess: (...args: unknown[]) => loadFundingOpportunityAccessMock(...args),
+}));
+
+import { GET as getApplication, PATCH as reorderApplication, POST as initApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/route";
+import { POST as createSection } from "@/app/api/funding-opportunities/[opportunityId]/sections/route";
+import {
+  DELETE as deleteSection,
+  PATCH as patchSection,
+} from "@/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/route";
+import { POST as createAttachment } from "@/app/api/funding-opportunities/[opportunityId]/attachments/route";
+import { PATCH as patchAttachment } from "@/app/api/funding-opportunities/[opportunityId]/attachments/[attachmentId]/route";
+
+type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
+type QueryChain = Record<string, ReturnType<typeof vi.fn>> & {
+  then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => unknown;
+};
+
+function makeQuery(result: QueryResult): QueryChain {
+  const chain = {} as QueryChain;
+  for (const method of ["select", "eq", "neq", "in", "order", "limit", "insert", "update", "delete"]) {
+    chain[method] = vi.fn(() => chain);
+  }
+  chain.maybeSingle = vi.fn(async () => result);
+  chain.single = vi.fn(async () => result);
+  chain.then = (resolve, reject) => Promise.resolve(result).then(resolve, reject);
+  return chain;
+}
+
+/** Return successive chains per from() call on the same table. */
+function tableSequence(...chains: QueryChain[]): () => QueryChain {
+  let index = 0;
+  return () => chains[Math.min(index++, chains.length - 1)];
+}
+
+function installTables(handlers: Record<string, () => QueryChain>) {
+  createClientMock.mockResolvedValue({
+    auth: { getUser: authGetUserMock },
+    from: vi.fn((table: string) => {
+      const handler = handlers[table];
+      if (!handler) throw new Error(`Unexpected table: ${table}`);
+      return handler();
+    }),
+  });
+}
+
+function jsonRequest(url: string, method: string, payload: unknown) {
+  return new NextRequest(url, {
+    method,
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+const baseOpportunity = {
+  id: OPPORTUNITY_ID,
+  workspace_id: WORKSPACE_ID,
+  program_id: null,
+  project_id: null,
+  title: "Corridor safety package",
+  opportunity_status: "open",
+  decision_state: "pursue",
+};
+
+const baseSectionRow = {
+  id: SECTION_ID,
+  workspace_id: WORKSPACE_ID,
+  opportunity_id: OPPORTUNITY_ID,
+  section_key: "community-engagement",
+  title: "Community engagement",
+  guidance: "Describe engagement. Verify the current call.",
+  sort_order: 2,
+  source: "catalog",
+  suggested_evidence: ["engagement", "kb"],
+  ai_drafting_enabled: true,
+  status: "not_started",
+  final_markdown: null,
+  finalized_from_draft_id: null,
+  updated_by: null,
+  created_at: "2026-07-27T00:00:00.000Z",
+  updated_at: "2026-07-27T00:00:00.000Z",
+};
+
+const baseAttachmentRow = {
+  id: ATTACHMENT_ID,
+  workspace_id: WORKSPACE_ID,
+  opportunity_id: OPPORTUNITY_ID,
+  attachment_key: "letters-of-support",
+  title: "Letters of support",
+  guidance: "Verify limits in the current call.",
+  required: false,
+  status: "missing",
+  kb_document_id: null,
+  report_artifact_id: null,
+  note: null,
+  sort_order: 0,
+  updated_by: null,
+  created_at: "2026-07-27T00:00:00.000Z",
+  updated_at: "2026-07-27T00:00:00.000Z",
+};
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  createApiAuditLoggerMock.mockReturnValue(mockAudit);
+  authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+  loadFundingOpportunityAccessMock.mockResolvedValue({
+    supabase: null,
+    opportunity: baseOpportunity,
+    membership: { workspace_id: WORKSPACE_ID, role: "member" },
+    error: null,
+    allowed: true,
+  });
+});
+
+describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/application`;
+  const context = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+
+  it("returns 401 when unauthenticated", async () => {
+    installTables({});
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+
+    const response = await initApplication(jsonRequest(url, "POST", {}), context);
+    expect(response.status).toBe(401);
+  });
+
+  it("returns 404 when the opportunity is invisible to the member", async () => {
+    installTables({});
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      supabase: null,
+      opportunity: null,
+      membership: null,
+      error: null,
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", {}), context);
+    expect(response.status).toBe(404);
+  });
+
+  it("returns 403 without write access", async () => {
+    installTables({});
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      supabase: null,
+      opportunity: baseOpportunity,
+      membership: { workspace_id: WORKSPACE_ID, role: "viewer" },
+      error: null,
+      allowed: false,
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", {}), context);
+    expect(response.status).toBe(403);
+  });
+
+  it("rejects an unknown catalog key with 422 — templates never match by inference", async () => {
+    const sectionsChain = makeQuery({ data: [], error: null });
+    installTables({ funding_opportunity_application_sections: () => sectionsChain });
+
+    const response = await initApplication(
+      jsonRequest(url, "POST", { catalogKey: "Active Transportation Program (ATP)" }),
+      context
+    );
+
+    expect(response.status).toBe(422);
+    expect((await response.json()).error).toContain("Unknown catalog key");
+    expect(sectionsChain.insert).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 when the application is already initialized", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [{ id: SECTION_ID }], error: null }),
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+    expect(response.status).toBe(409);
+  });
+
+  it("answers 503 with the migration to apply when the schema is pending", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({
+          data: null,
+          error: {
+            message:
+              "Could not find the table 'public.funding_opportunity_application_sections' in the schema cache",
+          },
+        }),
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toContain("20260727000014_grant_application_assembly");
+  });
+
+  it("seeds the full catalog template by explicit key", async () => {
+    const atp = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!;
+    const existingChain = makeQuery({ data: [], error: null });
+    const sectionInsertChain = makeQuery({ data: [{ id: SECTION_ID }], error: null });
+    const attachmentInsertChain = makeQuery({ data: [{ id: ATTACHMENT_ID }], error: null });
+
+    installTables({
+      funding_opportunity_application_sections: tableSequence(existingChain, sectionInsertChain),
+      funding_opportunity_attachments: () => attachmentInsertChain,
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+    expect(response.status).toBe(201);
+
+    const insertedSections = sectionInsertChain.insert.mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >;
+    expect(insertedSections).toHaveLength(atp.applicationSections!.length);
+    insertedSections.forEach((row, index) => {
+      expect(row.workspace_id).toBe(WORKSPACE_ID);
+      expect(row.opportunity_id).toBe(OPPORTUNITY_ID);
+      expect(row.source).toBe("catalog");
+      expect(row.status).toBe("not_started");
+      expect(row.sort_order).toBe(index);
+      expect(row.section_key).toBe(atp.applicationSections![index].key);
+    });
+    // The budget section seeds as never-AI-draftable.
+    const budgetRow = insertedSections.find((row) => row.section_key === "budget-narrative");
+    expect(budgetRow?.ai_drafting_enabled).toBe(false);
+
+    const insertedAttachments = attachmentInsertChain.insert.mock.calls[0][0] as Array<
+      Record<string, unknown>
+    >;
+    expect(insertedAttachments).toHaveLength(atp.requiredAttachments!.length);
+    expect(insertedAttachments.every((row) => row.status === "missing")).toBe(true);
+  });
+
+  it("initializes an empty custom scaffold when no catalog key is given", async () => {
+    const existingChain = makeQuery({ data: [], error: null });
+    installTables({ funding_opportunity_application_sections: () => existingChain });
+
+    const response = await initApplication(jsonRequest(url, "POST", {}), context);
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ sections: [], attachments: [] });
+    expect(existingChain.insert).not.toHaveBeenCalled();
+  });
+});
+
+describe("GET /api/funding-opportunities/[opportunityId]/application", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/application`;
+  const context = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+
+  it("discloses a pending schema instead of presenting an empty application", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({
+          data: null,
+          error: { message: 'relation "funding_opportunity_application_sections" does not exist' },
+        }),
+      funding_opportunity_attachments: () =>
+        makeQuery({
+          data: null,
+          error: { message: 'relation "funding_opportunity_application_sections" does not exist' },
+        }),
+    });
+
+    const response = await getApplication(new NextRequest(url), context);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.schemaPending).toBe(true);
+    expect(body.error).toContain("20260727000014_grant_application_assembly");
+  });
+
+  it("returns sections and attachments in sort order", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [baseSectionRow], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [baseAttachmentRow], error: null }),
+    });
+
+    const response = await getApplication(new NextRequest(url), context);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.sections).toHaveLength(1);
+    expect(body.attachments).toHaveLength(1);
+    expect(body.schemaPending).toBe(false);
+  });
+});
+
+describe("PATCH /api/funding-opportunities/[opportunityId]/application (reorder)", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/application`;
+  const context = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+  const SECOND_SECTION_ID = "44444444-4444-4444-8444-444444444444";
+
+  it("rejects a partial order with 422", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [{ id: SECTION_ID }, { id: SECOND_SECTION_ID }], error: null }),
+    });
+
+    const response = await reorderApplication(
+      jsonRequest(url, "PATCH", { sectionOrder: [SECTION_ID] }),
+      context
+    );
+    expect(response.status).toBe(422);
+  });
+
+  it("writes sequential sort orders for a complete permutation", async () => {
+    const listChain = makeQuery({
+      data: [{ id: SECTION_ID }, { id: SECOND_SECTION_ID }],
+      error: null,
+    });
+    const updateFirst = makeQuery({ data: null, error: null });
+    const updateSecond = makeQuery({ data: null, error: null });
+    const reloadChain = makeQuery({ data: [baseSectionRow], error: null });
+
+    installTables({
+      funding_opportunity_application_sections: tableSequence(
+        listChain,
+        updateFirst,
+        updateSecond,
+        reloadChain
+      ),
+    });
+
+    const response = await reorderApplication(
+      jsonRequest(url, "PATCH", { sectionOrder: [SECOND_SECTION_ID, SECTION_ID] }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateFirst.update.mock.calls[0][0]).toMatchObject({ sort_order: 0, updated_by: USER_ID });
+    expect(updateFirst.eq).toHaveBeenCalledWith("id", SECOND_SECTION_ID);
+    expect(updateSecond.update.mock.calls[0][0]).toMatchObject({ sort_order: 1 });
+    expect(updateSecond.eq).toHaveBeenCalledWith("id", SECTION_ID);
+  });
+});
+
+describe("POST /api/funding-opportunities/[opportunityId]/sections", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/sections`;
+  const context = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+
+  it("creates a custom section appended after the last, with a slugged key", async () => {
+    const lastChain = makeQuery({ data: [{ sort_order: 4 }], error: null });
+    const insertChain = makeQuery({
+      data: { ...baseSectionRow, source: "custom", section_key: "local-match-story" },
+      error: null,
+    });
+
+    installTables({
+      funding_opportunity_application_sections: tableSequence(lastChain, insertChain),
+    });
+
+    const response = await createSection(
+      jsonRequest(url, "POST", { title: "Local Match Story!" }),
+      context
+    );
+
+    expect(response.status).toBe(201);
+    const inserted = insertChain.insert.mock.calls[0][0] as Record<string, unknown>;
+    expect(inserted).toMatchObject({
+      workspace_id: WORKSPACE_ID,
+      opportunity_id: OPPORTUNITY_ID,
+      section_key: "local-match-story",
+      source: "custom",
+      status: "not_started",
+      sort_order: 5,
+      ai_drafting_enabled: true,
+      suggested_evidence: [],
+    });
+  });
+
+  it("answers 409 when the section key is already taken", async () => {
+    const lastChain = makeQuery({ data: [], error: null });
+    const insertChain = makeQuery({
+      data: null,
+      error: { message: "duplicate key value violates unique constraint", code: "23505" },
+    });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(lastChain, insertChain),
+    });
+
+    const response = await createSection(
+      jsonRequest(url, "POST", { title: "Need", sectionKey: "need-and-safety" }),
+      context
+    );
+    expect(response.status).toBe(409);
+  });
+});
+
+describe("PATCH /api/funding-opportunities/[opportunityId]/sections/[sectionId]", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/sections/${SECTION_ID}`;
+  const context = {
+    params: Promise.resolve({ opportunityId: OPPORTUNITY_ID, sectionId: SECTION_ID }),
+  };
+
+  it("refuses a status regression the machine forbids", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: { ...baseSectionRow, status: "drafting" }, error: null }),
+    });
+
+    const response = await patchSection(jsonRequest(url, "PATCH", { status: "not_started" }), context);
+    expect(response.status).toBe(422);
+  });
+
+  it("never lets a catalog never-AI section become draftable again", async () => {
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({
+          data: {
+            ...baseSectionRow,
+            section_key: "budget-narrative",
+            ai_drafting_enabled: false,
+          },
+          error: null,
+        }),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { aiDraftingEnabled: true }),
+      context
+    );
+
+    expect(response.status).toBe(422);
+    expect((await response.json()).error).toContain("never AI-drafted");
+  });
+
+  it("updates title and walks drafting → operator_review", async () => {
+    const loadChain = makeQuery({ data: { ...baseSectionRow, status: "drafting" }, error: null });
+    const updateChain = makeQuery({
+      data: { ...baseSectionRow, status: "operator_review", title: "Engagement summary" },
+      error: null,
+    });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { title: "Engagement summary", status: "operator_review" }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateChain.update.mock.calls[0][0]).toMatchObject({
+      title: "Engagement summary",
+      status: "operator_review",
+      updated_by: USER_ID,
+    });
+  });
+});
+
+describe("DELETE /api/funding-opportunities/[opportunityId]/sections/[sectionId]", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/sections/${SECTION_ID}`;
+  const context = {
+    params: Promise.resolve({ opportunityId: OPPORTUNITY_ID, sectionId: SECTION_ID }),
+  };
+
+  it("refuses to delete a catalog-seeded section", async () => {
+    installTables({
+      funding_opportunity_application_sections: () => makeQuery({ data: baseSectionRow, error: null }),
+    });
+
+    const response = await deleteSection(new NextRequest(url, { method: "DELETE" }), context);
+    expect(response.status).toBe(422);
+  });
+
+  it("deletes a custom section", async () => {
+    const loadChain = makeQuery({ data: { ...baseSectionRow, source: "custom" }, error: null });
+    const deleteChain = makeQuery({ data: null, error: null });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, deleteChain),
+    });
+
+    const response = await deleteSection(new NextRequest(url, { method: "DELETE" }), context);
+    expect(response.status).toBe(200);
+    expect(deleteChain.delete).toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/funding-opportunities/[opportunityId]/attachments", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/attachments`;
+  const context = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }) };
+
+  it("creates a custom checklist item", async () => {
+    const lastChain = makeQuery({ data: [], error: null });
+    const insertChain = makeQuery({ data: baseAttachmentRow, error: null });
+    installTables({
+      funding_opportunity_attachments: tableSequence(lastChain, insertChain),
+    });
+
+    const response = await createAttachment(
+      jsonRequest(url, "POST", { title: "Site plan sketch", required: true }),
+      context
+    );
+
+    expect(response.status).toBe(201);
+    expect(insertChain.insert.mock.calls[0][0]).toMatchObject({
+      attachment_key: "site-plan-sketch",
+      required: true,
+      status: "missing",
+      sort_order: 0,
+    });
+  });
+});
+
+describe("PATCH /api/funding-opportunities/[opportunityId]/attachments/[attachmentId]", () => {
+  const url = `http://localhost/api/funding-opportunities/${OPPORTUNITY_ID}/attachments/${ATTACHMENT_ID}`;
+  const context = {
+    params: Promise.resolve({ opportunityId: OPPORTUNITY_ID, attachmentId: ATTACHMENT_ID }),
+  };
+
+  it("moves the checklist status", async () => {
+    const loadChain = makeQuery({ data: baseAttachmentRow, error: null });
+    const updateChain = makeQuery({
+      data: { ...baseAttachmentRow, status: "in_progress" },
+      error: null,
+    });
+    installTables({
+      funding_opportunity_attachments: tableSequence(loadChain, updateChain),
+    });
+
+    const response = await patchAttachment(jsonRequest(url, "PATCH", { status: "in_progress" }), context);
+    expect(response.status).toBe(200);
+    expect(updateChain.update.mock.calls[0][0]).toMatchObject({ status: "in_progress" });
+  });
+
+  it("attaches a workspace Knowledge Base document and auto-marks it attached", async () => {
+    const loadChain = makeQuery({ data: baseAttachmentRow, error: null });
+    const updateChain = makeQuery({
+      data: { ...baseAttachmentRow, status: "attached", kb_document_id: KB_DOCUMENT_ID },
+      error: null,
+    });
+    installTables({
+      funding_opportunity_attachments: tableSequence(loadChain, updateChain),
+      kb_documents: () =>
+        makeQuery({ data: { id: KB_DOCUMENT_ID, workspace_id: WORKSPACE_ID }, error: null }),
+    });
+
+    const response = await patchAttachment(
+      jsonRequest(url, "PATCH", { kbDocumentId: KB_DOCUMENT_ID }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateChain.update.mock.calls[0][0]).toMatchObject({
+      kb_document_id: KB_DOCUMENT_ID,
+      status: "attached",
+    });
+  });
+
+  it("rejects a Knowledge Base document from another workspace", async () => {
+    const loadChain = makeQuery({ data: baseAttachmentRow, error: null });
+    const updateChain = makeQuery({ data: baseAttachmentRow, error: null });
+    installTables({
+      funding_opportunity_attachments: tableSequence(loadChain, updateChain),
+      kb_documents: () =>
+        makeQuery({ data: { id: KB_DOCUMENT_ID, workspace_id: OTHER_WORKSPACE_ID }, error: null }),
+    });
+
+    const response = await patchAttachment(
+      jsonRequest(url, "PATCH", { kbDocumentId: KB_DOCUMENT_ID }),
+      context
+    );
+
+    expect(response.status).toBe(422);
+    expect(updateChain.update).not.toHaveBeenCalled();
+  });
+
+  it("attaches a report artifact after walking artifact → report → workspace", async () => {
+    const loadChain = makeQuery({ data: baseAttachmentRow, error: null });
+    const updateChain = makeQuery({
+      data: { ...baseAttachmentRow, status: "attached", report_artifact_id: REPORT_ARTIFACT_ID },
+      error: null,
+    });
+    installTables({
+      funding_opportunity_attachments: tableSequence(loadChain, updateChain),
+      report_artifacts: () =>
+        makeQuery({ data: { id: REPORT_ARTIFACT_ID, report_id: "report-1" }, error: null }),
+      reports: () => makeQuery({ data: { id: "report-1", workspace_id: WORKSPACE_ID }, error: null }),
+    });
+
+    const response = await patchAttachment(
+      jsonRequest(url, "PATCH", { reportArtifactId: REPORT_ARTIFACT_ID }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(updateChain.update.mock.calls[0][0]).toMatchObject({
+      report_artifact_id: REPORT_ARTIFACT_ID,
+      status: "attached",
+    });
+  });
+
+  it("rejects a report artifact whose report lives in another workspace", async () => {
+    const loadChain = makeQuery({ data: baseAttachmentRow, error: null });
+    const updateChain = makeQuery({ data: baseAttachmentRow, error: null });
+    installTables({
+      funding_opportunity_attachments: tableSequence(loadChain, updateChain),
+      report_artifacts: () =>
+        makeQuery({ data: { id: REPORT_ARTIFACT_ID, report_id: "report-1" }, error: null }),
+      reports: () =>
+        makeQuery({ data: { id: "report-1", workspace_id: OTHER_WORKSPACE_ID }, error: null }),
+    });
+
+    const response = await patchAttachment(
+      jsonRequest(url, "PATCH", { reportArtifactId: REPORT_ARTIFACT_ID }),
+      context
+    );
+
+    expect(response.status).toBe(422);
+    expect(updateChain.update).not.toHaveBeenCalled();
+  });
+});

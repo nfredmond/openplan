@@ -47,8 +47,28 @@ export const APPLICATION_ATTACHMENT_STATUSES = [
 export type ApplicationAttachmentStatus = (typeof APPLICATION_ATTACHMENT_STATUSES)[number];
 
 // ---------------------------------------------------------------------------
+// Pending-schema tolerance (routes answer 503 + the migration to apply)
+// ---------------------------------------------------------------------------
+
+export const APPLICATION_ASSEMBLY_MIGRATION = "20260727000014_grant_application_assembly";
+
+export const APPLICATION_PENDING_SCHEMA_ERROR = `This deployment's database predates the grant application assembly tables. Apply migration ${APPLICATION_ASSEMBLY_MIGRATION}, then retry.`;
+
+/** PostgREST/Postgres shapes for "the assembly tables are not migrated yet". */
+export function looksLikePendingAssemblySchema(message: string | null | undefined): boolean {
+  return /could not find the table|relation .* does not exist|schema cache/i.test(message ?? "");
+}
+
+// ---------------------------------------------------------------------------
 // Row shapes (as read back through the untyped Supabase client)
 // ---------------------------------------------------------------------------
+
+/** Canonical select column lists (the untyped client never checks these). */
+export const APPLICATION_SECTION_SELECT =
+  "id, workspace_id, opportunity_id, section_key, title, guidance, sort_order, source, suggested_evidence, ai_drafting_enabled, status, final_markdown, finalized_from_draft_id, updated_by, created_at, updated_at";
+
+export const APPLICATION_ATTACHMENT_SELECT =
+  "id, workspace_id, opportunity_id, attachment_key, title, guidance, required, status, kb_document_id, report_artifact_id, note, sort_order, updated_by, created_at, updated_at";
 
 export type ApplicationSectionRow = {
   id: string;
