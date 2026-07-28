@@ -15,6 +15,7 @@
  * identical `ABMInputs`.
  */
 
+import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import type { ABMInputs, Household, Person, SkimRow, Zone, ZoneSkims } from "./types";
 
 /** Tract-level inputs the builder needs. `CensusTractData` from
@@ -168,11 +169,19 @@ const SECOND_ADULT_WORKER_PROBABILITY = 0.5;
  * mobile home). */
 const BUILDING_TYPE_SPLITS = { single_family: 0.65, multi_family: 0.3 } as const;
 
-/** Grid anchor for zones without real centroids. Only relative distances feed
- * the skims, so the absolute anchor is inert; it sits in the North State
- * pilot region for map-plausibility. */
-const GRID_ANCHOR_LON = -121.0;
-const GRID_ANCHOR_LAT = 39.0;
+/**
+ * Grid anchor for zones without real centroids.
+ *
+ * Only relative distances feed the skims — every skim pair is derived from the
+ * same grid, and the longitude step is rescaled by the cosine of the row's own
+ * latitude — so the absolute anchor cancels out and no output depends on it.
+ * It is therefore deliberately NOT a study area: it is the same
+ * jurisdiction-neutral `CONTINENTAL_US_CENTER` the map camera falls back to,
+ * used here only because a grid has to start somewhere. These coordinates are
+ * synthetic placement, not the geography of the corridor being screened, and
+ * must never be presented as tract locations.
+ */
+const [GRID_ANCHOR_LON, GRID_ANCHOR_LAT] = CONTINENTAL_US_CENTER;
 
 const EARTH_RADIUS_KM = 6371;
 const KM_PER_DEGREE_LAT = 110.574;

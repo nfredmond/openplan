@@ -171,7 +171,7 @@ export function PlanCreator({ projects }: { projects: ProjectOption[] }) {
             </label>
             <Input
               id="plan-geography"
-              placeholder="Downtown core / SR-49 corridor"
+              placeholder="Downtown core / main street corridor"
               value={geographyLabel}
               onChange={(event) => setGeographyLabel(event.target.value)}
             />

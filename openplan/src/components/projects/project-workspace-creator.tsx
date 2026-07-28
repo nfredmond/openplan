@@ -99,7 +99,7 @@ export function ProjectWorkspaceCreator() {
           </label>
           <Input
             id="project-name"
-            placeholder="Nevada County Safety Action Program"
+            placeholder="Corridor Safety Action Program"
             value={projectName}
             onChange={(event) => setProjectName(event.target.value)}
             required

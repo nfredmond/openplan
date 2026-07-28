@@ -50,15 +50,16 @@ single-user workstation:
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → the printed anon key
    - `SUPABASE_SERVICE_ROLE_KEY` → the printed service_role key
    - `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` → your free Mapbox public token
-4. Apply the schema and (optionally) seed the demo workspace:
+4. Apply the schema:
 
    ```bash
    npm exec -- supabase migration up
-   npm run seed:nctc        # optional demo data; set OPENPLAN_DEMO_USER_PASSWORD to sign into it
    ```
 
 5. `npm run dev`, then open `http://localhost:3000` and sign up. Local email confirmation is
-   disabled, so the account activates immediately.
+   disabled, so the account activates immediately. Signing up provisions your workspace; you
+   then pick your own geography and create your own records — there is no demo dataset to load,
+   and nothing about the app is fitted to one place.
 
 One local quirk: the local Supabase config sets its auth site URL to `http://127.0.0.1:3000`, so
 the password-reset round-trip (`/forgot-password` → emailed link → `/auth/callback`) works from
@@ -169,7 +170,6 @@ A Census API key is **free** and issued instantly at
 | `NEXT_PUBLIC_SITE_URL` | The canonical public origin of your deployment (e.g. `https://plan.example.gov`) — governs the canonical URL and social-preview origin of every public page. On Vercel it falls back to the deployment URL; on other hosts, set it. |
 | `CHROME_EXECUTABLE_PATH` | Path to a Chrome/Chromium binary for report PDF typesetting on a non-serverless host. Falls back to `/usr/bin/google-chrome`; without any Chrome, PDFs use the built-in writer tier and disclose it in the document. |
 | `OPENPLAN_ASSISTANT_MODEL`, `OPENPLAN_GRANTS_AI_MODEL`, `OPENPLAN_ENGAGEMENT_{SYNTHESIS,TRANSLATION,MODERATION}_MODEL` | Override the Claude model each AI surface uses — cost/quality controls; unset uses the compiled defaults. |
-| `OPENPLAN_DEMO_USER_PASSWORD` | Password for the demo account `npm run seed:nctc` creates; without it the seed succeeds but the demo account cannot be signed into. |
 | `OPENPLAN_EQUITY_INGEST_TOKEN` | Bearer token gating the equity-designation tract ingest endpoint. |
 | `OPENPLAN_INTEGRATION_KEY_SECRET` | Optional. Enables **per-workspace integration keys**: with it set, workspace owners/admins can store their own Anthropic and Census keys from the dashboard — encrypted with this secret, validated live before saving, and billed to their own provider accounts. **Set it to a high-entropy value** — `openssl rand -hex 32` — never a passphrase: the secret is the only thing standing between a database dump and the stored keys, and stored ciphertexts are only as strong as it is (16 characters is the enforced minimum, not a recommendation). **Unset, per-workspace keys are simply disabled** and the panel says so; the deployment env keys above keep working exactly as before. Rotating or changing this secret invalidates every stored workspace key (they fail decryption and fall back to the deployment env keys), so after a rotation teams re-enter their keys. Keys stored before the salted-KDF upgrade (`v1:`-format ciphertexts) remain readable under the same secret — no re-entry is needed for the upgrade itself. |
 | `OPENPLAN_WORKER_LOCAL_ROOT` | Single-machine deployments only: filesystem root where a co-located modeling worker writes artifacts so the app reads them from disk. |

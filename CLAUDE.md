@@ -243,7 +243,6 @@ npm test               # vitest unit tests
 npm run test:watch     # vitest watch
 npm run lint           # eslint
 npm run qa:gate        # lint + test + pnpm audit + build — the full pre-ship gate
-npm run seed:nctc      # seed NCTC pilot demo
 npm run test:rls-live  # live RLS-isolation test (needs OPENPLAN_RLS_LIVE_TEST=1, set by the script)
 
 npm exec -- supabase start           # local Supabase stack

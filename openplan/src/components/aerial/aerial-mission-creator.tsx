@@ -134,7 +134,7 @@ export function AerialMissionCreator({
             <Input
               value={geographyLabel}
               onChange={(e) => setGeographyLabel(e.target.value)}
-              placeholder="Nevada County, Segment A"
+              placeholder="Study corridor, Segment A"
             />
           </div>
           <div className="space-y-1.5">

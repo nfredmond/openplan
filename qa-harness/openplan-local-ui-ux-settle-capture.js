@@ -16,165 +16,200 @@ const VIEWPORTS = {
   mobile: { width: 390, height: 844 },
 };
 
+/**
+ * Record-detail routes take their id from the operator's own workspace.
+ *
+ * These used to be hardcoded UUIDs from a checked-in demo seed, which meant the
+ * capture only ever produced screenshots of one agency's data — and 404ed for
+ * anybody else. There is no seed now. A detail route with no id supplied is
+ * ledgered as `fixture_required` and skipped, which is a non-blocking status:
+ * the capture still runs and still says plainly which routes it could not
+ * reach and how to reach them.
+ *
+ * Deliberately NOT self-provisioning: this script authenticates from a storage
+ * state the operator hands it, and its job is to photograph whatever workspace
+ * it is pointed at. Creating records of its own would duplicate the two local
+ * spine smokes and photograph a workspace nobody asked about.
+ */
+const RECORD_ID_ENV_VARS = {
+  project: 'OPENPLAN_UI_UX_PROJECT_ID',
+  plan: 'OPENPLAN_UI_UX_PLAN_ID',
+  program: 'OPENPLAN_UI_UX_PROGRAM_ID',
+  report: 'OPENPLAN_UI_UX_REPORT_ID',
+  scenarioSet: 'OPENPLAN_UI_UX_SCENARIO_SET_ID',
+  countyRun: 'OPENPLAN_UI_UX_COUNTY_RUN_ID',
+  engagementCampaign: 'OPENPLAN_UI_UX_ENGAGEMENT_CAMPAIGN_ID',
+  rtpCycle: 'OPENPLAN_UI_UX_RTP_CYCLE_ID',
+};
+
+function readRecordId(key) {
+  const value = (process.env[RECORD_ID_ENV_VARS[key]] || '').trim();
+  return value || null;
+}
+
+/**
+ * A detail route, resolved against whatever id the operator supplied.
+ *
+ * When no id is supplied the route keeps a placeholder URL purely so the
+ * ledger row reads sensibly; it is never navigated to, because
+ * `fixtureRequired` short-circuits capture before navigation.
+ */
+function detailRoute({ routeKey, recordKey, pathPrefix, visibleTarget, expectedTextAny }) {
+  const recordId = readRecordId(recordKey);
+  return {
+    routeKey,
+    stateKey: recordId ? 'operator-record' : 'no-record-supplied',
+    url: recordId ? `${pathPrefix}/${recordId}` : `${pathPrefix}/<id>`,
+    authWorkspace: "Operator's own workspace",
+    seedState: recordId ? 'Supplied record detail visible' : 'No record id supplied',
+    visibleTarget,
+    expectedTextAny,
+    fixtureRequired: !recordId,
+    missingDependency: recordId
+      ? undefined
+      : `No record id supplied. Set ${RECORD_ID_ENV_VARS[recordKey]} to a record in the workspace this storage state belongs to.`,
+  };
+}
+
+/**
+ * Index-route expectations are structural on purpose.
+ *
+ * They used to assert one agency's record titles, so they could only ever pass
+ * against that agency's data. What a capture can honestly assert for ANY
+ * workspace is that the module rendered an authorized surface rather than an
+ * auth wall or a denial — which `captureRoute` checks before these run — plus
+ * the module's own name. Whether a given workspace happens to hold records is
+ * that workspace's business, not a pass/fail condition.
+ */
 const ROUTES = [
   {
     routeKey: 'dashboard',
     stateKey: 'workspace-overview',
     url: '/dashboard',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'Command board and overview populated',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Command board and overview rendered',
     visibleTarget: 'Shell rails visible',
-    expectedTextAny: ['Nevada County Transportation Commission', 'NCTC', 'Command board'],
+    expectedTextAny: ['Command board', 'Overview'],
   },
   {
     routeKey: 'projects-index',
-    stateKey: 'nctc-project-visible',
+    stateKey: 'workspace-projects',
     url: '/projects',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC project row visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Project registry rendered',
     visibleTarget: 'Registry/list worksurface',
-    expectedTextAny: ['NCTC 2045 RTP', 'proof-of-capability'],
+    expectedTextAny: ['Projects'],
   },
-  {
+  detailRoute({
     routeKey: 'project-detail',
-    stateKey: 'nctc-project',
-    url: '/projects/d0000001-0000-4000-8000-000000000003',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC project detail visible',
+    recordKey: 'project',
+    pathPrefix: '/projects',
     visibleTarget: 'Project posture/detail regions',
-    expectedTextAny: ['NCTC 2045 RTP', 'proof-of-capability'],
-  },
+    expectedTextAny: ['Project', 'Aerial evidence'],
+  }),
   {
     routeKey: 'plans-index',
-    stateKey: 'nctc-plan-visible',
+    stateKey: 'workspace-plans',
     url: '/plans',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC local proof plan visible',
-    visibleTarget: 'Plan registry/detail surface',
-    expectedTextAny: ['NCTC 2045 RTP local proof plan'],
-    missingDependency: 'Updated local NCTC plan fixture missing; rerun the local NCTC seed before capture.',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Plan registry rendered',
+    visibleTarget: 'Plan registry surface',
+    expectedTextAny: ['Plans'],
   },
-  {
+  detailRoute({
     routeKey: 'plan-detail',
-    stateKey: 'nctc-plan',
-    url: '/plans/d0000001-0000-4000-8000-000000000015',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'Linked NCTC local proof plan detail visible',
+    recordKey: 'plan',
+    pathPrefix: '/plans',
     visibleTarget: 'Plan detail surface',
-    expectedTextAny: ['NCTC 2045 RTP local proof plan'],
-    missingDependency: 'Updated local NCTC plan fixture missing; rerun the local NCTC seed before capture.',
-  },
+    expectedTextAny: ['Plan'],
+  }),
   {
     routeKey: 'programs-index',
-    stateKey: 'nctc-program-visible',
+    stateKey: 'workspace-programs',
     url: '/programs',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC programming pipeline visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Program registry rendered',
     visibleTarget: 'Program registry surface',
-    expectedTextAny: ['NCTC 2045 RTP programming pipeline'],
-    missingDependency: 'Updated local NCTC program fixture missing; rerun the local NCTC seed before capture.',
+    expectedTextAny: ['Programs'],
   },
-  {
+  detailRoute({
     routeKey: 'program-detail',
-    stateKey: 'nctc-program',
-    url: '/programs/d0000001-0000-4000-8000-000000000016',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'Linked NCTC program detail visible',
+    recordKey: 'program',
+    pathPrefix: '/programs',
     visibleTarget: 'Program detail/funding lane surface',
-    expectedTextAny: ['NCTC 2045 RTP programming pipeline', 'Rural RTP implementation readiness call'],
-    missingDependency: 'Updated local NCTC program fixture missing; rerun the local NCTC seed before capture.',
-  },
+    expectedTextAny: ['Program'],
+  }),
   {
     routeKey: 'reports-index',
-    stateKey: 'nctc-report-visible',
+    stateKey: 'workspace-reports',
     url: '/reports',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC report packet visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Report registry rendered',
     visibleTarget: 'Report registry surface',
-    expectedTextAny: ['NCTC 2045 RTP settle board packet'],
-    missingDependency: 'Updated local NCTC report fixture missing; rerun the local NCTC seed before capture.',
+    expectedTextAny: ['Reports'],
   },
-  {
+  detailRoute({
     routeKey: 'report-detail',
-    stateKey: 'nctc-report',
-    url: '/reports/d0000001-0000-4000-8000-000000000019',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC report packet detail visible',
+    recordKey: 'report',
+    pathPrefix: '/reports',
     visibleTarget: 'Report detail/artifact state',
-    expectedTextAny: ['NCTC 2045 RTP settle board packet', 'Latest HTML packet'],
-    missingDependency: 'Updated local NCTC report fixture missing; rerun the local NCTC seed before capture.',
-  },
+    expectedTextAny: ['Report'],
+  }),
   {
     routeKey: 'scenarios-index',
-    stateKey: 'nctc-scenario-visible',
+    stateKey: 'workspace-scenarios',
     url: '/scenarios',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC scenario set and comparison entries visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Scenario registry rendered',
     visibleTarget: 'Scenario registry surface',
-    expectedTextAny: ['NCTC 2045 RTP scenario comparison', 'SR-49 safety package'],
-    missingDependency: 'Updated local NCTC scenario fixture missing; rerun the local NCTC seed before capture.',
+    expectedTextAny: ['Scenarios'],
   },
-  {
+  detailRoute({
     routeKey: 'scenario-detail',
-    stateKey: 'nctc-scenario',
-    url: '/scenarios/d0000001-0000-4000-8000-000000000030',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC scenario comparison detail visible',
+    recordKey: 'scenarioSet',
+    pathPrefix: '/scenarios',
     visibleTarget: 'Scenario comparison surface',
-    expectedTextAny: [
-      'NCTC 2045 RTP scenario comparison',
-      'SR-49 safety package vs Existing conditions baseline',
-      'SR-49 safety package comparison snapshot',
-    ],
-    missingDependency: 'Updated local NCTC scenario fixture missing; rerun the local NCTC seed before capture.',
-  },
+    expectedTextAny: ['Scenario'],
+  }),
   {
     routeKey: 'models-index',
     stateKey: 'workspace-models',
     url: '/models',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'Modeling readiness/run history visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Modeling readiness/run history rendered',
     visibleTarget: 'Modeling workbench surface',
-    expectedTextAny: ['Model', 'County', 'run'],
+    expectedTextAny: ['Models'],
   },
   {
     routeKey: 'county-runs-index',
     stateKey: 'workspace-runs',
     url: '/county-runs',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'County run registry visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'County run registry rendered',
     visibleTarget: 'Run registry surface',
-    expectedTextAny: ['County', 'run', 'nevada-county-runtime'],
+    expectedTextAny: ['County'],
   },
-  {
+  detailRoute({
     routeKey: 'county-run-detail',
-    stateKey: 'nctc-run',
-    url: '/county-runs/d0000001-0000-4000-8000-000000000005',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'County run evidence visible',
+    recordKey: 'countyRun',
+    pathPrefix: '/county-runs',
     visibleTarget: 'Run detail/evidence panel',
-    expectedTextAny: ['nevada-county-runtime-norenumber-freeze-20260324', 'County run'],
-  },
+    expectedTextAny: ['County run', 'County'],
+  }),
   {
     routeKey: 'data-hub',
     stateKey: 'workspace-data',
     url: '/data-hub',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC Data Hub connector and datasets visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Data Hub connectors and datasets rendered',
     visibleTarget: 'Data hub worksurface',
-    expectedTextAll: [
-      'NCTC RTP evidence catalog',
-      'Nevada County ACS equity tract context',
-      'SR-49 safety package corridor screening',
-      'SR-49 and Grass Valley safety comment/crash points',
-    ],
-    missingDependency: 'Updated local NCTC Data Hub fixture missing; rerun the local NCTC seed before capture.',
+    expectedTextAny: ['Data Hub'],
   },
   {
     routeKey: 'explore-map',
-    stateKey: 'nctc-layers-ready',
+    stateKey: 'map-layers-ready',
     url: '/explore',
-    authWorkspace: 'NCTC demo workspace',
+    authWorkspace: "Operator's own workspace",
     seedState: 'Mapbox map and layers loaded',
     visibleTarget: 'Map controls/inspector visible',
     expectedSelector: '.mapboxgl-canvas',
@@ -184,71 +219,43 @@ const ROUTES = [
     routeKey: 'engagement-index',
     stateKey: 'workspace-campaigns',
     url: '/engagement',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC engagement campaign visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Engagement registry rendered',
     visibleTarget: 'Engagement registry/workflow surface',
-    expectedTextAny: ['NCTC 2045 RTP community input map', 'community input'],
+    expectedTextAny: ['Campaigns', 'Engagement'],
   },
-  {
+  detailRoute({
     routeKey: 'engagement-detail',
-    stateKey: 'nctc-campaign',
-    url: '/engagement/d0000001-0000-4000-8000-000000000010',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'Campaign and approved items visible',
+    recordKey: 'engagementCampaign',
+    pathPrefix: '/engagement',
     visibleTarget: 'Campaign detail/workflow',
-    expectedTextAny: ['NCTC 2045 RTP community input map', 'community input'],
-  },
+    expectedTextAny: ['Campaign', 'Engagement'],
+  }),
   {
     routeKey: 'grants',
-    stateKey: 'nctc-grants-visible',
+    stateKey: 'workspace-grants',
     url: '/grants',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC grants opportunity, award, and reimbursement state visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'Grants operating lanes rendered',
     visibleTarget: 'Grants operating lanes',
-    expectedTextAll: [
-      'Rural RTP implementation readiness call',
-      'NCTC RTP LPP construction award',
-      'NCTC SR-49 SAFETY PACKAGE CONSTRUCTION AWARD',
-      'NCTC-LPP-2026-001',
-    ],
-    missingDependency: 'Updated local NCTC grants fixture missing; rerun the local NCTC seed before capture.',
+    expectedTextAny: ['Grants'],
   },
   {
     routeKey: 'rtp-index',
-    stateKey: 'nctc-cycle-visible',
+    stateKey: 'workspace-rtp',
     url: '/rtp',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'NCTC RTP cycle visible',
+    authWorkspace: "Operator's own workspace",
+    seedState: 'RTP registry rendered',
     visibleTarget: 'RTP registry/document flow',
-    expectedTextAny: ['NCTC 2045 RTP', 'demo cycle'],
+    expectedTextAny: ['RTP'],
   },
-  {
+  detailRoute({
     routeKey: 'rtp-detail',
-    stateKey: 'nctc-cycle',
-    url: '/rtp/d0000001-0000-4000-8000-000000000004',
-    authWorkspace: 'NCTC demo workspace',
-    seedState: 'RTP cycle and chapter visible',
+    recordKey: 'rtpCycle',
+    pathPrefix: '/rtp',
     visibleTarget: 'Cycle detail/document flow',
-    expectedTextAny: ['NCTC 2045 RTP', 'demo cycle'],
-  },
-  {
-    routeKey: 'admin-index',
-    stateKey: 'authenticated-admin',
-    url: '/admin',
-    authWorkspace: 'Authenticated operator workspace',
-    seedState: 'Admin route reachable',
-    visibleTarget: 'Admin module surface',
-    expectedTextAny: ['Admin', 'Operations', 'Readiness'],
-  },
-  {
-    routeKey: 'pilot-readiness',
-    stateKey: 'local-doc-status',
-    url: '/admin/pilot-readiness',
-    authWorkspace: 'Authenticated operator workspace',
-    seedState: 'Local proof docs visible as readiness inputs',
-    visibleTarget: 'Readiness status list',
-    expectedTextAny: ['Pilot readiness', 'readiness', 'proof'],
-  },
+    expectedTextAny: ['RTP'],
+  }),
 ];
 
 function printUsage() {
@@ -264,7 +271,18 @@ Safe defaults:
   - Vercel and production-looking URLs are always refused.
   - Output is confined to docs/ops/2026-04-29-test-output/ui-ux-settle/ unless --output-dir or
     OPENPLAN_UI_UX_SETTLE_OUTPUT_DIR points to another directory under docs/ops/.
-  - Fixture-required routes are ledgered and skipped until local populated fixtures exist.
+  - Record-detail routes are ledgered and skipped (status "fixture_required", non-blocking) unless
+    you supply an id from your own workspace. This script ships no demo data and creates none.
+
+Record ids (optional; each unset id skips one detail route with an explicit note):
+  OPENPLAN_UI_UX_PROJECT_ID              /projects/<id>
+  OPENPLAN_UI_UX_PLAN_ID                 /plans/<id>
+  OPENPLAN_UI_UX_PROGRAM_ID              /programs/<id>
+  OPENPLAN_UI_UX_REPORT_ID               /reports/<id>
+  OPENPLAN_UI_UX_SCENARIO_SET_ID         /scenarios/<id>
+  OPENPLAN_UI_UX_COUNTY_RUN_ID           /county-runs/<id>
+  OPENPLAN_UI_UX_ENGAGEMENT_CAMPAIGN_ID  /engagement/<id>
+  OPENPLAN_UI_UX_RTP_CYCLE_ID            /rtp/<id>
 
 Options:
   --base-url <url>          Local app URL. Env: BASE_URL.
