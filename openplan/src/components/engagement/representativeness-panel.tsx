@@ -140,7 +140,9 @@ export function RepresentativenessPanel({
             ) : null}
             <span>
               Study area:{" "}
-              {result.studyAreaSource === "project_corridor"
+              {result.studyAreaSource === "project_place"
+                ? "the project's stated study area"
+                : result.studyAreaSource === "project_corridor"
                 ? "buffered project corridor"
                 : "buffered respondent footprint"}
             </span>

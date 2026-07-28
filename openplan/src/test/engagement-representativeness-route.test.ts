@@ -5,6 +5,7 @@ const loadCampaignAccess = vi.fn();
 const getUser = vi.fn();
 const itemsLimit = vi.fn();
 const corridorsLimit = vi.fn();
+const projectPlaceSingle = vi.fn();
 const updateEq = vi.fn();
 const fetchCensusForCorridor = vi.fn();
 const fetchTractOverlayFeatures = vi.fn();
@@ -18,6 +19,13 @@ const fakeSupabase = {
       builder.eq = () => builder;
       builder.not = () => builder;
       builder.limit = itemsLimit;
+      return builder;
+    }
+    if (table === "projects") {
+      const builder: Record<string, unknown> = {};
+      builder.select = () => builder;
+      builder.eq = () => builder;
+      builder.maybeSingle = projectPlaceSingle;
       return builder;
     }
     if (table === "project_corridors") {
@@ -65,6 +73,9 @@ beforeEach(() => {
   vi.clearAllMocks();
   getUser.mockResolvedValue({ data: { user: { id: "user-1" } } });
   loadCampaignAccess.mockResolvedValue({ campaign: { workspace_id: "ws-1" }, error: null, allowed: true });
+  // No stated project area by default, so the existing corridor and fallback
+  // cases keep exercising the paths they were written for.
+  projectPlaceSingle.mockResolvedValue({ data: null, error: null });
   itemsLimit.mockResolvedValue({
     data: [
       { id: "i1", latitude: 39.24, longitude: -121.03 },
@@ -187,5 +198,66 @@ describe("POST /api/engagement/campaigns/[campaignId]/representativeness", () =>
     const res = await POST(req(), ctx);
     expect(res.status).toBe(200);
     expect((await res.json()).representativeness.studyAreaSource).toBe("respondent_extent");
+  });
+
+  it("prefers the project's stated study area over everything else", async () => {
+    // The correctness fix: a screen whose job is finding who did NOT respond
+    // cannot be baselined on who did. Until projects could state an area, this
+    // value was "respondent_extent" on 100% of runs.
+    loadCampaignAccess.mockResolvedValue({
+      campaign: { workspace_id: "ws-1", project_id: "proj-1" },
+      error: null,
+      allowed: true,
+    });
+    projectPlaceSingle.mockResolvedValue({
+      data: {
+        place_min_lon: -121.9,
+        place_min_lat: 39.1,
+        place_max_lon: -121.5,
+        place_max_lat: 39.4,
+      },
+      error: null,
+    });
+
+    const response = await POST(req(), ctx);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.representativeness.studyAreaSource).toBe("project_place");
+    // A corridor lookup is pointless once the project has stated its own area.
+    expect(corridorsLimit).not.toHaveBeenCalled();
+  });
+
+  it("falls back to the corridor when the project states no area", async () => {
+    loadCampaignAccess.mockResolvedValue({
+      campaign: { workspace_id: "ws-1", project_id: "proj-1" },
+      error: null,
+      allowed: true,
+    });
+    projectPlaceSingle.mockResolvedValue({ data: { place_min_lon: null, place_min_lat: null, place_max_lon: null, place_max_lat: null }, error: null });
+    corridorsLimit.mockResolvedValue({
+      data: [{ geometry_geojson: { type: "LineString", coordinates: [[-121.8, 39.2], [-121.6, 39.3]] } }],
+      error: null,
+    });
+
+    const response = await POST(req(), ctx);
+    const body = await response.json();
+    expect(body.representativeness.studyAreaSource).toBe("project_corridor");
+  });
+
+  it("treats an unreadable project row as non-fatal and keeps screening", async () => {
+    loadCampaignAccess.mockResolvedValue({
+      campaign: { workspace_id: "ws-1", project_id: "proj-1" },
+      error: null,
+      allowed: true,
+    });
+    projectPlaceSingle.mockResolvedValue({ data: null, error: { message: "boom" } });
+    corridorsLimit.mockResolvedValue({ data: [], error: null });
+
+    const response = await POST(req(), ctx);
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    // A worse study area beats a 500 for an on-demand screening — and the
+    // weaker source is disclosed rather than hidden.
+    expect(body.representativeness.studyAreaSource).toBe("respondent_extent");
   });
 });

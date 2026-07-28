@@ -98,27 +98,70 @@ export async function POST(request: NextRequest, context: RouteContext) {
       let studyAreaBbox = bboxOfPoints(respondentPoints)!;
 
       if (campaignRow.project_id) {
-        const { data: corridorRows, error: corridorError } = await supabase
-          .from("project_corridors")
-          .select("geometry_geojson")
-          .eq("workspace_id", campaignRow.workspace_id)
-          .eq("project_id", campaignRow.project_id)
-          .limit(50);
-        if (corridorError) {
-          audit.warn("engagement_representativeness_corridor_load_failed", {
+        // Strongest first: the area the PROJECT states. A planner declared it,
+        // and unlike the respondent footprint it does not move when a comment
+        // cluster lands in one corner.
+        const { data: projectRow, error: projectError } = await supabase
+          .from("projects")
+          .select("place_min_lon, place_min_lat, place_max_lon, place_max_lat")
+          .eq("id", campaignRow.project_id)
+          .maybeSingle();
+
+        if (projectError) {
+          audit.warn("engagement_representativeness_project_place_load_failed", {
             campaignId,
-            message: corridorError.message,
+            message: projectError.message,
           });
         } else {
-          const corridorBbox = bboxOfCorridorLines(
-            ((corridorRows ?? []) as Array<{ geometry_geojson: unknown }>)
-              .map((row) => row.geometry_geojson)
-              .filter(isCorridorLineGeoJson)
-              .map((geometry) => geometry.coordinates)
-          );
-          if (corridorBbox) {
-            studyAreaSource = "project_corridor";
-            studyAreaBbox = corridorBbox;
+          const place = projectRow as {
+            place_min_lon: number | null;
+            place_min_lat: number | null;
+            place_max_lon: number | null;
+            place_max_lat: number | null;
+          } | null;
+
+          if (
+            place?.place_min_lon != null &&
+            place.place_min_lat != null &&
+            place.place_max_lon != null &&
+            place.place_max_lat != null
+          ) {
+            studyAreaSource = "project_place";
+            studyAreaBbox = {
+              minLon: place.place_min_lon,
+              minLat: place.place_min_lat,
+              maxLon: place.place_max_lon,
+              maxLat: place.place_max_lat,
+            };
+          }
+        }
+
+        // Corridors are next: still independent of respondents, but they
+        // describe an alignment rather than a catchment, so they only apply
+        // when the project has stated no area of its own.
+        if (studyAreaSource === "respondent_extent") {
+          const { data: corridorRows, error: corridorError } = await supabase
+            .from("project_corridors")
+            .select("geometry_geojson")
+            .eq("workspace_id", campaignRow.workspace_id)
+            .eq("project_id", campaignRow.project_id)
+            .limit(50);
+          if (corridorError) {
+            audit.warn("engagement_representativeness_corridor_load_failed", {
+              campaignId,
+              message: corridorError.message,
+            });
+          } else {
+            const corridorBbox = bboxOfCorridorLines(
+              ((corridorRows ?? []) as Array<{ geometry_geojson: unknown }>)
+                .map((row) => row.geometry_geojson)
+                .filter(isCorridorLineGeoJson)
+                .map((geometry) => geometry.coordinates)
+            );
+            if (corridorBbox) {
+              studyAreaSource = "project_corridor";
+              studyAreaBbox = corridorBbox;
+            }
           }
         }
       }

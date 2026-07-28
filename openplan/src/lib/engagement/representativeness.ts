@@ -72,13 +72,28 @@ export type RepresentativenessResult = {
 };
 
 /**
- * Where the study-area bbox came from. `project_corridor` (the corridor(s)
- * linked to the campaign's project) is preferred when available: it baselines
- * against who the project AFFECTS, so a comment cluster from one corner no
- * longer shrinks the study area to itself and masks who was never reached.
- * `respondent_extent` is the fallback (buffered bbox of respondent pins).
+ * Where the study-area bbox came from, strongest first.
+ *
+ * The point of preferring anything over `respondent_extent` is that a screen
+ * whose job is finding who did NOT respond cannot be baselined on who did. A
+ * comment cluster in one corner otherwise shrinks the study area to itself and
+ * masks everyone it never reached — the exact blind spot this metric exists to
+ * expose.
+ *
+ * `project_place` — the area the project itself states (20260728000009) — is the
+ * strongest: it is the area the work covers, declared by a planner, independent
+ * of who happened to answer.
+ *
+ * `project_corridor` is next: the corridor LineStrings linked to the campaign's
+ * project. Narrower than the project's area and still independent of
+ * respondents, but it describes an alignment rather than a catchment.
+ *
+ * `respondent_extent` is the fallback, and it is a disclosed weakness rather
+ * than a neutral default. Until 20260728000009 it was the ONLY value this could
+ * ever take, because no project could state an area and no route could create a
+ * corridor — so every representativeness result ever produced was circular.
  */
-export type StudyAreaSource = "respondent_extent" | "project_corridor";
+export type StudyAreaSource = "respondent_extent" | "project_corridor" | "project_place";
 
 /** Union bbox over corridor LineStrings ([lng, lat] pairs). Null when empty. */
 export function bboxOfCorridorLines(lines: Array<[number, number][]>): LngLatBbox | null {
