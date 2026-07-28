@@ -26,6 +26,7 @@ function freshBudgetFixture(): BudgetFixture {
 }
 
 let budgetFixture: BudgetFixture = freshBudgetFixture();
+let uiStreamResponseOptions: Record<string, unknown> | null = null;
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -155,12 +156,15 @@ describe("/api/assistant/chat", () => {
       list_projects: { description: "stub tool" },
       propose_generate_report_artifact: { description: "stub proposal tool" },
     });
+    uiStreamResponseOptions = null;
     streamTextMock.mockReturnValue({
-      toUIMessageStreamResponse: () =>
-        new Response("data: {\"type\":\"start\"}\n\ndata: [DONE]\n\n", {
+      toUIMessageStreamResponse: (options?: Record<string, unknown>) => {
+        uiStreamResponseOptions = options ?? null;
+        return new Response("data: {\"type\":\"start\"}\n\ndata: [DONE]\n\n", {
           status: 200,
           headers: { "content-type": "text/event-stream" },
-        }),
+        });
+      },
     });
   });
 
@@ -349,6 +353,34 @@ describe("/api/assistant/chat", () => {
     expect(response.headers.get("retry-after")).toBe("300");
     expect(streamTextMock).not.toHaveBeenCalled();
     expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+  });
+
+  it("annotates the finish frame with a cost-threshold warning only when exceeded", async () => {
+    await postAssistantChat(
+      jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })
+    );
+
+    const messageMetadata = uiStreamResponseOptions?.messageMetadata as (options: {
+      part: { type: string; totalUsage?: { inputTokens?: number; outputTokens?: number } };
+    }) => unknown;
+    expect(typeof messageMetadata).toBe("function");
+
+    // Heavy call on the opus default (~$0.75) exceeds the $0.50 threshold.
+    expect(
+      messageMetadata({ part: { type: "finish", totalUsage: { inputTokens: 20_000, outputTokens: 6_000 } } })
+    ).toEqual({
+      costWarning: { thresholdKind: "single_call", thresholdUsd: 0.5, estimatedCostUsd: 0.75 },
+    });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "assistant_chat_cost_threshold_exceeded",
+      expect.objectContaining({ estimatedCostUsd: 0.75, workspaceId: WORKSPACE_ID })
+    );
+
+    // Small calls and non-finish parts carry no metadata.
+    expect(
+      messageMetadata({ part: { type: "finish", totalUsage: { inputTokens: 1_000, outputTokens: 500 } } })
+    ).toBeUndefined();
+    expect(messageMetadata({ part: { type: "start" } })).toBeUndefined();
   });
 
   it("respects the OPENPLAN_ASSISTANT_MODEL override", async () => {

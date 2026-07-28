@@ -116,9 +116,49 @@ describe("AppCopilot", () => {
       if (url.startsWith("/api/assistant")) {
         return jsonResponse({ response: deterministicResponse });
       }
+      if (url.startsWith("/api/funding-opportunities")) {
+        return jsonResponse({ opportunity: { id: "new-opportunity" } }, 201);
+      }
       throw new Error(`Unexpected fetch: ${url}`);
     });
   });
+
+  function proposalReplyResponse() {
+    return sseResponse([
+      { type: "start" },
+      { type: "tool-input-start", toolCallId: "call-2", toolName: "propose_create_funding_opportunity" },
+      {
+        type: "tool-output-available",
+        toolCallId: "call-2",
+        output: {
+          status: "proposed",
+          kind: "create_funding_opportunity",
+          payload: { kind: "create_funding_opportunity", title: "SS4A Implementation Grant" },
+          approval: "approval_required",
+          description: "Creates a new funding opportunity record in this workspace.",
+        },
+      },
+      { type: "text-start", id: "t1" },
+      { type: "text-delta", id: "t1", delta: "I prepared a proposal for your approval." },
+      { type: "text-end", id: "t1" },
+      { type: "finish" },
+    ]);
+  }
+
+  async function streamProposalReply() {
+    chatRoute = () => proposalReplyResponse();
+
+    await openPanel();
+
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), {
+      target: { value: "Create the SS4A opportunity" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Approve & run" })).toBeInTheDocument();
+    });
+  }
 
   async function openPanel() {
     render(<AppCopilot workspaceId={WORKSPACE_ID} workspaceName="Foothill COG" />);
@@ -335,6 +375,121 @@ describe("AppCopilot", () => {
     await waitFor(() => {
       expect(screen.getAllByText("Planner Agent action approval was cancelled.").length).toBeGreaterThan(0);
     });
+  });
+
+  it("runs an approved chat proposal through the existing approval modal and registry dispatch", async () => {
+    await streamProposalReply();
+
+    fireEvent.click(screen.getByRole("button", { name: "Approve & run" }));
+
+    // The EXISTING in-panel approval sheet gates the proposal.
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: "Approve Planner Agent action" })).toBeInTheDocument();
+    });
+    const sheet = within(screen.getByRole("dialog", { name: "Approve Planner Agent action" }));
+    expect(sheet.getByText("Chat proposal · create funding opportunity")).toBeInTheDocument();
+    expect(sheet.getByText("Creates a new funding opportunity record in this workspace.")).toBeInTheDocument();
+
+    fireEvent.click(sheet.getByRole("button", { name: "Approve action" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Approved and executed/)).toBeInTheDocument();
+    });
+
+    // Approval evidence was minted for the exact proposal payload.
+    const approvalCall = fetchMock.mock.calls.find((call) => String(call[0]).startsWith("/api/assistant/actions/approvals"));
+    expect(approvalCall).toBeDefined();
+    const approvalBody = JSON.parse(String((approvalCall![1] as RequestInit).body)) as {
+      workspaceId: string;
+      requireApproval: boolean;
+      action: { kind: string; title: string };
+    };
+    expect(approvalBody.workspaceId).toBe(WORKSPACE_ID);
+    expect(approvalBody.requireApproval).toBe(true);
+    expect(approvalBody.action).toEqual({ kind: "create_funding_opportunity", title: "SS4A Implementation Grant" });
+
+    // The registry effect executed with the proposal payload and approval headers.
+    const executeCall = fetchMock.mock.calls.find(
+      (call) => String(call[0]) === "/api/funding-opportunities" && (call[1] as RequestInit | undefined)?.method === "POST"
+    );
+    expect(executeCall).toBeDefined();
+    const executeInit = executeCall![1] as RequestInit;
+    expect(JSON.parse(String(executeInit.body))).toMatchObject({ title: "SS4A Implementation Grant" });
+    const headers = executeInit.headers as Record<string, string>;
+    expect(headers["x-openplan-assistant-approval-id"]).toBe("approval-1");
+    expect(headers["x-openplan-assistant-input-hash"]).toBe("hash-1");
+    expect(headers["x-openplan-assistant-execution-source"]).toBe("planner_agent_quick_link");
+  });
+
+  it("leaves no execution behind a rejected proposal approval", async () => {
+    await streamProposalReply();
+
+    fireEvent.click(screen.getByRole("button", { name: "Approve & run" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: "Approve Planner Agent action" })).toBeInTheDocument();
+    });
+    fireEvent.click(within(screen.getByRole("dialog", { name: "Approve Planner Agent action" })).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Approve Planner Agent action" })).not.toBeInTheDocument();
+    });
+    await waitFor(() => {
+      expect(screen.getAllByText("Planner Agent action approval was cancelled.").length).toBeGreaterThan(0);
+    });
+
+    // The card returns to pending — approvable again, nothing executed.
+    expect(screen.getByRole("button", { name: "Approve & run" })).toBeInTheDocument();
+    const approvalCall = fetchMock.mock.calls.find((call) => String(call[0]).startsWith("/api/assistant/actions/approvals"));
+    expect(approvalCall).toBeUndefined();
+    const executeCall = fetchMock.mock.calls.find(
+      (call) => String(call[0]) === "/api/funding-opportunities" && (call[1] as RequestInit | undefined)?.method === "POST"
+    );
+    expect(executeCall).toBeUndefined();
+  });
+
+  it("dismissing a proposal records the dismissal and executes nothing", async () => {
+    await streamProposalReply();
+
+    fireEvent.click(screen.getByRole("button", { name: "Dismiss" }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Dismissed — no change was made\./)).toBeInTheDocument();
+    });
+    expect(screen.queryByRole("button", { name: "Approve & run" })).not.toBeInTheDocument();
+    const executeCall = fetchMock.mock.calls.find(
+      (call) => String(call[0]) === "/api/funding-opportunities" && (call[1] as RequestInit | undefined)?.method === "POST"
+    );
+    expect(executeCall).toBeUndefined();
+  });
+
+  it("surfaces the cost-threshold warning from finish metadata as a final annotation", async () => {
+    chatRoute = () =>
+      sseResponse([
+        { type: "start" },
+        { type: "text-start", id: "t1" },
+        { type: "text-delta", id: "t1", delta: "A heavy but complete answer." },
+        { type: "text-end", id: "t1" },
+        {
+          type: "finish",
+          messageMetadata: {
+            costWarning: { thresholdKind: "single_call", thresholdUsd: 0.5, estimatedCostUsd: 0.75 },
+          },
+        },
+      ]);
+
+    await openPanel();
+
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), {
+      target: { value: "Audit everything at once" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText("A heavy but complete answer.")).toBeInTheDocument();
+    });
+    expect(screen.getByText(/estimated at ~\$0\.75/)).toBeInTheDocument();
+    expect(screen.getByText(/\$0\.50 review threshold/)).toBeInTheDocument();
   });
 
   it("cancels the approval sheet from the Cancel button", async () => {

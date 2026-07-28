@@ -11,6 +11,10 @@ import {
   buildAssistantChatSystemPrompt,
 } from "@/lib/assistant/chat-context";
 import { buildAssistantChatTools, createChatToolBudget } from "@/lib/assistant/chat-tools";
+import {
+  buildAnalysisCostThresholdWarning,
+  estimateAnthropicCostUsd,
+} from "@/lib/ai/cost-threshold";
 import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
 import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 
@@ -221,6 +225,26 @@ export async function POST(request: NextRequest) {
     // explicit error frame — an upstream failure can no longer surface as a
     // silent empty body. Parsed client-side by consumeAssistantChatStream.
     return result.toUIMessageStreamResponse({
+      // Attach the single-call cost-threshold warning (when exceeded) to the
+      // finish frame so the copilot can surface it as a final annotation.
+      messageMetadata: ({ part }) => {
+        if (part.type !== "finish") return undefined;
+        const costWarning = buildAnalysisCostThresholdWarning(
+          estimateAnthropicCostUsd(
+            modelId,
+            part.totalUsage?.inputTokens ?? null,
+            part.totalUsage?.outputTokens ?? null
+          )
+        );
+        if (!costWarning) return undefined;
+        audit.warn("assistant_chat_cost_threshold_exceeded", {
+          workspaceId: context.workspace.id,
+          userId: user.id,
+          model: modelId,
+          ...costWarning,
+        });
+        return { costWarning };
+      },
       onError: (error) => {
         audit.error("assistant_chat_stream_error_frame", {
           message: error instanceof Error ? error.message : String(error),

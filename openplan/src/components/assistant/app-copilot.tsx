@@ -40,6 +40,7 @@ import {
   describeAssistantChatToolActivity,
 } from "@/lib/assistant/chat-stream";
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
+import type { AnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 
 type AppCopilotProps = {
   workspaceId: string | null;
@@ -73,6 +74,7 @@ type ConversationEntry =
       question: string;
       toolEvents: ChatToolActivity[];
       proposals: ChatProposalEntry[];
+      costWarning?: AnalysisCostThresholdWarning | null;
     }
   | {
       id: string;
@@ -537,17 +539,28 @@ function proposalApprovalBadge(proposal: AssistantChatProposal) {
   }
 }
 
-function ChatProposalCard({ entry }: { entry: ChatProposalEntry }) {
+function ChatProposalCard({
+  entry,
+  onApprove,
+  onDismiss,
+  busy,
+}: {
+  entry: ChatProposalEntry;
+  onApprove?: (entry: ChatProposalEntry) => void;
+  onDismiss?: (entry: ChatProposalEntry) => void;
+  busy?: boolean;
+}) {
   const badge = proposalApprovalBadge(entry.proposal);
+  const kindLabel = humanizeProposalKind(entry.proposal.kind);
   return (
     <div
       className="rounded-[0.5rem] border border-violet-300/22 bg-violet-400/8 px-3.5 py-3"
       role="group"
-      aria-label={`Proposed action: ${humanizeProposalKind(entry.proposal.kind)}`}
+      aria-label={`Proposed action: ${kindLabel}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/78">
-          Proposed action · {humanizeProposalKind(entry.proposal.kind)}
+          Proposed action · {kindLabel}
         </p>
         <span
           className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${badge.className}`}
@@ -567,9 +580,54 @@ function ChatProposalCard({ entry }: { entry: ChatProposalEntry }) {
           </span>
         ))}
       </div>
-      <p className="mt-2 text-xs leading-relaxed text-slate-300/78">
-        Nothing has changed yet — this is a proposal awaiting your explicit approval.
-      </p>
+
+      {entry.state === "pending" ? (
+        <>
+          <p className="mt-2 text-xs leading-relaxed text-slate-300/78">
+            Nothing has changed yet — this is a proposal awaiting your explicit approval.
+          </p>
+          <div className="mt-3 flex items-center gap-2">
+            <Button
+              type="button"
+              size="sm"
+              className="bg-violet-400/90 text-slate-950 hover:bg-violet-300"
+              onClick={() => onApprove?.(entry)}
+              disabled={busy}
+            >
+              Approve &amp; run
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="border-white/12 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08] hover:text-white"
+              onClick={() => onDismiss?.(entry)}
+              disabled={busy}
+            >
+              Dismiss
+            </Button>
+          </div>
+        </>
+      ) : null}
+      {entry.state === "executing" ? (
+        <p className="mt-2 inline-flex items-center gap-2 text-xs leading-relaxed text-violet-100/88">
+          <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
+          Waiting on approval, then running through the audited action flow…
+        </p>
+      ) : null}
+      {entry.state === "executed" ? (
+        <p className="mt-2 text-xs font-semibold leading-relaxed text-emerald-100/92">
+          Approved and executed. The change is recorded in the action log.
+        </p>
+      ) : null}
+      {entry.state === "failed" ? (
+        <p className="mt-2 text-xs leading-relaxed text-rose-100/92">
+          {entry.error ?? "The approved action failed before completing."} Nothing further was changed.
+        </p>
+      ) : null}
+      {entry.state === "dismissed" ? (
+        <p className="mt-2 text-xs leading-relaxed text-slate-400/88">Dismissed — no change was made.</p>
+      ) : null}
     </div>
   );
 }
@@ -1648,6 +1706,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             }));
           } else if (event.type === "error") {
             streamErrorText = event.errorText;
+          } else if (event.type === "finish") {
+            const metadata = event.metadata as { costWarning?: AnalysisCostThresholdWarning } | undefined;
+            if (metadata?.costWarning) {
+              const costWarning = metadata.costWarning;
+              patchChatEntry((entry) => ({ ...entry, costWarning }));
+            }
           }
         }
 
@@ -1902,6 +1966,68 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       promptLabel: link.promptLabel ?? link.label,
       operationLink: link,
     });
+  }
+
+  function patchChatProposal(
+    chatEntryId: string,
+    proposalId: string,
+    patch: (proposal: ChatProposalEntry) => ChatProposalEntry
+  ) {
+    setMessages((current) =>
+      current.map((entry) =>
+        entry.id === chatEntryId && entry.type === "chat"
+          ? { ...entry, proposals: entry.proposals.map((proposal) => (proposal.id === proposalId ? patch(proposal) : proposal)) }
+          : entry
+      )
+    );
+  }
+
+  function dismissChatProposal(chatEntryId: string, proposalEntry: ChatProposalEntry) {
+    patchChatProposal(chatEntryId, proposalEntry.id, (proposal) => ({ ...proposal, state: "dismissed" }));
+  }
+
+  /**
+   * "Approve & run" on a chat proposal enters the EXISTING action flow: the
+   * in-panel approval sheet (pendingApproval) gates it, approval mints
+   * single-use evidence via /api/assistant/actions/approvals, and the
+   * client-side action registry dispatches with the approval headers. The
+   * proposal payload itself is never executed any other way.
+   */
+  async function executeChatProposal(chatEntryId: string, proposalEntry: ChatProposalEntry) {
+    const action = proposalEntry.proposal.payload as AssistantQuickLinkExecuteAction;
+    const label = `Chat proposal · ${humanizeProposalKind(proposalEntry.proposal.kind)}`;
+
+    patchChatProposal(chatEntryId, proposalEntry.id, (proposal) => ({ ...proposal, state: "executing", error: undefined }));
+    setResponding(true);
+    setError(null);
+
+    try {
+      const approvalEvidence = await requestActionApproval({ workspaceId, action, label });
+
+      await dispatchRegistryAction(
+        action as Extract<AssistantQuickLinkExecuteAction, { kind: typeof action.kind }>,
+        {
+          onCompleted: () => {
+            patchChatProposal(chatEntryId, proposalEntry.id, (proposal) => ({ ...proposal, state: "executed" }));
+            setResponding(false);
+          },
+          refreshAssistantPreview: async () => {
+            const refreshed = await refreshAssistantPreview();
+            return { quickLinks: refreshed.quickLinks };
+          },
+        },
+        { approvalEvidence }
+      );
+    } catch (proposalError) {
+      const message =
+        proposalError instanceof Error ? proposalError.message : "Failed to execute the approved Planner Agent proposal";
+      const wasCancelled = message.includes("cancelled");
+      patchChatProposal(chatEntryId, proposalEntry.id, (proposal) =>
+        wasCancelled ? { ...proposal, state: "pending", error: undefined } : { ...proposal, state: "failed", error: message }
+      );
+      setError(message);
+      setResponding(false);
+    }
   }
 
   const summaryLabel = preview?.title ?? workspaceName;
@@ -2230,9 +2356,23 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           {message.proposals.length ? (
                             <div className="mt-3 space-y-2">
                               {message.proposals.map((entry) => (
-                                <ChatProposalCard key={entry.id} entry={entry} />
+                                <ChatProposalCard
+                                  key={entry.id}
+                                  entry={entry}
+                                  busy={responding}
+                                  onApprove={(proposalEntry) => void executeChatProposal(message.id, proposalEntry)}
+                                  onDismiss={(proposalEntry) => dismissChatProposal(message.id, proposalEntry)}
+                                />
                               ))}
                             </div>
+                          ) : null}
+                          {message.costWarning ? (
+                            <p className="mt-3 rounded-[0.5rem] border border-amber-300/16 bg-amber-400/10 px-3.5 py-2.5 text-xs leading-relaxed text-amber-100/92">
+                              This reply&apos;s single AI call was estimated at ~$
+                              {message.costWarning.estimatedCostUsd.toFixed(2)}, above the $
+                              {message.costWarning.thresholdUsd.toFixed(2)} review threshold. Occasional heavy questions are
+                              fine — repeated ones are worth narrowing.
+                            </p>
                           ) : null}
                           {message.status === "error" ? (
                             <div className="mt-3 flex items-center justify-between gap-3 rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-3.5 py-2.5 text-sm text-rose-100/92">
