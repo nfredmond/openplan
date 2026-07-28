@@ -347,4 +347,47 @@ describe("/api/models/[modelId]", () => {
       }),
     ]);
   });
+
+  it("PATCH refuses a viewer and updates nothing", async () => {
+    // models' RLS write policy asks only for membership; "models.write" in the
+    // role matrix is what keeps the read-only tier read-only.
+    membershipMaybeSingleMock.mockResolvedValue({
+      data: { workspace_id: WORKSPACE_ID, role: "viewer" },
+      error: null,
+    });
+
+    const response = await patchModelDetail(
+      new NextRequest(`http://localhost/api/models/${MODEL_ID}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "Countywide ABM setup v2" }),
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(403);
+    expect(modelUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH still updates for a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      modelUpdateMock.mockClear();
+      membershipMaybeSingleMock.mockResolvedValue({
+        data: { workspace_id: WORKSPACE_ID, role },
+        error: null,
+      });
+
+      const response = await patchModelDetail(
+        new NextRequest(`http://localhost/api/models/${MODEL_ID}`, {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ title: "Countywide ABM setup v2" }),
+        }),
+        { params: Promise.resolve({ modelId: MODEL_ID }) }
+      );
+
+      expect(response.status, `${role} should still be able to update a model`).toBe(200);
+      expect(modelUpdateMock).toHaveBeenCalledTimes(1);
+    }
+  });
 });

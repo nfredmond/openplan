@@ -12,6 +12,7 @@ const queryLimitMock = vi.fn();
 const insertMock = vi.fn();
 const insertSelectMock = vi.fn();
 const insertSingleMock = vi.fn();
+const membershipMaybeSingleMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -78,12 +79,18 @@ describe("/api/county-runs route", () => {
     });
     insertSelectMock.mockReturnValue({ single: insertSingleMock });
     insertMock.mockReturnValue({ select: insertSelectMock });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
 
     fromMock.mockImplementation((table: string) => {
       if (table === "county_runs") {
         return {
           select: querySelectMock,
           insert: insertMock,
+        };
+      }
+      if (table === "workspace_members") {
+        return {
+          select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
         };
       }
       throw new Error(`Unexpected table: ${table}`);
@@ -196,5 +203,64 @@ describe("/api/county-runs route", () => {
 
     expect(getResponse.status).toBe(401);
     expect(postResponse.status).toBe(401);
+  });
+
+  it("refuses a viewer's county run and never inserts", async () => {
+    // county_runs' RLS write policy only asks for membership, so the role check
+    // in the route is the ONLY thing standing between a viewer and a model run.
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
+
+    const response = await postCountyRuns(
+      jsonRequest("POST", "http://localhost/api/county-runs", {
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        geographyType: "county_fips",
+        geographyId: "06061",
+        geographyLabel: "Placer County, CA",
+        runName: "placer-run",
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({
+      error: "Viewers have read-only access to this workspace",
+    });
+    expect(insertMock).not.toHaveBeenCalled();
+  });
+
+  it("still creates for a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      insertMock.mockClear();
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role }, error: null });
+
+      const response = await postCountyRuns(
+        jsonRequest("POST", "http://localhost/api/county-runs", {
+          workspaceId: "11111111-1111-4111-8111-111111111111",
+          geographyType: "county_fips",
+          geographyId: "06061",
+          geographyLabel: "Placer County, CA",
+          runName: "placer-run",
+        })
+      );
+
+      expect(response.status, `${role} should still be able to create a county run`).toBe(201);
+      expect(insertMock).toHaveBeenCalledTimes(1);
+    }
+  });
+
+  it("refuses a non-member without confirming the workspace exists", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const response = await postCountyRuns(
+      jsonRequest("POST", "http://localhost/api/county-runs", {
+        workspaceId: "22222222-2222-4222-8222-222222222222",
+        geographyType: "county_fips",
+        geographyId: "06061",
+        geographyLabel: "Placer County, CA",
+        runName: "placer-run",
+      })
+    );
+
+    expect(response.status).toBe(404);
+    expect(insertMock).not.toHaveBeenCalled();
   });
 });

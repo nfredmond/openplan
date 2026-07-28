@@ -17,13 +17,19 @@ vi.mock("@/lib/supabase/server", () => ({
     auth: { getUser: getUserMock },
     from: (table: string) => {
       if (table === "workspace_members") {
-        // Two different chains hit this table: the guard
-        // (.eq().eq().maybeSingle()) and the member count (.eq().limit()).
+        // Only the actor guard (.eq().eq().maybeSingle()) may use the RLS
+        // client here: members_read_own limits it to the caller's own row, so
+        // a member COUNT read through it would always be 1. That count moved
+        // to the service role — see the mock below.
         return {
           select: () => ({
             eq: () => ({
               eq: () => ({ maybeSingle: membershipMaybeSingleMock }),
-              limit: async () => ({ data: [{ user_id: "u1" }, { user_id: "u2" }], error: null }),
+              limit: () => {
+                throw new Error(
+                  "The member count must use the service role — RLS (members_read_own) always counts 1"
+                );
+              },
             }),
           }),
         };
@@ -37,6 +43,12 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
   createServiceRoleClient: () => ({
     from: () => ({
+      // The authoritative member count: a head+exact select, awaited after
+      // one .eq(workspace_id).
+      select: (_columns: string, options?: { head?: boolean }) =>
+        options?.head
+          ? { eq: async () => ({ count: 2, error: null }) }
+          : { eq: async () => ({ data: [], error: null }) },
       update: () => ({
         eq: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle: revokeMaybeSingleMock }) }) }) }),
       }),

@@ -50,7 +50,9 @@ export function EngagementCampaignCreator({ projects }: { projects: ProjectOptio
       }
 
       router.refresh();
-      router.push(`/engagement/${payload.campaignId}`);
+      // `created=1` lets the campaign console surface its create-success state:
+      // where the public link will live and that submissions land in moderation.
+      router.push(`/engagement/${payload.campaignId}?created=1`);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to create engagement campaign");
     } finally {

@@ -150,4 +150,46 @@ describe("POST /api/workspaces/invitations", () => {
       })
     );
   });
+
+  it("creates a viewer invitation — the read-only tier is invitable", async () => {
+    createWorkspaceInvitationMock.mockResolvedValue({
+      invitation: {
+        id: "33333333-3333-4333-8333-333333333333",
+        email: "auditor@nctc.ca.gov",
+        email_normalized: "auditor@nctc.ca.gov",
+        role: "viewer",
+        status: "pending",
+        expires_at: "2026-05-08T12:00:00.000Z",
+      },
+      invitationUrl: "http://localhost/sign-up?invite=token&redirect=%2Fdashboard",
+      reissued: false,
+    });
+
+    const response = await postWorkspaceInvitation(
+      invitationRequest({
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        email: "auditor@nctc.ca.gov",
+        role: "viewer",
+      })
+    );
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({ role: "viewer" });
+    expect(createWorkspaceInvitationMock).toHaveBeenCalledWith(
+      expect.objectContaining({ role: "viewer" })
+    );
+  });
+
+  it("still refuses to mint an owner invitation", async () => {
+    const response = await postWorkspaceInvitation(
+      invitationRequest({
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        email: "planner@nctc.ca.gov",
+        role: "owner",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(createWorkspaceInvitationMock).not.toHaveBeenCalled();
+  });
 });

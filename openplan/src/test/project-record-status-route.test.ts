@@ -27,6 +27,11 @@ const projectDeliverablesUpdateMock = vi.fn(() => ({ eq: projectDeliverablesEqId
 const projectsSelectEqMock = vi.fn(() => ({ single: projectsSingleMock }));
 const projectsSelectMock = vi.fn(() => ({ eq: projectsSelectEqMock }));
 
+const membershipMaybeSingleMock = vi.fn();
+const membershipSelectMock = vi.fn(() => ({
+  eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }),
+}));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "projects") {
     return { select: projectsSelectMock };
@@ -42,6 +47,10 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "project_deliverables") {
     return { update: projectDeliverablesUpdateMock };
+  }
+
+  if (table === "workspace_members") {
+    return { select: membershipSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -88,6 +97,8 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
     authGetUserMock.mockResolvedValue({
       data: { user: { id: "22222222-2222-4222-8222-222222222222" } },
     });
+
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
 
     projectsSingleMock.mockResolvedValue({
       data: {
@@ -321,5 +332,35 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
 
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({ error: "Milestone not found" });
+  });
+
+  it("refuses a viewer and updates nothing", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
+
+    const response = await patchRecord(
+      jsonRequest(MILESTONE_ID, { recordType: "milestone", status: "complete" }),
+      routeContext(MILESTONE_ID)
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({
+      error: "Viewers have read-only access to this workspace",
+    });
+    expect(projectMilestonesUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("still updates for a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      projectMilestonesUpdateMock.mockClear();
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role }, error: null });
+
+      const response = await patchRecord(
+        jsonRequest(MILESTONE_ID, { recordType: "milestone", status: "complete" }),
+        routeContext(MILESTONE_ID)
+      );
+
+      expect(response.status, `${role} should still be able to advance a record`).toBe(200);
+      expect(projectMilestonesUpdateMock).toHaveBeenCalledTimes(1);
+    }
   });
 });

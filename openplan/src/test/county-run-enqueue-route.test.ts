@@ -10,6 +10,7 @@ const countyRunEqMock = vi.fn();
 const countyRunMaybeSingleMock = vi.fn();
 const countyRunUpdateMock = vi.fn();
 const countyRunUpdateEqMock = vi.fn();
+const membershipMaybeSingleMock = vi.fn();
 const dispatchCountyOnrampJobMock = vi.fn();
 
 const mockAudit = {
@@ -54,6 +55,7 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     countyRunMaybeSingleMock.mockResolvedValue({
       data: {
         id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        workspace_id: "11111111-1111-4111-8111-111111111111",
         requested_runtime_json: {
           workspaceId: "11111111-1111-4111-8111-111111111111",
           geographyType: "county_fips",
@@ -78,10 +80,16 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     countyRunSelectMock.mockReturnValue({ eq: countyRunEqMock });
     countyRunUpdateEqMock.mockResolvedValue({ error: null });
     countyRunUpdateMock.mockReturnValue({ eq: countyRunUpdateEqMock });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
 
     fromMock.mockImplementation((table: string) => {
       if (table === "county_runs") {
         return { select: countyRunSelectMock, update: countyRunUpdateMock };
+      }
+      if (table === "workspace_members") {
+        return {
+          select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
+        };
       }
       throw new Error(`Unexpected table: ${table}`);
     });
@@ -202,5 +210,36 @@ describe("POST /api/county-runs/[countyRunId]/enqueue", () => {
     });
 
     expect(response.status).toBe(401);
+  });
+
+  it("refuses a viewer and never dispatches the worker", async () => {
+    // A viewer can SEE the run through RLS; that is not permission to launch it.
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
+
+    const response = await postCountyRunEnqueue(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({
+      error: "Viewers have read-only access to this workspace",
+    });
+    expect(dispatchCountyOnrampJobMock).not.toHaveBeenCalled();
+    expect(countyRunUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("still allows a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      vi.clearAllMocks();
+      createApiAuditLoggerMock.mockReturnValue(mockAudit);
+      dispatchCountyOnrampJobMock.mockResolvedValue({ deliveryMode: "prepared", workerUrl: null });
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role }, error: null });
+
+      const response = await postCountyRunEnqueue(request(), {
+        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+      });
+
+      expect(response.status, `${role} should still be able to enqueue`).toBe(200);
+    }
   });
 });

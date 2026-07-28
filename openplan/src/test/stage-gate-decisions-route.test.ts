@@ -121,10 +121,11 @@ describe("GET /api/stage-gates/decisions auth + role guards", () => {
   });
 
   it("returns 403 for unsupported role (deny-by-default)", async () => {
+    // "viewer" became a real read-capable role; an unknown string still denies.
     membershipMaybeSingleMock.mockResolvedValueOnce({
       data: {
         workspace_id: "11111111-1111-4111-8111-111111111111",
-        role: "viewer",
+        role: "auditor",
       },
       error: null,
     });

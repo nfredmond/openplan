@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import {
   checkMonthlyRunCap,
   isRunCapExceeded,
@@ -142,6 +143,13 @@ export async function POST(
       userId: user.id,
     });
     return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+  }
+
+  if (isReadOnlyWorkspaceRole((membership as { role?: string }).role)) {
+    return NextResponse.json(
+      { error: "Viewers have read-only access to this workspace" },
+      { status: 403 }
+    );
   }
 
   // The workspace billing lookup and subscription gate that stood here are

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
   projectId: z.string().uuid(),
@@ -81,6 +82,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
+
+    // Seeing the project is not permission to advance its records: the write
+    // policy behind every table below asks only for membership.
+    const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, project.workspace_id);
+    if (!writeAccess.ok) return writeAccess.response;
 
     const updatedAt = new Date().toISOString();
 

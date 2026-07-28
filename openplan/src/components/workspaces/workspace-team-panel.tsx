@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 /**
- * Invite teammates into a workspace.
+ * Invite teammates into a workspace, and manage the members already in it.
  *
  * The invitation API has existed for a while and sign-in already accepts an
  * `?invite=` token — but nothing in the app could CREATE one, so a workspace
@@ -13,10 +14,24 @@ import { Input } from "@/components/ui/input";
  * multi-person organization, which is every MPO, city, county, tribe, and
  * consultancy.
  *
+ * Member management closes the other half of that gap: roles can be changed
+ * and members removed here, backed by /api/workspaces/members, which enforces
+ * the authority rules (owner-only owner changes, last-owner protection)
+ * server-side. Error copy from that API is rendered verbatim.
+ *
  * Delivery is deliberately manual and said so plainly: the server does not send
  * email (`delivery: "manual"`), so the owner copies the link. Claiming "invite
  * sent" when nothing was sent would be exactly the kind of overclaim this
  * codebase guards against elsewhere.
+ *
+ * SELF-AFFECTING MUTATIONS ARE DIFFERENT. `canManage` is computed on the SERVER
+ * from the caller's role, so the moment a caller demotes or removes THEMSELVES
+ * this panel's authority is stale — and it cannot re-read its own way out of
+ * it, because the members API answers 403 to a non-manager and 404 to a
+ * non-member. Those two cases therefore ask the server to re-render the page
+ * (`router.refresh()`) instead of trusting local state, and hold the controls
+ * disabled until that lands. Anything else would keep offering management
+ * actions whose next request is already refused.
  */
 
 type Invitation = {
@@ -30,32 +45,70 @@ type Invitation = {
   revoked_at: string | null;
 };
 
+type Member = {
+  userId: string;
+  email: string | null;
+  role: string;
+  joinedAt: string | null;
+};
+
+type InviteRole = "member" | "admin" | "viewer";
+
+const ROLE_DESCRIPTIONS: Record<string, string> = {
+  admin: "Manage the team and all workspace content.",
+  member: "Create and edit workspace content.",
+  viewer: "Read everything, change nothing.",
+};
+
 type WorkspaceTeamPanelProps = {
   workspaceId: string;
   /** Only owners and admins may manage members; the API enforces this too. */
   canManage: boolean;
 };
 
+/** The roles the members API lets manage a team; everything else is read-only there. */
+function isManagerRole(role: string): boolean {
+  return role === "owner" || role === "admin";
+}
+
 export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPanelProps) {
+  const router = useRouter();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [memberCount, setMemberCount] = useState<number | null>(null);
+  const [members, setMembers] = useState<Member[]>([]);
+  const [callerUserId, setCallerUserId] = useState<string | null>(null);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"member" | "admin">("member");
+  const [role, setRole] = useState<InviteRole>("member");
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selfChangeNotice, setSelfChangeNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [working, setWorking] = useState(false);
+  // Tracks the server re-render that follows a self-affecting mutation: it
+  // stays pending until the page comes back with the caller's NEW role, which
+  // is exactly how long the controls must stay disabled.
+  const [refreshingAccess, startAccessRefresh] = useTransition();
+  const busy = working || refreshingAccess;
 
   const load = useCallback(async () => {
     if (!canManage || !workspaceId) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/workspaces/invitations?workspaceId=${encodeURIComponent(workspaceId)}`);
-      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? "Failed to load team");
-      const body = await res.json();
-      setInvitations(Array.isArray(body.invitations) ? body.invitations : []);
-      setMemberCount(typeof body.memberCount === "number" ? body.memberCount : null);
+      const [invitationsRes, membersRes] = await Promise.all([
+        fetch(`/api/workspaces/invitations?workspaceId=${encodeURIComponent(workspaceId)}`),
+        fetch(`/api/workspaces/members?workspaceId=${encodeURIComponent(workspaceId)}`),
+      ]);
+      if (!invitationsRes.ok) {
+        throw new Error((await invitationsRes.json().catch(() => ({}))).error ?? "Failed to load team");
+      }
+      if (!membersRes.ok) {
+        throw new Error((await membersRes.json().catch(() => ({}))).error ?? "Failed to load members");
+      }
+      const invitationsBody = await invitationsRes.json();
+      const membersBody = await membersRes.json();
+      setInvitations(Array.isArray(invitationsBody.invitations) ? invitationsBody.invitations : []);
+      setMembers(Array.isArray(membersBody.members) ? membersBody.members : []);
+      setCallerUserId(typeof membersBody.callerUserId === "string" ? membersBody.callerUserId : null);
       setError(null);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Failed to load team");
@@ -67,6 +120,26 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
   useEffect(() => {
     void load();
   }, [load]);
+
+  /**
+   * The caller just changed their OWN membership and the server confirmed it.
+   * Re-render the page from the server so `canManage` — and every other surface
+   * rendered for this role — reflects the new truth; this panel disappears on
+   * its own if management is no longer the caller's. Only re-list the team when
+   * the caller can still read it; after leaving or dropping to member/viewer,
+   * that request would be refused and its error would be noise, not news.
+   *
+   * `fact` states only what the server confirmed; the "reloading" half of the
+   * message is rendered from the live transition state, so it is never claimed
+   * after the reload has landed.
+   */
+  function applySelfMembershipChange(fact: string, callerStillManages: boolean) {
+    setSelfChangeNotice(fact);
+    if (callerStillManages) void load();
+    startAccessRefresh(() => {
+      router.refresh();
+    });
+  }
 
   async function invite(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -110,16 +183,88 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
     }
   }
 
+  async function changeMemberRole(member: Member, nextRole: string) {
+    if (nextRole === member.role) return;
+    const isSelf = callerUserId !== null && member.userId === callerUserId;
+    setWorking(true);
+    setError(null);
+    setSelfChangeNotice(null);
+    try {
+      const res = await fetch("/api/workspaces/members", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ workspaceId, userId: member.userId, role: nextRole }),
+      });
+      if (!res.ok) {
+        throw new Error((await res.json().catch(() => ({}))).error ?? "Could not change the role");
+      }
+      if (isSelf) {
+        const stillManages = isManagerRole(nextRole);
+        applySelfMembershipChange(
+          stillManages
+            ? `You changed your own role to ${nextRole}.`
+            : `Your role is now ${nextRole}, which cannot manage this team.`,
+          stillManages
+        );
+        return;
+      }
+      await load();
+    } catch (roleError) {
+      setError(roleError instanceof Error ? roleError.message : "Could not change the role");
+    } finally {
+      setWorking(false);
+    }
+  }
+
+  async function removeMember(member: Member) {
+    const isSelf = callerUserId !== null && member.userId === callerUserId;
+    const who = member.email ?? "this member";
+    const message = isSelf
+      ? "Leave this workspace? You will immediately lose access to all of its projects and data."
+      : `Remove ${who} from the workspace? They will immediately lose access to all of its projects and data.`;
+    if (!window.confirm(message)) return;
+
+    setWorking(true);
+    setError(null);
+    setSelfChangeNotice(null);
+    try {
+      const res = await fetch("/api/workspaces/members", {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ workspaceId, userId: member.userId }),
+      });
+      if (!res.ok) {
+        throw new Error((await res.json().catch(() => ({}))).error ?? "Could not remove the member");
+      }
+      if (isSelf) {
+        applySelfMembershipChange("You left this workspace.", false);
+        return;
+      }
+      await load();
+    } catch (removeError) {
+      setError(removeError instanceof Error ? removeError.message : "Could not remove the member");
+    } finally {
+      setWorking(false);
+    }
+  }
+
   if (!canManage) return null;
 
   const pending = invitations.filter((invitation) => invitation.status === "pending");
+  const selfRole = callerUserId
+    ? (members.find((member) => member.userId === callerUserId)?.role ?? null)
+    : null;
+  // The API is the authority; the select just avoids offering actions that
+  // would be refused: only an owner may grant/revoke the owner role or touch
+  // another owner at all.
+  const assignableRoles = selfRole === "owner" ? ["owner", "admin", "member", "viewer"] : ["admin", "member", "viewer"];
 
   return (
     <section className="rounded-xl border border-border/70 p-5" aria-label="Workspace team">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="text-sm font-semibold text-foreground">Team</h2>
         <p className="text-xs text-muted-foreground">
-          {memberCount === null ? "" : `${memberCount} member${memberCount === 1 ? "" : "s"}`}
+          {members.length === 0 ? "" : `${members.length} member${members.length === 1 ? "" : "s"}`}
           {pending.length > 0 ? ` · ${pending.length} pending invitation${pending.length === 1 ? "" : "s"}` : ""}
         </p>
       </div>
@@ -145,17 +290,19 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
           <select
             id="invite-role"
             value={role}
-            onChange={(e) => setRole(e.target.value as "member" | "admin")}
+            onChange={(e) => setRole(e.target.value as InviteRole)}
             className="h-9 rounded-md border border-input bg-transparent px-2 text-sm"
           >
             <option value="member">Member</option>
             <option value="admin">Admin</option>
+            <option value="viewer">Viewer</option>
           </select>
         </div>
-        <Button type="submit" disabled={working}>
+        <Button type="submit" disabled={busy}>
           {working ? "Creating…" : "Create invitation"}
         </Button>
       </form>
+      <p className="mt-1 text-xs text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</p>
 
       {inviteUrl ? (
         <div className="mt-4 rounded-md border border-emerald-300/70 bg-emerald-50/60 p-3 text-sm dark:border-emerald-900 dark:bg-emerald-950/20">
@@ -181,6 +328,13 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
         </div>
       ) : null}
 
+      {selfChangeNotice ? (
+        <p className="mt-3 text-sm text-muted-foreground" role="status">
+          {selfChangeNotice}
+          {refreshingAccess ? " Reloading your access…" : ""}
+        </p>
+      ) : null}
+
       {error ? (
         <p className="mt-3 text-sm text-destructive" role="alert">
           {error}
@@ -190,31 +344,90 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
       <div className="mt-4">
         {loading ? (
           <p className="text-sm text-muted-foreground">Loading team…</p>
-        ) : pending.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            No pending invitations. Anyone you invite joins this workspace once they sign in with the
-            invited address.
-          </p>
         ) : (
-          <ul className="divide-y divide-border/60 text-sm">
-            {pending.map((invitation) => (
-              <li key={invitation.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
-                <span>
-                  <span className="font-medium">{invitation.email}</span>{" "}
-                  <span className="text-muted-foreground">· {invitation.role}</span>
-                  {invitation.expires_at ? (
-                    <span className="text-muted-foreground">
-                      {" "}
-                      · expires {new Date(invitation.expires_at).toLocaleDateString()}
+          <>
+            {members.length > 0 ? (
+              <ul className="divide-y divide-border/60 text-sm" aria-label="Workspace members">
+                {members.map((member) => {
+                  const isSelf = callerUserId !== null && member.userId === callerUserId;
+                  const targetIsOwner = member.role === "owner";
+                  // An admin may not touch an owner; the API refuses it too.
+                  const canEditTarget = selfRole === "owner" || !targetIsOwner;
+                  return (
+                    <li
+                      key={member.userId}
+                      className="flex flex-wrap items-center justify-between gap-2 py-2"
+                    >
+                      <span className="min-w-0">
+                        <span className="font-medium">{member.email ?? "Unknown email"}</span>
+                        {isSelf ? <span className="text-muted-foreground"> (you)</span> : null}{" "}
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                          {member.role}
+                        </span>
+                      </span>
+                      <span className="flex items-center gap-2">
+                        {canEditTarget ? (
+                          <select
+                            aria-label={`Role for ${member.email ?? member.userId}`}
+                            value={member.role}
+                            disabled={busy}
+                            onChange={(e) => void changeMemberRole(member, e.target.value)}
+                            className="h-8 rounded-md border border-input bg-transparent px-2 text-xs"
+                          >
+                            {(assignableRoles.includes(member.role)
+                              ? assignableRoles
+                              : [member.role, ...assignableRoles]
+                            ).map((option) => (
+                              <option key={option} value={option}>
+                                {option.charAt(0).toUpperCase() + option.slice(1)}
+                              </option>
+                            ))}
+                          </select>
+                        ) : null}
+                        {canEditTarget || isSelf ? (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            disabled={busy}
+                            onClick={() => void removeMember(member)}
+                          >
+                            {isSelf ? "Leave" : "Remove"}
+                          </Button>
+                        ) : null}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+
+            {pending.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">
+                No pending invitations. Anyone you invite joins this workspace once they sign in with
+                the invited address.
+              </p>
+            ) : (
+              <ul className="mt-3 divide-y divide-border/60 text-sm" aria-label="Pending invitations">
+                {pending.map((invitation) => (
+                  <li key={invitation.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                    <span>
+                      <span className="font-medium">{invitation.email}</span>{" "}
+                      <span className="text-muted-foreground">· {invitation.role}</span>
+                      {invitation.expires_at ? (
+                        <span className="text-muted-foreground">
+                          {" "}
+                          · expires {new Date(invitation.expires_at).toLocaleDateString()}
+                        </span>
+                      ) : null}
                     </span>
-                  ) : null}
-                </span>
-                <Button type="button" variant="outline" disabled={working} onClick={() => void revoke(invitation.id)}>
-                  Revoke
-                </Button>
-              </li>
-            ))}
-          </ul>
+                    <Button type="button" variant="outline" disabled={busy} onClick={() => void revoke(invitation.id)}>
+                      Revoke
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
     </section>

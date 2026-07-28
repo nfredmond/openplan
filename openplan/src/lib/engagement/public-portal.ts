@@ -26,10 +26,47 @@ export type PublicPortalState = {
   portalPath: string | null;
   visibility: "private" | "staged" | "live_open" | "live_closed";
   label: string;
+  /** Compact one-word form for chips and list rows: Private / Staged / Live. */
+  shortLabel: "Private" | "Staged" | "Live";
   detail: string;
   isPubliclyReachable: boolean;
   isAcceptingSubmissions: boolean;
 };
+
+/**
+ * Server-minted share tokens: 28 characters over a 36-character lowercase
+ * alphanumeric alphabet ≈ 144 bits of entropy — unguessable, URL-safe, and
+ * already in `normalizeShareToken` canonical form (no case to lose).
+ */
+export const PUBLIC_SHARE_TOKEN_LENGTH = 28;
+
+const SHARE_TOKEN_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+/**
+ * Mint a crypto-strong public share token. Uses rejection sampling so every
+ * character is uniformly likely (a plain modulo would bias toward the start of
+ * the alphabet). Collisions against the UNIQUE `share_token` column are
+ * practically impossible at this entropy, but callers still handle the
+ * constraint honestly instead of assuming.
+ */
+export function mintPublicShareToken(length: number = PUBLIC_SHARE_TOKEN_LENGTH): string {
+  // Largest multiple of the alphabet size that fits in a byte; bytes at or
+  // above it are rejected so the modulo stays unbiased.
+  const rejectionThreshold = Math.floor(256 / SHARE_TOKEN_ALPHABET.length) * SHARE_TOKEN_ALPHABET.length;
+  const characters: string[] = [];
+
+  while (characters.length < length) {
+    const bytes = new Uint8Array(length * 2);
+    crypto.getRandomValues(bytes);
+    for (const byte of bytes) {
+      if (byte >= rejectionThreshold) continue;
+      characters.push(SHARE_TOKEN_ALPHABET[byte % SHARE_TOKEN_ALPHABET.length]);
+      if (characters.length === length) break;
+    }
+  }
+
+  return characters.join("");
+}
 
 export function normalizeShareToken(value: string | null | undefined): string | null {
   const normalized = value?.trim().toLowerCase() ?? "";
@@ -51,6 +88,7 @@ export function getPublicPortalState(campaign: PublicPortalCampaignLike): Public
       portalPath: null,
       visibility: "private",
       label: "Private",
+      shortLabel: "Private",
       detail: "No share token is configured yet, so the public engagement page is offline.",
       isPubliclyReachable: false,
       isAcceptingSubmissions: false,
@@ -63,6 +101,7 @@ export function getPublicPortalState(campaign: PublicPortalCampaignLike): Public
       portalPath,
       visibility: "staged",
       label: "Staged link",
+      shortLabel: "Staged",
       detail: "A share link is saved, but the public page only resolves when the campaign status is Active.",
       isPubliclyReachable: false,
       isAcceptingSubmissions: false,
@@ -75,6 +114,7 @@ export function getPublicPortalState(campaign: PublicPortalCampaignLike): Public
       portalPath,
       visibility: "live_closed",
       label: "Live · submissions closed",
+      shortLabel: "Live",
       detail: "The public page is reachable, but new submissions are closed for this campaign.",
       isPubliclyReachable: true,
       isAcceptingSubmissions: false,
@@ -87,6 +127,7 @@ export function getPublicPortalState(campaign: PublicPortalCampaignLike): Public
       portalPath,
       visibility: "live_open",
       label: "Live · accepting submissions",
+      shortLabel: "Live",
       detail: "The public page is reachable and can receive moderated public input.",
       isPubliclyReachable: true,
       isAcceptingSubmissions: true,
@@ -98,6 +139,7 @@ export function getPublicPortalState(campaign: PublicPortalCampaignLike): Public
     portalPath,
     visibility: "live_closed",
     label: "Live · view only",
+    shortLabel: "Live",
     detail: "The public page is reachable, but public submission intake is turned off.",
     isPubliclyReachable: true,
     isAcceptingSubmissions: false,

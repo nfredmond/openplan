@@ -446,4 +446,47 @@ describe("scenario entry routes", () => {
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "This scenario set already has a baseline entry" });
   });
+
+  it("POST refuses a viewer and inserts nothing", async () => {
+    // scenario_entries' RLS write policy asks only for membership; the matrix
+    // action "scenarios.write" is what actually keeps a viewer out.
+    membershipMaybeSingleMock.mockResolvedValue({
+      data: { workspace_id: "33333333-3333-4333-8333-333333333333", role: "viewer" },
+      error: null,
+    });
+
+    const response = await postScenarioEntry(
+      new NextRequest("http://localhost/api/scenarios/1/entries", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ entryType: "alternative", label: "Protected bike package" }),
+      }),
+      { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(403);
+    expect(entryInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("POST still creates for a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      entryInsertMock.mockClear();
+      membershipMaybeSingleMock.mockResolvedValue({
+        data: { workspace_id: "33333333-3333-4333-8333-333333333333", role },
+        error: null,
+      });
+
+      const response = await postScenarioEntry(
+        new NextRequest("http://localhost/api/scenarios/1/entries", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ entryType: "alternative", label: "Protected bike package" }),
+        }),
+        { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+
+      expect(response.status, `${role} should still be able to add a scenario entry`).toBe(201);
+      expect(entryInsertMock).toHaveBeenCalledTimes(1);
+    }
+  });
 });

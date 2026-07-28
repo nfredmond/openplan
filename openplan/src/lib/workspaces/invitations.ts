@@ -50,6 +50,7 @@ export type InvitationLookupResult =
   | { ok: false; reason: "not_found" | "not_pending" | "expired"; invitation?: WorkspaceInvitationRow };
 
 const ROLE_RANK: Record<WorkspaceRole, number> = {
+  viewer: 0,
   member: 1,
   admin: 2,
   owner: 3,

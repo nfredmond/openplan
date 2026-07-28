@@ -4,6 +4,7 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { buildOdmProcessingBoundary } from "@/lib/aerial/odm-processing";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import {
   buildProcessingRequest,
   processingCallbackSchema,
@@ -100,6 +101,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
     if (!membership) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    if (isReadOnlyWorkspaceRole((membership as { role?: string }).role)) {
+      return NextResponse.json(
+        { error: "Viewers have read-only access to this workspace" },
+        { status: 403 }
+      );
     }
 
     const workerUrl = process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_URL?.trim();

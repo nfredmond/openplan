@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Download, ExternalLink, Globe, Link2, Loader2, Lock } from "lucide-react";
+import { Check, Copy, Download, ExternalLink, Globe, Link2, Loader2, Lock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getPublicPortalReadiness, getPublicPortalState } from "@/lib/engagement/public-portal";
+import { getPublicPortalReadiness, getPublicPortalState, normalizeShareToken } from "@/lib/engagement/public-portal";
 
 type ShareControlsCampaign = {
   id: string;
@@ -32,33 +31,20 @@ function escapeHtmlAttribute(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
-function generateShareToken(): string {
-  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-
-  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
-    const bytes = new Uint8Array(24);
-    crypto.getRandomValues(bytes);
-    return Array.from(bytes, (value) => chars[value % chars.length]).join("");
-  }
-
-  let token = "";
-  for (let i = 0; i < 24; i++) {
-    token += chars[Math.floor(Math.random() * chars.length)];
-  }
-  return token;
-}
-
 export function EngagementShareControls({
   campaign,
 }: {
   campaign: ShareControlsCampaign;
 }) {
   const router = useRouter();
-  const [shareToken, setShareToken] = useState(campaign.share_token ?? "");
+  // The share token is server truth: it is minted and rotated by
+  // POST /share-token and cleared by PATCH { shareToken: null } — never typed.
+  const shareToken = normalizeShareToken(campaign.share_token) ?? "";
   const [publicDescription, setPublicDescription] = useState(campaign.public_description ?? "");
   const [allowSubmissions, setAllowSubmissions] = useState(campaign.allow_public_submissions);
   const [demographicsEnabled, setDemographicsEnabled] = useState(campaign.demographics_enabled);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRotating, setIsRotating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
@@ -113,7 +99,6 @@ export function EngagementShareControls({
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          shareToken: shareToken || null,
           publicDescription: publicDescription || null,
           allowPublicSubmissions: allowSubmissions,
           demographicsEnabled,
@@ -133,16 +118,73 @@ export function EngagementShareControls({
     }
   }
 
-  function handleGenerateToken() {
-    setShareToken(generateShareToken());
+  // Mint (or rotate) the share token SERVER-side in one step — no free-text
+  // token, no separate save. Rotation invalidates the old link immediately.
+  async function requestServerMintedToken() {
+    setError(null);
+    setIsRotating(true);
+
+    try {
+      const response = await fetch(`/api/engagement/campaigns/${campaign.id}/share-token`, {
+        method: "POST",
+      });
+
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to generate a share link");
+      }
+
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate a share link");
+    } finally {
+      setIsRotating(false);
+    }
   }
 
-  function handleRemoveToken() {
-    setShareToken("");
+  function handleGenerateLink() {
+    void requestServerMintedToken();
+  }
+
+  function handleRegenerateLink() {
+    const confirmed = window.confirm(
+      "Mint a replacement public link? The current link stops working immediately — everywhere it has already been shared — and cannot be restored."
+    );
+    if (!confirmed) return;
+    void requestServerMintedToken();
+  }
+
+  async function handleDisableLink() {
+    const confirmed = window.confirm(
+      "Take the public link offline? The public page stops resolving immediately."
+    );
+    if (!confirmed) return;
+
+    setError(null);
+    setIsRotating(true);
+
+    try {
+      const response = await fetch(`/api/engagement/campaigns/${campaign.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ shareToken: null }),
+      });
+
+      const payload = (await response.json()) as { error?: string };
+      if (!response.ok) {
+        throw new Error(payload.error || "Failed to disable the share link");
+      }
+
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to disable the share link");
+    } finally {
+      setIsRotating(false);
+    }
   }
 
   return (
-    <article className="module-section-surface">
+    <article id="public-share-controls" className="module-section-surface scroll-mt-24">
       <div className="module-section-header">
         <div className="module-section-heading">
           <p className="module-section-label">Public access</p>
@@ -159,27 +201,27 @@ export function EngagementShareControls({
 
       <div className="mt-5 space-y-4">
         <div className="space-y-1.5">
-          <label htmlFor="share-token" className="text-[0.82rem] font-semibold">
-            Share token
-          </label>
-          <div className="flex gap-2">
-            <Input
-              id="share-token"
-              value={shareToken}
-              onChange={(e) => setShareToken(e.target.value)}
-              placeholder="No share token — campaign is private"
-              className="flex-1"
-            />
+          <p className="text-[0.82rem] font-semibold">Share link</p>
+          <p className="text-xs text-muted-foreground">
+            Links are minted server-side and saved in one step — there is nothing to type or guess.
+          </p>
+          <div className="flex flex-wrap gap-2">
             {!shareToken ? (
-              <Button type="button" variant="outline" onClick={handleGenerateToken}>
-                <Link2 className="h-4 w-4" />
-                Generate
+              <Button type="button" variant="outline" onClick={handleGenerateLink} disabled={isRotating}>
+                {isRotating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+                Generate link
               </Button>
             ) : (
-              <Button type="button" variant="outline" onClick={handleRemoveToken}>
-                <Lock className="h-4 w-4" />
-                Remove
-              </Button>
+              <>
+                <Button type="button" variant="outline" onClick={handleRegenerateLink} disabled={isRotating}>
+                  {isRotating ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                  Regenerate link
+                </Button>
+                <Button type="button" variant="outline" onClick={() => void handleDisableLink()} disabled={isRotating}>
+                  <Lock className="h-4 w-4" />
+                  Disable link
+                </Button>
+              </>
             )}
           </div>
         </div>

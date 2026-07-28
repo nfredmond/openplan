@@ -11,6 +11,7 @@ import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
 import { persistBehavioralOnrampKpis } from "@/lib/models/behavioral-onramp-kpis";
 import { refreshCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -78,6 +79,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const callbackBearerValid = hasValidCallbackBearer(request);
     const supabase = callbackBearerValid ? createServiceRoleClient() : await createClient();
 
+    // Null for the worker callback, which authenticates with the shared bearer
+    // token and runs as the service role rather than as any workspace member.
+    let sessionUserId: string | null = null;
+
     if (!callbackBearerValid) {
       const {
         data: { user },
@@ -87,6 +92,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         audit.warn("unauthorized", { durationMs: Date.now() - startedAt });
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
+
+      sessionUserId = user.id;
     }
 
     const { data: countyRun, error: countyRunError } = await supabase
@@ -108,6 +115,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const existingRow = countyRun as CountyRunRow;
+
+    // A signed-in caller must be allowed to WRITE this workspace, not merely to
+    // see the run. The worker callback is exempt: it is the run's own producer,
+    // authenticated by the shared bearer token above.
+    if (sessionUserId) {
+      const writeAccess = await requireWorkspaceWriteAccess(
+        supabase,
+        sessionUserId,
+        existingRow.workspace_id
+      );
+      if (!writeAccess.ok) return writeAccess.response;
+    }
 
     if (parsed.data.status === "failed") {
       const failureStatus = parsed.data.error?.message ?? "Worker failed";

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { requireNetworkPackageWriteAccess } from "@/lib/network-packages/access";
 
 export async function GET(
   request: NextRequest,
@@ -50,6 +51,17 @@ export async function POST(
   if (!version_name) {
     return NextResponse.json({ error: "Missing required field: version_name" }, { status: 400 });
   }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const writeAccess = await requireNetworkPackageWriteAccess(supabase, packageId, user.id);
+  if (!writeAccess.ok) return writeAccess.response;
 
   const { data, error } = await supabase
     .from("network_package_versions")

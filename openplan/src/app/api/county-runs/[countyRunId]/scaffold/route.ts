@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/county-onramp-scaffold";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -192,6 +193,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const existingRow = countyRun as CountyRunRow;
+
+    // Before the scaffold CSV is rewritten on disk, not just before the row
+    // update: a viewer must not be able to change the validation inputs either.
+    const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, existingRow.workspace_id);
+    if (!writeAccess.ok) return writeAccess.response;
+
     const parsedManifest = countyOnrampManifestSchema.safeParse(existingRow.manifest_json ?? null);
     if (!parsedManifest.success) {
       audit.warn("county_run_manifest_missing", { countyRunId: existingRow.id });
