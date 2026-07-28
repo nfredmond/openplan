@@ -413,6 +413,29 @@ const RTP_SECTION_TEMPLATES: Partial<Record<ReportType, ReportSectionTemplate[]>
   ],
 };
 
+/**
+ * The only report sections that may carry an AI-drafted narrative block, per
+ * report type. Deliberately narrow: one prose-shaped section per packet family
+ * (the leadership summary or the run digest), never the evidence/provenance
+ * sections — those stay purely deterministic. Section keys here MUST exist in
+ * SECTION_TEMPLATES for the same report type.
+ */
+export const AI_NARRATIVE_SECTION_KEYS: Record<ReportType, readonly string[]> = {
+  board_packet: ["executive_summary"],
+  project_status: ["status_snapshot"],
+  analysis_summary: ["run_summaries"],
+};
+
+/** Whether a section of a given report type is on the AI-narrative whitelist. */
+export function sectionSupportsAiNarrative(
+  reportType: string | null | undefined,
+  sectionKey: string | null | undefined
+): boolean {
+  if (!reportType || !sectionKey) return false;
+  const keys = AI_NARRATIVE_SECTION_KEYS[reportType as ReportType];
+  return Array.isArray(keys) && keys.includes(sectionKey);
+}
+
 export function resolveRtpPacketPresetStage(status: string | null | undefined): RtpPacketPresetStage {
   switch (status) {
     case "draft":
