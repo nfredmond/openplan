@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, Loader2, Pencil, Trash2, X } from "lucide-react";
+import { AlertTriangle, Loader2, MapPin, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,6 +17,9 @@ import {
   type ProjectDeliveryPhase,
   type ProjectStatus,
 } from "@/lib/projects/project-record-fields";
+import { StudyAreaPicker } from "@/components/models/study-area-picker";
+import { parseCorridorText } from "@/lib/models/study-area";
+import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 
 /**
  * Edit the project's own record, or delete it.
@@ -40,6 +43,11 @@ type ProjectRecord = {
   status: string;
   planType: string;
   deliveryPhase: string;
+  place: {
+    label: string | null;
+    /** A drawn area has a shape but no resolvable identity — say so, do not hide it. */
+    isDrawn: boolean;
+  };
 };
 
 type DeleteBlocker = {
@@ -68,9 +76,12 @@ const PLAN_TYPE_SUGGESTIONS = [
 export function ProjectIdentityEditor({
   project,
   canWrite,
+  workspaceHomeLabel = null,
 }: {
   project: ProjectRecord;
   canWrite: boolean;
+  /** Named so the empty state can state the real fallback rather than invent one. */
+  workspaceHomeLabel?: string | null;
 }) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
@@ -83,6 +94,10 @@ export function ProjectIdentityEditor({
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [refusal, setRefusal] = useState<DeleteRefusal | null>(null);
+  const [editingPlace, setEditingPlace] = useState(false);
+  const [placeText, setPlaceText] = useState("");
+  const [pickedPlace, setPickedPlace] = useState<PlaceBoundaryResponse | null>(null);
+  const [savingPlace, setSavingPlace] = useState(false);
 
   function resetToRecord() {
     setName(project.name);
@@ -125,6 +140,52 @@ export function ProjectIdentityEditor({
     } finally {
       setSaving(false);
     }
+  }
+
+  /** Send the place as a REFERENCE when one was searched; the server re-resolves it. */
+  async function savePlace(place: unknown) {
+    setError(null);
+    setSavingPlace(true);
+    try {
+      const response = await fetch(`/api/projects/${project.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ place }),
+      });
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+        setError(body.message ?? body.error ?? "Could not save this study area.");
+        return;
+      }
+
+      setEditingPlace(false);
+      setPlaceText("");
+      setPickedPlace(null);
+      router.refresh();
+    } catch {
+      setError("Could not reach the server to save this study area.");
+    } finally {
+      setSavingPlace(false);
+    }
+  }
+
+  async function handleSavePlace() {
+    if (pickedPlace) {
+      await savePlace({ mode: "place", kind: pickedPlace.kind, geoid: pickedPlace.geoid });
+      return;
+    }
+
+    const drawn = parseCorridorText(placeText);
+    if (!drawn) {
+      setError("Search for a place or draw an area before saving.");
+      return;
+    }
+    await savePlace({ mode: "drawn", geometry: drawn });
+  }
+
+  async function handleClearPlace() {
+    await savePlace(null);
   }
 
   async function handleDelete() {
@@ -308,6 +369,89 @@ export function ProjectIdentityEditor({
       {error ? (
         <StateBlock className="mt-4" title="That did not save" description={error} tone="danger" compact />
       ) : null}
+
+      <div className="mt-6 border-t border-border pt-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">Study area</p>
+            <p className="text-sm text-muted-foreground">
+              The area this project covers. Model runs, county onboarding, and safety acquisitions
+              start here instead of asking again. This is separate from the map marker below, which
+              is the project&apos;s site.
+            </p>
+          </div>
+          {canWrite && !editingPlace ? (
+            <Button variant="outline" onClick={() => setEditingPlace(true)}>
+              <MapPin className="h-4 w-4" />
+              {project.place.label ? "Change area" : "Set study area"}
+            </Button>
+          ) : null}
+        </div>
+
+        {!editingPlace ? (
+          <div className="mt-3">
+            {project.place.label ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge tone={project.place.isDrawn ? "warning" : "success"}>
+                  {project.place.label}
+                </StatusBadge>
+                {project.place.isDrawn ? (
+                  <span className="text-sm text-muted-foreground">
+                    Drawn area — modules can inherit its shape, but cannot derive a county filter,
+                    crash-data scope, or jurisdiction rule from it.
+                  </span>
+                ) : null}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                No study area set.{" "}
+                {workspaceHomeLabel
+                  ? `Model runs and county onboarding will start from this workspace's home geography (${workspaceHomeLabel}).`
+                  : "This workspace has no home geography either, so every module will ask each time."}
+              </p>
+            )}
+          </div>
+        ) : (
+          <div className="mt-3 space-y-3">
+            <StudyAreaPicker
+              corridorText={placeText}
+              onCorridorChange={setPlaceText}
+              onPlaceResolved={setPickedPlace}
+              // Setting a project's area launches no run, so the engine-routing
+              // hint would be advice about something that is not going to happen.
+              showRunEngineHint={false}
+              externalLabel={project.place.label}
+            />
+            <p className="text-sm text-muted-foreground">
+              Searching gives this project a place identity, which is what lets county onboarding,
+              stage-gate templates, and grant eligibility resolve. A drawn area sets the shape only.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button onClick={() => void handleSavePlace()} disabled={savingPlace}>
+                {savingPlace ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                Save study area
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setPlaceText("");
+                  setPickedPlace(null);
+                  setEditingPlace(false);
+                }}
+                disabled={savingPlace}
+              >
+                <X className="h-4 w-4" />
+                Cancel
+              </Button>
+              {project.place.label ? (
+                <Button variant="outline" onClick={() => void handleClearPlace()} disabled={savingPlace}>
+                  Clear area
+                </Button>
+              ) : null}
+            </div>
+          </div>
+        )}
+      </div>
 
       {canWrite ? (
         <div className="mt-6 border-t border-border pt-4">

@@ -54,12 +54,13 @@ import { ProjectEvidenceAndActivity } from "./_components/project-evidence-activ
 import { ProjectSpineCrosslinkBoard } from "./_components/project-spine-crosslink-board";
 import { ProjectMapPresencePanel } from "./_components/project-map-presence-panel";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
+import { DRAWN_PLACE_SOURCE } from "@/lib/geographies/place-of-record";
 import {
   CORRIDOR_COLUMNS,
   serializeProjectCorridor,
   type ProjectCorridorRow,
 } from "@/lib/cartographic/project-corridor-record";
-import { deriveHomeMapView, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
+import { deriveHomeMapView, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import type {
   BillingInvoiceRow,
@@ -170,7 +171,7 @@ export default async function ProjectDetailPage({
   const { data: projectData } = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     )
     .eq("id", projectId)
     .single();
@@ -227,7 +228,10 @@ export default async function ProjectDetailPage({
   // Open the picker over the workspace's own geography when it has one. A null
   // here is the point: the component falls back to the neutral continental view
   // rather than showing an unset workspace somebody else's town.
-  const projectMapHomeView = deriveHomeMapView(parseWorkspaceHomeGeography(workspaceData));
+  const workspaceHomeGeography = parseWorkspaceHomeGeography(workspaceData);
+  const projectMapHomeView = deriveHomeMapView(workspaceHomeGeography);
+  // Named so an unset project can state the REAL fallback instead of inventing one.
+  const workspaceHomeGeographyLabel = homeGeographyLabel(workspaceHomeGeography);
 
   const projectRtpLinkResult = await supabase
     .from("project_rtp_cycle_links")
@@ -1248,8 +1252,13 @@ export default async function ProjectDetailPage({
           status: project.status,
           planType: project.plan_type,
           deliveryPhase: project.delivery_phase,
+          place: {
+            label: project.place_label ?? null,
+            isDrawn: project.place_source === DRAWN_PLACE_SOURCE,
+          },
         }}
         canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+        workspaceHomeLabel={workspaceHomeGeographyLabel}
       />
 
       <ProjectMapPresencePanel

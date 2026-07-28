@@ -19,9 +19,25 @@ export type ProjectRow = {
   updated_at: string;
   rtp_posture: ProjectRtpPosture | null;
   rtp_posture_updated_at: string | null;
-  /** Backdrop marker position. Null until a planner places the project. */
+  /** Backdrop marker position — the project SITE. Null until a planner places the project. */
   latitude: number | null;
   longitude: number | null;
+  /**
+   * The AREA this project studies (20260728000009), which is a different fact
+   * from the marker above and is the one downstream modules inherit.
+   */
+  place_source: string | null;
+  place_kind: string | null;
+  place_ref: string | null;
+  place_label: string | null;
+  place_country_code: string | null;
+  place_subdivision_code: string | null;
+  place_min_lon: number | null;
+  place_min_lat: number | null;
+  place_max_lon: number | null;
+  place_max_lat: number | null;
+  place_geometry_geojson: unknown;
+  place_set_at: string | null;
 };
 
 export type ProjectReportRow = {
