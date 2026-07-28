@@ -23,12 +23,13 @@
  * and it names no place at all — every label is generic and every geometry is
  * anchored on a deliberately meaningless origin (see fixtures/provision.js).
  *
- * THE ONE DOCUMENTED EXCEPTION
- * ----------------------------
- * `project_corridors` has no write route anywhere in the product; its only
- * historical producer was the deleted demo seed. Those two rows are inserted
- * directly, and the proof report says so rather than implying a route ran.
- * Everything else on this page went through a route.
+ * NO EXCEPTIONS
+ * -------------
+ * Every row this smoke creates goes through a product route. There used to be
+ * one documented exception — the three cartographic-backdrop layers, which had
+ * no write route anywhere in the product and had to be written directly with
+ * the service-role key. That gap is closed, so the exception is gone, and
+ * `fixtures/provision.js` now asserts it has no call sites left.
  */
 
 const fs = require('fs');
@@ -83,7 +84,9 @@ async function main() {
     scriptName: 'local Phase 1 spine smoke',
   });
 
-  const { restSelect, restInsert, restUpdate } = createRestClient({ supabaseUrl, serviceRoleKey });
+  // Read-only. `restInsert` / `restUpdate` exist on this client for a gap that
+  // no longer has one — see the guard in fixtures/provision.js.
+  const { restSelect } = createRestClient({ supabaseUrl, serviceRoleKey });
   const identity = buildRunIdentity('spine-smoke');
   const { email, password, stamp, suffix } = identity;
 
@@ -520,54 +523,55 @@ async function main() {
     notes.push(`Created ${DATASET_COUNT} Data Hub datasets linked to the canonical project.`);
 
     // ---------------------------------------------------------------------
-    // 8. The cartographic backdrop — three layers with no write route
+    // 8. The cartographic backdrop — now reachable through the product
     //
-    // A project created through `POST /api/projects` has no coordinates, and an
-    // RTP cycle created through `POST /api/rtp-cycles` has no anchor, because
-    // nothing in the product ever writes those columns; the deleted demo seed
-    // was their only producer. So all three backdrop layers — project markers,
-    // RTP pins, and corridors — are unreachable through the app today.
+    // These three layers used to be written directly here, because the product
+    // had no write route for any of them: a project created through
+    // `POST /api/projects` had no coordinates, an RTP cycle had no anchor, and
+    // a corridor could not be created at all. Their only historical producer
+    // was the deleted demo seed, so every one of these layers was permanently
+    // empty for a workspace built by using the app.
     //
-    // The harness writes them directly and says so. The alternative would be to
-    // drop the map assertions, which would hide a regression in the map routes
-    // themselves on top of the gap that already exists.
+    // They now go through real routes, which is what makes this section proof
+    // rather than setup: if the write path regresses, the map assertions below
+    // fail instead of being propped up by a service-role insert.
     // ---------------------------------------------------------------------
     const projectAnchor = syntheticPoint(1);
-    await restUpdate(
-      'projects',
-      { id: `eq.${ids.projectId}` },
+    await expectAppFetch(
+      `/api/projects/${ids.projectId}/location`,
       { latitude: projectAnchor.lat, longitude: projectAnchor.lon },
-      'the product exposes no write route for projects.latitude/longitude, so a project created through the app never appears on the map backdrop'
+      200,
+      'Project location patch',
+      'PATCH'
     );
     const rtpAnchor = syntheticPoint(2);
-    await restUpdate(
-      'rtp_cycles',
-      { id: `eq.${ids.rtpCycleId}` },
-      { anchor_latitude: rtpAnchor.lat, anchor_longitude: rtpAnchor.lon },
-      'the product exposes no write route for rtp_cycles.anchor_latitude/_longitude, so an RTP cycle created through the app never appears on the map backdrop'
+    await expectAppFetch(
+      `/api/rtp-cycles/${ids.rtpCycleId}`,
+      { anchorLatitude: rtpAnchor.lat, anchorLongitude: rtpAnchor.lon },
+      200,
+      'RTP cycle anchor patch',
+      'PATCH'
     );
-    notes.push(
-      'Set the project marker and RTP pin coordinates DIRECTLY — the product has no write route for either, which this run records as a product gap rather than papering over.'
-    );
+    notes.push('Placed the project marker and the RTP pin through the product write routes.');
 
-    const corridorRows = await restInsert(
-      'project_corridors',
-      Array.from({ length: CORRIDOR_COUNT }, (_, index) => ({
-        workspace_id: ids.workspaceId,
-        project_id: ids.projectId,
-        name: `Spine smoke corridor ${index + 1} (${suffix})`,
-        corridor_type: index === 0 ? 'arterial' : 'bike',
-        los_grade: index === 0 ? 'D' : 'C',
-        geometry_geojson: syntheticLineString(index + 1, 5),
-        created_by: ids.userId,
-      })),
-      'the product exposes no write route for project_corridors; its only historical producer was the deleted demo seed'
-    );
-    ids.corridorIds = corridorRows.map((row) => row.id);
+    ids.corridorIds = [];
+    for (let index = 0; index < CORRIDOR_COUNT; index += 1) {
+      const corridorPayload = await expectAppFetch(
+        `/api/projects/${ids.projectId}/corridors`,
+        {
+          name: `Spine smoke corridor ${index + 1} (${suffix})`,
+          corridorType: index === 0 ? 'arterial' : 'bike',
+          losGrade: index === 0 ? 'D' : 'C',
+          geometry: syntheticLineString(index + 1, 5),
+        },
+        201,
+        `Corridor ${index + 1} creation`
+      );
+      ids.corridorIds.push(corridorPayload.corridor?.id);
+    }
+    assertEvery(ids.corridorIds.map((id) => ({ id })), (row) => Boolean(row.id), 'corridor ids');
     assertRowCount(ids.corridorIds, CORRIDOR_COUNT, 'project corridors');
-    notes.push(
-      `Inserted ${CORRIDOR_COUNT} corridor rows DIRECTLY — the product has no corridor write route, which this run records as a product gap rather than papering over.`
-    );
+    notes.push(`Drew ${CORRIDOR_COUNT} corridors through POST /api/projects/{id}/corridors.`);
 
     // ---------------------------------------------------------------------
     // 9. Aerial missions, AOIs, evidence packages
@@ -959,7 +963,7 @@ async function main() {
       '- **Hermetic.** Each run works inside a workspace that did not exist a moment earlier, so there is no prior-run residue to clean and no shared state with any other smoke.',
       '',
       '## Boundary Notes',
-      '- **Three cartographic-backdrop layers have no write route in the product**, and the deleted demo seed was their only producer. This run writes them directly and records the gap rather than hiding it: `project_corridors` rows (no create route at all), `projects.latitude/longitude`, and `rtp_cycles.anchor_latitude/_longitude`. As shipped, a project or RTP cycle created through the app never appears on the map backdrop, and a corridor cannot be created at all.',
+      '- **All three cartographic-backdrop layers were written through product routes.** They previously had no write path at all — the deleted demo seed was their only producer, so a project or RTP cycle created through the app never appeared on the map and a corridor could not be created by any means. This run places the project marker via `PATCH /api/projects/{id}/location`, the RTP pin via `PATCH /api/rtp-cycles/{id}`, and the corridors via `POST /api/projects/{id}/corridors`, then asserts the map-features routes return them.',
       '- The managed runs use the `ite_trip_generation` engine, which is a pure computation over a land-use program. The corridor engine was not used because it needs real geography with live Census/LODES coverage — a place-shaped dependency this smoke exists to avoid.',
       '- The county run stays at `bootstrap-incomplete`. Advancing it to `validated-screening` requires the Python worker and real artifacts on disk; this smoke proves the project-provenance edge only, and claims nothing about model validity.',
       '',

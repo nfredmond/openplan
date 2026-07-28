@@ -52,6 +52,14 @@ import { ProjectDeliveryBoard } from "./_components/project-delivery-board";
 import { ProjectRiskAndDecisionLog } from "./_components/project-risk-decision-log";
 import { ProjectEvidenceAndActivity } from "./_components/project-evidence-activity";
 import { ProjectSpineCrosslinkBoard } from "./_components/project-spine-crosslink-board";
+import { ProjectMapPresencePanel } from "./_components/project-map-presence-panel";
+import {
+  CORRIDOR_COLUMNS,
+  serializeProjectCorridor,
+  type ProjectCorridorRow,
+} from "@/lib/cartographic/project-corridor-record";
+import { deriveHomeMapView, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import type {
   BillingInvoiceRow,
   FundingAwardRow,
@@ -161,7 +169,7 @@ export default async function ProjectDetailPage({
   const { data: projectData } = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude"
     )
     .eq("id", projectId)
     .single();
@@ -199,6 +207,26 @@ export default async function ProjectDetailPage({
   // board and the disclosure above it can never describe different templates.
   const stageGateResolution = resolveWorkspaceStageGateBinding(workspaceData);
   const stageGateBinding = stageGateResolution.kind === "resolved" ? stageGateResolution.binding : null;
+
+  // The project's own corridors, for the backdrop-presence panel. Read through
+  // the pending-schema fallback like every other optional table on this page, so
+  // a deployment that has not applied the corridor migration renders a stated
+  // limitation rather than an error.
+  const projectCorridorResult = await supabase
+    .from("project_corridors")
+    .select(CORRIDOR_COLUMNS)
+    .eq("project_id", project.id)
+    .order("created_at", { ascending: true });
+
+  const projectCorridorsPending = looksLikePendingSchema(projectCorridorResult.error?.message);
+  const projectCorridors = projectCorridorsPending
+    ? []
+    : ((projectCorridorResult.data ?? []) as ProjectCorridorRow[]).map(serializeProjectCorridor);
+
+  // Open the picker over the workspace's own geography when it has one. A null
+  // here is the point: the component falls back to the neutral continental view
+  // rather than showing an unset workspace somebody else's town.
+  const projectMapHomeView = deriveHomeMapView(parseWorkspaceHomeGeography(workspaceData));
 
   const projectRtpLinkResult = await supabase
     .from("project_rtp_cycle_links")
@@ -1210,6 +1238,16 @@ export default async function ProjectDetailPage({
 
         <ProjectStageGateBoard stageGateSummary={stageGateSummary} />
       </div>
+
+      <ProjectMapPresencePanel
+        projectId={project.id}
+        latitude={project.latitude}
+        longitude={project.longitude}
+        corridors={projectCorridors}
+        corridorsPending={projectCorridorsPending}
+        {...(projectMapHomeView ? { homeCenter: projectMapHomeView.center, homeZoom: projectMapHomeView.zoom } : {})}
+        canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+      />
 
       <ProjectFundingPanel
         projectId={project.id}

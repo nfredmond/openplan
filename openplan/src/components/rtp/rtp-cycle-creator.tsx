@@ -34,12 +34,28 @@ export function RtpCycleCreator() {
   const [publicReviewOpenAt, setPublicReviewOpenAt] = useState("");
   const [publicReviewCloseAt, setPublicReviewCloseAt] = useState("");
   const [summary, setSummary] = useState("");
+  const [anchorLatitude, setAnchorLatitude] = useState("");
+  const [anchorLongitude, setAnchorLongitude] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+
+    // Caught here rather than as a 400, because the pair rule is easier to
+    // understand next to the two fields than in a toast after a round trip.
+    const hasLatitude = anchorLatitude.trim().length > 0;
+    const hasLongitude = anchorLongitude.trim().length > 0;
+    if (hasLatitude !== hasLongitude) {
+      setError("Enter both a map pin latitude and longitude, or leave both blank.");
+      return;
+    }
+    if (hasLatitude && (!Number.isFinite(Number(anchorLatitude)) || !Number.isFinite(Number(anchorLongitude)))) {
+      setError("The map pin latitude and longitude must be numbers.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -56,6 +72,8 @@ export function RtpCycleCreator() {
           publicReviewOpenAt: publicReviewOpenAt ? new Date(publicReviewOpenAt).toISOString() : undefined,
           publicReviewCloseAt: publicReviewCloseAt ? new Date(publicReviewCloseAt).toISOString() : undefined,
           summary: summary || undefined,
+          anchorLatitude: anchorLatitude.trim() ? Number(anchorLatitude) : undefined,
+          anchorLongitude: anchorLongitude.trim() ? Number(anchorLongitude) : undefined,
         }),
       });
 
@@ -73,6 +91,8 @@ export function RtpCycleCreator() {
       setPublicReviewOpenAt("");
       setPublicReviewCloseAt("");
       setSummary("");
+      setAnchorLatitude("");
+      setAnchorLongitude("");
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to create RTP cycle");
@@ -139,6 +159,43 @@ export function RtpCycleCreator() {
               placeholder="Countywide, including unincorporated areas"
               value={geographyLabel}
               onChange={(event) => setGeographyLabel(event.target.value)}
+            />
+          </div>
+        </div>
+
+        {/*
+          Where the cycle drops its pin on the workspace map. Optional, and both
+          halves move together — the backdrop needs both to draw anything, so a
+          lone latitude would silently render nothing. Until this existed the
+          columns had no writer outside the deleted demo seed, and the RTP layer
+          was permanently empty.
+        */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1.5">
+            <label htmlFor="rtp-cycle-anchor-latitude" className="text-[0.82rem] font-semibold">
+              Map pin latitude
+              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            </label>
+            <Input
+              id="rtp-cycle-anchor-latitude"
+              inputMode="decimal"
+              placeholder="39.9612"
+              value={anchorLatitude}
+              onChange={(event) => setAnchorLatitude(event.target.value)}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="rtp-cycle-anchor-longitude" className="text-[0.82rem] font-semibold">
+              Map pin longitude
+              <span className="ml-1.5 text-[0.72rem] font-normal text-muted-foreground">optional</span>
+            </label>
+            <Input
+              id="rtp-cycle-anchor-longitude"
+              inputMode="decimal"
+              placeholder="-82.9988"
+              value={anchorLongitude}
+              onChange={(event) => setAnchorLongitude(event.target.value)}
             />
           </div>
         </div>

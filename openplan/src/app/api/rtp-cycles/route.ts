@@ -28,6 +28,15 @@ const createRtpCycleSchema = z
     publicReviewOpenAt: z.string().datetime({ offset: true }).optional(),
     publicReviewCloseAt: z.string().datetime({ offset: true }).optional(),
     summary: z.string().trim().max(4000).optional(),
+    /**
+     * Where this cycle drops its pin on the cartographic backdrop. Optional —
+     * a cycle without an anchor simply does not render a pin, which is what the
+     * anchor migration says. Until now these columns had no writer at all
+     * outside the deleted demo seed, so the "RTP cycles" backdrop layer was
+     * permanently empty for a workspace built by using the app.
+     */
+    anchorLatitude: z.number().min(-90).max(90).optional(),
+    anchorLongitude: z.number().min(-180).max(180).optional(),
   })
   .superRefine((value, context) => {
     const hasStart = typeof value.horizonStartYear === "number";
@@ -45,6 +54,19 @@ const createRtpCycleSchema = z
         code: z.ZodIssueCode.custom,
         path: ["horizonEndYear"],
         message: "The horizon end year must be greater than or equal to the start year.",
+      });
+    }
+
+    // A pin needs both halves. One coordinate alone is not a partly-placed
+    // cycle; the map-features route requires both to be non-null, so a lone
+    // latitude renders nothing and reports nothing.
+    const hasAnchorLat = typeof value.anchorLatitude === "number";
+    const hasAnchorLon = typeof value.anchorLongitude === "number";
+    if (hasAnchorLat !== hasAnchorLon) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: hasAnchorLat ? ["anchorLongitude"] : ["anchorLatitude"],
+        message: "Both anchor coordinates must be provided together.",
       });
     }
 
@@ -95,7 +117,7 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from("rtp_cycles")
       .select(
-        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, created_at, updated_at"
+        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, anchor_latitude, anchor_longitude, created_at, updated_at"
       )
       .order("updated_at", { ascending: false });
 
@@ -184,6 +206,8 @@ export async function POST(request: NextRequest) {
       public_review_open_at: payload.data.publicReviewOpenAt ?? null,
       public_review_close_at: payload.data.publicReviewCloseAt ?? null,
       summary: payload.data.summary || null,
+      anchor_latitude: payload.data.anchorLatitude ?? null,
+      anchor_longitude: payload.data.anchorLongitude ?? null,
       created_by: user.id,
     };
 
@@ -191,7 +215,7 @@ export async function POST(request: NextRequest) {
       .from("rtp_cycles")
       .insert(insertPayload)
       .select(
-        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, created_at, updated_at"
+        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, anchor_latitude, anchor_longitude, created_at, updated_at"
       )
       .single();
 

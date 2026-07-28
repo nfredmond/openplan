@@ -202,9 +202,15 @@ function createRestClient({ supabaseUrl, serviceRoleKey }) {
 
   /**
    * Direct insert. Legitimate ONLY for a table the product exposes no write
-   * route for — today that is `project_corridors`, whose only historical
-   * producer was the deleted demo seed. Every call site must say which route
-   * is missing, so the workaround stays visible instead of becoming a habit.
+   * route for. Every call site must say which route is missing, so the
+   * workaround stays visible instead of becoming a habit.
+   *
+   * THERE ARE CURRENTLY NO SUCH TABLES, and so no call sites. The last one was
+   * `project_corridors`, whose only historical producer was the deleted demo
+   * seed; it now has a real create route. This helper is kept because the next
+   * gap should be recorded the same way rather than quietly worked around —
+   * `no-service-role-writes.test.ts` fails if a call site reappears without
+   * being named there.
    */
   async function restInsert(table, payload, missingRouteReason) {
     assertOk(
@@ -227,11 +233,12 @@ function createRestClient({ supabaseUrl, serviceRoleKey }) {
   }
 
   /**
-   * Direct update. Same rule as `restInsert`: legitimate ONLY for a column the
-   * product exposes no write route for. Today those are the map-anchor columns
-   * `projects.latitude/longitude` and `rtp_cycles.anchor_latitude/_longitude`,
-   * whose only historical producer was the deleted demo seed — which means a
-   * project or RTP cycle created through the app never appears on the map.
+   * Direct update. Same rule, and the same current answer: no call sites.
+   *
+   * The last ones were the map-anchor columns `projects.latitude/longitude`
+   * and `rtp_cycles.anchor_latitude/_longitude`, which meant a project or RTP
+   * cycle created through the app never appeared on the map. Both now have
+   * routes: `PATCH /api/projects/{id}/location` and `PATCH /api/rtp-cycles/{id}`.
    */
   async function restUpdate(table, filterParams, payload, missingRouteReason) {
     assertOk(

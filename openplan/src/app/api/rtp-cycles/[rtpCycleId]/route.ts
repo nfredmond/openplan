@@ -27,6 +27,9 @@ const patchRtpCycleSchema = z
     publicReviewOpenAt: z.union([z.string().datetime({ offset: true }), z.null()]).optional(),
     publicReviewCloseAt: z.union([z.string().datetime({ offset: true }), z.null()]).optional(),
     summary: z.union([z.string().trim().max(4000), z.null()]).optional(),
+    // Nullable so a cycle can be un-pinned, not only moved.
+    anchorLatitude: z.union([z.number().min(-90).max(90), z.null()]).optional(),
+    anchorLongitude: z.union([z.number().min(-180).max(180), z.null()]).optional(),
   })
   .refine((value) => Object.values(value).some((item) => item !== undefined), {
     message: "At least one field must be updated",
@@ -48,6 +51,25 @@ const patchRtpCycleSchema = z
         message: "The horizon end year must be greater than or equal to the start year.",
       });
     }
+    // Both coordinates move, or both clear, together. A cycle holding one half
+    // of a pin renders nothing and explains nothing.
+    const anchorLat = value.anchorLatitude;
+    const anchorLon = value.anchorLongitude;
+    if ((anchorLat !== undefined || anchorLon !== undefined) && (anchorLat === undefined || anchorLon === undefined)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: [anchorLat === undefined ? "anchorLatitude" : "anchorLongitude"],
+        message: "Both anchor coordinates must be cleared or provided together.",
+      });
+    }
+    if (anchorLat !== undefined && anchorLon !== undefined && (anchorLat === null) !== (anchorLon === null)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["anchorLongitude"],
+        message: "Both anchor coordinates must be cleared or provided together.",
+      });
+    }
+
     if ((value.publicReviewOpenAt === null) !== (value.publicReviewCloseAt === null) && (value.publicReviewOpenAt !== undefined || value.publicReviewCloseAt !== undefined)) {
       context.addIssue({
         code: z.ZodIssueCode.custom,
@@ -141,13 +163,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (payload.data.publicReviewOpenAt !== undefined) updates.public_review_open_at = payload.data.publicReviewOpenAt;
     if (payload.data.publicReviewCloseAt !== undefined) updates.public_review_close_at = payload.data.publicReviewCloseAt;
     if (payload.data.summary !== undefined) updates.summary = payload.data.summary;
+    if (payload.data.anchorLatitude !== undefined) updates.anchor_latitude = payload.data.anchorLatitude;
+    if (payload.data.anchorLongitude !== undefined) updates.anchor_longitude = payload.data.anchorLongitude;
 
     const { data: updatedCycle, error: updateError } = await supabase
       .from("rtp_cycles")
       .update(updates)
       .eq("id", cycle.id)
       .select(
-        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, created_at, updated_at"
+        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, anchor_latitude, anchor_longitude, created_at, updated_at"
       )
       .single();
 

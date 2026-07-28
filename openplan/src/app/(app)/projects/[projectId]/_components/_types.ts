@@ -19,6 +19,9 @@ export type ProjectRow = {
   updated_at: string;
   rtp_posture: ProjectRtpPosture | null;
   rtp_posture_updated_at: string | null;
+  /** Backdrop marker position. Null until a planner places the project. */
+  latitude: number | null;
+  longitude: number | null;
 };
 
 export type ProjectReportRow = {

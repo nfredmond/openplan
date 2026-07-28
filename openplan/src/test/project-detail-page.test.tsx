@@ -308,6 +308,16 @@ const fromMock = vi.fn((table: string) => {
       })),
     };
   }
+  if (table === "project_corridors") {
+    // Corridors drawn on the cartographic backdrop for this project.
+    return {
+      select: vi.fn(() => ({
+        eq: vi.fn(() => ({
+          order: vi.fn(async () => ({ data: [], error: null })),
+        })),
+      })),
+    };
+  }
 
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -347,6 +357,12 @@ vi.mock("@/components/projects/project-rtp-linker", () => ({
 
 vi.mock("@/components/projects/project-funding-profile-editor", () => ({
   ProjectFundingProfileEditor: () => <div data-testid="project-funding-profile-editor" />,
+}));
+
+// Carries a Mapbox picker and a router; the panel's own behavior is covered by
+// src/test/project-map-presence-routes.test.ts and the local spine smoke.
+vi.mock("@/components/projects/project-map-presence", () => ({
+  ProjectMapPresence: () => <div data-testid="project-map-presence" />,
 }));
 
 vi.mock("@/components/projects/project-funding-award-creator", () => ({
