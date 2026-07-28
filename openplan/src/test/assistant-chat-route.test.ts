@@ -6,9 +6,26 @@ const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadAssistantContextMock = vi.fn();
 const streamTextMock = vi.fn();
+const stepCountIsMock = vi.fn((count: number) => ({ __stepCountIs: count }));
 const anthropicMock = vi.fn((modelId: string) => ({ __modelId: modelId }));
 const checkAiUsageRateLimitMock = vi.fn();
 const recordAiUsageEventMock = vi.fn();
+const buildAssistantChatToolsMock = vi.fn();
+const createChatToolBudgetMock = vi.fn();
+
+type BudgetFixture = {
+  maxCalls: number;
+  maxKnowledgeBaseSearches: number;
+  usedCalls: number;
+  usedKnowledgeBaseSearches: number;
+  ledger: Array<{ toolCallId: string; tool: string; ok: boolean; durationMs: number }>;
+};
+
+function freshBudgetFixture(): BudgetFixture {
+  return { maxCalls: 12, maxKnowledgeBaseSearches: 3, usedCalls: 0, usedKnowledgeBaseSearches: 0, ledger: [] };
+}
+
+let budgetFixture: BudgetFixture = freshBudgetFixture();
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -37,6 +54,12 @@ vi.mock("@/lib/assistant/context", async () => {
 
 vi.mock("ai", () => ({
   streamText: (...args: unknown[]) => streamTextMock(...args),
+  stepCountIs: (...args: unknown[]) => stepCountIsMock(...(args as [number])),
+}));
+
+vi.mock("@/lib/assistant/chat-tools", () => ({
+  buildAssistantChatTools: (...args: unknown[]) => buildAssistantChatToolsMock(...args),
+  createChatToolBudget: (...args: unknown[]) => createChatToolBudgetMock(...args),
 }));
 
 vi.mock("@ai-sdk/anthropic", () => ({
@@ -126,11 +149,17 @@ describe("/api/assistant/chat", () => {
     loadAssistantContextMock.mockResolvedValue(workspaceContextFixture());
     checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
     recordAiUsageEventMock.mockResolvedValue(undefined);
+    budgetFixture = freshBudgetFixture();
+    createChatToolBudgetMock.mockReturnValue(budgetFixture);
+    buildAssistantChatToolsMock.mockReturnValue({
+      list_projects: { description: "stub tool" },
+      propose_generate_report_artifact: { description: "stub proposal tool" },
+    });
     streamTextMock.mockReturnValue({
-      toTextStreamResponse: () =>
-        new Response("Grounded reply", {
+      toUIMessageStreamResponse: () =>
+        new Response("data: {\"type\":\"start\"}\n\ndata: [DONE]\n\n", {
           status: 200,
-          headers: { "content-type": "text/plain; charset=utf-8" },
+          headers: { "content-type": "text/event-stream" },
         }),
     });
   });
@@ -193,7 +222,7 @@ describe("/api/assistant/chat", () => {
     expect(streamTextMock).not.toHaveBeenCalled();
   });
 
-  it("streams a grounded reply on the happy path", async () => {
+  it("streams a grounded UI-message reply with tools wired on the happy path", async () => {
     const response = await postAssistantChat(
       jsonRequest({
         kind: "workspace",
@@ -207,7 +236,8 @@ describe("/api/assistant/chat", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(await response.text()).toBe("Grounded reply");
+    expect(response.headers.get("content-type")).toContain("text/event-stream");
+    expect(await response.text()).toContain("data:");
 
     expect(loadAssistantContextMock).toHaveBeenCalledWith(
       expect.anything(),
@@ -215,23 +245,72 @@ describe("/api/assistant/chat", () => {
       expect.objectContaining({ kind: "workspace", workspaceId: WORKSPACE_ID })
     );
 
+    // Tools are built from the user-session client with the loaded context and
+    // the per-request budget — never a service client.
+    expect(buildAssistantChatToolsMock).toHaveBeenCalledTimes(1);
+    const toolsArgs = buildAssistantChatToolsMock.mock.calls[0][0] as {
+      userId: string;
+      budget: unknown;
+      supabase: unknown;
+    };
+    expect(toolsArgs.userId).toBe(USER_ID);
+    expect(toolsArgs.budget).toBe(budgetFixture);
+
     expect(streamTextMock).toHaveBeenCalledTimes(1);
     const callArgs = streamTextMock.mock.calls[0][0] as {
       model: { __modelId: string };
       system: string;
       messages: Array<{ role: string; content: string }>;
       maxOutputTokens: number;
+      tools: Record<string, unknown>;
+      stopWhen: { __stepCountIs: number };
     };
 
     expect(callArgs.model).toEqual({ __modelId: "claude-opus-4-8" });
     expect(callArgs.system).toContain("Workspace: Foothill COG");
     expect(callArgs.system).toContain("Never invent workspace data.");
+    expect(Object.keys(callArgs.tools)).toContain("list_projects");
+    expect(Object.keys(callArgs.tools)).toContain("propose_generate_report_artifact");
+    expect(callArgs.stopWhen).toEqual({ __stepCountIs: 6 });
+    expect(stepCountIsMock).toHaveBeenCalledWith(6);
     expect(callArgs.messages).toEqual([
       { role: "user", content: "Hi" },
       { role: "assistant", content: "Hello, planner." },
       { role: "user", content: "Where should I focus this week?" },
     ]);
     expect(callArgs.maxOutputTokens).toBeGreaterThan(0);
+  });
+
+  it("drains the tool ledger into assistant_chat_tool_called audit events at each step boundary", async () => {
+    await postAssistantChat(
+      jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })
+    );
+
+    const callArgs = streamTextMock.mock.calls[0][0] as {
+      onStepFinish: (step: Record<string, unknown>) => void;
+    };
+
+    budgetFixture.ledger.push(
+      { toolCallId: "c1", tool: "list_projects", ok: true, durationMs: 12 },
+      { toolCallId: "c2", tool: "search_knowledge_base", ok: false, durationMs: 40 }
+    );
+    callArgs.onStepFinish({});
+
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "assistant_chat_tool_called",
+      expect.objectContaining({ tool: "list_projects", ok: true, durationMs: 12, workspaceId: WORKSPACE_ID })
+    );
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "assistant_chat_tool_called",
+      expect.objectContaining({ tool: "search_knowledge_base", ok: false, durationMs: 40 })
+    );
+    expect(budgetFixture.ledger).toHaveLength(0);
+
+    // A later step only audits its own executions.
+    const auditCallsBefore = mockAudit.info.mock.calls.filter(([event]) => event === "assistant_chat_tool_called").length;
+    callArgs.onStepFinish({});
+    const auditCallsAfter = mockAudit.info.mock.calls.filter(([event]) => event === "assistant_chat_tool_called").length;
+    expect(auditCallsAfter).toBe(auditCallsBefore);
   });
 
   it("records an assistant_chat usage event when the stream finishes (not before)", async () => {

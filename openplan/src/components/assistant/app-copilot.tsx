@@ -35,10 +35,29 @@ import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 import { getActionMetadata, resolveQuickLinkApproval } from "@/lib/runtime/action-metadata";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import type { AssistantActionApprovalEvidence } from "@/lib/runtime/action-registry";
+import {
+  consumeAssistantChatStream,
+  describeAssistantChatToolActivity,
+} from "@/lib/assistant/chat-stream";
+import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
 
 type AppCopilotProps = {
   workspaceId: string | null;
   workspaceName: string;
+};
+
+type ChatToolActivity = {
+  toolCallId: string;
+  toolName: string;
+  status: "running" | "done" | "failed";
+  summary: string;
+};
+
+type ChatProposalEntry = {
+  id: string;
+  proposal: AssistantChatProposal;
+  state: "pending" | "executing" | "executed" | "failed" | "dismissed";
+  error?: string;
 };
 
 type ConversationEntry =
@@ -52,6 +71,8 @@ type ConversationEntry =
       status: "streaming" | "complete" | "error";
       error?: string;
       question: string;
+      toolEvents: ChatToolActivity[];
+      proposals: ChatProposalEntry[];
     }
   | {
       id: string;
@@ -492,6 +513,65 @@ function BoardStateCueCard({ cue }: { cue: AssistantBoardStateCue }) {
 function formatOperationTimestamp(timestamp: number | undefined): string | null {
   if (!timestamp) return null;
   return new Date(timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function humanizeProposalKind(kind: string): string {
+  return kind.replace(/_/g, " ");
+}
+
+function proposalPayloadFields(proposal: AssistantChatProposal): Array<[string, string]> {
+  return Object.entries(proposal.payload as Record<string, unknown>)
+    .filter(([key, value]) => key !== "kind" && value !== undefined && value !== null)
+    .map(([key, value]) => [key, typeof value === "string" ? value : JSON.stringify(value)] as [string, string]);
+}
+
+function proposalApprovalBadge(proposal: AssistantChatProposal) {
+  switch (proposal.approval) {
+    case "approval_required":
+      return { label: "Approval required", className: "border-amber-300/25 bg-amber-400/14 text-amber-100" };
+    case "review":
+      return { label: "Review", className: "border-sky-300/22 bg-sky-400/12 text-sky-100" };
+    case "safe":
+    default:
+      return { label: "Safe", className: "border-emerald-300/22 bg-emerald-400/12 text-emerald-100" };
+  }
+}
+
+function ChatProposalCard({ entry }: { entry: ChatProposalEntry }) {
+  const badge = proposalApprovalBadge(entry.proposal);
+  return (
+    <div
+      className="rounded-[0.5rem] border border-violet-300/22 bg-violet-400/8 px-3.5 py-3"
+      role="group"
+      aria-label={`Proposed action: ${humanizeProposalKind(entry.proposal.kind)}`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-violet-100/78">
+          Proposed action · {humanizeProposalKind(entry.proposal.kind)}
+        </p>
+        <span
+          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.14em] ${badge.className}`}
+        >
+          {badge.label}
+        </span>
+      </div>
+      <p className="mt-2 text-sm leading-relaxed text-slate-100">{entry.proposal.description}</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {proposalPayloadFields(entry.proposal).map(([key, value]) => (
+          <span
+            key={key}
+            className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold text-slate-200/85"
+          >
+            <span className="uppercase tracking-[0.12em] text-slate-400/88">{key}</span>
+            <span className="truncate normal-case">{value}</span>
+          </span>
+        ))}
+      </div>
+      <p className="mt-2 text-xs leading-relaxed text-slate-300/78">
+        Nothing has changed yet — this is a proposal awaiting your explicit approval.
+      </p>
+    </div>
+  );
 }
 
 function upsertOperationHistory(
@@ -1497,64 +1577,98 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           text: "",
           status: "streaming",
           question,
+          toolEvents: [],
+          proposals: [],
         },
       ]);
       setDraft("");
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
+      const patchChatEntry = (
+        patch: (entry: Extract<ConversationEntry, { type: "chat" }>) => Extract<ConversationEntry, { type: "chat" }>
+      ) => {
+        setMessages((current) =>
+          current.map((entry) => (entry.id === chatEntryId && entry.type === "chat" ? patch(entry) : entry))
+        );
+      };
+
       let receivedText = "";
+      let proposalCount = 0;
+      let streamErrorText: string | null = null;
 
       try {
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const delta = decoder.decode(value, { stream: true });
-          if (!delta) continue;
-          receivedText += delta;
-          setMessages((current) =>
-            current.map((entry) =>
-              entry.id === chatEntryId && entry.type === "chat" ? { ...entry, text: entry.text + delta } : entry
-            )
-          );
+        for await (const event of consumeAssistantChatStream(response.body)) {
+          if (event.type === "text-delta") {
+            receivedText += event.text;
+            patchChatEntry((entry) => ({ ...entry, text: entry.text + event.text }));
+          } else if (event.type === "tool-start") {
+            patchChatEntry((entry) => ({
+              ...entry,
+              toolEvents: [
+                ...entry.toolEvents,
+                {
+                  toolCallId: event.toolCallId,
+                  toolName: event.toolName,
+                  status: "running" as const,
+                  summary: describeAssistantChatToolActivity(event.toolName),
+                },
+              ],
+            }));
+          } else if (event.type === "tool-result") {
+            patchChatEntry((entry) => ({
+              ...entry,
+              toolEvents: entry.toolEvents.map((activity) =>
+                activity.toolCallId === event.toolCallId
+                  ? {
+                      ...activity,
+                      status: event.ok ? ("done" as const) : ("failed" as const),
+                      summary: event.ok
+                        ? describeAssistantChatToolActivity(activity.toolName, event.output)
+                        : `${describeAssistantChatToolActivity(activity.toolName)} — failed`,
+                    }
+                  : activity
+              ),
+            }));
+          } else if (event.type === "proposal") {
+            proposalCount += 1;
+            patchChatEntry((entry) => ({
+              ...entry,
+              toolEvents: entry.toolEvents.map((activity) =>
+                activity.toolCallId === event.toolCallId
+                  ? { ...activity, status: "done" as const, summary: describeAssistantChatToolActivity(activity.toolName) }
+                  : activity
+              ),
+              proposals: [
+                ...entry.proposals,
+                {
+                  id: `${chatEntryId}-proposal-${entry.proposals.length}`,
+                  proposal: event.proposal,
+                  state: "pending" as const,
+                },
+              ],
+            }));
+          } else if (event.type === "error") {
+            streamErrorText = event.errorText;
+          }
         }
-        const tail = decoder.decode();
-        receivedText += tail;
-        // A plain-text stream cannot carry an error frame, so an upstream model
-        // failure before any token arrives ends the stream with an empty body.
-        // Treat an empty completed reply as an error (with retry) rather than a
-        // silent blank bubble.
-        if (receivedText.trim().length === 0) {
-          setMessages((current) =>
-            current.map((entry) =>
-              entry.id === chatEntryId && entry.type === "chat"
-                ? {
-                    ...entry,
-                    status: "error" as const,
-                    error: "The Planner Agent chat reply came back empty — the model may be busy. Try again.",
-                  }
-                : entry
-            )
-          );
+
+        if (streamErrorText) {
+          patchChatEntry((entry) => ({ ...entry, status: "error" as const, error: streamErrorText ?? undefined }));
+        } else if (receivedText.trim().length === 0 && proposalCount === 0) {
+          // The protocol carries explicit error frames now, but a finished
+          // stream with neither text nor a proposal is still a blank reply —
+          // surface it as retryable instead of a silent empty bubble.
+          patchChatEntry((entry) => ({
+            ...entry,
+            status: "error" as const,
+            error: "The Planner Agent chat reply came back empty — the model may be busy. Try again.",
+          }));
         } else {
-          setMessages((current) =>
-            current.map((entry) =>
-              entry.id === chatEntryId && entry.type === "chat"
-                ? { ...entry, text: entry.text + tail, status: "complete" as const }
-                : entry
-            )
-          );
+          patchChatEntry((entry) => ({ ...entry, status: "complete" as const }));
         }
       } catch (streamError) {
         const streamMessage =
           streamError instanceof Error ? streamError.message : "The Planner Agent chat reply was interrupted.";
-        setMessages((current) =>
-          current.map((entry) =>
-            entry.id === chatEntryId && entry.type === "chat"
-              ? { ...entry, status: "error" as const, error: streamMessage }
-              : entry
-          )
-        );
+        patchChatEntry((entry) => ({ ...entry, status: "error" as const, error: streamMessage }));
       }
     } catch (chatError) {
       setError(chatError instanceof Error ? chatError.message : "Failed to stream the Planner Agent chat reply");
@@ -2084,6 +2198,25 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               <Loader2 className="h-3 w-3 animate-spin text-emerald-300" aria-label="Streaming reply" />
                             ) : null}
                           </div>
+                          {message.toolEvents.length ? (
+                            <div className="mb-3 flex flex-wrap gap-1.5" aria-label="Tool activity">
+                              {message.toolEvents.map((activity) => (
+                                <span
+                                  key={activity.toolCallId}
+                                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[0.64rem] font-semibold uppercase tracking-[0.12em] ${
+                                    activity.status === "failed"
+                                      ? "border-rose-300/22 bg-rose-400/10 text-rose-100"
+                                      : "border-sky-300/18 bg-sky-400/8 text-sky-100"
+                                  }`}
+                                >
+                                  {activity.status === "running" ? (
+                                    <Loader2 className="h-2.5 w-2.5 animate-spin" aria-hidden />
+                                  ) : null}
+                                  {activity.summary}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
                           {message.text ? (
                             <div
                               className="chapter-markdown text-sm leading-relaxed text-slate-100"
@@ -2094,6 +2227,13 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               {message.status === "streaming" ? "…" : message.status === "complete" ? "No reply text was returned." : ""}
                             </p>
                           )}
+                          {message.proposals.length ? (
+                            <div className="mt-3 space-y-2">
+                              {message.proposals.map((entry) => (
+                                <ChatProposalCard key={entry.id} entry={entry} />
+                              ))}
+                            </div>
+                          ) : null}
                           {message.status === "error" ? (
                             <div className="mt-3 flex items-center justify-between gap-3 rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-3.5 py-2.5 text-sm text-rose-100/92">
                               <span>{message.error ?? "The Planner Agent chat reply was interrupted."}</span>

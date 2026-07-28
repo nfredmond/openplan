@@ -289,13 +289,19 @@ describe("buildAssistantChatContextLines", () => {
 });
 
 describe("buildAssistantChatSystemPrompt", () => {
-  it("includes grounding, no-invention, screening-grade, and no-action-execution rules", () => {
+  it("includes grounding, no-invention, screening-grade, tool-use, and propose-only rules", () => {
     const prompt = buildAssistantChatSystemPrompt(buildWorkspaceContext());
 
     expect(prompt).toContain("copilot for city and regional transportation planners");
     expect(prompt).toContain("Never invent workspace data.");
     expect(prompt).toContain("screening-grade");
-    expect(prompt).toContain("You cannot execute actions from chat.");
+    expect(prompt).toContain("TOOLS:");
+    expect(prompt).toContain("row-level security applies");
+    expect(prompt).toContain("PROPOSALS:");
+    expect(prompt).toContain("PROPOSE a write action, never execute one");
+    expect(prompt).toContain("Never claim an action was performed");
+    // The old blanket prohibition is gone — chat can now propose (not execute).
+    expect(prompt).not.toContain("You cannot execute actions from chat.");
     expect(prompt).toContain("WORKSPACE CONTEXT (RLS-scoped, current surface):");
   });
 

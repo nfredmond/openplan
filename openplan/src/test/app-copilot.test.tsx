@@ -71,6 +71,23 @@ function jsonResponse(payload: unknown, status = 200) {
   });
 }
 
+/** Build a UI-message-protocol SSE response body from chunk objects. */
+function sseResponse(chunks: Array<Record<string, unknown>>, options?: { omitDone?: boolean }) {
+  const body =
+    chunks.map((chunk) => `data: ${JSON.stringify(chunk)}\n\n`).join("") + (options?.omitDone ? "" : "data: [DONE]\n\n");
+  return new Response(body, { status: 200, headers: { "content-type": "text/event-stream" } });
+}
+
+function textReplyResponse(text: string) {
+  return sseResponse([
+    { type: "start" },
+    { type: "text-start", id: "t1" },
+    { type: "text-delta", id: "t1", delta: text },
+    { type: "text-end", id: "t1" },
+    { type: "finish" },
+  ]);
+}
+
 describe("AppCopilot", () => {
   const fetchMock = vi.fn();
   let chatRoute: FetchRoute;
@@ -82,7 +99,7 @@ describe("AppCopilot", () => {
     vi.stubGlobal("ResizeObserver", ResizeObserverStub);
     vi.stubGlobal("fetch", fetchMock);
 
-    chatRoute = () => new Response("Here is a grounded AI reply.", { status: 200 });
+    chatRoute = () => textReplyResponse("Here is a grounded AI reply.");
 
     fetchMock.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -162,11 +179,13 @@ describe("AppCopilot", () => {
   it("shows a retry affordance when the stream fails mid-reply", async () => {
     const failingStream = new ReadableStream<Uint8Array>({
       start(controller) {
-        controller.enqueue(new TextEncoder().encode("Partial rep"));
+        controller.enqueue(
+          new TextEncoder().encode('data: {"type":"text-delta","id":"t1","delta":"Partial rep"}\n\n')
+        );
         controller.error(new Error("network dropped"));
       },
     });
-    chatRoute = () => new Response(failingStream, { status: 200 });
+    chatRoute = () => new Response(failingStream, { status: 200, headers: { "content-type": "text/event-stream" } });
 
     await openPanel();
 
@@ -180,13 +199,120 @@ describe("AppCopilot", () => {
     });
 
     // Retrying issues a fresh chat request without duplicating the user prompt.
-    chatRoute = () => new Response("Recovered reply.", { status: 200 });
+    chatRoute = () => textReplyResponse("Recovered reply.");
     fireEvent.click(screen.getByRole("button", { name: "Retry" }));
 
     await waitFor(() => {
       expect(screen.getByText("Recovered reply.")).toBeInTheDocument();
     });
     expect(screen.getAllByText("Where should I focus this week?")).toHaveLength(1);
+  });
+
+  it("surfaces an explicit error frame with retry (no more silent empty body)", async () => {
+    chatRoute = () =>
+      sseResponse([{ type: "start" }, { type: "error", errorText: "The Planner Agent reply failed mid-stream — the model may be busy. Try again." }]);
+
+    await openPanel();
+
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), {
+      target: { value: "Where should I focus this week?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText("The Planner Agent reply failed mid-stream — the model may be busy. Try again.")
+      ).toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
+  });
+
+  it("treats a finished stream with no text and no proposals as a retryable empty reply", async () => {
+    chatRoute = () => sseResponse([{ type: "start" }, { type: "finish" }]);
+
+    await openPanel();
+
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), {
+      target: { value: "Where should I focus this week?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/came back empty/)).toBeInTheDocument();
+    });
+    expect(screen.getByRole("button", { name: "Retry" })).toBeInTheDocument();
+  });
+
+  it("renders compact tool-activity chips for tool calls in the streaming bubble", async () => {
+    chatRoute = () =>
+      sseResponse([
+        { type: "start" },
+        { type: "tool-input-start", toolCallId: "call-1", toolName: "list_funding_opportunities" },
+        {
+          type: "tool-output-available",
+          toolCallId: "call-1",
+          output: { status: "ok", opportunityCount: 3, opportunities: [] },
+        },
+        { type: "text-start", id: "t1" },
+        { type: "text-delta", id: "t1", delta: "Three opportunities are open." },
+        { type: "text-end", id: "t1" },
+        { type: "finish" },
+      ]);
+
+    await openPanel();
+
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), {
+      target: { value: "What funding is open?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText("Three opportunities are open.")).toBeInTheDocument();
+    });
+    expect(screen.getByText("Looked up: 3 funding opportunities")).toBeInTheDocument();
+  });
+
+  it("renders a proposal card from a propose_* tool output without executing anything", async () => {
+    chatRoute = () =>
+      sseResponse([
+        { type: "start" },
+        { type: "tool-input-start", toolCallId: "call-2", toolName: "propose_create_funding_opportunity" },
+        {
+          type: "tool-output-available",
+          toolCallId: "call-2",
+          output: {
+            status: "proposed",
+            kind: "create_funding_opportunity",
+            payload: { kind: "create_funding_opportunity", title: "SS4A Implementation Grant" },
+            approval: "approval_required",
+            description: "Creates a new funding opportunity record in this workspace.",
+          },
+        },
+        { type: "text-start", id: "t1" },
+        { type: "text-delta", id: "t1", delta: "I prepared a proposal for your approval." },
+        { type: "text-end", id: "t1" },
+        { type: "finish" },
+      ]);
+
+    await openPanel();
+
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), {
+      target: { value: "Create the SS4A opportunity" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("group", { name: /Proposed action: create funding opportunity/ })).toBeInTheDocument();
+    });
+    expect(screen.getAllByText("Creates a new funding opportunity record in this workspace.").length).toBeGreaterThan(0);
+    expect(screen.getByText("SS4A Implementation Grant")).toBeInTheDocument();
+    // Proposing must not have executed anything: no mutation endpoints were hit.
+    const mutatingCall = fetchMock.mock.calls.find((call) => {
+      const url = String(call[0]);
+      const method = (call[1] as RequestInit | undefined)?.method ?? "GET";
+      return url.startsWith("/api/funding-opportunities") && method !== "GET";
+    });
+    expect(mutatingCall).toBeUndefined();
   });
 
   it("opens the in-panel approval sheet with the action description and cancels on Escape", async () => {

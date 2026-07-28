@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { streamText } from "ai";
+import { stepCountIs, streamText } from "ai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -10,6 +10,7 @@ import {
   ASSISTANT_CHAT_MAX_KB_EXCERPTS,
   buildAssistantChatSystemPrompt,
 } from "@/lib/assistant/chat-context";
+import { buildAssistantChatTools, createChatToolBudget } from "@/lib/assistant/chat-tools";
 import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
 import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 
@@ -17,6 +18,8 @@ const ASSISTANT_CHAT_MAX_BODY_BYTES = BODY_LIMITS.normalJson;
 const ASSISTANT_CHAT_DEFAULT_MODEL = "claude-opus-4-8";
 const ASSISTANT_CHAT_MAX_OUTPUT_TOKENS = 2000;
 const ASSISTANT_CHAT_MAX_HISTORY_ENTRIES = 12;
+/** Tool-use loop bound: at most 6 model steps (5 tool rounds + the final reply). */
+const ASSISTANT_CHAT_MAX_STEPS = 6;
 
 const historyEntrySchema = z.object({
   role: z.enum(["user", "assistant"]),
@@ -142,13 +145,43 @@ export async function POST(request: NextRequest) {
       history = history.slice(1);
     }
 
+    // RLS-scoped read + proposal tools. They close over the USER-SESSION
+    // client, and the per-request budget bounds how many lookups one chat
+    // turn may spend. The budget's ledger is drained into audit events at
+    // each step boundary below.
+    const budget = createChatToolBudget();
+    const tools = buildAssistantChatTools({
+      supabase,
+      context,
+      userId: user.id,
+      audit,
+      budget,
+    });
+
     const result = streamText({
       model: anthropic(modelId),
       system: systemPrompt,
       messages: [...history, { role: "user" as const, content: parsed.data.question }],
+      tools,
+      stopWhen: stepCountIs(ASSISTANT_CHAT_MAX_STEPS),
       maxOutputTokens: ASSISTANT_CHAT_MAX_OUTPUT_TOKENS,
       onError: ({ error }) => {
         audit.error("assistant_chat_stream_error", { error });
+      },
+      onStepFinish: () => {
+        // Steps run sequentially, so every tool execution recorded since the
+        // previous boundary belongs to the step that just finished.
+        const executed = budget.ledger.splice(0, budget.ledger.length);
+        for (const record of executed) {
+          audit.info("assistant_chat_tool_called", {
+            tool: record.tool,
+            ok: record.ok,
+            durationMs: record.durationMs,
+            kind: context.kind,
+            workspaceId: context.workspace.id,
+            userId: user.id,
+          });
+        }
       },
       onFinish: ({ usage }) => {
         audit.info("assistant_chat_stream_finished", {
@@ -158,6 +191,7 @@ export async function POST(request: NextRequest) {
           model: modelId,
           inputTokens: usage?.inputTokens ?? null,
           outputTokens: usage?.outputTokens ?? null,
+          toolCallsUsed: budget.usedCalls,
           durationMs: Date.now() - startedAt,
         });
         // Fire-and-forget spend metering: the stream finished, so the model
@@ -183,7 +217,17 @@ export async function POST(request: NextRequest) {
       durationMs: Date.now() - startedAt,
     });
 
-    return result.toTextStreamResponse();
+    // UI-message protocol (SSE): carries tool activity, proposals, and an
+    // explicit error frame — an upstream failure can no longer surface as a
+    // silent empty body. Parsed client-side by consumeAssistantChatStream.
+    return result.toUIMessageStreamResponse({
+      onError: (error) => {
+        audit.error("assistant_chat_stream_error_frame", {
+          message: error instanceof Error ? error.message : String(error),
+        });
+        return "The Planner Agent reply failed mid-stream — the model may be busy. Try again.";
+      },
+    });
   } catch (error) {
     audit.error("assistant_chat_unhandled_error", {
       error,
