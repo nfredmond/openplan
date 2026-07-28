@@ -23,8 +23,10 @@ import {
   ASSISTANT_CHAT_TOOL_MAX_KB_SEARCHES,
   buildAssistantChatTools,
   createChatToolBudget,
+  isAssistantChatProposal,
   type ChatToolBudget,
 } from "@/lib/assistant/chat-tools";
+import { ACTION_METADATA } from "@/lib/runtime/action-metadata";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
@@ -177,17 +179,20 @@ describe("buildAssistantChatTools", () => {
     loadAssistantContextMock.mockResolvedValue(workspaceContextFixture());
   });
 
-  it("exposes exactly the seven read tools", () => {
+  it("exposes the seven read tools plus one propose tool per registry action", () => {
     const { tools } = buildTools();
-    expect(Object.keys(tools).sort()).toEqual([
-      "get_grant_program_catalog",
-      "get_surface_context",
-      "list_funding_opportunities",
-      "list_projects",
-      "list_pending_operations",
-      "list_reports",
-      "search_knowledge_base",
-    ].sort());
+    expect(Object.keys(tools).sort()).toEqual(
+      [
+        "get_grant_program_catalog",
+        "get_surface_context",
+        "list_funding_opportunities",
+        "list_projects",
+        "list_pending_operations",
+        "list_reports",
+        "search_knowledge_base",
+        ...Object.keys(ACTION_METADATA).map((kind) => `propose_${kind}`),
+      ].sort()
+    );
   });
 
   it("list_projects queries the workspace with a hard row limit and returns a small projection", async () => {
@@ -511,5 +516,155 @@ describe("buildAssistantChatTools", () => {
     expect(source).not.toContain("createServiceRoleClient");
     expect(source).not.toContain("service_role");
     expect(source).not.toContain("SUPABASE_SERVICE_ROLE");
+  });
+});
+
+describe("buildAssistantChatTools proposal tools", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    buildAssistantOperationsMock.mockReturnValue([]);
+  });
+
+  it("derives one propose_<kind> tool per registry action kind, mechanically", () => {
+    const { tools } = buildTools();
+    const proposeToolNames = Object.keys(tools).filter((name) => name.startsWith("propose_"));
+    expect(proposeToolNames.sort()).toEqual(
+      Object.keys(ACTION_METADATA)
+        .map((kind) => `propose_${kind}`)
+        .sort()
+    );
+  });
+
+  it("hides kind and post-action chaining fields from the model-facing input schema", () => {
+    const { tools } = buildTools();
+    const inputSchema = (tools.propose_create_funding_opportunity as { inputSchema?: { shape?: Record<string, unknown> } })
+      .inputSchema;
+    const shapeKeys = Object.keys(inputSchema?.shape ?? {});
+    expect(shapeKeys).toContain("title");
+    expect(shapeKeys).not.toContain("kind");
+    expect(shapeKeys).not.toContain("postActionWorkflowId");
+    expect(shapeKeys).not.toContain("postActionPrompt");
+    expect(shapeKeys).not.toContain("postActionPromptLabel");
+  });
+
+  it("proposes an approval-required action after an RLS-scoped reference check", async () => {
+    const supabase = createSupabaseMock({
+      funding_opportunities: [{ id: "opp-1" }],
+    });
+    const { tools } = buildTools({ supabase });
+
+    const result = await toolExecute(tools, "propose_update_funding_opportunity_decision")(
+      { opportunityId: "opp-1", decisionState: "pursue" },
+      CALL_OPTIONS
+    );
+
+    expect(result).toEqual({
+      status: "proposed",
+      kind: "update_funding_opportunity_decision",
+      payload: { kind: "update_funding_opportunity_decision", opportunityId: "opp-1", decisionState: "pursue" },
+      approval: "approval_required",
+      description: ACTION_METADATA.update_funding_opportunity_decision.description,
+    });
+
+    const query = supabase.queries.find((entry) => entry.table === "funding_opportunities");
+    expect(query).toBeDefined();
+    expect(query!.filters).toContainEqual(["id", "opp-1"]);
+    expect(query!.filters).toContainEqual(["workspace_id", WORKSPACE_ID]);
+  });
+
+  it("carries the metadata approval tier on safe actions too", async () => {
+    const supabase = createSupabaseMock({ reports: [{ id: "r1" }] });
+    const { tools } = buildTools({ supabase });
+
+    const result = await toolExecute(tools, "propose_generate_report_artifact")({ reportId: "r1" }, CALL_OPTIONS);
+
+    expect(result.status).toBe("proposed");
+    expect(result.approval).toBe("safe");
+  });
+
+  it("returns not_found instead of a proposal when the target row is not visible", async () => {
+    const supabase = createSupabaseMock({ projects: [] });
+    const { tools } = buildTools({ supabase });
+
+    const result = await toolExecute(tools, "propose_create_project_funding_profile")(
+      { projectId: "55555555-5555-4555-8555-555555555555" },
+      CALL_OPTIONS
+    );
+
+    expect(result.status).toBe("not_found");
+    expect(result.payload).toBeUndefined();
+  });
+
+  it("rejects an invalid payload against the schema branch before any query runs", async () => {
+    const supabase = createSupabaseMock();
+    const { tools } = buildTools({ supabase });
+
+    const result = await toolExecute(tools, "propose_update_funding_opportunity_decision")(
+      { opportunityId: "opp-1", decisionState: "definitely-not-a-state" },
+      CALL_OPTIONS
+    );
+
+    expect(result.status).toBe("invalid_payload");
+    expect(supabase.queries).toHaveLength(0);
+  });
+
+  it("refuses a payload that names a different workspace", async () => {
+    const supabase = createSupabaseMock({
+      billing_invoice_records: [{ id: "inv-1" }],
+      funding_awards: [{ id: "award-1" }],
+    });
+    const { tools } = buildTools({ supabase });
+
+    const result = await toolExecute(tools, "propose_link_billing_invoice_funding_award")(
+      { workspaceId: OTHER_WORKSPACE_ID, invoiceId: "inv-1", fundingAwardId: "award-1" },
+      CALL_OPTIONS
+    );
+
+    expect(result.status).toBe("refused");
+    expect(String(result.reason)).toMatch(/different workspace/i);
+  });
+
+  it("never issues a mutating supabase call while proposing", async () => {
+    const supabase = createSupabaseMock({
+      reports: [{ id: "r1" }],
+      projects: [{ id: "p1" }],
+      funding_opportunities: [{ id: "opp-1" }],
+    });
+    const { tools } = buildTools({ supabase });
+
+    await toolExecute(tools, "propose_generate_report_artifact")({ reportId: "r1" }, CALL_OPTIONS);
+    await toolExecute(tools, "propose_create_project_funding_profile")({ projectId: "p1" }, CALL_OPTIONS);
+    await toolExecute(tools, "propose_update_funding_opportunity_decision")(
+      { opportunityId: "opp-1", decisionState: "monitor" },
+      CALL_OPTIONS
+    );
+    await toolExecute(tools, "propose_create_funding_opportunity")({ title: "New opportunity" }, CALL_OPTIONS);
+
+    expect(supabase.mutations).toEqual([]);
+  });
+
+  it("counts proposals against the shared per-request tool budget", async () => {
+    const budget = createChatToolBudget({ maxCalls: 1 });
+    const supabase = createSupabaseMock({ reports: [{ id: "r1" }] });
+    const { tools } = buildTools({ supabase, budget });
+
+    expect((await toolExecute(tools, "propose_generate_report_artifact")({ reportId: "r1" }, CALL_OPTIONS)).status).toBe(
+      "proposed"
+    );
+    expect((await toolExecute(tools, "propose_generate_report_artifact")({ reportId: "r1" }, CALL_OPTIONS)).status).toBe(
+      "refused"
+    );
+    expect(budget.usedCalls).toBe(1);
+  });
+
+  it("identifies proposal payloads with the isAssistantChatProposal guard", async () => {
+    const supabase = createSupabaseMock({ reports: [{ id: "r1" }] });
+    const { tools } = buildTools({ supabase });
+
+    const proposal = await toolExecute(tools, "propose_generate_report_artifact")({ reportId: "r1" }, CALL_OPTIONS);
+
+    expect(isAssistantChatProposal(proposal)).toBe(true);
+    expect(isAssistantChatProposal({ status: "ok" })).toBe(false);
+    expect(isAssistantChatProposal({ status: "proposed", kind: "not_a_kind", description: "x", payload: {} })).toBe(false);
   });
 });

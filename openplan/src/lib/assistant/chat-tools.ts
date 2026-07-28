@@ -9,7 +9,15 @@ import { buildAssistantOperations } from "@/lib/assistant/operations";
 import { excerptPageLabel, retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
-import { resolveQuickLinkApproval } from "@/lib/runtime/action-metadata";
+import {
+  ACTION_METADATA,
+  resolveQuickLinkApproval,
+  type ActionApproval,
+} from "@/lib/runtime/action-metadata";
+import {
+  assistantApprovalActionSchema,
+  type AssistantApprovalAction,
+} from "@/lib/assistant/action-approval-server";
 import type { AssistantTargetKind } from "@/lib/assistant/catalog";
 
 /**
@@ -171,6 +179,178 @@ function guarded<INPUT>(params: {
 
 function isoOrNull(value: unknown): string | null {
   return typeof value === "string" ? value : null;
+}
+
+/**
+ * A structured write PROPOSAL the model can emit from chat. It never mutates
+ * anything: the payload rides the stream to the copilot, where the planner's
+ * "Approve & run" enters the EXISTING approval flow (mint single-use evidence
+ * via /api/assistant/actions/approvals, then dispatch through the client-side
+ * action registry with approval headers). The server-side approval verifier
+ * stays the only gate.
+ */
+export type AssistantChatProposal = {
+  status: "proposed";
+  kind: AssistantApprovalAction["kind"];
+  payload: AssistantApprovalAction;
+  approval: ActionApproval;
+  description: string;
+};
+
+export function isAssistantChatProposal(value: unknown): value is AssistantChatProposal {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    candidate.status === "proposed" &&
+    typeof candidate.kind === "string" &&
+    candidate.kind in ACTION_METADATA &&
+    typeof candidate.description === "string" &&
+    Boolean(candidate.payload) &&
+    typeof candidate.payload === "object"
+  );
+}
+
+/**
+ * Post-action chaining fields are stripped from the model-facing input: they
+ * feed follow-up prompts back into the agent, which a generated payload must
+ * not be able to script. The proposal payload the planner approves is exactly
+ * {kind, ...modelInput}.
+ */
+const PROPOSAL_HIDDEN_INPUT_FIELDS = ["kind", "postActionWorkflowId", "postActionPrompt", "postActionPromptLabel"] as const;
+
+/**
+ * RLS-scoped existence checks run before a proposal is emitted, so the model
+ * cannot propose an action against a row the planner cannot see (or one in
+ * another workspace). Kinds without an entry simply skip reference checks —
+ * a new registry action still becomes a propose_ tool automatically.
+ */
+const PROPOSAL_REFERENCE_CHECKS: Partial<
+  Record<AssistantApprovalAction["kind"], Array<{ field: string; table: string; optional?: boolean }>>
+> = {
+  generate_report_artifact: [{ field: "reportId", table: "reports" }],
+  create_rtp_packet_record: [
+    { field: "rtpCycleId", table: "rtp_cycles" },
+    { field: "modelingCountyRunId", table: "county_runs", optional: true },
+  ],
+  create_funding_opportunity: [
+    { field: "programId", table: "programs", optional: true },
+    { field: "projectId", table: "projects", optional: true },
+  ],
+  create_project_funding_profile: [{ field: "projectId", table: "projects" }],
+  update_funding_opportunity_decision: [{ field: "opportunityId", table: "funding_opportunities" }],
+  create_project_record: [{ field: "projectId", table: "projects" }],
+  link_billing_invoice_funding_award: [
+    { field: "invoiceId", table: "billing_invoice_records" },
+    { field: "fundingAwardId", table: "funding_awards" },
+  ],
+};
+
+type ProposalSchemaBranch = z.ZodObject<Record<string, z.ZodTypeAny>>;
+
+/** Resolve the per-kind branch of the approval action schema — the single source of truth. */
+function proposalSchemaBranchForKind(kind: string): ProposalSchemaBranch | null {
+  for (const option of assistantApprovalActionSchema.options) {
+    const branch = option as ProposalSchemaBranch;
+    const kindSchema = branch.shape?.kind;
+    if (kindSchema && kindSchema.safeParse(kind).success) {
+      return branch;
+    }
+  }
+  return null;
+}
+
+/** The model-facing input schema: the branch minus kind and post-action chaining fields. */
+function proposalInputSchema(branch: ProposalSchemaBranch): ProposalSchemaBranch {
+  const mask: Record<string, true> = {};
+  for (const field of PROPOSAL_HIDDEN_INPUT_FIELDS) {
+    if (field in branch.shape) mask[field] = true;
+  }
+  return branch.omit(mask) as ProposalSchemaBranch;
+}
+
+function buildAssistantProposalTools(params: BuildAssistantChatToolsParams): Record<string, Tool<any, any>> {
+  const { supabase, context, audit, budget } = params;
+  const workspaceId = context.workspace.id;
+  const tools: Record<string, Tool<any, any>> = {};
+
+  for (const kind of Object.keys(ACTION_METADATA) as Array<AssistantApprovalAction["kind"]>) {
+    const metadata = ACTION_METADATA[kind];
+    const branch = proposalSchemaBranchForKind(kind);
+    if (!branch) {
+      // A registry action without a schema branch cannot be validated, so it
+      // gets no propose tool. The approvals route would reject it anyway.
+      audit.warn("assistant_chat_proposal_tool_skipped", { kind, reason: "no_schema_branch" });
+      continue;
+    }
+
+    const toolName = `propose_${kind}`;
+    tools[toolName] = tool({
+      description: `PROPOSE (never execute) this Planner Agent action: ${metadata.description} Approval tier: ${metadata.approval}. The planner must approve the proposal card before anything changes.`,
+      inputSchema: proposalInputSchema(branch),
+      execute: guarded<Record<string, unknown>>({
+        name: toolName,
+        budget,
+        audit,
+        run: async (input) => {
+          if (!workspaceId) {
+            return refusal("No workspace is attached to this chat surface, so no action can be proposed.");
+          }
+
+          const parsed = branch.safeParse({ ...input, kind });
+          if (!parsed.success) {
+            return {
+              status: "invalid_payload",
+              message: `The proposed ${kind} payload is invalid: ${parsed.error.issues
+                .map((issue) => `${issue.path.join(".") || "payload"}: ${issue.message}`)
+                .join("; ")}`,
+            };
+          }
+          const payload = parsed.data as AssistantApprovalAction;
+
+          // Any workspaceId inside the payload must be THIS workspace.
+          const payloadWorkspaceId = (payload as Record<string, unknown>).workspaceId;
+          if (typeof payloadWorkspaceId === "string" && payloadWorkspaceId !== workspaceId) {
+            return refusal("The proposal names a different workspace. Chat proposals only target the current workspace.");
+          }
+
+          for (const check of PROPOSAL_REFERENCE_CHECKS[kind] ?? []) {
+            const value = (payload as Record<string, unknown>)[check.field];
+            if (value === null || value === undefined) {
+              if (check.optional) continue;
+              return {
+                status: "invalid_payload",
+                message: `The proposed ${kind} payload is missing ${check.field}.`,
+              };
+            }
+            const { data, error } = await supabase
+              .from(check.table)
+              .select("id")
+              .eq("id", value)
+              .eq("workspace_id", workspaceId)
+              .maybeSingle();
+            if (error) throw new Error(error.message ?? `${check.table} lookup failed`);
+            if (!data) {
+              return {
+                status: "not_found",
+                message: `No ${check.table} record ${String(value)} is visible in this workspace, so this action cannot be proposed. Verify the id with a list tool first.`,
+              };
+            }
+          }
+
+          const proposal: AssistantChatProposal = {
+            status: "proposed",
+            kind,
+            payload,
+            approval: metadata.approval,
+            description: metadata.description,
+          };
+          return proposal as unknown as ChatToolPayload;
+        },
+      }),
+    });
+  }
+
+  return tools;
 }
 
 export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): ToolSet {
@@ -438,6 +618,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
     list_reports: listReports,
     list_pending_operations: listPendingOperations,
     get_grant_program_catalog: getGrantProgramCatalog,
+    ...buildAssistantProposalTools(params),
   };
 
   return tools as ToolSet;
