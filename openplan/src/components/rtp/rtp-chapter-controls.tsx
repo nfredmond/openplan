@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RTP_CHAPTER_STATUS_OPTIONS } from "@/lib/rtp/catalog";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
+import { RtpChapterDraftAssist } from "@/components/rtp/rtp-chapter-draft-assist";
 
 type Chapter = {
   id: string;
@@ -118,6 +119,20 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
             placeholder="Summarize what this RTP section needs to say, what evidence it depends on, and what still needs to be resolved."
           />
         </div>
+
+        <RtpChapterDraftAssist
+          rtpCycleId={rtpCycleId}
+          chapterId={chapter.id}
+          onInsert={(markdown) => {
+            // Inserted text becomes the operator's own working draft: append
+            // to what they already wrote (never overwrite), and land them in
+            // the editor to review it.
+            setContentMarkdown((previous) =>
+              previous.trim() ? `${previous.replace(/\s+$/, "")}\n\n${markdown}` : markdown
+            );
+            setContentMode("edit");
+          }}
+        />
 
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center justify-between gap-2">

@@ -324,7 +324,19 @@ function SectionDraftCard({
   );
 }
 
-function DraftGroundingLine({ draft }: { draft: ReportNarrativeDraftRow }) {
+/**
+ * Grounding stats + flagged-sentence disclosure for one stored draft row.
+ * Exported for reuse by the RTP chapter draft assist, which reviews the same
+ * document_narrative_drafts rows.
+ */
+export function DraftGroundingLine({
+  draft,
+}: {
+  draft: Pick<
+    ReportNarrativeDraftRow,
+    "grounding_json" | "grounded_sentence_count" | "total_sentence_count"
+  >;
+}) {
   const grounding = useMemo(() => parseStoredNarrativeGrounding(draft.grounding_json), [draft]);
 
   const groundedCount = draft.grounded_sentence_count ?? grounding?.grounded_sentence_count ?? null;
