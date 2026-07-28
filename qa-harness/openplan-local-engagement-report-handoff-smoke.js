@@ -72,7 +72,9 @@ async function main() {
   const campaignTitle = `Local Public Feedback Campaign ${suffix}`;
   const campaignSummary = 'Local engagement-flow proof for public submission, moderation, and report handoff traceability.';
   const categoryLabel = `School access ${suffix}`;
-  const shareToken = `localengage${suffix}`.toLowerCase();
+  // Share tokens are minted server-side; the value is captured after the
+  // campaign is activated (see the share-token POST below).
+  let shareToken = null;
   const itemTitle = `Missing sidewalk near school ${suffix}`;
   const itemBody =
     `Families reported a missing sidewalk and fast turning traffic near the school entrance during the ${suffix} local smoke.`;
@@ -196,7 +198,6 @@ async function main() {
       `/api/engagement/campaigns/${ids.campaignId}`,
       {
         status: 'active',
-        shareToken,
         publicDescription: 'Public feedback lane for the local engagement-to-report handoff smoke.',
         allowPublicSubmissions: true,
       },
@@ -205,7 +206,19 @@ async function main() {
     if (shareResult.status !== 200) {
       throw new Error(`Engagement public sharing patch failed: ${shareResult.status} ${JSON.stringify(shareResult.data)}`);
     }
-    notes.push(`Activated public engagement portal with share token ${shareToken}.`);
+
+    // The token is minted by the server, not chosen by the caller: PATCH now
+    // refuses a caller-supplied token outright.
+    const mintResult = await appFetch(
+      `/api/engagement/campaigns/${ids.campaignId}/share-token`,
+      {},
+      'POST'
+    );
+    if (mintResult.status !== 200 || typeof mintResult.data?.shareToken !== 'string') {
+      throw new Error(`Engagement share-token mint failed: ${mintResult.status} ${JSON.stringify(mintResult.data)}`);
+    }
+    shareToken = mintResult.data.shareToken;
+    notes.push(`Activated public engagement portal with a server-minted share token (${shareToken.length} chars).`);
 
     await publicPage.goto(`${baseUrl}/engage/${shareToken}`, { waitUntil: 'networkidle' });
     await publicPage.getByRole('heading', { name: campaignTitle, exact: false }).waitFor({ timeout: 20000 });
