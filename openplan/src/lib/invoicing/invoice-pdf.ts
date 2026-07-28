@@ -87,8 +87,9 @@ function formatAmount(value: number | string | null | undefined, currencyCode: s
     return new Intl.NumberFormat("en-US", { style: "currency", currency: code }).format(numeric);
   } catch {
     // An unrecognized currency code must not sink the document: show the
-    // number with the code the row actually carries.
-    return `${numeric.toFixed(2)} ${code}`;
+    // number with the code the row actually carries. Escaped like every other
+    // user-entered string — the column is free text.
+    return `${numeric.toFixed(2)} ${esc(code)}`;
   }
 }
 

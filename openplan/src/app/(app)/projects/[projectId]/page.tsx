@@ -509,6 +509,17 @@ export default async function ProjectDetailPage({
       }));
   const projectInvoicesPending = looksLikePendingSchema(invoiceResult.error?.message);
 
+  // Claim-progress math must not run on the display-capped recent-6 query
+  // above — an award with a longer history would show an understated
+  // claimed-to-date as if it were fact. Award-scoped, effectively uncapped.
+  const selectAwardInvoices = async (columns: string, awardIds: string[]) =>
+    (await supabase
+      .from("billing_invoice_records")
+      .select(columns)
+      .in("funding_award_id", awardIds)
+      .order("created_at", { ascending: false })
+      .limit(1000)) as { data: unknown[] | null; error: { message?: string } | null };
+
   const projectFundingProfileResult = await supabase
     .from("project_funding_profiles")
     .select("id, project_id, funding_need_amount, local_match_need_amount, notes, updated_at")
@@ -691,14 +702,31 @@ export default async function ProjectDetailPage({
   const illustrativeRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "illustrative").length;
   const candidateRtpLinkCount = existingRtpLinks.filter((link) => link.portfolioRole === "candidate").length;
   const invoiceSummary = summarizeBillingInvoiceRecords(projectInvoices);
+  const fundingAwardIds = fundingAwards.map((award) => award.id);
+  let awardInvoicesResult = fundingAwardIds.length
+    ? await selectAwardInvoices(projectInvoiceSelect, fundingAwardIds)
+    : { data: [], error: null };
+  if (awardInvoicesResult.error && looksLikePendingSchema(awardInvoicesResult.error.message)) {
+    awardInvoicesResult = await selectAwardInvoices(projectInvoiceSelectLegacy, fundingAwardIds);
+  }
+  // On any residual error, fall back to the display-capped rows rather than
+  // rendering an empty claim history for awards that have one.
+  const awardInvoiceRows = awardInvoicesResult.error
+    ? projectInvoices
+    : ((awardInvoicesResult.data ?? []) as BillingInvoiceRow[]).map((invoice) => ({
+        ...invoice,
+        fundingAward: Array.isArray(invoice.funding_awards)
+          ? (invoice.funding_awards[0] ?? null)
+          : invoice.funding_awards ?? null,
+      }));
   const invoiceSummaryByFundingAwardId = new Map(
     fundingAwards.map((award) => [
       award.id,
-      summarizeBillingInvoiceRecords(projectInvoices.filter((invoice) => invoice.funding_award_id === award.id)),
+      summarizeBillingInvoiceRecords(awardInvoiceRows.filter((invoice) => invoice.funding_award_id === award.id)),
     ])
   );
   const invoiceRecordsByFundingAwardId = new Map(
-    fundingAwards.map((award) => [award.id, projectInvoices.filter((invoice) => invoice.funding_award_id === award.id)])
+    fundingAwards.map((award) => [award.id, awardInvoiceRows.filter((invoice) => invoice.funding_award_id === award.id)])
   );
   const unlinkedProjectInvoices = projectInvoices.filter((invoice) => !invoice.funding_award_id);
   const unlinkedProjectInvoiceSummary = summarizeBillingInvoiceRecords(unlinkedProjectInvoices);

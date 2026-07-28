@@ -47,10 +47,25 @@ const deliverablesSelectMock = vi.fn(() => ({ in: deliverablesInMock }));
 const milestonesInMock = vi.fn();
 const milestonesSelectMock = vi.fn(() => ({ in: milestonesInMock }));
 
-// invoicing_time_entries — select().in() lookups plus update().in() stamping
+// invoicing_time_entries — select().in() lookups plus update().in() writes.
+// The void-unstamp path awaits update().in() directly (thenable); the stamp
+// path chains .is("billed_line_item_id", null).select("id") and verifies the
+// row count. Override timeEntryStampResult to simulate a lost race.
+let timeEntryStampResult:
+  | ((ids: string[]) => { data: Array<{ id: string }> | null; error: { message: string } | null })
+  | null = null;
 const timeEntrySelectInMock = vi.fn();
 const timeEntrySelectMock = vi.fn(() => ({ in: timeEntrySelectInMock }));
-const timeEntryUpdateInMock = vi.fn();
+const timeEntryUpdateInMock = vi.fn((_column: unknown, ids: unknown) => ({
+  then: (resolve: (value: unknown) => void) => resolve({ error: null }),
+  is: vi.fn(() => ({
+    select: vi.fn(async () =>
+      timeEntryStampResult
+        ? timeEntryStampResult(ids as string[])
+        : { data: (ids as string[]).map((id) => ({ id })), error: null }
+    ),
+  })),
+}));
 const timeEntryUpdateMock = vi.fn(() => ({ in: timeEntryUpdateInMock }));
 
 // client_invoices — detail single, awaited list (NTE read), GET list chain,
@@ -252,7 +267,7 @@ beforeEach(() => {
     data: [{ id: TIME_ENTRY, workspace_id: WORKSPACE, engagement_id: ENGAGEMENT, billed_line_item_id: null }],
     error: null,
   });
-  timeEntryUpdateInMock.mockResolvedValue({ error: null });
+  timeEntryStampResult = null;
 
   invoiceDetailSingleMock.mockResolvedValue({
     data: {
@@ -610,6 +625,24 @@ describe("POST /api/invoicing/client-invoices", () => {
     expect(body.invoice).toMatchObject({ id: INVOICE });
     expect(body.lineItems).toHaveLength(1);
     expect(body.nteWarning).toBeUndefined();
+  });
+
+  it("409s and rolls back when a concurrent invoice wins the stamp race", async () => {
+    // The pre-insert unbilled read passed, but by stamp time another invoice
+    // claimed the hours: the conditional update matches zero rows.
+    timeEntryStampResult = () => ({ data: [], error: null });
+
+    const response = await postClientInvoice(
+      jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload)
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({
+      error: expect.stringContaining("concurrent invoice"),
+    });
+    // The whole create is undone — no half-billed invoice survives the race.
+    expect(serviceInvoiceDeleteMock).toHaveBeenCalled();
+    expect(serviceInvoiceDeleteEqMock).toHaveBeenCalledWith("id", INVOICE);
   });
 
   it("deletes the invoice (compensating, via the service role) when the line insert fails", async () => {

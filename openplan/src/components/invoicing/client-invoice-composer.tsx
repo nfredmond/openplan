@@ -203,9 +203,21 @@ export function ClientInvoiceComposer({
         throw new Error(payload.error || "Failed to load unbilled time");
       }
 
-      const entries = payload.timeEntries ?? [];
+      // A second pull must not re-draft hours already sitting in this
+      // composer's lines — the server would 409 the duplicate ids, but the
+      // honest UX is to never offer the same hours twice.
+      const alreadyPulledIds = new Set(
+        lineItems.flatMap((line) => line.sourceTimeEntryIds ?? [])
+      );
+      const entries = (payload.timeEntries ?? []).filter(
+        (entry) => !alreadyPulledIds.has(String(entry.id))
+      );
       if (entries.length === 0) {
-        setPullNotice("No unbilled billable time on this engagement.");
+        setPullNotice(
+          alreadyPulledIds.size > 0
+            ? "Every unbilled entry on this engagement is already drafted below."
+            : "No unbilled billable time on this engagement."
+        );
         return;
       }
 

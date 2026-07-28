@@ -106,23 +106,39 @@ async function unstampTimeEntriesForLineItems(
   return error ? { message: error.message } : null;
 }
 
-/** Stamp each line's source time entries with its inserted line item id. */
+/**
+ * Stamp each line's source time entries with its inserted line item id.
+ * Conditional on the entry being unbilled at stamp time, with the updated row
+ * count verified: this invoice's own prior stamps were just released by the
+ * replacement delete (ON DELETE SET NULL), so they stamp cleanly, while an
+ * entry billed by a concurrent invoice stays that invoice's — the shortfall
+ * fails the replacement and the snapshot restore puts everything back.
+ */
 async function stampTimeEntriesToLines(
   supabase: SupabaseLike,
   lines: readonly LineItemInput[],
   lineRows: ReadonlyArray<{ id: string }>
-): Promise<{ message: string } | null> {
+): Promise<{ message: string; raced?: boolean } | null> {
   for (let index = 0; index < lines.length; index += 1) {
     const sourceIds = lines[index].sourceTimeEntryIds ?? [];
     if (sourceIds.length === 0) continue;
 
-    const { error } = await supabase
+    const { data: stamped, error } = await supabase
       .from("invoicing_time_entries")
       .update({ billed_line_item_id: lineRows[index].id })
-      .in("id", sourceIds);
+      .in("id", sourceIds)
+      .is("billed_line_item_id", null)
+      .select("id");
 
     if (error) {
       return { message: error.message };
+    }
+
+    if (((stamped ?? []) as Array<{ id: string }>).length !== sourceIds.length) {
+      return {
+        message: "One or more time entries were billed by a concurrent invoice",
+        raced: true,
+      };
     }
   }
   return null;

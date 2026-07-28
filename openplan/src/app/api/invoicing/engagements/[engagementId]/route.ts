@@ -109,7 +109,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const { data: engagement, error: engagementError } = await supabase
       .from("invoicing_engagements")
-      .select("id, workspace_id")
+      .select("id, workspace_id, client_id")
       .eq("id", parsedParams.data.engagementId)
       .single();
 
@@ -136,6 +136,37 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           message: clientError?.message ?? null,
         });
         return NextResponse.json({ error: "Client is not available in the requested workspace" }, { status: 400 });
+      }
+
+      // Repointing an engagement to a different client while non-void
+      // invoices reference it would leave those invoices billing the OLD
+      // client under an engagement the NEW client owns — the exact coherence
+      // the invoice create path enforces. Refuse until they are voided.
+      if ((engagement as { client_id: string }).client_id !== parsed.data.clientId) {
+        const { data: liveInvoices, error: liveInvoicesError } = await supabase
+          .from("client_invoices")
+          .select("id")
+          .eq("engagement_id", parsedParams.data.engagementId)
+          .neq("status", "void")
+          .limit(1);
+
+        if (liveInvoicesError) {
+          audit.error("engagement_repoint_invoice_check_failed", {
+            engagementId: parsedParams.data.engagementId,
+            message: liveInvoicesError.message,
+          });
+          return NextResponse.json({ error: "Failed to verify the engagement's invoices" }, { status: 500 });
+        }
+
+        if ((liveInvoices ?? []).length > 0) {
+          return NextResponse.json(
+            {
+              error:
+                "This engagement has non-void invoices billed to its current client; void them before moving the engagement to another client",
+            },
+            { status: 409 }
+          );
+        }
       }
     }
 

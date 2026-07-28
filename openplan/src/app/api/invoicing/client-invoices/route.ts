@@ -93,23 +93,39 @@ function collectSourceTimeEntryIds(lines: readonly LineItemInput[]): {
  * Stamp each line's source time entries with the inserted line item's id.
  * Insert order is preserved by PostgREST, so lineRows[i] is lines[i].
  * Returns the first failure, or null when every stamp landed.
+ *
+ * The stamp is CONDITIONAL on the entry still being unbilled and the updated
+ * row count is verified — the pre-insert already-billed check is a separate
+ * read, so two concurrent creates could both pass it and bill the same hours
+ * twice. The condition makes the database the arbiter: the loser of the race
+ * stamps fewer rows than it sent and the whole create is rolled back.
  */
 async function stampTimeEntriesToLines(
   supabase: SupabaseLike,
   lines: readonly LineItemInput[],
   lineRows: ReadonlyArray<{ id: string }>
-): Promise<{ message: string } | null> {
+): Promise<{ message: string; raced?: boolean } | null> {
   for (let index = 0; index < lines.length; index += 1) {
     const sourceIds = lines[index].sourceTimeEntryIds ?? [];
     if (sourceIds.length === 0) continue;
 
-    const { error } = await supabase
+    const { data: stamped, error } = await supabase
       .from("invoicing_time_entries")
       .update({ billed_line_item_id: lineRows[index].id })
-      .in("id", sourceIds);
+      .in("id", sourceIds)
+      .is("billed_line_item_id", null)
+      .select("id");
 
     if (error) {
       return { message: error.message };
+    }
+
+    if (((stamped ?? []) as Array<{ id: string }>).length !== sourceIds.length) {
+      return {
+        message:
+          "One or more time entries were billed by a concurrent invoice; nothing from this invoice was kept",
+        raced: true,
+      };
     }
   }
   return null;
@@ -522,10 +538,16 @@ export async function POST(request: NextRequest) {
 
     const stampFailure = await stampTimeEntriesToLines(supabase, parsed.data.lineItems, insertedLines);
     if (stampFailure) {
+      // Rolling back the invoice cascades the line items away, and the
+      // billed_line_item_id FK's ON DELETE SET NULL releases any stamps this
+      // invoice DID land before the failure — no hours stay claimed by it.
       const cleaned = await rollBackInvoice(
         "client_invoice_time_entry_stamp_failed_invoice_rolled_back",
         stampFailure.message
       );
+      if (stampFailure.raced && cleaned) {
+        return NextResponse.json({ error: stampFailure.message }, { status: 409 });
+      }
       return NextResponse.json(
         {
           error: cleaned
