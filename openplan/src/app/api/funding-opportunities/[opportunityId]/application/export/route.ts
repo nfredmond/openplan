@@ -49,7 +49,8 @@ import {
 
 const EXPORT_BUCKET = "grant-application-exports";
 
-export const APPLICATION_EXPORT_SELECT =
+// Not exported: Next.js route files may only export route handlers/config.
+const APPLICATION_EXPORT_SELECT =
   "id, workspace_id, opportunity_id, storage_path, pdf_engine, page_count, generated_by, generated_at";
 
 const paramsSchema = z.object({
@@ -81,7 +82,7 @@ type OffendingSection = {
  * updated_by is NEVER an acceptable substitute: it is touch-latest, and the
  * reorder PATCH stamps it on every row, so it can name the wrong person.
  */
-export const FINALIZER_NOT_RECORDED_DISCLOSURE =
+const FINALIZER_NOT_RECORDED_DISCLOSURE =
   "finalized before finalizer tracking; not recorded";
 
 function resolveSectionProvenance(
