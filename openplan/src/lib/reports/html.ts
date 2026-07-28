@@ -270,8 +270,9 @@ const MODEL_RUN_SCORECARD_KPI_LABELS: Array<{ key: string; label: string }> = [
 ];
 
 /** Compact KPI line from model_runs.result_summary_json: the managed scorecard
- * keys when present, otherwise the first few finite numeric entries. */
-function compactModelRunKpiLine(resultSummary: Record<string, unknown> | null): string | null {
+ * keys when present, otherwise the first few finite numeric entries. Exported
+ * so the narrative-draft fact builder states the same KPIs the packet renders. */
+export function compactModelRunKpiLine(resultSummary: Record<string, unknown> | null): string | null {
   if (!resultSummary) {
     return null;
   }
