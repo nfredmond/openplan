@@ -315,6 +315,40 @@ export function normalizeJoin<T>(value: T | T[] | null | undefined): T | null {
   return value ?? null;
 }
 
+/**
+ * The two directions money moves through the invoicing module:
+ * - "reimbursement" — this workspace invoicing ITS FUNDERS for grant draws
+ *   (billing_invoice_records); the original register, and the default.
+ * - "receivables" — this workspace invoicing ITS OWN CLIENTS
+ *   (client_invoices and the tables around them).
+ */
+export type InvoicingDirection = "reimbursement" | "receivables";
+
+export function normalizeInvoicingDirection(value: string | string[] | undefined): InvoicingDirection {
+  return value === "receivables" ? "receivables" : "reimbursement";
+}
+
+/**
+ * Href for the direction tabs. Every other string search param is preserved so
+ * switching direction never discards register filter state; `direction` itself
+ * is omitted for the default direction to keep canonical URLs stable.
+ */
+export function buildInvoicingDirectionHref(
+  resolvedParams: Record<string, string | string[] | undefined>,
+  direction: InvoicingDirection
+): string {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(resolvedParams)) {
+    if (key === "direction" || typeof value !== "string" || value.length === 0) continue;
+    search.set(key, value);
+  }
+  if (direction !== "reimbursement") {
+    search.set("direction", direction);
+  }
+  const query = search.toString();
+  return query ? `/invoicing?${query}` : "/invoicing";
+}
+
 export function normalizeInvoiceLinkageFilter(value: string | string[] | undefined): BillingInvoiceLinkageFilter {
   return value === "linked" || value === "unlinked" ? value : "all";
 }
