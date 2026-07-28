@@ -1,0 +1,216 @@
+/**
+ * What has to be true before a project can be deleted.
+ *
+ * THE PROBLEM. `projects` is the spine: 16 tables cascade from it and 17 more
+ * hold a nullable `project_id` that `ON DELETE SET NULL` would quietly blank.
+ * A single `DELETE` therefore destroys reports, scenario sets, funding awards,
+ * BCA screenings, spend entries and the whole delivery record, and orphans every
+ * model run, campaign, invoice and crash acquisition that pointed at it. No
+ * confirmation dialog is informed enough to authorize that, because the person
+ * clicking it cannot see what is attached.
+ *
+ * THE RULE. A delete succeeds only when the project carries nothing. Anything
+ * attached is a blocker, the refusal names it and where to find it, and the
+ * offered alternative is a status change — retiring a project is reversible,
+ * deleting it is not.
+ *
+ * There is deliberately NO force flag. A `?confirm=cascade` escape hatch would
+ * reintroduce exactly the uninformed bulk destruction this exists to prevent.
+ * A planner who genuinely wants a project gone can detach or delete its children
+ * through the modules that own them — each step deliberate, audited, and
+ * individually reversible — and then delete the empty shell.
+ *
+ * `blocking` versus `evidence` is about what the refusal SAYS, not about whether
+ * it refuses; both do. `blocking` marks records that represent an external
+ * commitment — money already claimed from a funder or billed to a client —
+ * where "delete the children first" is not honest advice, because those records
+ * are supposed to outlive the project. Those say so explicitly.
+ *
+ * This module is pure so the policy is testable without a database, and so the
+ * rule lives in one place instead of being re-derived in a route and a dialog.
+ */
+
+export type ProjectDeleteBlockerSeverity = "blocking" | "evidence";
+
+/** How the row behaves if the project is deleted, straight from the FK definition. */
+export type ProjectDeleteCascadeBehavior = "cascade" | "orphan";
+
+export type ProjectDeleteRelation = {
+  /** Table holding the reference. */
+  table: string;
+  /** Column holding it — every one of these is `project_id` today, but naming it keeps the inventory checkable. */
+  column: string;
+  /** What a planner calls these records. */
+  label: string;
+  severity: ProjectDeleteBlockerSeverity;
+  behavior: ProjectDeleteCascadeBehavior;
+  /** Where to go to deal with them. `{projectId}` is substituted by the caller. */
+  href: string;
+};
+
+export type ProjectDeleteBlocker = ProjectDeleteRelation & {
+  count: number;
+  /** Why this record stops the delete, in one sentence a planner can act on. */
+  reason: string;
+};
+
+export type ProjectDeleteAssessment = {
+  deletable: boolean;
+  blockers: ProjectDeleteBlocker[];
+  /** True when at least one blocker is an external financial commitment. */
+  hasCommitments: boolean;
+  /** One-line summary for the refusal body. */
+  headline: string;
+  /** The reversible alternative, always offered. */
+  alternative: string;
+};
+
+/**
+ * Every foreign key into `projects`, with what losing it would mean.
+ *
+ * `project-delete-preconditions.test.ts` reads the migrations and fails if a
+ * table references `projects` and is missing here — otherwise the next module to
+ * hang off a project would be destroyed by a delete that never mentioned it.
+ */
+export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
+  // External commitments. These outlive the project by design.
+  {
+    table: "billing_invoice_records",
+    column: "project_id",
+    label: "reimbursement invoices",
+    severity: "blocking",
+    behavior: "orphan",
+    href: "/invoicing",
+  },
+  {
+    table: "client_invoices",
+    column: "project_id",
+    label: "client invoices",
+    severity: "blocking",
+    behavior: "orphan",
+    href: "/invoicing",
+  },
+  {
+    table: "funding_awards",
+    column: "project_id",
+    label: "funding awards",
+    severity: "blocking",
+    behavior: "cascade",
+    href: "/grants",
+  },
+
+  // Work products destroyed outright by the cascade.
+  { table: "reports", column: "project_id", label: "reports", severity: "evidence", behavior: "cascade", href: "/reports" },
+  { table: "scenario_sets", column: "project_id", label: "scenario sets", severity: "evidence", behavior: "cascade", href: "/scenarios" },
+  { table: "project_bca_screenings", column: "project_id", label: "BCA screenings", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_spend_entries", column: "project_id", label: "spend entries", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_funding_profiles", column: "project_id", label: "funding profile", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_rtp_cycle_links", column: "project_id", label: "RTP portfolio placements", severity: "evidence", behavior: "cascade", href: "/rtp" },
+  { table: "project_milestones", column: "project_id", label: "milestones", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_submittals", column: "project_id", label: "submittals", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_deliverables", column: "project_id", label: "deliverables", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_risks", column: "project_id", label: "risks", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_issues", column: "project_id", label: "issues", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_decisions", column: "project_id", label: "decisions", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "project_meetings", column: "project_id", label: "meetings", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  { table: "data_dataset_project_links", column: "project_id", label: "linked datasets", severity: "evidence", behavior: "cascade", href: "/data-hub" },
+  { table: "aerial_project_posture", column: "project_id", label: "aerial posture", severity: "evidence", behavior: "cascade", href: "/aerial" },
+
+  // Work that survives but loses its attribution.
+  { table: "models", column: "project_id", label: "models", severity: "evidence", behavior: "orphan", href: "/models" },
+  { table: "model_runs", column: "project_id", label: "model runs", severity: "evidence", behavior: "orphan", href: "/models" },
+  { table: "runs", column: "project_id", label: "analysis runs", severity: "evidence", behavior: "orphan", href: "/explore" },
+  { table: "county_runs", column: "project_id", label: "county runs", severity: "evidence", behavior: "orphan", href: "/county-runs" },
+  { table: "engagement_campaigns", column: "project_id", label: "engagement campaigns", severity: "evidence", behavior: "orphan", href: "/engagement" },
+  { table: "funding_opportunities", column: "project_id", label: "funding opportunities", severity: "evidence", behavior: "orphan", href: "/grants" },
+  { table: "safety_crash_ingests", column: "project_id", label: "crash acquisitions", severity: "evidence", behavior: "orphan", href: "/safety" },
+  { table: "kb_documents", column: "project_id", label: "knowledge-base documents", severity: "evidence", behavior: "orphan", href: "/knowledge-base" },
+  { table: "project_corridors", column: "project_id", label: "corridors", severity: "evidence", behavior: "orphan", href: "/projects/{projectId}" },
+  { table: "aerial_missions", column: "project_id", label: "aerial missions", severity: "evidence", behavior: "orphan", href: "/aerial" },
+  { table: "aerial_evidence_packages", column: "project_id", label: "aerial evidence packages", severity: "evidence", behavior: "orphan", href: "/aerial" },
+  { table: "aerial_processing_jobs", column: "project_id", label: "aerial processing jobs", severity: "evidence", behavior: "orphan", href: "/aerial" },
+  { table: "invoicing_engagements", column: "project_id", label: "invoicing engagements", severity: "evidence", behavior: "orphan", href: "/invoicing" },
+  { table: "plans", column: "project_id", label: "plans", severity: "evidence", behavior: "orphan", href: "/plans" },
+  { table: "programs", column: "project_id", label: "programs", severity: "evidence", behavior: "orphan", href: "/programs" },
+];
+
+function pluralize(count: number, label: string): string {
+  // Labels are already plural nouns; a count of one reads better singularized on
+  // the simple cases and is left alone otherwise.
+  if (count !== 1) return `${count} ${label}`;
+  const singular = label.endsWith("ies")
+    ? `${label.slice(0, -3)}y`
+    : label.endsWith("s")
+      ? label.slice(0, -1)
+      : label;
+  return `1 ${singular}`;
+}
+
+function reasonFor(relation: ProjectDeleteRelation, count: number): string {
+  if (relation.severity === "blocking") {
+    return relation.behavior === "cascade"
+      ? `${pluralize(count, relation.label)} would be destroyed. A funding commitment is a record of what was awarded; it is meant to outlive the project.`
+      : `${pluralize(count, relation.label)} would lose the project they were raised against, leaving a financial record that no longer names what it paid for.`;
+  }
+
+  return relation.behavior === "cascade"
+    ? `${pluralize(count, relation.label)} would be deleted along with the project.`
+    : `${pluralize(count, relation.label)} would survive but stop being attributed to any project.`;
+}
+
+/**
+ * Decide whether a project may be deleted, given how many rows reference it.
+ *
+ * `counts` is keyed by table name; a table missing from the map counts as zero,
+ * so a caller that cannot query a table (schema not yet applied) does not
+ * accidentally read as "nothing attached". Callers that cannot count a relation
+ * at all should pass it explicitly rather than omit it — see the route.
+ */
+export function assessProjectDelete(
+  counts: Readonly<Record<string, number>>,
+  options: { projectId: string }
+): ProjectDeleteAssessment {
+  const blockers = PROJECT_DELETE_RELATIONS.flatMap((relation) => {
+    const count = counts[relation.table] ?? 0;
+    if (count <= 0) return [];
+    return [
+      {
+        ...relation,
+        href: relation.href.replace("{projectId}", options.projectId),
+        count,
+        reason: reasonFor(relation, count),
+      },
+    ];
+  }).sort((left, right) => {
+    // Commitments first, then the largest losses.
+    if (left.severity !== right.severity) return left.severity === "blocking" ? -1 : 1;
+    return right.count - left.count;
+  });
+
+  const hasCommitments = blockers.some((blocker) => blocker.severity === "blocking");
+
+  if (blockers.length === 0) {
+    return {
+      deletable: true,
+      blockers,
+      hasCommitments,
+      headline: "Nothing is attached to this project, so deleting it removes only the project record.",
+      alternative: "",
+    };
+  }
+
+  return {
+    deletable: false,
+    blockers,
+    hasCommitments,
+    headline: hasCommitments
+      ? "This project carries funding or invoicing records that are meant to outlive it, so it cannot be deleted."
+      : `This project has ${pluralize(
+          blockers.reduce((total, blocker) => total + blocker.count, 0),
+          "attached records"
+        )} across ${pluralize(blockers.length, "modules")}, so deleting it would take real work with it.`,
+    alternative: hasCommitments
+      ? "Set the project's status to complete to retire it. Its funding and invoicing history stays intact and attributable."
+      : "Set the project's status to complete to retire it — that is reversible — or remove the attached records from the modules listed above and delete the empty project afterwards.",
+  };
+}

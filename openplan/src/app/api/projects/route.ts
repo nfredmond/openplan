@@ -6,13 +6,28 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { checkWorkspaceMembership } from "@/lib/workspaces/membership";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import {
+  PROJECT_DEFAULT_DELIVERY_PHASE,
+  PROJECT_DEFAULT_PLAN_TYPE,
+  PROJECT_DEFAULT_STATUS,
+  projectDeliveryPhaseSchema,
+  projectNameSchema,
+  projectPlanTypeSchema,
+  projectStatusSchema,
+  projectSummarySchema,
+} from "@/lib/projects/project-record-fields";
 
 const createProjectSchema = z.object({
-  projectName: z.string().trim().min(1).max(120),
-  summary: z.string().trim().max(2000).optional(),
-  planType: z.string().trim().min(1).max(80).optional(),
-  deliveryPhase: z.string().trim().min(1).max(40).optional(),
-  status: z.string().trim().min(1).max(40).optional(),
+  projectName: projectNameSchema,
+  summary: projectSummarySchema.optional(),
+  planType: projectPlanTypeSchema.optional(),
+  // `status` and `deliveryPhase` are the vocabulary the CHECK constraints in
+  // 20260313000011 enforce. They were validated here as free strings, so an
+  // unrecognized value reached Postgres and returned a 500 that read like
+  // saving was broken. Sharing the schemas with PATCH makes it a 400 that names
+  // the allowed values, and keeps create and edit from drifting apart.
+  deliveryPhase: projectDeliveryPhaseSchema.optional(),
+  status: projectStatusSchema.optional(),
   /**
    * Which workspace the project belongs to. Optional and defaults to the
    * caller's current workspace; the workspace switcher passes it explicitly.
@@ -103,9 +118,9 @@ export async function POST(request: NextRequest) {
 
     const projectName = parsed.data.projectName.trim();
     const summary = parsed.data.summary?.trim() || null;
-    const planType = parsed.data.planType?.trim() || "corridor_plan";
-    const deliveryPhase = parsed.data.deliveryPhase?.trim() || "scoping";
-    const status = parsed.data.status?.trim() || "active";
+    const planType = parsed.data.planType?.trim() || PROJECT_DEFAULT_PLAN_TYPE;
+    const deliveryPhase = parsed.data.deliveryPhase ?? PROJECT_DEFAULT_DELIVERY_PHASE;
+    const status = parsed.data.status ?? PROJECT_DEFAULT_STATUS;
 
     // A project lives INSIDE the caller's workspace; it never creates one. The
     // prior behavior inserted a new `workspaces` row per project, which — with

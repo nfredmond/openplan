@@ -325,6 +325,9 @@ const fromMock = vi.fn((table: string) => {
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
+  // The project record editor is a client component mounted on this page and
+  // navigates after a delete, so rendering the page needs a router.
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
 }));
 
 vi.mock("next/link", () => ({

@@ -1,0 +1,279 @@
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { createClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
+import { loadProjectAccess } from "@/lib/programs/api";
+import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import {
+  projectDeliveryPhaseSchema,
+  projectNameSchema,
+  projectPlanTypeSchema,
+  projectStatusSchema,
+  projectSummarySchema,
+} from "@/lib/projects/project-record-fields";
+import {
+  assessProjectDelete,
+  PROJECT_DELETE_RELATIONS,
+} from "@/lib/projects/project-delete-preconditions";
+
+/**
+ * The project record itself: edit it, or delete it.
+ *
+ * WHY THIS ROUTE EXISTS. Projects were the only top-level module with no detail
+ * route at all. Plans, programs, reports, scenarios, campaigns and missions all
+ * had a PATCH; a project had five sub-routes and no way to change its own row.
+ * A planner who mistyped a project name was stuck with it permanently, and a
+ * workspace could only ever grow — which, under the self-serve posture, is a
+ * defect rather than a caveat.
+ *
+ * The sibling `location/route.ts` argued for sub-routes over a general PATCH so
+ * that fixing the map would not "open a broad mutable surface on the project
+ * record as a side effect". That reasoning was right about ITS change and is
+ * left intact: location still lives in its own route, and this one does not
+ * touch coordinates. Editing the record is not a side effect here; it is the
+ * point.
+ *
+ * DELETE is the careful half. `projects` is the spine — 16 tables cascade from
+ * it, 17 more get their `project_id` blanked — so this route refuses any
+ * project that carries anything, naming what and where, and offers a status
+ * change instead. There is no force flag; the reasoning is in
+ * `project-delete-preconditions.ts`.
+ */
+
+const paramsSchema = z.object({ projectId: z.string().uuid() });
+
+/**
+ * Every field optional, at least one required. A PATCH that names no field is a
+ * caller bug worth reporting rather than a no-op worth pretending succeeded.
+ *
+ * `summary` accepts null to clear it; the three vocabulary fields do not,
+ * because their columns are NOT NULL with defaults — clearing one has no
+ * meaning, where blanking a summary does.
+ */
+const patchProjectSchema = z
+  .object({
+    name: projectNameSchema.optional(),
+    summary: z.union([projectSummarySchema, z.null()]).optional(),
+    status: projectStatusSchema.optional(),
+    planType: projectPlanTypeSchema.optional(),
+    deliveryPhase: projectDeliveryPhaseSchema.optional(),
+  })
+  .refine((value) => Object.values(value).some((field) => field !== undefined), {
+    message: "Provide at least one field to update.",
+  });
+
+type ProjectAccess = Awaited<ReturnType<typeof loadProjectAccess>>;
+
+/** Shared auth + access resolution. Returns either a failure response or the access record. */
+async function resolveAccess(
+  request: NextRequest,
+  projectId: string,
+  audit: ReturnType<typeof createApiAuditLogger>
+): Promise<{ response: NextResponse } | { access: ProjectAccess; userId: string; supabase: Awaited<ReturnType<typeof createClient>> }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  }
+
+  const access = await loadProjectAccess(supabase, projectId, user.id, "programs.write");
+
+  if (access.error) {
+    audit.error("project_access_failed", {
+      projectId,
+      message: access.error.message,
+      code: access.error.code ?? null,
+    });
+    return { response: NextResponse.json({ error: "Failed to verify project access" }, { status: 500 }) };
+  }
+
+  if (!access.project) {
+    return { response: NextResponse.json({ error: "Project not found" }, { status: 404 }) };
+  }
+
+  if (!access.membership || !access.allowed) {
+    return { response: NextResponse.json({ error: "Workspace access denied" }, { status: 403 }) };
+  }
+
+  return { access, userId: user.id, supabase };
+}
+
+export async function PATCH(request: NextRequest, context: { params: Promise<{ projectId: string }> }) {
+  const audit = createApiAuditLogger("projects.patch", request);
+  const startedAt = Date.now();
+
+  try {
+    const routeParams = paramsSchema.safeParse(await context.params);
+    if (!routeParams.success) {
+      return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
+    }
+
+    const body = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    if (!body.ok) return body.response;
+
+    const payload = patchProjectSchema.safeParse(body.data);
+    if (!payload.success) {
+      audit.warn("validation_failed", { issues: payload.error.issues });
+      return NextResponse.json(
+        { error: payload.error.issues[0]?.message ?? "Invalid project payload" },
+        { status: 400 }
+      );
+    }
+
+    const resolved = await resolveAccess(request, routeParams.data.projectId, audit);
+    if ("response" in resolved) return resolved.response;
+    const { access, userId, supabase } = resolved;
+    const project = access.project!;
+
+    const updates: Record<string, unknown> = {};
+    if (payload.data.name !== undefined) updates.name = payload.data.name;
+    if (payload.data.summary !== undefined) updates.summary = payload.data.summary;
+    if (payload.data.status !== undefined) updates.status = payload.data.status;
+    if (payload.data.planType !== undefined) updates.plan_type = payload.data.planType;
+    if (payload.data.deliveryPhase !== undefined) updates.delivery_phase = payload.data.deliveryPhase;
+
+    // User (RLS) client: projects_update re-checks membership and, since
+    // 20260728000006, the restrictive writer policy re-checks role — so the
+    // explicit gate above is defence in depth rather than the only guard.
+    const { data, error } = await supabase
+      .from("projects")
+      .update(updates)
+      .eq("id", project.id)
+      .select("id, name, summary, status, plan_type, delivery_phase, updated_at")
+      .single();
+
+    if (error || !data) {
+      audit.error("project_update_failed", {
+        projectId: project.id,
+        message: error?.message ?? "unknown",
+        code: error?.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to update project" }, { status: 500 });
+    }
+
+    audit.info("project_updated", {
+      projectId: project.id,
+      workspaceId: project.workspace_id,
+      userId,
+      fields: Object.keys(updates),
+      durationMs: Date.now() - startedAt,
+    });
+
+    return NextResponse.json({ project: data }, { status: 200 });
+  } catch (error) {
+    audit.error("project_patch_unhandled_error", { durationMs: Date.now() - startedAt, error });
+    return NextResponse.json({ error: "Unexpected error while updating project" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest, context: { params: Promise<{ projectId: string }> }) {
+  const audit = createApiAuditLogger("projects.delete", request);
+  const startedAt = Date.now();
+
+  try {
+    const routeParams = paramsSchema.safeParse(await context.params);
+    if (!routeParams.success) {
+      return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
+    }
+
+    const resolved = await resolveAccess(request, routeParams.data.projectId, audit);
+    if ("response" in resolved) return resolved.response;
+    const { access, userId, supabase } = resolved;
+    const project = access.project!;
+
+    // Count every reference before touching anything. RLS scopes these to the
+    // caller's workspace, which is the same scope the delete would act in.
+    const counts: Record<string, number> = {};
+    const unreadable: string[] = [];
+
+    await Promise.all(
+      PROJECT_DELETE_RELATIONS.map(async (relation) => {
+        const { count, error } = await supabase
+          .from(relation.table)
+          .select("id", { count: "exact", head: true })
+          .eq(relation.column, project.id);
+
+        if (error) {
+          // A relation we cannot read is not a relation that is empty. Refusing
+          // is the only safe reading — the alternative is deleting rows we
+          // failed to notice.
+          unreadable.push(relation.table);
+          return;
+        }
+        counts[relation.table] = count ?? 0;
+      })
+    );
+
+    if (unreadable.length > 0) {
+      audit.warn("project_delete_precondition_unreadable", {
+        projectId: project.id,
+        tables: unreadable,
+      });
+      return NextResponse.json(
+        {
+          error: "Cannot confirm what is attached to this project",
+          message:
+            "Some related records could not be read, so deleting could destroy work this check did not see. " +
+            "Retry once the workspace schema is fully available.",
+          unreadable,
+        },
+        { status: 503 }
+      );
+    }
+
+    const assessment = assessProjectDelete(counts, { projectId: project.id });
+
+    if (!assessment.deletable) {
+      audit.info("project_delete_refused", {
+        projectId: project.id,
+        workspaceId: project.workspace_id,
+        userId,
+        blockerCount: assessment.blockers.length,
+        hasCommitments: assessment.hasCommitments,
+      });
+      return NextResponse.json(
+        {
+          error: "Project is not empty",
+          headline: assessment.headline,
+          alternative: assessment.alternative,
+          blockers: assessment.blockers.map((blocker) => ({
+            table: blocker.table,
+            label: blocker.label,
+            count: blocker.count,
+            severity: blocker.severity,
+            behavior: blocker.behavior,
+            reason: blocker.reason,
+            href: blocker.href,
+          })),
+        },
+        { status: 409 }
+      );
+    }
+
+    const { error } = await supabase.from("projects").delete().eq("id", project.id);
+
+    if (error) {
+      audit.error("project_delete_failed", {
+        projectId: project.id,
+        message: error.message,
+        code: error.code ?? null,
+      });
+      return NextResponse.json({ error: "Failed to delete project" }, { status: 500 });
+    }
+
+    audit.info("project_deleted", {
+      projectId: project.id,
+      workspaceId: project.workspace_id,
+      userId,
+      durationMs: Date.now() - startedAt,
+    });
+
+    return NextResponse.json({ deleted: { id: project.id, name: project.name } }, { status: 200 });
+  } catch (error) {
+    audit.error("project_delete_unhandled_error", { durationMs: Date.now() - startedAt, error });
+    return NextResponse.json({ error: "Unexpected error while deleting project" }, { status: 500 });
+  }
+}

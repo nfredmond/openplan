@@ -53,6 +53,7 @@ import { ProjectRiskAndDecisionLog } from "./_components/project-risk-decision-l
 import { ProjectEvidenceAndActivity } from "./_components/project-evidence-activity";
 import { ProjectSpineCrosslinkBoard } from "./_components/project-spine-crosslink-board";
 import { ProjectMapPresencePanel } from "./_components/project-map-presence-panel";
+import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
 import {
   CORRIDOR_COLUMNS,
   serializeProjectCorridor,
@@ -1238,6 +1239,18 @@ export default async function ProjectDetailPage({
 
         <ProjectStageGateBoard stageGateSummary={stageGateSummary} />
       </div>
+
+      <ProjectIdentityEditor
+        project={{
+          id: project.id,
+          name: project.name,
+          summary: project.summary ?? null,
+          status: project.status,
+          planType: project.plan_type,
+          deliveryPhase: project.delivery_phase,
+        }}
+        canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+      />
 
       <ProjectMapPresencePanel
         projectId={project.id}
