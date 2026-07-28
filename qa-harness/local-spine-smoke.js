@@ -132,7 +132,7 @@ function tail(text, maxChars = 6000) {
 }
 
 function runNctcSeed(env, notes) {
-  const result = spawnSync('pnpm', ['seed:nctc'], {
+  const result = spawnSync('npm', ['run', 'seed:nctc'], {
     cwd: appRoot,
     env: { ...process.env, ...env },
     encoding: 'utf8',
@@ -145,11 +145,11 @@ function runNctcSeed(env, notes) {
 
   if (result.status !== 0) {
     throw new Error(
-      `pnpm seed:nctc failed with status ${result.status}\nSTDOUT:\n${tail(result.stdout)}\nSTDERR:\n${tail(result.stderr)}`
+      `npm run seed:nctc failed with status ${result.status}\nSTDOUT:\n${tail(result.stdout)}\nSTDERR:\n${tail(result.stderr)}`
     );
   }
 
-  notes.push('Ran pnpm seed:nctc and the deterministic NCTC fixture completed.');
+  notes.push('Ran npm run seed:nctc and the deterministic NCTC fixture completed.');
 }
 
 async function listAdminUsers(supabaseUrl, serviceRoleKey) {
@@ -425,7 +425,7 @@ async function main() {
   assertEqual(project.name, DEMO_PROJECT_NAME, 'Project name drifted');
   notes.push('Verified the canonical NCTC project exists once in the seeded workspace.');
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   const context = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1440, height: 1700 } }));
   const page = await context.newPage();
 

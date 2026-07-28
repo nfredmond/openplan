@@ -95,7 +95,7 @@ async function main() {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const email = `openplan-layout-audit-${stamp}@natfordplanning.com`;
   const password = `OpenPlan!${Date.now()}LayoutAudit`;
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   const context = await browser.newContext(
     buildBrowserContextOptions({ viewport: { width: viewportWidth, height: viewportHeight } })
   );

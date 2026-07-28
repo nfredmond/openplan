@@ -223,7 +223,9 @@ export function ReportCreator({
         },
         body: JSON.stringify({
           projectId,
-          title,
+          title:
+            title.trim() ||
+            (selectedProject ? defaultReportTitle(selectedProject.name, reportType) : title),
           summary,
           reportType,
           runIds: selectedRunIds,

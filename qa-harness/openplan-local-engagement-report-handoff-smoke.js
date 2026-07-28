@@ -107,7 +107,7 @@ async function main() {
   ids.userId = createUserResult.data.user?.id ?? createUserResult.data.id ?? null;
   notes.push(`Created QA auth user ${email}.`);
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   const context = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1440, height: 1700 } }));
   const page = await context.newPage();
   const publicContext = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1280, height: 1500 } }));
@@ -244,7 +244,13 @@ async function main() {
 
     await page.goto(`${baseUrl}/engagement/${ids.campaignId}`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: campaignTitle, exact: false }).waitFor({ timeout: 20000 });
-    const itemRow = page.locator('.module-record-row').filter({ has: page.getByRole('heading', { name: itemTitle, exact: false }) }).first();
+    // Several .module-record-row cards mention the item title (e.g. the
+    // appendix-readiness card); the moderation row is the one that can Approve.
+    const itemRow = page
+      .locator('.module-record-row')
+      .filter({ has: page.getByRole('heading', { name: itemTitle, exact: false }) })
+      .filter({ has: page.getByRole('button', { name: /^approve$/i }) })
+      .first();
     await itemRow.waitFor({ timeout: 20000 });
     await itemRow.getByText(/Pending/i).first().waitFor({ timeout: 20000 });
     await Promise.all([
@@ -317,6 +323,8 @@ async function main() {
     );
     notes.push('Verified report section provenance froze the campaign id and handoff-ready count.');
 
+    // The packet format defaults to PDF; the generate button label follows it.
+    await page.getByLabel('Packet format').selectOption({ label: 'HTML' });
     await Promise.all([
       page.waitForResponse(
         (response) =>

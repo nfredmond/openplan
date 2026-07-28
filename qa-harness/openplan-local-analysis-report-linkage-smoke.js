@@ -117,7 +117,7 @@ async function main() {
   ids.userId = createUserResult.data.user?.id ?? createUserResult.data.id ?? null;
   notes.push(`Created QA auth user ${email}.`);
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   const context = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1440, height: 1700 } }));
   const page = await context.newPage();
 
@@ -359,6 +359,8 @@ async function main() {
     await page.getByText(/Linked runs/i).first().waitFor({ timeout: 20000 });
     await screenshot('local-analysis-report-linkage-04-report-detail');
 
+    // The packet format defaults to PDF; the generate button label follows it.
+    await page.getByLabel('Packet format').selectOption({ label: 'HTML' });
     await Promise.all([
       page.waitForResponse(
         (response) =>

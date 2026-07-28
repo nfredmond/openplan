@@ -87,11 +87,12 @@ export type NarrativeEvidenceOpportunity = {
   questions_due_at?: string | null;
 };
 
-/** Linked-project stage/delivery detail (proposal schedule facts). */
+/** Linked-project identity/stage detail (all pursuit kinds). */
 export type NarrativeLinkedProjectStage = {
   name: string;
   status: string | null;
   deliveryPhase: string | null;
+  summary: string | null;
 };
 
 /** One completed project offered as past-performance evidence (proposals). */
@@ -115,7 +116,7 @@ export type OpportunityEvidenceBundle = {
   engagementEvidence: ProjectEngagementEvidence | null;
   evidenceReadinessSummary: string;
   kbExcerpts: KnowledgeBaseExcerpt[];
-  /** Proposal pursuits only: the linked project's stage/delivery detail. */
+  /** The linked project's identity/stage detail, when a project is linked. */
   linkedProjectStage: NarrativeLinkedProjectStage | null;
   /**
    * Proposal pursuits only: the workspace's completed-projects history, as
@@ -213,7 +214,7 @@ export async function assembleOpportunityEvidence(
     ] = await Promise.all([
       client
         .from("projects")
-        .select("id, name, status, delivery_phase")
+        .select("id, name, status, delivery_phase, summary")
         .eq("id", opportunity.project_id)
         .maybeSingle(),
       client
@@ -260,14 +261,16 @@ export async function assembleOpportunityEvidence(
       name: string;
       status?: unknown;
       delivery_phase?: unknown;
+      summary?: unknown;
     } | null;
     projectName = projectRow?.name ?? null;
-    if (isProposal && projectRow) {
+    if (projectRow) {
       linkedProjectStage = {
         name: projectRow.name,
         status: typeof projectRow.status === "string" ? projectRow.status : null,
         deliveryPhase:
           typeof projectRow.delivery_phase === "string" ? projectRow.delivery_phase : null,
+        summary: typeof projectRow.summary === "string" && projectRow.summary.trim() ? projectRow.summary : null,
       };
     }
 
@@ -453,8 +456,11 @@ export function buildOpportunityFactList(
     isProposal && opportunity.questions_due_at
       ? `Written questions to the issuing agency are due ${String(opportunity.questions_due_at).slice(0, 10)}.`
       : null,
-    isProposal && include("project") && bundle.linkedProjectStage
+    include("project") && bundle.linkedProjectStage
       ? `The linked project ${bundle.linkedProjectStage.name} is recorded in status "${bundle.linkedProjectStage.status ?? "unknown"}"${bundle.linkedProjectStage.deliveryPhase ? ` and delivery phase "${bundle.linkedProjectStage.deliveryPhase}"` : ""}.`
+      : null,
+    include("project") && bundle.linkedProjectStage?.summary
+      ? `The linked project's recorded summary: ${bundle.linkedProjectStage.summary}`
       : null,
     ...(isProposal && include("project") && bundle.completedProjects
       ? bundle.completedProjects.map(

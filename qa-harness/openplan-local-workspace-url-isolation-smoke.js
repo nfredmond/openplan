@@ -407,7 +407,7 @@ async function main() {
 
   fs.mkdirSync(outputDir, { recursive: true });
 
-  const browser = await chromium.launch({ headless: !args.headed });
+  const browser = await chromium.launch({ headless: !args.headed, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   try {
     for (const userKey of userKeys) {
       sessions[userKey] = await buildContext(browser, baseUrl, userKey, users[userKey]);

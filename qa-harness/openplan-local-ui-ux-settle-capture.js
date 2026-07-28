@@ -734,7 +734,7 @@ async function main() {
   }
 
   const rows = [];
-  const browser = await chromium.launch({ headless: !args.headed });
+  const browser = await chromium.launch({ headless: !args.headed, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   try {
     for (const viewport of viewports) {
       const context = await browser.newContext({

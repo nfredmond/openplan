@@ -187,7 +187,7 @@ async function main() {
   if (!createUserResult.ok) throw new Error(`Failed to create QA user: ${createUserResult.status} ${JSON.stringify(createUserResult.data)}`);
   summary.userId = createUserResult.data.user?.id ?? null;
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   const context = await browser.newContext(
     buildBrowserContextOptions({ viewport: { width: 1440, height: 1800 }, acceptDownloads: true })
   );

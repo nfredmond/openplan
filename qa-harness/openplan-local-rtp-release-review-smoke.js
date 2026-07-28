@@ -70,7 +70,7 @@ async function main() {
   ids.userId = createUserResult.data.user?.id ?? createUserResult.data.id ?? null;
   notes.push(`Created QA auth user ${email}.`);
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   const context = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1440, height: 1600 } }));
   const page = await context.newPage();
 

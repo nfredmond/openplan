@@ -93,7 +93,7 @@ function tail(text, maxChars = 6000) {
 }
 
 function runNctcSeed(env, notes) {
-  const result = spawnSync('pnpm', ['seed:nctc'], {
+  const result = spawnSync('npm', ['run', 'seed:nctc'], {
     cwd: appRoot,
     env: { ...process.env, ...env },
     encoding: 'utf8',
@@ -106,11 +106,11 @@ function runNctcSeed(env, notes) {
 
   if (result.status !== 0) {
     throw new Error(
-      `pnpm seed:nctc failed with status ${result.status}\nSTDOUT:\n${tail(result.stdout)}\nSTDERR:\n${tail(result.stderr)}`
+      `npm run seed:nctc failed with status ${result.status}\nSTDOUT:\n${tail(result.stdout)}\nSTDERR:\n${tail(result.stderr)}`
     );
   }
 
-  notes.push('Ran pnpm seed:nctc from openplan/ and refreshed the deterministic NCTC fixture.');
+  notes.push('Ran npm run seed:nctc from openplan/ and refreshed the deterministic NCTC fixture.');
 }
 
 async function listAdminUsers(supabaseUrl, serviceRoleKey) {
@@ -436,7 +436,7 @@ async function main() {
   ids.projectAerialPostureBefore = posturesBefore[0]?.updated_at ?? null;
   notes.push('Verified exactly one canonical seeded NCTC project exists; no project creation API is called by this harness.');
 
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.OPENPLAN_QA_CHROME || undefined });
   const context = await browser.newContext(buildBrowserContextOptions({ viewport: { width: 1440, height: 1700 } }));
   const page = await context.newPage();
 

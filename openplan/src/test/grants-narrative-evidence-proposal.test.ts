@@ -7,9 +7,10 @@ import {
 
 /**
  * Proposal pursuits ground on more than a grant does: the solicitation
- * fields, the linked project's stage data, and the workspace's
- * completed-projects history as past performance. Grant bundles must keep
- * exactly their old fact lists — the pursuit fields are additive.
+ * fields and the workspace's completed-projects history as past performance.
+ * The linked project's identity facts (name, status, phase, summary) ground
+ * BOTH pursuit kinds — a grant narrative cannot describe a project the fact
+ * list never mentions. Solicitation fields stay proposal-only.
  */
 
 function bundle(overrides: Partial<OpportunityEvidenceBundle> = {}): OpportunityEvidenceBundle {
@@ -37,7 +38,12 @@ function bundle(overrides: Partial<OpportunityEvidenceBundle> = {}): Opportunity
     engagementEvidence: null,
     evidenceReadinessSummary: "Evidence summary.",
     kbExcerpts: [],
-    linkedProjectStage: { name: "Corridor study", status: "active", deliveryPhase: "environmental" },
+    linkedProjectStage: {
+      name: "Corridor study",
+      status: "active",
+      deliveryPhase: "environmental",
+      summary: "Multimodal corridor study for the main street spine.",
+    },
     completedProjects: [
       {
         id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
@@ -111,6 +117,26 @@ describe("buildOpportunityFactList — proposal pursuits", () => {
     expect(grantFacts.some((claim) => claim.includes("solicitation number"))).toBe(false);
     expect(grantFacts.some((claim) => claim.includes("Completed project on record"))).toBe(false);
     expect(grantFacts.some((claim) => claim.includes("Written questions"))).toBe(false);
+  });
+
+  it("grounds grant pursuits on the linked project's identity facts too", () => {
+    const grantFacts = claims(
+      buildOpportunityFactList(
+        bundle({
+          opportunity: {
+            ...bundle().opportunity,
+            pursuit_kind: "grant",
+          },
+        })
+      )
+    );
+
+    expect(grantFacts).toContain(
+      'The linked project Corridor study is recorded in status "active" and delivery phase "environmental".'
+    );
+    expect(grantFacts).toContain(
+      "The linked project's recorded summary: Multimodal corridor study for the main street spine."
+    );
   });
 
   it("omits absent solicitation fields instead of inventing them", () => {

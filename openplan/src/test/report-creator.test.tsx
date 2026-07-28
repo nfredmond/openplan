@@ -139,8 +139,11 @@ describe("ReportCreator", () => {
 
     const request = fetchMock.mock.calls[0] as [string, RequestInit];
     expect(request[0]).toBe("/api/reports");
-    const body = JSON.parse(String(request[1]?.body)) as { modelingCountyRunId?: string };
+    const body = JSON.parse(String(request[1]?.body)) as { modelingCountyRunId?: string; title?: string };
     expect(body.modelingCountyRunId).toBe("county-run-screening");
+    // A blank title submits the promised suggested default, never an empty
+    // string the API would 400 on.
+    expect(body.title).toBe("Downtown Mobility Plan Project Status");
     expect(pushMock).toHaveBeenCalledWith("/reports/report-123");
     expect(refreshMock).toHaveBeenCalled();
   });

@@ -174,7 +174,7 @@ describe("FundingOpportunityApplicationWorkspace", () => {
     render(
       <FundingOpportunityApplicationWorkspace opportunityId={OPPORTUNITY_ID} pursuitKind="proposal" />
     );
-    fireEvent.click(screen.getByRole("button", { name: /open application workspace/i }));
+    fireEvent.click(screen.getByRole("button", { name: /open proposal workspace/i }));
 
     expect(screen.getByText("Proposal workspace")).toBeInTheDocument();
     expect(await screen.findByTestId("application-init")).toBeInTheDocument();

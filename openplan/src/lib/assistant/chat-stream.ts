@@ -100,12 +100,27 @@ export async function* consumeAssistantChatStream(
   const toolNamesById = new Map<string, string>();
   const startedToolCallIds = new Set<string>();
   let buffer = "";
+  let emittedTextInPriorPart = false;
+  let emittedTextInCurrentPart = false;
 
   function* reduce(chunk: UiChunkLike): Generator<ChatStreamEvent> {
     switch (chunk.type) {
+      case "text-start": {
+        // A new text part begins (typically after a tool call). Flattened
+        // concatenation would glue "…identifier:" + "Now I can…" together, so
+        // separate completed parts with a paragraph break.
+        emittedTextInPriorPart = emittedTextInPriorPart || emittedTextInCurrentPart;
+        emittedTextInCurrentPart = false;
+        return;
+      }
       case "text-delta": {
         const text = asString(chunk.delta);
-        if (text) yield { type: "text-delta", text };
+        if (!text) return;
+        if (emittedTextInPriorPart && !emittedTextInCurrentPart) {
+          yield { type: "text-delta", text: "\n\n" };
+        }
+        emittedTextInCurrentPart = true;
+        yield { type: "text-delta", text };
         return;
       }
       case "tool-input-start":

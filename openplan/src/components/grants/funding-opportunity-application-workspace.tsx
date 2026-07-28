@@ -537,7 +537,13 @@ export function FundingOpportunityApplicationWorkspace({
         </div>
         <Button type="button" variant="outline" size="sm" onClick={handleToggle}>
           {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          {isOpen ? "Close application workspace" : "Open application workspace"}
+          {isOpen
+            ? pursuitKind === "proposal"
+              ? "Close proposal workspace"
+              : "Close application workspace"
+            : pursuitKind === "proposal"
+              ? "Open proposal workspace"
+              : "Open application workspace"}
         </Button>
       </div>
 
@@ -712,7 +718,9 @@ export function FundingOpportunityApplicationWorkspace({
                 ))}
 
                 <div className="rounded-xl border border-border/70 bg-background/70 px-3 py-3" data-testid="application-export">
-                  <p className="font-semibold text-foreground">Export application packet</p>
+                  <p className="font-semibold text-foreground">
+                    {pursuitKind === "proposal" ? "Export proposal packet" : "Export application packet"}
+                  </p>
                   <p className="mt-1 text-muted-foreground">
                     Assembles the cover, every section (final text, or a disclosed outstanding
                     item), the attachment checklist, and a provenance appendix into one PDF.
@@ -727,7 +735,7 @@ export function FundingOpportunityApplicationWorkspace({
                     onClick={() => void handleExport()}
                   >
                     {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
-                    Export application packet (PDF)
+                    {pursuitKind === "proposal" ? "Export proposal packet (PDF)" : "Export application packet (PDF)"}
                   </Button>
                   {exportError ? (
                     <div className="mt-2" data-testid="export-refusal">

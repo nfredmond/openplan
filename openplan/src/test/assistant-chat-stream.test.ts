@@ -53,6 +53,54 @@ describe("consumeAssistantChatStream", () => {
     ]);
   });
 
+  it("separates distinct text parts (around a tool call) with a paragraph break", async () => {
+    const body = encodeChunks([
+      sseFrames([
+        { type: "start" },
+        { type: "text-start", id: "t1" },
+        { type: "text-delta", id: "t1", delta: "Let me look that up:" },
+        { type: "text-end", id: "t1" },
+        { type: "tool-input-start", toolCallId: "call-1", toolName: "list_projects" },
+        { type: "tool-output-available", toolCallId: "call-1", output: { status: "ok" } },
+        { type: "text-start", id: "t2" },
+        { type: "text-delta", id: "t2", delta: "Now I can propose it." },
+        { type: "text-end", id: "t2" },
+        { type: "finish" },
+        "[DONE]",
+      ]),
+    ]);
+
+    const events = await collect(body);
+    const text = events
+      .filter((event): event is Extract<ChatStreamEvent, { type: "text-delta" }> => event.type === "text-delta")
+      .map((event) => event.text)
+      .join("");
+
+    expect(text).toBe("Let me look that up:\n\nNow I can propose it.");
+  });
+
+  it("adds no leading break when the reply's first text part follows a tool call", async () => {
+    const body = encodeChunks([
+      sseFrames([
+        { type: "start" },
+        { type: "tool-input-start", toolCallId: "call-1", toolName: "list_projects" },
+        { type: "tool-output-available", toolCallId: "call-1", output: { status: "ok" } },
+        { type: "text-start", id: "t1" },
+        { type: "text-delta", id: "t1", delta: "Here is what I found." },
+        { type: "finish" },
+        "[DONE]",
+      ]),
+    ]);
+
+    const events = await collect(body);
+    const text = events
+      .filter((event): event is Extract<ChatStreamEvent, { type: "text-delta" }> => event.type === "text-delta")
+      .map((event) => event.text)
+      .join("");
+
+    expect(text).toBe("Here is what I found.");
+  });
+
   it("tracks tool calls: start once per id, result with the resolved tool name", async () => {
     const body = encodeChunks([
       sseFrames([
