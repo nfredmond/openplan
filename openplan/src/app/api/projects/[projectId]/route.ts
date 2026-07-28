@@ -191,9 +191,14 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
     await Promise.all(
       PROJECT_DELETE_RELATIONS.map(async (relation) => {
+        // `*` rather than a named column: `head: true` returns no rows, so the
+        // projection costs nothing — and two of these tables have no `id` at
+        // all (`data_dataset_project_links` is a pure join, and
+        // `aerial_project_posture` is keyed by project_id). Naming `id` made
+        // every delete fail its own precondition check and answer 503.
         const { count, error } = await supabase
           .from(relation.table)
-          .select("id", { count: "exact", head: true })
+          .select("*", { count: "exact", head: true })
           .eq(relation.column, project.id);
 
         if (error) {
@@ -253,7 +258,16 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       );
     }
 
-    const { error } = await supabase.from("projects").delete().eq("id", project.id);
+    // `.select()` so the deleted row comes back. A DELETE that matches nothing
+    // is a SUCCESSFUL statement that changed nothing — which is exactly what
+    // happened before 20260728000008, when `projects` had no DELETE policy at
+    // all and RLS silently filtered every row out. Reporting "deleted" on that
+    // is worse than failing, because the planner believes the project is gone.
+    const { data: removed, error } = await supabase
+      .from("projects")
+      .delete()
+      .eq("id", project.id)
+      .select("id");
 
     if (error) {
       audit.error("project_delete_failed", {
@@ -262,6 +276,23 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
         code: error.code ?? null,
       });
       return NextResponse.json({ error: "Failed to delete project" }, { status: 500 });
+    }
+
+    if (!removed || removed.length === 0) {
+      audit.error("project_delete_removed_nothing", {
+        projectId: project.id,
+        workspaceId: project.workspace_id,
+        userId,
+      });
+      return NextResponse.json(
+        {
+          error: "Project was not deleted",
+          message:
+            "The delete was accepted but removed no rows, so the project is still there. " +
+            "This usually means the workspace delete policy is missing on this deployment.",
+        },
+        { status: 500 }
+      );
     }
 
     audit.info("project_deleted", {

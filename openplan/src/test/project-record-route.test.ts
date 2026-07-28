@@ -64,7 +64,7 @@ function withCounts(counts: Record<string, number>, options: { failing?: string[
             }),
           }),
         }),
-        delete: () => ({ eq: async () => ({ error: null }) }),
+        delete: () => ({ eq: () => ({ select: async () => ({ data: [{ id: PROJECT_ID }], error: null }) }) }),
       };
     }
 
@@ -190,7 +190,7 @@ describe("project record route", () => {
     it("counts every known relation before allowing a delete", async () => {
       const counted: string[] = [];
       fromMock.mockImplementation((table: string) => {
-        if (table === "projects") return { delete: () => ({ eq: async () => ({ error: null }) }) };
+        if (table === "projects") return { delete: () => ({ eq: () => ({ select: async () => ({ data: [{ id: PROJECT_ID }], error: null }) }) }) };
         counted.push(table);
         return { select: () => ({ eq: async () => ({ count: 0, error: null }) }) };
       });
@@ -198,6 +198,24 @@ describe("project record route", () => {
       await deleteProject(deleteRequest(), params);
 
       expect(counted.sort()).toEqual(PROJECT_DELETE_RELATIONS.map((r) => r.table).sort());
+    });
+
+    it("does not claim success when the delete removed no rows", async () => {
+      // Before 20260728000008 the projects table had no DELETE policy, so RLS
+      // filtered every row out and `DELETE ... WHERE id = $1` succeeded while
+      // changing nothing. Reporting "deleted" there is worse than failing.
+      fromMock.mockImplementation((table: string) => {
+        if (table === "projects") {
+          return { delete: () => ({ eq: () => ({ select: async () => ({ data: [], error: null }) }) }) };
+        }
+        return { select: () => ({ eq: async () => ({ count: 0, error: null }) }) };
+      });
+
+      const response = await deleteProject(deleteRequest(), params);
+      expect(response.status).toBe(500);
+      await expect(response.json()).resolves.toMatchObject({
+        error: "Project was not deleted",
+      });
     });
 
     it("gates deletion on the same write action as editing", async () => {
