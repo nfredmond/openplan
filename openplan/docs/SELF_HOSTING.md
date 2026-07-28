@@ -64,6 +64,25 @@ One local quirk: the local Supabase config sets its auth site URL to `http://127
 the password-reset round-trip (`/forgot-password` → emailed link → `/auth/callback`) works from
 `127.0.0.1:3000` but not from `localhost:3000`. Normal sign-in works from either.
 
+### Keeping an always-on local instance (optional)
+
+If you want a persistent instance to open in front of someone — rather than starting a dev
+server each time — run it from a **second checkout** and keep that checkout current with
+`scripts/ops/refresh-walkthrough-instance.sh`:
+
+```bash
+scripts/ops/refresh-walkthrough-instance.sh ~/apps/openplan
+```
+
+It fast-forwards the instance to `origin/main`, reinstalls, rebuilds, and restarts the service
+unit that serves it. It **refuses** to run if that checkout has uncommitted changes or commits
+that were never pushed, so refreshing a demo box can't cost you work. It never copies secrets;
+it only reports, by name, variables your canonical `.env.local` defines that the instance is
+missing — worth heeding, because a missing one degrades a feature silently rather than loudly.
+
+Use a separate checkout on purpose: `next dev` in your working copy and `next start` in the
+instance would otherwise contend for the same `.next` directory.
+
 Everything below this point is the production/deployment path.
 
 ---
