@@ -103,7 +103,7 @@ export function RtpCycleCreator() {
           </label>
           <Input
             id="rtp-cycle-title"
-            placeholder="Nevada County Regional Transportation Plan 2028"
+            placeholder="Regional Transportation Plan 2050"
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             required
@@ -136,7 +136,7 @@ export function RtpCycleCreator() {
             </label>
             <Input
               id="rtp-cycle-geography"
-              placeholder="Nevada County / regional unincorporated area"
+              placeholder="Countywide, including unincorporated areas"
               value={geographyLabel}
               onChange={(event) => setGeographyLabel(event.target.value)}
             />

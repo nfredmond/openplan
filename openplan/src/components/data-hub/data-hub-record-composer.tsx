@@ -453,7 +453,7 @@ export function DataHubRecordComposer({
                 id="dataset-name"
                 value={datasetName}
                 onChange={(event) => setDatasetName(event.target.value)}
-                placeholder="ACS equity indicators for Nevada County corridors"
+                placeholder="Equity indicators for study corridors"
                 required
               />
             </div>
@@ -555,7 +555,7 @@ export function DataHubRecordComposer({
                 <label htmlFor="dataset-coverage" className="text-sm font-medium">
                   Coverage summary
                 </label>
-                <Input id="dataset-coverage" value={datasetCoverageSummary} onChange={(event) => setDatasetCoverageSummary(event.target.value)} placeholder="Nevada County focus areas + comparator geographies" />
+                <Input id="dataset-coverage" value={datasetCoverageSummary} onChange={(event) => setDatasetCoverageSummary(event.target.value)} placeholder="Study area focus zones + comparator geographies" />
               </div>
               <div className="space-y-2">
                 <label htmlFor="dataset-geometry-attachment" className="text-sm font-medium">

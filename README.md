@@ -45,7 +45,6 @@ cd openplan
 npm install
 npm exec supabase start      # local Postgres + Auth + Storage (Docker)
 npm exec supabase db reset   # apply all migrations
-npm run seed:nctc            # optional: seed the Nevada County demo workspace
 npm run dev                  # http://localhost:3000
 ```
 

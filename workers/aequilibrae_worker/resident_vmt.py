@@ -20,7 +20,9 @@ from typing import Any, Iterable, Sequence
 EARTH_RADIUS_MILES = 3958.7613
 METERS_PER_MILE = 1609.34
 # Great-circle -> network distance adjustment used by the internal-resident VMT
-# estimator; matches the seeded NCTC derivation (openplan/scripts/seed-nctc-demo.ts).
+# estimator. A screening constant, not a calibrated per-place value: straight-line
+# zone-to-zone distance understates travel on a real network, and 1.3 is the
+# conventional planning circuity factor. It applies to every study area equally.
 VMT_NETWORK_CIRCUITY = 1.3
 
 

@@ -176,7 +176,7 @@ export function ProgramCreator({ projects }: { projects: ProjectOption[] }) {
             </label>
             <Input
               id="program-sponsor"
-              placeholder="Nevada County Transportation Commission"
+              placeholder="Agency sponsoring this program"
               value={sponsorAgency}
               onChange={(event) => setSponsorAgency(event.target.value)}
             />
