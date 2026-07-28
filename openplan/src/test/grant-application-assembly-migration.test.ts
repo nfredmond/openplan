@@ -108,6 +108,50 @@ describe("grant application assembly migration", () => {
     );
   });
 
+  it("revokes authenticated's Supabase default-privilege grant before granting back the exact surface", () => {
+    // ALTER DEFAULT PRIVILEGES grants ALL on new public tables directly to
+    // `authenticated`; revoke-from-PUBLIC does not remove it (the documented
+    // 20260722000005 gotcha). Every table must revoke it explicitly, before
+    // the grants, or "append-only" would be false at the privilege level.
+    for (const table of TABLES) {
+      const revokeIndex = sqlWithoutComments.indexOf(
+        `REVOKE ALL ON TABLE ${table} FROM authenticated;`,
+      );
+      const grantIndex = sqlWithoutComments.indexOf(`ON TABLE ${table} TO authenticated;`);
+      expect(revokeIndex, `${table} must revoke authenticated's default grant`).toBeGreaterThanOrEqual(0);
+      expect(grantIndex, `${table} grant must follow the revoke`).toBeGreaterThan(revokeIndex);
+    }
+  });
+
+  it("ties every INSERT (and UPDATE) to an opportunity in the row's own workspace", () => {
+    // Workspace membership alone is not enough: a member of workspace A could
+    // otherwise insert rows pairing their own workspace_id with workspace B's
+    // opportunity_id. Every INSERT policy's WITH CHECK must join the named
+    // opportunity back to the row's own workspace.
+    for (const table of TABLES) {
+      expect(
+        sqlWithoutComments,
+        `${table} insert policy must join funding_opportunities on workspace`,
+      ).toMatch(
+        new RegExp(
+          `EXISTS \\(\\s*SELECT 1 FROM funding_opportunities fo\\s*` +
+            `WHERE fo\\.id = ${table}\\.opportunity_id\\s*` +
+            `AND fo\\.workspace_id = ${table}\\.workspace_id\\s*\\)`,
+        ),
+      );
+    }
+    // The editable tables carry the same coherence on their UPDATE policies,
+    // so a row cannot be re-pointed at a foreign opportunity after insert.
+    expect(
+      (sqlWithoutComments.match(/SELECT 1 FROM funding_opportunities fo/g) ?? []).length,
+    ).toBeGreaterThanOrEqual(6);
+    // A draft must also name a section of the SAME opportunity — a foreign
+    // section can never be chained into this workspace's draft history.
+    expect(sqlWithoutComments).toMatch(
+      /EXISTS \(\s*SELECT 1 FROM funding_opportunity_application_sections s\s*WHERE s\.id = funding_opportunity_section_drafts\.section_id\s*AND s\.opportunity_id = funding_opportunity_section_drafts\.opportunity_id\s*\)/,
+    );
+  });
+
   it("enables RLS on all four tables with member policies, and revokes anon", () => {
     for (const table of TABLES) {
       expect(sql).toMatch(new RegExp(`ALTER TABLE ${table} ENABLE ROW LEVEL SECURITY;`));

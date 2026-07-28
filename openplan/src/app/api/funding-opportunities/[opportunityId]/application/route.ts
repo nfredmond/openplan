@@ -125,15 +125,103 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to check application state" }, { status: 500 });
     }
 
+    const sectionSeeds = catalogEntry ? buildCatalogSectionSeeds(catalogEntry) : [];
+    const attachmentSeeds = catalogEntry ? buildCatalogAttachmentSeeds(catalogEntry) : [];
+
     if ((existingSections ?? []).length > 0) {
+      // Sections and attachments seed in two separate inserts (no
+      // transaction), so a failed first init can leave sections without their
+      // catalog attachments. A blanket 409 here would wedge the opportunity
+      // permanently — the retry could never seed what the failure skipped. So
+      // the "already initialized" path first COMPLETES an interrupted init
+      // idempotently: seed exactly the catalog attachments that are absent,
+      // then report success. Only a fully seeded application still 409s.
+      if (attachmentSeeds.length > 0) {
+        const { data: existingAttachments, error: attachmentsLookupError } = await supabase
+          .from("funding_opportunity_attachments")
+          .select("attachment_key")
+          .eq("opportunity_id", opportunity.id);
+
+        if (attachmentsLookupError) {
+          if (looksLikePendingAssemblySchema(attachmentsLookupError.message)) {
+            return NextResponse.json({ error: APPLICATION_PENDING_SCHEMA_ERROR }, { status: 503 });
+          }
+          audit.error("application_attachments_lookup_failed", {
+            opportunityId: opportunity.id,
+            userId: user.id,
+            message: attachmentsLookupError.message,
+          });
+          return NextResponse.json({ error: "Failed to check application state" }, { status: 500 });
+        }
+
+        const presentKeys = new Set(
+          ((existingAttachments ?? []) as Array<{ attachment_key: string }>).map((row) => row.attachment_key)
+        );
+        const missingSeeds = attachmentSeeds.filter((seed) => !presentKeys.has(seed.attachment_key));
+
+        if (missingSeeds.length > 0) {
+          const { error: completeError } = await supabase
+            .from("funding_opportunity_attachments")
+            .insert(
+              missingSeeds.map((seed) => ({
+                workspace_id: opportunity.workspace_id,
+                opportunity_id: opportunity.id,
+                status: "missing",
+                updated_by: user.id,
+                ...seed,
+              }))
+            );
+
+          if (completeError) {
+            audit.error("application_attachments_completion_failed", {
+              opportunityId: opportunity.id,
+              userId: user.id,
+              message: completeError.message,
+            });
+            return NextResponse.json(
+              { error: "Failed to seed the missing application attachments" },
+              { status: 500 }
+            );
+          }
+
+          const [sectionsResult, attachmentsResult] = await Promise.all([
+            supabase
+              .from("funding_opportunity_application_sections")
+              .select(APPLICATION_SECTION_SELECT)
+              .eq("opportunity_id", opportunity.id)
+              .order("sort_order", { ascending: true }),
+            supabase
+              .from("funding_opportunity_attachments")
+              .select(APPLICATION_ATTACHMENT_SELECT)
+              .eq("opportunity_id", opportunity.id)
+              .order("sort_order", { ascending: true }),
+          ]);
+
+          if (sectionsResult.error || attachmentsResult.error) {
+            return NextResponse.json({ error: "Failed to reload the completed application" }, { status: 500 });
+          }
+
+          audit.info("application_init_completed", {
+            opportunityId: opportunity.id,
+            workspaceId: opportunity.workspace_id,
+            userId: user.id,
+            catalogKey: catalogEntry?.key ?? null,
+            seededAttachmentCount: missingSeeds.length,
+            durationMs: Date.now() - startedAt,
+          });
+
+          return NextResponse.json(
+            { sections: sectionsResult.data ?? [], attachments: attachmentsResult.data ?? [] },
+            { status: 200 }
+          );
+        }
+      }
+
       return NextResponse.json(
         { error: "An application is already initialized for this opportunity" },
         { status: 409 }
       );
     }
-
-    const sectionSeeds = catalogEntry ? buildCatalogSectionSeeds(catalogEntry) : [];
-    const attachmentSeeds = catalogEntry ? buildCatalogAttachmentSeeds(catalogEntry) : [];
 
     let sections: unknown[] = [];
     if (sectionSeeds.length > 0) {

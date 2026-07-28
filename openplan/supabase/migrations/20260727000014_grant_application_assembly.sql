@@ -20,7 +20,12 @@
 --     application exports written to the grant-application-exports bucket.
 --
 -- All additive. RLS mirrors the existing grants tables (workspace-member
--- read/write); drafts and exports are append-only for authenticated users.
+-- read/write), and every INSERT additionally requires the named opportunity
+-- to belong to the row's own workspace (and, for drafts, the named section to
+-- belong to that opportunity) — workspace membership alone would let a member
+-- of workspace A insert rows pointing at workspace B's opportunity. Drafts
+-- and exports are append-only for authenticated users: their default-
+-- privilege grant is revoked outright and replaced with SELECT + INSERT.
 
 CREATE TABLE IF NOT EXISTS funding_opportunity_application_sections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -176,6 +181,14 @@ BEGIN
         workspace_id IN (
           SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
         )
+        -- The named opportunity must live in the row's own workspace — without
+        -- this, a member of workspace A could attach rows to workspace B's
+        -- opportunity by pairing their own workspace_id with a foreign id.
+        AND EXISTS (
+          SELECT 1 FROM funding_opportunities fo
+          WHERE fo.id = funding_opportunity_application_sections.opportunity_id
+            AND fo.workspace_id = funding_opportunity_application_sections.workspace_id
+        )
       );
   END IF;
 END
@@ -198,6 +211,13 @@ BEGIN
       WITH CHECK (
         workspace_id IN (
           SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
+        )
+        -- Same coherence as insert: an update may not re-point the row at
+        -- another workspace's opportunity.
+        AND EXISTS (
+          SELECT 1 FROM funding_opportunities fo
+          WHERE fo.id = funding_opportunity_application_sections.opportunity_id
+            AND fo.workspace_id = funding_opportunity_application_sections.workspace_id
         )
       );
   END IF;
@@ -255,6 +275,20 @@ BEGIN
           SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
         )
         AND created_by = auth.uid()
+        -- The named opportunity must live in the row's own workspace…
+        AND EXISTS (
+          SELECT 1 FROM funding_opportunities fo
+          WHERE fo.id = funding_opportunity_section_drafts.opportunity_id
+            AND fo.workspace_id = funding_opportunity_section_drafts.workspace_id
+        )
+        -- …and the named section must belong to that same opportunity, so a
+        -- draft can never chain a foreign section into this workspace's
+        -- history.
+        AND EXISTS (
+          SELECT 1 FROM funding_opportunity_application_sections s
+          WHERE s.id = funding_opportunity_section_drafts.section_id
+            AND s.opportunity_id = funding_opportunity_section_drafts.opportunity_id
+        )
       );
   END IF;
 END
@@ -293,6 +327,12 @@ BEGIN
         workspace_id IN (
           SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
         )
+        -- The named opportunity must live in the row's own workspace.
+        AND EXISTS (
+          SELECT 1 FROM funding_opportunities fo
+          WHERE fo.id = funding_opportunity_attachments.opportunity_id
+            AND fo.workspace_id = funding_opportunity_attachments.workspace_id
+        )
       );
   END IF;
 END
@@ -315,6 +355,13 @@ BEGIN
       WITH CHECK (
         workspace_id IN (
           SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
+        )
+        -- Same coherence as insert: an update may not re-point the row at
+        -- another workspace's opportunity.
+        AND EXISTS (
+          SELECT 1 FROM funding_opportunities fo
+          WHERE fo.id = funding_opportunity_attachments.opportunity_id
+            AND fo.workspace_id = funding_opportunity_attachments.workspace_id
         )
       );
   END IF;
@@ -372,6 +419,12 @@ BEGIN
           SELECT workspace_id FROM workspace_members WHERE user_id = auth.uid()
         )
         AND generated_by = auth.uid()
+        -- The named opportunity must live in the row's own workspace.
+        AND EXISTS (
+          SELECT 1 FROM funding_opportunities fo
+          WHERE fo.id = funding_opportunity_application_exports.opportunity_id
+            AND fo.workspace_id = funding_opportunity_application_exports.workspace_id
+        )
       );
   END IF;
 END
@@ -381,6 +434,17 @@ REVOKE ALL ON TABLE funding_opportunity_application_sections FROM PUBLIC, anon;
 REVOKE ALL ON TABLE funding_opportunity_section_drafts FROM PUBLIC, anon;
 REVOKE ALL ON TABLE funding_opportunity_attachments FROM PUBLIC, anon;
 REVOKE ALL ON TABLE funding_opportunity_application_exports FROM PUBLIC, anon;
+
+-- Supabase's ALTER DEFAULT PRIVILEGES grants ALL on every new public-schema
+-- table directly to `authenticated` — a SEPARATE grant that the
+-- revoke-from-PUBLIC above does not remove (the documented 20260722000005
+-- gotcha). Revoke it outright, then grant back exactly the intended surface,
+-- so "append-only" for drafts and exports is true at the privilege level and
+-- not just by the absence of an UPDATE/DELETE policy.
+REVOKE ALL ON TABLE funding_opportunity_application_sections FROM authenticated;
+REVOKE ALL ON TABLE funding_opportunity_section_drafts FROM authenticated;
+REVOKE ALL ON TABLE funding_opportunity_attachments FROM authenticated;
+REVOKE ALL ON TABLE funding_opportunity_application_exports FROM authenticated;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE funding_opportunity_application_sections TO authenticated;
 GRANT SELECT, INSERT ON TABLE funding_opportunity_section_drafts TO authenticated;

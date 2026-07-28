@@ -657,6 +657,32 @@ describe("buildAssistantChatTools proposal tools", () => {
     expect(budget.usedCalls).toBe(1);
   });
 
+  it("trims free-text fields before emitting the payload, so the approval hash matches execution", async () => {
+    // Executing routes trim strings before recomputing the approval hash; an
+    // untrimmed proposal payload would mint evidence for a hash execution can
+    // never match — an inexplicable post-approval 403.
+    const { tools } = buildTools();
+
+    const result = await toolExecute(tools, "propose_create_funding_opportunity")(
+      { title: "  SS4A Implementation Grant \n" },
+      CALL_OPTIONS
+    );
+
+    expect(result.status).toBe("proposed");
+    expect((result.payload as { title: string }).title).toBe("SS4A Implementation Grant");
+  });
+
+  it("rejects a whitespace-only required field instead of proposing an empty value", async () => {
+    const { tools } = buildTools();
+
+    const result = await toolExecute(tools, "propose_create_funding_opportunity")(
+      { title: "   " },
+      CALL_OPTIONS
+    );
+
+    expect(result.status).toBe("invalid_payload");
+  });
+
   it("identifies proposal payloads with the isAssistantChatProposal guard", async () => {
     const supabase = createSupabaseMock({ reports: [{ id: "r1" }] });
     const { tools } = buildTools({ supabase });

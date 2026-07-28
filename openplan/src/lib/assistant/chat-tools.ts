@@ -247,6 +247,23 @@ const PROPOSAL_REFERENCE_CHECKS: Partial<
 
 type ProposalSchemaBranch = z.ZodObject<Record<string, z.ZodTypeAny>>;
 
+/**
+ * Trim every string field of the model-authored input BEFORE validation, so
+ * the payload the planner approves is byte-identical to what the executing
+ * route hashes. Routes trim free-text fields (title, notes, …) when they
+ * recompute the approval hash; an untrimmed proposal would mint single-use
+ * evidence for a hash execution can never match — an inexplicable
+ * post-approval 403. Trimming before Zod also means a whitespace-only
+ * required field fails min-length validation instead of slipping through.
+ */
+function normalizeProposalInput(input: Record<string, unknown>): Record<string, unknown> {
+  const normalized: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(input)) {
+    normalized[key] = typeof value === "string" ? value.trim() : value;
+  }
+  return normalized;
+}
+
 /** Resolve the per-kind branch of the approval action schema — the single source of truth. */
 function proposalSchemaBranchForKind(kind: string): ProposalSchemaBranch | null {
   for (const option of assistantApprovalActionSchema.options) {
@@ -296,7 +313,7 @@ function buildAssistantProposalTools(params: BuildAssistantChatToolsParams): Rec
             return refusal("No workspace is attached to this chat surface, so no action can be proposed.");
           }
 
-          const parsed = branch.safeParse({ ...input, kind });
+          const parsed = branch.safeParse({ ...normalizeProposalInput(input), kind });
           if (!parsed.success) {
             return {
               status: "invalid_payload",

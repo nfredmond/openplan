@@ -87,6 +87,25 @@ describe("document narrative drafts migration", () => {
     expect(sqlWithoutComments).toMatch(/REVOKE ALL ON TABLE public\.document_narrative_drafts FROM PUBLIC, anon/);
   });
 
+  it("revokes authenticated's Supabase default-privilege grant before granting back the exact surface", () => {
+    // Supabase's ALTER DEFAULT PRIVILEGES grants ALL on new public tables
+    // directly to `authenticated` — revoke-from-PUBLIC does not remove it.
+    // Without the explicit revoke, members could UPDATE the draft body or
+    // DELETE rows and the "append-only, enforced at the database level" claim
+    // in the header would be false (the documented 20260722000005 gotcha).
+    const revokeIndex = sqlWithoutComments.indexOf(
+      "REVOKE ALL ON TABLE public.document_narrative_drafts FROM authenticated",
+    );
+    const grantIndex = sqlWithoutComments.indexOf(
+      "GRANT SELECT, INSERT ON TABLE public.document_narrative_drafts TO authenticated",
+    );
+    expect(revokeIndex).toBeGreaterThanOrEqual(0);
+    // The revoke must precede the grants, or it would strip them again.
+    expect(grantIndex).toBeGreaterThan(revokeIndex);
+    // No DELETE or TRUNCATE is ever granted back to authenticated.
+    expect(sqlWithoutComments).not.toMatch(/GRANT[^;]*\b(DELETE|TRUNCATE)\b[^;]*TO authenticated/);
+  });
+
   it("destroys nothing", () => {
     expect(sql).not.toMatch(/DROP TABLE/i);
     expect(sql).not.toMatch(/DROP COLUMN/i);

@@ -220,4 +220,35 @@ describe("describeAssistantChatToolActivity", () => {
     expect(describeAssistantChatToolActivity("get_surface_context")).toBe("Read: another workspace surface");
     expect(describeAssistantChatToolActivity("some_future_tool")).toBe("some future tool");
   });
+
+  it("never gives a failed propose_* call a success chip", () => {
+    expect(
+      describeAssistantChatToolActivity("propose_create_funding_opportunity", {
+        status: "refused",
+        reason: "The per-question tool budget is spent.",
+      })
+    ).toBe("Could not propose: create funding opportunity");
+    expect(
+      describeAssistantChatToolActivity("propose_create_project_record", {
+        status: "not_found",
+        message: "No projects record is visible in this workspace.",
+      })
+    ).toBe("Could not propose: create project record");
+    expect(
+      describeAssistantChatToolActivity("propose_create_project_record", {
+        status: "invalid_payload",
+        message: "title: Required",
+      })
+    ).toBe("Could not propose: create project record");
+    expect(
+      describeAssistantChatToolActivity("propose_generate_report_artifact", {
+        status: "error",
+        message: "the tool failed",
+      })
+    ).toBe("Could not propose: generate report artifact");
+    // An actual proposal (or no output yet, at tool start) keeps the success label.
+    expect(
+      describeAssistantChatToolActivity("propose_create_funding_opportunity", { status: "proposed" })
+    ).toBe("Proposed: create funding opportunity");
+  });
 });

@@ -355,6 +355,74 @@ describe("AppCopilot", () => {
     expect(mutatingCall).toBeUndefined();
   });
 
+  it("shows model-authored free text in full on the card and echoes the whole payload in the approval sheet", async () => {
+    const projectId = "44444444-4444-4444-8444-444444444444";
+    const longNotes =
+      "First sentence of the model-authored submittal notes. Second sentence carrying a substantive claim the planner is accountable for. Third sentence that a truncated chip would have hidden entirely from review.";
+    chatRoute = () =>
+      sseResponse([
+        { type: "start" },
+        { type: "tool-input-start", toolCallId: "call-3", toolName: "propose_create_project_record" },
+        {
+          type: "tool-output-available",
+          toolCallId: "call-3",
+          output: {
+            status: "proposed",
+            kind: "create_project_record",
+            payload: {
+              kind: "create_project_record",
+              projectId,
+              recordType: "submittal",
+              title: "Authorization packet",
+              notes: longNotes,
+            },
+            approval: "approval_required",
+            description: "Creates a delivery record on a project in this workspace.",
+          },
+        },
+        { type: "text-start", id: "t1" },
+        { type: "text-delta", id: "t1", delta: "I prepared a submittal record proposal." },
+        { type: "text-end", id: "t1" },
+        { type: "finish" },
+      ]);
+
+    await openPanel();
+
+    fireEvent.change(screen.getByPlaceholderText(/Ask about project status/), {
+      target: { value: "Record the authorization packet submittal" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /Send/ }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "Approve & run" })).toBeInTheDocument();
+    });
+
+    // The proposal card renders the model-authored free text in full, unclamped.
+    expect(screen.getByText(longNotes)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Approve & run" }));
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog", { name: "Approve Planner Agent action" })).toBeInTheDocument();
+    });
+    // The approval sheet echoes EVERY payload field in full before the Approve
+    // button — the planner never approves text they were not shown.
+    const sheet = within(screen.getByRole("dialog", { name: "Approve Planner Agent action" }));
+    expect(sheet.getByText("Exactly what you are approving")).toBeInTheDocument();
+    expect(sheet.getByText(longNotes)).toBeInTheDocument();
+    expect(sheet.getByText("Authorization packet")).toBeInTheDocument();
+    expect(sheet.getByText(projectId)).toBeInTheDocument();
+    expect(sheet.getByText("submittal")).toBeInTheDocument();
+
+    // Nothing executed while the disclosure was on screen.
+    fireEvent.click(sheet.getByRole("button", { name: "Cancel" }));
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "Approve Planner Agent action" })).not.toBeInTheDocument();
+    });
+    const approvalCall = fetchMock.mock.calls.find((call) => String(call[0]).startsWith("/api/assistant/actions/approvals"));
+    expect(approvalCall).toBeUndefined();
+  });
+
   it("opens the in-panel approval sheet with the action description and cancels on Escape", async () => {
     await openPanel();
 

@@ -193,14 +193,78 @@ describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
     expect(sectionsChain.insert).not.toHaveBeenCalled();
   });
 
-  it("returns 409 when the application is already initialized", async () => {
+  it("returns 409 only when the application is FULLY initialized (sections and catalog attachments)", async () => {
+    const atp = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!;
+    const attachmentsChain = makeQuery({
+      data: atp.requiredAttachments!.map((template) => ({ attachment_key: template.key })),
+      error: null,
+    });
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [{ id: SECTION_ID }], error: null }),
+      funding_opportunity_attachments: () => attachmentsChain,
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+    expect(response.status).toBe(409);
+    expect(attachmentsChain.insert).not.toHaveBeenCalled();
+  });
+
+  it("returns 409 without touching attachments when re-initialized with no catalog key", async () => {
     installTables({
       funding_opportunity_application_sections: () =>
         makeQuery({ data: [{ id: SECTION_ID }], error: null }),
     });
 
-    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+    const response = await initApplication(jsonRequest(url, "POST", {}), context);
     expect(response.status).toBe(409);
+  });
+
+  it("completes an interrupted init: sections exist, catalog attachments missing → seeds them and 200s", async () => {
+    // The wedge scenario: a first init seeded sections, then the attachment
+    // insert failed. The retry must COMPLETE the init (seed exactly the
+    // missing catalog attachments), never answer a permanent 409.
+    const atp = GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")!;
+    const alreadySeededKey = atp.requiredAttachments![0].key;
+
+    const existingSectionsChain = makeQuery({ data: [{ id: SECTION_ID }], error: null });
+    const sectionsReloadChain = makeQuery({ data: [baseSectionRow], error: null });
+    const attachmentKeysChain = makeQuery({
+      data: [{ attachment_key: alreadySeededKey }],
+      error: null,
+    });
+    const attachmentInsertChain = makeQuery({ data: null, error: null });
+    const attachmentsReloadChain = makeQuery({ data: [baseAttachmentRow], error: null });
+
+    installTables({
+      funding_opportunity_application_sections: tableSequence(existingSectionsChain, sectionsReloadChain),
+      funding_opportunity_attachments: tableSequence(
+        attachmentKeysChain,
+        attachmentInsertChain,
+        attachmentsReloadChain
+      ),
+    });
+
+    const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "atp" }), context);
+
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { sections: unknown[]; attachments: unknown[] };
+    expect(body.sections).toHaveLength(1);
+    expect(body.attachments).toHaveLength(1);
+
+    // Exactly the MISSING attachments were seeded — the one already present
+    // was not duplicated, and every seeded row starts as missing.
+    const inserted = attachmentInsertChain.insert.mock.calls[0][0] as Array<Record<string, unknown>>;
+    expect(inserted).toHaveLength(atp.requiredAttachments!.length - 1);
+    expect(inserted.some((row) => row.attachment_key === alreadySeededKey)).toBe(false);
+    inserted.forEach((row) => {
+      expect(row.workspace_id).toBe(WORKSPACE_ID);
+      expect(row.opportunity_id).toBe(OPPORTUNITY_ID);
+      expect(row.status).toBe("missing");
+    });
+    // No section rows were re-inserted.
+    expect(existingSectionsChain.insert).not.toHaveBeenCalled();
+    expect(sectionsReloadChain.insert).not.toHaveBeenCalled();
   });
 
   it("answers 503 with the migration to apply when the schema is pending", async () => {

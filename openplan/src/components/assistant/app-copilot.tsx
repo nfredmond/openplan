@@ -521,10 +521,57 @@ function humanizeProposalKind(kind: string): string {
   return kind.replace(/_/g, " ");
 }
 
-function proposalPayloadFields(proposal: AssistantChatProposal): Array<[string, string]> {
-  return Object.entries(proposal.payload as Record<string, unknown>)
+/**
+ * Every payload field a proposed/approved action carries, stringified for
+ * display. `kind` is omitted (it is already the card/sheet headline); nothing
+ * else may be — the planner approves these exact values.
+ */
+function actionPayloadFields(payload: Record<string, unknown>): Array<[string, string]> {
+  return Object.entries(payload)
     .filter(([key, value]) => key !== "kind" && value !== undefined && value !== null)
     .map(([key, value]) => [key, typeof value === "string" ? value : JSON.stringify(value)] as [string, string]);
+}
+
+function proposalPayloadFields(proposal: AssistantChatProposal): Array<[string, string]> {
+  return actionPayloadFields(proposal.payload as Record<string, unknown>);
+}
+
+/**
+ * Short single-line values (ids, dates, enum states) read well as chips; any
+ * longer or multi-line value is model-authored free text and must render as a
+ * full, unclamped block — a truncated chip would let a planner approve
+ * sentences they never saw.
+ */
+const PROPOSAL_CHIP_MAX_CHARS = 72;
+
+function isCompactPayloadValue(value: string): boolean {
+  return value.length <= PROPOSAL_CHIP_MAX_CHARS && !value.includes("\n");
+}
+
+/**
+ * The full payload echo inside the approval sheet: every field, untruncated,
+ * shown BEFORE the Approve button. The chat proposal path is the first place
+ * the MODEL authors stored strings (titles, notes), so approval must disclose
+ * exactly what will be written, not just the action's label and audit event.
+ */
+function ApprovalPayloadDisclosure({ action }: { action: AssistantQuickLinkExecuteAction }) {
+  const fields = actionPayloadFields(action as unknown as Record<string, unknown>);
+  if (fields.length === 0) return null;
+  return (
+    <div className="mt-3 rounded-[0.5rem] border border-white/10 bg-white/[0.04]">
+      <p className="border-b border-white/8 px-3 py-2 text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
+        Exactly what you are approving
+      </p>
+      <dl className="max-h-56 space-y-2.5 overflow-y-auto px-3 py-2.5">
+        {fields.map(([key, value]) => (
+          <div key={key}>
+            <dt className="text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-slate-400/88">{key}</dt>
+            <dd className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-100">{value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
 }
 
 function proposalApprovalBadge(proposal: AssistantChatProposal) {
@@ -552,6 +599,9 @@ function ChatProposalCard({
 }) {
   const badge = proposalApprovalBadge(entry.proposal);
   const kindLabel = humanizeProposalKind(entry.proposal.kind);
+  const payloadFields = proposalPayloadFields(entry.proposal);
+  const compactFields = payloadFields.filter(([, value]) => isCompactPayloadValue(value));
+  const freeTextFields = payloadFields.filter(([, value]) => !isCompactPayloadValue(value));
   return (
     <div
       className="rounded-[0.5rem] border border-violet-300/22 bg-violet-400/8 px-3.5 py-3"
@@ -569,17 +619,31 @@ function ChatProposalCard({
         </span>
       </div>
       <p className="mt-2 text-sm leading-relaxed text-slate-100">{entry.proposal.description}</p>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {proposalPayloadFields(entry.proposal).map(([key, value]) => (
-          <span
-            key={key}
-            className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold text-slate-200/85"
-          >
-            <span className="uppercase tracking-[0.12em] text-slate-400/88">{key}</span>
-            <span className="truncate normal-case">{value}</span>
-          </span>
-        ))}
-      </div>
+      {compactFields.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {compactFields.map(([key, value]) => (
+            <span
+              key={key}
+              className="inline-flex max-w-full items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[0.64rem] font-semibold text-slate-200/85"
+            >
+              <span className="uppercase tracking-[0.12em] text-slate-400/88">{key}</span>
+              <span className="break-all normal-case">{value}</span>
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {/* Model-authored free text renders in full — never clamped — so the
+          planner reads every sentence they are being asked to approve. */}
+      {freeTextFields.length > 0 ? (
+        <dl className="mt-2 space-y-2">
+          {freeTextFields.map(([key, value]) => (
+            <div key={key} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-3 py-2">
+              <dt className="text-[0.64rem] font-semibold uppercase tracking-[0.12em] text-slate-400/88">{key}</dt>
+              <dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-100">{value}</dd>
+            </div>
+          ))}
+        </dl>
+      ) : null}
 
       {entry.state === "pending" ? (
         <>
@@ -1681,7 +1745,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       status: event.ok ? ("done" as const) : ("failed" as const),
                       summary: event.ok
                         ? describeAssistantChatToolActivity(activity.toolName, event.output)
-                        : `${describeAssistantChatToolActivity(activity.toolName)} — failed`,
+                        : `${describeAssistantChatToolActivity(activity.toolName, event.output)} — failed`,
                     }
                   : activity
               ),
@@ -2555,6 +2619,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   <p className="mt-2 text-xs leading-relaxed text-slate-300/78">
                     Approving records audit evidence ({getActionMetadata(pendingApproval.action.kind).auditEvent}) and then makes a real change in OpenPlan. Press Esc or choose Cancel to stop.
                   </p>
+                  <ApprovalPayloadDisclosure action={pendingApproval.action} />
                   <div className="mt-4 flex items-center justify-end gap-2">
                     <Button
                       type="button"

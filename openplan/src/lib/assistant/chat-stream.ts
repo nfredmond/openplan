@@ -227,10 +227,20 @@ function pluralize(noun: string, count: number): string {
 /**
  * Compact chip label for a completed tool call, e.g.
  * "Looked up: 3 funding opportunities" or "Proposed: create funding opportunity".
+ *
+ * A propose_* call only earns the "Proposed" label when its output actually IS
+ * a proposal: refused / not_found / invalid_payload / error outputs label as
+ * "Could not propose" so a failed proposal never wears a success chip.
  */
 export function describeAssistantChatToolActivity(toolName: string, output?: unknown): string {
   if (toolName.startsWith("propose_")) {
-    return `Proposed: ${toolName.slice("propose_".length).replace(/_/g, " ")}`;
+    const kindLabel = toolName.slice("propose_".length).replace(/_/g, " ");
+    const status =
+      output && typeof output === "object" ? (output as Record<string, unknown>).status : undefined;
+    if (typeof status === "string" && status !== "proposed") {
+      return `Could not propose: ${kindLabel}`;
+    }
+    return `Proposed: ${kindLabel}`;
   }
 
   const label = TOOL_ACTIVITY_LABELS[toolName];

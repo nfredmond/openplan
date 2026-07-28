@@ -19,11 +19,13 @@
 -- Append-only per draft: draft_markdown, grounding_json, the sentence counts,
 -- and facts_hash are immutable once inserted. Members may only ever touch the
 -- REVIEW fields (status, accepted_markdown, accepted_by, accepted_at) — this
--- is enforced at the database level with a column-scoped UPDATE grant, not
--- just in the app. Terminality of 'dismissed' (a dismissed row never returns
--- to draft/accepted) is app-enforced in the PATCH routes and documented here:
--- RLS policies cannot compare OLD and NEW rows, so the state machine lives in
--- the route handlers.
+-- is enforced at the database level: authenticated's Supabase default-
+-- privilege grant is revoked outright below and replaced with SELECT, INSERT,
+-- and a column-scoped UPDATE, so members hold no DELETE, no TRUNCATE, and no
+-- UPDATE on any column outside the review set. Terminality of 'dismissed' (a
+-- dismissed row never returns to draft/accepted) is app-enforced in the PATCH
+-- routes and documented here: RLS policies cannot compare OLD and NEW rows,
+-- so the state machine lives in the route handlers.
 
 CREATE TABLE IF NOT EXISTS public.document_narrative_drafts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -125,6 +127,14 @@ END
 $$;
 
 REVOKE ALL ON TABLE public.document_narrative_drafts FROM PUBLIC, anon;
+-- Supabase's ALTER DEFAULT PRIVILEGES grants ALL on every new public-schema
+-- table directly to `authenticated` — a SEPARATE grant that the
+-- revoke-from-PUBLIC above does not remove (the same gotcha
+-- 20260722000005_reap_rpc_lock_down.sql fixed for functions). Without this
+-- explicit revoke, authenticated members could UPDATE the draft body or
+-- DELETE draft rows directly, and the column-scoped UPDATE below would be
+-- vacuous next to the table-wide default grant.
+REVOKE ALL ON TABLE public.document_narrative_drafts FROM authenticated;
 GRANT SELECT, INSERT ON TABLE public.document_narrative_drafts TO authenticated;
 -- Review fields ONLY: the draft body, its grounding record, and its facts
 -- hash are immutable to members. This is the "append-only per draft" contract
