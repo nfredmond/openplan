@@ -28,6 +28,7 @@ const sourceManifestUpsertMock = vi.fn();
 const sourceManifestUpsertSelectMock = vi.fn();
 const validationResultInsertMock = vi.fn();
 const claimDecisionInsertMock = vi.fn();
+const membershipMaybeSingleMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -268,8 +269,15 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
           insert: claimDecisionInsertMock,
         };
       }
+      if (table === "workspace_members") {
+        return {
+          select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
+        };
+      }
       throw new Error(`Unexpected table: ${table}`);
     });
+
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -393,5 +401,54 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
 
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "Invalid manifest ingest payload" });
+  });
+
+  it("refuses a viewer's session ingest and writes nothing", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
+
+    const response = await postCountyRunManifest(jsonRequest({ status: "completed", manifest }), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({
+      error: "Viewers have read-only access to this workspace",
+    });
+    expect(countyRunUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("does not apply the viewer gate to the worker callback", async () => {
+    // The callback runs as the service role with no membership at all; asking
+    // workspace_members about it would refuse the worker's own results.
+    vi.stubEnv("OPENPLAN_COUNTY_ONRAMP_CALLBACK_BEARER_TOKEN", "callback-secret");
+    authGetUserMock.mockResolvedValue({ data: { user: null } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    countyRunUpdateMock.mockReturnValue({
+      eq: vi.fn().mockResolvedValue({ error: null }),
+    });
+
+    const response = await postCountyRunManifest(
+      bearerJsonRequest({
+        status: "failed",
+        jobId: "123e4567-e89b-12d3-a456-426614174999",
+        error: { message: "Worker crashed" },
+      }),
+      { params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }) }
+    );
+
+    expect(response.status).toBe(202);
+    expect(membershipMaybeSingleMock).not.toHaveBeenCalled();
+  });
+
+  it("still ingests for a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role }, error: null });
+
+      const response = await postCountyRunManifest(jsonRequest({ status: "completed", manifest }), {
+        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+      });
+
+      expect(response.status, `${role} should still be able to ingest a manifest`).toBe(200);
+    }
   });
 });

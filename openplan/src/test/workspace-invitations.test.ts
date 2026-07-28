@@ -64,7 +64,8 @@ describe("workspace invitation helpers", () => {
     expect(normalizeInvitationEmail(" Planner@Agency.Gov ")).toBe("planner@agency.gov");
     expect(normalizeInvitationRole(" ADMIN ")).toBe("admin");
     expect(normalizeInvitationRole("owner")).toBe("owner");
-    expect(normalizeInvitationRole("viewer")).toBeNull();
+    expect(normalizeInvitationRole("viewer")).toBe("viewer");
+    expect(normalizeInvitationRole("auditor")).toBeNull();
   });
 
   it("hashes tokens and derives a non-secret lookup prefix", () => {

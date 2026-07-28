@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import {
   KB_DOCUMENT_COLUMNS,
   KB_DOCUMENTS_BUCKET,
@@ -100,7 +101,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     // document's workspace before any service-role write happens.
     const { data: document, error } = await supabase
       .from("kb_documents")
-      .select("id, storage_ref")
+      .select("id, storage_ref, workspace_id")
       .eq("id", parsedParams.data.documentId)
       .maybeSingle();
 
@@ -110,6 +111,21 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     }
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
+
+    // Visibility proves membership, not write authority — the viewer tier can
+    // read this document but may not delete it.
+    const { data: membership } = await supabase
+      .from("workspace_members")
+      .select("role")
+      .eq("workspace_id", document.workspace_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (isReadOnlyWorkspaceRole((membership as { role?: string } | null)?.role)) {
+      return NextResponse.json(
+        { error: "Viewers have read-only access to this workspace" },
+        { status: 403 }
+      );
     }
 
     const service = createServiceRoleClient();

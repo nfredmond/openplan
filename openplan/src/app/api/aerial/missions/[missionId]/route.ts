@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 const paramsSchema = z.object({
   missionId: z.string().uuid(),
@@ -94,6 +95,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     if (!membership) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    if (isReadOnlyWorkspaceRole((membership as { role?: string }).role)) {
+      return NextResponse.json(
+        { error: "Viewers have read-only access to this workspace" },
+        { status: 403 }
+      );
     }
 
     const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };

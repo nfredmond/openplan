@@ -8,6 +8,7 @@ import {
   type WorkspaceMembershipResult,
 } from "@/lib/workspaces/membership";
 import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 // Paging a county-scale crash extract exceeds the default budget.
 export const runtime = "nodejs";
@@ -90,6 +91,12 @@ export async function POST(request: NextRequest) {
     const membership = await checkWorkspaceMembership(supabase, user.id, parsed.data.workspaceId);
     if (!membership.ok) {
       return membershipErrorResponse(membership);
+    }
+    if (isReadOnlyWorkspaceRole(membership.role)) {
+      return NextResponse.json(
+        { error: "Viewers have read-only access to this workspace" },
+        { status: 403 }
+      );
     }
 
     // A project link must name a project of THIS workspace — same posture as

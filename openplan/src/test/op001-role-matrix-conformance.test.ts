@@ -9,20 +9,22 @@ describe("OP-001 role-matrix conformance (deny-by-default)", () => {
   it("publishes expected role matrix rows for key API actions", () => {
     const rows = getWorkspaceRoleMatrixProofRows();
 
+    // Read/list actions carry the read-only "viewer" tier; mutating actions
+    // never do (see role-matrix-viewer.test.ts for the exhaustive sweep).
     expect(rows).toEqual(
       expect.arrayContaining([
         { action: "analysis.create", allowedRoles: ["owner", "admin", "member"] },
-        { action: "analysis.context.read", allowedRoles: ["owner", "admin", "member"] },
-        { action: "plans.read", allowedRoles: ["owner", "admin", "member"] },
+        { action: "analysis.context.read", allowedRoles: ["owner", "admin", "member", "viewer"] },
+        { action: "plans.read", allowedRoles: ["owner", "admin", "member", "viewer"] },
         { action: "plans.write", allowedRoles: ["owner", "admin", "member"] },
-        { action: "runs.list", allowedRoles: ["owner", "admin", "member"] },
+        { action: "runs.list", allowedRoles: ["owner", "admin", "member", "viewer"] },
         { action: "runs.update", allowedRoles: ["owner", "admin", "member"] },
         { action: "runs.delete", allowedRoles: ["owner", "admin", "member"] },
         { action: "report.generate", allowedRoles: ["owner", "admin", "member"] },
         { action: "workspace.configure", allowedRoles: ["owner", "admin"] },
-        { action: "invoices.read", allowedRoles: ["owner", "admin", "member"] },
+        { action: "invoices.read", allowedRoles: ["owner", "admin", "member", "viewer"] },
         { action: "invoices.write", allowedRoles: ["owner", "admin"] },
-        { action: "stage_gates.decisions.read", allowedRoles: ["owner", "admin", "member"] },
+        { action: "stage_gates.decisions.read", allowedRoles: ["owner", "admin", "member", "viewer"] },
         { action: "stage_gates.decisions.write", allowedRoles: ["owner", "admin", "member"] },
       ])
     );

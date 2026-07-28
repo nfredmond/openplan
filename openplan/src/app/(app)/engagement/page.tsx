@@ -11,6 +11,7 @@ const ENGAGEMENT_STATUS_FILTER_OPTIONS = [
   { value: "archived", label: "Archived" },
 ] as const;
 import { EngagementCampaignCreator } from "@/components/engagement/engagement-campaign-creator";
+import { EngagementPortalStatusChip } from "@/components/engagement/portal-status-chip";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
@@ -33,6 +34,12 @@ type CampaignRow = {
   summary: string | null;
   status: string;
   engagement_type: string;
+  // Public-portal columns (migration 20260321000032_engagement_public_share):
+  // exactly what getPublicPortalState needs to place each campaign on the
+  // Private / Staged / Live spectrum without duplicating any rules here.
+  share_token: string | null;
+  allow_public_submissions: boolean;
+  submissions_closed_at: string | null;
   created_at: string;
   updated_at: string;
   projects: { id: string; name: string } | Array<{ id: string; name: string }> | null;
@@ -98,7 +105,7 @@ export default async function EngagementPage({
   const [{ data: campaignsData }, { data: projectsData }, { data: itemsData }, { data: categoriesData }] = await Promise.all([
     supabase
       .from("engagement_campaigns")
-      .select("id, workspace_id, project_id, title, summary, status, engagement_type, created_at, updated_at, projects(id, name)")
+      .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, allow_public_submissions, submissions_closed_at, created_at, updated_at, projects(id, name)")
       .order("updated_at", { ascending: false }),
     supabase.from("projects").select("id, name").order("updated_at", { ascending: false }),
     supabase.from("engagement_items").select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"),
@@ -280,6 +287,7 @@ export default async function EngagementPage({
                         <StatusBadge tone={engagementStatusTone(campaign.status)}>
                           {titleizeEngagementValue(campaign.status)}
                         </StatusBadge>
+                        <EngagementPortalStatusChip campaign={campaign} />
                         <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
                       </div>
 

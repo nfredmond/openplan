@@ -226,6 +226,23 @@ looking stuck.
 
 ---
 
+## Sharing the public engagement portal
+
+Each engagement campaign can publish a public feedback page at
+**`/engage/<shareToken>`** on your deployment's own domain. The share token is minted server-side
+from the campaign console ("Generate link" under Operator Actions — nothing to invent or type), and
+the page only resolves while the campaign status is **Active**; the console's Private / Staged /
+Live chip always shows the current state. Everything submitted through the public page lands in
+that campaign's moderation queue inside the authenticated console — nothing appears publicly until
+a member approves it.
+
+**Regenerating invalidates the old link immediately.** "Regenerate link" mints a fresh token and
+saves it in one step; the previous URL stops resolving the moment it lands, everywhere it was
+already shared. Use it when a link has leaked beyond its intended audience. "Disable link" takes
+the page offline without minting a replacement.
+
+---
+
 ## Verifying a deployment
 
 1. Sign up. A workspace should be provisioned automatically.

@@ -16,6 +16,7 @@ import {
   countyOnrampManifestSchema,
   countyOnrampValidationSummarySchema,
 } from "@/lib/models/county-onramp";
+import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -94,6 +95,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const existingRow = countyRun as CountyRunRow;
+
+    // The worker callback is the run's own producer and is exempt; a signed-in
+    // caller must be allowed to write this workspace, not merely to see it.
+    if (!isWorkerCallback && user) {
+      const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, existingRow.workspace_id);
+      if (!writeAccess.ok) return writeAccess.response;
+    }
+
     const parsedManifest = countyOnrampManifestSchema.safeParse(existingRow.manifest_json ?? null);
     if (!parsedManifest.success) {
       audit.warn("county_run_manifest_missing", { countyRunId: existingRow.id });

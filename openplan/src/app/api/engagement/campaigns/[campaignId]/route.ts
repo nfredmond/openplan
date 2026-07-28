@@ -4,13 +4,25 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess, loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
-import { normalizeShareToken } from "@/lib/engagement/public-portal";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({
   campaignId: z.string().uuid(),
 });
+
+/**
+ * A share token is the SOLE credential protecting a public engagement portal,
+ * so it is never chosen by a caller and never written by this endpoint: POST
+ * /api/engagement/campaigns/{campaignId}/share-token mints 144 bits of entropy
+ * and saves it in one step, which is also the only way to rotate one.
+ *
+ * PATCH keeps exactly one token transition — DISABLE, an explicit null that
+ * takes the public page offline — and refuses a caller-supplied token rather
+ * than quietly ignoring it, so an API client learns where minting lives.
+ */
+const SHARE_TOKEN_IS_SERVER_MINTED =
+  "Share tokens are minted server-side. Use POST /api/engagement/campaigns/{campaignId}/share-token to create or rotate the public link; this endpoint accepts only shareToken: null, which takes the link offline.";
 
 const patchCampaignSchema = z
   .object({
@@ -21,9 +33,8 @@ const patchCampaignSchema = z
     projectId: z.union([z.string().uuid(), z.null()]).optional(),
     rtpCycleId: z.union([z.string().uuid(), z.null()]).optional(),
     rtpCycleChapterId: z.union([z.string().uuid(), z.null()]).optional(),
-    shareToken: z
-      .union([z.string().trim().min(16).max(64).regex(/^[a-zA-Z0-9_-]+$/), z.null()])
-      .optional(),
+    // Disable-only — see SHARE_TOKEN_IS_SERVER_MINTED above.
+    shareToken: z.null().optional(),
     publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
     demographicsEnabled: z.boolean().optional(),
@@ -202,8 +213,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const parsed = patchCampaignSchema.safeParse(payload);
 
     if (!parsed.success) {
-      audit.warn("validation_failed", { issues: parsed.error.issues });
-      return NextResponse.json({ error: "Invalid campaign update payload" }, { status: 400 });
+      // Log the SHAPE of the failure only. A rejected share token is still a
+      // credential someone tried to install, so nothing derived from the
+      // submitted values reaches the audit trail.
+      audit.warn("validation_failed", {
+        issues: parsed.error.issues.map((issue) => ({
+          code: issue.code,
+          path: issue.path.join("."),
+          message: issue.message,
+        })),
+      });
+      const rejectedTokenSet = parsed.error.issues.some((issue) => issue.path[0] === "shareToken");
+      return NextResponse.json(
+        { error: rejectedTokenSet ? SHARE_TOKEN_IS_SERVER_MINTED : "Invalid campaign update payload" },
+        { status: 400 }
+      );
     }
 
     const supabase = await createClient();
@@ -337,34 +361,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const nextShareToken =
-      parsed.data.shareToken !== undefined ? normalizeShareToken(parsed.data.shareToken) : undefined;
-
-    if (nextShareToken && nextShareToken !== normalizeShareToken(access.campaign.share_token)) {
-      const { data: existingShareTokenCampaign, error: shareTokenLookupError } = await supabase
-        .from("engagement_campaigns")
-        .select("id")
-        .eq("share_token", nextShareToken)
-        .maybeSingle();
-
-      if (shareTokenLookupError) {
-        audit.error("campaign_share_token_lookup_failed", {
-          campaignId: access.campaign.id,
-          shareToken: nextShareToken,
-          message: shareTokenLookupError.message,
-          code: shareTokenLookupError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to verify share token availability" }, { status: 500 });
-      }
-
-      if (existingShareTokenCampaign && existingShareTokenCampaign.id !== access.campaign.id) {
-        return NextResponse.json(
-          { error: "That share token is already in use by another engagement campaign" },
-          { status: 409 }
-        );
-      }
-    }
-
     const updates: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) updates.title = parsed.data.title;
     if (parsed.data.summary !== undefined) updates.summary = parsed.data.summary;
@@ -375,7 +371,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updates.rtp_cycle_id = nextRtpCycleId;
       updates.rtp_cycle_chapter_id = nextRtpCycleChapterId;
     }
-    if (parsed.data.shareToken !== undefined) updates.share_token = nextShareToken;
+    // Only null survives the schema, so this is the disable transition and
+    // nothing else; no uniqueness check is needed to clear a column.
+    if (parsed.data.shareToken !== undefined) updates.share_token = null;
     if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
     if (parsed.data.demographicsEnabled !== undefined) updates.demographics_enabled = parsed.data.demographicsEnabled;
@@ -394,6 +392,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     audit.info("campaign_updated", {
       userId: user.id,
       campaignId: access.campaign.id,
+      // A derived fact, never a token value: enough to reconstruct that the
+      // public link was taken offline, and useless to anyone reading the log.
+      shareTokenDisabled: parsed.data.shareToken === null,
       durationMs: Date.now() - startedAt,
     });
 

@@ -135,8 +135,9 @@ describe("/api/runs auth + membership guards", () => {
   });
 
   it("GET returns 403 when workspace role is unsupported (deny-by-default)", async () => {
+    // "viewer" became a real read-capable role; an unknown string still denies.
     membershipMaybeSingleMock.mockResolvedValueOnce({
-      data: { workspace_id: "11111111-1111-4111-8111-111111111111", role: "viewer" },
+      data: { workspace_id: "11111111-1111-4111-8111-111111111111", role: "auditor" },
       error: null,
     });
 
@@ -220,7 +221,7 @@ describe("/api/runs auth + membership guards", () => {
     expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
   });
 
-  it("DELETE returns 403 when workspace role is unsupported (deny-by-default)", async () => {
+  it("DELETE returns 403 for the read-only viewer role", async () => {
     membershipMaybeSingleMock.mockResolvedValueOnce({
       data: { workspace_id: "11111111-1111-4111-8111-111111111111", role: "viewer" },
       error: null,

@@ -18,6 +18,8 @@ const artifactDeleteEqMock = vi.fn();
 const artifactInsertMock = vi.fn();
 const artifactInsertSelectMock = vi.fn();
 
+const membershipMaybeSingleMock = vi.fn();
+
 const mockAudit = {
   info: vi.fn(),
   warn: vi.fn(),
@@ -202,8 +204,15 @@ describe("POST /api/county-runs/[countyRunId]/validate/refresh", () => {
           insert: artifactInsertMock,
         };
       }
+      if (table === "workspace_members") {
+        return {
+          select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
+        };
+      }
       throw new Error(`Unexpected table: ${table}`);
     });
+
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -259,5 +268,33 @@ describe("POST /api/county-runs/[countyRunId]/validate/refresh", () => {
 
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: "Validation summary file was not found on disk" });
+  });
+
+  it("refuses a viewer's session refresh and writes nothing", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
+
+    const response = await refreshCountyRunValidation(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({
+      error: "Viewers have read-only access to this workspace",
+    });
+    expect(countyRunUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("still refreshes for a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      countyRunUpdateMock.mockClear();
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role }, error: null });
+
+      const response = await refreshCountyRunValidation(request(), {
+        params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+      });
+
+      expect(response.status, `${role} should still be able to refresh validation`).toBe(200);
+      expect(countyRunUpdateMock).toHaveBeenCalledTimes(1);
+    }
   });
 });

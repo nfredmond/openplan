@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 const invitationSchema = z.object({
   workspaceId: z.string().uuid(),
   email: z.string().trim().email(),
-  role: z.enum(["admin", "member"]).optional().default("member"),
+  role: z.enum(["admin", "member", "viewer"]).optional().default("member"),
 });
 
 function canManageWorkspaceMembers(role: string | null | undefined): boolean {
@@ -73,9 +73,15 @@ export async function GET(request: NextRequest) {
   const guard = await requireManagerMembership(supabase, user.id, parsed.data.workspaceId);
   if (!guard.ok) return guard.response;
 
-  // RLS scopes both reads to the caller's workspaces; the explicit filter keeps
-  // the intent obvious. Note token_hash is never selected — the raw token is
-  // shown once at creation and is not recoverable afterwards by design.
+  // RLS scopes the invitations read to the caller's workspaces; the explicit
+  // filter keeps the intent obvious. Note token_hash is never selected — the
+  // raw token is shown once at creation and is not recoverable afterwards by
+  // design.
+  //
+  // The member COUNT goes through the service role deliberately: the only
+  // SELECT policy on workspace_members is members_read_own (user_id =
+  // auth.uid(), migration 20260316000024), so an RLS count is always 1 no
+  // matter how large the team is. The manager guard above authorizes it.
   const [invitationsResult, membersResult] = await Promise.all([
     supabase
       .from("workspace_invitations")
@@ -83,11 +89,12 @@ export async function GET(request: NextRequest) {
       .eq("workspace_id", parsed.data.workspaceId)
       .order("created_at", { ascending: false })
       .limit(100),
-    supabase
+    createServiceRoleClient()
       .from("workspace_members")
-      .select("user_id, role, created_at")
-      .eq("workspace_id", parsed.data.workspaceId)
-      .limit(200),
+      // The column is joined_at (20260219000002); selecting created_at errored
+      // at runtime and silently nulled the member count.
+      .select("user_id", { count: "exact", head: true })
+      .eq("workspace_id", parsed.data.workspaceId),
   ]);
 
   if (invitationsResult.error) {
@@ -97,7 +104,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     invitations: invitationsResult.data ?? [],
-    memberCount: membersResult.error ? null : (membersResult.data ?? []).length,
+    memberCount: membersResult.error ? null : membersResult.count ?? null,
   });
 }
 
@@ -201,7 +208,10 @@ export async function POST(request: NextRequest) {
 
   const role = normalizeInvitationRole(input.role);
   if (!role || role === "owner") {
-    return NextResponse.json({ error: "Workspace invitations may target admin or member roles" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Workspace invitations may target admin, member, or viewer roles" },
+      { status: 400 }
+    );
   }
 
   try {

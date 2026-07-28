@@ -2,16 +2,14 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { ArrowRight, FileStack, MapPinned, MessageSquareText, ShieldCheck } from "lucide-react";
-import { EngagementCampaignControls } from "@/components/engagement/engagement-campaign-controls";
+import { EngagementOperatorActions } from "@/components/engagement/engagement-operator-actions";
 import { EngagementReportCreateButton } from "@/components/engagement/engagement-report-create-button";
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
-import { EngagementItemComposer } from "@/components/engagement/engagement-item-composer";
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
-import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
 import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
-import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
 import { EngagementNotificationsInbox } from "@/components/engagement/notifications-inbox";
-import { EngagementShareControls } from "@/components/engagement/engagement-share-controls";
+import { EngagementPublicLinkCompact } from "@/components/engagement/engagement-public-link-compact";
+import { EngagementCampaignCreatedNotice } from "@/components/engagement/campaign-created-notice";
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -108,10 +106,13 @@ function fmtPercent(value: number): string {
 
 export default async function EngagementCampaignDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ campaignId: string }>;
+  searchParams?: Promise<{ created?: string }>;
 }) {
   const { campaignId } = await params;
+  const query = searchParams ? await searchParams : {};
   const supabase = await createClient();
   const {
     data: { user },
@@ -409,6 +410,8 @@ export default async function EngagementCampaignDetailPage({
         <span className="text-foreground">{campaign.title}</span>
       </div>
 
+      {query.created ? <EngagementCampaignCreatedNotice campaign={campaign} /> : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -429,6 +432,8 @@ export default async function EngagementCampaignDetailPage({
                 "This campaign is ready for category setup, item intake, and operator moderation review."}
             </p>
           </div>
+
+          <EngagementPublicLinkCompact campaign={campaign} />
 
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
@@ -1236,40 +1241,13 @@ export default async function EngagementCampaignDetailPage({
         </div>
       </div>
 
-      <div className="mt-12 space-y-6 border-t pt-12">
-        <div className="module-section-heading">
-          <p className="module-section-label">Operator Actions</p>
-          <h2 className="module-section-title">Campaign management and intake</h2>
-          <p className="module-section-description">
-            Update campaign settings, manage share tokens, or manually compose new intake items.
-          </p>
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-2">
-          <EngagementCampaignControls campaign={campaign} projects={(projects ?? []) as Array<{ id: string; name: string }>} />
-          <EngagementShareControls campaign={campaign} />
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-1">
-          <EngagementItemComposer
-            campaignId={campaign.id}
-            categories={builderCategories}
-          />
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-1">
-          <EngagementSurveyBuilder
-            campaignId={campaign.id}
-            categories={builderCategories}
-            initialQuestions={surveyQuestions}
-          />
-          <EngagementCloseLoopBuilder
-            campaignId={campaign.id}
-            categories={builderCategories}
-            initialEntries={closeLoopEntries}
-          />
-        </div>
-      </div>
+      <EngagementOperatorActions
+        campaign={campaign}
+        projects={(projects ?? []) as Array<{ id: string; name: string }>}
+        categories={builderCategories}
+        surveyQuestions={surveyQuestions}
+        closeLoopEntries={closeLoopEntries}
+      />
     </section>
   );
 }

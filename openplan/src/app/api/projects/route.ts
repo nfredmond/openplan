@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { checkWorkspaceMembership } from "@/lib/workspaces/membership";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 const createProjectSchema = z.object({
   projectName: z.string().trim().min(1).max(120),
@@ -132,6 +133,12 @@ export async function POST(request: NextRequest) {
         });
         return NextResponse.json({ error: "Failed to verify workspace access" }, { status: 500 });
       }
+      if (isReadOnlyWorkspaceRole(membership.role)) {
+        return NextResponse.json(
+          { error: "Viewers have read-only access to this workspace" },
+          { status: 403 }
+        );
+      }
       workspaceId = parsed.data.workspaceId;
     } else {
       const { membership } = await loadCurrentWorkspaceMembership(supabase, user.id);
@@ -140,6 +147,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { error: "No workspace is attached to this account yet." },
           { status: 409 }
+        );
+      }
+      if (isReadOnlyWorkspaceRole(membership.role)) {
+        return NextResponse.json(
+          { error: "Viewers have read-only access to this workspace" },
+          { status: 403 }
         );
       }
       workspaceId = membership.workspace_id;

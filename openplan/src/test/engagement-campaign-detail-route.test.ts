@@ -35,6 +35,19 @@ const mockAudit = {
   error: vi.fn(),
 };
 
+/**
+ * Everything this route handed to the audit logger, flattened. Share tokens are
+ * the sole credential protecting a public engagement portal, so the token-value
+ * assertions below search the whole audit surface rather than one call site.
+ */
+function auditPayloads(): string {
+  return JSON.stringify([
+    mockAudit.info.mock.calls,
+    mockAudit.warn.mock.calls,
+    mockAudit.error.mock.calls,
+  ]);
+}
+
 const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") {
     return {
@@ -251,6 +264,25 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     });
   });
 
+  it("GET succeeds for a viewer — the read-only tier reads, it does not write", async () => {
+    membershipMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        role: "viewer",
+      },
+      error: null,
+    });
+
+    const response = await getCampaignDetail(new NextRequest("http://localhost/api/engagement/campaigns/1"), {
+      params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }),
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      campaign: { id: "11111111-1111-4111-8111-111111111111" },
+    });
+  });
+
   it("PATCH returns 403 when workspace role is unsupported", async () => {
     membershipMaybeSingleMock.mockResolvedValueOnce({
       data: {
@@ -301,69 +333,50 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     );
   });
 
-  it("PATCH rejects an in-use share token after normalization", async () => {
-    campaignMaybeSingleMock
-      .mockResolvedValueOnce({
-        data: {
-          id: "11111111-1111-4111-8111-111111111111",
-          workspace_id: "33333333-3333-4333-8333-333333333333",
-          project_id: "44444444-4444-4444-8444-444444444444",
-          title: "Downtown listening campaign",
-          status: "draft",
-          engagement_type: "comment_collection",
-          share_token: null,
-        },
-        error: null,
-      })
-      .mockResolvedValueOnce({
-        data: {
-          id: "99999999-9999-4999-8999-999999999999",
-        },
-        error: null,
-      });
+  it("PATCH refuses a caller-chosen share token and names where minting lives", async () => {
+    const attemptedToken = "pilot_link_2026_01";
 
     const response = await patchCampaignDetail(
       new NextRequest("http://localhost/api/engagement/campaigns/1", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          shareToken: " Pilot_Link_2026_01 ",
-        }),
+        body: JSON.stringify({ shareToken: attemptedToken }),
       }),
       {
         params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }),
       }
     );
 
-    expect(response.status).toBe(409);
+    expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({
-      error: "That share token is already in use by another engagement campaign",
+      error: expect.stringContaining("/share-token"),
     });
+    // Refused outright — not silently dropped from an otherwise-applied update.
+    expect(campaignUpdateMock).not.toHaveBeenCalled();
+    // A rejected token is still a credential: it must appear in no audit record.
+    expect(auditPayloads()).not.toContain(attemptedToken);
   });
 
-  it("PATCH stores a lowercased share token when available", async () => {
-    campaignMaybeSingleMock
-      .mockResolvedValueOnce({
-        data: {
-          id: "11111111-1111-4111-8111-111111111111",
-          workspace_id: "33333333-3333-4333-8333-333333333333",
-          project_id: "44444444-4444-4444-8444-444444444444",
-          title: "Downtown listening campaign",
-          status: "draft",
-          engagement_type: "comment_collection",
-          share_token: null,
-        },
-        error: null,
-      })
-      .mockResolvedValueOnce({ data: null, error: null });
+  it("PATCH disables the public link on an explicit null without logging the token", async () => {
+    const liveToken = "livesharetoken0123456789abcd";
+    campaignMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: "44444444-4444-4444-8444-444444444444",
+        title: "Downtown listening campaign",
+        status: "active",
+        engagement_type: "comment_collection",
+        share_token: liveToken,
+      },
+      error: null,
+    });
 
     const response = await patchCampaignDetail(
       new NextRequest("http://localhost/api/engagement/campaigns/1", {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          shareToken: " Pilot_Link_2026_02 ",
-        }),
+        body: JSON.stringify({ shareToken: null }),
       }),
       {
         params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }),
@@ -371,10 +384,12 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(campaignUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        share_token: "pilot_link_2026_02",
-      })
+    expect(campaignUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ share_token: null }));
+    // The disable is auditable as a derived fact, never as a value.
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "campaign_updated",
+      expect.objectContaining({ shareTokenDisabled: true })
     );
+    expect(auditPayloads()).not.toContain(liveToken);
   });
 });

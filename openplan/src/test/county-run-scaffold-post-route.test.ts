@@ -1,3 +1,4 @@
+import { existsSync, rmSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -18,6 +19,8 @@ const artifactDeleteTypeEqMock = vi.fn();
 const artifactSelectMock = vi.fn();
 const artifactSelectEqMock = vi.fn();
 const artifactSelectOrderMock = vi.fn();
+
+const membershipMaybeSingleMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -234,8 +237,15 @@ describe("POST /api/county-runs/[countyRunId]/scaffold", () => {
           select: artifactSelectMock,
         };
       }
+      if (table === "workspace_members") {
+        return {
+          select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }),
+        };
+      }
       throw new Error(`Unexpected table: ${table}`);
     });
+
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -269,5 +279,45 @@ describe("POST /api/county-runs/[countyRunId]/scaffold", () => {
     const payload = await response.json();
     expect(payload.stage).toBe("validation-scaffolded");
     expect(payload.statusLabel).toBe("Validation pending scaffold edits");
+  });
+
+  it("refuses a viewer BEFORE the scaffold CSV is rewritten on disk", async () => {
+    // This route writes the file before it writes the row, so a gate placed
+    // after the row update would still let a viewer overwrite the counts.
+    rmSync(scaffoldPath, { force: true });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
+
+    const response = await postCountyRunScaffold(
+      jsonRequest({
+          csvContent:
+            "station_id,observed_volume,source_agency,source_description\nA,789,Caltrans,PM 2.4\n",
+        }),
+      { params: Promise.resolve({ countyRunId }) }
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({
+      error: "Viewers have read-only access to this workspace",
+    });
+    expect(existsSync(scaffoldPath)).toBe(false);
+    expect(countyRunUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("still updates the scaffold for a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      countyRunUpdateMock.mockClear();
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role }, error: null });
+
+      const response = await postCountyRunScaffold(
+        jsonRequest({
+          csvContent:
+            "station_id,observed_volume,source_agency,source_description\nA,789,Caltrans,PM 2.4\n",
+        }),
+        { params: Promise.resolve({ countyRunId }) }
+      );
+
+      expect(response.status, `${role} should still be able to edit the scaffold`).toBe(200);
+      expect(countyRunUpdateMock).toHaveBeenCalledTimes(1);
+    }
   });
 });

@@ -154,6 +154,10 @@ vi.mock("@/components/engagement/engagement-share-controls", () => ({
   EngagementShareControls: () => <div data-testid="engagement-share-controls" />,
 }));
 
+vi.mock("@/components/engagement/engagement-public-link-compact", () => ({
+  EngagementPublicLinkCompact: () => <div data-testid="engagement-public-link-compact" />,
+}));
+
 vi.mock("@/components/engagement/engagement-bulk-moderation", () => ({
   EngagementBulkModeration: () => <div data-testid="engagement-bulk-moderation" />,
 }));
@@ -170,10 +174,11 @@ vi.mock("@/components/engagement/ai-moderation-panel", () => ({
 
 import EngagementCampaignDetailPage from "@/app/(app)/engagement/[campaignId]/page";
 
-async function renderPage() {
+async function renderPage(searchParams?: { created?: string }) {
   render(
     await EngagementCampaignDetailPage({
       params: Promise.resolve({ campaignId: "campaign-1" }),
+      searchParams: Promise.resolve(searchParams ?? {}),
     })
   );
 }
@@ -443,6 +448,54 @@ describe("EngagementCampaignDetailPage", () => {
     expect(screen.getAllByText(/Held for duplicate review/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Excluded — internal\/private note/i)).toBeInTheDocument();
     expect(screen.getByText(/does not establish representativeness, legal sufficiency/i)).toBeInTheDocument();
+  });
+
+  it("hoists the compact public-link block into the console header", async () => {
+    await renderPage();
+
+    expect(screen.getByTestId("engagement-public-link-compact")).toBeInTheDocument();
+  });
+
+  it("surfaces the create-success public-link explainer only when arriving from creation", async () => {
+    await renderPage({ created: "1" });
+
+    expect(screen.getByText(/Campaign created\./)).toBeInTheDocument();
+    // The seeded campaign is active with a token → the banner may call the link live.
+    expect(screen.getByText(/public link is live/i)).toBeInTheDocument();
+    expect(screen.getByText(/every submission lands in this console's moderation queue/i)).toBeInTheDocument();
+  });
+
+  it("keeps the create-success banner honest for a campaign with no live portal", async () => {
+    campaignMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "campaign-1",
+        workspace_id: "workspace-1",
+        project_id: "project-1",
+        title: "Downtown listening campaign",
+        summary: "Collect downtown safety feedback.",
+        status: "draft",
+        engagement_type: "comment_collection",
+        share_token: null,
+        public_description: null,
+        allow_public_submissions: false,
+        submissions_closed_at: null,
+        created_at: "2026-03-01T00:00:00.000Z",
+        updated_at: "2026-03-28T22:00:00.000Z",
+      },
+      error: null,
+    });
+
+    await renderPage({ created: "1" });
+
+    expect(screen.getByText(/Campaign created\./)).toBeInTheDocument();
+    expect(screen.getByText(/stays offline until a share link is generated/i)).toBeInTheDocument();
+    expect(screen.queryByText(/public link is live/i)).toBeNull();
+  });
+
+  it("does not show the create-success banner on a normal visit", async () => {
+    await renderPage();
+
+    expect(screen.queryByText(/Campaign created\./)).toBeNull();
   });
 
   it("shows the empty report state when no reports exist for the linked project", async () => {

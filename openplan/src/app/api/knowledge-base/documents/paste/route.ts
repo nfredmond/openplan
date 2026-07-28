@@ -4,6 +4,7 @@ import { z } from "zod";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import {
   buildKbChunkRows,
   checkWorkspaceMembership,
@@ -69,6 +70,12 @@ export async function POST(request: NextRequest) {
         audit.error("membership_lookup_failed", { message: membership.message });
       }
       return membershipErrorResponse(membership);
+    }
+    if (isReadOnlyWorkspaceRole(membership.role)) {
+      return NextResponse.json(
+        { error: "Viewers have read-only access to this workspace" },
+        { status: 403 }
+      );
     }
 
     if (parsed.data.projectId) {

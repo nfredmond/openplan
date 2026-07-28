@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { requireNetworkPackageWriteAccess } from "@/lib/network-packages/access";
 
 // GET /api/network-packages/[packageId]/versions/[versionId]/connectors
 export async function GET(
@@ -35,11 +36,22 @@ export async function POST(
   { params }: { params: Promise<{ packageId: string; versionId: string }> }
 ) {
   const audit = createApiAuditLogger("network_connectors.create", req);
-  const { versionId } = await params;
+  const { packageId, versionId } = await params;
   const supabase = await createClient();
   const bodyBody = await readJsonOrNullWithLimit<Record<string, unknown>>(req, BODY_LIMITS.networkGeoJson);
   if (!bodyBody.ok) return bodyBody.response;
   const body = bodyBody.data ?? {};
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const writeAccess = await requireNetworkPackageWriteAccess(supabase, packageId, user.id);
+  if (!writeAccess.ok) return writeAccess.response;
 
   const { data, error } = await supabase
     .from("network_connectors")

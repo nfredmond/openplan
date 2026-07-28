@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("network_packages.list", request);
@@ -45,9 +46,22 @@ export async function POST(request: NextRequest) {
 
   const { workspace_id, name, description, region_code, bbox } = body;
 
-  if (!workspace_id || !name) {
+  if (typeof workspace_id !== "string" || !workspace_id || !name) {
     return NextResponse.json({ error: "Missing required fields (workspace_id, name)" }, { status: 400 });
   }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // The network_packages write policy only asks for membership, so without this
+  // a viewer could create packages in a workspace they may only read.
+  const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, workspace_id);
+  if (!writeAccess.ok) return writeAccess.response;
 
   const { data, error } = await supabase
     .from("network_packages")

@@ -9,6 +9,7 @@ import {
   sanitizeCountyOnrampWorkerPayload,
   storedCountyOnrampRequestSchema,
 } from "@/lib/api/county-onramp-worker";
+import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
   countyRunId: z.string().uuid(),
@@ -41,7 +42,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const { data: countyRun, error: countyRunError } = await supabase
       .from("county_runs")
-      .select("id, requested_runtime_json")
+      .select("id, workspace_id, requested_runtime_json")
       .eq("id", parsedParams.data.countyRunId)
       .maybeSingle();
 
@@ -56,6 +57,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!countyRun) {
       return NextResponse.json({ error: "County run not found" }, { status: 404 });
     }
+
+    // Dispatching a worker job and stamping enqueue state onto the run are
+    // writes; seeing the run is not enough to perform them.
+    const writeAccess = await requireWorkspaceWriteAccess(
+      supabase,
+      user.id,
+      (countyRun as { workspace_id: string }).workspace_id
+    );
+    if (!writeAccess.ok) return writeAccess.response;
 
     const storedRequest = storedCountyOnrampRequestSchema.safeParse(countyRun.requested_runtime_json);
     if (!storedRequest.success) {

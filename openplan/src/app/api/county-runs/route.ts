@@ -13,6 +13,7 @@ import {
 } from "@/lib/api/county-onramp-worker";
 import { presentCountyRunListItem } from "@/lib/api/county-onramp-presenters";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("county-runs.list", request);
@@ -132,6 +133,11 @@ export async function POST(request: NextRequest) {
     const runName = parsed.data.runName;
     const projectId = parsed.data.projectId ?? null;
     const normalizedRequest = normalizeCountyOnrampRequest(parsed.data);
+
+    // Membership alone is not permission: the county_runs write policy is
+    // role-blind, so a viewer would otherwise be able to start a model build.
+    const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, workspaceId);
+    if (!writeAccess.ok) return writeAccess.response;
 
     // Provenance: the chosen project must live in the same workspace. The
     // projects select is RLS-scoped, so a foreign project reads as absent.

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { rebuildAerialProjectPosture } from "@/lib/aerial/posture-writeback";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 const AERIAL_PACKAGE_TYPES = ["measurable_output", "qa_bundle", "share_package"] as const;
 const AERIAL_PACKAGE_STATUSES = ["processing", "qa_pending", "ready", "shared"] as const;
@@ -81,6 +82,13 @@ export async function POST(request: NextRequest) {
 
     if (!membership) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    if (isReadOnlyWorkspaceRole((membership as { role?: string }).role)) {
+      return NextResponse.json(
+        { error: "Viewers have read-only access to this workspace" },
+        { status: 403 }
+      );
     }
 
     const { data: pkg, error: insertError } = await supabase

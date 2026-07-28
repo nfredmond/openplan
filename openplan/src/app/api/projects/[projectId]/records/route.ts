@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { readAssistantExecutionSource, verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
   projectId: z.string().uuid(),
@@ -131,6 +132,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
+
+    // The project-record tables inherit the project's role-blind write policy,
+    // so RLS admits any member — including a viewer. Authorize explicitly, and
+    // before the assistant-approval path, so a viewer cannot reach the write
+    // through the Planner Agent either.
+    const writeAccess = await requireWorkspaceWriteAccess(supabase, user.id, project.workspace_id);
+    if (!writeAccess.ok) return writeAccess.response;
 
     const performInsert = async (): Promise<{ recordType: string; record: unknown }> => {
       if (parsed.data.recordType === "milestone") {

@@ -10,6 +10,7 @@ import {
 } from "@/lib/assistant/action-approval-server";
 import { getActionMetadata } from "@/lib/runtime/action-metadata";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 const approvalRequestSchema = z.object({
   workspaceId: z.string().uuid().nullable(),
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     if (parsed.data.workspaceId) {
       const { data: membership, error: membershipError } = await supabase
         .from("workspace_members")
-        .select("workspace_id")
+        .select("workspace_id, role")
         .eq("workspace_id", parsed.data.workspaceId)
         .eq("user_id", user.id)
         .maybeSingle();
@@ -59,6 +60,15 @@ export async function POST(request: NextRequest) {
 
       if (!membership) {
         return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+      }
+
+      // An approval authorizes a write the assistant will then execute, so the
+      // read-only tier may not mint one.
+      if (isReadOnlyWorkspaceRole((membership as { role?: string }).role)) {
+        return NextResponse.json(
+          { error: "Viewers have read-only access to this workspace" },
+          { status: 403 }
+        );
       }
     }
 

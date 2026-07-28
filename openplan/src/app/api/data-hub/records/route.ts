@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 const DUPLICATE_KEY_CODE = "23505";
 
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
 
     const { data: memberships, error: membershipError } = await supabase
       .from("workspace_members")
-      .select("workspace_id")
+      .select("workspace_id, role")
       .eq("user_id", user.id)
       .eq("workspace_id", parsed.data.workspaceId)
       .limit(1);
@@ -164,6 +165,13 @@ export async function POST(request: NextRequest) {
         workspaceId: parsed.data.workspaceId,
       });
       return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
+    }
+
+    if (isReadOnlyWorkspaceRole((memberships[0] as { role?: string }).role)) {
+      return NextResponse.json(
+        { error: "Viewers have read-only access to this workspace" },
+        { status: 403 }
+      );
     }
 
     if (parsed.data.recordType === "connector") {

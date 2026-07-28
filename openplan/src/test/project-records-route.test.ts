@@ -26,6 +26,11 @@ const projectIssuesInsertMock = vi.fn(() => ({ select: projectIssuesSelectMock }
 const projectsSelectEqMock = vi.fn(() => ({ single: projectsSingleMock }));
 const projectsSelectMock = vi.fn(() => ({ eq: projectsSelectEqMock }));
 
+const membershipMaybeSingleMock = vi.fn();
+const membershipSelectMock = vi.fn(() => ({
+  eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }),
+}));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "projects") {
     return { select: projectsSelectMock };
@@ -51,6 +56,10 @@ const fromMock = vi.fn((table: string) => {
     return {
       insert: vi.fn().mockResolvedValue({ error: null }),
     };
+  }
+
+  if (table === "workspace_members") {
+    return { select: membershipSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -89,6 +98,8 @@ describe("POST /api/projects/[projectId]/records", () => {
     authGetUserMock.mockResolvedValue({
       data: { user: { id: "22222222-2222-4222-8222-222222222222" } },
     });
+
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
 
     projectsSingleMock.mockResolvedValue({
       data: {
@@ -384,5 +395,37 @@ describe("POST /api/projects/[projectId]/records", () => {
 
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({ error: "Project not found" });
+  });
+
+  it("refuses a viewer and creates no record", async () => {
+    // The project-record tables inherit the project's role-blind write policy,
+    // so a viewer could reach every insert below through RLS alone.
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
+
+    const response = await postRecord(
+      jsonRequest({ recordType: "deliverable", title: "Draft board-ready safety memo" }),
+      { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({
+      error: "Viewers have read-only access to this workspace",
+    });
+    expect(projectDeliverablesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still creates for a member, an admin, and an owner", async () => {
+    for (const role of ["member", "admin", "owner"]) {
+      projectDeliverablesInsertMock.mockClear();
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role }, error: null });
+
+      const response = await postRecord(
+        jsonRequest({ recordType: "deliverable", title: "Draft board-ready safety memo" }),
+        { params: Promise.resolve({ projectId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+
+      expect(response.status, `${role} should still be able to create a project record`).toBe(201);
+      expect(projectDeliverablesInsertMock).toHaveBeenCalledTimes(1);
+    }
   });
 });
