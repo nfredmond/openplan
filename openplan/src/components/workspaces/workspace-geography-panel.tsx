@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Globe2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
@@ -46,6 +47,7 @@ type WorkspaceGeographyPanelProps = {
 };
 
 export function WorkspaceGeographyPanel({ workspaceId, canManage }: WorkspaceGeographyPanelProps) {
+  const router = useRouter();
   const [geography, setGeography] = useState<WorkspaceHomeGeography | null>(null);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
@@ -130,6 +132,11 @@ export function WorkspaceGeographyPanel({ workspaceId, canManage }: WorkspaceGeo
           ? "Saved. Census tracts for this county are loading in the background — the equity layer fills in shortly."
           : "Saved.",
       );
+      // The first-run checklist and the map camera are rendered on the server
+      // from this same setting. Without a refresh the page would show the
+      // panel saying "Saved" directly beneath a step still claiming the
+      // geography is unset — one screen contradicting itself.
+      router.refresh();
     } catch (saveError) {
       setError(saveError instanceof Error ? saveError.message : "Could not set the workspace geography");
     } finally {
@@ -153,6 +160,7 @@ export function WorkspaceGeographyPanel({ workspaceId, canManage }: WorkspaceGeo
       setEditing(false);
       resetPicker();
       setNotice("Cleared. Maps return to the neutral continental view until a geography is set.");
+      router.refresh();
     } catch (clearError) {
       setError(clearError instanceof Error ? clearError.message : "Could not clear the workspace geography");
     } finally {

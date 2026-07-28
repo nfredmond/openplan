@@ -11,6 +11,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
  * dashboard must render the panel (asserted in dashboard-page.test.tsx).
  */
 
+const refreshMock = vi.fn();
+// The panel refreshes the server-rendered surfaces that read this setting (the
+// first-run checklist, the map camera), so the router must be stubbed.
+vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: refreshMock }) }));
+
 const placeResolvedHandlers: Array<(place: unknown) => void> = [];
 
 // StudyAreaPicker owns a Mapbox-backed draw mode and a debounced network
@@ -140,6 +145,27 @@ describe("WorkspaceGeographyPanel", () => {
     fireEvent.click(await screen.findByRole("button", { name: /use franklin county, oh/i }));
 
     expect(await screen.findByText(/loading in the background/i)).toBeInTheDocument();
+  });
+
+  it("refreshes the server-rendered surfaces that read this setting", async () => {
+    // The first-run checklist and the map camera are rendered on the server
+    // from the same row this panel writes. Without the refresh, a fresh
+    // workspace showed the panel reporting "Saved" directly beneath a step
+    // still claiming the geography was unset — one screen contradicting itself.
+    mockFetch({
+      GET: { body: { homeGeography: null } },
+      PATCH: { body: { homeGeography: FRANKLIN_COUNTY } },
+    });
+
+    render(<WorkspaceGeographyPanel workspaceId={WORKSPACE_ID} canManage />);
+    await waitFor(() => expect(screen.getByText(/No home geography set/)).toBeInTheDocument());
+    expect(refreshMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /set workspace geography/i }));
+    act(() => placeResolvedHandlers.forEach((handler) => handler(RESOLVED_PLACE)));
+    fireEvent.click(await screen.findByRole("button", { name: /use franklin county, oh/i }));
+
+    await waitFor(() => expect(refreshMock).toHaveBeenCalled());
   });
 
   it("DELETEs to return the workspace to an honest unset state", async () => {

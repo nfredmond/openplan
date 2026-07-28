@@ -196,7 +196,11 @@ export function FirstRunChecklist({
         status={homeGeographyIsSet ? "done" : "todo"}
         emphasis={!homeGeographyIsSet}
         state={geographyState}
-        unlocks="Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all read this one setting. Until it is set, maps open on a neutral continental view, no jurisdiction-specific stage-gate rules are bound, and equity layers stay empty."
+        unlocks={
+          homeGeographyIsSet
+            ? "Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all read this one setting."
+            : "Maps, jurisdiction rules, equity data, and study-area defaults across OpenPlan all read this one setting. Until it is set, maps open on a neutral continental view, no jurisdiction-specific stage-gate rules are bound, and equity layers stay empty."
+        }
       >
         {children}
       </FirstRunStep>
