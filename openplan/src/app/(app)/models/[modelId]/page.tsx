@@ -21,6 +21,7 @@ import { reconcileStaleModelRuns } from "@/lib/models/run-reconcile";
 import type { ReaperRun } from "@/lib/models/run-reaper";
 import { loadModelRunClaimStatuses, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import { createClient } from "@/lib/supabase/server";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
   buildModelWorkspaceSummary,
@@ -96,13 +97,30 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     redirect("/sign-in");
   }
 
-  const { data: model } = await supabase
+  // Every read below is registered here, and anything that failed is disclosed
+  // by name at the top of the page. Before this, a failed read and an empty
+  // table were the same `null`, and the empty-state copy — written for the
+  // empty table — stated the failure as a fact about the planner's workspace.
+  const reads = new ReadFailureLog();
+
+  const modelResult = await supabase
     .from("models")
     .select(
       "id, workspace_id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, horizon_label, assumptions_summary, input_summary, output_summary, summary, config_json, last_validated_at, last_run_recorded_at, created_at, updated_at"
     )
     .eq("id", modelId)
     .maybeSingle();
+
+  // The one read on this page that IS load-bearing, and the one place where
+  // "could not read it" and "it is not there" must not be merged: `notFound()`
+  // tells the planner their model does not exist, and a 400 or a policy failure
+  // is not evidence of that. It raises instead, so the route's error boundary
+  // says something a retry can act on.
+  if (modelResult.error) {
+    throw new Error(`Could not read this model: ${modelResult.error.message}`);
+  }
+
+  const model = modelResult.data;
 
   if (!model) {
     notFound();
@@ -183,10 +201,13 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       supabase.from("workspaces").select(HOME_GEOGRAPHY_COLUMNS).eq("id", model.workspace_id).maybeSingle(),
     ]);
 
-  const { data: workspaceCountyRuns } = await supabase
+  const countyRunsResult = await supabase
     .from("county_runs")
     .select("stage, status_label")
     .eq("workspace_id", model.workspace_id);
+
+  const countyRunsUnreadable = reads.check("county screening runs", countyRunsResult);
+  const workspaceCountyRuns = countyRunsResult.data;
 
   const networkBasisResult = await supabase
     .from("models")
@@ -223,6 +244,26 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
   const hasWorkspacePassingCountyRun = countyRunRows.some(
     (row) => row.stage === "validated-screening" && isPassingCountyRunGateStatus(row.status_label)
   );
+
+  // The option lists behind the Links tab. A failed read here offers the
+  // planner nothing to attach, which looks identical to a workspace that has
+  // nothing to attach.
+  reads.check("selectable projects", projectsResult);
+  reads.check("selectable scenario sets", scenarioOptionsResult);
+  reads.check("selectable plans", plansResult);
+  reads.check("selectable reports", reportsResult);
+  reads.check("selectable datasets", datasetsResult);
+  reads.check("selectable runs", runsResult);
+  reads.check("the primary project", primaryProjectResult);
+  reads.check("the primary scenario set", primaryScenarioResult);
+  reads.check("scenario entries", scenarioEntriesResult);
+  reads.check("this workspace's home geography", workspaceResult);
+
+  // The link set itself. Everything downstream of it — the six linked-record
+  // sections, the four linkage counts in the header, and the link-derived
+  // readiness checks — is computed from this one array, so its failure is the
+  // single read on this page that can turn the most of it into a false claim.
+  const linkSetUnreadable = reads.check("this model's link set", linksResult);
 
   const links = (linksResult.data ?? []) as ModelLinkRow[];
   const scenarioLinkIds = links.filter((link) => link.link_type === "scenario_set").map((link) => link.linked_id);
@@ -272,10 +313,37 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     links,
   });
 
-  const linkedRecordSections: Array<{ title: string; count: number; records: LinkedRecordCard[]; emptyCopy: string }> = [
+  // Each of the six resolves the records behind one KIND of link. The link ids
+  // came from `model_links` and are already in hand, so a failure here has a
+  // more precise thing to say than "none": the links exist, and their records
+  // could not be loaded. The count therefore falls back to the number of LINKS
+  // — which is known — rather than to zero, which would be a claim.
+  const linkedScenariosUnreadable = reads.check("linked scenario sets", linkedScenariosResult);
+  const linkedPlansUnreadable = reads.check("linked plans", linkedPlansResult);
+  const linkedReportsUnreadable = reads.check("linked reports", linkedReportsResult);
+  const linkedDatasetsUnreadable = reads.check("linked datasets", linkedDatasetsResult);
+  const linkedRunsUnreadable = reads.check("linked runs", linkedRunsResult);
+  const linkedProjectsUnreadable = reads.check("linked projects", linkedProjectsResult);
+
+  function unreadableCopy(linkCount: number, noun: string) {
+    return (
+      `${linkCount} ${linkCount === 1 ? noun : `${noun}s`} ${linkCount === 1 ? "is" : "are"} linked to this ` +
+      "model, and the records could not be read. This list is empty because the query failed, not because " +
+      "nothing is attached."
+    );
+  }
+
+  const linkedRecordSections: Array<{
+    title: string;
+    count: number;
+    records: LinkedRecordCard[];
+    emptyCopy: string;
+    unavailable: string | null;
+  }> = [
     {
       title: "Scenario links",
-      count: linkedScenariosResult.data?.length ?? 0,
+      unavailable: linkedScenariosUnreadable ? unreadableCopy(scenarioLinkIds.length, "scenario set") : null,
+      count: linkedScenariosUnreadable ? scenarioLinkIds.length : linkedScenariosResult.data?.length ?? 0,
       emptyCopy: "Use the Links tab to attach additional scenario variants or parallel scenario sets.",
       records: ((linkedScenariosResult.data ?? []) as Array<{
         id: string;
@@ -294,7 +362,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     },
     {
       title: "Plan links",
-      count: linkedPlansResult.data?.length ?? 0,
+      unavailable: linkedPlansUnreadable ? unreadableCopy(planLinkIds.length, "plan") : null,
+      count: linkedPlansUnreadable ? planLinkIds.length : linkedPlansResult.data?.length ?? 0,
       emptyCopy: "Attach plans when the model supports a specific planning package or corridor strategy.",
       records: ((linkedPlansResult.data ?? []) as Array<{
         id: string;
@@ -313,7 +382,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     },
     {
       title: "Report links",
-      count: linkedReportsResult.data?.length ?? 0,
+      unavailable: linkedReportsUnreadable ? unreadableCopy(reportLinkIds.length, "report") : null,
+      count: linkedReportsUnreadable ? reportLinkIds.length : linkedReportsResult.data?.length ?? 0,
       emptyCopy: "Attach reports when outputs have been cited or published downstream.",
       records: ((linkedReportsResult.data ?? []) as Array<{
         id: string;
@@ -333,7 +403,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     },
     {
       title: "Dataset links",
-      count: linkedDatasetsResult.data?.length ?? 0,
+      unavailable: linkedDatasetsUnreadable ? unreadableCopy(datasetLinkIds.length, "dataset") : null,
+      count: linkedDatasetsUnreadable ? datasetLinkIds.length : linkedDatasetsResult.data?.length ?? 0,
       emptyCopy: "Attach datasets to make the model input basis traceable from Data Hub forward.",
       records: ((linkedDatasetsResult.data ?? []) as Array<{
         id: string;
@@ -353,7 +424,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     },
     {
       title: "Recorded runs",
-      count: linkedRunsResult.data?.length ?? 0,
+      unavailable: linkedRunsUnreadable ? unreadableCopy(runLinkIds.length, "recorded run") : null,
+      count: linkedRunsUnreadable ? runLinkIds.length : linkedRunsResult.data?.length ?? 0,
       emptyCopy: "Attach run records when execution evidence exists and should remain auditable.",
       records: ((linkedRunsResult.data ?? []) as Array<{
         id: string;
@@ -370,7 +442,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     },
     {
       title: "Related projects",
-      count: linkedProjectsResult.data?.length ?? 0,
+      unavailable: linkedProjectsUnreadable ? unreadableCopy(projectLinkIds.length, "project") : null,
+      count: linkedProjectsUnreadable ? projectLinkIds.length : linkedProjectsResult.data?.length ?? 0,
       emptyCopy: "Attach adjacent projects when the model informs work outside the primary anchor.",
       records: ((linkedProjectsResult.data ?? []) as Array<{
         id: string;
@@ -394,6 +467,20 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     scenarioDataPackagesResult.error,
     scenarioIndicatorSnapshotsResult.error,
   ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
+
+  // Classified first, collected second. A spine table this deployment has not
+  // migrated yet already has a truer thing to say than "could not be read", and
+  // it says it below; only the failures that are NOT that are disclosed.
+  if (!scenarioSpineSchemaPending) {
+    reads.check("scenario assumption sets", scenarioAssumptionSetsResult);
+    reads.check("scenario data packages", scenarioDataPackagesResult);
+    reads.check("scenario indicator snapshots", scenarioIndicatorSnapshotsResult);
+  }
+
+  if (!networkBasisSchemaPending) {
+    reads.check("this model's network basis", networkBasisResult);
+    reads.check("the linked network package version", networkBasisVersionResult);
+  }
 
   const primaryScenarioSpine = model.scenario_set_id
     ? {
@@ -419,6 +506,10 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
 
   const launchTemplate = extractModelLaunchTemplate(model.config_json ?? {});
   const modelRunsSchemaPending = Boolean(modelRunsResult.error && looksLikePendingSchema(modelRunsResult.error.message));
+
+  if (!modelRunsSchemaPending) {
+    reads.check("this model's runs", modelRunsResult);
+  }
 
   // Reconcile-on-read: reap runs whose worker crashed or never picked them up
   // so the UI never shows a run stuck "running"/"queued" forever. The client
@@ -531,7 +622,35 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
           Back to Models
         </Link>
 
-        {!hasWorkspacePassingCountyRun ? (
+        {reads.any ? (
+          <StateBlock
+            tone="danger"
+            title="Part of this page could not be read"
+            description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+          />
+        ) : null}
+
+        {/* The screening gate, and the difference between not having one and not
+            being able to tell. Both hold modeling output to prototype-only —
+            withholding the claim is the safe direction either way — but only one
+            of them is a statement about this workspace, and the planner acts
+            differently on each: go and run a county screening, or come back when
+            the read works. */}
+        {countyRunsUnreadable ? (
+          <StateBlock
+            tone="warning"
+            title="Screening status could not be verified"
+            description="The county screening runs for this workspace could not be read, so this page cannot say whether a validated screening run exists. Treat modeling output here as prototype-only until it can."
+            action={
+              <Link
+                href="/county-runs"
+                className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-primary/35 hover:text-primary"
+              >
+                Review county runs
+              </Link>
+            }
+          />
+        ) : !hasWorkspacePassingCountyRun ? (
           <StateBlock
             tone="warning"
             title="No validated screening run on file"
@@ -567,32 +686,49 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
             </div>
 
             <div className="module-summary-grid cols-5">
+              {/* All four linkage counts and several readiness checks are
+                  computed from the one `model_links` read. When it fails the
+                  numbers are not zero, they are unknown — and an unknown
+                  rendered as 0 is the exact shape of the defect this page had:
+                  a query failure presented as a finished count. */}
               <div className="module-summary-card">
                 <p className="module-summary-label">Checks passed</p>
                 <p className="module-summary-value">
-                  {readiness.readyCheckCount}/{readiness.totalCheckCount}
+                  {linkSetUnreadable ? "—" : `${readiness.readyCheckCount}/${readiness.totalCheckCount}`}
                 </p>
-                <p className="module-summary-detail">{readiness.reason}</p>
+                <p className="module-summary-detail">
+                  {linkSetUnreadable
+                    ? "Several checks read this model's links, which could not be loaded."
+                    : readiness.reason}
+                </p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Linked plans</p>
-                <p className="module-summary-value">{linkageCounts.plans}</p>
-                <p className="module-summary-detail">Plans that already reference this model.</p>
+                <p className="module-summary-value">{linkSetUnreadable ? "—" : linkageCounts.plans}</p>
+                <p className="module-summary-detail">
+                  {linkSetUnreadable ? "Link set unreadable." : "Plans that already reference this model."}
+                </p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Datasets</p>
-                <p className="module-summary-value">{linkageCounts.datasets}</p>
-                <p className="module-summary-detail">Linked Data Hub records.</p>
+                <p className="module-summary-value">{linkSetUnreadable ? "—" : linkageCounts.datasets}</p>
+                <p className="module-summary-detail">
+                  {linkSetUnreadable ? "Link set unreadable." : "Linked Data Hub records."}
+                </p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Runs</p>
-                <p className="module-summary-value">{linkageCounts.runs}</p>
-                <p className="module-summary-detail">Recorded run references tied to this model.</p>
+                <p className="module-summary-value">{linkSetUnreadable ? "—" : linkageCounts.runs}</p>
+                <p className="module-summary-detail">
+                  {linkSetUnreadable ? "Link set unreadable." : "Recorded run references tied to this model."}
+                </p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Reports</p>
-                <p className="module-summary-value">{linkageCounts.reports}</p>
-                <p className="module-summary-detail">Reports that reference this model.</p>
+                <p className="module-summary-value">{linkSetUnreadable ? "—" : linkageCounts.reports}</p>
+                <p className="module-summary-detail">
+                  {linkSetUnreadable ? "Link set unreadable." : "Reports that reference this model."}
+                </p>
               </div>
             </div>
           </article>
@@ -805,7 +941,11 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               </div>
             </article>
 
-            <ModelLinkedRecordsBoard sections={linkedRecordSections} totalLinkCount={links.length} />
+            <ModelLinkedRecordsBoard
+              sections={linkedRecordSections}
+              totalLinkCount={links.length}
+              linkSetUnavailable={linkSetUnreadable}
+            />
           </div>
         </div>
       </div>

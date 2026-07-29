@@ -20,6 +20,16 @@ export type ModelLinkedRecordSection = {
   count: number;
   emptyCopy: string;
   records: ModelLinkedRecord[];
+  /**
+   * Why this section's records could not be read, or null when they were.
+   *
+   * Present because an empty `records` array previously meant two different
+   * things — nothing is linked, and the query that would have told us failed —
+   * and the section rendered the confident one for both: "0 linked", an "Empty"
+   * badge, and copy inviting the planner to go and attach something they may
+   * already have attached.
+   */
+  unavailable?: string | null;
 };
 
 const COLUMNS: ReadonlyArray<DataTableColumn<ModelLinkedRecord>> = [
@@ -62,11 +72,20 @@ const COLUMNS: ReadonlyArray<DataTableColumn<ModelLinkedRecord>> = [
 export function ModelLinkedRecordsBoard({
   sections,
   totalLinkCount,
+  linkSetUnavailable = false,
 }: {
   sections: ReadonlyArray<ModelLinkedRecordSection>;
   totalLinkCount: number;
+  /**
+   * True when the `model_links` read itself failed, so `totalLinkCount` is not
+   * a count of anything — it is the length of an array that was never filled.
+   */
+  linkSetUnavailable?: boolean;
 }) {
-  const hasAnyLinkedRecords = sections.some((section) => section.count > 0);
+  // A section that could not be read is a reason to draw the board, not to skip
+  // it: collapsing to "No explicit links yet" is precisely the sentence that
+  // must not be said when the answer is unknown.
+  const hasAnythingToShow = sections.some((section) => section.count > 0 || section.unavailable);
 
   return (
     <article className="module-section-surface">
@@ -80,11 +99,18 @@ export function ModelLinkedRecordsBoard({
         </div>
         <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           <FolderKanban className="h-3.5 w-3.5" />
-          {totalLinkCount} explicit links
+          {linkSetUnavailable ? "links unreadable" : `${totalLinkCount} explicit links`}
         </span>
       </div>
 
-      {!hasAnyLinkedRecords ? (
+      {linkSetUnavailable ? (
+        <div className="mt-5">
+          <EmptyState
+            title="This model's links could not be read"
+            description="The link set behind this board failed to load, so nothing below is a count of what is attached. Reload the page; if it keeps failing, the records may be readable from the linked plan, report, dataset, or run instead."
+          />
+        </div>
+      ) : !hasAnythingToShow ? (
         <div className="mt-5">
           <EmptyState
             title="No explicit links yet"
@@ -102,8 +128,8 @@ export function ModelLinkedRecordsBoard({
                   </p>
                   <p className="mt-2 text-base font-semibold text-foreground">{section.count} linked</p>
                 </div>
-                <StatusBadge tone={section.count > 0 ? "info" : "neutral"}>
-                  {section.count > 0 ? "Active" : "Empty"}
+                <StatusBadge tone={section.unavailable ? "danger" : section.count > 0 ? "info" : "neutral"}>
+                  {section.unavailable ? "Unreadable" : section.count > 0 ? "Active" : "Empty"}
                 </StatusBadge>
               </div>
 
@@ -114,9 +140,15 @@ export function ModelLinkedRecordsBoard({
                   getRowId={(row) => row.id}
                   density="compact"
                   emptyState={
-                    <p className="rounded-[0.5rem] border border-dashed border-border/60 bg-background/60 p-3 text-sm text-muted-foreground">
-                      {section.emptyCopy}
-                    </p>
+                    section.unavailable ? (
+                      <p className="rounded-[0.5rem] border border-dashed border-destructive/45 bg-destructive/10 p-3 text-sm text-destructive">
+                        {section.unavailable}
+                      </p>
+                    ) : (
+                      <p className="rounded-[0.5rem] border border-dashed border-border/60 bg-background/60 p-3 text-sm text-muted-foreground">
+                        {section.emptyCopy}
+                      </p>
+                    )
                   }
                 />
               </div>
