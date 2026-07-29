@@ -173,9 +173,10 @@ A Census API key is **free** and issued instantly at
 | `OPENPLAN_EQUITY_INGEST_TOKEN` | Bearer token gating the equity-designation tract ingest endpoint. |
 | `OPENPLAN_INTEGRATION_KEY_SECRET` | Optional. Enables **per-workspace integration keys**: with it set, workspace owners/admins can store their own Anthropic and Census keys from the dashboard — encrypted with this secret, validated live before saving, and billed to their own provider accounts. **Set it to a high-entropy value** — `openssl rand -hex 32` — never a passphrase: the secret is the only thing standing between a database dump and the stored keys, and stored ciphertexts are only as strong as it is (16 characters is the enforced minimum, not a recommendation). **Unset, per-workspace keys are simply disabled** and the panel says so; the deployment env keys above keep working exactly as before. Rotating or changing this secret invalidates every stored workspace key (they fail decryption and fall back to the deployment env keys), so after a rotation teams re-enter their keys. Keys stored before the salted-KDF upgrade (`v1:`-format ciphertexts) remain readable under the same secret — no re-entry is needed for the upgrade itself. |
 | `OPENPLAN_WORKER_LOCAL_ROOT` | Single-machine deployments only: filesystem root where a co-located modeling worker writes artifacts so the app reads them from disk. |
+| `OPENPLAN_MODELING_WORKER` | Declares whether you run the AequilibraE modeling worker: `deployed` or `absent`. The worker polls your database, so the app has nothing to probe and cannot find out for itself. **Unset means "not declared"** — nothing changes, and the model launch controls go on inferring a missing worker from runs that were queued and then reaped. Declaring it is what lets the *first* launch be honest instead of the second: with `absent`, worker-backed runs are refused at the launch button naming this deployment; with `deployed`, they launch normally, and a run that is never picked up still refuses the next one, because run history outranks the declaration. Not a plan or a tier — nothing here is for sale. |
 | `CRON_SECRET` | Authorizes `/api/cron/reap-model-runs`, which marks crashed model runs as failed instead of leaving them queued forever. Vercel sets and sends this automatically; on another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Outbound email. Without them the app does not pretend to send: teammate invitations produce a link the inviter copies and sends themselves. |
-| `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to a worker. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted. |
+| `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to a worker. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted — and `/county-runs` says so *before* the first launch rather than after it, since the URL is the same test the dispatcher itself applies. Unlike the modeling worker there is nothing extra to declare: configuring the URL is the declaration. |
 | `OPENPLAN_AERIAL_PROCESSING_*` | Aerial Ops integration with an external processing platform. |
 | `LODES_YEAR` | Pins the LEHD LODES vintage used for commute flows. |
 | `OPENPLAN_MONTHLY_RUN_CAP` | An optional per-workspace monthly cap on expensive runs. **Unset means unlimited**, which is the default and the right setting for a self-hosted deployment. Set it only if you run a public deployment and need to protect your own compute. It is an operator limit, not a tier — model-run launches count 5×, everything else 1×, and the refusal names you rather than offering an upgrade. |
@@ -238,6 +239,28 @@ not free anywhere. The documented options are Fly.io at roughly **$3–5/month**
 free credit, which covers light use. If you do not deploy a worker, everything else in OpenPlan
 still works — model runs simply stay queued, and the dashboard says so rather than leaving them
 looking stuck.
+
+**Tell the app which way you went.** Set `OPENPLAN_MODELING_WORKER` to `deployed` or `absent`. It is
+one variable and it takes ten seconds, and it is the difference between a planner being told *before*
+they launch that this deployment cannot run screening assignment, and finding out fifteen minutes
+later when the reaper fails their run. Because the worker polls, the app has nothing to ping and no
+heartbeat to read: without your answer it can only infer a missing worker from runs that have
+**already** been queued and abandoned, so the first run on every new deployment is spent discovering
+what you could simply have said.
+
+- `absent` — worker-backed run modes (Fast Screening, the behavioral-demand preflight) are refused at
+  the launch button, naming this deployment as the reason and pointing the planner at the run modes
+  that execute in-process. Every other module is untouched. This is a legitimate configuration, not a
+  reduced tier; OpenPlan is free either way.
+- `deployed` — nothing is refused. If runs are queued and never picked up anyway, the launch control
+  refuses the next one regardless: **what the runs show outranks what the variable says**, in both
+  directions, so a retired worker cannot go on vouching for itself and a stale `absent` cannot block a
+  worker that is demonstrably running.
+- unset — nothing changes from before this existed.
+
+The dashboard's configuration panel shows what OpenPlan currently believes about your deployment,
+including when the declaration is contradicted by your own runs or is set to a value it does not
+understand.
 
 > **Open question for the project, not for you:** whether OpenPlan should offer a shared hosted
 > worker so self-hosting agencies do not each stand one up. That is a cost and trust decision that

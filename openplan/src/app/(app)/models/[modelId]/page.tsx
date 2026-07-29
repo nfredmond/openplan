@@ -8,6 +8,7 @@ import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/co
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
 import { isPassingCountyRunGateStatus } from "@/lib/models/county-onramp";
 import { corridorGeojsonSchema, extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { resolveStudyArea } from "@/lib/models/study-area";
@@ -611,6 +612,27 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     ? JSON.stringify(studyArea.geometry, null, 2)
     : "";
 
+  /**
+   * What this deployment DECLARES about the AequilibraE worker.
+   *
+   * Read here rather than inside the run manager because the manager is a client
+   * component and this variable is deliberately unprefixed: it is not in the
+   * browser bundle at all, and the `NEXT_PUBLIC_` alternative would be inlined
+   * at build time, so an operator who started a worker and corrected the
+   * declaration would keep being refused until they rebuilt. Read per request on
+   * the server, a corrected answer takes effect on the next process restart.
+   *
+   * The same reader the dashboard's configuration panel uses, so the panel and
+   * the launch button can never describe this deployment differently.
+   *
+   * Unset stays `undeclared`, and the manager then behaves exactly as it did
+   * before any declaration existed — inferring from this model's own run history
+   * and claiming nothing more. A deployment that runs a worker and has never set
+   * the variable is untouched by this, which is the whole reason silence is not
+   * read as absence.
+   */
+  const modelingWorkerDeclaration = resolveModelingWorkerDeclaration();
+
   return (
     <section className="module-page relative">
       <CartographicSurfaceWide />
@@ -795,6 +817,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               scenarioEntries={scenarioEntryOptions}
               modelRuns={modelRuns}
               schemaPending={modelRunsSchemaPending}
+              modelingWorkerDeclaration={modelingWorkerDeclaration}
             />
 
             <article className="module-section-surface">

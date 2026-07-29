@@ -60,7 +60,11 @@ function executedAequilibraeRun(id: string): ManagedRun {
   };
 }
 
-function renderManager(modelRuns: ManagedRun[]) {
+type Declaration = NonNullable<
+  React.ComponentProps<typeof ModelRunManager>["modelingWorkerDeclaration"]
+>;
+
+function renderManager(modelRuns: ManagedRun[], declaration?: Declaration) {
   return render(
     <ModelRunManager
       modelId={MODEL_ID}
@@ -70,6 +74,7 @@ function renderManager(modelRuns: ManagedRun[]) {
       scenarioEntries={[]}
       modelRuns={modelRuns}
       schemaPending={false}
+      modelingWorkerDeclaration={declaration}
     />
   );
 }
@@ -171,6 +176,164 @@ describe("launching a worker-backed run where nothing is processing runs", () =>
     selectRunMode("aequilibrae");
 
     expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
+  });
+});
+
+/**
+ * The refusal above needs a run that was already queued and reaped, so on a
+ * fresh deployment the FIRST launch could never be refused: it was enqueued,
+ * the planner watched nothing happen, and fifteen minutes later the reaper
+ * failed it. An operator declaration is the only thing knowable before any run
+ * exists, because the worker polls and has nothing to probe.
+ */
+describe("launching where the deployment itself declares no modeling worker", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("refuses the first launch on a model that has never run anything", async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ modelRunId: "r" }) }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderManager([], "absent");
+    selectRunMode("aequilibrae");
+
+    const refusal = screen.getByTestId("worker-launch-refusal");
+    expect(refusal).toHaveTextContent(/this deployment declares that it runs none/i);
+    fireEvent.click(screen.getByRole("button", { name: /Launch refused/i }));
+    await waitFor(() => expect(fetchMock).not.toHaveBeenCalled());
+  });
+
+  it("says the deployment declared it, and does not claim to have looked", () => {
+    renderManager([], "absent");
+    selectRunMode("aequilibrae");
+
+    const refusal = screen.getByTestId("worker-launch-refusal");
+    expect(refusal).toHaveTextContent(/configuration states that no such worker runs against it/i);
+    // No run history exists, so there is no observation to recite as evidence.
+    expect(refusal).not.toHaveTextContent(/queued and never started by anything/i);
+    // Deployment configuration is not a plan, a tier, or an upgrade path.
+    expect(refusal.textContent ?? "").not.toMatch(
+      /upgrade|subscription|billing|pricing|paid tier|plan tier|contact sales/i
+    );
+    expect(refusal).toHaveTextContent(/Whoever operates this deployment/i);
+  });
+
+  it("does not offer a planner a tick-box override of the operator's answer", () => {
+    renderManager([], "absent");
+    selectRunMode("aequilibrae");
+
+    expect(screen.queryByRole("checkbox", { name: /worker has been started/i })).toBeNull();
+    expect(screen.getByRole("button", { name: /Launch refused/i })).toHaveProperty("disabled", true);
+  });
+
+  it("does not refuse a deployment that declares a worker and has no history", async () => {
+    const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({ modelRunId: "r" }) }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderManager([], "deployed");
+    selectRunMode("aequilibrae");
+
+    expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+  });
+
+  it("lets a run that really executed clear a declaration that is out of date", () => {
+    renderManager([executedAequilibraeRun("run-1")], "absent");
+    selectRunMode("aequilibrae");
+
+    // Evidence outranks configuration: refusing a launch this deployment has
+    // demonstrably served would be the same defect pointing the other way.
+    expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
+  });
+
+  it("names the contradiction when a declared worker has not been starting runs", () => {
+    renderManager([abandonedAequilibraeRun("run-1")], "deployed");
+    selectRunMode("aequilibrae");
+
+    const refusal = screen.getByTestId("worker-launch-refusal");
+    expect(refusal).toHaveTextContent(/declares that an AequilibraE worker runs against it/i);
+    expect(refusal).toHaveTextContent(/not a heartbeat/i);
+    expect(refusal).toHaveTextContent(/queued and never started by anything/i);
+  });
+
+  it("refuses nothing on a fresh model when the deployment has declared nothing", () => {
+    // The default is load-bearing: a page that has not been wired up must
+    // behave exactly as this control did before declarations existed, and
+    // silence from a page may never become a claim about a deployment.
+    renderManager([], "undeclared");
+    selectRunMode("aequilibrae");
+
+    expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
+  });
+
+  it("falls back to the inference, worded as an inference, when nothing is declared", () => {
+    renderManager([abandonedAequilibraeRun("run-1")], "undeclared");
+    selectRunMode("aequilibrae");
+
+    const refusal = screen.getByTestId("worker-launch-refusal");
+    expect(refusal).toHaveTextContent(/nothing has been picking up the worker-backed runs/i);
+    // It may not borrow the certainty of a declaration it does not have.
+    expect(refusal).not.toHaveTextContent(/this deployment declares/i);
+  });
+});
+
+describe("an acknowledgement that a worker was started", () => {
+  it("expires when another run is abandoned after it was given", () => {
+    // It used to outlive the evidence: once ticked, a later abandonment could
+    // not re-refuse until the component remounted, so the planner went on
+    // queueing runs into a queue that had just eaten another one.
+    const { rerender } = renderManager([abandonedAequilibraeRun("run-1")]);
+    selectRunMode("aequilibrae");
+    fireEvent.click(screen.getByRole("checkbox", { name: /worker has been started/i }));
+    expect(screen.getByRole("button", { name: /Launch managed run/i })).toHaveProperty(
+      "disabled",
+      false
+    );
+
+    rerender(
+      <ModelRunManager
+        modelId={MODEL_ID}
+        modelTitle="Screening"
+        defaultQueryText="Screening run"
+        defaultCorridorText="{}"
+        scenarioEntries={[]}
+        modelRuns={[abandonedAequilibraeRun("run-2"), abandonedAequilibraeRun("run-1")]}
+        schemaPending={false}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /Launch refused/i })).toHaveProperty("disabled", true);
+    expect(screen.getByRole("checkbox", { name: /worker has been started/i })).toHaveProperty(
+      "checked",
+      false
+    );
+  });
+
+  it("holds while the evidence it answered is unchanged", () => {
+    const { rerender } = renderManager([abandonedAequilibraeRun("run-1")]);
+    selectRunMode("aequilibrae");
+    fireEvent.click(screen.getByRole("checkbox", { name: /worker has been started/i }));
+
+    // A poll refresh that returns the same rows must not re-refuse — that would
+    // be an override no one could ever hold.
+    rerender(
+      <ModelRunManager
+        modelId={MODEL_ID}
+        modelTitle="Screening"
+        defaultQueryText="Screening run"
+        defaultCorridorText="{}"
+        scenarioEntries={[]}
+        modelRuns={[abandonedAequilibraeRun("run-1")]}
+        schemaPending={false}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: /Launch managed run/i })).toHaveProperty(
+      "disabled",
+      false
+    );
   });
 });
 

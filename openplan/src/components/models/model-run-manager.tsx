@@ -22,7 +22,11 @@ import {
   IN_PROCESS_ENGINE_KEYS,
   assessWorkerLaunchReadiness,
   describeWorkerAbsenceEvidence,
+  describeWorkerLaunchRefusal,
+  describeWorkerQueueRisk,
+  evaluateWorkerLaunchGate,
   isWorkerBackedEngineKey,
+  type ModelingWorkerDeclaration,
 } from "@/lib/models/worker-backed-launch";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
@@ -100,6 +104,19 @@ type ModelRunManagerProps = {
   scenarioEntries: ScenarioEntryOption[];
   modelRuns: ManagedModelRun[];
   schemaPending: boolean;
+  /**
+   * What THIS DEPLOYMENT declares about the AequilibraE worker, read
+   * server-side by the page (`resolveModelingWorkerDeclaration`) and handed
+   * down — the worker is a poller, so there is nothing to probe and a
+   * declaration is the only thing that can be known before the first run.
+   *
+   * Optional, defaulting to `"undeclared"`, and that default is load-bearing:
+   * an un-wired caller behaves exactly as this control did before the
+   * declaration existed, inferring from run history and claiming nothing else.
+   * Silence from a page must never become a claim that a deployment has no
+   * worker.
+   */
+  modelingWorkerDeclaration?: ModelingWorkerDeclaration;
 };
 
 function fmtDateTime(value: string | null | undefined) {
@@ -255,6 +272,7 @@ export function ModelRunManager({
   scenarioEntries,
   modelRuns,
   schemaPending,
+  modelingWorkerDeclaration = "undeclared",
 }: ModelRunManagerProps) {
   const router = useRouter();
   const [title, setTitle] = useState(`${modelTitle} managed run`);
@@ -282,7 +300,16 @@ export function ModelRunManager({
   // Set only by the planner, and only from the refusal below. The app cannot
   // observe a worker being started — it can only be told — so the person who
   // did it is the one who clears the refusal.
-  const [workerStartedSinceThoseRuns, setWorkerStartedSinceThoseRuns] = useState(false);
+  //
+  // It stores WHICH evidence was acknowledged rather than a bare "yes", because
+  // a bare yes outlived the thing it answered: once ticked, a later abandonment
+  // could not re-refuse, and the planner kept queueing runs into a queue that
+  // had just eaten another one. Holding the key makes the acknowledgement
+  // expire the moment fresh evidence arrives, with no effect and no reset to
+  // forget — the comparison below simply stops matching.
+  const [acknowledgedWorkerEvidenceKey, setAcknowledgedWorkerEvidenceKey] = useState<string | null>(
+    null
+  );
 
   const selectedScenarioEntry = useMemo(
     () => scenarioEntries.find((entry) => entry.id === scenarioEntryId) ?? null,
@@ -383,22 +410,52 @@ export function ModelRunManager({
    * rows that tell the history tell whether anything has been executing it.
    * `now` is 0 until the poll timer runs (React render may not read a clock),
    * and null means "no clock yet" to the assessment rather than "epoch".
+   *
+   * Two sources, in the order the gate defines: what the deployment declares,
+   * and what its runs show. A deployment that declares no worker refuses the
+   * FIRST launch — there is no history to infer from on a new model, which is
+   * exactly the case history could never cover.
+   */
+  const workerGate = useMemo(
+    () =>
+      evaluateWorkerLaunchGate({
+        engineKey,
+        declaration: modelingWorkerDeclaration,
+        runs: modelRuns,
+        now: now > 0 ? now : null,
+      }),
+    [engineKey, modelingWorkerDeclaration, modelRuns, now]
+  );
+  const workerRefusesLaunch = workerGate.refused;
+  const workerRefusalCopy = workerGate.reason
+    ? describeWorkerLaunchRefusal(workerGate.reason, selectedRunMode.label, workerGate.evidence)
+    : null;
+  // The acknowledgement holds only against the evidence it was given for.
+  const workerAcknowledged =
+    workerGate.acknowledgementKey !== null &&
+    acknowledgedWorkerEvidenceKey === workerGate.acknowledgementKey;
+
+  /**
+   * Engine-independent, because the reroute notice needs it for `sketch_abm` —
+   * a lane that is not worker-backed at the button but can be handed to the
+   * worker queue server-side.
    */
   const workerReadiness = useMemo(
     () => assessWorkerLaunchReadiness(modelRuns, now > 0 ? now : null),
     [modelRuns, now]
   );
   const workerAbsenceEvidence = describeWorkerAbsenceEvidence(workerReadiness);
-  const workerRefusesLaunch = engineNeedsWorker && workerAbsenceEvidence !== null;
   // "preflight" is launchable (it runs an honest input-validation / runtime-staging
   // preflight); only "prototype" keeps the launch button disabled outright. The
-  // worker refusal is the other block, and unlike a prototype it is clearable by
-  // the one person who can know the thing this app cannot observe.
+  // worker refusal is the other block. An inference-based one is clearable by the
+  // one person who can know the thing this app cannot observe; one the deployment
+  // itself declared is not, because that answer was already given by the only
+  // party who can change it.
   const launchDisabled =
     isLaunching ||
     schemaPending ||
     selectedRunMode.availability === "prototype" ||
-    (workerRefusesLaunch && !workerStartedSinceThoseRuns);
+    (workerRefusesLaunch && !workerAcknowledged);
 
   return (
     <article className="module-section-surface">
@@ -661,7 +718,11 @@ export function ModelRunManager({
           {launchNotice ? (
             <div
               className={
-                launchNotice.queuedOnWorker && workerAbsenceEvidence
+                // Amber whenever the run has landed on a queue there is reason to
+                // doubt — abandoned runs, or a deployment that says it runs no
+                // worker at all. Calm blue there would be false reassurance.
+                launchNotice.queuedOnWorker &&
+                (workerAbsenceEvidence !== null || modelingWorkerDeclaration === "absent")
                   ? "rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
                   : "rounded-[0.5rem] border border-sky-300/80 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200"
               }
@@ -670,9 +731,7 @@ export function ModelRunManager({
               {launchNotice.queuedOnWorker ? (
                 <p className="mt-2">
                   That queue is served by the AequilibraE worker, not by this app.{" "}
-                  {workerAbsenceEvidence
-                    ? `${workerAbsenceEvidence} Unless a worker has been started on this deployment since then, this run will sit queued and then be failed rather than finishing.`
-                    : "It finishes only while a worker is polling this deployment."}
+                  {describeWorkerQueueRisk(modelingWorkerDeclaration, workerAbsenceEvidence)}
                 </p>
               ) : null}
             </div>
@@ -690,36 +749,29 @@ export function ModelRunManager({
 
           {/* The refusal. It fires BEFORE the enqueue, because after it there is
               nothing left to say that is not either a false success or a
-              fifteen-minute-late failure. It names what was observed, names the
-              deployment operator as the party who acts — never a plan, a tier
-              or an upgrade, none of which exist here — and hands over the lanes
-              that do run, so a refusal is never a dead end. */}
-          {workerRefusesLaunch ? (
+              fifteen-minute-late failure. It names what was observed OR what
+              this deployment declared — and which of the two it is, since they
+              carry different weight — names the deployment operator as the
+              party who acts (never a plan, a tier or an upgrade, none of which
+              exist here), and hands over the lanes that do run, so a refusal is
+              never a dead end. */}
+          {workerRefusesLaunch && workerRefusalCopy ? (
             <div
               data-testid="worker-launch-refusal"
               className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
             >
               {/* The heading may claim no more than the rows underneath it do.
-                  Whether a worker process exists is unobservable from here — the
-                  worker polls and has no heartbeat — so the heading states the
-                  observation (nothing picked these runs up) rather than the
-                  conclusion (there is no worker), which would be the same
-                  confidently-wrong answer in the opposite direction. */}
-              <p className="font-semibold">
-                {selectedRunMode.label} needs a processing worker, and nothing has been picking up
-                the worker-backed runs on this model
-              </p>
-              <p className="mt-2">
-                {selectedRunMode.label} does not run inside OpenPlan. Launching it puts stages on a
-                queue that a separate AequilibraE worker polls and executes. {workerAbsenceEvidence}{" "}
-                That is what an absent worker looks like: this launch would report success, the run
-                would sit queued, and it would be failed some minutes later with nothing to show.
-              </p>
-              <p className="mt-2">
-                Nothing about this workspace, this account or this study area is blocking it, and
-                there is nothing to buy — OpenPlan is free. Whoever operates this deployment starts
-                the worker; the steps are in <code>workers/aequilibrae_worker/DEPLOY.md</code>.
-              </p>
+                  Whether a worker PROCESS exists is unobservable from here — the
+                  worker polls and has no heartbeat — so an inference-based
+                  heading states the observation (nothing picked these runs up)
+                  rather than the conclusion (there is no worker). Where the
+                  deployment has declared the answer itself, the heading may say
+                  so, and attributes it: the deployment said this, OpenPlan did
+                  not discover it. `describeWorkerLaunchRefusal` owns which of
+                  those is on screen. */}
+              <p className="font-semibold">{workerRefusalCopy.heading}</p>
+              <p className="mt-2">{workerRefusalCopy.body}</p>
+              <p className="mt-2">{workerRefusalCopy.operatorAction}</p>
               <p className="mt-3 font-semibold">These run modes execute in this app right now:</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {IN_PROCESS_ENGINE_KEYS.map((inProcessKey) => (
@@ -739,26 +791,43 @@ export function ModelRunManager({
                 area above that cap is handed to this same worker queue, so a metro-scale sketch run
                 depends on the worker too.
               </p>
-              <label className="mt-3 flex items-start gap-2 text-xs">
-                <input
-                  type="checkbox"
-                  className="mt-0.5 h-4 w-4 rounded border-border"
-                  checked={workerStartedSinceThoseRuns}
-                  onChange={(event) => setWorkerStartedSinceThoseRuns(event.target.checked)}
-                />
-                <span>
-                  A modeling worker has been started on this deployment since those runs — queue this
-                  one anyway. (The worker is a poller with no heartbeat, so OpenPlan cannot see that
-                  for itself; only you can tell it.)
-                </span>
-              </label>
+              {/* Offered only where the refusal rests on inference. A deployment
+                  that declares no worker has been answered by the person who
+                  would have to start one, and a planner ticking a box does not
+                  make that false — so there is no box, and the paragraph above
+                  says who changes it instead. */}
+              {workerGate.acknowledgementKey !== null ? (
+                <label className="mt-3 flex items-start gap-2 text-xs">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 h-4 w-4 rounded border-border"
+                    checked={workerAcknowledged}
+                    onChange={(event) =>
+                      setAcknowledgedWorkerEvidenceKey(
+                        event.target.checked ? workerGate.acknowledgementKey : null
+                      )
+                    }
+                  />
+                  <span>
+                    A modeling worker has been started on this deployment since those runs — queue
+                    this one anyway. (The worker is a poller with no heartbeat, so OpenPlan cannot
+                    see that for itself; only you can tell it. If another run is abandoned after
+                    this, the refusal comes back — the tick answers the runs on screen now, not
+                    every run from here on.)
+                  </span>
+                </label>
+              ) : null}
             </div>
           ) : null}
 
           <Button type="button" onClick={() => void handleLaunch()} disabled={launchDisabled}>
             {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {workerRefusesLaunch && !workerStartedSinceThoseRuns
-              ? "Launch refused — nothing has been picking these runs up"
+            {workerRefusesLaunch && !workerAcknowledged
+              ? workerGate.reason === "deployment_declares_no_worker"
+                ? "Launch refused — this deployment declares no modeling worker"
+                : workerGate.reason === "declared_worker_never_started"
+                  ? "Launch refused — the declared worker has not been picking these runs up"
+                  : "Launch refused — nothing has been picking these runs up"
               : selectedRunMode.availability === "launchable"
                 ? "Launch managed run"
                 : selectedRunMode.availability === "preflight"

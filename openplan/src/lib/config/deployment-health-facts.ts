@@ -7,6 +7,12 @@
  * secret; the I/O and the `process.env` reads live here, where the conversion
  * from "a token string" to "a boolean" happens exactly once and never travels
  * further.
+ *
+ * Two of the readers below are used beyond the dashboard. A worker declaration
+ * is only worth making if the surface that would otherwise mislead a planner
+ * can see it, so the modeling-worker and county-onramp-worker declarations are
+ * also read here and handed to the launch controls by the server components
+ * that render them. One reader, two readers of it — not two rules.
  */
 
 import {
@@ -14,7 +20,11 @@ import {
   resolvePublicMapboxToken,
 } from "@/lib/mapbox/public-token";
 import { classifyRunLiveness, type LivenessRun } from "@/lib/models/run-liveness";
-import type { DeploymentHealthFacts } from "./deployment-health";
+import {
+  MODELING_WORKER_DECLARATION_ENV,
+  type DeploymentHealthFacts,
+  type ModelingWorkerDeclaration,
+} from "./deployment-health";
 import { detectPdfEngineAvailability } from "@/lib/reports/pdf";
 
 /** Minimal structural view of the client, so this is testable with a stub. */
@@ -59,7 +69,62 @@ export function readDeploymentEnvFacts(): Omit<DeploymentHealthFacts, "modelingW
 }
 
 /**
- * Observed modeling-worker state for one workspace.
+ * Values an operator may write for the modeling-worker declaration.
+ *
+ * Two canonical words plus the boolean-ish spellings people actually type. The
+ * synonyms are here so a reasonable answer is never thrown away as a typo —
+ * but the set is closed on purpose: anything outside it becomes
+ * `unrecognized`, which is REPORTED on the dashboard rather than quietly read
+ * as either answer. A declaration guessed from a misspelling would be worse
+ * than no declaration at all, because it would be trusted.
+ */
+const DECLARED_DEPLOYED = new Set(["deployed", "running", "true", "yes", "1", "on"]);
+const DECLARED_ABSENT = new Set(["absent", "none", "false", "no", "0", "off"]);
+
+/** Pure: what a raw declaration string means. Empty/unset is `undeclared`. */
+export function parseModelingWorkerDeclaration(
+  raw: string | null | undefined
+): ModelingWorkerDeclaration {
+  const value = raw?.trim().toLowerCase();
+  if (!value) return "undeclared";
+  if (DECLARED_DEPLOYED.has(value)) return "deployed";
+  if (DECLARED_ABSENT.has(value)) return "absent";
+  return "unrecognized";
+}
+
+/**
+ * The declaration this deployment has made, for the dashboard AND for the model
+ * launch controls — read it in a server component and pass the result down, the
+ * way the aerial and county worker declarations are read.
+ *
+ * Unprefixed on purpose. It is not a secret, but a `NEXT_PUBLIC_` variable is
+ * inlined at BUILD time: an operator who deployed a worker and updated the
+ * declaration would keep being refused until they rebuilt, which is a fresh way
+ * for the product to be confidently wrong. Read server-side per request, a
+ * changed declaration takes effect as soon as the process restarts.
+ */
+export function resolveModelingWorkerDeclaration(
+  env: NodeJS.ProcessEnv = process.env
+): ModelingWorkerDeclaration {
+  return parseModelingWorkerDeclaration(env[MODELING_WORKER_DECLARATION_ENV]);
+}
+
+/**
+ * Whether a county onramp worker is configured to RECEIVE county jobs.
+ *
+ * Mirrors `dispatchCountyOnrampJob`'s own test exactly — the URL alone decides,
+ * because that is the branch that returns `deliveryMode: "prepared"` without
+ * making any request; the token is optional there. Kept in step deliberately:
+ * if the dispatcher's rule ever changes, this must change with it, or the
+ * county launch control will promise something the dispatcher does not do.
+ */
+export function isCountyOnrampWorkerConfigured(env: NodeJS.ProcessEnv = process.env): boolean {
+  return Boolean(env.OPENPLAN_COUNTY_ONRAMP_WORKER_URL?.trim());
+}
+
+/**
+ * Observed modeling-worker state for one workspace, plus what the deployment
+ * declares about the worker itself.
  *
  * Scoped to the workspace deliberately. Worker liveness is a deployment-wide
  * property, but a workspace-scoped view cannot see it: a worker busy on another
@@ -81,9 +146,15 @@ export function readDeploymentEnvFacts(): Omit<DeploymentHealthFacts, "modelingW
 export async function loadModelingWorkerFacts(
   client: RunsQueryClient,
   workspaceId: string,
-  now: number = Date.now()
+  now: number = Date.now(),
+  env: NodeJS.ProcessEnv = process.env
 ): Promise<DeploymentHealthFacts["modelingWorker"]> {
-  const empty = { nonTerminalRunCount: 0, stalledRunCount: 0 };
+  // Read first and carried through every early return: the declaration is
+  // configuration, so a database problem must not be able to erase it. Losing
+  // it here would turn a query failure into "this deployment says nothing",
+  // which is a different — and false — statement.
+  const declaration = resolveModelingWorkerDeclaration(env);
+  const empty = { declaration, nonTerminalRunCount: 0, stalledRunCount: 0 };
   if (!workspaceId) return empty;
 
   try {
@@ -105,7 +176,7 @@ export async function loadModelingWorkerFacts(
       (run) => classifyRunLiveness(run, now, { workerLikelyAlive: false }) !== "ok"
     ).length;
 
-    return { nonTerminalRunCount: runs.length, stalledRunCount };
+    return { declaration, nonTerminalRunCount: runs.length, stalledRunCount };
   } catch {
     return empty;
   }

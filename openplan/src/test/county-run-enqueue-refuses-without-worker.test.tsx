@@ -161,6 +161,60 @@ describe("county run launch control on a deployment with no worker", () => {
     expect(screen.getByText(/prepared, not submitted/i)).toBeInTheDocument();
   });
 
+  /**
+   * The disclosure above needs a run that was ALREADY prepared, so the first
+   * county launch on a fresh deployment got nothing. Unlike the modeling
+   * worker, this one is declared by configuration already — the page can hand
+   * the answer down and the first launch can be honest.
+   */
+  it("says it before the first launch, on a deployment that declares no worker", () => {
+    useCountyRunsMock.mockReturnValue({ items: [], loading: false, error: null, refresh: vi.fn() });
+
+    render(
+      <CountyRunsPageClient
+        workspaceId="123e4567-e89b-12d3-a456-426614174000"
+        countyOnrampWorkerConfigured={false}
+      />
+    );
+
+    const disclosure = screen.getByTestId("county-worker-absent-disclosure");
+    expect(disclosure).toHaveTextContent(/no county onramp worker configured/i);
+    // Nothing has been prepared here, so there is no record to cite as evidence.
+    expect(disclosure).not.toHaveTextContent(/county run here was prepared/i);
+    // The handoff lane stays real: this is a disclosure, not a dead end.
+    expect(disclosure).toHaveTextContent(/payload is usable/i);
+  });
+
+  it("stops calling a launch a handoff once a worker is configured", () => {
+    // Prepared records prove only what was true when they were made. With a
+    // worker configured now, a launch really would be submitted, so repeating
+    // the old disclosure would be the false statement.
+    useCountyRunsMock.mockReturnValue({
+      items: [
+        {
+          id: COUNTY_RUN_ID,
+          geographyLabel: "Franklin County, Ohio",
+          runName: "franklin-runtime",
+          stage: "bootstrap-incomplete",
+          enqueueStatus: "prepared",
+          updatedAt: "2026-07-28T11:00:00Z",
+        },
+      ],
+      loading: false,
+      error: null,
+      refresh: vi.fn(),
+    });
+
+    render(
+      <CountyRunsPageClient
+        workspaceId="123e4567-e89b-12d3-a456-426614174000"
+        countyOnrampWorkerConfigured
+      />
+    );
+
+    expect(screen.queryByTestId("county-worker-absent-disclosure")).toBeNull();
+  });
+
   it("stays quiet when nothing has been prepared-without-a-worker here", () => {
     useCountyRunsMock.mockReturnValue({
       items: [

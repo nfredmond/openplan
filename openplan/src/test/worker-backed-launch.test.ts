@@ -5,6 +5,9 @@ import {
   WORKER_BACKED_ENGINE_KEYS,
   assessWorkerLaunchReadiness,
   describeWorkerAbsenceEvidence,
+  describeWorkerLaunchRefusal,
+  describeWorkerQueueRisk,
+  evaluateWorkerLaunchGate,
   isWorkerBackedEngineKey,
   type WorkerBackedRunObservation,
 } from "@/lib/models/worker-backed-launch";
@@ -220,6 +223,212 @@ describe("what a model's own run history proves about the worker", () => {
     ];
 
     expect(assessWorkerLaunchReadiness(runs, null)).toEqual({ state: "unobserved" });
+  });
+});
+
+/**
+ * The hole the declaration fills: every judgement above needs a run that has
+ * ALREADY been abandoned, so the first launch on a fresh deployment could never
+ * be refused — it was enqueued, waited, and was reaped, and the planner learned
+ * nothing from it. An operator's declaration is the only thing that can be known
+ * before any run exists, because the worker is a poller with nothing to probe.
+ */
+describe("refusing the first launch a deployment has ever been asked for", () => {
+  const noHistory: WorkerBackedRunObservation[] = [];
+
+  function gate(
+    declaration: Parameters<typeof evaluateWorkerLaunchGate>[0]["declaration"],
+    runs: WorkerBackedRunObservation[] = noHistory,
+    engineKey = "aequilibrae"
+  ) {
+    return evaluateWorkerLaunchGate({ engineKey, declaration, runs, now: NOW });
+  }
+
+  const abandoned = (id: string, minutesAgo = 40): WorkerBackedRunObservation => ({
+    id,
+    engine_key: "aequilibrae",
+    status: "failed",
+    started_at: null,
+    created_at: iso(NOW - minutesAgo * 60_000),
+    stages: queuedStages(),
+  });
+
+  const executed = (id: string): WorkerBackedRunObservation => ({
+    id,
+    engine_key: "aequilibrae",
+    status: "succeeded",
+    started_at: iso(NOW - 30 * 60_000),
+    created_at: iso(NOW - 31 * 60_000),
+    stages: [{ status: "succeeded", started_at: iso(NOW - 30 * 60_000) }],
+  });
+
+  it("refuses a deployment that declares no worker before anything is queued", () => {
+    const result = gate("absent");
+
+    expect(result.refused).toBe(true);
+    expect(result.reason).toBe("deployment_declares_no_worker");
+    // There is no history, so there is nothing observed to assert.
+    expect(result.evidence).toBeNull();
+  });
+
+  it("does not refuse a deployment that declares a worker and has no history", () => {
+    // The reason to declare one: a correctly configured deployment must never
+    // be refused a launch that would have worked.
+    expect(gate("deployed").refused).toBe(false);
+  });
+
+  it("keeps claiming nothing where nothing has been declared and nothing observed", () => {
+    expect(gate("undeclared").refused).toBe(false);
+    expect(gate("unrecognized").refused).toBe(false);
+  });
+
+  it("reads a value it does not understand as no answer at all, never as an answer", () => {
+    // A typo must not become a refusal; it falls back to inference, and the
+    // dashboard tells the operator the value was ignored.
+    expect(gate("unrecognized", [abandoned("run-1")]).reason).toBe("runs_were_never_started");
+    expect(gate("unrecognized").refused).toBe(false);
+  });
+
+  it("lets a run that really executed override a stale declaration of absence", () => {
+    // Evidence outranks configuration in both directions. A worker that has
+    // demonstrably served this queue must not be refused because a variable was
+    // never updated.
+    expect(gate("absent", [executed("run-1")]).refused).toBe(false);
+  });
+
+  it("still refuses where a declared worker has not been picking runs up", () => {
+    const result = gate("deployed", [abandoned("run-1"), abandoned("run-2")]);
+
+    expect(result.refused).toBe(true);
+    expect(result.reason).toBe("declared_worker_never_started");
+    expect(result.evidence).toContain("The last 2 worker-backed runs");
+  });
+
+  it("does not refuse an engine that runs inside this app, whatever is declared", () => {
+    for (const engineKey of IN_PROCESS_ENGINE_KEYS) {
+      expect(gate("absent", [abandoned("run-1")], engineKey).refused).toBe(false);
+    }
+  });
+
+  it("does not offer a planner an override of the operator's own declaration", () => {
+    // A checkbox saying "there is a worker really" cannot make a deployment's
+    // stated configuration false; the person who changes it is named instead.
+    expect(gate("absent").acknowledgementKey).toBeNull();
+    expect(gate("absent", [abandoned("run-1")]).acknowledgementKey).toBeNull();
+  });
+});
+
+describe("an acknowledgement that expires when fresh evidence arrives", () => {
+  const abandoned = (id: string): WorkerBackedRunObservation => ({
+    id,
+    engine_key: "aequilibrae",
+    status: "failed",
+    started_at: null,
+    created_at: iso(NOW - 40 * 60_000),
+    stages: queuedStages(),
+  });
+
+  const keyFor = (runs: WorkerBackedRunObservation[]) =>
+    evaluateWorkerLaunchGate({
+      engineKey: "aequilibrae",
+      declaration: "undeclared",
+      runs,
+      now: NOW,
+    }).acknowledgementKey;
+
+  it("keys the acknowledgement to the runs it was given for", () => {
+    expect(keyFor([abandoned("run-1")])).toBe(keyFor([abandoned("run-1")]));
+  });
+
+  it("changes the key the moment another run is abandoned", () => {
+    // The defect this closes: a planner ticked "a worker has been started", the
+    // next run was reaped too, and the tick went on authorising launches into a
+    // queue that had just eaten another one.
+    expect(keyFor([abandoned("run-2"), abandoned("run-1")])).not.toBe(keyFor([abandoned("run-1")]));
+  });
+
+  it("changes the key even for rows carrying no identity of their own", () => {
+    const anonymous = (): WorkerBackedRunObservation => ({
+      engine_key: "aequilibrae",
+      status: "failed",
+      started_at: null,
+      created_at: null,
+      stages: queuedStages(),
+    });
+
+    expect(keyFor([anonymous(), anonymous()])).not.toBe(keyFor([anonymous()]));
+  });
+});
+
+describe("what each refusal is allowed to say", () => {
+  it("attributes a declared absence to the deployment, not to an observation", () => {
+    const copy = describeWorkerLaunchRefusal("deployment_declares_no_worker", "Fast Screening", null);
+
+    expect(copy.heading).toMatch(/this deployment declares that it runs none/i);
+    expect(copy.body).toMatch(/configuration states that no such worker runs against it/i);
+    // It may not claim to have looked and found nothing.
+    expect(`${copy.heading} ${copy.body}`).not.toMatch(/we (checked|found)|no worker was found/i);
+    // The party who acts is the operator, and nothing is for sale.
+    expect(copy.operatorAction).toMatch(/Whoever operates this deployment/);
+    expect(`${copy.heading} ${copy.body} ${copy.operatorAction}`).not.toMatch(
+      /upgrade|subscription|billing|pricing|paid tier|plan tier|contact sales/i
+    );
+  });
+
+  it("names the contradiction where a declared worker has not been starting runs", () => {
+    const copy = describeWorkerLaunchRefusal(
+      "declared_worker_never_started",
+      "Fast Screening",
+      "The last worker-backed run on this model was queued and never started by anything."
+    );
+
+    expect(copy.body).toMatch(/never started by anything/);
+    expect(copy.body).toMatch(/not a heartbeat/i);
+    expect(copy.operatorAction).toMatch(/workers\/aequilibrae_worker\/DEPLOY\.md/);
+  });
+
+  it("keeps the inference-only refusal to what the runs show", () => {
+    const copy = describeWorkerLaunchRefusal(
+      "runs_were_never_started",
+      "Fast Screening",
+      "The last worker-backed run on this model was queued and never started by anything."
+    );
+
+    expect(copy.heading).toMatch(/nothing has been picking up the worker-backed runs/i);
+    // Never the conclusion "this deployment has no worker" — unobservable here.
+    expect(copy.heading).not.toMatch(/has no worker|runs none/i);
+  });
+});
+
+describe("what a run already queued on the worker may be told", () => {
+  const evidence = "The last worker-backed run on this model was queued and never started by anything.";
+
+  it("says plainly that a declared-worker-less deployment will not finish it", () => {
+    // This fires after a large sketch run is rerouted onto the worker queue
+    // server-side, which the launch button cannot predict.
+    expect(describeWorkerQueueRisk("absent", null)).toMatch(
+      /declares that no AequilibraE worker runs against it/i
+    );
+    expect(describeWorkerQueueRisk("absent", null)).toMatch(/failed rather than finishing/i);
+  });
+
+  it("keeps both the observation and the declaration when they disagree", () => {
+    const text = describeWorkerQueueRisk("deployed", evidence);
+    expect(text).toContain(evidence);
+    expect(text).toMatch(/disagree/i);
+  });
+
+  it("does not promise a declared worker is running right now", () => {
+    expect(describeWorkerQueueRisk("deployed", null)).toMatch(/rather than a live check/i);
+  });
+
+  it("falls back to exactly what it said before anything was declared", () => {
+    expect(describeWorkerQueueRisk("undeclared", evidence)).toBe(
+      `${evidence} Unless a worker has been started on this deployment since then, this run will sit queued and then be failed rather than finishing.`
+    );
+    expect(describeWorkerQueueRisk("undeclared", null)).toBe(
+      "It finishes only while a worker is polling this deployment."
+    );
   });
 });
 

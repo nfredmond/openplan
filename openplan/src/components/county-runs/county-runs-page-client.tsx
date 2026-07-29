@@ -29,9 +29,21 @@ export type CountyRunsInitialStudyArea = {
 export function CountyRunsPageClient({
   workspaceId,
   initialStudyArea,
+  countyOnrampWorkerConfigured = null,
 }: {
   workspaceId: string;
   initialStudyArea?: CountyRunsInitialStudyArea;
+  /**
+   * Whether this deployment has a county onramp worker configured to receive
+   * jobs — read server-side by the page from
+   * `isCountyOnrampWorkerConfigured()`, which mirrors the dispatcher's own rule.
+   *
+   * `null` means the page did not say, and is the honest default: the control
+   * falls back to inferring from `prepared` records, exactly as before. It must
+   * never be read as "no worker", because that would refuse-by-disclosure on
+   * every deployment whose page has simply not been wired up yet.
+   */
+  countyOnrampWorkerConfigured?: boolean | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -91,20 +103,35 @@ export function CountyRunsPageClient({
 
   /**
    * Whether county onboarding on this deployment produces a RUN or only a
-   * handoff — and this is evidence, not a guess.
+   * handoff — declaration first, evidence second.
    *
    * `prepared` is recorded by exactly one branch of `dispatchCountyOnrampJob`:
    * the one taken when no county onramp worker URL is configured, where no HTTP
    * request is made at all. So a single prepared record proves that a county
-   * run here waits for a person, not for a worker. Saying so before the launch
+   * run here waited for a person, not for a worker. Saying so before the launch
    * button is the same refuse-before-enqueue rule the model run modes follow —
    * launching is still allowed, because a prepared handoff is genuinely usable
    * by an operator, but it may not be presented as background execution.
+   *
+   * That evidence alone was RETROSPECTIVE, though: it exists only after a run
+   * has already been prepared, so the first county launch on a fresh deployment
+   * got no disclosure at all. Unlike the modeling worker, this one is declared
+   * by configuration already (`OPENPLAN_COUNTY_ONRAMP_WORKER_URL`), so the page
+   * can hand down the answer and the very first launch can be honest.
+   *
+   * The declaration wins where it exists, in BOTH directions. A configured
+   * worker makes old prepared records history — a launch now really would be
+   * submitted, so warning that it "produces a handoff" would be false. And a
+   * deployment with no worker configured is told before its first launch rather
+   * than after it.
    */
   const preparedOnlyRunCount = useMemo(
     () => items.filter((item) => item.enqueueStatus === "prepared").length,
     [items]
   );
+  const workerAbsenceIsDeclared = countyOnrampWorkerConfigured === false;
+  const disclosePreparedOnly =
+    workerAbsenceIsDeclared || (countyOnrampWorkerConfigured === null && preparedOnlyRunCount > 0);
 
   const suggestedRunName = useMemo(() => {
     if (!countySelection.ready) return "";
@@ -211,7 +238,7 @@ export function CountyRunsPageClient({
                 placeholder={suggestedRunName || "Named after the county if left blank"}
               />
             </div>
-            {preparedOnlyRunCount > 0 ? (
+            {disclosePreparedOnly ? (
               <div
                 data-testid="county-worker-absent-disclosure"
                 className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
@@ -220,13 +247,21 @@ export function CountyRunsPageClient({
                   On this deployment, launching produces a handoff — not a run that starts itself
                 </p>
                 <p className="mt-2">
-                  {preparedOnlyRunCount === 1
-                    ? "A county run here was prepared rather than submitted"
-                    : `${preparedOnlyRunCount} county runs here were prepared rather than submitted`}
-                  , which OpenPlan records only when no county onramp worker is configured to receive
-                  the job. Launching still creates the run record and the full worker payload, and
-                  that payload is usable — but the bootstrap does not execute until whoever operates
-                  this deployment either configures a worker (
+                  {/* Two sentences for the same conclusion, and which one is on
+                      screen matters: a declaration is attributed to the
+                      deployment's configuration, an inference is attributed to
+                      the records it was drawn from. Blurring them would let a
+                      guess borrow the authority of a fact. */}
+                  {workerAbsenceIsDeclared
+                    ? "This deployment has no county onramp worker configured to receive the job, so nothing will be submitted anywhere."
+                    : `${
+                        preparedOnlyRunCount === 1
+                          ? "A county run here was prepared rather than submitted"
+                          : `${preparedOnlyRunCount} county runs here were prepared rather than submitted`
+                      }, which OpenPlan records only when no county onramp worker is configured to receive the job.`}{" "}
+                  Launching still creates the run record and the full worker payload, and that
+                  payload is usable — but the bootstrap does not execute until whoever operates this
+                  deployment either configures a worker (
                   <code>workers/county_onramp_worker/DEPLOY.md</code>) or runs the prepared handoff
                   themselves and posts the manifest back.
                 </p>

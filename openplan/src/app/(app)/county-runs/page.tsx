@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { CountyRunsPageClient } from "@/components/county-runs/county-runs-page-client";
+import { isCountyOnrampWorkerConfigured } from "@/lib/config/deployment-health-facts";
 import {
   HOME_GEOGRAPHY_COLUMNS,
   parseWorkspaceHomeGeography,
@@ -138,6 +139,25 @@ export default async function CountyRunsPage({
     workspaceHome: placeOfRecordFromHomeGeography(parseWorkspaceHomeGeography(workspaceResult.data)),
   });
 
+  /**
+   * Whether this deployment has a county onramp worker configured to RECEIVE
+   * jobs, answered here because only the server can answer it:
+   * `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` is an unprefixed variable and the URL
+   * itself is an internal endpoint that has no business in a browser bundle.
+   * What crosses to the client is the VERDICT — a boolean — never the address.
+   *
+   * A boolean rather than `null` from this page onwards. `null` means "the page
+   * did not say", which was true while nothing read the variable; now that this
+   * page has looked, passing `null` would understate what is known and leave the
+   * first launch on a worker-less deployment undisclosed, which is the whole
+   * defect. The client keeps `null` as its default for any caller not yet wired.
+   *
+   * `isCountyOnrampWorkerConfigured` mirrors `dispatchCountyOnrampJob`'s own
+   * test, so what this page discloses and what the dispatcher then does cannot
+   * disagree.
+   */
+  const countyOnrampWorkerConfigured = isCountyOnrampWorkerConfigured();
+
   /** Why the requested project's area is NOT the one below, when it isn't. */
   const projectAreaNotice = !requestedProjectId
     ? null
@@ -195,6 +215,7 @@ export default async function CountyRunsPage({
           // study area" rather than leaving an inherited boundary anonymous.
           label: studyArea.originLabel,
         }}
+        countyOnrampWorkerConfigured={countyOnrampWorkerConfigured}
       />
     </>
   );
