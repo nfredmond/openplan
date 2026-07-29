@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import { replaceLinkSet, restoreLinkSet } from "@/lib/api/link-replacement";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { MODEL_LINK_TARGETS, type ModelLinkIdentityRow } from "@/lib/models/link-targets";
 import {
   buildModelReadiness,
   buildModelWorkflowSummary,
@@ -58,13 +59,6 @@ type RouteContext = {
 
 type LinkInput = z.infer<typeof modelLinkInputSchema>;
 
-type LinkTargetRow = {
-  id: string;
-  workspace_id: string;
-  title?: string | null;
-  name?: string | null;
-};
-
 type PreparedModelLink = {
   link_type: ModelLinkType;
   linked_id: string;
@@ -82,39 +76,6 @@ type ModelLinkRow = {
 type NetworkPackageVersionLookupRow = {
   id: string;
   package: { id: string; workspace_id: string } | Array<{ id: string; workspace_id: string }> | null;
-};
-
-const LINK_TARGET_CONFIG: Record<ModelLinkType, { table: string; select: string; labelField: "title" | "name" }> = {
-  scenario_set: {
-    table: "scenario_sets",
-    select: "id, workspace_id, title, status, planning_question, updated_at",
-    labelField: "title",
-  },
-  report: {
-    table: "reports",
-    select: "id, workspace_id, project_id, title, report_type, status, generated_at, updated_at",
-    labelField: "title",
-  },
-  data_dataset: {
-    table: "data_datasets",
-    select: "id, workspace_id, name, status, vintage_label, geometry_scope, updated_at",
-    labelField: "name",
-  },
-  plan: {
-    table: "plans",
-    select: "id, workspace_id, project_id, title, plan_type, status, updated_at",
-    labelField: "title",
-  },
-  project_record: {
-    table: "projects",
-    select: "id, workspace_id, name, status, delivery_phase, updated_at",
-    labelField: "name",
-  },
-  run: {
-    table: "runs",
-    select: "id, workspace_id, title, created_at",
-    labelField: "title",
-  },
 };
 
 function dedupeLinks(links: LinkInput[] | undefined): LinkInput[] {
@@ -150,16 +111,20 @@ async function validateModelLinks(
     const linksForType = dedupedLinks.filter((link) => link.linkType === linkType);
     if (linksForType.length === 0) continue;
 
-    const config = LINK_TARGET_CONFIG[linkType as ModelLinkType];
+    const config = MODEL_LINK_TARGETS[linkType as ModelLinkType];
     const ids = linksForType.map((link) => link.linkedId);
 
-    const { data, error } = await supabase.from(config.table).select(config.select).eq("workspace_id", workspaceId).in("id", ids);
+    const { data, error } = await supabase
+      .from(config.table)
+      .select(config.identitySelect)
+      .eq("workspace_id", workspaceId)
+      .in("id", ids);
 
     if (error) {
       return { error, preparedLinks: null };
     }
 
-    const rows = (data ?? []) as unknown as LinkTargetRow[];
+    const rows = (data ?? []) as unknown as ModelLinkIdentityRow[];
     if (rows.length !== new Set(ids).size) {
       return { invalid: true, preparedLinks: null as PreparedModelLink[] | null };
     }
@@ -301,43 +266,27 @@ export async function GET(request: NextRequest, context: RouteContext) {
       run: links.filter((link) => link.link_type === "run").map((link) => link.linked_id),
     };
 
+    /**
+     * Load the linked records of one type, or resolve empty when none are
+     * linked. The projection comes from the shared target map so the detail
+     * hydration and the link validation above it can no longer disagree about
+     * what a table's columns are called.
+     */
+    const hydrateLinked = (linkType: ModelLinkType) => {
+      const ids = grouped[linkType];
+      if (!ids.length) return Promise.resolve({ data: [], error: null });
+
+      const config = MODEL_LINK_TARGETS[linkType];
+      return detailSupabase.from(config.table).select(config.detailSelect).in("id", ids);
+    };
+
     const [linkedScenarios, linkedReports, linkedDatasets, linkedPlans, linkedProjects, linkedRuns] = await Promise.all([
-      grouped.scenario_set.length
-        ? detailSupabase
-            .from("scenario_sets")
-            .select("id, workspace_id, project_id, title, summary, planning_question, status, updated_at")
-            .in("id", grouped.scenario_set)
-        : Promise.resolve({ data: [], error: null }),
-      grouped.report.length
-        ? detailSupabase
-            .from("reports")
-            .select("id, workspace_id, project_id, title, report_type, status, generated_at, updated_at")
-            .in("id", grouped.report)
-        : Promise.resolve({ data: [], error: null }),
-      grouped.data_dataset.length
-        ? detailSupabase
-            .from("data_datasets")
-            .select("id, workspace_id, name, status, vintage_label, geometry_scope, updated_at")
-            .in("id", grouped.data_dataset)
-        : Promise.resolve({ data: [], error: null }),
-      grouped.plan.length
-        ? detailSupabase
-            .from("plans")
-            .select("id, workspace_id, project_id, title, plan_type, status, updated_at")
-            .in("id", grouped.plan)
-        : Promise.resolve({ data: [], error: null }),
-      grouped.project_record.length
-        ? detailSupabase
-            .from("projects")
-            .select("id, workspace_id, name, status, delivery_phase, updated_at")
-            .in("id", grouped.project_record)
-        : Promise.resolve({ data: [], error: null }),
-      grouped.run.length
-        ? detailSupabase
-            .from("runs")
-            .select("id, workspace_id, title, created_at")
-            .in("id", grouped.run)
-        : Promise.resolve({ data: [], error: null }),
+      hydrateLinked("scenario_set"),
+      hydrateLinked("report"),
+      hydrateLinked("data_dataset"),
+      hydrateLinked("plan"),
+      hydrateLinked("project_record"),
+      hydrateLinked("run"),
     ]);
 
     for (const [name, result] of [

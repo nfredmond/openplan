@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { MODEL_LINK_TARGETS, type ModelLinkIdentityRow } from "@/lib/models/link-targets";
 import {
   buildModelReadiness,
   buildModelWorkflowSummary,
@@ -57,13 +58,6 @@ const createModelSchema = z
 
 type LinkInput = z.infer<typeof modelLinkInputSchema>;
 
-type LinkTargetRow = {
-  id: string;
-  workspace_id: string;
-  title?: string | null;
-  name?: string | null;
-};
-
 type PreparedModelLink = {
   link_type: ModelLinkType;
   linked_id: string;
@@ -83,39 +77,6 @@ type WorkspaceContextResult = {
   error: { message: string; code?: string | null } | null;
   allowed: boolean;
   missing?: "project" | "scenario_set";
-};
-
-const LINK_TARGET_CONFIG: Record<ModelLinkType, { table: string; select: string; labelField: "title" | "name" }> = {
-  scenario_set: {
-    table: "scenario_sets",
-    select: "id, workspace_id, title",
-    labelField: "title",
-  },
-  report: {
-    table: "reports",
-    select: "id, workspace_id, title",
-    labelField: "title",
-  },
-  data_dataset: {
-    table: "data_datasets",
-    select: "id, workspace_id, name",
-    labelField: "name",
-  },
-  plan: {
-    table: "plans",
-    select: "id, workspace_id, title",
-    labelField: "title",
-  },
-  project_record: {
-    table: "projects",
-    select: "id, workspace_id, name",
-    labelField: "name",
-  },
-  run: {
-    table: "runs",
-    select: "id, workspace_id, title",
-    labelField: "title",
-  },
 };
 
 function dedupeLinks(links: LinkInput[] | undefined): LinkInput[] {
@@ -274,16 +235,20 @@ async function validateModelLinks(
     const linksForType = dedupedLinks.filter((link) => link.linkType === linkType);
     if (linksForType.length === 0) continue;
 
-    const config = LINK_TARGET_CONFIG[linkType as ModelLinkType];
+    const config = MODEL_LINK_TARGETS[linkType as ModelLinkType];
     const ids = linksForType.map((link) => link.linkedId);
 
-    const { data, error } = await supabase.from(config.table).select(config.select).eq("workspace_id", workspaceId).in("id", ids);
+    const { data, error } = await supabase
+      .from(config.table)
+      .select(config.identitySelect)
+      .eq("workspace_id", workspaceId)
+      .in("id", ids);
 
     if (error) {
       return { error, preparedLinks: null };
     }
 
-    const rows = (data ?? []) as unknown as LinkTargetRow[];
+    const rows = (data ?? []) as unknown as ModelLinkIdentityRow[];
     if (rows.length !== new Set(ids).size) {
       return { invalid: true, preparedLinks: null as PreparedModelLink[] | null };
     }

@@ -119,7 +119,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       supabase.from("reports").select("id, title").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
       supabase
         .from("data_datasets")
-        .select("id, name, status, vintage_label, geometry_scope, updated_at")
+        .select("id, name, status, vintage_label, geography_scope, updated_at")
         .eq("workspace_id", model.workspace_id)
         .order("updated_at", { ascending: false }),
       supabase.from("runs").select("id, title, created_at").eq("workspace_id", model.workspace_id).order("created_at", { ascending: false }).limit(60),
@@ -226,7 +226,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       datasetLinkIds.length
         ? supabase
             .from("data_datasets")
-            .select("id, name, status, vintage_label, geometry_scope, updated_at")
+            .select("id, name, status, vintage_label, geography_scope, updated_at")
             .in("id", datasetLinkIds)
         : Promise.resolve({ data: [], error: null }),
       runLinkIds.length ? supabase.from("runs").select("id, title, created_at").in("id", runLinkIds) : Promise.resolve({ data: [], error: null }),
@@ -317,7 +317,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
         name: string | null;
         status: string | null;
         vintage_label: string | null;
-        geometry_scope: string | null;
+        geography_scope: string | null;
         updated_at: string | null;
       }>).map((record) => ({
         id: record.id,
@@ -325,7 +325,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
         href: "/data-hub",
         statusLabel: record.status || "Dataset record",
         timestampLabel: formatModelDateTime(record.updated_at),
-        meta: [record.vintage_label, record.geometry_scope].filter((value): value is string => Boolean(value)),
+        meta: [record.vintage_label, record.geography_scope].filter((value): value is string => Boolean(value)),
       })),
     },
     {
