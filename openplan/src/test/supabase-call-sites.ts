@@ -554,6 +554,27 @@ export function collectSupabaseSelectSites(options: CollectOptions = {}): Supaba
 
   for (const file of targetFiles(options)) {
     const source = parse(file);
+    const { declarations } = collectDeclarations(source);
+
+    /**
+     * `.select(KB_DOCUMENT_COLUMNS)` is as checkable as `.select("id, name")`
+     * when the constant is a string literal in the same file — and projections
+     * are very often hoisted into a constant precisely because they are long,
+     * which is exactly when a column typo is easiest to miss.
+     */
+    const literalProjection = (argument: ts.Node): string | null => {
+      if (ts.isStringLiteralLike(argument)) return argument.text;
+      if (!ts.isIdentifier(argument)) return null;
+
+      const declaration = lookup(declarations, argument.text, argument.getStart(source));
+      if (!declaration) return null;
+
+      const text = declaration.initializer.trim();
+      const quoted = text.match(/^(["'`])([\s\S]*)\1$/);
+      // A template literal with an interpolation is not a fixed projection.
+      if (!quoted || quoted[2].includes("${")) return null;
+      return quoted[2];
+    };
 
     const visit = (node: ts.Node) => {
       if (
@@ -590,7 +611,7 @@ export function collectSupabaseSelectSites(options: CollectOptions = {}): Supaba
             line: lineOf(source, node),
             table: resolved.table,
             tableExpression: resolved.tableExpression,
-            projection: projectionArg && ts.isStringLiteralLike(projectionArg) ? projectionArg.text : null,
+            projection: projectionArg ? literalProjection(projectionArg) : null,
             projectionExpression: projectionArg?.getText(source) ?? "",
             isCount: Boolean(countMatch),
             countMode: countMatch?.[1] ?? null,

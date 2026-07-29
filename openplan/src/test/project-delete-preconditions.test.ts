@@ -126,20 +126,13 @@ describe("project delete preconditions", () => {
     expect(assessProjectDelete({}, { projectId: "p1" }).deletable).toBe(true);
   });
 
-  it("counts references with a projection every relation actually has", () => {
-    // Two of the 33 tables have no `id` column — data_dataset_project_links is
-    // a pure join table and aerial_project_posture is keyed by project_id — so
-    // counting with .select("id") errored on them, tripped the unreadable-table
-    // branch, and made EVERY delete answer 503. Mocked route tests cannot catch
-    // that, because the mock answers whatever column it is asked for.
-    const route = readFileSync(
-      path.join(process.cwd(), "src/app/api/projects/[projectId]/route.ts"),
-      "utf8"
-    );
-
-    expect(route).toContain('.select("*", { count: "exact", head: true })');
-    expect(route).not.toContain('.select("id", { count: "exact", head: true })');
-  });
+  // The projection question — that counting these relations must not name a
+  // column two of them do not have — moved to
+  // `reference-count-projection-guard.test.ts`. It used to live here as an
+  // assertion that this one route file CONTAINED a particular literal string,
+  // which broke as soon as the projection moved into a shared helper (as it
+  // should have: it tested a substring, not a property) and which said nothing
+  // about the other 1,100 queries in the codebase.
 
   it("guards the guard — the inventory covers both cascade behaviours and both severities", () => {
     expect(PROJECT_DELETE_RELATIONS.length).toBeGreaterThanOrEqual(30);

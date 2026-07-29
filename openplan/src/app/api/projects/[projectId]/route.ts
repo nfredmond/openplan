@@ -15,6 +15,7 @@ import {
   assessProjectDelete,
   PROJECT_DELETE_RELATIONS,
 } from "@/lib/projects/project-delete-preconditions";
+import { countReferences } from "@/lib/api/reference-counts";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
@@ -263,37 +264,23 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     const project = access.project!;
 
     // Count every reference before touching anything. RLS scopes these to the
-    // caller's workspace, which is the same scope the delete would act in.
-    const counts: Record<string, number> = {};
-    const unreadable: string[] = [];
-
-    await Promise.all(
-      PROJECT_DELETE_RELATIONS.map(async (relation) => {
-        // `*` rather than a named column: `head: true` returns no rows, so the
-        // projection costs nothing — and two of these tables have no `id` at
-        // all (`data_dataset_project_links` is a pure join, and
-        // `aerial_project_posture` is keyed by project_id). Naming `id` made
-        // every delete fail its own precondition check and answer 503.
-        const { count, error } = await supabase
-          .from(relation.table)
-          .select("*", { count: "exact", head: true })
-          .eq(relation.column, project.id);
-
-        if (error) {
-          // A relation we cannot read is not a relation that is empty. Refusing
-          // is the only safe reading — the alternative is deleting rows we
-          // failed to notice.
-          unreadable.push(relation.table);
-          return;
-        }
-        counts[relation.table] = count ?? 0;
-      })
-    );
+    // caller's workspace, which is the same scope the delete would act in. The
+    // projection lives in `countReferences` — see its header for why naming a
+    // column over a dynamic table made every delete answer 503.
+    const { counts, unreadable } = await countReferences({
+      supabase,
+      targets: PROJECT_DELETE_RELATIONS,
+      value: project.id,
+    });
 
     if (unreadable.length > 0) {
+      // A relation we cannot read is not a relation that is empty. Refusing is
+      // the only safe reading — the alternative is deleting rows we failed to
+      // notice.
       audit.warn("project_delete_precondition_unreadable", {
         projectId: project.id,
-        tables: unreadable,
+        tables: unreadable.map((entry) => entry.table),
+        errors: unreadable.map((entry) => `${entry.table}: ${entry.message}`),
       });
       return NextResponse.json(
         {
@@ -301,7 +288,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
           message:
             "Some related records could not be read, so deleting could destroy work this check did not see. " +
             "Retry once the workspace schema is fully available.",
-          unreadable,
+          unreadable: unreadable.map((entry) => entry.table),
         },
         { status: 503 }
       );
