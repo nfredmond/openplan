@@ -7,6 +7,12 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { aerialMissionFeatureToSelection } from "@/lib/cartographic/mission-feature-to-selection";
 import { projectFeatureToSelection } from "@/lib/cartographic/project-feature-to-selection";
+import { projectAreaFeatureToSelection } from "@/lib/cartographic/project-area-feature-to-selection";
+import { crashFeatureToSelection } from "@/lib/cartographic/crash-feature-to-selection";
+import {
+  CRASH_SEVERITY_COLOR,
+  CRASH_SEVERITY_UNKNOWN_COLOR,
+} from "@/lib/cartographic/crash-severity-palette";
 import { corridorFeatureToSelection } from "@/lib/cartographic/corridor-feature-to-selection";
 import { rtpCycleFeatureToSelection } from "@/lib/cartographic/rtp-cycle-feature-to-selection";
 import { tractFeatureToSelection } from "@/lib/cartographic/tract-feature-to-selection";
@@ -63,6 +69,17 @@ const AOI_OUTLINE_LAYER_ID = "cartographic-aerial-mission-aois-outline";
 const PROJECTS_SOURCE_ID = "cartographic-projects";
 const PROJECTS_CIRCLE_LAYER_ID = "cartographic-projects-circle";
 
+// The AREA a project studies, which is a separate record from its site marker
+// above (see `src/lib/projects/project-place.ts`). Separate source so
+// feature-state highlight cannot cross-contaminate between the two.
+const PROJECT_AREAS_SOURCE_ID = "cartographic-project-areas";
+const PROJECT_AREAS_FILL_LAYER_ID = "cartographic-project-areas-fill";
+const PROJECT_AREAS_OUTLINE_LAYER_ID = "cartographic-project-areas-outline";
+
+const CRASHES_SOURCE_ID = "cartographic-crashes";
+const CRASHES_HALO_LAYER_ID = "cartographic-crashes-halo";
+const CRASHES_CORE_LAYER_ID = "cartographic-crashes-core";
+
 const CORRIDORS_SOURCE_ID = "cartographic-corridors";
 const CORRIDORS_LINE_LAYER_ID = "cartographic-corridors-line";
 
@@ -79,20 +96,46 @@ const ENGAGEMENT_CIRCLE_LAYER_ID = "cartographic-engagement-items-layer";
 const KNOWN_SOURCES = [
   AOI_SOURCE_ID,
   PROJECTS_SOURCE_ID,
+  PROJECT_AREAS_SOURCE_ID,
   CORRIDORS_SOURCE_ID,
   RTP_CYCLES_SOURCE_ID,
   CENSUS_TRACTS_SOURCE_ID,
   ENGAGEMENT_SOURCE_ID,
+  CRASHES_SOURCE_ID,
 ] as const;
 
 const FEATURE_LAYERS = [
   AOI_FILL_LAYER_ID,
   PROJECTS_CIRCLE_LAYER_ID,
+  PROJECT_AREAS_FILL_LAYER_ID,
   CORRIDORS_LINE_LAYER_ID,
   RTP_CYCLES_CIRCLE_LAYER_ID,
   CENSUS_TRACTS_FILL_LAYER_ID,
   ENGAGEMENT_CIRCLE_LAYER_ID,
+  CRASHES_CORE_LAYER_ID,
 ] as const;
+
+// Crash severity as a Mapbox `match`. Built from the shared palette rather than
+// written out, so the legend swatches and these dots cannot describe the same
+// severity differently. The trailing fallback is the unknown-severity colour: a
+// severity outside the KABCO vocabulary must not borrow a real one's meaning.
+const CRASH_SEVERITY_PAINT: mapboxgl.ExpressionSpecification = [
+  "match",
+  ["get", "severity"],
+  "fatal",
+  CRASH_SEVERITY_COLOR.fatal,
+  "severe_injury",
+  CRASH_SEVERITY_COLOR.severe_injury,
+  "injury",
+  CRASH_SEVERITY_COLOR.injury,
+  "pdo",
+  CRASH_SEVERITY_COLOR.pdo,
+  CRASH_SEVERITY_UNKNOWN_COLOR,
+];
+
+// The project-area fill. Same green family as the project marker but far lighter
+// — the area is context for the work, not a competing figure.
+const PROJECT_AREA_COLOR = "#4f8a7b";
 
 // Sequential teal ramp for the equity choropleth, painted on
 // `pctZeroVehicle`. Bins mirror the legend entry so the visual key lines
@@ -145,6 +188,8 @@ export type MissionAoiFeatureCollection = {
 };
 
 type ProjectFeatureCollection = MissionAoiFeatureCollection;
+type ProjectAreaFeatureCollection = MissionAoiFeatureCollection;
+type CrashFeatureCollection = MissionAoiFeatureCollection;
 type CorridorFeatureCollection = MissionAoiFeatureCollection;
 type RtpCycleFeatureCollection = MissionAoiFeatureCollection;
 type CensusTractFeatureCollection = MissionAoiFeatureCollection;
@@ -250,6 +295,8 @@ export function CartographicMapBackdrop({
   const [ready, setReady] = useState(() => !MAPBOX_ACCESS_TOKEN);
   const [aois, setAois] = useState<MissionAoiFeatureCollection | null>(null);
   const [projectMarkers, setProjectMarkers] = useState<ProjectFeatureCollection | null>(null);
+  const [projectAreas, setProjectAreas] = useState<ProjectAreaFeatureCollection | null>(null);
+  const [crashes, setCrashes] = useState<CrashFeatureCollection | null>(null);
   const [corridors, setCorridors] = useState<CorridorFeatureCollection | null>(null);
   const [rtpCycles, setRtpCycles] = useState<RtpCycleFeatureCollection | null>(null);
   const [censusTracts, setCensusTracts] =
@@ -452,6 +499,91 @@ export function CartographicMapBackdrop({
     return () => {
       cancelled = true;
     };
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
+
+  // Same pattern for the AREA each project studies — a separate layer from the
+  // markers above, because a project's site and the area its work covers are
+  // separate records (20260728000009) and a planner wants to see both.
+  useEffect(() => {
+    if (suppressed) return;
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const response = await fetch("/api/map-features/project-areas", {
+          method: "GET",
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          if (response.status !== 401) {
+            console.warn(
+              `[cartographic-backdrop] project-areas fetch returned ${response.status}`,
+            );
+            noteLayer("projectAreas", null, true);
+          }
+          return;
+        }
+        const payload = (await response.json()) as ProjectAreaFeatureCollection;
+        if (controller.signal.aborted) return;
+        if (payload && payload.type === "FeatureCollection") {
+          setProjectAreas(payload);
+          noteLayer("projectAreas", disclosureOf(payload), false);
+        }
+      } catch (error) {
+        if ((error as { name?: string }).name === "AbortError") return;
+        console.warn("[cartographic-backdrop] project-areas fetch failed", error);
+        noteLayer("projectAreas", null, true);
+      }
+    })();
+    return () => controller.abort();
+  }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
+
+  // Acquired crashes. Fetched even while the layer is toggled OFF, deliberately:
+  // the response carries the coverage sentences that tell a planner in an
+  // uncovered state that crash data is unavailable to them, and gating the fetch
+  // on the toggle would hide that behind a checkbox nobody has a reason to tick.
+  //
+  // The route builds its own sentences — it is the only layer whose emptiness
+  // has four different meanings (no covering source, nothing acquired, an
+  // acquisition that failed, an acquisition that genuinely found nothing) — so
+  // they are used verbatim rather than re-derived from counts here.
+  useEffect(() => {
+    if (suppressed) return;
+    const controller = new AbortController();
+    (async () => {
+      try {
+        const response = await fetch("/api/map-features/crashes", {
+          method: "GET",
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          if (response.status !== 401) {
+            console.warn(`[cartographic-backdrop] crashes fetch returned ${response.status}`);
+            noteLayer("crashes", null, true);
+          }
+          return;
+        }
+        const payload = (await response.json()) as CrashFeatureCollection;
+        if (controller.signal.aborted) return;
+        if (payload && payload.type === "FeatureCollection") {
+          setCrashes(payload);
+          const coverageNotes = (payload as unknown as { coverageNotes?: unknown }).coverageNotes;
+          registerLayerStatus("crashes", {
+            workspaceId,
+            failed: false,
+            notes: Array.isArray(coverageNotes)
+              ? coverageNotes.filter((note): note is string => typeof note === "string")
+              : [],
+          });
+        }
+      } catch (error) {
+        if ((error as { name?: string }).name === "AbortError") return;
+        console.warn("[cartographic-backdrop] crashes fetch failed", error);
+        noteLayer("crashes", null, true);
+      }
+    })();
+    return () => controller.abort();
   }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
 
   // Same pattern for project corridors — separate source + line layer.
@@ -717,6 +849,89 @@ export function CartographicMapBackdrop({
     }
   }, [ready, projectMarkers, resolvedTheme]);
 
+  // Paint the area each project studies. Deliberately drawn as a soft fill with
+  // a dashed outline: it is the ground the work stands on, and a solid boundary
+  // at full weight would compete with the corridors and AOIs that ARE the work.
+  //
+  // The dash also carries meaning — a stored place boundary is the source's
+  // generalized outline, not a surveyed limit, and a crisp solid line would
+  // imply a precision the geometry does not have.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !projectAreas) return;
+
+    const paint = () => {
+      if (!map.getSource(PROJECT_AREAS_SOURCE_ID)) {
+        map.addSource(PROJECT_AREAS_SOURCE_ID, {
+          type: "geojson",
+          data: projectAreas as unknown as GeoJSON.FeatureCollection,
+        });
+      } else {
+        const source = map.getSource(PROJECT_AREAS_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        source.setData(projectAreas as unknown as GeoJSON.FeatureCollection);
+      }
+
+      // Keep areas beneath every point/line layer so a marker, corridor or pin
+      // inside the area still picks up first on a click.
+      const beforeId = [
+        AOI_FILL_LAYER_ID,
+        PROJECTS_CIRCLE_LAYER_ID,
+        CORRIDORS_LINE_LAYER_ID,
+        RTP_CYCLES_CIRCLE_LAYER_ID,
+        ENGAGEMENT_CIRCLE_LAYER_ID,
+        CRASHES_CORE_LAYER_ID,
+      ].find((id) => map.getLayer(id));
+
+      if (!map.getLayer(PROJECT_AREAS_FILL_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: PROJECT_AREAS_FILL_LAYER_ID,
+            type: "fill",
+            source: PROJECT_AREAS_SOURCE_ID,
+            paint: {
+              "fill-color": PROJECT_AREA_COLOR,
+              "fill-opacity": [
+                "case",
+                ["boolean", ["feature-state", "selected"], false],
+                0.3,
+                0.12,
+              ],
+            },
+          },
+          beforeId,
+        );
+      }
+
+      if (!map.getLayer(PROJECT_AREAS_OUTLINE_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: PROJECT_AREAS_OUTLINE_LAYER_ID,
+            type: "line",
+            source: PROJECT_AREAS_SOURCE_ID,
+            paint: {
+              "line-color": PROJECT_AREA_COLOR,
+              "line-width": [
+                "case",
+                ["boolean", ["feature-state", "selected"], false],
+                3,
+                1.5,
+              ],
+              "line-opacity": 0.85,
+              "line-dasharray": [2, 1.5],
+            },
+          },
+          beforeId,
+        );
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [ready, projectAreas, resolvedTheme]);
+
   // Paint corridor LineStrings onto the map once both the map and the data
   // are ready. Separate source from AOIs + projects so feature-state
   // highlight never cross-contaminates. LOS-driven color via a match
@@ -862,12 +1077,20 @@ export function CartographicMapBackdrop({
       // Force tracts beneath point/line layers so a clicked AOI, project,
       // corridor, or RTP pin still picks up first. Pick the first rendered
       // feature-layer id that currently exists on the style.
+      //
+      // The project-area fill leads the list on purpose. Both it and this
+      // choropleth are fills, so whichever is added second would otherwise land
+      // on top — and which one that is depends on which fetch resolves first,
+      // making the stacking order a race. Naming the area fill here pins tracts
+      // beneath it in both orders.
       const beforeId = [
+        PROJECT_AREAS_FILL_LAYER_ID,
         AOI_FILL_LAYER_ID,
         PROJECTS_CIRCLE_LAYER_ID,
         CORRIDORS_LINE_LAYER_ID,
         RTP_CYCLES_CIRCLE_LAYER_ID,
         ENGAGEMENT_CIRCLE_LAYER_ID,
+        CRASHES_CORE_LAYER_ID,
       ].find((id) => map.getLayer(id));
 
       if (!map.getLayer(CENSUS_TRACTS_FILL_LAYER_ID)) {
@@ -992,6 +1215,84 @@ export function CartographicMapBackdrop({
     }
   }, [ready, engagementItems, resolvedTheme]);
 
+  // Paint acquired crash points: a soft halo so dense clusters read as intensity
+  // without individual collisions disappearing, and a core dot that stays
+  // clickable. Both take colour from the shared severity palette, which the
+  // legend also reads, so a red dot means the same thing in both places.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !crashes) return;
+
+    const paint = () => {
+      if (!map.getSource(CRASHES_SOURCE_ID)) {
+        map.addSource(CRASHES_SOURCE_ID, {
+          type: "geojson",
+          data: crashes as unknown as GeoJSON.FeatureCollection,
+        });
+      } else {
+        const source = map.getSource(CRASHES_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        source.setData(crashes as unknown as GeoJSON.FeatureCollection);
+      }
+
+      // Beneath the workspace's own project and RTP pins: a crash is evidence
+      // about a place, and the work being managed there should still win a click.
+      const beforeId = [PROJECTS_CIRCLE_LAYER_ID, RTP_CYCLES_CIRCLE_LAYER_ID].find((id) =>
+        map.getLayer(id),
+      );
+
+      if (!map.getLayer(CRASHES_HALO_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: CRASHES_HALO_LAYER_ID,
+            type: "circle",
+            source: CRASHES_SOURCE_ID,
+            paint: {
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 6, 11, 12],
+              "circle-color": CRASH_SEVERITY_PAINT,
+              "circle-opacity": 0.18,
+              "circle-blur": 0.8,
+            },
+          },
+          beforeId,
+        );
+      }
+
+      if (!map.getLayer(CRASHES_CORE_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: CRASHES_CORE_LAYER_ID,
+            type: "circle",
+            source: CRASHES_SOURCE_ID,
+            paint: {
+              "circle-radius": [
+                "case",
+                ["boolean", ["feature-state", "selected"], false],
+                9,
+                ["interpolate", ["linear"], ["zoom"], 5, 3.5, 11, 7],
+              ],
+              "circle-color": CRASH_SEVERITY_PAINT,
+              "circle-stroke-color": "#ffffff",
+              "circle-stroke-width": [
+                "case",
+                ["boolean", ["feature-state", "selected"], false],
+                2.5,
+                1,
+              ],
+              "circle-opacity": 0.95,
+            },
+          },
+          beforeId,
+        );
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [ready, crashes, resolvedTheme]);
+
   // Frame the workspace's own features once, on the first payload that carries
   // any. This outranks the home-geography camera on purpose: real data already
   // in scope is a better answer than a stated boundary, and a stated boundary
@@ -1000,13 +1301,26 @@ export function CartographicMapBackdrop({
   // Census tracts are deliberately excluded: that payload is workspace-
   // agnostic reference data, so fitting to it would frame whatever the tract
   // service happens to return rather than this workspace's work.
+  //
+  // Crashes are excluded for a different reason. They ARE the workspace's data,
+  // but their extent is the footprint of an ACQUISITION — typically a whole
+  // county pulled in one request — so framing to them would show the shape of a
+  // data pull rather than the shape of the work. Project areas are included:
+  // that is a boundary the workspace deliberately chose.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
     if (didInitialFitRef.current || userMovedMapRef.current) return;
 
     const bounds = new mapboxgl.LngLatBounds();
-    for (const collection of [aois, projectMarkers, corridors, rtpCycles, engagementItems]) {
+    for (const collection of [
+      aois,
+      projectMarkers,
+      projectAreas,
+      corridors,
+      rtpCycles,
+      engagementItems,
+    ]) {
       extendBoundsWithCollection(bounds, collection);
     }
     if (bounds.isEmpty()) return;
@@ -1017,7 +1331,7 @@ export function CartographicMapBackdrop({
       maxZoom: INITIAL_FIT_MAX_ZOOM,
       duration: 0,
     });
-  }, [ready, aois, projectMarkers, corridors, rtpCycles, engagementItems]);
+  }, [ready, aois, projectMarkers, projectAreas, corridors, rtpCycles, engagementItems]);
 
   // Honor the layers.aerial toggle from the cartographic context.
   useEffect(() => {
@@ -1048,6 +1362,40 @@ export function CartographicMapBackdrop({
       }
     }
   }, [layers.projects, ready, projectMarkers]);
+
+  // Honor the layers.projectAreas toggle. Fill + outline move together so the
+  // area reads as one layer from the planner's side.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const visibility = layers.projectAreas ? "visible" : "none";
+    for (const layerId of [PROJECT_AREAS_FILL_LAYER_ID, PROJECT_AREAS_OUTLINE_LAYER_ID]) {
+      if (map.getLayer(layerId)) {
+        try {
+          map.setLayoutProperty(layerId, "visibility", visibility);
+        } catch {
+          // no-op: layers.projectAreas toggle is best-effort
+        }
+      }
+    }
+  }, [layers.projectAreas, ready, projectAreas]);
+
+  // Honor the layers.crashes toggle. Halo + core move together so a crash never
+  // renders as a glow with no dot inside it.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const visibility = layers.crashes ? "visible" : "none";
+    for (const layerId of [CRASHES_HALO_LAYER_ID, CRASHES_CORE_LAYER_ID]) {
+      if (map.getLayer(layerId)) {
+        try {
+          map.setLayoutProperty(layerId, "visibility", visibility);
+        } catch {
+          // no-op: layers.crashes toggle is best-effort
+        }
+      }
+    }
+  }, [layers.crashes, ready, crashes]);
 
   // Honor the layers.corridors toggle.
   useEffect(() => {
@@ -1177,6 +1525,34 @@ export function CartographicMapBackdrop({
       }
     };
 
+    const onProjectAreaClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const nextSelection = projectAreaFeatureToSelection(feature.properties, {
+        navigate: (path) => navigateRef.current(path),
+        sourceId: PROJECT_AREAS_SOURCE_ID,
+      });
+      if (nextSelection) {
+        setSelection(nextSelection);
+        fitToFeatureGeometry(feature.geometry);
+      }
+    };
+
+    const onCrashClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const nextSelection = crashFeatureToSelection(feature.properties, {
+        navigate: (path) => navigateRef.current(path),
+        sourceId: CRASHES_SOURCE_ID,
+      });
+      if (nextSelection) {
+        setSelection(nextSelection);
+        // Deliberately no fit: a crash is a point, and easing to street level on
+        // every dot would throw away the pattern the planner was reading. The
+        // inspector dock names the collision; the camera stays where it was.
+      }
+    };
+
     const onCorridorClick = (e: mapboxgl.MapLayerMouseEvent) => {
       const feature = e.features?.[0];
       if (!feature) return;
@@ -1247,6 +1623,12 @@ export function CartographicMapBackdrop({
     map.on("click", PROJECTS_CIRCLE_LAYER_ID, onProjectClick);
     map.on("mouseenter", PROJECTS_CIRCLE_LAYER_ID, onMouseEnter);
     map.on("mouseleave", PROJECTS_CIRCLE_LAYER_ID, onMouseLeave);
+    map.on("click", PROJECT_AREAS_FILL_LAYER_ID, onProjectAreaClick);
+    map.on("mouseenter", PROJECT_AREAS_FILL_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", PROJECT_AREAS_FILL_LAYER_ID, onMouseLeave);
+    map.on("click", CRASHES_CORE_LAYER_ID, onCrashClick);
+    map.on("mouseenter", CRASHES_CORE_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", CRASHES_CORE_LAYER_ID, onMouseLeave);
     map.on("click", CORRIDORS_LINE_LAYER_ID, onCorridorClick);
     map.on("mouseenter", CORRIDORS_LINE_LAYER_ID, onMouseEnter);
     map.on("mouseleave", CORRIDORS_LINE_LAYER_ID, onMouseLeave);
@@ -1268,6 +1650,12 @@ export function CartographicMapBackdrop({
       map.off("click", PROJECTS_CIRCLE_LAYER_ID, onProjectClick);
       map.off("mouseenter", PROJECTS_CIRCLE_LAYER_ID, onMouseEnter);
       map.off("mouseleave", PROJECTS_CIRCLE_LAYER_ID, onMouseLeave);
+      map.off("click", PROJECT_AREAS_FILL_LAYER_ID, onProjectAreaClick);
+      map.off("mouseenter", PROJECT_AREAS_FILL_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", PROJECT_AREAS_FILL_LAYER_ID, onMouseLeave);
+      map.off("click", CRASHES_CORE_LAYER_ID, onCrashClick);
+      map.off("mouseenter", CRASHES_CORE_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", CRASHES_CORE_LAYER_ID, onMouseLeave);
       map.off("click", CORRIDORS_LINE_LAYER_ID, onCorridorClick);
       map.off("mouseenter", CORRIDORS_LINE_LAYER_ID, onMouseEnter);
       map.off("mouseleave", CORRIDORS_LINE_LAYER_ID, onMouseLeave);
@@ -1321,7 +1709,18 @@ export function CartographicMapBackdrop({
     } else {
       map.once("style.load", apply);
     }
-  }, [selection, ready, aois, projectMarkers, corridors, rtpCycles, censusTracts, engagementItems]);
+  }, [
+    selection,
+    ready,
+    aois,
+    projectMarkers,
+    projectAreas,
+    corridors,
+    rtpCycles,
+    censusTracts,
+    engagementItems,
+    crashes,
+  ]);
 
   if (suppressed) return null;
 

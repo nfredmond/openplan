@@ -11,15 +11,18 @@ import { resolveCensusTractScope } from "@/lib/geographies/census-tract-scope";
 
 export type MapFeatureCounts = {
   projects: number | null;
+  projectAreas: number | null;
   aerial: number | null;
   corridors: number | null;
   rtp: number | null;
   equity: number | null;
   engagement: number | null;
+  crashes: number | null;
 };
 
 const EMPTY_COUNTS: MapFeatureCounts = {
   projects: 0,
+  projectAreas: 0,
   aerial: 0,
   corridors: 0,
   rtp: 0,
@@ -30,6 +33,10 @@ const EMPTY_COUNTS: MapFeatureCounts = {
   // measurement that was never taken.
   equity: null,
   engagement: 0,
+  // Same reasoning, different fact: with no workspace there is no acquired
+  // crash record to count, and "0 crashes" beside a map is the single most
+  // dangerous number this route could invent.
+  crashes: null,
 };
 
 export async function GET(request: NextRequest) {
@@ -68,11 +75,14 @@ export async function GET(request: NextRequest) {
 
     const [
       projectsResult,
+      projectAreasResult,
       aerialResult,
       corridorsResult,
       rtpResult,
       equityResult,
       engagementResult,
+      crashesResult,
+      crashAcquisitionsResult,
     ] =
       await Promise.all([
         supabase
@@ -81,6 +91,14 @@ export async function GET(request: NextRequest) {
           .eq("workspace_id", workspaceId)
           .not("latitude", "is", null)
           .not("longitude", "is", null),
+        // Scoped identically to /api/map-features/project-areas. `head: true`
+        // keeps the boundary polygons in Postgres — the count needs to know a
+        // geometry exists, not what it is.
+        supabase
+          .from("projects")
+          .select("id", { count: "exact", head: true })
+          .eq("workspace_id", workspaceId)
+          .not("place_geometry_geojson", "is", null),
         aerialMissionsWithAoiCountQuery(supabase, workspaceId),
         supabase
           .from("project_corridors")
@@ -110,10 +128,31 @@ export async function GET(request: NextRequest) {
           .eq("status", "approved")
           .not("latitude", "is", null)
           .not("longitude", "is", null),
+        supabase
+          .from("safety_crashes")
+          .select("id", { count: "exact", head: true })
+          .eq("workspace_id", workspaceId),
+        // Counted so the crash chip can tell "none acquired" from "acquired
+        // none". Without it a workspace that has never run an acquisition would
+        // show a confident 0 next to a crash layer, which reads as a finding
+        // about the roads rather than about this workspace's data.
+        supabase
+          .from("safety_crash_ingests")
+          .select("id", { count: "exact", head: true })
+          .eq("workspace_id", workspaceId),
       ]);
+
+    // A crash count is only reported once an acquisition exists. Until then the
+    // honest answer is "not known", exactly as it is for unscoped equity: the
+    // workspace has not asked any source for crashes, so zero is a fact about
+    // the record and never a fact about the roads. The chip disappears rather
+    // than asserting a measurement nobody took.
+    const hasCrashAcquisition =
+      !crashAcquisitionsResult.error && (crashAcquisitionsResult.count ?? 0) > 0;
 
     const counts: MapFeatureCounts = {
       projects: projectsResult.error ? null : projectsResult.count ?? 0,
+      projectAreas: projectAreasResult.error ? null : projectAreasResult.count ?? 0,
       aerial: aerialResult.error ? null : aerialResult.count ?? 0,
       corridors: corridorsResult.error ? null : corridorsResult.count ?? 0,
       rtp: rtpResult.error ? null : rtpResult.count ?? 0,
@@ -121,24 +160,32 @@ export async function GET(request: NextRequest) {
       // purpose, and coercing it to 0 would put the fabricated zero back.
       equity: equityResult.error ? null : equityResult.count ?? null,
       engagement: engagementResult.error ? null : engagementResult.count ?? 0,
+      crashes:
+        crashesResult.error || !hasCrashAcquisition ? null : crashesResult.count ?? null,
     };
 
     if (
       projectsResult.error ||
+      projectAreasResult.error ||
       aerialResult.error ||
       corridorsResult.error ||
       rtpResult.error ||
       equityResult.error ||
-      engagementResult.error
+      engagementResult.error ||
+      crashesResult.error ||
+      crashAcquisitionsResult.error
     ) {
       audit.warn("map_feature_counts_partial_failure", {
         workspaceId,
         projectsError: projectsResult.error?.message ?? null,
+        projectAreasError: projectAreasResult.error?.message ?? null,
         aerialError: aerialResult.error?.message ?? null,
         corridorsError: corridorsResult.error?.message ?? null,
         rtpError: rtpResult.error?.message ?? null,
         equityError: equityResult.error?.message ?? null,
         engagementError: engagementResult.error?.message ?? null,
+        crashesError: crashesResult.error?.message ?? null,
+        crashAcquisitionsError: crashAcquisitionsResult.error?.message ?? null,
       });
     }
 

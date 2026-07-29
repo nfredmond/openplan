@@ -23,18 +23,35 @@ function buildQueryChain(result: CountResult) {
 }
 
 let projectsChain: ReturnType<typeof buildQueryChain>;
+let projectAreasChain: ReturnType<typeof buildQueryChain>;
 let aerialChain: ReturnType<typeof buildQueryChain>;
 let corridorsChain: ReturnType<typeof buildQueryChain>;
 let rtpChain: ReturnType<typeof buildQueryChain>;
 let equityChain: ReturnType<typeof buildQueryChain>;
 let engagementChain: ReturnType<typeof buildQueryChain>;
+let crashesChain: ReturnType<typeof buildQueryChain>;
+let crashIngestsChain: ReturnType<typeof buildQueryChain>;
 
-const projectsSelectMock = vi.fn(() => projectsChain);
+/**
+ * `projects` is queried TWICE — once for site markers, once for stated project
+ * areas — so the mock hands back a different chain per call in the order the
+ * route issues them. Keying off call order rather than off the filter args is
+ * deliberate: both queries select the same columns, and asserting on `.not()`
+ * arguments to tell them apart would make this fixture depend on filter details
+ * the individual tests already assert.
+ */
+let projectsSelectCallCount = 0;
+const projectsSelectMock = vi.fn(() => {
+  projectsSelectCallCount += 1;
+  return projectsSelectCallCount === 1 ? projectsChain : projectAreasChain;
+});
 const aerialSelectMock = vi.fn(() => aerialChain);
 const corridorsSelectMock = vi.fn(() => corridorsChain);
 const rtpSelectMock = vi.fn(() => rtpChain);
 const equitySelectMock = vi.fn(() => equityChain);
 const engagementSelectMock = vi.fn(() => engagementChain);
+const crashesSelectMock = vi.fn(() => crashesChain);
+const crashIngestsSelectMock = vi.fn(() => crashIngestsChain);
 
 const mockAudit = {
   info: vi.fn(),
@@ -62,6 +79,8 @@ const fromMock = vi.fn((table: string) => {
   if (table === "rtp_cycles") return { select: rtpSelectMock };
   if (table === "census_tracts_map") return { select: equitySelectMock };
   if (table === "engagement_items") return { select: engagementSelectMock };
+  if (table === "safety_crashes") return { select: crashesSelectMock };
+  if (table === "safety_crash_ingests") return { select: crashIngestsSelectMock };
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -98,12 +117,16 @@ describe("GET /api/map-features/counts", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+    projectsSelectCallCount = 0;
     projectsChain = buildQueryChain({ count: 0, error: null });
+    projectAreasChain = buildQueryChain({ count: 0, error: null });
     aerialChain = buildQueryChain({ count: 0, error: null });
     corridorsChain = buildQueryChain({ count: 0, error: null });
     rtpChain = buildQueryChain({ count: 0, error: null });
     equityChain = buildQueryChain({ count: 0, error: null });
     engagementChain = buildQueryChain({ count: 0, error: null });
+    crashesChain = buildQueryChain({ count: 0, error: null });
+    crashIngestsChain = buildQueryChain({ count: 0, error: null });
     workspaceMaybeSingleMock.mockResolvedValue({ data: NEVADA_COUNTY_ROW, error: null });
   });
 
@@ -129,11 +152,16 @@ describe("GET /api/map-features/counts", () => {
     // "no workspace" is not evidence that zero tracts exist.
     expect(payload).toEqual({
       projects: 0,
+      projectAreas: 0,
       aerial: 0,
       corridors: 0,
       rtp: 0,
       equity: null,
       engagement: 0,
+      // Same reasoning as equity, applied to the most dangerous zero on the
+      // map: with no workspace there is no acquired crash record, and "0
+      // crashes" would read as a statement about the roads.
+      crashes: null,
     });
     expect(projectsSelectMock).not.toHaveBeenCalled();
     expect(aerialSelectMock).not.toHaveBeenCalled();
@@ -141,20 +169,25 @@ describe("GET /api/map-features/counts", () => {
     expect(rtpSelectMock).not.toHaveBeenCalled();
     expect(equitySelectMock).not.toHaveBeenCalled();
     expect(engagementSelectMock).not.toHaveBeenCalled();
+    expect(crashesSelectMock).not.toHaveBeenCalled();
+    expect(crashIngestsSelectMock).not.toHaveBeenCalled();
   });
 
-  it("returns live counts across all six layers when queries succeed", async () => {
+  it("returns live counts across every layer when queries succeed", async () => {
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "editor" },
       workspace: { id: WORKSPACE_ID, name: "NCTC demo" },
     });
     projectsChain = buildQueryChain({ count: 1, error: null });
+    projectAreasChain = buildQueryChain({ count: 2, error: null });
     aerialChain = buildQueryChain({ count: 3, error: null });
     corridorsChain = buildQueryChain({ count: 2, error: null });
     rtpChain = buildQueryChain({ count: 1, error: null });
     equityChain = buildQueryChain({ count: 4, error: null });
     engagementChain = buildQueryChain({ count: 5, error: null });
+    crashesChain = buildQueryChain({ count: 912, error: null });
+    crashIngestsChain = buildQueryChain({ count: 1, error: null });
 
     const response = await getCounts(bareRequest());
 
@@ -162,12 +195,19 @@ describe("GET /api/map-features/counts", () => {
     const payload = await response.json();
     expect(payload).toEqual({
       projects: 1,
+      projectAreas: 2,
       aerial: 3,
       corridors: 2,
       rtp: 1,
       equity: 4,
       engagement: 5,
+      crashes: 912,
     });
+    // The area count must be scoped to the same rows the layer can draw: a
+    // project with no stated area is not a blank area, it is no area.
+    expect(projectAreasChain.not).toHaveBeenCalledWith("place_geometry_geojson", "is", null);
+    expect(crashesSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
+    expect(crashesChain.eq).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
     expect(projectsSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(aerialSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
     expect(corridorsSelectMock).toHaveBeenCalledWith("id", { count: "exact", head: true });
@@ -193,9 +233,54 @@ describe("GET /api/map-features/counts", () => {
       "map_feature_counts_loaded",
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
-        counts: { projects: 1, aerial: 3, corridors: 2, rtp: 1, equity: 4, engagement: 5 },
+        counts: {
+          projects: 1,
+          projectAreas: 2,
+          aerial: 3,
+          corridors: 2,
+          rtp: 1,
+          equity: 4,
+          engagement: 5,
+          crashes: 912,
+        },
       })
     );
+  });
+
+  /**
+   * The crash chip's whole reason for existing in `null` form. A workspace that
+   * has never acquired crash data has zero crash rows — but reporting "0" beside
+   * a crash layer states a finding about collisions, when the only fact in
+   * evidence is that nobody has asked a source yet.
+   */
+  it("reports crashes as not-known, rather than zero, when no acquisition has ever run", async () => {
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: WORKSPACE_ID, role: "editor" },
+      workspace: { id: WORKSPACE_ID, name: "Any workspace" },
+    });
+    crashesChain = buildQueryChain({ count: 0, error: null });
+    crashIngestsChain = buildQueryChain({ count: 0, error: null });
+
+    const response = await getCounts(bareRequest());
+
+    const payload = (await response.json()) as { crashes: number | null };
+    expect(payload.crashes).toBeNull();
+  });
+
+  it("reports a genuine zero once an acquisition exists and stored nothing", async () => {
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: WORKSPACE_ID, role: "editor" },
+      workspace: { id: WORKSPACE_ID, name: "Any workspace" },
+    });
+    crashesChain = buildQueryChain({ count: 0, error: null });
+    crashIngestsChain = buildQueryChain({ count: 1, error: null });
+
+    const response = await getCounts(bareRequest());
+
+    const payload = (await response.json()) as { crashes: number | null };
+    expect(payload.crashes).toBe(0);
   });
 
   it("returns null for the failing layer and logs a partial-failure warning", async () => {
@@ -217,11 +302,13 @@ describe("GET /api/map-features/counts", () => {
     const payload = await response.json();
     expect(payload).toEqual({
       projects: 1,
+      projectAreas: 0,
       aerial: null,
       corridors: 2,
       rtp: 1,
       equity: 4,
       engagement: 5,
+      crashes: null,
     });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "map_feature_counts_partial_failure",
@@ -256,11 +343,13 @@ describe("GET /api/map-features/counts", () => {
     const payload = await response.json();
     expect(payload).toEqual({
       projects: 1,
+      projectAreas: 0,
       aerial: 3,
       corridors: 2,
       rtp: null,
       equity: 4,
       engagement: 5,
+      crashes: null,
     });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "map_feature_counts_partial_failure",
@@ -295,11 +384,13 @@ describe("GET /api/map-features/counts", () => {
     const payload = await response.json();
     expect(payload).toEqual({
       projects: 1,
+      projectAreas: 0,
       aerial: 3,
       corridors: 2,
       rtp: 1,
       equity: null,
       engagement: 5,
+      crashes: null,
     });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "map_feature_counts_partial_failure",
@@ -337,11 +428,13 @@ describe("GET /api/map-features/counts", () => {
     const payload = await response.json();
     expect(payload).toEqual({
       projects: 1,
+      projectAreas: 0,
       aerial: 3,
       corridors: 2,
       rtp: 1,
       equity: 4,
       engagement: null,
+      crashes: null,
     });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "map_feature_counts_partial_failure",
@@ -364,11 +457,14 @@ describe("GET /api/map-features/counts", () => {
       workspace: { id: WORKSPACE_ID, name: "NCTC demo" },
     });
     projectsChain = buildQueryChain({ count: null, error: null });
+    projectAreasChain = buildQueryChain({ count: null, error: null });
     aerialChain = buildQueryChain({ count: null, error: null });
     corridorsChain = buildQueryChain({ count: null, error: null });
     rtpChain = buildQueryChain({ count: null, error: null });
     equityChain = buildQueryChain({ count: null, error: null });
     engagementChain = buildQueryChain({ count: null, error: null });
+    crashesChain = buildQueryChain({ count: null, error: null });
+    crashIngestsChain = buildQueryChain({ count: null, error: null });
 
     const response = await getCounts(bareRequest());
 
@@ -379,11 +475,15 @@ describe("GET /api/map-features/counts", () => {
     // "no workspace" is not evidence that zero tracts exist.
     expect(payload).toEqual({
       projects: 0,
+      projectAreas: 0,
       aerial: 0,
       corridors: 0,
       rtp: 0,
       equity: null,
       engagement: 0,
+      // A null acquisition count is not evidence that an acquisition ran, so the
+      // crash chip stays unknown rather than coercing to a confident zero.
+      crashes: null,
     });
     expect(mockAudit.warn).not.toHaveBeenCalled();
   });

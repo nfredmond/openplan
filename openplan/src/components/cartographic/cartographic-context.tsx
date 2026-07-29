@@ -6,28 +6,43 @@ import type { CartographicInspectorSelection } from "./cartographic-inspector-do
 
 export type LayerKey =
   | "projects"
+  | "projectAreas"
   | "rtp"
   | "corridors"
   | "engagement"
   | "aerial"
-  | "equity";
+  | "equity"
+  | "crashes";
 
 export const LAYER_KEYS: LayerKey[] = [
   "projects",
+  "projectAreas",
   "rtp",
   "corridors",
   "engagement",
   "aerial",
   "equity",
+  "crashes",
 ];
 
 const DEFAULT_LAYERS: Readonly<Record<LayerKey, boolean>> = Object.freeze({
   projects: true,
+  // On by default: the area a project covers is the answer to "where are we
+  // working?", and it is drawn as a soft fill beneath every point layer, so it
+  // gives context without competing for clicks.
+  projectAreas: true,
   rtp: true,
-  corridors: true,
   engagement: true,
+  corridors: true,
   aerial: true,
   equity: false,
+  // Off by default, like the equity choropleth and for the same reason: a
+  // several-hundred-point analytic overlay dominates everything beneath it, and
+  // it answers a specialist question. The layers panel still lists it and still
+  // shows its coverage notes while it is off, so a planner in an uncovered state
+  // learns that crashes are unavailable to them without having to turn on a
+  // layer that would draw nothing.
+  crashes: false,
 });
 
 export type CartographicMapControls = {

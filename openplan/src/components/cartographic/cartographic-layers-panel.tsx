@@ -21,11 +21,18 @@ const HAS_MAPBOX_BASEMAP = Boolean(
 
 const LAYER_LABELS: Record<LayerKey, string> = {
   projects: "Projects",
+  // "Areas", not "Boundaries": this is the area a project studies, which is a
+  // different fact from the project's site marker on the `projects` layer.
+  projectAreas: "Project areas",
   rtp: "RTP cycles",
   corridors: "Study corridors",
   engagement: "Engagement pins",
   aerial: "Aerial missions",
   equity: "Equity priority",
+  // "Acquired" is load-bearing. This layer draws collisions this workspace has
+  // pulled into its own record — not everything a source knows about the area —
+  // and the label is the first place a planner can learn that.
+  crashes: "Crashes (acquired)",
 };
 
 const COMPACT_FORMATTER = new Intl.NumberFormat("en-US", {
@@ -134,10 +141,14 @@ export function CartographicLayersPanel({ workspaceId = null }: { workspaceId?: 
 function chipForLayer(key: LayerKey, counts: MapFeatureCounts | null): string | undefined {
   if (!counts) return undefined;
   if (key === "projects") return formatChip(counts.projects);
+  if (key === "projectAreas") return formatChip(counts.projectAreas);
   if (key === "aerial") return formatChip(counts.aerial);
   if (key === "corridors") return formatChip(counts.corridors);
   if (key === "rtp") return formatChip(counts.rtp);
   if (key === "equity") return formatChip(counts.equity);
   if (key === "engagement") return formatChip(counts.engagement);
+  // Null until an acquisition exists, so no chip is rendered rather than a "0"
+  // that would read as a crash finding — see the counts route.
+  if (key === "crashes") return formatChip(counts.crashes);
   return undefined;
 }

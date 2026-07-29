@@ -3,6 +3,11 @@
 import { useState } from "react";
 
 import { useCartographicLayers, type LayerKey } from "./cartographic-context";
+import {
+  CRASH_SEVERITY_COLOR,
+  CRASH_SEVERITY_LEGEND_LABEL,
+  CRASH_SEVERITY_LEGEND_ORDER,
+} from "@/lib/cartographic/crash-severity-palette";
 
 type SwatchEntry = { kind: "swatch"; color: string; label: string };
 type RampStop = { color: string; label: string };
@@ -11,20 +16,25 @@ type LegendEntry = SwatchEntry | RampEntry;
 
 type LegendLayerKey = Extract<
   LayerKey,
-  "projects" | "aerial" | "corridors" | "rtp" | "equity" | "engagement"
+  "projects" | "projectAreas" | "aerial" | "corridors" | "rtp" | "equity" | "engagement" | "crashes"
 >;
 
 const LEGEND_ORDER: LegendLayerKey[] = [
   "projects",
+  "projectAreas",
   "engagement",
   "aerial",
   "corridors",
   "rtp",
   "equity",
+  "crashes",
 ];
 
 const LEGEND_ENTRIES: Record<LegendLayerKey, LegendEntry> = {
   projects: { kind: "swatch", color: "#1f6b5e", label: "Projects" },
+  // Same green family as the project marker, lower saturation: the area and the
+  // site belong to the same project, and the area is the quieter of the two.
+  projectAreas: { kind: "swatch", color: "#4f8a7b", label: "Project areas" },
   engagement: { kind: "swatch", color: "#c24a7f", label: "Community input" },
   aerial: { kind: "swatch", color: "#e45635", label: "Aerial AOIs" },
   corridors: {
@@ -50,6 +60,24 @@ const LEGEND_ENTRIES: Record<LegendLayerKey, LegendEntry> = {
       { color: "#4d847c", label: "10–15%" },
       { color: "#1f544c", label: ">15%" },
     ],
+  },
+  /**
+   * Crash severity, keyed off the shared palette so the swatch and the Mapbox
+   * paint expression cannot drift.
+   *
+   * All four KABCO buckets are listed because they are the vocabulary, not a
+   * claim that every one of them is populated — the only currently storable
+   * source cannot separate suspected serious injuries, and the layer's coverage
+   * notes say so in the panel directly above this legend. Omitting the bucket
+   * instead would leave a future full-KABCO source painting a colour with no key.
+   */
+  crashes: {
+    kind: "ramp",
+    label: "Crash severity",
+    stops: CRASH_SEVERITY_LEGEND_ORDER.map((severity) => ({
+      color: CRASH_SEVERITY_COLOR[severity],
+      label: CRASH_SEVERITY_LEGEND_LABEL[severity],
+    })),
   },
 };
 

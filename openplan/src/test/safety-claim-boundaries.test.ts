@@ -1,5 +1,5 @@
 /**
- * Claim-boundary guard for the Safety module.
+ * Claim-boundary guard for crash and safety copy, wherever it lives.
  *
  * WHY THIS FILE EXISTS. The repo's honesty gates each scan live `src/`
  * surfaces for their own module's overclaims (the old docs-scanning
@@ -18,6 +18,16 @@
  *   - a KSI ("killed or seriously injured") figure, which the current source
  *     cannot produce because CCRS Crashes_* has no KABCO A column;
  *   - crash-reduction language that reads as a guarantee.
+ *
+ * WHY THE ROOTS ARE NOT JUST `safety/`. The claims are what this guard is for,
+ * and the claims moved. The shared cartographic crash layer carries the same
+ * severity vocabulary, the same KSI caveat and its own coverage sentences —
+ * so a "certified High-Injury Network" or a KSI total can now be written in
+ * `lib/cartographic/`, `api/map-features/crashes/` or `components/cartographic/`
+ * without ever touching `safety/`. A firewall that does not cover where the
+ * claims live is not a firewall. Scanning by CLAIM rather than by module also
+ * means a directory rename cannot quietly move copy out from under the guard;
+ * the "scans something" test below is what catches a root going stale.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -32,7 +42,15 @@ import {
   SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
 } from "@/lib/safety/caveats";
 
-const SAFETY_SOURCE_ROOTS = ["src/lib/safety", "src/components/safety"];
+const SAFETY_SOURCE_ROOTS = [
+  "src/lib/safety",
+  "src/components/safety",
+  // The shared map's crash lane. It reuses the Safety caveats but writes its own
+  // coverage sentences, so it can overclaim independently of the module above.
+  "src/lib/cartographic",
+  "src/app/api/map-features/crashes",
+  "src/components/cartographic",
+];
 
 function collectSourceFiles(relativeRoot: string): string[] {
   const absolute = path.join(process.cwd(), relativeRoot);
@@ -119,10 +137,22 @@ function withoutNegatedClaims(source: string): string {
     .join("\n");
 }
 
-describe("safety module claim boundaries", () => {
+describe("safety and shared-map crash claim boundaries", () => {
   it("actually scans safety source files", () => {
     // Without this, an empty glob would make every assertion below vacuous.
     expect(SAFETY_FILES.length).toBeGreaterThan(0);
+  });
+
+  it("covers the shared map's crash lane, not only the Safety module", () => {
+    // Named individually rather than counted: the crash claims live in these
+    // three trees now, and a root silently dropping to zero files would leave
+    // them unscanned while the count above still passed on `safety/` alone.
+    for (const root of ["src/lib/cartographic", "src/app/api/map-features/crashes", "src/components/cartographic"]) {
+      expect(
+        SAFETY_FILES.filter((file) => file.startsWith(root)).length,
+        `${root} contributed no files to the crash-claim scan`
+      ).toBeGreaterThan(0);
+    }
   });
 
   it.each(SAFETY_FILES)("keeps %s inside screening-grade safety claims", (file) => {

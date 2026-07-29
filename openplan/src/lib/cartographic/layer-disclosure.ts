@@ -19,13 +19,28 @@
 /** How many features one `/api/map-features/*` response will carry. */
 export const MAP_FEATURE_LAYER_LIMIT = 500;
 
+/**
+ * The same cap, lowered by an order of magnitude for boundary polygons.
+ *
+ * A project's stored area is a TIGERweb boundary, and a county one runs to tens
+ * or hundreds of kilobytes even at the resolver's four-decimal precision — two
+ * to three orders of magnitude heavier per feature than a point or a corridor
+ * line. Five hundred of them is a payload no navigation should pull. The number
+ * is derived from the shared cap rather than invented so the relationship stays
+ * legible: areas are roughly ten times the weight, so ten times fewer are drawn,
+ * and the truncation is disclosed by the same contract as every other layer.
+ */
+export const PROJECT_AREA_LAYER_LIMIT = MAP_FEATURE_LAYER_LIMIT / 10;
+
 export type MapLayerKey =
   | "projects"
+  | "projectAreas"
   | "rtp"
   | "corridors"
   | "engagement"
   | "aerial"
-  | "equity";
+  | "equity"
+  | "crashes";
 
 /** The counts that keep a map layer honest. */
 export type MapLayerDisclosure = {
@@ -76,11 +91,18 @@ export function buildMapLayerDisclosure(input: {
 
 const LAYER_NOUNS: Record<MapLayerKey, { singular: string; plural: string }> = {
   projects: { singular: "project", plural: "projects" },
+  projectAreas: { singular: "project area", plural: "project areas" },
   rtp: { singular: "RTP cycle", plural: "RTP cycles" },
   corridors: { singular: "study corridor", plural: "study corridors" },
   engagement: { singular: "engagement pin", plural: "engagement pins" },
   aerial: { singular: "aerial mission", plural: "aerial missions" },
   equity: { singular: "census tract", plural: "census tracts" },
+  // Present so a FAILED crash fetch has a sentence. Everything the crash layer
+  // says when it succeeds comes from `describeCrashLayerCoverage`, which knows
+  // about source coverage and acquisition history — facts this generic
+  // vocabulary cannot express, and without which an empty layer reads as
+  // "no crashes here".
+  crashes: { singular: "crash", plural: "crashes" },
 };
 
 /**

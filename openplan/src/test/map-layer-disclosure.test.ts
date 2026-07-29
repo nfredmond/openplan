@@ -14,7 +14,16 @@ import {
  * conclusion ("this is everything") was wrong and nothing contradicted it.
  */
 
-const ALL_KEYS: MapLayerKey[] = ["projects", "rtp", "corridors", "engagement", "aerial", "equity"];
+const ALL_KEYS: MapLayerKey[] = [
+  "projects",
+  "projectAreas",
+  "rtp",
+  "corridors",
+  "engagement",
+  "aerial",
+  "equity",
+  "crashes",
+];
 
 describe("buildMapLayerDisclosure", () => {
   it("is not truncated when everything matched was fetched", () => {
