@@ -16,7 +16,7 @@ import {
   GRANTS_COMMAND_MODULE_LABEL,
   resolveRtpFundingFollowThrough,
 } from "@/lib/operations/grants-links";
-import { buildPlanReadiness } from "@/lib/plans/catalog";
+import { buildPlanReadiness, type PlanReadinessCheck } from "@/lib/plans/catalog";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
   buildRtpReleaseReviewSummary,
@@ -258,6 +258,10 @@ export type WorkspaceOperationsSummary = {
     projects: number;
     activeProjects: number;
     plans: number;
+    // Counts only the plan-record fields this module actually reads — see
+    // `planNeedsObservableRecordSetup`. Scenario, engagement, and report linkage
+    // are graded on /plans, which loads them; they are indeterminate here, so a
+    // zero here means "no observable record gap", not "every plan is complete".
     plansNeedingSetup: number;
     programs: number;
     activePrograms: number;
@@ -471,6 +475,62 @@ function resolveExactWorkspaceBillingInvoiceId(invoices: WorkspaceOperationsBill
   }
 
   return actionableInvoices[0]?.id ?? null;
+}
+
+// The three plan readiness checks that are counts of linked planning artifacts
+// rather than fields on the plan row itself. `buildPlanReadiness` judges six
+// things about a plan; these three are the ones the workspace-level read in this
+// module cannot see. It loads plan rows, never `plan_links`, and it never loads
+// scenario sets or engagement campaigns at all.
+const PLAN_ARTIFACT_LINKAGE_CHECK_KEYS: ReadonlySet<PlanReadinessCheck["key"]> = new Set([
+  "scenario_set",
+  "engagement_campaign",
+  "report",
+]);
+
+/**
+ * Whether a plan is missing one of the record-level fields this module can
+ * actually observe: a linked project, a geography label, a horizon year.
+ *
+ * The three artifact counts handed to `buildPlanReadiness` below are
+ * placeholders, not measurements — the checks they drive are filtered back out
+ * before the verdict is taken. They used to be read as measurements, and that
+ * was a live defect: a zero count fails a `count > 0` check, `readiness.ready`
+ * requires all six checks to pass, so every plan in every workspace counted as
+ * needing setup forever. `plansNeedingSetup` could never fall to zero however
+ * completely an operator filled a plan out, the Dashboard and Command Center
+ * nagged about finished plans, and the "Tighten plan foundations" queue item
+ * pinned the command queue permanently open for any workspace holding a single
+ * plan.
+ *
+ * Not knowing is not the same as knowing there is nothing, so at this scope the
+ * artifact checks are indeterminate and are left out of the verdict instead of
+ * being reported as missing. Loading them here was the alternative and was
+ * rejected: it would mean three more reads on every page that renders the
+ * command board, and the reads in this module are all capped (`limit(200)`)
+ * because it is a portfolio snapshot — a capped artifact read would manufacture
+ * exactly the confidently-wrong zero being fixed here, just further from view.
+ * Full six-check readiness is computed on `/plans` and `/plans/[planId]`, which
+ * load the linkage rows for the plans actually on screen.
+ *
+ * Keeping `buildPlanReadiness` as the definition of what each check means, and
+ * filtering by check key afterwards, is deliberate: the plans module stays the
+ * single source of truth, and a check key that no longer exists is a type error
+ * rather than a silently skipped check.
+ */
+function planNeedsObservableRecordSetup(plan: WorkspaceOperationsPlanRow): boolean {
+  const readiness = buildPlanReadiness({
+    hasProject: Boolean(plan.projectId),
+    scenarioCount: 0,
+    engagementCampaignCount: 0,
+    reportCount: 0,
+    geographyLabel: plan.geographyLabel,
+    horizonYear: plan.horizonYear,
+  });
+
+  return readiness.checks.some(
+    (check) => !check.ready && !PLAN_ARTIFACT_LINKAGE_CHECK_KEYS.has(check.key)
+  );
 }
 
 function mapWorkspaceOperationsProjectRows(
@@ -807,18 +867,7 @@ export function buildWorkspaceOperationsSummary({
   });
 
   const activeProjects = projects.filter((project) => !["complete", "archived", "cancelled"].includes(project.status ?? "")).length;
-  const plansNeedingSetup = plans.filter((plan) => {
-    const readiness = buildPlanReadiness({
-      hasProject: Boolean(plan.projectId),
-      scenarioCount: 0,
-      engagementCampaignCount: 0,
-      reportCount: 0,
-      geographyLabel: plan.geographyLabel,
-      horizonYear: plan.horizonYear,
-    });
-
-    return !readiness.ready;
-  }).length;
+  const plansNeedingSetup = plans.filter(planNeedsObservableRecordSetup).length;
   const activePrograms = programs.filter((program) => !["adopted", "archived"].includes(program.status ?? "")).length;
   const reportRefreshRecommended = reportRows.filter((report) => report.freshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED).length;
   const reportNoPacket = reportRows.filter((report) => report.freshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET).length;
@@ -1324,18 +1373,7 @@ export function buildWorkspaceOperationsSummary({
   const firstOverdueDecisionProject = firstOverdueDecisionOpportunity?.projectId
     ? projects.find((project) => project.id === firstOverdueDecisionOpportunity.projectId) ?? null
     : null;
-  const firstPlanNeedingSetup = plans.find((plan) => {
-    const readiness = buildPlanReadiness({
-      hasProject: Boolean(plan.projectId),
-      scenarioCount: 0,
-      engagementCampaignCount: 0,
-      reportCount: 0,
-      geographyLabel: plan.geographyLabel,
-      horizonYear: plan.horizonYear,
-    });
-
-    return !readiness.ready;
-  });
+  const firstPlanNeedingSetup = plans.find(planNeedsObservableRecordSetup);
   const firstActiveProgram = programs.find((program) => !["adopted", "archived"].includes(program.status ?? ""));
 
   const queueCandidates: WorkspaceCommandQueueItem[] = [];
