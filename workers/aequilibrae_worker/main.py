@@ -109,14 +109,25 @@ GATEWAY_BUFFER_DEG = max(0.0, float(os.getenv("AEQ_GATEWAY_BUFFER_DEG", "0.03"))
 
 # Split internal person-trips into auto vs active (walk+bike) and assign only
 # the auto matrix. Default on; set to 0 for the old all-auto behaviour.
-MODE_SPLIT_ENABLED = os.getenv("MODE_SPLIT_ENABLED", "1") not in ("0", "false", "False", "")
+#
+# An EMPTY value is deliberately NOT an off switch, for the same reason it is not
+# one for GTFS_DISCOVER below: several hosting platforms materialize a variable
+# nobody defined as an empty string, and reading that as a deliberate "off" would
+# silently drop mode choice entirely — every internal trip back to auto, which
+# OVERSTATES the auto share and INFLATES the VMT a planner defends. Empty means
+# unset, which means the default; only an explicit falsy value turns it off.
+MODE_SPLIT_ENABLED = (os.getenv("MODE_SPLIT_ENABLED") or "1").strip().lower() not in ("0", "false")
 
 # Dynamic per-place GTFS discovery (keyless Mobility Database catalog). Default
-# OFF so the Nevada County pilot stays byte-identical; when ON (and no explicit
-# GTFS_PATH/GTFS_URL is set) the worker resolves a feed covering the study area,
-# and a discovery miss degrades to the honest no_local_feed state instead of
-# skimming the bundled Nevada feed against an arbitrary place.
-GTFS_DISCOVER = os.getenv("GTFS_DISCOVER", "0") in ("1", "true", "True")
+# ON — see gtfs_skim.discovery_enabled for the reasoning and for GTFS_DISCOVER=0,
+# the explicit operator OFF switch (an EMPTY value is not one — it means unset).
+# When on (and no explicit GTFS_PATH/GTFS_URL is set) the worker resolves a feed
+# covering the study area. What happens on a miss is gtfs_skim.plan_feed's call:
+# a catalog that answered and covered nothing degrades to the honest no_local_feed
+# state, while a catalog we could not READ falls back to the bundled feed under
+# feed_covers() — so an offline deployment keeps transit where the bundled feed
+# genuinely reaches, and never skims it against an arbitrary place.
+GTFS_DISCOVER = gtfs_skim.discovery_enabled(os.getenv("GTFS_DISCOVER"))
 
 # Fixed share of each boundary-crossing highway's daily volume routed as
 # pass-through (cordon→same-route cordon) so interior mainlines load, rather than
@@ -136,7 +147,10 @@ PASSTHROUGH_SHARE = min(max(PASSTHROUGH_SHARE, 0.0), 0.9)
 # checks the count set's own station extent against the study area first, so a
 # run outside that extent reports a coverage gap instead of matching another
 # jurisdiction's stations and reporting a failed gate.
-COUNT_VALIDATION_ENABLED = os.getenv("COUNT_VALIDATION_ENABLED", "1") not in ("0", "false", "False", "")
+# Empty is unset, not off — see MODE_SPLIT_ENABLED above. Losing count validation
+# to a hosting platform's empty string would silently drop the check that decides
+# whether a run may claim the calibrated tier at all.
+COUNT_VALIDATION_ENABLED = (os.getenv("COUNT_VALIDATION_ENABLED") or "1").strip().lower() not in ("0", "false")
 VALIDATION_COUNTS_PATH = os.getenv(
     "VALIDATION_COUNTS_PATH",
     os.path.join(os.path.dirname(__file__), "data", "validation", "nevada_county_priority_counts.csv"),
@@ -228,7 +242,10 @@ CALIBRATION_MIN_IMPROVEMENT = float(os.getenv("AEQ_CALIBRATE_MIN_IMPROVEMENT", "
 # Stage 2 of the staged method: a light, select-link-guided demand nudge on top
 # of the stage-1 capacity/speed calibration. On by default when calibration is
 # on (Nathaniel chose "both, staged"); AEQ_CALIBRATE_DEMAND=0 disables it.
-CALIBRATION_DEMAND_ENABLED = os.getenv("AEQ_CALIBRATE_DEMAND", "1") in ("1", "true", "True")
+# Written as an OFF list, not an allow-list: an allow-list turns every value it
+# does not recognise — including the empty string a host hands over for a variable
+# nobody set — into a silent "off" for a stage that is meant to default ON.
+CALIBRATION_DEMAND_ENABLED = (os.getenv("AEQ_CALIBRATE_DEMAND") or "1").strip().lower() not in ("0", "false")
 CALIBRATION_DEMAND_MAX_ITER = int(os.getenv("AEQ_CALIBRATE_DEMAND_MAX_ITER", "6"))
 
 if not SUPABASE_URL or not SUPABASE_KEY:
@@ -1361,56 +1378,164 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                         else haversine_miles(lons[i], lats[i], lons[j], lats[j])
                     )
 
-            # Transit LOS from the bundled GTFS. A feed failure falls back to the
-            # auto/active split, but records transit_status so a 0 transit share
-            # is never mistaken for "no transit demand".
+            # Transit LOS from a published GTFS feed. A feed failure falls back to
+            # the auto/active split, but records transit_status so a 0 transit
+            # share is never mistaken for "no transit demand".
+            #
+            # `transit_los_meta` is written on EVERY outcome, hits and misses
+            # alike, because it is what the run-detail evidence panel reads. A
+            # planner defending a VMT number has to be able to say which feed and
+            # from when; a run with no feed has to state that as a coverage fact
+            # rather than by leaving the provenance blank.
             transit_skim = None
             transit_status = "modeled"
             transit_los_meta = {}
             try:
-                discovered_url = None
-                explicit_feed = bool(os.getenv("GTFS_PATH") or os.getenv("GTFS_URL"))
+                # One wall-clock budget for the WHOLE transit stage — discovery,
+                # feed download and skim together — started before any of it runs.
+                # The worker's stages are serial inside one queued job, so an
+                # unbounded transit stage stalls every run behind this one. The
+                # budget is COOPERATIVE — it stops the stage at the next
+                # check_deadline call, not the instant it expires, so a stalled
+                # download is still bounded by requests' own timeout rather than by
+                # this. It never changes a modeled number, only converts an
+                # open-ended stall into a named refusal.
+                transit_deadline = gtfs_skim.stage_deadline()
+                discovery = None
+                env_url = os.getenv("GTFS_URL")
+                env_path = os.getenv("GTFS_PATH")
+                explicit_feed = bool(env_path or env_url)
                 discovering = GTFS_DISCOVER and not explicit_feed
                 if discovering:
                     study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
-                    discovered_url = gtfs_skim.discover_feed(study_bbox)
-                    if discovered_url:
-                        log += f"GTFS discovery selected a feed covering this study area: {discovered_url}\n"
+                    discovery = gtfs_skim.discover_feed(study_bbox)
+                    if discovery.url:
+                        log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
 
-                if discovering and not discovered_url:
-                    # Discovery on, but the catalog has no scheduled feed covering
-                    # this area — do NOT fall back to the bundled Nevada feed.
-                    transit_status = "no_local_feed"
+                # WHICH feed this run tries, and what it may say when it has none.
+                # The decision itself lives in gtfs_skim.plan_feed so it is unit
+                # testable — main.py cannot be imported by the stdlib worker suites.
+                feed_plan = gtfs_skim.plan_feed(
+                    discovery, discovering=discovering, env_url=env_url, env_path=env_path
+                )
+                feed_origin = feed_plan.origin
+                transit_los_meta = {"feed_origin": feed_origin}
+                if feed_plan.discovery_error:
+                    # Kept even when the fallback below goes on to model transit
+                    # successfully: a run that says "modeled" must still disclose
+                    # that discovery never actually ran for this study area.
+                    # Truncated so an unexpectedly long message cannot bloat the packet.
+                    transit_los_meta["discovery_error"] = feed_plan.discovery_error[:300]
+                if feed_plan.fallback_after_catalog_failure:
+                    log += (
+                        "GTFS feed catalog could not be reached "
+                        f"({feed_plan.discovery_error or 'reason not reported'}); falling back to the feed "
+                        "bundled with the worker, which is applied only if its own stops fall inside "
+                        "this study area. Discovery did NOT run for this study area, so a published "
+                        "feed covering it may exist and was not looked for.\n"
+                    )
+
+                if not feed_plan.load:
+                    # Discovery ran, the catalog ANSWERED, and nothing it lists
+                    # covers this area. That is a checked coverage fact, so we may
+                    # state it — and there is nothing to fall back to, because the
+                    # bundled single-county feed is not a stand-in for an arbitrary
+                    # place.
+                    transit_status = feed_plan.status
+                    transit_los_meta["no_feed_reason"] = feed_plan.no_feed_reason
                     log += (
                         "GTFS discovery found no scheduled feed covering this study area; "
                         "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
                     )
                 else:
-                    los = gtfs_skim.load_feed(url=discovered_url)
+                    los = gtfs_skim.load_feed(url=feed_plan.url)
+                    transit_los_meta["source_url"] = los.source_url
+                    transit_los_meta["source_name"] = los.source_name
+                    # A slow-drip download can outlast requests' per-read timeout;
+                    # check before committing to the skim rather than starting one
+                    # there is no longer time to finish.
+                    gtfs_skim.check_deadline(transit_deadline, "downloading and parsing the feed")
                     if not gtfs_skim.feed_covers(los, lons, lats):
                         # The feed loaded but none of its stops fall within the study
                         # area — skimming it would report a misleading transit_status
-                        # of "modeled" with a 0 share. Be honest: no local feed here.
-                        transit_status = "no_local_feed"
-                        log += (
-                            "No GTFS feed covers this study area; transit not modeled "
-                            "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
-                            "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
-                        )
+                        # of "modeled" with a 0 share.
+                        if feed_plan.fallback_after_catalog_failure:
+                            # The bundled feed was standing in for a catalog we could
+                            # not read, so its miss says only that IT is the wrong
+                            # feed. Nothing was established about this area, and
+                            # calling that "no local feed" would state a coverage
+                            # fact nobody checked.
+                            transit_status = "feed_unavailable"
+                            transit_los_meta["no_feed_reason"] = "feed_catalog_unavailable"
+                            log += (
+                                "The bundled fallback feed has no stops in this study area, and the "
+                                "feed catalog could not be reached — so whether a feed covers this "
+                                "study area is UNKNOWN, not an absence of local service.\n"
+                            )
+                        else:
+                            transit_status = "no_local_feed"
+                            transit_los_meta["no_feed_reason"] = "feed_has_no_stops_in_study_area"
+                            log += (
+                                "No GTFS feed covers this study area; transit not modeled "
+                                "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
+                                "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
+                            )
                     else:
-                        transit_skim = gtfs_skim.transit_skim(los, lons, lats)
-                        transit_los_meta = {
+                        transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
+                        transit_los_meta.update({
                             "service_day": los.service_day,
-                            "service_period": f"{los.service_start}..{los.service_end}",
+                            "service_start": los.service_start,
+                            "service_end": los.service_end,
+                            # None — not the string "None..None" — when the feed's
+                            # calendar states no window. An unknown service window
+                            # must not render downstream as a confident one.
+                            "service_period": (
+                                f"{los.service_start}..{los.service_end}"
+                                if los.service_start and los.service_end
+                                else None
+                            ),
                             "n_routes": los.n_routes,
                             "n_served_stops": los.n_stops,
                             "n_lines": len(los.lines),
                             "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
                             "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
-                            "source_url": discovered_url or "bundled_or_env",
-                        }
+                        })
+                        log += (
+                            f"Transit LOS from {los.source_url or los.source_name} "
+                            f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
+                            f"service day {los.service_day}, service window "
+                            f"{transit_los_meta['service_period'] or 'not stated in the feed calendar'}.\n"
+                        )
             except Exception as te:
                 transit_status = "feed_unavailable"
+                # Carry forward whatever provenance was already established, then
+                # name the REAL reason (e.g. the loud frequencies.txt rejection).
+                # Truncated so an unexpectedly long message cannot bloat the packet.
+                #
+                # Which failure it was decides what we may say. `load_feed` stamps
+                # the feed's identity the moment it succeeds, so the presence of a
+                # source is the evidence that the feed WAS read and something after
+                # it — the coverage check or the skim itself — is what failed.
+                # Reporting that as "the feed could not be read" would give a real
+                # refusal the wrong reason, and would send a planner off to fix a
+                # feed that is fine.
+                _feed_was_read = bool(transit_los_meta.get("source_url") or transit_los_meta.get("source_name"))
+                if isinstance(te, gtfs_skim.GtfsTimeout):
+                    # Ran out of time, not out of data. Reported separately because
+                    # nothing about the feed is wrong — a rerun, a smaller zone
+                    # system or a larger GTFS_STAGE_BUDGET_S is the answer, and
+                    # calling it a feed problem would send a planner to their
+                    # transit agency over a budget the operator sets.
+                    _no_feed_reason = "transit_skim_timed_out"
+                elif _feed_was_read:
+                    _no_feed_reason = "transit_skim_failed"
+                else:
+                    _no_feed_reason = "feed_load_failed"
+                transit_los_meta = {
+                    **transit_los_meta,
+                    "no_feed_reason": _no_feed_reason,
+                    "error": str(te)[:300],
+                }
                 log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
 
             auto_float, auto_int, transit_int, active_int, mm = mode_choice.split_matrix(
@@ -2413,6 +2538,13 @@ def stage_artifacts(
             kpis.append(("assignment", "validation_spearman_rho", "Validation Spearman rho", validation["spearman_rho"], "ratio"))
 
     _transit_status = (mode_split or {}).get("transit_status", "not_run")
+    # Name the feed and its service window in the KPI provenance itself, so the
+    # transit share travels with the evidence for it rather than pointing at a
+    # bundled snapshot the run may not have used. `or` (not a dict default) —
+    # these keys are present-but-null when the feed did not state a window.
+    _transit_los = (mode_split or {}).get("transit_los") or {}
+    _feed_ref = _transit_los.get("source_url") or _transit_los.get("source_name") or "feed not identified"
+    _service_window = _transit_los.get("service_period") or "service window not stated in the feed calendar"
     if _transit_status == "modeled":
         mode_provenance = (
             "Screening-grade 3-way auto/transit/active(walk+bike) logit applied per internal "
@@ -2424,16 +2556,18 @@ def stage_artifacts(
             "both ends and a direct-or-one-transfer scheduled itinerary runs on the modeled "
             "day — transit share is 0 elsewhere by construction, small where rural service "
             "exists. Coefficients are a trip-weighted blend of the sketch-ABM per-purpose "
-            "tables. Derived from a FROZEN GTFS snapshot (service window "
-            f"{((mode_split or {}).get('transit_los') or {}).get('service_period', 'n/a')}); a "
-            "screening approximation, not current or real-time service. NOT a calibrated "
+            f"tables. Derived from a point-in-time snapshot of {_feed_ref} ({_service_window}); "
+            "a screening approximation, not current or real-time service. NOT a calibrated "
             "transit assignment or a validated model."
         )
     else:
+        _no_feed_reason = _transit_los.get("no_feed_reason")
         mode_provenance = (
             "Screening-grade auto-vs-active(walk+bike) logit; transit share is 0 because no usable "
-            f"GTFS feed covered this study area (transit_status={_transit_status}) — this is NOT "
-            "'no transit demand'. Not a validated mode choice model or calibrated forecast."
+            f"GTFS feed covered this study area (transit_status={_transit_status}"
+            + (f"; {_no_feed_reason}" if _no_feed_reason else "")
+            + ") — this is NOT 'no transit demand'. Not a validated mode choice model or "
+            "calibrated forecast."
         )
 
     for cat, name, label, value, unit in kpis:

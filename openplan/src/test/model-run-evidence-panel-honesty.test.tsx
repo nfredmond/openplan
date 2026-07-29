@@ -152,3 +152,295 @@ describe("ModelRunEvidencePanel run-honesty header", () => {
     expect(block).not.toHaveTextContent("Screening-grade");
   });
 });
+
+/** With per-place GTFS discovery on by default, a run's transit share is only
+ * defensible if the planner can say which feed produced it and over what dates.
+ * These pin that the panel states the feed — or states plainly that there wasn't
+ * one, which is a different fact from "0% transit". */
+describe("ModelRunEvidencePanel transit-feed provenance", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("names the discovered feed and its service window for a modeled run", async () => {
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "modeled",
+        transit_los: {
+          feed_origin: "discovered_catalog",
+          source_url: "https://catalog.example.org/feeds/unitrans.zip",
+          source_name: null,
+          service_day: "wednesday",
+          service_start: "20260301",
+          service_end: "20260930",
+          service_period: "20260301..20260930",
+          n_routes: 17,
+          n_served_stops: 412,
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("https://catalog.example.org/feeds/unitrans.zip");
+    expect(block).toHaveTextContent("Discovered for this study area");
+    // ISO dates, not locale dates — a YYYYMMDD calendar date parsed as UTC would
+    // render a day early for most viewers.
+    expect(block).toHaveTextContent("2026-03-01 → 2026-09-30");
+    expect(block).toHaveTextContent("Wednesday");
+    expect(block).toHaveTextContent("17 routes · 412 served stops");
+  });
+
+  it("states the coverage limit when discovery found no feed, rather than implying 0% was measured", async () => {
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "no_local_feed",
+        transit_los: { feed_origin: "none", no_feed_reason: "discovery_found_no_covering_feed" },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("No published GTFS feed in the Mobility Database catalog covers this study area");
+    expect(block).toHaveTextContent("a coverage limit, not a finding that transit demand here is zero");
+    // No feed means no service window to report — the panel must not print one.
+    expect(block).not.toHaveTextContent("2026-");
+  });
+
+  it("calls an unreachable feed catalog unknown, not an absence of local transit", async () => {
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "feed_unavailable",
+        transit_los: {
+          feed_origin: "none",
+          no_feed_reason: "feed_catalog_unavailable",
+          error: "MobilityDB catalog download failed: HTTP 503",
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("could not be reached, so whether a feed covers this study area is unknown");
+    expect(block).toHaveTextContent("HTTP 503");
+    // The claim that must NOT be made: that the catalog was consulted and had
+    // nothing. Nobody checked.
+    expect(block).not.toHaveTextContent("No published GTFS feed in the Mobility Database catalog covers");
+  });
+
+  it("says a feed loaded but did not reach the study area, and names it", async () => {
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "no_local_feed",
+        transit_los: {
+          feed_origin: "bundled_default",
+          source_name: "bundled_agency_gtfs.zip",
+          no_feed_reason: "feed_has_no_stops_in_study_area",
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("bundled_agency_gtfs.zip");
+    expect(block).toHaveTextContent("has no stops inside the study area");
+  });
+
+  it("reports the real reason a feed could not be read instead of a bare failure", async () => {
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "feed_unavailable",
+        transit_los: {
+          feed_origin: "discovered_catalog",
+          source_url: "https://catalog.example.org/feeds/headway-only.zip",
+          no_feed_reason: "feed_load_failed",
+          error: "frequencies.txt-based GTFS is not supported by the headway skim; supply a stop_times-scheduled feed.",
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("frequencies.txt-based GTFS is not supported");
+    expect(block).toHaveTextContent("https://catalog.example.org/feeds/headway-only.zip");
+  });
+
+  it("does not blame the publisher's feed when the feed read fine and the skim failed", async () => {
+    // The worker distinguishes these because they send a planner to different
+    // places. A feed that read fine and then broke the skim must not be reported
+    // as unreadable — that sends someone to their transit agency to fix a file
+    // that is not broken.
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "feed_unavailable",
+        transit_los: {
+          feed_origin: "discovered_catalog",
+          source_url: "https://catalog.example.org/feeds/regional.zip",
+          no_feed_reason: "transit_skim_failed",
+          error: "'GHOST'",
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("was read, but the transit skim did not complete");
+    expect(block).not.toHaveTextContent("The feed could not be read.");
+    expect(block).toHaveTextContent("https://catalog.example.org/feeds/regional.zip");
+  });
+
+  it("does not let a bundled-feed fallback read as a successful discovery", async () => {
+    // When the feed catalog cannot be reached the worker still loads the bundled
+    // feed and lets its own coverage check decide — otherwise an offline
+    // deployment loses transit for the one area that feed does cover. But a run
+    // that then reports "modeled" must say discovery never ran, or a planner will
+    // believe the catalog was searched for their area when it never answered.
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "modeled",
+        transit_los: {
+          feed_origin: "bundled_after_catalog_unavailable",
+          source_name: "bundled_agency_gtfs.zip",
+          discovery_error: "MobilityDB catalog download failed: HTTP 503",
+          service_day: "monday",
+          service_period: "20250101..20261231",
+          n_routes: 2,
+          n_served_stops: 30,
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(screen.getByTestId("evidence-transit-discovery-fallback")).toBeInTheDocument();
+    expect(block).toHaveTextContent("Per-study-area feed discovery did not run");
+    expect(block).toHaveTextContent("HTTP 503");
+    expect(block).toHaveTextContent("may exist and was not looked for");
+    expect(block).toHaveTextContent("fallback — the feed catalog could not be reached");
+    // The claim that must NOT be made: that this feed was found for this area.
+    expect(block).not.toHaveTextContent("Discovered for this study area");
+  });
+
+  it("calls a fallback feed that misses the area unknown, not an absence of transit", async () => {
+    // The bundled feed standing in for an unreachable catalog says nothing about
+    // whether a published feed covers this area — only that IT is the wrong feed.
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "feed_unavailable",
+        transit_los: {
+          feed_origin: "bundled_after_catalog_unavailable",
+          source_name: "bundled_agency_gtfs.zip",
+          discovery_error: "MobilityDB catalog download failed: HTTP 503",
+          no_feed_reason: "feed_catalog_unavailable",
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("could not be reached, so whether a feed covers this study area is unknown");
+    expect(block).toHaveTextContent("Per-study-area feed discovery did not run");
+    // Neither checked coverage claim may be made from an unreachable catalog.
+    expect(block).not.toHaveTextContent("No published GTFS feed in the Mobility Database catalog covers");
+    expect(block).not.toHaveTextContent("has no stops inside the study area");
+  });
+
+  it("blames the time budget, not the feed, when the transit stage is stopped early", async () => {
+    // A run abandoned for time must not be reported as a broken feed: the fix is
+    // the operator's, and "your feed could not be read" sends a planner to their
+    // transit agency over a file that is fine.
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "feed_unavailable",
+        transit_los: {
+          feed_origin: "discovered_catalog",
+          source_url: "https://catalog.example.org/feeds/regional.zip",
+          no_feed_reason: "transit_skim_timed_out",
+          error: "the transit stage ran out of its wall-clock budget while skimming zone-to-zone transit itineraries",
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    // The badge has to agree with the body. `feed_unavailable` is the only
+    // enumerated status that keeps the transit block on screen, but a badge
+    // reading "feed unavailable" would say the feed is broken while the body says
+    // nothing is wrong with it — and a planner who reads only the badge would go
+    // to their transit agency over a budget their own operator sets.
+    const honesty = screen.getByTestId("evidence-run-honesty");
+    expect(honesty).toHaveTextContent("Transit not modeled — time budget exceeded");
+    expect(honesty).not.toHaveTextContent("feed unavailable");
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("exceeded this deployment's wall-clock budget");
+    expect(block).toHaveTextContent("Nothing is known to be wrong with the feed itself");
+    expect(block).toHaveTextContent("https://catalog.example.org/feeds/regional.zip");
+    expect(block).not.toHaveTextContent("The feed could not be read.");
+    // A stopped run is still a coverage limit, never a measured zero.
+    expect(block).toHaveTextContent("not a finding that transit demand here is zero");
+  });
+
+  it("reports an unstated service window as unstated rather than inventing one", async () => {
+    mockEvidenceFetch({
+      ...AEQUILIBRAE_PACKET,
+      mode_split: {
+        transit_status: "modeled",
+        transit_los: {
+          feed_origin: "operator_url",
+          source_url: "https://agency.example.org/gtfs.zip",
+          service_day: "unknown",
+          service_period: null,
+          n_routes: 1,
+          n_served_stops: 1,
+        },
+      },
+    });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("Not stated in the feed calendar");
+    expect(block).toHaveTextContent("Not determined from the feed calendar");
+    // Singular units, not "1 routes".
+    expect(block).toHaveTextContent("1 route · 1 served stop");
+  });
+
+  it("does not attribute a transit share to a feed when the run recorded no provenance", async () => {
+    // Packets written before the worker stamped feed provenance: the status is
+    // known but the feed is not, and the panel must say so rather than leave the
+    // share looking sourced.
+    mockEvidenceFetch({ ...AEQUILIBRAE_PACKET, mode_split: { transit_status: "modeled" } });
+    renderPanel("aequilibrae");
+    await openEvidence();
+
+    const block = screen.getByTestId("evidence-transit-provenance");
+    expect(block).toHaveTextContent("recorded no transit-feed provenance");
+    expect(block).toHaveTextContent("unattributed rather than as a measurement");
+  });
+
+  it("shows no transit-feed block for an engine that reports no transit status", async () => {
+    mockEvidenceFetch({ engine: "sketch_abm" });
+    renderPanel("sketch_abm");
+    await openEvidence();
+
+    expect(screen.queryByTestId("evidence-transit-provenance")).toBeNull();
+  });
+});

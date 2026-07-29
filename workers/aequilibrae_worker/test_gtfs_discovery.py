@@ -4,6 +4,7 @@ Pure selection logic — no network. Run with the worker venv:
 
     workers/aequilibrae_worker/.venv311/bin/python workers/aequilibrae_worker/test_gtfs_discovery.py
 """
+import os
 import sys
 
 import gtfs_skim
@@ -72,6 +73,189 @@ def test_rejects_corrupt_worldwide_bbox_and_non_us():
     assert url is None, f"expected None (corrupt bbox + non-US both excluded), got {url!r}"
 
 
+def _with_catalog(loader):
+    """Swap gtfs_skim's catalog loader for the duration of one check (no network)."""
+    original = gtfs_skim._load_catalog
+    gtfs_skim._load_catalog = loader
+    try:
+        return gtfs_skim.discover_feed(DAVIS_BBOX)
+    finally:
+        gtfs_skim._load_catalog = original
+
+
+def test_an_answered_catalog_with_nothing_nearby_is_reported_as_a_coverage_fact():
+    result = _with_catalog(lambda: [CATALOG[2]])  # only the far-away NYC feed
+    assert result.url is None
+    assert result.reason == "no_covering_feed", result.reason
+
+
+def test_an_unreachable_catalog_is_reported_as_unknown_not_as_no_service():
+    # The failure this prevents: a download error rendering as "no transit feed
+    # covers this study area", which is a coverage claim nobody ever checked —
+    # and which would then sit underneath a VMT number a planner has to defend.
+    def _boom():
+        raise gtfs_skim.GtfsError("MobilityDB catalog download failed: HTTP 503")
+
+    result = _with_catalog(_boom)
+    assert result.url is None
+    assert result.reason == "catalog_unavailable", result.reason
+    assert "503" in (result.detail or ""), "the real failure must survive to the caller"
+
+
+def test_a_covering_catalog_returns_the_selected_feed():
+    result = _with_catalog(lambda: CATALOG)
+    assert result.reason == "selected", result.reason
+    assert result.url == "http://mdb/latest/davis.zip", result.url
+
+
+def test_a_run_looks_for_a_local_feed_unless_the_operator_stops_it():
+    # The regression this pins: the flag defaulted to OFF and NOTHING set it, so
+    # every study area outside the one bundled county reported a transit share of
+    # exactly 0 — which OVERSTATES auto and INFLATES the screening VMT a planner
+    # defends. Unset must mean "go look".
+    assert gtfs_skim.discovery_enabled(None) is True, "discovery must run when GTFS_DISCOVER is unset"
+    for off in ("0", "false", "False", "FALSE", "no", "off", "  0  "):
+        assert gtfs_skim.discovery_enabled(off) is False, f"{off!r} must switch discovery off"
+    for on in ("1", "true", "True", "yes"):
+        assert gtfs_skim.discovery_enabled(on) is True, f"{on!r} must leave discovery on"
+
+
+def test_an_empty_value_is_read_as_unset_rather_than_as_an_operator_choosing_off():
+    # Several hosting platforms materialize a variable nobody defined as an empty
+    # string. Reading that as "off" would silently reinstate the very defect the
+    # on-by-default flip fixed — every study area outside the bundled county back
+    # to a 0 transit share and an inflated VMT — and the evidence panel would
+    # present it as a deliberate operator decision nobody actually made.
+    for blank in ("", " ", "\t", "\n  "):
+        assert gtfs_skim.discovery_enabled(blank) is True, (
+            f"{blank!r} is an unset variable, not an operator switching discovery off"
+        )
+
+
+def test_an_unreachable_catalog_still_tries_the_bundled_feed():
+    # The capability regression this pins: turning discovery on removed transit
+    # from the ONE area that had it. When the catalog cannot be reached the worker
+    # stopped loading any feed at all, so an offline or network-blocked deployment
+    # lost the bundled feed's own area and gained nothing anywhere else. Falling
+    # back is safe in ANY study area by construction — feed_covers() rejects a feed
+    # whose stops are elsewhere — so the fallback can only add coverage.
+    unreachable = gtfs_skim.FeedDiscovery(None, "catalog_unavailable", "HTTP 503")
+    plan = gtfs_skim.plan_feed(unreachable, discovering=True)
+    assert plan.load is True, "an unreachable catalog must not cost a run its bundled feed"
+    assert plan.url is None, "the fallback is the bundled feed, not some other place's URL"
+    assert plan.fallback_after_catalog_failure is True
+
+
+def test_the_bundled_fallback_does_not_read_as_a_successful_discovery():
+    # A fallback that looks like a discovery hit is worse than the regression: it
+    # lets a planner believe the catalog was consulted for their area when it never
+    # answered. The origin must name the fallback, and the catalog failure must
+    # survive onto the run even though a feed was ultimately loaded.
+    plan = gtfs_skim.plan_feed(
+        gtfs_skim.FeedDiscovery(None, "catalog_unavailable", "HTTP 503"), discovering=True
+    )
+    assert plan.origin == "bundled_after_catalog_unavailable", plan.origin
+    assert plan.origin != "discovered_catalog"
+    assert plan.discovery_error == "HTTP 503", plan.discovery_error
+
+
+def test_an_answered_catalog_with_no_covering_feed_does_not_reach_for_the_bundled_feed():
+    # The asymmetry that matters: a catalog that ANSWERED and listed nothing is a
+    # checked coverage fact, so the run says so. Reaching for a single-county
+    # bundled feed in an arbitrary place would only invite a coverage miss dressed
+    # up as an answer.
+    plan = gtfs_skim.plan_feed(gtfs_skim.FeedDiscovery(None, "no_covering_feed"), discovering=True)
+    assert plan.load is False
+    assert plan.status == "no_local_feed", plan.status
+    assert plan.no_feed_reason == "discovery_found_no_covering_feed", plan.no_feed_reason
+    assert plan.fallback_after_catalog_failure is False
+
+
+def test_an_operator_named_feed_outranks_discovery_and_the_bundled_fallback():
+    selected = gtfs_skim.FeedDiscovery("http://mdb/latest/davis.zip", "selected")
+    assert gtfs_skim.plan_feed(selected, discovering=True).origin == "discovered_catalog"
+    # The precedence this test is named for, asserted rather than assumed: an
+    # operator who pinned a feed must keep it even if a caller also discovered
+    # one. main.py never does both today, so only this check stops the order in
+    # plan_feed from drifting away from what its docstring promises.
+    assert (
+        gtfs_skim.plan_feed(selected, discovering=True, env_url="http://agency/gtfs.zip").origin
+        == "operator_url"
+    )
+    assert (
+        gtfs_skim.plan_feed(selected, discovering=True, env_path="/feeds/agency.zip").origin
+        == "operator_path"
+    )
+    # discovering=False is what an explicit GTFS_URL/GTFS_PATH produces in main.py.
+    url_plan = gtfs_skim.plan_feed(None, discovering=False, env_url="http://agency/gtfs.zip")
+    assert url_plan.origin == "operator_url" and url_plan.load is True
+    assert url_plan.url is None, "load_feed resolves the operator's env var itself"
+    path_plan = gtfs_skim.plan_feed(None, discovering=False, env_path="/feeds/agency.zip")
+    assert path_plan.origin == "operator_path" and path_plan.load is True
+    # Discovery switched off with no operator feed: the bundled feed, named as such.
+    off_plan = gtfs_skim.plan_feed(None, discovering=False)
+    assert off_plan.origin == "bundled_default" and off_plan.load is True
+    assert off_plan.fallback_after_catalog_failure is False
+
+
+def test_a_missing_discovery_result_is_an_unknown_not_a_coverage_fact():
+    # Defensive: a caller that says it discovered but hands over no result has told
+    # us nothing about the area. That is the same state as an unreachable catalog,
+    # and must never collapse into "no feed covers this area".
+    plan = gtfs_skim.plan_feed(None, discovering=True)
+    assert plan.load is True and plan.fallback_after_catalog_failure is True
+    assert plan.status != "no_local_feed"
+
+
+def test_the_worker_takes_its_discovery_default_and_feed_plan_from_gtfs_skim():
+    # A text check rather than an import: main.py pulls in aequilibrae/pandas/
+    # shapely, which this stdlib suite deliberately does not require. What must
+    # hold is that the worker has exactly ONE documented place where each of these
+    # decisions lives, so neither can quietly regress inside a file no test can
+    # import — which is how the off-by-default literal survived in the first place.
+    main_src = open(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "main.py"), encoding="utf-8"
+    ).read()
+    assert "GTFS_DISCOVER = gtfs_skim.discovery_enabled(" in main_src, (
+        "main.py must resolve GTFS_DISCOVER through gtfs_skim.discovery_enabled"
+    )
+    assert 'os.getenv("GTFS_DISCOVER", "0")' not in main_src, (
+        "the off-by-default literal is back in main.py"
+    )
+    assert "gtfs_skim.plan_feed(" in main_src, (
+        "main.py must choose its feed through gtfs_skim.plan_feed, not inline branching"
+    )
+
+
+def test_no_env_switch_in_the_worker_reads_an_empty_value_as_a_deliberate_off():
+    # The same defect GTFS_DISCOVER had, generalised so it cannot reappear on the
+    # next switch: several hosting platforms materialize a variable nobody defined
+    # as an empty string. A default-ON capability whose off-list contains "" —
+    # or whose on-list is an allow-list that "" simply fails — turns a deployment
+    # that made no choice at all into one that silently dropped the capability,
+    # and the evidence panel then presents it as an operator's decision.
+    # Empty means UNSET; only an explicit falsy word may switch something off.
+    import re
+
+    main_src = open(
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "main.py"), encoding="utf-8"
+    ).read()
+    offenders = []
+    for lineno, line in enumerate(main_src.splitlines(), start=1):
+        if "os.getenv(" not in line:
+            continue
+        match = re.search(r"(?:not )?in \(([^)]*)\)", line)
+        if not match:
+            continue
+        values = [v.strip() for v in match.group(1).split(",") if v.strip()]
+        if '""' in values or "''" in values:
+            offenders.append(f"{lineno}: {line.strip()}")
+    assert not offenders, (
+        "an empty environment value must not be treated as an explicit 'off': "
+        + "; ".join(offenders)
+    )
+
+
 if __name__ == "__main__":
     tests = [
         test_selects_smallest_covering_gtfs_feed_and_prefers_latest,
@@ -79,6 +263,18 @@ if __name__ == "__main__":
         test_returns_none_when_nothing_covers,
         test_excludes_non_gtfs_and_non_overlapping,
         test_rejects_corrupt_worldwide_bbox_and_non_us,
+        test_an_answered_catalog_with_nothing_nearby_is_reported_as_a_coverage_fact,
+        test_an_unreachable_catalog_is_reported_as_unknown_not_as_no_service,
+        test_a_covering_catalog_returns_the_selected_feed,
+        test_a_run_looks_for_a_local_feed_unless_the_operator_stops_it,
+        test_an_empty_value_is_read_as_unset_rather_than_as_an_operator_choosing_off,
+        test_an_unreachable_catalog_still_tries_the_bundled_feed,
+        test_the_bundled_fallback_does_not_read_as_a_successful_discovery,
+        test_an_answered_catalog_with_no_covering_feed_does_not_reach_for_the_bundled_feed,
+        test_an_operator_named_feed_outranks_discovery_and_the_bundled_fallback,
+        test_a_missing_discovery_result_is_an_unknown_not_a_coverage_fact,
+        test_the_worker_takes_its_discovery_default_and_feed_plan_from_gtfs_skim,
+        test_no_env_switch_in_the_worker_reads_an_empty_value_as_a_deliberate_off,
     ]
     try:
         for t in tests:

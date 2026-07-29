@@ -46,8 +46,22 @@ function claimStatusTone(status: ModelingClaimStatus): StatusTone {
 
 /** First-class transit-status label so a 0 transit share is never read as "no
  * transit demand" — the honest distinction between "modeled" and a feed
- * limitation. */
-function transitStatusDisplay(status: EvidenceTransitStatus | null): { label: string; tone: StatusTone } | null {
+ * limitation.
+ *
+ * `noFeedReason` refines the label without widening `EvidenceTransitStatus`. The
+ * worker reports a run stopped by its wall-clock budget as `feed_unavailable`
+ * because that is the only enumerated status that keeps the transit block on
+ * screen at all — but the feed in that case was read and is fine, so a badge
+ * reading "feed unavailable" states something untrue about it and contradicts the
+ * body text two lines below, which says nothing is known to be wrong with the
+ * feed. The reason is what actually happened; the badge follows it. */
+function transitStatusDisplay(
+  status: EvidenceTransitStatus | null,
+  noFeedReason?: string | null
+): { label: string; tone: StatusTone } | null {
+  if (status === "feed_unavailable" && noFeedReason === "transit_skim_timed_out") {
+    return { label: "Transit not modeled — time budget exceeded", tone: "warning" };
+  }
   switch (status) {
     case "modeled":
       return { label: "Transit modeled (local GTFS)", tone: "info" };
@@ -60,6 +74,146 @@ function transitStatusDisplay(status: EvidenceTransitStatus | null): { label: st
     default:
       return null;
   }
+}
+
+/**
+ * Feed provenance the AequilibraE worker records beside `transit_status`, in
+ * `mode_split.transit_los`. The status badge alone says whether transit was
+ * modeled; this says WHICH feed and FROM WHEN — the two things a planner has to
+ * be able to state when the resulting VMT number is challenged, because leaving
+ * transit out overstates auto and inflates VMT.
+ *
+ * Read here rather than in `evidence-packet.ts` because there is nothing to
+ * normalize: the packet normalizer already carries `mode_split` through
+ * verbatim, and every field below is display-only.
+ */
+type TransitFeedProvenance = {
+  /** How the run chose a feed, or that it chose none. */
+  origin: string | null;
+  /** The feed itself — its URL when fetched, its file name when read from disk. */
+  feedRef: string | null;
+  /** GTFS calendar window as `YYYYMMDD..YYYYMMDD`, or null when the feed stated none. */
+  servicePeriod: string | null;
+  /** The weekday, or explicit service date, whose schedule was skimmed. */
+  serviceDay: string | null;
+  routeCount: number | null;
+  servedStopCount: number | null;
+  /** Why no feed was applied, when none was. */
+  noFeedReason: string | null;
+  /** The loader's own message when the feed could not be read at all. */
+  error: string | null;
+  /** Why per-study-area discovery did not run, when the run used a fallback feed
+   * instead. Present even on a SUCCESSFUL run — a fallback that reads as a
+   * successful discovery is worse than no fallback, because it lets a planner
+   * believe the catalog was consulted for their area when it never answered. */
+  discoveryError: string | null;
+};
+
+const TRANSIT_FEED_ORIGIN_LABELS: Record<string, string> = {
+  discovered_catalog: "Discovered for this study area (Mobility Database catalog)",
+  operator_url: "Operator-configured feed URL",
+  operator_path: "Operator-configured feed file",
+  bundled_default: "Feed bundled with the worker (discovery switched off)",
+  // Deliberately worded so it can never be mistaken for a discovery hit: the
+  // catalog was never consulted for this area, and the feed that was used is the
+  // one that ships with the worker, applied only because its own stops fall
+  // inside the study area.
+  bundled_after_catalog_unavailable:
+    "Feed bundled with the worker (fallback — the feed catalog could not be reached)",
+  none: "No feed applied",
+};
+
+const TRANSIT_NO_FEED_REASON_LABELS: Record<string, string> = {
+  discovery_found_no_covering_feed:
+    "No published GTFS feed in the Mobility Database catalog covers this study area.",
+  // Distinct from the line above on purpose: a catalog that answered and listed
+  // nothing is a coverage fact, whereas a catalog we could not reach settles
+  // nothing at all. Collapsing the two would tell a planner their area has no
+  // transit when only a download failed.
+  feed_catalog_unavailable:
+    "The published-feed catalog could not be reached, so whether a feed covers this study area is unknown.",
+  feed_has_no_stops_in_study_area:
+    "The feed this run loaded has no stops inside the study area, so it was not skimmed.",
+  feed_load_failed: "The feed could not be read.",
+  // Separate from `feed_load_failed` because the two send a planner to different
+  // places: a feed that could not be read is the publisher's problem, whereas a
+  // feed that read fine and then broke the skim is ours. Telling someone their
+  // feed is unreadable when it is not costs them a day chasing a file that is
+  // fine.
+  transit_skim_failed:
+    "The feed named above was read, but the transit skim did not complete, so transit was not modeled.",
+  // Ran out of time, not out of data. Kept separate from the two failures above
+  // because nothing about the feed is wrong here — the fix is the operator's
+  // (a larger budget, or a smaller zone system), not the transit agency's, and
+  // saying "your feed could not be read" would send a planner to the wrong door.
+  transit_skim_timed_out:
+    "The transit stage exceeded this deployment's wall-clock budget and was stopped, so transit was not modeled. " +
+    "Nothing is known to be wrong with the feed itself.",
+};
+
+function readTransitProvenance(packet: NormalizedEvidencePacket): TransitFeedProvenance | null {
+  const engineSummary = packet.outputs.engine_summary;
+  if (!engineSummary) return null;
+  const modeSplit = engineSummary.mode_split;
+  if (!modeSplit || typeof modeSplit !== "object") return null;
+  const los = (modeSplit as Record<string, unknown>).transit_los;
+  if (!los || typeof los !== "object") return null;
+
+  const text = (key: string): string | null => {
+    const value = (los as Record<string, unknown>)[key];
+    return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+  };
+  const count = (key: string): number | null => {
+    const value = (los as Record<string, unknown>)[key];
+    return typeof value === "number" && Number.isFinite(value) ? value : null;
+  };
+
+  return {
+    origin: text("feed_origin"),
+    feedRef: text("source_url") ?? text("source_name"),
+    servicePeriod: text("service_period"),
+    serviceDay: text("service_day"),
+    routeCount: count("n_routes"),
+    servedStopCount: count("n_served_stops"),
+    noFeedReason: text("no_feed_reason"),
+    error: text("error"),
+    discoveryError: text("discovery_error"),
+  };
+}
+
+/** GTFS calendar dates are `YYYYMMDD`. Rendered as ISO `YYYY-MM-DD` rather than a
+ * locale date on purpose: `new Date("20260301")` resolves against UTC and would
+ * shift a day backwards for most viewers. A feed's service window is a fact
+ * printed in the feed, not a moment in the reader's timezone. */
+function formatGtfsDate(value: string): string {
+  return /^\d{8}$/.test(value) ? `${value.slice(0, 4)}-${value.slice(4, 6)}-${value.slice(6, 8)}` : value;
+}
+
+function formatServiceWindow(servicePeriod: string | null): string {
+  if (!servicePeriod) return "Not stated in the feed calendar";
+  const [start, end] = servicePeriod.split("..");
+  if (!start || !end) return servicePeriod;
+  return `${formatGtfsDate(start)} → ${formatGtfsDate(end)}`;
+}
+
+function formatServiceDay(serviceDay: string | null): string {
+  if (!serviceDay || serviceDay === "unknown") return "Not determined from the feed calendar";
+  if (serviceDay.startsWith("date:")) return `Service date ${formatGtfsDate(serviceDay.slice(5))}`;
+  return serviceDay.charAt(0).toUpperCase() + serviceDay.slice(1);
+}
+
+function formatServiceFound(provenance: TransitFeedProvenance): string | null {
+  if (provenance.routeCount === null && provenance.servedStopCount === null) return null;
+  const parts: string[] = [];
+  if (provenance.routeCount !== null) {
+    parts.push(`${provenance.routeCount.toLocaleString()} route${provenance.routeCount === 1 ? "" : "s"}`);
+  }
+  if (provenance.servedStopCount !== null) {
+    parts.push(
+      `${provenance.servedStopCount.toLocaleString()} served stop${provenance.servedStopCount === 1 ? "" : "s"}`
+    );
+  }
+  return parts.join(" · ");
 }
 
 function shortHash(hash: string | null): string | null {
@@ -109,6 +263,11 @@ export function ModelRunEvidencePanel({
   const highlights = useMemo(() => (evidence ? buildEvidenceHighlights(evidence) : []), [evidence]);
   const categories = useMemo(() => (evidence ? summarizeEvidenceCategories(evidence) : []), [evidence]);
   const transitStatus = useMemo(() => (evidence ? evidenceTransitStatus(evidence) : null), [evidence]);
+  const transitProvenance = useMemo(() => (evidence ? readTransitProvenance(evidence) : null), [evidence]);
+  const transitDisplay = useMemo(
+    () => transitStatusDisplay(transitStatus, transitProvenance?.noFeedReason),
+    [transitStatus, transitProvenance]
+  );
   // Honest run posture. Prefer the run's REAL recorded claim tier (from
   // modeling_claim_decisions) — so a run the worker genuinely promoted to
   // calibrated_to_counts renders as such, not as bare screening_grade. Only when
@@ -293,10 +452,8 @@ export function ModelRunEvidencePanel({
                   {claimStatus === "screening_grade" ? (
                     <StatusBadge tone="neutral">Uncalibrated by default</StatusBadge>
                   ) : null}
-                  {transitStatusDisplay(transitStatus) ? (
-                    <StatusBadge tone={transitStatusDisplay(transitStatus)!.tone}>
-                      {transitStatusDisplay(transitStatus)!.label}
-                    </StatusBadge>
+                  {transitDisplay ? (
+                    <StatusBadge tone={transitDisplay.tone}>{transitDisplay.label}</StatusBadge>
                   ) : null}
                 </div>
                 <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-xs text-amber-950/90 dark:text-amber-100/90 sm:grid-cols-2">
@@ -328,6 +485,107 @@ export function ModelRunEvidencePanel({
                     </dd>
                   </div>
                 </dl>
+
+                {/* Which feed, from when. The badge above says whether transit was
+                    modeled; this names the evidence behind that answer — and when
+                    there was no feed, states the coverage limit as a fact instead
+                    of leaving a 0% transit share to read as a measurement. */}
+                {transitDisplay ? (
+                  <div
+                    className="mt-3 rounded-[14px] border border-amber-300/50 bg-amber-100/40 px-3 py-2.5 dark:border-amber-900/50 dark:bg-amber-950/30"
+                    data-testid="evidence-transit-provenance"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-900/80 dark:text-amber-200/80">
+                      Transit feed
+                    </p>
+
+                    {transitProvenance ? (
+                      <dl className="mt-2 space-y-1.5 text-xs text-amber-950/90 dark:text-amber-100/90">
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="shrink-0 text-amber-900/70 dark:text-amber-200/70">Feed</dt>
+                          <dd className="min-w-0 break-all text-right font-medium">
+                            {transitProvenance.feedRef ?? "None applied"}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="shrink-0 text-amber-900/70 dark:text-amber-200/70">How it was selected</dt>
+                          <dd className="min-w-0 text-right font-medium">
+                            {(transitProvenance.origin
+                              ? TRANSIT_FEED_ORIGIN_LABELS[transitProvenance.origin]
+                              : null) ??
+                              transitProvenance.origin ??
+                              "Not recorded by this run"}
+                          </dd>
+                        </div>
+                        <div className="flex items-start justify-between gap-3">
+                          <dt className="shrink-0 text-amber-900/70 dark:text-amber-200/70">Service window</dt>
+                          <dd className="min-w-0 text-right font-medium">
+                            {transitStatus === "modeled"
+                              ? formatServiceWindow(transitProvenance.servicePeriod)
+                              : "No feed was skimmed"}
+                          </dd>
+                        </div>
+                        {transitStatus === "modeled" ? (
+                          <>
+                            <div className="flex items-start justify-between gap-3">
+                              <dt className="shrink-0 text-amber-900/70 dark:text-amber-200/70">Schedule day used</dt>
+                              <dd className="min-w-0 text-right font-medium">
+                                {formatServiceDay(transitProvenance.serviceDay)}
+                              </dd>
+                            </div>
+                            {formatServiceFound(transitProvenance) ? (
+                              <div className="flex items-start justify-between gap-3">
+                                <dt className="shrink-0 text-amber-900/70 dark:text-amber-200/70">Service found</dt>
+                                <dd className="min-w-0 text-right font-medium">
+                                  {formatServiceFound(transitProvenance)}
+                                </dd>
+                              </div>
+                            ) : null}
+                          </>
+                        ) : null}
+                      </dl>
+                    ) : (
+                      <p className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90">
+                        This run recorded no transit-feed provenance, so its transit share cannot be traced to a
+                        feed. Treat it as unattributed rather than as a measurement.
+                      </p>
+                    )}
+
+                    {/* Disclosed on EVERY outcome, including a run that went on to
+                        model transit successfully from the fallback feed. Without
+                        this line a bundled-feed fallback reads as a discovery hit,
+                        and a planner would believe the catalog was searched for
+                        their area when it never answered — a confident claim about
+                        coverage nobody established. */}
+                    {transitProvenance?.discoveryError ? (
+                      <p
+                        className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90"
+                        data-testid="evidence-transit-discovery-fallback"
+                      >
+                        Per-study-area feed discovery did not run: the published-feed catalog could not be
+                        reached ({transitProvenance.discoveryError}). This run fell back to the feed bundled
+                        with the worker, so a published feed covering this study area may exist and was not
+                        looked for.
+                      </p>
+                    ) : null}
+
+                    {transitStatus !== "modeled" ? (
+                      <p className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90">
+                        {(transitProvenance?.noFeedReason
+                          ? TRANSIT_NO_FEED_REASON_LABELS[transitProvenance.noFeedReason]
+                          : null) ?? "No GTFS feed was applied to this study area."}{" "}
+                        Transit share is 0 because no feed was applied — a coverage limit, not a finding that
+                        transit demand here is zero.
+                      </p>
+                    ) : null}
+
+                    {transitProvenance?.error ? (
+                      <p className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90">
+                        Reported by the feed reader: {transitProvenance.error}
+                      </p>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
 
               <div className="flex flex-wrap gap-2">
