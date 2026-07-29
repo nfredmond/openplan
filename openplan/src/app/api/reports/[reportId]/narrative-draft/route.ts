@@ -11,10 +11,13 @@ import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import {
+  buildNarrativeFactList,
   factClaimTextMap,
   renderNarrativeFactPromptLines,
   summarizeNarrativeGrounding,
 } from "@/lib/grants/narrative-grounding";
+import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
+import { buildKnowledgeBaseFactClaims, KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
 import {
   buildProjectFundingSnapshot,
   type FundingAwardLike,
@@ -22,7 +25,7 @@ import {
   type FundingOpportunityLike,
   type ProjectFundingProfileLike,
 } from "@/lib/projects/funding";
-import { formatReportTypeLabel, sectionSupportsAiNarrative } from "@/lib/reports/catalog";
+import { formatReportTypeLabel, sectionSupportsAiNarrative, titleize } from "@/lib/reports/catalog";
 import {
   buildReportSectionFacts,
   factsHash,
@@ -42,6 +45,13 @@ import type { ReportCitedCountyRun, ReportCitedModelRun } from "@/lib/reports/ht
  * every sentence must cite `[fact:N]` tokens, and the citation validation is
  * stored with the draft alongside a facts_hash so later generation can detect
  * that the underlying data moved.
+ *
+ * The workspace's own uploaded documents are part of that fact list too. A
+ * Knowledge Base excerpt enters as a numbered fact carrying its source document,
+ * page, and KB_NARRATIVE_CAVEAT verbatim — the same shape the grant narrative
+ * path uses (`@/lib/grants/kb-evidence`) — so a board packet can cite the
+ * agency's prior plans on exactly the terms a grant application can, and no
+ * passage reaches the model outside the citation contract.
  *
  * v1 scope: PROJECT-targeted reports only. RTP-cycle packets assemble
  * operator-authored chapters (which have their own draft assist) and campaign
@@ -419,9 +429,55 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }),
       };
 
-      const facts = buildReportSectionFacts(factsInput, sectionKey);
+      const sectionFacts = buildReportSectionFacts(factsInput, sectionKey);
+
+      // The hash fingerprints the DETERMINISTIC section facts only — the exact
+      // list `buildReportSectionFacts` returns — because that is what the
+      // generate route recomputes to decide whether an accepted block went
+      // stale. Knowledge Base excerpts are retrieved at drafting time and the
+      // packet does not render them, so folding them into the hash would mark
+      // every accepted draft stale at the next generation with nothing having
+      // changed: a permanent false alarm is not a safety belt. Which excerpts
+      // were citable stays on the record regardless — the full fact list,
+      // including every KB claim, is persisted in `grounding_json.facts`.
+      const draftFactsHash = factsHash(sectionFacts);
+
+      // Knowledge Base grounding: the agency's own uploaded plans and policies,
+      // matched against this packet. Without this the same document could be
+      // cited in a grant application (via the grants narrative evidence path)
+      // and not in the agency's own board packet. Best-effort by contract —
+      // retrieval answers [] when the KB schema or RPC is unavailable, which
+      // costs the draft some citable facts and never invents one.
+      const knowledgeBaseQuery = [
+        report.title,
+        report.summary,
+        projectResult.data.name,
+        projectResult.data.summary,
+        titleize(sectionKey),
+      ]
+        .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
+        .join(". ");
+      const kbExcerpts = await retrieveKnowledgeBaseExcerpts({
+        supabase,
+        workspaceId: report.workspace_id,
+        projectId: report.project_id,
+        query: knowledgeBaseQuery,
+        limit: 4,
+      });
+      const kbClaims = buildKnowledgeBaseFactClaims(kbExcerpts, projectResult.data.name);
+
+      // One renumbered list so KB excerpts enter the SAME [fact:N] contract the
+      // citation and numeric-faithfulness validation below runs over. A KB
+      // passage handed to the model outside this list would be an ungrounded
+      // claim in a document an agency publishes.
+      const facts =
+        kbClaims.length > 0
+          ? buildNarrativeFactList([
+              ...sectionFacts.map((fact) => fact.claim_text),
+              ...kbClaims,
+            ])
+          : sectionFacts;
       const factIds = facts.map((fact) => fact.fact_id);
-      const draftFactsHash = factsHash(facts);
 
       const modelId = process.env.OPENPLAN_ASSISTANT_MODEL?.trim() || DEFAULT_NARRATIVE_MODEL_ID;
 
@@ -435,6 +491,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual — when in doubt, prefer citing.",
         "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
         "- NEVER upgrade a claim: modeling and analysis facts below are screening-grade planning support. If a fact carries a caveat sentence, repeat that caveat verbatim in the same paragraph whenever you reference that fact, and never present screening results as forecasts, calibrated models, or decisions.",
+        // Stated only when uploaded-document facts actually exist: an
+        // instruction about facts that are not in the list below teaches the
+        // model a caveat it has nothing to attach to.
+        ...(kbClaims.length > 0
+          ? [
+              "- If (and only if) you reference the uploaded-document facts below, you MUST include the following caveat sentence verbatim in the same paragraph, attribute the content to the named document, and never present it as OpenPlan's own finding or as independently verified:",
+              `  "${KB_NARRATIVE_CAVEAT}"`,
+            ]
+          : []),
         "- Do not promise outcomes, approvals, or awards; this draft supports an operator-reviewed packet and will not be included until a reviewer accepts it.",
         "",
         "WORKSPACE FACTS (the only citable claims; cite as [fact:fact_N]):",
@@ -555,6 +620,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         model: modelId,
         inputTokens,
         outputTokens,
+        knowledgeBaseExcerptCount: kbExcerpts.length,
+        knowledgeBaseFactCount: kbClaims.length,
         groundedSentenceCount: grounding.grounded_sentence_count,
         totalSentenceCount: grounding.total_sentence_count,
         isFullyGrounded: grounding.is_fully_grounded,

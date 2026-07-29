@@ -82,8 +82,23 @@ const AERIAL_ATTACHMENT_USES: AerialEvidenceAttachmentUse[] = [
   "public_response",
 ];
 
-export const AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT =
-  "Operator-assisted aerial evidence only; attach the cited package and human review notes before using it in a grant, report, or public comment response. No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied.";
+/**
+ * What a report packet actually knows about an aerial artifact's availability.
+ *
+ * This is not boilerplate. OpenPlan stores the evidence package RECORD, never
+ * the imagery: the processing callback writes the worker's own time-limited
+ * signed URLs onto the job row exactly as received
+ * (`aerial_processing_jobs.artifacts`, each with its `expiresAt`), and nothing
+ * re-signs or re-hosts them. A provenance panel that lists a package therefore
+ * knows the package exists and what an operator said about it — it does NOT
+ * know the underlying file can still be fetched. Saying so is the difference
+ * between provenance and a promise a reader would find broken.
+ */
+export const AERIAL_REPORT_ARTIFACT_RETRIEVABILITY_NOTE =
+  "OpenPlan records the evidence package, not the imagery: processing outputs are held as the worker's time-limited signed URLs, which may already have expired, so confirm each cited artifact is still retrievable before relying on it.";
+
+/** The verbatim caveat every aerial claim in a report packet carries. */
+export const AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT = `Operator-assisted aerial evidence only; attach the cited package and human review notes before using it in a grant, report, or public comment response. No autonomous photogrammetry, regulatory compliance, or survey-grade certification is implied. ${AERIAL_REPORT_ARTIFACT_RETRIEVABILITY_NOTE}`;
 
 const REPORT_AERIAL_SOURCE_CONTEXT_SCHEMA_VERSION = "2026-05-aerial-report-source-context";
 
@@ -299,6 +314,18 @@ export function buildReportAerialEvidenceSourceContext(input: {
       ? `${attachmentReadyPackageCount} operator-reviewed aerial package${attachmentReadyPackageCount === 1 ? "" : "s"} can be cited after human report review.`
       : blockers[0] ?? "Complete aerial evidence source context before report attachment.";
 
+  // The per-mission sentences come from the AERIAL module's own summarizer and
+  // carry the aerial module's caveat, which speaks to claim scope but says
+  // nothing about whether the file is still fetchable. `sourceContext` is the
+  // prose a reviewer may quote out of the artifact, so the retrievability truth
+  // is appended here — once — no matter which branch assembled the text.
+  const assembledSourceContext =
+    sourceContextParts.join(" ") ||
+    `Aerial evidence source context is incomplete. ${AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT}`;
+  const sourceContext = assembledSourceContext.includes(AERIAL_REPORT_ARTIFACT_RETRIEVABILITY_NOTE)
+    ? assembledSourceContext
+    : `${assembledSourceContext} ${AERIAL_REPORT_ARTIFACT_RETRIEVABILITY_NOTE}`;
+
   return {
     metadataSchemaVersion: REPORT_AERIAL_SOURCE_CONTEXT_SCHEMA_VERSION,
     missionCount: input.missions.length,
@@ -311,7 +338,7 @@ export function buildReportAerialEvidenceSourceContext(input: {
     detail,
     readyUses,
     blockedUses,
-    sourceContext: sourceContextParts.join(" ") || `Aerial evidence source context is incomplete. ${AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT}`,
+    sourceContext,
     blockers,
     caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
     operatorAssisted: true,
@@ -319,6 +346,45 @@ export function buildReportAerialEvidenceSourceContext(input: {
     regulatoryComplianceClaim: false,
     surveyGradeCertificationClaim: false,
     missionSummaries,
+  };
+}
+
+/**
+ * The source context to record when the aerial rows could NOT be read.
+ *
+ * `buildReportAerialEvidenceSourceContext` answers null for a project with no
+ * aerial work, and the display state renders that as "no aerial evidence
+ * source context captured" — a true statement about a successful read of zero
+ * rows. A failed read produces the same empty inputs but means something
+ * completely different, so it gets its own context: blocked, with the real
+ * reason as the blocker, so a reviewer sees an unanswered question rather than
+ * a confident "there is none".
+ */
+export function buildReportAerialEvidenceReadFailureContext(
+  reason: string
+): ReportAerialEvidenceSourceContext {
+  const detail = reason.trim() || "Aerial evidence could not be read for this report.";
+
+  return {
+    metadataSchemaVersion: REPORT_AERIAL_SOURCE_CONTEXT_SCHEMA_VERSION,
+    missionCount: 0,
+    packageCount: 0,
+    orphanPackageCount: 0,
+    attachmentReadyPackageCount: 0,
+    sourceContextPackageCount: 0,
+    readiness: "blocked",
+    label: "Aerial evidence could not be read",
+    detail,
+    readyUses: [],
+    blockedUses: [...AERIAL_ATTACHMENT_USES],
+    sourceContext: `${detail} No aerial claim in this packet is supported by a read of the aerial records. ${AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT}`,
+    blockers: [detail],
+    caveat: AERIAL_REPORT_SOURCE_CONTEXT_CAVEAT,
+    operatorAssisted: true,
+    autonomousPhotogrammetryClaim: false,
+    regulatoryComplianceClaim: false,
+    surveyGradeCertificationClaim: false,
+    missionSummaries: [],
   };
 }
 

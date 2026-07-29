@@ -19,6 +19,10 @@ const draftSingleMock = vi.fn();
 const draftSelectMock = vi.fn(() => ({ single: draftSingleMock }));
 const draftInsertMock = vi.fn(() => ({ select: draftSelectMock }));
 
+// Knowledge Base retrieval goes through the `kb_search_chunks` RPC. Left
+// unstubbed (rejecting) it degrades to no excerpts, which is the contract.
+const rpcMock = vi.fn();
+
 const mockAudit = {
   info: vi.fn(),
   warn: vi.fn(),
@@ -109,6 +113,7 @@ function installClient(overrides?: {
 
   createClientMock.mockResolvedValue({
     auth: { getUser: authGetUserMock },
+    rpc: (...args: unknown[]) => rpcMock(...args),
     from: vi.fn((table: string) => {
       if (table === "document_narrative_drafts") return { insert: draftInsertMock };
       if (table === "reports") return chainable({ data: report, error: null });
@@ -154,6 +159,8 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     vi.stubEnv("OPENPLAN_ASSISTANT_MODEL", "");
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    // Default: the workspace has uploaded nothing that matches this packet.
+    rpcMock.mockResolvedValue({ data: [], error: null });
     checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
     recordAiUsageEventMock.mockResolvedValue(undefined);
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
@@ -366,5 +373,233 @@ describe("/api/reports/[reportId]/narrative-draft", () => {
     expect(response.status).toBe(503);
     const payload = (await response.json()) as { hint?: string };
     expect(payload.hint).toContain("20260727000013_document_narrative_drafts");
+  });
+
+  it("makes an uploaded document citable in the agency's own board packet", async () => {
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          chunk_id: "chunk-1",
+          document_id: "doc-1",
+          document_title: "2024 Local Road Safety Plan",
+          doc_kind: "plan",
+          page_from: 12,
+          page_to: 13,
+          chunk_index: 4,
+          content: "The corridor was identified as a high-injury network segment.",
+          rank: 0.9,
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+
+    // Retrieval is scoped to this workspace AND this report's project.
+    expect(rpcMock).toHaveBeenCalledWith(
+      "kb_search_chunks",
+      expect.objectContaining({ p_workspace_id: WORKSPACE_ID, p_project_id: PROJECT_ID })
+    );
+
+    // The excerpt reaches the model only as a NUMBERED, citable fact carrying
+    // its document, page, and the uploaded-document caveat verbatim.
+    const prompt = (generateTextMock.mock.calls[0][0] as { prompt: string }).prompt;
+    expect(prompt).toMatch(
+      /\[fact:fact_\d+\] An uploaded document "2024 Local Road Safety Plan", pp\. 12-13 in the Main St Bridge project workspace states:/
+    );
+    expect(prompt).toContain("high-injury network segment");
+    expect(prompt).toContain(
+      "has not been independently verified by OpenPlan"
+    );
+    expect(prompt).toContain("attribute the content to the named document");
+
+    // The stored provenance record lists the KB fact among the citable facts.
+    const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+      grounding_json: { facts: Array<{ fact_id: string; claim_text: string }> };
+    };
+    expect(
+      insertPayload.grounding_json.facts.some((fact) =>
+        fact.claim_text.includes("2024 Local Road Safety Plan")
+      )
+    ).toBe(true);
+  });
+
+  it("grounds a sentence that cites a knowledge-base fact instead of flagging it as unknown", async () => {
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          chunk_id: "chunk-1",
+          document_id: "doc-1",
+          document_title: "2024 Local Road Safety Plan",
+          doc_kind: "plan",
+          page_from: 12,
+          page_to: null,
+          chunk_index: 4,
+          content: "The corridor was identified as a high-injury network segment.",
+          rank: 0.9,
+        },
+      ],
+      error: null,
+    });
+
+    // Draft first so the fact ids are known, then answer citing the last one
+    // (the KB claim is appended after the deterministic section facts).
+    await postNarrativeDraft(jsonRequest(), routeContext());
+    const firstFacts = (
+      (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+        grounding_json: { facts: Array<{ fact_id: string; claim_text: string }> };
+      }
+    ).grounding_json.facts;
+    const kbFactId = firstFacts.find((fact) =>
+      fact.claim_text.includes("2024 Local Road Safety Plan")
+    )?.fact_id;
+    expect(kbFactId).toBeTruthy();
+
+    vi.clearAllMocks();
+    createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          chunk_id: "chunk-1",
+          document_id: "doc-1",
+          document_title: "2024 Local Road Safety Plan",
+          doc_kind: "plan",
+          page_from: 12,
+          page_to: null,
+          chunk_index: 4,
+          content: "The corridor was identified as a high-injury network segment.",
+          rank: 0.9,
+        },
+      ],
+      error: null,
+    });
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    draftSingleMock.mockResolvedValue({ data: { id: DRAFT_ID }, error: null });
+    generateTextMock.mockResolvedValue({
+      text: `The adopted plan names this corridor a high-injury network segment. [fact:${kbFactId}]`,
+      usage: { inputTokens: 10, outputTokens: 10, totalTokens: 20 },
+    });
+    installClient();
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    const insertPayload = (draftInsertMock.mock.calls[0] as unknown[])[0] as {
+      grounding_json: { is_fully_grounded: boolean; unknown_fact_ids: string[] };
+      grounded_sentence_count: number;
+    };
+    expect(insertPayload.grounding_json.unknown_fact_ids).toEqual([]);
+    expect(insertPayload.grounding_json.is_fully_grounded).toBe(true);
+    expect(insertPayload.grounded_sentence_count).toBe(1);
+  });
+
+  it("keeps the facts hash tied to the deterministic packet facts, not to retrieval", async () => {
+    // The generate route recomputes this hash from `buildReportSectionFacts`
+    // alone. If a retrieved excerpt moved it, every accepted block would be
+    // reported stale at the next generation with nothing having changed.
+    await postNarrativeDraft(jsonRequest(), routeContext());
+    const withoutKb = (
+      (draftInsertMock.mock.calls[0] as unknown[])[0] as { facts_hash: string }
+    ).facts_hash;
+
+    draftInsertMock.mockClear();
+    rpcMock.mockResolvedValue({
+      data: [
+        {
+          chunk_id: "chunk-1",
+          document_id: "doc-1",
+          document_title: "2024 Local Road Safety Plan",
+          doc_kind: "plan",
+          page_from: 12,
+          page_to: null,
+          chunk_index: 4,
+          content: "The corridor was identified as a high-injury network segment.",
+          rank: 0.9,
+        },
+      ],
+      error: null,
+    });
+
+    await postNarrativeDraft(jsonRequest(), routeContext());
+    const withKb = (
+      (draftInsertMock.mock.calls[0] as unknown[])[0] as { facts_hash: string }
+    ).facts_hash;
+
+    expect(withKb).toBe(withoutKb);
+  });
+
+  it("does not instruct the model about uploaded-document facts it was not given", async () => {
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    const prompt = (generateTextMock.mock.calls[0][0] as { prompt: string }).prompt;
+    expect(prompt).not.toContain("uploaded-document facts");
+    expect(prompt).not.toContain("has not been independently verified by OpenPlan");
+  });
+
+  it("still drafts when the knowledge base cannot be searched", async () => {
+    // Retrieval is best-effort by contract: an unavailable RPC costs the draft
+    // some citable facts and never invents one.
+    rpcMock.mockRejectedValue(new Error("kb_search_chunks does not exist"));
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    const prompt = (generateTextMock.mock.calls[0][0] as { prompt: string }).prompt;
+    expect(prompt).toContain("WORKSPACE FACTS");
+    expect(prompt).not.toContain("An uploaded document");
+  });
+});
+
+/**
+ * The route appends uploaded-document claims to the deterministic section
+ * facts. That is safe only while every draftable section has deterministic
+ * facts of its own: if one ever produced none, the appended excerpts would BE
+ * the whole citable list, and the section would come back reading
+ * `is_fully_grounded: true` while resting entirely on quotations OpenPlan has
+ * not verified and the packet does not itself render. `buildReportSectionFacts`
+ * answers [] for any key it does not handle, so a section key added to the
+ * whitelist without a matching fact branch would open exactly that path — and
+ * would do it silently, since nothing else in the route notices an empty list.
+ */
+describe("AI-narrative section whitelist", () => {
+  it("gives every draftable section deterministic facts of its own to cite", async () => {
+    const { AI_NARRATIVE_SECTION_KEYS } = await import("@/lib/reports/catalog");
+    const { buildReportSectionFacts } = await import("@/lib/reports/narrative-drafts");
+
+    // Deliberately the emptiest input the route can assemble: no runs, no
+    // citations, no funding snapshot. A section whose facts appear only when
+    // data exists is exactly the hazard this pins.
+    const bareInput = {
+      report: { title: "Packet", summary: null, report_type: "board_packet" },
+      project: {
+        name: "Project",
+        summary: null,
+        status: "active",
+        plan_type: "capital",
+        delivery_phase: "planning",
+        updated_at: null,
+      },
+      runs: [],
+      citedModelRuns: [],
+      citedCountyRuns: [],
+      projectFundingSnapshot: null,
+    };
+
+    for (const [reportType, sectionKeys] of Object.entries(AI_NARRATIVE_SECTION_KEYS)) {
+      for (const sectionKey of sectionKeys) {
+        const facts = buildReportSectionFacts(
+          { ...bareInput, report: { ...bareInput.report, report_type: reportType } },
+          sectionKey
+        );
+        expect(
+          facts.length,
+          `${reportType}.${sectionKey} is draftable but has no deterministic facts, so a knowledge-base excerpt would become the only citable claim in it`
+        ).toBeGreaterThan(0);
+      }
+    }
   });
 });

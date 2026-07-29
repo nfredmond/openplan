@@ -168,6 +168,132 @@ export async function loadAerialMissionsAndPackagesForProject(
   return { missions, packages, pending: missionsPending || packagesPending };
 }
 
+// ── Report source-context inputs for one project ─────────────────────────
+/**
+ * Mission fields the report packet's aerial provenance summary reads. Wider
+ * than the detail-page loader above on purpose: the summary's readiness
+ * verdict turns on `aoi_geojson` (a missing AOI blocks map-exhibit use), so
+ * reusing the narrower detail shape here would report every mission as
+ * blocked no matter what the row actually says.
+ */
+export type ProjectAerialSourceContextMissionRow = {
+  id: string;
+  title: string | null;
+  status: string | null;
+  mission_type: string | null;
+  project_id: string | null;
+  aoi_geojson: unknown;
+  updated_at: string | null;
+};
+
+/** Package fields the same summary reads — `notes` IS the source-context text. */
+export type ProjectAerialSourceContextPackageRow = {
+  id: string;
+  mission_id: string;
+  title: string | null;
+  status: string | null;
+  verification_readiness: string | null;
+  notes: string | null;
+  updated_at: string | null;
+};
+
+export type ProjectAerialSourceContextRows = {
+  missions: ProjectAerialSourceContextMissionRow[];
+  packages: ProjectAerialSourceContextPackageRow[];
+  /**
+   * Why the aerial rows could NOT be read, or null when the read succeeded —
+   * including the ordinary "this project has no aerial work" case, which is a
+   * successful read of zero rows and must stay distinguishable from a failure.
+   *
+   * The other loaders in this file swallow a pending-schema error into an empty
+   * result because their callers only tint a posture chip. A generated report
+   * artifact is a durable record an agency publishes, so its caller has to be
+   * able to say "this could not be read" instead of "there is none".
+   */
+  unreadableReason: string | null;
+};
+
+function aerialReadFailureReason(subject: string, message: string | undefined): string {
+  return looksLikePendingSchema(message)
+    ? `The aerial tables are not present in this database, so ${subject} could not be read.`
+    : `${subject} could not be read: ${message ?? "unknown database error"}`;
+}
+
+/**
+ * Load the mission and evidence-package rows a report needs to describe its
+ * aerial provenance.
+ *
+ * Packages are fetched by BOTH the project link and the loaded mission ids, and
+ * merged. Fetching only by mission id would make an untraceable package
+ * impossible to observe (the summary's `orphanPackageCount` would always be
+ * zero); fetching only by project id would miss packages whose own project link
+ * is null while their mission belongs to the project. A package that survives
+ * the merge but names a mission that is not in the mission list is genuinely
+ * untraceable — which is exactly the signal the report summary reports.
+ */
+export async function loadAerialSourceContextRowsForProject(
+  supabase: AerialQuerySupabaseLike,
+  projectId: string
+): Promise<ProjectAerialSourceContextRows> {
+  const missionsResult = await supabase
+    .from("aerial_missions")
+    .select("id, title, status, mission_type, project_id, aoi_geojson, updated_at")
+    .eq("project_id", projectId)
+    .order("updated_at", { ascending: false });
+
+  if (missionsResult.error) {
+    return {
+      missions: [],
+      packages: [],
+      unreadableReason: aerialReadFailureReason(
+        "aerial missions for this project",
+        missionsResult.error.message
+      ),
+    };
+  }
+
+  const missions = (missionsResult.data ?? []) as ProjectAerialSourceContextMissionRow[];
+  const missionIds = missions.map((mission) => mission.id);
+  const packageColumns = "id, mission_id, title, status, verification_readiness, notes, updated_at";
+
+  const [projectPackagesResult, missionPackagesResult] = await Promise.all([
+    supabase
+      .from("aerial_evidence_packages")
+      .select(packageColumns)
+      .eq("project_id", projectId)
+      .order("updated_at", { ascending: false }),
+    missionIds.length > 0
+      ? supabase
+          .from("aerial_evidence_packages")
+          .select(packageColumns)
+          .in("mission_id", missionIds)
+          .order("updated_at", { ascending: false })
+      : Promise.resolve({ data: [] as unknown[], error: null }),
+  ]);
+
+  const packageError = projectPackagesResult.error ?? missionPackagesResult.error;
+  if (packageError) {
+    return {
+      missions: [],
+      packages: [],
+      unreadableReason: aerialReadFailureReason(
+        "aerial evidence packages for this project",
+        packageError.message
+      ),
+    };
+  }
+
+  const packagesById = new Map<string, ProjectAerialSourceContextPackageRow>();
+  for (const row of [
+    ...((projectPackagesResult.data ?? []) as ProjectAerialSourceContextPackageRow[]),
+    ...((missionPackagesResult.data ?? []) as ProjectAerialSourceContextPackageRow[]),
+  ]) {
+    packagesById.set(row.id, row);
+  }
+
+  return { missions, packages: [...packagesById.values()], unreadableReason: null };
+}
+
 // ── Cached project posture (aerial-owned table) ──────────────────────────
 /**
  * Reads the authoritative cached aerial posture for a project from the

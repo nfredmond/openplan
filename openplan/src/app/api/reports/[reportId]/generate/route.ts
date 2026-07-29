@@ -48,6 +48,7 @@ import { renderReportPdf, type ReportPdfEngine } from "@/lib/reports/pdf";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { loadSentimentHotspots, negativeItemIdsFromSyntheses } from "@/lib/engagement/hotspots";
+import { loadSelfReportedDemographicsSource } from "@/lib/engagement/demographics";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
 import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import {
@@ -66,6 +67,14 @@ import {
   type ReportSectionFactsInput,
   type ReportSectionFactsRun,
 } from "@/lib/reports/narrative-drafts";
+import {
+  buildReportAerialEvidenceReadFailureContext,
+  buildReportAerialEvidenceSourceContext,
+} from "@/lib/reports/aerial-source-context";
+// Aerial rows are loaded through the aerial module's own provider, never a raw
+// `.from("aerial_missions")` here — see the separability boundary in
+// `src/lib/aerial/public.ts`.
+import { loadAerialSourceContextRowsForProject } from "@/lib/aerial/queries";
 import type { ReportCitedCountyRun, ReportCitedModelRun } from "@/lib/reports/html";
 
 function looksLikePendingSchema(message: string | null | undefined) {
@@ -1023,8 +1032,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         supabase.from("workspaces").select("id, name").eq("id", report.workspace_id).maybeSingle(),
         supabase
           .from("engagement_campaigns")
+          // demographics_enabled is the campaign's own opt-in switch, and it has
+          // to be SELECTED to be read: these clients are untyped, so a column
+          // left out of this string is silently `undefined` at runtime, which
+          // would charge every campaign with "not collecting demographics".
           .select(
-            "id, workspace_id, title, summary, status, engagement_type, share_token, updated_at, ai_synthesis_json, representativeness_json"
+            "id, workspace_id, title, summary, status, engagement_type, share_token, updated_at, ai_synthesis_json, representativeness_json, demographics_enabled"
           )
           .eq("workspace_id", report.workspace_id)
           .eq("id", campaignTargetId)
@@ -1085,6 +1098,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
         updated_at: string;
         ai_synthesis_json?: unknown;
         representativeness_json?: CampaignRepresentativeness | null;
+        // Not optional: the column is NOT NULL since 20260719000094 and is named
+        // in the select above, so PostgREST errors the whole read rather than
+        // omitting it. Declaring it optional would invite a `?? false` that
+        // turns a schema problem into "this campaign collects no demographics".
+        demographics_enabled: boolean;
       };
 
       const [campaignCategoriesResult, campaignItemsResult] = await Promise.all([
@@ -1129,6 +1147,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
         campaignHotspots = null;
       }
 
+      // E5a — the k-anonymized self-reported aggregate. Read through the RLS
+      // client on purpose: engagement_demographics_summary is SECURITY DEFINER
+      // and answers a non-member with zero rows rather than an error, so the
+      // service-role client (auth.uid() null) would hand back an empty summary
+      // that reads exactly like "nobody answered". This client carries the
+      // generating user, whose workspace membership the route already proved.
+      const campaignSelfReported = await loadSelfReportedDemographicsSource(supabase, campaignRow.id, {
+        collectionEnabled: campaignRow.demographics_enabled,
+      });
+
       const engagement = buildReportEngagementSummary({
         campaign: campaignRow,
         categories: campaignCategoriesResult.data ?? [],
@@ -1136,6 +1164,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         hotspots: campaignHotspots,
         // Cached E5b screening only (never recomputed in the report path).
         representativeness: campaignRow.representativeness_json ?? null,
+        // E5a/E5c — the self-reported side and the joint reading across both.
+        // A failed read arrives here as `unreadable` and is disclosed as
+        // unknown; it must never reach the packet as an absence.
+        selfReported: campaignSelfReported,
         // E1 synthesis prose is export-gated inside the builder.
         synthesis: buildReportEngagementSynthesis(campaignRow.ai_synthesis_json ?? null),
       });
@@ -1686,7 +1718,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ? await Promise.all([
             supabase
               .from("engagement_campaigns")
-              .select("id, title, summary, status, engagement_type, share_token, updated_at, ai_synthesis_json, representativeness_json")
+              // demographics_enabled must be selected to be read — see the
+              // campaign-packet path above; an unselected column comes back
+              // `undefined` on these untyped clients, not as an error.
+              .select(
+                "id, title, summary, status, engagement_type, share_token, updated_at, ai_synthesis_json, representativeness_json, demographics_enabled"
+              )
               .eq("workspace_id", report.workspace_id)
               .eq("id", engagementCampaignId)
               .maybeSingle(),
@@ -1745,6 +1782,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
+    // E5a — the self-reported aggregate for the linked campaign, when there is
+    // one. A project report with no linked campaign stays at `not_loaded`, which
+    // is silence: this path has read nothing, so it may not say a campaign
+    // collected nothing. Same RLS-client reasoning as the campaign packet above.
+    const linkedCampaign = engagementCampaignResult.data as { id: string; demographics_enabled: boolean } | null;
+    const engagementSelfReported = linkedCampaign
+      ? await loadSelfReportedDemographicsSource(supabase, linkedCampaign.id, {
+          collectionEnabled: linkedCampaign.demographics_enabled,
+        })
+      : ({ state: "not_loaded" } as const);
+
     const engagement = buildReportEngagementSummary({
       campaign: engagementCampaignResult.data,
       categories: engagementCategoriesResult.data ?? [],
@@ -1754,6 +1802,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       representativeness:
         (engagementCampaignResult.data as { representativeness_json?: CampaignRepresentativeness | null } | null)
           ?.representativeness_json ?? null,
+      // E5a/E5c — the self-reported side and the joint reading across both, so
+      // the half of the representativeness picture that describes actual people
+      // reaches the packet instead of stopping at the campaign page.
+      selfReported: engagementSelfReported,
       // E1 synthesis prose is export-gated inside the builder (a report
       // artifact is an export path; ungrounded narratives are withheld).
       synthesis: buildReportEngagementSynthesis(
@@ -1945,6 +1997,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelingEvidenceCount: modelingEvidence.length,
       modelingEvidenceClaimStatuses,
     });
+
+    // Aerial provenance for the packet. The report detail page already parses
+    // and renders this key; until it was written here the read side always
+    // parsed `undefined` and every packet reported "no aerial evidence source
+    // context captured", including packets whose project had operator-reviewed
+    // evidence packages sitting right there.
+    //
+    // A failed read is recorded AS a failed read. Both a project with no aerial
+    // work and a database that could not answer produce zero rows, and only one
+    // of them means "there is none"; conflating them would let the artifact
+    // state an absence it never established.
+    const aerialSourceRows = await loadAerialSourceContextRowsForProject(
+      supabase,
+      report.project_id
+    );
+    if (aerialSourceRows.unreadableReason) {
+      audit.warn("report_aerial_source_context_unreadable", {
+        reportId: report.id,
+        projectId: report.project_id,
+        reason: aerialSourceRows.unreadableReason,
+      });
+    }
+    const aerialEvidenceSourceContext = aerialSourceRows.unreadableReason
+      ? buildReportAerialEvidenceReadFailureContext(aerialSourceRows.unreadableReason)
+      : buildReportAerialEvidenceSourceContext({
+          missions: aerialSourceRows.missions,
+          packages: aerialSourceRows.packages,
+        });
 
     const scenarioSpineSummary = {
       assumptionSetCount: scenarioSetLinks.reduce(
@@ -2157,6 +2237,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         projectFundingProfileScan,
         fundingSourceContextReadiness,
         evidenceChainSummary,
+        aerialEvidenceSourceContext,
         modelingEvidence: modelingEvidenceMetadata,
         modelingEvidenceCount: modelingEvidenceMetadata.length,
         modelingEvidenceClaimStatuses,

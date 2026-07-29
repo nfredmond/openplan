@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
+import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -91,6 +92,21 @@ const billingInvoicesOrderMock = vi.fn();
 const billingInvoicesInMock = vi.fn();
 const billingInvoicesEqMock = vi.fn(() => ({ order: billingInvoicesOrderMock }));
 const billingInvoicesSelectMock = vi.fn(() => ({ eq: billingInvoicesEqMock, in: billingInvoicesInMock }));
+
+// Aerial provenance for the packet. Loaded through the aerial module's own
+// provider, so the packet's aerial claims trace to mission + evidence-package
+// rows instead of the `undefined` the read side used to parse.
+const aerialMissionsOrderMock = vi.fn();
+const aerialMissionsEqMock = vi.fn(() => ({ order: aerialMissionsOrderMock }));
+const aerialMissionsSelectMock = vi.fn(() => ({ eq: aerialMissionsEqMock }));
+
+const aerialPackagesOrderMock = vi.fn();
+const aerialPackagesEqMock = vi.fn(() => ({ order: aerialPackagesOrderMock }));
+const aerialPackagesInMock = vi.fn(() => ({ order: aerialPackagesOrderMock }));
+const aerialPackagesSelectMock = vi.fn(() => ({
+  eq: aerialPackagesEqMock,
+  in: aerialPackagesInMock,
+}));
 
 const scenarioEntriesInMock = vi.fn();
 const scenarioEntriesSelectMock = vi.fn(() => ({ in: scenarioEntriesInMock }));
@@ -287,6 +303,18 @@ const fromMock = vi.fn((table: string) => {
   if (table === "billing_invoice_records") {
     return {
       select: billingInvoicesSelectMock,
+    };
+  }
+
+  if (table === "aerial_missions") {
+    return {
+      select: aerialMissionsSelectMock,
+    };
+  }
+
+  if (table === "aerial_evidence_packages") {
+    return {
+      select: aerialPackagesSelectMock,
     };
   }
 
@@ -638,6 +666,11 @@ describe("POST /api/reports/[reportId]/generate", () => {
       ],
       error: null,
     });
+
+    // Default: this project has no aerial work — a SUCCESSFUL read of zero
+    // rows, which is a different thing from a read that failed.
+    aerialMissionsOrderMock.mockResolvedValue({ data: [], error: null });
+    aerialPackagesOrderMock.mockResolvedValue({ data: [], error: null });
 
     engagementCampaignMaybeSingleMock.mockResolvedValue({
       data: {
@@ -2258,5 +2291,132 @@ describe("POST /api/reports/[reportId]/generate", () => {
       hint: expect.stringContaining("20260727000008_reports_engagement_campaign_target"),
     });
     expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("records the project's aerial evidence packages in artifact provenance", async () => {
+    aerialMissionsOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "aerial-mission-1",
+          title: "Corridor shoulder inventory",
+          status: "complete",
+          mission_type: "corridor_survey",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          aoi_geojson: { type: "Polygon", coordinates: [] },
+          updated_at: "2026-03-13T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    aerialPackagesOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "aerial-package-1",
+          mission_id: "aerial-mission-1",
+          title: "Shoulder orthomosaic QA bundle",
+          status: "ready",
+          verification_readiness: "ready",
+          notes: "Operator reviewed the imagery against the field log.",
+          updated_at: "2026-03-13T01:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json
+      ?.sourceContext as Record<string, unknown>;
+    const aerial = parseReportAerialEvidenceSourceContext(
+      sourceContext?.aerialEvidenceSourceContext
+    );
+
+    // The read side parses what the write side stored — the whole point of the
+    // connector. Before it existed this was always null.
+    expect(aerial).not.toBeNull();
+    expect(aerial).toMatchObject({
+      readiness: "ready",
+      missionCount: 1,
+      packageCount: 1,
+      sourceContextPackageCount: 1,
+      operatorAssisted: true,
+      autonomousPhotogrammetryClaim: false,
+      surveyGradeCertificationClaim: false,
+    });
+    // OpenPlan holds no imagery bytes, so the packet may not imply the cited
+    // artifact is still downloadable.
+    expect(aerial?.caveat).toContain("time-limited signed URLs");
+    expect(aerial?.caveat).toContain("may already have expired");
+    expectProvenanceLanguageOnly(`${aerial?.label} ${aerial?.detail} ${aerial?.caveat}`);
+  });
+
+  it("records an unreadable aerial source as unreadable, not as an absent one", async () => {
+    aerialMissionsOrderMock.mockResolvedValue({
+      data: null,
+      error: { message: 'relation "public.aerial_missions" does not exist' },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json
+      ?.sourceContext as Record<string, unknown>;
+    const aerial = parseReportAerialEvidenceSourceContext(
+      sourceContext?.aerialEvidenceSourceContext
+    );
+
+    expect(aerial).toMatchObject({
+      readiness: "blocked",
+      label: "Aerial evidence could not be read",
+      missionCount: 0,
+      packageCount: 0,
+    });
+    expect(aerial?.detail).toContain("aerial tables are not present");
+    expect(aerial?.blockers[0]).toContain("aerial tables are not present");
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "report_aerial_source_context_unreadable",
+      expect.objectContaining({ reason: expect.stringContaining("could not be read") })
+    );
+  });
+
+  it("leaves aerial provenance absent when the project genuinely has no aerial work", async () => {
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json
+      ?.sourceContext as Record<string, unknown>;
+    expect(sourceContext?.aerialEvidenceSourceContext).toBeNull();
+    expect(mockAudit.warn).not.toHaveBeenCalledWith(
+      "report_aerial_source_context_unreadable",
+      expect.anything()
+    );
   });
 });
