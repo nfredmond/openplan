@@ -4,6 +4,8 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { ingestCensusTractsForCounty } from "@/lib/data-sources/census-tract-ingest";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 // TIGERweb + ACS fetch per county, paged, plus one upsert per tract — beyond the
 // default budget for a metropolitan county.
@@ -61,15 +63,34 @@ export async function POST(request: NextRequest) {
     );
 
     const service = createServiceRoleClient();
-    const results = [];
-    for (const county of uniqueCounties) {
-      results.push(
-        await ingestCensusTractsForCounty(service, {
-          stateFips: county.stateFips,
-          countyFips: county.countyFips,
-        })
-      );
-    }
+    const runIngest = async () => {
+      const collected = [];
+      for (const county of uniqueCounties) {
+        collected.push(
+          await ingestCensusTractsForCounty(service, {
+            stateFips: county.stateFips,
+            countyFips: county.countyFips,
+          })
+        );
+      }
+      return collected;
+    };
+
+    // The ACS half of this ingest goes through `withCensusApiKey`, which resolves
+    // the workspace's own Census key. Without this context it silently used the
+    // deployment env key instead — so a workspace that had self-served a key
+    // under Integration keys still ingested without it, and the "add a Census
+    // API key" remedy this route's failures point at was not actually true.
+    //
+    // Best-effort, exactly like /api/geographies/counties: a user with no
+    // workspace, or a failed lookup, ingests with the deployment key rather than
+    // failing outright.
+    const workspaceId = await loadCurrentWorkspaceMembership(supabase, user.id)
+      .then(({ membership }) => membership?.workspace_id ?? null)
+      .catch(() => null);
+    const results = workspaceId
+      ? await withWorkspaceIntegrationContext(workspaceId, runIngest)
+      : await runIngest();
 
     const tractsUpserted = results.reduce((sum, r) => sum + r.tractsUpserted, 0);
     audit.info("census_tract_ingest_finished", {

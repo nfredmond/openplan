@@ -105,6 +105,19 @@ export type CensusTractCoverageInput = {
  * is worse than no remedy: there is no `/settings` route — the panel lives on
  * the dashboard.
  */
+/**
+ * Where a user actually fills the layer.
+ *
+ * The previous wording said tract data "loads in the background after a home
+ * geography is set, and stays empty when the deployment has no Census API key".
+ * Both halves were misleading: the background load swallowed its errors and was
+ * cut off part way through large counties, and the Census key is
+ * workspace-configurable rather than deployment-only. It also offered no action.
+ */
+const GEOGRAPHY_REMEDY_COVERAGE =
+  "Load them from the Workspace geography panel on the dashboard, which reports how many are stored " +
+  "and can be retried.";
+
 const GEOGRAPHY_REMEDY = "Set it in the Workspace geography panel on the dashboard.";
 
 /** The label, or a neutral stand-in — never empty quotes. */
@@ -153,8 +166,8 @@ export function describeCensusTractCoverage(input: CensusTractCoverageInput): st
   if (input.matchedCount === 0) {
     notes.push(
       `Equity tracts are scoped to ${placeName(input.scopeLabel)}, but none have been loaded for it yet. ` +
-        `This is not a finding that the county has no census tracts. Tract data loads in the background ` +
-        `after a home geography is set, and stays empty when the deployment has no Census API key.`
+        `This is not a finding that the county has no census tracts — none have been fetched. ` +
+        GEOGRAPHY_REMEDY_COVERAGE
     );
     return notes;
   }

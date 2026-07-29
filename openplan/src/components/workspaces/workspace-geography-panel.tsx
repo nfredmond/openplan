@@ -5,9 +5,12 @@ import { useRouter } from "next/navigation";
 import { Globe2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
+import { CensusTractCoverageControl } from "@/components/geographies/census-tract-coverage-control";
+import { placeIdentityOnly } from "@/lib/geographies/place-of-record";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import {
   homeGeographyLabel,
+  placeOfRecordFromHomeGeography,
   type WorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
 
@@ -127,11 +130,12 @@ export function WorkspaceGeographyPanel({ workspaceId, canManage }: WorkspaceGeo
       // Say what the server actually kicked off, and only when it applies. The
       // tract load is best-effort and asynchronous, so promising populated
       // equity data would be an overclaim.
-      setNotice(
-        pendingPlace.kind === "county"
-          ? "Saved. Census tracts for this county are loading in the background — the equity layer fills in shortly."
-          : "Saved.",
-      );
+      // Just "Saved." The old text promised that census tracts "are loading in
+      // the background — the equity layer fills in shortly", which this code
+      // could not observe and, for a large county on the default function
+      // budget, was not true. The coverage control below reports what is
+      // actually stored, and offers a retry.
+      setNotice("Saved.");
       // The first-run checklist and the map camera are rendered on the server
       // from this same setting. Without a refresh the page would show the
       // panel saying "Saved" directly beneath a step still claiming the
@@ -201,6 +205,18 @@ export function WorkspaceGeographyPanel({ workspaceId, canManage }: WorkspaceGeo
           </p>
         </div>
       )}
+
+      {!loading ? (
+        <CensusTractCoverageControl
+          place={placeIdentityOnly(placeOfRecordFromHomeGeography(geography))}
+          origin="workspace_home_geography"
+          affectsWorkspaceLayer
+          // The first-run checklist and the map camera render from this same
+          // setting on the server, so a filled layer must not sit under a
+          // screen still describing it as empty.
+          onCoverageChanged={() => router.refresh()}
+        />
+      ) : null}
 
       {canManage && !loading ? (
         editing ? (

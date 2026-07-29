@@ -19,6 +19,8 @@ import {
 } from "@/lib/projects/project-record-fields";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { parseCorridorText } from "@/lib/models/study-area";
+import { CensusTractCoverageControl } from "@/components/geographies/census-tract-coverage-control";
+import { DRAWN_PLACE_SOURCE, type PlaceOfRecord } from "@/lib/geographies/place-of-record";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 
 /**
@@ -43,11 +45,16 @@ type ProjectRecord = {
   status: string;
   planType: string;
   deliveryPhase: string;
-  place: {
-    label: string | null;
-    /** A drawn area has a shape but no resolvable identity — say so, do not hide it. */
-    isDrawn: boolean;
-  };
+  /**
+   * The study area as the shared place-of-record shape, WITHOUT its boundary.
+   *
+   * `{label, isDrawn}` could not answer "WHICH county is this", which is what
+   * every downstream derivation needs — and it made this component re-decide
+   * "drawn" from a comparison the shared module already owns. The polygon is
+   * excluded because a TIGERweb county boundary is megabytes and this crosses an
+   * RSC boundary; `placeIdentityOnly` names that omission at the call site.
+   */
+  place: PlaceOfRecord;
 };
 
 type DeleteBlocker = {
@@ -84,6 +91,8 @@ export function ProjectIdentityEditor({
   workspaceHomeLabel?: string | null;
 }) {
   const router = useRouter();
+  // "Drawn" is decided by the shared constant rather than re-derived here.
+  const placeIsDrawn = project.place.source === DRAWN_PLACE_SOURCE;
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(project.name);
   const [summary, setSummary] = useState(project.summary ?? "");
@@ -392,10 +401,10 @@ export function ProjectIdentityEditor({
           <div className="mt-3">
             {project.place.label ? (
               <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge tone={project.place.isDrawn ? "warning" : "success"}>
+                <StatusBadge tone={placeIsDrawn ? "warning" : "success"}>
                   {project.place.label}
                 </StatusBadge>
-                {project.place.isDrawn ? (
+                {placeIsDrawn ? (
                   <span className="text-sm text-muted-foreground">
                     Drawn area — modules can inherit its shape, but cannot derive a county filter,
                     crash-data scope, or jurisdiction rule from it.
@@ -451,6 +460,17 @@ export function ProjectIdentityEditor({
             </div>
           </div>
         )}
+
+        <CensusTractCoverageControl
+          place={project.place}
+          origin="project_study_area"
+          // FALSE, always. `resolveCensusTractScope` scopes the equity layer to
+          // the WORKSPACE home geography and to nothing else, so loading a
+          // project's county changes what is stored (shared, public data) but
+          // not what this workspace's map draws. The control says so rather
+          // than implying a change the map will not show.
+          affectsWorkspaceLayer={false}
+        />
       </div>
 
       {canWrite ? (

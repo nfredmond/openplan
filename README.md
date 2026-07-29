@@ -4,7 +4,7 @@ OpenPlan is Apache-2.0 open-source planning software for transportation and land
 
 ## What it does
 
-- **Cartographic workbench** — a live map behind every screen with projects, corridors, RTP cycles, equity tracts, and community comments as clickable layers, plus an inspector-driven workflow shell.
+- **Cartographic workbench** — a live map behind every screen with projects, study corridors, RTP cycles, aerial missions, equity tracts, and community comments as clickable layers, plus an inspector-driven workflow shell. Every layer is fillable from inside the app: equity tracts load on demand from the US Census Bureau for a workspace's own county, and when a layer draws nothing it says whether that is an empty record or a limit of the data.
 - **Projects & delivery** — project control rooms with milestones, submittals, deliverables, risks, decisions, meetings; an invoice register with retention math; award closeout gated on 100% reimbursement (Caltrans LAPM-style delivery discipline as workflow).
 - **Grants** — a pipeline from funding need → opportunity → decision → award → reimbursement, a curated catalog of real CA/federal programs with one-click tracking, and AI-drafted narratives where every factual sentence must cite a verifiable workspace fact (per-sentence grounding validation, unverified sentences flagged).
 - **Community engagement** — public map-based commenting via share links: points, drawn lines, and drawn areas, optional photo attachments (private until approved), "Support" votes, and a staff moderation queue in front of everything public.

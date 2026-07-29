@@ -61,6 +61,18 @@ export const EMPTY_PLACE_OF_RECORD: PlaceOfRecord = {
  * can be resolved to a place. Guessing which county contains a drawn polygon is
  * exactly the plausible-looking wrong answer this codebase refuses.
  */
+/**
+ * The same place with its boundary dropped.
+ *
+ * A TIGERweb county boundary can be megabytes, and a place of record crosses the
+ * server/client boundary whenever a control needs to reason about WHICH county
+ * this is. Naming the omission makes it deliberate, rather than a spread someone
+ * later "completes".
+ */
+export function placeIdentityOnly(place: PlaceOfRecord): PlaceOfRecord {
+  return { ...place, geometry: null };
+}
+
 export function placeHasResolvableIdentity(place: PlaceOfRecord | null | undefined): boolean {
   if (!place?.source) return false;
   if (place.source === DRAWN_PLACE_SOURCE) return false;

@@ -55,7 +55,7 @@ import { ProjectEvidenceAndActivity } from "./_components/project-evidence-activ
 import { ProjectSpineCrosslinkBoard } from "./_components/project-spine-crosslink-board";
 import { ProjectMapPresencePanel } from "./_components/project-map-presence-panel";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
-import { DRAWN_PLACE_SOURCE } from "@/lib/geographies/place-of-record";
+import { placeIdentityOnly } from "@/lib/geographies/place-of-record";
 import {
   CORRIDOR_COLUMNS,
   serializeProjectCorridor,
@@ -1255,7 +1255,7 @@ export default async function ProjectDetailPage({
           status: project.status,
           planType: project.plan_type,
           deliveryPhase: project.delivery_phase,
-          place: { label: projectPlaceOfRecord.label, isDrawn: projectPlaceOfRecord.source === DRAWN_PLACE_SOURCE },
+          place: placeIdentityOnly(projectPlaceOfRecord),
         }}
         canWrite={!isReadOnlyWorkspaceRole(membership.role)}
         workspaceHomeLabel={workspaceHomeGeographyLabel}

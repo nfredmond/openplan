@@ -100,6 +100,16 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "aerial/processing-callback/route.ts":
     "worker callback authenticated by a shared bearer token, not by a session",
 
+  // Public reference data, not workspace content. This route loads a US county's
+  // census tracts into the shared, cross-tenant `census_tracts` table — the data
+  // is public and loading a county once benefits every workspace that ever looks
+  // at it, which its own header argues at length. It reads the caller's current
+  // workspace ONLY to resolve that workspace's Census API key; the workspace is
+  // an integration scope here, never an authorization subject, and no row it
+  // writes belongs to a workspace at all.
+  "geographies/census-tracts/ingest/route.ts":
+    "writes public cross-tenant reference data; the workspace lookup resolves an API key, not a permission",
+
   // The assistant answers and PROPOSES; it never writes workspace content here.
   // Anything it proposes is executed by a different route, and each of those
   // routes carries its own gate (approvals go through

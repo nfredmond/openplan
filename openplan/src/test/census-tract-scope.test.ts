@@ -102,7 +102,12 @@ describe("describeCensusTractCoverage", () => {
     const notes = describeCensusTractCoverage({ ...scoped, matchedCount: 0, returnedCount: 0, droppedCount: 0 });
     expect(notes[0]).toContain("none have been loaded for it yet");
     expect(notes[0]).toContain("not a finding that the county has no census tracts");
-    expect(notes[0]).toMatch(/Census API key/i);
+    // Points at the control that can actually fill it, rather than at a
+    // background load that swallowed its errors and a deployment env var that
+    // is in fact workspace-configurable.
+    expect(notes[0]).toMatch(/Workspace geography panel/i);
+    expect(notes[0]).toMatch(/retried/i);
+    expect(notes[0]).not.toMatch(/loads in the background/i);
   });
 
   it("names the truncation, its ordering, and what it does not mean", () => {

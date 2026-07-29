@@ -132,7 +132,13 @@ describe("WorkspaceGeographyPanel", () => {
     expect(patch.body).not.toHaveProperty("geojson");
   });
 
-  it("discloses the background tract load for a county, without promising data", async () => {
+  it("stops promising a background tract load it cannot observe", async () => {
+    // This test used to assert the opposite. The save notice said census tracts
+    // "are loading in the background — the equity layer fills in shortly",
+    // which the panel could not observe and which was not true for a large
+    // county: the after() block ran on the default function budget and was cut
+    // off part way through, leaving a partial layer, no way to see it, and no
+    // way to retry. The coverage control below now reports what is stored.
     mockFetch({
       GET: { body: { homeGeography: null } },
       PATCH: { body: { homeGeography: FRANKLIN_COUNTY } },
@@ -144,7 +150,9 @@ describe("WorkspaceGeographyPanel", () => {
     act(() => placeResolvedHandlers.forEach((handler) => handler(RESOLVED_PLACE)));
     fireEvent.click(await screen.findByRole("button", { name: /use franklin county, oh/i }));
 
-    expect(await screen.findByText(/loading in the background/i)).toBeInTheDocument();
+    expect(await screen.findByText("Saved.")).toBeInTheDocument();
+    expect(screen.queryByText(/loading in the background/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/fills in shortly/i)).not.toBeInTheDocument();
   });
 
   it("refreshes the server-rendered surfaces that read this setting", async () => {

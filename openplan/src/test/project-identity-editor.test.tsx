@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectIdentityEditor } from "@/components/projects/project-identity-editor";
+import { DRAWN_PLACE_SOURCE, EMPTY_PLACE_OF_RECORD } from "@/lib/geographies/place-of-record";
 
 const pushMock = vi.fn();
 const refreshMock = vi.fn();
@@ -45,7 +46,7 @@ const PROJECT = {
   status: "active",
   planType: "corridor_plan",
   deliveryPhase: "scoping",
-  place: { label: null, isDrawn: false },
+  place: EMPTY_PLACE_OF_RECORD,
 };
 
 describe("ProjectIdentityEditor", () => {
@@ -100,7 +101,10 @@ describe("ProjectIdentityEditor", () => {
   it("says out loud that a drawn area has no identity", () => {
     render(
       <ProjectIdentityEditor
-        project={{ ...PROJECT, place: { label: "Main St area", isDrawn: true } }}
+        project={{
+          ...PROJECT,
+          place: { ...EMPTY_PLACE_OF_RECORD, label: "Main St area", source: DRAWN_PLACE_SOURCE },
+        }}
         canWrite
       />
     );

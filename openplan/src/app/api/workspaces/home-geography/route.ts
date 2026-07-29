@@ -34,6 +34,11 @@ import {
 
 // Resolving a boundary calls out to TIGERweb.
 export const runtime = "nodejs";
+// The `after()` block below runs the same county tract ingest that
+// /api/geographies/census-tracts/ingest documents as needing more than the
+// default budget. Without this the background load was cut off part way through
+// any metropolitan county, leaving a silently partial layer.
+export const maxDuration = 60;
 
 /**
  * Stating where the agency works is workspace configuration, not day-to-day
