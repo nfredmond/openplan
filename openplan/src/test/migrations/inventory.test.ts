@@ -34,10 +34,11 @@ import { loadSchemaInventory } from "./schema-inventory";
  */
 
 const EXPECTED = {
-  policies: 540,
-  permissive: 300,
+  // +2 permissive UPDATE policies from 20260728000010 (runs, project_rtp_cycle_links).
+  policies: 542,
+  permissive: 302,
   restrictive: 240,
-  permissiveWrites: 195,
+  permissiveWrites: 197,
   expanded: 252,
   tablesWithPolicies: 105,
   relations: 121,
@@ -190,10 +191,14 @@ describe("migration policy inventory", () => {
     // The distinction the parser this replaces did not have, and the reason
     // `runs` reported success over zero rows for every user: a RESTRICTIVE
     // policy only ever subtracts, so a table with a restrictive UPDATE gate and
-    // no permissive UPDATE policy accepts no updates at all.
-    expect(inventory.restrictiveGates("runs", "UPDATE").map((p) => p.policy)).toEqual([
-      "runs_writer_only_update",
-    ]);
+    // no permissive UPDATE policy accepts no updates at all. 20260728000010
+    // supplied the missing permissive halves; both layers must stay present.
+    for (const table of ["runs", "project_rtp_cycle_links"]) {
+      expect(inventory.restrictiveGates(table, "UPDATE").map((p) => p.policy)).toEqual([
+        `${table}_writer_only_update`,
+      ]);
+      expect(inventory.permissiveGrants(table, "UPDATE").map((p) => p.policy)).toEqual([`${table}_update`]);
+    }
     expect(inventory.permissiveGrants("runs", "SELECT").map((p) => p.policy)).toEqual(["runs_read"]);
   });
 

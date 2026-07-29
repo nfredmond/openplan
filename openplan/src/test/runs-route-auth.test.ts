@@ -23,6 +23,10 @@ const runsDeleteLookupSelectMock = vi.fn(() => ({ eq: runsDeleteLookupEqMock }))
 const runsDeleteEqMock = vi.fn();
 const runsDeleteMock = vi.fn(() => ({ eq: runsDeleteEqMock }));
 
+const runsUpdateSelectMock = vi.fn();
+const runsUpdateEqMock = vi.fn(() => ({ select: runsUpdateSelectMock }));
+const runsUpdateMock = vi.fn(() => ({ eq: runsUpdateEqMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "workspace_members") {
     return { select: membershipSelectMock };
@@ -37,6 +41,7 @@ const fromMock = vi.fn((table: string) => {
         return runsDeleteLookupSelectMock();
       },
       delete: runsDeleteMock,
+      update: runsUpdateMock,
     };
   }
 
@@ -57,7 +62,17 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
-import { GET as getRuns, DELETE as deleteRun } from "@/app/api/runs/route";
+import { GET as getRuns, DELETE as deleteRun, PATCH as patchRun } from "@/app/api/runs/route";
+
+const RUN_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+function patchRequest(body: unknown = { id: RUN_ID, mapViewState: { showTracts: true } }) {
+  return new NextRequest("http://localhost/api/runs", {
+    method: "PATCH",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
 
 describe("/api/runs auth + membership guards", () => {
   beforeEach(() => {
@@ -103,6 +118,11 @@ describe("/api/runs auth + membership guards", () => {
     });
 
     runsDeleteEqMock.mockResolvedValue({ error: null });
+
+    runsUpdateSelectMock.mockResolvedValue({
+      data: [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }],
+      error: null,
+    });
   });
 
   it("GET returns 400 when limit is invalid", async () => {
@@ -248,5 +268,49 @@ describe("/api/runs auth + membership guards", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ success: true });
+  });
+
+  /**
+   * PATCH had a test file of its own (`runs-update-route.test.ts`) but no
+   * coverage in THIS one, which is about auth and membership — so the role
+   * matrix was never applied to it. The row-counting regression lives in that
+   * other file, next to the assertion it corrects.
+   */
+  it("PATCH returns 401 when unauthenticated", async () => {
+    authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
+
+    const response = await patchRun(patchRequest());
+
+    expect(response.status).toBe(401);
+    expect(runsUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH returns 404 when the run does not exist", async () => {
+    runsDeleteLookupMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchRun(patchRequest());
+
+    expect(response.status).toBe(404);
+    expect(runsUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH returns 403 for the read-only viewer role", async () => {
+    membershipMaybeSingleMock.mockResolvedValueOnce({
+      data: { workspace_id: "11111111-1111-4111-8111-111111111111", role: "viewer" },
+      error: null,
+    });
+
+    const response = await patchRun(patchRequest());
+
+    expect(response.status).toBe(403);
+    expect(runsUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH returns 200 for an authorized member", async () => {
+    const response = await patchRun(patchRequest());
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ success: true });
+    expect(runsUpdateEqMock).toHaveBeenCalledWith("id", RUN_ID);
   });
 });

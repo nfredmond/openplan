@@ -14,7 +14,8 @@ const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMo
 const membershipEqWorkspaceMock = vi.fn(() => ({ eq: membershipEqUserMock }));
 const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
 
-const updateEqMock = vi.fn().mockResolvedValue({ error: null });
+const updateSelectMock = vi.fn();
+const updateEqMock = vi.fn(() => ({ select: updateSelectMock }));
 const updateMock = vi.fn(() => ({ eq: updateEqMock }));
 
 const fromMock = vi.fn((table: string) => {
@@ -50,6 +51,23 @@ vi.mock("@/lib/observability/audit", () => ({
 
 import { PATCH as patchRun } from "@/app/api/runs/route";
 
+/**
+ * This file used to contain the sharpest possible illustration of why a green
+ * suite proved nothing here.
+ *
+ * A test named "persists map view state into run metrics" asserted status 200
+ * and that `.update()` was called with the right metrics object — and it passed
+ * for the entire life of a bug in which NOTHING WAS EVER PERSISTED. `runs` had
+ * a RESTRICTIVE writer gate and no PERMISSIVE UPDATE policy (fixed by
+ * 20260728000010), so every update matched zero rows; with RLS on that is a
+ * SUCCESSFUL statement, and supabase-js returns `error: null` over it. The mock
+ * resolved `{ error: null }` too — faithfully reproducing the failure and
+ * calling it a pass.
+ *
+ * The test verified the REQUEST, and was named for the RESULT. So the assertion
+ * below is now about the row the write actually changed, and the zero-row case
+ * has its own test.
+ */
 describe("PATCH /api/runs", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -86,6 +104,11 @@ describe("PATCH /api/runs", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+
+    updateSelectMock.mockResolvedValue({
+      data: [{ id: "11111111-1111-4111-8111-111111111111" }],
+      error: null,
+    });
   });
 
   it("returns 400 for invalid payload", async () => {
@@ -100,7 +123,7 @@ describe("PATCH /api/runs", () => {
     expect(response.status).toBe(400);
   });
 
-  it("persists map view state into run metrics", async () => {
+  it("writes map view state into run metrics and confirms a row changed", async () => {
     const response = await patchRun(
       new NextRequest("http://localhost/api/runs", {
         method: "PATCH",
@@ -144,5 +167,32 @@ describe("PATCH /api/runs", () => {
         }),
       }),
     });
+
+    // The projection is what makes "did anything change?" answerable at all.
+    expect(updateSelectMock).toHaveBeenCalled();
+  });
+
+  it("reports failure when the update matched no rows", async () => {
+    // THE REGRESSION. An UPDATE that matches nothing is a successful statement
+    // under RLS, so this is indistinguishable from a real write unless the
+    // route counts the rows it changed. Reporting success here is what made the
+    // audit log agree with the lie: it recorded `run_updated` every time.
+    updateSelectMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await patchRun(
+      new NextRequest("http://localhost/api/runs", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          id: "11111111-1111-4111-8111-111111111111",
+          mapViewState: { showTracts: true },
+        }),
+      })
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Run update did not apply" });
+    expect(mockAudit.info).not.toHaveBeenCalledWith("run_updated", expect.anything());
+    expect(mockAudit.error).toHaveBeenCalledWith("update_matched_no_rows", expect.anything());
   });
 });

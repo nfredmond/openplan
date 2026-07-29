@@ -64,7 +64,7 @@ const WRITER_GATE_MIGRATIONS = [
 
 const EXPECTED_GATED_TABLES = 80;
 const EXPECTED_RESTRICTIVE_POLICIES = 240;
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 195;
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 197;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

@@ -281,10 +281,18 @@ export async function PATCH(request: NextRequest) {
       mapViewState: parsed.data.mapViewState,
     };
 
-    const { error: updateError } = await supabase
+    // `.select()` is not decoration here. With RLS on, an UPDATE that matches
+    // no rows is a SUCCESSFUL statement — Postgres filters the row set before
+    // the write, PostgREST answers 204, and supabase-js hands back
+    // `error: null`. Until 20260728000010 this table had a RESTRICTIVE writer
+    // gate and no PERMISSIVE UPDATE policy, so every save matched zero rows and
+    // this route reported success over it while audit-logging `run_updated`.
+    // Counting the affected rows is what makes the next such gap loud.
+    const { data: updatedRows, error: updateError } = await supabase
       .from("runs")
       .update({ metrics: nextMetrics })
-      .eq("id", parsed.data.id);
+      .eq("id", parsed.data.id)
+      .select("id");
 
     if (updateError) {
       audit.error("update_failed", {
@@ -299,6 +307,29 @@ export async function PATCH(request: NextRequest) {
         {
           error: "Failed to update run",
           details: updateError.message,
+        },
+        { status: 500 }
+      );
+    }
+
+    if ((updatedRows?.length ?? 0) === 0) {
+      // The run was readable a moment ago and the caller passed both the
+      // membership and the role check, so reaching here means the database
+      // refused a write the application believed was allowed — or the row was
+      // deleted concurrently. Either way the save did not happen, and saying
+      // otherwise is the defect this branch exists to prevent.
+      audit.error("update_matched_no_rows", {
+        runId: parsed.data.id,
+        workspaceId: run.workspace_id,
+        userId: user.id,
+        role: membership.role ?? null,
+      });
+
+      return NextResponse.json(
+        {
+          error: "Run update did not apply",
+          details:
+            "The database matched no rows for this run, so nothing was saved. The run may have been deleted, or a row-level security policy refused the write.",
         },
         { status: 500 }
       );

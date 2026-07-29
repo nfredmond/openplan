@@ -232,11 +232,37 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .update(updates)
       .eq("id", link.id)
       .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, created_at")
-      .single();
+      // `maybeSingle`, not `single`. Until 20260728000010 this table had a
+      // RESTRICTIVE writer gate and no PERMISSIVE UPDATE policy, so every
+      // update matched zero rows — and `single()` turns that into PGRST116,
+      // which this route reported as a 500 "Failed to update RTP link". An
+      // authorization outcome surfacing as a server error, with an audit code
+      // pointing at result cardinality rather than at the missing policy.
+      .maybeSingle();
 
     if (error) {
       audit.error("update_failed", { error: error.message, code: error.code ?? null });
       return NextResponse.json({ error: "Failed to update RTP link" }, { status: 500 });
+    }
+
+    if (!data) {
+      // The link was readable a moment ago and the caller passed both the
+      // membership and the `plans.write` role check, so no matched row means
+      // the database refused a write the application believed was allowed, or
+      // the link was deleted concurrently. Nothing was saved either way.
+      audit.error("update_matched_no_rows", {
+        projectId: routeParams.data.projectId,
+        linkId: link.id,
+        role: membership.role ?? null,
+      });
+      return NextResponse.json(
+        {
+          error: "RTP link update did not apply",
+          details:
+            "The database matched no rows for this link, so nothing was saved. The link may have been deleted, or a row-level security policy refused the write.",
+        },
+        { status: 500 }
+      );
     }
 
     audit.info("updated", { projectId: routeParams.data.projectId, linkId: link.id, durationMs: Date.now() - startedAt });
