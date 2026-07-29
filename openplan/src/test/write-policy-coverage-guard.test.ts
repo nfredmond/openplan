@@ -174,7 +174,10 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/invoicing/client-invoices/[invoiceId]/route.ts": 4,
   "src/app/api/invoicing/rate-tables/[rateTableId]/route.ts": 1,
   "src/app/api/invoicing/time-entries/[timeEntryId]/route.ts": 1,
-  "src/app/api/models/[modelId]/runs/[modelRunId]/launch/route.ts": 4,
+  // 4 -> 3: the relaunch re-queue now chains `.select("id").maybeSingle()` and
+  // answers zero matched rows through write-outcome.ts, because that write also
+  // carries the run's rebuilt demographics.
+  "src/app/api/models/[modelId]/runs/[modelRunId]/launch/route.ts": 3,
   "src/app/api/models/[modelId]/runs/[modelRunId]/route.ts": 2,
   "src/app/api/models/[modelId]/runs/route.ts": 15,
   "src/app/api/plans/[planId]/route.ts": 1,

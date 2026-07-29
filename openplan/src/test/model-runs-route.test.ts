@@ -862,7 +862,16 @@ describe("/api/models/[modelId]/runs", () => {
     ]);
   });
 
-  it("omits zoneGeography from the snapshot when not requested (worker env fallback stays in charge)", async () => {
+  it("stamps the default zoneGeography too, so the worker cannot resolve a different one", async () => {
+    // This used to assert the OPPOSITE — an unrequested zoneGeography was left
+    // off so the worker's AEQ_ZONE_GEOGRAPHY env stayed in charge. That stopped
+    // being safe when the app began READING the demographics itself: the app
+    // resolves the same default ("tract") to decide which geography to publish
+    // the equity table at, so an unstamped run let the worker build zones at
+    // one resolution against a table read at another — and the equity overlay
+    // was then refused for a mismatch the app had caused. The stamp and the
+    // fetch have to be the same value; the env can only stand in where the app
+    // supplied nothing at all.
     const response = await postModelRun(
       launchRequest({ engineKey: "aequilibrae" }),
       { params: Promise.resolve({ modelId: MODEL_ID }) }
@@ -872,7 +881,7 @@ describe("/api/models/[modelId]/runs", () => {
     const inserted = modelRunInsertMock.mock.calls[0][0] as {
       input_snapshot_json: Record<string, unknown>;
     };
-    expect("zoneGeography" in inserted.input_snapshot_json).toBe(false);
+    expect(inserted.input_snapshot_json.zoneGeography).toBe("tract");
   });
 
   it("ignores zoneGeography for engines that don't consume it", async () => {

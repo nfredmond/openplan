@@ -4,9 +4,26 @@ Dynamic data package generation for the AequilibraE worker.
 
 Given a study-area corridor polygon (or a fallback bbox), this module:
 1. Resolves intersecting Census tracts via TIGERweb
-2. Pulls ACS tract population + household counts
+2. Obtains tract population + household counts
 3. Builds a synthetic-but-plausible daily OD matrix with a gravity model
 4. Writes zone_attributes.csv + od_trip_matrix.csv in the worker package format
+
+WHERE STEP 2's NUMBERS COME FROM
+    Preferred: the LAUNCHING APP supplies them. The app holds the workspace's
+    own Census key (encrypted at rest, decrypted per-request) and hands this
+    worker a finished measure table via `zone_attributes`. That is the only way
+    a self-serve workspace's key can reach a model build at all — the worker
+    cannot see per-workspace secrets, and shipping it one would defeat the
+    encryption. It also leaves this worker with NO mandatory secret of its own,
+    which is what makes a hosted worker pool tractable.
+
+    Fallback: this worker's own ACS fetch on a host-level CENSUS_API_KEY. Kept
+    working deliberately, so an operator running the worker directly (or a run
+    launched before the handoff existed) is not broken by a flag day.
+
+    The measure vocabulary on the wire is jurisdiction-neutral ('population',
+    'households', …) rather than ACS variable codes, so a non-US demographic
+    source can supply the same table without inventing US Census table numbers.
 
 Why gravity instead of bulk LODES right now?
 - State LODES OD files are very large for big states like California
@@ -59,6 +76,114 @@ class DataPipelineError(RuntimeError):
     pass
 
 
+# ─── App-supplied zone attributes ───────────────────────────────────────────
+# Wire format written by openplan/src/lib/models/zone-attribute-payload.ts.
+# Version-gated on purpose: a payload shape this worker does not recognise is
+# REFUSED rather than guessed at, because misreading a column would silently
+# rescale a whole model's population.
+ZONE_ATTRIBUTE_PAYLOAD_VERSION = "zone-attributes-v1"
+
+# What "the app did not supply anything" reads as. Not an error — the worker's
+# own ACS path still exists — but it is recorded so a run can never look like it
+# used the workspace's data when it did not.
+_NOT_SUPPLIED_NOTE = (
+    "The launching app supplied no {table} table for this run, so the worker used its "
+    "own configured data source."
+)
+
+
+def supplied_measure_table(
+    zone_attributes: dict[str, Any] | None,
+    table_name: str,
+) -> tuple[dict[str, dict[str, float]] | None, dict[str, Any]]:
+    """Unpack one table of an app-supplied zone-attribute payload.
+
+    Returns ``(rows, note)`` where ``rows`` is ``{geoid: {measure: value}}`` or
+    None, and ``note`` ALWAYS explains the outcome. There is no silent third
+    state: every path that yields no rows yields a reason with them, so the run's
+    evidence can say why a table is missing rather than leaving a hole.
+
+    Pure and stdlib-only, so it stays unit-testable without the scientific stack.
+    """
+    if not isinstance(zone_attributes, dict):
+        return None, {"status": "not_supplied", "reason": _NOT_SUPPLIED_NOTE.format(table=table_name)}
+
+    version = zone_attributes.get("version")
+    if version != ZONE_ATTRIBUTE_PAYLOAD_VERSION:
+        return None, {
+            "status": "unrecognized_version",
+            "reason": (
+                f"The app supplied a zone-attribute payload versioned {version!r}, but this worker "
+                f"understands {ZONE_ATTRIBUTE_PAYLOAD_VERSION!r}. The payload was not used; upgrade "
+                "the worker (or the app) so both speak the same version."
+            ),
+        }
+
+    source = zone_attributes.get("source") or {}
+    tables = zone_attributes.get("tables") or {}
+    table = tables.get(table_name)
+    if not isinstance(table, dict):
+        return None, {
+            "status": "absent",
+            "reason": f"The app's zone-attribute payload carries no {table_name!r} table.",
+        }
+
+    if table.get("status") != "supplied":
+        return None, {
+            "status": "unavailable",
+            # The app states WHY it could not read the table (no key, source
+            # unavailable, outside coverage). Pass that through verbatim — it is
+            # the only place the real cause is known.
+            "reason": table.get("reason")
+            or f"The app reported no {table_name} data for this study area and gave no reason.",
+        }
+
+    measures = table.get("measures")
+    raw_rows = table.get("rows")
+    if not isinstance(measures, list) or not measures or not isinstance(raw_rows, dict):
+        return None, {
+            "status": "malformed",
+            "reason": (
+                f"The app's {table_name} table is missing its measure list or rows, so it could "
+                "not be read."
+            ),
+        }
+
+    rows: dict[str, dict[str, float]] = {}
+    skipped = 0
+    for geoid, values in raw_rows.items():
+        if not isinstance(values, (list, tuple)) or len(values) != len(measures):
+            skipped += 1
+            continue
+        try:
+            rows[str(geoid)] = {str(m): float(v) for m, v in zip(measures, values)}
+        except (TypeError, ValueError):
+            skipped += 1
+
+    if not rows:
+        return None, {
+            "status": "malformed",
+            "reason": (
+                f"The app's {table_name} table had {skipped} unreadable row(s) and no usable ones."
+            ),
+        }
+
+    return rows, {
+        "status": "supplied",
+        "reason": None,
+        "level": table.get("level"),
+        "geographies": len(rows),
+        "measures": [str(m) for m in measures],
+        "measure_provenance": table.get("measureProvenance"),
+        "rows_skipped": skipped,
+        "source_id": source.get("id"),
+        "source_label": source.get("label"),
+        "vintage": source.get("vintage"),
+        "key_origin": source.get("key_origin"),
+        "geography_index_truncated": source.get("geography_index_truncated"),
+    }
+
+
 def bbox_from_corridor_geojson(corridor_geojson: dict[str, Any]) -> tuple[float, float, float, float]:
     geom = shape(corridor_geojson)
     if geom.is_empty:
@@ -94,8 +219,18 @@ def _tigerweb_features_for_bbox(bbox: tuple[float, float, float, float]) -> list
 def fetch_tracts_for_study_area(
     bbox: tuple[float, float, float, float],
     corridor_geojson: dict[str, Any] | None = None,
+    supplied_demographics: dict[str, dict[str, float]] | None = None,
+    demographics_note: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
-    """Return tract rows with ACS attributes for centroids inside the study area."""
+    """Return tract rows with demographic attributes for centroids inside the study area.
+
+    ``supplied_demographics`` is the app-supplied ``{geoid: {measure: value}}``
+    table (see :func:`supplied_measure_table`). When present, NO network ACS call
+    is made and no Census key is needed here — the app already paid for the read
+    with the workspace's own key. When absent, the historical worker-side ACS
+    fetch runs unchanged. ``demographics_note``, if given, is filled with the
+    per-run coverage outcome for the package manifest.
+    """
     print("  Identifying candidate tracts via TIGERweb...")
     features = _tigerweb_features_for_bbox(bbox)
     if not features:
@@ -142,6 +277,59 @@ def fetch_tracts_for_study_area(
 
     print(f"  Candidate tracts: {len(centroid_rows)} across {len(county_set)} counties")
 
+    if supplied_demographics is not None:
+        # The app already read these with the workspace's own Census key. Look
+        # each candidate tract up rather than trusting the payload's own extent:
+        # the app deliberately sends a SUPERSET (whole overlapping counties, no
+        # polygon clip), so the study area is defined here, by this worker's
+        # clip, exactly as it was before the handoff existed.
+        supplied_rows = []
+        missing: list[str] = []
+        for tract_geoid in centroid_rows:
+            measures = supplied_demographics.get(tract_geoid)
+            if not measures:
+                missing.append(tract_geoid)
+                continue
+            supplied_rows.append({
+                "geoid": tract_geoid,
+                # The app sends measures, not place names; NAMELSAD from
+                # TIGERweb fills the label in below.
+                "NAME": None,
+                "est_population": float(measures.get("population", 0.0)),
+                "households": float(measures.get("households", 0.0)),
+            })
+
+        if demographics_note is not None:
+            demographics_note["candidate_tracts"] = len(centroid_rows)
+            demographics_note["matched_tracts"] = len(supplied_rows)
+            demographics_note["unmatched_tracts"] = len(missing)
+            # Naming the first few makes a systematic mismatch (wrong vintage,
+            # wrong padding) diagnosable without re-running the whole pipeline.
+            demographics_note["unmatched_examples"] = sorted(missing)[:5]
+
+        if not supplied_rows:
+            raise DataPipelineError(
+                f"The app supplied demographics for {len(supplied_demographics)} geographies, but none "
+                f"of them match the {len(centroid_rows)} census tracts in this study area. The supplied "
+                "table and this worker's TIGERweb tract lookup are describing different geographies "
+                "(likely different Census vintages), so no zone table could be built."
+            )
+        if missing:
+            # Honest partial coverage: those tracts are simply absent from the
+            # model rather than being quietly given invented population.
+            print(
+                f"  Demographics: app-supplied for {len(supplied_rows)}/{len(centroid_rows)} tracts; "
+                f"{len(missing)} tract(s) had no supplied row and are excluded from the model."
+            )
+        else:
+            print(f"  Demographics: app-supplied for all {len(supplied_rows)} tracts (no worker Census key used).")
+
+        all_acs = [pd.DataFrame(supplied_rows)]
+        return _merge_demographics_with_centroids(all_acs, centroid_rows)
+
+    if demographics_note is not None:
+        demographics_note["candidate_tracts"] = len(centroid_rows)
+
     all_acs = []
     for state_fips, county_fips in sorted(county_set):
         params = {
@@ -165,10 +353,28 @@ def fetch_tracts_for_study_area(
         except ValueError as exc:
             body_head = res.text[:300]
             if "key" in body_head.lower():
+                # The old wording here told the reader to edit openplan/.env.local
+                # — a server file a planner does not have and cannot reach, which
+                # made an operator workaround the documented fix. Name the action
+                # the person who launched the run can actually take FIRST, and
+                # keep the operator route for whoever runs the worker directly.
+                #
+                # It says "relaunch", and that is only allowed to be said because
+                # it is now TRUE. The relaunch route
+                # (api/models/<id>/runs/<runId>/launch) rebuilds the run's
+                # zone-attribute payload before re-queueing the row, so a key
+                # added after the original launch IS picked up. It used to only
+                # re-queue the row and leave the stale stamp alone, which made
+                # this instruction a loop that could not terminate — the reason
+                # it briefly read "start a NEW run" instead.
                 raise DataPipelineError(
-                    "Census ACS API rejected the request — an API key is required. "
-                    "Get a free key at https://api.census.gov/data/key_signup.html "
-                    "and set CENSUS_API_KEY in openplan/.env.local (the worker reads it)."
+                    "The US Census ACS API rejected this request because no API key was supplied. "
+                    "A workspace owner or admin can add a free Census key under "
+                    "Settings -> Integrations (get one at https://api.census.gov/data/key_signup.html) "
+                    "and then relaunch this run: the app reads the demographics with that key at "
+                    "launch — rebuilding them on every relaunch — and hands them to this worker, "
+                    "which needs no key of its own. An operator running this worker "
+                    "directly can instead set CENSUS_API_KEY in the worker's own environment."
                 ) from exc
             raise DataPipelineError(
                 f"Census ACS API returned non-JSON for {state_fips}/{county_fips}: {body_head!r}"
@@ -190,13 +396,28 @@ def fetch_tracts_for_study_area(
     if not all_acs:
         raise DataPipelineError("No ACS tract data retrieved for the study area")
 
-    acs = pd.concat(all_acs, ignore_index=True)
+    return _merge_demographics_with_centroids(all_acs, centroid_rows)
+
+
+def _merge_demographics_with_centroids(
+    demographic_frames: list[pd.DataFrame],
+    centroid_rows: dict[str, dict[str, Any]],
+) -> pd.DataFrame:
+    """Join demographic rows to TIGERweb centroids and keep the populated tracts.
+
+    Shared by both demographic paths (app-supplied and worker-fetched) so the
+    two can never diverge in how they filter or de-duplicate — the study area a
+    run models must not depend on which side paid for the data.
+    """
+    acs = pd.concat(demographic_frames, ignore_index=True)
     tracts = acs.merge(pd.DataFrame(centroid_rows.values()), on="geoid", how="inner")
     tracts = tracts[tracts["est_population"] > 0].copy()
     tracts = tracts.drop_duplicates(subset=["geoid"]).reset_index(drop=True)
 
     if tracts.empty:
-        raise DataPipelineError("Study area contains no populated tracts after ACS merge")
+        raise DataPipelineError(
+            "Study area contains no populated tracts after the demographic merge"
+        )
 
     print(f"  Populated tracts retained: {len(tracts)}")
     return tracts
@@ -599,6 +820,21 @@ def build_daily_od_matrix(
     return od
 
 
+def _demographics_source_label(note: dict[str, Any]) -> str:
+    """One-line manifest label naming the source that actually supplied the zone
+    population/household marginals — the app's table (with its own vintage) or
+    this worker's own ACS fetch (with the URL it was pointed at)."""
+    if note.get("status") == "supplied":
+        label = note.get("source_label") or note.get("source_id") or "app-supplied demographics"
+        origin = note.get("key_origin")
+        origin_note = {
+            "workspace": " (read by the app with the workspace's own key)",
+            "deployment_env": " (read by the app with the deployment's key)",
+        }.get(str(origin), "")
+        return f"{label}{origin_note}"
+    return f"worker-side ACS fetch from {ACS_5_URL}"
+
+
 def normalize_zone_geography(value: Any) -> str:
     """Collapse the accepted zone-geography spellings to 'block_group' | 'tract'.
 
@@ -631,6 +867,7 @@ def generate_package(
     bbox: tuple[float, float, float, float] | None = None,
     corridor_geojson: dict[str, Any] | None = None,
     zone_geography: str = "tract",
+    zone_attributes: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Generate zone_attributes.csv + od_trip_matrix.csv in output_dir.
 
@@ -639,6 +876,10 @@ def generate_package(
     trip lengths/VMT; requires no extra key, disaggregates tract ACS population
     by keyless LODES residence share). Falls back to tracts if BG refinement
     fails.
+
+    ``zone_attributes`` is the app-supplied measure payload (see
+    :func:`supplied_measure_table`). Passing it removes this worker's need for a
+    Census key entirely; omitting it keeps the historical worker-side ACS fetch.
     """
     if corridor_geojson is not None and bbox is None:
         bbox = bbox_from_corridor_geojson(corridor_geojson)
@@ -647,8 +888,22 @@ def generate_package(
 
     os.makedirs(output_dir, exist_ok=True)
 
-    print(f"  Fetching Census tracts for study area bbox {bbox}...")
-    tracts = fetch_tracts_for_study_area(bbox=bbox, corridor_geojson=corridor_geojson)
+    supplied_demographics, demographics_note = supplied_measure_table(
+        zone_attributes, "demographics"
+    )
+    if supplied_demographics is None:
+        # Not fatal — the worker-side ACS fetch below may still succeed on a
+        # host key — but the reason travels with the package either way, so a
+        # run never looks like it used the workspace's data when it did not.
+        print(f"  Demographics: {demographics_note['reason']}")
+
+    print(f"  Resolving census tracts for study area bbox {bbox}...")
+    tracts = fetch_tracts_for_study_area(
+        bbox=bbox,
+        corridor_geojson=corridor_geojson,
+        supplied_demographics=supplied_demographics,
+        demographics_note=demographics_note,
+    )
 
     # Real LODES employment (WAC total jobs) per state, aggregated to tracts,
     # with the population-proxy synthesis kept as an explicit fallback.
@@ -729,7 +984,11 @@ def generate_package(
         "demand_method": "lodes_seeded_gravity_v1" if od_used_lodes else "gravity_daily_v1",
         "source": {
             "tracts": "Census TIGERweb 2020",
-            "demographics": "ACS 2022 5-year",
+            # Derived from the source that actually answered, never a standing
+            # literal: the app and the worker can be pointed at different ACS
+            # vintages, and a manifest that names the wrong one is a provenance
+            # claim the run cannot support.
+            "demographics": _demographics_source_label(demographics_note),
             "jobs": (
                 f"LEHD LODES8 WAC S000/JT00 {LODES_YEAR} (states {','.join(lodes_used)})"
                 if lodes_tract_count
@@ -741,6 +1000,10 @@ def generate_package(
                 else "synthetic gravity model"
             ),
         },
+        # Where each zone's population/household marginals came from, including
+        # the reason when the app could not supply them. Read by main.py so the
+        # run's evidence carries it.
+        "demographics_provenance": demographics_note,
         "jobs_provenance": {
             "primary": "lehd_lodes8_wac_s000_jt00",
             "year": str(LODES_YEAR),

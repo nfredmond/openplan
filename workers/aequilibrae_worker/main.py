@@ -31,9 +31,11 @@ from dotenv import load_dotenv
 
 from data_pipeline import (
     DataPipelineError,
+    ZONE_ATTRIBUTE_PAYLOAD_VERSION,
     generate_package,
     normalize_zone_geography,
     package_geography_mismatch,
+    supplied_measure_table,
 )
 from resident_vmt import compute_internal_resident_vmt, haversine_miles, intrazonal_miles
 import convergence
@@ -561,6 +563,333 @@ def resolve_calibration_enabled(run_row: dict | None) -> bool:
     return bool(requested)
 
 
+# The app writes the run's zone-attribute payload to private Storage and stamps
+# a pointer into input_snapshot_json.zoneAttributes. The worker caches the
+# downloaded payload beside (not inside) the package directory, because a
+# package rebuild wipes that directory and the payload is a RUN input, not a
+# generated package artifact.
+ZONE_ATTRIBUTES_CACHE_FILENAME = "zone_attributes_payload.json"
+
+
+def parse_zone_attribute_stamp(run_row: dict | None) -> tuple[str | None, dict]:
+    """Read the app's zone-attribute stamp off a run row.
+
+    Returns ``(storage_ref, note)``. ``storage_ref`` is None whenever there is
+    nothing to download, and ``note`` then always carries the REASON — an
+    older launch path, or the app's own stated failure (no Census key, source
+    unavailable, outside coverage). Pure: no network, so it is unit-testable.
+    """
+    snapshot = (run_row or {}).get("input_snapshot_json") or {}
+    stamp = snapshot.get("zoneAttributes")
+    if not isinstance(stamp, dict):
+        return None, {
+            "status": "not_stamped",
+            "reason": (
+                "This run was launched without an app-supplied zone-attribute table (an older "
+                "launch path or an older app version), so the worker used its own configured "
+                "data source."
+            ),
+        }
+
+    if stamp.get("status") != "supplied":
+        return None, {
+            "status": str(stamp.get("status") or "unavailable"),
+            # The app knows the real cause; repeating it verbatim is the only
+            # way the worker's failure names something the planner can act on.
+            "reason": (
+                stamp.get("reason")
+                or (stamp.get("demographics") or {}).get("reason")
+                or "The app supplied no zone attributes for this run and gave no reason."
+            ),
+        }
+
+    storage_ref = stamp.get("storageRef")
+    if not isinstance(storage_ref, str) or not storage_ref:
+        return None, {
+            "status": "malformed",
+            "reason": "The app marked zone attributes as supplied but recorded no storage reference.",
+        }
+
+    return storage_ref, {"status": "supplied", "reason": None}
+
+
+def zone_attribute_object_path(run_id: str, storage_ref: str) -> str | None:
+    """Validate a ``storage://run-artifacts/...`` reference and return its object
+    path, or None when it points anywhere but THIS run's own prefix.
+
+    Workspace members can write `input_snapshot_json`, and this worker reads
+    Storage with the service-role key — so an unchecked reference would turn the
+    worker into a read oracle for the whole bucket. Same containment rule the
+    app's artifact resolver applies (src/lib/models/artifact-source.ts).
+    """
+    prefix = "storage://run-artifacts/"
+    if not storage_ref.startswith(prefix):
+        return None
+    object_path = storage_ref[len(prefix):]
+    expected = f"model-runs/{run_id}/"
+    if not object_path.startswith(expected) or ".." in object_path:
+        return None
+    return object_path
+
+
+def unavailable_zone_attributes(reason: str) -> dict:
+    """A payload-shaped record that carries a REASON instead of measures.
+
+    The setup stage learns why a table is missing; the artifact stage, which
+    runs later and separately, is the one that must say so in the run's
+    evidence. Writing the reason in the payload's own shape carries it across
+    that boundary through the existing contract — `supplied_measure_table`
+    already knows how to pass a stated reason through — rather than inventing a
+    second channel that could go stale independently.
+    """
+    table = {"status": "unavailable", "reason": reason}
+    return {
+        "version": ZONE_ATTRIBUTE_PAYLOAD_VERSION,
+        "source": {},
+        "tables": {"demographics": dict(table), "equity": dict(table)},
+    }
+
+
+def _cache_zone_attributes(work_dir: str, payload: dict) -> None:
+    """Persist the payload (or its stated absence) for the later stages.
+
+    Always overwrites, so the artifact stage reads THIS attempt's outcome and
+    never a previous attempt's leftovers in the same per-run work directory.
+
+    Overwriting is also what makes the relaunch recovery visible here: the
+    relaunch route rebuilds `input_snapshot_json.zoneAttributes` before it
+    re-queues the row, so a re-queue downloads a table read with whatever key
+    the workspace has NOW, not the one it had at the original launch. That is
+    why the no-key messages in this file and in data_pipeline.py are allowed to
+    say "relaunch this run". This docstring previously recorded the opposite —
+    that a re-queue re-downloaded the same stored table — which was true of the
+    launch route before the rebuild landed; do not reinstate that wording
+    without also removing "relaunch" from those messages.
+    """
+    try:
+        os.makedirs(work_dir, exist_ok=True)
+        with open(os.path.join(work_dir, ZONE_ATTRIBUTES_CACHE_FILENAME), "w") as f:
+            json.dump(payload, f)
+    except Exception as exc:
+        # Caching is a convenience for the later artifact stage; a failure here
+        # must not cost the setup stage its demographics.
+        print(f"  Warning: could not cache the zone-attribute payload ({exc}).")
+
+
+def resolve_zone_attributes(run_id: str, work_dir: str, run_row: dict | None) -> tuple[dict | None, dict]:
+    """Download this run's app-supplied zone-attribute payload, cache it in
+    ``work_dir``, and return ``(payload, note)``.
+
+    The payload is the app's read of the workspace's OWN demographic source —
+    the only route by which a per-workspace Census key can reach a model build,
+    since the worker cannot see per-workspace secrets. Every failure returns a
+    reason rather than None-and-silence, and the reason is cached alongside so
+    the artifact stage can state it too.
+    """
+
+    def unavailable(status: str, reason: str) -> tuple[None, dict]:
+        _cache_zone_attributes(work_dir, unavailable_zone_attributes(reason))
+        return None, {"status": status, "reason": reason}
+
+    storage_ref, note = parse_zone_attribute_stamp(run_row)
+    if storage_ref is None:
+        return unavailable(note["status"], note["reason"])
+
+    object_path = zone_attribute_object_path(run_id, storage_ref)
+    if object_path is None:
+        return unavailable(
+            "rejected_reference",
+            f"The run's zone-attribute reference {storage_ref!r} does not point inside this "
+            "run's own storage prefix, so it was not read.",
+        )
+
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+            timeout=60,
+        )
+        if res.status_code != 200:
+            return unavailable(
+                "download_failed",
+                f"The app-supplied zone-attribute table could not be downloaded "
+                f"(HTTP {res.status_code}), so the worker fell back to its own data source.",
+            )
+        payload = res.json()
+    except Exception as exc:
+        return unavailable(
+            "download_failed",
+            f"The app-supplied zone-attribute table could not be downloaded ({exc}).",
+        )
+
+    if not isinstance(payload, dict):
+        return unavailable(
+            "malformed", "The app-supplied zone-attribute table was not a JSON object."
+        )
+
+    _cache_zone_attributes(work_dir, payload)
+    return payload, {"status": "supplied", "reason": None}
+
+
+def load_cached_zone_attributes(work_dir: str) -> dict | None:
+    """Re-read the payload the setup stage cached, so the artifact stage uses
+    the SAME demographic source the zones were built from rather than a second,
+    possibly-newer download."""
+    path = os.path.join(work_dir, ZONE_ATTRIBUTES_CACHE_FILENAME)
+    if not os.path.exists(path):
+        return None
+    try:
+        with open(path) as f:
+            payload = json.load(f)
+        return payload if isinstance(payload, dict) else None
+    except Exception:
+        return None
+
+
+def acs_row_from_equity_measures(measures: dict[str, float]) -> dict[str, float]:
+    """Translate the app's jurisdiction-neutral equity measures into the ACS
+    variable names ``equity.build_equity_zone`` already speaks.
+
+    Translating instead of recomputing keeps exactly ONE definition of each
+    equity share — in equity.py — rather than a second copy here that could
+    silently drift from it. Two details are deliberate:
+
+    * B25044's owner/renter zero-vehicle split collapses into one field, because
+      build_equity_zone only ever sums the two.
+    * The poverty pair is always expressed as B17001 even for block groups. The
+      app has already made the C17002-for-B17001 substitution that block-group
+      geography requires; by the time it reaches here it is just a universe and
+      a below-poverty count, and build_equity_zone divides them identically.
+    """
+    minority_universe = float(measures.get("minorityUniverse", 0.0))
+    minority_count = float(measures.get("minorityCount", 0.0))
+    return {
+        "B01003_001E": float(measures.get("population", 0.0)),
+        "B17001_001E": float(measures.get("lowIncomeUniverse", 0.0)),
+        "B17001_002E": float(measures.get("lowIncomeCount", 0.0)),
+        "B03002_001E": minority_universe,
+        # build_equity_zone derives the minority share as (total - reference
+        # group), so the supplied COUNT is expressed as its complement.
+        "B03002_003E": max(0.0, minority_universe - minority_count),
+        "B25044_001E": float(measures.get("zeroVehicleHouseholdUniverse", 0.0)),
+        "B25044_003E": float(measures.get("zeroVehicleHouseholdCount", 0.0)),
+        "B25044_010E": 0.0,
+    }
+
+
+def resolve_equity_measure_source(
+    supplied_equity: dict[str, dict[str, float]] | None,
+    supplied_note: dict,
+    zone_level_key: str,
+    zone_level_label: str,
+    worker_census_key: str,
+    worker_fetch,
+) -> tuple[dict[str, dict[str, float]], str | None, str | None, str | None]:
+    """Decide where this run's equity measures come from, and say why if nowhere.
+
+    Returns ``(acs_rows, source_label, reason, supplied_refusal)``:
+
+    * ``acs_rows`` — ``{geoid: ACS-shaped row}``; empty when nothing answered.
+    * ``source_label`` — provenance for an overlay that was produced, else None.
+    * ``reason`` — why NO measures could be obtained; None when some were.
+    * ``supplied_refusal`` — why the APP's table was set aside, when it was. That
+      is provenance, not an absence: the caller records it alongside a produced
+      overlay rather than reporting a gap that did not happen.
+
+    WHY THE WORKER'S OWN FETCH IS NOT SKIPPED WHEN THE SUPPLIED TABLE IS REFUSED.
+    A supplied table published at a different geography than the run's zones
+    actually resolved to would mis-scale every share, so refusing it is correct.
+    Skipping the worker's own fetch at the same time was not, and it cost real
+    overlays: a run launched with ``zoneGeography: "block_group"`` whose
+    block-group refinement legitimately falls back to tracts (an explicitly
+    supported fallback in data_pipeline) produced NO equity overlay at all — even
+    on a worker with CENSUS_API_KEY set, which could have answered the question
+    at the geography the zones really are. Refusing a table that cannot answer is
+    honest; refusing the one that can is a silent degrade.
+
+    Pure: the ACS call arrives as ``worker_fetch``, so the decision is testable
+    without a network or the scientific stack.
+    """
+    supplied_refusal = None
+    if supplied_equity is not None and supplied_note.get("level") != zone_level_key:
+        supplied_refusal = (
+            f"The app supplied equity data at {supplied_note.get('level')!r} geography, but this "
+            f"run's zones resolved to {zone_level_key!r}, so the supplied table was not used — "
+            "comparing across geographies would mis-scale every share."
+        )
+        supplied_equity = None
+
+    if supplied_equity is not None:
+        rows = {
+            geoid: acs_row_from_equity_measures(measures)
+            for geoid, measures in supplied_equity.items()
+        }
+        label = supplied_note.get("source_label") or supplied_note.get("source_id")
+        return rows, label, None, None
+
+    if worker_census_key:
+        # Second choice, kept so an operator running this worker directly is not
+        # broken — and, since the refusal above, the ONLY route that can answer
+        # at a geography the app did not publish.
+        return worker_fetch() or {}, f"worker-side ACS fetch ({zone_level_label})", None, supplied_refusal
+
+    # Neither route had data. Say BOTH halves — "the app sent nothing" alone
+    # would imply the worker could have covered for it, which it could not.
+    unavailable = (
+        supplied_refusal
+        or supplied_note.get("reason")
+        or "The app supplied no equity table for this run."
+    )
+    return (
+        {},
+        None,
+        (
+            f"{unavailable} No Census API key is set on the worker either, so the EJ/Title VI "
+            "overlay could not be produced. A workspace owner or admin can add a free Census key "
+            "under Settings -> Integrations and then relaunch this run: the app rebuilds this "
+            "run's demographics on every launch, so the new key is picked up."
+        ),
+        supplied_refusal,
+    )
+
+
+def demographic_coverage_caveat(demographics_provenance: dict | None) -> str | None:
+    """State partial demographic coverage, or None when there is nothing to state.
+
+    A zone the supplied table could not cover is dropped from the model entirely
+    (``data_pipeline._merge_demographics_with_centroids`` keeps only the rows it
+    matched). That is the honest thing to do with a zone whose population is
+    unknown — inventing one would be worse — but it silently SHRINKS the modelled
+    area, and every study-area total (population, VMT per capita, the equity
+    denominators) then describes less ground than the planner drew. One flaky ACS
+    county response out of several is enough to trigger it.
+
+    The caller routes this into ``evidence["caveats"]``, the one evidence field
+    the app's packet normalizer copies through verbatim. Left in the manifest
+    alone it would let a partial read render as a complete model — and a
+    per-capita number over a silently shrunken denominator is exactly the
+    overclaim the caveat channel exists to prevent.
+    """
+    provenance = demographics_provenance or {}
+    unmatched = provenance.get("unmatched_tracts") or 0
+    candidates = provenance.get("candidate_tracts") or 0
+    if unmatched:
+        return (
+            f"Partial demographic coverage — {unmatched} of {candidates} census tracts in this "
+            "study area had no supplied demographics and are excluded from the model, so "
+            "study-area totals (including VMT per capita) cover less than the area requested."
+        )
+    if provenance.get("geography_index_truncated"):
+        # The source told the app its geography index was cut short. Nothing is
+        # known to be missing, but "complete" is no longer a claim this run can
+        # make, and an unstated maybe is the failure mode this repo forbids.
+        return (
+            "The demographic source reported a truncated geography index for this study area, "
+            "so the supplied table is not guaranteed to cover every zone in it."
+        )
+    return None
+
+
 def should_run_calibration(calibrate_requested: bool, counts_path: str) -> bool:
     """Whether stage_assignment actually runs count calibration: the run opted in
     (per-run flag / env), count validation is enabled, and a count set exists on
@@ -579,6 +908,13 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
     # "block_group" builds ~3x finer sub-tract TAZs than "tract" (lower
     # intrazonal share, more accurate trip lengths/VMT).
     zone_geography = resolve_zone_geography(run_row)
+
+    # Demographics the APP read with the workspace's own key. Fetched on every
+    # setup — including a cache hit — so the artifact stage's equity overlay
+    # always has this run's payload, not a previous run's leftovers.
+    zone_attributes, zone_attributes_note = resolve_zone_attributes(run_id, work_dir, run_row)
+    if zone_attributes is None:
+        print(f"  Zone attributes: {zone_attributes_note['reason']}")
 
     if os.path.exists(manifest_path):
         with open(manifest_path) as f:
@@ -615,7 +951,7 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
     try:
         manifest = generate_package(
             output_dir=pkg_dir, bbox=bbox, corridor_geojson=corridor_geojson,
-            zone_geography=zone_geography,
+            zone_geography=zone_geography, zone_attributes=zone_attributes,
         )
     except DataPipelineError as exc:
         raise RuntimeError(f"Dynamic package generation failed: {exc}") from exc
@@ -2147,14 +2483,27 @@ def stage_artifacts(
         log += f"Resident VMT computation warning: {e}\n"
 
     # ── Equity / EJ overlay (screening, Title VI ACS indicators) ──────────────
-    # Real ACS low-income / minority / zero-vehicle shares at the run's geography;
+    # Real low-income / minority / zero-vehicle shares at the run's geography;
     # compares resident VMT/capita for above-typical-disadvantage zones vs the
-    # rest. Needs a CENSUS key (now live). Screening-grade, NOT the SB 535 list.
+    # rest. The measures come from the app (read with the workspace's own key)
+    # when supplied, else from this worker's own key. Screening-grade, NOT the
+    # SB 535 list.
     equity_screen = None
+    # Why the overlay did not run, in words. This used to be nothing at all: the
+    # block was gated on `if census_key and pkg_dir`, so a run without a Census
+    # key produced no equity KPIs, no log line and no evidence — a result that
+    # reads exactly like "we looked and found no disparity". Under this repo's
+    # rules that silent degrade is the more dangerous of the two failure modes,
+    # so every path out of here now leaves a reason behind.
+    equity_reason = None
     try:
-        census_key = os.getenv("CENSUS_API_KEY", "")
         pkg_dir = (package_meta or {}).get("package_dir")
-        if census_key and pkg_dir:
+        if not pkg_dir:
+            equity_reason = (
+                "This run has no zone package directory, so the equity overlay had no zones to "
+                "screen."
+            )
+        else:
             zattr_e = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"), dtype={"GEOID": str})
             zattr_e["zone_id"] = zattr_e["zone_id"].astype(int)
             zone_ids_e = zattr_e["zone_id"].tolist()
@@ -2174,9 +2523,33 @@ def stage_artifacts(
                        for zj in zone_ids_e] for zi in zone_ids_e]
             per_zone_vmt = equity.resident_vmt_by_origin_zone(od_mat, zone_ids_e, lons_e, lats_e, areas_e, gateway_zone_ids)
             level_e = "block group" if all(len(g) == 12 for g in geoids_e) else "tract"
+            # The payload spells the level "block_group"; the ACS `for=` clause
+            # spells it "block group". normalize_zone_geography does not accept
+            # the spaced form, so convert explicitly rather than silently
+            # degrading a block-group run to a tract comparison.
+            level_key_e = "block_group" if level_e == "block group" else "tract"
             pairs_e = {(g[:2], g[2:5]) for g in geoids_e}
-            acs_e = equity.fetch_acs_equity(pairs_e, level_e, census_key)
-            if any(acs_e.get(g) for g in geoids_e):
+
+            # Preferred source: the equity measures the APP read with this
+            # workspace's own key and handed over at launch. This is what makes
+            # the overlay work for a self-serve workspace at all — the worker
+            # cannot see per-workspace secrets.
+            supplied_equity, supplied_note = supplied_measure_table(
+                load_cached_zone_attributes(work_dir), "equity"
+            )
+            census_key = os.getenv("CENSUS_API_KEY", "")
+            acs_e, equity_source, source_reason, supplied_refusal = resolve_equity_measure_source(
+                supplied_equity=supplied_equity,
+                supplied_note=supplied_note,
+                zone_level_key=level_key_e,
+                zone_level_label=level_e,
+                worker_census_key=census_key,
+                worker_fetch=lambda: equity.fetch_acs_equity(pairs_e, level_e, census_key),
+            )
+            if source_reason:
+                equity_reason = source_reason
+
+            if acs_e and any(acs_e.get(g) for g in geoids_e):
                 zones_eq = []
                 for zid, geoid, pop in zip(zone_ids_e, geoids_e, pops_e):
                     z = equity.build_equity_zone(geoid, float(pop), acs_e.get(geoid) or {})
@@ -2184,16 +2557,55 @@ def stage_artifacts(
                     zones_eq.append(z)
                 zones_eq = equity.classify_equity_focus(zones_eq)
                 equity_screen = equity.summarize_equity(zones_eq, per_zone_vmt)
+                equity_screen["status"] = "computed"
                 equity_screen["geography"] = level_e
+                equity_screen["source"] = equity_source
+                if supplied_refusal:
+                    # The app's table was set aside and the worker's own fetch
+                    # covered for it. That is provenance about WHICH source
+                    # answered, not a missing result — so it rides with the
+                    # computed screen instead of becoming an "unavailable".
+                    equity_screen["supplied_table_note"] = supplied_refusal
+                # An overlay exists, so nothing here is an absence any more.
+                equity_reason = None
                 log += (
-                    f"Equity overlay ({level_e}): {equity_screen['focus_zone_count']}/"
+                    f"Equity overlay ({level_e}, {equity_source}): {equity_screen['focus_zone_count']}/"
                     f"{equity_screen['total_zone_count']} focus zones; VMT/capita disparity "
                     f"{equity_screen.get('vmt_per_capita_disparity_ratio')}\n"
                 )
-            else:
-                log += "Equity overlay skipped: ACS equity data unavailable for study geographies.\n"
+            elif equity_reason is None:
+                # Both routes ran and neither covered these zones. When the app's
+                # table was set aside first, that is half the story and has to be
+                # said too, or the reader is sent to fix the wrong thing.
+                equity_reason = (f"{supplied_refusal} " if supplied_refusal else "") + (
+                    f"No {level_e}-level equity data was returned for this study area's "
+                    f"{len(geoids_e)} zone(s), so the overlay had nothing to compare."
+                )
     except Exception as e:
-        log += f"Equity overlay warning: {e}\n"
+        equity_reason = f"The equity overlay failed while being computed: {e}"
+
+    if equity_screen is None:
+        # The absence is reported, with its cause, in the same field a computed
+        # screen would occupy — so a reader of the evidence cannot mistake
+        # "not measured" for "measured, no disparity".
+        equity_screen_evidence = {
+            "status": "unavailable",
+            "reason": equity_reason or "The equity overlay did not run and no reason was recorded.",
+            "method": equity.EQUITY_METHOD_NOTE,
+        }
+        log += f"Equity overlay not produced: {equity_screen_evidence['reason']}\n"
+        equity_caveat = f"Equity overlay not produced — {equity_screen_evidence['reason']}"
+    else:
+        equity_screen_evidence = equity_screen
+        equity_caveat = None
+
+    # ── Demographic COVERAGE, stated rather than buried ──────────────────────
+    # Why this cannot stay in the manifest alone: see demographic_coverage_caveat.
+    coverage_caveat = demographic_coverage_caveat(
+        (package_meta or {}).get("demographics_provenance")
+    )
+    if coverage_caveat:
+        log += f"Demographic coverage: {coverage_caveat}\n"
 
     resident_basis_note = (
         "auto trips only (mode-choice output — the CEQA §15064.3 vehicle-VMT basis)"
@@ -2303,7 +2715,9 @@ def stage_artifacts(
             "network_gateway_zone_ids": gateway_zone_ids,
         },
         "emissions": emissions_screen,
-        "equity": equity_screen,
+        # Always an object: either the computed screen or a stated reason there
+        # is none. A bare null here read as "nothing to report".
+        "equity": equity_screen_evidence,
         "mode_split": mode_split,
         "validation": validation,
         # Select-link corridor attribution: per-screenline local/commute/through
@@ -2328,7 +2742,25 @@ def stage_artifacts(
         # LODES-vs-synthetic employment provenance from the package manifest,
         # so the app can badge synthetic-fallback jobs as Estimated.
         "employment": (package_meta or {}).get("jobs_provenance"),
-        "caveats": ["Uncalibrated", "OSM default speeds/capacities", boundary_caveat, mode_caveat, "Screening-grade"],
+        # Where the zone population/household marginals came from — the app's
+        # read on the workspace's own key, or this worker's own fetch.
+        "demographics": (package_meta or {}).get("demographics_provenance"),
+        # `caveats` is the one evidence field the app's packet normalizer copies
+        # through verbatim, so a missing equity overlay is stated on a surface a
+        # planner actually reads rather than only in the raw evidence JSON.
+        "caveats": [
+            c
+            for c in [
+                "Uncalibrated",
+                "OSM default speeds/capacities",
+                boundary_caveat,
+                mode_caveat,
+                "Screening-grade",
+                equity_caveat,
+                coverage_caveat,
+            ]
+            if c
+        ],
         "created_at": datetime.now(timezone.utc).isoformat(),
         "model_area": model_area_label,
     }

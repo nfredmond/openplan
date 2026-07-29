@@ -3,6 +3,17 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import {
+  isWriteFailure,
+  noRowsMatchedResponse,
+  writeMatchedNoRows,
+} from "@/lib/http/write-outcome";
+import {
+  prepareWorkerZoneAttributes,
+  type ZoneAttributeStamp,
+} from "@/lib/models/zone-attribute-payload";
+import type { ZoneAttributeLevel } from "@/lib/geographies/zone-attribute-source";
 import {
   checkMonthlyRunCap,
   isRunCapExceeded,
@@ -75,10 +86,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: runCap.message }, { status: 429 });
     }
 
-    // Load the model run
+    // Load the model run. `corridor_geojson` and `input_snapshot_json` are read
+    // because relaunching REBUILDS this run's demographic inputs (below) rather
+    // than re-queueing a stale copy of them.
     const { data: modelRun, error: modelRunError } = await supabase
       .from("model_runs")
-      .select("id, status, engine_key")
+      .select("id, status, engine_key, corridor_geojson, input_snapshot_json")
       .eq("id", parsedParams.data.modelRunId)
       .eq("model_id", access.model.id)
       .maybeSingle();
@@ -109,9 +122,86 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const nowIso = new Date().toISOString();
 
+    // ── Rebuild the run's demographic inputs, because a relaunch that did not
+    // was a recovery instruction that could never work ──────────────────────
+    //
+    // `input_snapshot_json.zoneAttributes` is the pointer the worker follows to
+    // this run's zone demographics, and it is a snapshot of ONE read — taken
+    // with whatever Census key the workspace had at the moment of the original
+    // launch. This route used to re-queue the row and leave that stamp alone, so
+    // a run stamped `{status: "unavailable", reason: "No US Census API key…"}`
+    // re-read the same refusal on every relaunch. "Add a key under Settings →
+    // Integrations, then relaunch" is the obvious recovery, and it is what the
+    // worker's own error text tells the planner to do — and it provably could
+    // not succeed. Telling someone to do something that cannot work is a false
+    // statement, not a rough edge, so the payload is rebuilt here instead.
+    //
+    // This runs BEFORE the status flip: a run whose inputs could not be rebuilt
+    // must not be sitting in the queue for a worker to claim.
+    const priorSnapshot =
+      (modelRun.input_snapshot_json as Record<string, unknown> | null) ?? {};
+
+    // Same resolution the run was originally built at. Read from the snapshot
+    // rather than re-derived, so a relaunch of a stamped run cannot quietly
+    // change the zone geography — and stamped back below so the app's fetch and
+    // the worker's `resolve_zone_geography` cannot disagree.
+    //
+    // HONEST LIMIT: a run launched BEFORE the stamp existed carries no
+    // `zoneGeography`, and the worker resolved its own `AEQ_ZONE_GEOGRAPHY` env
+    // for it. There is no record here of what that env said, so relaunching such
+    // a run pins it to "tract" — which, on a deployment that set that env to
+    // block_group, rebuilds the cached package at the coarser resolution. Every
+    // run launched since the stamp shipped is unaffected; the alternative
+    // (leaving it unstamped) would let the worker build zones at one resolution
+    // against the table this route is about to read at another.
+    const zoneGeography: ZoneAttributeLevel =
+      priorSnapshot.zoneGeography === "block_group" ? "block_group" : "tract";
+
+    let refreshedSnapshot = priorSnapshot;
+    let zoneAttributes: ZoneAttributeStamp | null = null;
+
+    // A run with no study-area geometry has nothing to resolve demographics
+    // for, and the worker refuses it by name ("This run has no study area…").
+    // Rebuilding a stamp for it would only replace one true reason with another.
+    if (modelRun.corridor_geojson) {
+      // Inside the workspace's integration context, or `censusApiKey()` cannot
+      // see the workspace's own key and the rebuild would silently answer from
+      // the deployment env — the same precedence the initial launch uses.
+      zoneAttributes = await withWorkspaceIntegrationContext(workspaceId, () =>
+        prepareWorkerZoneAttributes({
+          modelRunId: modelRun.id,
+          corridorGeojson: modelRun.corridor_geojson,
+          zoneGeography,
+        })
+      );
+
+      refreshedSnapshot = {
+        ...priorSnapshot,
+        zoneGeography,
+        zoneAttributes,
+        relaunchedAt: nowIso,
+      };
+
+      if (zoneAttributes.status !== "supplied") {
+        // Not a launch failure — the worker may still have a key of its own —
+        // but it is the leading cause of a dead worker run, and after a relaunch
+        // it is also the answer to "did adding the key help?".
+        audit.warn("zone_attribute_handoff_unavailable", {
+          modelId: access.model.id,
+          modelRunId: modelRun.id,
+          status: zoneAttributes.status,
+          keyOrigin: zoneAttributes.keyOrigin,
+          reason: zoneAttributes.reason ?? zoneAttributes.demographics.reason,
+        });
+      }
+    }
+
     // Update run to queued and clear stale prior-run residue.
     // result_summary_json is NOT NULL DEFAULT '{}' — reset to {}, never null.
-    const { error: updateError } = await supabase
+    // `.select(...).maybeSingle()` is not decoration: without it PostgREST
+    // reports a write that matched zero rows as success, and this one carries
+    // the rebuilt inputs the whole recovery depends on.
+    const requeue = await supabase
       .from("model_runs")
       .update({
         status: "queued",
@@ -121,17 +211,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
         error_message: null,
         result_summary_json: {},
         source_analysis_run_id: null,
+        input_snapshot_json: refreshedSnapshot,
       })
-      .eq("id", modelRun.id);
+      .eq("id", modelRun.id)
+      .select("id")
+      .maybeSingle();
 
-    if (updateError) {
+    if (isWriteFailure(requeue.error)) {
       audit.error("model_run_requeue_failed", {
         modelId: access.model.id,
         modelRunId: modelRun.id,
-        message: updateError.message,
-        code: updateError.code ?? null,
+        message: requeue.error?.message ?? null,
+        code: requeue.error?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to queue model run" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows(requeue)) {
+      // This route already read this exact row through the caller's own client
+      // and passed every membership and role check, so zero rows here is the
+      // database disagreeing with the application — a policy gap, not a missing
+      // run. `targetWasVerified` makes the answer say that instead of inventing
+      // a 404 for a run the caller just saw.
+      audit.error("model_run_requeue_matched_no_rows", {
+        modelId: access.model.id,
+        modelRunId: modelRun.id,
+      });
+      return noRowsMatchedResponse({ subject: "model run", targetWasVerified: true });
     }
 
     // Create the first stage if it doesn't exist, or reset it
@@ -206,10 +312,35 @@ export async function POST(request: NextRequest, context: RouteContext) {
     audit.info("model_run_launched", {
       modelId: access.model.id,
       modelRunId: modelRun.id,
+      zoneAttributeStatus: zoneAttributes?.status ?? "not_rebuilt",
       durationMs: Date.now() - startedAt,
     });
 
-    return NextResponse.json({ success: true, status: "queued" }, { status: 200 });
+    return NextResponse.json(
+      {
+        success: true,
+        status: "queued",
+        // Additive, and deliberately not silent. A relaunch is usually the
+        // second half of "add a Census key, then relaunch", so whether the
+        // rebuild above actually read this study area's demographics is the
+        // answer to the question the planner just asked.
+        //
+        // NOT YET RENDERED: the only caller today, the relaunch button in
+        // `components/models/model-run-evidence-panel.tsx`, reads `error` off
+        // this body and discards the rest — so a planner still learns the
+        // outcome from the worker's failure minutes later, not from here. This
+        // field is what a surface would read; it is not itself that surface,
+        // and it must not be described as one until the panel shows it.
+        zoneAttributes: zoneAttributes
+          ? {
+              status: zoneAttributes.status,
+              keyOrigin: zoneAttributes.keyOrigin,
+              reason: zoneAttributes.reason ?? zoneAttributes.demographics.reason,
+            }
+          : null,
+      },
+      { status: 200 }
+    );
   } catch (error) {
     audit.error("model_run_launch_error", { durationMs: Date.now() - startedAt, error });
     return NextResponse.json({ error: "Unexpected error launching model run" }, { status: 500 });

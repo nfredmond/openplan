@@ -46,7 +46,12 @@ export const INTEGRATION_PROVIDERS: readonly IntegrationProviderDescriptor[] = [
     id: "census",
     label: "US Census Bureau",
     purpose:
-      "County search, ACS demographics, and equity overlays. Free key; without one, some Census reads degrade to empty results.",
+      // Scoped to what the key ACTUALLY buys. Place / CDP / metro search reads
+      // keyless TIGERweb and keeps working without one, and county search names
+      // its missing key rather than answering an empty list, so promising that
+      // both "return empty results" would send a planner to fix a surface that
+      // is not broken and misdescribe one that already refuses honestly.
+      "US county search, the ACS demographics that size model zones, and the EJ/Title VI equity overlay on worker-backed model runs. The app reads the ACS with your key and hands the finished table to the modeling worker, so the worker needs no key of its own. Free key; United States geographies only. Place, CDP and metro search do not need it. Without a key — here or on the deployment — county search says so instead of answering, and an AequilibraE or behavioral-demand run can build its zone table only if the worker host carries a Census key of its own.",
     keySignupUrl: "https://api.census.gov/data/key_signup.html",
     envVar: "CENSUS_API_KEY",
     workspaceConfigurable: true,

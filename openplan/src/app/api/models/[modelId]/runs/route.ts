@@ -41,6 +41,7 @@ import {
   markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
+import { prepareWorkerZoneAttributes } from "@/lib/models/zone-attribute-payload";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -496,6 +497,42 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const isBehavioralDemandRun = launchPayload.engineKey === "behavioral_demand";
       const isSketchAbmRun = launchPayload.engineKey === "sketch_abm";
 
+      // The ONE zone resolution this run is built at. Read once and used for
+      // both the app's fetch and the stamp the worker resolves against, because
+      // they must not be able to disagree: `resolve_zone_geography` in the
+      // worker falls through to its own AEQ_ZONE_GEOGRAPHY env whenever the
+      // stamp is absent, so an unstamped run could build block-group zones
+      // against a table the app read at tract level (or the reverse). The
+      // equity overlay is published at exactly this level.
+      const workerZoneGeography = parsed.data.zoneGeography ?? "tract";
+
+      // Worker-backed engines get their zone demographics from the APP, read
+      // with this workspace's own Census key. Only these two lanes need it: the
+      // in-process lanes (sketch_abm, ite_trip_generation) already run inside
+      // `withWorkspaceIntegrationContext` above, so `censusApiKey()` honors the
+      // workspace key for them without any handoff.
+      const workerZoneAttributes =
+        (isAequilibraeRun || isBehavioralDemandRun) && launchPayload.corridorGeojson
+          ? await prepareWorkerZoneAttributes({
+              modelRunId,
+              corridorGeojson: launchPayload.corridorGeojson,
+              zoneGeography: workerZoneGeography,
+            })
+          : null;
+
+      if (workerZoneAttributes && workerZoneAttributes.status !== "supplied") {
+        // Not a launch failure — the worker can still try its own env key — but
+        // it is the leading cause of a dead worker run, so it is audited at
+        // launch rather than only discovered in the worker log.
+        audit.warn("zone_attribute_handoff_unavailable", {
+          modelId: access.model.id,
+          modelRunId,
+          status: workerZoneAttributes.status,
+          keyOrigin: workerZoneAttributes.keyOrigin,
+          reason: workerZoneAttributes.reason ?? workerZoneAttributes.demographics.reason,
+        });
+      }
+
       // Immutable input snapshot for the run row. Extracted so the sketch lane
       // can reuse it verbatim when a large study area is rerouted to the worker.
       const baseInputSnapshot: Record<string, unknown> = {
@@ -504,12 +541,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
         modelFamily: access.model.model_family ?? null,
         configVersion: access.model.config_version ?? null,
         launchedAt,
-        // The worker reads this to size the dynamic package's TAZs; stamped
-        // only for the engine that consumes it so other engines' snapshots
-        // don't carry a dead option.
-        ...(isAequilibraeRun && parsed.data.zoneGeography
-          ? { zoneGeography: parsed.data.zoneGeography }
-          : {}),
+        // The worker reads this to size the dynamic package's TAZs. Stamped for
+        // EVERY engine that received a zone-attribute handoff above, and stamped
+        // even when the caller sent no preference: the handoff already resolved
+        // the default, and leaving the field off would let the worker's env pick
+        // a different resolution than the table the app just built. The stamp is
+        // omitted only for the in-process engines, whose snapshots would carry a
+        // dead option.
+        ...(workerZoneAttributes ? { zoneGeography: workerZoneGeography } : {}),
         // Per-run count-calibration opt-in. Stamped for the worker-backed engines
         // whose screening stages run in the AequilibraE worker (aequilibrae +
         // behavioral_demand), and only when the caller sent it — an absent flag
@@ -518,6 +557,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ...((isAequilibraeRun || isBehavioralDemandRun) && parsed.data.calibrate !== undefined
           ? { calibrate: parsed.data.calibrate }
           : {}),
+        // Pointer + provenance for the app-supplied zone-attribute table (the
+        // table itself lives in private Storage; see zone-attribute-payload.ts
+        // for why it is not inlined here). Stamped even when unavailable, so
+        // the worker can name the real reason instead of guessing at one.
+        ...(workerZoneAttributes ? { zoneAttributes: workerZoneAttributes } : {}),
       };
 
       // Operator run-cap check for the synchronous in-process branches only —
@@ -703,6 +747,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
               `This run was routed to the AequilibraE fast-screening worker (no zone cap) — expect a longer runtime.`;
             const reroutedAt = new Date().toISOString();
 
+            // The run is becoming a WORKER run, so it now needs the same
+            // app-supplied demographics a directly-launched worker run gets.
+            // Without this the reroute would hand the worker a study area it
+            // has no key to resolve — the exact failure this handoff exists to
+            // remove, reintroduced through a side door.
+            const rerouteZoneAttributes = await prepareWorkerZoneAttributes({
+              modelRunId,
+              corridorGeojson: launchPayload.corridorGeojson,
+              zoneGeography: workerZoneGeography,
+            });
+
             const { error: rerouteUpdateError } = await supabase
               .from("model_runs")
               .update({
@@ -711,6 +766,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
                 started_at: null,
                 input_snapshot_json: {
                   ...baseInputSnapshot,
+                  zoneAttributes: rerouteZoneAttributes,
+                  // baseInputSnapshot carries no zoneGeography for a sketch
+                  // launch (it had no handoff), but this row is a WORKER run
+                  // now — so the resolution the table above was read at has to
+                  // travel with it, or the worker resolves its own env instead.
+                  zoneGeography: workerZoneGeography,
                   reroutedFromEngine: "sketch_abm",
                   rerouteReason: "large_study_area",
                   requestedTractCount: census.tracts.length,

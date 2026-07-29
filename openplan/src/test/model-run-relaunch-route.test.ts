@@ -1,7 +1,22 @@
+/**
+ * Relaunching a run rebuilds the inputs it will be run with.
+ *
+ * THE DEFECT THESE PIN. `input_snapshot_json.zoneAttributes` is the pointer the
+ * AequilibraE worker follows to a run's zone demographics, and it is a snapshot
+ * of one read — taken with whatever Census key the workspace had at the original
+ * launch. This route used to re-queue the row and leave that stamp untouched, so
+ * a run stamped `{status: "unavailable", reason: "No US Census API key…"}`
+ * re-read the same refusal every time. "Add a key under Settings → Integrations,
+ * then relaunch" is the obvious recovery AND what the worker's own error text
+ * says — and it could never succeed. An instruction the product gives a planner
+ * that cannot work is a false statement, not a rough edge.
+ */
+
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const prepareWorkerZoneAttributesMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const loadModelAccessMock = vi.fn();
 const authGetUserMock = vi.fn();
@@ -31,8 +46,15 @@ const fromMock = vi.fn((table: string) => {
       select: vi.fn(() => ({
         eq: vi.fn(() => ({ eq: vi.fn(() => ({ maybeSingle: runMaybeSingleMock })) })),
       })),
+      // The re-queue now reads its own row count back — `.select().maybeSingle()`
+      // is what lets a write that matched nothing be answered as its own
+      // outcome instead of passing for success.
       update: (payload: Record<string, unknown>) => ({
-        eq: (..._args: unknown[]) => runUpdateMock(payload),
+        eq: (..._args: unknown[]) => ({
+          select: (..._cols: unknown[]) => ({
+            maybeSingle: () => runUpdateMock(payload),
+          }),
+        }),
       }),
     };
   }
@@ -56,7 +78,20 @@ const fromMock = vi.fn((table: string) => {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  // `withWorkspaceIntegrationContext` loads the workspace's decrypted keys with
+  // this; the real one is exercised in its own suite.
+  createServiceRoleClient: () => {
+    throw new Error("no service-role key in this test");
+  },
 }));
+
+vi.mock("@/lib/models/zone-attribute-payload", async (importOriginal) => {
+  const actual = (await importOriginal()) as Record<string, unknown>;
+  return {
+    ...actual,
+    prepareWorkerZoneAttributes: (...args: unknown[]) => prepareWorkerZoneAttributesMock(...args),
+  };
+});
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
@@ -79,8 +114,58 @@ function routeContext() {
   return { params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }) };
 }
 
-describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
-  beforeEach(() => {
+/** Any place — no jurisdiction is baked into the route or this suite. */
+const CORRIDOR = {
+  type: "Polygon",
+  coordinates: [
+    [
+      [-121.1, 39.2],
+      [-121.0, 39.2],
+      [-121.0, 39.3],
+      [-121.1, 39.2],
+    ],
+  ],
+};
+
+const SUPPLIED_STAMP = {
+  version: "zone-attributes-v1",
+  status: "supplied",
+  storageRef: `storage://run-artifacts/model-runs/${MODEL_RUN_ID}/zone-attributes.json`,
+  sourceId: "us_census_acs5",
+  sourceLabel: "American Community Survey 2023 5-year (US Census Bureau)",
+  vintage: "2023",
+  keyOrigin: "workspace",
+  demographics: { status: "supplied", geographies: 42, reason: null },
+  equity: { status: "supplied", level: "tract", geographies: 42, reason: null },
+  reason: null,
+  geographyIndexTruncated: false,
+};
+
+/** The stamp a run launched before the workspace had a Census key carries. */
+const STALE_UNAVAILABLE_STAMP = {
+  ...SUPPLIED_STAMP,
+  status: "unavailable",
+  storageRef: null,
+  keyOrigin: "none",
+  demographics: {
+    status: "unavailable",
+    geographies: 0,
+    reason: "No US Census API key is available.",
+  },
+  equity: {
+    status: "unavailable",
+    level: null,
+    geographies: 0,
+    reason: "No US Census API key is available.",
+  },
+};
+
+function requeuePayload(): Record<string, unknown> {
+  return runUpdateMock.mock.calls[0][0] as Record<string, unknown>;
+}
+
+/** A relaunchable failed run, everything green. Shared by both suites below. */
+function givenARelaunchableRun() {
     vi.clearAllMocks();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
@@ -101,14 +186,18 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
       data: { id: MODEL_RUN_ID, status: "failed" },
       error: null,
     });
-    runUpdateMock.mockResolvedValue({ error: null });
+    runUpdateMock.mockResolvedValue({ data: { id: MODEL_RUN_ID }, error: null });
+    prepareWorkerZoneAttributesMock.mockResolvedValue(SUPPLIED_STAMP);
     stageSelectEqMock.mockResolvedValue({ data: [{ id: "stage-1" }], error: null });
     stageUpdateMock.mockResolvedValue({ error: null });
     stageInsertMock.mockResolvedValue({ error: null });
     artifactDeleteEqMock.mockResolvedValue({ error: null });
     kpiDeleteEqMock.mockResolvedValue({ error: null });
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
-  });
+}
+
+describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
+  beforeEach(givenARelaunchableRun);
 
   it("requeues a failed run with a NOT NULL-safe reset payload", async () => {
     const res = await relaunchRun(request(), routeContext());
@@ -194,12 +283,135 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
   });
 
   it("logs and 500s when the requeue update fails", async () => {
-    runUpdateMock.mockResolvedValue({ error: { message: "boom", code: "23502" } });
+    runUpdateMock.mockResolvedValue({ data: null, error: { message: "boom", code: "23502" } });
     const res = await relaunchRun(request(), routeContext());
     expect(res.status).toBe(500);
     expect(mockAudit.error).toHaveBeenCalledWith(
       "model_run_requeue_failed",
       expect.objectContaining({ code: "23502" }),
     );
+  });
+
+  it("answers a requeue that matched no rows as a policy gap, not a silent success", async () => {
+    // The route already read this exact row through the caller's own client and
+    // passed every membership check, so zero rows here is the database
+    // disagreeing with the application. Reporting it as a success would leave a
+    // run showing "queued" in the UI that no worker will ever claim.
+    runUpdateMock.mockResolvedValue({ data: null, error: null });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(500);
+    const body = (await res.json()) as { error: string; details: string };
+    expect(body.error).toMatch(/model run was not saved/i);
+    expect(body.details).toMatch(/row-level security/);
+  });
+});
+
+describe("relaunching rebuilds the demographics the run will be built from", () => {
+  beforeEach(() => {
+    givenARelaunchableRun();
+    runMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: MODEL_RUN_ID,
+        status: "failed",
+        engine_key: "aequilibrae",
+        corridor_geojson: CORRIDOR,
+        input_snapshot_json: { modelId: MODEL_ID, zoneAttributes: STALE_UNAVAILABLE_STAMP },
+      },
+      error: null,
+    });
+  });
+
+  it("replaces a stale 'no Census key' stamp instead of re-queueing it forever", async () => {
+    // The workspace has since added its key, so the rebuild answers. Before
+    // this, the run re-read the refusal above and failed identically however
+    // many times a planner pressed relaunch.
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(200);
+    expect(prepareWorkerZoneAttributesMock).toHaveBeenCalledTimes(1);
+    expect(prepareWorkerZoneAttributesMock.mock.calls[0][0]).toMatchObject({
+      modelRunId: MODEL_RUN_ID,
+      corridorGeojson: CORRIDOR,
+      zoneGeography: "tract",
+    });
+
+    const snapshot = requeuePayload().input_snapshot_json as Record<string, unknown>;
+    expect(snapshot.zoneAttributes).toEqual(SUPPLIED_STAMP);
+    // Everything else the original launch recorded survives the rebuild.
+    expect(snapshot.modelId).toBe(MODEL_ID);
+    // And the caller is told the recovery worked, rather than finding out from
+    // a worker failure minutes later.
+    expect(await res.json()).toMatchObject({
+      status: "queued",
+      zoneAttributes: { status: "supplied", keyOrigin: "workspace" },
+    });
+  });
+
+  it("rebuilds at the zone geography the run was originally built at", async () => {
+    runMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: MODEL_RUN_ID,
+        status: "failed",
+        engine_key: "aequilibrae",
+        corridor_geojson: CORRIDOR,
+        input_snapshot_json: { zoneGeography: "block_group" },
+      },
+      error: null,
+    });
+
+    await relaunchRun(request(), routeContext());
+
+    // A relaunch may not quietly change the resolution — and the stamp is
+    // written back so the worker's own resolve_zone_geography cannot resolve a
+    // different one from its environment than the app just fetched at.
+    expect(prepareWorkerZoneAttributesMock.mock.calls[0][0]).toMatchObject({
+      zoneGeography: "block_group",
+    });
+    const snapshot = requeuePayload().input_snapshot_json as Record<string, unknown>;
+    expect(snapshot.zoneGeography).toBe("block_group");
+  });
+
+  it("still queues the run, and says so, when the rebuild cannot read demographics", async () => {
+    prepareWorkerZoneAttributesMock.mockResolvedValue(STALE_UNAVAILABLE_STAMP);
+
+    const res = await relaunchRun(request(), routeContext());
+
+    // The worker may still have a key of its own, so this is a degraded run
+    // rather than a refused one — but the fresh reason is stamped and the
+    // caller is told, instead of the run looking healthy until it dies.
+    expect(res.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      zoneAttributes: { status: "unavailable", reason: "No US Census API key is available." },
+    });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "zone_attribute_handoff_unavailable",
+      expect.objectContaining({ status: "unavailable" }),
+    );
+  });
+
+  it("does not invent a demographics stamp for a run with no study area", async () => {
+    runMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: MODEL_RUN_ID,
+        status: "failed",
+        engine_key: "aequilibrae",
+        corridor_geojson: null,
+        input_snapshot_json: { modelId: MODEL_ID },
+      },
+      error: null,
+    });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    // Nothing to resolve demographics FOR. The worker refuses this run by name
+    // ("This run has no study area…"), which is the true reason; manufacturing
+    // a second one here would only bury it.
+    expect(res.status).toBe(200);
+    expect(prepareWorkerZoneAttributesMock).not.toHaveBeenCalled();
+    const snapshot = requeuePayload().input_snapshot_json as Record<string, unknown>;
+    expect(snapshot).toEqual({ modelId: MODEL_ID });
+    expect(await res.json()).toMatchObject({ zoneAttributes: null });
   });
 });
