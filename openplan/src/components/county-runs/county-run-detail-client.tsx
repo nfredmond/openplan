@@ -59,6 +59,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
     manifestPath: string;
     hasBearerToken: boolean;
   } | null>(null);
+  // Only the planner can clear the refusal below: whether a worker has since
+  // been configured is a fact about the deployment that this page cannot read.
+  const [workerConfiguredSinceLastAttempt, setWorkerConfiguredSinceLastAttempt] = useState(false);
   const [linkCopyState, setLinkCopyState] = useState<"idle" | "copied" | "error">("idle");
 
   const backTo = searchParams.get("backTo");
@@ -128,7 +131,20 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   const enqueueLabel = getCountyRunEnqueueStatusLabel(enqueueStatus);
   const enqueueTone = getCountyRunEnqueueStatusTone(enqueueStatus);
   const enqueueHelp = getCountyRunEnqueueHelpText(enqueueStatus);
-  const canEnqueue = enqueueStatus !== "submitted";
+  /**
+   * A previous attempt on this run proved there is no worker to hand it to.
+   *
+   * `prepared` comes from exactly one branch of `dispatchCountyOnrampJob` — the
+   * one where no county onramp worker URL is configured and no HTTP request is
+   * made — and the stored `worker_url` is null with it. So this is an observed
+   * fact about this deployment, not an inference from a run that is merely
+   * slow. Pressing the button again would build the identical payload and hand
+   * it to nothing, which is why the control refuses before it does that rather
+   * than reporting another success.
+   */
+  const lastAttemptReachedNoWorker = enqueueStatus === "prepared" && data.workerUrl == null;
+  const enqueueRefused = lastAttemptReachedNoWorker && !workerConfiguredSinceLastAttempt;
+  const canEnqueue = enqueueStatus !== "submitted" && !enqueueRefused;
 
   const runEnqueue = async () => {
     const result = await enqueue(countyRunId);
@@ -164,7 +180,11 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             Refresh
           </Button>
           <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
-            {enqueueStatus === "submitted" ? "Worker submitted" : "Prepare run handoff"}
+            {enqueueStatus === "submitted"
+              ? "Worker submitted"
+              : enqueueRefused
+                ? "No worker to hand this to"
+                : "Prepare run handoff"}
           </Button>
           <Button asChild variant="outline">
             <Link href={safeBackHref}>Back to county runs</Link>
@@ -173,7 +193,44 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             {linkCopyState === "copied" ? "Copied detail link" : "Copy page link"}
           </Button>
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>
+        {/* The stored status alone cannot tell these two apart: "prepared" reads
+            as background execution, and on a deployment with no worker it means
+            the opposite. The record knows which one this is, so the record's
+            wording wins over the generic label. */}
+        {lastAttemptReachedNoWorker ? (
+          <div
+            data-testid="county-enqueue-refusal"
+            className="mt-3 rounded-xl border border-amber-300/80 bg-amber-50/70 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
+          >
+            <p className="font-semibold">
+              This handoff was prepared, not submitted — nothing is going to run it
+            </p>
+            <p className="mt-2">
+              The last attempt found no county onramp worker configured on this deployment, so no
+              request was made and no bootstrap started. The payload below is complete and usable:
+              an operator can run <code>scripts/modeling/bootstrap_county_validation_onramp.py</code>{" "}
+              and POST the resulting manifest to the callback URL, and this page will pick it up.
+              Configuring a worker instead is described in{" "}
+              <code>workers/county_onramp_worker/DEPLOY.md</code>. Nothing about this workspace or
+              this county is blocking it, and there is nothing to buy — OpenPlan is free.
+            </p>
+            <label className="mt-3 flex items-start gap-2 text-xs">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4 rounded border-border"
+                checked={workerConfiguredSinceLastAttempt}
+                onChange={(event) => setWorkerConfiguredSinceLastAttempt(event.target.checked)}
+              />
+              <span>
+                A county onramp worker has been configured on this deployment since that attempt —
+                prepare the handoff again. (This page reads the stored result, not the deployment&apos;s
+                environment, so only you can tell it that changed.)
+              </span>
+            </label>
+          </div>
+        ) : (
+          <p className="mt-3 text-sm text-muted-foreground">{enqueueHelp}</p>
+        )}
         {stageReasonLabel ? (
           <p className="mt-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Why this stage:</span> {stageReasonLabel}
@@ -200,8 +257,16 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         {enqueueState ? (
           <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
             <div className="font-medium text-foreground">
-              {enqueueState.status === "submitted" ? "Bootstrap handoff submitted" : "Bootstrap handoff prepared"}
+              {enqueueState.status === "submitted"
+                ? "Bootstrap handoff submitted to the worker"
+                : "Bootstrap handoff prepared — nothing was submitted"}
             </div>
+            {enqueueState.status === "prepared" ? (
+              <div className="mt-1">
+                No county onramp worker is configured on this deployment, so this payload is waiting
+                for a person to run it. It will not start on its own.
+              </div>
+            ) : null}
             <div className="mt-1 break-all">Callback: {enqueueState.manifestIngestUrl}</div>
             <div className="mt-1 break-all">Manifest: {enqueueState.manifestPath}</div>
             <div className="mt-1">Callback bearer: {enqueueState.hasBearerToken ? "configured" : "not configured"}</div>

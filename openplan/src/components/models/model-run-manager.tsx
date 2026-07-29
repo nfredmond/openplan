@@ -18,6 +18,12 @@ import { ModelRunEngagementPanel } from "@/components/models/model-run-engagemen
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
+import {
+  IN_PROCESS_ENGINE_KEYS,
+  assessWorkerLaunchReadiness,
+  describeWorkerAbsenceEvidence,
+  isWorkerBackedEngineKey,
+} from "@/lib/models/worker-backed-launch";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 const TrafficVolumeMap = dynamic(
@@ -269,8 +275,14 @@ export function ModelRunManager({
   const [error, setError] = useState<string | null>(null);
   // Non-silent handoff notice — e.g. a large sketch study area rerouted to the
   // async AequilibraE worker. Surfaced immediately so the operator knows why a
-  // "fast" run is now queued on the worker.
-  const [launchNotice, setLaunchNotice] = useState<string | null>(null);
+  // "fast" run is now queued on the worker. `queuedOnWorker` records that the
+  // run left this app's process, because that changes what the notice means:
+  // it is now waiting on infrastructure the app cannot see.
+  const [launchNotice, setLaunchNotice] = useState<{ message: string; queuedOnWorker: boolean } | null>(null);
+  // Set only by the planner, and only from the refusal below. The app cannot
+  // observe a worker being started — it can only be told — so the person who
+  // did it is the one who clears the refusal.
+  const [workerStartedSinceThoseRuns, setWorkerStartedSinceThoseRuns] = useState(false);
 
   const selectedScenarioEntry = useMemo(
     () => scenarioEntries.find((entry) => entry.id === scenarioEntryId) ?? null,
@@ -281,9 +293,7 @@ export function ModelRunManager({
   // the aequilibrae engine and the behavioral_demand preflight (whose screening
   // stages are AequilibraE-run).
   const supportsCalibration = engineKey === "aequilibrae" || engineKey === "behavioral_demand";
-  // "preflight" is launchable (it runs an honest input-validation / runtime-staging
-  // preflight); only "prototype" keeps the launch button disabled.
-  const launchDisabled = isLaunching || schemaPending || selectedRunMode.availability === "prototype";
+  const engineNeedsWorker = isWorkerBackedEngineKey(engineKey);
 
   async function handleLaunch() {
     setError(null);
@@ -315,13 +325,24 @@ export function ModelRunManager({
         }),
       });
 
-      const payload = (await response.json()) as { error?: string; notice?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        notice?: string;
+        reroutedFrom?: string;
+      };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to launch managed model run");
       }
 
       if (typeof payload.notice === "string" && payload.notice.trim()) {
-        setLaunchNotice(payload.notice.trim());
+        setLaunchNotice({
+          message: payload.notice.trim(),
+          // A reroute is the server telling us it moved this run onto the
+          // worker queue. Whatever the planner picked, the run is now worker-
+          // backed, and the notice has to say so rather than read as a routine
+          // "this will take a bit longer".
+          queuedOnWorker: Boolean(payload.reroutedFrom),
+        });
       }
 
       router.refresh();
@@ -354,6 +375,30 @@ export function ModelRunManager({
     () => (now ? modelRuns.filter((run) => isRunStuck(run, now)) : []),
     [modelRuns, now]
   );
+
+  /**
+   * Refuse-before-enqueue for the worker-backed engines.
+   *
+   * `modelRuns` arrives newest-first and already reflects the reap, so the same
+   * rows that tell the history tell whether anything has been executing it.
+   * `now` is 0 until the poll timer runs (React render may not read a clock),
+   * and null means "no clock yet" to the assessment rather than "epoch".
+   */
+  const workerReadiness = useMemo(
+    () => assessWorkerLaunchReadiness(modelRuns, now > 0 ? now : null),
+    [modelRuns, now]
+  );
+  const workerAbsenceEvidence = describeWorkerAbsenceEvidence(workerReadiness);
+  const workerRefusesLaunch = engineNeedsWorker && workerAbsenceEvidence !== null;
+  // "preflight" is launchable (it runs an honest input-validation / runtime-staging
+  // preflight); only "prototype" keeps the launch button disabled outright. The
+  // worker refusal is the other block, and unlike a prototype it is clearable by
+  // the one person who can know the thing this app cannot observe.
+  const launchDisabled =
+    isLaunching ||
+    schemaPending ||
+    selectedRunMode.availability === "prototype" ||
+    (workerRefusesLaunch && !workerStartedSinceThoseRuns);
 
   return (
     <article className="module-section-surface">
@@ -442,6 +487,28 @@ export function ModelRunManager({
               <p className="mt-2 text-muted-foreground">
                 <span className="text-foreground">Caveat:</span> {selectedRunMode.caveatSummary}
               </p>
+              {engineNeedsWorker ? (
+                <p className="mt-2 text-muted-foreground">
+                  <span className="text-foreground">Where it runs:</span> not in this app. Launching
+                  queues the run for a separate AequilibraE processing worker, which whoever operates
+                  this deployment has to be running for it to finish.
+                </p>
+              ) : null}
+              {engineKey === "sketch_abm" ? (
+                /* The in-app lane is only in-app up to a point. Above the launch
+                   route's zone cap a sketch run is handed to the same worker
+                   queue, which for a mid-size city is the normal case, not an
+                   edge case — so the dependency is stated before the click. The
+                   cap itself is deliberately not repeated here: the route owns
+                   that number and states it in the reroute notice, and a second
+                   copy in the UI is a number that can silently drift. */
+                <p className="mt-2 text-muted-foreground">
+                  <span className="text-foreground">Where it runs:</span> in-process for study areas
+                  within the sketch lane&apos;s zone cap. A larger area — a mid-size city or a metro —
+                  is handed to the AequilibraE worker queue instead, so it depends on a processing
+                  worker the same way Fast Screening does. The launch tells you when that happens.
+                </p>
+              ) : null}
               {engineKey === "ite_trip_generation" ? (
                 <p className="mt-2 text-muted-foreground">
                   <span className="text-foreground">Input:</span> this engine ignores query text and
@@ -592,9 +659,23 @@ export function ModelRunManager({
           ) : null}
 
           {launchNotice ? (
-            <p className="rounded-[0.5rem] border border-sky-300/80 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200">
-              {launchNotice}
-            </p>
+            <div
+              className={
+                launchNotice.queuedOnWorker && workerAbsenceEvidence
+                  ? "rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
+                  : "rounded-[0.5rem] border border-sky-300/80 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200"
+              }
+            >
+              <p>{launchNotice.message}</p>
+              {launchNotice.queuedOnWorker ? (
+                <p className="mt-2">
+                  That queue is served by the AequilibraE worker, not by this app.{" "}
+                  {workerAbsenceEvidence
+                    ? `${workerAbsenceEvidence} Unless a worker has been started on this deployment since then, this run will sit queued and then be failed rather than finishing.`
+                    : "It finishes only while a worker is polling this deployment."}
+                </p>
+              ) : null}
+            </div>
           ) : null}
 
           {selectedRunMode.availability === "prototype" ? (
@@ -607,13 +688,82 @@ export function ModelRunManager({
             </div>
           ) : null}
 
+          {/* The refusal. It fires BEFORE the enqueue, because after it there is
+              nothing left to say that is not either a false success or a
+              fifteen-minute-late failure. It names what was observed, names the
+              deployment operator as the party who acts — never a plan, a tier
+              or an upgrade, none of which exist here — and hands over the lanes
+              that do run, so a refusal is never a dead end. */}
+          {workerRefusesLaunch ? (
+            <div
+              data-testid="worker-launch-refusal"
+              className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
+            >
+              {/* The heading may claim no more than the rows underneath it do.
+                  Whether a worker process exists is unobservable from here — the
+                  worker polls and has no heartbeat — so the heading states the
+                  observation (nothing picked these runs up) rather than the
+                  conclusion (there is no worker), which would be the same
+                  confidently-wrong answer in the opposite direction. */}
+              <p className="font-semibold">
+                {selectedRunMode.label} needs a processing worker, and nothing has been picking up
+                the worker-backed runs on this model
+              </p>
+              <p className="mt-2">
+                {selectedRunMode.label} does not run inside OpenPlan. Launching it puts stages on a
+                queue that a separate AequilibraE worker polls and executes. {workerAbsenceEvidence}{" "}
+                That is what an absent worker looks like: this launch would report success, the run
+                would sit queued, and it would be failed some minutes later with nothing to show.
+              </p>
+              <p className="mt-2">
+                Nothing about this workspace, this account or this study area is blocking it, and
+                there is nothing to buy — OpenPlan is free. Whoever operates this deployment starts
+                the worker; the steps are in <code>workers/aequilibrae_worker/DEPLOY.md</code>.
+              </p>
+              <p className="mt-3 font-semibold">These run modes execute in this app right now:</p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {IN_PROCESS_ENGINE_KEYS.map((inProcessKey) => (
+                  <Button
+                    key={inProcessKey}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEngineKey(inProcessKey)}
+                  >
+                    Switch to {getManagedRunModeDefinition(inProcessKey).label}
+                  </Button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs">
+                One caveat on the sketch lane: it runs in-process only up to its zone cap. A study
+                area above that cap is handed to this same worker queue, so a metro-scale sketch run
+                depends on the worker too.
+              </p>
+              <label className="mt-3 flex items-start gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 h-4 w-4 rounded border-border"
+                  checked={workerStartedSinceThoseRuns}
+                  onChange={(event) => setWorkerStartedSinceThoseRuns(event.target.checked)}
+                />
+                <span>
+                  A modeling worker has been started on this deployment since those runs — queue this
+                  one anyway. (The worker is a poller with no heartbeat, so OpenPlan cannot see that
+                  for itself; only you can tell it.)
+                </span>
+              </label>
+            </div>
+          ) : null}
+
           <Button type="button" onClick={() => void handleLaunch()} disabled={launchDisabled}>
             {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            {selectedRunMode.availability === "launchable"
-              ? "Launch managed run"
-              : selectedRunMode.availability === "preflight"
-                ? "Launch preflight run"
-                : `${selectedRunMode.label} launch not yet available`}
+            {workerRefusesLaunch && !workerStartedSinceThoseRuns
+              ? "Launch refused — nothing has been picking these runs up"
+              : selectedRunMode.availability === "launchable"
+                ? "Launch managed run"
+                : selectedRunMode.availability === "preflight"
+                  ? "Launch preflight run"
+                  : `${selectedRunMode.label} launch not yet available`}
           </Button>
         </div>
 
