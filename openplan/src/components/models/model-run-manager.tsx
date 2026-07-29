@@ -81,6 +81,16 @@ type ModelRunManagerProps = {
   modelTitle: string;
   defaultQueryText: string;
   defaultCorridorText: string;
+  /**
+   * Where `defaultCorridorText` came from — "this project's study area", "this
+   * workspace's home geography", and so on.
+   *
+   * An inherited study area that does not say where it came from is a silent
+   * assumption about what is being analysed, so this is shown whenever the area
+   * was not picked here. Optional because the value is null when nothing was
+   * inherited, which is also the only honest thing to display then.
+   */
+  studyAreaOriginLabel?: string | null;
   scenarioEntries: ScenarioEntryOption[];
   modelRuns: ManagedModelRun[];
   schemaPending: boolean;
@@ -235,6 +245,7 @@ export function ModelRunManager({
   modelTitle,
   defaultQueryText,
   defaultCorridorText,
+  studyAreaOriginLabel = null,
   scenarioEntries,
   modelRuns,
   schemaPending,
@@ -545,7 +556,20 @@ export function ModelRunManager({
 
           <div className="space-y-1.5">
             <label className="text-[0.82rem] font-semibold">Study area</label>
-            <StudyAreaPicker corridorText={corridorText} onCorridorChange={setCorridorText} />
+            <StudyAreaPicker
+              corridorText={corridorText}
+              onCorridorChange={setCorridorText}
+              // Only while the inherited area is still the one in the box. The
+              // moment a planner changes it, saying where the OLD one came from
+              // would be describing something that is no longer on screen.
+              externalLabel={corridorText === defaultCorridorText ? studyAreaOriginLabel : null}
+            />
+            {studyAreaOriginLabel && corridorText === defaultCorridorText ? (
+              <p className="text-xs text-muted-foreground">
+                Starting from {studyAreaOriginLabel}. Change it here to run somewhere else — this
+                does not alter the source.
+              </p>
+            ) : null}
             <details className="mt-1 rounded-[0.5rem] border border-border/60 bg-background/60 px-3 py-2">
               <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
                 Advanced: edit raw corridor GeoJSON

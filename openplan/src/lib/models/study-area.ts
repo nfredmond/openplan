@@ -6,8 +6,7 @@
 import { placeKindSchema, type PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { corridorGeojsonSchema, type CorridorGeojson } from "@/lib/models/run-launch";
 import {
-  homeGeographyBbox,
-  homeGeographyLabel,
+  placeOfRecordFromHomeGeography,
   TIGERWEB_GEOGRAPHY_SOURCE,
   type WorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
@@ -157,16 +156,10 @@ export function studyAreaPrefillFromHomeGeography(
 ): StudyAreaPrefill {
   if (!geo) return EMPTY_STUDY_AREA_PREFILL;
 
-  return studyAreaPrefillFrom({
-    source: geo.home_geography_source ?? null,
-    kind: geo.home_geography_kind ?? null,
-    ref: geo.home_geography_ref ?? null,
-    label: homeGeographyLabel(geo),
-    countryCode: geo.home_country_code ?? null,
-    subdivisionCode: geo.home_subdivision_code ?? null,
-    bbox: homeGeographyBbox(geo),
-    geometry: geo.home_geometry_geojson,
-  });
+  // The narrowing lives in `home-geography.ts` beside the columns it reads, so
+  // that this module and `resolveStudyArea` cannot disagree about what a
+  // workspace's place of record is.
+  return studyAreaPrefillFrom(placeOfRecordFromHomeGeography(geo));
 }
 
 /**

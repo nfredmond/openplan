@@ -9,7 +9,14 @@ import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { isPassingCountyRunGateStatus } from "@/lib/models/county-onramp";
-import { extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
+import { corridorGeojsonSchema, extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
+import { resolveStudyArea } from "@/lib/models/study-area";
+import { placeOfRecordFromProject } from "@/lib/projects/project-place";
+import {
+  HOME_GEOGRAPHY_COLUMNS,
+  parseWorkspaceHomeGeography,
+  placeOfRecordFromHomeGeography,
+} from "@/lib/workspaces/home-geography";
 import { reconcileStaleModelRuns } from "@/lib/models/run-reconcile";
 import type { ReaperRun } from "@/lib/models/run-reaper";
 import { loadModelRunClaimStatuses, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
@@ -101,12 +108,24 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     notFound();
   }
 
-  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult, scenarioAssumptionSetsResult, scenarioDataPackagesResult, scenarioIndicatorSnapshotsResult] =
+  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult, scenarioAssumptionSetsResult, scenarioDataPackagesResult, scenarioIndicatorSnapshotsResult, workspaceResult] =
     await Promise.all([
       supabase.from("projects").select("id, name").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
       supabase.from("scenario_sets").select("id, title").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
       model.project_id
-        ? supabase.from("projects").select("id, name, status, delivery_phase, summary, updated_at").eq("id", model.project_id).maybeSingle()
+        ? supabase
+            .from("projects")
+            // Spelled out rather than interpolating PROJECT_PLACE_COLUMNS: a
+            // template literal breaks supabase-js inference, and a projection
+            // this guard cannot read as a literal is one
+            // reference-count-projection-guard.test.ts silently stops checking.
+            // The full place row INCLUDING geometry — the scope variant omits
+            // it deliberately, and geometry is what makes an area seedable.
+            .select(
+              "id, name, status, delivery_phase, summary, updated_at, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+            )
+            .eq("id", model.project_id)
+            .maybeSingle()
         : Promise.resolve({ data: null, error: null }),
       model.scenario_set_id
         ? supabase
@@ -135,7 +154,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       supabase
         .from("model_runs")
         .select(
-          "id, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, started_at, completed_at, created_at, updated_at, stages:model_run_stages(id, stage_name, status, started_at, completed_at, updated_at, error_message, log_tail), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes)"
+          "id, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, corridor_geojson, started_at, completed_at, created_at, updated_at, stages:model_run_stages(id, stage_name, status, started_at, completed_at, updated_at, error_message, log_tail), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes)"
         )
         .eq("model_id", model.id)
         .order("created_at", { ascending: false })
@@ -158,6 +177,10 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
             .select("snapshot_at")
             .eq("scenario_set_id", model.scenario_set_id)
         : Promise.resolve({ data: [], error: null }),
+      // The workspace's own place of record — the last fallback a model run
+      // inherits when neither the model nor its project carries an area. Same
+      // read as county-runs/page.tsx and safety/page.tsx.
+      supabase.from("workspaces").select(HOME_GEOGRAPHY_COLUMNS).eq("id", model.workspace_id).maybeSingle(),
     ]);
 
   const { data: workspaceCountyRuns } = await supabase
@@ -465,8 +488,36 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     status: entry.status,
     assumptionCount: Object.keys(entry.assumptions_json ?? {}).length,
   }));
-  const defaultCorridorText = launchTemplate.corridorGeojson
-    ? JSON.stringify(launchTemplate.corridorGeojson, null, 2)
+  /**
+   * Which study area this model's run form opens with.
+   *
+   * Before this, the picker here opened EMPTY while Explore, Safety and county
+   * runs all opened on something the workspace had already told the app — so a
+   * planner who had set their county, and then set a study area on the project,
+   * still had to find and re-pick the same boundary to launch a model run.
+   *
+   * Precedence is `resolveStudyArea`'s, and the first candidate is the model's
+   * OWN launch template, which outranks the rest: an area deliberately
+   * configured for this model must not be replaced by a project-wide one just
+   * because a project-wide one exists. So this cannot change what any existing
+   * model opens with; it only fills a blank.
+   *
+   * Seeded into initial state rather than applied by an effect — this page is
+   * server-rendered, so `useState(initial)` already satisfies "applied once,
+   * into an empty field, never over a user's edit". The `prefillAppliedRef`
+   * pattern in `use-explore-home-geography.ts` exists because Explore fetches
+   * its geography client-side, after the field is already on screen.
+   */
+  const previousRun = ((modelRunsResult.data ?? []) as Array<{ corridor_geojson?: unknown }>)[0];
+  const studyArea = resolveStudyArea({
+    existing: launchTemplate.corridorGeojson,
+    project: placeOfRecordFromProject(primaryProjectResult.data as Parameters<typeof placeOfRecordFromProject>[0]),
+    workspaceHome: placeOfRecordFromHomeGeography(parseWorkspaceHomeGeography(workspaceResult.data)),
+    previousRun: corridorGeojsonSchema.safeParse(previousRun?.corridor_geojson).data ?? null,
+  });
+
+  const defaultCorridorText = studyArea.geometry
+    ? JSON.stringify(studyArea.geometry, null, 2)
     : "";
 
   return (
@@ -604,6 +655,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               modelTitle={model.title}
               defaultQueryText={launchTemplate.queryText ?? ""}
               defaultCorridorText={defaultCorridorText}
+              studyAreaOriginLabel={studyArea.originLabel}
               scenarioEntries={scenarioEntryOptions}
               modelRuns={modelRuns}
               schemaPending={modelRunsSchemaPending}

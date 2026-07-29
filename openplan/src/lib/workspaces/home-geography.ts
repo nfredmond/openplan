@@ -25,6 +25,7 @@
 
 import type { PlaceBoundaryResponse, PlaceKind } from "@/lib/api/place-geographies";
 import { stateUspsFromFips } from "@/lib/geographies/state-fips";
+import { EMPTY_PLACE_OF_RECORD, type PlaceOfRecord } from "@/lib/geographies/place-of-record";
 
 /**
  * The home-geography columns on `workspaces`
@@ -316,6 +317,32 @@ export function resolveJurisdiction(
 /** Display name for the home geography, or `null` — never a placeholder place. */
 export function homeGeographyLabel(geo: WorkspaceHomeGeography | null | undefined): string | null {
   return geo?.home_geography_label?.trim() || null;
+}
+
+/**
+ * Narrow the `home_*` columns into the shared, owner-agnostic place shape.
+ *
+ * The mirror of `placeOfRecordFromProject` in `lib/projects/project-place.ts`.
+ * It exists so that anything working on a PLACE — study-area prefill, county
+ * derivation, tract coverage — takes ONE shape from both owners instead of one
+ * overload per owner. `resolveStudyArea` is the first caller to need both in
+ * the same expression, which is what made the asymmetry worth removing.
+ */
+export function placeOfRecordFromHomeGeography(
+  geo: WorkspaceHomeGeography | null | undefined
+): PlaceOfRecord {
+  if (!geo) return EMPTY_PLACE_OF_RECORD;
+
+  return {
+    source: geo.home_geography_source ?? null,
+    kind: geo.home_geography_kind ?? null,
+    ref: geo.home_geography_ref ?? null,
+    label: homeGeographyLabel(geo),
+    countryCode: geo.home_country_code ?? null,
+    subdivisionCode: geo.home_subdivision_code ?? null,
+    bbox: homeGeographyBbox(geo),
+    geometry: geo.home_geometry_geojson,
+  };
 }
 
 // ---------------------------------------------------------------------------
