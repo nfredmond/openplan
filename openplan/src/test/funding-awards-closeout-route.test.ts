@@ -261,7 +261,10 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
           invoice_date: "2026-04-01",
         },
         {
-          status: "approved",
+          // The real enum value. This fixture said "approved", a status
+          // `billing_invoice_records` has never allowed, which is why the route
+          // could bucket on it and still look tested.
+          status: "approved_for_payment",
           amount: 200_000,
           retention_percent: 0,
           retention_amount: 0,
@@ -304,6 +307,78 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     expect(awardUpdateMock).not.toHaveBeenCalled();
     expect(milestonesInsertMock).not.toHaveBeenCalled();
     expect(rebuildProjectRtpPostureMock).not.toHaveBeenCalled();
+  });
+
+  it("counts an approved-for-payment invoice as money in flight, not as an unsubmitted draft", async () => {
+    // `billing_invoice_records.status` is
+    // draft | internal_review | submitted | approved_for_payment | paid | rejected.
+    // Every one of the non-paid, non-rejected statuses appears here so the
+    // refusal's own explanation can be checked against the whole enum rather
+    // than the two values the route used to recognize.
+    invoicesEqSecondMock.mockResolvedValue({
+      data: [
+        { status: "paid", amount: 400_000, retention_percent: 0, retention_amount: 0, net_amount: 400_000, due_date: null, invoice_date: "2026-04-01" },
+        { status: "approved_for_payment", amount: 200_000, retention_percent: 0, retention_amount: 0, net_amount: 200_000, due_date: null, invoice_date: "2026-04-15" },
+        { status: "submitted", amount: 60_000, retention_percent: 0, retention_amount: 0, net_amount: 60_000, due_date: null, invoice_date: "2026-04-16" },
+        { status: "internal_review", amount: 40_000, retention_percent: 0, retention_amount: 0, net_amount: 40_000, due_date: null, invoice_date: "2026-04-17" },
+        { status: "draft", amount: 50_000, retention_percent: 0, retention_amount: 0, net_amount: 50_000, due_date: null, invoice_date: "2026-04-20" },
+        { status: "rejected", amount: 25_000, retention_percent: 0, retention_amount: 0, net_amount: 25_000, due_date: null, invoice_date: "2026-04-21" },
+      ],
+      error: null,
+    });
+
+    const response = await postCloseout(closeoutRequest(), context());
+    expect(response.status).toBe(422);
+    const json = await response.json();
+
+    expect(json.coverage.invoiceStatusBreakdown).toEqual({
+      paidCount: 1,
+      paidAmount: 400_000,
+      // approved_for_payment + submitted + internal_review — the same
+      // "outstanding" set every other funding surface uses.
+      activeCount: 3,
+      activeAmount: 300_000,
+      draftCount: 1,
+      draftAmount: 50_000,
+    });
+    // Approved for payment is a promise from the funder, not a deposit, so it
+    // may never be counted toward the coverage that permits a close-out.
+    expect(json.coverage.paidAmount).toBe(400_000);
+    // The rejected invoice is in no bucket, so the three counts total five of
+    // the six linked invoices rather than all six.
+    const breakdown = json.coverage.invoiceStatusBreakdown;
+    expect(breakdown.paidCount + breakdown.activeCount + breakdown.draftCount).toBe(5);
+    expect(awardUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("reports the same net amount in its breakdown that it used to compute coverage", async () => {
+    // `net_amount` is a plain stored column with DEFAULT 0, not a generated one.
+    // A row written by anything other than the invoicing composer can carry a
+    // zero there while `amount` and the retention fields are correct. The
+    // breakdown used to print that zero next to a coverage figure computed from
+    // amount-minus-retention — two different numbers for the same money.
+    invoicesEqSecondMock.mockResolvedValue({
+      data: [
+        {
+          status: "paid",
+          amount: 1_000_000,
+          retention_percent: 10,
+          retention_amount: 100_000,
+          net_amount: 0,
+          due_date: null,
+          invoice_date: "2026-04-01",
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postCloseout(closeoutRequest(), context());
+    expect(response.status).toBe(422);
+    const json = await response.json();
+
+    expect(json.coverage.paidAmount).toBe(900_000);
+    expect(json.coverage.outstandingAmount).toBe(100_000);
+    expect(json.coverage.invoiceStatusBreakdown.paidAmount).toBe(json.coverage.paidAmount);
   });
 
   it("returns 404 when the award does not exist", async () => {

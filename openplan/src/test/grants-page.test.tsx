@@ -90,6 +90,10 @@ const fromMock = vi.fn((table: string) => {
 
 vi.mock("next/navigation", () => ({
   redirect: (...args: unknown[]) => redirectMock(...args),
+  // The awards lane now renders the award close-out control, a client component
+  // that calls useRouter().refresh() after a close-out lands. Rendering the page
+  // reaches that hook, so the navigation mock has to answer it.
+  useRouter: () => ({ refresh: () => {} }),
 }));
 
 vi.mock("next/link", () => ({
@@ -599,6 +603,44 @@ describe("GrantsPage", () => {
     );
     // A posture vocabulary nobody chose is disclosed, never presented as chosen.
     expect(screen.getByText(new RegExp(INTERIM_DEFAULT_RATIONALE.slice(0, 40)))).toBeInTheDocument();
+  });
+
+  it("offers award close-out to a member, the role the close-out route already accepts", async () => {
+    // The control shipped with no caller passing its permission prop, so the
+    // section fell back to `invoices.write` (owner/admin) for an action
+    // `POST /api/funding-awards/[awardId]/closeout` authorizes on
+    // `programs.write` (owner/admin/member). Every member on every workspace
+    // saw an award they were entitled to close with no way to close it, and
+    // nothing failed loudly enough to notice. This test is the alarm: it goes
+    // red the moment the page stops handing this section the close-out
+    // permission it computes.
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: "workspace-1", role: "member" },
+      workspace: { id: "workspace-1", name: "OpenPlan QA" },
+    });
+    seedComposerStackAward();
+
+    await renderPage();
+
+    expect(screen.getByRole("button", { name: "Close out award" })).toBeInTheDocument();
+  });
+
+  it("withholds award close-out from a viewer, the role the close-out route refuses", async () => {
+    // The other direction of the same gate: the fix must be the real
+    // `programs.write` answer, not a constant `true` that would offer a
+    // read-only member a button the server is going to refuse.
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: "workspace-1", role: "viewer" },
+      workspace: { id: "workspace-1", name: "OpenPlan QA" },
+    });
+    seedComposerStackAward();
+
+    await renderPage();
+
+    expect(screen.queryByRole("button", { name: "Close out award" })).toBeNull();
+    // Withheld, and said so as a fact about this view rather than about the
+    // reader — the route is still the authority on who may close an award.
+    expect(screen.getByText(/this view is not offering it/)).toBeInTheDocument();
   });
 
   it("resolves a jurisdiction-matched profile for the composer from the workspace's own home geography", async () => {

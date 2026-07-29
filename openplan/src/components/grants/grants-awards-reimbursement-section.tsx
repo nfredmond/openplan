@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { InvoiceTriageLinkCopy } from "@/components/invoicing/invoice-triage-link-copy";
 import { InvoiceRecordComposer } from "@/components/invoicing/invoice-record-composer";
+import { FundingAwardCloseoutPanel } from "@/components/grants/funding-award-closeout-control";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
 import {
@@ -67,6 +68,7 @@ export function GrantsAwardsReimbursementSection({
   activeFocusedProjectId,
   workspaceId,
   canWriteInvoices,
+  canCloseOutAwards,
 }: {
   fundingAwardsCount: number;
   fundingProjectStacks: ProjectFundingStack[];
@@ -89,6 +91,20 @@ export function GrantsAwardsReimbursementSection({
   activeFocusedProjectId: string | null;
   workspaceId: string;
   canWriteInvoices: boolean;
+  /**
+   * Whether this reader may record an award close-out — a different permission
+   * from `canWriteInvoices`, not a shade of it. The close-out route authorizes
+   * on `programs.write` (owner/admin/member); invoice writing is `invoices.write`
+   * (owner/admin).
+   *
+   * Required — not optional with a fallback to `canWriteInvoices` — because that
+   * fallback is exactly how this shipped broken: the only caller omitted the
+   * prop, the narrower invoice permission quietly stood in, and no member ever
+   * saw the control for an action the server would have accepted from them. A
+   * silent narrowing reads as caution and behaves as a defect; a required prop
+   * makes a caller that has not thought about it fail to compile.
+   */
+  canCloseOutAwards: boolean;
 }) {
   return (
     <article id="grants-awards-reimbursement" className="module-section-surface">
@@ -272,6 +288,22 @@ export function GrantsAwardsReimbursementSection({
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </div>
+
+                    {/*
+                      The last step of the money lifecycle, in the same place the
+                      first three already are. Without it an award that has been
+                      reimbursed to the dollar stays open forever, because the
+                      close-out route had no caller anywhere in the app.
+                    */}
+                    <FundingAwardCloseoutPanel
+                      projectName={item.project.name}
+                      awards={item.awards.map((award) => ({
+                        id: award.id,
+                        title: award.title,
+                        spendingStatus: award.spending_status,
+                      }))}
+                      canClose={canCloseOutAwards}
+                    />
                   </div>
                 </div>
               );

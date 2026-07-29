@@ -4,7 +4,10 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { rebuildProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
-import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
+import {
+  summarizeBillingInvoiceRecords,
+  type BillingInvoiceSummary,
+} from "@/lib/invoicing/invoice-records";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const awardIdSchema = z.object({
@@ -35,28 +38,51 @@ type CloseoutInvoiceCoverageBreakdown = {
   draftAmount: number;
 };
 
+/**
+ * The three buckets a close-out refusal explains itself with, read off the
+ * invoicing module's own summary of the same rows rather than re-derived here.
+ *
+ * This was a second, hand-rolled pass over the invoices, and it was wrong twice.
+ * It bucketed on the status `"approved"`, which `billing_invoice_records` has
+ * never permitted — the column's CHECK constraint allows
+ * `draft | internal_review | submitted | approved_for_payment | paid | rejected`
+ * — so every approved-for-payment invoice fell through to the residual bucket
+ * and was reported back to the planner as money that had not even been submitted
+ * for payment. And it valued each row as `net_amount ?? amount` while the
+ * coverage figure printed beside it came from `computeNetInvoiceAmount`.
+ * `net_amount` is a plain stored column with a `DEFAULT 0`, not a generated one:
+ * any row written by something other than the invoicing composer can carry a
+ * zero there, and the same invoice would then be worth $0 in the breakdown and
+ * its full retention-net value in the coverage figure — two different amounts
+ * for one planner's money, in one response.
+ *
+ * Deriving both from `summarizeBillingInvoiceRecords` makes that class of
+ * disagreement impossible: the breakdown's paid bucket IS the coverage figure,
+ * and "in the payment flow" means here exactly what it means on /grants,
+ * /invoicing and the project funding lane.
+ *
+ * Approved-for-payment sits with the in-flight invoices rather than the paid
+ * ones because the agency has not been reimbursed yet — a funder's approval is a
+ * promise, not a deposit, and counting it as paid would let an award close on
+ * money that never arrived. Rejected invoices are in no bucket at all, so the
+ * three counts deliberately need not add up to every invoice linked to the
+ * award: a rejected invoice is not money in this pipeline and never will be.
+ */
 function buildCloseoutInvoiceCoverageBreakdown(
-  invoices: Array<{ status?: string | null; net_amount?: number | string | null; amount?: number | string | null }>
+  summary: BillingInvoiceSummary
 ): CloseoutInvoiceCoverageBreakdown {
-  return invoices.reduce<CloseoutInvoiceCoverageBreakdown>(
-    (breakdown, invoice) => {
-      const amount = toNumber(invoice.net_amount ?? invoice.amount);
-
-      if (invoice.status === "paid") {
-        breakdown.paidCount += 1;
-        breakdown.paidAmount += amount;
-      } else if (invoice.status === "submitted" || invoice.status === "approved") {
-        breakdown.activeCount += 1;
-        breakdown.activeAmount += amount;
-      } else if (invoice.status !== "rejected") {
-        breakdown.draftCount += 1;
-        breakdown.draftAmount += amount;
-      }
-
-      return breakdown;
-    },
-    { paidCount: 0, paidAmount: 0, activeCount: 0, activeAmount: 0, draftCount: 0, draftAmount: 0 }
-  );
+  return {
+    paidCount: summary.paidCount,
+    paidAmount: summary.paidNetAmount,
+    // `submittedCount` is the summary's count of the outstanding triad
+    // (internal review / submitted / approved for payment), incremented in the
+    // same branch as `outstandingNetAmount`, so the count and the amount can
+    // never describe different sets of rows.
+    activeCount: summary.submittedCount,
+    activeAmount: summary.outstandingNetAmount,
+    draftCount: summary.draftCount,
+    draftAmount: summary.draftNetAmount,
+  };
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -148,8 +174,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load linked invoices" }, { status: 500 });
     }
 
+    // One read of the rows, one set of money numbers. The stored `net_amount`
+    // column is selected above for shape parity with the other invoice reads but
+    // deliberately not trusted here: the summary recomputes net from `amount`
+    // and the retention fields, which is the module's single definition of what
+    // an invoice is worth.
     const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRows ?? []);
-    const invoiceCoverageBreakdown = buildCloseoutInvoiceCoverageBreakdown(invoiceRows ?? []);
+    const invoiceCoverageBreakdown = buildCloseoutInvoiceCoverageBreakdown(invoiceSummary);
     const awardedAmount = toNumber(award.awarded_amount);
     const paidAmount = invoiceSummary.paidNetAmount;
     const coverageRatio = awardedAmount > 0 ? paidAmount / awardedAmount : 0;
