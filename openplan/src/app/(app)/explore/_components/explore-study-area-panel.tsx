@@ -5,7 +5,7 @@ import Link from "next/link";
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { parseCorridorText, type StudyAreaPrefill } from "@/lib/models/study-area";
+import { parseCorridorText, type ResolvedStudyArea } from "@/lib/models/study-area";
 import type { CorridorGeometry, HomeGeographyLoadState } from "./_types";
 
 /**
@@ -24,9 +24,16 @@ import type { CorridorGeometry, HomeGeographyLoadState } from "./_types";
  * and the run gate reads it, so a run behaves identically whichever way the area
  * was set. The picker is controlled around GeoJSON *text*, and that text is
  * DERIVED from the page's geometry rather than mirrored in local state — so an
- * area arriving from somewhere else entirely (a home-geography prefill, a
+ * area arriving from somewhere else entirely (an inherited study area, a
  * reloaded run) shows up in the picker with nothing to keep in step and nothing
  * to fall out of step.
+ *
+ * WHERE AN INHERITED AREA CAME FROM IS PART OF THE ANSWER. An area can now be
+ * inherited from the project this page was opened for as well as from the
+ * workspace's home geography, and those are different places. Showing the
+ * boundary without saying which one it is would let a county-wide study pass for
+ * a corridor-scoped one, so the origin is named here in prose AND handed to the
+ * picker as its `externalLabel`.
  *
  * WHAT IT MUST NOT SAY. Setting an area is not an analysis. The copy here says
  * what a selection does — defines the boundary — and leaves the claims about
@@ -39,19 +46,33 @@ type ExploreStudyAreaPanelProps = {
   /** Publishes a new study area, or `null` when it is cleared. */
   onCorridorChange: (geometry: CorridorGeometry | null) => void;
   /**
-   * The workspace's home geography as a study-area selection, from
-   * `studyAreaPrefillFromHomeGeography`. Applying it is the page's job; this
-   * panel only needs to recognize it so it can say where the area came from.
+   * What the shared precedence resolved to, from `resolveStudyArea`. Applying it
+   * is the page's job; this panel only needs to recognize it so it can say where
+   * the area came from.
    */
-  prefill: StudyAreaPrefill;
+  studyArea: ResolvedStudyArea;
   homeGeographyLoadState: HomeGeographyLoadState;
+  /**
+   * The project named in `?projectId=`, when it was read and belongs to this
+   * workspace — so an inherited project area can be attributed by name rather
+   * than as an anonymous boundary.
+   */
+  openedForProject: { id: string; name: string | null } | null;
+  /**
+   * Why the requested project's area is NOT the one on screen, when it isn't.
+   * Composed by the loader, which is the only thing that knows whether the row
+   * was missing, unreadable, foreign to this workspace, or simply arealess.
+   */
+  projectAreaNotice: string | null;
 };
 
 export function ExploreStudyAreaPanel({
   corridorGeojson,
   onCorridorChange,
-  prefill,
+  studyArea,
   homeGeographyLoadState,
+  openedForProject,
+  projectAreaNotice,
 }: ExploreStudyAreaPanelProps) {
   // What the picker shows is the study area itself, serialized — not a copy of
   // it that has to be kept honest.
@@ -76,8 +97,37 @@ export function ExploreStudyAreaPanel({
   }
 
   const hasStudyArea = corridorGeojson !== null;
-  const prefillIsCurrent = prefill.geometry !== null && corridorGeojson === prefill.geometry;
+
+  /**
+   * Whether the area on screen IS the inherited one — compared as text, not by
+   * object identity.
+   *
+   * Identity looks tempting and is wrong here. The resolver runs again the
+   * moment its second candidate arrives (the workspace's home geography is
+   * fetched after the project's area is already in hand), and re-parsing yields
+   * an EQUAL but not IDENTICAL boundary. Comparing references meant the
+   * attribution below — and the picker's label — disappeared a few hundred
+   * milliseconds after the page opened, leaving an inherited county-wide
+   * boundary on screen with nothing saying where it came from. `corridorText` is
+   * the resolver's own serialization of the same geometry, so this asks the
+   * question that actually matters: is this still that area?
+   */
+  const inheritedIsCurrent = studyArea.corridorText !== "" && corridorText === studyArea.corridorText;
+
+  // The upload keeps identity: nothing re-derives an uploaded file, so the
+  // object the panel handed up is the object it gets back.
   const uploadIsCurrent = uploadedGeometry !== null && corridorGeojson === uploadedGeometry;
+
+  // The place name in parentheses when the inherited area has one. A drawn
+  // project area has no name at all, and inventing "Custom study area" for it
+  // would hide that it was inherited rather than picked.
+  const inheritedPlace = studyArea.label ? ` (${studyArea.label})` : "";
+  const inheritedFromCopy =
+    studyArea.origin === "project"
+      ? `Prefilled from the study area of ${
+          openedForProject?.name ?? "the project this page was opened for"
+        }${inheritedPlace}. Change or clear it here — the project record itself is not affected.`
+      : `Prefilled from this workspace's home geography${inheritedPlace}. Change or clear it here — the workspace setting itself is not affected.`;
 
   return (
     <>
@@ -97,16 +147,27 @@ export function ExploreStudyAreaPanel({
         </div>
 
         <div className="analysis-studio-body">
-          {prefillIsCurrent ? (
-            <p className="analysis-studio-note">
-              {prefill.label
-                ? `Prefilled from this workspace's home geography (${prefill.label}).`
-                : "Prefilled from this workspace's home geography."}{" "}
-              Change or clear it here — the workspace setting itself is not affected.
-            </p>
+          {projectAreaNotice ? (
+            <div className="analysis-sidepanel-row is-warning">
+              <div className="analysis-sidepanel-main">
+                <p className="analysis-sidepanel-title">
+                  This did not open on the project&apos;s study area
+                </p>
+                <p className="analysis-sidepanel-body">{projectAreaNotice}</p>
+              </div>
+              {openedForProject ? (
+                <div className="analysis-sidepanel-actions">
+                  <Link className="underline underline-offset-2" href={`/projects/${openedForProject.id}`}>
+                    Open project record
+                  </Link>
+                </div>
+              ) : null}
+            </div>
           ) : null}
 
-          {homeGeographyLoadState === "loaded" && prefill.geometry === null && !hasStudyArea ? (
+          {inheritedIsCurrent ? <p className="analysis-studio-note">{inheritedFromCopy}</p> : null}
+
+          {homeGeographyLoadState === "loaded" && studyArea.origin === "none" && !hasStudyArea ? (
             <p className="analysis-studio-note">
               No home geography is set for this workspace, so nothing is preselected. A workspace owner
               or admin can set one on the{" "}
@@ -117,7 +178,7 @@ export function ExploreStudyAreaPanel({
             </p>
           ) : null}
 
-          {homeGeographyLoadState === "unavailable" ? (
+          {homeGeographyLoadState === "unavailable" && studyArea.origin !== "project" ? (
             <p className="analysis-studio-note">
               This workspace&apos;s home geography could not be checked, so nothing is preselected.
               Search for the place below.
@@ -127,9 +188,13 @@ export function ExploreStudyAreaPanel({
           <StudyAreaPicker
             corridorText={corridorText}
             onCorridorChange={handlePickerChange}
-            // The prefill and an uploaded file are areas the picker did not
-            // choose; only the prefill has a name the panel can vouch for.
-            externalLabel={prefillIsCurrent ? prefill.label : null}
+            // `originLabel`, not the bare place name: the resolver documents it
+            // as what the planner is TOLD about where the area came from. When
+            // the place has a name that name IS the label; when it does not,
+            // this says "this project's study area" rather than leaving an
+            // inherited boundary anonymous. An uploaded file is an area the
+            // panel cannot vouch for at all, so it carries no label.
+            externalLabel={inheritedIsCurrent ? studyArea.originLabel : null}
           />
         </div>
       </section>

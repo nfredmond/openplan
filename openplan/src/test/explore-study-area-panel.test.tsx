@@ -5,18 +5,23 @@ import { describe, expect, it, vi } from "vitest";
 import { ExploreStudyAreaPanel } from "@/app/(app)/explore/_components/explore-study-area-panel";
 import { canRunAnalysis } from "@/app/(app)/explore/_components/explore-page-state";
 import type { CorridorGeometry, HomeGeographyLoadState } from "@/app/(app)/explore/_components/_types";
+import { resolveStudyArea, type ResolvedStudyArea } from "@/lib/models/study-area";
+import { placeOfRecordFromProject } from "@/lib/projects/project-place";
 import {
-  EMPTY_STUDY_AREA_PREFILL,
-  studyAreaPrefillFromHomeGeography,
-  type StudyAreaPrefill,
-} from "@/lib/models/study-area";
-import type { WorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
+  placeOfRecordFromHomeGeography,
+  type WorkspaceHomeGeography,
+} from "@/lib/workspaces/home-geography";
 
 /**
  * Analysis Studio used to accept exactly one kind of study area: a `.geojson`
  * file from disk. This suite is about the promise that replaced it — a boundary
  * is a boundary, whichever of the three ways set it, and the run gate cannot
  * tell them apart.
+ *
+ * It now also pins the second half of that promise: an area the planner did not
+ * pick has to SAY where it came from. An inherited area can be the project's or
+ * the workspace's, those are different places, and a boundary shown without its
+ * origin lets a county-wide study pass for a corridor-scoped one.
  *
  * The geometries below are fixtures, not places the code knows about. Nothing in
  * `src/` names a jurisdiction; that is the point of the picker these tests stand
@@ -92,17 +97,25 @@ vi.mock("@/components/models/study-area-picker", () => ({
 
 const QUERY = "Assess safety, access, and equity conditions for this study area.";
 const WORKSPACE_ID = "11111111-1111-4111-8111-111111111111";
+const PROJECT_ID = "22222222-2222-4222-8222-222222222222";
+
+/** Nothing to inherit: what the panel gets when neither owner states an area. */
+const NOTHING_INHERITED = resolveStudyArea({});
 
 /** Mirrors the page: the study area lives above the panel, both inputs write it. */
 function Harness({
-  prefill = EMPTY_STUDY_AREA_PREFILL,
+  studyArea = NOTHING_INHERITED,
   homeGeographyLoadState = "loaded",
   initialGeometry = null,
+  openedForProject = null,
+  projectAreaNotice = null,
   onChange,
 }: {
-  prefill?: StudyAreaPrefill;
+  studyArea?: ResolvedStudyArea;
   homeGeographyLoadState?: HomeGeographyLoadState;
   initialGeometry?: CorridorGeometry | null;
+  openedForProject?: { id: string; name: string | null } | null;
+  projectAreaNotice?: string | null;
   onChange?: (geometry: CorridorGeometry | null) => void;
 }) {
   const [corridorGeojson, setCorridorGeojson] = useState<CorridorGeometry | null>(initialGeometry);
@@ -113,8 +126,10 @@ function Harness({
         onChange?.(geometry);
         setCorridorGeojson(geometry);
       }}
-      prefill={prefill}
+      studyArea={studyArea}
       homeGeographyLoadState={homeGeographyLoadState}
+      openedForProject={openedForProject}
+      projectAreaNotice={projectAreaNotice}
     />
   );
 }
@@ -142,6 +157,32 @@ function homeGeography(over: Partial<WorkspaceHomeGeography> = {}): WorkspaceHom
     home_geography_set_at: "2026-07-27T00:00:00.000Z",
     ...over,
   };
+}
+
+/** The same precedence the page applies, so these fixtures cannot drift from it. */
+function inheritedFromHome(): ResolvedStudyArea {
+  return resolveStudyArea({ workspaceHome: placeOfRecordFromHomeGeography(homeGeography()) });
+}
+
+function inheritedFromProject(over: Record<string, unknown> = {}): ResolvedStudyArea {
+  return resolveStudyArea({
+    project: placeOfRecordFromProject({
+      place_source: "tigerweb",
+      place_kind: "city",
+      place_ref: "9999999",
+      place_label: "Example City, ZZ",
+      place_country_code: "US",
+      place_subdivision_code: "ZZ",
+      place_min_lon: -97.9,
+      place_min_lat: 30.1,
+      place_max_lon: -97.5,
+      place_max_lat: 30.4,
+      place_geometry_geojson: fixtures.drawn,
+      place_set_at: "2026-07-28T00:00:00.000Z",
+      ...over,
+    }),
+    workspaceHome: placeOfRecordFromHomeGeography(homeGeography()),
+  });
 }
 
 describe("Explore study area panel", () => {
@@ -222,8 +263,8 @@ describe("Explore study area panel", () => {
   });
 
   it("opens on the workspace's home geography, named and attributed, when one is set", () => {
-    const prefill = studyAreaPrefillFromHomeGeography(homeGeography());
-    render(<Harness prefill={prefill} initialGeometry={prefill.geometry} />);
+    const studyArea = inheritedFromHome();
+    render(<Harness studyArea={studyArea} initialGeometry={studyArea.geometry} />);
 
     expect(screen.getByTestId("picker-text")).toHaveTextContent(JSON.stringify(fixtures.searched));
     expect(screen.getByTestId("picker-external-label")).toHaveTextContent("Example County, ZZ");
@@ -233,8 +274,82 @@ describe("Explore study area panel", () => {
     expect(screen.getByText("Study area set")).toBeInTheDocument();
   });
 
+  it("says the area came from the project, by name, when the project outranked the workspace", () => {
+    const studyArea = inheritedFromProject();
+    render(
+      <Harness
+        studyArea={studyArea}
+        initialGeometry={studyArea.geometry}
+        openedForProject={{ id: PROJECT_ID, name: "Broad Street corridor study" }}
+      />
+    );
+
+    // The project's boundary, not the workspace county's.
+    expect(screen.getByTestId("picker-text")).toHaveTextContent(JSON.stringify(fixtures.drawn));
+    expect(screen.getByTestId("picker-external-label")).toHaveTextContent("Example City, ZZ");
+    expect(
+      screen.getByText(
+        /Prefilled from the study area of Broad Street corridor study \(Example City, ZZ\)/
+      )
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Prefilled from this workspace's home geography/)
+    ).not.toBeInTheDocument();
+  });
+
+  it("still attributes an inherited project area that has no place name", () => {
+    // A hand-drawn project area has extent but no identity. There is no name to
+    // show, and inventing one would hide that the area was inherited at all.
+    const studyArea = inheritedFromProject({
+      place_source: "drawn",
+      place_kind: null,
+      place_ref: null,
+      place_label: null,
+    });
+    render(
+      <Harness
+        studyArea={studyArea}
+        initialGeometry={studyArea.geometry}
+        openedForProject={{ id: PROJECT_ID, name: "Broad Street corridor study" }}
+      />
+    );
+
+    expect(screen.getByTestId("picker-external-label")).toHaveTextContent("this project's study area");
+    expect(
+      screen.getByText(/Prefilled from the study area of Broad Street corridor study\./)
+    ).toBeInTheDocument();
+  });
+
+  it("keeps attributing the inherited area after the resolver re-derives it", () => {
+    // The resolver runs again when its second candidate arrives — the workspace
+    // home geography is fetched after the project's area is already in hand —
+    // and re-parsing produces an equal but not identical boundary. An identity
+    // comparison dropped the attribution at that moment, leaving an inherited
+    // area on screen with nothing saying where it came from.
+    const studyArea = inheritedFromHome();
+    const rederived = JSON.parse(JSON.stringify(studyArea.geometry)) as CorridorGeometry;
+    expect(rederived).not.toBe(studyArea.geometry);
+
+    render(<Harness studyArea={studyArea} initialGeometry={rederived} />);
+
+    expect(screen.getByTestId("picker-external-label")).toHaveTextContent("Example County, ZZ");
+    expect(
+      screen.getByText(/Prefilled from this workspace's home geography \(Example County, ZZ\)/)
+    ).toBeInTheDocument();
+  });
+
+  it("stops attributing the inherited area once the planner replaces it", () => {
+    const studyArea = inheritedFromHome();
+    render(<Harness studyArea={studyArea} initialGeometry={studyArea.geometry} />);
+
+    fireEvent.click(screen.getByText("draw-an-area"));
+
+    expect(screen.getByTestId("picker-external-label")).toHaveTextContent("");
+    expect(screen.queryByText(/Prefilled from/)).not.toBeInTheDocument();
+  });
+
   it("preselects nothing when the workspace has no home geography", () => {
-    render(<Harness prefill={EMPTY_STUDY_AREA_PREFILL} homeGeographyLoadState="loaded" />);
+    render(<Harness studyArea={NOTHING_INHERITED} homeGeographyLoadState="loaded" />);
 
     expect(screen.getByTestId("picker-text")).toHaveTextContent("");
     expect(screen.getByTestId("picker-external-label")).toHaveTextContent("");
@@ -243,10 +358,47 @@ describe("Explore study area panel", () => {
   });
 
   it("does not report an unreachable home geography as none being set", () => {
-    render(<Harness prefill={EMPTY_STUDY_AREA_PREFILL} homeGeographyLoadState="unavailable" />);
+    render(<Harness studyArea={NOTHING_INHERITED} homeGeographyLoadState="unavailable" />);
 
     expect(screen.getByText(/could not be checked/)).toBeInTheDocument();
     expect(screen.queryByText(/No home geography is set for this workspace/)).not.toBeInTheDocument();
+  });
+
+  it("does not claim nothing is preselected while showing the project's area", () => {
+    // Both statements could be true at once — the home lookup failed AND the
+    // project supplied an area — but "nothing is preselected" would be a plain
+    // falsehood about the boundary on screen.
+    const studyArea = inheritedFromProject();
+    render(
+      <Harness
+        studyArea={studyArea}
+        initialGeometry={studyArea.geometry}
+        homeGeographyLoadState="unavailable"
+        openedForProject={{ id: PROJECT_ID, name: "Broad Street corridor study" }}
+      />
+    );
+
+    expect(screen.queryByText(/could not be checked/)).not.toBeInTheDocument();
+    expect(screen.getByTestId("picker-external-label")).toHaveTextContent("Example City, ZZ");
+  });
+
+  it("explains why the project's area is not the one on screen, and links to the record", () => {
+    render(
+      <Harness
+        studyArea={inheritedFromHome()}
+        initialGeometry={inheritedFromHome().geometry}
+        openedForProject={{ id: PROJECT_ID, name: "Broad Street corridor study" }}
+        projectAreaNotice="Broad Street corridor study has no study area of its own yet, so nothing could be inherited from it."
+      />
+    );
+
+    expect(
+      screen.getByText(/Broad Street corridor study has no study area of its own yet/)
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open project record" })).toHaveAttribute(
+      "href",
+      `/projects/${PROJECT_ID}`
+    );
   });
 
   it("says a study area is a boundary, not an analysis", () => {

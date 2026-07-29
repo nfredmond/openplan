@@ -3,13 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
-import {
-  studyAreaPrefillFromHomeGeography,
-  summarizeCorridorText,
-} from "@/lib/models/study-area";
+import { summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
-import { type WorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
 import { SafetyCrashMap } from "./safety-crash-map";
 import {
   COVERAGE_STATE_COPY,
@@ -29,15 +25,54 @@ import type { CrashSeverity } from "@/lib/safety/sources/types";
 
 const SEVERITY_ORDER: CrashSeverity[] = ["fatal", "severe_injury", "injury", "pdo"];
 
+/**
+ * The area this page opens on, already resolved on the server.
+ *
+ * It is the flattened result of `resolveStudyArea` — the app's one statement of
+ * study-area precedence — rather than a single owner's geography, because this
+ * page can now be opened FOR a project (`/safety?projectId=…`) whose corridor is
+ * a fraction of the workspace's county. `origin` is what makes the difference
+ * visible: without it the picker would show a boundary with no account of why
+ * that boundary and not the other one.
+ *
+ * The full `ResolvedStudyArea` is not passed as-is because its `geometry` is the
+ * same polygon `corridorText` already carries, and a county boundary can be
+ * megabytes on the wire.
+ */
+export type SafetyStudyAreaSeed = {
+  /** The boundary, serialized — what the controlled picker takes. */
+  corridorText: string;
+  /** The resolved place identity, when the area has one. Null for a drawn area. */
+  place: PlaceBoundaryResponse | null;
+  /** The place's own name, when it has one. */
+  label: string | null;
+  origin: StudyAreaOrigin;
+  originLabel: string | null;
+};
+
+const EMPTY_STUDY_AREA_SEED: SafetyStudyAreaSeed = {
+  corridorText: "",
+  place: null,
+  label: null,
+  origin: "none",
+  originLabel: null,
+};
+
 type SafetyWorkspaceProps = {
   workspaceId: string;
   latestIngest: SafetyIngestSummary | null;
   /**
-   * The workspace's stated home geography, read on the server. `null` (or
-   * absent) keeps the original behavior: nothing is preselected and nothing is
-   * fetched until the user picks a study area.
+   * Where the picker STARTS, resolved on the server. Absent (or `origin: "none"`)
+   * keeps the original behavior: nothing is preselected and nothing is fetched
+   * until the user picks a study area.
    */
-  homeGeography?: WorkspaceHomeGeography | null;
+  studyArea?: SafetyStudyAreaSeed;
+  /**
+   * The project `/safety?projectId=…` was opened for, whether or not its area is
+   * the one above — a project with no study area of its own is still the project
+   * this visit is about, and the acquisition should still attach to it.
+   */
+  openedForProject?: { id: string; name: string | null } | null;
   /** Workspace projects for the attach-on-ingest selector. */
   projects?: SafetyProjectOption[];
   /** Recent acquisitions, newest first, with their project links. */
@@ -47,26 +82,33 @@ type SafetyWorkspaceProps = {
 export function SafetyWorkspace({
   workspaceId,
   latestIngest,
-  homeGeography = null,
+  studyArea = EMPTY_STUDY_AREA_SEED,
+  openedForProject = null,
   projects = [],
   ingestHistory = [],
 }: SafetyWorkspaceProps) {
-  // The study area is still the user's to choose. The only thing that changes
-  // when a workspace has stated a home geography is where the picker STARTS —
-  // no place is ever invented here, and clearing the area clears it fully.
-  const prefill = useMemo(() => studyAreaPrefillFromHomeGeography(homeGeography), [homeGeography]);
-  const [corridorText, setCorridorText] = useState(prefill.corridorText);
-  const [place, setPlace] = useState<PlaceBoundaryResponse | null>(prefill.place);
+  // The study area is still the user's to choose. Inheriting one only changes
+  // where the picker STARTS — no place is ever invented here, and clearing the
+  // area clears it fully.
+  const [corridorText, setCorridorText] = useState(studyArea.corridorText);
+  const [place, setPlace] = useState<PlaceBoundaryResponse | null>(studyArea.place);
   const [ingest, setIngest] = useState<SafetyIngestSummary | null>(latestIngest);
   const [history, setHistory] = useState<SafetyIngestHistoryEntry[]>(ingestHistory);
   // Optional project the NEXT acquisition is attached to. "" = unattached.
-  // Defaults to the most recent acquisition's project (when it is still
-  // offered): a re-acquisition that silently dropped the project link would
-  // strand project-scoped crash counts on the older data. Visible in the
-  // selector, so clearing it stays a one-click choice.
+  //
+  // The project this page was OPENED for wins, because naming it in the URL is a
+  // statement and the last acquisition's project is only a habit — the same
+  // order of precedence the study area itself follows. Failing that, the most
+  // recent acquisition's project (when it is still offered): a re-acquisition
+  // that silently dropped the project link would strand project-scoped crash
+  // counts on the older data. Either way it is visible in the selector below, so
+  // clearing it stays a one-click choice.
   const [projectId, setProjectId] = useState(() => {
+    const offered = (candidate: string) =>
+      Boolean(candidate) && projects.some((project) => project.id === candidate);
+    if (openedForProject && offered(openedForProject.id)) return openedForProject.id;
     const lastProjectId = ingestHistory[0]?.projectId ?? "";
-    return lastProjectId && projects.some((project) => project.id === lastProjectId) ? lastProjectId : "";
+    return offered(lastProjectId) ? lastProjectId : "";
   });
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
   const [severities, setSeverities] = useState<CrashSeverity[]>([]);
@@ -74,6 +116,14 @@ export function SafetyWorkspace({
   const [loading, setLoading] = useState(false);
   const [ingesting, setIngesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Whether the box still holds the area this page opened with. Everything that
+  // explains where that area came from is gated on it: once the planner picks
+  // somewhere else, the explanation describes a boundary that is gone.
+  const inheritedAreaIsCurrent =
+    studyArea.origin !== "none" &&
+    studyArea.corridorText !== "" &&
+    corridorText === studyArea.corridorText;
 
   // Bounding box of the user's selection, or null until they pick one.
   const bbox = useMemo(() => {
@@ -275,12 +325,44 @@ export function SafetyWorkspace({
           corridorText={corridorText}
           onCorridorChange={setCorridorText}
           onPlaceResolved={setPlace}
+          // Only while the inherited area is still the one in the box. The
+          // moment a planner changes it, naming the OLD area would be labelling
+          // a boundary that is no longer on screen.
+          externalLabel={inheritedAreaIsCurrent ? studyArea.originLabel : null}
         />
-        {prefill.corridorText !== "" && corridorText === prefill.corridorText && (
+        {inheritedAreaIsCurrent && (
           <p className="mt-2 text-xs text-muted-foreground">
-            Starting from this workspace&rsquo;s home geography
-            {prefill.label ? <> ({prefill.label})</> : null}. Search or draw above to analyze
-            somewhere else.
+            {/* Composed from `origin` rather than printed from `originLabel`,
+                because `originLabel` collapses to the place NAME whenever the
+                place has one. That says WHICH area is loaded but not WHY it is
+                this one — and on this page the difference is the whole point: a
+                county and a corridor inside it look equally plausible in the
+                picker, and retrieving crashes for the wrong one of the two is
+                not visible in the result. */}
+            {studyArea.origin === "project" ? (
+              <>
+                Starting from the study area set on{" "}
+                {openedForProject ? (
+                  <Link
+                    href={`/projects/${openedForProject.id}`}
+                    className="underline underline-offset-2"
+                  >
+                    {openedForProject.name ?? "this project"}
+                  </Link>
+                ) : (
+                  "this project"
+                )}
+                {studyArea.label ? <> ({studyArea.label})</> : null}.
+              </>
+            ) : studyArea.origin === "workspace_home" ? (
+              <>
+                Starting from this workspace&rsquo;s home geography
+                {studyArea.label ? <> ({studyArea.label})</> : null}.
+              </>
+            ) : (
+              <>Starting from {studyArea.originLabel}.</>
+            )}{" "}
+            Search or draw above to analyze somewhere else — this does not change the source.
           </p>
         )}
         {bbox && countyCode === null && (

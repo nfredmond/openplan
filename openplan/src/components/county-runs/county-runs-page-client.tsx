@@ -89,6 +89,23 @@ export function CountyRunsPageClient({
     };
   }, [resolvedPlace, corridorText]);
 
+  /**
+   * Whether county onboarding on this deployment produces a RUN or only a
+   * handoff — and this is evidence, not a guess.
+   *
+   * `prepared` is recorded by exactly one branch of `dispatchCountyOnrampJob`:
+   * the one taken when no county onramp worker URL is configured, where no HTTP
+   * request is made at all. So a single prepared record proves that a county
+   * run here waits for a person, not for a worker. Saying so before the launch
+   * button is the same refuse-before-enqueue rule the model run modes follow —
+   * launching is still allowed, because a prepared handoff is genuinely usable
+   * by an operator, but it may not be presented as background execution.
+   */
+  const preparedOnlyRunCount = useMemo(
+    () => items.filter((item) => item.enqueueStatus === "prepared").length,
+    [items]
+  );
+
   const suggestedRunName = useMemo(() => {
     if (!countySelection.ready) return "";
     const slug = countySelection.label
@@ -194,6 +211,27 @@ export function CountyRunsPageClient({
                 placeholder={suggestedRunName || "Named after the county if left blank"}
               />
             </div>
+            {preparedOnlyRunCount > 0 ? (
+              <div
+                data-testid="county-worker-absent-disclosure"
+                className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
+              >
+                <p className="font-semibold">
+                  On this deployment, launching produces a handoff — not a run that starts itself
+                </p>
+                <p className="mt-2">
+                  {preparedOnlyRunCount === 1
+                    ? "A county run here was prepared rather than submitted"
+                    : `${preparedOnlyRunCount} county runs here were prepared rather than submitted`}
+                  , which OpenPlan records only when no county onramp worker is configured to receive
+                  the job. Launching still creates the run record and the full worker payload, and
+                  that payload is usable — but the bootstrap does not execute until whoever operates
+                  this deployment either configures a worker (
+                  <code>workers/county_onramp_worker/DEPLOY.md</code>) or runs the prepared handoff
+                  themselves and posts the manifest back.
+                </p>
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center gap-3 pt-1">
               <Button type="submit" disabled={creating || !countySelection.ready}>
                 Launch county run
@@ -252,7 +290,17 @@ export function CountyRunsPageClient({
           });
           const enqueueLabel = getCountyRunEnqueueStatusLabel(item.enqueueStatus ?? "not-enqueued");
           const enqueueTone = getCountyRunEnqueueStatusTone(item.enqueueStatus ?? "not-enqueued");
-          const enqueueHelp = getCountyRunEnqueueHelpText(item.enqueueStatus ?? "not-enqueued");
+          // The shared help text calls a prepared handoff "prepared for background
+          // execution", which is the one thing it is not: `prepared` is recorded
+          // only by the branch of `dispatchCountyOnrampJob` where no worker URL is
+          // configured and no request is made, so nothing is going to execute it in
+          // the background. The disclosure above the launch button says this once;
+          // leaving the old sentence on the cards below would contradict it on the
+          // same screen. Every other status keeps the shared wording.
+          const enqueueHelp =
+            item.enqueueStatus === "prepared"
+              ? "County bootstrap handoff is prepared, not submitted — no county onramp worker was configured to receive it, so it will not start until an operator runs it or configures a worker."
+              : getCountyRunEnqueueHelpText(item.enqueueStatus ?? "not-enqueued");
 
           return (
             <Card key={item.id}>
