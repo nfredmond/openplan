@@ -21,10 +21,39 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 
+/**
+ * `?projectId=` is how this catalog is TOLD which project it was opened for.
+ *
+ * THE DEFECT IT ARRIVED WITH. The project spine board and the workflow handoff
+ * both link here with a project id attached. This page applied the filter and
+ * then said nothing about it: a filtered zero rendered "No engagement campaigns
+ * yet — create the first campaign", which is a claim about a workspace this
+ * render never queried, and the status tabs reported workspace-wide counts over
+ * a project-scoped list. A filtered list has to name its filter, or its
+ * emptiness gets read as the world's.
+ */
 type EngagementPageSearchParams = Promise<{
   projectId?: string;
   status?: string;
 }>;
+
+/**
+ * A status-tab href that carries the filters already in effect.
+ *
+ * Each tab used to rebuild its href from scratch (`/engagement?status=active`),
+ * so a planner who arrived from a project board on `/engagement?projectId=…` and
+ * then picked a status silently widened from one project back to the whole
+ * workspace, with nothing on screen saying the scope had changed. Choosing a
+ * status is a request to narrow; it must never widen behind the reader's back.
+ * Widening stays deliberate — that is what "Clear filters" is for.
+ */
+function engagementTabHref(projectId: string | null, status: string | null): string {
+  const params = new URLSearchParams();
+  if (projectId) params.set("projectId", projectId);
+  if (status) params.set("status", status);
+  const query = params.toString();
+  return query ? `/engagement?${query}` : "/engagement";
+}
 
 type CampaignRow = {
   id: string;
@@ -102,7 +131,7 @@ export default async function EngagementPage({
     );
   }
 
-  const [{ data: campaignsData }, { data: projectsData }, { data: itemsData }, { data: categoriesData }] = await Promise.all([
+  const [{ data: campaignsData }, { data: projectsData, error: projectsError }, { data: itemsData }, { data: categoriesData }] = await Promise.all([
     supabase
       .from("engagement_campaigns")
       .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, allow_public_submissions, submissions_closed_at, created_at, updated_at, projects(id, name)")
@@ -126,7 +155,11 @@ export default async function EngagementPage({
     categoriesByCampaign.set(category.campaign_id, current);
   }
 
-  const campaigns = ((campaignsData ?? []) as CampaignRow[])
+  const projectFilterId = filters.projectId?.trim() || null;
+  const statusFilter = filters.status?.trim() || null;
+  const hasActiveFilters = Boolean(projectFilterId || statusFilter);
+
+  const campaignsInScope = ((campaignsData ?? []) as CampaignRow[])
     .map((campaign) => {
       const categoryCount = (categoriesByCampaign.get(campaign.id) ?? []).length;
       const counts = summarizeEngagementItems(categoriesByCampaign.get(campaign.id) ?? [], itemsByCampaign.get(campaign.id) ?? []);
@@ -145,14 +178,38 @@ export default async function EngagementPage({
         }),
       };
     })
-    .filter((campaign) => (filters.projectId ? campaign.project_id === filters.projectId : true))
-    .filter((campaign) => (filters.status ? campaign.status === filters.status : true));
+    .filter((campaign) => (projectFilterId ? campaign.project_id === projectFilterId : true));
 
-  const allCampaignCount = (campaignsData ?? []).length;
-  const statusCountsAll = ((campaignsData ?? []) as CampaignRow[]).reduce<Record<string, number>>((acc, c) => {
+  const campaigns = campaignsInScope.filter((campaign) =>
+    statusFilter ? campaign.status === statusFilter : true
+  );
+
+  // The status tabs count within the project scope but BEFORE the status filter.
+  // They used to count every campaign in the workspace, so a project-scoped list
+  // of two rows sat under an "All (37)" tab — a workspace total offered as the
+  // total of the list being shown.
+  const scopedCampaignCount = campaignsInScope.length;
+  const statusCountsInScope = campaignsInScope.reduce<Record<string, number>>((acc, c) => {
     acc[c.status] = (acc[c.status] ?? 0) + 1;
     return acc;
   }, {});
+
+  // The project is named from the list this page already reads for the creator
+  // panel rather than a second query. A name is a courtesy that list may not be
+  // able to supply; the id is the filter, and is disclosed instead when the name
+  // is missing, so the reader can still tell WHICH project is in scope.
+  const projectFilterName = projectFilterId
+    ? ((projectsData ?? []) as Array<{ id: string; name: string | null }>)
+        .find((project) => project.id === projectFilterId)
+        ?.name?.trim() || null
+    : null;
+
+  // Named in the reader's terms so the empty state can say what it is filtered
+  // TO, not merely that it is filtered.
+  const activeFilterLabels = [
+    projectFilterId ? `project ${projectFilterName ?? projectFilterId}` : null,
+    statusFilter ? `status ${titleizeEngagementValue(statusFilter)}` : null,
+  ].filter((label): label is string => Boolean(label));
 
   const activeCount = campaigns.filter((campaign) => campaign.status === "active").length;
   const closedCount = campaigns.filter((campaign) => campaign.status === "closed").length;
@@ -174,13 +231,40 @@ export default async function EngagementPage({
             <p className="module-intro-description">
               Create campaigns, link them to projects when needed, organize public input, and keep moderation and reporting in one place.
             </p>
+            {projectFilterId ? (
+              // Every tile and every row below belongs to one project, so the
+              // scope has to be stated where the reader cannot miss it and be
+              // reversible in one click. Without this the totals read as the
+              // workspace's.
+              <p className="module-intro-description">
+                Showing only campaigns linked to {projectFilterName ?? `the project with id ${projectFilterId}`}.{" "}
+                <Link href="/engagement" className="underline underline-offset-2 hover:text-foreground">
+                  Show every campaign in this workspace
+                </Link>
+                .
+              </p>
+            ) : null}
+            {projectFilterId && !projectFilterName ? (
+              // Why the project could not be named. A failed read and a project
+              // this workspace does not have produce the same empty catalog, and
+              // only one of them is a statement about the project.
+              <p className="module-intro-description">
+                {projectsError
+                  ? "This workspace's project list could not be read, so the filter above is named by id. An empty catalog below would not mean that project has no campaigns."
+                  : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
+              </p>
+            ) : null}
           </div>
 
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Campaigns</p>
               <p className="module-summary-value">{campaigns.length}</p>
-              <p className="module-summary-detail">Workspace-scoped engagement containers with auditable ownership.</p>
+              <p className="module-summary-detail">
+                {hasActiveFilters
+                  ? "Matching the current filters."
+                  : "Workspace-scoped engagement containers with auditable ownership."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Status mix</p>
@@ -228,7 +312,10 @@ export default async function EngagementPage({
           <div className="module-section-header">
             <div className="module-section-heading">
               <p className="module-section-label">Catalog</p>
-              <h2 className="module-section-title">Current engagement campaigns</h2>
+              <h2 className="module-section-title">
+                {/* The heading may not imply workspace scope over a project-scoped list. */}
+                {projectFilterId ? "Campaigns linked to this project" : "Current engagement campaigns"}
+              </h2>
             </div>
             <span className="module-record-chip">
               <FolderKanban className="h-3.5 w-3.5" />
@@ -240,27 +327,38 @@ export default async function EngagementPage({
           {/* Status filter bar */}
           <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
             <Link
-              href="/engagement"
-              className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
+              href={engagementTabHref(projectFilterId, null)}
+              className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
             >
-              All ({allCampaignCount})
+              All ({scopedCampaignCount})
             </Link>
             {ENGAGEMENT_STATUS_FILTER_OPTIONS.map((option) => (
               <Link
                 key={option.value}
-                href={`/engagement?status=${option.value}`}
-                className={cn("rounded px-2 py-0.5 transition-colors", filters.status === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
+                href={engagementTabHref(projectFilterId, option.value)}
+                className={cn("rounded px-2 py-0.5 transition-colors", statusFilter === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
               >
-                {option.label} ({statusCountsAll[option.value] ?? 0})
+                {option.label} ({statusCountsInScope[option.value] ?? 0})
               </Link>
             ))}
+            {hasActiveFilters ? (
+              // The one deliberate way to widen. Every tab above narrows within
+              // the scope the page was opened for; only this leaves it.
+              <Link href="/engagement" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
+                Clear filters ×
+              </Link>
+            ) : null}
           </div>
 
           {campaigns.length === 0 ? (
             <div className="mt-5">
               <EmptyState
-                title="No engagement campaigns yet"
-                description="Create the first campaign to open a real moderation and public-input registry inside OpenPlan."
+                title={hasActiveFilters ? "No campaigns match these filters" : "No engagement campaigns yet"}
+                description={
+                  hasActiveFilters
+                    ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
+                    : "Create the first campaign to open a real moderation and public-input registry inside OpenPlan."
+                }
               />
             </div>
           ) : (

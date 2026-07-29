@@ -154,6 +154,37 @@ export function geographyLaneInput(
   };
 }
 
+/**
+ * A lane href that tells the destination which project it was opened for.
+ *
+ * THE DEFECT. Six of the eight lanes linked to a bare module path. The board
+ * would say "2 missions tied to this project" or "1,180 crashes on the latest
+ * linked acquisition" and then hand the planner a workspace-wide catalog with no
+ * indication of which rows it had just counted — and in Safety's case, a crash
+ * retrieval pre-aimed at the workspace's home geography rather than this
+ * project's study area. The parameter was not missing because the destinations
+ * ignored it: `/models`, `/scenarios`, `/engagement` and `/aerial` all filter on
+ * it and `/safety` seeds its study area from it. The board was simply throwing
+ * away something its own targets already honour.
+ *
+ * WHY THE PARAMETER NAME IS AN ARGUMENT. Grants does not filter — it focuses a
+ * queue that still shows the rest of the portfolio — so it reads
+ * `focusProjectId`. Every other destination narrows its list, and reads
+ * `projectId`. Naming them the same would have meant lying about one of them.
+ *
+ * Built through `URLSearchParams` rather than interpolated, matching
+ * `src/lib/operations/grants-links.ts`. Project ids are database-issued today,
+ * so nothing needs escaping yet; a board that hand-concatenates query strings is
+ * one that eventually emits a broken one.
+ *
+ * Adding a lane here obliges you to check the destination honours the parameter
+ * first. A link that carries an id the target discards is worse than a bare
+ * link, because it looks connected and is not.
+ */
+function laneHrefForProject(path: string, projectId: string, paramName = "projectId") {
+  return `${path}?${new URLSearchParams({ [paramName]: projectId }).toString()}`;
+}
+
 function pluralize(value: number, singular: string, plural = `${singular}s`) {
   return `${value} ${value === 1 ? singular : plural}`;
 }
@@ -341,7 +372,11 @@ export function buildProjectSpineCrosslinkSummary(
             : "No study area",
       headline:
         geographyReadiness === "ready"
-          ? `${geographyPlaceName} is this project's area of record, and model runs, county onboarding and safety acquisitions start from it.`
+          // No "below" and no "now": this sentence is also rendered on its own in
+          // the "First operator move" aside beside the board, where there is
+          // nothing below it, and a reader arriving today has not seen the
+          // version of the board where safety did not carry the project.
+          ? `${geographyPlaceName} is this project's area of record. A model run opened from this project starts from it, and so does the safety lane, which opens crash retrieval for this project. County onboarding has no lane on this board, so it still has to be opened for this project by hand.`
           : geographyReadiness === "attention"
             ? `${geographyPlaceName} was drawn by hand, so it has an extent but no place identity.`
             : input.geography.workspaceFallbackLabel
@@ -431,7 +466,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Add or mark the baseline and at least one alternative as ready before using scenario language downstream."
             : "Review the scenario set, then confirm downstream report packets reference the same comparison basis.",
       caveat: "Scenario evidence is planning-support context only; do not treat it as a validated forecast, legal finding, or autonomous prioritization decision.",
-      href: "/scenarios",
+      href: laneHrefForProject("/scenarios", input.projectId),
       actionLabel: "Review scenarios",
     },
     {
@@ -459,7 +494,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Resolve the funding gap, award risk, or reimbursement follow-through before reusing the packet funding language."
             : "Confirm source documents and award status before moving funding language into external packets.",
       caveat: "Funding evidence shows current source-context posture only; it is not an award commitment, eligibility opinion, or reimbursement approval.",
-      href: `/grants?focusProjectId=${input.projectId}`,
+      href: laneHrefForProject("/grants", input.projectId, "focusProjectId"),
       actionLabel: "Open Grants OS",
     },
     {
@@ -485,7 +520,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Moderate or approve enough engagement items for clean packet handoff."
             : "Confirm the approved engagement excerpts are attached to the downstream report packet.",
       caveat: "Engagement rows are evidence of intake and moderation status, not a substitute for adopted outreach findings or public agency response records.",
-      href: `/engagement?projectId=${input.projectId}`,
+      href: laneHrefForProject("/engagement", input.projectId),
       actionLabel: "Open engagement",
     },
     {
@@ -513,7 +548,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Bind the recent run to a scenario entry or comparison-backed report before citing the output."
             : "Open the comparison-backed packet and verify caveats before reusing analysis language.",
       caveat: "Modeling evidence must stay source-cited and supervised; this board does not certify travel behavior forecasts or prioritization outcomes.",
-      href: "/models",
+      href: laneHrefForProject("/models", input.projectId),
       actionLabel: "Open models",
     },
     {
@@ -548,7 +583,7 @@ export function buildProjectSpineCrosslinkSummary(
             : "Review the acquisition's coverage and geocoding gap, then reuse the counts in BCA screening or grant evidence with their caveats.",
       caveat:
         "Crash records are reported collisions retrieved from the source agency for screening-level review; ungeocoded crashes are counted but cannot be mapped, and none of this is an adopted safety plan or an engineering study.",
-      href: "/safety",
+      href: laneHrefForProject("/safety", input.projectId),
       actionLabel: "Open safety",
     },
     {
@@ -574,7 +609,7 @@ export function buildProjectSpineCrosslinkSummary(
             ? "Finish package QA and verification before citing aerial evidence downstream."
             : "Confirm the ready package is linked to the report or grant evidence trail that needs it.",
       caveat: "Aerial evidence supports documentation and measurement review; it is not a stamped survey, final engineering record, or autonomous verification.",
-      href: "/aerial",
+      href: laneHrefForProject("/aerial", input.projectId),
       actionLabel: "Open aerial ops",
     },
   ];

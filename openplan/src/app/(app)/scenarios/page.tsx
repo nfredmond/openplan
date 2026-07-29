@@ -11,10 +11,45 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 
+/**
+ * `?projectId=` is how this catalog is TOLD which project it was opened for.
+ *
+ * THE DEFECT IT ARRIVED WITH. The project spine board's scenario lane counts the
+ * scenario sets tied to one project and links here with the id attached. This
+ * page applied the filter and then said nothing about it: the heading still read
+ * "Scenario sets in this workspace", the summary tiles still read as workspace
+ * totals, and a filtered zero rendered "No scenario sets yet — create the first
+ * one", which is a claim about a workspace this render never queried. A filtered
+ * list has to name its filter, or its emptiness gets read as the world's.
+ */
 type ScenariosPageSearchParams = Promise<{
   projectId?: string;
   status?: string;
 }>;
+
+const SCENARIO_STATUS_FILTER_OPTIONS = [
+  { value: "draft", label: "Draft" },
+  { value: "active", label: "Active" },
+  { value: "archived", label: "Archived" },
+] as const;
+
+/**
+ * A status-tab href that carries the filters already in effect.
+ *
+ * Each tab used to rebuild its href from scratch (`/scenarios?status=active`),
+ * so a planner who arrived from a project board on `/scenarios?projectId=…` and
+ * then picked a status silently widened from one project back to the whole
+ * workspace, with nothing on screen saying the scope had changed. Choosing a
+ * status is a request to narrow; it must never widen behind the reader's back.
+ * Widening stays deliberate — that is what "Clear filters" is for.
+ */
+function scenariosTabHref(projectId: string | null, status: string | null): string {
+  const params = new URLSearchParams();
+  if (projectId) params.set("projectId", projectId);
+  if (status) params.set("status", status);
+  const query = params.toString();
+  return query ? `/scenarios?${query}` : "/scenarios";
+}
 
 type ScenarioSetRow = {
   id: string;
@@ -72,7 +107,7 @@ export default async function ScenariosPage({
     );
   }
 
-  const [{ data: scenarioSetsData }, { data: projectsData }, { data: entriesData }] = await Promise.all([
+  const [{ data: scenarioSetsData }, { data: projectsData, error: projectsError }, { data: entriesData }] = await Promise.all([
     supabase
       .from("scenario_sets")
       .select(
@@ -94,14 +129,42 @@ export default async function ScenariosPage({
     counts.set(entry.scenario_set_id, current);
   }
 
-  const scenarioSets = ((scenarioSetsData ?? []) as ScenarioSetRow[])
+  const projectFilterId = filters.projectId?.trim() || null;
+  const statusFilter = filters.status?.trim() || null;
+  const hasActiveFilters = Boolean(projectFilterId || statusFilter);
+
+  // The project is named from the list this page already reads for the creator
+  // panel rather than a second query. A name is a courtesy the list may not be
+  // able to supply — the id is the filter, and is disclosed instead when the
+  // name is missing, so the reader can still tell WHICH project is in scope.
+  const projectFilterName = projectFilterId
+    ? ((projectsData ?? []) as Array<{ id: string; name: string | null }>)
+        .find((project) => project.id === projectFilterId)
+        ?.name?.trim() || null
+    : null;
+
+  // The status tabs count within the project scope but BEFORE the status filter.
+  // Counting the fully filtered list made every unselected tab read "(0)" the
+  // moment a status was chosen — a count of records the page had already thrown
+  // away, presented as a count of records that do not exist.
+  const scenarioSetsInScope = ((scenarioSetsData ?? []) as ScenarioSetRow[])
     .map((scenarioSet) => ({
       ...scenarioSet,
       project: Array.isArray(scenarioSet.projects) ? scenarioSet.projects[0] ?? null : scenarioSet.projects ?? null,
       counts: counts.get(scenarioSet.id) ?? { baselineCount: 0, alternativeCount: 0 },
     }))
-    .filter((scenarioSet) => (filters.projectId ? scenarioSet.project_id === filters.projectId : true))
-    .filter((scenarioSet) => (filters.status ? scenarioSet.status === filters.status : true));
+    .filter((scenarioSet) => (projectFilterId ? scenarioSet.project_id === projectFilterId : true));
+
+  const scenarioSets = scenarioSetsInScope.filter((scenarioSet) =>
+    statusFilter ? scenarioSet.status === statusFilter : true
+  );
+
+  // Named in the reader's terms so the empty state can say what it is filtered
+  // to, not merely that it is filtered.
+  const activeFilterLabels = [
+    projectFilterId ? `project ${projectFilterName ?? projectFilterId}` : null,
+    statusFilter ? `status ${titleizeScenarioValue(statusFilter)}` : null,
+  ].filter((label): label is string => Boolean(label));
 
   const activeCount = scenarioSets.filter((scenarioSet) => scenarioSet.status === "active").length;
   const withBaselineCount = scenarioSets.filter((scenarioSet) => scenarioSet.counts.baselineCount > 0).length;
@@ -120,13 +183,38 @@ export default async function ScenariosPage({
             <p className="module-intro-description">
               Compare alternatives, keep a clear baseline, and revisit earlier scenario work when a project changes.
             </p>
+            {projectFilterId ? (
+              // Every tile and every row below belongs to one project, so the
+              // scope has to be stated where the reader cannot miss it and be
+              // reversible in one click. Without this the totals read as the
+              // workspace's.
+              <p className="module-intro-description">
+                Showing only scenario sets for {projectFilterName ?? `the project with id ${projectFilterId}`}.{" "}
+                <Link href="/scenarios" className="underline underline-offset-2 hover:text-foreground">
+                  Show every scenario set in this workspace
+                </Link>
+                .
+              </p>
+            ) : null}
+            {projectFilterId && !projectFilterName ? (
+              // Why the project could not be named. A failed read and a project
+              // this workspace does not have produce the same empty catalog, and
+              // only one of them is a statement about the project.
+              <p className="module-intro-description">
+                {projectsError
+                  ? "This workspace's project list could not be read, so the filter above is named by id. An empty catalog below would not mean that project has no scenario sets."
+                  : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
+              </p>
+            ) : null}
           </div>
 
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Scenario sets</p>
               <p className="module-summary-value">{scenarioSets.length}</p>
-              <p className="module-summary-detail">Saved scenario groups linked to projects and plans.</p>
+              <p className="module-summary-detail">
+                {hasActiveFilters ? "Matching the current filters." : "Saved scenario groups linked to projects and plans."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Active</p>
@@ -170,9 +258,14 @@ export default async function ScenariosPage({
           <div className="module-section-header">
             <div className="module-section-heading">
               <p className="module-section-label">Catalog</p>
-              <h2 className="module-section-title">Scenario sets in this workspace</h2>
+              <h2 className="module-section-title">
+                {/* The heading may not claim workspace scope over a project-scoped list. */}
+                {projectFilterId ? "Scenario sets for this project" : "Scenario sets in this workspace"}
+              </h2>
               <p className="module-section-description">
-                Filter by status to narrow the catalog to the records that need attention.
+                {projectFilterId
+                  ? "Filter by status to narrow this project's scenario sets further."
+                  : "Filter by status to narrow the catalog to the records that need attention."}
               </p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
@@ -182,25 +275,32 @@ export default async function ScenariosPage({
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
-            <Link href="/scenarios" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-              All ({scenarioSets.length})
+            <Link href={scenariosTabHref(projectFilterId, null)} className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
+              All ({scenarioSetsInScope.length})
             </Link>
-            {[
-              { value: "draft", label: "Draft" },
-              { value: "active", label: "Active" },
-              { value: "archived", label: "Archived" },
-            ].map((opt) => (
-              <Link key={opt.value} href={`/scenarios?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-                {opt.label} ({scenarioSets.filter((s) => s.status === opt.value).length})
+            {SCENARIO_STATUS_FILTER_OPTIONS.map((opt) => (
+              <Link key={opt.value} href={scenariosTabHref(projectFilterId, opt.value)} className={cn("rounded px-2 py-0.5 transition-colors", statusFilter === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
+                {opt.label} ({scenarioSetsInScope.filter((s) => s.status === opt.value).length})
               </Link>
             ))}
+            {hasActiveFilters ? (
+              // The one deliberate way to widen. Every tab above narrows within
+              // the scope the page was opened for; only this leaves it.
+              <Link href="/scenarios" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
+                Clear filters ×
+              </Link>
+            ) : null}
           </div>
 
           {scenarioSets.length === 0 ? (
             <div className="mt-5">
               <EmptyState
-                title="No scenario sets yet"
-                description="Create the first scenario set to establish a baseline-versus-alternatives registry for a project."
+                title={hasActiveFilters ? "No scenario sets match these filters" : "No scenario sets yet"}
+                description={
+                  hasActiveFilters
+                    ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set in this workspace — an empty filtered list is not a statement that none exist.`
+                    : "Create the first scenario set to establish a baseline-versus-alternatives registry for a project."
+                }
               />
             </div>
           ) : (

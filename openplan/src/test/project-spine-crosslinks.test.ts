@@ -311,7 +311,9 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(safetyRow?.detail).toContain("Statewide crash reporting system");
     expect(safetyRow?.evidence).toContain("Statewide reported collisions");
     expect(safetyRow?.caveat).toMatch(/none of this is an adopted safety plan/i);
-    expect(safetyRow?.href).toBe("/safety");
+    // Carries the project, because /safety seeds its study area from it. A bare
+    // "/safety" retrieved crashes for the workspace's home geography instead.
+    expect(safetyRow?.href).toBe("/safety?projectId=project-1");
   });
 
   it("treats a zero-crash acquisition as review work, not proof of zero crashes", () => {
@@ -368,5 +370,71 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(scenarioRow?.statusLabel).toBe("Scenario basis incomplete");
     expect(scenarioRow?.nextAction).toMatch(/baseline and at least one alternative/i);
     expect(scenarioRow?.evidence).toContain("1 attached run");
+  });
+
+  /**
+   * THE DEFECT THESE PIN. Six of the eight lanes linked to a bare module path,
+   * so clicking "Open models" from a project landed on every model in the
+   * workspace and clicking "Open safety" retrieved crashes for the workspace's
+   * home geography rather than this project's study area. The destinations were
+   * never the problem — each one already reads the id the board was discarding.
+   *
+   * The lane-by-lane parameter names are asserted individually rather than
+   * through a loop, because they are not interchangeable: `/grants` focuses a
+   * queue on `focusProjectId` while the rest narrow a list on `projectId`, and a
+   * lane sent the wrong name would silently fall back to the unfiltered page.
+   */
+  describe("every lane whose destination reads a project id carries one", () => {
+    const summary = buildProjectSpineCrosslinkSummary(baseInput);
+    const hrefFor = (id: string) => summary.rows.find((row) => row.id === id)?.href;
+
+    it("narrows the scenario, model and aerial catalogs to this project", () => {
+      expect(hrefFor("scenario_sets")).toBe("/scenarios?projectId=project-1");
+      expect(hrefFor("analysis_modeling")).toBe("/models?projectId=project-1");
+      expect(hrefFor("aerial_evidence")).toBe("/aerial?projectId=project-1");
+    });
+
+    it("keeps the grants lane on focusProjectId, which is the name that page reads", () => {
+      expect(hrefFor("funding_profile")).toBe("/grants?focusProjectId=project-1");
+      expect(hrefFor("engagement_evidence")).toBe("/engagement?projectId=project-1");
+    });
+
+    it("leaves the study-area lane as an in-page anchor, since it never left the project", () => {
+      expect(hrefFor("geography")).toBe("#project-identity");
+      expect(hrefFor("rtp_packets")).toBe("#project-reporting");
+    });
+
+    it("percent-encodes an id rather than pasting it into the query string", () => {
+      // Project ids are database-issued uuids today, so nothing needs escaping
+      // yet. This pins the behaviour anyway: the board must not be the thing
+      // that emits a malformed URL if that ever stops being true.
+      const awkward = buildProjectSpineCrosslinkSummary({ ...baseInput, projectId: "a b&c=d" });
+
+      expect(awkward.rows.find((row) => row.id === "safety_evidence")?.href).toBe(
+        "/safety?projectId=a+b%26c%3Dd"
+      );
+    });
+
+    it("stops claiming nothing on the board opens safety for this project", () => {
+      // The geography lane used to end "nothing on this board opens them that
+      // way yet", which the safety lane's href has now made false. What is still
+      // true — county onboarding has no lane here — is stated as its own clause
+      // rather than dropped.
+      const geography = summary.rows.find((row) => row.id === "geography");
+
+      expect(geography?.headline).toMatch(/the safety lane, which opens crash retrieval for this project/i);
+      expect(geography?.headline).not.toMatch(/nothing on this board/i);
+      expect(geography?.headline).toMatch(/County onboarding has no lane on this board/i);
+    });
+
+    it("only says county onboarding has no lane while the board genuinely has none", () => {
+      // The sentence above is a claim about this board's own contents, and the
+      // board is built right here — so adding a county-onboarding lane would
+      // make the study-area headline false with nothing to catch it. Tie the
+      // claim to the row set instead of to the string.
+      expect(summary.rows.map((row) => row.id)).not.toContain("county_runs");
+      expect(summary.rows.some((row) => /county/i.test(row.lane))).toBe(false);
+      expect(summary.rows.some((row) => row.href.startsWith("/county-runs"))).toBe(false);
+    });
   });
 });

@@ -28,6 +28,35 @@ type ModelsPageSearchParams = Promise<{
   q?: string;
 }>;
 
+type ModelsPageFilters = {
+  projectId: string | null;
+  modelFamily: string | null;
+  status: string | null;
+  readiness: string | null;
+  q: string | null;
+};
+
+/**
+ * A status-tab href that carries the filters already in effect.
+ *
+ * Each tab used to rebuild its href from scratch (`/models?status=approved`), so
+ * a planner who arrived from a project board on `/models?projectId=…` and then
+ * picked a status silently widened from one project back to the whole workspace
+ * — every other filter dropped with it — while the page went on looking like a
+ * narrowed view. Choosing a status is a request to narrow; it must never widen
+ * behind the reader's back. Widening stays deliberate: that is "Clear filters".
+ */
+function modelsTabHref(filters: ModelsPageFilters, status: string | null): string {
+  const params = new URLSearchParams();
+  if (filters.projectId) params.set("projectId", filters.projectId);
+  if (filters.modelFamily) params.set("modelFamily", filters.modelFamily);
+  if (filters.readiness) params.set("readiness", filters.readiness);
+  if (filters.q) params.set("q", filters.q);
+  if (status) params.set("status", status);
+  const query = params.toString();
+  return query ? `/models?${query}` : "/models";
+}
+
 type ModelRow = {
   id: string;
   workspace_id: string;
@@ -110,7 +139,7 @@ export default async function ModelsPage({
     );
   }
 
-  const [{ data: modelsData }, { data: projectsData }, { data: scenarioSetsData }] = await Promise.all([
+  const [{ data: modelsData }, { data: projectsData, error: projectsError }, { data: scenarioSetsData }] = await Promise.all([
     supabase
       .from("models")
       .select(
@@ -189,7 +218,15 @@ export default async function ModelsPage({
 
   const normalizedQuery = filters.q?.trim().toLowerCase() ?? "";
 
-  const models = ((modelsData ?? []) as ModelRow[])
+  const activeFilters: ModelsPageFilters = {
+    projectId: filters.projectId?.trim() || null,
+    modelFamily: filters.modelFamily?.trim() || null,
+    status: filters.status?.trim() || null,
+    readiness: filters.readiness?.trim() || null,
+    q: filters.q?.trim() || null,
+  };
+
+  const modelsInScope = ((modelsData ?? []) as ModelRow[])
     .map((model) => {
       const project = Array.isArray(model.projects) ? model.projects[0] ?? null : model.projects ?? null;
       const scenarioSet = Array.isArray(model.scenario_sets) ? model.scenario_sets[0] ?? null : model.scenario_sets ?? null;
@@ -223,12 +260,11 @@ export default async function ModelsPage({
         ...workspaceSummary,
       };
     })
-    .filter((model) => (filters.projectId ? model.project_id === filters.projectId : true))
-    .filter((model) => (filters.modelFamily ? model.model_family === filters.modelFamily : true))
-    .filter((model) => (filters.status ? model.status === filters.status : true))
+    .filter((model) => (activeFilters.projectId ? model.project_id === activeFilters.projectId : true))
+    .filter((model) => (activeFilters.modelFamily ? model.model_family === activeFilters.modelFamily : true))
     .filter((model) => {
-      if (filters.readiness === "ready") return model.readiness.ready;
-      if (filters.readiness === "gaps") return !model.readiness.ready;
+      if (activeFilters.readiness === "ready") return model.readiness.ready;
+      if (activeFilters.readiness === "gaps") return !model.readiness.ready;
       return true;
     })
     .filter((model) => {
@@ -251,10 +287,54 @@ export default async function ModelsPage({
       return searchableText.includes(normalizedQuery);
     });
 
+  // The status tabs count within every OTHER active filter but before the status
+  // one. Counting the fully filtered list made each unselected tab read "(0)"
+  // the moment a status was chosen — a count of records the page had already
+  // discarded, presented as a count of records that do not exist.
+  const models = modelsInScope.filter((model) =>
+    activeFilters.status ? model.status === activeFilters.status : true
+  );
+
   const reviewReadyCount = models.filter((model) => model.status === "ready_for_review" || model.status === "approved").length;
   const readinessGreenCount = models.filter((model) => model.readiness.ready).length;
   const traceableCount = models.filter((model) => model.linkageCounts.reports > 0 || model.linkageCounts.runs > 0).length;
-  const hasActiveFilters = Boolean(filters.projectId || filters.modelFamily || filters.status || filters.readiness || normalizedQuery);
+  const hasActiveFilters = Boolean(
+    activeFilters.projectId || activeFilters.modelFamily || activeFilters.status || activeFilters.readiness || normalizedQuery
+  );
+
+  // The project is named from the list this page already reads for the creator
+  // panel rather than a second query. A name is a courtesy that list may not be
+  // able to supply; the id is the filter, and is disclosed instead when the name
+  // is missing, so the reader can still tell WHICH project is in scope.
+  const projectFilterName = activeFilters.projectId
+    ? ((projectsData ?? []) as Array<{ id: string; name: string | null }>)
+        .find((project) => project.id === activeFilters.projectId)
+        ?.name?.trim() || null
+    : null;
+
+  // Named in the reader's terms so the empty state can say what it is filtered
+  // TO, not merely that it is filtered.
+  const activeFilterLabels = [
+    activeFilters.projectId ? `project ${projectFilterName ?? activeFilters.projectId}` : null,
+    activeFilters.modelFamily ? `family ${formatModelFamilyLabel(activeFilters.modelFamily)}` : null,
+    activeFilters.status ? `status ${formatModelStatusLabel(activeFilters.status)}` : null,
+    activeFilters.readiness === "ready"
+      ? "readiness Ready"
+      : activeFilters.readiness === "gaps"
+        ? "readiness Has gaps"
+        : null,
+    activeFilters.q ? `search “${activeFilters.q}”` : null,
+  ].filter((label): label is string => Boolean(label));
+
+  // `?readiness=` is the one filter whose value can be present and unrecognized
+  // (only "ready" and "gaps" narrow anything), so the label list can be empty
+  // while `hasActiveFilters` is true. Naming nothing there would have rendered
+  // "This catalog is filtered to ." — so the sentence falls back to saying only
+  // what it can stand behind: that a filter is in effect.
+  const filteredEmptyDescription =
+    activeFilterLabels.length > 0
+      ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every model in this workspace — an empty filtered list is not a statement that none exist.`
+      : "This catalog is filtered by the query string it was opened with. Clear the filters to see every model in this workspace — an empty filtered list is not a statement that none exist.";
 
   return (
     <section className="module-page">
@@ -269,6 +349,29 @@ export default async function ModelsPage({
             <p className="module-intro-description">
               Keep methods, assumptions, and results connected to the plans and projects they support.
             </p>
+            {activeFilters.projectId ? (
+              // Every tile and every row below belongs to one project, so the
+              // scope has to be stated where the reader cannot miss it and be
+              // reversible in one click. Without this the totals read as the
+              // workspace's.
+              <p className="module-intro-description">
+                Showing only models for {projectFilterName ?? `the project with id ${activeFilters.projectId}`}.{" "}
+                <Link href="/models" className="underline underline-offset-2 hover:text-foreground">
+                  Show every model in this workspace
+                </Link>
+                .
+              </p>
+            ) : null}
+            {activeFilters.projectId && !projectFilterName ? (
+              // Why the project could not be named. A failed read and a project
+              // this workspace does not have produce the same empty catalog, and
+              // only one of them is a statement about the project.
+              <p className="module-intro-description">
+                {projectsError
+                  ? "This workspace's project list could not be read, so the filter above is named by id. An empty catalog below would not mean that project has no models."
+                  : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
+              </p>
+            ) : null}
           </div>
 
           <div className="module-summary-grid cols-3">
@@ -339,15 +442,17 @@ export default async function ModelsPage({
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
-            <Link href="/models" className={cn("rounded px-2 py-0.5 transition-colors", !filters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-              All ({models.length})
+            <Link href={modelsTabHref(activeFilters, null)} className={cn("rounded px-2 py-0.5 transition-colors", !activeFilters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
+              All ({modelsInScope.length})
             </Link>
             {MODEL_STATUS_OPTIONS.map((opt) => (
-              <Link key={opt.value} href={`/models?status=${opt.value}`} className={cn("rounded px-2 py-0.5 transition-colors", filters.status === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-                {opt.label} ({models.filter((m) => m.status === opt.value).length})
+              <Link key={opt.value} href={modelsTabHref(activeFilters, opt.value)} className={cn("rounded px-2 py-0.5 transition-colors", activeFilters.status === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
+                {opt.label} ({modelsInScope.filter((m) => m.status === opt.value).length})
               </Link>
             ))}
             {hasActiveFilters ? (
+              // The one deliberate way to widen. Every tab above narrows within
+              // the scope the page was opened for; only this leaves it.
               <Link href="/models" className="ml-auto rounded px-2 py-0.5 text-muted-foreground/70 hover:text-foreground">
                 Clear filters ×
               </Link>
@@ -360,7 +465,7 @@ export default async function ModelsPage({
                 title={hasActiveFilters ? "No models match these filters" : "No models yet"}
                 description={
                   hasActiveFilters
-                    ? "Adjust the catalog filters or clear them to bring records back into view."
+                    ? filteredEmptyDescription
                     : "Create the first model record to establish config versioning, readiness checks, and traceability across scenarios, datasets, reports, and linked plans."
                 }
               />
