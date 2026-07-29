@@ -77,6 +77,12 @@ const DYNAMIC_TABLE_PROJECTIONS: Record<string, { tables: string[]; reason: stri
     reason:
       "replaceLinkSet({ table }) — the three link tables passed by the models, plans and programs routes.",
   },
+  "src/app/api/stage-gates/decisions/route.ts": {
+    tables: ["runs", "model_runs", "county_runs"],
+    reason:
+      "RUN_CITATION_TABLES — a gate decision may cite one run, and OpenPlan has three run tables; " +
+      "the route verifies the cited one belongs to the workspace before writing.",
+  },
 };
 
 /**

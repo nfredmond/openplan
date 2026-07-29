@@ -41,9 +41,10 @@ import { buildReportGenerationReadiness } from "@/lib/reports/generation-readine
 import { buildTypedRunCitations, loadCiteableModelRuns, loadReportRunCitationLinks, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import {
-  buildProjectStageGateSummary,
-  type ProjectStageGateSummary,
-} from "@/lib/stage-gates/summary";
+  loadProjectStageGateBoard,
+  type StageGateDecisionQuerySupabaseLike,
+} from "@/lib/stage-gates/decision-queries";
+import type { ProjectStageGateSummary } from "@/lib/stage-gates/summary";
 import {
   asEngagementCampaignSnapshot,
   asHtmlContent,
@@ -77,7 +78,6 @@ import type {
   ProjectRecordSnapshotKey,
   ReportArtifact,
   ScenarioSpineRow,
-  StageGateDecisionRow,
 } from "./_components/_types";
 import { ReportStandardDetail } from "./_components/report-standard-detail";
 
@@ -643,7 +643,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     scenarioDataPackagesResult,
     scenarioIndicatorSnapshotsResult,
     scenarioComparisonSnapshotsResult,
-    stageGateDecisionsResult,
+    stageGateBoard,
     deliverablesResult,
     risksResult,
     issuesResult,
@@ -697,14 +697,19 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           .select("scenario_set_id, updated_at")
           .in("scenario_set_id", liveScenarioSetIds)
       : Promise.resolve({ data: [], error: null }),
-    stageGateSnapshot
-      ? supabase
-          .from("stage_gate_decisions")
-          .select("gate_id, decision, rationale, decided_at, missing_artifacts")
-          .eq("workspace_id", report.workspace_id)
-          .order("decided_at", { ascending: false })
-          .limit(200)
-      : Promise.resolve({ data: [], error: null }),
+    // The LIVE board this packet's frozen snapshot is compared against. It goes
+    // through the shared loader because the comparison is only meaningful if
+    // both sides are about the same project — a workspace-wide read here put
+    // another project's verdict on this packet's drift row, and this packet is
+    // a document an agency sends to a funder. `report.project_id` is null on an
+    // RTP- or campaign-targeted report, which has no project board to compare
+    // against at all.
+    stageGateSnapshot && report.project_id
+      ? loadProjectStageGateBoard(supabase as unknown as StageGateDecisionQuerySupabaseLike, {
+          workspaceId: report.workspace_id,
+          projectId: report.project_id,
+        })
+      : Promise.resolve(null),
     projectRecordsSnapshot.some((item) => item.key === "deliverables")
       ? supabase
           .from("project_deliverables")
@@ -800,11 +805,15 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       latestComparisonSnapshotUpdatedAt: maxTimestamp(...comparisonRows.map((row) => row.updated_at ?? null)),
     });
   }
-  const currentStageGateSummary: ProjectStageGateSummary | null = stageGateSnapshot
-    ? buildProjectStageGateSummary(
-        (stageGateDecisionsResult.data ?? []) as StageGateDecisionRow[]
-      )
-    : null;
+  const currentStageGateSummary: ProjectStageGateSummary | null = stageGateBoard?.summary ?? null;
+  // Set only when the live decision log FAILED to load, which is not the same
+  // as this report having no gate board to compare (`null` above). The drift
+  // check below withholds its verdict in that case and the packet-freshness
+  // line names the gap, so an outage cannot be read here as "nothing changed".
+  const stageGateLiveReadFailure =
+    currentStageGateSummary && !currentStageGateSummary.decisionsRead.readable
+      ? currentStageGateSummary.decisionsRead.reason
+      : null;
   const currentProjectRecordsByKey = new Map<ProjectRecordSnapshotKey, CurrentProjectRecordEntry>([
     [
       "deliverables",
@@ -1099,7 +1108,13 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     });
   }
 
-  if (stageGateSnapshot && currentStageGateSummary) {
+  // No drift row when the live log did not load, and deliberately none: a drift
+  // row is a COMPARISON, and every status one could carry ("unchanged", "count
+  // changed") would state something about the live board that nothing here
+  // established. The counts on an unreadable board are zero because they are
+  // unknown, so comparing them would have reported an outage as gates lost
+  // since generation. The gap is named in the packet-freshness line instead.
+  if (stageGateSnapshot && currentStageGateSummary && !stageGateLiveReadFailure) {
     const snapshotBlockedGateId = stageGateSnapshot.blockedGate?.gateId ?? null;
     const currentBlockedGateId = currentStageGateSummary.blockedGate?.gateId ?? null;
     const snapshotNextGateId = stageGateSnapshot.nextGate?.gateId ?? null;
@@ -1123,19 +1138,35 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       detail: gatesChanged
         ? `Blocked ${snapshotBlockedGateId ?? "none"} -> ${currentBlockedGateId ?? "none"}. Next ${snapshotNextGateId ?? "complete"} -> ${currentNextGateId ?? "complete"}.`
         : countsChanged
-          ? `Snapshot ${stageGateSnapshot.passCount} pass / ${stageGateSnapshot.holdCount} hold / ${stageGateSnapshot.notStartedCount} not started. Live ${currentStageGateSummary.passCount} pass / ${currentStageGateSummary.holdCount} hold / ${currentStageGateSummary.notStartedCount} not started.`
+          // "no decision recorded", not "not started": the third count is the
+          // gates whose verdict is unrecorded, and the gate itself may be well
+          // under way. The board says it that way and this line must match.
+          ? `Snapshot ${stageGateSnapshot.passCount} pass / ${stageGateSnapshot.holdCount} hold / ${stageGateSnapshot.notStartedCount} with no decision recorded. Live ${currentStageGateSummary.passCount} pass / ${currentStageGateSummary.holdCount} hold / ${currentStageGateSummary.notStartedCount} with no decision recorded.`
           : "Review counts and next steps still match the saved report snapshot.",
     });
   }
 
   const driftedItems = driftItems.filter((item) => item.status !== "unchanged");
+  // "Refresh recommended" is a RECOMMENDATION, not a claim that anything moved,
+  // which is why an unreadable live gate log lands here rather than on "packet
+  // current": one of the sources this check covers was never checked, so the
+  // packet cannot be called clean, and the detail says plainly that no change
+  // was observed — only that observation failed.
   const currentReportPacketFreshness = latestArtifact?.generated_at ?? report.generated_at
-    ? driftedItems.length > 0
+    ? driftedItems.length > 0 || stageGateLiveReadFailure
       ? {
           label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
           tone: "warning" as const,
-          detail:
-            "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review.",
+          detail: [
+            driftedItems.length > 0
+              ? "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review."
+              : "Do not treat this packet as verified against live sources yet.",
+            stageGateLiveReadFailure
+              ? `The live stage-gate decision log could not be read (${stageGateLiveReadFailure}), so this check did not cover stage gates — that is an unchecked source, not a finding that gates changed.`
+              : null,
+          ]
+            .filter((value): value is string => Boolean(value))
+            .join(" "),
         }
       : {
           label: PACKET_FRESHNESS_LABELS.CURRENT,

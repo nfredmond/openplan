@@ -25,6 +25,11 @@ import {
 } from "@/lib/projects/funding";
 import { getRtpPacketPresetAlignment } from "@/lib/reports/catalog";
 import {
+  looksLikePendingStageGateProjectScope,
+  PROJECT_STAGE_GATE_DECISION_COLUMNS,
+  type ProjectStageGateDecisionRow,
+} from "@/lib/stage-gates/decision-queries";
+import {
   buildProjectStageGateSnapshot,
   buildProjectStageGateSummary,
 } from "@/lib/stage-gates/summary";
@@ -1526,10 +1531,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .select("id, run_id, model_run_id, county_run_id, sort_order")
         .eq("report_id", report.id)
         .order("sort_order", { ascending: true }),
+      // Scoped to the project, and this is the most consequential of the three
+      // reads that were not: the snapshot built from these rows is frozen into
+      // a packet an agency sends to a funder or a board, where a gate that
+      // passed on a NEIGHBOURING project in the same workspace would be
+      // asserted, permanently, as this project's. `report.project_id` is
+      // non-null here — the RTP and campaign targets returned above.
+      //
+      // The read stays inline rather than going through
+      // `loadProjectStageGateBoard` on purpose: a failure must reach
+      // `loadErrors` below and refuse the whole generation with its audit
+      // event, not be softened into an "unreadable" board that a packet would
+      // then have to decide what to do with.
       supabase
         .from("stage_gate_decisions")
-        .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
+        .select(PROJECT_STAGE_GATE_DECISION_COLUMNS)
         .eq("workspace_id", report.workspace_id)
+        .eq("project_id", report.project_id)
         .order("decided_at", { ascending: false })
         .limit(200),
       supabase
@@ -1628,6 +1646,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       fundingOpportunitiesResult.error,
       billingInvoicesResult.error,
     ].filter(Boolean);
+
+    // The gate read is scoped by `project_id`, a column 20260728000011 added, and
+    // code deploys ahead of migrations. Refusing generation is still correct in
+    // that window — falling back to a workspace-wide read would freeze another
+    // project's gate verdict into a funder-facing packet — but the refusal names
+    // the missing migration instead of arriving as a generic 500, in the same
+    // shape as the campaign-target branch above.
+    if (looksLikePendingStageGateProjectScope(stageGateDecisionsResult.error?.message)) {
+      audit.warn("report_stage_gate_project_scope_schema_pending", {
+        reportId: report.id,
+        message: stageGateDecisionsResult.error?.message ?? null,
+        code: stageGateDecisionsResult.error?.code ?? null,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "This packet's stage-gate snapshot cannot be built yet, because the database cannot say which project a gate decision belongs to.",
+          hint: "Apply migration 20260728000011_stage_gate_decisions_project_scope (or wait for the schema cache to refresh), then generate again. Generating without it could record another project's gate decision as this one's.",
+        },
+        { status: 503 }
+      );
+    }
 
     if (loadErrors.length > 0 || !projectResult.data) {
       const firstError = loadErrors[0];
@@ -1884,13 +1924,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
     const stageGateSnapshot = buildProjectStageGateSnapshot(
       buildProjectStageGateSummary(
-        (stageGateDecisionsResult.data ?? []) as Array<{
-          gate_id: string;
-          decision: string;
-          rationale: string | null;
-          decided_at: string | null;
-          missing_artifacts?: string[] | null;
-        }>
+        (stageGateDecisionsResult.data ?? []) as ProjectStageGateDecisionRow[],
+        { projectId: report.project_id }
       )
     );
 

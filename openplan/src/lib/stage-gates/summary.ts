@@ -12,6 +12,17 @@ export type StageGateDecisionRow = {
   rationale: string | null;
   decided_at: string | null;
   missing_artifacts?: string[] | null;
+  /**
+   * Which project the decision is about.
+   *
+   * Optional on the TYPE, not on a real row: `stage_gate_decisions` gained the
+   * column in 20260728000011, so rows written before it carry NULL, and a
+   * caller building a board from an empty log has no rows to attribute at all.
+   * A row that is MISSING the key entirely came from a `.select()` that did not
+   * ask for it, which the builder refuses rather than silently drops — see the
+   * scope guard in `buildProjectStageGateSummary`.
+   */
+  project_id?: string | null;
 };
 
 export type StageGateEvidencePreviewItem = StageGateTemplateEvidence & {
@@ -21,7 +32,31 @@ export type StageGateEvidencePreviewItem = StageGateTemplateEvidence & {
   operatorControlAcceptancePreview: string[];
 };
 
-export type StageGateWorkflowState = "pass" | "hold" | "not_started";
+/**
+ * What the board knows about a gate.
+ *
+ * `not_started` and `unknown` are the two that matter and they are NOT the same
+ * claim. `not_started` says the decision log was read and holds no decision for
+ * this gate — an absence established by looking. `unknown` says the log could
+ * not be read at all, so nothing whatever is established. Collapsing the second
+ * into the first is how a failed query becomes a confident sentence about a
+ * planner's compliance posture, which is the failure mode
+ * `src/lib/ui/read-failures.ts` exists to name.
+ *
+ * Neither one may ever be rendered as "not passed". A gate with no decision has
+ * not been judged; it has not failed.
+ */
+export type StageGateWorkflowState = "pass" | "hold" | "not_started" | "unknown";
+
+/**
+ * Whether the decision log behind this board was readable.
+ *
+ * Carried on the summary rather than inferred from empty counts, because zero is
+ * a legitimate answer and an unreadable log is not an answer at all.
+ */
+export type StageGateDecisionsReadState =
+  | { readable: true }
+  | { readable: false; reason: string };
 
 export type StageGateSummaryItem = {
   gateId: string;
@@ -43,12 +78,34 @@ export type StageGateSummaryItem = {
 
 export type ProjectStageGateSummary = {
   templateId: string;
+  /** As authored: "California LAPM/CEQA stage gates". */
+  templateName: string;
   templateVersion: string;
+  /** The flat code carried inside the artifact ("CA"). */
   jurisdiction: string;
+  /**
+   * The readable jurisdiction, from the registry descriptor rather than derived
+   * from the code — deriving "California" from "CA" would need a code-to-name
+   * table for the world, and "CA" is Canada under ISO 3166-1. Carried so a
+   * surface can name the jurisdiction without writing one into its own copy.
+   */
+  jurisdictionLabel: string;
   totalGateCount: number;
   passCount: number;
   holdCount: number;
   notStartedCount: number;
+  /**
+   * Gates whose state could not be established because the decision log did not
+   * load. Always 0 when `decisionsRead.readable` is true, and always the full
+   * gate count when it is false — the two cannot be mixed, because a read either
+   * returned rows or returned an error.
+   *
+   * A surface rendering `passCount`/`holdCount`/`notStartedCount` MUST check
+   * `decisionsRead` first: those three are zero in the unreadable case, and
+   * zero pass gates is a claim this build has not earned.
+   */
+  unknownCount: number;
+  decisionsRead: StageGateDecisionsReadState;
   nextGate: StageGateSummaryItem | null;
   blockedGate: StageGateSummaryItem | null;
   gates: StageGateSummaryItem[];
@@ -85,6 +142,22 @@ function normalizeDecisionState(value: string | null | undefined): StageGateWork
   return "not_started";
 }
 
+/**
+ * What each state says on the board, in the planner's words.
+ *
+ * "No decision recorded" rather than "Not started": the gate itself may be well
+ * under way — evidence gathered, review scheduled — and what the log is actually
+ * missing is a recorded verdict. "Not started" describes the work; only the
+ * decision is absent, and saying otherwise puts a claim about the project on
+ * screen that the decision log never made.
+ */
+const DECISION_LABELS: Record<StageGateWorkflowState, string> = {
+  pass: "Pass",
+  hold: "Hold",
+  not_started: "No decision recorded",
+  unknown: "Not readable",
+};
+
 export type ProjectStageGateSummaryOptions = {
   /**
    * The template the project is bound to. Omitted means "whatever the registry's
@@ -92,6 +165,34 @@ export type ProjectStageGateSummaryOptions = {
    * to, which is why omitting it stays the current behaviour.
    */
   templateId?: string;
+  /**
+   * Which project this board is about. REQUIRED whenever any decision is
+   * supplied — see the refusal in `buildProjectStageGateSummary`.
+   *
+   * It reads as optional because an empty log and an unreadable one have
+   * nothing to attribute, and both build a legitimate board from the template
+   * alone. It is not optional for a caller that read rows: a board built from
+   * decisions it cannot attribute is indistinguishable from a correct one, and
+   * the surfaces that consume it — the assistant, the report detail page, the
+   * packet generator — restate it as a claim about THIS project to a funder or
+   * a board.
+   *
+   * A row with a DIFFERENT project is excluded and a row with NO project is
+   * excluded too: an unattributed decision is not evidence about this project,
+   * and treating NULL as a wildcard would put one project's verdict on every
+   * other project's board — the exact defect 20260728000011 was written to fix.
+   */
+  projectId?: string | null;
+  /**
+   * Set when the decision log could not be READ, with the reason.
+   *
+   * Passing `[]` for `decisions` says "the log is empty". Passing this says
+   * "the log is unknown". They produce different boards on purpose: the first
+   * reports nine gates awaiting a decision, the second reports nine gates whose
+   * state this page cannot establish. Callers should take the reason from the
+   * database error — see `src/lib/ui/read-failures.ts`, which collects them.
+   */
+  decisionsUnavailable?: { reason: string } | null;
 };
 
 /**
@@ -118,9 +219,45 @@ export function buildProjectStageGateSummary(
   }
   const template = entry.document;
 
+  const decisionsUnavailable = options?.decisionsUnavailable ?? null;
+  const scopedProjectId = options?.projectId?.trim() || null;
+  const readDecisions = decisionsUnavailable ? [] : (decisions ?? []);
+
+  // A gate verdict is a judgement about ONE project, and every surface that
+  // consumes this board restates it as a claim about the project in front of
+  // the reader — including a generated report packet an agency sends to a
+  // funder. Building the board from decisions that name no project is therefore
+  // refused for the same reason an unregistered template id is: the result
+  // would be wrong and indistinguishable from correct.
+  //
+  // An empty log is exempt because it has nothing to attribute, and so is an
+  // unreadable one — the rows are discarded either way, and the board it builds
+  // says only that nothing is established.
+  if (!scopedProjectId && readDecisions.length > 0) {
+    throw new Error(
+      "Refusing to build a stage-gate board from decisions that are not scoped to a project: " +
+        "pass `projectId` so one project's gate decision cannot be reported as another's."
+    );
+  }
+
   const latestDecisionByGate = new Map<string, StageGateDecisionRow>();
 
-  for (const decision of decisions ?? []) {
+  // Nothing is loaded when the read failed. The map stays empty and every gate
+  // resolves to `unknown` below — as opposed to an empty map from a SUCCESSFUL
+  // read, which resolves to `not_started`. Same map, different claim.
+  for (const decision of readDecisions) {
+    if (!("project_id" in decision)) {
+      // The read omitted the column, so every row is about to fail the scope
+      // test and the board would render as "no decision recorded" on all nine
+      // gates — a total loss of the log that looks exactly like an empty one.
+      // `.select()` strings are not checked against the schema in this
+      // codebase, so this is the only place the omission can be caught.
+      throw new Error(
+        "Refusing to scope stage-gate decisions by project: the rows carry no `project_id` field, " +
+          "so the read did not select it and every decision would be dropped silently."
+      );
+    }
+    if (decision.project_id !== scopedProjectId) continue;
     if (!latestDecisionByGate.has(decision.gate_id)) {
       latestDecisionByGate.set(decision.gate_id, decision);
     }
@@ -131,7 +268,9 @@ export function buildProjectStageGateSummary(
     .filter((gate): gate is StageGateTemplateGate => Boolean(gate))
     .map((gate) => {
       const latestDecision = latestDecisionByGate.get(gate.gate_id);
-      const workflowState = normalizeDecisionState(latestDecision?.decision);
+      const workflowState: StageGateWorkflowState = decisionsUnavailable
+        ? "unknown"
+        : normalizeDecisionState(latestDecision?.decision);
       const missingArtifacts = Array.isArray(latestDecision?.missing_artifacts)
         ? latestDecision?.missing_artifacts.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
         : [];
@@ -154,19 +293,19 @@ export function buildProjectStageGateSummary(
         sequence: gate.sequence,
         name: gate.name,
         workflowState,
-        decisionLabel:
-          workflowState === "pass"
-            ? "Pass"
-            : workflowState === "hold"
-              ? "Hold"
-              : "Not started",
+        decisionLabel: DECISION_LABELS[workflowState],
+        // `latestDecision` is always undefined in the unknown case — the map is
+        // never filled when the read failed — so the recorded rationale can only
+        // win when there genuinely is one.
         rationale:
           latestDecision?.rationale?.trim() ||
-          (workflowState === "not_started"
-            ? "No gate decision recorded yet."
-            : workflowState === "hold"
-              ? "Gate is on hold and requires evidence closure."
-              : "Gate currently passes based on the latest recorded decision."),
+          (workflowState === "unknown"
+            ? `This gate's decision log could not be read (${decisionsUnavailable?.reason ?? "no reason reported"}), so whether a decision exists for it is unknown — not that none was recorded.`
+            : workflowState === "not_started"
+              ? "No gate decision has been recorded for this gate. That is an absence of a decision, not a failure to pass."
+              : workflowState === "hold"
+                ? "Gate is on hold and requires evidence closure."
+                : "Gate currently passes based on the latest recorded decision."),
         decidedAt: latestDecision?.decided_at ?? null,
         missingArtifacts,
         requiredEvidenceCount: requiredEvidence.length,
@@ -182,17 +321,27 @@ export function buildProjectStageGateSummary(
   const passCount = gates.filter((gate) => gate.workflowState === "pass").length;
   const holdCount = gates.filter((gate) => gate.workflowState === "hold").length;
   const notStartedCount = gates.filter((gate) => gate.workflowState === "not_started").length;
+  const unknownCount = gates.filter((gate) => gate.workflowState === "unknown").length;
   const blockedGate = gates.find((gate) => gate.workflowState === "hold") ?? null;
+  // "Next" means the first gate not yet passed. With the log unreadable that is
+  // the first gate, which is honest — it is where a reader would have to start
+  // looking — and the board says the state is unknown rather than pending.
   const nextGate = gates.find((gate) => gate.workflowState !== "pass") ?? null;
 
   return {
     templateId: template.template_id,
+    templateName: entry.descriptor.templateName,
     templateVersion: template.version,
     jurisdiction: template.jurisdiction,
+    jurisdictionLabel: entry.descriptor.jurisdiction.label,
     totalGateCount: gates.length,
     passCount,
     holdCount,
     notStartedCount,
+    unknownCount,
+    decisionsRead: decisionsUnavailable
+      ? { readable: false, reason: decisionsUnavailable.reason }
+      : { readable: true },
     nextGate,
     blockedGate,
     gates,
@@ -218,9 +367,27 @@ function toSnapshotGateSummary(
   };
 }
 
+/**
+ * Freeze a board into the compliance snapshot a report packet carries.
+ *
+ * THROWS when the summary was built from a decision log that could not be read.
+ * A snapshot is durable evidence: it is written into a report, cited by
+ * `evidence-chain.ts`, and later compared against the live board to detect
+ * drift. Minting one from an unread log would stamp "0 pass, 0 hold, 9 with no
+ * decision" into a permanent artifact, where nothing downstream could ever tell
+ * that it was a database error rather than a compliance posture. Refusing loudly
+ * is the only outcome that cannot become a false record.
+ */
 export function buildProjectStageGateSnapshot(
   summary: ProjectStageGateSummary
 ): ProjectStageGateSnapshot {
+  if (!summary.decisionsRead.readable) {
+    throw new Error(
+      `Refusing to snapshot stage gates: the decision log could not be read (${summary.decisionsRead.reason}), ` +
+        "so the counts would record an unread log as an empty one."
+    );
+  }
+
   return {
     templateId: summary.templateId,
     templateVersion: summary.templateVersion,

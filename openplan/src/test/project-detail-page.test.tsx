@@ -72,7 +72,11 @@ const engagementItemsSelectMock = vi.fn(() => ({ in: engagementItemsInMock }));
 
 const stageGateLimitMock = vi.fn();
 const stageGateOrderMock = vi.fn(() => ({ limit: stageGateLimitMock }));
-const stageGateEqMock = vi.fn(() => ({ order: stageGateOrderMock }));
+// Two `.eq()` links: workspace_id, then project_id. Gate decisions became
+// project-scoped in 20260728000011 — a workspace-wide read put one project's
+// recorded verdicts on every other project's board.
+const stageGateEqProjectMock = vi.fn(() => ({ order: stageGateOrderMock }));
+const stageGateEqMock = vi.fn(() => ({ eq: stageGateEqProjectMock, order: stageGateOrderMock }));
 const stageGateSelectMock = vi.fn(() => ({ eq: stageGateEqMock }));
 
 const milestonesLimitMock = vi.fn();
@@ -683,9 +687,19 @@ describe("ProjectDetailPage", () => {
     });
 
     buildProjectStageGateSummaryMock.mockReturnValue({
+      templateId: "ca_stage_gates_v0_1",
+      templateName: "Test stage-gate template",
+      templateVersion: "0.1.0",
+      jurisdiction: "CA",
+      jurisdictionLabel: "Test jurisdiction",
+      totalGateCount: 0,
       passCount: 0,
       holdCount: 0,
       notStartedCount: 0,
+      unknownCount: 0,
+      // The board branches on this before printing any count: an unreadable
+      // decision log must not render as zero recorded decisions.
+      decisionsRead: { readable: true },
       nextGate: null,
       blockedGate: null,
       gates: [],

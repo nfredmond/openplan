@@ -210,30 +210,42 @@ describe("POST /api/report", () => {
         "metrics.sourceSnapshots.crashes.fetchedAt",
       ]),
     });
-    expect(decisionInsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        decision: "HOLD",
-        gate_id: "report_artifact_gate",
-        run_id: runId,
-        workspace_id: "33333333-3333-4333-8333-333333333333",
-        missing_artifacts: expect.arrayContaining([
-          "summary_text",
-          "metrics.sourceSnapshots.crashes.fetchedAt",
-        ]),
-      })
-    );
     expect(telemetryUpdateMock).not.toHaveBeenCalled();
   });
 
-  it("returns 500 when decision persistence fails", async () => {
-    decisionInsertMock.mockResolvedValueOnce({
-      error: { message: "write failed", code: "XX000" },
+  /**
+   * The export refusal is REPORTED, not RECORDED as a gate decision.
+   *
+   * This route used to insert a `stage_gate_decisions` row on every export with
+   * `gate_id: "report_artifact_gate"` — a value in no template's gate order, so
+   * every reader dropped it. It attributed a pure function of the run row to
+   * whoever clicked Export, stored a fact that goes stale the moment the run
+   * gains a snapshot, crowded real decisions out of the newest-200 window every
+   * board reads, and 500'd the export if the write failed.
+   *
+   * The two assertions below are the guard on all of that: the gate still
+   * decides, and the decision log stays a log of human judgements.
+   */
+  it("refuses the export without writing anything to the stage-gate decision log", async () => {
+    runsSingleMock.mockResolvedValueOnce({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "Missing artifacts run",
+        query_text: "Evaluate this corridor",
+        summary_text: "",
+        ai_interpretation: "Interpretation text.",
+        metrics: { overallScore: 70, confidence: "high" },
+        created_at: "2025-01-01T00:00:00.000Z",
+      },
+      error: null,
     });
 
     const response = await postReport(jsonRequest({ runId, format: "html" }));
 
-    expect(response.status).toBe(500);
-    expect(await response.json()).toMatchObject({ error: "Failed to persist stage-gate decision" });
+    expect(response.status).toBe(409);
+    expect(clientFromMock).not.toHaveBeenCalledWith("stage_gate_decisions");
+    expect(decisionInsertMock).not.toHaveBeenCalled();
   });
 
   it("returns html for format=html and includes active map view when provided", async () => {
@@ -273,16 +285,18 @@ describe("POST /api/report", () => {
     // must show the prose stripped of them.
     expect(html).toContain("Interpretation text with 12345 residents.");
     expect(html).not.toContain("[fact:");
-    expect(decisionInsertMock).toHaveBeenCalledWith(
+    // A successful export writes no gate decision either. The map view the
+    // export ran with is still recorded — on the audit line, where a derived,
+    // recomputable fact belongs.
+    expect(clientFromMock).not.toHaveBeenCalledWith("stage_gate_decisions");
+    expect(decisionInsertMock).not.toHaveBeenCalled();
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "report_gate_decision",
       expect.objectContaining({
         decision: "PASS",
-        gate_id: "report_artifact_gate",
-        run_id: runId,
-        metadata: expect.objectContaining({
-          mapViewState: expect.objectContaining({
-            crashSeverityFilter: "fatal",
-            crashUserFilter: "pedestrian",
-          }),
+        mapViewState: expect.objectContaining({
+          crashSeverityFilter: "fatal",
+          crashUserFilter: "pedestrian",
         }),
       })
     );

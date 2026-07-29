@@ -41,7 +41,10 @@ import { RTP_EVIDENCE_KPI_NAMES, summarizeRtpModelingEvidence, type RtpModelingE
 import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
-import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
+import {
+  loadProjectStageGateBoard,
+  type StageGateDecisionQuerySupabaseLike,
+} from "@/lib/stage-gates/decision-queries";
 import { resolveWorkspaceStageGateBinding } from "@/lib/stage-gates/template-loader";
 import { buildProjectTimelineItems } from "./_components/_timeline";
 import { ProjectPostureHeader } from "./_components/project-posture-header";
@@ -62,7 +65,7 @@ import {
   type ProjectCorridorRow,
 } from "@/lib/cartographic/project-corridor-record";
 import { deriveHomeMapView, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
-import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { canAccessWorkspaceAction, isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import type {
   BillingInvoiceRow,
   FundingAwardRow,
@@ -426,12 +429,15 @@ export default async function ProjectDetailPage({
       }>);
   const scenarioEntriesPending = looksLikePendingSchema(scenarioEntriesResult.error?.message);
 
-  const { data: recentGateDecisions } = await supabase
-    .from("stage_gate_decisions")
-    .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
-    .eq("workspace_id", project.workspace_id)
-    .order("decided_at", { ascending: false })
-    .limit(200);
+  // The gate cockpit: this project's decisions and the board built from them.
+  // Both the project scoping and the read-failure disclosure live in the loader —
+  // see src/lib/stage-gates/decision-queries.ts for why each one is load-bearing.
+  const stageGateBoard = await loadProjectStageGateBoard(supabase as unknown as StageGateDecisionQuerySupabaseLike, {
+    workspaceId: project.workspace_id,
+    projectId: project.id,
+    templateId: stageGateBinding?.templateId ?? null,
+  });
+  const { decisions: recentGateDecisions, summary: stageGateSummary } = stageGateBoard;
 
   const milestoneResult = await supabase
     .from("project_milestones")
@@ -693,21 +699,6 @@ export default async function ProjectDetailPage({
     .slice(0, 6);
 
   const dataHubMigrationPending = looksLikePendingSchema(datasetLinksResult.error?.message);
-
-  const stageGateSummary = buildProjectStageGateSummary(
-    recentGateDecisions as Array<{
-      gate_id: string;
-      decision: string;
-      rationale: string | null;
-      decided_at: string | null;
-      missing_artifacts?: string[] | null;
-    }>,
-    // Render the template this workspace is bound to, not whichever one the
-    // registry happens to hold as its interim default. They are the same today;
-    // registering a second pack must not silently make the board disagree with
-    // the binding disclosed beside it.
-    stageGateBinding ? { templateId: stageGateBinding.templateId } : undefined
-  );
 
   const now = new Date();
   const prioritizedMilestones = [...milestones].sort((left, right) => {
@@ -1244,7 +1235,12 @@ export default async function ProjectDetailPage({
           />
         </div>
 
-        <ProjectStageGateBoard stageGateSummary={stageGateSummary} />
+        <ProjectStageGateBoard
+          stageGateSummary={stageGateSummary}
+          workspaceId={project.workspace_id}
+          projectId={project.id}
+          canRecordDecision={canAccessWorkspaceAction("stage_gates.decisions.write", membership.role)}
+        />
       </div>
 
       <ProjectIdentityEditor

@@ -112,6 +112,15 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   { table: "project_risks", column: "project_id", label: "risks", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_issues", column: "project_id", label: "issues", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_decisions", column: "project_id", label: "decisions", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
+  // Stage-gate decisions are append-only by design — there is no route that
+  // deletes one, because a verdict is superseded by recording the next one, not
+  // by erasing it. So a project that has ever been formally gated is, in
+  // practice, permanently undeletable. That is the intended reading of "a delete
+  // succeeds only when the project carries nothing": the reversible alternative
+  // (retire the project) is the right answer for a project with a governance
+  // record, and the refusal now names those decisions instead of cascading them
+  // away unmentioned.
+  { table: "stage_gate_decisions", column: "project_id", label: "stage-gate decisions", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}#project-governance" },
   { table: "project_meetings", column: "project_id", label: "meetings", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "data_dataset_project_links", column: "project_id", label: "linked datasets", severity: "evidence", behavior: "cascade", href: "/data-hub" },
   { table: "aerial_project_posture", column: "project_id", label: "aerial posture", severity: "evidence", behavior: "cascade", href: "/aerial" },

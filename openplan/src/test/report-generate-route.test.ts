@@ -38,10 +38,14 @@ const reportRunsOrderMock = vi.fn();
 const reportRunsEqMock = vi.fn(() => ({ order: reportRunsOrderMock }));
 const reportRunsSelectMock = vi.fn(() => ({ eq: reportRunsEqMock }));
 
+// Workspace AND project scoped. The snapshot built from these rows is frozen
+// into a packet an agency sends to a funder, so a gate that passed on a
+// different project in the same workspace must not be able to reach it.
 const stageGateDecisionsLimitMock = vi.fn();
 const stageGateDecisionsOrderMock = vi.fn(() => ({ limit: stageGateDecisionsLimitMock }));
-const stageGateDecisionsEqMock = vi.fn(() => ({ order: stageGateDecisionsOrderMock }));
-const stageGateDecisionsSelectMock = vi.fn(() => ({ eq: stageGateDecisionsEqMock }));
+const stageGateDecisionsEqProjectMock = vi.fn(() => ({ order: stageGateDecisionsOrderMock }));
+const stageGateDecisionsEqMock = vi.fn(() => ({ eq: stageGateDecisionsEqProjectMock }));
+const stageGateDecisionsSelectMock = vi.fn((_columns: string) => ({ eq: stageGateDecisionsEqMock }));
 
 const deliverablesLimitMock = vi.fn();
 const deliverablesOrderMock = vi.fn(() => ({ limit: deliverablesLimitMock }));
@@ -1707,6 +1711,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       data: [
         {
           id: "stage-gate-1",
+          project_id: "44444444-4444-4444-8444-444444444444",
           gate_id: "G01_INITIATION_AUTHORIZATION",
           decision: "PASS",
           rationale: "Charter is approved.",
@@ -1715,6 +1720,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
         },
         {
           id: "stage-gate-2",
+          project_id: "44444444-4444-4444-8444-444444444444",
           gate_id: "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
           decision: "HOLD",
           rationale: "Civil rights plan is still missing.",
@@ -1737,6 +1743,19 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
 
     expect(response.status).toBe(200);
+    // The snapshot is only about THIS project. Read workspace-wide, a gate that
+    // passed on a neighbouring project would be frozen into this packet as a
+    // pass of its own — the one falsehood a packet cannot be corrected out of
+    // once it has been sent.
+    expect(stageGateDecisionsSelectMock.mock.calls[0]?.[0]).toContain("project_id");
+    expect(stageGateDecisionsEqMock).toHaveBeenCalledWith(
+      "workspace_id",
+      "33333333-3333-4333-8333-333333333333"
+    );
+    expect(stageGateDecisionsEqProjectMock).toHaveBeenCalledWith(
+      "project_id",
+      "44444444-4444-4444-8444-444444444444"
+    );
     expect(artifactsInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata_json: expect.objectContaining({
@@ -1777,6 +1796,63 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Missing artifacts: G02_E03.");
     expect(generatedHtml).toContain("G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS");
     expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-governance');
+  });
+
+  it("names the missing migration when the decision log cannot be scoped yet, instead of a generic 500", async () => {
+    // Code deploys ahead of migrations. Until 20260728000011 lands there is no
+    // `project_id` to filter on, and refusing is right — a workspace-wide
+    // fallback would freeze a neighbouring project's gate verdict into a packet
+    // an agency sends to a funder. But the refusal has to be actionable, in the
+    // shape this route already uses for a pending campaign-target schema.
+    stageGateDecisionsLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: {
+        message: 'column stage_gate_decisions.project_id does not exist',
+        code: "42703",
+      },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(503);
+    const body = await response.json();
+    expect(body.hint).toContain("20260728000011_stage_gate_decisions_project_scope");
+    // And nothing was written: a packet is never produced from a gate read that
+    // failed.
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still refuses generically when the decision log fails for a reason a migration will not fix", async () => {
+    // A policy or permission failure must not be reported as a pending
+    // migration — that would send an operator to apply one that is already
+    // applied, and the real cause would go unlooked-at.
+    stageGateDecisionsLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'permission denied for table stage_gate_decisions', code: "42501" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
   });
 
   it("persists scenario-set provenance derived from linked report runs", async () => {

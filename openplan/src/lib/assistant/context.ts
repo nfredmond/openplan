@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { buildProjectStageGateSummary } from "@/lib/stage-gates/summary";
+import {
+  loadProjectStageGateBoard,
+  type StageGateDecisionQuerySupabaseLike,
+} from "@/lib/stage-gates/decision-queries";
+import type { ProjectStageGateSummary } from "@/lib/stage-gates/summary";
 import { buildModelWorkspaceSummary } from "@/lib/models/catalog";
 import { extractModelLaunchTemplate } from "@/lib/models/run-launch";
 import {
@@ -146,7 +150,7 @@ export type ProjectAssistantContext = {
       decisionDueAt: string | null;
     } | null;
   };
-  stageGateSummary: ReturnType<typeof buildProjectStageGateSummary>;
+  stageGateSummary: ProjectStageGateSummary;
   linkedDatasets: Array<{
     datasetId: string;
     name: string;
@@ -852,7 +856,7 @@ async function loadProjectContext(
     issuesResult,
     decisionsResult,
     meetingsResult,
-    stageGatesResult,
+    stageGateBoard,
     runsResult,
     datasetLinksResult,
     projectFundingProfileResult,
@@ -867,12 +871,15 @@ async function loadProjectContext(
     supabase.from("project_issues").select("id, status, severity").eq("project_id", project.id),
     supabase.from("project_decisions").select("id").eq("project_id", project.id),
     supabase.from("project_meetings").select("id").eq("project_id", project.id),
-    supabase
-      .from("stage_gate_decisions")
-      .select("id, gate_id, decision, rationale, decided_at, missing_artifacts")
-      .eq("workspace_id", project.workspace_id)
-      .order("decided_at", { ascending: false })
-      .limit(200),
+    // Through the shared loader rather than inline, because the assistant
+    // restates this board as a claim about THIS project — "no stage gate is
+    // currently on hold" — and the loader is where the two rules that makes
+    // honest live: the read is scoped to the project, and a read that FAILED is
+    // reported as unreadable instead of as an empty log.
+    loadProjectStageGateBoard(supabase as unknown as StageGateDecisionQuerySupabaseLike, {
+      workspaceId: project.workspace_id,
+      projectId: project.id,
+    }),
     supabase
       .from("runs")
       .select("id, title, created_at, summary_text")
@@ -1221,15 +1228,7 @@ async function loadProjectContext(
           }
         : null,
     },
-    stageGateSummary: buildProjectStageGateSummary(
-      ((stageGatesResult.data ?? []) as Array<{
-        gate_id: string;
-        decision: string;
-        rationale: string | null;
-        decided_at: string | null;
-        missing_artifacts?: string[] | null;
-      }>)
-    ),
+    stageGateSummary: stageGateBoard.summary,
     linkedDatasets,
     recentRuns: ((runsResult.data ?? []) as Array<{
       id: string;

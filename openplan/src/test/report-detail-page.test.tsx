@@ -105,10 +105,15 @@ const dataRefreshJobsOrderMock = vi.fn();
 const dataRefreshJobsInMock = vi.fn(() => ({ order: dataRefreshJobsOrderMock }));
 const dataRefreshJobsSelectMock = vi.fn(() => ({ in: dataRefreshJobsInMock }));
 
+// The live gate board is read workspace AND project scoped: the packet's frozen
+// gate snapshot is only comparable against decisions recorded on the same
+// project, and a neighbouring project's verdict would otherwise show up as this
+// packet's drift.
 const stageGateLimitMock = vi.fn();
 const stageGateOrderMock = vi.fn(() => ({ limit: stageGateLimitMock }));
-const stageGateEqWorkspaceMock = vi.fn(() => ({ order: stageGateOrderMock }));
-const stageGateSelectMock = vi.fn(() => ({ eq: stageGateEqWorkspaceMock }));
+const stageGateEqProjectMock = vi.fn(() => ({ order: stageGateOrderMock }));
+const stageGateEqWorkspaceMock = vi.fn(() => ({ eq: stageGateEqProjectMock }));
+const stageGateSelectMock = vi.fn((_columns: string) => ({ eq: stageGateEqWorkspaceMock }));
 
 const deliverablesOrderMock = vi.fn();
 const deliverablesEqProjectMock = vi.fn(() => ({ order: deliverablesOrderMock }));
@@ -714,6 +719,8 @@ describe("ReportDetailPage", () => {
 
       data: [
         {
+          id: "gate-decision-1",
+          project_id: "project-1",
           gate_id: "G01",
           decision: "pass",
           rationale: "Ready",
@@ -721,6 +728,8 @@ describe("ReportDetailPage", () => {
           missing_artifacts: [],
         },
         {
+          id: "gate-decision-2",
+          project_id: "project-1",
           gate_id: "G03",
           decision: "hold",
           rationale: "Contracting packet needs signature",
@@ -1010,5 +1019,53 @@ describe("ReportDetailPage", () => {
 
     expect(screen.queryByText(/^Not yet$/i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/3\/28\/2026/i).length).toBeGreaterThan(0);
+  });
+
+  it("reads the live gate board for this report's project, not the whole workspace", async () => {
+    // The drift row compares this packet's frozen gate snapshot against the
+    // live board. Unscoped, a gate that passed on a NEIGHBOURING project in the
+    // same workspace would show up as this packet's own gate posture — in a
+    // document an agency sends to a funder.
+    const page = await ReportDetailPage({
+      params: Promise.resolve({ reportId: "report-1" }),
+    });
+
+    render(page);
+
+    expect(stageGateEqWorkspaceMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
+    expect(stageGateEqProjectMock).toHaveBeenCalledWith("project_id", "project-1");
+    expect(stageGateSelectMock.mock.calls[0]?.[0]).toContain("project_id");
+  });
+
+  it("does not report an unreadable live gate log as a packet that still matches", async () => {
+    stageGateLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'permission denied for table "stage_gate_decisions"' },
+    });
+
+    const page = await ReportDetailPage({
+      params: Promise.resolve({ reportId: "report-1" }),
+    });
+
+    render(page);
+
+    // The drift row is withheld rather than rendered as a comparison that never
+    // happened: an unreadable board has zero passes because the counts are
+    // unknown, so comparing them would have read as gates lost since generation.
+    expect(screen.queryByText(/Snapshot 1 pass/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/Review counts and next steps still match the saved report snapshot/i)
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText(/No live source drift is currently visible/i)
+    ).not.toBeInTheDocument();
+    // And the gap is named, with the database's own reason, so the reader knows
+    // which check did not run.
+    expect(
+      screen.getAllByText(/live stage-gate decision log could not be read/i).length
+    ).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/permission denied for table "stage_gate_decisions"/i).length
+    ).toBeGreaterThan(0);
   });
 });

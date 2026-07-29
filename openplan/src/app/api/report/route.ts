@@ -583,6 +583,37 @@ export async function POST(request: NextRequest) {
         ? (runMetrics.mapViewState as Record<string, unknown>)
         : null);
 
+    /**
+     * The export precondition: does this run carry the artifacts a report needs?
+     *
+     * IT IS NOT A STAGE-GATE DECISION, AND IT USED TO BE RECORDED AS ONE. Every
+     * export inserted a `stage_gate_decisions` row with
+     * `gate_id: "report_artifact_gate"` — a string in NO registered template's
+     * gate order — and four things followed from that, all bad:
+     *
+     *   1. It attributed a machine's arithmetic to a person. `decided_by` was
+     *      whoever clicked Export; `evaluateReportArtifactGate` is a pure
+     *      function of the run row and exercises no judgement at all. A
+     *      stage-gate decision is a judgement someone is accountable for.
+     *   2. It stored a DERIVED fact that goes stale. A HOLD recorded at 10:00
+     *      is false at 10:05 once the crash snapshot lands, and nothing rewrote
+     *      it — so the log accumulated verdicts that used to be true.
+     *   3. Nothing read it. Every reader passes rows through
+     *      `buildProjectStageGateSummary`, which matches gate ids against the
+     *      bound template; these matched nothing and were dropped. They were
+     *      write-only rows that then CROWDED OUT real decisions, because each
+     *      reader takes the newest 200 — so a workspace that exported reports
+     *      pushed its genuine gate decisions out of the window and every gate
+     *      silently reverted to "no decision recorded".
+     *   4. A failed insert 500'd the export. A report a planner was entitled to
+     *      was blocked by a row nobody read.
+     *
+     * Removing it loses nothing recoverable: the audit line below records the
+     * same fields, the 409 hands the caller the decision and the missing
+     * artifacts, and the verdict itself is recomputable from the run at any time.
+     * The decision log is now what its name says — recorded human judgements
+     * against a template's gates, written by /api/stage-gates/decisions.
+     */
     const gateResult = evaluateReportArtifactGate(run);
     audit.info("report_gate_decision", {
       runId,
@@ -592,45 +623,8 @@ export async function POST(request: NextRequest) {
       template,
       decision: gateResult.decision,
       missingArtifacts: gateResult.missingArtifacts,
+      mapViewState: resolvedMapViewState,
     });
-
-    const decisionRationale =
-      gateResult.decision === "PASS"
-        ? "Report artifact gate passed: all required artifacts are present."
-        : `Report artifact gate hold: missing ${gateResult.missingArtifacts.length} required artifact(s).`;
-
-    const { error: decisionPersistenceError } = await supabase
-      .from("stage_gate_decisions")
-      .insert({
-        workspace_id: run.workspace_id,
-        run_id: run.id,
-        gate_id: "report_artifact_gate",
-        decision: gateResult.decision,
-        rationale: decisionRationale,
-        missing_artifacts: gateResult.missingArtifacts,
-        metadata: {
-          source: "api.report",
-          template,
-          format,
-          mapViewState: resolvedMapViewState,
-        },
-        decided_by: user.id,
-      });
-
-    if (decisionPersistenceError) {
-      audit.error("report_gate_decision_persist_failed", {
-        runId,
-        workspaceId: run.workspace_id,
-        userId: user.id,
-        format,
-        template,
-        decision: gateResult.decision,
-        message: decisionPersistenceError.message,
-        code: decisionPersistenceError.code ?? null,
-      });
-
-      return NextResponse.json({ error: "Failed to persist stage-gate decision" }, { status: 500 });
-    }
 
     if (gateResult.decision === "HOLD") {
       return NextResponse.json(

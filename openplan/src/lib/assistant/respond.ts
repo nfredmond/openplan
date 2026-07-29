@@ -88,6 +88,42 @@ function hasRtpFundingBackedReleaseReviewPressure(context: { operationsSummary: 
   return context.operationsSummary.counts.rtpFundingReviewPackets > 0;
 }
 
+type StageGateSummary = ProjectAssistantContext["stageGateSummary"];
+
+/**
+ * The gate counts, in the words the rest of the lane uses.
+ *
+ * "not-started" was a claim about the PROJECT — that its gates had not been
+ * begun. The board never knew that. It knows whether a DECISION was recorded,
+ * and a gate can be well under way with no verdict logged, which is why
+ * `src/lib/stage-gates/summary.ts` labels it "No decision recorded". The
+ * assistant speaks to the same planner about the same board and may not use a
+ * stronger word for it than the board does.
+ */
+function describeStageGateCounts(summary: StageGateSummary): string {
+  if (!summary.decisionsRead.readable) {
+    return `Stage-gate decisions could not be read (${summary.decisionsRead.reason}), so pass, hold, and no-decision counts are unknown here.`;
+  }
+
+  return `Stage-gate pass / hold / no decision recorded: ${summary.passCount}/${summary.holdCount}/${summary.notStartedCount}`;
+}
+
+/**
+ * What to say when `blockedGate` is null.
+ *
+ * Null means one of two entirely different things: the log was read and holds
+ * no HOLD, or the log did not load and nothing about holds is established. The
+ * assistant is the surface most likely to have that restated in a meeting, so
+ * the second one may never borrow the first one's sentence.
+ */
+function describeAbsentStageGateHold(summary: StageGateSummary, absentSentence: string): string {
+  if (!summary.decisionsRead.readable) {
+    return `Whether any stage gate is on hold is unknown for this project: the decision log could not be read (${summary.decisionsRead.reason}).`;
+  }
+
+  return absentSentence;
+}
+
 function metricLabel(metrics: Record<string, unknown>, key: string): string {
   const value = asNumber(metrics[key]);
   return value === null ? "N/A" : `${value}`;
@@ -177,7 +213,12 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
 function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview {
   const openRisks = context.counts.risks;
   const openIssues = context.counts.issues;
-  const blockedGate = context.stageGateSummary.blockedGate?.name ?? "No hold gate";
+  // A stat tile has room for a label, not a caveat, so the unreadable case gets
+  // its own word rather than borrowing "No hold gate" — which would report a
+  // failed read as a clean gate board.
+  const blockedGate =
+    context.stageGateSummary.blockedGate?.name ??
+    (context.stageGateSummary.decisionsRead.readable ? "No hold gate" : "Gate log not readable");
   const gapAmount = context.fundingSummary.gapAmount;
   const needsFundingSourcing = context.fundingSummary.fundingNeedAmount !== null && context.fundingSummary.opportunityCount === 0;
   const awardRecordCount = context.fundingSummary.awardRecordCount;
@@ -941,15 +982,26 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
       title: `Current blockers for ${context.project.name}`,
       summary: blockedGate
         ? `${context.project.name} is not blocker-free: the main formal control issue is ${blockedGate.name}, and the surrounding project record still shows open risk / issue pressure.`
-        : `${context.project.name} does not show a formal held stage gate, but open risk and issue counts still need active review.`,
+        : describeAbsentStageGateHold(
+            context.stageGateSummary,
+            `${context.project.name} does not show a formal held stage gate, but open risk and issue counts still need active review.`
+          ),
       findings: [
         blockedGate
           ? `Primary gate hold: ${blockedGate.gateId} · ${blockedGate.name} · ${blockedGate.rationale}`
-          : "No stage gate is currently recorded on HOLD.",
+          : describeAbsentStageGateHold(
+              context.stageGateSummary,
+              "No stage gate is currently recorded on HOLD."
+            ),
         `${pluralize(context.counts.risks, "risk")} and ${pluralize(context.counts.issues, "issue")} are visible on the project record.`,
         blockedGate?.missingArtifacts.length
           ? `Missing artifacts on the blocked gate: ${blockedGate.missingArtifacts.join(", ")}.`
-          : "No explicit missing-artifact list is recorded on the current gate surface.",
+          // Same rule as the two findings above: with the log unread there is no
+          // blocked gate to carry a missing-artifact list, so reporting the list
+          // as absent would state an outage as a fact about the gate record.
+          : context.stageGateSummary.decisionsRead.readable
+            ? "No explicit missing-artifact list is recorded on the current gate surface."
+            : "Whether any missing-artifact list is recorded is unknown for the same reason: the gate decision log did not load.",
       ],
       nextSteps: [
         blockedGate
@@ -958,7 +1010,7 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         "Use the project control room to tighten rationale, owners, and mitigation notes before external reporting.",
       ],
       evidence: [
-        `Stage-gate pass/hold/not-started: ${context.stageGateSummary.passCount}/${context.stageGateSummary.holdCount}/${context.stageGateSummary.notStartedCount}`,
+        describeStageGateCounts(context.stageGateSummary),
         `Project status: ${context.project.status}`,
         `Updated: ${formatDateTime(context.project.updatedAt)}`,
       ],
@@ -1108,7 +1160,10 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
         : "No linked funding opportunities are currently visible on this project.",
       blockedGate
         ? `Gate pressure exists at ${blockedGate.gateId} · ${blockedGate.name}.`
-        : `No formal stage gate is currently on hold; next gate cue is ${context.stageGateSummary.nextGate?.gateId ?? "not yet set"}.`,
+        : describeAbsentStageGateHold(
+            context.stageGateSummary,
+            `No formal stage gate is currently on hold; next gate cue is ${context.stageGateSummary.nextGate?.gateId ?? "not yet set"}.`
+          ),
     ],
     nextSteps: [
       blockedGate
@@ -1126,7 +1181,9 @@ function buildProjectResponse(context: ProjectAssistantContext, workflowId: stri
     ],
     evidence: [
       `Plan type: ${context.project.planType}`,
-      `Stage-gate pass count: ${context.stageGateSummary.passCount}`,
+      context.stageGateSummary.decisionsRead.readable
+        ? `Stage-gate pass count: ${context.stageGateSummary.passCount}`
+        : `Stage-gate pass count: unknown — the decision log could not be read (${context.stageGateSummary.decisionsRead.reason}).`,
       `Recent run count: ${context.counts.recentRuns}`,
     ],
     quickLinks: buildAssistantOperations(context),
