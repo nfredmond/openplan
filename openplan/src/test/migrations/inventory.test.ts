@@ -35,16 +35,20 @@ import { loadSchemaInventory } from "./schema-inventory";
 
 const EXPECTED = {
   // +2 permissive UPDATE policies from 20260728000010 (runs, project_rtp_cycle_links).
-  policies: 542,
-  permissive: 302,
+  // +2 permissive policies (SELECT + INSERT) from 20260728000012
+  // (vmt_significance_screenings), whose INSERT policy is role-AWARE — it calls
+  // workspace_member_can_write — so it needs no restrictive writer gate and the
+  // restrictive count is unchanged. +1 table, +1 view, +1 RLS-enabled table.
+  policies: 544,
+  permissive: 304,
   restrictive: 240,
-  permissiveWrites: 197,
+  permissiveWrites: 198,
   expanded: 252,
-  tablesWithPolicies: 105,
-  relations: 121,
-  tables: 116,
-  views: 5,
-  rlsEnabledTables: 106,
+  tablesWithPolicies: 106,
+  relations: 123,
+  tables: 117,
+  views: 6,
+  rlsEnabledTables: 107,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -346,6 +350,7 @@ describe("migration schema inventory", () => {
       "lodes_by_tract",
       "project_bca_screenings_latest",
       "scenario_comparison_summary",
+      "vmt_significance_screenings_latest",
     ]);
     expect(schema.isView("census_tracts_map")).toBe(true);
     expect(schema.columns("census_tracts_map")).toBeUndefined();

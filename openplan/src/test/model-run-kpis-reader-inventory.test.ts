@@ -169,6 +169,14 @@ describe("model_run_kpis reader inventory", () => {
         filePath: "src/app/api/models/[modelId]/runs/[modelRunId]/launch/route.ts",
         classification: "model-run-cleanup-by-run-id",
       }),
+      // The persisted VMT significance determination recomputes from the run's
+      // STORED KPIs rather than trusting a figure in the request body — that
+      // read is what keeps the KPI-namespace claim firewall in force when a
+      // determination is saved.
+      expect.objectContaining({
+        filePath: "src/app/api/models/[modelId]/runs/[modelRunId]/vmt-significance/route.ts",
+        classification: "model-run-read-by-run-id",
+      }),
       expect.objectContaining({
         filePath: "src/app/api/models/[modelId]/runs/route.ts",
         classification: "sketch-abm-run-kpi-writer",

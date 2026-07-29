@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download } from "lucide-react";
+import { Download, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -26,29 +26,87 @@ import {
   type CeqaVmtKpiRowLike,
   type CeqaVmtScreeningInputs,
 } from "@/lib/models/ceqa-vmt-screen";
+import {
+  claimStatusLabel,
+  type VmtClaimTierEvidence,
+  type VmtDeterminationSaveRequest,
+} from "@/lib/planner-pack/vmt-screening-records";
+import {
+  selectCalibratedHoldoutApe,
+  selectCalibratedVmtPerCapita,
+} from "@/lib/planner-pack/vmt-determination-inputs";
+import type { VmtFrameworkResolution } from "@/lib/planner-pack/vmt-significance-frameworks";
 
 /**
- * Presentational core of the CEQA §15064.3 VMT screen, shared by the
- * county-run panel and the model-run panel. Consumes stored KPI rows only —
- * derivation, empty states, operator inputs, determination, and memo download.
- * Access gating (e.g. the county screening-grade consent gate) stays in the
- * wrappers.
+ * Presentational core of the VMT significance screen, shared by the county-run
+ * panel and the model-run panel. Consumes stored KPI rows only — derivation,
+ * empty states, operator inputs, determination, and memo download. Access gating
+ * (e.g. the county screening-grade consent gate) stays in the wrappers.
+ *
+ * THE JURISDICTION BASIS AND THE CLAIM TIER ARE NOT OPTIONAL DISPLAY. A
+ * significance determination is the one determination-shaped output OpenPlan
+ * produces, and its meaning depends entirely on two facts that are invisible in
+ * the arithmetic: WHOSE LAW makes VMT the significance metric here (CEQA
+ * §15064.3 is California law and determines nothing in Ohio), and HOW GOOD the
+ * model behind the number is (the repo's own record documents sketch-ABM VMT
+ * running ~56% below the CARB reference — enough to turn a "potentially
+ * significant" into a false "less than significant"). So both are rendered
+ * unconditionally, and the ABSENCE of either is stated rather than left blank:
+ * a surface that has not resolved a framework says so in the loudest form, which
+ * is why the props below are optional but their absent state is never quiet.
  */
 export type CeqaVmtScreenBodyProps = {
   /** Scenario identifier stamped on screening rows and the downloaded memo. */
   scenarioId: string;
   /** KPI rows already scoped to the run under screening. */
   kpis: CeqaVmtKpiRowLike[];
+  /**
+   * Which VMT significance framework governs this workspace's jurisdiction, as
+   * the registry resolved it. Omitted by a surface that has not resolved one;
+   * that renders the same refusal as an uncovered jurisdiction, because a
+   * determination with no established basis is exactly as unquotable.
+   */
+  frameworkResolution?: VmtFrameworkResolution | null;
+  /**
+   * Why no framework is available, when the surface knows a more specific reason
+   * than "none was resolved" — most importantly, that the lookup itself failed.
+   * A failed read must not render as "your jurisdiction is not covered".
+   */
+  frameworkUnavailableReason?: string | null;
+  /** The run's recorded modeling claim tier, when the surface reads it. */
+  claimTier?: VmtClaimTierEvidence | null;
+  /** Supplied only by a surface that can persist a determination. */
+  onSaveDetermination?: (request: VmtDeterminationSaveRequest) => void;
+  savePending?: boolean;
+  saveError?: string | null;
+  saveNotice?: string | null;
 };
 
 function formatNumber(value: number, digits = 1): string {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: digits }).format(value);
 }
 
-export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) {
-  const [referenceInput, setReferenceInput] = useState(String(DEFAULT_REFERENCE_VMT_PER_CAPITA));
+export function CeqaVmtScreenBody({
+  scenarioId,
+  kpis,
+  frameworkResolution,
+  frameworkUnavailableReason = null,
+  claimTier,
+  onSaveDetermination,
+  savePending = false,
+  saveError = null,
+  saveNotice = null,
+}: CeqaVmtScreenBodyProps) {
+  // A covered jurisdiction supplies its OWN starting reference and cut line. The
+  // module-level constants remain the fallback for a surface with no resolved
+  // framework, but they are a California statewide figure and OPR's percentage —
+  // presenting them as universal is the hardcode this branch removes.
+  const framework = frameworkResolution?.kind === "covered" ? frameworkResolution.framework : null;
+  const [referenceInput, setReferenceInput] = useState(
+    String(framework?.defaultReferenceVmtPerCapita ?? DEFAULT_REFERENCE_VMT_PER_CAPITA)
+  );
   const [thresholdPctInput, setThresholdPctInput] = useState(
-    String(OPR_DEFAULT_THRESHOLD_PCT * 100)
+    String((framework?.defaultThresholdPct ?? OPR_DEFAULT_THRESHOLD_PCT) * 100)
   );
   const [projectType, setProjectType] = useState<CeqaProjectType>("residential");
   const [referenceLabel, setReferenceLabel] = useState<CeqaReferenceLabel>("regional");
@@ -60,26 +118,31 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
   // observed traffic COUNTS (link volumes), which strengthens the evidence for
   // this area's screening determination without recalculating the per-capita
   // VMT aggregate. None on the default (uncalibrated) path.
-  const calibratedHoldoutApe = useMemo(() => {
-    const row = kpis.find((k) => k.kpi_name === "validation_median_ape_calibrated");
-    return typeof row?.value === "number" ? row.value : null;
-  }, [kpis]);
+  const calibratedHoldoutApe = useMemo(() => selectCalibratedHoldoutApe(kpis), [kpis]);
 
   // Opt-in: a calibrated resident VMT per capita (from the stage-2 nudged OD),
   // present only when the demand nudge accepted. Off by default — the operator
   // must explicitly choose a calibrated-input determination.
-  const calibratedPerCapita = useMemo(() => {
-    const row = kpis.find((k) => k.kpi_name === "resident_vmt_per_capita_calibrated");
-    return typeof row?.value === "number" ? row.value : null;
-  }, [kpis]);
+  //
+  // SELECTED BY THE SHARED RULE, not by a lookup written here. This panel used
+  // to accept any row with the calibrated KPI's name, while the save route also
+  // required it to be run-level and positive — so a geometry-scoped calibrated
+  // slice put a calibrated determination on screen that the server then refused
+  // with 422. The refusal was honest; showing a planner a number the product
+  // will not keep is not. One definition, called from both sides.
+  const calibrated = useMemo(() => selectCalibratedVmtPerCapita(kpis), [kpis]);
   const [useCalibratedInput, setUseCalibratedInput] = useState(false);
-  const calibratedActive = useCalibratedInput && calibratedPerCapita !== null;
+  const calibratedActive = useCalibratedInput && calibrated !== null;
   const activeInputs: CeqaVmtScreeningInputs = useMemo(
     () =>
-      calibratedActive
-        ? { status: "per-capita", vmtPerCapita: calibratedPerCapita as number, vmtKpiName: "resident_vmt_per_capita_calibrated" }
+      calibratedActive && calibrated
+        ? {
+            status: "per-capita",
+            vmtPerCapita: calibrated.vmtPerCapita,
+            vmtKpiName: calibrated.kpiName,
+          }
         : screeningInputs,
-    [calibratedActive, calibratedPerCapita, screeningInputs]
+    [calibratedActive, calibrated, screeningInputs]
   );
 
   const referenceVmtPerCapita = Number(referenceInput);
@@ -242,11 +305,31 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
       </div>
       <p className="text-xs text-muted-foreground">
         The reference baseline and threshold are operator-supplied — the stored KPI set cannot
-        provide them. The OPR Technical Advisory (December 2018) default is 15% below the regional
-        or citywide VMT-per-capita baseline. The pre-filled 22.0 reference is the California
-        statewide average total VMT per capita (FHWA Highway Statistics 2022–2023, Table PS-1:
-        21.8–21.9 mi/day) — total travel on public roads divided by population, a coarse screening
-        reference; replace it with your region&apos;s adopted baseline where one exists.
+        provide them.{" "}
+        {framework ? (
+          <>
+            {framework.defaultThresholdRationale} {framework.defaultReferenceRationale}
+          </>
+        ) : (
+          <>
+            {/* The pre-filled numbers are NOT neutral and must not be described as
+                such: the reference is a California statewide average and the
+                percentage is California OPR's recommendation (see
+                DEFAULT_REFERENCE_VMT_PER_CAPITA / OPR_DEFAULT_THRESHOLD_PCT).
+                With no framework established there is nothing to say they suit
+                this workspace, so the honest move is to name where they came
+                from rather than to launder them as a universal default. */}
+            No significance framework has been established for this workspace, so nothing here can
+            tell you what your jurisdiction recommends. The pre-filled values are carried over from
+            California&apos;s guidance — a California statewide VMT-per-capita average (
+            {formatNumber(DEFAULT_REFERENCE_VMT_PER_CAPITA, 1)}) and the{" "}
+            {formatNumber(OPR_DEFAULT_THRESHOLD_PCT * 100, 0)} percent-below cut line recommended by
+            California&apos;s Governor&apos;s Office of Planning and Research — and they are a
+            starting point for the arithmetic only, not a
+            baseline adopted for your area. Replace them with your region&apos;s adopted baseline
+            and threshold.
+          </>
+        )}
       </p>
 
       {!inputsValid ? (
@@ -256,7 +339,7 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
         </p>
       ) : null}
 
-      {calibratedPerCapita !== null ? (
+      {calibrated ? (
         <label
           className="flex items-start gap-2 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-foreground/90"
           data-testid="ceqa-vmt-calibrated-toggle"
@@ -270,7 +353,7 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
           <span>
             <span className="font-semibold">Use calibrated (count-tuned) VMT for this determination.</span>{" "}
             Off (default) = screening VMT. On = the calibrated resident VMT/capita from the demand-nudge
-            stage ({formatNumber(calibratedPerCapita, 3)}), a count-informed refinement — clearly a
+            stage ({formatNumber(calibrated.vmtPerCapita, 3)}), a count-informed refinement — clearly a
             distinct, disclosed calibrated-input determination, not the screening default.
           </span>
         </label>
@@ -326,17 +409,122 @@ export function CeqaVmtScreenBody({ scenarioId, kpis }: CeqaVmtScreenBodyProps) 
               VMT aggregate).
             </p>
           ) : null}
-          <p className="mt-3 text-xs text-muted-foreground">{CEQA_STATUTORY_CITATION}</p>
+          {/* The jurisdiction basis rides WITH the determination, always. A
+              determination that leaves this panel without it is a statement
+              about somebody's law, made to a planner who may not be under it. */}
+          {framework ? (
+            <p
+              className="mt-3 rounded-[0.5rem] border border-[color:var(--pine)]/30 bg-[color:var(--pine)]/5 px-3 py-2 text-xs text-foreground/90"
+              data-testid="ceqa-vmt-jurisdiction-basis"
+            >
+              <span className="font-semibold">Jurisdiction basis:</span> {framework.frameworkName},{" "}
+              {framework.jurisdiction.label}. Established from this workspace&apos;s stated home
+              geography
+              {frameworkResolution?.kind === "covered" && frameworkResolution.jurisdiction.label
+                ? ` (${frameworkResolution.jurisdiction.label})`
+                : ""}
+              . {framework.scopeStatement}
+            </p>
+          ) : (
+            <p
+              className="mt-3 rounded-[0.5rem] border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-xs text-foreground/90"
+              data-testid="ceqa-vmt-jurisdiction-basis"
+            >
+              {/* Two different absences, and they must not be worded alike. A
+                  RESOLUTION means the registry answered about this workspace —
+                  "none covers you" is then a fact. NO resolution means this
+                  surface never asked, and saying "none has been established for
+                  this workspace" would state as fact something the surface
+                  cannot know: the county-run screen does not resolve one, and a
+                  California workspace reading it would be told, wrongly, that it
+                  has no framework. */}
+              <span className="font-semibold">
+                {frameworkResolution
+                  ? "No VMT significance framework has been established for this workspace, so the comparison above is arithmetic — not a significance determination for your area."
+                  : "This screen has not established which VMT significance framework applies here, so the comparison above is arithmetic — not a significance determination for your area."}
+              </span>{" "}
+              {frameworkResolution?.kind === "not_covered" ||
+              frameworkResolution?.kind === "jurisdiction_unknown" ||
+              frameworkResolution?.kind === "ambiguous"
+                ? frameworkResolution.reason
+                : (frameworkUnavailableReason ??
+                  "This surface does not resolve which jurisdiction's VMT significance rules apply, so " +
+                    "OpenPlan cannot say whose determination this would be and will not record one.")}
+            </p>
+          )}
+          {/* The claim tier rides with it for the same reason: the arithmetic is
+              identical whether the VMT behind it is validated or a prototype. */}
+          <p className="mt-2 text-xs text-muted-foreground" data-testid="ceqa-vmt-claim-tier">
+            <span className="font-semibold">Modeling claim tier:</span>{" "}
+            {!claimTier
+              ? "not established on this surface. The run's recorded claim tier is not read here, so how strongly this determination may be claimed is unknown."
+              : claimTier.claimStatusSource === "recorded_claim_decision"
+                ? `${claimStatusLabel(claimTier.claimStatus)} — recorded for this run.`
+                : "not recorded for this run. No modeling claim decision exists, so OpenPlan will not assume a tier for it."}
+          </p>
+          {/* A citation means two different things depending on the jurisdiction
+              basis. Under a framework that governs here, it is the AUTHORITY the
+              determination rests on. Outside one, the same statute is only where
+              the arithmetic came from — printing it unlabelled would let a
+              planner in another state read it as authority over their project. */}
+          {framework ? (
+            <p className="mt-3 text-xs text-muted-foreground" data-testid="ceqa-vmt-citation">
+              {framework.statutoryCitation}
+            </p>
+          ) : (
+            <p className="mt-3 text-xs text-muted-foreground" data-testid="ceqa-vmt-citation">
+              <span className="font-semibold">Method reference:</span> the comparison above implements
+              the VMT-efficiency screening method defined by {CEQA_STATUTORY_CITATION} It is cited as
+              the source of the method, not as authority over a project in your area.
+            </p>
+          )}
           <p className="mt-2 text-xs text-muted-foreground" data-testid="ceqa-vmt-caveat">
             {CEQA_SCREENING_CAVEAT} This screening-grade output is not a CEQA determination of
             record.
           </p>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Button type="button" variant="outline" size="sm" onClick={handleDownloadMemo}>
               <Download className="h-4 w-4" />
               Download memo (markdown)
             </Button>
+            {onSaveDetermination ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                data-testid="ceqa-vmt-save-determination"
+                disabled={!framework || savePending}
+                onClick={() =>
+                  onSaveDetermination({
+                    referenceVmtPerCapita,
+                    thresholdPct,
+                    projectType,
+                    referenceLabel,
+                    inputBasis: calibratedActive ? "calibrated" : "screening",
+                  })
+                }
+              >
+                <Save className="h-4 w-4" />
+                {savePending ? "Saving determination…" : "Save determination to this run"}
+              </Button>
+            ) : null}
           </div>
+          {onSaveDetermination && !framework ? (
+            <p className="mt-2 text-xs text-muted-foreground" data-testid="ceqa-vmt-save-blocked">
+              Saving is unavailable until a VMT significance framework is established for this
+              workspace — a stored determination has to record whose rules it was issued under.
+            </p>
+          ) : null}
+          {saveError ? (
+            <p className="mt-2 text-xs text-destructive" data-testid="ceqa-vmt-save-error">
+              {saveError}
+            </p>
+          ) : null}
+          {saveNotice ? (
+            <p className="mt-2 text-xs text-muted-foreground" data-testid="ceqa-vmt-save-notice">
+              {saveNotice}
+            </p>
+          ) : null}
         </div>
       ) : null}
     </div>

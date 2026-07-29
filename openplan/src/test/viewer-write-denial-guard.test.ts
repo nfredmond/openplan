@@ -64,7 +64,13 @@ const WRITER_GATE_MIGRATIONS = [
 
 const EXPECTED_GATED_TABLES = 80;
 const EXPECTED_RESTRICTIVE_POLICIES = 240;
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 197;
+// 198 rather than 197 since 20260728000012 added `vmt_significance_screenings`.
+// Its INSERT policy is role-AWARE (it calls `workspace_member_can_write`), which
+// is why the gated-table and restrictive-policy counts above did NOT move: a
+// policy that consults the role needs no restrictive partner to supply one. That
+// is the intended shape for a new table — the 240 restrictive policies exist to
+// retrofit 80 tables whose policies were written role-blind.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 198;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [
