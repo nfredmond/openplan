@@ -39,16 +39,30 @@ const EXPECTED = {
   // (vmt_significance_screenings), whose INSERT policy is role-AWARE — it calls
   // workspace_member_can_write — so it needs no restrictive writer gate and the
   // restrictive count is unchanged. +1 table, +1 view, +1 RLS-enabled table.
-  policies: 544,
-  permissive: 304,
+  //
+  // +4 permissive policies (SELECT + INSERT + UPDATE + DELETE) from
+  // 20260729000002 (engagement_context_layers), the GIS context layers an
+  // operator puts on participant maps. All three writes are role-AWARE for the
+  // same reason, so `restrictive` again does not move — that is the intended
+  // shape for a new table, and the 240 restrictive policies remain a retrofit
+  // of 80 older tables whose policies were written role-blind. +1 table,
+  // +1 RLS-enabled table, +1 table with policies, and no new view.
+  //
+  // 20260729000003 (engagement_campaigns.place_*) moves NOTHING here, and that
+  // is the whole entry: it adds nullable columns to a table that already exists
+  // and already has its policies, so no count below changes. Recorded because a
+  // reader diffing the migration list against these notes would otherwise find
+  // it unaccounted for and have to re-derive that absence.
+  policies: 548,
+  permissive: 308,
   restrictive: 240,
-  permissiveWrites: 198,
+  permissiveWrites: 201,
   expanded: 252,
-  tablesWithPolicies: 106,
-  relations: 123,
-  tables: 117,
+  tablesWithPolicies: 107,
+  relations: 124,
+  tables: 118,
   views: 6,
-  rlsEnabledTables: 107,
+  rlsEnabledTables: 108,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

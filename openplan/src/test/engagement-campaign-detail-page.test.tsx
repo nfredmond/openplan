@@ -10,6 +10,8 @@ const redirectMock = vi.fn((..._args: unknown[]) => {
   throw new Error("redirect");
 });
 
+const routerRefreshMock = vi.fn();
+
 const authGetUserMock = vi.fn();
 
 const campaignMaybeSingleMock = vi.fn();
@@ -51,7 +53,89 @@ const reportSectionsSelectMock = vi.fn(() => ({ in: reportSectionsInMock }));
 const reportArtifactsInMock = vi.fn();
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+// The membership row `loadCampaignAccess` reads to decide whether this member
+// may change the campaign's map layers. RLS proves the user is IN the
+// workspace; only this proves what they are allowed to do there.
+const membershipMaybeSingleMock = vi.fn();
+
+/**
+ * The campaign's GIS context layers, read twice by the page: once as summaries
+ * for the management panel, once — filtered on `visible_to_participants` — as
+ * the published geometry the moderators' review map draws. One chainable serves
+ * both, and answers according to the filters it was actually given, so a query
+ * that forgot the publication filter would be visible here as unpublished
+ * geometry arriving at a surface that must not have it.
+ */
+let contextLayerRows: Array<Record<string, unknown>> = [];
+let contextLayerReadError: { message: string } | null = null;
+
+function contextLayerChain(): Record<string, unknown> {
+  const filters: Array<[string, unknown]> = [];
+  const chain: Record<string, unknown> = {
+    select: () => chain,
+    eq: (column: string, value: unknown) => {
+      filters.push([column, value]);
+      return chain;
+    },
+    order: () => chain,
+    then: (resolve: (value: { data: unknown[]; error: { message: string } | null }) => unknown) => {
+      if (contextLayerReadError) return resolve({ data: [], error: contextLayerReadError });
+      const publishedOnly = filters.some(([column, value]) => column === "visible_to_participants" && value === true);
+      const rows = publishedOnly
+        ? contextLayerRows.filter((row) => row.visible_to_participants === true)
+        : contextLayerRows;
+      return resolve({ data: rows, error: null });
+    },
+  };
+  return chain;
+}
+
+function contextLayerRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+  return {
+    id: "layer-1",
+    campaign_id: "campaign-1",
+    workspace_id: "workspace-1",
+    name: "Proposed alignment",
+    description: "Centreline as designed at 30% plans",
+    source_format: "geojson",
+    source_filename: "alignment.geojson",
+    source_byte_size: 2048,
+    srs_authority: "EPSG",
+    srs_code: "4326",
+    srs_name: "WGS 84",
+    srs_basis: "geojson_rfc7946_default",
+    geometry_kinds: ["LineString"],
+    feature_count: 1,
+    source_feature_count: 1,
+    dropped_feature_count: 0,
+    truncated: false,
+    bbox: [-121.1, 39.2, -121, 39.3],
+    display_color: "#38bdf8",
+    sort_order: 0,
+    visible_to_participants: true,
+    created_at: "2026-07-29T00:00:00.000Z",
+    updated_at: "2026-07-29T00:00:00.000Z",
+    features: {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          properties: {},
+          geometry: { type: "LineString", coordinates: [[-121.1, 39.2], [-121, 39.3]] },
+        },
+      ],
+    },
+    ...overrides,
+  };
+}
+
 const fromMock = vi.fn((table: string) => {
+  if (table === "workspace_members") {
+    return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }) }) };
+  }
+  if (table === "engagement_context_layers") {
+    return { select: () => contextLayerChain() };
+  }
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
   }
@@ -95,6 +179,9 @@ const fromMock = vi.fn((table: string) => {
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: (...args: unknown[]) => redirectMock(...args),
+  // The context-layer panel is a client component that refreshes the route
+  // after every write; without this the whole page fails to render.
+  useRouter: () => ({ refresh: routerRefreshMock }),
 }));
 
 vi.mock("next/link", () => ({
@@ -172,6 +259,25 @@ vi.mock("@/components/engagement/ai-moderation-panel", () => ({
   AiModerationPanel: () => <div data-testid="ai-moderation-panel" />,
 }));
 
+/**
+ * The review map stands in for itself, rendering the NAMES of the context
+ * layers it was handed.
+ *
+ * The real component is exercised against a Mapbox double elsewhere; what has
+ * to be proven HERE is the seam this repo keeps breaking — that the render site
+ * actually passes the prop. A map that silently receives `undefined` looks
+ * identical to one that received an empty campaign.
+ */
+vi.mock("@/components/engagement/location-display-map", () => ({
+  LocationDisplayMap: ({ contextLayers }: { contextLayers?: { layers: Array<{ name: string }> } | null }) => (
+    <div data-testid="location-display-map">
+      {(contextLayers?.layers ?? []).map((layer) => (
+        <span key={layer.name}>drawn under review: {layer.name}</span>
+      ))}
+    </div>
+  ),
+}));
+
 import EngagementCampaignDetailPage from "@/app/(app)/engagement/[campaignId]/page";
 
 async function renderPage(searchParams?: { created?: string }) {
@@ -186,6 +292,13 @@ async function renderPage(searchParams?: { created?: string }) {
 describe("EngagementCampaignDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    contextLayerRows = [];
+    contextLayerReadError = null;
+    membershipMaybeSingleMock.mockResolvedValue({
+      data: { workspace_id: "workspace-1", role: "admin" },
+      error: null,
+    });
 
     authGetUserMock.mockResolvedValue({
       data: {
@@ -506,5 +619,71 @@ describe("EngagementCampaignDetailPage", () => {
     expect(
       screen.getByText(/No reports linked through this project yet/i)
     ).toBeInTheDocument();
+  });
+
+  /**
+   * THE REACHABILITY SEAM.
+   *
+   * The importer, the route, the storage, the RLS and the paint module were all
+   * built and all tested, and `EngagementContextLayersPanel` appeared in no file
+   * outside `src/test/` — so no operator could upload a layer and no resident
+   * could see one. A capability a planner cannot reach has not shipped, however
+   * green its unit tests are, and this console is where an operator reaches this
+   * one. These assertions are on the rendered page for that reason.
+   */
+  describe("the campaign's GIS context layers", () => {
+    it("puts the upload panel on the console a planner actually opens", async () => {
+      await renderPage();
+
+      expect(screen.getByText(/Put your project on the map/i)).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /add layer/i })).toBeInTheDocument();
+      expect(screen.getByLabelText(/Layer file/i)).toBeInTheDocument();
+    });
+
+    it("lists an uploaded layer and hands the published one to the review map", async () => {
+      contextLayerRows = [
+        contextLayerRow(),
+        contextLayerRow({ id: "layer-2", name: "Draft parcels", visible_to_participants: false }),
+      ];
+
+      await renderPage();
+
+      // Both layers are the operator's business…
+      expect(screen.getByText("Proposed alignment")).toBeInTheDocument();
+      expect(screen.getByText("Draft parcels")).toBeInTheDocument();
+      expect(screen.getByText("Public")).toBeInTheDocument();
+      expect(screen.getByText("Hidden")).toBeInTheDocument();
+
+      // …but only the published one reaches a map, and it reaches it by name.
+      expect(screen.getByText(/drawn under review: Proposed alignment/)).toBeInTheDocument();
+      expect(screen.queryByText(/drawn under review: Draft parcels/)).not.toBeInTheDocument();
+    });
+
+    it("offers a viewer no control the upload route would refuse", async () => {
+      // Driven through the same `loadCampaignAccess` gate the route uses, so the
+      // console and the API cannot come to disagree about who gets a button.
+      membershipMaybeSingleMock.mockResolvedValue({
+        data: { workspace_id: "workspace-1", role: "viewer" },
+        error: null,
+      });
+      contextLayerRows = [contextLayerRow()];
+
+      await renderPage();
+
+      expect(screen.getByText("Proposed alignment")).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /add layer/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /show to participants/i })).not.toBeInTheDocument();
+      expect(screen.getByText(/map layers but not change them/i)).toBeInTheDocument();
+    });
+
+    it("says the layer list could not be read instead of showing a campaign with none", async () => {
+      contextLayerReadError = { message: "connection reset" };
+
+      await renderPage();
+
+      expect(screen.getByText(/could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/not a finding/i)).toBeInTheDocument();
+      expect(screen.queryByText(/No map layers yet/i)).not.toBeInTheDocument();
+    });
   });
 });

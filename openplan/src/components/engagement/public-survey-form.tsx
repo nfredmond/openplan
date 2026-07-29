@@ -31,6 +31,19 @@ export type PortalSurveyQuestion = {
   helpText: string | null;
   required: boolean;
   config: unknown; // raw config_json — re-parsed defensively per widget
+  /**
+   * For a `map_point` question, the sentence saying where its map opens and
+   * why — resolved server-side by `resolveMapPointQuestionView`, which is also
+   * what filled in `config.center`/`config.zoom`. Null for every other question
+   * type, and for a `map_point` question an operator framed themselves (nothing
+   * was inherited, so there is no assumption to disclose).
+   *
+   * REQUIRED, and required on every question rather than only the one type that
+   * can have it, because the defect it closes was a survey tab that opened on
+   * the continental United States in silence while the portal map beside it said
+   * so out loud. An optional field is one a caller forgets and nothing catches.
+   */
+  mapFramingNote: string | null;
   options: PortalSurveyOption[];
 };
 
@@ -378,6 +391,18 @@ function MapPointWidget({ question, onChange }: WidgetProps) {
   return (
     <div className="space-y-2">
       {cfg.guidance ? <p className="text-xs text-muted-foreground">{cfg.guidance}</p> : null}
+      {/*
+        Say where this map is, on the same terms as the portal's own map one tab
+        over. `cfg.center` is what the picker will actually use, so the "you are
+        looking at a continent" hint is keyed off the camera that exists rather
+        than off a second guess about it.
+      */}
+      {question.mapFramingNote ? (
+        <p className="text-xs text-muted-foreground">
+          {question.mapFramingNote}
+          {cfg.center ? null : " Zoom to your neighbourhood before dropping a pin."}
+        </p>
+      ) : null}
       <div className="public-map-frame public-map-frame--editor">
         <GeometryPickerMap
           onGeometryChange={(next) => {

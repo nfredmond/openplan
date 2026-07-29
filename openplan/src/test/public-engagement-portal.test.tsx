@@ -1,6 +1,14 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PublicEngagementPortal, groupApprovedItems } from "@/components/engagement/public-engagement-portal";
+import { resolvePortalMapFraming } from "@/lib/engagement/public-portal-data";
+
+/**
+ * A campaign nothing could frame. Built through the real resolver rather than
+ * hand-written, so a fixture cannot describe a portal state the resolver would
+ * never produce.
+ */
+const UNFRAMED_MAP = resolvePortalMapFraming({});
 
 const mkItem = (id: string, createdAt: string, parentItemId: string | null = null) => ({
   id,
@@ -80,9 +88,58 @@ describe("PublicEngagementPortal", () => {
     window.localStorage.clear();
   });
 
+  /**
+   * The disclosure has to reach the RESIDENT, not just exist in the resolver.
+   * A framing computed correctly and never rendered leaves the same continent on
+   * screen with nothing said about it, which is the defect this whole change is
+   * about.
+   */
+  it("tells a resident where the map opens, and admits when nothing framed it", () => {
+    const { unmount } = render(
+      <PublicEngagementPortal
+        mapFraming={UNFRAMED_MAP}
+        shareToken="share-token-123"
+        acceptingSubmissions
+        engagementType="map_feedback"
+        categories={[]}
+        approvedItems={[]}
+      />
+    );
+
+    expect(screen.getByText(/no study area has been set for this campaign/i)).toBeInTheDocument();
+    expect(screen.getByText(/zoom to your neighbourhood before dropping a pin/i)).toBeInTheDocument();
+    unmount();
+
+    const framed = resolvePortalMapFraming({
+      projectPlace: {
+        state: "set",
+        label: "Franklin County, Ohio",
+        bbox: { minLon: -83.2, minLat: 39.85, maxLon: -82.8, maxLat: 40.1 },
+      },
+    });
+
+    render(
+      <PublicEngagementPortal
+        mapFraming={framed}
+        shareToken="share-token-123"
+        acceptingSubmissions
+        engagementType="map_feedback"
+        categories={[]}
+        approvedItems={[]}
+      />
+    );
+
+    expect(
+      screen.getByText(/This map opens on Franklin County, Ohio — the linked project's study area\./i)
+    ).toBeInTheDocument();
+    // The continental instruction belongs only to the unframed case.
+    expect(screen.queryByText(/zoom to your neighbourhood before dropping a pin/i)).toBeNull();
+  });
+
   it("renders clearer submission guidance and optionality cues", () => {
     render(
       <PublicEngagementPortal
+        mapFraming={UNFRAMED_MAP}
         shareToken="share-token-123"
         acceptingSubmissions
         engagementType="map_feedback"
@@ -113,6 +170,7 @@ describe("PublicEngagementPortal", () => {
 
     render(
       <PublicEngagementPortal
+        mapFraming={UNFRAMED_MAP}
         shareToken="share-token-123"
         acceptingSubmissions
         engagementType="map_feedback"
@@ -145,6 +203,7 @@ describe("PublicEngagementPortal", () => {
   it("offers point, line, and area drawing plus a photo input on the submit form", () => {
     render(
       <PublicEngagementPortal
+        mapFraming={UNFRAMED_MAP}
         shareToken="share-token-123"
         acceptingSubmissions
         engagementType="map_feedback"
@@ -165,6 +224,7 @@ describe("PublicEngagementPortal", () => {
   it("shows support controls with counts, geometry labels, and attached photos on the feedback list", () => {
     render(
       <PublicEngagementPortal
+        mapFraming={UNFRAMED_MAP}
         shareToken="share-token-123"
         acceptingSubmissions={false}
         engagementType="map_feedback"
@@ -183,6 +243,7 @@ describe("PublicEngagementPortal", () => {
   it("sorts the feedback list by most supported when selected", () => {
     render(
       <PublicEngagementPortal
+        mapFraming={UNFRAMED_MAP}
         shareToken="share-token-123"
         acceptingSubmissions={false}
         engagementType="map_feedback"
@@ -211,6 +272,7 @@ describe("PublicEngagementPortal", () => {
 
     render(
       <PublicEngagementPortal
+        mapFraming={UNFRAMED_MAP}
         shareToken="share-token-123"
         acceptingSubmissions={false}
         engagementType="map_feedback"
@@ -244,6 +306,7 @@ describe("PublicEngagementPortal", () => {
 
     render(
       <PublicEngagementPortal
+        mapFraming={UNFRAMED_MAP}
         shareToken="share-token-123"
         acceptingSubmissions={false}
         engagementType="map_feedback"

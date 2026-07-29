@@ -7,9 +7,23 @@ const authGetUserMock = vi.fn();
 
 const campaignMaybeSingleMock = vi.fn();
 const campaignEqMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }));
-const campaignSelectMock = vi.fn(() => ({ eq: campaignEqMock }));
-const campaignUpdateEqMock = vi.fn().mockResolvedValue({ error: null });
+// The UPDATE now reads back the row it changed (`.select("id").maybeSingle()`),
+// so it can tell "changed nothing" from "failed" instead of answering
+// `{ success: true }` over a write the database may have refused.
+const campaignUpdateMaybeSingleMock = vi.fn().mockResolvedValue({
+  data: { id: "11111111-1111-4111-8111-111111111111" },
+  error: null,
+});
+const campaignUpdateSelectMock = vi.fn(() => ({ maybeSingle: campaignUpdateMaybeSingleMock }));
+const campaignUpdateEqMock = vi.fn(() => ({ select: campaignUpdateSelectMock }));
 const campaignUpdateMock = vi.fn(() => ({ eq: campaignUpdateEqMock }));
+
+// The campaign's own place columns (20260729000003), read by
+// `loadPortalPlaceCandidates` on the GET path.
+const campaignPlaceMaybeSingleMock = vi.fn();
+const workspaceMaybeSingleMock = vi.fn();
+const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
+const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
 
 const membershipMaybeSingleMock = vi.fn();
 const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMock }));
@@ -18,7 +32,28 @@ const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
 
 const projectMaybeSingleMock = vi.fn();
 const projectEqMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
-const projectSelectMock = vi.fn(() => ({ eq: projectEqMock }));
+const projectPlaceMaybeSingleMock = vi.fn();
+
+/**
+ * Two different reads hit each of these tables now — the access/detail read and
+ * the place-of-record read behind the public map's framing — so the fake client
+ * routes on the SELECT string rather than pretending one row shape serves both.
+ * That is also what lets the tests below assert which columns were asked for,
+ * which is the seam a missing column would break silently.
+ */
+const selectsPlaceColumns = (columns: string) => columns.includes("place_source");
+
+const campaignSelectMock = vi.fn((columns: string) =>
+  selectsPlaceColumns(columns)
+    ? { eq: () => ({ maybeSingle: campaignPlaceMaybeSingleMock }) }
+    : { eq: campaignEqMock }
+);
+
+const projectSelectMock = vi.fn((columns: string) =>
+  selectsPlaceColumns(columns)
+    ? { eq: () => ({ maybeSingle: projectPlaceMaybeSingleMock }) }
+    : { eq: projectEqMock }
+);
 
 const categoriesOrderCreatedMock = vi.fn();
 const categoriesOrderSortMock = vi.fn(() => ({ order: categoriesOrderCreatedMock }));
@@ -86,6 +121,12 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "workspaces") {
+    return {
+      select: workspaceSelectMock,
+    };
+  }
+
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -95,6 +136,13 @@ vi.mock("@/lib/supabase/server", () => ({
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
+}));
+
+// A searched campaign area is stored from the boundary the SERVER re-resolves,
+// never from anything the caller sent, so the resolver is the seam under test.
+const resolvePlaceBoundaryMock = vi.fn();
+vi.mock("@/lib/geographies/place-resolver", () => ({
+  resolvePlaceBoundary: (...args: unknown[]) => resolvePlaceBoundaryMock(...args),
 }));
 
 import { GET as getCampaignDetail, PATCH as patchCampaignDetail } from "@/app/api/engagement/campaigns/[campaignId]/route";
@@ -140,6 +188,31 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
         name: "Downtown safety project",
       },
       error: null,
+    });
+
+    // No campaign area of its own; the project states one; the workspace does
+    // not. That is the ordinary shape, and it is what makes the precedence
+    // observable at the route.
+    campaignPlaceMaybeSingleMock.mockResolvedValue({ data: {}, error: null });
+    projectPlaceMaybeSingleMock.mockResolvedValue({
+      data: {
+        place_source: "tigerweb",
+        place_label: "Franklin County, Ohio",
+        place_min_lon: -83.2,
+        place_min_lat: 39.85,
+        place_max_lon: -82.8,
+        place_max_lat: 40.1,
+      },
+      error: null,
+    });
+    workspaceMaybeSingleMock.mockResolvedValue({ data: {}, error: null });
+
+    resolvePlaceBoundaryMock.mockResolvedValue({
+      kind: "county",
+      geoid: "39049",
+      label: "Franklin County, Ohio",
+      geojson: { type: "Polygon", coordinates: [[[-83.2, 39.85], [-82.8, 39.85], [-82.8, 40.1], [-83.2, 40.1], [-83.2, 39.85]]] },
+      bbox: { minLon: -83.2, minLat: 39.85, maxLon: -82.8, maxLat: 40.1 },
     });
 
     categoriesOrderCreatedMock.mockResolvedValue({
@@ -391,5 +464,123 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
       expect.objectContaining({ shareTokenDisabled: true })
     );
     expect(auditPayloads()).not.toContain(liveToken);
+  });
+
+  /**
+   * The campaign's map area (20260729000003). These are the route half of the
+   * reachability seam: the console can only show and change what this endpoint
+   * reads and writes.
+   */
+  it("GET says which area frames the public map, and why", async () => {
+    const response = await getCampaignDetail(new NextRequest("http://localhost/api/engagement/campaigns/1"), {
+      params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }),
+    });
+
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      mapFraming: { origin: string; originLabel: string | null; summary: string; view: unknown };
+    };
+
+    // The campaign states no area of its own, so the linked project's wins.
+    expect(body.mapFraming.origin).toBe("project_place");
+    expect(body.mapFraming.originLabel).toBe("Franklin County, Ohio");
+    expect(body.mapFraming.summary).toContain("Franklin County, Ohio");
+    expect(body.mapFraming.view).not.toBeNull();
+
+    // The reads behind it must name the columns the migrations create — a
+    // missing one is `undefined` at runtime and silent at build.
+    const placeSelects = [
+      ...campaignSelectMock.mock.calls.map((call) => call[0]),
+      ...projectSelectMock.mock.calls.map((call) => call[0]),
+    ].filter((columns) => typeof columns === "string" && columns.includes("place_source"));
+    expect(placeSelects).toHaveLength(2);
+    for (const columns of placeSelects) {
+      for (const column of ["place_min_lon", "place_min_lat", "place_max_lon", "place_max_lat", "place_label"]) {
+        expect(columns).toContain(column);
+      }
+    }
+    expect(workspaceSelectMock).toHaveBeenCalledWith(expect.stringContaining("home_min_lon"));
+  });
+
+  it("PATCH stores a searched campaign area from the boundary it re-resolved, not from the caller", async () => {
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        // A REFERENCE, not a bbox. A caller-supplied extent would be an
+        // unverifiable geography wearing trusted-looking provenance — and this
+        // one frames the map every resident is asked to draw on.
+        body: JSON.stringify({ place: { mode: "place", kind: "county", geoid: "39049" } }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(resolvePlaceBoundaryMock).toHaveBeenCalledWith("county", "39049");
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        place_source: "tigerweb",
+        place_ref: "39049",
+        place_label: "Franklin County, Ohio",
+        place_min_lon: -83.2,
+        place_max_lat: 40.1,
+      })
+    );
+  });
+
+  it("PATCH refuses a place the boundary service could not resolve, rather than half-writing it", async () => {
+    resolvePlaceBoundaryMock.mockResolvedValueOnce(null);
+
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ place: { mode: "place", kind: "county", geoid: "39049" } }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(404);
+    // Nothing was written: an area recorded without a verified boundary frames
+    // nothing, which is the state these columns exist to end.
+    expect(campaignUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH clears the campaign area on an explicit null", async () => {
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ place: null }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ place_source: null, place_ref: null, place_min_lon: null, place_set_at: null })
+    );
+  });
+
+  it("PATCH reports a write that matched no rows instead of answering success", async () => {
+    campaignUpdateMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "Renamed campaign" }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    // The route already read this campaign through the caller's own client and
+    // passed the role gate, so zero matched rows is the database refusing what
+    // the application allowed — not a missing campaign, and not a success.
+    expect(response.status).not.toBe(200);
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "campaign_update_matched_no_rows",
+      expect.objectContaining({ campaignId: "11111111-1111-4111-8111-111111111111" })
+    );
   });
 });

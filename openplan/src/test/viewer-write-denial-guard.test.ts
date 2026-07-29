@@ -70,7 +70,18 @@ const EXPECTED_RESTRICTIVE_POLICIES = 240;
 // policy that consults the role needs no restrictive partner to supply one. That
 // is the intended shape for a new table — the 240 restrictive policies exist to
 // retrofit 80 tables whose policies were written role-blind.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 198;
+//
+// 201 rather than 198 since 20260729000002 added `engagement_context_layers`
+// with role-aware INSERT, UPDATE and DELETE policies. Same reasoning, and the
+// same reason the two counts above are untouched. The stake is higher on this
+// table than most: one of its columns publishes geometry to the open internet,
+// so "viewer cannot write" has to hold at the database and not only at the route.
+//
+// 20260729000003 (engagement_campaigns.place_*) deliberately moves none of the
+// three numbers: it adds nullable columns to an existing table, creating no
+// policy and no table. Written down so the migration is not left unaccounted
+// for by someone checking this list against the migration directory.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 201;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

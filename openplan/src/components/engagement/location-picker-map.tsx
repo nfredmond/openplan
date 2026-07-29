@@ -6,6 +6,9 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import type { HomeMapView } from "@/lib/workspaces/home-geography";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
+import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
+import { ParticipantMapLegend } from "./participant-map-legend";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -30,6 +33,7 @@ export function LocationPickerMap({
   longitude,
   onLocationChange,
   homeMapView = null,
+  contextLayers = null,
 }: {
   latitude: string;
   longitude: string;
@@ -40,6 +44,12 @@ export function LocationPickerMap({
    * the neutral continental view is the honest answer.
    */
   homeMapView?: HomeMapView | null;
+  /**
+   * The campaign's published GIS context. An operator entering an item on
+   * someone's behalf is placing it against the same alignment or parcel set the
+   * public sees, so the same layers belong under this pin.
+   */
+  contextLayers?: ParticipantContextLayerSet | null;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -102,6 +112,29 @@ export function LocationPickerMap({
     };
   }, [onLocationChange]);
 
+  // The campaign's context layers. No `beforeId`: this map draws its pin as a
+  // DOM marker, which always sits above every canvas layer, so nothing an
+  // operator uploads can cover it.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    // Nothing to do when the caller has not wired the campaign's layers through
+    // at all. That is the difference between "this map shows no context" and
+    // "this map was told there is none": a null prop means the render site never
+    // supplied them, and touching the map's source registry to say so would be
+    // work with no observable purpose.
+    if (!contextLayers) return;
+    const layers = contextLayers.layers;
+
+    const paint = () => syncContextLayers(map, layers);
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [contextLayers]);
+
   // Sync prop changes to marker
   useEffect(() => {
     if (!mapRef.current) return;
@@ -152,6 +185,7 @@ export function LocationPickerMap({
           <span className="text-muted-foreground">Click the map to drop a pin</span>
         )}
       </div>
+      <ParticipantMapLegend contextLayers={contextLayers} />
     </div>
   );
 }

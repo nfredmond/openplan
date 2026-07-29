@@ -24,6 +24,10 @@ import {
   TRANSLATION_LANGUAGE_LABELS,
   type TranslationLanguage,
 } from "@/lib/engagement/translation-languages";
+// Type-only: `public-portal-data.ts` is server-only (service-role client), and
+// an `import type` is erased before the client bundle is built.
+import type { PortalMapFraming } from "@/lib/engagement/public-portal-data";
+import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { GeometryPickerMap } from "./geometry-picker-map";
 import { LocationDisplayMap } from "./location-display-map";
 import { PublicSurveyForm, type PortalSurveyQuestion } from "./public-survey-form";
@@ -167,7 +171,8 @@ function SubmissionForm({
   parentItemId = null,
   replyingToLabel = null,
   onCancelReply,
-  mapView = null,
+  framing,
+  contextLayers = null,
 }: {
   shareToken: string;
   categories: CategoryOption[];
@@ -176,8 +181,15 @@ function SubmissionForm({
   parentItemId?: string | null;
   replyingToLabel?: string | null;
   onCancelReply?: () => void;
-  /** Where the map opens, derived by the portal from this campaign's own pins. */
-  mapView?: { center: [number, number]; zoom: number } | null;
+  /**
+   * Where the map opens AND why — see `resolvePortalMapFraming`. The reason
+   * travels with the camera because the form has to say something different
+   * when nothing framed the map: a continent shown without comment reads as a
+   * study area.
+   */
+  framing: PortalMapFraming;
+  /** The campaign's published GIS context, drawn under the resident's sketch. */
+  contextLayers?: ParticipantContextLayerSet | null;
 }) {
   const [categoryId, setCategoryId] = useState("");
   const [title, setTitle] = useState("");
@@ -439,11 +451,26 @@ function SubmissionForm({
                 <p className="text-xs text-muted-foreground">
                   Drop a pin, trace a street or route as a line, or outline an area if your input is about a specific place.
                 </p>
+                {/*
+                  Say where the map is, always. When something framed it this
+                  names the area so a resident can tell at a glance whether they
+                  are looking at their own neighbourhood; when nothing did, the
+                  continent is stated as a continent instead of being allowed to
+                  pass for the study area.
+                */}
+                <p className="text-xs text-muted-foreground">
+                  {framing.summary}
+                  {framing.origin === "none" ? " Zoom to your neighbourhood before dropping a pin." : null}
+                </p>
+                {framing.unreadableNote ? (
+                  <p className="text-xs text-muted-foreground">{framing.unreadableNote}</p>
+                ) : null}
                 <div className="public-map-frame public-map-frame--editor">
                   <GeometryPickerMap
                     onGeometryChange={setGeometry}
-                    {...(mapView
-                      ? { initialCenter: mapView.center, initialZoom: mapView.zoom }
+                    contextLayers={contextLayers}
+                    {...(framing.view
+                      ? { initialCenter: framing.view.center, initialZoom: framing.view.zoom }
                       : {})}
                   />
                 </div>
@@ -662,41 +689,6 @@ function SubmissionForm({
   );
 }
 
-/**
- * Where the resident-facing map should open.
- *
- * A campaign carries no geography of its own, so rather than defaulting to a
- * hardcoded town we derive the view from the campaign's OWN approved
- * submissions. A brand-new campaign with no pins yet returns null and the map
- * opens on the neutral continental view — never on somebody else's city.
- */
-export function derivePortalMapCenter(
-  items: Array<{ latitude: number | null; longitude: number | null }>
-): { center: [number, number]; zoom: number } | null {
-  const points = items.filter(
-    (i): i is { latitude: number; longitude: number } =>
-      typeof i.latitude === "number" &&
-      typeof i.longitude === "number" &&
-      Number.isFinite(i.latitude) &&
-      Number.isFinite(i.longitude)
-  );
-  if (points.length === 0) return null;
-
-  const lons = points.map((p) => p.longitude);
-  const lats = points.map((p) => p.latitude);
-  const minLon = Math.min(...lons);
-  const maxLon = Math.max(...lons);
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
-
-  // Zoom from the spread of existing input, so a citywide campaign and a
-  // single-intersection campaign both open at a usable scale.
-  const span = Math.max(maxLon - minLon, maxLat - minLat);
-  const zoom = span > 2 ? 7 : span > 0.5 ? 9 : span > 0.1 ? 11 : 13;
-
-  return { center: [(minLon + maxLon) / 2, (minLat + maxLat) / 2], zoom };
-}
-
 export function PublicEngagementPortal({
   shareToken,
   acceptingSubmissions,
@@ -708,6 +700,8 @@ export function PublicEngagementPortal({
   surveyQuestions = [],
   closeLoopEntries = [],
   emailUpdatesAvailable = false,
+  mapFraming: framing,
+  contextLayers = null,
 }: {
   shareToken: string;
   acceptingSubmissions: boolean;
@@ -722,9 +716,43 @@ export function PublicEngagementPortal({
   surveyQuestions?: PortalSurveyQuestion[];
   closeLoopEntries?: PublicCloseLoopEntry[];
   emailUpdatesAvailable?: boolean;
+  /**
+   * Where this map opens and why, resolved server-side by
+   * `loadPublicPortalBundle` — the campaign's own area, then the linked
+   * project's, then the workspace's, then the pins already on the map.
+   *
+   * It arrives resolved rather than as raw candidates because the campaign
+   * console is shown the SAME object, so both surfaces state one fact instead of
+   * two calculations that can drift.
+   *
+   * REQUIRED on purpose. The defect that keeps recurring in this repo is a
+   * finished capability made unreachable by a prop nobody passed at the render
+   * site; a required prop turns that into a build error instead of a map that
+   * silently opens on the whole country. `resolvePortalMapFraming` always
+   * returns a value — "nothing framed this map" is one of its answers, not an
+   * absence — so there is nothing for a caller to be unable to supply.
+   */
+  mapFraming: PortalMapFraming;
+  /**
+   * The campaign's PUBLISHED GIS context — the proposed alignment, the parcels,
+   * the existing network — drawn under the resident's own sketch and under the
+   * community's pins, each with its name in the legend.
+   *
+   * Until this arrives, a resident is asked to comment on a bare basemap: "widen
+   * it here" with no "it" on screen. Both maps below hand it straight to
+   * `syncContextLayers`, and the whole set travels — including `readFailure`,
+   * because a layer read that broke must not render as a campaign with no
+   * geometry to show.
+   *
+   * `loadPublicPortalBundle` now calls `loadParticipantContextLayers` — the one
+   * query that decides what the public may see — and puts the result on
+   * `PublicPortalProps`, which both portal pages spread. It stays optional only
+   * so the embed and preview surfaces that build props by hand keep compiling;
+   * the portal itself is always given a set, and a null here draws no layers
+   * rather than pretending there are none to draw.
+   */
+  contextLayers?: ParticipantContextLayerSet | null;
 }) {
-  const portalMapView = useMemo(() => derivePortalMapCenter(approvedItems), [approvedItems]);
-
   const hasSurvey = surveyQuestions.length > 0;
   const hasCloseLoop = closeLoopEntries.length > 0;
   const [activeTab, setActiveTab] = useState<"submit" | "feedback" | "survey" | "closeloop">(
@@ -1050,7 +1078,8 @@ export function PublicEngagementPortal({
               </div>
 
               <SubmissionForm
-                mapView={portalMapView}
+                framing={framing}
+                contextLayers={contextLayers}
                 shareToken={shareToken}
                 categories={categories}
                 helpfulInput={engagementGuidance.helpfulInput}
@@ -1104,6 +1133,7 @@ export function PublicEngagementPortal({
                   }))}
                   onSupport={supportItem}
                   hasVoted={(itemId) => supportedItemIds.has(itemId)}
+                  contextLayers={contextLayers}
                 />
               </div>
 

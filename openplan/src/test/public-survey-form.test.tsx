@@ -10,6 +10,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: "Pick one.",
     required: true,
     config: { allow_other: true },
+    mapFramingNote: null,
     options: [
       { id: "opt-bike", label: "Bike lane", value: null },
       { id: "opt-bus", label: "Bus stop", value: null },
@@ -22,6 +23,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: null,
     required: false,
     config: { min_select: 1, max_select: 2 },
+    mapFramingNote: null,
     options: [
       { id: "mode-walk", label: "Walk", value: null },
       { id: "mode-bike", label: "Bike", value: null },
@@ -34,6 +36,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: null,
     required: false,
     config: { scale: 5 },
+    mapFramingNote: null,
     options: [],
   },
   {
@@ -43,6 +46,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: null,
     required: false,
     config: { max: 5 },
+    mapFramingNote: null,
     options: [],
   },
   {
@@ -52,6 +56,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: null,
     required: false,
     config: {},
+    mapFramingNote: null,
     options: [
       { id: "rank-a", label: "Trees", value: null },
       { id: "rank-b", label: "Benches", value: null },
@@ -64,6 +69,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: null,
     required: false,
     config: { total: 100, unit: "usd" },
+    mapFramingNote: null,
     options: [
       { id: "bud-a", label: "Paving", value: null },
       { id: "bud-b", label: "Lighting", value: null },
@@ -76,6 +82,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: null,
     required: false,
     config: { geometry_types: ["Point"] },
+    mapFramingNote: null,
     options: [],
   },
   {
@@ -85,6 +92,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: null,
     required: false,
     config: { max_length: 500, multiline: true },
+    mapFramingNote: null,
     options: [],
   },
   {
@@ -94,6 +102,7 @@ const QUESTIONS: PortalSurveyQuestion[] = [
     helpText: null,
     required: false,
     config: { max_files: 1, max_size_bytes: 5_242_880, accept: ["image/jpeg", "image/png", "image/webp"] },
+    mapFramingNote: null,
     options: [],
   },
 ];
@@ -126,6 +135,45 @@ describe("PublicSurveyForm", () => {
     expect(screen.getByText("Attach a photo")).toBeTruthy();
     // required marker on the single_choice question
     expect(screen.getByText("Pick one.")).toBeTruthy();
+  });
+
+  /**
+   * A `map_point` question inherits the campaign's camera, and used to inherit
+   * nothing else — so when the campaign had no area to give, the survey tab
+   * opened on the continental United States in silence while the portal's own
+   * map, one tab over, said so out loud. The sentence travels on the question
+   * because the question is the only thing that reaches this widget.
+   */
+  it("says where a map_point question's map opens, and says when it is the whole country", () => {
+    const unframed: PortalSurveyQuestion = {
+      id: "q-map-unframed",
+      questionType: "map_point",
+      prompt: "Where is the problem?",
+      helpText: null,
+      required: false,
+      config: { geometry_types: ["Point"] },
+      mapFramingNote:
+        "No study area has been set for this campaign and no locations have been marked yet, so this map opens on the whole country.",
+      options: [],
+    };
+    const { unmount } = render(<PublicSurveyForm shareToken="token12345678" questions={[unframed]} />);
+    expect(screen.getByText(/so this map opens on the whole country/i)).toBeTruthy();
+    // With no camera the participant is also told what to do about it.
+    expect(screen.getByText(/zoom to your neighbourhood before dropping a pin/i)).toBeTruthy();
+    unmount();
+
+    const framed: PortalSurveyQuestion = {
+      ...unframed,
+      id: "q-map-framed",
+      config: { geometry_types: ["Point"], center: [-83.0, 39.98], zoom: 10 },
+      mapFramingNote: "This map opens on Franklin County, Ohio — the linked project's study area.",
+    };
+    render(<PublicSurveyForm shareToken="token12345678" questions={[framed]} />);
+    expect(
+      screen.getByText(/This map opens on Franklin County, Ohio — the linked project's study area\./i)
+    ).toBeTruthy();
+    // The continental instruction belongs only to the unframed case.
+    expect(screen.queryByText(/zoom to your neighbourhood before dropping a pin/i)).toBeNull();
   });
 
   it("blocks submission when nothing is answered and never calls the network", () => {
@@ -205,6 +253,7 @@ describe("PublicSurveyForm", () => {
       helpText: null,
       required: false,
       config: {},
+      mapFramingNote: null,
       options: [
         { id: "rank-a", label: "Trees", value: null },
         { id: "rank-b", label: "Benches", value: null },
@@ -228,6 +277,7 @@ describe("PublicSurveyForm", () => {
       helpText: null,
       required: false,
       config: { max: 5, allow_half: true },
+      mapFramingNote: null,
       options: [],
     };
     render(<PublicSurveyForm shareToken="token12345678" questions={[ratingQuestion]} />);

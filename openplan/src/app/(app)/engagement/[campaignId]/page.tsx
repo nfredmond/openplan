@@ -37,6 +37,9 @@ import {
   ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS,
 } from "@/lib/engagement/photo";
 import { LocationDisplayMap } from "@/components/engagement/location-display-map";
+import { EngagementContextLayersPanel } from "@/components/engagement/engagement-context-layers-panel";
+import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from "@/lib/engagement/context-layers";
+import { loadCampaignAccess } from "@/lib/engagement/api";
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
 import { ParticipationHeatmapMap, type HeatmapPoint } from "@/components/engagement/participation-heatmap-map";
 import { ParticipationDashboard } from "@/components/engagement/participation-dashboard";
@@ -321,6 +324,29 @@ export default async function EngagementCampaignDetailPage({
   const locatedItems = ((items ?? []) as ItemGeometryRef[]).filter(
     (item) => item.geometry !== null || (item.latitude !== null && item.longitude !== null)
   );
+
+  // THE CAMPAIGN'S GIS CONTEXT, AND WHO MAY CHANGE IT.
+  //
+  // Role comes from `loadCampaignAccess` — the SAME function the upload route
+  // gates on, called with the same action — so the panel and the API cannot
+  // disagree about who gets a button. RLS proved this user is IN the workspace;
+  // it did not prove their role. A viewer shown a control the route will 403 is
+  // a worse screen than no control, and a member denied one they are allowed to
+  // press is a capability nobody can reach.
+  //
+  // Two reads of the layer table, deliberately. The summary projection carries
+  // no geometry, because a campaign with a dozen parcel layers must not ship
+  // every polygon to a management list. The participant projection carries the
+  // geometry and only PUBLISHED layers, and it is the same call the portal
+  // makes, so a moderator reviews located comments against exactly what the
+  // resident was looking at when they wrote them — "move it to the other side"
+  // is no more reviewable over a blank basemap than it was writable over one.
+  const [layerAccess, contextLayers, publishedContextLayers] = await Promise.all([
+    loadCampaignAccess(supabase, campaign.id, user.id, "engagement.write"),
+    loadCampaignContextLayerSummaries(supabase, campaign.id),
+    loadParticipantContextLayers(supabase, campaign.id),
+  ]);
+  const canManageContextLayers = "allowed" in layerAccess && Boolean(layerAccess.allowed);
 
   // Participation insights (E3): the heatmap, the intake trend, and the
   // screening-grade spatial hotspot test. Sentiment for the hotspot test is
@@ -989,6 +1015,13 @@ export default async function EngagementCampaignDetailPage({
         </div>
 
         <div className="space-y-6">
+          <EngagementContextLayersPanel
+            campaignId={campaign.id}
+            layers={contextLayers.layers}
+            readFailure={contextLayers.readFailure}
+            canWrite={canManageContextLayers}
+          />
+
           {locatedItems.length > 0 ? (
             <article className="module-section-surface">
               <div className="module-section-header">
@@ -1002,6 +1035,7 @@ export default async function EngagementCampaignDetailPage({
               </div>
               <div className="mt-5">
                 <LocationDisplayMap
+                  contextLayers={publishedContextLayers}
                   items={locatedItems.map((item) => ({
                     id: item.id,
                     latitude: item.latitude,

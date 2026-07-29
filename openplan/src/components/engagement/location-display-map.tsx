@@ -6,6 +6,9 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
+import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
+import { ParticipantMapLegend } from "./participant-map-legend";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -115,21 +118,35 @@ export function LocationDisplayMap({
   items,
   onSupport,
   hasVoted,
+  contextLayers = null,
 }: {
   items: MapItem[];
   onSupport?: SupportHandler;
   hasVoted?: (itemId: string) => boolean;
+  /**
+   * Operator-published GIS context, drawn under the community's own input.
+   *
+   * Its presence also decides whether this map exists at all: a campaign that
+   * has published a proposed alignment but collected no comments yet still has
+   * something a resident needs to see, and the old "no located items → render
+   * nothing" rule would have hidden it.
+   */
+  contextLayers?: ParticipantContextLayerSet | null;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const onSupportRef = useRef(onSupport);
   const hasVotedRef = useRef(hasVoted);
+  // Read inside the map-creation effect for the opening frame only; the paint
+  // effect below owns keeping the drawn layers in step.
+  const contextLayersRef = useRef(contextLayers);
 
   useEffect(() => {
     onSupportRef.current = onSupport;
     hasVotedRef.current = hasVoted;
-  }, [onSupport, hasVoted]);
+    contextLayersRef.current = contextLayers;
+  }, [onSupport, hasVoted, contextLayers]);
 
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
@@ -157,18 +174,26 @@ export function LocationDisplayMap({
       }
     }
 
-    if (pointItems.length === 0 && shapeItems.length === 0) return;
+    const openingContextLayers = contextLayersRef.current?.layers ?? [];
+    if (pointItems.length === 0 && shapeItems.length === 0 && openingContextLayers.length === 0) return;
 
     // Seed the first paint from the campaign's own data — the load handler
     // below fits to the full extent once the style is up. There is no
     // place-shaped default here: this map belongs to whichever agency's
     // campaign rendered it. The shape branch is safe because the guard above
-    // has already returned when both collections are empty; the remaining
-    // `?? null` covers a shape whose ring parsed to no positions at all.
+    // has already returned when all three collections are empty; the remaining
+    // `?? null` covers a shape whose ring parsed to no positions at all, and
+    // the third branch covers a campaign whose only geometry so far is the
+    // context the operator published.
+    const contextSeed = openingContextLayers.find((layer) => layer.bbox)?.bbox ?? null;
     const seed: [number, number] | null =
       pointItems.length > 0
         ? [pointItems[0].longitude, pointItems[0].latitude]
-        : (collectGeometryPositions(shapeItems[0].parsedGeometry)[0] ?? null);
+        : shapeItems.length > 0
+          ? (collectGeometryPositions(shapeItems[0].parsedGeometry)[0] ?? null)
+          : contextSeed
+            ? [(contextSeed[0] + contextSeed[2]) / 2, (contextSeed[1] + contextSeed[3]) / 2]
+            : null;
 
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
@@ -265,12 +290,20 @@ export function LocationDisplayMap({
         markersRef.current.push(marker);
       });
 
+      // Frame everything the map carries, community input and operator context
+      // alike. A campaign whose only geometry is the published alignment still
+      // gets framed on it rather than on the continent.
       const positionCount = pointItems.length + shapeItems.length;
-      if (positionCount > 1 || shapeItems.length > 0) {
+      if (positionCount > 1 || shapeItems.length > 0 || openingContextLayers.length > 0) {
         const bounds = new mapboxgl.LngLatBounds();
         pointItems.forEach((item) => bounds.extend([item.longitude, item.latitude]));
         shapeItems.forEach((item) => {
           collectGeometryPositions(item.parsedGeometry).forEach((position) => bounds.extend(position));
+        });
+        openingContextLayers.forEach((layer) => {
+          if (!layer.bbox) return;
+          bounds.extend([layer.bbox[0], layer.bbox[1]]);
+          bounds.extend([layer.bbox[2], layer.bbox[3]]);
         });
         if (!bounds.isEmpty()) {
           map.fitBounds(bounds, { padding: 40, maxZoom: 14 });
@@ -286,6 +319,38 @@ export function LocationDisplayMap({
     };
   }, [items]);
 
+  // Operator context, painted UNDER the community's shapes. `beforeId` is the
+  // first shape layer when one exists; a campaign with only points has no
+  // canvas layer to sit below, and DOM markers always draw above the canvas.
+  // Re-runs on `style.load` for the same reason the cartographic backdrop does:
+  // a style swap wipes the source and layer registry.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    // Nothing to do when the caller has not wired the campaign's layers through
+    // at all. That is the difference between "this map shows no context" and
+    // "this map was told there is none": a null prop means the render site never
+    // supplied them, and touching the map's source registry to say so would be
+    // work with no observable purpose.
+    if (!contextLayers) return;
+    const layers = contextLayers.layers;
+
+    const paint = () => {
+      const beforeId = map.getLayer("engagement-shapes-fill")
+        ? "engagement-shapes-fill"
+        : map.getLayer("engagement-shapes-line")
+          ? "engagement-shapes-line"
+          : undefined;
+      syncContextLayers(map, layers, { beforeId });
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [contextLayers, items]);
+
   if (!MAPBOX_ACCESS_TOKEN) {
     return null;
   }
@@ -295,8 +360,18 @@ export function LocationDisplayMap({
       (item.latitude !== null && item.longitude !== null) ||
       readStoredEngagementGeometry(item.geometry ?? null) !== null
   );
-  if (!hasMappedItems) {
-    return null; // No need to show map if no items have locations
+  // A campaign that has published context but collected no located input yet
+  // still has something a resident needs to see. The old rule — render nothing
+  // unless somebody has already commented — hid the project from the very
+  // people being asked about it.
+  //
+  // A FAILED layer read counts too, and for the stronger reason: returning null
+  // there would turn "we could not load this campaign's layers" into "this
+  // campaign has no map", which is a confident claim nobody checked.
+  const hasContextLayers = (contextLayers?.layers.length ?? 0) > 0;
+  const contextLayersFailed = Boolean(contextLayers?.readFailure);
+  if (!hasMappedItems && !hasContextLayers && !contextLayersFailed) {
+    return null;
   }
 
   return (
@@ -305,6 +380,7 @@ export function LocationDisplayMap({
       <div className="absolute top-3 left-3 flex items-center gap-2 rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
         <span className="font-medium text-foreground">Community Input Map</span>
       </div>
+      <ParticipantMapLegend contextLayers={contextLayers} />
     </div>
   );
 }

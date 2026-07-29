@@ -162,7 +162,11 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/engagement/campaigns/[campaignId]/items/[itemId]/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/moderation-scan/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/representativeness/route.ts": 1,
-  "src/app/api/engagement/campaigns/[campaignId]/route.ts": 1,
+  // 1 -> 0: the campaign PATCH now chains `.select("id").maybeSingle()` and
+  // answers zero matched rows through write-outcome.ts. It had to, because
+  // 20260729000003 gave that same UPDATE the campaign's map area: an operator
+  // setting the area their whole public portal opens on was being told
+  // `{ success: true }` over a write the database may have refused.
   "src/app/api/engagement/campaigns/[campaignId]/share-token/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/survey/questions/[questionId]/options/[optionId]/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/survey/questions/[questionId]/route.ts": 1,

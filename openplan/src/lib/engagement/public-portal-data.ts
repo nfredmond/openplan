@@ -1,8 +1,27 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { ENGAGEMENT_PHOTO_BUCKET, ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS } from "@/lib/engagement/photo";
 import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import { loadPublishedCloseLoopEntries } from "@/lib/engagement/close-loop";
 import { isEmailTransportConfigured } from "@/lib/notifications/email";
+import {
+  placeOfRecordFromProject,
+  PROJECT_PLACE_SCOPE_COLUMNS,
+  type ProjectPlaceRow,
+} from "@/lib/projects/project-place";
+import {
+  clearedHomeGeographyRow,
+  deriveHomeMapView,
+  HOME_GEOGRAPHY_COLUMN_NAMES,
+  parseWorkspaceHomeGeography,
+  placeOfRecordFromHomeGeography,
+} from "@/lib/workspaces/home-geography";
+import {
+  loadParticipantContextLayers,
+  type ParticipantContextLayerSet,
+} from "@/lib/engagement/context-layers";
+import { resolveMapPointQuestionView } from "@/lib/engagement/survey";
+import { EMPTY_PLACE_OF_RECORD, type PlaceOfRecord } from "@/lib/geographies/place-of-record";
 import type { PortalSurveyQuestion } from "@/components/engagement/public-survey-form";
 import type { PublicCloseLoopEntry } from "@/components/engagement/public-close-loop";
 
@@ -14,6 +33,7 @@ import type { PublicCloseLoopEntry } from "@/components/engagement/public-close-
 
 export type PublicPortalCampaign = {
   id: string;
+  workspace_id: string;
   project_id: string | null;
   title: string;
   summary: string | null;
@@ -27,6 +47,482 @@ export type PublicPortalCampaign = {
 };
 
 export type PublicPortalProject = { id: string; name: string; summary: string | null };
+
+/**
+ * THE MAP-FRAMING SEAM.
+ *
+ * A campaign's public map used to be framed only by the pins already on it, so a
+ * brand-new campaign opened on the continental United States — for the first
+ * resident, on a phone, from a QR code on a flyer. Three areas were already
+ * known and none of them was read here. These constants and helpers are how they
+ * reach the portal, and this repo's recurring defect is exactly a column missing
+ * from one of these select strings, so every name below is derived from a shared
+ * list rather than retyped.
+ *
+ * `engagement_campaigns.place_*` (20260729000003) deliberately uses the SAME
+ * column names as `projects.place_*` (20260728000009), because a place of record
+ * has one shape regardless of who owns it — see
+ * src/lib/geographies/place-of-record.ts. That is why the project-named column
+ * list and narrowing below are applied to a campaign row verbatim: they are
+ * keyed on column names both tables share on purpose, and a second copy under a
+ * campaign-shaped name would be two things to keep in step instead of one.
+ *
+ * SHIP ORDER, and it is load-bearing: apply 20260729000003 BEFORE deploying
+ * code that contains this select. Between a deploy and its migration the
+ * `place_*` columns do not exist, so this read errors for every campaign in
+ * the deployment and every public portal shows residents a disclosure about a
+ * lookup that failed. That disclosure is true — it is deliberately the third
+ * state below, not a guess — but it is a paragraph of apology on every
+ * resident-facing map until the migration lands. `docs/SELF_HOSTING.md` §2 step
+ * 3 is where that order has to reach whoever runs a deployment, since nobody
+ * deploying reads this file; do not delete this note on the assumption that the
+ * doc already carries it — check.
+ */
+export const CAMPAIGN_PLACE_SCOPE_COLUMNS = PROJECT_PLACE_SCOPE_COLUMNS;
+
+/**
+ * The workspace home-geography columns MINUS the boundary polygon.
+ *
+ * `HOME_GEOGRAPHY_SCOPE_COLUMNS` cannot be used: it drops the bbox, which is the
+ * only part the map camera needs. `HOME_GEOGRAPHY_COLUMNS` cannot be used
+ * either: it carries `home_geometry_geojson`, and a TIGERweb county boundary is
+ * megabytes dragged out of Postgres on every public page load. Derived by
+ * filtering the shared name list so a renamed column cannot leave this pointing
+ * at something that no longer exists.
+ */
+const HOME_GEOGRAPHY_FRAMING_COLUMNS = HOME_GEOGRAPHY_COLUMN_NAMES.filter(
+  (column) => column !== "home_geometry_geojson"
+).join(", ");
+
+export type PortalMapView = { center: [number, number]; zoom: number };
+
+export type PortalMapBbox = { minLon: number; minLat: number; maxLon: number; maxLat: number };
+
+/**
+ * One area the portal map could open on, as the server read it.
+ *
+ * THREE states, not two, because there are three different things that can be
+ * true and each gets a different sentence in front of a resident:
+ *
+ *   `set`        — the read succeeded and an area is on record. Its `bbox` may
+ *                  still be missing, which is an operator's problem to fix.
+ *   `unset`      — the read succeeded and no area is on record. Ordinary.
+ *   `unreadable` — the READ ITSELF failed. Nothing is known: not the label, not
+ *                  the extent, and not whether an area exists at all.
+ *
+ * The third one used to be folded into `set`, and the cost was a false sentence
+ * shown to members of the public: a failed read rendered as "the area set for
+ * this campaign could not be read as a map extent", which claims an area exists
+ * (unknown) and blames its extent (not what failed). Folding it into `unset`
+ * instead would have been the mirror-image lie. A failure is its own state.
+ *
+ * Only the bounding box crosses to the public portal. The boundary polygon
+ * frames nothing a bbox cannot, and a TIGERweb county boundary is megabytes on
+ * a page that opens from a phone.
+ */
+export type PortalPlaceCandidate = {
+  state: "set" | "unset" | "unreadable";
+  label: string | null;
+  bbox: PortalMapBbox | null;
+};
+
+/**
+ * Narrow a successfully read place of record into what the public portal is
+ * allowed to know: is there an area at all, what is it called, what does it
+ * cover.
+ *
+ * `set` is taken from the SOURCE rather than from the bbox, so "an operator
+ * recorded an area whose extent will not load" stays distinguishable from "no
+ * area was ever set". The portal says different things about those two, and
+ * collapsing them is how a broken campaign looks like an ordinary one.
+ *
+ * Only ever called on a read that SUCCEEDED — a failed read never reaches here,
+ * because an absent row and an absent answer are not the same fact.
+ */
+function portalPlaceCandidate(place: PlaceOfRecord): PortalPlaceCandidate {
+  return {
+    state: place.source ? "set" : "unset",
+    label: place.label?.trim() || null,
+    bbox: place.bbox,
+  };
+}
+
+/**
+ * What a candidate is when its READ failed.
+ *
+ * Neither `set` nor `unset`. A query that errored has told us nothing about
+ * whether an area exists: reporting "no area set" would state a failure as a
+ * fact about the world, and reporting "set but unreadable" — which this
+ * constant used to do — states a different fact nobody established. It is
+ * reported as unknown, because unknown is what it is.
+ */
+const UNREADABLE_PORTAL_PLACE: PortalPlaceCandidate = { state: "unreadable", label: null, bbox: null };
+
+export type PortalPlaceCandidates = {
+  campaign: PortalPlaceCandidate;
+  project: PortalPlaceCandidate;
+  workspaceHome: PortalPlaceCandidate;
+};
+
+/**
+ * The three candidates that are a recorded PLACE, in precedence order.
+ *
+ * Split out from `PortalFramingOrigin` because only these three can be missing,
+ * broken, or unreadable — `approved_pins` is derived from rows already loaded
+ * and `none` is the absence of an answer. Typing the disclosure over this
+ * narrower set is what stops a sentence about a failed lookup ever being built
+ * for a candidate that cannot have one.
+ */
+export type PortalPlaceOrigin = "campaign_place" | "project_place" | "workspace_home";
+
+/** Which candidate framed the map. `none` means nothing could. */
+export type PortalFramingOrigin = PortalPlaceOrigin | "approved_pins" | "none";
+
+/**
+ * A candidate that could have framed the map and did not, plus WHY.
+ *
+ * The reason is carried rather than assumed because the two reasons are
+ * different facts with different fixes, and only one of them may say an area
+ * exists:
+ *
+ *   `extent` — an area IS on record and its extent could not be turned into a
+ *              camera. The operator can fix it by re-picking the area.
+ *   `read`   — the query failed. Whether an area is on record is UNKNOWN, so
+ *              nothing about it may be stated; whoever runs the deployment
+ *              fixes it, not the operator.
+ */
+export type PortalFramingGap = {
+  origin: PortalPlaceOrigin;
+  reason: "extent" | "read";
+};
+
+export type PortalMapFraming = {
+  /** Null means nothing framed this map, and the surface showing it must say so. */
+  view: PortalMapView | null;
+  origin: PortalFramingOrigin;
+  /** The area's own name, when it has one. Never a name standing in for an explanation. */
+  originLabel: string | null;
+  /**
+   * Candidates that could not frame the map despite being tried, in precedence
+   * order, each with its reason. Disclosed rather than swallowed: a campaign
+   * whose stated area cannot frame its own map is broken in a way only its
+   * operator can fix, and neither "set but unreadable" nor "we could not even
+   * look" is the same state as "never set".
+   */
+  unreadable: PortalFramingGap[];
+  /**
+   * One sentence naming what frames this map and why.
+   *
+   * Rendered HERE, once, because two audiences need the same fact and neither
+   * can compute it: the resident deciding whether the map shows their town, and
+   * the operator checking that the portal they are about to publish opens
+   * somewhere useful. Both are client surfaces and this module is server-only,
+   * so the sentence travels with the answer instead of being written twice and
+   * drifting.
+   */
+  summary: string;
+  /** What was set but could not be used, or null when nothing was. */
+  unreadableNote: string | null;
+};
+
+/**
+ * Where the resident-facing map should open, derived from the campaign's OWN
+ * approved submissions — the LAST candidate in the precedence below.
+ *
+ * The zoom ladder here is deliberately coarser than a bbox fit. The extent of
+ * existing pins is where people have already spoken, not the area being studied;
+ * framing exactly to it would crop out the streets nobody has pinned yet, which
+ * are precisely the ones the campaign still needs to hear about. So it opens one
+ * step wider than the pins themselves.
+ *
+ * Returns null when there are no usable pins. That is the honest answer for this
+ * candidate alone — it is not the answer for the campaign, because three better
+ * candidates are tried before it.
+ */
+export function derivePortalMapCenter(
+  items: Array<{ latitude: number | null; longitude: number | null }>
+): PortalMapView | null {
+  const points = items.filter(
+    (i): i is { latitude: number; longitude: number } =>
+      typeof i.latitude === "number" &&
+      typeof i.longitude === "number" &&
+      Number.isFinite(i.latitude) &&
+      Number.isFinite(i.longitude)
+  );
+  if (points.length === 0) return null;
+
+  const lons = points.map((p) => p.longitude);
+  const lats = points.map((p) => p.latitude);
+  const minLon = Math.min(...lons);
+  const maxLon = Math.max(...lons);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+
+  // Zoom from the spread of existing input, so a citywide campaign and a
+  // single-intersection campaign both open at a usable scale.
+  const span = Math.max(maxLon - minLon, maxLat - minLat);
+  const zoom = span > 2 ? 7 : span > 0.5 ? 9 : span > 0.1 ? 11 : 13;
+
+  return { center: [(minLon + maxLon) / 2, (minLat + maxLat) / 2], zoom };
+}
+
+/**
+ * Turn a bounding box into a camera using the one fitter this app has.
+ *
+ * `deriveHomeMapView` lives beside the workspace home geography because that is
+ * where the question was first asked, but none of its maths is about a
+ * workspace: it handles the antimeridian, the Mercator latitude distortion, the
+ * padding and the zoom clamps. A second copy here would drift from it, and the
+ * drift would surface as a resident-facing map framing the wrong thing — the
+ * exact defect this seam exists to remove. So the bbox is passed through the
+ * shape that fitter reads instead of being re-fitted here.
+ */
+function viewForBbox(bbox: PortalMapBbox): PortalMapView | null {
+  return deriveHomeMapView({
+    ...clearedHomeGeographyRow(),
+    home_min_lon: bbox.minLon,
+    home_min_lat: bbox.minLat,
+    home_max_lon: bbox.maxLon,
+    home_max_lat: bbox.maxLat,
+  });
+}
+
+/**
+ * What each origin IS, for a sentence. Never a place name — that is
+ * `originLabel`.
+ *
+ * Every phrase here ASSERTS that an area exists ("the area set for this
+ * campaign"), so it may only be used where that has actually been established:
+ * the candidate that framed the map, or one whose `state` is `set`. For a
+ * candidate whose read failed, use `PORTAL_FRAMING_ORIGIN_OWNER` — saying "the
+ * area set for this campaign could not be read" about a campaign that may never
+ * have had one is two false claims in one sentence, shown to the public.
+ */
+const PORTAL_FRAMING_ORIGIN_ROLE: Record<Exclude<PortalFramingOrigin, "none">, string> = {
+  campaign_place: "the area set for this campaign",
+  project_place: "the linked project's study area",
+  workspace_home: "this workspace's home geography",
+  approved_pins: "the places people have already marked on this map",
+};
+
+/**
+ * WHOSE area a candidate would have been — asserting nothing about whether one
+ * exists. This is the vocabulary for a lookup that failed, where the only
+ * honest subject of the sentence is the owner, not the area.
+ */
+const PORTAL_FRAMING_ORIGIN_OWNER: Record<PortalPlaceOrigin, string> = {
+  campaign_place: "this campaign",
+  project_place: "the linked project",
+  workspace_home: "this workspace",
+};
+
+/** These phrases are written to sit mid-sentence; some of them start one. */
+function sentenceCase(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+function joinPhrases(phrases: string[]): string {
+  return phrases.length === 1
+    ? phrases[0]
+    : `${phrases.slice(0, -1).join(", ")} and ${phrases[phrases.length - 1]}`;
+}
+
+function describeFraming(
+  origin: PortalFramingOrigin,
+  originLabel: string | null,
+  gaps: PortalFramingGap[]
+): string {
+  if (origin === "none") {
+    // "No study area has been set" is a claim about the world, and it is only
+    // ours to make when every candidate was actually checked. If any lookup
+    // failed we know less than that, and the note built below names which.
+    return gaps.length > 0
+      ? "This map could not be framed on a study area, so it opens on the whole country."
+      : "No study area has been set for this campaign and no locations have been marked yet, so this map opens on the whole country.";
+  }
+
+  const role = PORTAL_FRAMING_ORIGIN_ROLE[origin];
+  return originLabel ? `This map opens on ${originLabel} — ${role}.` : `This map opens on ${role}.`;
+}
+
+/**
+ * One paragraph naming everything that could have framed this map and did not.
+ *
+ * Grouped by reason rather than listed together, because the two reasons are
+ * different facts and share no true sentence: an area on record with an
+ * unusable extent can be named as an area, while a lookup that failed leaves
+ * nobody entitled to say an area was there.
+ */
+function describeGaps(gaps: PortalFramingGap[]): string | null {
+  if (gaps.length === 0) return null;
+
+  const sentences: string[] = [];
+
+  /** "so it did not frame this map" / "so none of them framed this map". */
+  const outcome = (count: number) =>
+    count === 1 ? "so it did not frame this map" : "so none of them framed this map";
+
+  const unusableExtent = gaps.filter((gap) => gap.reason === "extent");
+  if (unusableExtent.length > 0) {
+    const listed = joinPhrases(unusableExtent.map((gap) => PORTAL_FRAMING_ORIGIN_ROLE[gap.origin]));
+    sentences.push(
+      `${sentenceCase(listed)} could not be read as a map extent, ${outcome(unusableExtent.length)}.`
+    );
+  }
+
+  const failedRead = gaps.filter((gap) => gap.reason === "read");
+  if (failedRead.length > 0) {
+    const listed = joinPhrases(failedRead.map((gap) => PORTAL_FRAMING_ORIGIN_OWNER[gap.origin]));
+    sentences.push(
+      `${sentenceCase(listed)} could not be checked for a recorded area, ${outcome(failedRead.length)}.`
+    );
+  }
+
+  return sentences.join(" ");
+}
+
+/**
+ * Decide which area frames a campaign's public map, and record why.
+ *
+ * This is the same shape as `resolveStudyArea` in src/lib/models/study-area.ts —
+ * one statement of precedence, plus an `origin`/`originLabel` disclosure — and
+ * for the same reason: an inherited geography that does not say where it came
+ * from is a silent assumption about what is being asked. Here the assumption is
+ * made in front of residents, so it matters more, not less.
+ *
+ * THE ORDER, most specific first:
+ *
+ *   1. The campaign's own area (20260729000003). An operator who set one meant
+ *      it — a corridor study inside a county-wide agency is about the corridor.
+ *   2. The linked project's place of record (20260728000009). The campaign is
+ *      public input ON that project, so its area is the right frame.
+ *   3. The workspace's home geography (20260723000005). The agency's own patch:
+ *      wide, but never somebody else's county.
+ *   4. The campaign's approved pins. Circular — it frames on the answers to
+ *      infer where the question is — so it is the fallback, not the answer.
+ *
+ * No branch invents a place. With nothing to inherit it returns a null view and
+ * origin `none`, and the caller is expected to SAY that the map is showing the
+ * whole country rather than let a continent pass for a study area.
+ */
+export function resolvePortalMapFraming(candidates: {
+  campaignPlace?: PortalPlaceCandidate | null;
+  projectPlace?: PortalPlaceCandidate | null;
+  workspaceHome?: PortalPlaceCandidate | null;
+  approvedItems?: Array<{ latitude: number | null; longitude: number | null }>;
+}): PortalMapFraming {
+  const unreadable: PortalFramingGap[] = [];
+
+  const ordered: Array<[PortalPlaceOrigin, PortalPlaceCandidate | null | undefined]> = [
+    ["campaign_place", candidates.campaignPlace],
+    ["project_place", candidates.projectPlace],
+    ["workspace_home", candidates.workspaceHome],
+  ];
+
+  const framed = (
+    view: PortalMapView | null,
+    origin: PortalFramingOrigin,
+    originLabel: string | null
+  ): PortalMapFraming => ({
+    view,
+    origin,
+    originLabel,
+    unreadable,
+    summary: describeFraming(origin, originLabel, unreadable),
+    unreadableNote: describeGaps(unreadable),
+  });
+
+  for (const [origin, candidate] of ordered) {
+    if (!candidate) continue;
+
+    if (candidate.state === "unreadable") {
+      // The lookup FAILED. Fall through so the map still works, but record it as
+      // a failed lookup rather than as an area — the sentence built for this
+      // reason is the only one entitled to be silent about whether an area
+      // exists, and it is the one a public portal shows during the window
+      // between a deploy and its migrations.
+      unreadable.push({ origin, reason: "read" });
+      continue;
+    }
+
+    if (candidate.state === "unset") continue;
+
+    const view = candidate.bbox ? viewForBbox(candidate.bbox) : null;
+    if (!view) {
+      // Recorded, but it cannot frame anything. Fall through to the next
+      // candidate so the map still works, and carry the fact out so it can be
+      // shown — a silent fall-through here is how "set" and "unset" become
+      // indistinguishable.
+      unreadable.push({ origin, reason: "extent" });
+      continue;
+    }
+
+    return framed(view, origin, candidate.label?.trim() || null);
+  }
+
+  const pinView = derivePortalMapCenter(candidates.approvedItems ?? []);
+  if (pinView) return framed(pinView, "approved_pins", null);
+
+  return framed(null, "none", null);
+}
+
+/** Only `from` is used, so any Supabase client — caller-RLS or service-role — fits. */
+type QueryClient = Pick<SupabaseClient, "from">;
+
+/**
+ * Read the three areas that can frame a campaign's public map.
+ *
+ * ONE reader, two very different callers, deliberately: the public portal calls
+ * it with the service-role client behind a share token, and the campaign console
+ * calls it with the operator's own RLS client. That is what makes the operator's
+ * "your portal opens here" statement the SAME fact residents are shown, rather
+ * than a second implementation that can quietly disagree with the first.
+ *
+ * Every read is answered as one of the three states in `PortalPlaceCandidate` —
+ * `set`, `unset`, or `unreadable`. A failed query is never allowed to arrive as
+ * either of the other two: not as "not set", which would state a failure as a
+ * fact, and not as "set", which would state a different fact nobody checked.
+ */
+export async function loadPortalPlaceCandidates(
+  supabase: QueryClient,
+  campaign: { id: string; workspace_id: string; project_id: string | null }
+): Promise<PortalPlaceCandidates> {
+  const [campaignPlace, projectPlace, workspaceRow] = await Promise.all([
+    supabase
+      .from("engagement_campaigns")
+      .select(CAMPAIGN_PLACE_SCOPE_COLUMNS)
+      .eq("id", campaign.id)
+      .maybeSingle(),
+    campaign.project_id
+      ? supabase
+          .from("projects")
+          .select(PROJECT_PLACE_SCOPE_COLUMNS)
+          .eq("id", campaign.project_id)
+          .maybeSingle()
+      : Promise.resolve({ data: null, error: null }),
+    supabase
+      .from("workspaces")
+      .select(HOME_GEOGRAPHY_FRAMING_COLUMNS)
+      .eq("id", campaign.workspace_id)
+      .maybeSingle(),
+  ]);
+
+  return {
+    campaign: campaignPlace.error
+      ? UNREADABLE_PORTAL_PLACE
+      : portalPlaceCandidate(placeOfRecordFromProject(campaignPlace.data as Partial<ProjectPlaceRow> | null)),
+    project: projectPlace.error
+      ? UNREADABLE_PORTAL_PLACE
+      : portalPlaceCandidate(placeOfRecordFromProject(projectPlace.data as Partial<ProjectPlaceRow> | null)),
+    workspaceHome: workspaceRow.error
+      ? UNREADABLE_PORTAL_PLACE
+      : portalPlaceCandidate(
+          workspaceRow.data
+            ? placeOfRecordFromHomeGeography(parseWorkspaceHomeGeography(workspaceRow.data))
+            : EMPTY_PLACE_OF_RECORD
+        ),
+  };
+}
 
 type CategoryRow = { id: string; label: string; slug: string | null; description: string | null; sort_order: number | null; color: string | null };
 type ApprovedItemRow = {
@@ -72,6 +568,22 @@ export type PublicPortalProps = {
   // Only true when an email transport is actually configured — the "notify me"
   // affordance is hidden otherwise so the UI never promises email it can't send.
   emailUpdatesAvailable: boolean;
+  /**
+   * Where the resident-facing map opens and why — resolved here rather than in
+   * the browser, because the operator console has to be shown the same answer
+   * and neither surface can compute it (this module is server-only).
+   */
+  mapFraming: PortalMapFraming;
+  /**
+   * The operator's published map layers, resolved server-side for the same
+   * reason `mapFraming` is: the query that decides what an anonymous reader may
+   * see must not be one the browser gets to ask.
+   *
+   * Carries `readFailure` rather than collapsing to an empty set. An absent
+   * layer and an unreadable one look identical on a map, and only the first is
+   * a fact about this campaign.
+   */
+  contextLayers: ParticipantContextLayerSet;
 };
 
 export type PublicPortalBundle = {
@@ -88,7 +600,7 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at")
+    .select("id, workspace_id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at")
     .eq("share_token", shareToken)
     .eq("status", "active")
     .maybeSingle();
@@ -97,10 +609,19 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
 
   const campaign = campaignData as PublicPortalCampaign;
 
-  const [{ data: projectData }, { data: categoriesData }, { data: approvedItemsData }, surveyDefinition, closeLoopRows] = await Promise.all([
+  const [
+    { data: projectData },
+    placeCandidates,
+    { data: categoriesData },
+    { data: approvedItemsData },
+    surveyDefinition,
+    closeLoopRows,
+  ] = await Promise.all([
     campaign.project_id
       ? supabase.from("projects").select("id, name, summary").eq("id", campaign.project_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    // Where this map opens, and why. See `loadPortalPlaceCandidates`.
+    loadPortalPlaceCandidates(supabase, campaign),
     supabase
       .from("engagement_categories")
       .select("id, label, slug, description, sort_order, color")
@@ -125,19 +646,39 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
   const approvedItems = (approvedItemsData ?? []) as ApprovedItemRow[];
   const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
 
-  const surveyQuestions: PortalSurveyQuestion[] = surveyDefinition.questions.map((question) => ({
-    id: question.id,
-    questionType: question.question_type,
-    prompt: question.prompt,
-    helpText: question.help_text,
-    required: question.required,
-    config: question.config_json,
-    options: (surveyDefinition.optionsByQuestion.get(question.id) ?? []).map((option) => ({
-      id: option.id,
-      label: option.label,
-      value: option.value,
-    })),
-  }));
+  const mapFraming = resolvePortalMapFraming({
+    campaignPlace: placeCandidates.campaign,
+    projectPlace: placeCandidates.project,
+    workspaceHome: placeCandidates.workspaceHome,
+    approvedItems,
+  });
+
+  const surveyQuestions: PortalSurveyQuestion[] = surveyDefinition.questions.map((question) => {
+    // A `map_point` question that names no camera of its own inherits the
+    // campaign's framing instead of opening on the continent, and carries the
+    // sentence saying which. The question's own camera always wins — see
+    // `resolveMapPointQuestionView`. Nothing else has a map, so nothing else
+    // has a note.
+    const mapPoint =
+      question.question_type === "map_point"
+        ? resolveMapPointQuestionView(question.config_json, mapFraming)
+        : null;
+
+    return {
+      id: question.id,
+      questionType: question.question_type,
+      prompt: question.prompt,
+      helpText: question.help_text,
+      required: question.required,
+      config: mapPoint ? mapPoint.config : question.config_json,
+      mapFramingNote: mapPoint ? mapPoint.framingNote : null,
+      options: (surveyDefinition.optionsByQuestion.get(question.id) ?? []).map((option) => ({
+        id: option.id,
+        label: option.label,
+        value: option.value,
+      })),
+    };
+  });
 
   const categoryLabelById = new Map(categories.map((category) => [category.id, category.label]));
   const closeLoopEntries: PublicCloseLoopEntry[] = closeLoopRows.map((entry) => ({
@@ -192,6 +733,19 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
     surveyQuestions,
     closeLoopEntries,
     emailUpdatesAvailable: isEmailTransportConfigured(),
+    mapFraming,
+    // The operator's published context layers — the alignment, the parcels, the
+    // existing bike network — on the map a resident draws on. The portal
+    // component and both participant maps already accept and paint these; this
+    // loader was the missing caller, which is the only reason the capability
+    // could ship complete and be reachable by nobody.
+    //
+    // `loadParticipantContextLayers` filters on `visible_to_participants`, so
+    // an unpublished layer never crosses to an anonymous reader, and it reports
+    // a failed read rather than returning an empty set — an absent layer and an
+    // unreadable one look identical on a map, and only one of them is a fact
+    // about this campaign.
+    contextLayers: await loadParticipantContextLayers(supabase, campaign.id),
   };
 
   return { campaign, project, acceptingSubmissions, portalProps };

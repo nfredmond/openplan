@@ -95,6 +95,17 @@ export function EngagementCampaignCreator({ projects }: { projects: ProjectOptio
               </option>
             ))}
           </select>
+          {/*
+            Linking a project is not only a filing decision — it is where the
+            public map opens, unless the campaign is later given an area of its
+            own. Said conditionally because this form cannot know whether the
+            chosen project has a study area, and promising a frame that does not
+            exist would be worse than saying nothing.
+          */}
+          <p className="text-[0.72rem] text-muted-foreground">
+            If the project has a study area, the campaign&apos;s public map opens there. You can set an
+            area for this campaign specifically once it exists.
+          </p>
         </div>
 
         <div className="space-y-1.5">

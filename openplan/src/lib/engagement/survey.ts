@@ -79,10 +79,104 @@ export const mapPointConfigSchema = z
     geometry_types: z.array(z.enum(["Point", "LineString", "Polygon"])).min(1).default(["Point"]),
     guidance: z.string().max(1000).optional(),
     require_within_corridor: z.boolean().optional(),
+    // Where THIS question's map opens. Optional, and meant to stay that way: a
+    // question can legitimately ask about one intersection inside a
+    // campaign-wide area, but most do not need their own camera. An unset pair
+    // is filled in from the campaign's framing by
+    // `resolveMapPointQuestionView` below, which also returns the sentence
+    // telling the participant which of the two they are looking at — before
+    // that existed, an unset pair meant the whole country, silently.
     center: z.tuple([z.number(), z.number()]).optional(),
     zoom: z.number().optional(),
   })
   .strict();
+
+/**
+ * Where a `map_point` question's map opens, AND the sentence that says so.
+ *
+ * `framingNote` is null only when the question carries a camera an operator
+ * chose for it: the frame is then nothing inherited and nothing assumed, so
+ * there is no assumption to disclose. Every other case gets a sentence,
+ * including — especially — the one where the map ends up on the whole country.
+ */
+export type MapPointQuestionView = { config: unknown; framingNote: string | null };
+
+/**
+ * What the map opens on when the question states a zoom level but no centre.
+ * Kept as its own sentence rather than borrowing the campaign's, because the
+ * reason is the question's, not the campaign's.
+ *
+ * IT DOES NOT SAY "the whole country", and that is the point: a half-stated
+ * camera keeps the question's zoom and falls back to `CONTINENTAL_US_CENTER`
+ * for the centre, so at zoom 14 the map opens tightly on the geographic middle
+ * of the United States — a farm field in Kansas — which is not the country and
+ * not the campaign's area. Naming the zoom level would be guessing at the
+ * widget's default; naming what it is NOT is the part that is knowable here.
+ */
+const MAP_POINT_UNFRAMED_NOTE =
+  "This question sets a zoom level but no location, so this map does not open on the campaign's area.";
+const MAP_POINT_UNREADABLE_CONFIG_NOTE =
+  "This question's map settings could not be read, so this map opens on the whole country.";
+
+/**
+ * Resolve a `map_point` question's camera from the campaign's map framing, and
+ * say which one the participant is looking at.
+ *
+ * WHY THIS EXISTS. `center`/`zoom` were reachable only by writing raw config
+ * JSON, so in practice every `map_point` question opened on the continental
+ * default and a resident had to find their own neighbourhood before they could
+ * answer. The campaign now resolves a framing (its own area, the linked
+ * project's, the workspace's, or where people have already pinned), and this is
+ * how that answer reaches a question that never asked for one.
+ *
+ * The question always WINS. An operator who set a camera for one question meant
+ * it, and a campaign-wide area must not overwrite a deliberately tighter frame.
+ * Only a genuinely absent value is filled, and `center` and `zoom` are treated
+ * as one decision — a centre from the campaign paired with a zoom from the
+ * question would be a camera nobody chose.
+ *
+ * THE NOTE IS RETURNED WITH THE CONFIG, not computed separately, because the
+ * two answers have to agree. The defect this replaces was a survey tab that
+ * silently opened on the continental United States while the portal's own map,
+ * one tab away, had just been taught to say when it did that. A second function
+ * deciding the same thing is how those two drift apart again; here the camera
+ * and the sentence about it are one decision with one exit.
+ */
+export function resolveMapPointQuestionView(
+  config: unknown,
+  framing: { view: { center: [number, number]; zoom: number } | null; summary: string }
+): MapPointQuestionView {
+  // `config_json` is nullable jsonb, and null is an ordinary question that
+  // simply configured nothing — mergeable. A non-object that is not null is
+  // corrupt: the widget will fall back to schema defaults and open on the whole
+  // country, so that, and not the campaign's area, is what gets said.
+  const current =
+    config === null || config === undefined
+      ? {}
+      : typeof config === "object" && !Array.isArray(config)
+        ? (config as Record<string, unknown>)
+        : null;
+  if (current === null) return { config, framingNote: MAP_POINT_UNREADABLE_CONFIG_NOTE };
+
+  if (current.center !== undefined || current.zoom !== undefined) {
+    // The question states a camera of its own and keeps it. A HALF-stated one is
+    // kept too, and it still leaves the map centred on the continental default —
+    // at the question's own zoom, which is why the sentence for that half names
+    // what the map is NOT on rather than claiming a scale it cannot know.
+    return { config, framingNote: current.center !== undefined ? null : MAP_POINT_UNFRAMED_NOTE };
+  }
+
+  // Nothing to inherit: the config is returned untouched rather than given a
+  // plausible-looking place, and the campaign's own summary — which in this
+  // branch already says the map opens on the whole country and why — is what
+  // the participant is told.
+  if (!framing.view) return { config, framingNote: framing.summary };
+
+  return {
+    config: { ...current, center: framing.view.center, zoom: framing.view.zoom },
+    framingNote: framing.summary,
+  };
+}
 export const budgetConfigSchema = z
   .object({
     total: z.number().positive(),

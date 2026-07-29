@@ -10,6 +10,9 @@ import {
   ENGAGEMENT_GEOMETRY_MAX_VERTICES,
   type EngagementGeometry,
 } from "@/lib/engagement/geometry";
+import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
+import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
+import { ParticipantMapLegend } from "./participant-map-legend";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -139,6 +142,7 @@ export function GeometryPickerMap({
   // somebody else's town.
   initialCenter = CONTINENTAL_US_CENTER,
   initialZoom = 3.5,
+  contextLayers = null,
 }: {
   onGeometryChange: (geometry: EngagementGeometry | null) => void;
   /** Starting draw mode (default "point" for the engagement submission form). */
@@ -148,6 +152,13 @@ export function GeometryPickerMap({
   /** Initial map center [lng, lat]. Defaults to the neutral continental view. */
   initialCenter?: [number, number];
   initialZoom?: number;
+  /**
+   * Operator-published GIS context — the proposed alignment, the parcels, the
+   * existing network — drawn UNDER the sketch, with a legend. Null means the
+   * caller has not wired the campaign's layers through yet, which renders
+   * exactly as it did before: a basemap and nothing else.
+   */
+  contextLayers?: ParticipantContextLayerSet | null;
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -324,6 +335,34 @@ export function GeometryPickerMap({
     source.setData(buildPreviewFeatureCollection(draw));
   }, [draw]);
 
+  // Paint the operator's context layers UNDER the resident's own sketch.
+  // `beforeId` is the first draw layer, so nothing an operator uploads can bury
+  // the geometry this map exists to collect. Deferred to `style.load` when the
+  // style is not up yet — the same shape as the cartographic backdrop, which
+  // re-runs its paint for exactly this reason.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    // Nothing to do when the caller has not wired the campaign's layers through
+    // at all. That is the difference between "this map shows no context" and
+    // "this map was told there is none": a null prop means the render site never
+    // supplied them, and touching the map's source registry to say so would be
+    // work with no observable purpose.
+    if (!contextLayers) return;
+    const layers = contextLayers.layers;
+
+    const paint = () => {
+      const beforeId = map.getLayer("engagement-draw-fill") ? "engagement-draw-fill" : undefined;
+      syncContextLayers(map, layers, { beforeId });
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [contextLayers]);
+
   const setMode = (mode: EngagementDrawMode) => {
     if (mode === draw.mode) return;
     setHint(null);
@@ -497,9 +536,10 @@ export function GeometryPickerMap({
             <span className="absolute left-1/2 top-1/2 h-px w-4 -translate-x-1/2 -translate-y-1/2 bg-primary/80" />
           </div>
         ) : null}
-        <div className="absolute bottom-3 left-3 max-w-[85%] rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
+        <div className="absolute bottom-3 left-3 max-w-[55%] rounded-lg border border-border/60 bg-background/90 px-3 py-1.5 text-xs shadow-sm backdrop-blur-sm">
           <span className="text-muted-foreground">{hint ?? statusCaption(draw)}</span>
         </div>
+        <ParticipantMapLegend contextLayers={contextLayers} />
       </div>
 
       <p id={instructionsId} className="text-xs text-muted-foreground">

@@ -6,6 +6,19 @@ import { loadCampaignAccess, loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { placeKindSchema } from "@/lib/api/place-geographies";
+import { corridorGeojsonSchema } from "@/lib/models/run-launch";
+import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
+import {
+  clearedProjectPlace,
+  projectPlaceFromDrawnArea,
+  projectPlaceFromPlaceBoundary,
+} from "@/lib/projects/project-place";
+import { loadPortalPlaceCandidates, resolvePortalMapFraming } from "@/lib/engagement/public-portal-data";
+
+// Setting a searched campaign area re-resolves the boundary through TIGERweb.
+export const runtime = "nodejs";
 
 const paramsSchema = z.object({
   campaignId: z.string().uuid(),
@@ -38,6 +51,32 @@ const patchCampaignSchema = z
     publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
     demographicsEnabled: z.boolean().optional(),
+    /**
+     * The area this campaign is about (20260729000003) — the area that frames
+     * the resident-facing map, not a link to anything.
+     *
+     * A searched place is sent as a REFERENCE and re-resolved here, exactly as
+     * `/api/projects/[projectId]` does it: a client-supplied bbox would be an
+     * unverifiable geography wearing trusted-looking provenance, and this one is
+     * published to every resident who opens the portal. A drawn area is sent as
+     * geometry, because there is nothing to look it up by.
+     */
+    place: z
+      .union([
+        z.object({
+          mode: z.literal("place"),
+          kind: placeKindSchema,
+          geoid: z.string().trim().min(5).max(7),
+          label: z.string().trim().min(1).max(200).optional(),
+        }),
+        z.object({
+          mode: z.literal("drawn"),
+          geometry: corridorGeojsonSchema,
+          label: z.string().trim().min(1).max(200).optional(),
+        }),
+        z.null(),
+      ])
+      .optional(),
   })
   .superRefine((value, context) => {
     if (value.rtpCycleChapterId && value.rtpCycleId === null) {
@@ -102,6 +141,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       { data: categories, error: categoriesError },
       { data: items, error: itemsError },
       { data: reports, error: reportsError },
+      placeCandidates,
     ] =
       await Promise.all([
         access.campaign.project_id
@@ -131,6 +171,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
               .eq("project_id", access.campaign.project_id)
               .order("updated_at", { ascending: false })
           : Promise.resolve({ data: [], error: null }),
+        // The SAME reader the public portal uses, through the operator's own RLS
+        // client. An operator has to be able to see which area frames the portal
+        // they are about to publish — and see it as the fact residents get, not
+        // as a second calculation that can drift from it.
+        loadPortalPlaceCandidates(supabase, {
+          id: access.campaign.id,
+          workspace_id: access.campaign.workspace_id,
+          project_id: access.campaign.project_id,
+        }),
       ]);
 
     if (projectError) {
@@ -173,6 +222,19 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const categoryMap = new Map((categories ?? []).map((category) => [category.id, category]));
     const counts = summarizeEngagementItems(categories ?? [], items ?? []);
 
+    // The SAME resolver the public portal runs, over the same four candidates,
+    // so the operator is told exactly what residents get rather than a second
+    // calculation that can drift from it. Only APPROVED items count, because
+    // only approved items are on the public map.
+    const mapFraming = resolvePortalMapFraming({
+      campaignPlace: placeCandidates.campaign,
+      projectPlace: placeCandidates.project,
+      workspaceHome: placeCandidates.workspaceHome,
+      approvedItems: (items ?? [])
+        .filter((item) => item.status === "approved")
+        .map((item) => ({ latitude: item.latitude, longitude: item.longitude })),
+    });
+
     return NextResponse.json(
       {
         campaign: access.campaign,
@@ -184,6 +246,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         })),
         linkedReports: reports ?? [],
         counts,
+        mapFraming,
       },
       { status: 200 }
     );
@@ -378,15 +441,78 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
     if (parsed.data.demographicsEnabled !== undefined) updates.demographics_enabled = parsed.data.demographicsEnabled;
 
-    const { error: updateError } = await supabase.from("engagement_campaigns").update(updates).eq("id", access.campaign.id);
+    if (parsed.data.place !== undefined) {
+      // The campaign's place columns are deliberately the same names as
+      // `projects.place_*` — 20260729000003 says so, and the shared
+      // `PlaceOfRecord` shape is why — so the project row builders apply
+      // verbatim rather than being copied under a second name.
+      if (parsed.data.place === null) {
+        Object.assign(updates, clearedProjectPlace());
+      } else if (parsed.data.place.mode === "place") {
+        const boundary = await resolvePlaceBoundary(parsed.data.place.kind, parsed.data.place.geoid);
+        if (!boundary) {
+          // Fail closed. Recording the id without a verified boundary would give
+          // the campaign an area that frames nothing — which is the state this
+          // whole column set exists to end, so silently half-writing it would be
+          // worse than refusing.
+          audit.warn("campaign_place_unresolved", {
+            campaignId: access.campaign.id,
+            kind: parsed.data.place.kind,
+            geoid: parsed.data.place.geoid,
+          });
+          return NextResponse.json(
+            {
+              error: "Could not resolve that place",
+              message:
+                "The boundary service did not return a boundary for that place. Search for it again and pick it from the list.",
+            },
+            { status: 404 }
+          );
+        }
+        Object.assign(
+          updates,
+          projectPlaceFromPlaceBoundary(boundary, { label: parsed.data.place.label ?? null })
+        );
+      } else {
+        const drawn = projectPlaceFromDrawnArea(parsed.data.place.geometry, {
+          label: parsed.data.place.label ?? null,
+        });
+        if (!drawn) {
+          return NextResponse.json({ error: "That drawn area has no usable coordinates." }, { status: 400 });
+        }
+        Object.assign(updates, drawn);
+      }
+    }
 
-    if (updateError) {
+    const { data: updated, error: updateError } = await supabase
+      .from("engagement_campaigns")
+      .update(updates)
+      .eq("id", access.campaign.id)
+      .select("id")
+      .maybeSingle();
+
+    if (isWriteFailure(updateError)) {
       audit.error("campaign_update_failed", {
         campaignId: access.campaign.id,
-        message: updateError.message,
-        code: updateError.code ?? null,
+        message: updateError?.message ?? "unknown",
+        code: updateError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to update engagement campaign" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data: updated, error: updateError })) {
+      // `loadCampaignAccess` read this exact campaign through the caller's own
+      // client and passed the role gate, so a write matching nothing is the
+      // database refusing what the application allowed — not a missing campaign.
+      // Before this branch existed the route answered `{ success: true }` over
+      // zero changed rows, which is the silent degrade this codebase refuses.
+      audit.error("campaign_update_matched_no_rows", {
+        campaignId: access.campaign.id,
+        workspaceId: access.campaign.workspace_id,
+        userId: user.id,
+        role: access.membership?.role ?? null,
+      });
+      return noRowsMatchedResponse({ subject: "engagement campaign", targetWasVerified: true });
     }
 
     audit.info("campaign_updated", {
