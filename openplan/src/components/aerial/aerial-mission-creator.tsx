@@ -20,16 +20,28 @@ export function AerialMissionCreator({
   projectId,
   titleLabel = "Log aerial mission",
   description,
+  defaultGeographyLabel = null,
 }: {
   projectId: string;
   titleLabel?: string;
   description?: string;
+  /**
+   * The project's study area, as a starting point for this mission's own label.
+   *
+   * A mission's geography is deliberately a free-text NOTE and not a picked
+   * place — it is usually narrower than the project ("Segment A", "the bridge
+   * approach"), and `aerial_missions` stores no geometry precisely because
+   * nothing inherits one from it. Starting the box from the project's area
+   * means a planner edits a name down rather than typing it from nothing, and
+   * an unedited value is still true.
+   */
+  defaultGeographyLabel?: string | null;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [missionType, setMissionType] = useState<AerialMissionType>("corridor_survey");
   const [status, setStatus] = useState<AerialMissionStatus>("planned");
-  const [geographyLabel, setGeographyLabel] = useState("");
+  const [geographyLabel, setGeographyLabel] = useState(defaultGeographyLabel ?? "");
   const [collectedAt, setCollectedAt] = useState("");
   const [notes, setNotes] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,7 +77,7 @@ export function AerialMissionCreator({
       setTitle("");
       setMissionType("corridor_survey");
       setStatus("planned");
-      setGeographyLabel("");
+      setGeographyLabel(defaultGeographyLabel ?? "");
       setCollectedAt("");
       setNotes("");
       setMessage("Mission logged.");
@@ -136,6 +148,11 @@ export function AerialMissionCreator({
               onChange={(e) => setGeographyLabel(e.target.value)}
               placeholder="Study corridor, Segment A"
             />
+            {defaultGeographyLabel ? (
+              <p className="text-[0.72rem] text-muted-foreground">
+                Starting from this project&apos;s study area. Narrow it to what was actually flown.
+              </p>
+            ) : null}
           </div>
           <div className="space-y-1.5">
             <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Collection date</label>

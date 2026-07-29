@@ -23,7 +23,8 @@ import { buildProjectBudgetSnapshot, type DeliverableBudgetSummary } from "@/lib
 import { loadProjectBudgetInputs, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
-import { buildProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-crosslinks";
+import { buildProjectSpineCrosslinkSummary, geographyLaneInput } from "@/lib/projects/project-spine-crosslinks";
+import { placeOfRecordFromProject } from "@/lib/projects/project-place";
 import { buildProjectSpineReadinessRollup } from "@/lib/projects/spine-readiness";
 import {
   describeComparisonSnapshotAggregate,
@@ -1017,8 +1018,10 @@ export default async function ProjectDetailPage({
   // (no longer a column on projects).
   const { posture: aerialCachedPosture, updatedAt: aerialCachedPostureUpdatedAt } =
     await loadAerialProjectPosture(supabase, project.id);
+  const projectPlaceOfRecord = placeOfRecordFromProject(project);
   const projectSpineCrosslinkSummary = buildProjectSpineCrosslinkSummary({
     projectId: project.id,
+    geography: geographyLaneInput(projectPlaceOfRecord, workspaceHomeGeographyLabel),
     linkedRtpCycleCount,
     reportRecordCount,
     reportAttentionCount,
@@ -1252,10 +1255,7 @@ export default async function ProjectDetailPage({
           status: project.status,
           planType: project.plan_type,
           deliveryPhase: project.delivery_phase,
-          place: {
-            label: project.place_label ?? null,
-            isDrawn: project.place_source === DRAWN_PLACE_SOURCE,
-          },
+          place: { label: projectPlaceOfRecord.label, isDrawn: projectPlaceOfRecord.source === DRAWN_PLACE_SOURCE },
         }}
         canWrite={!isReadOnlyWorkspaceRole(membership.role)}
         workspaceHomeLabel={workspaceHomeGeographyLabel}
@@ -1351,6 +1351,7 @@ export default async function ProjectDetailPage({
         aerialMissions={aerialMissions}
         aerialPackages={aerialPackages}
         projectId={project.id}
+        projectPlaceLabel={project.place_label ?? null}
         timelineItems={timelineItems}
       />
     </section>

@@ -2,7 +2,11 @@ import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { ProjectSpineCrosslinkBoard } from "@/app/(app)/projects/[projectId]/_components/project-spine-crosslink-board";
-import { buildProjectSpineCrosslinkSummary, type ProjectSpineCrosslinkInput } from "@/lib/projects/project-spine-crosslinks";
+import {
+  PROJECT_SPINE_CROSSLINK_ROW_COUNT,
+  buildProjectSpineCrosslinkSummary,
+  type ProjectSpineCrosslinkInput,
+} from "@/lib/projects/project-spine-crosslinks";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, ...props }: ComponentPropsWithoutRef<"a"> & { href: string }) => (
@@ -14,6 +18,12 @@ vi.mock("next/link", () => ({
 
 const emptyInput: ProjectSpineCrosslinkInput = {
   projectId: "project-1",
+  geography: {
+    label: null,
+    isDrawn: false,
+    hasResolvableIdentity: false,
+    workspaceFallbackLabel: null,
+  },
   linkedRtpCycleCount: 0,
   reportRecordCount: 0,
   reportAttentionCount: 0,
@@ -184,7 +194,7 @@ describe("ProjectSpineCrosslinkBoard", () => {
 
     expect(screen.getAllByText("Schema setup pending")).toHaveLength(6);
     expect(screen.getAllByText("Setup needed")).toHaveLength(6);
-    expect(screen.getAllByText(/Do not cite this lane as empty or complete/i)).toHaveLength(7);
+    expect(screen.getAllByText(/Do not cite this lane as empty or complete/i)).toHaveLength(8);
 
     const text = renderedText();
     expect(text).toContain("showing setup actions instead of pretending those lanes are empty");
@@ -199,6 +209,10 @@ describe("ProjectSpineCrosslinkBoard", () => {
     expect(screen.getByText("Loading state")).toBeInTheDocument();
     expect(screen.getByText("Loading crosslink queue")).toBeInTheDocument();
     expect(screen.getByText(/Keep the board visible while source reads finish/i)).toBeInTheDocument();
-    expect(screen.getAllByLabelText("Loading crosslink row")).toHaveLength(7);
+    // Derived from PROJECT_SPINE_CROSSLINK_ROW_COUNT rather than hard-coded, so
+    // the skeleton renders the shape the board will actually take.
+    expect(screen.getAllByLabelText("Loading crosslink row")).toHaveLength(
+      PROJECT_SPINE_CROSSLINK_ROW_COUNT
+    );
   });
 });

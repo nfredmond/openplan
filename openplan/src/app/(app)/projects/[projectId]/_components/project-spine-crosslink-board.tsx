@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, GitBranch } from "lucide-react";
-import type { ProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-crosslinks";
+import {
+  PROJECT_SPINE_CROSSLINK_ROW_COUNT,
+  type ProjectSpineCrosslinkSummary,
+} from "@/lib/projects/project-spine-crosslinks";
 
 function readinessClass(readiness: string) {
   switch (readiness) {
@@ -75,7 +78,7 @@ export function ProjectSpineCrosslinkBoard({
       <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,20rem)]">
         <div className="module-record-list">
           {isLoading
-            ? Array.from({ length: 7 }).map((_, index) => (
+            ? Array.from({ length: PROJECT_SPINE_CROSSLINK_ROW_COUNT }).map((_, index) => (
                 <div
                   key={`crosslink-loading-${index}`}
                   className="module-record-row overflow-hidden border-border/80 bg-background/80"

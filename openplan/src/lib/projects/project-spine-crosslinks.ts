@@ -1,8 +1,18 @@
+import {
+  DRAWN_PLACE_SOURCE,
+  placeHasResolvableIdentity,
+  type PlaceOfRecord,
+} from "@/lib/geographies/place-of-record";
+
 export type ProjectSpineCrosslinkReadiness = "ready" | "attention" | "missing";
 export type ProjectSpineCrosslinkSourceState = "linked" | "empty" | "schema_pending";
 export type ProjectSpineCrosslinkBoardState = "active" | "empty" | "schema_pending";
 
 export type ProjectSpineCrosslinkRowId =
+  // First, because it is upstream of the other seven: a study area is what
+  // model runs, county onboarding, safety acquisitions and grant eligibility
+  // all start from. A project without one makes every other lane ask again.
+  | "geography"
   | "rtp_packets"
   | "scenario_sets"
   | "funding_profile"
@@ -45,6 +55,21 @@ export type ProjectSpineCrosslinkSummary = {
 
 export type ProjectSpineCrosslinkInput = {
   projectId: string;
+  /**
+   * The project's place of record, and the workspace fallback if it has none.
+   *
+   * `place` is the identity only — this crosses an RSC boundary and a county
+   * boundary polygon can be megabytes.
+   */
+  geography: {
+    label: string | null;
+    /** True when the area was hand-drawn, so it carries no resolvable identity. */
+    isDrawn: boolean;
+    /** Set when the place resolves to something downstream lanes can re-derive. */
+    hasResolvableIdentity: boolean;
+    /** The workspace home geography's name, when this project has no area of its own. */
+    workspaceFallbackLabel: string | null;
+  };
   linkedRtpCycleCount: number;
   reportRecordCount: number;
   reportAttentionCount: number;
@@ -102,6 +127,33 @@ export type ProjectSpineCrosslinkInput = {
   pendingSchema?: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>;
 };
 
+/**
+ * How many lanes the board has. Exported so the loading skeleton renders the
+ * shape the board will actually take — it hard-coded 7, which silently became
+ * wrong the moment an eighth lane was added.
+ */
+export const PROJECT_SPINE_CROSSLINK_ROW_COUNT = 8;
+
+/**
+ * The geography lane's input, derived from a place of record.
+ *
+ * Lives beside the lane that consumes it rather than in the page, so that what
+ * counts as "resolvable" and what counts as "drawn" is decided once. The place
+ * is expected to be identity-only — a county boundary polygon is megabytes and
+ * this crosses an RSC boundary.
+ */
+export function geographyLaneInput(
+  place: PlaceOfRecord,
+  workspaceFallbackLabel: string | null
+): ProjectSpineCrosslinkInput["geography"] {
+  return {
+    label: place.label,
+    isDrawn: place.source === DRAWN_PLACE_SOURCE,
+    hasResolvableIdentity: placeHasResolvableIdentity(place),
+    workspaceFallbackLabel,
+  };
+}
+
 function pluralize(value: number, singular: string, plural = `${singular}s`) {
   return `${value} ${value === 1 ? singular : plural}`;
 }
@@ -123,6 +175,7 @@ function byPriority(row: ProjectSpineCrosslinkRow): number {
 }
 
 const schemaSetupNextAction: Record<ProjectSpineCrosslinkRowId, string> = {
+  geography: "Apply the project place-of-record columns and reload; until then this project's study area cannot be read, which is not the same as it being unset.",
   rtp_packets: "Apply or verify the RTP link/report packet schema, then reload this project before treating portfolio placement as missing.",
   scenario_sets: "Apply the scenario spine tables and reload; then create the baseline-versus-alternative set this project is allowed to cite.",
   funding_profile: "Apply the funding profile, award, opportunity, and invoice tables before deciding whether this project lacks a funding target.",
@@ -258,9 +311,61 @@ export function buildProjectSpineCrosslinkSummary(
         ? "ready"
         : "attention";
 
+  /**
+   * `attention`, not `ready`, for a drawn area. A hand-drawn shape has extent
+   * but no identity: there is no boundary to re-resolve, so no county filter, no
+   * jurisdiction rule and no eligibility check downstream can be derived from
+   * it. That is a real limitation on what the other lanes can do, and calling it
+   * "ready" would hide it.
+   */
+  const geographyReadiness: ProjectSpineCrosslinkReadiness = input.geography.hasResolvableIdentity
+    ? "ready"
+    : input.geography.isDrawn
+      ? "attention"
+      : "missing";
+
+  const geographyPlaceName = input.geography.label ?? "this project's study area";
+
   const pendingSchema = input.pendingSchema ?? {};
 
   const baseRows: Array<Omit<ProjectSpineCrosslinkRow, "sourceState" | "sourceLabel" | "sourceDetail">> = [
+    {
+      id: "geography",
+      lane: "Study area",
+      readiness: geographyReadiness,
+      statusLabel:
+        geographyReadiness === "ready"
+          ? "Area of record set"
+          : geographyReadiness === "attention"
+            ? "Drawn area only"
+            : "No study area",
+      headline:
+        geographyReadiness === "ready"
+          ? `${geographyPlaceName} is this project's area of record, and model runs, county onboarding and safety acquisitions start from it.`
+          : geographyReadiness === "attention"
+            ? `${geographyPlaceName} was drawn by hand, so it has an extent but no place identity.`
+            : input.geography.workspaceFallbackLabel
+              ? `No study area is set, so anything that needs one falls back to the workspace's home geography, ${input.geography.workspaceFallbackLabel}.`
+              : "No study area is set, and the workspace has no home geography either, so every module will ask for a place each time.",
+      detail:
+        geographyReadiness === "ready"
+          ? "Resolved place — downstream lanes can re-derive the boundary, the county filter and the jurisdiction from it."
+          : geographyReadiness === "attention"
+            ? "Drawn shape — no boundary to re-resolve, so no county filter or jurisdiction rule can be derived downstream."
+            : "Unset — each module will ask for a place separately, and two of them may be answered differently.",
+      evidence:
+        "A study area states WHERE this project is, not what is true there. It scopes what other lanes fetch; it is not itself a finding about the place.",
+      nextAction:
+        geographyReadiness === "ready"
+          ? "Nothing needed — change it only if the project's scope moves."
+          : geographyReadiness === "attention"
+            ? "Re-pick the area from search if a county or place identity is needed downstream; keep the drawn shape if the extent is the point."
+            : "Set the study area on the project record so every other lane inherits it instead of asking.",
+      caveat:
+        "Do not cite this lane as empty or complete without opening the project record; a study area that cannot be read is not a study area that is unset.",
+      href: "#project-identity",
+      actionLabel: "Open project record",
+    },
     {
       id: "rtp_packets",
       lane: "RTP / report packets",

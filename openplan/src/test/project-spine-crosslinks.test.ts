@@ -3,6 +3,12 @@ import { buildProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-
 
 const baseInput = {
   projectId: "project-1",
+  geography: {
+    label: "Franklin County",
+    isDrawn: false,
+    hasResolvableIdentity: true,
+    workspaceFallbackLabel: null,
+  },
   linkedRtpCycleCount: 1,
   reportRecordCount: 2,
   reportAttentionCount: 0,
@@ -69,9 +75,12 @@ describe("buildProjectSpineCrosslinkSummary", () => {
       reportAttentionCount: 1,
     });
 
-    expect(summary.rows).toHaveLength(7);
+    // Eight lanes: the seven downstream ones plus the study area they all
+    // start from. baseInput carries a resolved place, so geography is ready.
+    expect(summary.rows).toHaveLength(8);
+    expect(summary.rows[0].id).toBe("geography");
     expect(summary.attentionCount).toBe(3);
-    expect(summary.readyCount).toBe(4);
+    expect(summary.readyCount).toBe(5);
     expect(summary.missingCount).toBe(0);
     expect(summary.leadAction.id).toBe("rtp_packets");
     expect(summary.rows.find((row) => row.id === "engagement_evidence")?.statusLabel).toBe(
@@ -131,20 +140,94 @@ describe("buildProjectSpineCrosslinkSummary", () => {
         readyPackageCount: 0,
         verificationReadiness: "none",
       },
+      // Unset too, so this case is what it says it is: a project with nothing
+      // linked anywhere, including the area the other lanes start from.
+      geography: {
+        label: null,
+        isDrawn: false,
+        hasResolvableIdentity: false,
+        workspaceFallbackLabel: null,
+      },
     });
 
     expect(summary.readyCount).toBe(0);
     expect(summary.attentionCount).toBe(0);
-    expect(summary.missingCount).toBe(7);
+    expect(summary.missingCount).toBe(8);
     expect(summary.boardState).toBe("empty");
     expect(summary.stateHeadline).toMatch(/No downstream outputs/i);
-    expect(summary.stateNextAction).toMatch(/attach this project to the right RTP cycle/i);
-    expect(summary.emptyCount).toBe(7);
-    expect(summary.leadAction.id).toBe("rtp_packets");
+    // With nothing set anywhere, the first move is the study area rather than
+    // the RTP cycle: geography is upstream of every other lane, and attaching a
+    // project to a cycle before anyone has said where it is only defers the
+    // question. This is the ordering the geography lane exists to produce.
+    expect(summary.stateNextAction).toMatch(/study area/i);
+    expect(summary.emptyCount).toBe(8);
+    expect(summary.leadAction.id).toBe("geography");
     expect(summary.rows.map((row) => row.statusLabel)).toContain("Funding target missing");
     expect(summary.rows.find((row) => row.id === "funding_profile")?.sourceLabel).toBe("No evidence yet");
     expect(summary.rows.find((row) => row.id === "analysis_modeling")?.evidence).toMatch(/no validated behavioral forecast/i);
     expect(summary.rows.find((row) => row.id === "scenario_sets")?.caveat).toMatch(/planning-support context/i);
+  });
+
+  it("puts the study area first, because every other lane starts from it", () => {
+    const summary = buildProjectSpineCrosslinkSummary(baseInput);
+    const geography = summary.rows.find((row) => row.id === "geography");
+
+    expect(summary.rows[0].id).toBe("geography");
+    expect(geography?.readiness).toBe("ready");
+    expect(geography?.headline).toContain("Franklin County");
+    expect(geography?.href).toBe("#project-identity");
+  });
+
+  it("calls a drawn area attention, not ready — it has extent but no identity", () => {
+    // A hand-drawn shape cannot be re-resolved, so no county filter, no
+    // jurisdiction rule and no eligibility check downstream can be derived from
+    // it. Reporting that as "ready" would hide a real limit on the other lanes.
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      geography: {
+        label: "Drawn corridor",
+        isDrawn: true,
+        hasResolvableIdentity: false,
+        workspaceFallbackLabel: "Franklin County",
+      },
+    });
+    const geography = summary.rows.find((row) => row.id === "geography");
+
+    expect(geography?.readiness).toBe("attention");
+    expect(geography?.statusLabel).toBe("Drawn area only");
+    expect(geography?.detail).toMatch(/no boundary to re-resolve/i);
+    expect(geography?.nextAction).toMatch(/keep the drawn shape if the extent is the point/i);
+  });
+
+  it("names the real fallback when no study area is set", () => {
+    // "Missing" must say what actually happens next, and what happens is that
+    // downstream lanes fall back to the workspace's home geography — by name,
+    // so nobody has to guess which place their run will use.
+    const withFallback = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      geography: {
+        label: null,
+        isDrawn: false,
+        hasResolvableIdentity: false,
+        workspaceFallbackLabel: "Delaware County",
+      },
+    });
+    expect(withFallback.rows.find((row) => row.id === "geography")?.headline).toContain(
+      "Delaware County"
+    );
+
+    const withoutFallback = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      geography: {
+        label: null,
+        isDrawn: false,
+        hasResolvableIdentity: false,
+        workspaceFallbackLabel: null,
+      },
+    });
+    expect(withoutFallback.rows.find((row) => row.id === "geography")?.headline).toMatch(
+      /every module will ask for a place each time/i
+    );
   });
 
   it("turns pending schema lanes into setup actions instead of false missing evidence", () => {

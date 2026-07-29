@@ -29,6 +29,7 @@ const manager = readFileSync(
   "utf8"
 );
 
+/** A ring around Franklin County, Ohio — deliberately not a California shape. */
 const geometry = {
   type: "Polygon" as const,
   coordinates: [
@@ -39,7 +40,7 @@ const geometry = {
       [-83.1, 40.1],
       [-83.1, 39.9],
     ],
-  ],
+  ] as [number, number][][],
 };
 
 describe("model run study-area inheritance", () => {

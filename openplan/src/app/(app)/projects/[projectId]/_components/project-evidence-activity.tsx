@@ -29,6 +29,8 @@ type ProjectEvidenceAndActivityProps = {
   aerialMissions: AerialMission[];
   aerialPackages: AerialPackage[];
   projectId: string;
+  /** The project's study area label, seeded into a new mission's geography note. */
+  projectPlaceLabel: string | null;
   timelineItems: TimelineItem[];
 };
 
@@ -41,6 +43,7 @@ export function ProjectEvidenceAndActivity({
   aerialMissions,
   aerialPackages,
   projectId,
+  projectPlaceLabel,
   timelineItems,
 }: ProjectEvidenceAndActivityProps) {
   return (
@@ -227,7 +230,11 @@ export function ProjectEvidenceAndActivity({
             <AerialEvidencePackageCreator
               missionOptions={aerialMissions.map((m) => ({ id: m.id, title: m.title }))}
             />
-            <AerialMissionCreator projectId={projectId} titleLabel="Log another mission" />
+            <AerialMissionCreator
+            projectId={projectId}
+            defaultGeographyLabel={projectPlaceLabel}
+            titleLabel="Log another mission"
+          />
           </div>
         )}
       </article>
