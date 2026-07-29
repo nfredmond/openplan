@@ -2,6 +2,16 @@ import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import type { HotspotAnalysis } from "@/lib/engagement/hotspots";
 import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import {
+  DEMOGRAPHICS_SCREENING_CAVEAT,
+  type DemographicsSummary,
+  type SelfReportedDemographicsSource,
+} from "@/lib/engagement/demographics";
+import {
+  buildJointRepresentativeness,
+  jointReadingIsPresentable,
+  type JointRepresentativeness,
+} from "@/lib/engagement/joint-representativeness";
+import {
   ENGAGEMENT_NARRATIVE_CAVEAT,
   parseStoredEngagementSynthesis,
   type EngagementSynthesisEvidence,
@@ -53,9 +63,75 @@ export type ReportEngagementSummary = {
   hotspots: HotspotAnalysis | null;
   /** Cached spatial representativeness screening (E5b), when present. */
   representativeness: CampaignRepresentativeness | null;
+  /**
+   * k-anonymized self-reported respondent demographics (E5a), when the caller
+   * actually loaded them. Null whenever the caller did not read them, the
+   * campaign never collected them, the read failed, or nobody answered — a
+   * report may not assert "no demographics were collected" on any of those.
+   */
+  selfReported: ReportEngagementSelfReported | null;
+  /**
+   * The joint reading across E5a and E5b (E5c), present only when there is
+   * something honest to say. Null when the caller never loaded the self-reported
+   * side, so an unwired report path stays silent instead of half-claiming.
+   */
+  joint: JointRepresentativeness | null;
   /** Cached E1 comment synthesis (themes/sentiment + export-gated narrative). */
   synthesis: ReportEngagementSynthesis | null;
 };
+
+/**
+ * The self-reported aggregate as it travels into a report artifact.
+ *
+ * WHY A SEPARATE TYPE RATHER THAN THE `DemographicsSummary` ITSELF. A report is
+ * an export path, and from there the counts get quoted into narrative prose. A
+ * k-anonymized aggregate that arrives somewhere without its suppression note
+ * reads as a complete census of respondents, which is exactly the laundering
+ * this repo forbids — the note is part of the number, not a UI decoration around
+ * it. Both string fields are REQUIRED here and are written by
+ * `buildReportEngagementSelfReported` from the shared constants, never taken
+ * from the caller, so there is no shape of this record that carries counts
+ * without carrying why they are incomplete.
+ */
+export type ReportEngagementSelfReported = {
+  /** Respondents who shared any demographics — the only published denominator. */
+  respondentsWithDemographics: number;
+  dimensions: DemographicsSummary["dimensions"];
+  /** True when at least one cell was collapsed into the `suppressed` bucket. */
+  hasSuppressed: boolean;
+  /** Always present: what suppression did to these counts. */
+  suppressionNote: string;
+  /** Always present: DEMOGRAPHICS_SCREENING_CAVEAT, verbatim. */
+  caveat: string;
+};
+
+const SUPPRESSION_NOTE_APPLIED =
+  "k-anonymized: categories with fewer than five respondents are collapsed into a suppressed bucket, and a residual under five is dropped entirely. These counts therefore do not sum to the respondent total, and the number behind any one question is not published.";
+
+const SUPPRESSION_NOTE_NONE_APPLIED =
+  "k-anonymized: any category with fewer than five respondents would have been suppressed. None were on this campaign, but the counts still describe only the respondents who chose to answer.";
+
+/**
+ * Shape the k-anon aggregate for report carriage, or return null when there is
+ * nothing publishable. Returns null for every non-`loaded` state as well, so a
+ * report path that has not been wired to read demographics carries silence
+ * rather than a claim that none exist.
+ */
+export function buildReportEngagementSelfReported(
+  source: SelfReportedDemographicsSource
+): ReportEngagementSelfReported | null {
+  if (source.state !== "loaded" || !source.summary.hasAny) {
+    return null;
+  }
+
+  return {
+    respondentsWithDemographics: source.summary.respondentsWithDemographics,
+    dimensions: source.summary.dimensions,
+    hasSuppressed: source.summary.hasSuppressed,
+    suppressionNote: source.summary.hasSuppressed ? SUPPRESSION_NOTE_APPLIED : SUPPRESSION_NOTE_NONE_APPLIED,
+    caveat: DEMOGRAPHICS_SCREENING_CAVEAT,
+  };
+}
 
 export type ReportEngagementSynthesis = EngagementSynthesisEvidence & {
   /**
@@ -237,6 +313,7 @@ export function buildReportEngagementSummary({
   items,
   hotspots = null,
   representativeness = null,
+  selfReported = { state: "not_loaded" },
   synthesis = null,
 }: {
   campaign: ReportEngagementCampaignRecord | null;
@@ -244,11 +321,25 @@ export function buildReportEngagementSummary({
   items: ReportEngagementItemRecord[];
   hotspots?: HotspotAnalysis | null;
   representativeness?: CampaignRepresentativeness | null;
+  /**
+   * Defaults to `not_loaded` because a caller that has not been wired to read
+   * the k-anon aggregate must produce silence, not the assertion that a campaign
+   * collected nothing. Pass a real state to make the self-reported side travel.
+   */
+  selfReported?: SelfReportedDemographicsSource;
   synthesis?: ReportEngagementSynthesis | null;
 }): ReportEngagementSummary | null {
   if (!campaign) {
     return null;
   }
+
+  // The joint reading is derived HERE rather than accepted from the caller, so
+  // a report can never carry a self-reported figure that was compared against a
+  // different baseline than the one printed beside it.
+  const joint =
+    selfReported.state === "not_loaded"
+      ? null
+      : buildJointRepresentativeness({ ecological: representativeness, selfReported });
 
   return {
     campaign,
@@ -256,6 +347,8 @@ export function buildReportEngagementSummary({
     categories,
     hotspots,
     representativeness,
+    selfReported: buildReportEngagementSelfReported(selfReported),
+    joint: joint && jointReadingIsPresentable(joint) ? joint : null,
     synthesis,
   };
 }

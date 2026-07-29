@@ -1,4 +1,8 @@
-import type { DemographicsSummary } from "@/lib/engagement/demographics";
+import { DEMOGRAPHIC_DIMENSIONS } from "@/lib/engagement/demographics";
+import type {
+  DemographicsSummary,
+  SelfReportedDemographicsSource,
+} from "@/lib/engagement/demographics";
 
 function SubLabel({ children }: { children: React.ReactNode }) {
   return <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{children}</p>;
@@ -22,14 +26,40 @@ function BandBar({ label, count, max, muted }: { label: string; count: number; m
   );
 }
 
-const DIMENSIONS: Array<{ key: keyof DemographicsSummary["dimensions"]; label: string }> = [
-  { key: "age_band", label: "Age" },
-  { key: "primary_language", label: "Primary language" },
-  { key: "household_tenure", label: "Housing tenure" },
-  { key: "race_ethnicity", label: "Race / ethnicity" },
-];
+/**
+ * The panel takes the SOURCE rather than the summary because the empty summary
+ * and the failed read used to arrive here identical. "No respondents have shared
+ * optional demographics yet" is a sentence about the community; a permission
+ * error or a dropped RPC must never be allowed to say it.
+ */
+export function DemographicsPanel({ source }: { source: SelfReportedDemographicsSource }) {
+  if (source.state === "unreadable") {
+    return (
+      <p className="text-xs text-amber-700 dark:text-amber-300">
+        Respondent demographics could not be read, so this panel is unavailable rather than empty — an absence here
+        would not mean no one answered. Reported cause: {source.message}
+      </p>
+    );
+  }
 
-export function DemographicsPanel({ summary }: { summary: DemographicsSummary }) {
+  if (source.state === "not_collected") {
+    return (
+      <p className="text-xs text-muted-foreground">
+        This campaign is not collecting optional demographics, so nothing is known about who responded.
+      </p>
+    );
+  }
+
+  if (source.state === "not_loaded") {
+    return (
+      <p className="text-xs text-muted-foreground">
+        Respondent demographics were not loaded for this view.
+      </p>
+    );
+  }
+
+  const summary: DemographicsSummary = source.summary;
+
   if (!summary.hasAny) {
     return (
       <p className="text-xs text-muted-foreground">
@@ -48,7 +78,7 @@ export function DemographicsPanel({ summary }: { summary: DemographicsSummary })
       </p>
 
       <div className="grid gap-6 sm:grid-cols-2">
-        {DIMENSIONS.map((dimension) => {
+        {DEMOGRAPHIC_DIMENSIONS.map((dimension) => {
           const bands = summary.dimensions[dimension.key];
           if (bands.length === 0) return null;
           const max = bands.reduce((acc, band) => Math.max(acc, band.count), 0);

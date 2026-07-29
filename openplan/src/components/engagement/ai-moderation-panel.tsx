@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ItemModeration, ModerationSeverity } from "@/lib/engagement/ai-moderation-shared";
+import type { ModerationQueueView, ModerationSeverity } from "@/lib/engagement/ai-moderation-shared";
 import { MODERATION_CAVEAT } from "@/lib/engagement/ai-moderation-shared";
 
 const SEVERITY_TONE: Record<ModerationSeverity, string> = {
@@ -21,19 +21,19 @@ const FLAG_LABEL: Record<string, string> = {
   spam: "Spam",
 };
 
-export type ModeratedItem = { id: string; snippet: string; moderation: ItemModeration };
+// The flagged-item shape and the queue assembly live in ai-moderation-shared.ts,
+// beside the vocabulary the scan writes. Re-exported so this component stays the
+// one import path for anything rendering moderation.
+export type { ModeratedItem } from "@/lib/engagement/ai-moderation-shared";
 
 export function AiModerationPanel({
   campaignId,
-  queueCount,
-  flagged,
-  lastSource,
+  queue,
 }: {
   campaignId: string;
-  queueCount: number;
-  flagged: ModeratedItem[];
-  lastSource: "ai" | "deterministic-fallback" | null;
+  queue: ModerationQueueView;
 }) {
+  const { queueItemCount: queueCount, flagged, lastSource, unreadableAssessmentCount } = queue;
   const router = useRouter();
   const [isRunning, setIsRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,10 +85,26 @@ export function AiModerationPanel({
       {error ? <p className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
       {note ? <p className="text-xs text-muted-foreground">{note}</p> : null}
 
+      {/* An assessment this build cannot interpret is an unknown, and saying
+          "nothing is flagged" over the top of one would be a clean bill of
+          health issued by a parse failure. Disclosed above the list so it is
+          read whether or not anything else was flagged. */}
+      {unreadableAssessmentCount > 0 ? (
+        <p className="text-xs text-amber-700 dark:text-amber-300">
+          {unreadableAssessmentCount} queued comment{unreadableAssessmentCount === 1 ? " carries" : "s carry"} a stored
+          assessment this version cannot read, so {unreadableAssessmentCount === 1 ? "it is" : "they are"} not
+          summarized here. Re-run the scan to refresh {unreadableAssessmentCount === 1 ? "it" : "them"}.
+        </p>
+      ) : null}
+
       {flagged.length === 0 ? (
         <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <ShieldCheck className="h-3.5 w-3.5 text-[color:var(--pine)]" />
-          {lastSource ? "No queued comments are currently flagged." : "Run a scan to flag comments that may need a closer look."}
+          {unreadableAssessmentCount > 0
+            ? "Nothing else in the queue is flagged."
+            : lastSource
+              ? "No queued comments are currently flagged."
+              : "Run a scan to flag comments that may need a closer look."}
         </p>
       ) : (
         <div className="space-y-2">

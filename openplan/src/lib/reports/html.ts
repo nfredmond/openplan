@@ -7,6 +7,8 @@ import {
   extractEngagementHandoffProvenance,
   type ReportEngagementSummary,
 } from "@/lib/reports/engagement";
+import { DEMOGRAPHIC_DIMENSIONS } from "@/lib/engagement/demographics";
+import { JOINT_READING_LABELS } from "@/lib/engagement/joint-representativeness";
 import {
   buildEvidenceChainSummary,
   type EvidenceChainSummary,
@@ -481,6 +483,96 @@ function engagementRepresentativenessMarkup(data: EngagementMarkupContext): stri
       })
       .join("")}</ul>
     <p class="meta">${esc(representativeness.caveat)}</p>
+  </div>`;
+}
+
+/**
+ * E5a — the k-anonymized self-reported respondent demographics, as they travel
+ * into a report artifact.
+ *
+ * WHY THE NOTE AND THE COUNTS ARE ONE TEMPLATE. A suppressed aggregate that
+ * arrives somewhere without its suppression note reads as a complete census of
+ * respondents, and a reader who quotes "8 renters" into a funding narrative has
+ * then published a number the data does not support. There is deliberately no
+ * branch here that emits a band count without also emitting
+ * `suppressionNote` and `caveat` — the note travels with the number or the
+ * number does not travel.
+ *
+ * Silence is the honest output when `selfReported` is null: the builder returns
+ * null both for a caller that never loaded the aggregate and for a campaign
+ * that collected nothing, and a report may not assert "no demographics were
+ * collected" on either. What IS said about a failed read is said by the joint
+ * block below, which knows the difference.
+ */
+function engagementSelfReportedDemographicsMarkup(data: EngagementMarkupContext): string {
+  const selfReported = data.engagement?.selfReported;
+  if (!selfReported) {
+    return "";
+  }
+
+  const dimensions = DEMOGRAPHIC_DIMENSIONS.map((dimension) => {
+    const bands = selfReported.dimensions[dimension.key];
+    if (bands.length === 0) {
+      return "";
+    }
+    return `<li>
+      <strong>${esc(dimension.label)}</strong>
+      <span class="meta">${bands
+        .map((band) => `${esc(band.label)} ${band.count}`)
+        .join(" • ")}</span>
+    </li>`;
+  }).join("");
+
+  return `<div style="margin-top: 18px;">
+    <h3>Self-reported respondent demographics (screening)</h3>
+    <p>${selfReported.respondentsWithDemographics} respondent${
+      selfReported.respondentsWithDemographics === 1 ? "" : "s"
+    } shared optional demographics. Counts only — no percentages, because suppression and multi-select answers make a share misleading.</p>
+    <ul class="record-list">${dimensions}</ul>
+    <p>${esc(selfReported.suppressionNote)}</p>
+    <p class="meta">${esc(selfReported.caveat)}</p>
+  </div>`;
+}
+
+/**
+ * E5c — the joint reading across the area-based (ACS) screen and the
+ * self-reported floor.
+ *
+ * WHY THE LIMITS ARE NOT OPTIONAL. The two screens share almost no vocabulary:
+ * one speaks minority / poverty / zero-vehicle / transit over tracts, the other
+ * age / language / tenure / race over the people who chose to answer. The
+ * headline is a sentence about both, and without the population-mismatch
+ * disclosure it becomes a comparison the data does not support — the exact
+ * over-read the joint module was built to prevent. So the headline and the
+ * limits are emitted together, and if a reading ever arrives with no limits at
+ * all the block refuses and names why rather than printing the headline bare.
+ */
+function engagementJointRepresentativenessMarkup(data: EngagementMarkupContext): string {
+  const joint = data.engagement?.joint;
+  if (!joint) {
+    return "";
+  }
+
+  if (joint.limits.length === 0) {
+    return `<div class="warning-box" style="margin-top: 18px;">
+      <strong>Joint representativeness reading withheld</strong>
+      <p>This reading arrived without the disclosure of what it cannot say, and the headline is not publishable on its own — the two screenings count different people. Nothing is claimed here either way.</p>
+    </div>`;
+  }
+
+  const readFailure = joint.readFailureMessage
+    ? `<p>Reported cause: ${esc(joint.readFailureMessage)}</p>`
+    : "";
+
+  return `<div style="margin-top: 18px;">
+    <h3>Joint representativeness reading (screening)</h3>
+    <p><strong>${esc(JOINT_READING_LABELS[joint.reading])}</strong></p>
+    <p>${esc(joint.headline)}</p>
+    ${readFailure}
+    <p class="meta">What this cannot say</p>
+    <ul class="record-list">${joint.limits.map((limit) => `<li>${esc(limit)}</li>`).join("")}</ul>
+    <p>${esc(joint.dimension.rationale)}</p>
+    <p class="meta">${esc(joint.caveat)}</p>
   </div>`;
 }
 
@@ -1094,6 +1186,8 @@ function engagementSummaryMarkup(data: EngagementMarkupContext): string {
     ${engagementSynthesisMarkup(data)}
     ${engagementHotspotsMarkup(data)}
     ${engagementRepresentativenessMarkup(data)}
+    ${engagementSelfReportedDemographicsMarkup(data)}
+    ${engagementJointRepresentativenessMarkup(data)}
     ${engagementHandoffMarkup(data)}
     <div class="two-col" style="margin-top: 18px;">
       <div>

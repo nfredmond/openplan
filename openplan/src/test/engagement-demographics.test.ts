@@ -4,6 +4,7 @@ import {
   DEMOGRAPHICS_SCREENING_CAVEAT,
   demographicsRowFromInput,
   loadDemographicsSummary,
+  loadSelfReportedDemographicsSource,
   shapeDemographicsSummary,
   type DemographicsSummaryRow,
 } from "@/lib/engagement/demographics";
@@ -105,5 +106,30 @@ describe("loadDemographicsSummary", () => {
     const { summary, error } = await loadDemographicsSummary({ rpc }, "camp-9");
     expect(error).toBe("boom");
     expect(summary.hasAny).toBe(false);
+  });
+});
+
+describe("loadSelfReportedDemographicsSource", () => {
+  it("keeps a failed aggregate read distinguishable from an empty one", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: "permission denied" } });
+    const source = await loadSelfReportedDemographicsSource({ rpc }, "camp-9", { collectionEnabled: true });
+
+    expect(source).toEqual({ state: "unreadable", message: "permission denied" });
+  });
+
+  it("reports a campaign that never asked as not collecting, without touching the RPC", async () => {
+    const rpc = vi.fn();
+    const source = await loadSelfReportedDemographicsSource({ rpc }, "camp-9", { collectionEnabled: false });
+
+    expect(source).toEqual({ state: "not_collected" });
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("loads the shaped aggregate when collection is on and the read succeeds", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: RPC_ROWS, error: null });
+    const source = await loadSelfReportedDemographicsSource({ rpc }, "camp-9", { collectionEnabled: true });
+
+    expect(source.state).toBe("loaded");
+    expect(source.state === "loaded" && source.summary.respondentsWithDemographics).toBe(12);
   });
 });

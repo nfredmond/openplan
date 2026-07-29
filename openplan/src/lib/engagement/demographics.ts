@@ -165,6 +165,22 @@ export type DemographicsSummary = {
 
 const DIMENSION_KEYS = ["age_band", "primary_language", "household_tenure", "race_ethnicity"] as const;
 
+/**
+ * Display order and heading for the four collected dimensions. Exported from
+ * here, next to the bands themselves, so the campaign panel and the report
+ * markup present the same aggregate under the same headings — a planner must
+ * not find one name on screen and another in the packet they hand to a funder.
+ */
+export const DEMOGRAPHIC_DIMENSIONS: ReadonlyArray<{
+  key: (typeof DIMENSION_KEYS)[number];
+  label: string;
+}> = [
+  { key: "age_band", label: "Age" },
+  { key: "primary_language", label: "Primary language" },
+  { key: "household_tenure", label: "Housing tenure" },
+  { key: "race_ethnicity", label: "Race / ethnicity" },
+];
+
 /** Shape the k-anon RPC rows into per-dimension band lists. 'suppressed' sorts
  * last; '__meta__' carries the respondent total. Pure/deterministic. */
 export function shapeDemographicsSummary(rows: DemographicsSummaryRow[]): DemographicsSummary {
@@ -227,4 +243,45 @@ export async function loadDemographicsSummary(
   }
   const rows = (Array.isArray(data) ? data : []) as DemographicsSummaryRow[];
   return { summary: shapeDemographicsSummary(rows), error: null };
+}
+
+/**
+ * Why the self-reported side is or is not available, as four distinguishable
+ * states rather than one nullable summary.
+ *
+ * THE DEFECT THIS EXISTS FOR. `loadDemographicsSummary` returns an EMPTY summary
+ * alongside its error, and every caller that took only `.summary` turned a failed
+ * RPC into "no respondent has shared optional demographics yet" — a confident
+ * sentence about the community, produced by a permission error. The same nullable
+ * summary also conflated "this campaign never asked" with "this reader never
+ * loaded it", which matters the moment the aggregate travels into a report: a
+ * report path that does not read demographics must stay silent, not assert that
+ * none were collected.
+ *
+ * - `not_loaded`    — this caller never asked for it. Say nothing.
+ * - `not_collected` — the campaign has demographics collection switched off.
+ * - `unreadable`    — the read failed. Unknown, never absent.
+ * - `loaded`        — the k-anonymized aggregate, which may itself be empty.
+ */
+export type SelfReportedDemographicsSource =
+  | { state: "not_loaded" }
+  | { state: "not_collected" }
+  | { state: "unreadable"; message: string }
+  | { state: "loaded"; summary: DemographicsSummary };
+
+/**
+ * Resolve the self-reported side to one of the four states above. `collectionEnabled`
+ * is the campaign's own opt-in switch, so a campaign that never asked is never
+ * charged with a failed read.
+ */
+export async function loadSelfReportedDemographicsSource(
+  supabase: unknown,
+  campaignId: string,
+  options: { collectionEnabled: boolean }
+): Promise<SelfReportedDemographicsSource> {
+  if (!options.collectionEnabled) {
+    return { state: "not_collected" };
+  }
+  const { summary, error } = await loadDemographicsSummary(supabase, campaignId);
+  return error === null ? { state: "loaded", summary } : { state: "unreadable", message: error };
 }

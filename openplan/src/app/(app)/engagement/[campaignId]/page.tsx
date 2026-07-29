@@ -41,13 +41,18 @@ import { EngagementSynthesisPanel } from "@/components/engagement/engagement-syn
 import { ParticipationHeatmapMap, type HeatmapPoint } from "@/components/engagement/participation-heatmap-map";
 import { ParticipationDashboard } from "@/components/engagement/participation-dashboard";
 import { DemographicsPanel } from "@/components/engagement/demographics-panel";
-import { loadDemographicsSummary } from "@/lib/engagement/demographics";
+import { loadSelfReportedDemographicsSource } from "@/lib/engagement/demographics";
 import { RepresentativenessPanel } from "@/components/engagement/representativeness-panel";
+import { JointRepresentativenessPanel } from "@/components/engagement/joint-representativeness-panel";
+import {
+  buildJointRepresentativeness,
+  jointReadingIsPresentable,
+} from "@/lib/engagement/joint-representativeness";
 import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import { NearDuplicatesPanel } from "@/components/engagement/near-duplicates-panel";
 import { loadNearDuplicates } from "@/lib/engagement/near-duplicates";
-import { AiModerationPanel, type ModeratedItem } from "@/components/engagement/ai-moderation-panel";
-import type { ItemModeration } from "@/lib/engagement/ai-moderation";
+import { AiModerationPanel } from "@/components/engagement/ai-moderation-panel";
+import { buildModerationQueueView } from "@/lib/engagement/ai-moderation-shared";
 import {
   hotspotsToFeatureCollection,
   loadSentimentHotspots,
@@ -347,10 +352,20 @@ export default async function EngagementCampaignDetailPage({
   const intakeTrend = buildDailyIntake(
     (items ?? []) as Array<{ created_at?: string | null; updated_at?: string | null }>
   );
-  // E5a — k-anonymized self-reported demographics (only when the campaign opted in).
-  const demographicsSummary = campaign.demographics_enabled
-    ? (await loadDemographicsSummary(supabase, campaign.id)).summary
-    : null;
+  // E5a — k-anonymized self-reported demographics (only when the campaign opted
+  // in). The SOURCE, not the summary: a failed aggregate read used to arrive here
+  // as an empty one and render as "no respondents have shared demographics yet".
+  const demographicsSource = await loadSelfReportedDemographicsSource(supabase, campaign.id, {
+    collectionEnabled: campaign.demographics_enabled,
+  });
+  // E5c — read the two representativeness screens against each other. Pure over
+  // caches the page already holds, so it costs nothing extra to compute and
+  // degrades in both directions: no self-reported side never reads as
+  // unrepresentative, no ACS baseline never reads as representative.
+  const jointRepresentativeness = buildJointRepresentativeness({
+    ecological: campaign.representativeness_json,
+    selfReported: demographicsSource,
+  });
   // E9 — fuzzy near-duplicate groups (pg_trgm) to help moderators collapse
   // paraphrased/re-posted comments the exact fingerprint check misses.
   const nearDuplicates =
@@ -364,40 +379,13 @@ export default async function EngagementCampaignDetailPage({
     ])
   );
 
-  // E9 part 2 — AI moderation assist: the queue (pending/flagged) + any stored
-  // per-item assessment (metadata_json.ai_moderation), flagged items surfaced.
-  type StoredModeration = {
-    flags?: string[];
-    severity?: string;
-    rationale?: string;
-    suggested_action?: string;
-    source?: string;
-  };
-  const moderationQueueItems = ((items ?? []) as Array<{
-    id: string;
-    body: string;
-    status: string | null;
-    metadata_json?: { ai_moderation?: StoredModeration } | null;
-  }>).filter((item) => item.status === "pending" || item.status === "flagged");
-  const moderationFlagged: ModeratedItem[] = moderationQueueItems
-    .filter((item) => (item.metadata_json?.ai_moderation?.flags?.length ?? 0) > 0)
-    .map((item) => {
-      const mod = item.metadata_json!.ai_moderation!;
-      return {
-        id: item.id,
-        snippet: item.body.trim().replace(/\s+/g, " ").slice(0, 120),
-        moderation: {
-          item_id: item.id,
-          flags: (mod.flags ?? []) as ItemModeration["flags"],
-          severity: (mod.severity ?? "none") as ItemModeration["severity"],
-          rationale: mod.rationale ?? "",
-          suggested_action: (mod.suggested_action ?? "review") as ItemModeration["suggested_action"],
-        },
-      };
-    });
-  const lastModerationSource =
-    (moderationQueueItems.find((item) => item.metadata_json?.ai_moderation?.source)?.metadata_json?.ai_moderation
-      ?.source as "ai" | "deterministic-fallback" | undefined) ?? null;
+  // E9 part 2 — AI moderation assist: the queue (pending/flagged) plus whatever
+  // the last scan persisted into metadata_json.ai_moderation. Read back by the
+  // module that owns the write shape, so a stored value this build does not
+  // recognize cannot be cast into one it does.
+  const moderationQueue = buildModerationQueueView(
+    (items ?? []) as Array<{ id: string; body: string; status: string | null; metadata_json?: unknown }>
+  );
 
   return (
     <section className="module-page">
@@ -1093,7 +1081,30 @@ export default async function EngagementCampaignDetailPage({
             />
           ) : null}
 
-          {campaign.demographics_enabled && demographicsSummary ? (
+          {jointReadingIsPresentable(jointRepresentativeness) ? (
+            <article className="module-section-surface">
+              <div className="module-section-header">
+                <div className="module-section-heading">
+                  <p className="module-section-label">Representativeness</p>
+                  <h2 className="module-section-title">Both screenings read together (screening)</h2>
+                  <p className="module-section-description">
+                    The area-based screening infers who was reached from the tracts comments came from; the
+                    self-reported screening asks respondents directly. They can disagree, and when they do the
+                    area-based inference is the one that can be wrong about individuals. Only race / ethnicity is
+                    comparable across the two — the rest of each vocabulary has no counterpart.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5">
+                <JointRepresentativenessPanel
+                  joint={jointRepresentativeness}
+                  spatialScreeningAvailable={heatmapPoints.length > 0}
+                />
+              </div>
+            </article>
+          ) : null}
+
+          {demographicsSource.state !== "not_collected" && demographicsSource.state !== "not_loaded" ? (
             <article className="module-section-surface">
               <div className="module-section-header">
                 <div className="module-section-heading">
@@ -1107,7 +1118,7 @@ export default async function EngagementCampaignDetailPage({
                 </div>
               </div>
               <div className="mt-5">
-                <DemographicsPanel summary={demographicsSummary} />
+                <DemographicsPanel source={demographicsSource} />
               </div>
             </article>
           ) : null}
@@ -1149,7 +1160,7 @@ export default async function EngagementCampaignDetailPage({
             </article>
           ) : null}
 
-          {moderationQueueItems.length > 0 ? (
+          {moderationQueue.queueItemCount > 0 ? (
             <article className="module-section-surface">
               <div className="module-section-header">
                 <div className="module-section-heading">
@@ -1163,12 +1174,7 @@ export default async function EngagementCampaignDetailPage({
                 </div>
               </div>
               <div className="mt-5">
-                <AiModerationPanel
-                  campaignId={campaign.id}
-                  queueCount={moderationQueueItems.length}
-                  flagged={moderationFlagged}
-                  lastSource={lastModerationSource}
-                />
+                <AiModerationPanel campaignId={campaign.id} queue={moderationQueue} />
               </div>
             </article>
           ) : null}
