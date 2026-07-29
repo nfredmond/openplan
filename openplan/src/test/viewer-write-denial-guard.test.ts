@@ -1,6 +1,14 @@
-import { readdirSync, readFileSync } from "node:fs";
-import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { readMigration } from "./migrations/read-migrations";
+import {
+  WRITE_COMMANDS,
+  classifyRoleAwareness,
+  classifyWorkspaceScope,
+  isWriteCommand,
+  loadPolicyInventory,
+  type PolicyStatement,
+  type WriteCommand,
+} from "./migrations/policy-inventory";
 
 /**
  * REGRESSION GUARD — a role-blind write policy may not exist without a
@@ -18,9 +26,29 @@ import { describe, expect, it } from "vitest";
  * JWT could write directly to PostgREST, past every route gate in the product.
  *
  * 20260728000006 / 20260728000007 close that with RESTRICTIVE policies over the
- * 74 workspace-scoped tables. This guard exists so the NEXT table does not
- * reopen it: add a role-blind permissive write policy to a table that carries no
- * restrictive writer gate, and this test fails and names the table.
+ * 80 workspace-scoped tables. This guard exists so the NEXT table does not
+ * reopen it.
+ *
+ * WHAT CHANGED, AND WHY IT MATTERED
+ *
+ * This guard used to carry its own regex parser, and that parser could not see
+ * policies built at migration time by `EXECUTE format(…)`. Twelve such policies
+ * exist over the three scenario_* spine tables, NINE of them role-blind
+ * workspace writes — and the guard passed anyway, because those three tables
+ * happen to appear in 20260728000007's VALUES list. Delete three lines from that
+ * migration and this suite stayed green while viewers regained write access.
+ *
+ * The parser now lives in `src/test/migrations/`, is shared with the class-1
+ * write-coverage guard, and throws rather than shrinking when it meets SQL it
+ * cannot render. Three consequences show up below:
+ *
+ *   1. `gatedTables()` is derived from PARSED restrictive policies rather than
+ *      scraped out of a VALUES list. The old version proved a table was NAMED;
+ *      this one proves three restrictive policies exist over it, so a typo in a
+ *      workspace expression or a dropped command is caught too.
+ *   2. Coverage is asserted per table AND per command — 240 facts, not one.
+ *   3. Floors became equalities. `>= 70` against an actual 80 tolerated seven
+ *      tables silently vanishing, which is exactly the failure being guarded.
  *
  * Note what is deliberately NOT asserted: that a policy is role-AWARE. Almost
  * every permissive policy in the schema is role-blind and that is fine — the
@@ -28,177 +56,73 @@ import { describe, expect, it } from "vitest";
  * workspace-scoped write path with neither.
  */
 
-const MIGRATIONS_DIR = path.join(process.cwd(), "supabase", "migrations");
-
 /** The two migrations that INSTALL the restrictive gate; they are the answer, not the question. */
 const WRITER_GATE_MIGRATIONS = [
   "20260728000006_workspace_write_role_gate.sql",
   "20260728000007_workspace_write_role_gate_children.sql",
 ];
 
-const WRITE_COMMANDS = ["INSERT", "UPDATE", "DELETE", "ALL"] as const;
+const EXPECTED_GATED_TABLES = 80;
+const EXPECTED_RESTRICTIVE_POLICIES = 240;
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 195;
 
-type PolicyStatement = {
-  /** Byte offset in the migration, so creates and drops can be replayed in source order. */
-  at: number;
-  file: string;
-  policy: string;
-  table: string;
-  command: string;
-  body: string;
-};
+/** The three tables whose policies exist only as runtime-built SQL. */
+const DYNAMIC_POLICY_TABLES = [
+  "scenario_assumption_sets",
+  "scenario_data_packages",
+  "scenario_indicator_snapshots",
+];
 
-function migrationFiles(): string[] {
-  return readdirSync(MIGRATIONS_DIR)
-    .filter((name) => name.endsWith(".sql"))
-    .sort();
-}
+const inventory = loadPolicyInventory();
 
-function readMigration(name: string): string {
-  return readFileSync(path.join(MIGRATIONS_DIR, name), "utf8");
+function permissiveWritePolicies(): PolicyStatement[] {
+  return inventory.all().filter((policy) => policy.kind === "PERMISSIVE" && isWriteCommand(policy));
 }
 
 /**
- * Every `CREATE POLICY` in a migration, with the clause body that follows it.
- * Policy bodies contain no semicolons, so the statement terminator is a safe
- * delimiter here.
- */
-function parsePolicies(file: string, sql: string): PolicyStatement[] {
-  const statements: PolicyStatement[] = [];
-  // The schema qualifier is optional but, when present, must be `public` —
-  // storage.objects carries its own policies that this guard has no business
-  // reasoning about, and an unanchored match reported them as a table called
-  // "storage".
-  // The schema qualifier must be captured generically, not as an optional
-  // literal `public.` — with `(?:(public)\.)?` the statement `ON storage.objects`
-  // matched no schema and reported a table named "storage", which is how
-  // storage.objects policies leaked into a guard about workspace content.
-  const pattern =
-    /CREATE\s+POLICY\s+"?([A-Za-z0-9_]+)"?\s+ON\s+(?:([A-Za-z0-9_]+)\.)?"?([A-Za-z0-9_]+)"?([^;]*);/gi;
-
-  for (const match of sql.matchAll(pattern)) {
-    const [, policy, schema, table, rest] = match;
-    if (schema !== undefined && schema.toLowerCase() !== "public") continue;
-
-    const commandMatch = rest.match(/\bFOR\s+(INSERT|UPDATE|DELETE|SELECT|ALL)\b/i);
-    statements.push({
-      at: match.index ?? 0,
-      file,
-      policy,
-      table,
-      // Postgres defaults a policy with no FOR clause to ALL — which is a WRITE
-      // grant. Six tables reached this guard only because an earlier hand-rolled
-      // pg_policies query filtered on cmd IN ('INSERT','UPDATE','DELETE') and
-      // silently skipped every FOR ALL policy in the schema.
-      command: (commandMatch?.[1] ?? "ALL").toUpperCase(),
-      body: rest,
-    });
-  }
-
-  return statements;
-}
-
-/** `DROP POLICY [IF EXISTS] <name> ON <table>` — a policy retired, not replaced. */
-function parsePolicyDrops(sql: string): Array<{ at: number; policy: string; table: string }> {
-  const drops: Array<{ at: number; policy: string; table: string }> = [];
-  const pattern =
-    /DROP\s+POLICY\s+(?:IF\s+EXISTS\s+)?"?([A-Za-z0-9_]+)"?\s+ON\s+(?:public\.)?"?([A-Za-z0-9_]+)"?/gi;
-  for (const match of sql.matchAll(pattern)) {
-    drops.push({ at: match.index ?? 0, policy: match[1], table: match[2] });
-  }
-  return drops;
-}
-
-function isWorkspaceScoped(statement: PolicyStatement): boolean {
-  return statement.body.includes("workspace_members");
-}
-
-/**
- * Role-blind means the predicate never consults `workspace_members.role`. The
- * one historically role-aware family (billing_invoice_records, 20260717000082)
- * names the column outright, so a plain word-boundary match separates them.
- */
-function isRoleBlind(statement: PolicyStatement): boolean {
-  return !/\brole\b/i.test(statement.body);
-}
-
-function isWriteCommand(statement: PolicyStatement): boolean {
-  return (WRITE_COMMANDS as readonly string[]).includes(statement.command);
-}
-
-/** The tables named in a writer-gate migration's VALUES mapping list. */
-function gatedTables(): Set<string> {
-  const tables = new Set<string>();
-  for (const file of WRITER_GATE_MIGRATIONS) {
-    const sql = readMigration(file);
-    for (const match of sql.matchAll(/^\s*\('([a-z0-9_]+)',/gim)) {
-      tables.add(match[1]);
-    }
-  }
-  return tables;
-}
-
-/**
- * Tables that carry at least one role-blind, workspace-scoped write policy.
- *
- * Migrations are replayed in filename order and a policy is keyed by
- * (table, policy name), so a later `DROP POLICY IF EXISTS … ; CREATE POLICY`
- * REPLACES the earlier definition rather than adding to it. Without that,
- * billing_invoice_records would register as role-blind forever on the strength
- * of its original 20260424000072 definition, even though 20260717000082
- * rewrote those same policies to be role-aware. The question this guard asks is
- * about the schema that exists, not about every schema that ever existed.
+ * Tables that carry at least one role-blind, workspace-scoped write policy —
+ * i.e. a policy that lets any MEMBER of the workspace write, without asking
+ * what that member is allowed to do.
  */
 function tablesNeedingGate(): Map<string, PolicyStatement[]> {
-  const latest = new Map<string, PolicyStatement>();
-
-  for (const file of migrationFiles()) {
-    if (WRITER_GATE_MIGRATIONS.includes(file)) continue;
-
-    const sql = readMigration(file);
-    // Creates and drops are replayed in the order they appear in the file, so
-    // that both `DROP POLICY IF EXISTS x; CREATE POLICY x` (a replace) and a
-    // drop with no recreate land correctly. assistant_action_executions is the
-    // second kind: its INSERT policy was retired and never reinstated, so the
-    // table has no write policy at all today and needs no gate.
-    const events: Array<{ at: number; apply: () => void }> = [
-      ...parsePolicies(file, sql).map((statement) => ({
-        at: statement.at,
-        apply: () => {
-          latest.set(`${statement.table}.${statement.policy}`, statement);
-        },
-      })),
-      ...parsePolicyDrops(sql).map((drop) => ({
-        at: drop.at,
-        apply: () => {
-          latest.delete(`${drop.table}.${drop.policy}`);
-        },
-      })),
-    ].sort((left, right) => left.at - right.at);
-
-    for (const event of events) event.apply();
-  }
-
   const needing = new Map<string, PolicyStatement[]>();
-  for (const statement of latest.values()) {
-    if (!isWriteCommand(statement)) continue;
-    if (!isWorkspaceScoped(statement)) continue;
-    if (!isRoleBlind(statement)) continue;
 
-    const existing = needing.get(statement.table) ?? [];
-    existing.push(statement);
-    needing.set(statement.table, existing);
+  for (const policy of permissiveWritePolicies()) {
+    if (classifyWorkspaceScope(policy).kind !== "matched") continue;
+    if (classifyRoleAwareness(policy).kind !== "absent") continue;
+
+    const existing = needing.get(policy.table) ?? [];
+    existing.push(policy);
+    needing.set(policy.table, existing);
   }
 
   return needing;
 }
 
+/** For each table, the write commands a restrictive writer gate actually covers. */
+function gatedCommands(): Map<string, Set<WriteCommand>> {
+  const gated = new Map<string, Set<WriteCommand>>();
+
+  for (const table of inventory.tables()) {
+    const commands = new Set<WriteCommand>();
+    for (const command of WRITE_COMMANDS) {
+      const gatedHere = inventory
+        .restrictiveGates(table, command)
+        .some((policy) => /workspace_member_can_write/i.test(policy.body));
+      if (gatedHere) commands.add(command);
+    }
+    if (commands.size) gated.set(table, commands);
+  }
+
+  return gated;
+}
+
 describe("viewer write denial", () => {
   it("gates every table that has a role-blind workspace write policy", () => {
-    const gated = gatedTables();
+    const gated = gatedCommands();
     const ungated = [...tablesNeedingGate().entries()]
       .filter(([table]) => !gated.has(table))
-      .map(([table, statements]) => `${table} (${statements.map((s) => `${s.command} in ${s.file}`).join(", ")})`)
+      .map(([table, policies]) => `${table} (${policies.map((p) => `${p.command} in ${p.file}`).join(", ")})`)
       .sort();
 
     expect(
@@ -210,36 +134,119 @@ describe("viewer write denial", () => {
     ).toEqual([]);
   });
 
+  it("gates each one for all three write commands, not just the one in use today", () => {
+    // 240 facts rather than one. A gate installed for INSERT only would have
+    // satisfied the old aggregate assertion while leaving UPDATE and DELETE
+    // open — and the command a table does not use today is exactly the one a
+    // future route will reach for.
+    const partial: string[] = [];
+
+    for (const table of tablesNeedingGate().keys()) {
+      for (const command of WRITE_COMMANDS) {
+        const covered = inventory
+          .restrictiveGates(table, command)
+          .some((policy) => /workspace_member_can_write/i.test(policy.body));
+        if (!covered) partial.push(`${table} ${command}`);
+      }
+    }
+
+    expect(partial).toEqual([]);
+  });
+
+  it("classifies every write policy — nothing exempts itself by being unreadable", () => {
+    // The two silent-shrink holes this guard used to have. `isWorkspaceScoped`
+    // was `body.includes("workspace_members")` and `isRoleBlind` a bare
+    // /\brole\b/; both answered "no" for anything unfamiliar, and a "no" here
+    // drops the policy from the inventory without failing anything. The
+    // asymmetry is what made them dangerous: a false positive is loud, a false
+    // negative is invisible.
+    const writes = permissiveWritePolicies();
+
+    expect(
+      writes.filter((p) => classifyWorkspaceScope(p).kind === "unclassifiable").map((p) => `${p.table}.${p.policy}`),
+      "This policy reaches a workspace by an idiom the inventory does not recognise. Add the " +
+        "idiom to WORKSPACE_SCOPE_IDIOMS rather than leaving it unclassified — an unclassified " +
+        "policy is one this guard cannot require a gate for."
+    ).toEqual([]);
+
+    expect(
+      writes.filter((p) => classifyRoleAwareness(p).kind === "unclassifiable").map((p) => `${p.table}.${p.policy}`),
+      "This policy mentions a role but by no pattern the inventory recognises. Add it to " +
+        "ROLE_AWARE_IDIOMS, or rewrite the policy — a policy that merely CONTAINS the word " +
+        "'role' must not be able to exempt itself from the writer gate."
+    ).toEqual([]);
+  });
+
+  it("keeps the gate list honest — nothing is gated for a reason that no longer exists", () => {
+    const needing = tablesNeedingGate();
+    const orphaned = [...gatedCommands().keys()].filter((table) => !needing.has(table)).sort();
+
+    expect(
+      orphaned,
+      "These tables carry a restrictive writer gate but no role-blind workspace write policy " +
+        "this guard can see. Two possibilities, and the second is the dangerous one: either the " +
+        "permissive policies were removed and the gate is now dead weight, OR the inventory " +
+        "cannot read them. Until 20260728000006's dynamic policies were expanded, the three " +
+        "scenario_* tables sat in exactly this state and nothing said so."
+    ).toEqual([]);
+  });
+
   it("installs the writer predicate as one shared, fail-closed helper", () => {
     const sql = readMigration(WRITER_GATE_MIGRATIONS[0]);
 
     expect(sql).toMatch(/CREATE\s+OR\s+REPLACE\s+FUNCTION\s+public\.workspace_member_can_write\(/i);
     // Rank comparison rather than a role-name allowlist, so a new tier ranks in
-    // one place instead of in 222 policies.
+    // one place instead of in 240 policies.
     expect(sql).toMatch(/workspace_role_rank\(wm\.role\)\s*>=\s*public\.workspace_role_rank\('member'\)/i);
     // An RLS policy evaluates as the caller, so the caller needs the rank helper.
     expect(sql).toMatch(/GRANT\s+EXECUTE\s+ON\s+FUNCTION\s+public\.workspace_role_rank\(text\)\s+TO\s+authenticated/i);
   });
 
-  it("creates all three write commands per table, not only the ones in use today", () => {
-    for (const file of WRITER_GATE_MIGRATIONS) {
-      const sql = readMigration(file);
-      for (const command of ["INSERT", "UPDATE", "DELETE"]) {
-        expect(sql, `${file} must gate ${command}`).toContain(`AS RESTRICTIVE FOR ${command}`);
-      }
-      // FOR ALL would put SELECT behind the writer predicate and take reading
-      // away from the very role this exists to keep reading.
-      expect(sql).not.toMatch(/AS\s+RESTRICTIVE\s+FOR\s+ALL/i);
-    }
+  it("never puts SELECT behind the writer predicate", () => {
+    // A RESTRICTIVE `FOR ALL` policy would constrain reading too, and take
+    // reading away from the very role this exists to keep reading. Asked of the
+    // parsed policies rather than of the migration text, so a gate installed
+    // from anywhere is covered.
+    const readingGates = inventory
+      .all()
+      .filter((policy) => policy.kind === "RESTRICTIVE" && (policy.command === "ALL" || policy.command === "SELECT"))
+      .map((policy) => `${policy.table}.${policy.policy} (${policy.command})`);
+
+    expect(readingGates).toEqual([]);
   });
 
   it("guards the guard", () => {
-    const gated = gatedTables();
+    const gated = gatedCommands();
     const needing = tablesNeedingGate();
 
-    // A parser that silently matched nothing would make this suite vacuously green.
-    expect(gated.size).toBeGreaterThanOrEqual(70);
-    expect(needing.size).toBeGreaterThanOrEqual(70);
+    // Equalities, not floors. `>= 70` against an actual 80 tolerated seven
+    // tables disappearing from the inventory unnoticed — which is the precise
+    // shape of the defect this file exists to prevent. When a legitimately new
+    // workspace table lands, these numbers move in the same commit as its
+    // migration, and the diff is the record of it.
+    expect(needing.size).toBe(EXPECTED_GATED_TABLES);
+    expect(gated.size).toBe(EXPECTED_GATED_TABLES);
+    expect(inventory.all().filter((p) => p.kind === "RESTRICTIVE")).toHaveLength(EXPECTED_RESTRICTIVE_POLICIES);
+    expect(permissiveWritePolicies()).toHaveLength(EXPECTED_PERMISSIVE_WRITE_POLICIES);
+
+    // Every gated table must be gated for all three commands.
+    for (const [table, commands] of gated) {
+      expect([...commands].sort(), `${table} must be gated for every write command`).toEqual([
+        "DELETE",
+        "INSERT",
+        "UPDATE",
+      ]);
+    }
+
+    // The tables whose policies are BUILT AT RUNTIME must be visible as
+    // needing a gate on their own merits — not merely present in the gate list.
+    // Their absence from `needing` is what made this suite green while it could
+    // not see twelve policies.
+    for (const table of DYNAMIC_POLICY_TABLES) {
+      expect(needing.has(table), `${table}'s dynamic write policies must be visible to this guard`).toBe(true);
+      expect(inventory.permissiveGrants(table, "UPDATE").map((p) => p.policy)).toEqual([`${table}_update`]);
+      expect(inventory.permissiveGrants(table, "DELETE")).toHaveLength(1);
+    }
 
     // Spot-check both families: a table owning workspace_id, and one that
     // reaches a workspace only through a parent.
