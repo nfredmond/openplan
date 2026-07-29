@@ -24,9 +24,26 @@ import {
   resolveProjectExactBillingTriageTarget,
 } from "@/lib/grants/page-helpers";
 
+/**
+ * The award row plus the closure-provenance columns added by 20260729000001.
+ *
+ * Declared as an optional widening rather than folded into `FundingAwardRow`
+ * because whether these arrive depends on the page's own `.select()`, and
+ * `undefined` has to stay distinguishable from `null` all the way to the badge:
+ * `null` is an award whose row carries no closure basis, `undefined` is a caller
+ * that did not ask for the column. The close-out control renders those two
+ * differently on purpose, and neither is rendered as "closed out".
+ */
+type FundingAwardWithClosureProvenance = FundingAwardRow & {
+  closure_basis?: string | null;
+  closed_at?: string | null;
+  closure_note?: string | null;
+  reopened_at?: string | null;
+};
+
 type ProjectFundingStack = {
   project: { id: string; name: string };
-  awards: FundingAwardRow[];
+  awards: FundingAwardWithClosureProvenance[];
   summary: {
     reimbursementStatus: ProjectFundingReimbursementStatus;
     reimbursementLabel: string;
@@ -301,6 +318,10 @@ export function GrantsAwardsReimbursementSection({
                         id: award.id,
                         title: award.title,
                         spendingStatus: award.spending_status,
+                        closureBasis: award.closure_basis,
+                        closedAt: award.closed_at,
+                        closureNote: award.closure_note,
+                        reopenedAt: award.reopened_at,
                       }))}
                       canClose={canCloseOutAwards}
                     />

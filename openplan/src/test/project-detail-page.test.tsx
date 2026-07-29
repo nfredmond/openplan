@@ -128,7 +128,15 @@ const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqMock }));
 const invoicesLimitMock = vi.fn();
 const invoicesOrderMock = vi.fn(() => ({ limit: invoicesLimitMock }));
 const invoicesEqMock = vi.fn(() => ({ order: invoicesOrderMock }));
-const invoicesSelectMock = vi.fn(() => ({ eq: invoicesEqMock }));
+// The award-scoped claim-progress read of the same table goes .select().in(),
+// not .select().eq(): it is deliberately not capped by the recent-invoices
+// query, so an award with a long history cannot show an understated
+// claimed-to-date. It only runs when the project HAS awards, which is why the
+// harness needed this branch the moment an award was seeded.
+const awardInvoicesLimitMock = vi.fn(async () => ({ data: [], error: null }));
+const awardInvoicesOrderMock = vi.fn(() => ({ limit: awardInvoicesLimitMock }));
+const awardInvoicesInMock = vi.fn(() => ({ order: awardInvoicesOrderMock }));
+const invoicesSelectMock = vi.fn(() => ({ eq: invoicesEqMock, in: awardInvoicesInMock }));
 
 const datasetLinksOrderMock = vi.fn();
 const datasetLinksEqMock = vi.fn(() => ({ order: datasetLinksOrderMock }));
@@ -151,7 +159,10 @@ const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfile
 const fundingAwardsLimitMock = vi.fn();
 const fundingAwardsOrderMock = vi.fn(() => ({ limit: fundingAwardsLimitMock }));
 const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
-const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock }));
+// The column list is a recorded argument, not a detail: a Supabase select string
+// is never checked against the schema, so a column this page stops asking for
+// simply arrives as `undefined` with nothing failing anywhere.
+const fundingAwardsSelectMock = vi.fn((_columns: string) => ({ eq: fundingAwardsEqMock }));
 
 const fundingOpportunitiesLimitMock = vi.fn();
 const fundingOpportunitiesOrderMock = vi.fn(() => ({ limit: fundingOpportunitiesLimitMock }));
@@ -1167,5 +1178,117 @@ describe("ProjectDetailPage", () => {
     expect(
       screen.getByText(/No reports are linked to this project yet\./i)
     ).toBeInTheDocument();
+  });
+
+  it("says a closed award was ASSERTED on import rather than earned against invoices", async () => {
+    // The regression this pins: the closure-provenance columns
+    // (20260729000001) existed, the API wrote them, and the panel knew how to
+    // render them — but this page's select never asked for them, so every
+    // closed award reached a planner as an unexplained green "Fully spent".
+    // Nothing type-checks a select string, so the whole distinction was lost
+    // silently, everywhere, permanently.
+    fundingAwardsLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "award-1",
+          project_id: "project-1",
+          program_id: null,
+          funding_opportunity_id: null,
+          title: "Legacy ATP construction award",
+          awarded_amount: 250000,
+          match_amount: 0,
+          match_posture: "secured",
+          obligation_due_at: null,
+          spending_status: "fully_spent",
+          closure_basis: "recorded_on_import",
+          closed_at: "2026-05-01T18:00:00.000Z",
+          closure_note: "Closed in the agency ledger years before this workspace existed.",
+          reopened_at: null,
+          risk_flag: "none",
+          notes: null,
+          updated_at: "2026-05-02T18:00:00.000Z",
+          created_at: "2026-04-01T18:00:00.000Z",
+          funding_opportunities: null,
+          programs: null,
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    const [awardColumns] = fundingAwardsSelectMock.mock.calls[0];
+    for (const column of ["closure_basis", "closed_at", "closure_note", "reopened_at"]) {
+      expect(awardColumns, `the funding_awards select must name ${column}`).toContain(column);
+    }
+
+    // The same vocabulary the /grants close-out control uses — one language for
+    // one fact, sourced from the programs catalog by both surfaces.
+    expect(screen.getByText("Recorded as closed on import")).toBeInTheDocument();
+    expect(screen.getByText(/No invoice coverage was checked/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Closed in the agency ledger years before this workspace existed\./i)
+    ).toBeInTheDocument();
+    // And never the finding it is not.
+    expect(screen.queryByText("Closed out on invoice coverage")).toBeNull();
+    expect(screen.queryByText(/Paid invoices covered the full awarded amount/i)).toBeNull();
+  });
+
+  it("does not claim a closure basis it was never given", async () => {
+    // The honest degrade has to keep working: a page that stops selecting the
+    // columns must say it does not know, rather than fall back to the reassuring
+    // reading. This is the state the whole app was stuck in before the select
+    // was fixed, and it is still the right answer whenever the columns are
+    // genuinely absent.
+    fundingAwardsLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "award-2",
+          project_id: "project-1",
+          program_id: null,
+          funding_opportunity_id: null,
+          title: "Award read without its provenance columns",
+          awarded_amount: 100000,
+          match_amount: 0,
+          match_posture: "secured",
+          obligation_due_at: null,
+          spending_status: "fully_spent",
+          risk_flag: "none",
+          notes: null,
+          updated_at: "2026-05-02T18:00:00.000Z",
+          created_at: "2026-04-01T18:00:00.000Z",
+          funding_opportunities: null,
+          programs: null,
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getByText("Closure basis not loaded")).toBeInTheDocument();
+    expect(screen.getByText(/is not recorded in what was loaded here/i)).toBeInTheDocument();
+    expect(screen.queryByText("Closed out on invoice coverage")).toBeNull();
+  });
+
+  it("discloses a database behind the closure migration instead of reporting no awards", async () => {
+    // Adding a column to a select buys a new failure mode: PostgREST answers a
+    // select naming a column the deployed schema lacks with `column
+    // funding_awards.closure_basis does not exist` (42703), the read returns
+    // `data: null`, and the award lane collapses to its empty state — "No
+    // funding awards are recorded for this project yet." over a project that
+    // has several. That is an absence stated as a fact, and it is caused by the
+    // page asking for more, so the page owes the disclosure.
+    fundingAwardsLimitMock.mockResolvedValue({
+      data: null,
+      error: { message: "column funding_awards.closure_basis does not exist" },
+    });
+
+    await renderPage();
+
+    expect(
+      screen.getByText(/award records will appear after the funding award migrations are applied/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/No funding awards are recorded for this project yet\./i)).toBeNull();
   });
 });

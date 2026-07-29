@@ -261,4 +261,109 @@ describe("/api/funding-awards", () => {
       })
     );
   });
+
+  /**
+   * An award used to be creatable already closed, by picking "Fully spent" from
+   * a dropdown. That skipped the entire close-out contract — no coverage check,
+   * no close-out milestone, no posture rebuild — and, with no PATCH route at the
+   * time, permanently, because close-out answers `already_closed` to every
+   * subsequent attempt. These pin both halves of the fix: the bare status value
+   * is refused, and the legitimate need it was serving has its own named,
+   * audited, self-labelling path.
+   */
+  it("refuses to create an award already closed by a bare spending status", async () => {
+    const response = await postFundingAwards(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "Historic ATP award",
+        awardedAmount: 500000,
+        spendingStatus: "fully_spent",
+      })
+    );
+
+    expect(response.status).toBe(422);
+    const json = await response.json();
+    // A refusal that names its real reason has to name the way through, or a
+    // planner with a genuinely historical award concludes the product cannot
+    // record their situation.
+    expect(json.details).toContain("recordClosedOnImport");
+    expect(awardsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("creates an imported closure as an assertion, stamped and audited as one", async () => {
+    const response = await postFundingAwards(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "Historic ATP award",
+        awardedAmount: 500000,
+        recordClosedOnImport: { note: "Closed by the county in FY22; final invoice held by the sponsor." },
+      })
+    );
+
+    expect(response.status).toBe(201);
+    const json = await response.json();
+    expect(json.closureBasis).toBe("recorded_on_import");
+    expect(json.details).toContain("No invoice coverage was checked");
+
+    // The status and its provenance are written in ONE insert: the schema's
+    // coherence CHECK refuses `fully_spent` with no basis, so an asserted
+    // closure carries its own account or the write fails loudly.
+    expect(awardsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        spending_status: "fully_spent",
+        closure_basis: "recorded_on_import",
+        closure_note: "Closed by the county in FY22; final invoice held by the sponsor.",
+      })
+    );
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "funding_award_recorded_closed_on_import",
+      expect.objectContaining({ awardId: AWARD_ID, closureBasis: "recorded_on_import" })
+    );
+  });
+
+  it("never records an imported closure without a stated basis", async () => {
+    const response = await postFundingAwards(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "Historic ATP award",
+        awardedAmount: 500000,
+        recordClosedOnImport: { note: "   " },
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(awardsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses two instructions about the spending status in one create", async () => {
+    const response = await postFundingAwards(
+      jsonRequest({
+        projectId: PROJECT_ID,
+        title: "Historic ATP award",
+        awardedAmount: 500000,
+        spendingStatus: "active",
+        recordClosedOnImport: { note: "Closed in FY22." },
+      })
+    );
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: "Conflicting spending-status intents" });
+    expect(awardsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("leaves an ordinary open award with no closure claim on it at all", async () => {
+    await postFundingAwards(
+      jsonRequest({ projectId: PROJECT_ID, title: "ATP award", awardedAmount: 1750000 })
+    );
+
+    expect(awardsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        spending_status: "not_started",
+        closure_basis: null,
+        closed_at: null,
+        closed_by: null,
+        closure_note: null,
+      })
+    );
+  });
 });

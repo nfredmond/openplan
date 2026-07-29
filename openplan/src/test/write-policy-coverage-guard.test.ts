@@ -167,7 +167,12 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/engagement/campaigns/[campaignId]/survey/questions/[questionId]/options/[optionId]/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/survey/questions/[questionId]/route.ts": 1,
   "src/app/api/engagement/campaigns/[campaignId]/synthesis/route.ts": 1,
-  "src/app/api/funding-awards/[awardId]/closeout/route.ts": 1,
+  // 1 -> 0: the award close-out UPDATE moved into
+  // src/app/api/funding-awards/[awardId]/award-closure.ts, shared with the new
+  // PATCH route, and now chains `.select("id").maybeSingle()` and answers zero
+  // matched rows through write-outcome.ts. It matters more here than most: this
+  // is the write that marks an award fully spent, so reporting success over zero
+  // rows would have told a planner their award was closed when it was not.
   "src/app/api/funding-opportunities/[opportunityId]/application/route.ts": 1,
   "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft/route.ts": 1,
   "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/route.ts": 1,

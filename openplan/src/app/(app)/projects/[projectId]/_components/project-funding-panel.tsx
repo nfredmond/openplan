@@ -6,11 +6,15 @@ import { ProjectFundingProfileEditor } from "@/components/projects/project-fundi
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
 import {
+  FUNDING_AWARD_CLOSED_SPENDING_STATUS,
+  describeFundingAwardClosureBasis,
+  formatFundingAwardClosureBasisLabel,
   formatFundingAwardMatchPostureLabel,
   formatFundingAwardRiskFlagLabel,
   formatFundingAwardSpendingStatusLabel,
   formatFundingOpportunityDecisionLabel,
   formatFundingOpportunityStatusLabel,
+  fundingAwardClosureBasisTone,
   fundingAwardMatchPostureTone,
   fundingAwardRiskFlagTone,
   fundingAwardSpendingStatusTone,
@@ -40,6 +44,59 @@ import type {
 
 type FundingStackSummary = ReturnType<typeof buildProjectFundingStackSummary>;
 
+/**
+ * The award row plus the closure-provenance columns from 20260729000001.
+ *
+ * An optional widening rather than a change to `FundingAward`, because whether
+ * these arrive is a property of the page's `.select()` and not of the table:
+ * `undefined` is a caller that did not ask for the column, `null` is a row that
+ * carries no basis. Both are rendered as "not known" below, and neither is ever
+ * rendered as an earned close-out — an award closed on a planner's say-so must
+ * not become indistinguishable from one verified against paid invoices just
+ * because a page forgot a column.
+ */
+type FundingAwardWithClosureProvenance = FundingAward & {
+  closure_basis?: string | null;
+  closed_at?: string | null;
+  closure_note?: string | null;
+  reopened_at?: string | null;
+};
+
+/**
+ * How a closed award came to be closed, in the same words the close-out control
+ * on /grants uses — both read the vocabulary out of the programs catalog, so a
+ * planner meets one language for one fact rather than two.
+ *
+ * Rendered only for a closed award. An open one has no basis by construction
+ * (the schema's coherence CHECK ties the two together), so showing this block
+ * there would turn a legitimate NULL into an apparent gap in the record.
+ */
+function FundingAwardClosureProvenance({ award }: { award: FundingAwardWithClosureProvenance }) {
+  return (
+    <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusBadge tone={fundingAwardClosureBasisTone(award.closure_basis)}>
+          {formatFundingAwardClosureBasisLabel(award.closure_basis)}
+        </StatusBadge>
+        {award.closed_at ? (
+          <span className="text-xs text-muted-foreground">Closed {fmtDateTime(award.closed_at)}</span>
+        ) : null}
+        {award.reopened_at ? (
+          <StatusBadge tone="warning">Re-opened {fmtDateTime(award.reopened_at)}</StatusBadge>
+        ) : null}
+      </div>
+      <p className="mt-1.5 text-xs text-muted-foreground">
+        {describeFundingAwardClosureBasis(award.closure_basis)}
+      </p>
+      {award.closure_note ? (
+        <p className="mt-1.5 text-xs text-foreground">
+          <span className="font-semibold">Stated basis:</span> {award.closure_note}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 type ComparisonBackedFundingReport = {
   id: string;
   title: string;
@@ -52,7 +109,7 @@ type ProjectFundingPanelProps = {
   projectFundingProfilePending: boolean;
   fundingAwardsPending: boolean;
   fundingOpportunitiesPending: boolean;
-  fundingAwards: FundingAward[];
+  fundingAwards: FundingAwardWithClosureProvenance[];
   fundingOpportunities: FundingOpportunity[];
   fundingStackSummary: FundingStackSummary;
   fundingNeedAmount: number;
@@ -287,6 +344,7 @@ export function ProjectFundingPanel({
                 const awardInvoiceSummary = invoiceSummaryByFundingAwardId.get(award.id);
                 const awardInvoices = invoiceRecordsByFundingAwardId.get(award.id) ?? [];
                 const claimProgress = awardClaimProgress.get(award.id) ?? null;
+                const isClosedOut = award.spending_status === FUNDING_AWARD_CLOSED_SPENDING_STATUS;
 
                 return (
                   <div key={award.id} className="module-record-row">
@@ -295,7 +353,23 @@ export function ProjectFundingPanel({
                         <StatusBadge tone={fundingAwardMatchPostureTone(award.match_posture)}>
                           {formatFundingAwardMatchPostureLabel(award.match_posture)}
                         </StatusBadge>
-                        <StatusBadge tone={fundingAwardSpendingStatusTone(award.spending_status)}>
+                        {/*
+                          A closed award is toned by HOW it closed, not by the
+                          fact that it closed. Every "Fully spent" badge here was
+                          the same success green whether the close-out was earned
+                          against paid invoices, asserted by whoever imported the
+                          award, or backfilled as unrecorded legacy — three
+                          different facts wearing one reassuring colour, which is
+                          how an assertion gets read as a finding. The green now
+                          means what the earned basis means, and nothing else.
+                        */}
+                        <StatusBadge
+                          tone={
+                            isClosedOut
+                              ? fundingAwardClosureBasisTone(award.closure_basis)
+                              : fundingAwardSpendingStatusTone(award.spending_status)
+                          }
+                        >
                           {formatFundingAwardSpendingStatusLabel(award.spending_status)}
                         </StatusBadge>
                         <StatusBadge tone={fundingAwardRiskFlagTone(award.risk_flag)}>
@@ -326,6 +400,8 @@ export function ProjectFundingPanel({
                             : ""}
                         </p>
                       ) : null}
+
+                      {isClosedOut ? <FundingAwardClosureProvenance award={award} /> : null}
 
                       <div className="mt-4 rounded-[0.5rem] border border-border/60 bg-background/70 px-4 py-4">
                         <div className="flex flex-wrap items-center justify-between gap-3">

@@ -25,7 +25,10 @@ const programsSelectMock = vi.fn(() => ({ eq: programsEqMock }));
 
 const fundingAwardsOrderMock = vi.fn();
 const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
-const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock }));
+// The column list is a recorded argument, not a detail: a Supabase select string
+// is never checked against the schema, so a column this page stops asking for
+// simply arrives as `undefined` with nothing failing anywhere.
+const fundingAwardsSelectMock = vi.fn((_columns: string) => ({ eq: fundingAwardsEqMock }));
 
 const invoiceRecordsOrderMock = vi.fn();
 const invoiceRecordsEqMock = vi.fn(() => ({ order: invoiceRecordsOrderMock }));
@@ -197,6 +200,44 @@ import {
 
 async function renderPage() {
   render(await GrantsPage({ searchParams: Promise.resolve({}) }));
+}
+
+/**
+ * One closed award, as the two paths that can close one actually record it.
+ * `closure_basis` is what tells an earned close-out from one a workspace
+ * asserted while importing its history; the rest of the row is the same either
+ * way, which is exactly the problem the column exists to solve.
+ */
+function seedClosedAward(closure: {
+  closure_basis?: string;
+  closed_at?: string | null;
+  closure_note?: string | null;
+  reopened_at?: string | null;
+}) {
+  fundingAwardsOrderMock.mockResolvedValue({
+    data: [
+      {
+        id: "award-1",
+        funding_opportunity_id: null,
+        project_id: "project-1",
+        program_id: null,
+        title: "Safety corridor construction award",
+        awarded_amount: 250000,
+        match_amount: 0,
+        obligation_due_at: null,
+        spending_status: "fully_spent",
+        risk_flag: "none",
+        notes: null,
+        updated_at: "2026-04-14T18:00:00.000Z",
+        created_at: "2026-04-01T18:00:00.000Z",
+        funding_opportunities: null,
+        programs: null,
+        projects: { id: "project-1", name: "Main Street Safety" },
+        ...closure,
+      },
+    ],
+    error: null,
+  });
 }
 
 /** One committed award with no invoices → a "not started" reimbursement stack, so the composer mounts. */
@@ -641,6 +682,59 @@ describe("GrantsPage", () => {
     // Withheld, and said so as a fact about this view rather than about the
     // reader — the route is still the authority on who may close an award.
     expect(screen.getByText(/this view is not offering it/)).toBeInTheDocument();
+  });
+
+  it("asks the database how each closed award was closed, and repeats the answer verbatim", async () => {
+    // The regression this pins: the closure-provenance columns
+    // (20260729000001) existed, the API wrote them, and the close-out control
+    // knew how to render them — but this page's select never asked for them, so
+    // its honest "Closure basis not loaded" was what every planner saw about
+    // every closed award, permanently. Nothing type-checks a select string, so
+    // the omission failed nowhere.
+    seedClosedAward({
+      closure_basis: "recorded_on_import",
+      closed_at: "2026-05-01T18:00:00.000Z",
+      closure_note: "Closed in the agency ledger years before this workspace existed.",
+    });
+
+    await renderPage();
+
+    const [awardColumns] = fundingAwardsSelectMock.mock.calls[0];
+    for (const column of ["closure_basis", "closed_at", "closure_note", "reopened_at"]) {
+      expect(awardColumns, `the funding_awards select must name ${column}`).toContain(column);
+    }
+
+    expect(screen.getByText("Recorded as closed on import")).toBeInTheDocument();
+    expect(screen.getByText(/No invoice coverage was checked/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Closed in the agency ledger years before this workspace existed\./i)
+    ).toBeInTheDocument();
+    // An assertion never gets to wear the finding's words.
+    expect(screen.queryByText("Closed out on invoice coverage")).toBeNull();
+    expect(screen.queryByText(/Paid invoices covered the full awarded amount/i)).toBeNull();
+  });
+
+  it("keeps the award lane when the closure columns are not deployed yet, and says the basis is unknown", async () => {
+    // This read used to drop its error, so a schema that rejected the select
+    // left every award lane on the page reading "none" — an absence rendered as
+    // a fact. A deployment behind the migration now gets its awards back from
+    // the legacy column list, with the basis reported as not loaded rather than
+    // assumed.
+    fundingAwardsOrderMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'column funding_awards.closure_basis does not exist' },
+    });
+    seedClosedAward({});
+
+    await renderPage();
+
+    expect(fundingAwardsSelectMock).toHaveBeenCalledTimes(2);
+    const [retryColumns] = fundingAwardsSelectMock.mock.calls[1];
+    expect(retryColumns).not.toContain("closure_basis");
+
+    expect(screen.getByText("Safety corridor construction award")).toBeInTheDocument();
+    expect(screen.getByText("Closure basis not loaded")).toBeInTheDocument();
+    expect(screen.queryByText("Closed out on invoice coverage")).toBeNull();
   });
 
   it("resolves a jurisdiction-matched profile for the composer from the workspace's own home geography", async () => {

@@ -108,8 +108,18 @@ function latestKnownDate(...values: Array<string | null | undefined>): string | 
   return valid[0].value;
 }
 
+// A pending COLUMN is a pending schema too, and this test used to recognise only
+// a pending TABLE. PostgREST answers a select naming a column the deployed
+// schema lacks with `column funding_awards.closure_basis does not exist`
+// (42703), which matched none of the table-shaped alternatives — so every read
+// on this page that outruns the database returned `data: null` with its
+// `*Pending` flag false, and the lane rendered its empty state: "No funding
+// awards are recorded for this project yet." over a project that has several.
+// An absence stated as a fact, produced by the page asking for more than the
+// database carries. The column form is what the rest of the repo already treats
+// as pending (src/lib/grants/pursuit.ts, src/lib/stage-gates/decision-queries.ts).
 function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
+  return /relation .* does not exist|column .* does not exist|could not find the table|could not find the .* column|schema cache/i.test(message ?? "");
 }
 
 function milestonePriority(milestone: MilestoneRow, now: Date): number {
@@ -594,10 +604,18 @@ export default async function ProjectDetailPage({
     : ((projectFundingProfileResult.data ?? null) as ProjectFundingProfileRow | null);
   const projectFundingProfilePending = looksLikePendingSchema(projectFundingProfileResult.error?.message);
 
+  // The closure-provenance columns (20260729000001) are selected here because
+  // the funding panel cannot tell an earned close-out from one asserted on
+  // import without them — and a `.select()` string is not schema-checked, so a
+  // column left out arrives as `undefined` with no error anywhere. The panel
+  // renders that absence as "closure basis not loaded"; it is the pages that
+  // decide whether a planner ever sees the real answer. On a deployment behind
+  // this migration the read fails the pending-schema test below, which is the
+  // page's existing disclosed degrade rather than a silent empty list.
   const fundingAwardsResult = await supabase
     .from("funding_awards")
     .select(
-      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, spending_status, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title)"
+      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, spending_status, closure_basis, closed_at, closure_note, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title)"
     )
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })

@@ -181,7 +181,14 @@ describe("FundingAwardCloseoutPanel", () => {
     );
     expect(disclosure).toContain("RTP funding posture");
     expect(disclosure).toContain("files a close-out milestone");
-    expect(disclosure).toContain("no route that reopens a closed award");
+    // This used to assert the panel warned that close-out was one-way, because
+    // it was: no route re-opened an award, so a mis-click closed it forever.
+    // PATCH /api/funding-awards/[awardId] ended that, and the disclosure was
+    // updated rather than dropped — a confirm step that still called the act
+    // irreversible would be scaring the planner with a fact that is no longer
+    // one, while hiding the condition that now applies.
+    expect(disclosure).toContain("Reversible, but not quietly");
+    expect(disclosure).toContain("written reason");
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -398,5 +405,111 @@ describe("FundingAwardCloseoutPanel", () => {
     expect(refusalText).toContain("(99%)");
     expect(refusalText).not.toContain("(100%)");
     expect(refusalText).toContain("$1,000 is still short");
+  });
+
+  /**
+   * A closed award used to render one line — "Recorded fully spent" — whether it
+   * had been earned to the dollar against paid invoices or born closed by a
+   * mis-click on the create form. These pin that the two now read differently,
+   * and that a caller which did not load the basis is told so rather than shown
+   * the earned wording by default.
+   */
+  it("tells an earned close-out apart from one recorded on import", () => {
+    renderPanel({
+      awards: [
+        {
+          ...OPEN_AWARD,
+          spendingStatus: "fully_spent",
+          closureBasis: "earned_coverage",
+          closedAt: "2026-07-01T00:00:00.000Z",
+        },
+      ],
+    });
+    expect(screen.getByText("Closed out on invoice coverage")).toBeTruthy();
+    expect(screen.getByText(/Paid invoices covered the full awarded amount/)).toBeTruthy();
+  });
+
+  it("says an imported closure was asserted, and shows the basis that was stated", () => {
+    renderPanel({
+      awards: [
+        {
+          ...OPEN_AWARD,
+          spendingStatus: "fully_spent",
+          closureBasis: "recorded_on_import",
+          closedAt: "2026-07-01T00:00:00.000Z",
+          closureNote: "Closed by the county in FY22; final invoice held by the sponsor.",
+        },
+      ],
+    });
+    expect(screen.getByText("Recorded as closed on import")).toBeTruthy();
+    expect(screen.getByText(/No invoice coverage was checked/)).toBeTruthy();
+    expect(screen.getByText(/Closed by the county in FY22/)).toBeTruthy();
+  });
+
+  it("does not present a closure whose basis it never loaded as an earned one", () => {
+    // `undefined` means the caller did not select the column. Rendering the
+    // earned wording here would state, as fact, something this view never read.
+    renderPanel({ awards: [{ ...OPEN_AWARD, spendingStatus: "fully_spent" }] });
+
+    expect(screen.getByText("Closure basis not loaded")).toBeTruthy();
+    expect(screen.getByText(/cannot tell an earned close-out from one recorded on import/)).toBeTruthy();
+    expect(screen.queryByText(/Paid invoices covered the full awarded amount/)).toBeNull();
+  });
+
+  it("re-opens a closed award only with a written reason, and keeps the milestone disclosure", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        awardId: "award-1",
+        status: "reopened",
+        priorClosureBasis: "recorded_on_import",
+        details: "Re-opened. Any close-out milestone already filed on this project is left in place.",
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    renderPanel({
+      awards: [{ ...OPEN_AWARD, spendingStatus: "fully_spent", closureBasis: "recorded_on_import" }],
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "Re-open award" }));
+
+    // Blank reason: refused here, before any request is sent. The API and the
+    // database refuse it too; this is the layer that can say which box is empty.
+    fireEvent.click(screen.getByRole("button", { name: "Confirm re-open" }));
+    expect(normalizedTextOf(await screen.findByRole("alert"))).toContain("needs a written reason");
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText("Reason (required)"), {
+      target: { value: "Funder de-obligated the final $200k." },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Confirm re-open" }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("/api/funding-awards/award-1");
+    expect(init.method).toBe("PATCH");
+    expect(JSON.parse(String(init.body))).toEqual({
+      reopen: { reason: "Funder de-obligated the final $200k.", spendingStatus: "active" },
+    });
+
+    const outcome = normalizedTextOf(await screen.findByRole("status"));
+    expect(outcome).toContain("Re-opened ATP Cycle 7 construction");
+    expect(outcome).toContain("recorded as closed on import");
+    expect(refreshMock).toHaveBeenCalled();
+  });
+
+  it("offers no re-open to a reader the view is not offering writes to", () => {
+    renderPanel({
+      awards: [{ ...OPEN_AWARD, spendingStatus: "fully_spent", closureBasis: "earned_coverage" }],
+      canClose: false,
+    });
+
+    expect(screen.queryByRole("button", { name: "Re-open award" })).toBeNull();
+    // The provenance itself is still shown: reading how an award was closed is
+    // not a write, and withholding it would hide the distinction from exactly
+    // the readers most likely to be auditing it.
+    expect(screen.getByText("Closed out on invoice coverage")).toBeTruthy();
   });
 });

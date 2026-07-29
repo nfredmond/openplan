@@ -8,10 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   FUNDING_AWARD_MATCH_POSTURE_OPTIONS,
+  FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS,
   FUNDING_AWARD_RISK_FLAG_OPTIONS,
-  FUNDING_AWARD_SPENDING_STATUS_OPTIONS,
 } from "@/lib/programs/catalog";
 
+/**
+ * "Fully spent" is deliberately absent from the spending-status select here.
+ *
+ * It was on it, and picking it created an award that was already closed: no
+ * invoice-coverage check, no close-out milestone, no RTP posture rebuild — the
+ * whole close-out contract skipped at birth. A new award cannot have earned a
+ * close-out in any case, because invoices link to an award by id and a record
+ * that does not exist yet has coverage of exactly zero.
+ *
+ * What replaces it is the checkbox below. A workspace importing awards that
+ * closed years ago has a real need to say so, and that need is served by an
+ * explicit act with a written basis — which the API audits under its own event
+ * and stamps on the row as an imported closure — rather than by a value in a
+ * dropdown that looks identical to a close-out this product verified.
+ */
 function toIsoDateTime(value: string): string | undefined {
   if (!value) return undefined;
   const parsed = new Date(value);
@@ -42,17 +57,33 @@ export function ProjectFundingAwardCreator({
   const [matchAmount, setMatchAmount] = useState("");
   const [matchPosture, setMatchPosture] = useState<(typeof FUNDING_AWARD_MATCH_POSTURE_OPTIONS)[number]["value"]>("partial");
   const [obligationDueAt, setObligationDueAt] = useState("");
-  const [spendingStatus, setSpendingStatus] = useState<(typeof FUNDING_AWARD_SPENDING_STATUS_OPTIONS)[number]["value"]>("not_started");
+  const [spendingStatus, setSpendingStatus] = useState<(typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"]>("not_started");
   const [riskFlag, setRiskFlag] = useState<(typeof FUNDING_AWARD_RISK_FLAG_OPTIONS)[number]["value"]>("none");
   const [notes, setNotes] = useState("");
+  const [isAlreadyClosed, setIsAlreadyClosed] = useState(false);
+  const [closureNote, setClosureNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const trimmedClosureNote = closureNote.trim();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setMessage(null);
+
+    // Checked here as well as at the API because the API's refusal would be a
+    // generic payload rejection, and the person filling this in needs to be told
+    // which box is empty. The server remains the authority; this is not a
+    // substitute for it.
+    if (isAlreadyClosed && !trimmedClosureNote) {
+      setError(
+        "Recording an award as already closed needs a written basis — what closed it, and on whose record."
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -68,16 +99,26 @@ export function ProjectFundingAwardCreator({
           matchAmount: matchAmount ? Number(matchAmount) : 0,
           matchPosture,
           obligationDueAt: toIsoDateTime(obligationDueAt),
-          spendingStatus,
+          // The two are mutually exclusive at the API — sending both is a 400,
+          // because they are two statements about the same field.
+          spendingStatus: isAlreadyClosed ? undefined : spendingStatus,
+          recordClosedOnImport: isAlreadyClosed ? { note: trimmedClosureNote } : undefined,
           riskFlag,
           notes: notes || undefined,
         }),
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as { error?: string; details?: string };
       if (!response.ok) {
-        throw new Error(payload.error || "Failed to create funding award");
+        // The API's `details` carries the specific reason and, on the refusals
+        // that have one, the way through. Dropping it would leave a planner with
+        // a headline and no next step.
+        throw new Error(
+          [payload.error, payload.details].filter(Boolean).join(" ") || "Failed to create funding award"
+        );
       }
+
+      const savedAsImportedClosure = isAlreadyClosed;
 
       setTitle(defaultTitle ?? "");
       setOpportunityId(defaultOpportunityId ?? "");
@@ -88,7 +129,13 @@ export function ProjectFundingAwardCreator({
       setSpendingStatus("not_started");
       setRiskFlag("none");
       setNotes("");
-      setMessage("Funding award saved.");
+      setIsAlreadyClosed(false);
+      setClosureNote("");
+      setMessage(
+        savedAsImportedClosure
+          ? "Funding award saved and recorded as closed on your statement. No invoice coverage was checked, and it will read as an imported closure wherever it is shown."
+          : "Funding award saved."
+      );
       router.refresh();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Failed to create funding award");
@@ -159,12 +206,23 @@ export function ProjectFundingAwardCreator({
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Spending status</label>
-            <select className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35" value={spendingStatus} onChange={(event) => setSpendingStatus(event.target.value as (typeof FUNDING_AWARD_SPENDING_STATUS_OPTIONS)[number]["value"])}>
-              {FUNDING_AWARD_SPENDING_STATUS_OPTIONS.map((option) => (
+            <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground" htmlFor="funding-award-spending-status">Spending status</label>
+            <select
+              id="funding-award-spending-status"
+              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 disabled:cursor-not-allowed disabled:opacity-60"
+              value={spendingStatus}
+              disabled={isAlreadyClosed}
+              onChange={(event) => setSpendingStatus(event.target.value as (typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"])}
+            >
+              {FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
             </select>
+            {isAlreadyClosed ? (
+              <p className="text-xs text-muted-foreground">
+                Not used — this award is being recorded as already closed below.
+              </p>
+            ) : null}
           </div>
           <div className="space-y-1.5">
             <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Risk flag</label>
@@ -179,6 +237,60 @@ export function ProjectFundingAwardCreator({
         <div className="space-y-1.5">
           <label className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Notes</label>
           <Textarea rows={3} value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Award terms, obligation risks, reimbursement posture, or scope notes." />
+        </div>
+
+        <div className="rounded-[0.5rem] border border-border/60 bg-muted/15 px-3 py-3">
+          <label className="flex items-start gap-2.5 text-sm" htmlFor="funding-award-already-closed">
+            <input
+              id="funding-award-already-closed"
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded border-input"
+              checked={isAlreadyClosed}
+              onChange={(event) => {
+                setIsAlreadyClosed(event.target.checked);
+                if (!event.target.checked) setClosureNote("");
+              }}
+            />
+            <span>
+              <span className="font-semibold">This award closed before it was recorded here.</span>
+              <span className="mt-1 block text-xs text-muted-foreground">
+                For historical awards whose reimbursements were never invoiced through OpenPlan. The award
+                is marked fully spent on your statement — no invoice coverage is checked and no close-out
+                milestone is filed — and it is labelled an imported closure everywhere it appears, so it is
+                never mistaken for a close-out this product verified.
+              </span>
+            </span>
+          </label>
+
+          {isAlreadyClosed ? (
+            <div className="mt-3 space-y-1.5">
+              <label
+                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                htmlFor="funding-award-closure-basis"
+              >
+                Basis for the closure (required)
+              </label>
+              <Textarea
+                id="funding-award-closure-basis"
+                rows={2}
+                maxLength={2000}
+                value={closureNote}
+                onChange={(event) => setClosureNote(event.target.value)}
+                placeholder="What closed this award, and where the record of it lives."
+                aria-describedby="funding-award-closure-basis-help"
+              />
+              <p id="funding-award-closure-basis-help" className="text-xs text-muted-foreground">
+                {/*
+                  Required, not optional-with-a-generated-default. A default
+                  sentence written by OpenPlan would be a statement about someone
+                  else's money that nobody made, attributed to whoever saved the
+                  form.
+                */}
+                Stored on the award and shown to anyone reading its closure. This is the only way to close
+                an award without paid invoices covering it, so the record has to say on what authority.
+              </p>
+            </div>
+          ) : null}
         </div>
 
         <Button type="submit" disabled={isSubmitting}>

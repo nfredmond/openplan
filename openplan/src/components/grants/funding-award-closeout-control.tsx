@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
 import { formatCurrency, formatDateTime } from "@/lib/grants/page-helpers";
+import {
+  FUNDING_AWARD_CLOSED_SPENDING_STATUS,
+  FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS,
+  describeFundingAwardClosureBasis,
+  formatFundingAwardClosureBasisLabel,
+  fundingAwardClosureBasisTone,
+} from "@/lib/programs/catalog";
 
 /**
  * The award close-out step of the money lifecycle: discovery → award →
@@ -30,6 +37,19 @@ export type FundingAwardCloseoutAward = {
   title: string;
   /** `funding_awards.spending_status`; `fully_spent` is what close-out sets. */
   spendingStatus: string | null;
+  /**
+   * How the award became closed — `funding_awards.closure_basis`
+   * (20260729000001). Optional on purpose, and `undefined` is NOT the same as
+   * `null` here: `null` is a row that carries no basis, `undefined` is a caller
+   * that did not load the column. Both are rendered as "not known", never as
+   * "closed out", because an imported closure that reads like an earned one is
+   * the exact false provenance this record exists to prevent.
+   */
+  closureBasis?: string | null;
+  closedAt?: string | null;
+  closureNote?: string | null;
+  /** Set when the award has been re-opened at least once; survives a re-close. */
+  reopenedAt?: string | null;
 };
 
 /**
@@ -64,6 +84,7 @@ type CloseoutCoverage = {
 type CloseoutOutcome =
   | { kind: "closed"; coverage: CloseoutCoverage | null; closedAt: string | null }
   | { kind: "already_closed" }
+  | { kind: "reopened"; priorClosureBasis: string | null; details: string | null }
   | { kind: "refused_coverage"; coverage: CloseoutCoverage }
   | { kind: "refused"; message: string };
 
@@ -208,6 +229,46 @@ function CloseoutCoverageBreakdown({ breakdown }: { breakdown: CloseoutInvoiceBr
   );
 }
 
+/**
+ * What a closed award's record actually says about how it closed.
+ *
+ * The badge and the sentence are both driven by the basis, and the "closure
+ * basis was not loaded" case gets its own words rather than borrowing another
+ * branch's. Before the basis existed, this row said "Recorded fully spent" over
+ * every closed award — an award born closed by a mis-click on the create form
+ * and an award closed to the dollar against paid invoices produced the identical
+ * line, which is how an assertion becomes indistinguishable from a finding.
+ */
+function FundingAwardClosureProvenance({ award }: { award: FundingAwardCloseoutAward }) {
+  const basisWasLoaded = award.closureBasis !== undefined;
+
+  return (
+    <div className="mt-2 rounded-[0.5rem] border border-border/50 bg-background/60 px-3 py-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <StatusBadge tone={basisWasLoaded ? fundingAwardClosureBasisTone(award.closureBasis) : "neutral"}>
+          {basisWasLoaded ? formatFundingAwardClosureBasisLabel(award.closureBasis) : "Closure basis not loaded"}
+        </StatusBadge>
+        {award.closedAt ? (
+          <span className="text-xs text-muted-foreground">Closed {formatDateTime(award.closedAt)}</span>
+        ) : null}
+        {award.reopenedAt ? (
+          <StatusBadge tone="warning">Re-opened {formatDateTime(award.reopenedAt)}</StatusBadge>
+        ) : null}
+      </div>
+      <p className="mt-1.5 text-xs text-muted-foreground">
+        {basisWasLoaded
+          ? describeFundingAwardClosureBasis(award.closureBasis)
+          : "This view did not load how this award was closed, so it cannot tell an earned close-out from one recorded on import. The award record itself is where that is stored."}
+      </p>
+      {award.closureNote ? (
+        <p className="mt-1.5 text-xs">
+          <span className="font-semibold">Stated basis:</span> {award.closureNote}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function FundingAwardCloseoutRow({
   award,
   projectName,
@@ -222,8 +283,15 @@ function FundingAwardCloseoutRow({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [note, setNote] = useState("");
   const [outcome, setOutcome] = useState<CloseoutOutcome | null>(null);
+  const [isReopening, setIsReopening] = useState(false);
+  const [reopenReason, setReopenReason] = useState("");
+  const [reopenStatus, setReopenStatus] =
+    useState<(typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"]>("active");
 
-  const isClosed = award.spendingStatus === "fully_spent";
+  // Through the catalog constant rather than the literal: this one comparison
+  // decides whether the panel offers a close-out or a re-open, and a spelling
+  // that drifts from the column's value would silently offer the wrong one.
+  const isClosed = award.spendingStatus === FUNDING_AWARD_CLOSED_SPENDING_STATUS;
 
   async function handleCloseout() {
     setIsSubmitting(true);
@@ -297,6 +365,74 @@ function FundingAwardCloseoutRow({
     }
   }
 
+  /**
+   * Withdraw a close-out.
+   *
+   * This exists because the alternative was worse: before the PATCH route, an
+   * award closed by a mis-click was closed forever, and the close-out route
+   * answered `already_closed` to every attempt to fix it. The reason is required
+   * — the API refuses a blank one and so does the database — because an undo
+   * nobody accounted for would be a bigger falsification than the mistake it
+   * corrects.
+   */
+  async function handleReopen() {
+    const reason = reopenReason.trim();
+    if (!reason) {
+      setOutcome({
+        kind: "refused",
+        message: "Re-opening a closed award needs a written reason — it withdraws a close-out.",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    setOutcome(null);
+
+    try {
+      const response = await fetch(`/api/funding-awards/${award.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ reopen: { reason, spendingStatus: reopenStatus } }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | (Record<string, unknown> & { error?: string; details?: string })
+        | null;
+
+      if (response.ok) {
+        setIsReopening(false);
+        setReopenReason("");
+        setOutcome({
+          kind: "reopened",
+          priorClosureBasis:
+            typeof payload?.priorClosureBasis === "string" ? payload.priorClosureBasis : null,
+          details: typeof payload?.details === "string" ? payload.details : null,
+        });
+        router.refresh();
+        return;
+      }
+
+      setIsReopening(false);
+      setOutcome({
+        kind: "refused",
+        message:
+          [payload?.error, payload?.details].filter((part) => typeof part === "string" && part).join(" ") ||
+          `Re-opening was refused with HTTP ${response.status} and no reason given.`,
+      });
+    } catch (requestError) {
+      setIsReopening(false);
+      setOutcome({
+        kind: "refused",
+        message:
+          requestError instanceof Error
+            ? `Re-opening could not be sent: ${requestError.message}`
+            : "Re-opening could not be sent, and the reason was not reported.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <li className="border-t border-border/50 pt-3 first:border-t-0 first:pt-0">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -323,14 +459,114 @@ function FundingAwardCloseoutRow({
               Close out award
             </Button>
           ) : null}
+          {isClosed && canClose && !isReopening ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={isSubmitting}
+              onClick={() => {
+                setOutcome(null);
+                setIsReopening(true);
+              }}
+            >
+              Re-open award
+            </Button>
+          ) : null}
         </div>
       </div>
 
-      {isClosed ? (
-        <p className="mt-1 text-xs text-muted-foreground">
-          Recorded fully spent. OpenPlan marks close-out by setting that spending status, so there is
-          nothing left to close here.
-        </p>
+      {isClosed ? <FundingAwardClosureProvenance award={award} /> : null}
+
+      {isReopening ? (
+        <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-3">
+          <p className="text-sm font-semibold">Re-open {award.title}?</p>
+          <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+            <li>
+              Withdraws the close-out: the award stops reading as fully spent, and its closure basis, date
+              and author are cleared from the record.
+            </li>
+            <li>
+              The re-opening itself is kept — date, reason and who did it stay on the award even if it is
+              closed out again later.
+            </li>
+            <li>
+              Any close-out milestone already filed on {projectName} is left in place. It records that a
+              close-out happened, which re-opening does not undo.
+            </li>
+            <li>Rebuilds {projectName}&rsquo;s RTP funding posture from the change.</li>
+          </ul>
+
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <div className="space-y-1.5">
+              <label
+                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                htmlFor={`reopen-status-${award.id}`}
+              >
+                Status it returns to
+              </label>
+              <select
+                id={`reopen-status-${award.id}`}
+                className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"
+                value={reopenStatus}
+                onChange={(event) =>
+                  setReopenStatus(
+                    event.target.value as (typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"]
+                  )
+                }
+              >
+                {FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {/*
+                Asked rather than defaulted. Whether a re-opened award is active
+                or delayed is a claim about the work, and only the planner knows
+                which is true.
+              */}
+            </div>
+            <div className="space-y-1.5">
+              <label
+                className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                htmlFor={`reopen-reason-${award.id}`}
+              >
+                Reason (required)
+              </label>
+              <Textarea
+                id={`reopen-reason-${award.id}`}
+                rows={2}
+                maxLength={2000}
+                value={reopenReason}
+                onChange={(event) => setReopenReason(event.target.value)}
+                placeholder="Why the close-out is being withdrawn — de-obligation, audit finding, amendment, or a mis-click."
+              />
+            </div>
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" size="sm" disabled={isSubmitting} onClick={() => void handleReopen()}>
+              {isSubmitting ? (
+                <span className="inline-flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Re-opening…
+                </span>
+              ) : (
+                "Confirm re-open"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={isSubmitting}
+              onClick={() => setIsReopening(false)}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
       ) : null}
 
       {isConfirming ? (
@@ -343,7 +579,8 @@ function FundingAwardCloseoutRow({
               on its own page and in the grants queue is recomputed from the change.
             </li>
             <li>
-              OpenPlan has no route that reopens a closed award, so treat this as one-way.
+              Reversible, but not quietly: re-opening a closed award needs a written reason, and both the
+              close-out and the re-opening stay on the record.
             </li>
             <li>
               The server refuses unless paid invoices cover the full awarded amount, and will name any
@@ -437,6 +674,22 @@ function FundingAwardCloseoutRow({
         </div>
       ) : null}
 
+      {outcome?.kind === "reopened" ? (
+        <div
+          role="status"
+          className="mt-3 rounded-[0.5rem] border border-[color:var(--copper)]/40 bg-[color:var(--copper)]/10 px-3 py-3 text-xs text-[color:var(--copper)]"
+        >
+          <p className="text-sm font-semibold">Re-opened {award.title}.</p>
+          {outcome.priorClosureBasis ? (
+            <p className="mt-1">
+              The closure it withdrew was recorded as{" "}
+              {formatFundingAwardClosureBasisLabel(outcome.priorClosureBasis).toLowerCase()}.
+            </p>
+          ) : null}
+          {outcome.details ? <p className="mt-1">{outcome.details}</p> : null}
+        </div>
+      ) : null}
+
       {outcome?.kind === "refused_coverage" ? (
         <div
           role="alert"
@@ -494,7 +747,7 @@ export function FundingAwardCloseoutPanel({
           route, which settles it per project.
         */}
         {canClose
-          ? "Close an award once its paid invoices cover the awarded amount. Closing marks it fully spent, files a close-out milestone, and rebuilds this project's RTP funding posture."
+          ? "Close an award once its paid invoices cover the awarded amount. Closing marks it fully spent, files a close-out milestone, and rebuilds this project's RTP funding posture. A closed award can be re-opened with a written reason, and each closed award shows how it was closed — earned against invoices, or recorded on import."
           : "Close-out marks an award fully spent once its paid invoices cover the awarded amount. Recording one is a write action and this view is not offering it; the server decides per project who may record a close-out."}
       </p>
       <ul className="mt-3 space-y-3">

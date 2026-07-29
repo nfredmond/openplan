@@ -92,6 +92,35 @@ import {
   resolveProjectExactBillingTriageTarget,
 } from "@/lib/grants/page-helpers";
 
+/**
+ * What PostgREST says back when a select names a column the deployed schema does
+ * not carry yet. Two column-tolerance fallbacks below depend on recognising it,
+ * and a second hand-written test would drift from this one — which would show up
+ * as a lane that silently renders empty on a database that is merely behind.
+ */
+function looksLikePendingColumn(message: string | null | undefined): boolean {
+  return /column .* does not exist|could not find the .* column|schema cache/i.test(message ?? "");
+}
+
+/**
+ * The funding-award column list, and the pre-20260729000001 fallback it is
+ * derived from.
+ *
+ * Derived by insertion rather than written out twice: the two lists must differ
+ * only in the closure-provenance columns, and a hand-maintained second literal
+ * drifts. `closure_basis`, `closed_at`, `closure_note` and `reopened_at` are
+ * what let the close-out panel tell an earned close-out from one asserted on
+ * import — without them in the select the panel truthfully says it does not
+ * know, which is honest but useless to the planner, since it would say that
+ * about every closed award forever.
+ */
+const FUNDING_AWARD_SELECT_LEGACY =
+  "id, funding_opportunity_id, project_id, program_id, title, awarded_amount, match_amount, obligation_due_at, spending_status, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), projects(id, name)";
+const FUNDING_AWARD_SELECT = FUNDING_AWARD_SELECT_LEGACY.replace(
+  "spending_status,",
+  "spending_status, closure_basis, closed_at, closure_note, reopened_at,"
+);
+
 export default async function GrantsPage({
   searchParams,
 }: {
@@ -131,7 +160,7 @@ export default async function GrantsPage({
     opportunitiesRead,
     { data: projectsData },
     { data: programsData },
-    { data: fundingAwardsData },
+    fundingAwardsRead,
     { data: fundingInvoicesData },
     { data: projectFundingProfilesData },
     { data: projectBcaScreeningsData },
@@ -158,9 +187,7 @@ export default async function GrantsPage({
       .order("updated_at", { ascending: false }),
     supabase
       .from("funding_awards")
-      .select(
-        "id, funding_opportunity_id, project_id, program_id, title, awarded_amount, match_amount, obligation_due_at, spending_status, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), projects(id, name)"
-      )
+      .select(FUNDING_AWARD_SELECT)
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
     supabase
@@ -208,12 +235,7 @@ export default async function GrantsPage({
   // 20260727000015 rejects the extended select. Fall back to the legacy
   // column list — on that schema every opportunity is truthfully a grant.
   let opportunitiesData: unknown = opportunitiesRead.data;
-  if (
-    opportunitiesRead.error &&
-    /column .* does not exist|could not find the .* column|schema cache/i.test(
-      opportunitiesRead.error.message ?? ""
-    )
-  ) {
+  if (opportunitiesRead.error && looksLikePendingColumn(opportunitiesRead.error.message)) {
     const legacyRead = await supabase
       .from("funding_opportunities")
       .select(
@@ -222,6 +244,23 @@ export default async function GrantsPage({
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false });
     opportunitiesData = legacyRead.data;
+  }
+
+  // Closure-provenance tolerance, for the same reason and with a sharper edge:
+  // this read used to drop its error on the floor, so a schema that rejected the
+  // select left `fundingAwards` empty and every award lane on the page reading
+  // "none" — an absence rendered as a fact. A deployment behind 20260729000001
+  // now gets its awards back from the legacy column list, and the close-out
+  // panel says the closure basis was not loaded rather than painting an imported
+  // closure as an earned one.
+  let fundingAwardsData: unknown = fundingAwardsRead.data;
+  if (fundingAwardsRead.error && looksLikePendingColumn(fundingAwardsRead.error.message)) {
+    const legacyAwardsRead = await supabase
+      .from("funding_awards")
+      .select(FUNDING_AWARD_SELECT_LEGACY)
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false });
+    fundingAwardsData = legacyAwardsRead.data;
   }
 
   // Where this workspace works, as one answer for every jurisdiction-aware lane

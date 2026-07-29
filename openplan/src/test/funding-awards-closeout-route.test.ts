@@ -12,7 +12,12 @@ const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
 
 const awardMaybeSingleMock = vi.fn();
-const awardUpdateEqSecondMock = vi.fn();
+// The close-out UPDATE now chains `.select("id").maybeSingle()` so it can see
+// whether it changed anything — a write that marks an award fully spent must not
+// report success over zero matched rows.
+const awardUpdateMaybeSingleMock = vi.fn();
+const awardUpdateSelectMock = vi.fn(() => ({ maybeSingle: awardUpdateMaybeSingleMock }));
+const awardUpdateEqSecondMock = vi.fn(() => ({ select: awardUpdateSelectMock }));
 const awardUpdateEqFirstMock = vi.fn(() => ({ eq: awardUpdateEqSecondMock }));
 const awardUpdateMock = vi.fn(() => ({ eq: awardUpdateEqFirstMock }));
 const invoicesEqSecondMock = vi.fn();
@@ -104,7 +109,7 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
       error: null,
     });
 
-    awardUpdateEqSecondMock.mockResolvedValue({ error: null });
+    awardUpdateMaybeSingleMock.mockResolvedValue({ data: { id: AWARD_ID }, error: null });
     milestonesLimitMock.mockResolvedValue({ data: [], error: null });
     milestonesInsertMock.mockResolvedValue({ error: null });
     rebuildProjectRtpPostureMock.mockResolvedValue({
@@ -161,7 +166,17 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         },
       })
     );
-    expect(awardUpdateMock).toHaveBeenCalledWith({ spending_status: "fully_spent" });
+    // The status and the closure provenance are written in ONE statement: the
+    // schema's coherence CHECK refuses `fully_spent` with no basis, so a writer
+    // that set the status alone would fail loudly rather than leave a closure
+    // nobody can account for.
+    expect(awardUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        spending_status: "fully_spent",
+        closure_basis: "earned_coverage",
+        closed_by: "22222222-2222-4222-8222-222222222222",
+      })
+    );
     expect(milestonesSelectMock).toHaveBeenCalledWith("id");
     expect(milestonesEqFirstMock).toHaveBeenCalledWith("project_id", PROJECT_ID);
     expect(milestonesEqSecondMock).toHaveBeenCalledWith("funding_award_id", AWARD_ID);
@@ -193,7 +208,9 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     expect(response.status).toBe(200);
     const json = await response.json();
     expect(json.awardId).toBe(AWARD_ID);
-    expect(awardUpdateMock).toHaveBeenCalledWith({ spending_status: "fully_spent" });
+    expect(awardUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ spending_status: "fully_spent", closure_basis: "earned_coverage" })
+    );
     expect(milestonesInsertMock).not.toHaveBeenCalled();
     expect(mockAudit.info).toHaveBeenCalledWith(
       "funding_award_closeout_milestone_already_exists",
@@ -385,6 +402,59 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
     awardMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     const response = await postCloseout(closeoutRequest(), context());
     expect(response.status).toBe(404);
+  });
+
+  it("reports an imported closure as already closed instead of refusing it on coverage", async () => {
+    // Ordering is load-bearing now that an award can be recorded as closed on
+    // import: such an award IS closed and has no paid invoices at all, so a
+    // coverage-first route would answer a planner clicking Close out with
+    // "coverage is short" — arithmetically true, and false about the thing they
+    // asked. Nothing is written on this branch either way.
+    awardMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: AWARD_ID,
+        workspace_id: WORKSPACE_ID,
+        project_id: PROJECT_ID,
+        title: "Historic ATP award",
+        awarded_amount: 1_000_000,
+        spending_status: "fully_spent",
+        closure_basis: "recorded_on_import",
+        obligation_due_at: null,
+      },
+      error: null,
+    });
+    invoicesEqSecondMock.mockResolvedValue({ data: [], error: null });
+
+    const response = await postCloseout(closeoutRequest(), context());
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.status).toBe("already_closed");
+    // How it became closed, not only that it is. Before the basis existed these
+    // two responses were identical, which is how an asserted closure came to
+    // read as a verified one on every surface downstream.
+    expect(json.closureBasis).toBe("recorded_on_import");
+    expect(awardUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("names the earned basis on the close-out it just performed", async () => {
+    const response = await postCloseout(closeoutRequest(), context());
+    expect(await response.json()).toMatchObject({ closureBasis: "earned_coverage" });
+  });
+
+  it("answers a close-out write that matched no rows as a disclosed policy failure", async () => {
+    // This route read the award through the caller's own client and passed the
+    // membership and role checks, so zero matched rows is the database refusing
+    // a write the application believed was allowed — not a missing award, and
+    // certainly not a close-out that succeeded.
+    awardUpdateMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    const response = await postCloseout(closeoutRequest(), context());
+
+    expect(response.status).toBe(500);
+    const json = await response.json();
+    expect(json.error).toBe("The funding award was not saved");
+    expect(json.details).toContain("row-level security policy");
   });
 
   it("returns 403 when the user is not a workspace member", async () => {

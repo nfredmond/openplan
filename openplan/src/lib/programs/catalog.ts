@@ -47,11 +47,60 @@ export const FUNDING_AWARD_MATCH_POSTURE_OPTIONS = [
   { value: "not_required", label: "Not required" },
 ] as const;
 
-export const FUNDING_AWARD_SPENDING_STATUS_OPTIONS = [
+/**
+ * The spending statuses a planner may set directly, on a create form or an edit.
+ *
+ * `fully_spent` is deliberately NOT one of them. It is not a status like the
+ * others: it is the outcome of the close-out contract — paid invoices covering
+ * the awarded amount, a close-out milestone filed on the project, the project's
+ * RTP funding posture rebuilt — and for a while it was reachable by picking it
+ * out of a dropdown on the create form, which skipped all three at birth. An
+ * award could be born closed, and with no PATCH route it stayed that way
+ * forever.
+ *
+ * So the closed status is reached by an act, never by a value: either the
+ * close-out route earns it, or an explicit "recorded as closed on import" intent
+ * asserts it and says so on the record. Anything offering a status choice to a
+ * user should offer THIS list.
+ */
+export const FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS = [
   { value: "not_started", label: "Not started" },
   { value: "active", label: "Active" },
   { value: "delayed", label: "Delayed" },
-  { value: "fully_spent", label: "Fully spent" },
+] as const;
+
+/** The one `spending_status` that means the award is closed. */
+export const FUNDING_AWARD_CLOSED_SPENDING_STATUS = "fully_spent";
+
+/**
+ * Every spending status the column can hold, for reading and labelling. Derived
+ * from the open list so the two can never drift into disagreeing about what
+ * "delayed" is called.
+ */
+export const FUNDING_AWARD_SPENDING_STATUS_OPTIONS = [
+  ...FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS,
+  { value: FUNDING_AWARD_CLOSED_SPENDING_STATUS, label: "Fully spent" },
+] as const;
+
+/**
+ * How an award came to be `fully_spent` — `funding_awards.closure_basis`
+ * (20260729000001).
+ *
+ * Two rows both reading "Fully spent" used to be indistinguishable, whether one
+ * was earned to the dollar against paid invoices and the other typed in by
+ * whoever created the record. These three values are what tell them apart, and
+ * the labels are written so that the difference survives being read quickly:
+ * "Closed out on invoice coverage" is a finding, "Recorded as closed on import"
+ * is an assertion, and "Closure basis not recorded" is an admission.
+ *
+ * `unrecorded_legacy` is written only by the migration's backfill, for awards
+ * that were already closed before OpenPlan stored the basis. No application
+ * path produces it, and it must never be presented as if it were earned.
+ */
+export const FUNDING_AWARD_CLOSURE_BASIS_OPTIONS = [
+  { value: "earned_coverage", label: "Closed out on invoice coverage" },
+  { value: "recorded_on_import", label: "Recorded as closed on import" },
+  { value: "unrecorded_legacy", label: "Closure basis not recorded" },
 ] as const;
 
 export const FUNDING_AWARD_RISK_FLAG_OPTIONS = [
@@ -75,6 +124,8 @@ export type FundingOpportunityStatus = (typeof FUNDING_OPPORTUNITY_STATUS_OPTION
 export type FundingOpportunityDecision = (typeof FUNDING_OPPORTUNITY_DECISION_OPTIONS)[number]["value"];
 export type FundingAwardMatchPosture = (typeof FUNDING_AWARD_MATCH_POSTURE_OPTIONS)[number]["value"];
 export type FundingAwardSpendingStatus = (typeof FUNDING_AWARD_SPENDING_STATUS_OPTIONS)[number]["value"];
+export type FundingAwardOpenSpendingStatus = (typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"];
+export type FundingAwardClosureBasis = (typeof FUNDING_AWARD_CLOSURE_BASIS_OPTIONS)[number]["value"];
 export type FundingAwardRiskFlag = (typeof FUNDING_AWARD_RISK_FLAG_OPTIONS)[number]["value"];
 
 export type ProgramReadinessCheck = {
@@ -164,6 +215,70 @@ export function formatFundingAwardSpendingStatusLabel(value: string | null | und
 
 export function formatFundingAwardRiskFlagLabel(value: string | null | undefined): string {
   return FUNDING_AWARD_RISK_FLAG_OPTIONS.find((option) => option.value === value)?.label ?? titleizeProgramValue(value);
+}
+
+/**
+ * The closure basis, in words.
+ *
+ * A NULL basis on a closed award is NOT rendered as a shrug that looks like the
+ * others: the schema's coherence CHECK makes that combination impossible, so
+ * seeing it means something read the row before the migration applied, or read
+ * it without selecting the column. Either way the honest answer is that this
+ * view does not know — never a default of "closed out".
+ */
+export function formatFundingAwardClosureBasisLabel(value: string | null | undefined): string {
+  if (!value) return "Closure basis not loaded";
+  return (
+    FUNDING_AWARD_CLOSURE_BASIS_OPTIONS.find((option) => option.value === value)?.label ??
+    titleizeProgramValue(value)
+  );
+}
+
+/**
+ * What the basis actually claims, for a planner who has to act on it.
+ *
+ * Written as sentences rather than adjectives because the distinction is the
+ * whole point: one of these says money was verified, one says a person asserted
+ * it, and one says nobody knows. Compressing them into a tone alone would put
+ * them back on the same footing.
+ */
+export function describeFundingAwardClosureBasis(value: string | null | undefined): string {
+  if (value === "earned_coverage") {
+    // The milestone is deliberately NOT claimed here. `closure_basis` records
+    // one thing — that coverage was verified — and the close-out's milestone
+    // insert is a separate write that `recordEarnedFundingAwardCloseout` logs a
+    // warning for and carries on from, so an `earned_coverage` row can exist
+    // with no milestone behind it. Asserting the milestone from the basis alone
+    // would state, as fact, a write nobody heard back about — and would
+    // contradict the close-out confirmation in the same panel, which says in so
+    // many words that it does not report on that write.
+    return "Paid invoices covered the full awarded amount when this award was closed out — a finding from the reimbursement register rather than an assertion.";
+  }
+
+  if (value === "recorded_on_import") {
+    return "A workspace member recorded this award as already closed. No invoice coverage was checked, so this is an assertion on the record rather than a finding from the reimbursement register.";
+  }
+
+  if (value === "unrecorded_legacy") {
+    return "This award was already marked fully spent before OpenPlan recorded how a closure was reached, so it cannot be told apart from one that was simply typed in.";
+  }
+
+  return "How this award was closed is not recorded in what was loaded here.";
+}
+
+/**
+ * `success` is reserved for the earned basis. An asserted or unrecorded closure
+ * is not a failure — it is a legitimate state — but painting it the same green
+ * as a verified close-out is exactly how a false provenance spreads: the colour
+ * is read long before the sentence is.
+ */
+export function fundingAwardClosureBasisTone(
+  value: string | null | undefined
+): "info" | "success" | "warning" | "danger" | "neutral" {
+  if (value === "earned_coverage") return "success";
+  if (value === "recorded_on_import") return "info";
+  if (value === "unrecorded_legacy") return "warning";
+  return "neutral";
 }
 
 export function programStatusTone(
