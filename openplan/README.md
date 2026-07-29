@@ -47,7 +47,7 @@ The main Next.js product app lives in `openplan/` (this directory). From the rep
 - Next.js 16 (App Router)
 - TypeScript
 - Supabase (Postgres, Auth, Storage, PostGIS)
-- Mapbox GL JS + deck.gl
+- Mapbox GL JS
 - Tailwind CSS
 - Vercel-compatible deployment (self-hosting supported; see `docs/SELF_HOSTING.md`)
 

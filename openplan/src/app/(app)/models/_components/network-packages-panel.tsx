@@ -36,8 +36,23 @@ function formatComponentCount(count: number | null): string {
   return count === null ? "?" : String(count);
 }
 
+/**
+ * What the ingest endpoint actually does, stated so a planner can predict the
+ * result before spending an upload on it.
+ *
+ * This sentence used to end "…to run QA checks and store the bundle". It does
+ * not store the bundle. The route validates the posted nodes/links GeoJSON,
+ * writes `qa_report_json` and `manifest_json` onto the version row — and the
+ * manifest holds fixed `nodes.geojson` / `links.geojson` filename strings plus
+ * whatever `crs` the caller declared, not bytes, not a storage key, not a
+ * feature count — and then the features go out of scope. The zones, corridors,
+ * and connectors this panel counts are inserted one at a time by the separate
+ * `.../zones`, `.../corridors`, and `.../connectors` POST routes, so a
+ * successful ingest legitimately leaves those counts at zero. Promising storage
+ * made that look like a bug and made the real next step invisible.
+ */
 const INGEST_HOW_TO =
-  "Ingest is API-only for now — there is no in-app upload form yet. Create a package with POST /api/network-packages, add a version with POST /api/network-packages/{packageId}/versions, then send nodes/links GeoJSON to POST /api/network-packages/{packageId}/versions/{versionId}/ingest to run QA checks and store the bundle.";
+  "Ingest is API-only for now — there is no in-app upload form yet. Create a package with POST /api/network-packages, add a version with POST /api/network-packages/{packageId}/versions, then send nodes/links GeoJSON to POST /api/network-packages/{packageId}/versions/{versionId}/ingest, which QA-checks the submitted network and records the QA report and manifest on that version. Ingest does not retain the geometry — the posted features are checked and discarded — so the zone, corridor, and connector records counted here are the ones written by the separate .../zones, .../corridors, and .../connectors endpoints.";
 
 export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: string }) {
   const supabase = await createClient();

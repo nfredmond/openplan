@@ -27,6 +27,10 @@ import {
   type AerialPackageStatus,
   type AerialVerificationReadiness,
 } from "@/lib/aerial/catalog";
+import {
+  describeAerialProcessingAvailability,
+  isAerialProcessingWorkerConfigured,
+} from "@/lib/aerial/processing-availability";
 import { loadAerialProjectPosture } from "@/lib/aerial/queries";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -156,6 +160,10 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     packages,
   });
   const postureDescription = describeAerialProjectPosture(posture);
+  // Read on the server, from the same condition the dispatch route decides on,
+  // so this page cannot tell a configured deployment that its worker is a
+  // future release. See src/lib/aerial/processing-availability.ts.
+  const processingNotice = describeAerialProcessingAvailability(isAerialProcessingWorkerConfigured());
   const attachmentSummaryTone =
     attachmentSummary.readiness === "ready"
       ? "success"
@@ -363,7 +371,11 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             id="aerial-mission-authoring"
             label="Authoring"
             title="Mission AOI & export"
-            description="Draw the area of interest, export a DJI waypoint file for pilot handoff, or request ODM processing."
+            // "or request ODM processing" used to close this line, but nothing
+            // in this section requests anything — the affordance has never
+            // existed. Describing what is here keeps the header from promising
+            // a button the block below has to walk back.
+            description="Draw the area of interest, export a DJI waypoint file for pilot handoff, and see where imagery processing stands on this deployment."
             trailing={
               <StatusBadge tone={hasAoi ? "success" : "neutral"}>
                 {hasAoi ? `${aoiVertexCount} vertex polygon` : "No AOI yet"}
@@ -388,8 +400,8 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             </div>
             <StateBlock
               className="mt-3"
-              title="Imagery processing ships in a future release"
-              description="Missions, AOIs, and evidence packages are tracked today. Imagery-to-ortho/DSM processing lands in a future release; until then, the POST /api/aerial/missions/[id]/process endpoint returns HTTP 501 with an integration-boundary payload — no simulated outputs."
+              title={processingNotice.title}
+              description={processingNotice.description}
               tone="info"
               compact
             />
