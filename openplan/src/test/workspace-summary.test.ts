@@ -5,24 +5,59 @@ import {
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 
-function createWorkspaceOperationsSupabaseStub(dataByTable: Record<string, unknown[]>) {
-  const buildResult = (table: string) => ({ data: (dataByTable[table] as unknown[]) ?? [] });
+/**
+ * Models a PostgREST filter builder the way the loader now uses one: every
+ * filter returns the builder again, and the builder itself is awaitable. The
+ * previous stub returned a fixed `.eq().order().limit()` shape, which could not
+ * express the workspace-lane reads (a status filter after an embedded-table
+ * filter, or a head-only count that ends at `.eq()`).
+ *
+ * A table may be given plain rows — in which case the stub reports an exact
+ * count equal to the row count, the honest reading of an uncapped read — or a
+ * `{ rows, count, error }` record, so a test can stage a read that FAILED or one
+ * whose workspace holds more rows than the read returned.
+ */
+type WorkspaceOperationsStubTable =
+  | unknown[]
+  | { rows?: unknown[]; count?: number | null; error?: { message: string } };
 
-  const chain = (table: string) => ({
-    order: () => ({
-      limit: async () => buildResult(table),
-    }),
-    limit: async () => buildResult(table),
-  });
+function createWorkspaceOperationsSupabaseStub(dataByTable: Record<string, WorkspaceOperationsStubTable>) {
+  const buildResult = (table: string) => {
+    const entry = dataByTable[table];
+
+    if (entry === undefined || Array.isArray(entry)) {
+      const rows = entry ?? [];
+      return { data: rows, count: rows.length, error: null };
+    }
+
+    if (entry.error) {
+      return { data: null, count: null, error: entry.error };
+    }
+
+    const rows = entry.rows ?? [];
+    return { data: rows, count: entry.count ?? rows.length, error: null };
+  };
+
+  const chain = (table: string) => {
+    const self = {
+      eq: () => self,
+      in: () => self,
+      order: () => self,
+      limit: () => self,
+      then: (
+        onfulfilled?: ((value: ReturnType<typeof buildResult>) => unknown) | null,
+        onrejected?: ((reason: unknown) => unknown) | null
+      ) => Promise.resolve(buildResult(table)).then(onfulfilled, onrejected),
+    };
+
+    return self;
+  };
 
   return {
     from: (table: string) => ({
-      select: () => ({
-        eq: () => chain(table),
-        in: () => chain(table),
-      }),
+      select: () => chain(table),
     }),
-  } as WorkspaceOperationsSupabaseLike;
+  } as unknown as WorkspaceOperationsSupabaseLike;
 }
 
 describe("workspace summary RTP funding review", () => {

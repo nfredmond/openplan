@@ -2,12 +2,20 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
+  BookOpen,
   Compass,
+  Database,
   FileText,
   FolderKanban,
+  Gauge,
+  GitCompare,
   Landmark,
+  LineChart,
+  MapPinned,
   PlaneTakeoff,
   Radar,
+  ReceiptText,
+  ShieldAlert,
 } from "lucide-react";
 
 import { RecentActionActivity } from "@/components/operations/recent-action-activity";
@@ -30,8 +38,29 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 export const metadata = {
   title: "Command Center · OpenPlan",
   description:
-    "Cross-domain operational view of RTP, grants, aerial, projects, and plans for the active workspace.",
+    "Operational view of the workspace lanes the shared operations summary reads: RTP, grants, projects, reports, invoicing, engagement, safety, modeling, data and knowledge, and aerial.",
 };
+
+/**
+ * A jump-lane count that never turns an unmeasured number into a zero.
+ *
+ * The counts on this page come from two places with different guarantees:
+ * `summary.counts` is always computed, while `summary.moduleObservations` is
+ * `number | null` where null means the read failed or the workspace holds more
+ * rows than one screening read summarizes. A "0 datasets" chip on a lane whose
+ * read failed would be a confident sentence about the world.
+ */
+function laneCountLabel(
+  value: number | null | undefined,
+  singular: string,
+  plural = `${singular}s`
+): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return `${plural} not measured`;
+  }
+
+  return `${value} ${value === 1 ? singular : plural}`;
+}
 
 export default async function CommandCenterPage() {
   const supabase = await createClient();
@@ -51,7 +80,7 @@ export default async function CommandCenterPage() {
       <WorkspaceMembershipRequired
         moduleLabel="Command Center"
         title="Command Center needs a provisioned workspace"
-        description="Command Center surfaces RTP, grants, aerial, projects, and plans state against a single workspace. Join or create a workspace first."
+        description="Command Center surfaces delivery, funding, engagement, safety, modeling, evidence, invoicing, and aerial state against a single workspace. Join or create a workspace first."
         primaryHref="/projects"
         primaryLabel="Create or open project workspace"
       />
@@ -70,7 +99,20 @@ export default async function CommandCenterPage() {
 
   const activeReimbursement = summary.counts.projectFundingReimbursementActiveProjects;
   const openOpportunities = summary.counts.openFundingOpportunities;
+  const observations = summary.moduleObservations;
 
+  /*
+   * One row per module the workspace operations summary actually reads.
+   *
+   * This list used to hold five rows on a page whose own badge says
+   * "Cross-domain view", while the summary behind it read seven of nineteen nav
+   * modules — so Engagement, Safety, Models, Scenarios, County Validation, the
+   * Data Hub, the Knowledge Base and client invoicing were absent from a page
+   * claiming to be the view across domains. The rule this list now follows: a
+   * module appears here when the summary reads it, with a count that says
+   * "not measured" rather than "0" when the read did not land. Adding a row for
+   * a module nothing reads would put the claim back.
+   */
   const domainLinks = [
     {
       key: "rtp",
@@ -89,14 +131,6 @@ export default async function CommandCenterPage() {
       icon: Landmark,
     },
     {
-      key: "aerial",
-      href: "/aerial",
-      title: "Aerial Ops",
-      description: "Missions, evidence packages, AOI authoring + DJI export.",
-      countLabel: `${summary.counts.aerialReadyPackages} ready package${summary.counts.aerialReadyPackages === 1 ? "" : "s"}`,
-      icon: PlaneTakeoff,
-    },
-    {
       key: "projects",
       href: "/projects",
       title: "Projects",
@@ -112,10 +146,83 @@ export default async function CommandCenterPage() {
       countLabel: `${summary.counts.reports} report${summary.counts.reports === 1 ? "" : "s"} · ${summary.counts.reportPacketCurrent} current packet${summary.counts.reportPacketCurrent === 1 ? "" : "s"}`,
       icon: FileText,
     },
+    {
+      key: "invoicing",
+      href: "/invoicing",
+      title: "Invoicing",
+      description: "Grant-reimbursement register and client invoices this workspace issues.",
+      countLabel: laneCountLabel(observations?.receivables.draftClientInvoices, "draft client invoice"),
+      icon: ReceiptText,
+    },
+    {
+      key: "engagement",
+      href: "/engagement",
+      title: "Engagement",
+      description: "Campaigns, public comment intake, moderation, handoff.",
+      countLabel: laneCountLabel(
+        observations?.engagement.moderationActionableItems,
+        "comment awaiting moderation",
+        "comments awaiting moderation"
+      ),
+      icon: MapPinned,
+    },
+    {
+      key: "safety",
+      href: "/safety",
+      title: "Safety",
+      description: "Crash data pulls, coverage limits, screening evidence.",
+      countLabel: laneCountLabel(observations?.safety.readyCrashIngests, "ready crash data pull"),
+      icon: ShieldAlert,
+    },
+    {
+      key: "models",
+      href: "/models",
+      title: "Models",
+      description: "Travel-demand models and the runs behind analysis evidence.",
+      countLabel: laneCountLabel(observations?.modeling.modelRuns, "model run"),
+      icon: LineChart,
+    },
+    {
+      key: "scenarios",
+      href: "/scenarios",
+      title: "Scenarios",
+      description: "Scenario sets, baselines, and comparison snapshots.",
+      countLabel: laneCountLabel(observations?.modeling.scenarioSets, "scenario set"),
+      icon: GitCompare,
+    },
+    {
+      key: "county-runs",
+      href: "/county-runs",
+      title: "County Validation",
+      description: "Screening onramp runs and their validation stage.",
+      countLabel: laneCountLabel(observations?.modeling.countyRuns, "validation run"),
+      icon: Gauge,
+    },
+    {
+      key: "data-hub",
+      href: "/data-hub",
+      title: "Data Hub",
+      description: "Registered datasets, refresh state, geometry attachment.",
+      countLabel: laneCountLabel(observations?.evidence.datasets, "dataset"),
+      icon: Database,
+    },
+    {
+      key: "knowledge-base",
+      href: "/knowledge-base",
+      title: "Knowledge Base",
+      description: "Uploaded documents grounded citations are drawn from.",
+      countLabel: laneCountLabel(observations?.evidence.readyKnowledgeDocuments, "ready document"),
+      icon: BookOpen,
+    },
+    {
+      key: "aerial",
+      href: "/aerial",
+      title: "Aerial Ops",
+      description: "Missions, evidence packages, AOI authoring + DJI export.",
+      countLabel: `${summary.counts.aerialReadyPackages} ready package${summary.counts.aerialReadyPackages === 1 ? "" : "s"}`,
+      icon: PlaneTakeoff,
+    },
   ];
-
-
-
 
 
   return (
@@ -133,8 +240,9 @@ export default async function CommandCenterPage() {
             </div>
             <h1 className="module-intro-title">Command Center</h1>
             <p className="module-intro-description">
-              One operational view of the runtime cue, command queue, and cross-domain counts for the active workspace.
-              Dashboard stays your workspace home; Command Center is the operational cut of the same state.
+              One operational view of the runtime cue, command queue, and lane counts for the active workspace —
+              delivery and funding, engagement, safety, modeling, evidence supply, invoicing, and aerial. Dashboard
+              stays your workspace home; Command Center is the operational cut of the same state.
             </p>
           </div>
         </div>
@@ -198,7 +306,7 @@ export default async function CommandCenterPage() {
       <StateBlock
         className="mt-6"
         title="Operational scope"
-        description="Command Center observes workspace summary counts and recent action audit rows. RTP, grants, aerial, and modeling truth-state locks still apply to their upstream surfaces."
+        description="Every lane above comes from the shared workspace operations summary, and the activity ledger comes from this workspace's audit log. Analysis Studio corridor runs are the one registered surface the summary does not read yet, so they are absent from this page rather than shown as empty. A lane the summary could not read says so instead of reporting zero. Per-record truth-state locks in RTP, grants, safety, and modeling still apply on their own surfaces."
         tone="info"
         compact
       />

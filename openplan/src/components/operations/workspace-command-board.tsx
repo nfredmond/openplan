@@ -31,8 +31,34 @@ function pluralize(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+/**
+ * For `summary.counts` only — see the matching note in
+ * `workflow-next-action-groups.ts`. The `summary.moduleObservations` numbers are
+ * `number | null` where null means NOT MEASURED, and must go through
+ * `observedValue` / `observedCountPhrase` instead so an unread lane cannot
+ * render as a zero.
+ */
 function safeCount(value: unknown): number {
   return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+/** What a stat tile shows in place of a number nobody measured. */
+const UNMEASURED_VALUE = "—";
+
+function observedValue(value: number | null | undefined): string {
+  return typeof value === "number" && Number.isFinite(value) ? String(value) : UNMEASURED_VALUE;
+}
+
+function observedCountPhrase(
+  value: number | null | undefined,
+  singular: string,
+  plural = `${singular}s`
+): string {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return `an unmeasured number of ${plural}`;
+  }
+
+  return `${value} ${value === 1 ? singular : plural}`;
 }
 
 function resolveNextActionHref(action: WorkflowNextActionEntry) {
@@ -91,6 +117,11 @@ export function WorkspaceCommandBoard({
   const aerialMissionCount = safeCount(counts.aerialMissions);
   const aerialActiveMissionCount = safeCount(counts.aerialActiveMissions);
   const aerialReadyPackageCount = safeCount(counts.aerialReadyPackages);
+  const observations = summary.moduleObservations;
+  const engagementObservation = observations?.engagement;
+  const safetyObservation = observations?.safety;
+  const modelingObservation = observations?.modeling;
+  const unreadableLaneLabels = (observations?.unreadable ?? []).map((failure) => failure.label);
   const baseDescription = description ?? summary.detail;
   const rtpFundingReviewRoutesThroughGrants =
     summary.nextCommand?.key === "review-current-report-packets" && summary.nextCommand.moduleKey === "grants";
@@ -178,6 +209,41 @@ export function WorkspaceCommandBoard({
               : `${reimbursementStartCount} need first reimbursement packet${reimbursementStartCount === 1 ? "" : "s"}, ${reimbursementAdvanceCount} already in the invoice follow-through lane.`}
           </p>
         </div>
+        {engagementObservation ? (
+          <div className="module-subpanel">
+            <p className="module-summary-label">Engagement moderation</p>
+            <p className="module-summary-value">
+              {observedValue(engagementObservation.moderationActionableItems)}
+            </p>
+            <p className="module-summary-detail">
+              {engagementObservation.moderationActionableItems === null
+                ? "The moderation queue could not be read, so this is not a claim that nothing is waiting. Open Engagement to see it."
+                : `Comments pending or flagged across ${observedCountPhrase(engagementObservation.campaigns, "campaign")}, with ${observedCountPhrase(engagementObservation.approvedItems, "approved comment")} available to draw from.`}
+            </p>
+          </div>
+        ) : null}
+        {safetyObservation ? (
+          <div className="module-subpanel">
+            <p className="module-summary-label">Crash data pulls</p>
+            <p className="module-summary-value">{observedValue(safetyObservation.crashIngests)}</p>
+            <p className="module-summary-detail">
+              {safetyObservation.crashIngests === null
+                ? "This workspace's crash data pulls could not be read, so nothing here says whether crash evidence exists."
+                : `${observedCountPhrase(safetyObservation.readyCrashIngests, "pull")} ready, ${observedCountPhrase(safetyObservation.failedCrashIngests, "pull")} failed, ${observedCountPhrase(safetyObservation.uncoveredCrashIngests, "study area")} with no registered source coverage. A study area without coverage is a disclosed gap, not a reading about collisions.`}
+            </p>
+          </div>
+        ) : null}
+        {modelingObservation ? (
+          <div className="module-subpanel">
+            <p className="module-summary-label">Model runs</p>
+            <p className="module-summary-value">{observedValue(modelingObservation.modelRuns)}</p>
+            <p className="module-summary-detail">
+              {modelingObservation.modelRuns === null
+                ? "Model runs could not be read for this workspace, so no run state is reported either way."
+                : `${observedCountPhrase(modelingObservation.activeModelRuns, "run")} in flight, ${observedCountPhrase(modelingObservation.failedModelRuns, "run")} failed, across ${observedCountPhrase(modelingObservation.scenarioSets, "scenario set")}.`}
+            </p>
+          </div>
+        ) : null}
         {aerialMissionCount > 0 ? (
           <div className="module-subpanel sm:col-span-2">
             <p className="module-summary-label">Aerial evidence</p>
@@ -193,6 +259,24 @@ export function WorkspaceCommandBoard({
           </div>
         ) : null}
       </div>
+
+      {unreadableLaneLabels.length > 0 ? (
+        /*
+         * The disclosure that keeps every empty lane above honest. A read that
+         * failed produces no count and no queue item, which on its own is
+         * indistinguishable from a lane with nothing in it — so the lanes that
+         * could not be read are named here, and the reader is told which parts
+         * of this board to disbelieve. Same rule as ReadFailureLog.describe().
+         */
+        <p className="mt-4 rounded-xl border border-border/80 bg-muted/30 px-3 py-2 text-[0.78rem] leading-5 text-muted-foreground">
+          This board could not read{" "}
+          {unreadableLaneLabels.length === 1
+            ? unreadableLaneLabels[0]
+            : `${unreadableLaneLabels.slice(0, -1).join(", ")} and ${unreadableLaneLabels[unreadableLaneLabels.length - 1]}`}
+          . Those lanes are shown as unmeasured rather than as zero — an empty lane here would not mean the records
+          are absent.
+        </p>
+      ) : null}
 
       {summary.nextCommand ? (
         <div className="mt-5 rounded-2xl border border-primary/20 bg-primary/5 p-4">

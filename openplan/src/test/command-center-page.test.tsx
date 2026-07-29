@@ -209,6 +209,122 @@ describe("CommandCenterPage", () => {
     expect(actionLimitMock).toHaveBeenCalledWith(8);
   });
 
+  it("offers a jump lane for every module the operations summary reads", async () => {
+    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
+      ...summary,
+      moduleObservations: {
+        engagement: {
+          campaigns: 2,
+          activeCampaigns: 1,
+          moderationActionableItems: 4,
+          approvedItems: 11,
+          leadActiveCampaign: { id: "campaign-1", title: "Corridor listening sessions" },
+        },
+        safety: {
+          crashIngests: 3,
+          readyCrashIngests: 2,
+          failedCrashIngests: 0,
+          uncoveredCrashIngests: 1,
+        },
+        modeling: {
+          modelRuns: 6,
+          activeModelRuns: 1,
+          failedModelRuns: 0,
+          succeededModelRuns: 5,
+          scenarioSets: 2,
+          activeScenarioSets: 1,
+          countyRuns: 1,
+          validatedScreeningCountyRuns: 1,
+        },
+        evidence: {
+          datasets: 4,
+          datasetsNeedingAttention: 0,
+          knowledgeDocuments: 3,
+          readyKnowledgeDocuments: 3,
+          failedKnowledgeDocuments: 0,
+        },
+        receivables: {
+          clientInvoices: 2,
+          draftClientInvoices: 1,
+          awaitingPaymentClientInvoices: 1,
+        },
+        unreadable: [],
+      },
+    });
+
+    render(await CommandCenterPage());
+
+    // The page badge says "Cross-domain view". These are the domains.
+    for (const [name, href] of [
+      ["Engagement", "/engagement"],
+      ["Safety", "/safety"],
+      ["Models", "/models"],
+      ["Scenarios", "/scenarios"],
+      ["County Validation", "/county-runs"],
+      ["Data Hub", "/data-hub"],
+      ["Knowledge Base", "/knowledge-base"],
+      ["Invoicing", "/invoicing"],
+    ] as const) {
+      expect(screen.getByRole("link", { name: new RegExp(name, "i") })).toHaveAttribute("href", href);
+    }
+
+    expect(screen.getByText(/4 comments awaiting moderation/i)).toBeInTheDocument();
+    expect(screen.getByText(/2 ready crash data pulls/i)).toBeInTheDocument();
+    expect(screen.getByText(/6 model runs/i)).toBeInTheDocument();
+  });
+
+  it("says a lane count was not measured rather than showing it as zero", async () => {
+    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
+      ...summary,
+      moduleObservations: {
+        engagement: {
+          campaigns: null,
+          activeCampaigns: null,
+          moderationActionableItems: null,
+          approvedItems: null,
+          leadActiveCampaign: null,
+        },
+        safety: {
+          crashIngests: null,
+          readyCrashIngests: null,
+          failedCrashIngests: null,
+          uncoveredCrashIngests: null,
+        },
+        modeling: {
+          modelRuns: null,
+          activeModelRuns: null,
+          failedModelRuns: null,
+          succeededModelRuns: null,
+          scenarioSets: null,
+          activeScenarioSets: null,
+          countyRuns: null,
+          validatedScreeningCountyRuns: null,
+        },
+        evidence: {
+          datasets: null,
+          datasetsNeedingAttention: null,
+          knowledgeDocuments: null,
+          readyKnowledgeDocuments: null,
+          failedKnowledgeDocuments: null,
+        },
+        receivables: {
+          clientInvoices: null,
+          draftClientInvoices: null,
+          awaitingPaymentClientInvoices: null,
+        },
+        unreadable: [{ label: "model runs", message: "permission denied for table model_runs" }],
+      },
+    });
+
+    render(await CommandCenterPage());
+
+    expect(screen.getByText(/model runs not measured/i)).toBeInTheDocument();
+    expect(screen.getByText(/datasets not measured/i)).toBeInTheDocument();
+    expect(screen.getByText(/comments awaiting moderation not measured/i)).toBeInTheDocument();
+    expect(screen.queryByText(/^0 model runs$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/^0 datasets$/i)).not.toBeInTheDocument();
+  });
+
   it("keeps the activity lane visible before any audited actions run", async () => {
     actionLimitMock.mockResolvedValueOnce({ data: [], error: null });
 

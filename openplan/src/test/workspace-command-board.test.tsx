@@ -85,6 +85,50 @@ const summary: WorkspaceOperationsSummary = {
   ],
 };
 
+/**
+ * A fully measured set of lane observations. Every field is a real number, so a
+ * test that wants the "not measured" path has to say so explicitly — the
+ * opposite default from the one that let literal zeros into this module before.
+ */
+const measuredObservations: NonNullable<WorkspaceOperationsSummary["moduleObservations"]> = {
+  engagement: {
+    campaigns: 2,
+    activeCampaigns: 1,
+    moderationActionableItems: 4,
+    approvedItems: 11,
+    leadActiveCampaign: { id: "campaign-1", title: "Corridor listening sessions" },
+  },
+  safety: {
+    crashIngests: 3,
+    readyCrashIngests: 2,
+    failedCrashIngests: 0,
+    uncoveredCrashIngests: 1,
+  },
+  modeling: {
+    modelRuns: 6,
+    activeModelRuns: 1,
+    failedModelRuns: 2,
+    succeededModelRuns: 3,
+    scenarioSets: 2,
+    activeScenarioSets: 1,
+    countyRuns: 1,
+    validatedScreeningCountyRuns: 0,
+  },
+  evidence: {
+    datasets: 4,
+    datasetsNeedingAttention: 0,
+    knowledgeDocuments: 3,
+    readyKnowledgeDocuments: 3,
+    failedKnowledgeDocuments: 0,
+  },
+  receivables: {
+    clientInvoices: 2,
+    draftClientInvoices: 1,
+    awaitingPaymentClientInvoices: 1,
+  },
+  unreadable: [],
+};
+
 describe("WorkspaceCommandBoard", () => {
   it("surfaces funding-backed RTP packet review in shared packet work copy", () => {
     render(<WorkspaceCommandBoard summary={summary} />);
@@ -376,5 +420,71 @@ describe("WorkspaceCommandBoard", () => {
       "href",
       "/grants?focusProjectId=project-anchor#grants-funding-need-editor"
     );
+  });
+
+  it("shows engagement, safety and modeling state once the summary reads those modules", () => {
+    render(<WorkspaceCommandBoard summary={{ ...summary, moduleObservations: measuredObservations }} />);
+
+    const moderationPanel = screen.getByText("Engagement moderation").closest("div");
+    expect(moderationPanel).not.toBeNull();
+    expect(within(moderationPanel as HTMLElement).getByText("4")).toBeInTheDocument();
+    expect(screen.getByText(/2 campaigns, with 11 approved comments available to draw from/i)).toBeInTheDocument();
+
+    const crashPanel = screen.getByText("Crash data pulls").closest("div");
+    expect(within(crashPanel as HTMLElement).getByText("3")).toBeInTheDocument();
+    // A study area with no registered source must never read as a finding about
+    // collisions — that sentence is the whole reason this panel exists.
+    expect(screen.getByText(/no registered source coverage/i)).toBeInTheDocument();
+    expect(screen.getByText(/disclosed gap, not a reading about collisions/i)).toBeInTheDocument();
+
+    const modelPanel = screen.getByText("Model runs").closest("div");
+    expect(within(modelPanel as HTMLElement).getByText("6")).toBeInTheDocument();
+    expect(screen.getByText(/1 run in flight, 2 runs failed, across 2 scenario sets/i)).toBeInTheDocument();
+
+    // Every lane the board now claims is present as a workflow lane.
+    expect(screen.getByText("Safety")).toBeInTheDocument();
+    expect(screen.getByText("Data & knowledge")).toBeInTheDocument();
+    expect(screen.getByText("Receivables")).toBeInTheDocument();
+  });
+
+  it("shows an unreadable lane as unmeasured and names it, instead of showing zero", () => {
+    render(
+      <WorkspaceCommandBoard
+        summary={{
+          ...summary,
+          moduleObservations: {
+            ...measuredObservations,
+            engagement: {
+              campaigns: null,
+              activeCampaigns: null,
+              moderationActionableItems: null,
+              approvedItems: null,
+              leadActiveCampaign: null,
+            },
+            unreadable: [
+              { label: "engagement campaigns", message: "permission denied for table engagement_campaigns" },
+              {
+                label: "engagement comments awaiting moderation",
+                message: "permission denied for table engagement_items",
+              },
+            ],
+          },
+        }}
+      />
+    );
+
+    const moderationPanel = screen.getByText("Engagement moderation").closest("div");
+    expect(within(moderationPanel as HTMLElement).getByText("—")).toBeInTheDocument();
+    expect(within(moderationPanel as HTMLElement).queryByText("0")).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/The moderation queue could not be read, so this is not a claim that nothing is waiting/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /could not read engagement campaigns and engagement comments awaiting moderation/i
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText(/shown as unmeasured rather than as zero/i)).toBeInTheDocument();
+    expect(document.body).not.toHaveTextContent(/NaN/);
   });
 });

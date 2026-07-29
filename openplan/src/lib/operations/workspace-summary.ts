@@ -31,25 +31,49 @@ import {
   resolveReportPacketSourceUpdatedAt,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+// The Safety module owns its own claim boundary; the operations queue reuses the
+// single-sentence variant verbatim rather than paraphrasing screening output
+// into something stronger on its way to the Command Center.
+import { SAFETY_SCREENING_NARRATIVE_CAVEAT } from "@/lib/safety/caveats";
 import type { StatusTone } from "@/lib/ui/status";
 
-type WorkspaceOperationsQueryResult = { data: unknown[] | null; error?: { message?: string } | null };
-
-type WorkspaceOperationsPostEqChain = {
-  order: (column: string, options: { ascending: boolean }) => {
-    limit: (count: number) => PromiseLike<WorkspaceOperationsQueryResult>;
-  };
-  limit: (count: number) => PromiseLike<WorkspaceOperationsQueryResult>;
+/**
+ * `count` rides alongside `data` because PostgREST reports how many rows the
+ * FILTER matched, independent of any `limit` the caller applied. That is the
+ * one thing a capped read cannot work out for itself, and this module needs it:
+ * a breakdown computed from 200 returned rows is only a workspace total when
+ * the workspace holds 200 rows or fewer.
+ */
+type WorkspaceOperationsQueryResult = {
+  data: unknown[] | null;
+  count?: number | null;
+  error?: { message?: string } | null;
 };
 
-type WorkspaceOperationsSelectChain = {
-  eq: (column: string, value: string) => WorkspaceOperationsPostEqChain;
-  in: (column: string, values: string[]) => WorkspaceOperationsPostEqChain;
+/**
+ * One PostgREST filter builder, modelled the way it actually behaves: every
+ * filter returns the builder again, and the builder itself is awaitable.
+ *
+ * The shape here used to spell out a single fixed call order — `.eq()` then
+ * `.order()` then `.limit()` — which was exactly enough for the ten spine reads
+ * and nothing else. The workspace-lane reads below need call orders it could
+ * not express: a status filter applied after an embedded-table filter, and a
+ * `head`-only count that ends at `.eq()` with no `.limit()` after it. Modelling
+ * the real builder once is cheaper than growing a second seam type per shape.
+ */
+type WorkspaceOperationsFilterChain = PromiseLike<WorkspaceOperationsQueryResult> & {
+  eq: (column: string, value: string) => WorkspaceOperationsFilterChain;
+  in: (column: string, values: string[]) => WorkspaceOperationsFilterChain;
+  order: (column: string, options: { ascending: boolean }) => WorkspaceOperationsFilterChain;
+  limit: (count: number) => WorkspaceOperationsFilterChain;
 };
 
 export type WorkspaceOperationsSupabaseLike = {
   from: (table: string) => {
-    select: (query: string) => WorkspaceOperationsSelectChain;
+    select: (
+      query: string,
+      options?: { count?: "exact"; head?: boolean }
+    ) => WorkspaceOperationsFilterChain;
   };
 };
 
@@ -250,6 +274,119 @@ export type WorkspaceGrantModelingSummary = {
   leadDecisionDetail: string | null;
 };
 
+/**
+ * A read this summary could not complete.
+ *
+ * Same rule as `ReadFailureLog` in `src/lib/ui/read-failures.ts` — *a read that
+ * failed may not be rendered as an answer* — carried across a data boundary
+ * instead of held in a per-render collector, because the reads happen in a
+ * loader and the disclosure happens in a component several files away.
+ *
+ * `label` is the planner's name for the missing thing, lower case and with no
+ * trailing period, so it reads inside a sentence.
+ */
+export type WorkspaceModuleReadFailure = {
+  label: string;
+  message: string;
+};
+
+/**
+ * ── How to read every number in `WorkspaceModuleObservations` ───────────────
+ *
+ * `null` means NOT MEASURED. It is never a zero, never a "no", and never a
+ * completed check. Two different things produce it and both are honest:
+ *
+ *   1. the read failed (permission, dropped column, migration not applied) —
+ *      the reason is in `unreadable` below, named for the planner; or
+ *   2. the workspace holds more rows of that kind than one screening read
+ *      returns (`WORKSPACE_MODULE_ROW_CAP`), so the breakdown this module could
+ *      compute would be a count within a window rather than a workspace total.
+ *
+ * Case 2 is the one worth explaining. Every read in this module is capped,
+ * because this is a portfolio snapshot rendered on ten pages, not a module
+ * report. A capped read still yields an exact TOTAL — PostgREST counts what the
+ * filter matched, not what it returned — so totals below are always real. What
+ * a capped read cannot yield is a trustworthy *breakdown*: "3 failed model
+ * runs" computed from the 200 most recent rows of 5,000 would sit in a stat
+ * grid next to workspace totals and be read as one. Rather than caption its way
+ * out of that, this module reports the breakdown as not measured and points at
+ * the module surface that loads everything — the same choice, for the same
+ * reason, as `planNeedsObservableRecordSetup` below.
+ *
+ * Consumers must therefore branch on `null` explicitly. `?? 0` anywhere in a
+ * consumer of these fields reintroduces the defect this shape exists to
+ * prevent.
+ */
+export type WorkspaceEngagementObservation = {
+  campaigns: number | null;
+  activeCampaigns: number | null;
+  /**
+   * Public and staff comments sitting in the moderation queue — `pending` plus
+   * `flagged`, the same "actionable" split the engagement module itself uses
+   * (`src/lib/engagement/summary.ts`). Counted by the database rather than
+   * derived from returned rows, because a workspace can hold tens of thousands
+   * of comments and this number is the one a planner acts on.
+   */
+  moderationActionableItems: number | null;
+  /** Approved comments — the pool a report or public-review handoff draws from. */
+  approvedItems: number | null;
+  /** The most recently updated active campaign, for a queue link that lands somewhere. */
+  leadActiveCampaign: { id: string; title: string } | null;
+};
+
+export type WorkspaceSafetyObservation = {
+  crashIngests: number | null;
+  readyCrashIngests: number | null;
+  failedCrashIngests: number | null;
+  /**
+   * Ingests the configured source could not cover for the requested area. This
+   * is a disclosed limit, not a defect and not an empty result: a planner whose
+   * area no registered source covers must be told so by name.
+   */
+  uncoveredCrashIngests: number | null;
+};
+
+export type WorkspaceModelingObservation = {
+  modelRuns: number | null;
+  /** Queued plus running — work in flight, not work that needs attention. */
+  activeModelRuns: number | null;
+  failedModelRuns: number | null;
+  succeededModelRuns: number | null;
+  scenarioSets: number | null;
+  activeScenarioSets: number | null;
+  countyRuns: number | null;
+  validatedScreeningCountyRuns: number | null;
+};
+
+export type WorkspaceEvidenceObservation = {
+  datasets: number | null;
+  /** Datasets whose own status says stale or error — refresh work, not absence. */
+  datasetsNeedingAttention: number | null;
+  knowledgeDocuments: number | null;
+  readyKnowledgeDocuments: number | null;
+  failedKnowledgeDocuments: number | null;
+};
+
+export type WorkspaceReceivablesObservation = {
+  clientInvoices: number | null;
+  draftClientInvoices: number | null;
+  /** Sent and not yet paid or voided. */
+  awaitingPaymentClientInvoices: number | null;
+};
+
+export type WorkspaceModuleObservations = {
+  engagement: WorkspaceEngagementObservation;
+  safety: WorkspaceSafetyObservation;
+  modeling: WorkspaceModelingObservation;
+  evidence: WorkspaceEvidenceObservation;
+  receivables: WorkspaceReceivablesObservation;
+  /**
+   * Every lane read that failed, by name. A lane with an entry here renders as
+   * unreadable; without one, an all-null lane means the caller never loaded it.
+   */
+  unreadable: WorkspaceModuleReadFailure[];
+};
+
 export type WorkspaceOperationsSummary = {
   posture: "stable" | "active" | "attention";
   headline: string;
@@ -290,6 +427,15 @@ export type WorkspaceOperationsSummary = {
   };
   grantModelingSummary?: WorkspaceGrantModelingSummary | null;
   aerialPosture?: AerialProjectPosture | null;
+  /**
+   * The modules outside the project/plan/program/report/funding spine that this
+   * summary reads. OPTIONAL on purpose, and the distinction matters: `undefined`
+   * means the caller never asked for them (a builder called with source rows
+   * only), while a present object with `null` fields means they were asked for
+   * and could not be measured. A consumer that collapses the two would turn "we
+   * did not look" into "there is nothing there".
+   */
+  moduleObservations?: WorkspaceModuleObservations;
   nextCommand: WorkspaceCommandQueueItem | null;
   commandQueue: WorkspaceCommandQueueItem[];
   fullCommandQueue: WorkspaceCommandQueueItem[];
@@ -640,6 +786,104 @@ function mapWorkspaceOperationsProjectSubmittalRows(
   }));
 }
 
+/**
+ * Cap on rows any ONE workspace-lane read pulls back.
+ *
+ * Same 200 the spine reads above use, and for the same reason: this summary is
+ * a portfolio snapshot rendered on ten pages, so no single render may pull a
+ * workspace's whole history of anything. What the cap costs is stated at the
+ * observation contract — totals stay exact because the database counts the
+ * match, and breakdowns go indeterminate rather than pretending the window was
+ * the workspace.
+ */
+const WORKSPACE_MODULE_ROW_CAP = 200;
+
+type WorkspaceModuleRowRead<Row> = {
+  rows: Row[];
+  /** Rows the filter matched, independent of the cap. `null` when unknown. */
+  total: number | null;
+  /**
+   * True when `rows` is not the whole matching set — because the cap clipped
+   * it, or because the read failed and saw nothing at all. Both mean the same
+   * thing to every breakdown taken off `rows`: it is not a workspace figure.
+   * A failed read sets this even though its `rows` is empty, so that an empty
+   * array from a failure cannot be counted as a legitimate zero.
+   */
+  clipped: boolean;
+};
+
+function recordWorkspaceModuleReadFailure(
+  label: string,
+  result: WorkspaceOperationsQueryResult | undefined,
+  unreadable: WorkspaceModuleReadFailure[]
+) {
+  const message = result?.error?.message;
+  unreadable.push({
+    label,
+    message: typeof message === "string" && message.trim() ? message.trim() : "no message reported",
+  });
+}
+
+function readWorkspaceModuleRows<Row>(
+  label: string,
+  result: WorkspaceOperationsQueryResult | undefined,
+  unreadable: WorkspaceModuleReadFailure[]
+): WorkspaceModuleRowRead<Row> {
+  if (!result || result.error) {
+    recordWorkspaceModuleReadFailure(label, result, unreadable);
+    return { rows: [], total: null, clipped: true };
+  }
+
+  const rows = (result.data ?? []) as Row[];
+  const reportedTotal =
+    typeof result.count === "number" && Number.isFinite(result.count) ? result.count : null;
+  // A capped read that came back short is its own proof of completeness: the
+  // filter matched fewer rows than the cap, so nothing was left behind. Only a
+  // read that filled the cap without a reported count is genuinely unbounded.
+  const total = reportedTotal ?? (rows.length < WORKSPACE_MODULE_ROW_CAP ? rows.length : null);
+
+  return { rows, total, clipped: total === null || total > rows.length };
+}
+
+function readWorkspaceModuleCount(
+  label: string,
+  result: WorkspaceOperationsQueryResult | undefined,
+  unreadable: WorkspaceModuleReadFailure[]
+): number | null {
+  if (!result || result.error) {
+    recordWorkspaceModuleReadFailure(label, result, unreadable);
+    return null;
+  }
+
+  return typeof result.count === "number" && Number.isFinite(result.count) ? result.count : null;
+}
+
+/**
+ * A breakdown count over one lane read, or `null` when the read cannot carry
+ * one — see the observation contract on `WorkspaceEngagementObservation` above.
+ * Every breakdown in this module goes through here so the clipped case cannot
+ * be forgotten at one call site and remembered at the next.
+ */
+function countWithinWorkspaceModuleRead<Row>(
+  read: WorkspaceModuleRowRead<Row>,
+  predicate: (row: Row) => boolean
+): number | null {
+  if (read.clipped) {
+    return null;
+  }
+
+  return read.rows.filter(predicate).length;
+}
+
+type WorkspaceEngagementCampaignSourceRow = {
+  id: string;
+  title: string | null;
+  status: string | null;
+  updated_at: string | null;
+};
+type WorkspaceStatusOnlySourceRow = { id: string; status: string | null };
+type WorkspaceCountyRunSourceRow = { id: string; stage: string | null };
+
 export function buildWorkspaceOperationsSummaryFromSourceRows({
   projects,
   plans,
@@ -651,6 +895,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   projectSubmittals = [],
   projectFundingProfiles = [],
   aerialPosture,
+  moduleObservations,
   now,
 }: {
   projects: WorkspaceOperationsProjectSourceRow[];
@@ -663,6 +908,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
   projectSubmittals?: WorkspaceOperationsProjectSubmittalSourceRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
   aerialPosture?: AerialProjectPosture | null;
+  moduleObservations?: WorkspaceModuleObservations;
   now?: Date;
 }) {
   return buildWorkspaceOperationsSummary({
@@ -676,6 +922,7 @@ export function buildWorkspaceOperationsSummaryFromSourceRows({
     projectSubmittals: mapWorkspaceOperationsProjectSubmittalRows(projectSubmittals),
     projectFundingProfiles,
     aerialPosture,
+    moduleObservations,
     now,
   });
 }
@@ -684,7 +931,33 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
   supabase: WorkspaceOperationsSupabaseLike,
   workspaceId: string
 ): Promise<WorkspaceOperationsSummary> {
-  const [projectsResult, plansResult, programsResult, reportsResult, fundingOpportunitiesResult, fundingAwardsResult, fundingInvoicesResult, projectSubmittalsResult, projectFundingProfilesResult] = await Promise.all([
+  const [
+    projectsResult,
+    plansResult,
+    programsResult,
+    reportsResult,
+    fundingOpportunitiesResult,
+    fundingAwardsResult,
+    fundingInvoicesResult,
+    projectSubmittalsResult,
+    projectFundingProfilesResult,
+    // ── Workspace-lane reads ────────────────────────────────────────────────
+    // Batched with the spine rather than issued after it: these exist so the
+    // Command Center stops describing itself as cross-domain while seeing only
+    // the delivery/funding spine, and a lane that costs a serial round trip on
+    // ten pages would be quietly dropped the first time someone profiled the
+    // render. Each carries `count: "exact"` so its TOTAL survives the row cap.
+    engagementCampaignsResult,
+    engagementModerationQueueResult,
+    engagementApprovedItemsResult,
+    safetyCrashIngestsResult,
+    modelRunsResult,
+    scenarioSetsResult,
+    countyRunsResult,
+    dataDatasetsResult,
+    knowledgeDocumentsResult,
+    clientInvoicesResult,
+  ] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, status, delivery_phase, updated_at")
@@ -738,6 +1011,69 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .select("project_id, funding_need_amount, local_match_need_amount")
       .eq("workspace_id", workspaceId)
       .limit(200),
+    supabase
+      .from("engagement_campaigns")
+      .select("id, title, status, updated_at", { count: "exact" })
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(WORKSPACE_MODULE_ROW_CAP),
+    // Comment volume is the one thing here that can reach five figures, so the
+    // two numbers a planner acts on are counted by the database instead of
+    // derived from a capped page of rows. `engagement_items` carries no
+    // workspace column — it hangs off a campaign — hence the embedded filter,
+    // the same shape /api/map-features/counts uses against this table.
+    supabase
+      .from("engagement_items")
+      .select("id, engagement_campaigns!inner(id)", { count: "exact", head: true })
+      .eq("engagement_campaigns.workspace_id", workspaceId)
+      .in("status", ["pending", "flagged"]),
+    supabase
+      .from("engagement_items")
+      .select("id, engagement_campaigns!inner(id)", { count: "exact", head: true })
+      .eq("engagement_campaigns.workspace_id", workspaceId)
+      .eq("status", "approved"),
+    supabase
+      .from("safety_crash_ingests")
+      .select("id, status", { count: "exact" })
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(WORKSPACE_MODULE_ROW_CAP),
+    supabase
+      .from("model_runs")
+      .select("id, status", { count: "exact" })
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(WORKSPACE_MODULE_ROW_CAP),
+    supabase
+      .from("scenario_sets")
+      .select("id, status", { count: "exact" })
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(WORKSPACE_MODULE_ROW_CAP),
+    supabase
+      .from("county_runs")
+      .select("id, stage", { count: "exact" })
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(WORKSPACE_MODULE_ROW_CAP),
+    supabase
+      .from("data_datasets")
+      .select("id, status", { count: "exact" })
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(WORKSPACE_MODULE_ROW_CAP),
+    supabase
+      .from("kb_documents")
+      .select("id, status", { count: "exact" })
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(WORKSPACE_MODULE_ROW_CAP),
+    supabase
+      .from("client_invoices")
+      .select("id, status", { count: "exact" })
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(WORKSPACE_MODULE_ROW_CAP),
   ]);
 
   const reportSourceRows = (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[];
@@ -781,6 +1117,144 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
 
   const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
 
+  // Every lane read is folded into observations HERE, in the loader, because
+  // this is the only place the `error` half of each result exists. Past this
+  // point the builder sees numbers or nulls, and a null it is handed is already
+  // known to mean "not measured" rather than "none".
+  const unreadable: WorkspaceModuleReadFailure[] = [];
+
+  const engagementCampaigns = readWorkspaceModuleRows<WorkspaceEngagementCampaignSourceRow>(
+    "engagement campaigns",
+    engagementCampaignsResult,
+    unreadable
+  );
+  const leadActiveCampaignRow =
+    engagementCampaigns.rows.find((campaign) => campaign.status === "active") ?? null;
+  const safetyCrashIngests = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
+    "safety crash data pulls",
+    safetyCrashIngestsResult,
+    unreadable
+  );
+  const modelRuns = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
+    "model runs",
+    modelRunsResult,
+    unreadable
+  );
+  const scenarioSets = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
+    "scenario sets",
+    scenarioSetsResult,
+    unreadable
+  );
+  const countyRuns = readWorkspaceModuleRows<WorkspaceCountyRunSourceRow>(
+    "county validation runs",
+    countyRunsResult,
+    unreadable
+  );
+  const dataDatasets = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
+    "data hub datasets",
+    dataDatasetsResult,
+    unreadable
+  );
+  const knowledgeDocuments = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
+    "knowledge base documents",
+    knowledgeDocumentsResult,
+    unreadable
+  );
+  const clientInvoices = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
+    "client invoices",
+    clientInvoicesResult,
+    unreadable
+  );
+
+  const moduleObservations: WorkspaceModuleObservations = {
+    engagement: {
+      campaigns: engagementCampaigns.total,
+      activeCampaigns: countWithinWorkspaceModuleRead(
+        engagementCampaigns,
+        (campaign) => campaign.status === "active"
+      ),
+      moderationActionableItems: readWorkspaceModuleCount(
+        "engagement comments awaiting moderation",
+        engagementModerationQueueResult,
+        unreadable
+      ),
+      approvedItems: readWorkspaceModuleCount(
+        "approved engagement comments",
+        engagementApprovedItemsResult,
+        unreadable
+      ),
+      leadActiveCampaign: leadActiveCampaignRow
+        ? {
+            id: leadActiveCampaignRow.id,
+            title: leadActiveCampaignRow.title ?? "Untitled campaign",
+          }
+        : null,
+    },
+    safety: {
+      crashIngests: safetyCrashIngests.total,
+      readyCrashIngests: countWithinWorkspaceModuleRead(
+        safetyCrashIngests,
+        (ingest) => ingest.status === "ready"
+      ),
+      failedCrashIngests: countWithinWorkspaceModuleRead(
+        safetyCrashIngests,
+        (ingest) => ingest.status === "failed"
+      ),
+      uncoveredCrashIngests: countWithinWorkspaceModuleRead(
+        safetyCrashIngests,
+        (ingest) => ingest.status === "no_coverage"
+      ),
+    },
+    modeling: {
+      modelRuns: modelRuns.total,
+      activeModelRuns: countWithinWorkspaceModuleRead(modelRuns, (run) =>
+        ["queued", "running"].includes(run.status ?? "")
+      ),
+      failedModelRuns: countWithinWorkspaceModuleRead(modelRuns, (run) => run.status === "failed"),
+      succeededModelRuns: countWithinWorkspaceModuleRead(
+        modelRuns,
+        (run) => run.status === "succeeded"
+      ),
+      scenarioSets: scenarioSets.total,
+      activeScenarioSets: countWithinWorkspaceModuleRead(
+        scenarioSets,
+        (scenarioSet) => scenarioSet.status === "active"
+      ),
+      countyRuns: countyRuns.total,
+      validatedScreeningCountyRuns: countWithinWorkspaceModuleRead(
+        countyRuns,
+        (run) => run.stage === "validated-screening"
+      ),
+    },
+    evidence: {
+      datasets: dataDatasets.total,
+      datasetsNeedingAttention: countWithinWorkspaceModuleRead(dataDatasets, (dataset) =>
+        ["stale", "error"].includes(dataset.status ?? "")
+      ),
+      knowledgeDocuments: knowledgeDocuments.total,
+      readyKnowledgeDocuments: countWithinWorkspaceModuleRead(
+        knowledgeDocuments,
+        (document) => document.status === "ready"
+      ),
+      failedKnowledgeDocuments: countWithinWorkspaceModuleRead(
+        knowledgeDocuments,
+        (document) => document.status === "failed"
+      ),
+    },
+    receivables: {
+      clientInvoices: clientInvoices.total,
+      draftClientInvoices: countWithinWorkspaceModuleRead(
+        clientInvoices,
+        (invoice) => invoice.status === "draft"
+      ),
+      awaitingPaymentClientInvoices: countWithinWorkspaceModuleRead(
+        clientInvoices,
+        (invoice) => invoice.status === "sent"
+      ),
+    },
+    unreadable,
+  };
+
   return buildWorkspaceOperationsSummaryFromSourceRows({
     projects: (projectsResult.data ?? []) as WorkspaceOperationsProjectSourceRow[],
     plans: (plansResult.data ?? []) as WorkspaceOperationsPlanSourceRow[],
@@ -792,6 +1266,7 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
     projectSubmittals: (projectSubmittalsResult.data ?? []) as WorkspaceOperationsProjectSubmittalSourceRow[],
     projectFundingProfiles: (projectFundingProfilesResult.data ?? []) as WorkspaceOperationsProjectFundingProfileSourceRow[],
     aerialPosture: aerialProjectPosture,
+    moduleObservations,
   });
 }
 
@@ -806,6 +1281,7 @@ export function buildWorkspaceOperationsSummary({
   projectSubmittals = [],
   projectFundingProfiles = [],
   aerialPosture = null,
+  moduleObservations,
   now = new Date(),
 }: {
   projects: WorkspaceOperationsProjectRow[];
@@ -818,6 +1294,7 @@ export function buildWorkspaceOperationsSummary({
   projectSubmittals?: WorkspaceOperationsProjectSubmittalRow[];
   projectFundingProfiles?: WorkspaceOperationsProjectFundingProfileSourceRow[];
   aerialPosture?: AerialProjectPosture | null;
+  moduleObservations?: WorkspaceModuleObservations;
   now?: Date;
 }): WorkspaceOperationsSummary {
   const reportRows = reports.map((report) => {
@@ -1786,6 +2263,128 @@ export function buildWorkspaceOperationsSummary({
     });
   }
 
+  // ── Workspace-lane queue candidates ──────────────────────────────────────
+  // Every guard below is `> 0` against a `number | null`, which in TypeScript
+  // is false for `null` — deliberately, and this is the whole discipline for
+  // these lanes: a number this module could not measure produces NO queue item,
+  // because "we could not count the moderation queue" is not the same claim as
+  // "the moderation queue is clear", and a command queue is read as the second.
+  // A lane that could not be read discloses itself through
+  // `moduleObservations.unreadable`, never through a missing or invented item.
+  const engagementObservation = moduleObservations?.engagement ?? null;
+  const safetyObservation = moduleObservations?.safety ?? null;
+  const modelingObservation = moduleObservations?.modeling ?? null;
+  const evidenceObservation = moduleObservations?.evidence ?? null;
+  const receivablesObservation = moduleObservations?.receivables ?? null;
+
+  const moderationActionableItems = engagementObservation?.moderationActionableItems ?? null;
+  if (moderationActionableItems !== null && moderationActionableItems > 0) {
+    const leadCampaign = engagementObservation?.leadActiveCampaign ?? null;
+    queueCandidates.push({
+      key: "moderate-engagement-comments",
+      title: "Moderate waiting engagement comments",
+      detail: `${moderationActionableItems} comment${moderationActionableItems === 1 ? " is" : "s are"} pending or flagged in the moderation queue, so no report handoff, comment matrix, or public-review appendix drawn from this workspace is settled yet.${leadCampaign ? ` Reopen ${leadCampaign.title} first.` : ""}`,
+      href: leadCampaign ? `/engagement/${leadCampaign.id}` : "/engagement",
+      tone: "warning",
+      priority: 4.5,
+      badges: [
+        { label: "Awaiting moderation", value: moderationActionableItems },
+        { label: "Approved", value: engagementObservation?.approvedItems ?? null },
+      ],
+    });
+  }
+
+  const failedModelRuns = modelingObservation?.failedModelRuns ?? null;
+  if (failedModelRuns !== null && failedModelRuns > 0) {
+    queueCandidates.push({
+      key: "resolve-failed-model-runs",
+      title: "Resolve failed model runs",
+      detail: `${failedModelRuns} model run${failedModelRuns === 1 ? " has" : "s have"} failed and produced no result. Anything downstream that expected those runs — scenario comparison, packet evidence, grant modeling support — is missing an input rather than showing a low number.`,
+      href: "/models",
+      tone: "warning",
+      priority: 5.5,
+      badges: [
+        { label: "Failed", value: failedModelRuns },
+        { label: "In flight", value: modelingObservation?.activeModelRuns ?? null },
+        { label: "Succeeded", value: modelingObservation?.succeededModelRuns ?? null },
+      ],
+    });
+  }
+
+  const failedCrashIngests = safetyObservation?.failedCrashIngests ?? null;
+  const uncoveredCrashIngests = safetyObservation?.uncoveredCrashIngests ?? null;
+  if (
+    (failedCrashIngests !== null && failedCrashIngests > 0) ||
+    (uncoveredCrashIngests !== null && uncoveredCrashIngests > 0)
+  ) {
+    const hasFailures = failedCrashIngests !== null && failedCrashIngests > 0;
+    queueCandidates.push({
+      key: "resolve-safety-crash-data-pulls",
+      title: hasFailures ? "Retry failed crash data pulls" : "Disclose uncovered crash data areas",
+      detail: hasFailures
+        ? `${failedCrashIngests} crash data pull${failedCrashIngests === 1 ? "" : "s"} did not complete, so the safety screening for ${failedCrashIngests === 1 ? "that study area" : "those study areas"} has no observed crash record behind it. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`
+        : `${uncoveredCrashIngests} crash data pull${uncoveredCrashIngests === 1 ? " found no" : "s found no"} registered source covering the requested area. Say that limit in any safety framing for ${uncoveredCrashIngests === 1 ? "that area" : "those areas"} — an empty result there is a coverage gap, not a finding about collisions. ${SAFETY_SCREENING_NARRATIVE_CAVEAT}`,
+      href: "/safety",
+      tone: hasFailures ? "warning" : "info",
+      priority: 6.5,
+      badges: [
+        ...(hasFailures ? [{ label: "Failed pulls", value: failedCrashIngests }] : []),
+        ...(uncoveredCrashIngests !== null && uncoveredCrashIngests > 0
+          ? [{ label: "No coverage", value: uncoveredCrashIngests }]
+          : []),
+        { label: "Ready", value: safetyObservation?.readyCrashIngests ?? null },
+      ],
+    });
+  }
+
+  const datasetsNeedingAttention = evidenceObservation?.datasetsNeedingAttention ?? null;
+  if (datasetsNeedingAttention !== null && datasetsNeedingAttention > 0) {
+    queueCandidates.push({
+      key: "refresh-attention-datasets",
+      title: "Refresh datasets flagged stale or errored",
+      detail: `${datasetsNeedingAttention} dataset${datasetsNeedingAttention === 1 ? " reports" : "s report"} a stale or error status in the Data Hub. Analysis, screening, and packet evidence built on ${datasetsNeedingAttention === 1 ? "it" : "them"} is running on data the workspace has already marked as needing a refresh.`,
+      href: "/data-hub",
+      tone: "warning",
+      priority: 8.5,
+      badges: [
+        { label: "Needs refresh", value: datasetsNeedingAttention },
+        { label: "Datasets", value: evidenceObservation?.datasets ?? null },
+      ],
+    });
+  }
+
+  const failedKnowledgeDocuments = evidenceObservation?.failedKnowledgeDocuments ?? null;
+  if (failedKnowledgeDocuments !== null && failedKnowledgeDocuments > 0) {
+    queueCandidates.push({
+      key: "resolve-knowledge-extraction-failures",
+      title: "Resolve knowledge base extraction failures",
+      detail: `${failedKnowledgeDocuments} uploaded document${failedKnowledgeDocuments === 1 ? " could not be" : "s could not be"} read into text, so ${failedKnowledgeDocuments === 1 ? "it is" : "they are"} absent from every grounded citation and retrieval answer without saying so at the point of use.`,
+      href: "/knowledge-base",
+      tone: "warning",
+      priority: 8.6,
+      badges: [
+        { label: "Extraction failed", value: failedKnowledgeDocuments },
+        { label: "Ready", value: evidenceObservation?.readyKnowledgeDocuments ?? null },
+      ],
+    });
+  }
+
+  const draftClientInvoices = receivablesObservation?.draftClientInvoices ?? null;
+  if (draftClientInvoices !== null && draftClientInvoices > 0) {
+    queueCandidates.push({
+      key: "advance-client-invoice-drafts",
+      title: "Advance draft client invoices",
+      detail: `${draftClientInvoices} client invoice${draftClientInvoices === 1 ? " is" : "s are"} still in draft and has not been sent, so the work behind ${draftClientInvoices === 1 ? "it" : "them"} is unbilled.`,
+      href: "/invoicing",
+      tone: "info",
+      priority: 9.5,
+      badges: [
+        { label: "Draft", value: draftClientInvoices },
+        { label: "Awaiting payment", value: receivablesObservation?.awaitingPaymentClientInvoices ?? null },
+      ],
+    });
+  }
+
   const fullCommandQueue = queueCandidates.sort((left, right) => left.priority - right.priority);
   const commandQueue = fullCommandQueue.slice(0, 5);
 
@@ -1839,6 +2438,7 @@ export function buildWorkspaceOperationsSummary({
     },
     grantModelingSummary,
     aerialPosture: aerialPosture ?? null,
+    moduleObservations,
     nextCommand,
     commandQueue,
     fullCommandQueue,
