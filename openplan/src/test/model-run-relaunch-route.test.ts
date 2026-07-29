@@ -12,7 +12,7 @@
  * that cannot work is a false statement, not a rough edge.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -413,5 +413,58 @@ describe("relaunching rebuilds the demographics the run will be built from", () 
     const snapshot = requeuePayload().input_snapshot_json as Record<string, unknown>;
     expect(snapshot).toEqual({ modelId: MODEL_ID });
     expect(await res.json()).toMatchObject({ zoneAttributes: null });
+  });
+});
+
+/**
+ * The relaunch button is the surface a planner reaches AFTER a run died for want
+ * of a worker, so "requeued" alone is not an answer: it is the same word that
+ * preceded the failure they are looking at. The route resolves the outlook
+ * server-side, because the panel that renders it is handed a run and nothing
+ * about the deployment — and the same outcome means different things depending
+ * on whether a poller is declared.
+ */
+describe("relaunching says whether anything will execute the run this time", () => {
+  beforeEach(givenARelaunchableRun);
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("tells a deployment with no worker that the relaunch will not run either", async () => {
+    vi.stubEnv("OPENPLAN_MODELING_WORKER", "absent");
+    vi.stubEnv("OPENPLAN_MODELING_WORKER_URL", "");
+    vi.stubEnv("OPENPLAN_MODELING_WORKER_TOKEN", "");
+
+    const res = await relaunchRun(request(), routeContext());
+    const body = (await res.json()) as {
+      dispatch: { state: string };
+      executionOutlook: { state: string; headline: string; detail: string };
+    };
+
+    expect(res.status).toBe(200);
+    expect(body.dispatch).toEqual({ state: "not_configured" });
+    expect(body.executionOutlook.state).toBe("unattended");
+    expect(body.executionOutlook.headline).toMatch(/nothing on this deployment/i);
+    // Free product: the way out is an operator running a worker, never a purchase.
+    expect(`${body.executionOutlook.headline} ${body.executionOutlook.detail}`).not.toMatch(
+      /upgrade|subscription|billing|pricing|paid tier|contact sales/i
+    );
+  });
+
+  it("reads the deployment's own declaration rather than assuming it has none", async () => {
+    // The failure this pins: resolving the outlook without the declaration (or
+    // with a hardcoded "undeclared") makes the route tell a deployment that HAS
+    // declared a poller that nothing declares one — a confident statement about
+    // its configuration that is simply false.
+    vi.stubEnv("OPENPLAN_MODELING_WORKER", "deployed");
+    vi.stubEnv("OPENPLAN_MODELING_WORKER_URL", "");
+    vi.stubEnv("OPENPLAN_MODELING_WORKER_TOKEN", "");
+
+    const res = await relaunchRun(request(), routeContext());
+    const body = (await res.json()) as { executionOutlook: { state: string; detail: string } };
+
+    expect(body.executionOutlook.state).toBe("waiting_for_poller");
+    expect(body.executionOutlook.detail).not.toMatch(/nothing declares/i);
   });
 });

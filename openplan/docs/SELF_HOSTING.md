@@ -22,7 +22,7 @@ README; nothing in this guide changes either way.
 | **Mapbox token** | Renders every map surface. | Yes, in practice |
 | **Census API key** | ACS demographics, equity tracts. Free. | Strongly recommended |
 | **Anthropic API key** | AI drafting, synthesis, translation, the in-app assistant. | Optional |
-| **AequilibraE worker** | Separate Python process for network-assignment model runs. | Only for modeling |
+| **AequilibraE worker** | Separate Python process for network-assignment model runs — run always-on polling your database, or as a pool OpenPlan pushes to. | Only for modeling |
 
 The app tells you, on the dashboard, which of these are missing and what each one costs you. That
 panel is the authoritative answer for a running deployment — this document is the setup path.
@@ -111,6 +111,13 @@ Everything below this point is the production/deployment path.
    against a project with real data — it re-applies every migration from scratch and destroys the
    contents.
 
+   **Apply migrations before you deploy the app, not after.** OpenPlan degrades honestly when a column
+   is missing — it says a thing could not be read rather than reporting an empty result as a finding —
+   but "could not be read" is still what your users see, and on the public engagement portal that
+   audience is members of the public rather than staff. Deploying code ahead of its migrations turns a
+   deploy window into a window where every resident who opens a campaign is told the map could not be
+   framed. Running them in this order costs nothing and closes that window entirely.
+
 Row Level Security is enabled on every tenant table and scopes rows to workspace membership. Nothing
 further is required to isolate one agency's data from another's within a deployment.
 
@@ -173,7 +180,9 @@ A Census API key is **free** and issued instantly at
 | `OPENPLAN_EQUITY_INGEST_TOKEN` | Bearer token gating the equity-designation tract ingest endpoint. |
 | `OPENPLAN_INTEGRATION_KEY_SECRET` | Optional. Enables **per-workspace integration keys**: with it set, workspace owners/admins can store their own Anthropic and Census keys from the dashboard — encrypted with this secret, validated live before saving, and billed to their own provider accounts. **Set it to a high-entropy value** — `openssl rand -hex 32` — never a passphrase: the secret is the only thing standing between a database dump and the stored keys, and stored ciphertexts are only as strong as it is (16 characters is the enforced minimum, not a recommendation). **Unset, per-workspace keys are simply disabled** and the panel says so; the deployment env keys above keep working exactly as before. Rotating or changing this secret invalidates every stored workspace key (they fail decryption and fall back to the deployment env keys), so after a rotation teams re-enter their keys. Keys stored before the salted-KDF upgrade (`v1:`-format ciphertexts) remain readable under the same secret — no re-entry is needed for the upgrade itself. |
 | `OPENPLAN_WORKER_LOCAL_ROOT` | Single-machine deployments only: filesystem root where a co-located modeling worker writes artifacts so the app reads them from disk. |
-| `OPENPLAN_MODELING_WORKER` | Declares whether you run the AequilibraE modeling worker: `deployed` or `absent`. The worker polls your database, so the app has nothing to probe and cannot find out for itself. **Unset means "not declared"** — nothing changes, and the model launch controls go on inferring a missing worker from runs that were queued and then reaped. Declaring it is what lets the *first* launch be honest instead of the second: with `absent`, worker-backed runs are refused at the launch button naming this deployment; with `deployed`, they launch normally, and a run that is never picked up still refuses the next one, because run history outranks the declaration. Not a plan or a tier — nothing here is for sale. |
+| `OPENPLAN_MODELING_WORKER` | Declares whether a **polling** AequilibraE worker serves this deployment: `deployed` or `absent`. A poller reads your database, so the app has nothing to probe and cannot find out for itself. **Unset means "not declared"** — nothing changes, and the model launch controls go on inferring a missing worker from runs that were queued and then reaped. Declaring it is what lets the *first* launch be honest instead of the second: with `absent`, worker-backed runs are refused at the launch button naming this deployment; with `deployed`, they launch normally, and a run that is never picked up still refuses the next one, because run history outranks the declaration. Not a plan or a tier — nothing here is for sale. |
+| `OPENPLAN_MODELING_WORKER_URL` / `_TOKEN` | Optional. A worker OpenPlan **pushes** each queued model run to, instead of waiting for one to poll — which is what lets you run a stateless pool rather than an always-on machine, and is the only configuration in which a planner is told *at launch* whether anything took their run. Both are required together: a URL with no token is refused rather than used, because the endpoint starts minutes of compute on request. Give the base URL; the contract path is appended. Run the worker with `AEQ_WORKER_MODE=push` (or `both`) and the same token. It composes with the declaration above rather than replacing it — every stage is claimed atomically, so a poller and a push pool can both serve one deployment with no coordination. |
+| `OPENPLAN_MODELING_QUEUE_DEPTH` | Optional operator bound on how many model runs one workspace may have waiting on the processing worker at once. **Unset means unlimited** and the counting query is never even run — the default, and the right setting for a self-hosted deployment. Set it only to protect compute you pay for; the refusal names you rather than offering anyone an upgrade. |
 | `CRON_SECRET` | Authorizes `/api/cron/reap-model-runs`, which marks crashed model runs as failed instead of leaving them queued forever. Vercel sets and sends this automatically; on another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Outbound email. Without them the app does not pretend to send: teammate invitations produce a link the inviter copies and sends themselves. |
 | `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to a worker. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted — and `/county-runs` says so *before* the first launch rather than after it, since the URL is the same test the dispatcher itself applies. Unlike the modeling worker there is nothing extra to declare: configuring the URL is the declaration. |
@@ -229,16 +238,55 @@ plausible-looking default place.
 ## 5. Modeling worker (only if you want model runs)
 
 Screening-grade network assignment runs in a separate Python process — the AequilibraE worker in
-`workers/aequilibrae_worker/`. It **polls your Supabase project** for queued runs; the web app never
-calls it directly, so there is no worker URL to configure. See
+`workers/aequilibrae_worker/`. See
 [`workers/aequilibrae_worker/DEPLOY.md`](../../workers/aequilibrae_worker/DEPLOY.md) for the
 deployment commands.
 
-**Cost, honestly.** The worker must be always-on to pick up queued runs, and an always-on process is
-not free anywhere. The documented options are Fly.io at roughly **$3–5/month** and Railway's monthly
-free credit, which covers light use. If you do not deploy a worker, everything else in OpenPlan
-still works — model runs simply stay queued, and the dashboard says so rather than leaving them
-looking stuck.
+**There are two ways to start it, and they cost different amounts.** `AEQ_WORKER_MODE` on the worker
+selects one; both execute runs through exactly the same code, so nothing about a run differs between
+them.
+
+| Mode | What it is | What it costs | Deploy with |
+| --- | --- | --- | --- |
+| `poll` (default) | The worker reads queued runs out of your Supabase project. The app never calls it, so there is no URL to configure. | An always-on process. Fly.io is roughly **$3–5/month**; Railway's monthly free credit covers light use. | `workers/aequilibrae_worker/fly.toml` |
+| `push` | The worker serves an HTTP trigger, and the app POSTs each queued run to it. Nothing has to stay running between runs. | Whatever your platform charges for the compute a run actually uses — a scale-to-zero pool idles at nothing. | `workers/aequilibrae_worker/fly.push.toml` |
+| `both` | Both at once, with nothing for you to coordinate. Between processes, every stage is taken with an atomic *queued → running* claim, so whichever reaches a stage first runs it and the other stops — no lock to configure, and no way for a run to execute twice. Inside the one process, the polling thread and the push thread execute stages one at a time rather than side by side. | As `poll`. | either, with `AEQ_WORKER_MODE=both` |
+
+The two Fly configs are separate files because they are opposite configurations: the polling one has
+no HTTP service and is never stopped, the push one serves a port and is allowed to stop when idle.
+`DEPLOY.md` has the commands for both, plus Railway and plain Docker.
+
+**To use the push mode**, set `OPENPLAN_MODELING_WORKER_URL` to the worker's base URL and
+`OPENPLAN_MODELING_WORKER_TOKEN` to a shared secret, and set the same token on the worker (with
+`AEQ_WORKER_MODE=push`). Both are required together — a URL with no token is refused rather than
+used, because that endpoint starts minutes of compute on request. The contract path is appended for
+you, so give the base URL.
+
+This is also the only configuration in which OpenPlan can tell a planner **at launch** whether
+anything took their run: the push either is accepted or is not, and either answer is on screen
+immediately instead of arriving fifteen minutes later as a reaper failure.
+
+**Two things push mode asks of you, and it is not honest to leave them out.**
+
+1. *The pool must stay alive while a run drains.* The worker answers the push immediately and then
+   executes for minutes, so a platform that reclaims an instance the moment it looks idle can stop
+   one mid-run. The worker treats a stop signal as *stop accepting, then finish* — it drains what it
+   accepted and names in its logs anything it could not — but only if your platform waits: set
+   `kill_timeout` (Fly), `terminationGracePeriodSeconds` (Kubernetes) or `docker stop --timeout` at
+   least as high as your longest stage. `fly.push.toml` sets Fly's maximum of five minutes.
+2. *Schedule the staleness sweep.* `/api/cron/reap-model-runs` with `CRON_SECRET` is what turns an
+   interrupted or abandoned run into an honest failure. Nothing is silently lost without it — the
+   model page reconciles stale runs whenever it loads — but on a push-only deployment there is no
+   poller to rescue anything, so the sweep is the safety net.
+
+Acceptance is not completion: a worker that answered "I have it" and then went away leaves a run that
+stops progressing, which OpenPlan reports as a stalled run rather than as a success. What it never
+becomes is a run that quietly disappeared.
+
+**What this does not do.** It cannot create compute. On a deployment that runs neither a poller nor a
+pool, a worker-backed run still cannot execute; what changed is that the planner is now told so at
+the moment they launch, by name, instead of watching a queued run die. Everything else in OpenPlan —
+every other run mode, every other module — works with no worker at all.
 
 **Tell the app which way you went.** Set `OPENPLAN_MODELING_WORKER` to `deployed` or `absent`. It is
 one variable and it takes ten seconds, and it is the difference between a planner being told *before*
@@ -258,9 +306,29 @@ what you could simply have said.
   worker that is demonstrably running.
 - unset — nothing changes from before this existed.
 
+The declaration and the push URL answer different questions: the URL says where a run can be pushed,
+the declaration says whether anything is **watching the queue**. With a push endpoint configured, an
+undeclared deployment is no longer reported as a gap — there is nothing left for the declaration to
+close, because the launch itself now gets an answer.
+
+**If you run a push pool and nothing polls, leave `OPENPLAN_MODELING_WORKER` unset.** This is the one
+combination worth spelling out, because the truthful-looking answer is the wrong one. `absent` means
+*nothing is watching the queue*, which is literally true of a push-only deployment — and it makes the
+launch button refuse every worker-backed run, including ones your pool would have executed happily.
+`deployed` would claim a poller you do not run. Unset is the only answer that is both true and
+working, and it costs you nothing: the push endpoint answers at launch, which is strictly better than
+what the declaration was ever able to say.
+
+**Optionally, bound the queue.** `OPENPLAN_MODELING_QUEUE_DEPTH` caps how many model runs one
+workspace may have waiting on the worker at once. **Unset means unlimited**, and the counting query
+is skipped entirely — that is what you get by default. Set it only to protect compute you are paying
+for. The refusal names you, the operator, and offers nobody an upgrade, because there is nothing to
+buy.
+
 The dashboard's configuration panel shows what OpenPlan currently believes about your deployment,
-including when the declaration is contradicted by your own runs or is set to a value it does not
-understand.
+including when the declaration is contradicted by your own runs or by a configured push endpoint, is
+set to a value it does not understand, or when a push endpoint is half-configured and therefore
+unused.
 
 > **Open question for the project, not for you:** whether OpenPlan should offer a shared hosted
 > worker so self-hosting agencies do not each stand one up. That is a cost and trust decision that

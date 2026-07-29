@@ -30,6 +30,7 @@ import {
 } from "@/lib/models/kpi-comparison";
 import type { BehavioralDemandComparison } from "@/lib/models/behavioral-kpi-comparison";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import type { ModelRunExecutionOutlook } from "@/lib/models/run-dispatch";
 
 type ModelRunComparisonCandidate = {
   id: string;
@@ -252,6 +253,10 @@ export function ModelRunEvidencePanel({
   const [comparisonError, setComparisonError] = useState<string | null>(null);
   const [selectedBaselineRunId, setSelectedBaselineRunId] = useState("");
   const [evidence, setEvidence] = useState<NormalizedEvidencePacket | null>(null);
+  // What, if anything, took the run this panel just relaunched. Null until a
+  // relaunch answers — the panel makes no claim about a run it did not just
+  // dispatch.
+  const [executionOutlook, setExecutionOutlook] = useState<ModelRunExecutionOutlook | null>(null);
   const [comparisonRows, setComparisonRows] = useState<Array<Record<string, unknown>> | null>(null);
   const [behavioralComparison, setBehavioralComparison] = useState<BehavioralDemandComparison | null>(null);
 
@@ -373,14 +378,29 @@ export function ModelRunEvidencePanel({
 
   async function handleRelaunch() {
     setError(null);
+    setExecutionOutlook(null);
     setIsRelaunching(true);
     try {
       const response = await fetch(`/api/models/${modelId}/runs/${modelRunId}/launch`, {
         method: "POST",
       });
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as {
+        error?: string;
+        executionOutlook?: ModelRunExecutionOutlook;
+      };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to relaunch worker run");
+      }
+
+      // THE ANSWER THIS BUTTON OWES. This panel is where a planner arrives after
+      // a run died for want of a worker — and until now pressing "Relaunch"
+      // requeued the run and said nothing at all about whether the second
+      // attempt would fare any better than the first, which is the only question
+      // being asked. The route resolves the outlook server-side (it knows the
+      // deployment's worker declaration; this component does not), so what is
+      // kept here is a sentence, not a decision.
+      if (payload.executionOutlook) {
+        setExecutionOutlook(payload.executionOutlook);
       }
 
       router.refresh();
@@ -425,6 +445,30 @@ export function ModelRunEvidencePanel({
       </div>
 
       {error ? <p className="mt-3 text-xs text-red-600 dark:text-red-300">{error}</p> : null}
+
+      {/* WHETHER THE RELAUNCH WILL FARE ANY BETTER. Deliberately outside the
+          collapsible evidence section: a run that never produced evidence has
+          nothing to expand, and this is the surface a planner reaches precisely
+          when there is none. The wording comes from the route, so the launch
+          form and this button cannot describe the same deployment differently. */}
+      {executionOutlook ? (
+        <div
+          data-testid="model-run-execution-outlook"
+          data-outlook-state={executionOutlook.state}
+          className={
+            executionOutlook.state === "accepted"
+              ? "mt-3 rounded-[0.5rem] border border-emerald-300/80 bg-emerald-50 px-4 py-3 text-xs text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
+              : executionOutlook.state === "unattended"
+                ? "mt-3 rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-xs text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
+                : executionOutlook.state === "waiting_for_poller"
+                  ? "mt-3 rounded-[0.5rem] border border-sky-300/80 bg-sky-50 px-4 py-3 text-xs text-sky-800 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200"
+                  : "mt-3 rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-xs text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
+          }
+        >
+          <p className="font-semibold">{executionOutlook.headline}</p>
+          <p className="mt-2">{executionOutlook.detail}</p>
+        </div>
+      ) : null}
 
       {isOpen ? (
         <div className="mt-4 space-y-4 border-t border-border/60 pt-4">

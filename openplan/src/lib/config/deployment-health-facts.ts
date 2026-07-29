@@ -25,6 +25,10 @@ import {
   type DeploymentHealthFacts,
   type ModelingWorkerDeclaration,
 } from "./deployment-health";
+import {
+  describeDispatchConfigurationProblem,
+  isPushDispatchConfigured,
+} from "@/lib/models/run-dispatch";
 import { detectPdfEngineAvailability } from "@/lib/reports/pdf";
 
 /** Minimal structural view of the client, so this is testable with a stub. */
@@ -149,12 +153,18 @@ export async function loadModelingWorkerFacts(
   now: number = Date.now(),
   env: NodeJS.ProcessEnv = process.env
 ): Promise<DeploymentHealthFacts["modelingWorker"]> {
-  // Read first and carried through every early return: the declaration is
-  // configuration, so a database problem must not be able to erase it. Losing
-  // it here would turn a query failure into "this deployment says nothing",
-  // which is a different — and false — statement.
+  // Read first and carried through every early return: both of these are
+  // configuration, so a database problem must not be able to erase them. Losing
+  // them here would turn a query failure into "this deployment says nothing" and
+  // "this deployment can push nowhere", which are different — and false —
+  // statements. `pushDispatch` resolves to booleans and one already-composed
+  // sentence, so no URL and no token can travel into the pure judging module.
   const declaration = resolveModelingWorkerDeclaration(env);
-  const empty = { declaration, nonTerminalRunCount: 0, stalledRunCount: 0 };
+  const pushDispatch = {
+    configured: isPushDispatchConfigured(env),
+    configurationProblem: describeDispatchConfigurationProblem(env),
+  };
+  const empty = { declaration, pushDispatch, nonTerminalRunCount: 0, stalledRunCount: 0 };
   if (!workspaceId) return empty;
 
   try {
@@ -176,7 +186,7 @@ export async function loadModelingWorkerFacts(
       (run) => classifyRunLiveness(run, now, { workerLikelyAlive: false }) !== "ok"
     ).length;
 
-    return { declaration, nonTerminalRunCount: runs.length, stalledRunCount };
+    return { declaration, pushDispatch, nonTerminalRunCount: runs.length, stalledRunCount };
   } catch {
     return empty;
   }

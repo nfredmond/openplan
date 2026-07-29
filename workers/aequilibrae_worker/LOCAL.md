@@ -1,9 +1,14 @@
 # Running the AequilibraE worker locally
 
-The worker is a background Python process that polls Supabase for queued
-`model_run_stages`, runs an OSM + AequilibraE traffic assignment, and writes
-KPIs, artifacts, and a volumes GeoJSON back to Supabase. Run it alongside
-`npm run dev` so a live model run completes without any cloud deployment.
+The worker is a Python process that executes queued `model_run_stages` — an OSM
++ AequilibraE traffic assignment — and writes KPIs, artifacts, and a volumes
+GeoJSON back to Supabase. Run it alongside `npm run dev` so a live model run
+completes without any cloud deployment.
+
+Locally it polls, which is the default and needs no configuration. (The other
+mode, an HTTP trigger the app pushes runs to, exists for deployments that would
+rather wake a container than keep one on; `AEQ_WORKER_MODE=push` and `DEPLOY.md`
+cover it. There is nothing to gain from it on a dev machine.)
 
 For cloud/hosted deployment (Fly.io, Railway, Docker) see `DEPLOY.md`.
 
@@ -27,9 +32,17 @@ SUPABASE_URL=<your-supabase-url>            # or NEXT_PUBLIC_SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
 # Optional, defaults shown:
 SPATIALITE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/mod_spatialite.so
-AEQ_WORK_DIR=<scratch dir; default is repo data/pilot-nevada-county>
+AEQ_WORK_DIR=<scratch dir; default is <system temp>/openplan-model-runs>
+AEQ_WORKER_MODE=<poll (default) | push | both — see DEPLOY.md>
 CENSUS_API_KEY=<REQUIRED for dynamic study areas — the Census ACS API rejects keyless requests; free at https://api.census.gov/data/key_signup.html>
 ```
+
+> The default scratch root used to be `data/pilot-nevada-county/` inside the
+> repo — one county's name on every run's working directory, anywhere in the
+> world. It is now the system temp directory. If you have an in-flight local run
+> under the old path, set `AEQ_WORK_DIR` to it so the remaining stages find their
+> `state.json`; if you want run scratch kept somewhere durable, set it to that
+> instead.
 
 For local runs against the local Supabase stack, use the local API URL and the
 local service-role key printed by `npm exec supabase status`.

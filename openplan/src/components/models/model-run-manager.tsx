@@ -28,6 +28,11 @@ import {
   isWorkerBackedEngineKey,
   type ModelingWorkerDeclaration,
 } from "@/lib/models/worker-backed-launch";
+import {
+  describeModelRunDispatch,
+  type ModelRunDispatchOutcome,
+  type ModelRunExecutionOutlook,
+} from "@/lib/models/run-dispatch";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 const TrafficVolumeMap = dynamic(
@@ -297,6 +302,11 @@ export function ModelRunManager({
   // run left this app's process, because that changes what the notice means:
   // it is now waiting on infrastructure the app cannot see.
   const [launchNotice, setLaunchNotice] = useState<{ message: string; queuedOnWorker: boolean } | null>(null);
+  // What, if anything, took the run that was just queued. Before this the three
+  // possible futures — a worker has it, a poller might get it, nothing will ever
+  // look at it — were rendered identically as "queued", and the planner learned
+  // which one it had been fifteen minutes later from the reaper, or never.
+  const [executionOutlook, setExecutionOutlook] = useState<ModelRunExecutionOutlook | null>(null);
   // Set only by the planner, and only from the refusal below. The app cannot
   // observe a worker being started — it can only be told — so the person who
   // did it is the one who clears the refusal.
@@ -325,6 +335,7 @@ export function ModelRunManager({
   async function handleLaunch() {
     setError(null);
     setLaunchNotice(null);
+    setExecutionOutlook(null);
     setIsLaunching(true);
 
     try {
@@ -356,9 +367,17 @@ export function ModelRunManager({
         error?: string;
         notice?: string;
         reroutedFrom?: string;
+        dispatch?: ModelRunDispatchOutcome;
       };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to launch managed model run");
+      }
+
+      // Only the lanes that leave this process carry a dispatch outcome. Its
+      // absence therefore means "this ran here", not "we could not tell" — an
+      // in-process run needs no statement about who will execute it.
+      if (payload.dispatch) {
+        setExecutionOutlook(describeModelRunDispatch(payload.dispatch, modelingWorkerDeclaration));
       }
 
       if (typeof payload.notice === "string" && payload.notice.trim()) {
@@ -731,8 +750,50 @@ export function ModelRunManager({
               {launchNotice.queuedOnWorker ? (
                 <p className="mt-2">
                   That queue is served by the AequilibraE worker, not by this app.{" "}
-                  {describeWorkerQueueRisk(modelingWorkerDeclaration, workerAbsenceEvidence)}
+                  {/* Superseded by the execution outlook below when there is
+                      one, and this is not a preference. That block is computed
+                      from strictly more information — it knows whether a worker
+                      OpenPlan pushed to actually answered — so keeping this
+                      sentence alongside it would let the panel contradict
+                      itself: on a deployment that declares nothing, this one
+                      says the run "finishes only while a worker is polling",
+                      which is plainly false about a run a pushed worker has
+                      already accepted. It still renders when no outlook exists,
+                      which is the pre-push behaviour, unchanged. */}
+                  {executionOutlook
+                    ? null
+                    : describeWorkerQueueRisk(modelingWorkerDeclaration, workerAbsenceEvidence)}
                 </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {/* WHAT IS GOING TO RUN THIS. The single most-felt gap in the worker
+              lane: every queued run looked the same whether a worker had taken
+              it, a poller might, or nothing on the deployment ever would. The
+              copy lives in run-dispatch.ts so each sentence can be tested for
+              what it claims without rendering anything. */}
+          {executionOutlook ? (
+            <div
+              data-testid="model-run-execution-outlook"
+              data-outlook-state={executionOutlook.state}
+              className={
+                executionOutlook.state === "accepted"
+                  ? "rounded-[0.5rem] border border-emerald-300/80 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200"
+                  : executionOutlook.state === "unattended"
+                    ? "rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200"
+                    : executionOutlook.state === "waiting_for_poller"
+                      ? "rounded-[0.5rem] border border-sky-300/80 bg-sky-50 px-4 py-3 text-sm text-sky-800 dark:border-sky-900 dark:bg-sky-950/30 dark:text-sky-200"
+                      : "rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
+              }
+            >
+              <p className="font-semibold">{executionOutlook.headline}</p>
+              <p className="mt-2">{executionOutlook.detail}</p>
+              {/* Run history is evidence the dispatch result cannot see, so it
+                  is added rather than replaced — a worker that accepted this run
+                  does not explain the ones nothing ever started. */}
+              {workerAbsenceEvidence && executionOutlook.state !== "accepted" ? (
+                <p className="mt-2">{workerAbsenceEvidence}</p>
               ) : null}
             </div>
           ) : null}

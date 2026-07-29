@@ -66,14 +66,35 @@ export type DeploymentHealth = {
 export const MODELING_WORKER_DECLARATION_ENV = "OPENPLAN_MODELING_WORKER";
 
 /**
+ * The OTHER way to give this deployment modeling compute: a worker OpenPlan
+ * PUSHES to, rather than one that polls. These names live here for the same
+ * reason the declaration's does — the remedies below have to print them, and a
+ * variable name spelt two ways is an operator sent looking for something that
+ * does not exist. `run-dispatch.ts` imports them and does the pushing.
+ *
+ * Unlike the declaration, a push endpoint is not merely a statement: OpenPlan
+ * calls it at launch and gets an answer or a failure, which is the first thing
+ * in this lane that is genuinely OBSERVED rather than declared or inferred. It
+ * still says nothing about whether the worker can finish what it accepted.
+ */
+export const MODELING_WORKER_URL_ENV = "OPENPLAN_MODELING_WORKER_URL";
+export const MODELING_WORKER_TOKEN_ENV = "OPENPLAN_MODELING_WORKER_TOKEN";
+
+/**
  * What this deployment SAYS about the modeling worker — never what OpenPlan has
  * checked, because it cannot check.
  *
- * The AequilibraE worker is a poller: it reads queued runs out of Postgres, so
- * it exposes no URL to probe and writes no heartbeat. Every other worker in the
- * product is declared by its URL and token, and that declaration is what lets
- * those routes answer honestly BEFORE doing anything. This is the same
- * declaration for a worker that has no URL to declare.
+ * The AequilibraE worker CAN be a poller: it reads queued runs out of Postgres,
+ * and in that shape it exposes no URL to probe and writes no heartbeat. Every
+ * other worker in the product is declared by its URL and token, and that
+ * declaration is what lets those routes answer honestly BEFORE doing anything.
+ * This is the same declaration for a worker configured with no URL to declare.
+ *
+ * A deployment may now ALSO give the modeling worker a URL and token
+ * (`MODELING_WORKER_URL_ENV`), in which case OpenPlan pushes each run to it and
+ * gets a real answer at launch. That does not make this declaration obsolete —
+ * a polling worker is still a supported, and simpler, configuration, and a
+ * deployment that runs one has nothing to point a URL at.
  *
  * `undeclared` is the default and is deliberately NOT the same as `absent`.
  * Every deployment that already runs a worker has never set this variable, so
@@ -108,6 +129,22 @@ export type DeploymentHealthFacts = {
     nonTerminalRunCount: number;
     /** Of those, how many have stopped making progress (see run-liveness). */
     stalledRunCount: number;
+    /**
+     * Whether this deployment can PUSH a run at a worker instead of waiting for
+     * one to poll. Configuration, resolved from env by the facts loader — the
+     * booleans-only rule holds, so no URL and no token reaches this module.
+     */
+    pushDispatch: {
+      /** A usable endpoint AND token are configured. */
+      configured: boolean;
+      /**
+       * Set when a push endpoint was evidently INTENDED and will not be used —
+       * a URL with no token, a token with no URL, an unparseable URL. Reporting
+       * "no push endpoint is configured" in that state would be true to the
+       * letter and false to the operator, who believes they configured one.
+       */
+      configurationProblem: string | null;
+    };
   };
 };
 
@@ -203,12 +240,20 @@ function anthropicCheck(facts: DeploymentHealthFacts): DeploymentCheck {
 }
 
 /**
- * Worker liveness is DECLARED or INFERRED, never probed.
+ * Worker liveness is DECLARED, INFERRED, or — where the deployment configures a
+ * push endpoint — ANSWERED AT LAUNCH. It is never probed from here.
  *
- * The AequilibraE screening worker is a poller: it reads queued runs out of the
- * database and has no endpoint to ping and no heartbeat column. There is
- * therefore no way to ask "is a worker running?" — only to be TOLD by whoever
- * runs the deployment, and to observe whether work is moving.
+ * A polling AequilibraE worker reads queued runs out of the database and has no
+ * endpoint to ping and no heartbeat column. There is therefore no way to ask "is
+ * a worker running?" — only to be TOLD by whoever runs the deployment, and to
+ * observe whether work is moving.
+ *
+ * The third source is different in kind and is why the remedies below changed.
+ * A deployment can configure a worker OpenPlan pushes to, and a push either is
+ * accepted or is not — that answer arrives at the moment of launch, to the
+ * planner who launched it. This check reports whether that configuration EXISTS
+ * (a fact about this deployment's environment); it never claims the worker
+ * behind it is up, because a configured endpoint is not a heartbeat either.
  *
  * Those two sources are ranked deliberately, and the ranking is the whole
  * design. Observed run history outranks the declaration, in both directions,
@@ -224,9 +269,24 @@ function anthropicCheck(facts: DeploymentHealthFacts): DeploymentCheck {
  * the remedies name the operator rather than offering anyone an upgrade.
  */
 function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
-  const { declaration, nonTerminalRunCount, stalledRunCount } = facts.modelingWorker;
+  const { declaration, nonTerminalRunCount, stalledRunCount, pushDispatch } = facts.modelingWorker;
   const base = { key: "modeling-worker", label: "Modeling worker" } as const;
   const runsInFlight = `${nonTerminalRunCount} model run${nonTerminalRunCount === 1 ? " is" : "s are"}`;
+
+  /**
+   * The sentence every remedy ends with.
+   *
+   * It exists because this module used to institutionalize a workaround: every
+   * remedy said "deploy the AequilibraE worker", full stop, as though standing
+   * up a long-lived polling process were the only shape modeling compute can
+   * take. It is not, and a self-serve operator on a platform that scales to
+   * zero could not follow that instruction at all. There are two configurations
+   * now, both free, and a remedy that names only one of them is an incomplete
+   * answer dressed as a complete one.
+   */
+  const executionOptions = pushDispatch.configured
+    ? `This deployment already configures a push endpoint (${MODELING_WORKER_URL_ENV}), so OpenPlan hands every worker-backed run to it and records at launch whether it was accepted — that answer, or the failure in its place, is on the launch panel and in the audit log.`
+    : `Two configurations give this deployment modeling compute and neither costs anything: run the worker as a long-lived poller (workers/aequilibrae_worker/DEPLOY.md), or run it behind its HTTP trigger and set ${MODELING_WORKER_URL_ENV} and ${MODELING_WORKER_TOKEN_ENV} so OpenPlan pushes each run to it and learns at launch whether anything took it.`;
 
   // Runs that have stopped moving are the strongest signal available, so they
   // are read first whatever the declaration says.
@@ -238,8 +298,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
         ...base,
         status: "fail",
         detail: `${stalled} This deployment declares that an AequilibraE worker runs against it, so the configuration and the run history disagree. The worker polls and has no heartbeat, so the declaration cannot be verified from here — only the contradiction can be reported.`,
-        remedy:
-          "Check that the worker process is running and pointed at THIS deployment's Supabase project, and read its logs (workers/aequilibrae_worker/DEPLOY.md). If the worker was retired, change the declaration so launches are refused before they are queued instead of after they are reaped.",
+        remedy: `Check that the worker process is running and pointed at THIS deployment's Supabase project, and read its logs (workers/aequilibrae_worker/DEPLOY.md). If the worker was retired, change the declaration so launches are refused before they are queued instead of after they are reaped. ${executionOptions}`,
       };
     }
 
@@ -248,16 +307,57 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
         ...base,
         status: "fail",
         detail: `${stalled} This deployment declares that it runs no AequilibraE worker, which is exactly what a queue nothing serves looks like. New worker-backed launches are now refused at the launch button, so these runs were queued before that declaration was made.`,
-        remedy:
-          "These runs cannot finish and the run reaper will fail them. To make model runs execute here, deploy the AequilibraE worker (workers/aequilibrae_worker/DEPLOY.md) and declare it.",
+        remedy: `These runs cannot finish and the run reaper will fail them. ${executionOptions} Then set ${MODELING_WORKER_DECLARATION_ENV} to "deployed", so launches stop being refused at the button.`,
       };
     }
 
     return {
       ...base,
       status: "fail",
-      detail: `${stalled} The AequilibraE worker polls for queued runs; if none is deployed and running, runs queue indefinitely instead of failing.`,
-      remedy: `Deploy the AequilibraE worker (workers/aequilibrae_worker/DEPLOY.md) against this deployment's own Supabase project, and check its logs. Setting ${MODELING_WORKER_DECLARATION_ENV} to "deployed" or "absent" also lets the launch controls answer before a run is queued rather than after it has been reaped.`,
+      detail: `${stalled} A worker-backed run executes only where something claims it — a worker polling this deployment's queue, or one OpenPlan pushes to. With neither, runs queue indefinitely instead of failing.`,
+      remedy: `${executionOptions} Whichever is in use, check that it is pointed at THIS deployment's own Supabase project and read its logs. Setting ${MODELING_WORKER_DECLARATION_ENV} to "deployed" or "absent" also lets the launch controls answer before a run is queued rather than after it has been reaped.`,
+    };
+  }
+
+  /**
+   * A push endpoint that was evidently meant and cannot be used. Reported ahead
+   * of the declaration branches because it is the one thing here an operator can
+   * fix with certainty — everything below is about a poller that cannot be
+   * probed, while this is a known-broken configuration in front of us.
+   *
+   * The DETAIL states the consequence and the REMEDY carries the variable names
+   * (rule 2 of this module): the person reading a dashboard may not be the
+   * person who can edit an environment.
+   */
+  if (pushDispatch.configurationProblem) {
+    return {
+      ...base,
+      status: "warn",
+      detail:
+        "This deployment is partly configured to push model runs to a processing worker, but not enough of that configuration is present to use, so nothing is pushed. Worker-backed runs fall back to waiting for a worker that polls this deployment — which may or may not be what was intended, and is why this is reported rather than left silent.",
+      remedy: `${pushDispatch.configurationProblem} ${executionOptions}`,
+    };
+  }
+
+  /**
+   * The deployment says one thing and its configuration does another. Both are
+   * operator statements, so neither is "observed" and neither may be silently
+   * preferred — the contradiction is what gets reported.
+   */
+  if (declaration === "absent" && pushDispatch.configured) {
+    return {
+      ...base,
+      status: "warn",
+      detail:
+        "This deployment declares that it runs no AequilibraE worker, and also configures an endpoint for OpenPlan to push model runs to. Both are statements by whoever configured this deployment, and they disagree. While the declaration says no worker exists, worker-backed launches are refused at the button — so if the push endpoint is real, planners are being refused runs this deployment can actually execute.",
+      // The middle case is the one a push-only operator actually lands in, and
+      // it must not be answered with `deployed`. This variable states whether
+      // anything POLLS the queue — so on a deployment whose runs are only ever
+      // pushed, `deployed` is a false statement and `absent` is a true one that
+      // refuses every worker-backed launch at the button. UNSET is the only
+      // answer that is both truthful and lets the pool work, and an operator
+      // will not guess that from a remedy that offers them two settings.
+      remedy: `If a worker also POLLS this deployment, set ${MODELING_WORKER_DECLARATION_ENV} to "deployed". If runs are only ever pushed to the endpoint above, UNSET ${MODELING_WORKER_DECLARATION_ENV} instead — it answers whether anything polls the queue, and "absent" goes on refusing worker-backed launches at the button even though the push endpoint could serve them. If nothing serves this deployment at all, remove ${MODELING_WORKER_URL_ENV} so nothing is pushed at an endpoint that will not answer. Every one of those is free — none of this is a plan or a tier.`,
     };
   }
 
@@ -292,7 +392,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       status: "warn",
       detail:
         "This deployment declares that it runs no AequilibraE worker. Worker-backed model runs — Fast Screening network assignment and the behavioral-demand preflight — are refused at the launch button instead of being queued and then failed minutes later, and a sketch run whose study area is large enough to be rerouted onto that same queue is disclosed as unable to finish. Every other run mode, and every other module, works normally.",
-      remedy: `Deploy the AequilibraE worker (workers/aequilibrae_worker/DEPLOY.md) and set ${MODELING_WORKER_DECLARATION_ENV} to "deployed". Declaring no worker is a valid, honest configuration and costs nothing — OpenPlan is free either way; it only changes whether the refusal arrives before the run or after it.`,
+      remedy: `${executionOptions} Whichever you choose, set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" so launches stop being refused. Declaring no worker is a valid, honest configuration and costs nothing — OpenPlan is free either way; it only changes whether the refusal arrives before the run or after it.`,
     };
   }
 
@@ -300,9 +400,10 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     return {
       ...base,
       status: "warn",
-      detail:
-        "This deployment sets a modeling-worker declaration to a value OpenPlan does not understand, so it is being ignored. Nothing is being guessed from it: the launch controls fall back to inferring a missing worker from runs that were already queued and abandoned, which means the first worker-backed run still has to be wasted before anyone can be warned.",
-      remedy: `Set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" if the AequilibraE worker runs against this deployment, or "absent" if it does not.`,
+      detail: pushDispatch.configured
+        ? "This deployment sets a modeling-worker declaration to a value OpenPlan does not understand, so it is being ignored. Nothing is being guessed from it. It costs less than it used to: this deployment also configures an endpoint OpenPlan pushes each worker-backed run to, so a planner is told at launch whether anything took their run rather than after it has been abandoned."
+        : "This deployment sets a modeling-worker declaration to a value OpenPlan does not understand, so it is being ignored. Nothing is being guessed from it: the launch controls fall back to inferring a missing worker from runs that were already queued and abandoned, which means the first worker-backed run still has to be wasted before anyone can be warned.",
+      remedy: `Set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" if the AequilibraE worker runs against this deployment, or "absent" if it does not. ${executionOptions}`,
     };
   }
 
@@ -325,8 +426,34 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     };
   }
 
-  // Undeclared. The app works; what is missing is the ability to answer before
-  // the first run rather than after it, which is a real cost a planner pays.
+  /**
+   * Undeclared, but this deployment configures somewhere to push runs.
+   *
+   * This is the one branch where the gap the declaration exists to close is
+   * already closed by something better. The declaration is a statement made
+   * once; a push endpoint is called at launch and either takes the run or does
+   * not, so the planner is answered before they wait — which is the entire cost
+   * the "undeclared" warning below is warning about. Passing here is therefore
+   * not leniency, it is the check no longer having a gap to report.
+   *
+   * It claims nothing about the worker being able to FINISH what it accepts.
+   * That is still only visible in the worker's own logs, and the detail says so.
+   */
+  if (pushDispatch.configured) {
+    return {
+      ...base,
+      status: "pass",
+      detail:
+        nonTerminalRunCount > 0
+          ? `${runsInFlight} queued or running here. This deployment configures an endpoint OpenPlan pushes each worker-backed run to, so whether anything accepted a run is answered at launch instead of being inferred later from runs that were abandoned. Acceptance is not completion: whether the worker finishes what it takes is visible only in its own logs.`
+          : "This deployment configures an endpoint OpenPlan pushes each worker-backed run to, so whether anything accepted a run is answered at launch instead of being inferred later from runs that were abandoned. Acceptance is not completion: whether the worker finishes what it takes is visible only in its own logs.",
+      remedy: null,
+    };
+  }
+
+  // Undeclared, with nowhere to push. The app works; what is missing is the
+  // ability to answer before the first run rather than after it, which is a real
+  // cost a planner pays.
   //
   // The wording here is bound by the same limit spelt out above the `absent`
   // branch, and for the identical reason: a queued run that nothing has touched
@@ -339,7 +466,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
       ...base,
       status: "warn",
       detail: `${runsInFlight} queued or running here, and none has yet stopped making progress — which is not the same as something having picked them up, because until a run goes stale it looks identical whether a worker is serving it or nothing is. Nothing declares whether this deployment runs an AequilibraE worker, so before a run is queued OpenPlan still cannot tell a planner whether one exists — on a model with no worker-backed history, the first run is queued, waits, and is failed by the reaper before anything can warn them.`,
-      remedy: `Set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" or "absent" so the launch controls can answer before the first run rather than after it.`,
+      remedy: `Set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" or "absent" so the launch controls can answer before the first run rather than after it. ${executionOptions}`,
     };
   }
 
@@ -348,7 +475,7 @@ function modelingWorkerCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     status: "warn",
     detail:
       "No model runs are in flight, and nothing declares whether this deployment runs an AequilibraE worker. The worker is a poller with no heartbeat, so whether one is deployed cannot be observed until a run is queued — which means the first worker-backed run here is queued, waits, and is failed by the reaper before anything can warn the planner who launched it.",
-    remedy: `Set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" if you run the AequilibraE worker (workers/aequilibrae_worker/DEPLOY.md), or "absent" if you do not. Either answer lets the launch controls refuse or allow before a run is queued; unset, they can only infer from runs that have already been abandoned.`,
+    remedy: `Set ${MODELING_WORKER_DECLARATION_ENV} to "deployed" if you run the AequilibraE worker (workers/aequilibrae_worker/DEPLOY.md), or "absent" if you do not. Either answer lets the launch controls refuse or allow before a run is queued; unset, they can only infer from runs that have already been abandoned. ${executionOptions}`,
   };
 }
 

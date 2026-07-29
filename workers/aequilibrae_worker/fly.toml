@@ -1,24 +1,48 @@
-# Fly.io configuration for the OpenPlan AequilibraE Worker
+# Fly.io configuration for the OpenPlan AequilibraE Worker — POLLING mode.
+#
+# This file describes ONE way to run the worker: an always-on process that reads
+# queued runs out of your Supabase project. It has no HTTP service because a
+# poller has nothing to serve and nothing to wake it, and it must not be stopped
+# when idle — an idle poller is a poller waiting for work.
+#
+# For the other way (a pool OpenPlan pushes runs to, which can scale to zero),
+# deploy fly.push.toml instead. Do not try to make this file do both: they differ
+# in whether Fly may stop the machine, and getting that wrong in this direction
+# gives you a worker that is asleep whenever a run is queued.
+#
 # Deploy: fly launch --copy-config --yes
 # Then set secrets: fly secrets set SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=...
+# Full instructions for both modes: DEPLOY.md
 
 app = "openplan-aeq-worker"
-primary_region = "sjc"  # San Jose — closest to Nevada County
+
+# NO primary_region here on purpose. The right region is the one nearest whoever
+# runs this deployment — there is no default place, and a region baked into a
+# shared config is one operator's convenience presented as everyone's.
+# `fly launch` asks and writes your answer into this file; on an existing app,
+# `fly regions set <region>`.
 
 [build]
   dockerfile = "Dockerfile"
 
 [env]
+  # Polling is also the default in code; stated here so the deployed
+  # configuration says what it is instead of relying on a default.
+  AEQ_WORKER_MODE = "poll"
+  # Scratch space for per-run working directories: container-local, rebuilt per
+  # run, durable in neither direction — and nothing here needs to be.
   AEQ_WORK_DIR = "/tmp/aeq_runs"
-  AEQ_SEED_DIR = "/app/data/package"
   SPATIALITE_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu/mod_spatialite.so"
 
 [[vm]]
   size = "shared-cpu-1x"
   memory = "512mb"
-  auto_stop = false     # Worker must stay running to poll
-  auto_start = true
 
-# No HTTP service — this is a background worker
+# A poller has no inbound requests, so Fly's request-driven autostop has nothing
+# to measure and this machine simply stays up; `fly scale count 1` keeps exactly
+# one. (auto_start/auto_stop belong under [http_service], which this mode has
+# none of. They were previously written under [[vm]], where Fly ignores them —
+# the always-on behaviour came from having no service at all, not from the
+# setting that appeared to say so.)
 [processes]
   worker = "python main.py"

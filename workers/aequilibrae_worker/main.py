@@ -1,12 +1,24 @@
 #!/usr/bin/env python3
 """
-AequilibraE Worker — polls Supabase for queued model_run_stages and executes
-real traffic assignment using the proven OSM + AequilibraE pipeline.
+AequilibraE Worker — executes real traffic assignment on queued model_run_stages
+using the proven OSM + AequilibraE pipeline.
 
 Stage pipeline:
   1. AequilibraE Setup     — download OSM network, add centroids, renumber nodes
   2. Network Assignment    — build graph, run skims, load demand, run BFW
   3. Artifact Extraction   — export evidence packet, link volumes, skim matrix
+
+TWO WAYS TO START IT, ONE WAY IT RUNS (AEQ_WORKER_MODE):
+  poll (default) — the original behaviour: an always-on process reading queued
+                   stages out of Supabase.
+  push           — an HTTP trigger the app POSTs a run id to, so a stateless
+                   pool can be woken on demand instead of kept running.
+  both           — both at once. Two processes cannot take the same stage: every
+                   stage is claimed with an atomic queued -> running update, so
+                   whichever reaches it first runs it and the other stops. And
+                   the two threads INSIDE this process cannot execute two stages
+                   at once either — see _STAGE_EXECUTION_LOCK, which is what
+                   makes that true rather than assumed.
 """
 import os
 import sys
@@ -16,11 +28,17 @@ import shutil
 import sqlite3
 import string
 import hashlib
+import hmac
+import queue
 import re
+import signal
 import tempfile
+import threading
 import urllib.parse
+import uuid
 from collections import deque
 from datetime import datetime, timezone
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
 import requests
@@ -165,11 +183,24 @@ VALIDATION_COUNTS_PATH = os.getenv(
 # a registered region. Best-effort: any failure keeps the default counts.
 COUNT_AUTO_INGEST = os.getenv("COUNT_AUTO_INGEST", "0") in ("1", "true", "True")
 
-# Run-local counts path: stage_assignment sets this from auto-ingest (or the
-# module default) at the top of each run; the validation/calibration helpers
-# read it. Safe as a module global because the worker processes one stage per
-# process at a time.
-_active_counts_path = VALIDATION_COUNTS_PATH
+# THERE IS DELIBERATELY NO MODULE-GLOBAL "counts path for the current run".
+#
+# stage_assignment resolves exactly one counts path per run — auto-ingested local
+# DOT AADT for that study area, or the configured default — and hands it to every
+# reader: the select-link screenlines and the calibration gate inside the same
+# stage, and `_run_count_validation` in the artifact stage, through the run state
+# the stages already persist.
+#
+# It used to be a module global, justified by "the worker processes one stage per
+# process at a time". That was true of the poll loop and it was never true of the
+# ARTIFACT stage: a run whose artifact stage is picked up by a different worker
+# process read the module default rather than the counts its own assignment
+# validated against, and a process that had just run another run's assignment
+# read THAT run's counts. The count set is what decides whether a run may claim
+# the calibrated tier, so validating one study area against another's stations is
+# a wrong number on a claim surface — and it looks exactly like a normal result.
+# Passing it explicitly is what makes the correct counts a property of the run
+# rather than of whatever the process did last.
 
 # The registered count-source regions now live in count_validation.py
 # (COUNT_REGION_BOUNDS) so the coverage rules are stdlib-testable without the
@@ -1337,20 +1368,25 @@ def _run_demand_nudge(assign_once, make_resident_mat, resident_od, ii_arr, n_ass
 
 
 def _run_calibration(proj_dir, out_dir, graph, resident_mat, external_mat, baseline_df, log,
-                     *, resident_od=None, ii=None, assignment_centroids=None, make_resident_mat=None,
-                     pkg_dir=None, ordered_zone_ids=None):
+                     *, counts_path, resident_od=None, ii=None, assignment_centroids=None,
+                     make_resident_mat=None, pkg_dir=None, ordered_zone_ids=None):
     """Staged count calibration outer loop. Returns (calibration_result_or_None,
     log). Reuses the prepared graph. Stage 1 (always): mutate per-road-class
     free-flow travel_time + capacity and re-run a fresh BFW assignment. Stage 2
     (when the resident_od/ii/assignment_centroids/make_resident_mat context is
     provided and enabled): a select-link-guided demand nudge on the resident
     internal OD. Every step is kept only if it improves the HELD-OUT count
-    objective. Never mutates the OD-based resident_vmt or the screening result."""
+    objective. Never mutates the OD-based resident_vmt or the screening result.
+
+    `counts_path` is required and is THIS RUN's count set — see the note where
+    the old module global used to live. Calibrating against another study area's
+    stations would promote a run to the calibrated tier on evidence that is not
+    about it."""
     import csv as _csv
     import numpy as _np
     from aequilibrae.paths import TrafficAssignment, TrafficClass
 
-    with open(_active_counts_path) as _cf:
+    with open(counts_path) as _cf:
         stations = list(_csv.DictReader(_cf))
     # Link attributes + link_id->class map, from the project DB (once).
     db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
@@ -1591,17 +1627,22 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # Resolve the counts used for validation/calibration for THIS run: auto-fetch
     # local DOT AADT for the study area when count auto-ingest is on (deployment
     # env OR this run's calibrate opt-in) and the area is in a registered region,
-    # else the module default. Off-Nevada CA runs get count-backed validation
-    # against local Caltrans counts instead of matching nothing against the Nevada
-    # priority file.
-    global _active_counts_path
-    _active_counts_path = (
+    # else the configured default. A run outside the default count set's own
+    # extent gets count-backed validation against its LOCAL counts instead of
+    # matching nothing against a distant jurisdiction's stations.
+    #
+    # A LOCAL, and returned to the caller below. Never a module global: the
+    # artifact stage validates against this same path, and it may run in another
+    # process (or after this process has handled a different run), where a global
+    # would silently be someone else's count set. See the note by
+    # VALIDATION_COUNTS_PATH.
+    counts_path = (
         auto_ingest_counts(setup_result.get("bbox"), proj_dir, out_dir,
                            calibrate_requested=calibrate_requested)
         or VALIDATION_COUNTS_PATH
     )
-    if _active_counts_path != VALIDATION_COUNTS_PATH:
-        log += f"Auto-ingested local DOT AADT counts for validation ({os.path.basename(_active_counts_path)}).\n"
+    if counts_path != VALIDATION_COUNTS_PATH:
+        log += f"Auto-ingested local DOT AADT counts for validation ({os.path.basename(counts_path)}).\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
     project = Project()
@@ -2025,9 +2066,9 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # unknown link_id, so screenlines are pre-filtered to graph-present links.
     select_link_sets: dict[str, list[tuple[int, int]]] = {}
     try:
-        if COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path):
+        if COUNT_VALIDATION_ENABLED and os.path.exists(counts_path):
             import csv as _csv
-            with open(_active_counts_path) as _f:
+            with open(counts_path) as _f:
                 _sl_stations = list(_csv.DictReader(_f))
             _sl_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
             _sl_db.enable_load_extension(True)
@@ -2148,7 +2189,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
     # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
     # touched; calibrated outputs get distinct KPI names.
     calibration_result = None
-    if should_run_calibration(calibrate_requested, _active_counts_path):
+    if should_run_calibration(calibrate_requested, counts_path):
         try:
             def _make_resident_mat(demand_array):
                 m = AequilibraeMatrix()
@@ -2160,6 +2201,7 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
 
             calibration_result, log = _run_calibration(
                 proj_dir, out_dir, graph, resident_mat, external_mat, results_df, log,
+                counts_path=counts_path,
                 resident_od=resident_od, ii=ii, assignment_centroids=assignment_centroids,
                 make_resident_mat=_make_resident_mat, pkg_dir=pkg_dir, ordered_zone_ids=ordered_zone_ids,
             )
@@ -2186,6 +2228,10 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
         "convergence_diagnostic": convergence_diag,
         "select_link_analysis": select_link_analysis,
         "calibration": calibration_result,
+        # Carried forward so the artifact stage validates against the counts THIS
+        # run used, whichever process picks that stage up. Persisted in the run's
+        # state.json by process_stage.
+        "counts_path": counts_path,
         "log": log,
     }
 
@@ -2241,10 +2287,18 @@ def compute_daily_vmt(db_path: str, link_volumes_csv: str) -> float | None:
     return vmt
 
 
-def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None) -> dict | None:
+def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
+                          counts_path: str | None = None) -> dict | None:
     """Match assigned link volumes to observed traffic counts → screening-grade
     fit summary. Returns None when disabled or inputs are missing (never fails
     the run).
+
+    `counts_path` is THIS RUN's count set, recorded by its assignment stage.
+    Falling back to the configured default when it is absent (or no longer on
+    disk, e.g. an artifact stage running on a different machine) is safe rather
+    than merely convenient: the coverage check below compares the count set's own
+    station extent against the study area first, so a default that does not cover
+    this area reports a coverage gap instead of a fit.
 
     COVERAGE FIRST. When the available count set does not cover the study area —
     the case for any state with no registered count source, which falls back to
@@ -2253,10 +2307,11 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None) 
     produced "Only 0 matched station(s); >= 3 required for a screening claim",
     which reads as a failed model rather than an absent data source."""
     import csv as _csv
-    if not (COUNT_VALIDATION_ENABLED and os.path.exists(_active_counts_path)
+    resolved_counts = counts_path if (counts_path and os.path.exists(counts_path)) else VALIDATION_COUNTS_PATH
+    if not (COUNT_VALIDATION_ENABLED and os.path.exists(resolved_counts)
             and os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
         return None
-    with open(_active_counts_path) as f:
+    with open(resolved_counts) as f:
         stations = list(_csv.DictReader(f))
     if not stations:
         return None
@@ -2645,7 +2700,12 @@ def stage_artifacts(
     # ── Observed-count validation (screening-grade diagnostic, NOT calibration) ──
     validation = None
     try:
-        validation = _run_count_validation(db_path, link_volumes_csv, setup_result.get("bbox"))
+        validation = _run_count_validation(
+            db_path, link_volumes_csv, setup_result.get("bbox"),
+            # The counts the ASSIGNMENT stage of this run actually used, not
+            # whatever this process happened to resolve last.
+            counts_path=assign_result.get("counts_path"),
+        )
         if validation and not (validation.get("coverage") or {}).get("covered", True):
             log += f"Count validation: not run. {(validation['coverage'] or {}).get('reason', '')}\n"
         elif validation:
@@ -3214,10 +3274,86 @@ def stage_artifacts(
 
 # ─── Main poll loop ────────────────────────────────────────────────────
 # Work directory: use /tmp/aeq_runs in cloud, or local data dir for dev
-PILOT_WORK_DIR = os.getenv("AEQ_WORK_DIR", os.path.join(os.path.dirname(__file__), "..", "..", "data", "pilot-nevada-county"))
+# Where per-run working directories are created. AEQ_WORK_DIR is the operator's
+# answer; the fallback is a neutral, repo-local scratch root for a developer who
+# has set nothing.
+#
+# The old fallback was `data/pilot-nevada-county` — one county's name baked into
+# the path every run in the world would be written under. It was scratch space,
+# never that county's data, and naming it that way both stated something untrue
+# about the run and made the pilot look like part of the runtime. A worker in
+# Ohio writing into a directory named for a California county is exactly the
+# defect the no-hardcoded-place rule exists to prevent, however harmless the
+# bytes.
+#
+# WHAT AN OPERATOR MUST DO: nothing, unless they were relying on the old default.
+# Every deployment path sets AEQ_WORK_DIR explicitly (the Dockerfile and both Fly
+# configs point it at container scratch), so only a local checkout that never set
+# it moves — and only for NEW runs. A run already in flight under the old path
+# keeps its state.json there: point AEQ_WORK_DIR at that directory to finish it.
+#
+# The fallback is the system temp directory rather than somewhere in the repo,
+# for the same reason the container default is /tmp: this is scratch, it is
+# rebuilt per run, and a worker must not silently accumulate gigabytes of run
+# output inside a checkout. Set AEQ_WORK_DIR if you want it kept (and point the
+# app's OPENPLAN_WORKER_LOCAL_ROOT at the same path — see LOCAL.md).
+RUN_WORK_ROOT = os.getenv(
+    "AEQ_WORK_DIR",
+    os.path.join(tempfile.gettempdir(), "openplan-model-runs"),
+)
 
 
-def process_stage(stage: dict):
+# ONE STAGE AT A TIME IN THIS PROCESS — the invariant, not a preference.
+#
+# resolve_max_concurrent_runs refuses AEQ_MAX_CONCURRENT_RUNS above 1 because
+# AequilibraE keeps the open project in a process-wide global
+# (`aequilibrae.context._current_project`, set by `Project.open()`/`new()` and
+# read by TrafficAssignment, NetworkSkimming and the graph builders when no
+# project is passed). Two stages executing at once in one process therefore
+# assign each other's networks and validate against each other's counts.
+#
+# Refusing that knob was necessary and NOT sufficient: `AEQ_WORKER_MODE=both`
+# runs the poll loop on one thread and the push executor's drain on another, in
+# the SAME process. The atomic queued -> running claim stops them taking the same
+# stage; it does nothing at all to stop them taking two DIFFERENT stages — of two
+# different runs, in two different study areas — and executing them side by side.
+# That is the identical corruption arriving through the other door.
+#
+# So execution is serialized here, at the one place both entrypoints funnel
+# through. Poll-only and push-only deployments never contend for this lock (they
+# have one executing thread), so it costs them nothing; `both` now genuinely is
+# safe by construction rather than only as far as the claim reaches. The lock is
+# released between stages, which is correct: everything a stage hands the next
+# one travels through state.json and the project directory on disk, never
+# through a live AequilibraE object.
+_STAGE_EXECUTION_LOCK = threading.Lock()
+
+
+def process_stage(stage: dict) -> bool:
+    """Claim and execute one stage. Returns False when the claim was lost.
+
+    The return value is what makes a PUSHED run safe (see serve_push_trigger
+    below). A push is only a doorbell: it hands over no ownership, so a pushed
+    worker and a polling worker can both arrive at the same stage, and the
+    conditional PATCH in sb_claim_stage is the one thing that decides which of
+    them runs it. The loser must be able to tell it lost and stop, rather than
+    carry on as though it owned the run.
+
+    Serialized process-wide: see `_STAGE_EXECUTION_LOCK` above. The claim is
+    taken INSIDE the lock deliberately — a thread that waited its turn must
+    re-test whether the stage is still `queued`, and the conditional PATCH is
+    exactly that test, so a stage finished by someone else in the meantime is
+    reported as a lost claim instead of being executed twice.
+    """
+    with _STAGE_EXECUTION_LOCK:
+        return _claim_and_run_stage(stage)
+
+
+def _claim_and_run_stage(stage: dict) -> bool:
+    """The body of `process_stage`, which owns the serialization above it.
+
+    Never call this directly: it assumes `_STAGE_EXECUTION_LOCK` is held.
+    """
     stage_id = stage["id"]
     run_id = stage["run_id"]
     stage_name = stage["stage_name"]
@@ -3232,11 +3368,11 @@ def process_stage(stage: dict):
     )
     if not claimed:
         print(f"[{time.strftime('%X')}] ⏭️ Lost claim race for {stage_name} (run={run_id[:8]}…); another worker owns it.")
-        return
+        return False
     sb_patch_run(run_id, {"status": "running"})
 
     # Each run gets its own working directory
-    work_dir = os.path.join(PILOT_WORK_DIR, "runs", run_id[:12])
+    work_dir = os.path.join(RUN_WORK_ROOT, "runs", run_id[:12])
     os.makedirs(work_dir, exist_ok=True)
     state_file = os.path.join(work_dir, f"state.json")
 
@@ -3289,7 +3425,7 @@ def process_stage(stage: dict):
                 "error_message": f"Unknown stage: {stage_name}",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
             })
-            return
+            return True
 
         print(f"[{time.strftime('%X')}] ✅ {stage_name} succeeded")
 
@@ -3302,7 +3438,10 @@ def process_stage(stage: dict):
             "completed_at": datetime.now(timezone.utc).isoformat(),
         })
         sb_patch_run(run_id, {"status": "failed"})
-        return
+        # True: this worker owned the stage and reached a terminal answer for it.
+        # Only a LOST CLAIM is False, because only that means someone else is
+        # carrying the run.
+        return True
 
     # Check if run is complete
     res = requests.get(
@@ -3312,6 +3451,8 @@ def process_stage(stage: dict):
     if res.status_code == 200 and not res.json():
         print(f"[{time.strftime('%X')}] 🎉 Run {run_id[:8]}… complete!")
         sb_patch_run(run_id, {"status": "succeeded", "completed_at": datetime.now(timezone.utc).isoformat()})
+
+    return True
 
 
 def get_prior_stage_statuses(run_id: str, sort_order: int) -> list[dict]:
@@ -3364,48 +3505,594 @@ _AEQ_STAGE_FILTER = "stage_name=" + urllib.parse.quote(
 )
 
 
+POLL_INTERVAL_SECONDS = max(1, int(os.getenv("AEQ_POLL_INTERVAL_SECONDS", "5")))
+
+
+def fetch_queued_stages(run_id: str | None = None, limit: int = 25) -> list[dict]:
+    """Queued stages this worker owns, oldest first — optionally for ONE run.
+
+    The single read behind both entrypoints. Filtering by run is what a push
+    trigger uses; without it this is the poll query, unchanged.
+    """
+    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?status=eq.queued&{_AEQ_STAGE_FILTER}"
+    if run_id:
+        url += f"&run_id=eq.{urllib.parse.quote(run_id, safe='')}"
+    url += (
+        "&select=id,run_id,stage_name,status,sort_order,created_at"
+        f"&order=created_at.asc,sort_order.asc&limit={int(limit)}"
+    )
+    res = requests.get(url, headers=HEADERS, timeout=30)
+    if res.status_code != 200:
+        raise RuntimeError(f"Stage read failed: {res.status_code} {res.text[:200]}")
+    return res.json()
+
+
+def process_first_actionable_stage(stages: list[dict]) -> str:
+    """Act on the first stage in `stages` that can be acted on, and say what happened.
+
+    THE SINGLE EXECUTION PATH. Polling and push differ only in how a list of
+    candidate stages is obtained; from here on there is one function, one claim,
+    one stage runner — so a run started by a push cannot behave differently from
+    one started by a poll, and a change to either lane changes both.
+
+      "processed" — a stage was claimed and driven to a terminal state here
+      "skipped"   — a stage was marked skipped because a prior stage is terminal
+      "lost"      — a stage was ready, but another process claimed it first
+      "idle"      — nothing here is actionable yet (a prior stage is still running)
+    """
+    for stage in stages:
+        readiness, reason = classify_stage_readiness(stage)
+        if readiness == "ready":
+            return "processed" if process_stage(stage) else "lost"
+        if readiness == "blocked_terminal":
+            print(f"[{time.strftime('%X')}] ⏭️ Skipping {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
+            mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
+            return "skipped"
+    return "idle"
+
+
 def poll_for_jobs():
     print(f"AequilibraE Worker started at {time.strftime('%c')}")
     print(f"Polling {SUPABASE_URL} for queued stages (owned: {', '.join(AEQ_STAGE_NAMES)})...")
 
     while True:
         try:
-            url = (
-                f"{SUPABASE_URL}/rest/v1/model_run_stages"
-                f"?status=eq.queued&{_AEQ_STAGE_FILTER}"
-                "&select=id,run_id,stage_name,status,sort_order,created_at&order=created_at.asc,sort_order.asc&limit=25"
-            )
-            res = requests.get(url, headers=HEADERS, timeout=30)
-            if res.status_code != 200:
-                print(f"Poll error: {res.text}")
-                time.sleep(5)
-                continue
-
-            stages = res.json()
+            stages = fetch_queued_stages()
             if not stages:
-                time.sleep(5)
+                time.sleep(POLL_INTERVAL_SECONDS)
                 continue
 
-            processed = False
-            for stage in stages:
-                readiness, reason = classify_stage_readiness(stage)
-                if readiness == "ready":
-                    process_stage(stage)
-                    processed = True
-                    break
-                if readiness == "blocked_terminal":
-                    print(f"[{time.strftime('%X')}] ⏭️ Skipping {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
-                    mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
-                    processed = True
-                    break
-
-            if not processed:
-                time.sleep(5)
+            # Anything but "idle" means work moved; go straight back for more.
+            if process_first_actionable_stage(stages) == "idle":
+                time.sleep(POLL_INTERVAL_SECONDS)
 
         except Exception as e:
             print(f"Poll loop error: {e}")
-            time.sleep(5)
+            time.sleep(POLL_INTERVAL_SECONDS)
+
+
+# ─── Push trigger ───────────────────────────────────────────────────────
+#
+# WHY THIS EXISTS ALONGSIDE THE POLL LOOP
+#   Polling requires a process that is always on. That is a fine way to run a
+#   worker and it is not going away — but it is the ONLY way this worker could be
+#   run, which quietly meant that "give your deployment modeling compute" always
+#   meant "keep a machine running". An operator who would rather run a stateless
+#   pool (a container woken by a request, which executes and then goes away) had
+#   no way to be told there is work. This is that way.
+#
+# WHAT A PUSH IS AND IS NOT
+#   It is a doorbell carrying a run id. It confers no ownership, sets no lock and
+#   writes no "assigned" flag, and the app deliberately does not mark a pushed run
+#   as spoken for. Both entrypoints converge on process_first_actionable_stage,
+#   so every stage — pushed or polled — is taken with the same conditional
+#   queued -> running PATCH, and whoever loses that race stops. That is why a
+#   deployment can run BOTH a poller and a push pool with no coordination between
+#   them, and why a pushed worker that dies before claiming anything leaves a run
+#   a poller can still rescue.
+#
+# WHAT IT STILL CANNOT DO
+#   It cannot create compute. A deployment that runs neither a poller nor a pool
+#   has nothing to push to, and the app says exactly that at launch instead of
+#   reporting a queued run that nothing will ever look at.
+
+MODEL_RUN_DISPATCH_PATH = "/api/v1/model-runs"
+MODEL_RUN_DISPATCH_CONTRACT = "openplan-modeling-dispatch.v1"
+TRIGGER_HEALTH_PATH = "/healthz"
+
+# Shared secret, identical in name and shape to the app's dispatcher and to the
+# aerial worker contract. There is no unauthenticated mode: this endpoint starts
+# minutes of compute on request, so an open one is an abuse surface rather than a
+# convenience, and serve_push_trigger refuses to start without it.
+TRIGGER_TOKEN = (os.getenv("OPENPLAN_MODELING_WORKER_TOKEN") or "").strip()
+
+# PORT first: the platforms a stateless pool actually runs on (Fly, Railway,
+# Cloud Run, Render) assign it and expect the process to obey.
+TRIGGER_PORT = int(os.getenv("PORT") or os.getenv("AEQ_HTTP_PORT") or "8080")
+TRIGGER_HOST = os.getenv("AEQ_HTTP_HOST", "0.0.0.0")
+
+# ONE run at a time, per process. This is not a default an operator may raise —
+# see resolve_max_concurrent_runs — and horizontal scale is the pool's job.
+MAX_CONCURRENT_RUNS = 1
+
+MAX_CONCURRENT_RUNS_ENV = "AEQ_MAX_CONCURRENT_RUNS"
+
+
+def resolve_max_concurrent_runs(env=None) -> int:
+    """Always 1, and REFUSES any other value instead of honouring it.
+
+    A knob is offered here because one was offered here: an operator who read
+    "up to N runs at a time" and set 2 would have got two threads executing
+    stage_assignment inside one process, and the result would not have been
+    slower or flakier — it would have been WRONG, quietly, on the surface that
+    decides what a run may claim. Two reasons, and the second is the one that
+    settles it:
+
+      * `aequilibrae` (1.6.x) keeps the open project in a PROCESS-GLOBAL —
+        `aequilibrae.context._current_project`, set by `Project.open()` — and
+        `traffic_assignment`, `network_skimming`, `graph` and
+        `database_connection` all read it. A second run opening its project
+        redirects the first run's assignment at the second run's database. No
+        amount of care in this file fixes that; it is the library's design.
+      * This worker's own per-run state (the count set a run validates and
+        calibrates against) is now threaded through explicitly rather than kept
+        in a module global, which was the other half of the same hazard.
+
+    So the honest answer is that this process runs one run at a time, and the way
+    to run more at once is to run more processes — which is exactly what a pool
+    is for, and what the push trigger exists to serve. Refusing loudly at startup
+    is the point: silently clamping to 1 would leave an operator believing they
+    had bought concurrency they did not get, and honouring the value would
+    corrupt calibration for a study area nobody asked about.
+    """
+    raw = ((env if env is not None else os.environ).get(MAX_CONCURRENT_RUNS_ENV) or "").strip()
+    if not raw:
+        return MAX_CONCURRENT_RUNS
+    try:
+        requested = int(raw)
+    except ValueError:
+        raise SystemExit(
+            f'{MAX_CONCURRENT_RUNS_ENV}="{raw}" is not a whole number. This worker executes '
+            "one model run per process; unset the variable, or set it to 1."
+        )
+    if requested == MAX_CONCURRENT_RUNS:
+        return MAX_CONCURRENT_RUNS
+    raise SystemExit(
+        f"{MAX_CONCURRENT_RUNS_ENV}={requested} is refused: this worker cannot execute more than one "
+        "model run per process. AequilibraE keeps the open project in a process-wide global, so two "
+        "runs in one process would assign each other's networks and validate against each other's "
+        "traffic counts — a wrong number on the surface that decides what a run may claim, with "
+        "nothing on screen to show it happened. Run more instances (or more machines in your pool) "
+        "instead; each one takes stages with the same atomic claim, so they cannot collide."
+    )
+
+
+# How many accepted-but-not-yet-started runs this process will hold. Past this
+# the trigger REFUSES (503) rather than accepting, because an acceptance it
+# cannot honour is worse than a refusal it can explain: the run stays queued
+# either way, but only the refusal reaches the planner. Operator-tunable for a
+# pool with more headroom than one machine; never a tier.
+MAX_QUEUED_RUNS = max(1, int((os.getenv("AEQ_MAX_QUEUED_RUNS") or "8").strip() or "8"))
+
+# How long a shutdown waits for accepted runs to finish before giving up and
+# saying which ones it dropped. Bounded by whatever the platform allows between
+# SIGTERM and SIGKILL (Fly's `kill_timeout`, Kubernetes'
+# terminationGracePeriodSeconds) — set that at least as high as this, or the
+# platform stops the process mid-run whatever this says.
+SHUTDOWN_GRACE_SECONDS = max(0, int((os.getenv("AEQ_SHUTDOWN_GRACE_SECONDS") or "300").strip() or "300"))
+
+# Enough for a pointer payload; anything larger is not one.
+MAX_TRIGGER_BODY_BYTES = 64 * 1024
+
+# A pushed run drains stage by stage, so one trigger carries a whole run. Bounded
+# so a pathological state (a stage that re-queues itself) cannot spin forever.
+MAX_STAGES_PER_TRIGGER = 12
+
+
+def execute_run_from_trigger(run_id: str) -> str:
+    """Drive ONE pushed run as far as this process can take it.
+
+    A trigger has to be able to finish a run on its own, or a push-only pool
+    would need the app to ring once per stage — which it has no way to know to
+    do. So this drains: claim the ready stage, run it, look again. It stops the
+    moment there is nothing left for THIS process to do, which is also what keeps
+    it correct when something else is working the same run:
+
+      lost  — another process claimed the stage, and it will carry the run on.
+      idle  — a prior stage is running elsewhere; whoever finishes it continues.
+
+    Both are "not ours any more", not "wait and retry", because retrying would
+    mean two processes spinning on one run.
+    """
+    outcome = "idle"
+    for _ in range(MAX_STAGES_PER_TRIGGER):
+        stages = fetch_queued_stages(run_id=run_id, limit=MAX_STAGES_PER_TRIGGER)
+        if not stages:
+            return outcome
+        result = process_first_actionable_stage(stages)
+        if result in ("processed", "skipped"):
+            outcome = result
+            continue
+        return result
+    print(f"[{time.strftime('%X')}] Trigger for run {run_id[:8]}… hit the per-trigger stage bound.")
+    return outcome
+
+
+class RunTriggerExecutor:
+    """Accepts run ids and executes them on a bounded pool of worker threads.
+
+    Accepting and executing are separated on purpose: a screening run takes
+    minutes, and holding an HTTP connection open for it would make every timeout
+    in the path — the app's, a proxy's, a platform's — into a false "the worker
+    did not take it". The app's contract matches: 202 means accepted, and the
+    real progress is read from the stage rows.
+
+    THE COST OF THAT SEPARATION, AND WHAT BOUNDS IT
+      Because the answer goes out before the work starts, an acceptance is a
+      promise made by a process that might not be here in a minute — and on the
+      very platform this lane is for (a container that wakes on a request and is
+      reclaimed when it looks idle) that is not a remote possibility. Two things
+      keep the promise honest:
+
+        * The queue is BOUNDED. Past the bound the trigger refuses instead of
+          accepting, so "accepted" always means "there is a slot for this",
+          never "it is on a pile nobody may get to". The app turns the refusal
+          into a planner-visible answer with the reason in it.
+        * `wait_for_drain` lets shutdown finish what was accepted. The process
+          stops taking pushes, drains, and then names anything it could not
+          finish, so a lost run is a logged event with a run id rather than a
+          silence. A run that was never claimed is still `queued` in the
+          database — a poller can take it, and the staleness sweep fails it —
+          so the worst case is a delay that something else can see, not a run
+          that disappeared.
+    """
+
+    def __init__(self, execute=execute_run_from_trigger, workers: int = MAX_CONCURRENT_RUNS,
+                 max_queued: int | None = None):
+        self._execute = execute
+        self._queue: "queue.Queue[str]" = queue.Queue(
+            maxsize=MAX_QUEUED_RUNS if max_queued is None else max(1, max_queued)
+        )
+        self._inflight: set[str] = set()
+        self._lock = threading.Lock()
+        self._idle = threading.Event()
+        self._idle.set()
+        self._threads = [
+            threading.Thread(target=self._drain, name=f"aeq-run-{index}", daemon=True)
+            for index in range(max(1, workers))
+        ]
+        for thread in self._threads:
+            thread.start()
+
+    def submit(self, run_id: str) -> tuple[str, str]:
+        """Queue a run. Returns (job reference, one of the states below).
+
+          "queued"         — accepted, and there is room for it.
+          "already_queued" — this process already has it. De-duplication here is
+                             an efficiency, NOT the safety property (the stage
+                             claim is that): two triggers for one run would
+                             simply race for a stage and one would lose. The app
+                             treats it as acceptance, because for the planner it
+                             is — something has the run.
+          "refused_full"   — the queue is at its bound. Refusing is the honest
+                             answer: this process cannot say when it would reach
+                             the run, and a 202 here would tell a planner a
+                             worker had taken something it may never start.
+        """
+        job_reference = str(uuid.uuid4())
+        with self._lock:
+            if run_id in self._inflight:
+                return job_reference, "already_queued"
+            self._inflight.add(run_id)
+            self._idle.clear()
+        try:
+            self._queue.put_nowait(run_id)
+        except queue.Full:
+            with self._lock:
+                self._inflight.discard(run_id)
+                if not self._inflight:
+                    self._idle.set()
+            return job_reference, "refused_full"
+        return job_reference, "queued"
+
+    def pending_run_ids(self) -> list[str]:
+        """Runs this process has accepted and not finished. For the shutdown log."""
+        with self._lock:
+            return sorted(self._inflight)
+
+    def wait_for_drain(self, timeout_seconds: float) -> list[str]:
+        """Block until nothing is accepted-but-unfinished, or the grace expires.
+
+        Returns the run ids still outstanding — empty when everything accepted
+        was carried to a terminal answer.
+        """
+        self._idle.wait(timeout=max(0.0, timeout_seconds))
+        return self.pending_run_ids()
+
+    def _drain(self):
+        while True:
+            run_id = self._queue.get()
+            try:
+                result = self._execute(run_id)
+                print(f"[{time.strftime('%X')}] Pushed run {run_id[:8]}… -> {result}")
+            except Exception as e:
+                # Never kill the drain thread: the pool would silently stop
+                # accepting work while still answering 202, which is the exact
+                # "looks fine, does nothing" failure this whole lane exists to
+                # remove. The run id is printed IN FULL and the consequence is
+                # spelled out, because this line is the only trace that a pushed
+                # run stopped here — process_stage records its own failures, so
+                # what lands here is a failure above it (a stage read, a network
+                # blip) that left the run queued rather than failed.
+                print(
+                    f"[{time.strftime('%X')}] Pushed run {run_id} errored before reaching a stage "
+                    f"outcome: {type(e).__name__}: {e}. Its stages are unchanged, so a polling "
+                    "worker can still take it and OpenPlan's staleness sweep will fail it if "
+                    "nothing does."
+                )
+            finally:
+                with self._lock:
+                    self._inflight.discard(run_id)
+                    if not self._inflight:
+                        self._idle.set()
+                self._queue.task_done()
+
+
+def _token_matches(header_value: str | None, expected: str) -> bool:
+    """Constant-time bearer-token check. Empty expected never matches."""
+    if not expected or not header_value:
+        return False
+    prefix = "bearer "
+    if header_value[: len(prefix)].lower() != prefix:
+        return False
+    return hmac.compare_digest(header_value[len(prefix):].strip(), expected)
+
+
+def build_trigger_server(token: str, submit, host: str = TRIGGER_HOST, port: int = TRIGGER_PORT):
+    """An HTTP server that turns an authenticated POST into a queued run.
+
+    `submit` is injected so the transport can be exercised without executing a
+    model run, and so this stays a thin adapter: everything below the queue is
+    the same code the poll loop runs.
+    """
+
+    class TriggerHandler(BaseHTTPRequestHandler):
+        protocol_version = "HTTP/1.1"
+        server_version = "OpenPlanAequilibraeWorker/1"
+
+        def _respond(self, status: int, payload: dict):
+            body = json.dumps(payload).encode("utf-8")
+            # A refusal ends the connection. A rejected caller's request body is
+            # deliberately never read, and unread bytes left on a keep-alive
+            # connection make the NEXT request on it parse as garbage — behind a
+            # proxy that reuses connections, one 401 would produce a trail of
+            # spurious 400s that look like the app sending malformed pushes.
+            if status >= 400:
+                self.close_connection = True
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            if status >= 400:
+                self.send_header("Connection", "close")
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_GET(self):  # noqa: N802 - BaseHTTPRequestHandler's naming
+            if self.path.split("?")[0] != TRIGGER_HEALTH_PATH:
+                self._respond(404, {"error": "not_found"})
+                return
+            # Says the PROCESS is up and nothing more. It is deliberately not a
+            # statement that a run would succeed — this worker cannot know that
+            # until it tries — so nothing here may be read as a worker heartbeat
+            # for a run.
+            self._respond(200, {
+                "status": "ok",
+                "contract": MODEL_RUN_DISPATCH_CONTRACT,
+                "stages": list(AEQ_STAGE_NAMES),
+            })
+
+        def do_POST(self):  # noqa: N802 - BaseHTTPRequestHandler's naming
+            if self.path.split("?")[0] != MODEL_RUN_DISPATCH_PATH:
+                self._respond(404, {"error": "not_found"})
+                return
+
+            if not _token_matches(self.headers.get("Authorization"), token):
+                self._respond(401, {"error": "unauthorized"})
+                return
+
+            try:
+                length = int(self.headers.get("Content-Length") or 0)
+            except ValueError:
+                length = -1
+            if length < 0 or length > MAX_TRIGGER_BODY_BYTES:
+                self._respond(413, {"error": "payload_too_large"})
+                return
+
+            try:
+                payload = json.loads(self.rfile.read(length) or b"{}")
+            except (ValueError, OSError):
+                self._respond(400, {"error": "invalid_json"})
+                return
+
+            if not isinstance(payload, dict):
+                self._respond(400, {"error": "invalid_payload"})
+                return
+
+            contract = payload.get("contract")
+            if contract is not None and contract != MODEL_RUN_DISPATCH_CONTRACT:
+                # Refuse a shape we do not understand by name, rather than
+                # accepting it and silently doing nothing with the parts we
+                # could not read.
+                self._respond(400, {
+                    "error": "unsupported_contract",
+                    "expected": MODEL_RUN_DISPATCH_CONTRACT,
+                })
+                return
+
+            run_id = payload.get("runId")
+            if not isinstance(run_id, str) or not run_id.strip():
+                self._respond(400, {"error": "missing_run_id"})
+                return
+
+            job_reference, state = submit(run_id.strip())
+            if state == "refused_full":
+                # 503, not 202. The run is untouched and still queued in the
+                # database; what this refuses is the CLAIM that this process has
+                # taken it. The app renders the reason, so the planner learns at
+                # launch that the pool is saturated instead of watching a run sit
+                # there — and a poller, if the deployment runs one, is unaffected.
+                self._respond(503, {
+                    "error": "pool_at_capacity",
+                    "detail": (
+                        f"This worker already has {MAX_QUEUED_RUNS} run(s) waiting and will not accept "
+                        "another it cannot say when it would start. The run is still queued; another "
+                        "worker can take it, or push again once this one is clear."
+                    ),
+                })
+                return
+            self._respond(202, {
+                "status": "accepted",
+                "runId": run_id.strip(),
+                "jobReference": job_reference,
+                # Honest, and not an error: the run was already in this process's
+                # queue. The app treats acceptance the same either way, because
+                # for the planner the answer is the same — something has it.
+                "alreadyQueued": state == "already_queued",
+                "acceptedAt": datetime.now(timezone.utc).isoformat(),
+            })
+
+        def log_message(self, fmt, *args):
+            print(f"[{time.strftime('%X')}] trigger {fmt % args}")
+
+    return ThreadingHTTPServer((host, port), TriggerHandler)
+
+
+def serve_push_trigger(executor: "RunTriggerExecutor | None" = None):
+    if not TRIGGER_TOKEN:
+        raise SystemExit(
+            "Refusing to start the push trigger with no shared secret: this endpoint "
+            "starts model runs on request, so an unauthenticated one would let anyone "
+            "spend this deployment's compute. Set OPENPLAN_MODELING_WORKER_TOKEN here "
+            "to the same value the app has, or run in the default polling mode "
+            "(AEQ_WORKER_MODE=poll), which needs no inbound port at all."
+        )
+
+    # Refuses a raised concurrency knob here, at startup, rather than at the first
+    # push — an operator who set it learns immediately, and no run is executed
+    # under a setting this worker cannot honour.
+    workers = resolve_max_concurrent_runs()
+
+    dispatcher = executor or RunTriggerExecutor(workers=workers)
+    server = build_trigger_server(TRIGGER_TOKEN, dispatcher.submit, TRIGGER_HOST, TRIGGER_PORT)
+    print(f"AequilibraE Worker push trigger listening on {TRIGGER_HOST}:{TRIGGER_PORT}{MODEL_RUN_DISPATCH_PATH}")
+    print(f"Owned stages: {', '.join(AEQ_STAGE_NAMES)}; {workers} run at a time, "
+          f"up to {MAX_QUEUED_RUNS} waiting.")
+    print(f"On shutdown this process finishes what it accepted, waiting up to "
+          f"{SHUTDOWN_GRACE_SECONDS}s — make sure your platform's kill timeout is at least that long, "
+          "or it will stop the process mid-run.")
+
+    _serve_until_drained(server, dispatcher)
+
+
+def _serve_until_drained(server, dispatcher: "RunTriggerExecutor"):
+    """Serve pushes, and on a shutdown signal finish what was already accepted.
+
+    THE FAILURE THIS EXISTS FOR. The trigger answers 202 and executes afterwards,
+    so on a platform that reclaims an instance the moment it looks idle — which
+    is precisely the platform this lane is for, because the run happens AFTER the
+    response the platform is watching — an accepted run could be terminated
+    before it ever claimed a stage, in a deployment with no poller to rescue it.
+    That is the one shape of failure this product must not have: not a run that
+    fails, a run that quietly stops existing while the planner has been told a
+    worker took it.
+
+    So SIGTERM is treated as "stop accepting, then finish": the listener closes
+    immediately (further pushes are refused at the socket, and the app reports
+    that honestly), accepted runs drain, and anything still outstanding when the
+    grace expires is NAMED. Nothing here can outrun a SIGKILL — a platform that
+    gives no grace will still kill a run mid-stage — which is why the log says
+    what state that leaves behind, and why the deployment docs make the kill
+    timeout part of the recipe rather than an afterthought.
+    """
+    def _request_stop(signum, _frame):
+        print(f"[{time.strftime('%X')}] Signal {signum}: no longer accepting pushes; "
+              "finishing runs already accepted.")
+        # shutdown() blocks until serve_forever returns, and the handler runs ON
+        # the thread inside serve_forever — calling it here would deadlock.
+        threading.Thread(target=server.shutdown, name="aeq-stop", daemon=True).start()
+
+    try:
+        signal.signal(signal.SIGTERM, _request_stop)
+        signal.signal(signal.SIGINT, _request_stop)
+    except ValueError:
+        # Only installable from the main thread. A worker started from a thread
+        # (a test, an embedding process) simply gets no graceful drain rather
+        # than failing to serve.
+        print("Shutdown handling not installed (not the main thread); a stop signal will not drain.")
+
+    try:
+        server.serve_forever()
+    finally:
+        # Close the LISTENING socket before draining, not after. `shutdown()`
+        # only stops the accept loop: the socket stays bound, so a push arriving
+        # during the drain window would be accepted by the kernel into the
+        # backlog and then sit there unanswered until the app's own timeout —
+        # ten seconds of a planner waiting to be told nothing took their run.
+        # Closed, the connection is refused at once and the app says so
+        # immediately. Established connections are unaffected (a handler only
+        # queues and returns), and server_close() is safe to call twice.
+        server.server_close()
+        unfinished = dispatcher.wait_for_drain(SHUTDOWN_GRACE_SECONDS)
+        if unfinished:
+            print(
+                f"[{time.strftime('%X')}] Shutting down with {len(unfinished)} accepted run(s) "
+                f"unfinished: {', '.join(unfinished)}. Their stages stay as this worker left them — "
+                "an unclaimed run is still queued and any worker can take it; one stopped mid-stage "
+                "reports no further progress and OpenPlan's staleness sweep will fail it. Neither is "
+                "lost, and neither will finish here."
+            )
+        else:
+            print(f"[{time.strftime('%X')}] Drained cleanly; nothing accepted was left unfinished.")
+        server.server_close()
+
+
+# How this process is started. `poll` is the default and is byte-for-byte the
+# behaviour that shipped before the trigger existed, so an existing deployment
+# that upgrades this file changes nothing about how it runs.
+WORKER_MODES = ("poll", "push", "both")
+
+
+def run_worker(mode: str | None = None):
+    resolved = (mode or os.getenv("AEQ_WORKER_MODE") or "poll").strip().lower()
+    if resolved not in WORKER_MODES:
+        raise SystemExit(
+            f'AEQ_WORKER_MODE="{resolved}" is not one of {", ".join(WORKER_MODES)}. '
+            "Refusing to guess: starting the wrong one would either leave a queue "
+            "unserved or open an unexpected port."
+        )
+
+    # Checked for EVERY mode, not just push: a poller is one run at a time too,
+    # so an operator who set this variable expecting concurrency is wrong in the
+    # same way, and silently ignoring it would leave them believing otherwise.
+    resolve_max_concurrent_runs()
+
+    if resolved == "poll":
+        poll_for_jobs()
+    elif resolved == "push":
+        serve_push_trigger()
+    else:
+        # Both: a poller for anything queued while nothing was listening (or by a
+        # deployment that pushes nowhere), and the trigger for immediate starts.
+        #
+        # These two threads share this process, so the atomic claim is only half
+        # of what keeps them apart — it stops them taking the SAME stage, not
+        # from running two different runs' stages side by side through
+        # AequilibraE's process-global project. `_STAGE_EXECUTION_LOCK` is the
+        # other half: the poll thread and the drain thread execute stages one at
+        # a time, and whichever arrives second waits rather than interleaving.
+        threading.Thread(target=poll_for_jobs, name="aeq-poll", daemon=True).start()
+        serve_push_trigger()
 
 
 if __name__ == "__main__":
-    poll_for_jobs()
+    run_worker()

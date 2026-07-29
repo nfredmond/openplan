@@ -42,6 +42,17 @@ import {
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
 import { prepareWorkerZoneAttributes } from "@/lib/models/zone-attribute-payload";
+import {
+  AEQUILIBRAE_SCREENING_STAGE_NAMES,
+  buildModelRunDispatchPayload,
+  checkModelingQueueDepth,
+  dispatchModelRun,
+  isQueueDepthExceeded,
+  isQueueDepthLookupError,
+  queuedStageRows,
+  workerRunStageNames,
+  type ModelRunDispatchOutcome,
+} from "@/lib/models/run-dispatch";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -262,6 +273,56 @@ function buildSketchAbmKpiRows(params: {
         "Total ACS population across the county-bbox-scale tract set (every tract in the counties overlapping the study-area bounding box, not clipped to the drawn corridor).",
     }),
   ];
+}
+
+/**
+ * Ring the worker's doorbell for a run whose stages are already `queued`.
+ *
+ * Ordering is the point: the rows exist BEFORE anything is pushed, so a worker
+ * that answers instantly finds real work, and a push that never lands leaves
+ * precisely the state that shipped before — a queued run for a poller to claim.
+ * That is also why this can never fail the launch. The push grants no ownership
+ * (see run-dispatch.ts): the worker still claims each stage atomically, so a
+ * pushed run and a polling worker cannot both execute it.
+ */
+async function pushQueuedRunToWorker(params: {
+  audit: ReturnType<typeof createApiAuditLogger>;
+  modelId: string;
+  modelRunId: string;
+  engineKey: string;
+  stageNames: readonly string[];
+}): Promise<ModelRunDispatchOutcome> {
+  const { audit, modelId, modelRunId, engineKey, stageNames } = params;
+  const outcome = await dispatchModelRun(
+    buildModelRunDispatchPayload({
+      requestId: crypto.randomUUID(),
+      runId: modelRunId,
+      engineKey,
+      stageNames: [...stageNames],
+    })
+  );
+
+  if (outcome.state === "accepted") {
+    audit.info("model_run_pushed_to_worker", {
+      modelId,
+      modelRunId,
+      engineKey,
+      workerHost: outcome.workerHost,
+      jobReference: outcome.jobReference,
+    });
+  } else if (outcome.state === "dispatch_failed") {
+    // An operator problem, not a planner one — but the planner is told too, by
+    // the outcome travelling back in the launch response.
+    audit.error("model_run_push_failed", {
+      modelId,
+      modelRunId,
+      engineKey,
+      workerHost: outcome.workerHost,
+      detail: outcome.detail,
+    });
+  }
+
+  return outcome;
 }
 
 export async function GET(request: NextRequest, context: RouteContext) {
@@ -596,6 +657,40 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
       }
 
+      // Optional operator bound on how much work one workspace may have sitting
+      // on the processing worker at once. Unset — the default everywhere — skips
+      // the counting query entirely and imposes nothing. Checked BEFORE the run
+      // row is written so a refusal never leaves a stranded record, and only for
+      // the engines that actually occupy the worker.
+      if (isAequilibraeRun || isBehavioralDemandRun) {
+        const queueDepth = await checkModelingQueueDepth(supabase, {
+          workspaceId: access.model.workspace_id,
+        });
+
+        if (isQueueDepthLookupError(queueDepth)) {
+          audit.error("modeling_queue_depth_count_failed", {
+            workspaceId: access.model.workspace_id,
+            userId: user.id,
+            message: queueDepth.message,
+            code: queueDepth.code,
+          });
+          return NextResponse.json(
+            { error: "Failed to validate the deployment's worker queue limit" },
+            { status: 500 }
+          );
+        }
+
+        if (isQueueDepthExceeded(queueDepth)) {
+          audit.warn("modeling_queue_depth_reached", {
+            workspaceId: access.model.workspace_id,
+            userId: user.id,
+            inFlight: queueDepth.inFlight,
+            limit: queueDepth.limit,
+          });
+          return NextResponse.json({ error: queueDepth.message }, { status: 429 });
+        }
+      }
+
       const { error: createModelRunError } = await supabase.from("model_runs").insert({
         id: modelRunId,
         workspace_id: access.model.workspace_id,
@@ -640,11 +735,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       if (isAequilibraeRun) {
         // Async run. Create stages and return immediately.
-        const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
-          { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-          { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-          { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-        ]);
+        const { error: stageInsertError } = await supabase
+          .from("model_run_stages")
+          .insert(queuedStageRows(modelRunId, AEQUILIBRAE_SCREENING_STAGE_NAMES));
 
         if (stageInsertError) {
           await supabase
@@ -665,8 +758,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
           return NextResponse.json({ error: "Failed to initialize model run stages" }, { status: 500 });
         }
 
+        const dispatch = await pushQueuedRunToWorker({
+          audit,
+          modelId: access.model.id,
+          modelRunId,
+          engineKey: "aequilibrae",
+          stageNames: AEQUILIBRAE_SCREENING_STAGE_NAMES,
+        });
+
         return NextResponse.json(
-          { modelRunId, status: "queued" },
+          { modelRunId, status: "queued", dispatch },
           { status: 201 }
         );
       }
@@ -680,12 +781,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // worker (same names it already runs); the final stage by the ActivitySim
         // worker. A calibrated run needs a dedicated modeling host + calibration
         // (see workers/activitysim_worker/DEPLOY.md).
-        const { error: stageInsertError } = await supabase.from("model_run_stages").insert([
-          { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-          { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-          { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-          { run_id: modelRunId, stage_name: "ActivitySim Bundle & Preflight", sort_order: 4, status: "queued" },
-        ]);
+        const behavioralStageNames = workerRunStageNames("behavioral_demand");
+        const { error: stageInsertError } = await supabase
+          .from("model_run_stages")
+          .insert(queuedStageRows(modelRunId, behavioralStageNames));
 
         if (stageInsertError) {
           await supabase
@@ -713,8 +812,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
           durationMs: Date.now() - startedAt,
         });
 
+        // The push wakes the AequilibraE worker, which owns the three screening
+        // stages. The final ActivitySim stage is a different worker's and has no
+        // push endpoint of its own, so the whole stage list is sent and each
+        // worker claims only the names it owns.
+        const dispatch = await pushQueuedRunToWorker({
+          audit,
+          modelId: access.model.id,
+          modelRunId,
+          engineKey: "behavioral_demand",
+          stageNames: behavioralStageNames,
+        });
+
         return NextResponse.json(
-          { modelRunId, status: "queued", engineKey: "behavioral_demand", mode: "preflight" },
+          { modelRunId, status: "queued", engineKey: "behavioral_demand", mode: "preflight", dispatch },
           { status: 201 }
         );
       }
@@ -809,11 +920,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
               );
             }
 
-            const { error: rerouteStageError } = await supabase.from("model_run_stages").insert([
-              { run_id: modelRunId, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-              { run_id: modelRunId, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-              { run_id: modelRunId, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-            ]);
+            const { error: rerouteStageError } = await supabase
+              .from("model_run_stages")
+              .insert(queuedStageRows(modelRunId, AEQUILIBRAE_SCREENING_STAGE_NAMES));
 
             if (rerouteStageError) {
               await supabase
@@ -842,6 +951,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
               durationMs: Date.now() - startedAt,
             });
 
+            // A rerouted sketch run is a worker run now, so it gets the same
+            // push and the same honest answer about what will execute it. This
+            // is the lane a mid-size city lands on without ever choosing a
+            // worker-backed engine, so leaving it un-pushed would strand exactly
+            // the planners least likely to know why.
+            const dispatch = await pushQueuedRunToWorker({
+              audit,
+              modelId: access.model.id,
+              modelRunId,
+              engineKey: "aequilibrae",
+              stageNames: AEQUILIBRAE_SCREENING_STAGE_NAMES,
+            });
+
             return NextResponse.json(
               {
                 modelRunId,
@@ -850,6 +972,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
                 reroutedFrom: "sketch_abm",
                 reason: "large_study_area",
                 notice: rerouteNotice,
+                dispatch,
               },
               { status: 201 }
             );

@@ -76,7 +76,46 @@ describe("the declaration reaching the dashboard's deployment health", () => {
       env({ OPENPLAN_MODELING_WORKER: "absent" })
     );
 
-    expect(facts).toEqual({ declaration: "absent", nonTerminalRunCount: 0, stalledRunCount: 0 });
+    // The push-endpoint configuration rides alongside the declaration, and for
+    // the same reason: it is what this deployment CAN do about a queued run,
+    // and the health check has to be able to say so. Booleans and one composed
+    // sentence only — no URL and no token may travel past this loader.
+    expect(facts).toEqual({
+      declaration: "absent",
+      nonTerminalRunCount: 0,
+      stalledRunCount: 0,
+      pushDispatch: { configured: false, configurationProblem: null },
+    });
+  });
+
+  it("carries a configured push endpoint as a boolean, never as its URL or token", async () => {
+    const facts = await loadModelingWorkerFacts(
+      clientReturning({ data: [], error: null }),
+      workspaceId,
+      Date.now(),
+      env({
+        OPENPLAN_MODELING_WORKER_URL: "https://worker.example",
+        OPENPLAN_MODELING_WORKER_TOKEN: "a-secret-value",
+      })
+    );
+
+    expect(facts.pushDispatch).toEqual({ configured: true, configurationProblem: null });
+    expect(JSON.stringify(facts)).not.toContain("a-secret-value");
+    expect(JSON.stringify(facts)).not.toContain("worker.example");
+  });
+
+  it("reports a half-configured push endpoint rather than reading it as 'none'", async () => {
+    const facts = await loadModelingWorkerFacts(
+      clientReturning({ data: [], error: null }),
+      workspaceId,
+      Date.now(),
+      env({ OPENPLAN_MODELING_WORKER_URL: "https://worker.example" })
+    );
+
+    // An operator who set a URL believes they configured this. Saying "no push
+    // endpoint is configured" would be true to the letter and useless to them.
+    expect(facts.pushDispatch.configured).toBe(false);
+    expect(facts.pushDispatch.configurationProblem).toMatch(/OPENPLAN_MODELING_WORKER_TOKEN/);
   });
 
   it("keeps the declaration when the run query fails", async () => {

@@ -20,6 +20,14 @@ import {
   isRunCapLookupError,
   RUN_WEIGHTS,
 } from "@/lib/config/run-cap";
+import {
+  buildModelRunDispatchPayload,
+  describeModelRunDispatch,
+  dispatchModelRun,
+  queuedStageRows,
+  workerRunStageNames,
+} from "@/lib/models/run-dispatch";
+import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -246,24 +254,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .select("id")
       .eq("run_id", modelRun.id);
 
+    // Engine-aware stage names, from the one place that owns them. The
+    // behavioral_demand lane adds an ActivitySim preflight stage (owned by the
+    // activitysim_worker) after the three AequilibraE assignment stages.
+    const stageNames = workerRunStageNames(modelRun.engine_key);
+
     if (!existingStages || existingStages.length === 0) {
-      // Create initial stages, engine-aware. The behavioral_demand lane runs an
-      // ActivitySim preflight (owned by the activitysim_worker), not the
-      // AequilibraE assignment stages.
-      const initialStages =
-        modelRun.engine_key === "behavioral_demand"
-          ? [
-              { run_id: modelRun.id, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-              { run_id: modelRun.id, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-              { run_id: modelRun.id, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-              { run_id: modelRun.id, stage_name: "ActivitySim Bundle & Preflight", sort_order: 4, status: "queued" },
-            ]
-          : [
-              { run_id: modelRun.id, stage_name: "AequilibraE Setup", sort_order: 1, status: "queued" },
-              { run_id: modelRun.id, stage_name: "Network Assignment", sort_order: 2, status: "queued" },
-              { run_id: modelRun.id, stage_name: "Artifact Extraction", sort_order: 3, status: "queued" },
-            ];
-      const { error: stageInsertError } = await supabase.from("model_run_stages").insert(initialStages);
+      const { error: stageInsertError } = await supabase
+        .from("model_run_stages")
+        .insert(queuedStageRows(modelRun.id, stageNames));
 
       if (stageInsertError) {
         audit.error("model_run_stage_insert_failed", {
@@ -309,10 +308,46 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to clear prior run artifacts" }, { status: 500 });
     }
 
+    // The stages are queued again, so ring the worker's doorbell exactly as the
+    // first launch does. Ordering matters and is the same both times: the rows
+    // are back in `queued` and the PRIOR run's artifacts and KPIs are already
+    // deleted before anything is pushed — a worker that answers instantly must
+    // not have this route delete the outputs it has just started writing. The
+    // push claims
+    // nothing — the worker still takes each stage with the atomic conditional
+    // update, so a pushed worker and a polling one cannot both execute this run.
+    // A push that does not land leaves the pre-existing behaviour untouched: a
+    // requeued run waiting for a poller.
+    const dispatch = await dispatchModelRun(
+      buildModelRunDispatchPayload({
+        requestId: crypto.randomUUID(),
+        runId: modelRun.id,
+        engineKey: modelRun.engine_key ?? "aequilibrae",
+        stageNames: [...stageNames],
+      })
+    );
+
+    if (dispatch.state === "accepted") {
+      audit.info("model_run_pushed_to_worker", {
+        modelId: access.model.id,
+        modelRunId: modelRun.id,
+        workerHost: dispatch.workerHost,
+        jobReference: dispatch.jobReference,
+      });
+    } else if (dispatch.state === "dispatch_failed") {
+      audit.error("model_run_push_failed", {
+        modelId: access.model.id,
+        modelRunId: modelRun.id,
+        workerHost: dispatch.workerHost,
+        detail: dispatch.detail,
+      });
+    }
+
     audit.info("model_run_launched", {
       modelId: access.model.id,
       modelRunId: modelRun.id,
       zoneAttributeStatus: zoneAttributes?.status ?? "not_rebuilt",
+      dispatchState: dispatch.state,
       durationMs: Date.now() - startedAt,
     });
 
@@ -326,11 +361,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // answer to the question the planner just asked.
         //
         // NOT YET RENDERED: the only caller today, the relaunch button in
-        // `components/models/model-run-evidence-panel.tsx`, reads `error` off
-        // this body and discards the rest — so a planner still learns the
-        // outcome from the worker's failure minutes later, not from here. This
-        // field is what a surface would read; it is not itself that surface,
-        // and it must not be described as one until the panel shows it.
+        // `components/models/model-run-evidence-panel.tsx`, reads `error` and
+        // `executionOutlook` off this body and nothing else — so a planner still
+        // learns the demographic-rebuild outcome from the worker's failure
+        // minutes later, not from here. This field is what a surface would read;
+        // it is not itself that surface, and it must not be described as one
+        // until the panel shows it.
         zoneAttributes: zoneAttributes
           ? {
               status: zoneAttributes.status,
@@ -338,6 +374,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
               reason: zoneAttributes.reason ?? zoneAttributes.demographics.reason,
             }
           : null,
+        // The raw dispatch outcome, for a caller that wants to decide for itself.
+        dispatch,
+        // ...and the sentence a planner reads, resolved HERE rather than by the
+        // caller. The relaunch button lives in the evidence panel, which is
+        // handed a run and nothing about the deployment — and the outlook is
+        // meaningless without the worker declaration, because "nothing took it"
+        // reads completely differently on a deployment that declares a poller
+        // and one that declares none. Resolving it client-side would have meant
+        // threading the declaration into a component two pages deep, and a
+        // default of "undeclared" there would print "nothing declares whether a
+        // worker polls this deployment" at a deployment that had declared
+        // exactly that. The server already knows; it answers.
+        executionOutlook: describeModelRunDispatch(dispatch, resolveModelingWorkerDeclaration()),
       },
       { status: 200 }
     );

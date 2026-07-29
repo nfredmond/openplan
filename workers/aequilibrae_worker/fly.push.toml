@@ -1,0 +1,90 @@
+# Fly.io configuration for the OpenPlan AequilibraE Worker — PUSH mode.
+#
+# The other way to run this worker: an HTTP trigger OpenPlan POSTs a run id to,
+# on a machine Fly starts for the request and stops when it is idle. Deploy this
+# INSTEAD of fly.toml (which is the always-on polling configuration), as a
+# separate app:
+#
+#   fly launch --config fly.push.toml --copy-config --yes
+#   fly secrets set --config fly.push.toml \
+#       SUPABASE_URL="https://<your-project-ref>.supabase.co" \
+#       SUPABASE_SERVICE_ROLE_KEY="<your-service-role-key>" \
+#       OPENPLAN_MODELING_WORKER_TOKEN="<the same secret the app has>"
+#
+# Then, on the app: OPENPLAN_MODELING_WORKER_URL=https://<this-app>.fly.dev and
+# OPENPLAN_MODELING_WORKER_TOKEN=<the same secret>. Both are required — the
+# worker refuses to serve this endpoint without a token, because it starts
+# minutes of compute on request. Full instructions: DEPLOY.md.
+#
+# READ THIS BEFORE CHOOSING THIS MODE. The trigger answers 202 and then executes,
+# so while a run is draining the machine has no open request — which is exactly
+# what Fly's autostop measures. The mitigations below are real but they are not
+# magic; see the kill_timeout note.
+
+app = "openplan-aeq-worker-pool"
+
+# NO primary_region here on purpose — see fly.toml. `fly launch` asks; the right
+# answer is wherever you and your data are.
+
+# THE ONE THING THAT CAN STILL LOSE A RUN, STATED PLAINLY.
+# Fly sends SIGTERM and waits kill_timeout before SIGKILL. The worker uses that
+# window to stop accepting pushes and finish the runs it already accepted, and
+# names anything it could not finish in its logs. 5 minutes is Fly's maximum, so
+# a stage that takes longer than that CAN still be interrupted. Nothing vanishes
+# when it is — the stages stay as the worker left them, an unclaimed run is still
+# queued for any worker, and OpenPlan's staleness sweep fails a run that stops
+# reporting — but it is a wasted run. If yours routinely exceed this window,
+# either set auto_stop_machines = "off" below (the machine then stays up, which
+# is the polling cost profile) or run fly.toml's polling mode instead.
+#
+# THESE TWO KEYS LIVE HERE, ABOVE EVERY TABLE HEADER, AND THAT IS LOAD-BEARING.
+# Fly reads them at the top level of the config. In TOML a bare key belongs to
+# the most recently opened table, so writing them after `[http_service]` or
+# `[[vm]]` — which reads naturally and is where the explanation wants to sit —
+# silently files them under that table instead, where Fly does not look. The
+# grace window this whole mode depends on would then be Fly's 5-second default
+# while both this file and DEPLOY.md said it was five minutes.
+kill_signal = "SIGTERM"
+kill_timeout = "5m"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  AEQ_WORKER_MODE = "push"
+  AEQ_WORK_DIR = "/tmp/aeq_runs"
+  SPATIALITE_LIBRARY_PATH = "/usr/lib/x86_64-linux-gnu/mod_spatialite.so"
+  # Must match internal_port below. The worker also honours PORT, which some
+  # platforms assign; on Fly the port is whatever this config says.
+  AEQ_HTTP_PORT = "8080"
+  # How long the worker keeps finishing accepted runs after a stop signal. Kept
+  # in step with kill_timeout — a grace longer than the platform allows is a
+  # number that describes nothing.
+  AEQ_SHUTDOWN_GRACE_SECONDS = "300"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  processes = ["worker"]
+  # Scale to zero between runs — the entire point of this mode. Fly starts the
+  # machine for the push and stops it when the proxy sees no traffic.
+  auto_start_machines = true
+  auto_stop_machines = "stop"
+  min_machines_running = 0
+
+  [[http_service.checks]]
+    # /healthz says the PROCESS is up and which stages it owns. It deliberately
+    # does not claim a run would succeed — this worker cannot know that until it
+    # tries — so never read a passing check as "runs are completing".
+    method = "GET"
+    path = "/healthz"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "10s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[processes]
+  worker = "python main.py"

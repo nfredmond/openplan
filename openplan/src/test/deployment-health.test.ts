@@ -18,10 +18,22 @@ function facts(overrides: Partial<DeploymentHealthFacts> = {}): DeploymentHealth
     censusApiKeyPresent: true,
     anthropicApiKeyPresent: true,
     pdfRendering: { browserEngineAvailable: true },
-    modelingWorker: { declaration: "deployed", nonTerminalRunCount: 0, stalledRunCount: 0 },
+    modelingWorker: {
+      declaration: "deployed",
+      nonTerminalRunCount: 0,
+      stalledRunCount: 0,
+      pushDispatch: NO_PUSH_ENDPOINT,
+    },
     ...overrides,
   };
 }
+
+/**
+ * The default everywhere below: a deployment that pushes nowhere, which is what
+ * every deployment configured before the push path existed looks like. Named so
+ * that a test which is ABOUT the push endpoint is visibly opting in.
+ */
+const NO_PUSH_ENDPOINT = { configured: false, configurationProblem: null };
 
 function modelingWorkerCheck(overrides: Partial<DeploymentHealthFacts["modelingWorker"]> = {}) {
   return evaluateDeploymentHealth(
@@ -30,6 +42,7 @@ function modelingWorkerCheck(overrides: Partial<DeploymentHealthFacts["modelingW
         declaration: "undeclared",
         nonTerminalRunCount: 0,
         stalledRunCount: 0,
+        pushDispatch: NO_PUSH_ENDPOINT,
         ...overrides,
       },
     })
@@ -267,16 +280,99 @@ describe("deployment health — what a modeling-worker declaration may claim", (
     const declarations = ["deployed", "absent", "undeclared", "unrecognized"] as const;
     for (const declaration of declarations) {
       for (const stalledRunCount of [0, 2]) {
-        const check = modelingWorkerCheck({
-          declaration,
-          nonTerminalRunCount: 2,
-          stalledRunCount,
-        });
-        const rendered = `${check.detail} ${check.remedy ?? ""}`;
-        expect(rendered).not.toMatch(/OpenPlan (has )?(checked|verified|confirmed|probed)/i);
-        expect(rendered).not.toMatch(/worker is (running|alive|up)\b/i);
+        // A configured push endpoint is the closest thing to a live signal in
+        // this lane, which is exactly why it must not be allowed to graduate
+        // into "OpenPlan verified the worker". A configured URL is a fact about
+        // an environment file; the worker behind it may be dead.
+        for (const configured of [false, true]) {
+          const check = modelingWorkerCheck({
+            declaration,
+            nonTerminalRunCount: 2,
+            stalledRunCount,
+            pushDispatch: { configured, configurationProblem: null },
+          });
+          const rendered = `${check.detail} ${check.remedy ?? ""}`;
+          expect(rendered).not.toMatch(/OpenPlan (has )?(checked|verified|confirmed|probed)/i);
+          expect(rendered).not.toMatch(/worker is (running|alive|up)\b/i);
+        }
       }
     }
+  });
+});
+
+/**
+ * A remedy that names only one shape of worker is an incomplete answer wearing
+ * a complete answer's clothes. Every remedy in this check used to end at "deploy
+ * the AequilibraE worker" — a long-lived polling process — which an operator on
+ * a platform that scales to zero cannot do at all. These pin the second option
+ * into the copy, and pin what a configured push endpoint may and may not claim.
+ */
+describe("deployment health — a remedy names every way to give this deployment compute", () => {
+  it("offers the push endpoint, not just 'deploy a poller', in every non-passing remedy", () => {
+    const nonPassing = [
+      modelingWorkerCheck({ declaration: "undeclared" }),
+      modelingWorkerCheck({ declaration: "absent" }),
+      modelingWorkerCheck({ declaration: "unrecognized" }),
+      modelingWorkerCheck({ declaration: "undeclared", nonTerminalRunCount: 2 }),
+      modelingWorkerCheck({ declaration: "undeclared", nonTerminalRunCount: 2, stalledRunCount: 2 }),
+    ];
+
+    for (const check of nonPassing) {
+      expect(check.status).not.toBe("pass");
+      // Both lanes, named, in the remedy where operator instructions belong.
+      expect(check.remedy).toMatch(/OPENPLAN_MODELING_WORKER_URL/);
+      expect(check.remedy).toMatch(/OPENPLAN_MODELING_WORKER_TOKEN/);
+      expect(check.remedy).toMatch(/poll/i);
+      // Still free, still not a tier.
+      expect(`${check.detail} ${check.remedy}`).not.toMatch(
+        /upgrade|subscription|billing|pricing|paid tier|plan tier|contact sales/i
+      );
+    }
+  });
+
+  it("stops reporting an undeclared deployment as a gap once it can push, without claiming the worker is up", () => {
+    const check = modelingWorkerCheck({
+      declaration: "undeclared",
+      pushDispatch: { configured: true, configurationProblem: null },
+    });
+
+    // The warning it replaces exists because a planner had to wait out a wasted
+    // run before anything could tell them. A push endpoint answers at launch,
+    // so that specific cost is gone and the check no longer reports it.
+    expect(check.status).toBe("pass");
+    expect(check.detail).toMatch(/answered at launch/i);
+    // But acceptance is not completion, and it must say so.
+    expect(check.detail).toMatch(/Acceptance is not completion/i);
+    expect(check.detail).not.toMatch(/failed by the reaper before anything can warn/i);
+  });
+
+  it("reports a half-configured push endpoint instead of calling it 'no push endpoint'", () => {
+    const problem = "OPENPLAN_MODELING_WORKER_URL is set but OPENPLAN_MODELING_WORKER_TOKEN is not.";
+    const check = modelingWorkerCheck({
+      declaration: "undeclared",
+      pushDispatch: { configured: false, configurationProblem: problem },
+    });
+
+    expect(check.status).toBe("warn");
+    // The consequence in the detail, the variable names in the remedy — an
+    // operator who thinks they configured this must not be told nothing is set.
+    expect(check.detail).toMatch(/partly configured/i);
+    expect(check.detail).toMatch(/nothing is pushed/i);
+    expect(check.remedy).toContain(problem);
+  });
+
+  it("reports a declared absence that contradicts a configured push endpoint as a contradiction", () => {
+    const check = modelingWorkerCheck({
+      declaration: "absent",
+      pushDispatch: { configured: true, configurationProblem: null },
+    });
+
+    expect(check.status).toBe("warn");
+    expect(check.detail).toMatch(/disagree/i);
+    // Neither operator statement may be silently preferred over the other, and
+    // the cost of leaving it wrong is named: planners refused runs that work.
+    expect(check.detail).toMatch(/refused at the button/i);
+    expect(check.remedy).toMatch(/OPENPLAN_MODELING_WORKER/);
   });
 });
 
@@ -300,14 +396,22 @@ describe("deployment health — never leaks a secret", () => {
           for (const anthropicApiKeyPresent of [true, false]) {
             for (const stalledRunCount of [0, 2]) {
               for (const declaration of ["deployed", "absent", "undeclared", "unrecognized"] as const) {
-                combinations.push(
-                  facts({
-                    mapbox: { hasValidToken, hasInvalidToken },
-                    censusApiKeyPresent,
-                    anthropicApiKeyPresent,
-                    modelingWorker: { declaration, nonTerminalRunCount: 2, stalledRunCount },
-                  })
-                );
+                // Both push states, because the push branches print a URL
+                // variable NAME and must never be able to print a value.
+                for (const pushDispatch of [
+                  NO_PUSH_ENDPOINT,
+                  { configured: true, configurationProblem: null },
+                  { configured: false, configurationProblem: "a worker URL is set with no token" },
+                ]) {
+                  combinations.push(
+                    facts({
+                      mapbox: { hasValidToken, hasInvalidToken },
+                      censusApiKeyPresent,
+                      anthropicApiKeyPresent,
+                      modelingWorker: { declaration, nonTerminalRunCount: 2, stalledRunCount, pushDispatch },
+                    })
+                  );
+                }
               }
             }
           }
