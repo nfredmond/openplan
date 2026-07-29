@@ -141,6 +141,68 @@ packets it scanned. The honesty gates that matter now all scan LIVE surfaces:
 `safety-claim-boundaries.test.ts`). New modules add their own claim-boundary guard over `src/`,
 never a docs-scanning one.
 
+## The ultimate goal — agentic control of OpenPlan (DEFERRED, do not start)
+
+**Decided 2026-07-28 (Nathaniel). This is the destination the product is being built toward.**
+
+A planner clicks the Planning Agent and can drop into a **Buzz workspace connected to OpenPlan that
+completely controls it** — the way an agentic coding agent controls a repository. `block/buzz` (Block Inc.,
+Apache 2.0, released 2026-07-21) is a self-hosted Rust/Nostr workspace where agents join as members with
+their own keypairs and narrowly scoped authorization.
+
+The reasoning is sound, and worth restating because it is the whole thesis: **planning narrative has the
+same shape as code.** Drafts get reviewed. Every claim carries provenance. Approval gates stand between a
+draft and something official. There is an append-only record of who changed what and why. And OpenPlan
+already has the planning analogue of a test suite — the `[fact:id]` grounding machinery and the claim
+tiers are what tell an agent whether its own output is defensible.
+
+**IT IS DEFERRED UNTIL THE EXISTING MODULES ARE FULLY DEVELOPED — by Nathaniel's own call.** Do not start
+building it. No Buzz integration, no Nostr, no second backend, until he says the modules are mature. If a
+task drifts toward it, say so. He asked to be **reminded frequently that he still wants this** — raise it
+at roadmap milestones, when a module is declared done, and when he asks what is next. The risk being
+guarded against is forgetting the destination, not scope creep toward it.
+
+**Two settled points. Do not re-litigate either.**
+
+- **It does not violate non-negotiable #4.** Self-serve governs the BASE product — sign up and use
+  OpenPlan unaided — not every optional advanced capability. An agency technical enough to run
+  Docker/Rust/Redis/MinIO can opt in; Nathaniel also intends to offer paid setup for those who cannot,
+  which is his consulting lane and touches no code. **The binding condition is that OpenPlan must remain
+  fully functional with no Buzz instance anywhere.** Buzz attaches as a layer; it is never a dependency
+  the app assumes.
+- **It does not violate non-negotiable #2** *(deepen, do not add modules)*, because it is not a planning
+  module. It is a control surface over the modules that already exist — which is exactly why it must come
+  after they are deep, not before.
+
+**What to do NOW, because it costs nothing and is the entire bridge.** The seam between today and that
+future is the action registry: `src/lib/runtime/action-metadata.ts`, from which `buildAssistantOperations`
+derives the `propose_*` tools, gated by `assistant_action_approvals` and
+`src/lib/assistant/action-approval-server.ts` (input-hash verified, so what a planner approves is provably
+what they saw). As of 2026-07-28 that registry held **exactly 7 actions**, all in the grants/reports/
+projects lane — nothing for models, engagement, scenarios, safety, invoicing, RTP chapters, or the
+knowledge base.
+
+> **Every new write capability gets an action-registry entry when it ships.** One entry, four fields. This
+> is part of the definition of done for a feature, not separate work. Doing it makes the eventual agentic
+> layer a switch; skipping it makes it a year-long retrofit across twenty modules.
+
+**Two guardrails to hold from the start — cheap now, painful to retrofit:**
+
+1. **The agent is a distinct principal, never an impersonation.** Buzz's sharpest idea is that
+   *authorization does not erase authorship*. Today the Planner Agent acts AS the user in the audit
+   ledger. It needs its own identity, so the record reads "the Planner Agent drafted this, approved by
+   <person> at <time>". When a grant narrative or a CEQA determination is challenged, "who wrote this
+   number" is a question with legal weight.
+2. **An agent may never promote a claim tier.** The honesty firewall is what makes OpenPlan defensible; an
+   agent that can mark its own run `calibrated_to_counts` destroys it. Agent proposes, evidence decides.
+   This must be structural, not policy.
+
+**One mechanical note on the consulting lane.** Nathaniel doing paid setup privately requires no code
+change. But `src/test/no-paid-tier-guard.test.ts` fails the build on `/managed hosting/i` and
+`/managed services?\b/i` appearing on any PUBLIC page. Advertising setup services inside the product is
+therefore a deliberate change to that guard, made as its own decision — never worked around, and never
+tripped by accident mid-feature.
+
 ## Engineering Philosophy
 
 OpenPlan is intended to become one of the most sophisticated planning software platforms ever built.
