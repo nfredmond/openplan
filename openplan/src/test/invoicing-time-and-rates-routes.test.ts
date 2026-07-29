@@ -18,6 +18,10 @@ const staffSelectMock = vi.fn(() => ({ eq: staffLookupEqMock }));
 const staffInsertSingleMock = vi.fn();
 const staffInsertSelectMock = vi.fn(() => ({ single: staffInsertSingleMock }));
 const staffInsertMock = vi.fn(() => ({ select: staffInsertSelectMock }));
+const staffUpdateSingleMock = vi.fn();
+const staffUpdateSelectMock = vi.fn(() => ({ single: staffUpdateSingleMock }));
+const staffUpdateEqMock = vi.fn(() => ({ select: staffUpdateSelectMock }));
+const staffUpdateMock = vi.fn(() => ({ eq: staffUpdateEqMock }));
 
 // invoicing_engagements
 const engagementSingleMock = vi.fn();
@@ -81,7 +85,7 @@ const fromMock = vi.fn((table: string) => {
     return { select: membersSelectMock };
   }
   if (table === "invoicing_staff") {
-    return { select: staffSelectMock, insert: staffInsertMock };
+    return { select: staffSelectMock, insert: staffInsertMock, update: staffUpdateMock };
   }
   if (table === "invoicing_engagements") {
     return { select: engagementSelectMock };
@@ -122,6 +126,7 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 import { POST as postStaff } from "@/app/api/invoicing/staff/route";
+import { PATCH as patchStaffMember } from "@/app/api/invoicing/staff/[staffId]/route";
 import { GET as listTimeEntries, POST as postTimeEntry } from "@/app/api/invoicing/time-entries/route";
 import {
   DELETE as deleteTimeEntry,
@@ -164,6 +169,10 @@ beforeEach(() => {
   });
   staffInsertSingleMock.mockResolvedValue({
     data: { id: STAFF, workspace_id: WORKSPACE, name: "J. Doe", active: true },
+    error: null,
+  });
+  staffUpdateSingleMock.mockResolvedValue({
+    data: { id: STAFF, workspace_id: WORKSPACE, name: "J. Doe", active: false },
     error: null,
   });
 
@@ -281,6 +290,66 @@ describe("POST /api/invoicing/staff", () => {
       error: "Linked user is not a member of the requested workspace",
     });
     expect(staffInsertMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("PATCH /api/invoicing/staff/[staffId]", () => {
+  const context = { params: Promise.resolve({ staffId: STAFF }) };
+
+  it("deactivates a staff record", async () => {
+    const response = await patchStaffMember(
+      jsonRequest(`http://localhost/api/invoicing/staff/${STAFF}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        active: false,
+      }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(staffUpdateMock).toHaveBeenCalledWith({ active: false });
+  });
+
+  it("reports a zero-row update as a refused write, not as an opaque failure", async () => {
+    staffUpdateSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchStaffMember(
+      jsonRequest(`http://localhost/api/invoicing/staff/${STAFF}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        active: false,
+      }),
+      context
+    );
+
+    // The staff row was already read through the caller's own client and
+    // cleared the membership and role checks, so zero rows is the database
+    // refusing a write the application allowed — a 500 that says which.
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.error).toBe("The staff record was not saved");
+    expect(body.details).toContain("row-level security");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "invoicing_staff_update_matched_no_rows",
+      expect.objectContaining({ staffId: STAFF })
+    );
+  });
+
+  it("still answers 500 with the original wording when the update genuinely fails", async () => {
+    staffUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "57014", message: "canceling statement due to statement timeout" },
+    });
+
+    const response = await patchStaffMember(
+      jsonRequest(`http://localhost/api/invoicing/staff/${STAFF}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        active: false,
+      }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to update staff record" });
+    expect(mockAudit.error).toHaveBeenCalledWith("invoicing_staff_update_failed", expect.anything());
   });
 });
 
@@ -458,6 +527,49 @@ describe("PATCH & DELETE /api/invoicing/time-entries/[timeEntryId] — billed-en
     expect(timeEntryDeleteEqMock).toHaveBeenCalledWith("id", TIME_ENTRY);
   });
 
+  it("reports a zero-row edit as a refused write, not as an opaque failure", async () => {
+    timeEntryUpdateSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchTimeEntry(
+      jsonRequest(`http://localhost/api/invoicing/time-entries/${TIME_ENTRY}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        hours: 3,
+      }),
+      context
+    );
+
+    // The entry was already read through the caller's own client and cleared
+    // the membership, role, and billed-entry checks, so zero rows is the
+    // database refusing a write the application allowed.
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.error).toBe("The time entry was not saved");
+    expect(body.details).toContain("row-level security");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "invoicing_time_entry_update_matched_no_rows",
+      expect.objectContaining({ timeEntryId: TIME_ENTRY })
+    );
+  });
+
+  it("still answers 500 with the original wording when the edit genuinely fails", async () => {
+    timeEntryUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "57014", message: "canceling statement due to statement timeout" },
+    });
+
+    const response = await patchTimeEntry(
+      jsonRequest(`http://localhost/api/invoicing/time-entries/${TIME_ENTRY}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        hours: 3,
+      }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to update time entry" });
+    expect(mockAudit.error).toHaveBeenCalledWith("invoicing_time_entry_update_failed", expect.anything());
+  });
+
   it("hides a time entry from another workspace as not found", async () => {
     timeEntryLookupSingleMock.mockResolvedValueOnce({
       data: { id: TIME_ENTRY, workspace_id: OTHER_WORKSPACE, billed_line_item_id: null },
@@ -616,6 +728,56 @@ describe("PATCH /api/invoicing/rate-tables/[rateTableId]", () => {
 
     expect(response.status).toBe(400);
     expect(rateEntriesDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("reports a zero-row header update as a refused write, and leaves the entries alone", async () => {
+    rateTableUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await patchRateTable(
+      jsonRequest(`http://localhost/api/invoicing/rate-tables/${RATE_TABLE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        name: "2026 Rates",
+        entries: [{ laborCategory: "Senior Planner", hourlyRate: 195 }],
+      }),
+      context
+    );
+
+    // The rate table was already read through the caller's own client and
+    // cleared the membership and role checks, so zero rows is the database
+    // refusing a write the application allowed.
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.error).toBe("The rate table was not saved");
+    expect(body.details).toContain("row-level security");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "invoicing_rate_table_update_matched_no_rows",
+      expect.objectContaining({ rateTableId: RATE_TABLE })
+    );
+    // A header that could not be saved must not take the entry set with it.
+    expect(rateEntriesDeleteMock).not.toHaveBeenCalled();
+    expect(rateEntriesInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still answers 500 with the original wording when the header update genuinely fails", async () => {
+    rateTableUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "57014", message: "canceling statement due to statement timeout" },
+    });
+
+    const response = await patchRateTable(
+      jsonRequest(`http://localhost/api/invoicing/rate-tables/${RATE_TABLE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        name: "2026 Rates",
+      }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to update rate table" });
+    expect(mockAudit.error).toHaveBeenCalledWith("invoicing_rate_table_update_failed", expect.anything());
   });
 
   it("hides a rate table from another workspace as not found", async () => {

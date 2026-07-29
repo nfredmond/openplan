@@ -270,6 +270,33 @@ describe("POST /api/county-runs/[countyRunId]/validate/refresh", () => {
     expect(await response.json()).toEqual({ error: "Validation summary file was not found on disk" });
   });
 
+  it("names a zero-row validation refresh as a refused write rather than a generic failure", async () => {
+    // The run was read through this same client and the write gate already
+    // passed, so a refresh that matches nothing is the database refusing a
+    // write the application had already allowed.
+    countyRunUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+    });
+
+    const response = await refreshCountyRunValidation(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(500);
+    const payload = await response.json();
+    expect(payload.error).toBe("The county run was not saved");
+    expect(payload.details).toContain("row-level security policy");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "county_run_update_matched_no_rows",
+      expect.objectContaining({
+        countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        authMode: "session",
+      })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("county_run_update_failed", expect.anything());
+  });
+
   it("refuses a viewer's session refresh and writes nothing", async () => {
     membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
 

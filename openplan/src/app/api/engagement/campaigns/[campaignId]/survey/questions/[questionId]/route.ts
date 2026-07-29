@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess, validateCampaignCategoryAccess } from "@/lib/engagement/api";
 import { validateSurveyConfig, type SurveyQuestionType } from "@/lib/engagement/survey";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid(), questionId: z.string().uuid() });
 
@@ -89,9 +90,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .eq("campaign_id", campaign.id)
       .select(QUESTION_SELECT)
       .single();
-    if (updateError || !question) {
+    if (isWriteFailure(updateError)) {
       audit.error("question_update_failed", { questionId: routeParams.data.questionId, message: updateError?.message ?? "unknown" });
       return NextResponse.json({ error: "Failed to update survey question" }, { status: 500 });
+    }
+    // This exact row was read back through the caller's own client above, after
+    // the campaign membership and engagement.write check passed. So a write that
+    // matches nothing is the database refusing what the application allowed —
+    // a missing permissive UPDATE policy — not a question that isn't there.
+    if (writeMatchedNoRows({ data: question, error: updateError })) {
+      audit.error("question_update_matched_no_rows", { campaignId: campaign.id, questionId: routeParams.data.questionId });
+      return noRowsMatchedResponse({ subject: "survey question", targetWasVerified: true });
     }
     return NextResponse.json({ question });
   } catch (error) {

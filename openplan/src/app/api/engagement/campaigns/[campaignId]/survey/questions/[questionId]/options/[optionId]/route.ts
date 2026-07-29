@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({
   campaignId: z.string().uuid(),
@@ -65,10 +66,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .eq("question_id", routeParams.data.questionId)
       .select(OPTION_SELECT)
       .single();
-    if (updateError || !option) {
-      if (updateError?.code === DUPLICATE_KEY_CODE) return NextResponse.json({ error: "An option with that value already exists" }, { status: 409 });
+    if (updateError?.code === DUPLICATE_KEY_CODE) return NextResponse.json({ error: "An option with that value already exists" }, { status: 409 });
+    if (isWriteFailure(updateError)) {
       audit.error("option_update_failed", { optionId: routeParams.data.optionId, message: updateError?.message ?? "not found" });
-      return NextResponse.json({ error: "Failed to update survey option" }, { status: updateError ? 500 : 404 });
+      return NextResponse.json({ error: "Failed to update survey option" }, { status: 500 });
+    }
+    // authorize() verified the CAMPAIGN, never this option — the write goes straight
+    // at the option id from the path — so nothing matched is the ordinary answer to
+    // "does this option exist and may you change it".
+    if (writeMatchedNoRows({ data: option, error: updateError })) {
+      audit.warn("option_update_matched_no_rows", { campaignId: campaign.id, questionId: routeParams.data.questionId, optionId: routeParams.data.optionId });
+      return noRowsMatchedResponse({ subject: "survey option", targetWasVerified: false });
     }
     return NextResponse.json({ option });
   } catch (error) {

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   projectDeliveryPhaseSchema,
   projectNameSchema,
@@ -224,13 +225,26 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .select(`id, name, summary, status, plan_type, delivery_phase, updated_at, ${PROJECT_PLACE_COLUMNS}`)
       .single();
 
-    if (error || !data) {
+    if (isWriteFailure(error)) {
       audit.error("project_update_failed", {
         projectId: project.id,
         message: error?.message ?? "unknown",
         code: error?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to update project" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data, error })) {
+      // `resolveAccess` read this exact project row through the caller's own
+      // client and passed the role gate, so a write that matches nothing is the
+      // database refusing what the application allowed — not a missing project.
+      audit.error("project_update_matched_no_rows", {
+        projectId: project.id,
+        workspaceId: project.workspace_id,
+        userId,
+        role: access.membership?.role ?? null,
+      });
+      return noRowsMatchedResponse({ subject: "project", targetWasVerified: true });
     }
 
     audit.info("project_updated", {

@@ -4,6 +4,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const STAFF_SELECT =
   "id, workspace_id, name, title, user_id, default_labor_category, active, created_by, created_at, updated_at";
@@ -136,13 +137,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(STAFF_SELECT)
       .single();
 
-    if (error || !data) {
+    if (isWriteFailure(error)) {
       audit.error("invoicing_staff_update_failed", {
         staffId: staffRow.id,
         workspaceId: parsed.data.workspaceId,
         message: error?.message ?? "invoicing_staff_update_returned_no_row",
       });
       return NextResponse.json({ error: "Failed to update staff record" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data, error })) {
+      // The staff row was read back through the caller's own client above and
+      // cleared the membership and role checks, so an update that changes
+      // nothing is the database refusing a write the application had allowed.
+      audit.error("invoicing_staff_update_matched_no_rows", {
+        staffId: staffRow.id,
+        workspaceId: parsed.data.workspaceId,
+        userId: user.id,
+      });
+      return noRowsMatchedResponse({ subject: "staff record", targetWasVerified: true });
     }
 
     audit.info("invoicing_staff_updated", {

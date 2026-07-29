@@ -4,6 +4,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const CLIENT_SELECT =
   "id, workspace_id, name, client_kind, billing_address, contact_name, contact_email, notes, created_by, created_at, updated_at";
@@ -125,13 +126,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(CLIENT_SELECT)
       .single();
 
-    if (error || !data) {
+    if (isWriteFailure(error)) {
       audit.error("invoicing_client_update_failed", {
         clientId: clientRow.id,
         workspaceId: parsed.data.workspaceId,
         message: error?.message ?? "invoicing_client_update_returned_no_row",
       });
       return NextResponse.json({ error: "Failed to update client" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data, error })) {
+      // This same request already read the client row back through the caller's
+      // own client and cleared the membership and role checks, so a zero-row
+      // update is the database refusing a write the application had allowed.
+      audit.error("invoicing_client_update_matched_no_rows", {
+        clientId: clientRow.id,
+        workspaceId: parsed.data.workspaceId,
+        userId: user.id,
+      });
+      return noRowsMatchedResponse({ subject: "client", targetWasVerified: true });
     }
 
     audit.info("invoicing_client_updated", {

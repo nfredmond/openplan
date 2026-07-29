@@ -281,6 +281,38 @@ describe("POST /api/county-runs/[countyRunId]/scaffold", () => {
     expect(payload.statusLabel).toBe("Validation pending scaffold edits");
   });
 
+  it("names a zero-row scaffold update as a refused write rather than a generic failure", async () => {
+    // The CSV is already on disk by the time the row update runs, so a zero-row
+    // update leaves the file and the row disagreeing. The run was read through
+    // the caller's own client and cleared the write gate, so this reports the
+    // database refusing the write instead of an unexplained 500.
+    countyRunUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+    });
+
+    const response = await postCountyRunScaffold(
+      jsonRequest({
+        csvContent:
+          "station_id,observed_volume,source_agency,source_description\nA,789,Caltrans,PM 2.4\n",
+      }),
+      { params: Promise.resolve({ countyRunId }) }
+    );
+
+    expect(response.status).toBe(500);
+    const payload = await response.json();
+    expect(payload.error).toBe("The county run was not saved");
+    expect(payload.details).toContain("row-level security policy");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "county_run_update_matched_no_rows",
+      expect.objectContaining({
+        countyRunId,
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+      })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("county_run_update_failed", expect.anything());
+  });
+
   it("refuses a viewer BEFORE the scaffold CSV is rewritten on disk", async () => {
     // This route writes the file before it writes the row, so a gate placed
     // after the row update would still let a viewer overwrite the counts.

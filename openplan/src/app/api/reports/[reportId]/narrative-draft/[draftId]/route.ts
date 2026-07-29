@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   isNarrativeExportable,
   listFlaggedNarrativeSentences,
@@ -201,13 +202,28 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(DRAFT_REVIEW_COLUMNS)
       .single();
 
-    if (updateError || !updatedRow) {
+    if (isWriteFailure(updateError)) {
       audit.error("draft_review_update_failed", {
         draftId: draft.id,
         userId: user.id,
         message: updateError?.message ?? "draft_review_update_returned_no_row",
       });
       return NextResponse.json({ error: "Failed to update narrative draft" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data: updatedRow, error: updateError })) {
+      // This draft row was read through the caller's own client above and its
+      // workspace membership passed `report.generate`, so a write that matches
+      // nothing is the database refusing something the application allowed —
+      // not a draft that does not exist.
+      audit.error("draft_review_update_matched_no_rows", {
+        draftId: draft.id,
+        reportId: draft.target_id,
+        workspaceId: draft.workspace_id,
+        userId: user.id,
+        role: membership.role ?? null,
+      });
+      return noRowsMatchedResponse({ subject: "narrative draft", targetWasVerified: true });
     }
 
     audit.info("draft_reviewed", {

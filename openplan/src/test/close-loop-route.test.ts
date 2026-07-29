@@ -131,7 +131,7 @@ describe("close-loop operator routes", () => {
     expect(res.status).toBe(400);
   });
 
-  it("PATCH double-scopes by id AND campaign_id and 404s a foreign entry", async () => {
+  it("PATCH double-scopes by id AND campaign_id and 404s a foreign entry, saying nothing was saved", async () => {
     entryUpdateMaybeSingle.mockResolvedValue({ data: null, error: null }); // no row matched both scopes
     const req = new NextRequest("http://localhost/x", {
       method: "PATCH",
@@ -139,7 +139,25 @@ describe("close-loop operator routes", () => {
       body: JSON.stringify({ status: "published" }),
     });
     const res = await PATCH(req, entryCtx);
+    // 404, not 500: the route verified the CAMPAIGN, never this entry, so zero
+    // matched rows is the ordinary "no such entry you can change" — and the body
+    // says so rather than implying the server broke.
     expect(res.status).toBe(404);
+    const body = await res.json();
+    expect(body.error).toBe("No such close-loop entry");
+    expect(body.details).toContain("nothing was saved");
+  });
+
+  it("PATCH still 500s when the update fails for a real reason", async () => {
+    entryUpdateMaybeSingle.mockResolvedValue({ data: null, error: { code: "42501", message: "permission denied" } });
+    const req = new NextRequest("http://localhost/x", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "published" }),
+    });
+    const res = await PATCH(req, entryCtx);
+    expect(res.status).toBe(500);
+    expect((await res.json()).error).toBe("Failed to update close-loop entry");
   });
 
   it("PATCH publishes and returns the updated row", async () => {

@@ -406,6 +406,35 @@ describe("PATCH /api/invoicing/clients/[clientId]", () => {
     expect(response.status).toBe(200);
     expect(clientUpdateMock).toHaveBeenCalledWith({ name: "Renamed", notes: null });
   });
+
+  it("names a policy refusal when the update matches no rows, rather than 'Failed to update'", async () => {
+    // The route read this client back through the caller's own client and
+    // passed the role check, so zero matched rows is the database refusing a
+    // write the application had already allowed — a 500 that says so.
+    clientUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await patchClient(
+      jsonRequest(`http://localhost/api/invoicing/clients/${CLIENT}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        name: "Renamed",
+      }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "The client was not saved",
+      details: expect.stringContaining("row-level security policy"),
+    });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "invoicing_client_update_matched_no_rows",
+      expect.objectContaining({ clientId: CLIENT, workspaceId: WORKSPACE })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("invoicing_client_update_failed", expect.anything());
+  });
 });
 
 describe("POST /api/invoicing/engagements", () => {
@@ -490,6 +519,30 @@ describe("PATCH /api/invoicing/engagements/[engagementId]", () => {
 
     expect(response.status).toBe(200);
     expect(engagementUpdateMock).toHaveBeenCalledWith({ status: "closed", not_to_exceed_amount: null });
+  });
+
+  it("names a policy refusal when the update matches no rows, rather than 'Failed to update'", async () => {
+    // `.maybeSingle()`'s shape of the same news: no error, no row.
+    engagementUpdateSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchEngagement(
+      jsonRequest(`http://localhost/api/invoicing/engagements/${ENGAGEMENT}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        status: "closed",
+      }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "The engagement was not saved",
+      details: expect.stringContaining("row-level security policy"),
+    });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "invoicing_engagement_update_matched_no_rows",
+      expect.objectContaining({ engagementId: ENGAGEMENT, workspaceId: WORKSPACE })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("invoicing_engagement_update_failed", expect.anything());
   });
 });
 
@@ -934,5 +987,55 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
     expect(timeEntryUpdateMock).toHaveBeenCalledWith({ billed_line_item_id: LINE_ITEM_1 });
     expect(timeEntryUpdateInMock).toHaveBeenCalledWith("id", [TIME_ENTRY]);
     expect(invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("names a policy refusal when the status update matches no rows, rather than 'Failed to update invoice'", async () => {
+    invoiceUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        status: "sent",
+      }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "The invoice was not saved",
+      details: expect.stringContaining("row-level security policy"),
+    });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "client_invoice_update_matched_no_rows",
+      expect.objectContaining({ invoiceId: INVOICE, workspaceId: WORKSPACE, lineItemsReplaced: false })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("client_invoice_update_failed", expect.anything());
+  });
+
+  it("keeps the stale-totals warning when the lines were replaced and the invoice update matched no rows", async () => {
+    invoiceUpdateSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [{ description: "Revised scope", amount: 250 }],
+      }),
+      context
+    );
+
+    // The replacement landed, so "nothing was saved" would be a lie; what the
+    // caller has to act on is the invoice's now-stale stored totals.
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "The line items were replaced, but the invoice record was not updated",
+      details: expect.stringContaining("stored totals may be stale"),
+    });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "client_invoice_update_matched_no_rows",
+      expect.objectContaining({ invoiceId: INVOICE, lineItemsReplaced: true })
+    );
   });
 });

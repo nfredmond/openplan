@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { type WorkspaceRole, WORKSPACE_ROLES } from "@/lib/auth/role-matrix";
+import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 export const WORKSPACE_INVITATION_STATUSES = ["pending", "accepted", "declined", "revoked", "expired"] as const;
 
@@ -38,12 +39,21 @@ export type CreateWorkspaceInvitationInput = {
   now?: Date;
 };
 
-export type CreateWorkspaceInvitationResult = {
-  invitation: WorkspaceInvitationRow;
-  token: string;
-  invitationUrl: string;
-  reissued: boolean;
-};
+/**
+ * Either an invitation, or the one outcome that is neither an invitation nor a
+ * failure: the reissue UPDATE matched no rows. Nothing broke and nothing was
+ * saved, so it is returned rather than thrown — a caller that cannot tell the
+ * two apart reports a race as a broken database.
+ */
+export type CreateWorkspaceInvitationResult =
+  | {
+      ok: true;
+      invitation: WorkspaceInvitationRow;
+      token: string;
+      invitationUrl: string;
+      reissued: boolean;
+    }
+  | { ok: false; reason: "reissue_matched_no_rows" };
 
 export type InvitationLookupResult =
   | { ok: true; invitation: WorkspaceInvitationRow }
@@ -158,15 +168,32 @@ export async function createWorkspaceInvitation({
     : supabase.from("workspace_invitations").insert(payload).select("*").single();
 
   const result = await query;
-  if (result.error || !result.data) {
+  if (isWriteFailure(result.error)) {
+    throw new Error(result.error?.message ?? "Failed to create workspace invitation");
+  }
+
+  const reissued = Boolean(existing.data?.id);
+
+  // Zero rows means two different things on the two branches. On the reissue
+  // branch the pending invitation read a moment ago is no longer updatable —
+  // accepted, revoked, or refused below the application — so nothing was saved
+  // and the caller is told exactly that. On the insert branch the row WAS
+  // written and only the read-back came back empty, which is not this outcome
+  // and keeps the throw it has always had.
+  if (reissued && writeMatchedNoRows(result)) {
+    return { ok: false, reason: "reissue_matched_no_rows" };
+  }
+
+  if (!result.data) {
     throw new Error(result.error?.message ?? "Failed to create workspace invitation");
   }
 
   return {
+    ok: true,
     invitation: result.data as WorkspaceInvitationRow,
     token,
     invitationUrl: buildInvitationUrl(origin, token),
-    reissued: Boolean(existing.data?.id),
+    reissued,
   };
 }
 

@@ -16,6 +16,7 @@ import {
   countyOnrampManifestSchema,
   countyOnrampValidationSummarySchema,
 } from "@/lib/models/county-onramp";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
@@ -164,12 +165,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
       )
       .single();
 
-    if (updateError || !updatedRow) {
+    if (isWriteFailure(updateError)) {
       audit.error("county_run_update_failed", {
         message: updateError?.message ?? "unknown",
         code: updateError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to refresh county run validation" }, { status: 500 });
+    }
+
+    // Read back through this same client above, and a signed-in caller also
+    // cleared the workspace write gate, so nothing matching now is the database
+    // refusing a write the application had already allowed.
+    if (writeMatchedNoRows({ data: updatedRow, error: updateError })) {
+      audit.error("county_run_update_matched_no_rows", {
+        countyRunId: existingRow.id,
+        workspaceId: existingRow.workspace_id,
+        userId: user?.id ?? null,
+        authMode: isWorkerCallback ? "worker-callback" : "session",
+      });
+      return noRowsMatchedResponse({ subject: "county run", targetWasVerified: true });
     }
 
     const { error: artifactDeleteError } = await supabase

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   APPLICATION_ATTACHMENT_SELECT,
   APPLICATION_ATTACHMENT_STATUSES,
@@ -226,7 +227,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(APPLICATION_ATTACHMENT_SELECT)
       .single();
 
-    if (updateError || !updated) {
+    if (isWriteFailure(updateError)) {
       audit.error("attachment_update_failed", {
         opportunityId: opportunity.id,
         attachmentId: attachment.id,
@@ -234,6 +235,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         message: updateError?.message ?? "attachment_update_returned_no_row",
       });
       return NextResponse.json({ error: "Failed to update attachment" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data: updated, error: updateError })) {
+      // This exact attachment row was read above through the caller's own
+      // client, under the same opportunity and after the write-access gate, so
+      // an update that matches nothing is the database refusing what the
+      // application allowed — not a checklist item that never existed.
+      audit.error("attachment_update_matched_no_rows", {
+        opportunityId: opportunity.id,
+        attachmentId: attachment.id,
+        workspaceId: opportunity.workspace_id,
+        userId: user.id,
+      });
+      return noRowsMatchedResponse({ subject: "attachment", targetWasVerified: true });
     }
 
     audit.info("attachment_updated", {

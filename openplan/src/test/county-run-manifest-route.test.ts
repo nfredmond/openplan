@@ -394,6 +394,34 @@ describe("POST /api/county-runs/[countyRunId]/manifest", () => {
     );
   });
 
+  it("names a zero-row county run update as a refused write rather than a generic failure", async () => {
+    // `.single()` answers PGRST116 when the UPDATE matched nothing. The run was
+    // read back through this same client and the write gate already passed, so
+    // the honest report is that the database refused the write.
+    countyRunUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+    });
+
+    const response = await postCountyRunManifest(jsonRequest({ status: "completed", manifest }), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(500);
+    const payload = await response.json();
+    expect(payload.error).toBe("The county run was not saved");
+    expect(payload.details).toContain("row-level security policy");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "county_run_update_matched_no_rows",
+      expect.objectContaining({
+        countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        authMode: "session",
+      })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("county_run_update_failed", expect.anything());
+  });
+
   it("returns 400 for invalid payloads", async () => {
     const response = await postCountyRunManifest(jsonRequest({ status: "completed" }), {
       params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),

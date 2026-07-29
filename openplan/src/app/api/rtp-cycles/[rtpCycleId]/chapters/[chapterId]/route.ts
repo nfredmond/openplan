@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { RTP_CHAPTER_STATUS_OPTIONS } from "@/lib/rtp/catalog";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({
   rtpCycleId: z.string().uuid(),
@@ -103,9 +104,22 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select("id, rtp_cycle_id, chapter_key, title, section_type, status, sort_order, required, guidance, summary, content_markdown, updated_at")
       .single();
 
-    if (updateError) {
+    if (updateError && isWriteFailure(updateError)) {
       audit.error("chapter_update_failed", { message: updateError.message, code: updateError.code ?? null });
       return NextResponse.json({ error: "Failed to update RTP chapter" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data: updatedChapter, error: updateError })) {
+      // The chapter row itself was read through the caller's client above and
+      // the membership passed `plans.write`, so nothing matching here is the
+      // database refusing an allowed write, not a chapter that does not exist.
+      audit.error("chapter_update_matched_no_rows", {
+        rtpCycleId: chapter.rtp_cycle_id,
+        chapterId: chapter.id,
+        workspaceId: chapter.workspace_id,
+        role: membership.role ?? null,
+      });
+      return noRowsMatchedResponse({ subject: "RTP chapter", targetWasVerified: true });
     }
 
     audit.info("chapter_updated", {

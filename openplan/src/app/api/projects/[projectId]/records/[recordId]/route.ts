@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({
   projectId: z.string().uuid(),
@@ -103,7 +104,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         .select("id, title, summary, milestone_type, phase_code, status, owner_label, target_date, actual_date, notes, created_at, updated_at")
         .maybeSingle();
 
-      if (error) {
+      if (error && isWriteFailure(error)) {
         audit.error("project_record_update_failed", {
           projectId: project.id,
           recordId: parsedParams.data.recordId,
@@ -113,13 +114,16 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Failed to update milestone", details: error.message }, { status: 500 });
       }
 
-      if (!data) {
-        audit.warn("record_not_found", {
+      // The read above verified the PROJECT, never this record: the recordId
+      // arrives from the URL and is written straight at. So zero rows is the
+      // ordinary answer to "does this record exist here", not a policy defect.
+      if (writeMatchedNoRows({ data, error }) || !data) {
+        audit.warn("project_record_update_matched_no_rows", {
           projectId: project.id,
           recordId: parsedParams.data.recordId,
           recordType: "milestone",
         });
-        return NextResponse.json({ error: "Milestone not found" }, { status: 404 });
+        return noRowsMatchedResponse({ subject: "milestone", targetWasVerified: false });
       }
 
       audit.info("project_record_updated", {
@@ -147,7 +151,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         .select("id, title, summary, owner_label, due_date, status, budget_amount, percent_complete, created_at, updated_at")
         .maybeSingle();
 
-      if (error) {
+      if (error && isWriteFailure(error)) {
         audit.error("project_record_update_failed", {
           projectId: project.id,
           recordId: parsedParams.data.recordId,
@@ -157,13 +161,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Failed to update deliverable", details: error.message }, { status: 500 });
       }
 
-      if (!data) {
-        audit.warn("record_not_found", {
+      if (writeMatchedNoRows({ data, error }) || !data) {
+        audit.warn("project_record_update_matched_no_rows", {
           projectId: project.id,
           recordId: parsedParams.data.recordId,
           recordType: "deliverable",
         });
-        return NextResponse.json({ error: "Deliverable not found" }, { status: 404 });
+        return noRowsMatchedResponse({ subject: "deliverable", targetWasVerified: false });
       }
 
       audit.info("project_record_updated", {
@@ -189,7 +193,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select("id, title, submittal_type, status, agency_label, reference_number, due_date, submitted_at, review_cycle, notes, created_at, updated_at")
       .maybeSingle();
 
-    if (error) {
+    if (error && isWriteFailure(error)) {
       audit.error("project_record_update_failed", {
         projectId: project.id,
         recordId: parsedParams.data.recordId,
@@ -199,13 +203,13 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to update submittal", details: error.message }, { status: 500 });
     }
 
-    if (!data) {
-      audit.warn("record_not_found", {
+    if (writeMatchedNoRows({ data, error }) || !data) {
+      audit.warn("project_record_update_matched_no_rows", {
         projectId: project.id,
         recordId: parsedParams.data.recordId,
         recordType: "submittal",
       });
-      return NextResponse.json({ error: "Submittal not found" }, { status: 404 });
+      return noRowsMatchedResponse({ subject: "submittal", targetWasVerified: false });
     }
 
     audit.info("project_record_updated", {

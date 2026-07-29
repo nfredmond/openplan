@@ -709,6 +709,35 @@ describe("PATCH /api/funding-opportunities/[opportunityId]/sections/[sectionId]"
       updated_by: USER_ID,
     });
   });
+
+  it("reports an update that matched no rows as a refused write, not a broken one", async () => {
+    // The section row was read through the caller's own client a moment
+    // earlier, so an UPDATE that touches nothing is the database refusing what
+    // the application allowed — PGRST116 must not read as "Failed to update".
+    const loadChain = makeQuery({ data: { ...baseSectionRow, status: "drafting" }, error: null });
+    const updateChain = makeQuery({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+    installTables({
+      funding_opportunity_application_sections: tableSequence(loadChain, updateChain),
+    });
+
+    const response = await patchSection(
+      jsonRequest(url, "PATCH", { title: "Engagement summary" }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    const payload = await response.json();
+    expect(payload.error).toBe("The section was not saved");
+    expect(payload.details).toContain("row-level security");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "section_update_matched_no_rows",
+      expect.objectContaining({ sectionId: SECTION_ID, opportunityId: OPPORTUNITY_ID })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("section_update_failed", expect.anything());
+  });
 });
 
 describe("DELETE /api/funding-opportunities/[opportunityId]/sections/[sectionId]", () => {
@@ -826,6 +855,32 @@ describe("PATCH /api/funding-opportunities/[opportunityId]/attachments/[attachme
 
     expect(response.status).toBe(422);
     expect(updateChain.update).not.toHaveBeenCalled();
+  });
+
+  it("reports an update that matched no rows as a refused write, not a broken one", async () => {
+    // The checklist item was read through the caller's own client a moment
+    // earlier, so an UPDATE that touches nothing is the database refusing what
+    // the application allowed — PGRST116 must not read as "Failed to update".
+    const loadChain = makeQuery({ data: baseAttachmentRow, error: null });
+    const updateChain = makeQuery({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+    installTables({
+      funding_opportunity_attachments: tableSequence(loadChain, updateChain),
+    });
+
+    const response = await patchAttachment(jsonRequest(url, "PATCH", { status: "in_progress" }), context);
+
+    expect(response.status).toBe(500);
+    const payload = await response.json();
+    expect(payload.error).toBe("The attachment was not saved");
+    expect(payload.details).toContain("row-level security");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "attachment_update_matched_no_rows",
+      expect.objectContaining({ attachmentId: ATTACHMENT_ID, opportunityId: OPPORTUNITY_ID })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("attachment_update_failed", expect.anything());
   });
 
   it("attaches a report artifact after walking artifact → report → workspace", async () => {

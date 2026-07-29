@@ -5,6 +5,12 @@ import { computeLineItemAmount, summarizeClientInvoiceTotals } from "@/lib/invoi
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import {
+  isWriteFailure,
+  noRowsMatchedBody,
+  noRowsMatchedStatus,
+  writeMatchedNoRows,
+} from "@/lib/http/write-outcome";
 
 const CLIENT_INVOICE_SELECT =
   "id, workspace_id, client_id, engagement_id, project_id, invoice_number, status, sent_date, paid_date, period_start, period_end, invoice_date, due_date, subtotal_amount, retention_percent, retention_amount, total_amount, payment_terms, currency_code, notes, created_by, created_at, updated_at";
@@ -584,7 +590,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(CLIENT_INVOICE_SELECT)
       .single();
 
-    if (updateError || !updated) {
+    if (isWriteFailure(updateError)) {
       audit.error("client_invoice_update_failed", {
         invoiceId: invoice.id,
         workspaceId: parsed.data.workspaceId,
@@ -598,6 +604,35 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             : "Failed to update invoice",
         },
         { status: 500 }
+      );
+    }
+
+    if (writeMatchedNoRows({ data: updated, error: updateError })) {
+      // The invoice row was read back through the caller's own client above and
+      // cleared the membership and role checks, so a zero-row update is the
+      // database refusing a write the application had allowed.
+      const outcome = { subject: "invoice", targetWasVerified: true };
+      audit.error("client_invoice_update_matched_no_rows", {
+        invoiceId: invoice.id,
+        workspaceId: parsed.data.workspaceId,
+        userId: user.id,
+        lineItemsReplaced: replacedLineRows !== null,
+      });
+      return NextResponse.json(
+        // A replacement that already landed cannot borrow the shared "nothing
+        // was saved" wording: the new lines ARE stored, and only the invoice's
+        // own totals are not, which is what the caller has to act on.
+        replacedLineRows
+          ? {
+              error: "The line items were replaced, but the invoice record was not updated",
+              details:
+                "The replacement line items were saved. The database then matched no rows for the invoice itself, " +
+                "so its stored totals may be stale. This request passed every check the application makes, so that " +
+                "write was refused below the application — most often a row-level security policy that grants no " +
+                "permissive write.",
+            }
+          : noRowsMatchedBody(outcome),
+        { status: noRowsMatchedStatus(outcome) }
       );
     }
 

@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import { replaceLinkSet, restoreLinkSet } from "@/lib/api/link-replacement";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { MODEL_LINK_TARGETS, type ModelLinkIdentityRow } from "@/lib/models/link-targets";
 import {
   buildModelReadiness,
@@ -548,7 +549,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       )
       .single();
 
-    if (updateError || !model) {
+    const updateMatchedNoRows = writeMatchedNoRows({ data: model, error: updateError });
+
+    if (isWriteFailure(updateError) || updateMatchedNoRows) {
+      // The links were already swapped for this update's sake, so they have to
+      // be put back whichever way the metadata write went wrong — a refused
+      // write leaves the same orphaned link set behind as a failed one.
       const rollback = linkReplacement?.ok
         ? await restoreLinkSet({
             supabase,
@@ -559,6 +565,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             links: linkReplacement.previousLinks,
           })
         : null;
+
+      if (updateMatchedNoRows) {
+        // loadModelAccess read this exact model row through the caller's own
+        // client and the role matrix already granted models.write, so a write
+        // matching nothing is the database refusing what the app allowed.
+        audit.error("model_update_matched_no_rows", {
+          modelId: access.model.id,
+          workspaceId,
+          userId: user.id,
+          linksRestored: rollback?.ok ?? null,
+          rollbackDeleteCode: rollback?.deleteError?.code ?? null,
+          rollbackInsertCode: rollback?.insertError?.code ?? null,
+        });
+        return noRowsMatchedResponse({ subject: "model", targetWasVerified: true });
+      }
 
       audit.error("model_update_failed", {
         modelId: access.model.id,

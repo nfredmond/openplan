@@ -4,6 +4,7 @@ import { createWorkspaceInvitation, normalizeInvitationRole } from "@/lib/worksp
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { noRowsMatchedResponse } from "@/lib/http/write-outcome";
 
 export const runtime = "nodejs";
 
@@ -224,6 +225,20 @@ export async function POST(request: NextRequest) {
       invitedByUserId: user.id,
       origin: request.nextUrl.origin,
     });
+
+    if (!invitation.ok) {
+      // The pending invitation was read and written through the SAME service
+      // client moments apart, so nothing matching is not "no such invitation" —
+      // it is the row going away, or a policy refusing a write the application
+      // had already allowed. Either way no fresh token exists to hand back.
+      audit.error("workspace_invitation_reissue_matched_no_rows", {
+        workspaceId: input.workspaceId,
+        userId: user.id,
+        role,
+        durationMs: Date.now() - startedAt,
+      });
+      return noRowsMatchedResponse({ subject: "workspace invitation", targetWasVerified: true });
+    }
 
     audit.info(invitation.reissued ? "workspace_invitation_reissued" : "workspace_invitation_created", {
       workspaceId: input.workspaceId,

@@ -84,6 +84,17 @@ export type SupabaseWriteSite = {
   chain: string[];
   /** Whether this write can see how many rows it changed AND looks at the answer. */
   verifiesAffectedRows: boolean;
+  /**
+   * Whether the function around this write deals with "matched no rows" as its
+   * own outcome, rather than folding it into the generic failure branch.
+   *
+   * Distinct from `verifiesAffectedRows`, which asks whether the write can SEE
+   * the row count. This asks what it then SAYS. A route can chain `.single()`,
+   * satisfying the first, and still answer 500 to a PGRST116 — which is the
+   * defect `src/lib/http/write-outcome.ts` exists for: an authorization or
+   * not-found outcome wearing a server error's clothes.
+   */
+  handlesZeroRows: boolean;
 };
 
 export type SupabaseSelectSite = {
@@ -489,6 +500,38 @@ function targetFiles(options: CollectOptions): string[] {
   return roots.flatMap((root) => walkFiles(root));
 }
 
+/**
+ * The helpers that constitute dealing with a zero-row write on purpose.
+ *
+ * Named rather than pattern-matched: the question "did this route THINK about
+ * matching no rows" has no syntactic signature, and every attempt to infer one
+ * from the shape of an `if` ends up either accepting `if (error) return 500` or
+ * rejecting a correct route spelled slightly differently. Importing one of these
+ * is the observable, unambiguous act of having thought about it.
+ */
+const ZERO_ROW_HELPERS = [
+  "writeMatchedNoRows",
+  "isNoRowsMatchedError",
+  "isWriteFailure",
+  "noRowsMatchedResponse",
+  "noRowsMatchedBody",
+  "noRowsMatchedStatus",
+  "insertNotReadableBackResponse",
+  "POSTGREST_NO_ROWS_MATCHED",
+] as const;
+
+/**
+ * Whether the function enclosing this write references one of the helpers above.
+ *
+ * Scoped to the enclosing function rather than the file, so a route file whose
+ * POST handles zero rows does not vouch for its PATCH.
+ */
+function zeroRowsHandled(write: ts.Node): boolean {
+  const enclosing = enclosingFunction(write);
+  const text = enclosing.getText(enclosing.getSourceFile());
+  return ZERO_ROW_HELPERS.some((helper) => text.includes(helper));
+}
+
 /** Every `insert` / `upsert` / `update` / `delete` reached through a `.from()`. */
 export function collectSupabaseWriteSites(options: CollectOptions = {}): SupabaseWriteSite[] {
   const sites: SupabaseWriteSite[] = [];
@@ -524,6 +567,7 @@ export function collectSupabaseWriteSites(options: CollectOptions = {}): Supabas
               chainNames.includes("single") || (observable && resultIsInspected(node, source));
 
             sites.push({
+              handlesZeroRows: zeroRowsHandled(node),
               file: repoRelative(file),
               routeId: routeIdOf(file),
               line: lineOf(source, node),
@@ -741,6 +785,7 @@ export function parseWriteSitesFromSource(code: string): SupabaseWriteSite[] {
           sites.push({
             file: "__fixture__.ts",
             routeId: null,
+            handlesZeroRows: zeroRowsHandled(node),
             line: lineOf(source, node),
             verb,
             command: VERB_COMMAND[verb],

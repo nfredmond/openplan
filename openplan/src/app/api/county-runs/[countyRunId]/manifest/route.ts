@@ -11,6 +11,7 @@ import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
 import { persistBehavioralOnrampKpis } from "@/lib/models/behavioral-onramp-kpis";
 import { refreshCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
@@ -195,12 +196,27 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .select("id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, requested_runtime_json, manifest_json, validation_summary_json")
       .single();
 
-    if (updateError || !updatedRows) {
+    if (isWriteFailure(updateError)) {
       audit.error("county_run_update_failed", {
         message: updateError?.message ?? "unknown",
         code: updateError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to update county run" }, { status: 500 });
+    }
+
+    // The run was read back through the very client this update runs on — the
+    // caller's, which also cleared the workspace write gate above, or the
+    // service role for the worker callback, which RLS does not constrain at
+    // all. Either way the application had already established that this write
+    // was permitted, so matching nothing is a defect and not a missing run.
+    if (writeMatchedNoRows({ data: updatedRows, error: updateError })) {
+      audit.error("county_run_update_matched_no_rows", {
+        countyRunId: existingRow.id,
+        workspaceId: existingRow.workspace_id,
+        userId: sessionUserId,
+        authMode: callbackBearerValid ? "callback-bearer" : "session",
+      });
+      return noRowsMatchedResponse({ subject: "county run", targetWasVerified: true });
     }
 
     const { error: artifactDeleteError } = await supabase

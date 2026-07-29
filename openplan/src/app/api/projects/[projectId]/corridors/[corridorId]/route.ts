@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   CORRIDOR_LOS_GRADES,
   CORRIDOR_MAX_VERTICES,
@@ -149,13 +150,26 @@ export async function PATCH(
       .select(CORRIDOR_COLUMNS)
       .single();
 
-    if (error || !data) {
+    if (isWriteFailure(error)) {
       audit.error("project_corridor_update_failed", {
         corridorId: resolved.corridor.id,
         message: error?.message ?? "unknown",
         code: error?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to update corridor" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data, error })) {
+      // `resolveCorridorContext` read this corridor row itself — not just its
+      // project — through the caller's client, and the write role gate passed.
+      // Matching nothing now is the database refusing what the app allowed.
+      audit.error("project_corridor_update_matched_no_rows", {
+        corridorId: resolved.corridor.id,
+        projectId: resolved.project.id,
+        workspaceId: resolved.project.workspace_id,
+        userId: resolved.user.id,
+      });
+      return noRowsMatchedResponse({ subject: "corridor", targetWasVerified: true });
     }
 
     audit.info("project_corridor_updated", {

@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
@@ -683,12 +684,26 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(DRAFT_COLUMNS)
       .single();
 
-    if (updateError || !updatedRow) {
+    if (isWriteFailure(updateError)) {
       audit.error("draft_review_update_failed", {
         draftId: draft.id,
         message: updateError?.message ?? "draft_review_update_returned_no_row",
       });
       return NextResponse.json({ error: "Failed to update chapter draft" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data: updatedRow, error: updateError })) {
+      // The draft ROW ITSELF, not just its parent chapter, was read through the
+      // caller's client above, and `resolveChapterAccess` already passed
+      // `plans.write` — so a write that matched nothing was refused below the
+      // application rather than aimed at a draft that does not exist.
+      audit.error("draft_review_update_matched_no_rows", {
+        draftId: draft.id,
+        chapterId: chapter.id,
+        workspaceId: chapter.workspace_id,
+        userId: access.userId,
+      });
+      return noRowsMatchedResponse({ subject: "chapter draft", targetWasVerified: true });
     }
 
     audit.info("chapter_draft_reviewed", {

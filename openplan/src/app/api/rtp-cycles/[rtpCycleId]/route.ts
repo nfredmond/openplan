@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -175,9 +176,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       )
       .single();
 
-    if (updateError) {
+    if (updateError && isWriteFailure(updateError)) {
       audit.error("cycle_update_failed", { message: updateError.message, code: updateError.code ?? null });
       return NextResponse.json({ error: "Failed to update RTP cycle" }, { status: 500 });
+    }
+
+    // The trailing null check restates the helper for the type checker, which is
+    // what lets the readiness build below read the returned row.
+    if (writeMatchedNoRows({ data: updatedCycle, error: updateError }) || !updatedCycle) {
+      // This request already read the cycle through the caller's own client and
+      // already passed `plans.write`, so zero matched rows is the database
+      // refusing a write the application believed was allowed — not a 404.
+      audit.error("cycle_update_matched_no_rows", {
+        rtpCycleId: cycle.id,
+        workspaceId: cycle.workspace_id,
+        role: membership.role ?? null,
+      });
+      return noRowsMatchedResponse({ subject: "RTP cycle", targetWasVerified: true });
     }
 
     const readiness = buildRtpCycleReadiness({

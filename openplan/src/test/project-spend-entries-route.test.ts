@@ -225,6 +225,27 @@ describe("/api/projects/[projectId]/spend-entries", () => {
     updateMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     const missing = await PATCH(jsonRequest("PATCH", { entryId: ENTRY_ID, amount: 900 }), routeContext());
     expect(missing.status).toBe(404);
+    expect(await missing.json()).toMatchObject({ error: "No such spend entry" });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "spend_entry_update_matched_no_rows",
+      expect.objectContaining({ projectId: PROJECT_ID, entryId: ENTRY_ID })
+    );
+  });
+
+  it("PATCH still 500s when the update fails for a real database reason", async () => {
+    updateMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { code: "42501", message: "permission denied for table project_spend_entries" },
+    });
+
+    const response = await PATCH(jsonRequest("PATCH", { entryId: ENTRY_ID, amount: 900 }), routeContext());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to update spend entry" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "spend_entry_update_failed",
+      expect.objectContaining({ entryId: ENTRY_ID })
+    );
   });
 
   it("DELETE removes a ledger row, scoped to the project", async () => {
@@ -239,6 +260,26 @@ describe("/api/projects/[projectId]/spend-entries", () => {
     deleteMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     const response = await DELETE(deleteRequest(ENTRY_ID), routeContext());
     expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ error: "No such spend entry" });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "spend_entry_delete_matched_no_rows",
+      expect.objectContaining({ projectId: PROJECT_ID, entryId: ENTRY_ID })
+    );
+  });
+
+  // The other shape of the same news: a `.single()`-style PGRST116 is zero rows
+  // matched, not a broken server.
+  it("DELETE 404s on a PGRST116 'no rows' error instead of 500ing", async () => {
+    deleteMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await DELETE(deleteRequest(ENTRY_ID), routeContext());
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ error: "No such spend entry" });
+    expect(mockAudit.error).not.toHaveBeenCalled();
   });
 
   it("DELETE 400s without a valid entryId", async () => {

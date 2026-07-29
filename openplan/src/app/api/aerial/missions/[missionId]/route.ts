@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 
 const paramsSchema = z.object({
@@ -118,9 +119,21 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select("id, status, title, geography_label, updated_at")
       .single();
 
-    if (updateError || !updated) {
+    if (isWriteFailure(updateError)) {
       audit.error("aerial_mission_update_failed", { missionId: mission.id, message: updateError?.message ?? "unknown" });
       return NextResponse.json({ error: "Failed to update mission" }, { status: 500 });
+    }
+
+    // This mission row was already read back through the caller's own client
+    // above, and the membership and role checks already passed, so a write that
+    // matches nothing was refused beneath the application rather than missing.
+    if (writeMatchedNoRows({ data: updated, error: updateError })) {
+      audit.error("aerial_mission_update_matched_no_rows", {
+        missionId: mission.id,
+        workspaceId: mission.workspace_id,
+        userId: user.id,
+      });
+      return noRowsMatchedResponse({ subject: "mission", targetWasVerified: true });
     }
 
     audit.info("aerial_mission_updated", {

@@ -6,6 +6,7 @@ import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   FUNDING_OPPORTUNITY_DECISION_OPTIONS,
   FUNDING_OPPORTUNITY_STATUS_OPTIONS,
@@ -49,6 +50,20 @@ const patchFundingOpportunitySchema = z
 type RouteContext = {
   params: Promise<{ opportunityId: string }>;
 };
+
+/**
+ * The update matched no rows. A decision update runs inside
+ * `withAssistantActionAudit`, which learns the outcome only from a throw, so a
+ * zero-row write still has to leave the body by throwing — it did fail, just
+ * not the way a database error fails. This type carries that distinction back
+ * out to the catch, which answers it as a refused write rather than a broken one.
+ */
+class FundingOpportunityUpdateMatchedNoRows extends Error {
+  constructor() {
+    super("funding_opportunity_update_matched_no_rows");
+    this.name = "FundingOpportunityUpdateMatchedNoRows";
+  }
+}
 
 export async function PATCH(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("funding-opportunities.patch", request);
@@ -171,8 +186,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         )
         .single();
 
-      if (error || !data) {
-        throw new Error(error?.message ?? "funding_opportunity_update_returned_no_row");
+      if (isWriteFailure(error)) {
+        throw new Error(error?.message ?? "funding_opportunity_update_failed");
+      }
+      if (writeMatchedNoRows({ data, error })) {
+        throw new FundingOpportunityUpdateMatchedNoRows();
       }
       return data;
     };
@@ -198,6 +216,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           )
         : await runUpdate();
     } catch (updateErr) {
+      if (updateErr instanceof FundingOpportunityUpdateMatchedNoRows) {
+        // `loadFundingOpportunityAccess` read this exact opportunity row through
+        // the caller's own client and the write-access gate passed, so a write
+        // that matches nothing is the database refusing what the application
+        // allowed — not an opportunity that never existed.
+        audit.error("funding_opportunity_update_matched_no_rows", {
+          opportunityId: access.opportunity.id,
+          workspaceId: access.opportunity.workspace_id,
+          userId: user.id,
+          role: access.membership.role,
+        });
+        return noRowsMatchedResponse({ subject: "funding opportunity", targetWasVerified: true });
+      }
       audit.error("funding_opportunity_update_failed", {
         opportunityId: access.opportunity.id,
         userId: user.id,

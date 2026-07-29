@@ -136,4 +136,50 @@ describe("/api/funding-opportunities/[opportunityId]", () => {
       }),
     });
   });
+
+  it("PATCH reports an update that matched no rows as a refused write, not a broken one", async () => {
+    // PostgREST answers `.single()` with PGRST116 when the UPDATE touched
+    // nothing. The route already read this opportunity through the caller's own
+    // client and passed the write gate, so the refusal came from below the
+    // application — the answer names that instead of "Failed to update".
+    fundingOpportunitiesSingleMock.mockResolvedValue({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await patchFundingOpportunity(jsonRequest({ decisionState: "skip" }), {
+      params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }),
+    });
+
+    expect(response.status).toBe(500);
+    const payload = await response.json();
+    expect(payload.error).toBe("The funding opportunity was not saved");
+    expect(payload.details).toContain("row-level security");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "funding_opportunity_update_matched_no_rows",
+      expect.objectContaining({ opportunityId: OPPORTUNITY_ID, workspaceId: WORKSPACE_ID })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith(
+      "funding_opportunity_update_failed",
+      expect.anything()
+    );
+  });
+
+  it("PATCH still answers a generic 500 when the update genuinely fails", async () => {
+    fundingOpportunitiesSingleMock.mockResolvedValue({
+      data: null,
+      error: { code: "57014", message: "canceling statement due to statement timeout" },
+    });
+
+    const response = await patchFundingOpportunity(jsonRequest({ decisionState: "skip" }), {
+      params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }),
+    });
+
+    expect(response.status).toBe(500);
+    expect((await response.json()).error).toBe("Failed to update funding opportunity");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "funding_opportunity_update_failed",
+      expect.objectContaining({ opportunityId: OPPORTUNITY_ID })
+    );
+  });
 });

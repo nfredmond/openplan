@@ -322,7 +322,7 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
     expect(projectDeliverablesUpdateMock).not.toHaveBeenCalled();
   });
 
-  it("returns 404 when the record does not belong to the project", async () => {
+  it("answers 404 'no such milestone' when the update matches no row", async () => {
     projectMilestonesMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
     const response = await patchRecord(
@@ -331,7 +331,68 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
     );
 
     expect(response.status).toBe(404);
-    expect(await response.json()).toMatchObject({ error: "Milestone not found" });
+    expect(await response.json()).toMatchObject({ error: "No such milestone" });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "project_record_update_matched_no_rows",
+      expect.objectContaining({ recordId: MILESTONE_ID, recordType: "milestone" })
+    );
+  });
+
+  it("answers 404 for a deliverable and a submittal that match no row", async () => {
+    projectDeliverablesMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+    const deliverable = await patchRecord(
+      jsonRequest(DELIVERABLE_ID, { recordType: "deliverable", status: "complete" }),
+      routeContext(DELIVERABLE_ID)
+    );
+
+    expect(deliverable.status).toBe(404);
+    expect(await deliverable.json()).toMatchObject({ error: "No such deliverable" });
+
+    projectSubmittalsMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+    const submittal = await patchRecord(
+      jsonRequest(SUBMITTAL_ID, { recordType: "submittal", status: "accepted" }),
+      routeContext(SUBMITTAL_ID)
+    );
+
+    expect(submittal.status).toBe(404);
+    expect(await submittal.json()).toMatchObject({ error: "No such submittal" });
+  });
+
+  // PostgREST reports zero matched rows two ways depending on how the query was
+  // spelled; neither is a server fault, so neither may surface as a 500.
+  it("treats a PGRST116 'no rows' error as a missing record, not a server failure", async () => {
+    projectMilestonesMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await patchRecord(
+      jsonRequest(MILESTONE_ID, { recordType: "milestone", status: "complete" }),
+      routeContext(MILESTONE_ID)
+    );
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ error: "No such milestone" });
+    expect(mockAudit.error).not.toHaveBeenCalled();
+  });
+
+  it("still 500s when the update fails for a real database reason", async () => {
+    projectMilestonesMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "42501", message: "permission denied for table project_milestones" },
+    });
+
+    const response = await patchRecord(
+      jsonRequest(MILESTONE_ID, { recordType: "milestone", status: "complete" }),
+      routeContext(MILESTONE_ID)
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to update milestone" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "project_record_update_failed",
+      expect.objectContaining({ recordType: "milestone" })
+    );
   });
 
   it("refuses a viewer and updates nothing", async () => {

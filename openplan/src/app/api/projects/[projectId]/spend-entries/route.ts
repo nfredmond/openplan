@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 /**
  * Project spend ledger — direct costs (subconsultant charges, expenses)
@@ -265,7 +266,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(SPEND_ENTRY_SELECT)
       .maybeSingle();
 
-    if (error) {
+    if (error && isWriteFailure(error)) {
       audit.error("spend_entry_update_failed", {
         projectId: project.id,
         entryId: parsed.data.entryId,
@@ -273,9 +274,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "Failed to update spend entry", details: error.message }, { status: 500 });
     }
-    if (!data) {
-      audit.warn("spend_entry_not_found", { projectId: project.id, entryId: parsed.data.entryId });
-      return NextResponse.json({ error: "Spend entry not found" }, { status: 404 });
+    // The access gate verified the PROJECT and the caller's role, never this
+    // ledger row — entryId comes from the payload and is written straight at.
+    if (writeMatchedNoRows({ data, error })) {
+      audit.warn("spend_entry_update_matched_no_rows", { projectId: project.id, entryId: parsed.data.entryId });
+      return noRowsMatchedResponse({ subject: "spend entry", targetWasVerified: false });
     }
 
     audit.info("spend_entry_updated", {
@@ -321,7 +324,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       .select("id")
       .maybeSingle();
 
-    if (error) {
+    if (error && isWriteFailure(error)) {
       audit.error("spend_entry_delete_failed", {
         projectId: project.id,
         entryId: entryIdParse.data,
@@ -329,9 +332,9 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "Failed to delete spend entry", details: error.message }, { status: 500 });
     }
-    if (!data) {
-      audit.warn("spend_entry_not_found", { projectId: project.id, entryId: entryIdParse.data });
-      return NextResponse.json({ error: "Spend entry not found" }, { status: 404 });
+    if (writeMatchedNoRows({ data, error })) {
+      audit.warn("spend_entry_delete_matched_no_rows", { projectId: project.id, entryId: entryIdParse.data });
+      return noRowsMatchedResponse({ subject: "spend entry", targetWasVerified: false });
     }
 
     audit.info("spend_entry_deleted", {

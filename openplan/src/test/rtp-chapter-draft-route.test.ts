@@ -400,6 +400,49 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft PATCH", () => 
     );
   });
 
+  it("reports a refused write, not a bare 500, when the update matches no rows", async () => {
+    // PostgREST's `.single()` spelling of "your UPDATE changed nothing": PGRST116
+    // with a null row, which is not a server fault. Both the chapter and the
+    // draft row itself were read through this caller's client first, so the
+    // honest answer names the refusal instead of "Failed to update".
+    updateSingleMock.mockResolvedValue({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await patchChapterDraft(
+      jsonRequest("PATCH", { action: "accept", draftId: DRAFT_ID }),
+      routeContext()
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "The chapter draft was not saved",
+      details: expect.stringContaining("row-level security policy"),
+    });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "draft_review_update_matched_no_rows",
+      expect.objectContaining({ draftId: DRAFT_ID, chapterId: CHAPTER_ID, workspaceId: WORKSPACE_ID })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("draft_review_update_failed", expect.anything());
+  });
+
+  it("keeps the original 500 and audit code when the update genuinely fails", async () => {
+    updateSingleMock.mockResolvedValue({ data: null, error: { code: "42501", message: "permission denied" } });
+
+    const response = await patchChapterDraft(
+      jsonRequest("PATCH", { action: "dismiss", draftId: DRAFT_ID }),
+      routeContext()
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to update chapter draft" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "draft_review_update_failed",
+      expect.objectContaining({ draftId: DRAFT_ID, message: "permission denied" })
+    );
+  });
+
   it("answers 409 for a dismissed draft — dismissal is terminal", async () => {
     installClient({ storedDraft: { ...storedDraft, status: "dismissed" } });
 

@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 /**
  * Where a project sits on the map.
@@ -106,13 +107,26 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .select("id, latitude, longitude, updated_at")
       .single();
 
-    if (error || !data) {
+    if (isWriteFailure(error)) {
       audit.error("project_location_update_failed", {
         projectId: access.project.id,
         message: error?.message ?? "unknown",
         code: error?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to update project location" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data, error })) {
+      // `loadProjectAccess` already read this exact project row through the
+      // caller's client and the role gate above passed, so matching no rows
+      // means the database refused a write the application believed was allowed.
+      audit.error("project_location_update_matched_no_rows", {
+        projectId: access.project.id,
+        workspaceId: access.project.workspace_id,
+        userId: user.id,
+        role: access.membership?.role ?? null,
+      });
+      return noRowsMatchedResponse({ subject: "project location", targetWasVerified: true });
     }
 
     const record = data as { id: string; latitude: number | null; longitude: number | null; updated_at: string };

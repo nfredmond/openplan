@@ -148,6 +148,105 @@ describe("PATCH /api/invoicing/invoices/[invoiceId]", () => {
     });
   });
 
+  it("reports a zero-row update as a refused write, not as an opaque failure", async () => {
+    // `.maybeSingle()`-shaped news that nothing changed: no error, no row.
+    billingInvoicesUpdateSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        status: "submitted",
+      }),
+      { params: Promise.resolve({ invoiceId: "99999999-9999-4999-8999-999999999999" }) }
+    );
+
+    // The invoice was already read back through the caller's own client and
+    // cleared the workspace and role checks, so zero rows is the database
+    // refusing a write the application allowed — a 500 that says which.
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.error).toBe("The invoice was not saved");
+    expect(body.details).toContain("row-level security");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "billing_invoice_update_matched_no_rows",
+      expect.objectContaining({ invoiceId: "99999999-9999-4999-8999-999999999999" })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("billing_invoice_update_failed", expect.anything());
+  });
+
+  it("reports a PGRST116 update the same way, without retrying against the legacy select", async () => {
+    billingInvoicesUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await patchInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        status: "submitted",
+      }),
+      { params: Promise.resolve({ invoiceId: "99999999-9999-4999-8999-999999999999" }) }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "The invoice was not saved" });
+    // Zero rows is not the pending-profile-schema case, so the legacy-select
+    // fallback must not fire a second update.
+    expect(billingInvoicesUpdateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("still answers 500 with the original wording when the update genuinely fails", async () => {
+    billingInvoicesUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "57014", message: "canceling statement due to statement timeout" },
+    });
+
+    const response = await patchInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        status: "submitted",
+      }),
+      { params: Promise.resolve({ invoiceId: "99999999-9999-4999-8999-999999999999" }) }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to update invoice record" });
+    expect(mockAudit.error).toHaveBeenCalledWith("billing_invoice_update_failed", expect.anything());
+  });
+
+  it("reports a zero-row link the same way, and records the assistant action as failed", async () => {
+    // The link path runs the update inside withAssistantActionAudit, so the
+    // zero-row signal has to survive being thrown through that wrapper —
+    // an action that saved nothing must not be audited as succeeded.
+    const executionsInsertMock = vi.fn().mockResolvedValue({ error: null });
+    createServiceRoleClientMock.mockReturnValueOnce({
+      from: vi.fn((table: string) => {
+        if (table === "assistant_action_executions") {
+          return { insert: executionsInsertMock };
+        }
+        throw new Error(`Unexpected service table: ${table}`);
+      }),
+    });
+    billingInvoicesUpdateSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchInvoice(
+      jsonRequest({
+        workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        fundingAwardId: "77777777-7777-4777-8777-777777777777",
+      }),
+      { params: Promise.resolve({ invoiceId: "99999999-9999-4999-8999-999999999999" }) }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "The invoice was not saved" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "billing_invoice_update_matched_no_rows",
+      expect.objectContaining({ invoiceId: "99999999-9999-4999-8999-999999999999" })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("billing_invoice_update_failed", expect.anything());
+    expect(executionsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ outcome: "failed" }));
+  });
+
   it("rejects linking a funding award that does not match the invoice project", async () => {
     billingInvoicesSingleMock.mockResolvedValueOnce({
       data: {

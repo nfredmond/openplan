@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { emailTransportName, sendEmail } from "./email";
 
 // The ONLY module that touches the sensitive engagement_subscriptions and
@@ -10,6 +11,16 @@ import { emailTransportName, sendEmail } from "./email";
 // here never fails the user's action.
 
 type QueryClient = Pick<SupabaseClient, "from">;
+
+// The three scoped single-row writes below all answer `{ ok, found }`, and the
+// two axes are deliberately independent: `ok` is whether the database answered
+// at all, `found` is whether the write matched a row. Collapsing them is how a
+// genuine failure ends up telling a participant their confirmation link was
+// "already used" — see @/lib/http/write-outcome for why zero matched rows is
+// not a fault. A failed write knows nothing about rows, so it is never `found`.
+// Each site reads those helpers itself rather than through a wrapper here: the
+// decision belongs at the write, and a wrapper would hide it from the reader
+// and from src/test/write-zero-row-status-guard.test.ts alike.
 
 export type EngagementNotificationType =
   | "comment_submitted"
@@ -83,14 +94,15 @@ export async function markNotificationRead(
   client: QueryClient,
   params: { notificationId: string; campaignId: string }
 ): Promise<{ ok: boolean; found: boolean }> {
-  const { data, error } = await client
+  const result = await client
     .from("engagement_notifications")
     .update({ is_read: true, read_at: new Date().toISOString() })
     .eq("id", params.notificationId)
     .eq("campaign_id", params.campaignId)
     .select("id")
     .maybeSingle();
-  return { ok: !error, found: Boolean(data) };
+  if (isWriteFailure(result.error)) return { ok: false, found: false };
+  return { ok: true, found: !writeMatchedNoRows(result) };
 }
 
 // ── Email outbox (sensitive) ──────────────────────────────────────────────────
@@ -203,24 +215,26 @@ export async function confirmSubscription(
   client: QueryClient,
   params: { campaignId: string; token: string }
 ): Promise<{ ok: boolean; found: boolean }> {
-  const { data, error } = await client
+  const result = await client
     .from("engagement_subscriptions")
     .update({ confirmed: true, confirmed_at: new Date().toISOString(), unsubscribed_at: null })
     .eq("campaign_id", params.campaignId)
     .eq("confirm_token", params.token)
     .select("id")
     .maybeSingle();
-  return { ok: !error, found: Boolean(data) };
+  if (isWriteFailure(result.error)) return { ok: false, found: false };
+  return { ok: true, found: !writeMatchedNoRows(result) };
 }
 
 export async function unsubscribeByToken(client: QueryClient, token: string): Promise<{ ok: boolean; found: boolean }> {
-  const { data, error } = await client
+  const result = await client
     .from("engagement_subscriptions")
     .update({ unsubscribed_at: new Date().toISOString(), confirmed: false })
     .eq("unsubscribe_token", token)
     .select("id")
     .maybeSingle();
-  return { ok: !error, found: Boolean(data) };
+  if (isWriteFailure(result.error)) return { ok: false, found: false };
+  return { ok: true, found: !writeMatchedNoRows(result) };
 }
 
 /** Rows this fingerprint created for a campaign — for per-IP subscribe rate limiting. */

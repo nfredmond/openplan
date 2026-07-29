@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR,
   APPLICATION_PENDING_SCHEMA_ERROR,
@@ -293,7 +294,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(APPLICATION_SECTION_SELECT)
       .single();
 
-    if (updateError || !updated) {
+    if (isWriteFailure(updateError)) {
       // A finalize (or reopen) against a database that predates the finalizer
       // columns must not silently drop the stamp — the export's provenance
       // depends on it. Name the migration instead.
@@ -310,6 +311,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         message: updateError?.message ?? "section_update_returned_no_row",
       });
       return NextResponse.json({ error: "Failed to update section" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data: updated, error: updateError })) {
+      // `loadSectionForWrite` read this exact section row through the caller's
+      // own client, under the same opportunity and after the write-access gate,
+      // so an update that matches nothing is the database refusing what the
+      // application allowed — not a missing section.
+      audit.error("section_update_matched_no_rows", {
+        opportunityId: opportunity.id,
+        sectionId: section.id,
+        workspaceId: opportunity.workspace_id,
+        userId,
+      });
+      return noRowsMatchedResponse({ subject: "section", targetWasVerified: true });
     }
 
     audit.info("section_updated", {

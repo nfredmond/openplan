@@ -67,6 +67,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     const result = await markNotificationRead(supabase, { notificationId: parsed.data.notificationId as string, campaignId: access.campaign.id });
+    // A write that failed and a write that matched no rows are different
+    // answers: the first is ours to fix, the second means no such notification
+    // in this campaign. Reporting both as 404 hid the first one.
+    if (!result.ok) return NextResponse.json({ error: "Failed to mark the notification read" }, { status: 500 });
     if (!result.found) return NextResponse.json({ error: "Notification not found" }, { status: 404 });
     return NextResponse.json({ ok: true });
   } catch (error) {

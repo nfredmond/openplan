@@ -4,6 +4,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const RATE_TABLE_SELECT =
   "id, workspace_id, name, engagement_id, effective_date, notes, created_by, created_at, updated_at";
@@ -163,13 +164,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         .select(RATE_TABLE_SELECT)
         .single();
 
-      if (error || !data) {
+      if (isWriteFailure(error)) {
         audit.error("invoicing_rate_table_update_failed", {
           rateTableId: rateTable.id,
           workspaceId: parsed.data.workspaceId,
           message: error?.message ?? "invoicing_rate_table_update_returned_no_row",
         });
         return NextResponse.json({ error: "Failed to update rate table" }, { status: 500 });
+      }
+
+      if (writeMatchedNoRows({ data, error })) {
+        // The rate table was read back through the caller's own client above and
+        // cleared the membership and role checks, so an update that changes
+        // nothing is the database refusing a write the application had allowed.
+        // Returning here also leaves the entry set untouched — a table whose
+        // header could not be saved must not have its entries replaced.
+        audit.error("invoicing_rate_table_update_matched_no_rows", {
+          rateTableId: rateTable.id,
+          workspaceId: parsed.data.workspaceId,
+          userId: user.id,
+        });
+        return noRowsMatchedResponse({ subject: "rate table", targetWasVerified: true });
       }
       updatedTable = data as Record<string, unknown>;
     } else {

@@ -6,6 +6,7 @@ import { loadCampaignAccess, validateCampaignCategoryAccess } from "@/lib/engage
 import { CLOSE_LOOP_ENTRY_COLUMNS } from "@/lib/engagement/close-loop";
 import { enqueueCampaignSubscriberEmails, recordOperatorNotification } from "@/lib/notifications/engagement";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid(), entryId: z.string().uuid() });
 
@@ -86,11 +87,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(CLOSE_LOOP_ENTRY_COLUMNS)
       .maybeSingle();
 
-    if (updateError) {
+    if (updateError && isWriteFailure(updateError)) {
       audit.error("entry_update_failed", { campaignId: access.campaign.id, entryId: routeParams.data.entryId, message: updateError.message });
       return NextResponse.json({ error: "Failed to update close-loop entry" }, { status: 500 });
     }
-    if (!entry) return NextResponse.json({ error: "Close-loop entry not found" }, { status: 404 });
+    // loadCampaignAccess verified the CAMPAIGN, never this entry — the write goes
+    // straight at the id from the path — so nothing matched is the ordinary answer
+    // to "does this entry exist and may you change it", not a policy defect.
+    // `.maybeSingle()` reports that as a null row with no error, which is why the
+    // null check leads; the helper covers the `.single()` shape too.
+    if (!entry || writeMatchedNoRows({ data: entry, error: updateError })) {
+      audit.warn("entry_update_matched_no_rows", { campaignId: access.campaign.id, entryId: routeParams.data.entryId });
+      return noRowsMatchedResponse({ subject: "close-loop entry", targetWasVerified: false });
+    }
 
     // On a real publish: operator inbox + subscriber emails. These touch the
     // service-role-only notification/subscription/outbox tables, so use a

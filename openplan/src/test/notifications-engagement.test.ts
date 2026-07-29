@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  confirmSubscription,
   enqueueCampaignSubscriberEmails,
   enqueueEmail,
   markNotificationRead,
   recordOperatorNotification,
   subscribeParticipant,
+  unsubscribeByToken,
 } from "@/lib/notifications/engagement";
 
 describe("engagement notifications lib", () => {
@@ -84,7 +86,71 @@ describe("engagement notifications lib", () => {
 
     const result = await markNotificationRead(client, { notificationId: "n1", campaignId: "c1" });
     expect(result.found).toBe(true);
+    expect(result.ok).toBe(true);
     expect(eqId).toHaveBeenCalledWith("id", "n1");
     expect(eqCampaign).toHaveBeenCalledWith("campaign_id", "c1");
+  });
+
+  // The two ways a write can change nothing are not the same news, and the
+  // callers answer them differently — a 404 or a stale-link page for "no row",
+  // a 500 for "the database refused". So the return value has to keep them apart.
+  it("markNotificationRead reports a matched-nothing write as ok-but-not-found", async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+    const client = {
+      from: vi.fn(() => ({ update: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }) }) })),
+    } as never;
+
+    expect(await markNotificationRead(client, { notificationId: "n1", campaignId: "c1" })).toEqual({
+      ok: true,
+      found: false,
+    });
+  });
+
+  it("markNotificationRead reports a genuine database failure as not-ok", async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: { code: "57014", message: "timeout" } });
+    const client = {
+      from: vi.fn(() => ({ update: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle }) }) }) }) })),
+    } as never;
+
+    expect(await markNotificationRead(client, { notificationId: "n1", campaignId: "c1" })).toEqual({
+      ok: false,
+      found: false,
+    });
+  });
+
+  it("confirmSubscription separates an unrecognized token from a refused write", async () => {
+    const subscriptionClient = (result: unknown) =>
+      ({
+        from: vi.fn(() => ({
+          update: () => ({ eq: () => ({ eq: () => ({ select: () => ({ maybeSingle: vi.fn().mockResolvedValue(result) }) }) }) }),
+        })),
+      }) as never;
+
+    expect(await confirmSubscription(subscriptionClient({ data: null, error: null }), { campaignId: "c1", token: "t" })).toEqual({
+      ok: true,
+      found: false,
+    });
+    expect(
+      await confirmSubscription(subscriptionClient({ data: null, error: { code: "42501", message: "denied" } }), {
+        campaignId: "c1",
+        token: "t",
+      })
+    ).toEqual({ ok: false, found: false });
+  });
+
+  it("unsubscribeByToken separates a spent link from a refused write", async () => {
+    const tokenClient = (result: unknown) =>
+      ({
+        from: vi.fn(() => ({
+          update: () => ({ eq: () => ({ select: () => ({ maybeSingle: vi.fn().mockResolvedValue(result) }) }) }),
+        })),
+      }) as never;
+
+    expect(await unsubscribeByToken(tokenClient({ data: null, error: null }), "t")).toEqual({ ok: true, found: false });
+    // Still subscribed: the caller must not be told "already unsubscribed".
+    expect(await unsubscribeByToken(tokenClient({ data: null, error: { code: "42501", message: "denied" } }), "t")).toEqual({
+      ok: false,
+      found: false,
+    });
   });
 });

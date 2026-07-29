@@ -239,6 +239,46 @@ describe("/api/reports/[reportId]/narrative-draft/[draftId]", () => {
     expect(updateMock).not.toHaveBeenCalled();
   });
 
+  it("says the review was not saved — and why — when the update matches no rows", async () => {
+    // The draft and the membership were both read through this same caller
+    // client, so a write that changes nothing is the database refusing an
+    // allowed write, not a missing draft. It stays a 500, but one that names
+    // the cause instead of "Failed to update narrative draft".
+    installClient(draftRow());
+    updateSingleMock.mockResolvedValue({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const response = await patchDraft(patchRequest({ action: "dismiss" }), routeContext());
+
+    expect(response.status).toBe(500);
+    const payload = (await response.json()) as { error: string; details: string };
+    expect(payload.error).toBe("The narrative draft was not saved");
+    expect(payload.details).toContain("row-level security policy");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "draft_review_update_matched_no_rows",
+      expect.objectContaining({ draftId: DRAFT_ID, reportId: REPORT_ID })
+    );
+  });
+
+  it("keeps a genuine update failure a plain 500", async () => {
+    installClient(draftRow());
+    updateSingleMock.mockResolvedValue({
+      data: null,
+      error: { code: "57014", message: "canceling statement due to statement timeout" },
+    });
+
+    const response = await patchDraft(patchRequest({ action: "dismiss" }), routeContext());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to update narrative draft" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "draft_review_update_failed",
+      expect.objectContaining({ draftId: DRAFT_ID })
+    );
+  });
+
   it("returns 404 when the draft does not belong to this report", async () => {
     installClient(null);
 

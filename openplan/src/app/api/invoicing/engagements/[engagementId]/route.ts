@@ -4,6 +4,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const ENGAGEMENT_SELECT =
   "id, workspace_id, client_id, project_id, parent_engagement_id, title, reference_code, engagement_kind, billing_basis, not_to_exceed_amount, start_date, end_date, status, notes, created_by, created_at, updated_at";
@@ -207,13 +208,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .select(ENGAGEMENT_SELECT)
       .single();
 
-    if (error || !data) {
+    if (isWriteFailure(error)) {
       audit.error("invoicing_engagement_update_failed", {
         engagementId: engagement.id,
         workspaceId: parsed.data.workspaceId,
         message: error?.message ?? "invoicing_engagement_update_returned_no_row",
       });
       return NextResponse.json({ error: "Failed to update engagement" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data, error })) {
+      // The engagement row itself was read back through the caller's own client
+      // above and the role check passed, so a zero-row update is the database
+      // refusing a write the application had already allowed.
+      audit.error("invoicing_engagement_update_matched_no_rows", {
+        engagementId: engagement.id,
+        workspaceId: parsed.data.workspaceId,
+        userId: user.id,
+      });
+      return noRowsMatchedResponse({ subject: "engagement", targetWasVerified: true });
     }
 
     audit.info("invoicing_engagement_updated", {

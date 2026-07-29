@@ -6,6 +6,7 @@ import { withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({
   invoiceId: z.string().uuid(),
@@ -34,6 +35,20 @@ const patchBillingInvoiceSchema = z
     message: "At least one invoice patch field is required",
     path: ["fundingAwardId"],
   });
+
+/**
+ * The update changed nothing — carried out of the update body as its own error
+ * so the handler can tell it apart from a database failure. It has to travel as
+ * a throw rather than a return value because the update runs inside
+ * `withAssistantActionAudit`, which records a *failed* execution only when the
+ * body throws, and a patch that saved nothing is not a successful action.
+ */
+class InvoiceUpdateMatchedNoRowsError extends Error {
+  constructor() {
+    super("billing_invoice_update_matched_no_rows");
+    this.name = "InvoiceUpdateMatchedNoRowsError";
+  }
+}
 
 type RouteContext = {
   params: Promise<{ invoiceId: string }>;
@@ -162,8 +177,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           .select(INVOICE_SELECT_LEGACY)
           .single());
       }
-      if (error || !data) {
-        throw new Error(error?.message ?? "billing_invoice_update_returned_no_row");
+      if (isWriteFailure(error)) {
+        throw new Error(error?.message ?? "billing_invoice_update_failed");
+      }
+      if (writeMatchedNoRows({ data, error })) {
+        throw new InvoiceUpdateMatchedNoRowsError();
       }
       return data;
     };
@@ -221,6 +239,18 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           )
         : await runUpdate();
     } catch (updateErr) {
+      if (updateErr instanceof InvoiceUpdateMatchedNoRowsError) {
+        // The invoice row was read back through the caller's own client above
+        // and cleared the membership and role checks, so an update that changes
+        // nothing is the database refusing a write the application had allowed.
+        audit.error("billing_invoice_update_matched_no_rows", {
+          invoiceId: invoice.id,
+          workspaceId: parsed.data.workspaceId,
+          userId: user.id,
+        });
+        return noRowsMatchedResponse({ subject: "invoice", targetWasVerified: true });
+      }
+
       audit.error("billing_invoice_update_failed", {
         invoiceId: invoice.id,
         workspaceId: parsed.data.workspaceId,

@@ -17,6 +17,7 @@ import {
 } from "@/lib/api/county-onramp-scaffold";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
 const paramsSchema = z.object({
@@ -254,12 +255,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
       )
       .single();
 
-    if (updateError || !updatedRow) {
+    if (isWriteFailure(updateError)) {
       audit.error("county_run_update_failed", {
         message: updateError?.message ?? "unknown",
         code: updateError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to update county run scaffold" }, { status: 500 });
+    }
+
+    // The run was read through the caller's own client above and then cleared
+    // the workspace write gate, so the application had already decided this
+    // caller may write it — and the scaffold CSV is already rewritten on disk
+    // by this point, which makes a silent zero-row update especially costly.
+    if (writeMatchedNoRows({ data: updatedRow, error: updateError })) {
+      audit.error("county_run_update_matched_no_rows", {
+        countyRunId: existingRow.id,
+        workspaceId: existingRow.workspace_id,
+        userId: user.id,
+      });
+      return noRowsMatchedResponse({ subject: "county run", targetWasVerified: true });
     }
 
     if (invalidatesValidation) {

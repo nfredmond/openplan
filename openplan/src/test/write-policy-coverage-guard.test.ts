@@ -45,13 +45,19 @@ import { loadSchemaInventory } from "./migrations/schema-inventory";
  * landed first, three permanent false entries would have gone into the
  * allowlist below and stayed there.
  *
+ * NO LONGER NOT ASSERTED. This header used to record the status question as out
+ * of scope: `PGRST116` appeared zero times in non-test `src`, so every caller-RLS
+ * write chaining `.select().single()` answered 500 when its target row was not
+ * writable — loud, but misclassified, exactly as `project_rtp_cycle_links` was,
+ * and fixing it was "a separate change with its own blast radius". That change
+ * has since landed. `src/lib/http/write-outcome.ts` holds the decision and
+ * `write-zero-row-status-guard.test.ts` ratchets it over every caller UPDATE and
+ * DELETE. The division between the two guards is worth keeping straight: this
+ * one asks whether a write can SEE how many rows it changed, that one asks what
+ * it then SAYS.
+ *
  * DELIBERATELY NOT ASSERTED:
  *
- *   - That a write answering PGRST116 is reported as a 4xx. `PGRST116` appears
- *     zero times in non-test `src`, so every caller-RLS write chaining
- *     `.select().single()` answers 500 when its target row is not writable —
- *     loud, but misclassified, exactly as `project_rtp_cycle_links` was. That is
- *     a separate change with its own blast radius.
  *   - That a write is AUTHORIZED. `workspace-write-role-gate-guard.test.ts`
  *     owns that question.
  *   - That an INSERT verifies rows. It cannot silently insert nothing: a

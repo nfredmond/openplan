@@ -140,6 +140,36 @@ describe("project record route", () => {
       expect((await patchProject(patchRequest({ summary: null }), params)).status).toBe(200);
       expect((await patchProject(patchRequest({ status: null }), params)).status).toBe(400);
     });
+
+    it("names the refused write when the update matched no rows", async () => {
+      // PGRST116 is PostgREST reporting that the UPDATE changed nothing, not
+      // that the server broke. `loadProjectAccess` read this exact row through
+      // the caller's client moments earlier, so the honest answer says the write
+      // was refused below the application rather than "Failed to update project".
+      fromMock.mockImplementation((table: string) => {
+        if (table === "projects") {
+          return {
+            update: () => ({
+              eq: () => ({
+                select: () => ({
+                  single: async () => ({ data: null, error: { code: "PGRST116", message: "no rows returned" } }),
+                }),
+              }),
+            }),
+          };
+        }
+        return { select: () => ({ eq: async () => ({ count: 0, error: null }) }) };
+      });
+
+      const response = await patchProject(patchRequest({ name: "Renamed" }), params);
+
+      expect(response.status).toBe(500);
+      await expect(response.json()).resolves.toMatchObject({ error: "The project was not saved" });
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "project_update_matched_no_rows",
+        expect.objectContaining({ projectId: PROJECT_ID, workspaceId: WORKSPACE_ID })
+      );
+    });
   });
 
   describe("DELETE", () => {

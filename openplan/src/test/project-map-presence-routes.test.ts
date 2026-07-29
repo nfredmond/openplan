@@ -38,7 +38,10 @@ vi.mock("@/lib/programs/api", () => ({
 
 import { PATCH as patchLocation } from "@/app/api/projects/[projectId]/location/route";
 import { POST as createCorridor } from "@/app/api/projects/[projectId]/corridors/route";
-import { DELETE as deleteCorridor } from "@/app/api/projects/[projectId]/corridors/[corridorId]/route";
+import {
+  DELETE as deleteCorridor,
+  PATCH as patchCorridor,
+} from "@/app/api/projects/[projectId]/corridors/[corridorId]/route";
 
 const LINE = { type: "LineString", coordinates: [[-83.1, 39.9], [-83.0, 40.0]] };
 
@@ -47,10 +50,12 @@ function buildSupabase(overrides: {
   projectUpdateResult?: { data: unknown; error: unknown };
   corridorInsertResult?: { data: unknown; error: unknown };
   corridorLookupResult?: { data: unknown; error: unknown };
+  corridorUpdateResult?: { data: unknown; error: unknown };
   corridorDeleteResult?: { error: unknown };
 }) {
   const projectUpdateSpy = vi.fn();
   const corridorInsertSpy = vi.fn();
+  const corridorUpdateSpy = vi.fn();
   const corridorDeleteEqSpy = vi.fn();
   const corridorLookupEqSpies: Array<[string, unknown]> = [];
 
@@ -100,6 +105,30 @@ function buildSupabase(overrides: {
               }),
             };
           },
+          update: (payload: unknown) => {
+            corridorUpdateSpy(payload);
+            return {
+              eq: () => ({
+                select: () => ({
+                  single: async () =>
+                    overrides.corridorUpdateResult ?? {
+                      data: {
+                        id: CORRIDOR_ID,
+                        workspace_id: WORKSPACE_ID,
+                        project_id: PROJECT_ID,
+                        name: "Main Street",
+                        corridor_type: "arterial",
+                        los_grade: "C",
+                        geometry_geojson: LINE,
+                        created_at: "2026-07-28T00:00:00Z",
+                        updated_at: "2026-07-28T01:00:00Z",
+                      },
+                      error: null,
+                    },
+                }),
+              }),
+            };
+          },
           select: () => {
             const chain = {
               eq: (column: string, value: unknown) => {
@@ -137,7 +166,14 @@ function buildSupabase(overrides: {
     }),
   };
 
-  return { client, projectUpdateSpy, corridorInsertSpy, corridorDeleteEqSpy, corridorLookupEqSpies };
+  return {
+    client,
+    projectUpdateSpy,
+    corridorInsertSpy,
+    corridorUpdateSpy,
+    corridorDeleteEqSpy,
+    corridorLookupEqSpies,
+  };
 }
 
 function locationRequest(body: unknown) {
@@ -151,6 +187,14 @@ function locationRequest(body: unknown) {
 function corridorRequest(body: unknown) {
   return new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/corridors`, {
     method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(body),
+  });
+}
+
+function corridorPatchRequest(body: unknown) {
+  return new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/corridors/${CORRIDOR_ID}`, {
+    method: "PATCH",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(body),
   });
@@ -249,6 +293,28 @@ describe("PATCH /api/projects/[projectId]/location", () => {
 
     const response = await patchLocation(locationRequest({ latitude: 39.9, longitude: -83.0 }), projectParams);
     expect(response.status).toBe(401);
+  });
+
+  /**
+   * PGRST116 is PostgREST saying the UPDATE matched no rows — an outcome, not a
+   * server fault. `loadProjectAccess` read this project through the caller's own
+   * client a moment earlier, so the refusal came from below the application and
+   * the response says so instead of "Failed to update project location".
+   */
+  it("names the refused write when the update matched no rows", async () => {
+    const { client } = buildSupabase({
+      projectUpdateResult: { data: null, error: { code: "PGRST116", message: "no rows returned" } },
+    });
+    createClientMock.mockResolvedValue(client);
+
+    const response = await patchLocation(locationRequest({ latitude: 39.9, longitude: -83.0 }), projectParams);
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({ error: "The project location was not saved" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "project_location_update_matched_no_rows",
+      expect.objectContaining({ projectId: PROJECT_ID, workspaceId: WORKSPACE_ID })
+    );
   });
 });
 
@@ -358,6 +424,39 @@ describe("POST /api/projects/[projectId]/corridors", () => {
 
     expect(response.status).toBe(403);
     expect(corridorInsertSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe("PATCH /api/projects/[projectId]/corridors/[corridorId]", () => {
+  it("edits a corridor that belongs to the project", async () => {
+    const { client, corridorUpdateSpy } = buildSupabase({});
+    createClientMock.mockResolvedValue(client);
+
+    const response = await patchCorridor(corridorPatchRequest({ losGrade: "C" }), corridorParams);
+
+    expect(response.status).toBe(200);
+    expect(corridorUpdateSpy).toHaveBeenCalledWith(expect.objectContaining({ los_grade: "C" }));
+  });
+
+  /**
+   * The lookup in `resolveCorridorContext` read this corridor row itself through
+   * the caller's client, so a write that then matches nothing is a refusal below
+   * the application — reported as such rather than as "Failed to update corridor".
+   */
+  it("names the refused write when the update matched no rows", async () => {
+    const { client } = buildSupabase({
+      corridorUpdateResult: { data: null, error: { code: "PGRST116", message: "no rows returned" } },
+    });
+    createClientMock.mockResolvedValue(client);
+
+    const response = await patchCorridor(corridorPatchRequest({ losGrade: "C" }), corridorParams);
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({ error: "The corridor was not saved" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "project_corridor_update_matched_no_rows",
+      expect.objectContaining({ corridorId: CORRIDOR_ID, projectId: PROJECT_ID })
+    );
   });
 });
 

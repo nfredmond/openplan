@@ -76,6 +76,7 @@ describe("POST /api/workspaces/invitations", () => {
     });
     createServiceRoleClientMock.mockReturnValue({ from: vi.fn() });
     createWorkspaceInvitationMock.mockResolvedValue({
+      ok: true,
       invitation: {
         id: "33333333-3333-4333-8333-333333333333",
         email: "planner@nctc.ca.gov",
@@ -153,6 +154,7 @@ describe("POST /api/workspaces/invitations", () => {
 
   it("creates a viewer invitation — the read-only tier is invitable", async () => {
     createWorkspaceInvitationMock.mockResolvedValue({
+      ok: true,
       invitation: {
         id: "33333333-3333-4333-8333-333333333333",
         email: "auditor@nctc.ca.gov",
@@ -177,6 +179,29 @@ describe("POST /api/workspaces/invitations", () => {
     expect(await response.json()).toMatchObject({ role: "viewer" });
     expect(createWorkspaceInvitationMock).toHaveBeenCalledWith(
       expect.objectContaining({ role: "viewer" })
+    );
+  });
+
+  it("says the invitation was not saved when the reissue matched no rows", async () => {
+    // Read and written through the same service client, so this is not "no such
+    // invitation" — nothing was saved and there is no token to hand back.
+    createWorkspaceInvitationMock.mockResolvedValue({ ok: false, reason: "reissue_matched_no_rows" });
+
+    const response = await postWorkspaceInvitation(
+      invitationRequest({
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        email: "planner@nctc.ca.gov",
+        role: "member",
+      })
+    );
+
+    expect(response.status).toBe(500);
+    const payload = (await response.json()) as { error: string; details: string };
+    expect(payload.error).toBe("The workspace invitation was not saved");
+    expect(payload.details).toContain("matched no rows");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "workspace_invitation_reissue_matched_no_rows",
+      expect.objectContaining({ workspaceId: "11111111-1111-4111-8111-111111111111" })
     );
   });
 

@@ -6,6 +6,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { RTP_PORTFOLIO_ROLE_OPTIONS } from "@/lib/rtp/catalog";
 import { parsePriorityScores } from "@/lib/rtp/priority-scoring";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const PORTFOLIO_ROLES = RTP_PORTFOLIO_ROLE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 
@@ -233,19 +234,17 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .eq("id", link.id)
       .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, created_at")
       // `maybeSingle`, not `single`. Until 20260728000010 this table had a
-      // RESTRICTIVE writer gate and no PERMISSIVE UPDATE policy, so every
-      // update matched zero rows — and `single()` turns that into PGRST116,
-      // which this route reported as a 500 "Failed to update RTP link". An
-      // authorization outcome surfacing as a server error, with an audit code
-      // pointing at result cardinality rather than at the missing policy.
+      // RESTRICTIVE writer gate and no PERMISSIVE UPDATE policy, so every update
+      // matched zero rows — the defect `@/lib/http/write-outcome` was extracted
+      // from, which now reports that outcome honestly in either spelling.
       .maybeSingle();
 
-    if (error) {
+    if (error && isWriteFailure(error)) {
       audit.error("update_failed", { error: error.message, code: error.code ?? null });
       return NextResponse.json({ error: "Failed to update RTP link" }, { status: 500 });
     }
 
-    if (!data) {
+    if (writeMatchedNoRows({ data, error })) {
       // The link was readable a moment ago and the caller passed both the
       // membership and the `plans.write` role check, so no matched row means
       // the database refused a write the application believed was allowed, or
@@ -255,14 +254,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
         linkId: link.id,
         role: membership.role ?? null,
       });
-      return NextResponse.json(
-        {
-          error: "RTP link update did not apply",
-          details:
-            "The database matched no rows for this link, so nothing was saved. The link may have been deleted, or a row-level security policy refused the write.",
-        },
-        { status: 500 }
-      );
+      return noRowsMatchedResponse({ subject: "RTP link", targetWasVerified: true });
     }
 
     audit.info("updated", { projectId: routeParams.data.projectId, linkId: link.id, durationMs: Date.now() - startedAt });

@@ -348,6 +348,51 @@ describe("/api/models/[modelId]", () => {
     ]);
   });
 
+  it("PATCH names a zero-row model update as a refused write and still restores the links", async () => {
+    // PGRST116 is `.single()` saying the UPDATE matched nothing, not a server
+    // fault. loadModelAccess already read this model through the caller's own
+    // client and models.write already passed, so the row was refused beneath
+    // the application — the answer says that instead of "Failed to update".
+    modelUpdateSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" },
+    });
+
+    const response = await patchModelDetail(
+      new NextRequest(`http://localhost/api/models/${MODEL_ID}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          title: "Countywide ABM setup v2",
+          links: [{ linkType: "plan", linkedId: PLAN_ID, label: "Updated link" }],
+        }),
+      }),
+      { params: Promise.resolve({ modelId: MODEL_ID }) }
+    );
+
+    expect(response.status).toBe(500);
+    const payload = await response.json();
+    expect(payload.error).toBe("The model was not saved");
+    expect(payload.details).toContain("row-level security policy");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "model_update_matched_no_rows",
+      expect.objectContaining({
+        modelId: MODEL_ID,
+        workspaceId: WORKSPACE_ID,
+        linksRestored: true,
+      })
+    );
+    expect(mockAudit.error).not.toHaveBeenCalledWith("model_update_failed", expect.anything());
+    expect(modelLinksInsertMock).toHaveBeenNthCalledWith(2, [
+      expect.objectContaining({
+        model_id: MODEL_ID,
+        link_type: "plan",
+        linked_id: PLAN_ID,
+        label: "Previous link",
+      }),
+    ]);
+  });
+
   it("PATCH refuses a viewer and updates nothing", async () => {
     // models' RLS write policy asks only for membership; "models.write" in the
     // role matrix is what keeps the read-only tier read-only.

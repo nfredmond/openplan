@@ -23,13 +23,21 @@ function createInvitationClient(existingId?: string) {
   };
   const selectExistingMock = vi.fn(() => existingQuery);
 
-  const singleMock = vi.fn(async () => ({
-    data: {
-      id: existingId ?? "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-      ...storedRows.at(-1),
-    },
-    error: null,
-  }));
+  // Typed wider than the happy path so a test can hand back the two other
+  // things PostgREST says: an error, or zero matched rows.
+  type WriteResult = {
+    data: Record<string, unknown> | null;
+    error: { code?: string; message: string } | null;
+  };
+  const singleMock = vi.fn(
+    async (): Promise<WriteResult> => ({
+      data: {
+        id: existingId ?? "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        ...storedRows.at(-1),
+      },
+      error: null,
+    })
+  );
   const selectMutationMock = vi.fn(() => ({ single: singleMock }));
   const updateEqMock = vi.fn(() => ({ select: selectMutationMock }));
   const updateMock = vi.fn((payload: Record<string, unknown>) => {
@@ -55,6 +63,7 @@ function createInvitationClient(existingId?: string) {
     insertMock,
     updateMock,
     updateEqMock,
+    singleMock,
     storedRows,
   };
 }
@@ -108,6 +117,8 @@ describe("workspace invitation helpers", () => {
       now: new Date("2026-04-24T12:00:00.000Z"),
     });
 
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected an invitation");
     expect(result.reissued).toBe(false);
     expect(result.invitationUrl).toContain("/sign-up?invite=");
     expect(insertMock).toHaveBeenCalledTimes(1);
@@ -137,8 +148,46 @@ describe("workspace invitation helpers", () => {
       origin: "https://openplan.example",
     });
 
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("expected an invitation");
     expect(result.reissued).toBe(true);
     expect(updateMock).toHaveBeenCalledTimes(1);
     expect(updateEqMock).toHaveBeenCalledWith("id", "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+  });
+
+  it("reports a reissue that matched no rows instead of throwing a failure", async () => {
+    // `.single()` reports zero matched rows as PGRST116, which is not a broken
+    // database: the pending invitation read a moment earlier is gone. The caller
+    // has to be able to tell that from a write that actually errored.
+    const { client, singleMock } = createInvitationClient("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    singleMock.mockResolvedValue({
+      data: null,
+      error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+    });
+
+    const result = await createWorkspaceInvitation({
+      supabase: client as never,
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      email: "planner@agency.gov",
+      role: "admin",
+      origin: "https://openplan.example",
+    });
+
+    expect(result).toEqual({ ok: false, reason: "reissue_matched_no_rows" });
+  });
+
+  it("still throws when the write genuinely fails", async () => {
+    const { client, singleMock } = createInvitationClient("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb");
+    singleMock.mockResolvedValue({ data: null, error: { code: "57014", message: "statement timeout" } });
+
+    await expect(
+      createWorkspaceInvitation({
+        supabase: client as never,
+        workspaceId: "11111111-1111-4111-8111-111111111111",
+        email: "planner@agency.gov",
+        role: "admin",
+        origin: "https://openplan.example",
+      })
+    ).rejects.toThrow("statement timeout");
   });
 });
