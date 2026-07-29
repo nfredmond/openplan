@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { loadPolicyInventory } from "./migrations/policy-inventory";
 
 /**
  * Migration-content guard for invoicing time & rates (20260727000011).
@@ -97,11 +98,25 @@ describe("invoicing time and rates migration", () => {
   });
 
   it("grants DELETE on rate entries and time entries only", () => {
-    expect(sql).toMatch(/CREATE POLICY invoicing_rate_entries_delete/);
-    expect(sql).toMatch(/CREATE POLICY invoicing_time_entries_delete/);
-    expect(sql).not.toMatch(/CREATE POLICY invoicing_staff_delete/);
-    expect(sql).not.toMatch(/CREATE POLICY invoicing_rate_tables_delete/);
-    expect(sqlWithoutComments.match(/FOR DELETE/g)?.length).toBe(2);
+    // Asked of the parsed schema, not of this file's text. Counting the literal
+    // "FOR DELETE" here missed two things: a `FOR ALL` policy grants DELETE
+    // without the string (six already exist in this schema), and a DELETE
+    // policy added by a LATER migration is invisible to a test that reads one
+    // file.
+    const inventory = loadPolicyInventory();
+
+    for (const table of ["invoicing_rate_entries", "invoicing_time_entries"]) {
+      expect(inventory.permissiveGrants(table, "DELETE").map((policy) => policy.policy)).toEqual([
+        `${table}_delete`,
+      ]);
+    }
+
+    for (const table of ["invoicing_staff", "invoicing_rate_tables"]) {
+      expect(
+        inventory.permissiveGrants(table, "DELETE").map((policy) => `${policy.policy} (${policy.command}, ${policy.file})`),
+        `${table} rows are referenced by billed history and must not be deletable`
+      ).toEqual([]);
+    }
   });
 
   it("documents that the API layer refuses mutating billed time entries", () => {

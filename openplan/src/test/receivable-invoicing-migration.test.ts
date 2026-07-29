@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { loadPolicyInventory } from "./migrations/policy-inventory";
 
 /**
  * Migration-content guard for receivable invoicing (20260727000010).
@@ -93,12 +94,32 @@ describe("receivable invoicing migration", () => {
   });
 
   it("grants DELETE on line items only — parents are corrected by voiding, never deleted", () => {
-    expect(sql).toMatch(/CREATE POLICY client_invoice_line_items_delete/);
+    // Asked of the PARSED SCHEMA rather than of this migration's text.
+    //
+    // Counting the literal string "FOR DELETE" in one file was defeated two
+    // ways. A policy written `FOR ALL` grants DELETE without containing the
+    // string — and six such policies already exist in this schema — as does a
+    // policy with no FOR clause at all, since Postgres defaults that to ALL.
+    // And reading only this file could never see a DELETE grant added by a
+    // LATER migration, which is the likelier regression.
+    //
+    // This matters beyond tidiness: api/invoicing/client-invoices/route.ts:501
+    // compensates for a half-created invoice with a SERVICE-ROLE delete,
+    // explicitly because the caller's client cannot delete a parent invoice.
+    // If that ever stops being true, the compensation is no longer the only
+    // path to deleting one.
+    const inventory = loadPolicyInventory();
+
+    expect(inventory.permissiveGrants("client_invoice_line_items", "DELETE").map((policy) => policy.policy)).toEqual([
+      "client_invoice_line_items_delete",
+    ]);
+
     for (const table of PARENT_TABLES) {
-      expect(sql).not.toMatch(new RegExp(`CREATE POLICY ${table}_delete`));
+      expect(
+        inventory.permissiveGrants(table, "DELETE").map((policy) => `${policy.policy} (${policy.command}, ${policy.file})`),
+        `${table} must have no policy granting DELETE — a wrong invoice is voided, not deleted`
+      ).toEqual([]);
     }
-    // Exactly one FOR DELETE policy in the whole migration.
-    expect(sqlWithoutComments.match(/FOR DELETE/g)?.length).toBe(1);
   });
 
   it("claims invoice numbers per workspace, never globally", () => {

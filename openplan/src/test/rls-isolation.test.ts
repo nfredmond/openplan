@@ -1,6 +1,6 @@
-import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { type SupabaseClient } from "@supabase/supabase-js";
+import { LIVE_RLS, getLocalSupabaseEnv, liveClient, type LocalSupabaseEnv } from "./local-supabase-env";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 type ProbeRow = Record<string, unknown>;
@@ -30,12 +30,6 @@ type SeedContext = {
   modelRunBId: string;
   sourceManifestBId: string;
   reportBId: string;
-};
-
-type LocalSupabaseEnv = {
-  API_URL: string;
-  ANON_KEY: string;
-  SERVICE_ROLE_KEY: string;
 };
 
 type ReadResult = {
@@ -576,49 +570,9 @@ const INSERT_ORDER = [
   ),
 ] as const;
 
-const LIVE_RLS = process.env.OPENPLAN_RLS_LIVE_TEST === "1";
 const liveDescribe = LIVE_RLS ? describe : describe.skip;
 
-function parseLocalSupabaseEnv(output: string): LocalSupabaseEnv {
-  const values = new Map<string, string>();
-  for (const line of output.split(/\r?\n/)) {
-    const match = line.match(/^([A-Z0-9_]+)="?([^"]*)"?$/);
-    if (match) {
-      values.set(match[1], match[2]);
-    }
-  }
-
-  const env = {
-    API_URL: values.get("API_URL"),
-    ANON_KEY: values.get("ANON_KEY"),
-    SERVICE_ROLE_KEY: values.get("SERVICE_ROLE_KEY"),
-  };
-
-  if (!env.API_URL || !env.ANON_KEY || !env.SERVICE_ROLE_KEY) {
-    throw new Error("Unable to resolve local Supabase env. Run `npm exec supabase start` first.");
-  }
-
-  return env as LocalSupabaseEnv;
-}
-
-function getLocalSupabaseEnv(): LocalSupabaseEnv {
-  const output = execFileSync("npm", ["exec", "--", "supabase", "status", "-o", "env"], {
-    cwd: process.cwd(),
-    encoding: "utf8",
-    stdio: ["ignore", "pipe", "ignore"],
-  });
-  return parseLocalSupabaseEnv(output);
-}
-
-function client(url: string, key: string): SupabaseClient {
-  return createClient(url, key, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-      storageKey: `openplan-rls-${randomUUID()}`,
-    },
-  });
-}
+const client = (url: string, key: string) => liveClient(url, key, "openplan-rls");
 
 function probeByTable(table: string): WorkspaceRlsProbe {
   const probe = WORKSPACE_RLS_PROBES.find((item) => item.table === table);
