@@ -58,9 +58,6 @@ const EXTERNAL_CALLERS: Record<string, string> = {
  * is the point. Adding one requires a reason a reviewer will ask about.
  */
 const KNOWN_UNWIRED = [
-  // Sentiment hotspot clustering over a campaign's comments — a real analytic
-  // with no surface on the campaign page.
-  "api/engagement/campaigns/[campaignId]/hotspots",
   // Per-run skim matrices, readable and writable, with nothing in the models UI
   // asking for them.
   "api/models/[modelId]/runs/[modelRunId]/skims",

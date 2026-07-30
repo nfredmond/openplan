@@ -50,8 +50,8 @@ import { EngagementContextLayersPanel } from "@/components/engagement/engagement
 import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from "@/lib/engagement/context-layers";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
-import { ParticipationHeatmapMap, type HeatmapPoint } from "@/components/engagement/participation-heatmap-map";
-import { ParticipationDashboard } from "@/components/engagement/participation-dashboard";
+import type { HeatmapPoint } from "@/components/engagement/participation-heatmap-map";
+import { SpatialHotspotTuner } from "@/components/engagement/spatial-hotspot-tuner";
 import { DemographicsPanel } from "@/components/engagement/demographics-panel";
 import { loadSelfReportedDemographicsSource } from "@/lib/engagement/demographics";
 import { RepresentativenessPanel } from "@/components/engagement/representativeness-panel";
@@ -66,7 +66,6 @@ import { loadNearDuplicates } from "@/lib/engagement/near-duplicates";
 import { AiModerationPanel } from "@/components/engagement/ai-moderation-panel";
 import { buildModerationQueueView } from "@/lib/engagement/ai-moderation-shared";
 import {
-  hotspotsToFeatureCollection,
   loadSentimentHotspots,
   negativeItemIdsFromSyntheses,
 } from "@/lib/engagement/hotspots";
@@ -367,7 +366,6 @@ export default async function EngagementCampaignDetailPage({
     campaignId: campaign.id,
     negativeItemIds,
   });
-  const hotspotFeatures = hotspotsToFeatureCollection(hotspots.clusters);
   const heatmapPoints: HeatmapPoint[] = (
     (items ?? []) as Array<{
       id: string;
@@ -1092,20 +1090,22 @@ export default async function EngagementCampaignDetailPage({
                   </p>
                 </div>
               </div>
-              <div className="mt-5 space-y-6">
-                {heatmapPoints.length > 0 || hotspotFeatures.features.length > 0 ? (
-                  <ParticipationHeatmapMap
-                    points={heatmapPoints}
-                    hotspots={hotspotFeatures}
-                    sentimentAvailable={hotspots.sentimentAvailable}
-                  />
-                ) : null}
-                <ParticipationDashboard
+              <div className="mt-5">
+                {/*
+                  The clustering radius is adjustable rather than fixed at 250 m.
+                  A single default is a claim about geographic scale, and this
+                  page serves a downtown block and a rural county equally — see
+                  `SpatialHotspotTuner`. The first render is still the server's,
+                  so this surface is complete before any JavaScript runs.
+                */}
+                <SpatialHotspotTuner
+                  campaignId={campaign.id}
+                  points={heatmapPoints}
+                  initialHotspots={hotspots}
                   counts={counts}
                   categories={
                     (categories ?? []) as Array<{ id: string; label: string | null; color?: string | null }>
                   }
-                  hotspots={hotspots}
                   intake={intakeTrend}
                 />
               </div>
