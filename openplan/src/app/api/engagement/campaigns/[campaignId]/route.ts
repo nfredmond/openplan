@@ -49,6 +49,20 @@ const patchCampaignSchema = z
     // Disable-only — see SHARE_TOKEN_IS_SERVER_MINTED above.
     shareToken: z.null().optional(),
     publicDescription: z.union([z.string().trim().max(4000), z.null()]).optional(),
+    /**
+     * How a resident who cannot use the portal takes part anyway
+     * (20260730000001). Agency-authored, never defaulted.
+     *
+     * Each is nullable so a field can be CLEARED, and each empty string is
+     * normalised to null below rather than rejected: "I deleted this" is a
+     * legitimate edit, while a blank string would be refused by the table's own
+     * CHECK and surface to the operator as a validation error about a field
+     * they intentionally emptied.
+     */
+    accessibilityContactLabel: z.union([z.string().trim().max(200), z.null()]).optional(),
+    accessibilityContactEmail: z.union([z.string().trim().max(320), z.null()]).optional(),
+    accessibilityContactPhone: z.union([z.string().trim().max(80), z.null()]).optional(),
+    accessibilityAlternateFormats: z.union([z.string().trim().max(2000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
     demographicsEnabled: z.boolean().optional(),
     /**
@@ -440,6 +454,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
     if (parsed.data.demographicsEnabled !== undefined) updates.demographics_enabled = parsed.data.demographicsEnabled;
+
+    // Empty string means "cleared", which the column stores as NULL. The table's
+    // CHECK refuses a blank string, so normalising here is what keeps a
+    // deliberate deletion from arriving as a constraint violation.
+    const blankToNull = (value: string | null) => (value === null || value.trim() === "" ? null : value);
+    if (parsed.data.accessibilityContactLabel !== undefined)
+      updates.accessibility_contact_label = blankToNull(parsed.data.accessibilityContactLabel);
+    if (parsed.data.accessibilityContactEmail !== undefined)
+      updates.accessibility_contact_email = blankToNull(parsed.data.accessibilityContactEmail);
+    if (parsed.data.accessibilityContactPhone !== undefined)
+      updates.accessibility_contact_phone = blankToNull(parsed.data.accessibilityContactPhone);
+    if (parsed.data.accessibilityAlternateFormats !== undefined)
+      updates.accessibility_alternate_formats = blankToNull(parsed.data.accessibilityAlternateFormats);
 
     if (parsed.data.place !== undefined) {
       // The campaign's place columns are deliberately the same names as

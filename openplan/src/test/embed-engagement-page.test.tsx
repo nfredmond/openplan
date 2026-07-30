@@ -68,10 +68,18 @@ function bundle(locale: PortalLocale = "en") {
       submissions_closed_at: null,
       demographics_enabled: false,
       updated_at: "2026-07-22T00:00:00Z",
+      // 20260730000001 — an embedded portal is still a participant surface, so
+      // a resident who cannot use it needs the same way out.
+      accessibility_contact_label: null,
+      accessibility_contact_email: "access@city.example",
+      accessibility_contact_phone: null,
+      accessibility_alternate_formats: null,
     },
     project: null,
     acceptingSubmissions: true,
     campaignText: {
+      accessibilityContactLabel: null,
+      accessibilityAlternateFormats: null,
       title:
         locale === "es"
           ? operatorText("Campaña de escucha del centro", "es", "es")
@@ -192,6 +200,16 @@ describe("EmbedEngagementPage", () => {
     // Without this an iframe participant is held in whichever language the
     // request resolved to, with no picker and no coverage notice anywhere.
     expect(screen.getByTestId("portal").getAttribute("data-language-chrome")).toBe("yes");
+  });
+
+  it("offers the same way out as the full page, not a lesser one", async () => {
+    loadPublicPortalBundle.mockResolvedValue(bundle("es"));
+    await renderEmbed({ lang: "es" });
+
+    // An agency embedding the portal in an iframe has not opted its residents
+    // out of being able to reach someone.
+    expect(screen.getByText(/Si no puede usar esta página/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "access@city.example" })).toBeInTheDocument();
   });
 
   it("turns the widget around for a right-to-left language", async () => {

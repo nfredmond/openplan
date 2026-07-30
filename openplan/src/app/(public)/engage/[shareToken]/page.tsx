@@ -7,6 +7,7 @@ import {
   PortalLanguagePicker,
 } from "@/components/engagement/portal-language-picker";
 import { PortalOperatorText } from "@/components/engagement/portal-operator-text";
+import { PortalAccessibilityNotice } from "@/components/engagement/portal-accessibility-notice";
 import { loadPublicPortalBundle } from "@/lib/engagement/public-portal-data";
 import { PORTAL_LOCALE_QUERY_PARAM } from "@/lib/engagement/portal-i18n/locales";
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
@@ -271,6 +272,20 @@ export default async function PublicEngagementPage({
       </div>
 
       <PublicEngagementPortal {...portalProps} />
+
+      {/*
+        AFTER the portal, not before it: a resident who can use the page should
+        meet the consultation first. A resident who cannot has a screen reader
+        or a keyboard, and reaches a landmark at the end of the document far more
+        reliably than they scroll past an offer they did not need.
+      */}
+      <PortalAccessibilityNotice
+        contactLabel={campaignText.accessibilityContactLabel}
+        alternateFormats={campaignText.accessibilityAlternateFormats}
+        email={campaign.accessibility_contact_email}
+        phone={campaign.accessibility_contact_phone}
+        translator={translator}
+      />
     </section>
   );
 }

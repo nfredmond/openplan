@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
 import { PortalOperatorText } from "@/components/engagement/portal-operator-text";
+import { PortalAccessibilityNotice } from "@/components/engagement/portal-accessibility-notice";
 import { loadPublicPortalBundle } from "@/lib/engagement/public-portal-data";
 import { PORTAL_LOCALE_QUERY_PARAM } from "@/lib/engagement/portal-i18n/locales";
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
@@ -66,7 +67,7 @@ export default async function EmbedEngagementPage({
     notFound();
   }
 
-  const { campaignText, locale, messages, portalProps } = bundle;
+  const { campaign, campaignText, locale, messages, portalProps } = bundle;
   const translator = createPortalTranslator(messages);
 
   return (
@@ -102,6 +103,20 @@ export default async function EmbedEngagementPage({
       </header>
 
       <PublicEngagementPortal {...portalProps} renderLanguagePicker />
+
+      {/*
+        AFTER the portal, not before it: a resident who can use the page should
+        meet the consultation first. A resident who cannot has a screen reader
+        or a keyboard, and reaches a landmark at the end of the document far more
+        reliably than they scroll past an offer they did not need.
+      */}
+      <PortalAccessibilityNotice
+        contactLabel={campaignText.accessibilityContactLabel}
+        alternateFormats={campaignText.accessibilityAlternateFormats}
+        email={campaign.accessibility_contact_email}
+        phone={campaign.accessibility_contact_phone}
+        translator={translator}
+      />
 
       <footer className="mt-6 border-t border-border/60 pt-3 text-center text-xs text-muted-foreground">
         {/*

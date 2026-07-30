@@ -13,6 +13,7 @@ import { EngagementCampaignCreatedNotice } from "@/components/engagement/campaig
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
 import { EngagementAppendixReadinessNote } from "@/components/engagement/engagement-appendix-readiness-note";
 import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
+import { CampaignAccessibilityEditor } from "@/components/engagement/campaign-accessibility-editor";
 import {
   MACHINE_TRANSLATION_BATCH_MAX,
   TRANSLATION_ACCEPT_BATCH_MAX,
@@ -86,6 +87,10 @@ type CampaignRow = {
   submissions_closed_at: string | null;
   demographics_enabled: boolean;
   representativeness_json: CampaignRepresentativeness | null;
+  accessibility_contact_label: string | null;
+  accessibility_contact_email: string | null;
+  accessibility_contact_phone: string | null;
+  accessibility_alternate_formats: string | null;
   ai_synthesis_json: EngagementSynthesis | null;
   ai_synthesized_at: string | null;
   created_at: string;
@@ -140,7 +145,7 @@ export default async function EngagementCampaignDetailPage({
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at")
+    .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
     .eq("id", campaignId)
     .maybeSingle();
 
@@ -983,6 +988,34 @@ export default async function EngagementCampaignDetailPage({
             readFailure={contextLayers.readFailure}
             canWrite={canManageContextLayers}
           />
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Taking part another way</p>
+                <h2 className="module-section-title">If a resident cannot use the portal</h2>
+                <p className="module-section-description">
+                  A map, a form and a comment feed each have people they do not work for. This is the
+                  contact a resident reaches when the page is not usable for them — your agency&apos;s
+                  words, not OpenPlan&apos;s, shown on the public portal in the resident&apos;s language.
+                  OpenPlan makes no claim that the portal meets any accessibility standard, and this is
+                  not one.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <CampaignAccessibilityEditor
+                campaignId={campaign.id}
+                portalIsLive={Boolean(campaign.share_token) && campaign.allow_public_submissions && !campaign.submissions_closed_at}
+                initial={{
+                  contactLabel: campaign.accessibility_contact_label,
+                  contactEmail: campaign.accessibility_contact_email,
+                  contactPhone: campaign.accessibility_contact_phone,
+                  alternateFormats: campaign.accessibility_alternate_formats,
+                }}
+              />
+            </div>
+          </article>
 
           {/*
             Mounted next to the map-layer panel because both answer the same

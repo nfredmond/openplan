@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { type WorkspaceRole, WORKSPACE_ROLES } from "@/lib/auth/role-matrix";
+import { type WorkspaceRole, WORKSPACE_ROLES, WORKSPACE_ROLE_DESCRIPTIONS } from "@/lib/auth/role-matrix";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { invitationPath } from "@/lib/workspaces/invitation-path";
 
@@ -67,21 +67,6 @@ const ROLE_RANK: Record<WorkspaceRole, number> = {
   owner: 3,
 };
 
-/**
- * WHAT ACCEPTING ACTUALLY GRANTS, in words the person deciding can act on.
- *
- * Kept beside `ROLE_RANK` so the sentence and the authority it describes are
- * edited together — a role whose powers change and whose description does not
- * is a consent screen that misinforms. `Record<WorkspaceRole, …>` rather than
- * `Record<string, …>` makes a new role a build error here rather than a blank
- * space on the page where the grant should be stated.
- */
-export const WORKSPACE_ROLE_DESCRIPTIONS: Record<WorkspaceRole, string> = {
-  owner: "Full control, including billing-free workspace settings and ownership transfer.",
-  admin: "Manage the team and all workspace content.",
-  member: "Create and edit workspace content.",
-  viewer: "Read everything, change nothing.",
-};
 
 function isWorkspaceRole(value: string): value is WorkspaceRole {
   return (WORKSPACE_ROLES as readonly string[]).includes(value);
@@ -145,6 +130,7 @@ export function buildInvitationUrl(origin: string, token: string): string {
  * browser — see that file.
  */
 export { invitationPath };
+export { WORKSPACE_ROLE_DESCRIPTIONS };
 
 export function higherWorkspaceRole(left: WorkspaceRole, right: WorkspaceRole): WorkspaceRole {
   return ROLE_RANK[left] >= ROLE_RANK[right] ? left : right;

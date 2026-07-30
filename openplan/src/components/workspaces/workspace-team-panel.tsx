@@ -4,13 +4,13 @@ import { useCallback, useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { WORKSPACE_ROLE_DESCRIPTIONS } from "@/lib/auth/role-matrix";
 
 /**
  * Invite teammates into a workspace, and manage the members already in it.
  *
- * The invitation API has existed for a while and sign-in already accepts an
- * `?invite=` token — but nothing in the app could CREATE one, so a workspace
- * owner had no way to add anyone. That made OpenPlan single-player for every
+ * The invitation API has existed for a while — but nothing in the app could
+ * CREATE an invitation, so a workspace owner had no way to add anyone. That made OpenPlan single-player for every
  * multi-person organization, which is every MPO, city, county, tribe, and
  * consultancy.
  *
@@ -54,11 +54,8 @@ type Member = {
 
 type InviteRole = "member" | "admin" | "viewer";
 
-const ROLE_DESCRIPTIONS: Record<string, string> = {
-  admin: "Manage the team and all workspace content.",
-  member: "Create and edit workspace content.",
-  viewer: "Read everything, change nothing.",
-};
+// The descriptions come from the role vocabulary itself, so this panel and the
+// invitation page a colleague reads cannot describe the same role differently.
 
 type WorkspaceTeamPanelProps = {
   workspaceId: string;
@@ -302,7 +299,7 @@ export function WorkspaceTeamPanel({ workspaceId, canManage }: WorkspaceTeamPane
           {working ? "Creating…" : "Create invitation"}
         </Button>
       </form>
-      <p className="mt-1 text-xs text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</p>
+      <p className="mt-1 text-xs text-muted-foreground">{WORKSPACE_ROLE_DESCRIPTIONS[role]}</p>
 
       {inviteUrl ? (
         <div className="mt-4 rounded-md border border-emerald-300/70 bg-emerald-50/60 p-3 text-sm dark:border-emerald-900 dark:bg-emerald-950/20">

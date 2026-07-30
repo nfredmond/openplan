@@ -190,6 +190,14 @@ describe("PublicEngagementPage", () => {
         allow_public_submissions: true,
         submissions_closed_at: null,
         updated_at: "2026-03-28T18:00:00.000Z",
+        // 20260730000001 — how a resident who cannot use this page takes part
+        // anyway. Present on the fixture because the page's `.select()` asks for
+        // it, and a fixture that omits a projected column silently renders the
+        // absent-value branch forever.
+        accessibility_contact_label: "ADA Coordinator",
+        accessibility_contact_email: "access@city.example",
+        accessibility_contact_phone: null,
+        accessibility_alternate_formats: "Paper copies at the front desk.",
       },
       error: null,
     });
@@ -377,6 +385,54 @@ describe("PublicEngagementPage", () => {
     await renderPage({ lang: "ko" });
 
     expect(screen.getAllByText(/only partly available/i)).toHaveLength(1);
+  });
+
+  /**
+   * THE MOUNT, not the component.
+   *
+   * `PortalAccessibilityNotice` has its own tests. This asserts the thing those
+   * cannot: that the real page actually renders it, from a real `.select()` that
+   * actually asks for the columns. That gap — a complete component reached by
+   * nothing, or reached with a column missing from the projection — is the
+   * defect this repo has shipped eight times.
+   */
+  it("offers a resident who cannot use the page a way to take part anyway", async () => {
+    await renderPage();
+
+    expect(screen.getByText(/If you cannot use this page/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "access@city.example" })).toBeInTheDocument();
+    expect(screen.getByText("Paper copies at the front desk.")).toBeInTheDocument();
+  });
+
+  /**
+   * THE PROJECTION, which a mocked client cannot catch by itself.
+   *
+   * `campaignMaybeSingleMock` returns the whole fixture regardless of what the
+   * `.select()` asked for, so deleting a column from the projection leaves every
+   * other assertion in this file green while the real page renders `undefined`.
+   * That is not hypothetical: this repo shipped exactly that defect — closure
+   * provenance landed with migration, routes, audit and UI complete, and neither
+   * page added the columns to its `.select()`, so the honest "not loaded" state
+   * was what everyone saw, permanently.
+   *
+   * The Supabase clients here are deliberately untyped, so `tsc` cannot see this
+   * either. Asserting on the projection string is the only thing that can.
+   */
+  it("asks the database for the columns it renders", async () => {
+    await renderPage();
+
+    const projections = campaignSelectMock.mock.calls.map((call) => call[0] as string);
+    const campaignProjection = projections.find((columns) => columns.includes("public_description"));
+
+    expect(campaignProjection).toBeDefined();
+    for (const column of [
+      "accessibility_contact_label",
+      "accessibility_contact_email",
+      "accessibility_contact_phone",
+      "accessibility_alternate_formats",
+    ]) {
+      expect(campaignProjection).toContain(column);
+    }
   });
 
   it("says nothing about translation on the page it is written in", async () => {

@@ -55,6 +55,17 @@ export type PublicPortalCampaign = {
   submissions_closed_at: string | null;
   demographics_enabled: boolean;
   updated_at: string;
+  /**
+   * How a resident who cannot use this portal takes part anyway
+   * (20260730000001). Agency-authored, every field optional, and NEVER
+   * defaulted by OpenPlan — the duty to offer an alternative sits with the body
+   * running the consultation, so a default here would put words in a public
+   * body's mouth about its own legal obligation.
+   */
+  accessibility_contact_label: string | null;
+  accessibility_contact_email: string | null;
+  accessibility_contact_phone: string | null;
+  accessibility_alternate_formats: string | null;
 };
 
 export type PublicPortalProject = { id: string; name: string; summary: string | null };
@@ -597,6 +608,8 @@ export type PortalCampaignText = {
   title: PortalText;
   summary: PortalText | null;
   publicDescription: PortalText | null;
+  accessibilityContactLabel: PortalText | null;
+  accessibilityAlternateFormats: PortalText | null;
 };
 
 // The prop object PublicEngagementPortal consumes (kept structural so both pages
@@ -724,7 +737,7 @@ export async function loadPublicPortalBundle(
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
-    .select("id, workspace_id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at")
+    .select("id, workspace_id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
     .eq("share_token", shareToken)
     .eq("status", "active")
     .maybeSingle();
@@ -955,6 +968,26 @@ export async function loadPublicPortalBundle(
       translationIndex,
       { entity: "campaign", id: campaign.id, field: "public_description" },
       campaign.public_description
+    ),
+    /*
+      TRANSLATED, because this is the sentence that matters most to the resident
+      least able to read the rest of the page. A person who cannot use the map
+      AND cannot read English needs "here is how else to take part" in their own
+      language, or it is not an offer they can act on.
+
+      The email and phone are NOT resolved: an address is not prose, and running
+      it through a translation path would invite a machine-translated contact
+      that reaches nobody.
+    */
+    accessibilityContactLabel: resolveOptionalOperatorText(
+      translationIndex,
+      { entity: "campaign", id: campaign.id, field: "accessibility_contact_label" },
+      campaign.accessibility_contact_label
+    ),
+    accessibilityAlternateFormats: resolveOptionalOperatorText(
+      translationIndex,
+      { entity: "campaign", id: campaign.id, field: "accessibility_alternate_formats" },
+      campaign.accessibility_alternate_formats
     ),
   };
 

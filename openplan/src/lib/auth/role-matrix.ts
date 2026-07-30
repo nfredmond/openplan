@@ -8,6 +8,26 @@ export const WORKSPACE_ROLES = ["owner", "admin", "member", "viewer"] as const;
 
 export type WorkspaceRole = (typeof WORKSPACE_ROLES)[number];
 
+/**
+ * WHAT EACH ROLE ACTUALLY GRANTS, in words the person affected can act on.
+ *
+ * Lives here, beside the role vocabulary itself, so the sentence and the
+ * authority it describes are edited together — a role whose powers change and
+ * whose description does not is a consent screen that misinforms. It is also
+ * the only place both the invitation page (server) and the team panel (client)
+ * can share it from: `lib/workspaces/invitations.ts` imports `node:crypto`, so
+ * a client component that reached for it there would fail the build.
+ *
+ * `Record<WorkspaceRole, …>` rather than `Record<string, …>` makes a new role a
+ * build error here rather than a blank space where the grant should be stated.
+ */
+export const WORKSPACE_ROLE_DESCRIPTIONS: Record<WorkspaceRole, string> = {
+  owner: "Full control, including workspace settings and ownership transfer.",
+  admin: "Manage the team and all workspace content.",
+  member: "Create and edit workspace content.",
+  viewer: "Read everything, change nothing.",
+};
+
 export const WORKSPACE_ACTIONS = [
   "analysis.create",
   "analysis.context.read",

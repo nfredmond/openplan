@@ -59,6 +59,20 @@ export const EN_PORTAL_MESSAGES = {
     "This page was opened with a language ({requested}) that is not available here, so it is showing {language}.",
   "language.shareHint": "The language is part of this page's web address, so a link you share opens in it too.",
 
+  // ----------------------------------------------------------- accessibility
+  // Deliberately says nothing about what this page CONFORMS to. OpenPlan has
+  // not audited itself against any standard, and a portal that claimed to be
+  // accessible while a resident sat unable to use it would be worse than one
+  // that said nothing. What is offered here is a person to contact, which is
+  // true regardless of the software's conformance.
+  "accessibility.heading": "If you cannot use this page",
+  "accessibility.intro":
+    "Contact the project team and they will help you take part another way. You do not have to explain why.",
+  "accessibility.contactLabel": "Who to contact",
+  "accessibility.email": "Email",
+  "accessibility.phone": "Phone",
+  "accessibility.otherWays": "Other ways to take part",
+
   // -------------------------------------------------------------- provenance
   "provenance.machine.label": "Machine translation",
   "provenance.machine.caveat":
@@ -223,6 +237,14 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
     "Esta página se abrió con un idioma ({requested}) que no está disponible aquí, por lo que se muestra en {language}.",
   "language.shareHint":
     "El idioma forma parte de la dirección web de esta página, así que un enlace que comparta se abrirá en ese idioma.",
+
+  "accessibility.heading": "Si no puede usar esta página",
+  "accessibility.intro":
+    "Comuníquese con el equipo del proyecto y le ayudarán a participar de otra manera. No tiene que explicar por qué.",
+  "accessibility.contactLabel": "A quién contactar",
+  "accessibility.email": "Correo electrónico",
+  "accessibility.phone": "Teléfono",
+  "accessibility.otherWays": "Otras maneras de participar",
 
   "provenance.machine.label": "Traducción automática",
   "provenance.machine.caveat":
