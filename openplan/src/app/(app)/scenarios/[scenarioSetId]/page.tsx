@@ -5,6 +5,7 @@ import { AlertTriangle, ArrowRight, FileStack, GitCompareArrows, ShieldCheck } f
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
 import { ScenarioEntryRegistry } from "@/components/scenarios/scenario-entry-registry";
 import { ScenarioSetControls } from "@/components/scenarios/scenario-set-controls";
+import { ScenarioSpinePanel } from "@/components/scenarios/scenario-spine-panel";
 import { TripGenComparisonSaveButton } from "@/components/scenarios/trip-gen-comparison-save";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -676,6 +677,23 @@ export default async function ScenarioSetDetailPage({
                 ))}
               </div>
             )}
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Provenance</p>
+                <h2 className="module-section-title">Assumptions, data, and measured indicators</h2>
+                <p className="module-section-description">
+                  What this scenario set assumes, where those numbers came from, and what was measured
+                  against them. A comparison that cannot name these is a number without a defence — and
+                  until now OpenPlan had the records but offered no way to write or read them.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <ScenarioSpinePanel scenarioSetId={scenarioSet.id} />
+            </div>
           </article>
 
           <article className="module-section-surface">

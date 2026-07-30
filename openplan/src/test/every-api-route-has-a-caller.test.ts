@@ -57,14 +57,13 @@ const EXTERNAL_CALLERS: Record<string, string> = {
  * still failing on anything NEW. Deleting a line when the route gets wired up
  * is the point. Adding one requires a reason a reviewer will ask about.
  */
-const KNOWN_UNWIRED = [
-  // The scenario spine's three record types. `comparison-snapshots` beside them
-  // IS wired, which is what makes these three visibly unfinished rather than
-  // undesigned — nothing creates them and the scenario page never reads them.
-  "api/scenarios/[scenarioSetId]/spine/assumption-sets",
-  "api/scenarios/[scenarioSetId]/spine/data-packages",
-  "api/scenarios/[scenarioSetId]/spine/indicator-snapshots",
-] as const;
+const KNOWN_UNWIRED: readonly string[] = [
+  // EMPTY, and that is the goal state rather than a missing list. Every API
+  // route in this repo now has a caller in the product, or an EXTERNAL_CALLERS
+  // entry naming what calls it from outside. Adding a line here means shipping
+  // a capability nobody can reach, so it needs a reason a reviewer will ask
+  // about — and the test below fails if a line stays after the route is wired.
+];
 
 /** `api/models/[modelId]/runs` -> `/api/models`, plus `["runs"]`. */
 function staticParts(routeDir: string): { prefix: string; tail: string[] } {
