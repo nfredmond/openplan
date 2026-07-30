@@ -13,6 +13,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { looksLikePendingSchema } from "@/lib/models/run-launch";
 import type { AerialProjectPosture } from "@/lib/aerial/catalog";
+import {
+  AERIAL_ARTIFACT_CUSTODY_COLUMNS,
+  type AerialArtifactCustodyRecord,
+} from "@/lib/aerial/artifact-custody";
 
 export type AerialQuerySupabaseLike = Pick<SupabaseClient, "from">;
 
@@ -294,6 +298,57 @@ export async function loadAerialSourceContextRowsForProject(
   return { missions, packages: [...packagesById.values()], unreadableReason: null };
 }
 
+// ── Artifact custody for a mission's processing jobs ─────────────────────
+/**
+ * Every custody row for a mission, grouped by processing job.
+ *
+ * WHY IT RETURNS A REASON RATHER THAN AN EMPTY MAP ON FAILURE. Custody is the
+ * answer to "do we still have the orthomosaic?", and an unreadable table
+ * rendered as "no artifacts" would answer that question wrongly in the
+ * reassuring direction — the exact shape of the defect custody exists to close.
+ * The pending-schema case (custody migration not applied) is reported too, for
+ * the same reason: a deployment that has not applied 20260730000004 is not
+ * holding bytes, and must not be shown as though it were.
+ *
+ * The projection is `AERIAL_ARTIFACT_CUSTODY_COLUMNS`, shared with the write
+ * engine so the summarizer and the writer cannot disagree about which columns
+ * exist — Supabase clients here are untyped, and a column dropped from a
+ * `.select()` is `undefined` at runtime with nothing failing at build.
+ */
+export async function loadAerialArtifactCustodyForMission(
+  supabase: AerialQuerySupabaseLike,
+  missionId: string
+): Promise<{
+  byProcessingJobId: Map<string, AerialArtifactCustodyRecord[]>;
+  unreadableReason: string | null;
+}> {
+  const result = await supabase
+    .from("aerial_artifact_custody")
+    .select(AERIAL_ARTIFACT_CUSTODY_COLUMNS + ", processing_job_id")
+    .eq("mission_id", missionId)
+    .order("kind", { ascending: true });
+
+  if (result.error) {
+    return {
+      byProcessingJobId: new Map(),
+      unreadableReason: looksLikePendingSchema(result.error.message)
+        ? "The aerial artifact custody table is not present in this database (migration 20260730000004 has not been applied), so whether OpenPlan holds this mission's processing outputs cannot be established."
+        : `Artifact custody for this mission could not be read: ${result.error.message ?? "unknown database error"}`,
+    };
+  }
+
+  const byProcessingJobId = new Map<string, AerialArtifactCustodyRecord[]>();
+  for (const row of ((result.data ?? []) as unknown) as Array<
+    AerialArtifactCustodyRecord & { processing_job_id: string }
+  >) {
+    const existing = byProcessingJobId.get(row.processing_job_id) ?? [];
+    existing.push(row);
+    byProcessingJobId.set(row.processing_job_id, existing);
+  }
+
+  return { byProcessingJobId, unreadableReason: null };
+}
+
 // ── Cached project posture (aerial-owned table) ──────────────────────────
 /**
  * Reads the authoritative cached aerial posture for a project from the
@@ -316,4 +371,123 @@ export async function loadAerialProjectPosture(
 
   const row = result.data as { posture: AerialProjectPosture | null; updated_at: string | null };
   return { posture: row.posture ?? null, updatedAt: row.updated_at ?? null };
+}
+
+// ── Imagery processing jobs for one mission (detail page) ────────────────
+/**
+ * Every column the mission page's processing surface renders.
+ *
+ * PINNED AS A CONSTANT ON PURPOSE. Supabase clients in this repo are
+ * deliberately untyped (see CLAUDE.md), so a column dropped from this string is
+ * `undefined` at runtime and silent at build. The page test asserts against
+ * THIS string as well as against the rendered DOM, because a page test that
+ * mocks the client gets its fixture back no matter what was projected — the
+ * fixture would keep rendering a `dispatch_error` the query stopped asking for.
+ */
+export const AERIAL_PROCESSING_JOB_SELECT = [
+  "id",
+  "request_id",
+  "job_reference",
+  "status",
+  "progress",
+  "message",
+  "preset_id",
+  "imagery_url",
+  "imagery_image_count",
+  "imagery_size_bytes",
+  "artifacts",
+  "benchmark_summary",
+  "last_callback_id",
+  "last_callback_at",
+  "dispatch_error",
+  "created_at",
+  "updated_at",
+].join(", ");
+
+/**
+ * Cap on jobs shown for a single mission; newest first, so the cap drops the oldest.
+ *
+ * The loader asks for ONE MORE than this and reports whether it got it. A capped
+ * list rendered as "N total" would be the page stating a count it did not
+ * establish — the same class of claim as rendering a failed read as zero, just
+ * quieter. `truncated` is what lets the page say "the N most recent" instead.
+ */
+export const MAX_MISSION_PROCESSING_JOBS = 50;
+
+export type AerialProcessingJobRow = {
+  id: string;
+  request_id: string;
+  job_reference: string | null;
+  status: string;
+  progress: number | string | null;
+  message: string | null;
+  preset_id: string | null;
+  imagery_url: string | null;
+  imagery_image_count: number | null;
+  imagery_size_bytes: number | null;
+  artifacts: unknown;
+  benchmark_summary: unknown;
+  last_callback_id: string | null;
+  last_callback_at: string | null;
+  dispatch_error: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MissionAerialProcessingJobs = {
+  jobs: AerialProcessingJobRow[];
+  /**
+   * Why the jobs could NOT be read, or null when the read succeeded — including
+   * the ordinary "this mission has never been dispatched" case, which is a
+   * successful read of zero rows.
+   *
+   * Unlike the posture loaders above, this one does NOT swallow a pending-schema
+   * error into an empty list. The page it feeds is where an operator goes to
+   * find out whether a flight they dispatched is running; answering "no jobs"
+   * to a failed read there is the difference between "nothing was dispatched"
+   * and "OpenPlan cannot see what was dispatched", and an operator acts
+   * differently on each.
+   */
+  unreadableReason: string | null;
+  /**
+   * True when the mission has MORE jobs than `MAX_MISSION_PROCESSING_JOBS`, so
+   * `jobs` is the newest page of them rather than all of them. The page must
+   * say "the N most recent" rather than "N total" when this is set.
+   */
+  truncated: boolean;
+};
+
+export async function loadAerialProcessingJobsForMission(
+  supabase: AerialQuerySupabaseLike,
+  params: { workspaceId: string; missionId: string }
+): Promise<MissionAerialProcessingJobs> {
+  const result = await supabase
+    .from("aerial_processing_jobs")
+    .select(AERIAL_PROCESSING_JOB_SELECT)
+    .eq("workspace_id", params.workspaceId)
+    .eq("mission_id", params.missionId)
+    .order("created_at", { ascending: false })
+    // One more than the cap: the extra row is never rendered, it only answers
+    // "is this list all of them?" without a second COUNT query.
+    .limit(MAX_MISSION_PROCESSING_JOBS + 1);
+
+  if (result.error) {
+    return {
+      jobs: [],
+      truncated: false,
+      unreadableReason: aerialReadFailureReason(
+        "imagery processing jobs for this mission",
+        result.error.message
+      ),
+    };
+  }
+
+  const rows = (result.data ?? []) as unknown as AerialProcessingJobRow[];
+  const truncated = rows.length > MAX_MISSION_PROCESSING_JOBS;
+
+  return {
+    jobs: truncated ? rows.slice(0, MAX_MISSION_PROCESSING_JOBS) : rows,
+    truncated,
+    unreadableReason: null,
+  };
 }

@@ -12,6 +12,12 @@ import {
   processingCallbackSchema,
   type ProcessingCallback,
 } from "@/lib/aerial/processing-contract";
+import {
+  assignArtifactOrdinals,
+  redactArtifactDescriptors,
+  type AerialArtifactCustodyPosture,
+} from "@/lib/aerial/artifact-custody";
+import { runAerialCustodyPass } from "@/lib/aerial/artifact-custody-server";
 
 export const runtime = "nodejs";
 
@@ -29,13 +35,26 @@ type ProcessingJobRow = {
   status: string;
 };
 
-function summarizeArtifacts(callback: ProcessingCallback): string {
+/**
+ * The source-context text an evidence package carries.
+ *
+ * WHAT THIS USED TO SAY, and why it was the defect in one sentence: "Download
+ * URLs are time-limited signed URLs recorded on the processing job row." That
+ * was true, and it was the entire problem — the package's own notes described a
+ * record that would evaporate on the vendor's schedule, and said so as though it
+ * were a filing detail. Custody is now stated first, because whether OpenPlan
+ * holds the bytes is the load-bearing fact about this evidence.
+ */
+function summarizeArtifacts(
+  callback: ProcessingCallback,
+  custody: AerialArtifactCustodyPosture
+): string {
   const kinds = (callback.artifacts ?? []).map((artifact) => artifact.kind);
   const kindSummary = kinds.length > 0 ? kinds.join(", ") : "none";
   return [
     `Outputs from aerial processing job ${callback.jobReference} (request ${callback.requestId}).`,
     `Artifact kinds: ${kindSummary}.`,
-    "Download URLs are time-limited signed URLs recorded on the processing job row (aerial_processing_jobs.artifacts).",
+    `Artifact custody: ${custody.label}. ${custody.detail}`,
   ].join(" ");
 }
 
@@ -153,7 +172,13 @@ export async function POST(request: NextRequest) {
 
     if (callback.status === "succeeded") {
       update.progress = 100;
-      update.artifacts = callback.artifacts ?? [];
+      // REDACTED, not raw. `aerial_processing_jobs` is readable by every
+      // workspace member and a signed downloadUrl is a bearer credential for the
+      // agency's own imagery. Kind / ordinal / expiry / declared size / content
+      // type / source host all survive; the credential does not. The verbatim
+      // payload stays in `aerial_processing_callbacks`, which migration
+      // 20260730000004 makes service-role-only.
+      update.artifacts = redactArtifactDescriptors(callback.artifacts ?? []);
       update.benchmark_summary = callback.benchmarkSummary ?? null;
     } else if (callback.progress !== undefined) {
       update.progress = callback.progress;
@@ -175,6 +200,50 @@ export async function POST(request: NextRequest) {
     }
 
     if (callback.status === "succeeded") {
+      // ── TAKE CUSTODY OF THE BYTES ────────────────────────────────────────
+      // Runs here, after the ledger and after the status write, so a slow or
+      // failing custody pass can never cost the deployment the knowledge that
+      // the job finished. It runs INSIDE this handler because the callback is
+      // the one moment the signed URLs are known-good; the cost is that the
+      // worker's request is held open while OpenPlan downloads, which is why the
+      // pass is bounded by OPENPLAN_AERIAL_CUSTODY_BUDGET_MS and anything it
+      // does not reach is written `pending` for the retry route rather than lost.
+      const custodyResult = await runAerialCustodyPass({
+        supabase,
+        job: {
+          processingJobId: job.id,
+          workspaceId: job.workspace_id,
+          missionId: job.mission_id,
+        },
+        candidates: assignArtifactOrdinals(callback.artifacts ?? []).map(({ artifact, ordinal }) => ({
+          kind: artifact.kind,
+          ordinal,
+          downloadUrl: artifact.downloadUrl,
+          expiresAt: artifact.expiresAt,
+          sizeBytes: artifact.sizeBytes ?? null,
+          contentType: artifact.contentType ?? null,
+        })),
+        elapsedMs: Date.now() - startedAt,
+      });
+
+      const custody = custodyResult.posture;
+
+      // Counts and states only — never a download URL, and never a raw fetch
+      // error string, which is where one would otherwise reach the log.
+      audit.info("aerial_artifact_custody_pass", {
+        processingJobId: job.id,
+        missionId: job.mission_id,
+        workspaceId: job.workspace_id,
+        custodyState: custody.state,
+        artifactCount: custody.artifactCount,
+        heldCount: custody.heldCount,
+        pendingCount: custody.pendingCount,
+        failedCount: custody.failedCount,
+        refusedCount: custody.refusedCount,
+        unrecoverableCount: custody.unrecoverableCount,
+        custodyUnreadable: custodyResult.unreadableReason,
+      });
+
       // Idempotent evidence-package creation keyed on processing_job_id.
       const { data: existingPackage, error: existingPackageError } = await supabase
         .from("aerial_evidence_packages")
@@ -220,9 +289,14 @@ export async function POST(request: NextRequest) {
             title: packageTitle,
             package_type: "measurable_output",
             status: "ready",
-            verification_readiness: "partial",
+            // NOT unconditionally "partial" any more. A package whose
+            // deliverables OpenPlan does not hold — whose orthomosaic exists
+            // only behind a link that dies on the worker's schedule — is not
+            // partially verified, it is pending, and the mission page renders
+            // that badge. This is where custody becomes visible to a planner.
+            verification_readiness: custody.verificationReadiness,
             processing_job_id: job.id,
-            notes: summarizeArtifacts(callback),
+            notes: summarizeArtifacts(callback, custody),
           })
           .select("id")
           .single();

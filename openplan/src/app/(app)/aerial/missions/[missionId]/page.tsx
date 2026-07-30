@@ -10,19 +10,26 @@ import { Worksurface, WorksurfaceSection } from "@/components/ui/worksurface";
 import { Inspector, InspectorField, InspectorGroup, InspectorEmpty } from "@/components/ui/inspector";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { AerialProcessingFreshness } from "@/components/aerial/aerial-processing-freshness";
+import { AerialProcessingJobsPanel } from "@/components/aerial/aerial-processing-jobs-panel";
+import { AerialProcessingRequestForm } from "@/components/aerial/aerial-processing-request";
 import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
 import {
   aerialMissionStatusTone,
   aerialPackageStatusTone,
   aerialVerificationReadinessTone,
   buildAerialProjectPosture,
+  describeAerialProcessingRequestSurface,
   describeAerialProjectPosture,
   formatAerialMissionStatusLabel,
   formatAerialMissionTypeLabel,
   formatAerialPackageStatusLabel,
   formatAerialVerificationReadinessLabel,
+  resolveAerialProcessingSilenceMinutes,
   summarizeAerialEvidenceAttachmentReadiness,
   summarizeAerialMissionPackagePosture,
+  summarizeAerialMissionProcessingPosture,
+  summarizeAerialProcessingJob,
   type AerialMissionStatus,
   type AerialPackageStatus,
   type AerialVerificationReadiness,
@@ -31,8 +38,10 @@ import {
   describeAerialProcessingAvailability,
   isAerialProcessingWorkerConfigured,
 } from "@/lib/aerial/processing-availability";
-import { loadAerialProjectPosture } from "@/lib/aerial/queries";
+import { loadAerialArtifactCustodyForMission, loadAerialProcessingJobsForMission, loadAerialProjectPosture } from "@/lib/aerial/queries";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import { createClient } from "@/lib/supabase/server";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type PackageRow = {
@@ -108,7 +117,35 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     .eq("workspace_id", workspaceId)
     .maybeSingle();
 
-  if (missionErr || !mission) {
+  // A FAILED READ IS NOT A MISSING MISSION. These were one branch, so a database
+  // error on `aerial_missions` rendered the 404 page — telling an operator their
+  // mission does not exist when OpenPlan had simply failed to look. That is the
+  // same class of untruth this page's processing and package sections were
+  // rewritten to avoid, and it is the loudest instance of it: the operator's
+  // next move is to re-create work that is still there.
+  if (missionErr) {
+    return (
+      <div className="mx-auto w-full max-w-2xl px-6 py-12">
+        <StateBlock
+          tone="danger"
+          title="This mission could not be read"
+          description={`The database refused the query for this mission: ${
+            missionErr.message ?? "no reason was returned"
+          }. This is not the same as the mission not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the record is gone.`}
+        />
+        <div className="mt-4">
+          <Button asChild variant="outline">
+            <Link href="/aerial">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Aerial Ops
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!mission) {
     notFound();
   }
 
@@ -126,7 +163,11 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     ? Math.max(0, (mission.aoi_geojson as { coordinates: [number, number][][] }).coordinates[0].length - 1)
     : 0;
 
-  const { data: pkgRows } = await supabase
+  // Every read below this point is collected rather than swallowed: a query that
+  // failed may not be rendered as an answer. See src/lib/ui/read-failures.ts.
+  const reads = new ReadFailureLog();
+
+  const packagesResult = await supabase
     .from("aerial_evidence_packages")
     .select(
       "id, title, package_type, status, verification_readiness, notes, created_at, updated_at"
@@ -134,6 +175,9 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     .eq("workspace_id", workspaceId)
     .eq("mission_id", missionId)
     .order("created_at", { ascending: false });
+
+  const packagesUnreadable = reads.check("evidence packages for this mission", packagesResult);
+  const pkgRows = packagesResult.data;
 
   const packages: PackageRow[] = (pkgRows ?? []).map((row) => ({
     id: row.id,
@@ -163,7 +207,50 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
   // Read on the server, from the same condition the dispatch route decides on,
   // so this page cannot tell a configured deployment that its worker is a
   // future release. See src/lib/aerial/processing-availability.ts.
-  const processingNotice = describeAerialProcessingAvailability(isAerialProcessingWorkerConfigured());
+  const workerConfigured = isAerialProcessingWorkerConfigured();
+  const unconfiguredNotice = describeAerialProcessingAvailability(false);
+  const canRequestProcessing = workerConfigured && !isReadOnlyWorkspaceRole(membership.role);
+  const processingSurface = describeAerialProcessingRequestSurface({
+    workerConfigured,
+    canRequest: canRequestProcessing,
+  });
+
+  // ── Imagery processing jobs ────────────────────────────────────────────
+  // `aerial_processing_jobs` has been written by the dispatch route and the
+  // processing callback since 20260721000001 and read back by nothing. An
+  // operator who dispatched a flight saw a page that rendered as though it had
+  // never happened.
+  const renderedAt = new Date();
+  const silenceMinutes = resolveAerialProcessingSilenceMinutes(
+    process.env.OPENPLAN_AERIAL_PROCESSING_SILENCE_MINUTES
+  );
+  const {
+    jobs: processingJobs,
+    unreadableReason: processingJobsUnreadable,
+    truncated: processingJobsTruncated,
+  } = await loadAerialProcessingJobsForMission(supabase, { workspaceId, missionId });
+
+  /*
+    WHAT OPENPLAN ACTUALLY HOLDS for each of those jobs.
+
+    This loader was written alongside the custody engine and had NO CALLER — so
+    the bytes were being fetched, hashed and stored, and no planner could see
+    that any of it had happened, or that an orthomosaic's vendor link had lapsed
+    with nothing held behind it. Meanwhile the panel carried a standing sentence
+    saying "OpenPlan records the list, not the files", which the custody work had
+    just made false.
+
+    Read separately from the jobs rather than joined, so a failure here degrades
+    to "we could not establish what is held" instead of taking the whole job
+    list down with it. Those are different sentences and the panel says both.
+  */
+  const { byProcessingJobId: custodyByJobId, unreadableReason: custodyUnreadable } =
+    await loadAerialArtifactCustodyForMission(supabase, missionId);
+  const processingJobSummaries = processingJobs.map((job) =>
+    summarizeAerialProcessingJob(job, { now: renderedAt, silenceMinutes })
+  );
+  const processingPosture = summarizeAerialMissionProcessingPosture(processingJobSummaries);
+
   const attachmentSummaryTone =
     attachmentSummary.readiness === "ready"
       ? "success"
@@ -230,14 +317,28 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     </div>
   );
 
+  // Every number in the two groups below is derived from the evidence-package
+  // read. If that read failed, "0 ready · 0 total" is not a small inaccuracy —
+  // it is the page stating a finding it does not have.
   const evidenceChain = (
     <Inspector
       title="Evidence chain"
       subtitle={
-        postureDescription ??
-        "Once packages are recorded and marked ready, their verification chain will summarize here."
+        packagesUnreadable
+          ? (reads.describe() ?? "Some of this page could not be read.")
+          : (postureDescription ??
+            "Once packages are recorded and marked ready, their verification chain will summarize here.")
       }
     >
+      {packagesUnreadable ? (
+        <InspectorGroup label="This mission only">
+          <InspectorEmpty
+            title="Evidence packages could not be read"
+            description="Package counts, verification state, and attachment readiness are all derived from that read, so none of them are shown. They are unavailable, not zero."
+          />
+        </InspectorGroup>
+      ) : (
+        <>
       <InspectorGroup label="This mission only">
         <InspectorField
           label="Packages recorded"
@@ -281,6 +382,51 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             </ul>
           </div>
         ) : null}
+      </InspectorGroup>
+        </>
+      )}
+
+      <InspectorGroup label="Processing jobs">
+        {processingJobsUnreadable ? (
+          <InspectorEmpty
+            title="Processing jobs could not be read"
+            description="OpenPlan cannot say whether this mission has jobs running. Do not read the absence of a job as evidence that nothing was dispatched."
+          />
+        ) : processingPosture.jobCount === 0 ? (
+          <InspectorEmpty
+            title="Nothing dispatched yet"
+            description="No imagery has been sent to a processing worker for this mission."
+          />
+        ) : (
+          <>
+            <InspectorField
+              label="Jobs recorded"
+              // The list is capped, so "total" is only true when the read was
+              // not truncated. Every count beside it describes the shown page.
+              value={
+                processingJobsTruncated
+                  ? `${processingPosture.jobCount} most recent`
+                  : `${processingPosture.jobCount} total`
+              }
+              hint={`${processingPosture.succeededCount} succeeded · ${processingPosture.failedCount} failed · ${processingPosture.canceledCount} canceled${
+                processingJobsTruncated
+                  ? `, across the ${processingPosture.jobCount} shown. This mission has more jobs than that, so these are not totals for the mission.`
+                  : ""
+              }`}
+            />
+            <InspectorField
+              label="Still open"
+              value={
+                <StatusBadge tone={processingPosture.tone}>{processingPosture.label}</StatusBadge>
+              }
+              hint={
+                processingPosture.silentCount > 0
+                  ? `${processingPosture.silentCount} job${processingPosture.silentCount === 1 ? " has" : "s have"} sent no callback inside this deployment's ${silenceMinutes}-minute reporting window. That is silence, not a verdict — the work may still be running on the worker.`
+                  : "OpenPlan learns a job's state only from worker callbacks; it never polls."
+              }
+            />
+          </>
+        )}
       </InspectorGroup>
 
       <InspectorGroup label="Linked project">
@@ -372,10 +518,10 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
             label="Authoring"
             title="Mission AOI & export"
             // "or request ODM processing" used to close this line, but nothing
-            // in this section requests anything — the affordance has never
-            // existed. Describing what is here keeps the header from promising
-            // a button the block below has to walk back.
-            description="Draw the area of interest, export a DJI waypoint file for pilot handoff, and see where imagery processing stands on this deployment."
+            // in this section requests anything. Requesting imagery processing
+            // now has its own section below, so this one describes only what it
+            // actually does.
+            description="Draw the area of interest and export a DJI waypoint file for pilot handoff."
             trailing={
               <StatusBadge tone={hasAoi ? "success" : "neutral"}>
                 {hasAoi ? `${aoiVertexCount} vertex polygon` : "No AOI yet"}
@@ -398,33 +544,100 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
                 </Button>
               ) : null}
             </div>
-            <StateBlock
-              className="mt-3"
-              title={processingNotice.title}
-              description={processingNotice.description}
-              tone="info"
-              compact
-            />
+          </WorksurfaceSection>
+          <WorksurfaceSection
+            id="aerial-mission-processing"
+            label="Processing"
+            title="Imagery processing jobs"
+            description={
+              processingJobsTruncated
+                ? `The ${processingPosture.jobCount} most recent processing jobs for this mission, in the state the worker last reported them. This mission has more than that; older jobs are not shown. OpenPlan cannot poll the worker, so a job advances only when a callback arrives — what is shown is as of the last one.`
+                : "Every processing job dispatched for this mission, in the state the worker last reported it. OpenPlan cannot poll the worker, so a job advances only when a callback arrives — what is shown is as of the last one."
+            }
+            // A roll-up derived from a read that failed is not a small
+            // inaccuracy — "No processing jobs" is an answer, and this page does
+            // not have one. Same treatment the packages section below gets.
+            trailing={
+              processingJobsUnreadable ? (
+                <StatusBadge tone="danger">Unavailable</StatusBadge>
+              ) : (
+                <StatusBadge tone={processingPosture.tone}>{processingPosture.label}</StatusBadge>
+              )
+            }
+          >
+            {workerConfigured ? (
+              <StateBlock
+                title={processingSurface.title}
+                description={processingSurface.description}
+                tone={processingSurface.tone === "info" ? "info" : "neutral"}
+                compact
+              />
+            ) : (
+              <StateBlock
+                title={unconfiguredNotice.title}
+                description={unconfiguredNotice.description}
+                tone="info"
+                compact
+              />
+            )}
+
+            {canRequestProcessing ? (
+              <div className="mt-3">
+                <AerialProcessingRequestForm missionId={mission.id} />
+              </div>
+            ) : null}
+
+            <div className="mt-4 space-y-3">
+              <AerialProcessingFreshness
+                renderedAt={renderedAt.toISOString()}
+                hasOpenJob={processingPosture.hasOpenJob}
+              />
+              <AerialProcessingJobsPanel
+                jobs={processingJobs}
+                summaries={processingJobSummaries}
+                now={renderedAt}
+                unreadableReason={processingJobsUnreadable}
+          custodyByJobId={custodyByJobId}
+          custodyUnreadableReason={custodyUnreadable}
+                truncated={processingJobsTruncated}
+              />
+            </div>
           </WorksurfaceSection>
           <WorksurfaceSection
             id="aerial-mission-packages"
             label="Evidence"
             title="Packages"
             description="Each package captures a processed output (orthos, models, surfaces, QA bundles) with its status, verification readiness, and report-attachment posture."
-            trailing={<StatusBadge tone={packagePosture.attachmentReady ? "success" : packagePosture.tone}>{packagePosture.attachmentReadyLabel}</StatusBadge>}
+            trailing={
+              packagesUnreadable ? (
+                <StatusBadge tone="danger">Unavailable</StatusBadge>
+              ) : (
+                <StatusBadge tone={packagePosture.attachmentReady ? "success" : packagePosture.tone}>
+                  {packagePosture.attachmentReadyLabel}
+                </StatusBadge>
+              )
+            }
           >
-            <DataTable<PackageRow>
-              columns={columns}
-              rows={packages}
-              getRowId={(row) => row.id}
-              density="compact"
-              emptyState={
-                <EmptyState
-                  title="No evidence packages yet"
-                  description="Once packages are recorded for this mission, they will appear here with status and verification state."
-                />
-              }
-            />
+            {packagesUnreadable ? (
+              <StateBlock
+                tone="danger"
+                title="Evidence packages could not be read"
+                description={`${reads.messages().join(" ")} An empty list here would not mean this mission has no packages — the query failed, so OpenPlan cannot say either way.`}
+              />
+            ) : (
+              <DataTable<PackageRow>
+                columns={columns}
+                rows={packages}
+                getRowId={(row) => row.id}
+                density="compact"
+                emptyState={
+                  <EmptyState
+                    title="No evidence packages yet"
+                    description="Once packages are recorded for this mission, they will appear here with status and verification state."
+                  />
+                }
+              />
+            )}
           </WorksurfaceSection>
         </>
       }

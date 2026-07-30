@@ -78,16 +78,35 @@ const EXPECTED = {
   // `relations`, `tables` and `rlsEnabledTables` by one each and nothing else.
   // Verified by parsing the migration file; it is in the tree and not yet
   // applied to a live database.
+  // 20260730000004 (aerial_artifact_custody) moves the RELATION counts and
+  // nothing else, which took two offsetting changes to be true and is worth
+  // spelling out rather than leaving as a coincidence:
+  //   +1 permissive SELECT policy for the new table (workspace members read
+  //      custody facts), and
+  //   -1 permissive SELECT policy, because the same migration DROPs
+  //      workspace_members_can_read_aerial_processing_callbacks. That ledger's
+  //      `payload` is the vendor callback verbatim, and a succeeded callback
+  //      carries signed artifact download URLs — bearer credentials for the
+  //      agency's own imagery — so it becomes service-role-only. No application
+  //      code read it with a user client.
+  // `tablesWithPolicies` therefore also holds at 108: aerial_processing_callbacks
+  // leaves the set (that was its only policy; it is in neither writer-gate
+  // migration) exactly as aerial_artifact_custody joins it. The new table grants
+  // no write policies, so `restrictive` and `permissiveWrites` do not move — RLS
+  // with no write policy denies PostgREST writes outright, the same posture as
+  // its sibling aerial_processing_jobs.
+  // +1 relation, +1 table, +1 RLS-enabled table. Verified by parsing the
+  // migration file; it is in the tree and not yet applied to a live database.
   policies: 552,
   permissive: 312,
   restrictive: 240,
   permissiveWrites: 204,
   expanded: 252,
   tablesWithPolicies: 108,
-  relations: 126,
-  tables: 120,
+  relations: 127,
+  tables: 121,
   views: 6,
-  rlsEnabledTables: 110,
+  rlsEnabledTables: 111,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

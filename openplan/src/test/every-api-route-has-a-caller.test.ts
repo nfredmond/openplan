@@ -47,6 +47,8 @@ const EXTERNAL_CALLERS: Record<string, string> = {
     "Operator/CI data load, authenticated by a shared secret with timingSafeEqual — cross-tenant public reference data, deliberately not driven from a workspace UI.",
   "api/county-runs/[countyRunId]/validate/refresh":
     "County worker callback, authenticated by isAuthenticatedCountyWorkerCallback — the Python worker posts its validation summary back here.",
+  "api/aerial/processing-callback":
+    "Photogrammetry worker callback — the processing platform posts job status and artifact descriptors here. Authenticated by the callback contract, not by a session.",
 };
 
 /**
@@ -58,12 +60,46 @@ const EXTERNAL_CALLERS: Record<string, string> = {
  * is the point. Adding one requires a reason a reviewer will ask about.
  */
 const KNOWN_UNWIRED: readonly string[] = [
+  // Network package ingest, which the product ITSELF describes as unbuilt:
+  // `network-packages-panel.tsx` tells a planner in as many words that "Ingest
+  // is API-only for now — there is no in-app upload form yet." Honest, and a
+  // real gap; listed here so it stays counted rather than excused.
+  "api/network-packages",
+  "api/network-packages/[packageId]/versions",
+  "api/network-packages/[packageId]/versions/[versionId]/connectors",
+  "api/network-packages/[packageId]/versions/[versionId]/corridors",
+  "api/network-packages/[packageId]/versions/[versionId]/ingest",
+  "api/network-packages/[packageId]/versions/[versionId]/zones",
+  // A GET that duplicates work the page already does. `/assistant-activity`
+  // imports `buildAssistantActivitySummary` from inside this route's own folder
+  // and runs its own query, so the HTTP endpoint beside it answers to nobody.
+  // Wire it or delete it; do not leave it as a second way to compute the same
+  // answer that can drift from the first.
+  "api/assistant-activity",
   // EMPTY, and that is the goal state rather than a missing list. Every API
   // route in this repo now has a caller in the product, or an EXTERNAL_CALLERS
   // entry naming what calls it from outside. Adding a line here means shipping
   // a capability nobody can reach, so it needs a reason a reviewer will ask
   // about — and the test below fails if a line stays after the route is wired.
 ];
+
+/**
+ * A ROUTE PATH IN PROSE IS NOT A CALL SITE.
+ *
+ * The first version of this guard asked whether the path appeared ANYWHERE in a
+ * source file. It therefore counted `POST /api/aerial/processing-callback/custody`
+ * written inside an operator-facing sentence ("retry through …") and inside a
+ * docblock, and passed a route that nothing in the product called — the exact
+ * defect it exists to catch, excused by its own documentation.
+ *
+ * A real call site writes the path at the START of a string: `"/api/x"`,
+ * `` `/api/x` ``, or `` `${base}/api/x` ``. Prose writes it mid-sentence, after
+ * a space. Requiring a quote, backtick or template-close immediately before the
+ * path is enough to tell those apart, and it costs nothing to keep true.
+ */
+function callSitePattern(prefix: string): RegExp {
+  return new RegExp(`["'\`}]${prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`);
+}
 
 /** `api/models/[modelId]/runs` -> `/api/models`, plus `["runs"]`. */
 function staticParts(routeDir: string): { prefix: string; tail: string[] } {
@@ -118,8 +154,9 @@ describe("every API route has a caller", () => {
 
   const unreferenced = routes.filter((routeDir) => {
     const { prefix, tail } = staticParts(routeDir);
+    const callSite = callSitePattern(prefix);
     return !sources.some(
-      (source) => source.includes(prefix) && tail.every((segment) => source.includes(segment))
+      (source) => callSite.test(source) && tail.every((segment) => source.includes(segment))
     );
   });
 

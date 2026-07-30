@@ -13,6 +13,10 @@ const evidenceLookupMaybeSingleMock = vi.fn();
 const evidenceInsertSingleMock = vi.fn();
 const evidenceInsertMock = vi.fn();
 const missionMaybeSingleMock = vi.fn();
+const custodyUpsertMock = vi.fn();
+const custodySelectEqMock = vi.fn();
+const storageUploadMock = vi.fn();
+const fetchMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -54,6 +58,13 @@ const fromMock = vi.fn((table: string) => {
           maybeSingle: missionMaybeSingleMock,
         }),
       }),
+    };
+  }
+
+  if (table === "aerial_artifact_custody") {
+    return {
+      upsert: custodyUpsertMock,
+      select: () => ({ eq: custodySelectEqMock }),
     };
   }
 
@@ -125,11 +136,55 @@ describe("POST /api/aerial/processing-callback", () => {
     process.env.OPENPLAN_AERIAL_PROCESSING_CALLBACK_BEARER_TOKEN = CALLBACK_TOKEN;
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
-    createServiceRoleClientMock.mockReturnValue({ from: fromMock });
+    createServiceRoleClientMock.mockReturnValue({
+      from: fromMock,
+      storage: { from: () => ({ upload: storageUploadMock }) },
+    });
+
+    // Custody now runs inside the succeeded branch. These stubs make it succeed
+    // so the assertions below stay about the callback's OWN behaviour; the
+    // custody engine itself has its own suite.
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockResolvedValue(
+      new Response(new Uint8Array([1, 2, 3]), {
+        status: 200,
+        headers: { "content-type": "image/tiff" },
+      })
+    );
+    storageUploadMock.mockResolvedValue({ error: null });
+    custodyUpsertMock.mockResolvedValue({ error: null });
+    custodySelectEqMock.mockResolvedValue({
+      data: [
+        {
+          kind: "orthomosaic",
+          ordinal: 0,
+          state: "held",
+          storage_bucket: "aerial-artifacts",
+          storage_path: "ws/mission/job/orthomosaic.tif",
+          byte_size: 3,
+          checksum_sha256: "a".repeat(64),
+          content_type: "image/tiff",
+          declared_size_bytes: 123456,
+          source_host: "storage.example.com",
+          source_expires_at: "2099-07-22T14:30:00Z",
+          failure_code: null,
+          failure_detail: null,
+          attempt_count: 1,
+          held_at: "2026-07-21T12:00:00Z",
+        },
+      ],
+      error: null,
+    });
 
     jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW }, error: null });
     ledgerInsertMock.mockResolvedValue({ error: null });
-    jobUpdateEqMock.mockResolvedValue({ error: null });
+    // The status write ends at `.eq()`; the custody roll-up chains
+    // `.select("id")` so it can see whether it changed anything.
+    jobUpdateEqMock.mockReturnValue(
+      Object.assign(Promise.resolve({ error: null }), {
+        select: () => Promise.resolve({ data: [{ id: JOB_ROW.id }], error: null }),
+      })
+    );
     jobUpdateMock.mockReturnValue({ eq: jobUpdateEqMock });
     evidenceLookupMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     evidenceInsertSingleMock.mockResolvedValue({ data: { id: "pkg-1" }, error: null });
@@ -227,7 +282,18 @@ describe("POST /api/aerial/processing-callback", () => {
       expect.objectContaining({
         status: "succeeded",
         progress: 100,
-        artifacts: SUCCEEDED_ARTIFACTS,
+        // REDACTED — the signed downloadUrl is a bearer credential and this row
+        // is readable by every workspace member.
+        artifacts: [
+          {
+            kind: "orthomosaic",
+            ordinal: 0,
+            expiresAt: "2026-07-22T14:30:00Z",
+            sizeBytes: 123456,
+            contentType: "image/tiff",
+            sourceHost: "storage.example.com",
+          },
+        ],
         benchmark_summary: { wallClockSeconds: 812 },
       })
     );

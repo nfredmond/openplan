@@ -86,6 +86,16 @@ function callerWrites(): SupabaseWriteSite[] {
  * module. An entry that stops being true fails; it does not quietly persist.
  */
 const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: string }> = {
+  "src/lib/aerial/artifact-custody-server.ts": {
+    functions: ["runAerialCustodyPass", "finalizeAerialCustodyState"],
+    reason:
+      "aerial_artifact_custody records whether OpenPlan holds the bytes of a drone flight's " +
+      "outputs. Members READ it (that is the whole point — a job whose deliverables are only a " +
+      "vendor link must be visible as such) but may not write it: custody is established by " +
+      "fetching from the processing worker, so a row asserting 'these bytes are here, this hash' " +
+      "is evidence, and the subject of evidence must not be able to author it. Both writers are " +
+      "reached only from the service-role processing-callback routes.",
+  },
   "src/lib/engagement/survey-responses.ts": {
     functions: ["insertSurveyResponse"],
     reason:

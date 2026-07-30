@@ -32,6 +32,11 @@
  * not promise otherwise. Read as literal property accesses rather than
  * `process.env[name]` so the values survive Next's build-time env handling.
  */
+import {
+  AERIAL_ARTIFACT_MAX_BYTES_ENV,
+  resolveAerialArtifactMaxBytes,
+} from "@/lib/aerial/artifact-custody";
+
 export function isAerialProcessingWorkerConfigured(): boolean {
   const workerUrl = process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_URL?.trim();
   const workerToken = process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN?.trim();
@@ -55,8 +60,19 @@ export type AerialProcessingAvailabilityNotice = {
  * describing a button that does not exist would be the same class of defect
  * this function was written to remove.
  */
+function formatCeiling(bytes: number): string {
+  const mb = bytes / (1024 * 1024);
+  return mb < 1024 ? `${mb.toFixed(0)} MB` : `${(mb / 1024).toFixed(2)} GB`;
+}
+
 export function describeAerialProcessingAvailability(
-  workerConfigured: boolean
+  workerConfigured: boolean,
+  /**
+   * This deployment's per-artifact custody ceiling. Parameterised for the same
+   * reason `workerConfigured` is — so both branches are testable without
+   * touching the environment — and defaulted so the page needs no new argument.
+   */
+  maxArtifactBytes: number = resolveAerialArtifactMaxBytes()
 ): AerialProcessingAvailabilityNotice {
   if (!workerConfigured) {
     return {
@@ -69,6 +85,6 @@ export function describeAerialProcessingAvailability(
   return {
     title: "Imagery processing is configured — request it through the API",
     description:
-      "This deployment has an Aerial Intel Platform worker configured, so POST /api/aerial/missions/[id]/process accepts a signed imagery ZIP URL, records the job, dispatches it, and answers HTTP 202; a succeeded worker callback writes an evidence package into the list below. There is no request button or job-status view on this page yet, so the request has to be made against that endpoint directly.",
+      `This deployment has an Aerial Intel Platform worker configured, so POST /api/aerial/missions/[id]/process accepts a signed imagery ZIP URL, records the job, dispatches it, and answers HTTP 202; a succeeded worker callback writes an evidence package. On that callback OpenPlan also downloads each artifact — orthomosaic, DSM, point cloud — into its own private storage, up to ${formatCeiling(maxArtifactBytes)} per artifact (${AERIAL_ARTIFACT_MAX_BYTES_ENV}), so the deliverables outlive the worker's time-limited links; anything it could not take is recorded against the job with the reason, and an evidence package whose bytes are not held stays verification-pending rather than claiming partial verification.`,
   };
 }

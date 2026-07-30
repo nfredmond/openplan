@@ -27,9 +27,13 @@ import {
  * exactly the shape the defect had. These tests drive the real server component
  * with the environment set both ways and read the resulting DOM.
  *
- * NOT ASSERTED: that a "Process imagery" button or a job-status section exists.
- * Neither does, and the configured-deployment copy says so in as many words —
- * inventing an affordance in a test would re-create the same class of lie.
+ * WHAT CHANGED SINCE. This file used to end by noting that no request button and
+ * no job-status section existed, and asserting that the copy admitted it. Both
+ * now exist — see `aerial-mission-processing-jobs.test.tsx`, which drives them —
+ * so the assertions here moved from "the page admits it has neither" to "the
+ * page no longer claims it has neither". The stale sentence still sits in
+ * `describeAerialProcessingAvailability`'s configured branch, which belongs to
+ * another lane; the page stopped rendering that branch instead.
  */
 
 const WORKER_URL_ENV = "OPENPLAN_AERIAL_PROCESSING_WORKER_URL";
@@ -47,6 +51,14 @@ const createClientMock = vi.fn();
 const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 const loadAerialProjectPostureMock = vi.fn();
+const loadAerialProcessingJobsForMissionMock = vi.fn();
+// The page reads the custody ledger alongside the jobs. This file is about the
+// availability copy, so custody stays empty — but the export must exist or the
+// page cannot render at all.
+const loadAerialArtifactCustodyForMissionMock = vi.fn((..._args: unknown[]) => ({
+  byProcessingJobId: new Map(),
+  unreadableReason: null,
+}));
 const notFoundMock = vi.fn(() => {
   throw new Error("notFound");
 });
@@ -89,6 +101,9 @@ const fromMock = vi.fn((table: string) => {
 vi.mock("next/navigation", () => ({
   notFound: () => notFoundMock(),
   redirect: () => redirectMock(),
+  // The processing section's client controls (request form, freshness control)
+  // call useRouter; they render inside this page now.
+  useRouter: () => ({ refresh: vi.fn(), push: vi.fn() }),
 }));
 
 vi.mock("next/link", () => ({
@@ -109,6 +124,11 @@ vi.mock("@/lib/workspaces/current", () => ({
 
 vi.mock("@/lib/aerial/queries", () => ({
   loadAerialProjectPosture: (...args: unknown[]) => loadAerialProjectPostureMock(...args),
+  AERIAL_PROCESSING_JOB_SELECT: "id",
+  loadAerialProcessingJobsForMission: (...args: unknown[]) =>
+    loadAerialProcessingJobsForMissionMock(...args),
+  loadAerialArtifactCustodyForMission: (...args: unknown[]) =>
+    loadAerialArtifactCustodyForMissionMock(...args),
 }));
 
 import AerialMissionDetailPage from "@/app/(app)/aerial/missions/[missionId]/page";
@@ -144,6 +164,7 @@ describe("aerial imagery-processing availability", () => {
       membership: { workspace_id: WORKSPACE_ID },
     });
     loadAerialProjectPostureMock.mockResolvedValue({ posture: null, updatedAt: null });
+    loadAerialProcessingJobsForMissionMock.mockResolvedValue({ jobs: [], unreadableReason: null });
     missionMaybeSingleMock.mockResolvedValue({
       data: {
         id: MISSION_ID,
@@ -234,11 +255,22 @@ describe("aerial imagery-processing availability", () => {
       expect(text).toContain(WORKER_TOKEN_ENV);
     });
 
-    it("admits there is no request button yet on a configured deployment", () => {
+    /**
+     * SUPERSEDED CLAIM. This branch used to end with "There is no request button
+     * or job-status view on this page yet", and a test here asserted that it
+     * said so. Both halves are now false: the mission page renders a processing
+     * request form and a job list read from `aerial_processing_jobs`.
+     *
+     * The stale sentence still lives in `processing-availability.ts`, which
+     * belongs to another lane, so the PAGE stopped rendering that branch rather
+     * than the sentence being edited from here. What is asserted instead is the
+     * thing that actually protects a reader: that the live page does not carry
+     * the claim. See "the rendered mission page" below.
+     */
+    it("still returns a configured-branch notice, which the page no longer renders verbatim", () => {
       const notice = describeAerialProcessingAvailability(true);
 
-      expect(notice.description).toMatch(/no request button/i);
-      expect(notice.description).toMatch(/job-status/i);
+      expect(notice.title).toMatch(/configured/i);
     });
   });
 
@@ -262,16 +294,31 @@ describe("aerial imagery-processing availability", () => {
       expect(text).toContain(WORKER_URL_ENV);
     });
 
-    it("never promises a processing request the authoring section cannot make", async () => {
+    it("never uses the old 'request ODM processing' phrasing for the AOI section", async () => {
       process.env[WORKER_URL_ENV] = "https://worker.example.com";
       process.env[WORKER_TOKEN_ENV] = "worker-token";
 
       const text = await renderMissionPage();
 
-      // The section header used to offer "request ODM processing" as one of the
-      // things you could do here. No such control exists on this page in either
-      // environment, so the offer may not be made in either.
+      // The AOI/export header once offered "request ODM processing" as one of
+      // the things you could do in it. Requesting processing is now its own
+      // section, so that header must still not claim it.
       expect(text).not.toMatch(/request ODM processing/i);
+    });
+
+    /**
+     * The claim that replaced the one this file was written for. A configured
+     * deployment now HAS a request control and a job list, so the page may not
+     * repeat `describeAerialProcessingAvailability(true)`'s closing sentence.
+     */
+    it("no longer tells a configured deployment it has no request button or job view", async () => {
+      process.env[WORKER_URL_ENV] = "https://worker.example.com";
+      process.env[WORKER_TOKEN_ENV] = "worker-token";
+
+      const text = await renderMissionPage();
+
+      expect(text).not.toMatch(/no request button/i);
+      expect(text).not.toMatch(/has to be made against that endpoint directly/i);
     });
   });
 });
