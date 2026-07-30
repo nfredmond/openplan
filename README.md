@@ -25,9 +25,12 @@ grant-reimbursement invoicing — an agency invoicing *its funder* — and the *
 Anthropic spend against runaway loops. Both are planning/operations features, unrelated to charging
 anyone for OpenPlan.
 
-Run it on your own infrastructure whenever you like: see
-[`openplan/docs/SELF_HOSTING.md`](openplan/docs/SELF_HOSTING.md). The software, the schema, and your
-data are yours.
+Run it on your own infrastructure whenever you like. To put it online for your whole team, follow
+[`openplan/docs/FIRST_DEPLOYMENT.md`](openplan/docs/FIRST_DEPLOYMENT.md) — a 20-minute checklist —
+or [`openplan/docs/SELF_HOSTING.md`](openplan/docs/SELF_HOSTING.md) for the same path with every
+piece explained. To try it on one machine first, see
+[Running OpenPlan on one computer](#running-openplan-on-one-computer) below. The software, the
+schema, and your data are yours.
 
 ## Repository layout
 

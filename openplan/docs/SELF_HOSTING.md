@@ -10,6 +10,10 @@ Next.js, of Supabase, or of Vercel, and explains each service before asking you 
 You do not need to be a programmer, but you will be creating accounts and copying keys between
 them, so set aside an uninterrupted hour.
 
+**In a hurry?** [`FIRST_DEPLOYMENT.md`](FIRST_DEPLOYMENT.md) is the same path as a
+20-minute checklist with no explanation. Use that to work through it; use this document when
+something does not behave as expected.
+
 **Do this once, for everybody.** The point of deploying is that nobody else has to install
 anything. When you finish, OpenPlan lives at a web address; every planner at your agency visits it,
 creates an account, and starts working. If you only want to *evaluate* OpenPlan first, the README's
