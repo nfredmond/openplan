@@ -4,12 +4,21 @@ OpenPlan is free and open source. Any agency, MPO/RTPA, city, county, tribe, non
 planning/environmental consultancy can run its own copy — your geography, your data, your database,
 no involvement from anyone else.
 
-This is the deployment guide for the people who will operate it. It is written for a competent IT
-team or a technically-minded planner; it assumes no prior knowledge of the codebase.
+**Who this is for.** Whoever at your organisation puts software on the internet — an IT person, a
+GIS analyst, a technically-minded planner. It assumes no prior knowledge of the codebase, of
+Next.js, of Supabase, or of Vercel, and explains each service before asking you to sign up for it.
+You do not need to be a programmer, but you will be creating accounts and copying keys between
+them, so set aside an uninterrupted hour.
 
-**There is currently no hosted OpenPlan instance** — running your own copy (locally or deployed)
-is how you use it today. If a hosted deployment exists in the future it will be announced in the
-README; nothing in this guide changes either way.
+**Do this once, for everybody.** The point of deploying is that nobody else has to install
+anything. When you finish, OpenPlan lives at a web address; every planner at your agency visits it,
+creates an account, and starts working. If you only want to *evaluate* OpenPlan first, the README's
+["Running OpenPlan on one computer"](../../README.md) puts it on a single machine with no accounts
+and no public address — that is the smaller commitment, and a reasonable first step.
+
+**There is currently no hosted OpenPlan instance** — running your own copy is how you use it today.
+There is no waiting list and nobody to ask: the instructions below are the whole path. If a hosted
+deployment exists in the future it will be announced in the README; nothing here changes either way.
 
 ---
 
@@ -31,39 +40,26 @@ panel is the authoritative answer for a running deployment — this document is 
 
 ## 0. Local development (no cloud accounts needed except Mapbox)
 
-To run OpenPlan on your own machine with a local database — for development, evaluation, or a
-single-user workstation:
+To run OpenPlan on one machine with a local database — for development, evaluation, or a
+single-user workstation — follow
+**["Running OpenPlan on one computer"](../../README.md#running-openplan-on-one-computer)** in the
+README. It installs Docker and Node step by step for Windows, macOS and Linux, and needs no cloud
+accounts beyond a free Mapbox token.
 
-1. Install [Docker](https://docs.docker.com/get-docker/) (the local Supabase stack runs in it)
-   and Node 20+.
-2. From `openplan/`:
+That path is the right first move even if you intend to deploy: it proves the software runs and
+lets you look around before you create hosted accounts. Nothing you do locally carries over to a
+deployment — the local database is separate — so treat it as a trial, not as step one of the
+production setup.
 
-   ```bash
-   npm ci
-   npm exec -- supabase start
-   ```
+Two things about the local instance that the README does not cover, because they only matter once
+you are working in it:
 
-   `supabase start` prints the local **API URL**, **anon key**, and **service_role key** when the
-   stack is up.
-3. Copy `.env.example` to `.env.local` and set at minimum:
-   - `NEXT_PUBLIC_SUPABASE_URL` → the printed API URL (`http://127.0.0.1:54321`)
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY` → the printed anon key
-   - `SUPABASE_SERVICE_ROLE_KEY` → the printed service_role key
-   - `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` → your free Mapbox public token
-4. Apply the schema:
-
-   ```bash
-   npm exec -- supabase migration up
-   ```
-
-5. `npm run dev`, then open `http://localhost:3000` and sign up. Local email confirmation is
-   disabled, so the account activates immediately. Signing up provisions your workspace; you
-   then pick your own geography and create your own records — there is no demo dataset to load,
-   and nothing about the app is fitted to one place.
-
-One local quirk: the local Supabase config sets its auth site URL to `http://127.0.0.1:3000`, so
-the password-reset round-trip (`/forgot-password` → emailed link → `/auth/callback`) works from
-`127.0.0.1:3000` but not from `localhost:3000`. Normal sign-in works from either.
+- Signing up provisions your workspace immediately; local email confirmation is disabled, so the
+  account activates without a round-trip. There is no demo dataset to load — you pick your own
+  geography and create your own records, and nothing about the app is fitted to one place.
+- The local Supabase config sets its auth site URL to `http://127.0.0.1:3000`, so the
+  password-reset round-trip (`/forgot-password` → emailed link → `/auth/callback`) works from
+  `127.0.0.1:3000` but not from `localhost:3000`. Ordinary sign-in works from either.
 
 ### Keeping an always-on local instance (optional)
 
@@ -90,22 +86,39 @@ Everything below this point is the production/deployment path.
 
 ## 1. Supabase project
 
-1. Create a project at [supabase.com](https://supabase.com). Note the project ref (the subdomain of
-   your project URL) — everything below refers to *your* project, never anyone else's.
+**Supabase** is the database. It stores every project, comment, model run and account in your
+deployment, and it handles sign-in. It is a company running Postgres for you, so that you are not
+administering a database server. Its free tier is enough to start.
+
+1. Create a free account and a project at [supabase.com](https://supabase.com). Choose a region near
+   your users and set a strong database password — **save that password**, as Supabase shows it once.
+
+   Your project gets an address like `https://abcdefghijklm.supabase.co`. The random-looking part —
+   `abcdefghijklm` — is your **project ref**, and a later command asks for it. Everything below
+   refers to *your* project, never anyone else's.
+
 2. From *Project Settings → API*, collect:
    - **Project URL** → `NEXT_PUBLIC_SUPABASE_URL`
    - **anon / public key** → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - **service_role key** → `SUPABASE_SERVICE_ROLE_KEY`
 
    The service-role key bypasses Row Level Security by design. It is used only in server code and in
-   the modeling worker. Never expose it to a browser and never commit it.
+   the modeling worker. **Never expose it to a browser and never commit it** — anyone holding it can
+   read and change every workspace in your deployment. The other two keys are safe to publish; the
+   `NEXT_PUBLIC_` prefix means they are sent to browsers on purpose.
 
-3. Apply the schema. From `openplan/`:
+3. Create the tables. A new Supabase project is empty; OpenPlan's ~157 tables have to be built in
+   it. Run this on a computer that has the code (see the README's local setup for how to get it),
+   from inside the `openplan` folder:
 
    ```bash
    npm exec -- supabase link --project-ref <your-project-ref>
    npm exec -- supabase migration up --linked
    ```
+
+   `link` tells the tool which of your Supabase projects to talk to; it will ask for the database
+   password from step 1. `migration up` then builds the tables. Expect a long list of migration
+   names and a minute or two of work.
 
    `migration up` applies only migrations that have not run yet. Do **not** use `supabase db reset`
    against a project with real data — it re-applies every migration from scratch and destroys the
@@ -203,10 +216,86 @@ billing-shaped reason, that is a bug — please report it.
 
 ## 3. Deploy the web app
 
-On Vercel the repo works as-is — `vercel.json` sets the install and build commands and registers the
-run-reaper cron. Set the environment variables in the project settings, then deploy.
+This is the step that turns OpenPlan from something on your laptop into a web address your
+colleagues can use.
 
-On any other Node host, from `openplan/`:
+**Vercel** is a hosting company. It watches your copy of the OpenPlan code on GitHub and, whenever
+that code changes, rebuilds the site and publishes it. Its free tier is sufficient for a small
+agency. You can use any Node host instead — see the end of this section — but Vercel needs no
+server administration, which is why it is the documented path.
+
+### 3a. Put the code somewhere Vercel can see it
+
+Vercel deploys from a code repository. If you have not already:
+
+1. Create a free account at [github.com](https://github.com).
+2. Go to [github.com/nfredmond/openplan](https://github.com/nfredmond/openplan) and click **Fork**
+   (top right). A fork is your own copy — you can deploy from it and pull in later updates.
+
+### 3b. Create the Vercel project
+
+1. Sign up at [vercel.com](https://vercel.com) and choose **Continue with GitHub**, so Vercel can
+   see your fork.
+2. Click **Add New… → Project**. Find your `openplan` fork and click **Import**.
+3. **Set the Root Directory.** Vercel asks which folder holds the app. Click **Edit** next to Root
+   Directory and choose **`openplan`**.
+
+   > This is the one setting people get wrong. The repository contains a folder called `openplan`,
+   > and the app is inside it. Leaving this at the repository root produces a build failure that
+   > does not explain itself.
+
+4. Leave the framework, build command, and output directory alone. The repository's `vercel.json`
+   already sets them, and it also registers the scheduled cleanup job described below.
+5. **Do not click Deploy yet.** Add the environment variables first — the next step.
+
+### 3c. Add the environment variables
+
+On the same import screen, expand **Environment Variables**. Add each of the four required settings
+from [section 2](#2-environment-variables) — the three Supabase values from your hosted project and
+your Mapbox token. Add `CENSUS_API_KEY` and `ANTHROPIC_API_KEY` too if you have them.
+
+Two that only matter once you are deployed:
+
+| Setting | Value |
+|---|---|
+| `NEXT_PUBLIC_SITE_URL` | your deployment's address, e.g. `https://openplan-yourteam.vercel.app` |
+| `CRON_SECRET` | any long random string you invent — it authorises the cleanup job below |
+
+You will not know your address until the first deploy finishes. Deploy without
+`NEXT_PUBLIC_SITE_URL`, note the address Vercel gives you, then add it and redeploy. Everything
+works in the meantime except links OpenPlan generates for emails and share links.
+
+> **The Supabase values here must come from your hosted Supabase project, not from
+> `supabase start`.** The local ones point at `127.0.0.1` — your own machine — which a deployed site
+> cannot reach. If maps load but nothing else does, this is why.
+
+### 3d. Deploy, then finish two settings
+
+Click **Deploy**. The first build takes a few minutes. When it finishes, Vercel shows you the
+address.
+
+Two things still need that address:
+
+1. **Add `NEXT_PUBLIC_SITE_URL`** as described above and redeploy.
+2. **Tell Supabase about your domain.** Without this, confirmation and password-reset emails send
+   people to a rejected link. In the Supabase dashboard → *Authentication → URL Configuration*, set
+   **Site URL** to your address and add `https://<your-address>/auth/callback` to **Redirect URLs**.
+   This is the same step described under [Accounts and workspaces](#accounts-and-workspaces).
+
+Now open your address, click **Create your free workspace**, and make the first account. Then set
+your workspace geography — [section 4](#4-set-your-workspace-geography).
+
+### The scheduled cleanup job
+
+`vercel.json` registers a job that calls `GET /api/cron/reap-model-runs` every few minutes to close
+out model runs whose worker died. It authenticates with the `CRON_SECRET` you set above. On Vercel
+this is automatic. **On any other host you must schedule it yourself**, sending an
+`Authorization: Bearer <your CRON_SECRET>` header. Without it, a crashed model run stays marked
+"running" forever rather than being recorded as failed.
+
+### On a host other than Vercel
+
+Any host that runs Node works. From `openplan/`:
 
 ```bash
 npm ci
@@ -214,8 +303,8 @@ npm run build     # webpack builder, not Turbopack
 npm start
 ```
 
-Then schedule `GET /api/cron/reap-model-runs` every ~5 minutes with an
-`Authorization: Bearer $CRON_SECRET` header.
+Set the same environment variables in that host's configuration, and schedule the cleanup job
+described above.
 
 ---
 
