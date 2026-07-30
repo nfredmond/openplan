@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import {
+  readAssistantExecutionSource,
+  verifyAssistantActionApproval,
+  type AssistantApprovalVerification,
+} from "@/lib/assistant/action-approval-server";
+import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
+import { USER_AUTHORED } from "@/lib/assistant/agent-principal";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { insertNotReadableBackResponse, isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { describeOffVocabularyGate, lookupStageGateInTemplate } from "@/lib/stage-gates/gate-vocabulary";
@@ -68,6 +76,24 @@ const createDecisionSchema = z.object({
   modelRunId: z.string().uuid().optional(),
   countyRunId: z.string().uuid().optional(),
 });
+
+/**
+ * Exactly the body keys the `record_stage_gate_hold` action maps onto this
+ * endpoint. `decision` is in the list because the route requires it — and is
+ * separately pinned to HOLD below, because being ALLOWED to send the key is not
+ * the same as being allowed to send either value.
+ */
+const AGENT_HOLD_BODY_KEYS = [
+  "workspaceId",
+  "projectId",
+  "gateId",
+  "decision",
+  "rationale",
+  "missingArtifacts",
+  "runId",
+  "modelRunId",
+  "countyRunId",
+] as const;
 
 /** The three run tables a decision may cite, and where each one lives. */
 const RUN_CITATION_TABLES = {
@@ -223,6 +249,59 @@ export async function POST(request: NextRequest) {
     }
 
     const { workspaceId, projectId, gateId, decision, rationale } = parsed.data;
+
+    /**
+     * Whether this request came through the Planner Agent seam, and — if so —
+     * whether it stayed inside what an agent is allowed to sign.
+     *
+     * Both checks run BEFORE any database work, because both are refusals about
+     * the request itself rather than about the workspace's state, and a refusal
+     * that costs four round trips first is a refusal that invites being skipped.
+     */
+    const executionSource = readAssistantExecutionSource(request);
+    const scopeRefusal = refuseOutOfScopeAgentRequest({
+      executionSource,
+      body: body.data,
+      allowedKeys: AGENT_HOLD_BODY_KEYS,
+      actionKind: "record_stage_gate_hold",
+    });
+    if (scopeRefusal) {
+      audit.warn("agent_request_out_of_scope", {
+        workspaceId,
+        projectId,
+        rejectedKeys: scopeRefusal.rejectedKeys,
+      });
+      return NextResponse.json(
+        { error: scopeRefusal.error, details: scopeRefusal.details },
+        { status: 400 }
+      );
+    }
+
+    /**
+     * AN AGENT MAY NOT SIGN A PASS.
+     *
+     * The registered action carries no `decision` field and its effect transmits
+     * the HOLD literal, so a payload cannot express a PASS. This is the second,
+     * independent refusal, and it is the one that matters: the type lives in the
+     * browser bundle, and anything holding a session cookie can post whatever
+     * body it likes with the agent header attached. A PASS is the affirmative
+     * verdict a board or a funder acts on, recorded under `decided_by = a
+     * person`. A HOLD is conservative and supersedable. The asymmetry is the
+     * rule, not the tier.
+     */
+    if (executionSource === "planner_agent_quick_link" && decision !== "HOLD") {
+      audit.warn("agent_pass_refused", { workspaceId, projectId, gateId });
+      return NextResponse.json(
+        {
+          error: "The Planner Agent may not record a gate PASS",
+          details:
+            "An affirmative stage-gate verdict is a person's signature — it is what a board or a funder " +
+            "relies on to let a project advance. The Planner Agent can propose a HOLD, with its rationale " +
+            "and cited evidence, and a person records the PASS that clears it.",
+        },
+        { status: 403 }
+      );
+    }
 
     const citedRunKeys = (Object.keys(RUN_CITATION_TABLES) as RunCitationKey[]).filter(
       (key) => parsed.data[key]
@@ -452,7 +531,67 @@ export async function POST(request: NextRequest) {
       (artifact) => artifact.trim().length > 0
     );
 
-    const insertResult = await supabase
+    /**
+     * Approval evidence, verified against the action this route rebuilds from
+     * its OWN parsed data — never from the header. The hash therefore covers the
+     * exact wording that is about to be written, so an approval minted for one
+     * rationale cannot execute a different one.
+     *
+     * `missingArtifacts` is hashed in its FILTERED form, matching what the chat
+     * proposal trims before validation; an unfiltered list here would hash
+     * differently from the payload the planner approved and 403 inexplicably.
+     */
+    const agentSourced = executionSource === "planner_agent_quick_link";
+    const serviceSupabase = agentSourced ? createServiceRoleClient() : null;
+    let approval: AssistantApprovalVerification = {
+      approvalId: null,
+      inputHash: null,
+      executionSource: "manual",
+      authorship: USER_AUTHORED,
+    };
+
+    if (agentSourced && serviceSupabase) {
+      try {
+        approval = await verifyAssistantActionApproval({
+          request,
+          serviceSupabase,
+          userId: user.id,
+          workspaceId,
+          action: {
+            kind: "record_stage_gate_hold",
+            workspaceId,
+            projectId,
+            gateId,
+            rationale,
+            ...(missingArtifacts.length > 0 ? { missingArtifacts } : {}),
+            ...(parsed.data.runId ? { runId: parsed.data.runId } : {}),
+            ...(parsed.data.modelRunId ? { modelRunId: parsed.data.modelRunId } : {}),
+            ...(parsed.data.countyRunId ? { countyRunId: parsed.data.countyRunId } : {}),
+          },
+        });
+      } catch (approvalError) {
+        audit.warn("agent_approval_rejected", { workspaceId, projectId, gateId });
+        return NextResponse.json(
+          { error: approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed" },
+          { status: 403 }
+        );
+      }
+    }
+
+    /**
+     * WHO WROTE THIS VERDICT, on the verdict itself.
+     *
+     * `decided_by` stays the person: they are accountable for it, and the
+     * database's own policies are written around that column. What was missing
+     * is that a decision a model drafted looked byte-identical to one a planner
+     * typed. When a gate decision is challenged — and a gate decision is exactly
+     * the kind of record that gets challenged — the answer to "who wrote this"
+     * has to come off the row, not out of a separate ledger somebody has to know
+     * to join.
+     */
+    const authorship = approval.authorship;
+
+    const insertDecision = async () => await supabase
       .from("stage_gate_decisions")
       .insert({
         workspace_id: workspaceId,
@@ -478,11 +617,52 @@ export async function POST(request: NextRequest) {
           // binding can change later, and a decision made under assumed gates
           // must stay identifiable as one.
           templateSelection: binding.templateSelection,
+          authorship: {
+            actorKind: authorship.actorKind,
+            agentId: authorship.actorAgentId,
+            approvedByUserId: authorship.approvedByUserId,
+            approvedAt: authorship.approvedAt,
+            approvalId: approval.approvalId,
+            inputHash: approval.inputHash,
+          },
         },
         decided_by: user.id,
       })
       .select(DECISION_COLUMNS)
       .single();
+
+    /**
+     * The ledger row is written for the AGENT path only, and that asymmetry is
+     * deliberate rather than an omission.
+     *
+     * `assistant_action_executions.action_kind` is a claim about what happened.
+     * This endpoint records PASS as well as HOLD, and only the agent path is
+     * pinned to HOLD — so wrapping a manual decision would stamp
+     * `record_stage_gate_hold` on rows describing a PASS a person signed. A
+     * mislabelled audit row is worse than an absent one. A manual decision is
+     * already recorded twice over: in `stage_gate_decisions` itself, which is
+     * append-only, and in this route's `decision_recorded` audit line.
+     */
+    const insertResult =
+      agentSourced && serviceSupabase
+        ? await withAssistantActionAudit(
+            serviceSupabase,
+            {
+              actionKind: "record_stage_gate_hold",
+              workspaceId,
+              userId: user.id,
+              ...assistantActionAuditIdentity(approval),
+              inputSummary: {
+                projectId: project.id,
+                gateId: lookup.gate.gate_id,
+                decision,
+                citedRun: citedRunKeys[0] ?? null,
+                missingArtifactCount: missingArtifacts.length,
+              },
+            },
+            insertDecision
+          )
+        : await insertDecision();
 
     if (isWriteFailure(insertResult.error)) {
       audit.error("decision_insert_failed", {
@@ -522,6 +702,8 @@ export async function POST(request: NextRequest) {
       decision,
       missingArtifactCount: missingArtifacts.length,
       citedRun: citedRunKeys[0] ?? null,
+      actorKind: authorship.actorKind,
+      actorAgentId: authorship.actorAgentId,
       durationMs: Date.now() - startedAt,
     });
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
+import { assistantActionAuditIdentity, recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import {
   createDefaultTargetedReportSections,
@@ -617,9 +617,7 @@ export async function POST(request: NextRequest) {
         approval: "review",
         regrounding: "refresh_preview",
         outcome: "succeeded",
-        approvalId: approval.approvalId,
-        inputHash: approval.inputHash,
-        executionSource: approval.executionSource,
+        ...assistantActionAuditIdentity(approval),
         inputSummary: {
           reportId: report.id,
           rtpCycleId: target.id,

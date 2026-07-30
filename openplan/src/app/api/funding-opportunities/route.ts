@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -396,9 +396,7 @@ export async function POST(request: NextRequest) {
           actionKind: "create_funding_opportunity",
           workspaceId: context.workspaceId,
           userId: user.id,
-          approvalId: approval.approvalId,
-          inputHash: approval.inputHash,
-          executionSource: approval.executionSource,
+          ...assistantActionAuditIdentity(approval),
           inputSummary: {
             title: parsed.data.title.trim(),
             programId: parsed.data.programId ?? null,

@@ -7,7 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import type { StatusTone } from "@/lib/ui/status";
 import {
-  ASSISTANT_ACTIVITY_SELECT,
+  loadAssistantActivityRows,
   buildAssistantActivitySummary,
   type AssistantActionExecutionRow,
 } from "@/app/api/assistant-activity/summary";
@@ -22,6 +22,7 @@ const ACTION_KIND_LABELS: Record<string, string> = {
   update_funding_opportunity_decision: "Update funding opportunity decision",
   link_billing_invoice_funding_award: "Link billing invoice to funding award",
   create_project_record: "Create project record",
+  record_stage_gate_hold: "Record stage-gate hold",
 };
 
 const APPROVAL_PRESENTATION: Record<
@@ -58,6 +59,34 @@ function formatInputHash(inputHash: string | null) {
   return inputHash.length > 12 ? `${inputHash.slice(0, 12)}…` : inputHash;
 }
 
+/**
+ * WHO WROTE IT, and who consented — as two facts, never merged into one name.
+ *
+ * The ledger used to answer both with `user_id`, so an action a model composed
+ * read as one a planner wrote. Three states are distinguishable here and each
+ * says something different:
+ *   - agent-authored and approved: the agent drafted it, a person consented, at
+ *     a stated time;
+ *   - agent-authored, unapproved: nobody consented — because the action's tier
+ *     did not ask anyone to, which is worth SEEING rather than inferring;
+ *   - person-authored: a member composed it themselves.
+ * A row whose deployment predates the authorship columns returns null and the
+ * caller shows the absence, because "we do not know" and "a person did it" are
+ * not the same answer.
+ */
+function describeRowAuthorship(execution: AssistantActionExecutionRow): string | null {
+  if (!execution.actor_kind) return null;
+  if (execution.actor_kind !== "planner_agent") return "composed by a workspace member";
+
+  const agentId = execution.actor_agent_id ?? "unidentified agent";
+  if (!execution.approved_by_user_id || !execution.approved_at) {
+    return `drafted by the Planner Agent (${agentId}) · no approval was required at this tier`;
+  }
+  return `drafted by the Planner Agent (${agentId}) · approved by a workspace member on ${formatExecutionTimestamp(
+    execution.approved_at
+  )}`;
+}
+
 export default async function AssistantActivityPage() {
   const supabase = await createClient();
   const {
@@ -82,12 +111,14 @@ export default async function AssistantActivityPage() {
 
   const workspaceName = workspace.name ?? "Planning Workspace";
 
-  const { data: executionsData, error: executionsError } = await supabase
-    .from("assistant_action_executions")
-    .select(ASSISTANT_ACTIVITY_SELECT)
-    .eq("workspace_id", membership.workspace_id)
-    .order("completed_at", { ascending: false })
-    .limit(ACTIVITY_LIMIT);
+  const {
+    data: executionsData,
+    error: executionsError,
+    authorshipAvailable,
+  } = await loadAssistantActivityRows(supabase, {
+    workspaceId: membership.workspace_id,
+    limit: ACTIVITY_LIMIT,
+  });
 
   const executions = (executionsData ?? []) as AssistantActionExecutionRow[];
   const summary = buildAssistantActivitySummary(executions);
@@ -107,6 +138,13 @@ export default async function AssistantActivityPage() {
               ledger — successes and failures alike — so operators can answer who fired what, when, and with
               what outcome.
             </p>
+            {authorshipAvailable ? null : (
+              <p className="module-intro-description text-amber-600 dark:text-amber-300">
+                This deployment has not applied the agent-principal migration, so these rows cannot say
+                whether a person or the Planner Agent composed each action. They are shown without that
+                attribution rather than defaulted to one.
+              </p>
+            )}
           </div>
 
           <div className="module-summary-grid cols-3">
@@ -218,6 +256,10 @@ export default async function AssistantActivityPage() {
                             {formatInputHash(execution.input_hash)}
                           </code>
                           {execution.execution_source ? ` · ${execution.execution_source}` : ""}
+                        </p>
+                        <p className="text-[0.73rem] text-muted-foreground">
+                          {describeRowAuthorship(execution) ??
+                            "Authorship not recorded — this row predates the agent-principal columns, so it cannot say whether a person or the Planner Agent composed it."}
                         </p>
                         {execution.outcome === "failed" && execution.error_message ? (
                           <p className="text-[0.73rem] text-destructive">Failed with: {execution.error_message}</p>

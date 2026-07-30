@@ -19,6 +19,9 @@ const APPROVED_ACTION = {
   title: "ATP Cycle 8",
 };
 
+/** When consent was granted — distinct from when the action later executes. */
+const APPROVAL_CREATED_AT = "2026-07-30T14:02:00.000Z";
+
 function approvalRow(overrides: Partial<{ consumed_at: string | null; expires_at: string }> = {}) {
   return {
     id: "approval-1",
@@ -28,6 +31,7 @@ function approvalRow(overrides: Partial<{ consumed_at: string | null; expires_at
     input_hash: hashAssistantActionPayload(APPROVED_ACTION),
     expires_at: new Date(Date.now() + 60_000).toISOString(),
     consumed_at: null as string | null,
+    created_at: APPROVAL_CREATED_AT,
     ...overrides,
   };
 }
@@ -89,6 +93,58 @@ function plannerVerify(serviceSupabase: { from: (table: string) => unknown }) {
   });
 }
 
+/**
+ * WHAT THE HASH COVERS IS WHAT WILL BE WRITTEN — nothing more.
+ *
+ * `/api/assistant/actions/approvals` hashes the quick link's whole
+ * `executeAction`; every target route hashes the action it rebuilds from its own
+ * parsed BODY. The post-action chaining fields exist only in the first of those,
+ * so including them made the two hashes disagree and turned an approved action
+ * into a 403. They are excluded for every kind, not just the one that surfaced
+ * it — this asserts the invariant per branch so a new action cannot reintroduce
+ * it.
+ */
+describe("post-action chaining fields do not enter the approval hash", () => {
+  const CHAINING = {
+    postActionWorkflowId: "workspace-funding",
+    postActionPrompt: "What should move next?",
+    postActionPromptLabel: "Review posture",
+  };
+
+  const SAMPLE_ACTIONS: Array<Record<string, unknown>> = [
+    { kind: "generate_report_artifact", reportId: "report-1" },
+    { kind: "create_rtp_packet_record", rtpCycleId: "cycle-1" },
+    { kind: "create_funding_opportunity", title: "ATP Cycle 8" },
+    { kind: "create_project_funding_profile", projectId: "project-1" },
+    { kind: "update_funding_opportunity_decision", opportunityId: "opp-1", decisionState: "pursue" },
+    { kind: "create_project_record", projectId: "project-1", recordType: "submittal", title: "Packet" },
+    {
+      kind: "record_stage_gate_hold",
+      workspaceId: "workspace-1",
+      projectId: "project-1",
+      gateId: "G01_INITIATION_AUTHORIZATION",
+      rationale: "No decision is recorded.",
+    },
+    { kind: "link_billing_invoice_funding_award", workspaceId: "w", invoiceId: "i", fundingAwardId: "a" },
+  ];
+
+  for (const action of SAMPLE_ACTIONS) {
+    it(`${action.kind} hashes the same with and without them`, () => {
+      expect(hashAssistantActionPayload({ ...action, ...CHAINING })).toBe(
+        hashAssistantActionPayload(action)
+      );
+    });
+  }
+
+  it("still distinguishes a payload field that IS written", () => {
+    // The exclusion must be narrow. Changing anything the route reconstructs has
+    // to change the hash, or the single-use evidence stops meaning anything.
+    expect(hashAssistantActionPayload({ kind: "create_funding_opportunity", title: "A" })).not.toBe(
+      hashAssistantActionPayload({ kind: "create_funding_opportunity", title: "B" })
+    );
+  });
+});
+
 describe("verifyAssistantActionApproval", () => {
   it("requires and consumes one-use approval evidence for approval-required Planner Agent mutations", async () => {
     const isMock = vi.fn(() => ({
@@ -114,6 +170,14 @@ describe("verifyAssistantActionApproval", () => {
       approvalId: "approval-1",
       inputHash: hashAssistantActionPayload(APPROVED_ACTION),
       executionSource: "planner_agent_quick_link",
+      // The agent authored it; the approver and the moment of consent come off
+      // the approval row, not off the session spending it.
+      authorship: {
+        actorKind: "planner_agent",
+        actorAgentId: "openplan.planner_agent",
+        approvedByUserId: "user-1",
+        approvedAt: APPROVAL_CREATED_AT,
+      },
     });
     // The single-use consume must be scoped to the still-unconsumed row.
     expect(isMock).toHaveBeenCalledWith("consumed_at", null);
@@ -193,6 +257,14 @@ describe("verifyAssistantActionApproval", () => {
       approvalId: null,
       inputHash: hashAssistantActionPayload(action),
       executionSource: "planner_agent_quick_link",
+      // No approval was required at this tier, so nobody consented — but the
+      // agent still authored it, and the ledger has to be able to say so.
+      authorship: {
+        actorKind: "planner_agent",
+        actorAgentId: "openplan.planner_agent",
+        approvedByUserId: null,
+        approvedAt: null,
+      },
     });
   });
 });

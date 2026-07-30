@@ -23,8 +23,8 @@ function makeCapturingClient(overrides?: { insertError?: null | { message: strin
 const ACTION_KINDS = Object.keys(ACTION_REGISTRY) as AssistantQuickLinkExecuteAction["kind"][];
 
 describe("withAssistantActionAudit (live-loop proof)", () => {
-  it("registry covers all 7 ActionRecord kinds", () => {
-    expect(ACTION_KINDS).toHaveLength(7);
+  it("registry covers all 8 ActionRecord kinds", () => {
+    expect(ACTION_KINDS).toHaveLength(8);
     expect(new Set(ACTION_KINDS)).toEqual(
       new Set([
         "generate_report_artifact",
@@ -34,6 +34,7 @@ describe("withAssistantActionAudit (live-loop proof)", () => {
         "update_funding_opportunity_decision",
         "link_billing_invoice_funding_award",
         "create_project_record",
+        "record_stage_gate_hold",
       ])
     );
   });
@@ -46,6 +47,7 @@ describe("withAssistantActionAudit (live-loop proof)", () => {
     "update_funding_opportunity_decision",
     "link_billing_invoice_funding_award",
     "create_project_record",
+    "record_stage_gate_hold",
   ] as const) {
     const record = getActionRecord(kind);
 

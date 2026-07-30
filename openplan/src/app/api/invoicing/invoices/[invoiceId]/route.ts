@@ -2,9 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
-import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
+import {
+  type AssistantApprovalVerification,
+  verifyAssistantActionApproval,
+} from "@/lib/assistant/action-approval-server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
@@ -189,13 +192,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const shouldAuditAsLink = parsed.data.fundingAwardId !== undefined;
     const shouldVerifyAssistantLink = parsed.data.fundingAwardId !== undefined && parsed.data.fundingAwardId !== null;
     const serviceSupabase = shouldAuditAsLink ? createServiceRoleClient() : null;
-    let approval:
-      | {
-          approvalId: string | null;
-          inputHash: string | null;
-          executionSource: "manual" | "planner_agent_quick_link";
-        }
-      | null = null;
+    let approval: AssistantApprovalVerification | null = null;
     if (shouldVerifyAssistantLink && serviceSupabase) {
       try {
         approval = await verifyAssistantActionApproval({
@@ -227,9 +224,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
               actionKind: "link_billing_invoice_funding_award",
               workspaceId: parsed.data.workspaceId,
               userId: user.id,
-              approvalId: approval?.approvalId ?? null,
-              inputHash: approval?.inputHash ?? null,
-              executionSource: approval?.executionSource ?? "manual",
+              ...(approval ? assistantActionAuditIdentity(approval) : {}),
               inputSummary: {
                 invoiceId: invoice.id,
                 fundingAwardId: parsed.data.fundingAwardId,

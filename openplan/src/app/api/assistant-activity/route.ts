@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCurrentWorkspaceMembership, unwrapWorkspaceRecord } from "@/lib/workspaces/current";
 import {
-  ASSISTANT_ACTIVITY_SELECT,
+  loadAssistantActivityRows,
   buildAssistantActivitySummary,
   type AssistantActionExecutionRow,
 } from "./summary";
@@ -47,18 +47,17 @@ export async function GET(request: NextRequest) {
         {
           executions: [],
           summary: buildAssistantActivitySummary([]),
+          authorshipAvailable: true,
           workspace: null,
         },
         { status: 200 }
       );
     }
 
-    const { data, error } = await supabase
-      .from("assistant_action_executions")
-      .select(ASSISTANT_ACTIVITY_SELECT)
-      .eq("workspace_id", membership.workspace_id)
-      .order("completed_at", { ascending: false })
-      .limit(parsedFilters.data.limit);
+    const { data, error, authorshipAvailable } = await loadAssistantActivityRows(supabase, {
+      workspaceId: membership.workspace_id,
+      limit: parsedFilters.data.limit,
+    });
 
     if (error) {
       audit.error("assistant_activity_list_failed", {
@@ -84,6 +83,11 @@ export async function GET(request: NextRequest) {
       {
         executions,
         summary,
+        // False means this deployment predates 20260730000006, so no row can say
+        // whether the Planner Agent or a person authored it. A client that
+        // rendered these rows as person-authored would be asserting something
+        // the ledger did not record.
+        authorshipAvailable,
         workspace: {
           id: membership.workspace_id,
           name: unwrapWorkspaceRecord(membership.workspaces)?.name ?? null,

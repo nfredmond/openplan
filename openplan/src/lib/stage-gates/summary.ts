@@ -68,6 +68,18 @@ export type StageGateSummaryItem = {
   decidedAt: string | null;
   missingArtifacts: string[];
   requiredEvidenceCount: number;
+  /**
+   * Every REQUIRED evidence id this gate's template declares, in template order.
+   *
+   * Distinct from `missingArtifacts`, and the distinction is load-bearing: that
+   * field is what a decider WROTE DOWN as outstanding, so it is empty on every
+   * gate with no recorded decision. This one is what the template ASKS FOR,
+   * which is knowable without any decision at all. A surface that needs to name
+   * what a blank gate is waiting on must read this; reading `missingArtifacts`
+   * there yields an empty list every time, which is a different claim and a
+   * silently unreachable condition.
+   */
+  requiredEvidenceIds: string[];
   operatorControlEvidenceCount: number;
   lapmMappings: string[];
   stipRtipMappings: string[];
@@ -309,6 +321,7 @@ export function buildProjectStageGateSummary(
         decidedAt: latestDecision?.decided_at ?? null,
         missingArtifacts,
         requiredEvidenceCount: requiredEvidence.length,
+        requiredEvidenceIds: requiredEvidence.map((evidence) => evidence.evidence_id),
         operatorControlEvidenceCount,
         lapmMappings: gate.lapm_mapping ?? [],
         stipRtipMappings: gate.stip_rtip_mapping ?? [],

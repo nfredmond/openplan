@@ -242,6 +242,16 @@ const PROPOSAL_REFERENCE_CHECKS: Partial<
   create_project_funding_profile: [{ field: "projectId", table: "projects" }],
   update_funding_opportunity_decision: [{ field: "opportunityId", table: "funding_opportunities" }],
   create_project_record: [{ field: "projectId", table: "projects" }],
+  record_stage_gate_hold: [
+    { field: "projectId", table: "projects" },
+    // The three run tables a gate decision may cite. Optional individually — the
+    // route refuses more than one — so an uncited hold is still proposable, and
+    // a hold citing a run from ANOTHER workspace is refused here rather than
+    // being minted into approval evidence the route would later reject.
+    { field: "runId", table: "runs", optional: true },
+    { field: "modelRunId", table: "model_runs", optional: true },
+    { field: "countyRunId", table: "county_runs", optional: true },
+  ],
   link_billing_invoice_funding_award: [
     { field: "invoiceId", table: "billing_invoice_records" },
     { field: "fundingAwardId", table: "funding_awards" },

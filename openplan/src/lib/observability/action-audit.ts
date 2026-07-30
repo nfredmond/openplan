@@ -5,6 +5,7 @@ import {
   getActionMetadata,
 } from "@/lib/runtime/action-metadata";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
+import { USER_AUTHORED, type AssistantActionAuthorship } from "@/lib/assistant/agent-principal";
 
 export type AssistantActionExecutionOutcome = "succeeded" | "failed";
 
@@ -21,17 +22,44 @@ export type AssistantActionExecutionAuditInput = {
   approvalId?: string | null;
   inputHash?: string | null;
   executionSource?: "manual" | "planner_agent_quick_link";
+  /**
+   * Who AUTHORED the action, and who approved it — distinct from `userId`, which
+   * is the session the write executed under. Defaults to user-authored so an
+   * existing manual write path keeps recording the truth about itself.
+   */
+  authorship?: AssistantActionAuthorship;
   startedAt: string;
   completedAt: string;
 };
 
 export type AssistantActionAuditSupabaseLike = Pick<SupabaseClient, "from">;
 
+/**
+ * Does this write error mean the deployment has not applied 20260730000006 yet?
+ *
+ * PostgREST answers an unknown column with PGRST204 and a schema-cache message;
+ * a direct Postgres error is 42703. Both name the column, so the match is on the
+ * authorship columns specifically — a genuine constraint or permission failure
+ * must never be mistaken for a pending migration and silently downgraded.
+ */
+function looksLikePendingAuthorshipColumns(error: { message?: string; code?: string | null } | null): boolean {
+  if (!error) return false;
+  const message = error.message ?? "";
+  const namesAuthorshipColumn = /actor_kind|actor_agent_id|approved_by_user_id|approved_at/.test(message);
+  if (!namesAuthorshipColumn) return false;
+  return (
+    error.code === "PGRST204" ||
+    error.code === "42703" ||
+    /does not exist|schema cache|could not find/i.test(message)
+  );
+}
+
 export async function recordAssistantActionExecution(
   supabase: AssistantActionAuditSupabaseLike,
   input: AssistantActionExecutionAuditInput
 ): Promise<{ error: { message: string; code?: string | null } | null }> {
-  const { error } = await supabase.from("assistant_action_executions").insert({
+  const authorship = input.authorship ?? USER_AUTHORED;
+  const core = {
     workspace_id: input.workspaceId,
     user_id: input.userId,
     action_kind: input.actionKind,
@@ -46,7 +74,35 @@ export async function recordAssistantActionExecution(
     execution_source: input.executionSource ?? "manual",
     started_at: input.startedAt,
     completed_at: input.completedAt,
+  };
+
+  const { error } = await supabase.from("assistant_action_executions").insert({
+    ...core,
+    actor_kind: authorship.actorKind,
+    actor_agent_id: authorship.actorAgentId,
+    approved_by_user_id: authorship.approvedByUserId,
+    approved_at: authorship.approvedAt,
   });
+
+  /**
+   * A deployment sitting between this code and its migration would otherwise
+   * write NO ledger row at all — the insert names four columns the table does
+   * not have, and the only consequence today is a console warning. Losing the
+   * audit trail silently is worse than losing the authorship on it, and the read
+   * side already reports `authorshipAvailable: false` for exactly this window.
+   * So the row is written without authorship rather than not written.
+   */
+  if (looksLikePendingAuthorshipColumns(error)) {
+    const fallback = await supabase.from("assistant_action_executions").insert(core);
+    if (!fallback.error) {
+      console.warn("[action-audit] authorship columns are missing; row written without them", {
+        actionKind: input.actionKind,
+        migration: "20260730000006_assistant_action_agent_principal",
+      });
+      return { error: null };
+    }
+    return { error: { message: fallback.error.message, code: fallback.error.code ?? null } };
+  }
 
   return {
     error: error
@@ -63,7 +119,35 @@ export type WithAssistantActionAuditMeta = {
   approvalId?: string | null;
   inputHash?: string | null;
   executionSource?: "manual" | "planner_agent_quick_link";
+  authorship?: AssistantActionAuthorship;
 };
+
+/**
+ * The identity half of an audit row, in one spread.
+ *
+ * Routes used to hand-thread `approvalId`/`inputHash`/`executionSource` one
+ * field at a time. Adding authorship would have made that four more fields per
+ * route to remember, and the failure mode of forgetting one is silent: the row
+ * still writes, it just records an agent-authored change under a person's name.
+ * Taking the whole verification and returning the whole identity removes the
+ * opportunity.
+ */
+export function assistantActionAuditIdentity(verification: {
+  approvalId: string | null;
+  inputHash: string | null;
+  executionSource: "manual" | "planner_agent_quick_link";
+  authorship: AssistantActionAuthorship;
+}): Pick<
+  WithAssistantActionAuditMeta,
+  "approvalId" | "inputHash" | "executionSource" | "authorship"
+> {
+  return {
+    approvalId: verification.approvalId,
+    inputHash: verification.inputHash,
+    executionSource: verification.executionSource,
+    authorship: verification.authorship,
+  };
+}
 
 /**
  * Wraps a server-side action body with per-action audit persistence.
@@ -98,6 +182,7 @@ export async function withAssistantActionAudit<T>(
       approvalId: meta.approvalId ?? null,
       inputHash: meta.inputHash ?? null,
       executionSource: meta.executionSource ?? "manual",
+      authorship: meta.authorship,
       startedAt,
       completedAt,
     });
@@ -125,6 +210,7 @@ export async function withAssistantActionAudit<T>(
       approvalId: meta.approvalId ?? null,
       inputHash: meta.inputHash ?? null,
       executionSource: meta.executionSource ?? "manual",
+      authorship: meta.authorship,
       startedAt,
       completedAt,
     });

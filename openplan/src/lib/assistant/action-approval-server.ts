@@ -2,6 +2,11 @@ import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
 import type { NextRequest } from "next/server";
 import { canonicalizeActionPayload, getActionMetadata } from "@/lib/runtime/action-metadata";
+import {
+  plannerAgentAuthored,
+  USER_AUTHORED,
+  type AssistantActionAuthorship,
+} from "@/lib/assistant/agent-principal";
 
 export const ASSISTANT_ACTION_APPROVAL_TTL_MS = 5 * 60 * 1000;
 export const ASSISTANT_ACTION_EXECUTION_SOURCE = "planner_agent_quick_link";
@@ -63,6 +68,25 @@ export const assistantApprovalActionSchema = z.discriminatedUnion("kind", [
     postActionPromptLabel: z.string().optional(),
   }),
   z.object({
+    kind: z.literal("record_stage_gate_hold"),
+    workspaceId: z.string().min(1),
+    projectId: z.string().min(1),
+    gateId: z.string().min(1).max(200),
+    // Matches the route's own rule: a gate decision with no stated reason is a
+    // verdict nobody can review, and that goes double for one a model drafted.
+    rationale: z.string().min(1).max(4000),
+    missingArtifacts: z.array(z.string().min(1).max(200)).max(50).optional(),
+    runId: z.string().min(1).optional(),
+    modelRunId: z.string().min(1).optional(),
+    countyRunId: z.string().min(1).optional(),
+    // NOTE: there is no `decision` key here, and adding one would be a change to
+    // what an agent is allowed to sign — not a schema tidy-up. See the union
+    // variant in catalog.ts.
+    postActionWorkflowId: z.string().optional(),
+    postActionPrompt: z.string().optional(),
+    postActionPromptLabel: z.string().optional(),
+  }),
+  z.object({
     kind: z.literal("link_billing_invoice_funding_award"),
     workspaceId: z.string().min(1),
     invoiceId: z.string().min(1),
@@ -75,8 +99,46 @@ export const assistantApprovalActionSchema = z.discriminatedUnion("kind", [
 
 export type AssistantApprovalAction = z.infer<typeof assistantApprovalActionSchema>;
 
+/**
+ * Fields that ride along on a quick link's `executeAction` but are NEVER part of
+ * the write.
+ *
+ * `postActionWorkflowId` / `postActionPrompt` / `postActionPromptLabel` steer
+ * the follow-up question the copilot asks itself after the action lands. No
+ * effect transmits them and no route reconstructs them — every route rebuilds
+ * its action from its own parsed BODY, which never carried them.
+ *
+ * WHY THEY MUST NOT BE HASHED. `/api/assistant/actions/approvals` hashes the
+ * whole `executeAction`, post-action fields included; the target route hashes
+ * its reconstruction, which excludes them. Those two hashes differ, so every
+ * `approval_required` quick link that sets a post-action prompt minted evidence
+ * the route could never match and answered 403 "approval hash mismatch" AFTER
+ * the planner had approved it — the funding-opportunity, funding-profile,
+ * pursue-decision and invoice-link offers, and the new gate hold. The chat
+ * proposal path never hit it because `PROPOSAL_HIDDEN_INPUT_FIELDS` already
+ * strips the same three fields before hashing.
+ *
+ * Excluding them here is also the stricter reading of what an approval means:
+ * the hash should cover exactly what will be WRITTEN, and a field that reaches
+ * no route is not part of that.
+ */
+const NON_EXECUTED_ACTION_FIELDS = [
+  "postActionWorkflowId",
+  "postActionPrompt",
+  "postActionPromptLabel",
+] as const;
+
+/** The action as it will be executed: presentation-only chaining fields removed. */
+export function executedActionPayload(action: unknown): unknown {
+  if (!action || typeof action !== "object" || Array.isArray(action)) return action;
+  const entries = Object.entries(action as Record<string, unknown>).filter(
+    ([key]) => !(NON_EXECUTED_ACTION_FIELDS as readonly string[]).includes(key)
+  );
+  return Object.fromEntries(entries);
+}
+
 export function hashAssistantActionPayload(action: unknown): string {
-  return createHash("sha256").update(canonicalizeActionPayload(action)).digest("hex");
+  return createHash("sha256").update(canonicalizeActionPayload(executedActionPayload(action))).digest("hex");
 }
 
 export function readAssistantExecutionSource(request: NextRequest): "manual" | "planner_agent_quick_link" {
@@ -85,10 +147,20 @@ export function readAssistantExecutionSource(request: NextRequest): "manual" | "
     : "manual";
 }
 
+/**
+ * What the route learns about a request that claims to be a Planner Agent
+ * execution — including WHO AUTHORED IT, which is not the same question as who
+ * is signed in.
+ *
+ * `authorship` is carried here rather than reconstructed per route because it is
+ * derived from facts only this function sees: the execution-source header, and
+ * the approval row it consumed. A route that recomputed it would be guessing.
+ */
 export type AssistantApprovalVerification = {
   approvalId: string | null;
   inputHash: string | null;
   executionSource: "manual" | "planner_agent_quick_link";
+  authorship: AssistantActionAuthorship;
 };
 
 type AssistantActionApprovalRow = {
@@ -99,6 +171,7 @@ type AssistantActionApprovalRow = {
   input_hash: string;
   expires_at: string;
   consumed_at: string | null;
+  created_at: string | null;
 };
 
 type AssistantApprovalSupabaseLike = {
@@ -116,7 +189,7 @@ export async function verifyAssistantActionApproval(params: {
   const inputHash = hashAssistantActionPayload(params.action);
 
   if (executionSource !== ASSISTANT_ACTION_EXECUTION_SOURCE) {
-    return { approvalId: null, inputHash: null, executionSource };
+    return { approvalId: null, inputHash: null, executionSource, authorship: USER_AUTHORED };
   }
 
   const metadata = getActionMetadata(params.action.kind);
@@ -124,7 +197,16 @@ export async function verifyAssistantActionApproval(params: {
   if (metadata.approval !== "approval_required") {
     // Always record the server-computed hash — the client header is unverified
     // and must not be able to write a spoofed hash into the audit row.
-    return { approvalId: null, inputHash, executionSource };
+    //
+    // Authorship is still the agent's: a `safe` or `review` tier means nobody
+    // was asked to approve, NOT that a person wrote it. Recording it as
+    // user-authored here is exactly the impersonation this seam exists to end.
+    return {
+      approvalId: null,
+      inputHash,
+      executionSource,
+      authorship: plannerAgentAuthored({ approvedByUserId: null, approvedAt: null }),
+    };
   }
 
   if (headerHash !== inputHash) {
@@ -158,7 +240,7 @@ export async function verifyAssistantActionApproval(params: {
   };
 
   const { data, error } = await approvalTable
-    .select("id, workspace_id, user_id, action_kind, input_hash, expires_at, consumed_at")
+    .select("id, workspace_id, user_id, action_kind, input_hash, expires_at, consumed_at, created_at")
     .eq("id", approvalId)
     .maybeSingle();
 
@@ -196,7 +278,19 @@ export async function verifyAssistantActionApproval(params: {
     throw new Error("Planner Agent approval evidence was already consumed.");
   }
 
-  return { approvalId, inputHash, executionSource };
+  return {
+    approvalId,
+    inputHash,
+    executionSource,
+    // The approver is `data.user_id`, which the check above proved equal to the
+    // caller — read from the approval ROW rather than from the session, because
+    // the row is the thing that recorded consent and the session is merely the
+    // thing spending it.
+    authorship: plannerAgentAuthored({
+      approvedByUserId: data.user_id,
+      approvedAt: data.created_at ?? null,
+    }),
+  };
 }
 
 export function newAssistantApprovalId(): string {

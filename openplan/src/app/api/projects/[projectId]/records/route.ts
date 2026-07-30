@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { withAssistantActionAudit } from "@/lib/observability/action-audit";
-import { readAssistantExecutionSource, verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
+import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
+import {
+  type AssistantApprovalVerification,
+  readAssistantExecutionSource, verifyAssistantActionApproval,
+} from "@/lib/assistant/action-approval-server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { requireWorkspaceWriteAccess } from "@/lib/auth/workspace-write-gate";
 
@@ -277,13 +280,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     };
 
     const serviceSupabase = createServiceRoleClient();
-    let approval:
-      | {
-          approvalId: string | null;
-          inputHash: string | null;
-          executionSource: "manual" | "planner_agent_quick_link";
-        }
-      | null = null;
+    let approval: AssistantApprovalVerification | null = null;
 
     if (readAssistantExecutionSource(request) === "planner_agent_quick_link" && parsed.data.recordType !== "submittal") {
       return NextResponse.json(
@@ -325,9 +322,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           actionKind: "create_project_record",
           workspaceId: project.workspace_id,
           userId: user.id,
-          approvalId: approval?.approvalId ?? null,
-          inputHash: approval?.inputHash ?? null,
-          executionSource: approval?.executionSource ?? "manual",
+          ...(approval ? assistantActionAuditIdentity(approval) : {}),
           inputSummary: {
             projectId: project.id,
             recordType: parsed.data.recordType,

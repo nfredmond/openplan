@@ -161,6 +161,32 @@ const CREATE_PROJECT_RECORD: ActionRecord<"create_project_record"> = {
   },
 };
 
+const RECORD_STAGE_GATE_HOLD: ActionRecord<"record_stage_gate_hold"> = {
+  kind: "record_stage_gate_hold",
+  effect: async (action, context) => {
+    await postJson(
+      "/api/stage-gates/decisions",
+      {
+        workspaceId: action.workspaceId,
+        projectId: action.projectId,
+        gateId: action.gateId,
+        // Literal, never read off the payload. The payload has no `decision`
+        // field to read (see the union variant), and writing the constant here
+        // means the ONLY value this effect can transmit is HOLD — including if a
+        // future payload gains one.
+        decision: "HOLD",
+        rationale: action.rationale,
+        missingArtifacts: action.missingArtifacts,
+        runId: action.runId,
+        modelRunId: action.modelRunId,
+        countyRunId: action.countyRunId,
+      },
+      "Failed to record the stage-gate hold",
+      context
+    );
+  },
+};
+
 type ActionRegistry = {
   [K in AssistantQuickLinkExecuteAction["kind"]]: ActionRecord<K>;
 };
@@ -173,6 +199,7 @@ export const ACTION_REGISTRY: ActionRegistry = {
   update_funding_opportunity_decision: UPDATE_FUNDING_OPPORTUNITY_DECISION,
   link_billing_invoice_funding_award: LINK_BILLING_INVOICE_FUNDING_AWARD,
   create_project_record: CREATE_PROJECT_RECORD,
+  record_stage_gate_hold: RECORD_STAGE_GATE_HOLD,
 };
 
 export function getActionRecord<K extends AssistantQuickLinkExecuteAction["kind"]>(

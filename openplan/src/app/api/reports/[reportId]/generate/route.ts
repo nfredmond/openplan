@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { recordAssistantActionExecution } from "@/lib/observability/action-audit";
+import { assistantActionAuditIdentity, recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
@@ -1472,9 +1472,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         approval: "safe",
         regrounding: "refresh_preview",
         outcome: "succeeded",
-        approvalId: approval.approvalId,
-        inputHash: approval.inputHash,
-        executionSource: approval.executionSource,
+        ...assistantActionAuditIdentity(approval),
         inputSummary: {
           reportId: report.id,
           artifactId: artifact.id,
@@ -2401,9 +2399,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       approval: "safe",
       regrounding: "refresh_preview",
       outcome: "succeeded",
-      approvalId: approval.approvalId,
-      inputHash: approval.inputHash,
-      executionSource: approval.executionSource,
+      ...assistantActionAuditIdentity(approval),
       inputSummary: {
         reportId: report.id,
         artifactId: artifact.id,

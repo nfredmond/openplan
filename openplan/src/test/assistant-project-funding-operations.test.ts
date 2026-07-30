@@ -58,6 +58,12 @@ function buildProjectContext(): ProjectAssistantContext {
     },
     stageGateSummary: {
       blockedGate: null,
+      // The gate board reads three states, not two: a readable-but-empty log and
+      // an unreadable one are different facts, and a fixture that omits
+      // `decisionsRead` describes neither. It was previously cast past, which
+      // hid the omission until a consumer read it.
+      decisionsRead: { readable: true, reason: null },
+      nextGate: null,
       holdCount: 0,
       passCount: 0,
       notStartedCount: 0,

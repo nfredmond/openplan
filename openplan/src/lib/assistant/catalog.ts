@@ -88,6 +88,42 @@ export type AssistantQuickLinkExecuteAction =
       postActionPrompt?: string;
       postActionPromptLabel?: string;
     }
+  /**
+   * Record a HOLD on a stage gate — and ONLY a hold.
+   *
+   * There is deliberately no `decision` field on this payload. The gate log
+   * accepts PASS and HOLD; an agent may propose exactly one of them, and the
+   * exclusion is expressed in the TYPE rather than in a validator, so there is
+   * no value an agent-authored payload could carry that would produce a PASS.
+   *
+   * WHY THE ASYMMETRY IS THE WHOLE POINT. A PASS is the affirmative judgement a
+   * board or a funder relies on to let a project advance; a HOLD is
+   * conservative, and the log is append-only, so a HOLD that turns out to be
+   * wrong is corrected by the PASS that supersedes it — which a person records.
+   * An agent that could sign the affirmative verdict would be signing under a
+   * planner's name (`stage_gate_decisions.decided_by`), which is the
+   * impersonation this seam exists to end.
+   *
+   * The route enforces the same rule independently: an agent-sourced request
+   * carrying `decision: "PASS"` is refused there too, because a type is not a
+   * boundary once a payload crosses the wire.
+   */
+  | {
+      kind: "record_stage_gate_hold";
+      workspaceId: string;
+      projectId: string;
+      gateId: string;
+      rationale: string;
+      /** Evidence ids the agent believes are still outstanding. */
+      missingArtifacts?: string[];
+      /** At most one cited run, each verified against this workspace before the proposal is emitted. */
+      runId?: string;
+      modelRunId?: string;
+      countyRunId?: string;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
+    }
   | {
       kind: "link_billing_invoice_funding_award";
       workspaceId: string;

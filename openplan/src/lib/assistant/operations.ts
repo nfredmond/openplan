@@ -584,7 +584,21 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
   ]);
 }
 
+/**
+ * The most evidence ids a drafted gate hold may name.
+ *
+ * Matches `assistantApprovalActionSchema`'s own `.max(50)` on
+ * `missingArtifacts`. A template with more required evidence than this on one
+ * gate would otherwise mint approval evidence the schema rejects — the payload
+ * a planner approved failing validation on its way to the route.
+ */
+const STAGE_GATE_HOLD_ARTIFACT_LIMIT = 50;
+
 function buildProjectOperations(context: ProjectAssistantContext): AssistantQuickLink[] {
+  const gateHoldEvidenceIds = (context.stageGateSummary.nextGate?.requiredEvidenceIds ?? []).slice(
+    0,
+    STAGE_GATE_HOLD_ARTIFACT_LIMIT
+  );
   const projectGapAmount = context.fundingSummary.gapAmount;
   const leadFundingOpportunity = context.fundingSummary.leadOpportunity;
   const leadAwardOpportunity = context.fundingSummary.leadAwardOpportunity;
@@ -823,6 +837,62 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
       prompt: "What is blocking this project right now?",
       promptLabel: "Check blockers in panel",
     }),
+    /**
+     * A gate the board can name, with required evidence and no recorded verdict,
+     * is the one place the agent can draft something a planner would otherwise
+     * have to write from scratch — and the decision log is append-only, so a
+     * hold it drafts is superseded rather than edited.
+     *
+     * WHAT THE CONDITION MAY NOT KEY ON. `missingArtifacts` is what a decider
+     * WROTE DOWN as outstanding, so it is populated only by an existing decision
+     * row — which means it is empty on precisely the gates this offer is for.
+     * Keying on it made the whole clause unsatisfiable: `workflowState ===
+     * "not_started"` holds exactly when no decision exists, and no decision means
+     * no `missingArtifacts`, so the two conjuncts excluded each other and the
+     * quick link could never render against a board `buildProjectStageGateSummary`
+     * can actually produce. The template's own `requiredEvidenceIds` is the fact
+     * that is knowable without a decision, and it is what the drafted hold names.
+     *
+     * Offered ONLY when the decision log was actually readable. `nextGate` is
+     * derived from the template as well as the log, so it is non-null even when
+     * the log failed to load — and proposing a hold on a gate whose real state is
+     * unknown would be the agent recording a verdict about something it could not
+     * see. It is also withheld when a gate is already on hold: the honest move
+     * then is to clear the existing one, not to stack a second.
+     */
+    context.stageGateSummary.decisionsRead.readable
+      && !context.stageGateSummary.blockedGate
+      && context.stageGateSummary.nextGate
+      && context.stageGateSummary.nextGate.workflowState === "not_started"
+      && gateHoldEvidenceIds.length > 0
+      ? quickLink("project-record-stage-gate-hold", "Record gate hold", `/projects/${context.project.id}#project-governance`, {
+          targetKind: "project",
+          actionClass: "review_controls",
+          executionMode: "future_agent_action",
+          priority: "primary",
+          statusLabel: `${gateHoldEvidenceIds.length} required evidence`,
+          reason: `${context.stageGateSummary.nextGate.name} has no recorded decision, so the gate log says nothing about a gate the board is waiting on, and none of its required evidence is recorded as closed. Planner Agent can draft the hold and name what the template asks for; only a person records the pass that clears it.`,
+          approval: "approval_required",
+          auditEvent: "assistant.operation.project.record_stage_gate_hold",
+          auditNote:
+            "Appends one HOLD to the append-only stage-gate decision log through the audited route. It cannot record a pass, and it supersedes nothing — the existing log is untouched.",
+          executeAction: {
+            kind: "record_stage_gate_hold",
+            workspaceId: context.workspace.id,
+            projectId: context.project.id,
+            gateId: context.stageGateSummary.nextGate.gateId,
+            // States only what the log and the template establish: no verdict is
+            // recorded, and therefore nothing is recorded as closed. It does not
+            // assert that the agency lacks the evidence — only that the log does
+            // not say it has it.
+            rationale: `No decision is recorded for ${context.stageGateSummary.nextGate.name}, so none of the evidence its template requires is recorded as closed: ${gateHoldEvidenceIds.join(", ")}. Recorded as a hold so the gate board states this gate's real posture instead of leaving it blank.`,
+            missingArtifacts: gateHoldEvidenceIds,
+            postActionWorkflowId: "project-blockers",
+            postActionPrompt: "A stage-gate hold was recorded. What evidence would clear it, and what is blocking this project next?",
+            postActionPromptLabel: "Review project gate posture",
+          },
+        })
+      : null,
     context.stageGateSummary.blockedGate
       ? quickLink("project-governance", "Open governance controls", `/projects/${context.project.id}#project-governance`, {
           targetKind: "project",

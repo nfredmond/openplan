@@ -26,6 +26,7 @@ describe("action registry", () => {
       "create_rtp_packet_record",
       "generate_report_artifact",
       "link_billing_invoice_funding_award",
+      "record_stage_gate_hold",
       "update_funding_opportunity_decision",
     ]);
 

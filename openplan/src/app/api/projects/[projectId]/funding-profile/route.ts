@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -110,9 +110,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           actionKind: "create_project_funding_profile",
           workspaceId: access.project.workspace_id,
           userId: user.id,
-          approvalId: approval.approvalId,
-          inputHash: approval.inputHash,
-          executionSource: approval.executionSource,
+          ...assistantActionAuditIdentity(approval),
           inputSummary: {
             projectId: access.project.id,
             hasFundingNeed: parsed.data.fundingNeedAmount !== undefined,

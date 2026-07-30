@@ -2,8 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { withAssistantActionAudit } from "@/lib/observability/action-audit";
-import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
+import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
+import {
+  type AssistantApprovalVerification,
+  verifyAssistantActionApproval,
+} from "@/lib/assistant/action-approval-server";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
@@ -149,13 +152,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     const shouldAuditAsDecision = parsed.data.decisionState !== undefined;
     const serviceSupabase = shouldAuditAsDecision ? createServiceRoleClient() : null;
-    let approval:
-      | {
-          approvalId: string | null;
-          inputHash: string | null;
-          executionSource: "manual" | "planner_agent_quick_link";
-        }
-      | null = null;
+    let approval: AssistantApprovalVerification | null = null;
     if (shouldAuditAsDecision && serviceSupabase) {
       try {
         approval = await verifyAssistantActionApproval({
@@ -204,9 +201,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
               actionKind: "update_funding_opportunity_decision",
               workspaceId: access.opportunity.workspace_id,
               userId: user.id,
-              approvalId: approval?.approvalId ?? null,
-              inputHash: approval?.inputHash ?? null,
-              executionSource: approval?.executionSource ?? "manual",
+              ...(approval ? assistantActionAuditIdentity(approval) : {}),
               inputSummary: {
                 opportunityId: access.opportunity.id,
                 decisionState: parsed.data.decisionState,

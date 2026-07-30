@@ -59,6 +59,17 @@ export const ACTION_METADATA: ActionMetadataRegistry = {
     auditEvent: "planner_agent.link_billing_invoice_funding_award",
     regrounding: "none",
   },
+  record_stage_gate_hold: {
+    kind: "record_stage_gate_hold",
+    description:
+      "Records a HOLD on one stage gate for the selected project, with the stated rationale and any cited run. It cannot record a PASS — an affirmative gate verdict is a person's signature, not the agent's.",
+    approval: "approval_required",
+    auditEvent: "planner_agent.record_stage_gate_hold",
+    // The gate board reads from the decision log, not from the assistant
+    // preview, and a fresh hold changes what the next honest move is — so the
+    // preview is re-grounded rather than left describing the pre-hold state.
+    regrounding: "refresh_preview",
+  },
   create_project_record: {
     kind: "create_project_record",
     description: "Creates a new project record in this workspace.",

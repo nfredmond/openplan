@@ -178,24 +178,128 @@ guarded against is forgetting the destination, not scope creep toward it.
 future is the action registry: `src/lib/runtime/action-metadata.ts`, from which `buildAssistantOperations`
 derives the `propose_*` tools, gated by `assistant_action_approvals` and
 `src/lib/assistant/action-approval-server.ts` (input-hash verified, so what a planner approves is provably
-what they saw). As of 2026-07-28 that registry held **exactly 7 actions**, all in the grants/reports/
-projects lane — nothing for models, engagement, scenarios, safety, invoicing, RTP chapters, or the
-knowledge base.
+what they saw). As of 2026-07-30 the registry holds **8 actions**: seven in the grants/reports/projects
+lane, plus `record_stage_gate_hold` in the stage-gate spine. Still nothing for models, engagement,
+scenarios, safety, RTP chapters, or the knowledge base.
 
-> **Every new write capability gets an action-registry entry when it ships.** One entry, four fields. This
-> is part of the definition of done for a feature, not separate work. Doing it makes the eventual agentic
-> layer a switch; skipping it makes it a year-long retrofit across twenty modules.
+> **Every new write capability gets an action-registry entry when it ships.** This is part of the
+> definition of done for a feature, not separate work. Doing it makes the eventual agentic layer a switch;
+> skipping it makes it a year-long retrofit across twenty modules.
 
-**Two guardrails to hold from the start — cheap now, painful to retrofit:**
+**"One entry, four fields" was wrong, and knowing the real cost is what makes the rule keepable.**
+Measured by mutation on 2026-07-30 while adding `record_stage_gate_hold`: adding a union variant to
+`AssistantQuickLinkExecuteAction` makes the build fail in exactly **two** places (the mapped types over the
+union in `action-metadata.ts` and `action-registry.ts`) plus an undocumented one — every variant must
+declare `postActionWorkflowId?`, `postActionPrompt?`, `postActionPromptLabel?`, because `executeAction()`
+reads them off the whole union unguarded. Satisfying the compiler is **not** enough: a "registered" action
+with no zod branch, no route-side verification and no audit call type-checks fine and executes with the
+approval tier enforced only in the browser. The honest cost of one action is **eight files**:
+
+1. `src/lib/assistant/catalog.ts` — the union variant + the three post-action fields.
+2. `src/lib/runtime/action-metadata.ts` — the metadata entry (five fields: `kind`, `description`,
+   `approval`, `auditEvent`, `regrounding`).
+3. `src/lib/runtime/action-registry.ts` — the `ActionRecord` with its fetch effect, **and** the map entry.
+4. `src/lib/assistant/action-approval-server.ts` — a zod branch in `assistantApprovalActionSchema`,
+   hand-maintained and not checked against the TS type. Without it the action gets no `propose_` tool.
+5. `src/lib/assistant/chat-tools.ts` — a `PROPOSAL_REFERENCE_CHECKS` entry (optional; omitting it silently
+   skips the workspace-scoped ownership checks).
+6. **The target API route** — `verifyAssistantActionApproval` + `withAssistantActionAudit`. Now enforced by
+   `src/test/every-action-route-verifies-its-own-approval.test.ts`, which resolves each action's route from
+   the effect's own source and asserts the **call**, not the import.
+7. `src/app/(app)/assistant-activity/page.tsx` — the ledger label.
+8. A `quickLink({ executeAction })` call site in `src/lib/assistant/operations.ts` — without one the action
+   exists only as a chat tool and no planner can reach it. Prove reachability with a test that drives
+   `buildAssistantOperations`, **and build that test's context from the real summary builder, never from a
+   hand-written fixture.** `record_stage_gate_hold` shipped with a condition no board could satisfy — it
+   required a gate that was `not_started` AND carried `missingArtifacts`, and `buildProjectStageGateSummary`
+   copies `missingArtifacts` off the latest DECISION row, so `not_started` (no decision) forces it empty.
+   The offer could never render for anyone and its reachability test passed, because the fixture described a
+   board the product cannot produce. A described fixture proves the assertion; only a built one proves the
+   feature. (Fixed 2026-07-30: `StageGateSummaryItem.requiredEvidenceIds` is what the TEMPLATE asks for and
+   is knowable with no decision recorded; `missingArtifacts` is what a decider WROTE DOWN. Do not confuse
+   them again.)
+
+**And the approval hash must cover the EXECUTED payload, not the offered one.**
+`/api/assistant/actions/approvals` hashes the whole `executeAction`; every route hashes the action it
+rebuilds from its own parsed BODY. `postActionWorkflowId` / `postActionPrompt` / `postActionPromptLabel`
+exist only in the first — they steer the copilot's follow-up prompt and reach no route — so hashing them
+made the two disagree and answered **403 after the planner had already approved**, on the gate hold and on
+the four funding/invoicing quick links that predate it. `hashAssistantActionPayload` now strips them via
+`executedActionPayload`; the chat path had always stripped the same three (`PROPOSAL_HIDDEN_INPUT_FIELDS`),
+which is why only quick links were broken. Any new presentation-only field on an action must be added to
+`NON_EXECUTED_ACTION_FIELDS` or it will do this again.
+
+Plus the two test files carrying hardcoded action lists — `action-registry.test.ts` and
+`action-audit-live-loop.test.ts` (a `toHaveLength(n)` and two full sets). `assistant-chat-tools.test.ts`
+derives its list from `ACTION_METADATA` and so needs no edit; it is the test that catches a **missing zod
+branch**, because a kind with no branch gets no `propose_` tool.
+
+**Refused deliberately on 2026-07-30 — do not register these without re-arguing them.** Accepting a
+machine translation (`translations` route, `accept`) is a provenance promotion an agent must never make:
+it turns model output into the agency's own Spanish, deletes the caveat a resident was reading, and
+rewrites `created_by` to the approver — in the one context where language access is legally binding.
+Publishing machine wording (`publish_machine`) puts model sentences on a public portal under an agency's
+name. Saving operator translations (`save`) is the agency's own words in a Title VI context, up to
+25 × 8,000 characters, which is not reviewable in the approval sheet. Importing offline comments
+(`items/import`) would let a model author up to 4 MB of public record. The submission geofence toggle would
+let an agent narrow who may comment — and an agent optimizing for a clean comment set has a standing
+incentive to do exactly that. The campaign accessibility contact was refused too, though it looks benign:
+every other registered action's payload is an id the agent verified against a workspace row or an enum,
+while this one would be the first whose consequential content the model authors from **outside** the
+system — a published ADA/Title VI commitment whose only control is the approver noticing a plausible wrong
+phone number. The safe shape exists (copy from a sibling campaign, with the route verifying the values
+against the source row so the model cannot author them) and is worth building as its own change.
+
+**The two guardrails — both now STRUCTURAL, as of 2026-07-30. Do not weaken either.**
 
 1. **The agent is a distinct principal, never an impersonation.** Buzz's sharpest idea is that
-   *authorization does not erase authorship*. Today the Planner Agent acts AS the user in the audit
-   ledger. It needs its own identity, so the record reads "the Planner Agent drafted this, approved by
-   <person> at <time>". When a grant narrative or a CEQA determination is challenged, "who wrote this
-   number" is a question with legal weight.
+   *authorization does not erase authorship*. **Built:** `src/lib/assistant/agent-principal.ts` defines the
+   principal (`openplan.planner_agent`); migration `20260730000006` adds `actor_kind`, `actor_agent_id`,
+   `approved_by_user_id` and `approved_at` to `assistant_action_executions`, with CHECKs that make an
+   agent-authored row with no principal, and a half-recorded consent, unstorable.
+   `verifyAssistantActionApproval` returns the authorship it derives from the consumed approval row, and
+   `assistantActionAuditIdentity()` spreads all of it into the ledger in one go so a route cannot thread
+   three fields and forget the fourth. `user_id` keeps its old meaning — the session the write ran under —
+   and is NOT the author. A `safe`/`review` agent action records the agent as author with a null approver,
+   because nobody consented; that null is the honest answer, not a gap. Guarded by
+   `src/test/planner-agent-is-a-distinct-principal.test.ts`.
+   **Both sides of the deploy/migrate window degrade, and they must stay symmetric.** The read
+   (`loadAssistantActivityRows`) falls back and reports `authorshipAvailable: false`. The WRITE was left
+   without a fallback at first, which meant a deployment between the code and `20260730000006` wrote **no
+   ledger row at all** — PostgREST fails the whole insert on an unknown column, and the only consequence was
+   a `console.warn`. A silent hole in the audit trail is worse than a row that cannot name its author, so
+   `recordAssistantActionExecution` now retries without the four columns on PGRST204/42703 **naming an
+   authorship column specifically** — never on a constraint or permission failure, which must surface as
+   itself.
+   **Still open:** most domain rows record only the person. `stage_gate_decisions.metadata.authorship` now
+   carries it (that row is a signed verdict a funder relies on); `funding_opportunities.created_by`,
+   `engagement_content_translations.created_by` and the rest do not. Add it as each lane is touched.
 2. **An agent may never promote a claim tier.** The honesty firewall is what makes OpenPlan defensible; an
    agent that can mark its own run `calibrated_to_counts` destroys it. Agent proposes, evidence decides.
-   This must be structural, not policy.
+   **Built:** `src/test/an-agent-may-not-promote-a-tier.test.ts` derives the tier vocabulary from
+   `MODELING_CLAIM_STATUSES` and from the migrations (every `CHECK (col IN (…))` whose vocabulary is a tier
+   vocabulary — which finds `claim_status`, `claim_status_source` and
+   `engagement_content_translations.source`), then fails if any registered action's payload names a tier
+   field or carries a tier value, or if **anything the action's route can reach** writes one. It generalizes
+   past modeling on purpose: promoting a machine translation to `source = 'operator'` is a provenance
+   promotion wearing another module's name, and it is refused by the same guard.
+   **Reading `route.ts` alone is not a boundary, and the first version of this guard did exactly that.**
+   Every route here delegates its writes to a lib, so moving `claim_status` one function away — an ordinary
+   refactor, not an evasion — moved it out of the guard; proven by mutation (making the stage-gate route
+   call `refreshCountyRunModelingEvidence`, which inserts `claim_status`, left the file-only guard green).
+   It also read only string-literal values, so a row builder with `claim_status: nextTier` passed. Both are
+   closed by `src/test/helpers/reachable-write-surface.ts`, which walks the called imported symbols out of
+   the route into their function bodies and extracts written columns by balanced-delimiter parsing —
+   single-line, array-of-rows and identifier (`const row = {…}; …upsert(row)`) forms included. Its own
+   extraction is unit-tested, because a broken walk would make every assertion above pass by finding
+   nothing.
+
+**A third rule this work established — a narrow action may not ride a wide route.** The approval hash
+covers the ACTION the route reconstructs, not the request body, so a request carrying the action's fields
+*plus* extra ones hashes identically to what the planner approved and writes the extras too. The planner
+approves three fields and the campaign's status also changes. Use
+`refuseOutOfScopeAgentRequest` (`src/lib/assistant/agent-request-scope.ts`) in any route where the endpoint
+is wider than the action.
 
 **One mechanical note on the consulting lane.** Nathaniel doing paid setup privately requires no code
 change. But `src/test/no-paid-tier-guard.test.ts` fails the build on `/managed hosting/i` and
