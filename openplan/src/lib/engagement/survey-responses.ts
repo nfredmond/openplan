@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   SURVEY_QUESTION_TYPES,
   tallyChoice,
@@ -10,6 +11,7 @@ import {
   summarizeFreeText,
   type SurveyQuestionType,
   type SurveyQuestionFamily,
+  type SurveyConditionQuestionRef,
 } from "./survey";
 
 // The survey RESPONSE tables (sessions + answers) are sensitive + service-role
@@ -17,6 +19,11 @@ import {
 // file is the ONLY module allowed to read them (enforced by
 // src/test/engagement-survey-reader-inventory.test.ts). Definition tables
 // (questions/options) are operator-scoped RLS; service-role reads bypass that.
+//
+// engagement_survey_response_drafts (part-finished responses) is held to the
+// SAME confinement, by src/test/a-part-finished-survey-can-be-resumed.test.ts.
+// It is a separate table from the response tables on purpose — a draft must
+// never be countable as a submission. See the migration for the argument.
 
 type QueryClient = Pick<SupabaseClient, "from">;
 
@@ -156,6 +163,35 @@ export async function loadSurveyDefinition(
   return { questions, optionsByQuestion };
 }
 
+/**
+ * The ACTIVE survey as the condition validator needs to see it: display order,
+ * with each question's live option ids.
+ *
+ * Only active questions, because those are the only ones a participant is shown
+ * and therefore the only ones a condition can be decided against. An archived
+ * question that others still point at is exactly the state
+ * `validateSurveyConditionGraph` refuses — which is why the authoring routes run
+ * this BEFORE archiving one.
+ *
+ * `sortOrder` travels with each entry so a caller can splice a
+ * not-yet-written question into the right position and validate the survey that
+ * would exist, rather than the one that does.
+ */
+export async function loadSurveyConditionRefs(
+  supabase: QueryClient,
+  campaignId: string
+): Promise<(SurveyConditionQuestionRef & { sortOrder: number })[]> {
+  const { questions, optionsByQuestion } = await loadSurveyDefinition(supabase, campaignId);
+  return questions.map((question) => ({
+    id: question.id,
+    prompt: question.prompt,
+    question_type: question.question_type,
+    config: question.config_json,
+    optionIds: (optionsByQuestion.get(question.id) ?? []).map((option) => option.id),
+    sortOrder: question.sort_order,
+  }));
+}
+
 // ── Operator builder view (ALL questions incl. archived; definition tables) ──
 export type SurveyBuilderOption = {
   id: string;
@@ -258,6 +294,195 @@ export async function loadRecentFingerprintSessions(
     .order("created_at", { ascending: false })
     .limit(25);
   return (result.data ?? []) as { id: string; created_at: string }[];
+}
+
+// ── Part-finished responses (SENSITIVE; see 20260730000003) ──────────────────
+//
+// A DRAFT IS NOT A RESPONSE. It lives in its own table so that nothing counting
+// responses can count it: `aggregateCampaignSurvey`, `loadSurveyResponseSessions`
+// and the representativeness reading all read sessions/answers, and none of them
+// can reach these rows even by mistake. The one function below that touches a
+// session is `deleteSurveyDraftByTokenHash`, called AFTER a real submission has
+// been written — which is the moment a draft stops being a draft.
+
+export type SurveyDraftRow = {
+  id: string;
+  answers_json: unknown;
+  answered_count: number;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * A read that FAILED and a draft that is NOT THERE are different facts.
+ *
+ * They must not collapse into one, because the sentence a participant is shown
+ * differs completely: "your saved answers are gone" is a claim about their work,
+ * and saying it because a query errored would be a lie told to somebody who
+ * still has answers saved. Routes answer 500 on `ok: false` and only ever say
+ * "no saved answers" on `ok: true, draft: null`.
+ */
+export type SurveyDraftReadResult =
+  | { ok: true; draft: SurveyDraftRow | null }
+  | { ok: false; error: string };
+
+const SURVEY_DRAFT_SELECT = "id, answers_json, answered_count, expires_at, created_at, updated_at";
+
+/**
+ * Reopen a draft by the digest of the token its browser holds.
+ *
+ * Scoped by campaign AND by expiry. The expiry filter is the enforcement of the
+ * retention promise: an expired draft is unreadable at the instant it expires,
+ * whether or not the sweep below has removed the row yet.
+ */
+export async function loadSurveyDraftByTokenHash(
+  supabase: QueryClient,
+  campaignId: string,
+  resumeTokenHash: string
+): Promise<SurveyDraftReadResult> {
+  const result = await supabase
+    .from("engagement_survey_response_drafts")
+    .select(SURVEY_DRAFT_SELECT)
+    .eq("campaign_id", campaignId)
+    .eq("resume_token_hash", resumeTokenHash)
+    .gt("expires_at", new Date().toISOString())
+    .maybeSingle();
+  if (result.error) return { ok: false, error: result.error.message };
+  return { ok: true, draft: (result.data ?? null) as SurveyDraftRow | null };
+}
+
+/** How many live drafts one connection holds on this campaign (the creation cap). */
+export async function countLiveSurveyDrafts(
+  supabase: QueryClient,
+  campaignId: string,
+  fingerprint: string
+): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
+  const result = await supabase
+    .from("engagement_survey_response_drafts")
+    .select("id")
+    .eq("campaign_id", campaignId)
+    .eq("respondent_fingerprint", fingerprint)
+    .gt("expires_at", new Date().toISOString())
+    .limit(50);
+  if (result.error) return { ok: false, error: result.error.message };
+  return { ok: true, count: (result.data ?? []).length };
+}
+
+/**
+ * Delete this campaign's expired drafts.
+ *
+ * Best-effort and opportunistic — every draft route sweeps the campaign it is
+ * already touching, so retention is enforced by ordinary use rather than by a
+ * scheduler this product does not require an operator to run. The read filter
+ * above is what makes the PROMISE true regardless; this is what makes the data
+ * actually go away.
+ */
+export async function purgeExpiredSurveyDrafts(
+  supabase: QueryClient,
+  campaignId: string
+): Promise<{ swept: number }> {
+  // `.select("id")` so the sweep can say how much it removed. A delete that
+  // cannot observe its own row count reports success over zero rows, and a
+  // retention promise nobody can see being kept is one nobody would notice
+  // breaking.
+  const result = await supabase
+    .from("engagement_survey_response_drafts")
+    .delete()
+    .eq("campaign_id", campaignId)
+    .lt("expires_at", new Date().toISOString())
+    .select("id");
+  return { swept: ((result.data ?? []) as { id: string }[]).length };
+}
+
+/** Create a draft against a freshly minted token digest. */
+export async function insertSurveyDraft(
+  supabase: QueryClient,
+  input: {
+    campaignId: string;
+    resumeTokenHash: string;
+    respondentFingerprint: string | null;
+    answersJson: unknown;
+    answeredCount: number;
+    expiresAt: string;
+  }
+): Promise<{ ok: true; draft: SurveyDraftRow } | { ok: false; error: string }> {
+  const result = await supabase
+    .from("engagement_survey_response_drafts")
+    .insert({
+      campaign_id: input.campaignId,
+      resume_token_hash: input.resumeTokenHash,
+      respondent_fingerprint: input.respondentFingerprint,
+      answers_json: input.answersJson,
+      answered_count: input.answeredCount,
+      expires_at: input.expiresAt,
+    })
+    .select(SURVEY_DRAFT_SELECT)
+    .single();
+  if (result.error || !result.data) {
+    return { ok: false, error: result.error?.message ?? "Failed to save your answers" };
+  }
+  return { ok: true, draft: result.data as SurveyDraftRow };
+}
+
+/**
+ * Replace a draft's answers, and push its expiry out from NOW.
+ *
+ * The expiry moves with the last save rather than the first, because the promise
+ * made to the participant is about the answers in front of them — a resident who
+ * came back on day 29 and added three answers has a draft saved today.
+ */
+export async function updateSurveyDraft(
+  supabase: QueryClient,
+  input: {
+    campaignId: string;
+    resumeTokenHash: string;
+    answersJson: unknown;
+    answeredCount: number;
+    expiresAt: string;
+  }
+): Promise<{ ok: true; draft: SurveyDraftRow | null } | { ok: false; error: string }> {
+  const result = await supabase
+    .from("engagement_survey_response_drafts")
+    .update({
+      answers_json: input.answersJson,
+      answered_count: input.answeredCount,
+      expires_at: input.expiresAt,
+    })
+    .eq("campaign_id", input.campaignId)
+    .eq("resume_token_hash", input.resumeTokenHash)
+    .select(SURVEY_DRAFT_SELECT)
+    .maybeSingle();
+  // ZERO ROWS IS ITS OWN OUTCOME, not a failure. The draft expired, or was
+  // discarded from another tab — a fact about the participant's own answers
+  // that the route turns into a 404 they are told about, while a genuine
+  // database error stays a 500. Folding the two together would report a
+  // transient outage as "your saved answers are gone".
+  if (isWriteFailure(result.error)) {
+    return { ok: false, error: result.error?.message ?? "Failed to save your answers" };
+  }
+  if (writeMatchedNoRows(result)) return { ok: true, draft: null };
+  return { ok: true, draft: result.data as SurveyDraftRow };
+}
+
+/** Discard a draft — on explicit request, and after a real submission. */
+export async function deleteSurveyDraftByTokenHash(
+  supabase: QueryClient,
+  campaignId: string,
+  resumeTokenHash: string
+): Promise<{ ok: true; removed: boolean } | { ok: false; error: string }> {
+  const result = await supabase
+    .from("engagement_survey_response_drafts")
+    .delete()
+    .eq("campaign_id", campaignId)
+    .eq("resume_token_hash", resumeTokenHash)
+    .select("id");
+  if (result.error) return { ok: false, error: result.error.message };
+  // REMOVING NOTHING IS NOT AN ERROR — the draft may have expired, or been
+  // discarded from another tab, or (after a submission) never have existed. It
+  // is reported rather than swallowed so the audit trail can tell the two
+  // apart, but no caller turns it into a failure the participant has to read.
+  return { ok: true, removed: ((result.data ?? []) as { id: string }[]).length > 0 };
 }
 
 export type SurveyAnswerInsert = {

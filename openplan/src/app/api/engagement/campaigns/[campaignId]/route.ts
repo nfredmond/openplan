@@ -16,6 +16,11 @@ import {
   projectPlaceFromPlaceBoundary,
 } from "@/lib/projects/project-place";
 import { loadPortalPlaceCandidates, resolvePortalMapFraming } from "@/lib/engagement/public-portal-data";
+import {
+  geofenceUpdateRefusal,
+  placeCanGeofence,
+  SUBMISSION_GEOFENCE_COLUMN,
+} from "@/lib/engagement/geofence";
 
 // Setting a searched campaign area re-resolves the boundary through TIGERweb.
 export const runtime = "nodejs";
@@ -65,6 +70,15 @@ const patchCampaignSchema = z
     accessibilityAlternateFormats: z.union([z.string().trim().max(2000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
     demographicsEnabled: z.boolean().optional(),
+    /**
+     * Refuse a submitted pin that falls outside this campaign's own area
+     * (20260730000002). Opt-in, and refused outright unless an area with a
+     * usable extent will be on record after this update — a check that cannot
+     * run must never be storable, because an operator who believes
+     * participation is being filtered when it is not is worse off than one who
+     * knows it is not.
+     */
+    submissionGeofenceEnabled: z.boolean().optional(),
     /**
      * The area this campaign is about (20260729000003) — the area that frames
      * the resident-facing map, not a link to anything.
@@ -156,6 +170,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       { data: items, error: itemsError },
       { data: reports, error: reportsError },
       placeCandidates,
+      { data: geofenceRow, error: geofenceError },
     ] =
       await Promise.all([
         access.campaign.project_id
@@ -194,6 +209,18 @@ export async function GET(request: NextRequest, context: RouteContext) {
           workspace_id: access.campaign.workspace_id,
           project_id: access.campaign.project_id,
         }),
+        // Whether this campaign refuses pins outside its own area
+        // (20260730000002). Read on its own rather than added to
+        // `loadCampaignAccess`, which is the shared access select behind every
+        // engagement route: a column that does not exist yet would 404 the whole
+        // engagement module in the window between a deploy and its migration.
+        // The same split the campaign console already makes for
+        // `default_content_locale`, for the same reason.
+        supabase
+          .from("engagement_campaigns")
+          .select(SUBMISSION_GEOFENCE_COLUMN)
+          .eq("id", access.campaign.id)
+          .maybeSingle(),
       ]);
 
     if (projectError) {
@@ -240,6 +267,26 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // so the operator is told exactly what residents get rather than a second
     // calculation that can drift from it. Only APPROVED items count, because
     // only approved items are on the public map.
+    /**
+     * Whether the location check is on, as THREE states rather than two.
+     *
+     * `null` is "the read failed", and it must never render as "off": that
+     * would tell an operator their consultation is accepting pins from anywhere
+     * on the strength of a broken query, which is the confidently-wrong answer
+     * this codebase refuses. The console shows a failure for it.
+     */
+    const geofenceEnabled = geofenceError
+      ? null
+      : (geofenceRow as Record<string, unknown> | null)?.[SUBMISSION_GEOFENCE_COLUMN] === true;
+
+    if (geofenceError) {
+      audit.error("campaign_geofence_flag_lookup_failed", {
+        campaignId: access.campaign.id,
+        message: geofenceError.message,
+        code: geofenceError.code ?? null,
+      });
+    }
+
     const mapFraming = resolvePortalMapFraming({
       campaignPlace: placeCandidates.campaign,
       projectPlace: placeCandidates.project,
@@ -247,6 +294,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       approvedItems: (items ?? [])
         .filter((item) => item.status === "approved")
         .map((item) => ({ latitude: item.latitude, longitude: item.longitude })),
+      submissionGeofenceEnabled: geofenceEnabled === true,
     });
 
     return NextResponse.json(
@@ -261,6 +309,26 @@ export async function GET(request: NextRequest, context: RouteContext) {
         linkedReports: reports ?? [],
         counts,
         mapFraming,
+        /**
+         * Everything the console needs to offer the location check honestly:
+         * whether it is on, whether it CAN be on, and what the area is called.
+         *
+         * `canEnable` is derived from the campaign's OWN place of record and
+         * nothing else. The map may perfectly well be framed by the linked
+         * project or the workspace home geography, but the check never runs
+         * against either: an operator who has not chosen an area for THIS
+         * campaign has not chosen the area residents would be refused against,
+         * and inheriting one silently is how a consultation starts turning
+         * people away on a boundary nobody picked for it.
+         */
+        submissionGeofence: {
+          enabled: geofenceEnabled,
+          canEnable:
+            placeCandidates.campaign.state === "set" &&
+            placeCanGeofence({ bbox: placeCandidates.campaign.bbox }),
+          areaState: placeCandidates.campaign.state,
+          areaLabel: placeCandidates.campaign.label,
+        },
       },
       { status: 200 }
     );
@@ -508,6 +576,81 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           return NextResponse.json({ error: "That drawn area has no usable coordinates." }, { status: 400 });
         }
         Object.assign(updates, drawn);
+      }
+    }
+
+    /**
+     * The location check and the area it tests against, resolved TOGETHER.
+     *
+     * They cannot be validated apart, because the broken state — a check with
+     * nothing to test — is reachable from either side: by turning the check on
+     * for a campaign with no area, and by clearing the area under a check that
+     * is already on. Both are refused here in words, and both are refused again
+     * by `engagement_campaigns_geofence_needs_area` in the database, so a future
+     * writer that forgets this block still cannot store the broken state.
+     *
+     * Only runs when this request touches one of the two. A PATCH that renames
+     * the campaign reads nothing extra.
+     */
+    if (parsed.data.submissionGeofenceEnabled !== undefined || parsed.data.place !== undefined) {
+      const placeChanging = parsed.data.place !== undefined;
+      const flagChanging = parsed.data.submissionGeofenceEnabled !== undefined;
+
+      let hasAreaAfter = placeChanging
+        ? updates.place_min_lon != null &&
+          updates.place_min_lat != null &&
+          updates.place_max_lon != null &&
+          updates.place_max_lat != null
+        : false;
+      let enabledAfter = parsed.data.submissionGeofenceEnabled ?? false;
+
+      if (!placeChanging || !flagChanging) {
+        const { data: currentRow, error: currentError } = await supabase
+          .from("engagement_campaigns")
+          .select(`${SUBMISSION_GEOFENCE_COLUMN}, place_min_lon, place_min_lat, place_max_lon, place_max_lat`)
+          .eq("id", access.campaign.id)
+          .maybeSingle();
+
+        if (currentError || !currentRow) {
+          // Fail closed. Writing either half without knowing the other could
+          // store a check with nothing behind it, or trip the table's CHECK and
+          // surface to the operator as an unexplained failure.
+          audit.error("campaign_geofence_precondition_read_failed", {
+            campaignId: access.campaign.id,
+            message: currentError?.message ?? "no row",
+            code: currentError?.code ?? null,
+          });
+          return NextResponse.json(
+            { error: "Failed to verify this campaign's area before changing the location check" },
+            { status: 500 }
+          );
+        }
+
+        const current = currentRow as Record<string, unknown>;
+        if (!placeChanging) {
+          hasAreaAfter =
+            current.place_min_lon != null &&
+            current.place_min_lat != null &&
+            current.place_max_lon != null &&
+            current.place_max_lat != null;
+        }
+        if (!flagChanging) {
+          enabledAfter = current[SUBMISSION_GEOFENCE_COLUMN] === true;
+        }
+      }
+
+      const refusal = geofenceUpdateRefusal({
+        enabled: enabledAfter,
+        hasArea: hasAreaAfter,
+        areaCleared: parsed.data.place === null,
+      });
+
+      if (refusal) {
+        return NextResponse.json({ error: refusal, message: refusal }, { status: 400 });
+      }
+
+      if (flagChanging) {
+        updates[SUBMISSION_GEOFENCE_COLUMN] = parsed.data.submissionGeofenceEnabled;
       }
     }
 

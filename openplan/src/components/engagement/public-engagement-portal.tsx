@@ -823,6 +823,20 @@ function SubmissionForm({
                     {framing.unreadableNote}
                   </p>
                 ) : null}
+                {/*
+                  The submission rule, when this campaign has one
+                  (20260730000002). Rendered HERE and nowhere else, because this
+                  is the one map whose submissions the rule actually governs — a
+                  survey `map_point` question is written by a different route
+                  that does not check it, and announcing the rule there would
+                  claim something nobody enforces. English for the same reason as
+                  the two sentences above, and disclosed by the same notice.
+                */}
+                {framing.submissionRule ? (
+                  <p className="text-xs text-muted-foreground" lang={PORTAL_DEFAULT_LOCALE}>
+                    {framing.submissionRule}
+                  </p>
+                ) : null}
                 <div className="public-map-frame public-map-frame--editor">
                   <GeometryPickerMap
                     onGeometryChange={setGeometry}

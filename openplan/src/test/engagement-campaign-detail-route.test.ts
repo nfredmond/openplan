@@ -43,11 +43,29 @@ const projectPlaceMaybeSingleMock = vi.fn();
  */
 const selectsPlaceColumns = (columns: string) => columns.includes("place_source");
 
-const campaignSelectMock = vi.fn((columns: string) =>
-  selectsPlaceColumns(columns)
+/**
+ * A THIRD read of `engagement_campaigns`: the submission location check
+ * (20260730000002), on the GET path as the console's current state and on the
+ * PATCH path as half of the precondition. Both projections name the flag, and
+ * neither names `place_source`, so one discriminator and one row serve both.
+ *
+ * It is a separate read in the route for the same reason the campaign console
+ * splits `default_content_locale`: welding a brand-new column onto
+ * `loadCampaignAccess` would 404 the whole engagement module in the window
+ * between a deploy and its migration.
+ */
+const selectsSubmissionGeofence = (columns: string) => columns.includes("submission_geofence_enabled");
+
+const campaignGeofenceMaybeSingleMock = vi.fn();
+
+const campaignSelectMock = vi.fn((columns: string) => {
+  if (selectsSubmissionGeofence(columns)) {
+    return { eq: () => ({ maybeSingle: campaignGeofenceMaybeSingleMock }) };
+  }
+  return selectsPlaceColumns(columns)
     ? { eq: () => ({ maybeSingle: campaignPlaceMaybeSingleMock }) }
-    : { eq: campaignEqMock }
-);
+    : { eq: campaignEqMock };
+});
 
 const projectSelectMock = vi.fn((columns: string) =>
   selectsPlaceColumns(columns)
@@ -194,6 +212,18 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     // not. That is the ordinary shape, and it is what makes the precedence
     // observable at the route.
     campaignPlaceMaybeSingleMock.mockResolvedValue({ data: {}, error: null });
+    // Off, with no campaign area behind it — the state every campaign is in
+    // before an operator asks for anything else.
+    campaignGeofenceMaybeSingleMock.mockResolvedValue({
+      data: {
+        submission_geofence_enabled: false,
+        place_min_lon: null,
+        place_min_lat: null,
+        place_max_lon: null,
+        place_max_lat: null,
+      },
+      error: null,
+    });
     projectPlaceMaybeSingleMock.mockResolvedValue({
       data: {
         place_source: "tigerweb",
@@ -582,5 +612,197 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
       "campaign_update_matched_no_rows",
       expect.objectContaining({ campaignId: "11111111-1111-4111-8111-111111111111" })
     );
+  });
+  /**
+   * THE LOCATION CHECK (20260730000002).
+   *
+   * The rule is that a check which cannot run must never be storable, and it is
+   * reachable from BOTH sides — turning the flag on with no area, and clearing
+   * the area under a flag that is already on. Each is refused here in a sentence
+   * an operator can act on, and each is refused again by the table's own CHECK,
+   * so a future writer that forgets this route still cannot store it.
+   */
+  it("GET reports the location check as three states, never folding a failed read into 'off'", async () => {
+    campaignGeofenceMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'column "submission_geofence_enabled" does not exist', code: "42703" },
+    });
+
+    const response = await getCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1"),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+    const body = (await response.json()) as { submissionGeofence: { enabled: boolean | null } };
+
+    // Not `false`. Telling an operator the check is off, on the strength of a
+    // query that broke, is a claim about the world nobody established.
+    expect(body.submissionGeofence.enabled).toBeNull();
+  });
+
+  it("GET says the check cannot be enabled when the campaign has no area of its OWN", async () => {
+    // The linked project states an area and it frames the map — but the check
+    // never runs against it, so offering the control here would refuse
+    // residents against a boundary nobody chose for this consultation.
+    const response = await getCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1"),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+    const body = (await response.json()) as {
+      submissionGeofence: { enabled: boolean | null; canEnable: boolean; areaState: string };
+      mapFraming: { origin: string };
+    };
+
+    expect(body.mapFraming.origin).toBe("project_place");
+    expect(body.submissionGeofence).toMatchObject({ enabled: false, canEnable: false, areaState: "unset" });
+  });
+
+  it("PATCH refuses to turn the location check on for a campaign with no area", async () => {
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ submissionGeofenceEnabled: true }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toMatch(/no area on record/i);
+    expect(campaignUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH turns the check on when an area exists, writing the flag and nothing else", async () => {
+    campaignGeofenceMaybeSingleMock.mockResolvedValue({
+      data: {
+        submission_geofence_enabled: false,
+        place_min_lon: -83.2,
+        place_min_lat: 39.85,
+        place_max_lon: -82.8,
+        place_max_lat: 40.1,
+      },
+      error: null,
+    });
+
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ submissionGeofenceEnabled: true }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenCalledWith({ submission_geofence_enabled: true });
+  });
+
+  it("PATCH sets an area and the check together, without needing two round trips", async () => {
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          place: { mode: "place", kind: "county", geoid: "39049" },
+          submissionGeofenceEnabled: true,
+        }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(200);
+    // The area arriving in the SAME request is what satisfies the precondition;
+    // reading the stored row would have found none and refused a valid edit.
+    expect(campaignUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ submission_geofence_enabled: true, place_ref: "39049" })
+    );
+  });
+
+  it("PATCH refuses to clear the area out from under a live location check", async () => {
+    campaignGeofenceMaybeSingleMock.mockResolvedValue({
+      data: {
+        submission_geofence_enabled: true,
+        place_min_lon: -83.2,
+        place_min_lat: 39.85,
+        place_max_lon: -82.8,
+        place_max_lat: 40.1,
+      },
+      error: null,
+    });
+
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ place: null }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+    const body = (await response.json()) as { error: string };
+
+    expect(response.status).toBe(400);
+    expect(body.error).toMatch(/clearing the area/i);
+    expect(campaignUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH allows clearing the area when the same request turns the check off", async () => {
+    campaignGeofenceMaybeSingleMock.mockResolvedValue({
+      data: {
+        submission_geofence_enabled: true,
+        place_min_lon: -83.2,
+        place_min_lat: 39.85,
+        place_max_lon: -82.8,
+        place_max_lat: 40.1,
+      },
+      error: null,
+    });
+
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ place: null, submissionGeofenceEnabled: false }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(campaignUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({ place_source: null, submission_geofence_enabled: false })
+    );
+  });
+
+  it("PATCH fails closed when it cannot read the campaign's current area", async () => {
+    campaignGeofenceMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "statement timeout", code: "57014" },
+    });
+
+    const response = await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ submissionGeofenceEnabled: true }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    // Writing either half without knowing the other could store a check with
+    // nothing behind it, or trip the table CHECK as an unexplained failure.
+    expect(response.status).toBe(500);
+    expect(campaignUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH that touches neither the area nor the check reads nothing extra", async () => {
+    await patchCampaignDetail(
+      new NextRequest("http://localhost/api/engagement/campaigns/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ title: "Renamed campaign" }),
+      }),
+      { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+    );
+
+    expect(campaignGeofenceMaybeSingleMock).not.toHaveBeenCalled();
   });
 });

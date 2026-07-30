@@ -22,6 +22,7 @@ import {
 } from "@/lib/engagement/context-layers";
 import { resolveMapPointQuestionView } from "@/lib/engagement/survey";
 import { EMPTY_PLACE_OF_RECORD, type PlaceOfRecord } from "@/lib/geographies/place-of-record";
+import { geofenceInviteSentence, SUBMISSION_GEOFENCE_COLUMN } from "@/lib/engagement/geofence";
 import { resolvePortalLocale, type ResolvedPortalLocale } from "@/lib/engagement/portal-i18n/locales";
 import { buildPortalMessageBundle } from "@/lib/engagement/portal-i18n/messages";
 import type { PortalMessageBundle } from "@/lib/engagement/portal-i18n/translator";
@@ -245,6 +246,22 @@ export type PortalMapFraming = {
   summary: string;
   /** What was set but could not be used, or null when nothing was. */
   unreadableNote: string | null;
+  /**
+   * The submission rule in force on the COMMENT map, or null when there is none.
+   *
+   * Deliberately NOT folded into `summary`, and that separation is load-bearing.
+   * `summary` is consumed by more than one map: `resolveMapPointQuestionView`
+   * hands it to a survey `map_point` question as that question's framing note.
+   * The geofence is enforced by `/api/engage/[shareToken]/submit` and by nothing
+   * else — a survey answer is written by a different route that does not check
+   * it — so a rule sentence riding inside `summary` would appear above a map
+   * where it is not true, and would additionally promise that "a comment sent
+   * without a pin is accepted from anywhere" beside a question that may be
+   * REQUIRED. A surface that does not enforce the rule must not announce it, so
+   * it travels in its own field and only the surface that is governed by it
+   * renders it.
+   */
+  submissionRule: string | null;
 };
 
 /**
@@ -426,12 +443,27 @@ function describeGaps(gaps: PortalFramingGap[]): string | null {
  * No branch invents a place. With nothing to inherit it returns a null view and
  * origin `none`, and the caller is expected to SAY that the map is showing the
  * whole country rather than let a continent pass for a study area.
+ *
+ * WHY THE SUBMISSION GEOFENCE IS SAID HERE, of all places (20260730000002). A
+ * campaign that only accepts pins inside its own area must not invite a pin it
+ * is going to refuse, and this sentence is the one already rendered directly
+ * above the map a resident is about to draw on — and beside the badge on the
+ * operator console. Putting the rule anywhere else would mean computing a second
+ * answer about the same area, which is exactly the drift this resolver exists to
+ * prevent. The name used is the CAMPAIGN's own, because the campaign's own place
+ * of record is the only area the check ever runs against.
  */
 export function resolvePortalMapFraming(candidates: {
   campaignPlace?: PortalPlaceCandidate | null;
   projectPlace?: PortalPlaceCandidate | null;
   workspaceHome?: PortalPlaceCandidate | null;
   approvedItems?: Array<{ latitude: number | null; longitude: number | null }>;
+  /**
+   * True when this campaign refuses a submitted pin that falls outside its own
+   * area. False for every campaign that has not opted in, which is what keeps
+   * this sentence off the portals it is not true of.
+   */
+  submissionGeofenceEnabled?: boolean;
 }): PortalMapFraming {
   const unreadable: PortalFramingGap[] = [];
 
@@ -445,14 +477,28 @@ export function resolvePortalMapFraming(candidates: {
     view: PortalMapView | null,
     origin: PortalFramingOrigin,
     originLabel: string | null
-  ): PortalMapFraming => ({
-    view,
-    origin,
-    originLabel,
-    unreadable,
-    summary: describeFraming(origin, originLabel, unreadable),
-    unreadableNote: describeGaps(unreadable),
-  });
+  ): PortalMapFraming => {
+    // Carried in its own field, never appended to `describeFraming`'s sentence:
+    // it is a different KIND of fact — that one says where the camera opens,
+    // this one says what will be accepted — and, decisively, `summary` is reused
+    // as the framing note of a survey `map_point` question, which this rule does
+    // NOT govern. See `submissionRule` on PortalMapFraming.
+    //
+    // It is set for whichever candidate ended up framing the map: the rule holds
+    // even where the campaign's own area is on record and could not be turned
+    // into a camera.
+    return {
+      view,
+      origin,
+      originLabel,
+      unreadable,
+      summary: describeFraming(origin, originLabel, unreadable),
+      unreadableNote: describeGaps(unreadable),
+      submissionRule: candidates.submissionGeofenceEnabled
+        ? geofenceInviteSentence(candidates.campaignPlace?.label ?? null)
+        : null,
+    };
+  };
 
   for (const [origin, candidate] of ordered) {
     if (!candidate) continue;
@@ -749,6 +795,7 @@ export async function loadPublicPortalBundle(
   const [
     { data: projectData },
     placeCandidates,
+    { data: geofenceRow },
     { data: categoriesData },
     { data: approvedItemsData },
     surveyDefinition,
@@ -760,6 +807,27 @@ export async function loadPublicPortalBundle(
       : Promise.resolve({ data: null }),
     // Where this map opens, and why. See `loadPortalPlaceCandidates`.
     loadPortalPlaceCandidates(supabase, campaign),
+    /**
+     * Whether this campaign refuses pins outside its own area (20260730000002),
+     * so the portal does not invite one it will refuse.
+     *
+     * Read on its own rather than added to the campaign select above, for the
+     * reason that select's own header gives about ship order — except that here
+     * the consequence is worse, not milder. A column that does not exist yet
+     * would make `campaignData` null and the WHOLE public portal 404 for every
+     * campaign in the deployment until the migration lands. Keyed by id, it
+     * costs one indexed lookup and cannot take the page down.
+     *
+     * A failed read leaves the sentence off. That is silence, not a claim:
+     * enforcement lives in the submit route, which reads the flag itself, so the
+     * rule still holds and a refused participant is still told why in words. The
+     * portal simply does not assert a rule it could not confirm.
+     */
+    supabase
+      .from("engagement_campaigns")
+      .select(SUBMISSION_GEOFENCE_COLUMN)
+      .eq("id", campaign.id)
+      .maybeSingle(),
     supabase
       .from("engagement_categories")
       .select("id, label, slug, description, sort_order, color")
@@ -798,6 +866,8 @@ export async function loadPublicPortalBundle(
     projectPlace: placeCandidates.project,
     workspaceHome: placeCandidates.workspaceHome,
     approvedItems,
+    submissionGeofenceEnabled:
+      (geofenceRow as Record<string, unknown> | null)?.[SUBMISSION_GEOFENCE_COLUMN] === true,
   });
 
   const surveyQuestions: PortalSurveyQuestionView[] = surveyDefinition.questions.map((question) => {

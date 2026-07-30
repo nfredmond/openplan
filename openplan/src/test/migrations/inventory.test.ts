@@ -70,16 +70,24 @@ const EXPECTED = {
   // exactly these four policies (one SELECT, three role-aware writes),
   // `relrowsecurity` was true, and the constraint list matched the file. Re-check
   // against `pg_policies` once it is applied for real.
+  // +0 policies from 20260730000003 (engagement_survey_response_drafts), and
+  // that zero is the point: a part-finished survey response is as sensitive as a
+  // submitted one, so the table gets RLS ENABLED WITH NO POLICIES and REVOKE
+  // ALL FROM anon, authenticated — the same service-role-only posture as
+  // engagement_survey_response_sessions / _answers. It therefore moves
+  // `relations`, `tables` and `rlsEnabledTables` by one each and nothing else.
+  // Verified by parsing the migration file; it is in the tree and not yet
+  // applied to a live database.
   policies: 552,
   permissive: 312,
   restrictive: 240,
   permissiveWrites: 204,
   expanded: 252,
   tablesWithPolicies: 108,
-  relations: 125,
-  tables: 119,
+  relations: 126,
+  tables: 120,
   views: 6,
-  rlsEnabledTables: 109,
+  rlsEnabledTables: 110,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

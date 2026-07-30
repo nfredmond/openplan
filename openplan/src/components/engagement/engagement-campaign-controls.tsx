@@ -16,6 +16,21 @@ import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 // this component reaches the browser.
 import type { PortalMapFraming } from "@/lib/engagement/public-portal-data";
 
+/**
+ * The location check as the API reports it (20260730000002).
+ *
+ * `enabled` is deliberately NULLABLE: null means the read failed, and it must
+ * never be rendered as "off". Telling an operator that their consultation
+ * accepts pins from anywhere, on the strength of a query that broke, is a claim
+ * about the world nobody established.
+ */
+type SubmissionGeofence = {
+  enabled: boolean | null;
+  canEnable: boolean;
+  areaState: "set" | "unset" | "unreadable";
+  areaLabel: string | null;
+};
+
 type ProjectOption = {
   id: string;
   name: string;
@@ -59,6 +74,13 @@ export function EngagementCampaignControls({
   const [savingArea, setSavingArea] = useState(false);
   const [areaError, setAreaError] = useState<string | null>(null);
 
+  // The submission location check, read from the same GET as the framing above —
+  // one request, so the control and the area it depends on can never describe
+  // two different moments.
+  const [geofence, setGeofence] = useState<SubmissionGeofence | null>(null);
+  const [savingGeofence, setSavingGeofence] = useState(false);
+  const [geofenceError, setGeofenceError] = useState<string | null>(null);
+
   const loadFraming = useCallback(async () => {
     setFramingError(null);
     try {
@@ -68,7 +90,11 @@ export function EngagementCampaignControls({
         setFramingError(body.error ?? "Could not read where the public map opens.");
         return;
       }
-      const body = (await response.json()) as { mapFraming?: PortalMapFraming };
+      const body = (await response.json()) as {
+        mapFraming?: PortalMapFraming;
+        submissionGeofence?: SubmissionGeofence;
+      };
+      setGeofence(body.submissionGeofence ?? null);
       if (!body.mapFraming) {
         setFramingError("The campaign loaded, but it did not say where the public map opens.");
         return;
@@ -108,6 +134,33 @@ export function EngagementCampaignControls({
       setAreaError("Could not reach the server to save this area.");
     } finally {
       setSavingArea(false);
+    }
+  }
+
+  async function saveGeofence(nextEnabled: boolean) {
+    setGeofenceError(null);
+    setSavingGeofence(true);
+    try {
+      const response = await fetch(`/api/engagement/campaigns/${campaign.id}`, {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ submissionGeofenceEnabled: nextEnabled }),
+      });
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => ({}))) as { error?: string; message?: string };
+        // The server's own sentence, not a generic one: it is the sentence that
+        // says WHY — usually that there is no area to check a pin against.
+        setGeofenceError(body.message ?? body.error ?? "Could not change the location check.");
+        return;
+      }
+
+      await loadFraming();
+      router.refresh();
+    } catch {
+      setGeofenceError("Could not reach the server to change the location check.");
+    } finally {
+      setSavingGeofence(false);
     }
   }
 
@@ -369,6 +422,89 @@ export function EngagementCampaignControls({
             </div>
           </div>
         ) : null}
+      </div>
+
+      {/*
+        THE LOCATION CHECK (20260730000002).
+
+        Opt-in, and never offered where it cannot run: a campaign with no area of
+        its own has nothing to test a dropped pin against, so the control is
+        disabled and says which of the three states it is in — no area, an
+        unreadable one, or a read that failed. Enabling a check that cannot run
+        would leave an operator believing participation is being filtered when it
+        is not, which is worse than not offering it at all.
+
+        The area it uses is this CAMPAIGN's own, never the linked project's or
+        the workspace's. The map above may well be framed by one of those; being
+        refused against a boundary nobody chose for this consultation is a
+        different thing entirely from opening the camera on it.
+      */}
+      <div className="mt-6 border-t border-border pt-4">
+        <p className="text-sm font-medium text-foreground">Where residents may drop a pin</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          A public comment can carry a location. This decides whether a location outside the
+          campaign&apos;s own area is accepted into the record.
+        </p>
+
+        {geofence === null ? (
+          <p className="mt-3 text-sm text-muted-foreground">Reading the location check…</p>
+        ) : geofence.enabled === null ? (
+          <div className="mt-3">
+            <StateBlock
+              title="Could not read whether the location check is on"
+              description="The campaign loaded but this setting did not. It is not known whether pins outside the campaign area are being refused, so nothing is claimed here either way. Reload the page; if it persists, whoever runs this deployment needs to look at it."
+              tone="danger"
+              compact
+            />
+          </div>
+        ) : (
+          <div className="mt-3 space-y-2">
+            <label className="flex items-start gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                className="mt-0.5 h-4 w-4"
+                checked={geofence.enabled}
+                disabled={savingGeofence || (!geofence.enabled && !geofence.canEnable)}
+                onChange={(event) => void saveGeofence(event.target.checked)}
+              />
+              <span className="font-medium">
+                Only accept comments pinned inside{" "}
+                {geofence.areaLabel ? geofence.areaLabel : "this campaign's area"}
+              </span>
+            </label>
+
+            {!geofence.canEnable ? (
+              <p className="text-sm text-muted-foreground">
+                {geofence.areaState === "unreadable"
+                  ? "This campaign's area could not be read, so it is not known whether a location check could run here."
+                  : "This campaign has no area of its own, so there is nothing to check a dropped pin against. Set the campaign area above first — the linked project's study area and the workspace home geography frame the map, but the check never runs against either."}
+              </p>
+            ) : null}
+
+            <p className="text-sm text-muted-foreground">
+              Comments sent without a pin are always accepted, whether this is on or off — a comment
+              with no location is not outside the area, it has no location at all. A resident whose
+              pin falls outside is told the comment is outside the area this consultation covers and
+              asked to move it or send it without a location; they are never shown the boundary.
+            </p>
+
+            {savingGeofence ? (
+              <p className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving…
+              </p>
+            ) : null}
+
+            {geofenceError ? (
+              <StateBlock
+                title="That did not save"
+                description={geofenceError}
+                tone="danger"
+                compact
+              />
+            ) : null}
+          </div>
+        )}
       </div>
     </article>
   );

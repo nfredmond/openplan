@@ -6,7 +6,25 @@ const createServiceRoleClientMock = vi.fn();
 const campaignMaybeSingleMock = vi.fn();
 const campaignEqStatusMock = vi.fn(() => ({ maybeSingle: campaignMaybeSingleMock }));
 const campaignEqTokenMock = vi.fn(() => ({ eq: campaignEqStatusMock }));
-const campaignSelectMock = vi.fn(() => ({ eq: campaignEqTokenMock }));
+
+/**
+ * The route reads the campaign a SECOND time when a submission carries a
+ * coordinate: the opt-in location check and this campaign's extent
+ * (20260730000002), keyed by id, so a column that does not exist yet can never
+ * break the gate query above. Answered here as "not opted in", which is every
+ * campaign that existed before that migration — the geofenced cases live in
+ * a-pin-outside-the-consultation-area-is-refused.test.ts.
+ */
+const campaignGeofenceMaybeSingleMock = vi.fn(async () => ({
+  data: { submission_geofence_enabled: false },
+  error: null,
+}));
+const campaignSelectMock = vi.fn((columns?: string) =>
+  typeof columns === "string" &&
+  (columns.includes("submission_geofence_enabled") || columns.trim() === "place_geometry_geojson")
+    ? { eq: () => ({ maybeSingle: campaignGeofenceMaybeSingleMock }) }
+    : { eq: campaignEqTokenMock }
+);
 
 const categoryMaybeSingleMock = vi.fn();
 const categoryEqCampaignMock = vi.fn(() => ({ maybeSingle: categoryMaybeSingleMock }));

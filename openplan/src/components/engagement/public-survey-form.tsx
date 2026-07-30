@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { CheckCircle2, Loader2, Send, Star } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { CheckCircle2, Loader2, Save, Send, Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import type { EngagementGeometry } from "@/lib/engagement/geometry";
 import {
+  SURVEY_DRAFT_RETENTION_DAYS,
   SURVEY_QUESTION_TYPES,
   budgetConfigSchema,
   fileUploadConfigSchema,
@@ -17,6 +18,8 @@ import {
   multipleChoiceConfigSchema,
   rankingConfigSchema,
   ratingConfigSchema,
+  readSurveyVisibilityCondition,
+  resolveSurveyVisibility,
   singleChoiceConfigSchema,
   type SurveyQuestionType,
 } from "@/lib/engagement/survey";
@@ -48,7 +51,7 @@ import {
   portalTextLang,
   type PortalDisclosureView,
 } from "@/lib/engagement/portal-i18n/provenance";
-import { formatPortalMegabytes, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
+import { formatPortalDate, formatPortalMegabytes, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
 import { GeometryPickerMap, type EngagementDrawMode } from "./geometry-picker-map";
 
 // ── Serializable participant-facing question shape (options folded in) ────────
@@ -513,6 +516,23 @@ function questionBadgeText(question: PortalSurveyQuestion, translator: PortalTra
   return rest.find((text) => portalTextBadge(text, translator) !== null) ?? null;
 }
 
+/**
+ * A saved answer as a plain record, or null.
+ *
+ * A draft's stored answers are read back from jsonb, so nothing here may assume
+ * a shape: a widget seeded from a corrupt blob must render empty rather than
+ * throw on a public form.
+ */
+function asAnswerRecord(value: unknown): Record<string, unknown> | null {
+  return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+/** The `{ value }` shared by the two scale widgets. */
+function savedNumber(value: unknown): number | null {
+  const saved = asAnswerRecord(value)?.value;
+  return typeof saved === "number" && Number.isFinite(saved) ? saved : null;
+}
+
 function cfgOf<T>(schema: { safeParse: (v: unknown) => { success: boolean; data?: T } }, raw: unknown): T {
   const parsed = schema.safeParse(raw ?? {});
   if (parsed.success && parsed.data !== undefined) return parsed.data;
@@ -522,6 +542,18 @@ function cfgOf<T>(schema: { safeParse: (v: unknown) => { success: boolean; data?
 
 type WidgetProps<T = unknown> = {
   question: PortalSurveyQuestion;
+  /**
+   * THE ANSWER THIS PARTICIPANT ALREADY GAVE, when they are resuming a saved
+   * response.
+   *
+   * Every widget holds its own local state, so a restored answer that only
+   * reached the FORM's answer map would show a blank widget over a form that
+   * believes it is answered — and the participant would submit a value they
+   * cannot see. Seeding is therefore per widget, from the canonical
+   * `answer_json` shape the draft stored, which is the same shape the widget
+   * emits. Undefined on a fresh form, which is the ordinary case.
+   */
+  initialAnswer?: unknown;
   /**
    * The participant's language, as a lookup. Passed EXPLICITLY to every widget
    * rather than read from a context, because a widget that can render without
@@ -538,10 +570,14 @@ function WidgetHint({ children }: { children: ReactNode }) {
 }
 
 // ── single_choice ─────────────────────────────────────────────────────────────
-function SingleChoiceWidget({ question, translator, onChange }: WidgetProps) {
+function SingleChoiceWidget({ question, translator, initialAnswer, onChange }: WidgetProps) {
   const cfg = cfgOf<{ allow_other?: boolean }>(singleChoiceConfigSchema, question.config);
-  const [selection, setSelection] = useState<string>("");
-  const [otherText, setOtherText] = useState("");
+  const saved = asAnswerRecord(initialAnswer);
+  const savedOther = typeof saved?.other_text === "string" ? saved.other_text : "";
+  const [selection, setSelection] = useState<string>(
+    typeof saved?.option_id === "string" ? saved.option_id : savedOther ? OTHER_SENTINEL : ""
+  );
+  const [otherText, setOtherText] = useState(savedOther);
 
   function emit(nextSelection: string, nextOther: string) {
     if (!nextSelection) return onChange(undefined);
@@ -604,14 +640,18 @@ function SingleChoiceWidget({ question, translator, onChange }: WidgetProps) {
 }
 
 // ── multiple_choice ───────────────────────────────────────────────────────────
-function MultipleChoiceWidget({ question, translator, onChange }: WidgetProps) {
+function MultipleChoiceWidget({ question, translator, initialAnswer, onChange }: WidgetProps) {
   const cfg = cfgOf<{ allow_other?: boolean; min_select?: number; max_select?: number }>(
     multipleChoiceConfigSchema,
     question.config
   );
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [otherChecked, setOtherChecked] = useState(false);
-  const [otherText, setOtherText] = useState("");
+  const saved = asAnswerRecord(initialAnswer);
+  const savedOther = typeof saved?.other_text === "string" ? saved.other_text : "";
+  const [selected, setSelected] = useState<Set<string>>(
+    new Set(Array.isArray(saved?.option_ids) ? (saved.option_ids as unknown[]).filter((id): id is string => typeof id === "string") : [])
+  );
+  const [otherChecked, setOtherChecked] = useState(savedOther.length > 0);
+  const [otherText, setOtherText] = useState(savedOther);
 
   function emit(nextSelected: Set<string>, nextOtherChecked: boolean, nextOther: string) {
     const optionIds = [...nextSelected];
@@ -693,9 +733,9 @@ function MultipleChoiceWidget({ question, translator, onChange }: WidgetProps) {
 }
 
 // ── likert ────────────────────────────────────────────────────────────────────
-function LikertWidget({ question, translator, onChange }: WidgetProps) {
+function LikertWidget({ question, translator, initialAnswer, onChange }: WidgetProps) {
   const cfg = cfgOf<{ scale: 5 | 7; labels?: string[] }>(likertConfigSchema, question.config);
-  const [value, setValue] = useState<number | null>(null);
+  const [value, setValue] = useState<number | null>(savedNumber(initialAnswer));
   const points = Array.from({ length: cfg.scale }, (_, i) => i + 1);
 
   return (
@@ -746,9 +786,9 @@ function LikertWidget({ question, translator, onChange }: WidgetProps) {
 }
 
 // ── rating ──────────────────────────────────────────────────────────────────
-function RatingWidget({ question, translator, onChange }: WidgetProps) {
+function RatingWidget({ question, translator, initialAnswer, onChange }: WidgetProps) {
   const cfg = cfgOf<{ max: number; allow_half?: boolean; icon?: "star" | "number" }>(ratingConfigSchema, question.config);
-  const [value, setValue] = useState<number | null>(null);
+  const [value, setValue] = useState<number | null>(savedNumber(initialAnswer));
 
   const maxLabel = formatPortalNumber(cfg.max, translator.bcp47);
   const scaleLabel = (step: number) =>
@@ -820,9 +860,17 @@ function RatingWidget({ question, translator, onChange }: WidgetProps) {
 }
 
 // ── ranking ──────────────────────────────────────────────────────────────────
-function RankingWidget({ question, translator, onChange }: WidgetProps) {
+function RankingWidget({ question, translator, initialAnswer, onChange }: WidgetProps) {
   const cfg = cfgOf<{ max_ranked?: number; require_full: boolean }>(rankingConfigSchema, question.config);
-  const [ranks, setRanks] = useState<Record<string, number>>({});
+  const [ranks, setRanks] = useState<Record<string, number>>(() => {
+    const saved = asAnswerRecord(initialAnswer)?.ranking;
+    if (!Array.isArray(saved)) return {};
+    const restored: Record<string, number> = {};
+    saved.forEach((optionId, index) => {
+      if (typeof optionId === "string") restored[optionId] = index + 1;
+    });
+    return restored;
+  });
   const rankCap = cfg.max_ranked ?? question.options.length;
   const maxRank = Math.min(rankCap, question.options.length);
 
@@ -890,17 +938,34 @@ function RankingWidget({ question, translator, onChange }: WidgetProps) {
 }
 
 // ── map_point ────────────────────────────────────────────────────────────────
-function MapPointWidget({ question, translator, onChange }: WidgetProps) {
+function MapPointWidget({ question, translator, initialAnswer, onChange }: WidgetProps) {
   const cfg = cfgOf<{
     geometry_types: ("Point" | "LineString" | "Polygon")[];
     guidance?: string;
     center?: [number, number];
     zoom?: number;
   }>(mapPointConfigSchema, question.config);
-  const [geometry, setGeometry] = useState<EngagementGeometry | null>(null);
-  const [note, setNote] = useState("");
+  const saved = asAnswerRecord(initialAnswer);
+  /**
+   * A RESTORED LOCATION IS KEPT, EVEN THOUGH THE MAP CANNOT REDRAW IT.
+   *
+   * `GeometryPickerMap` takes a camera but no starting geometry, so a resumed
+   * answer cannot be shown as a shape on the map. Dropping it instead would
+   * throw away the most laborious answer on the form — somebody found their
+   * street on a phone — and, worse, the note field's `emit` would then overwrite
+   * the saved geometry with nothing the moment they typed. So the geometry is
+   * held here and the participant is TOLD it is still attached and how to
+   * replace it. Silence would leave them looking at an empty map believing their
+   * pin was lost.
+   */
+  const [geometry, setGeometry] = useState<EngagementGeometry | null>(
+    (saved?.geometry as EngagementGeometry | undefined) ?? null
+  );
+  const [replaced, setReplaced] = useState(false);
+  const [note, setNote] = useState(typeof saved?.note === "string" ? saved.note : "");
 
   const allowedModes = cfg.geometry_types.map((type) => GEO_TYPE_TO_MODE[type]);
+  const keptFromDraft = Boolean(saved?.geometry) && !replaced;
 
   function emit(nextGeometry: EngagementGeometry | null, nextNote: string) {
     if (!nextGeometry) return onChange(undefined);
@@ -943,6 +1008,7 @@ function MapPointWidget({ question, translator, onChange }: WidgetProps) {
       <div className="public-map-frame public-map-frame--editor">
         <GeometryPickerMap
           onGeometryChange={(next) => {
+            setReplaced(true);
             setGeometry(next);
             emit(next, note);
           }}
@@ -952,6 +1018,11 @@ function MapPointWidget({ question, translator, onChange }: WidgetProps) {
           initialZoom={cfg.zoom}
         />
       </div>
+      {keptFromDraft ? (
+        <WidgetHint>
+          <Copy of={portalMessageView(translator, "survey.draftLocationKept")} />
+        </WidgetHint>
+      ) : null}
       <Input
         value={note}
         placeholder={PENDING_PORTAL_COPY.mapNotePlaceholder}
@@ -1025,12 +1096,23 @@ function budgetUnitSymbol(unit: "usd" | "points" | "percent", bcp47: string): st
   }
 }
 
-function BudgetWidget({ question, translator, onChange }: WidgetProps) {
+function BudgetWidget({ question, translator, initialAnswer, onChange }: WidgetProps) {
   const cfg = cfgOf<{ total: number; unit: "usd" | "points" | "percent"; must_allocate_all: boolean }>(
     budgetConfigSchema,
     question.config
   );
-  const [amounts, setAmounts] = useState<Record<string, string>>({});
+  const [amounts, setAmounts] = useState<Record<string, string>>(() => {
+    const saved = asAnswerRecord(initialAnswer)?.allocations;
+    if (!Array.isArray(saved)) return {};
+    const restored: Record<string, string> = {};
+    for (const allocation of saved) {
+      const record = asAnswerRecord(allocation);
+      if (typeof record?.option_id === "string" && typeof record.amount === "number") {
+        restored[record.option_id] = String(record.amount);
+      }
+    }
+    return restored;
+  });
 
   const total = cfg.total ?? 0;
   const sum = question.options.reduce((carried, option) => carried + (Number(amounts[option.id]) || 0), 0);
@@ -1098,9 +1180,10 @@ function BudgetWidget({ question, translator, onChange }: WidgetProps) {
 }
 
 // ── free_text ────────────────────────────────────────────────────────────────
-function FreeTextWidget({ question, translator, onChange }: WidgetProps) {
+function FreeTextWidget({ question, translator, initialAnswer, onChange }: WidgetProps) {
   const cfg = cfgOf<{ max_length: number; min_length?: number; multiline: boolean }>(freeTextConfigSchema, question.config);
-  const [text, setText] = useState("");
+  const savedText = asAnswerRecord(initialAnswer)?.text;
+  const [text, setText] = useState(typeof savedText === "string" ? savedText : "");
 
   function emit(next: string) {
     onChange(next.trim() ? { text: next } : undefined);
@@ -1287,6 +1370,7 @@ function QuestionField({
   translator,
   shareToken,
   error,
+  initialAnswer,
   onChange,
 }: {
   question: PortalSurveyQuestion;
@@ -1294,6 +1378,8 @@ function QuestionField({
   shareToken: string;
   /** The server validator's own words — English. See `englishSentence`. */
   error?: string;
+  /** This participant's saved answer, when they are resuming. */
+  initialAnswer?: unknown;
   onChange: (answer: unknown) => void;
 }) {
   const def = SURVEY_QUESTION_TYPES[question.questionType];
@@ -1303,21 +1389,21 @@ function QuestionField({
   function renderWidget() {
     switch (question.questionType) {
       case "single_choice":
-        return <SingleChoiceWidget question={question} translator={translator} onChange={onChange} />;
+        return <SingleChoiceWidget question={question} translator={translator} initialAnswer={initialAnswer} onChange={onChange} />;
       case "multiple_choice":
-        return <MultipleChoiceWidget question={question} translator={translator} onChange={onChange} />;
+        return <MultipleChoiceWidget question={question} translator={translator} initialAnswer={initialAnswer} onChange={onChange} />;
       case "likert":
-        return <LikertWidget question={question} translator={translator} onChange={onChange} />;
+        return <LikertWidget question={question} translator={translator} initialAnswer={initialAnswer} onChange={onChange} />;
       case "rating":
-        return <RatingWidget question={question} translator={translator} onChange={onChange} />;
+        return <RatingWidget question={question} translator={translator} initialAnswer={initialAnswer} onChange={onChange} />;
       case "ranking":
-        return <RankingWidget question={question} translator={translator} onChange={onChange} />;
+        return <RankingWidget question={question} translator={translator} initialAnswer={initialAnswer} onChange={onChange} />;
       case "map_point":
-        return <MapPointWidget question={question} translator={translator} onChange={onChange} />;
+        return <MapPointWidget question={question} translator={translator} initialAnswer={initialAnswer} onChange={onChange} />;
       case "budget_allocation":
-        return <BudgetWidget question={question} translator={translator} onChange={onChange} />;
+        return <BudgetWidget question={question} translator={translator} initialAnswer={initialAnswer} onChange={onChange} />;
       case "free_text":
-        return <FreeTextWidget question={question} translator={translator} onChange={onChange} />;
+        return <FreeTextWidget question={question} translator={translator} initialAnswer={initialAnswer} onChange={onChange} />;
       case "file_upload":
         return (
           <FileUploadWidget
@@ -1398,6 +1484,23 @@ function QuestionField({
 }
 
 /**
+ * WHAT THE FORM IS CURRENTLY TELLING A PARTICIPANT ABOUT THEIR SAVED ANSWERS.
+ *
+ * One closed set, because every one of these is a CLAIM about a resident's own
+ * work and the wrong one is a lie: "saved" carries the date the promise runs to,
+ * "gone" is only ever said when the server said 404, and `checkFailed` exists
+ * precisely so a failed request is never reported as an absent draft. A single
+ * boolean `saved` flag could not tell those apart.
+ */
+type DraftNotice =
+  | { kind: "saved"; expiresAt: string | null; filesNotSaved: boolean }
+  | { kind: "restored"; savedAt: string | null }
+  | { kind: "gone" }
+  | { kind: "checkFailed" }
+  | { kind: "saveFailed"; serverSentence: string | null }
+  | { kind: "discarded" };
+
+/**
  * Participant survey renderer. Collects one answer per question (each widget
  * emits the canonical answer_json shape that the submit route re-validates via
  * validateSurveyAnswer), then POSTs the whole response to the confined survey
@@ -1447,17 +1550,260 @@ export function PublicSurveyForm({
   // Remounts every widget on "submit another" so local widget state resets.
   const [formNonce, setFormNonce] = useState(0);
 
+  // ── Save and resume ────────────────────────────────────────────────────────
+  /** The credential for this browser's saved draft, if it holds one. */
+  const [resumeToken, setResumeToken] = useState<string | null>(null);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [draftNotice, setDraftNotice] = useState<DraftNotice | null>(null);
+  /** Answers a resumed draft returned — seeded into the widgets themselves. */
+  const [restoredAnswers, setRestoredAnswers] = useState<Record<string, unknown>>({});
+
   const translator = useMemo(() => createPortalTranslator(messages), [messages]);
+
+  /**
+   * WHICH QUESTIONS APPLY TO THIS PARTICIPANT RIGHT NOW.
+   *
+   * Computed from `resolveSurveyVisibility` — the SAME function the submit route
+   * runs before it stores anything. Two implementations of one rule is how a
+   * form comes to hide a question the server still requires (unsubmittable) or
+   * show one the server will discard (a wasted answer). There is one rule.
+   */
+  const visibilityQuestions = useMemo(
+    () => questions.map((question) => ({ id: question.id, question_type: question.questionType, config: question.config })),
+    [questions]
+  );
+  const visibility = useMemo(
+    () => resolveSurveyVisibility(visibilityQuestions, answers),
+    [visibilityQuestions, answers]
+  );
+  const visibleQuestions = useMemo(
+    () => questions.filter((question) => visibility.visible.has(question.id)),
+    [questions, visibility]
+  );
+  const hasConditionalQuestions = useMemo(
+    () => questions.some((question) => readSurveyVisibilityCondition(question.config) !== null),
+    [questions]
+  );
+
+  const draftStorageKey = `openplan.survey.draft.${shareToken}`;
+
+  /**
+   * Browser storage, defensively.
+   *
+   * Safari in private mode throws on `localStorage`, and a survey that crashes
+   * because it could not remember a token is worse than one that simply cannot
+   * offer resume. Both helpers fail quiet; the save button then still works and
+   * the participant is told what saving does and does not do.
+   */
+  function readStoredToken(): string | null {
+    try {
+      return window.localStorage.getItem(draftStorageKey);
+    } catch {
+      return null;
+    }
+  }
+  function writeStoredToken(token: string | null) {
+    try {
+      if (token === null) window.localStorage.removeItem(draftStorageKey);
+      else window.localStorage.setItem(draftStorageKey, token);
+    } catch {
+      // Nothing to do: the draft still exists server-side until it expires, and
+      // this browser simply cannot reopen it. Claiming otherwise is the failure
+      // to avoid, and the notice below never claims it.
+    }
+  }
+
+  // Reopen a saved draft on arrival. Runs once per share token.
+  useEffect(() => {
+    let cancelled = false;
+    const token = readStoredToken();
+    if (!token) return;
+
+    void (async () => {
+      try {
+        const response = await fetch(`/api/engage/${shareToken}/survey/draft/resume`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ resumeToken: token }),
+        });
+        if (cancelled) return;
+        if (response.status === 404) {
+          // The draft expired or was discarded. The token is useless now, and
+          // the participant is told rather than left wondering.
+          writeStoredToken(null);
+          setDraftNotice({ kind: "gone" });
+          return;
+        }
+        if (!response.ok) {
+          // A FAILED CHECK IS NOT AN ABSENT DRAFT. The token is KEPT, because
+          // the answers are probably still there — telling somebody their work
+          // is gone on the strength of a failed request is a false claim about
+          // their own answers.
+          setDraftNotice({ kind: "checkFailed" });
+          return;
+        }
+        const payload = (await response.json()) as {
+          answers?: { questionId: string; answer: unknown }[];
+          savedAt?: string;
+        };
+        const restored: Record<string, unknown> = {};
+        for (const entry of payload.answers ?? []) restored[entry.questionId] = entry.answer;
+        setResumeToken(token);
+        setRestoredAnswers(restored);
+        setAnswers(resolveSurveyVisibility(visibilityQuestions, restored).answers);
+        // Remount the widgets so each one seeds itself from the restored answer.
+        setFormNonce((nonce) => nonce + 1);
+        setDraftNotice({ kind: "restored", savedAt: payload.savedAt ?? null });
+      } catch {
+        if (!cancelled) setDraftNotice({ kind: "checkFailed" });
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shareToken]);
 
   function setAnswer(questionId: string, answer: unknown) {
     setAnswers((previous) => {
-      if (answer === undefined) {
-        const next = { ...previous };
-        delete next[questionId];
-        return next;
-      }
-      return { ...previous, [questionId]: answer };
+      const next = { ...previous };
+      if (answer === undefined) delete next[questionId];
+      else next[questionId] = answer;
+      // ANSWERS TO QUESTIONS THAT NO LONGER APPLY ARE DROPPED HERE, not filtered
+      // at submit time. A hidden question's widget unmounts and loses its local
+      // state, so an answer left in this map would be one the form believes in
+      // and the participant cannot see — and would then be sent to a server that
+      // discards it anyway.
+      return resolveSurveyVisibility(visibilityQuestions, next).answers;
     });
+  }
+
+  /**
+   * A DROPPED ANSWER IS DROPPED FROM THE RESUME SEED TOO.
+   *
+   * Otherwise a resumed answer comes back the moment its question applies
+   * again: the widget re-mounts and seeds itself from the restored draft, while
+   * `answers` has already let that answer go — and a widget that seeds itself
+   * does not emit. The resident would read their own sentence in the box and
+   * the form would submit without it, which is the same defect as a stale
+   * answer, pointing the other way. The box and the payload have to agree, and
+   * blank is the one that matches what will actually be sent.
+   */
+  useEffect(() => {
+    setRestoredAnswers((seeded) => {
+      const stale = Object.keys(seeded).filter((questionId) => !visibility.visible.has(questionId));
+      if (stale.length === 0) return seeded;
+      const remaining = { ...seeded };
+      for (const questionId of stale) delete remaining[questionId];
+      return remaining;
+    });
+  }, [visibility]);
+
+  /**
+   * A DROPPED ANSWER IS DROPPED FROM THE RESUME SEED TOO.
+   *
+   * Otherwise a resumed answer comes back the moment its question applies
+   * again: the widget re-mounts and seeds itself from the restored draft, while
+   * `answers` has already let that answer go — and a widget that seeds itself
+   * does not emit. The resident would read their own sentence in the box and
+   * the form would submit without it, which is the same defect as a stale
+   * answer, pointing the other way. The box and the payload have to agree, and
+   * blank is the one that matches what will actually be sent.
+   */
+
+  /** The answers this participant would submit, in payload shape. */
+  function currentPayloadAnswers(): { questionId: string; answer: unknown }[] {
+    return Object.entries(answers)
+      .filter(([questionId, answer]) => answer !== undefined && visibility.visible.has(questionId))
+      .map(([questionId, answer]) => ({ questionId, answer }));
+  }
+
+  async function saveDraft() {
+    setDraftNotice(null);
+    setIsSavingDraft(true);
+    try {
+      const send = (token: string | null) =>
+        fetch(`/api/engage/${shareToken}/survey/draft`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            answers: currentPayloadAnswers(),
+            ...(token ? { resumeToken: token } : {}),
+          }),
+        });
+
+      let response = await send(resumeToken);
+      // The draft this browser knew about is gone (expired, or discarded from
+      // another tab). Saving again as a NEW draft keeps the participant's work,
+      // which is the only outcome that matters to them.
+      if (response.status === 404 && resumeToken) {
+        writeStoredToken(null);
+        setResumeToken(null);
+        response = await send(null);
+      }
+
+      const payload = (await response.json()) as {
+        error?: string;
+        resumeToken?: string;
+        expiresAt?: string;
+        filesNotSaved?: boolean;
+      };
+      if (!response.ok) throw new Error(payload.error || "");
+
+      if (payload.resumeToken) {
+        setResumeToken(payload.resumeToken);
+        writeStoredToken(payload.resumeToken);
+      }
+      setDraftNotice({
+        kind: "saved",
+        expiresAt: payload.expiresAt ?? null,
+        filesNotSaved: Boolean(payload.filesNotSaved),
+      });
+    } catch (saveError) {
+      const fromServer = saveError instanceof Error ? saveError.message : "";
+      setDraftNotice({ kind: "saveFailed", serverSentence: fromServer || null });
+    } finally {
+      setIsSavingDraft(false);
+    }
+  }
+
+  async function discardDraft() {
+    if (!resumeToken) return;
+    setIsSavingDraft(true);
+    try {
+      const response = await fetch(`/api/engage/${shareToken}/survey/draft`, {
+        method: "DELETE",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ resumeToken }),
+      });
+      /**
+       * A REQUEST THAT CAME BACK IS NOT A DELETION THAT HAPPENED.
+       *
+       * `fetch` rejects only on a network failure, so a 500 from the route
+       * arrives here as a perfectly ordinary response. Treating it as success
+       * would tell a resident "your saved answers have been discarded" about
+       * answers still sitting in the database — and, worse, would then throw
+       * away the ONLY credential that could ever discard them, leaving their
+       * part-finished demographics there for the full retention window with
+       * nobody able to reach them. The token is kept and the failure is said.
+       */
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => ({}))) as { error?: string };
+        setDraftNotice({ kind: "saveFailed", serverSentence: payload.error || null });
+        setIsSavingDraft(false);
+        return;
+      }
+    } catch {
+      // Reported below as a failure rather than as a discard that happened.
+      setDraftNotice({ kind: "saveFailed", serverSentence: null });
+      setIsSavingDraft(false);
+      return;
+    }
+    writeStoredToken(null);
+    setResumeToken(null);
+    setDraftNotice({ kind: "discarded" });
+    setIsSavingDraft(false);
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1465,9 +1811,7 @@ export function PublicSurveyForm({
     setError(null);
     setFieldErrors({});
 
-    const payloadAnswers = Object.entries(answers)
-      .filter(([, answer]) => answer !== undefined)
-      .map(([questionId, answer]) => ({ questionId, answer }));
+    const payloadAnswers = currentPayloadAnswers();
 
     if (payloadAnswers.length === 0) {
       // SAME CHECK, translated words. The condition is unchanged — nothing
@@ -1480,7 +1824,7 @@ export function PublicSurveyForm({
       // resident gets Spanish. With nothing required it would be false, so the
       // weaker English sentence is used and marked as English.
       setError(
-        questions.some((question) => question.required)
+        visibleQuestions.some((question) => question.required)
           ? portalMessageView(translator, "survey.requiredMissing")
           : englishSentence(PENDING_PORTAL_COPY.noAnswers)
       );
@@ -1495,6 +1839,10 @@ export function PublicSurveyForm({
         body: JSON.stringify({
           answers: payloadAnswers,
           submittedBy: submittedBy || undefined,
+          // Names the draft this response finishes, so the server deletes it.
+          // A part-finished copy of somebody's answers outliving the finished
+          // one is data nobody asked us to keep.
+          ...(resumeToken ? { resumeToken } : {}),
           website,
         }),
       });
@@ -1510,6 +1858,12 @@ export function PublicSurveyForm({
         }
         throw new Error(payload.error || "");
       }
+      // The response is in. The draft is the server's to delete (it was told the
+      // token above); this browser forgets its credential either way, so a
+      // "resume" cannot reopen answers that have already been submitted.
+      writeStoredToken(null);
+      setResumeToken(null);
+      setDraftNotice(null);
       setSubmitted(true);
     } catch (submitError) {
       const fromServer = submitError instanceof Error ? submitError.message : "";
@@ -1554,6 +1908,50 @@ export function PublicSurveyForm({
    * shrinks what is untranslated; it does not make this notice false, and
    * retiring it would have to wait on that label too.
    */
+  /**
+   * The draft notice as ONE sentence carrying the language it is in.
+   *
+   * Built through `portalMessageView` like every other run of copy on this form,
+   * so a Spanish resident reads Spanish and a Farsi resident is TOLD the
+   * sentence is English rather than having it pronounced as Farsi. The dates are
+   * formatted for the participant's locale — a retention promise written
+   * "7/3/2026" names a different day to most of the world.
+   */
+  function draftNoticeView(notice: DraftNotice): PortalDisclosureView {
+    switch (notice.kind) {
+      case "saved":
+        return notice.expiresAt
+          ? portalMessageView(translator, "survey.draftSaved", {
+              date: formatPortalDate(notice.expiresAt, translator.bcp47),
+            })
+          : // No expiry came back, so the sentence that names one must not be
+            // shown. The weaker, still-true sentence is used instead.
+            portalMessageView(translator, "survey.draftDeviceOnly", {
+              days: formatPortalNumber(SURVEY_DRAFT_RETENTION_DAYS, translator.bcp47),
+            });
+      case "restored":
+        return notice.savedAt
+          ? portalMessageView(translator, "survey.draftRestored", {
+              date: formatPortalDate(notice.savedAt, translator.bcp47),
+            })
+          : portalMessageView(translator, "survey.draftDeviceOnly", {
+              days: formatPortalNumber(SURVEY_DRAFT_RETENTION_DAYS, translator.bcp47),
+            });
+      case "gone":
+        return portalMessageView(translator, "survey.draftGone");
+      case "checkFailed":
+        return portalMessageView(translator, "survey.draftCheckFailed");
+      case "discarded":
+        return portalMessageView(translator, "survey.draftDiscarded");
+      case "saveFailed":
+        // The route's own words when it sent any — English, and marked as such
+        // rather than passed off as the participant's language.
+        return notice.serverSentence
+          ? englishSentence(notice.serverSentence)
+          : portalMessageView(translator, "survey.draftSaveFailed");
+    }
+  }
+
   const hasUntranslatedCopy = translator.locale !== PENDING_COPY_LOCALE;
 
   // The whole form is one language and one direction. Set here rather than
@@ -1586,6 +1984,10 @@ export function PublicSurveyForm({
           onClick={() => {
             setSubmitted(false);
             setAnswers({});
+            // The previous response's restored answers must not seed the next
+            // one — a second respondent on a shared phone would find somebody
+            // else's answers already filled in.
+            setRestoredAnswers({});
             setSubmittedBy("");
             setWebsite("");
             setError(null);
@@ -1613,14 +2015,54 @@ export function PublicSurveyForm({
         </p>
       ) : null}
 
+      {/*
+        Said BEFORE the questions, once, when the survey actually has a
+        condition in it. A resident who watches a question disappear as they
+        answer has been given no reason to trust the form unless it said this
+        first — and a survey with no conditions must not claim to have any.
+      */}
+      {hasConditionalQuestions ? (
+        <p className="mb-4 text-xs text-muted-foreground">
+          <Copy of={portalMessageView(translator, "survey.conditionalNote")} />
+        </p>
+      ) : null}
+
+      {draftNotice ? (
+        <p
+          role="status"
+          className={cn(
+            "mb-4 rounded-lg border px-3 py-2 text-xs",
+            draftNotice.kind === "saveFailed" || draftNotice.kind === "checkFailed"
+              ? "border-red-300/80 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300"
+              : "border-border/70 bg-muted/40 text-muted-foreground"
+          )}
+        >
+          <Copy of={draftNoticeView(draftNotice)} />
+          {draftNotice.kind === "saved" && draftNotice.filesNotSaved ? (
+            <>
+              {" "}
+              <Copy of={portalMessageView(translator, "survey.draftFilesNotSaved")} />
+            </>
+          ) : null}
+        </p>
+      ) : null}
+
       <div key={formNonce} className="space-y-4">
-        {questions.map((question) => (
+        {/*
+          ONLY THE QUESTIONS THAT APPLY. A question gated on an earlier answer is
+          not rendered disabled or greyed — it is absent, because a form that
+          shows somebody eight questions they cannot answer is the burden this
+          feature exists to remove. The server re-decides the same thing before
+          storing anything.
+        */}
+        {visibleQuestions.map((question) => (
           <QuestionField
             key={question.id}
             question={question}
             translator={translator}
             shareToken={shareToken}
             error={fieldErrors[question.id]}
+            initialAnswer={restoredAnswers[question.id]}
             onChange={(answer) => setAnswer(question.id, answer)}
           />
         ))}
@@ -1678,6 +2120,52 @@ export function PublicSurveyForm({
           <Copy of={error} />
         </p>
       ) : null}
+
+      {/*
+        SAVE AND FINISH LATER, stated with exactly what it does.
+        `survey.draftDeviceOnly` is not decoration: the resume credential is held
+        in THIS browser and nowhere else, so a resident who saves on a library
+        computer and comes back on their phone would otherwise find their answers
+        missing with no explanation. The retention number in that sentence is the
+        same constant the server writes into the row's expiry.
+      */}
+      <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-border/60 px-3 py-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isSavingDraft || isSubmitting}
+          onClick={() => void saveDraft()}
+        >
+          {isSavingDraft ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+          <Copy
+            of={
+              isSavingDraft
+                ? portalMessageView(translator, "survey.savingDraft")
+                : portalMessageView(translator, "survey.saveForLater")
+            }
+          />
+        </Button>
+        {resumeToken ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={isSavingDraft || isSubmitting}
+            onClick={() => void discardDraft()}
+          >
+            <Trash2 className="h-4 w-4" />
+            <Copy of={portalMessageView(translator, "survey.draftDiscard")} />
+          </Button>
+        ) : null}
+        <p className="basis-full text-xs text-muted-foreground">
+          <Copy
+            of={portalMessageView(translator, "survey.draftDeviceOnly", {
+              days: formatPortalNumber(SURVEY_DRAFT_RETENTION_DAYS, translator.bcp47),
+            })}
+          />
+        </p>
+      </div>
 
       <div className="mt-5 flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">

@@ -195,6 +195,35 @@ export const EN_PORTAL_MESSAGES = {
   "survey.mapHint": "Tap the map to place your answer.",
   "survey.requiredMissing": "Please answer the required questions before submitting.",
 
+  // ------------------------------------------------- survey: save and resume
+  // EVERY SENTENCE HERE IS A PROMISE ABOUT A RESIDENT'S OWN ANSWERS, so each one
+  // says only what the product actually does. The draft is reachable from this
+  // browser on this device because the resume credential is held there and
+  // nowhere else (see survey-drafts.ts); `{days}` is
+  // SURVEY_DRAFT_RETENTION_DAYS, the same constant the server enforces; and the
+  // attachments really are not saved, because a stored file path outlives the
+  // upload window and would fail at submission.
+  "survey.saveForLater": "Save and finish later",
+  "survey.savingDraft": "Saving…",
+  "survey.draftDeviceOnly":
+    "Saved answers stay in this browser on this device, and are kept for {days} days. Nobody else can open them.",
+  "survey.draftSaved": "Saved. You can come back to this page on this device until {date}.",
+  "survey.draftRestored": "We brought back the answers you saved on {date}.",
+  "survey.draftGone": "The answers you saved earlier are no longer available, so this form is starting empty.",
+  "survey.draftCheckFailed":
+    "We could not check for saved answers just now. If you saved some, they have not been lost — reload this page to try again.",
+  "survey.draftSaveFailed":
+    "Your answers could not be saved just now. Nothing you have typed has been lost — you can try again.",
+  "survey.draftFilesNotSaved":
+    "Files you attached are not saved with your answers. You will need to attach them again.",
+  "survey.draftDiscard": "Discard saved answers",
+  "survey.draftDiscarded": "Your saved answers have been discarded.",
+  "survey.draftLocationKept":
+    "The location you saved earlier is still attached to this answer, even though the map is showing empty. Draw on the map again to replace it.",
+
+  // ------------------------------------------------ survey: conditional logic
+  "survey.conditionalNote": "Some questions appear only if they apply to your earlier answers.",
+
   // -------------------------------------------------------------- close loop
   "closeLoop.title": "You said / We did",
   "closeLoop.intro": "What the project team heard from the community, and how they responded.",
@@ -365,6 +394,27 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "survey.budgetRemaining": "Queda {amount} por asignar",
   "survey.mapHint": "Toque el mapa para situar su respuesta.",
   "survey.requiredMissing": "Responda las preguntas obligatorias antes de enviar.",
+
+  "survey.saveForLater": "Guardar y terminar más tarde",
+  "survey.savingDraft": "Guardando…",
+  "survey.draftDeviceOnly":
+    "Las respuestas guardadas se quedan en este navegador y en este dispositivo, y se conservan {days} días. Nadie más puede abrirlas.",
+  "survey.draftSaved": "Guardado. Puede volver a esta página desde este dispositivo hasta el {date}.",
+  "survey.draftRestored": "Hemos recuperado las respuestas que guardó el {date}.",
+  "survey.draftGone":
+    "Las respuestas que guardó antes ya no están disponibles, así que este formulario empieza vacío.",
+  "survey.draftCheckFailed":
+    "No pudimos comprobar si hay respuestas guardadas en este momento. Si guardó algunas, no se han perdido: vuelva a cargar la página para intentarlo de nuevo.",
+  "survey.draftSaveFailed":
+    "No se pudieron guardar sus respuestas en este momento. No se ha perdido nada de lo que escribió: puede intentarlo de nuevo.",
+  "survey.draftFilesNotSaved":
+    "Los archivos que adjuntó no se guardan con sus respuestas. Tendrá que adjuntarlos otra vez.",
+  "survey.draftDiscard": "Descartar las respuestas guardadas",
+  "survey.draftDiscarded": "Se han descartado sus respuestas guardadas.",
+  "survey.draftLocationKept":
+    "La ubicación que guardó antes sigue asociada a esta respuesta, aunque el mapa aparezca vacío. Vuelva a dibujar en el mapa para reemplazarla.",
+
+  "survey.conditionalNote": "Algunas preguntas solo aparecen si corresponden a sus respuestas anteriores.",
 
   "closeLoop.title": "Usted dijo / Nosotros hicimos",
   "closeLoop.intro": "Lo que el equipo del proyecto escuchó de la comunidad, y cómo respondió.",

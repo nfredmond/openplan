@@ -65,3 +65,91 @@ describe("EngagementSurveyBuilder", () => {
     expect(screen.getByText("No questions yet. Add your first below.")).toBeTruthy();
   });
 });
+
+describe("saying when a question applies", () => {
+  /**
+   * A CONDITION THE BUILDER OFFERS MUST BE ONE THE BUILDER CAN ACTUALLY SAVE.
+   *
+   * `SURVEY_CONDITION_OPERATORS_BY_TYPE` offers "is" / "is not" against a Likert
+   * or rating question, and the evaluator compares those to a NUMBER on the
+   * scale. Choosing the comparison field from the operator alone offered an
+   * option picker instead — and Likert and rating questions carry no options, so
+   * the operator met an empty dropdown, could enter nothing, and the save came
+   * back "Invalid question configuration" with no way to get past it. A
+   * capability visible in a menu and reachable by nobody is this repo's most
+   * repeated defect; this is the participant-visible half of it, one level up.
+   */
+  const SCALE = {
+    id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    campaign_id: "c1",
+    category_id: null,
+    question_type: "likert" as const,
+    prompt: "How safe do you feel walking here?",
+    help_text: null,
+    required: false,
+    is_active: true,
+    sort_order: 0,
+    config_json: { scale: 5 },
+    options: [],
+  };
+  const FOLLOW_UP = { ...Q, id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", prompt: "What would make it feel safer?", sort_order: 1 };
+
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => vi.restoreAllMocks());
+
+  it("asks for a number, not an option, when the earlier question is a scale", async () => {
+    render(<EngagementSurveyBuilder campaignId="c1" categories={[]} initialQuestions={[SCALE, FOLLOW_UP]} />);
+    fireEvent.click(screen.getByRole("button", { name: /What would make it feel safer\?/ }));
+
+    // Point the follow-up at the scale question, then compare with "is".
+    fireEvent.change(screen.getByLabelText("Show this question only when"), { target: { value: SCALE.id } });
+    fireEvent.change(await screen.findByLabelText("…that answer"), { target: { value: "equals" } });
+
+    // A number field, because a Likert answer IS a number. Not an option list a
+    // scale question could never populate.
+    const valueField = await screen.findByLabelText("…this value");
+    expect((valueField as HTMLInputElement).type).toBe("number");
+    expect(screen.queryByLabelText("…this option")).toBeNull();
+
+    fireEvent.change(valueField, { target: { value: "2" } });
+
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ question: { ...FOLLOW_UP, config_json: {} } }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    fireEvent.click(screen.getByRole("button", { name: /^save$/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const [, opts] = fetchMock.mock.calls[0] as [string, { body: string }];
+    // The condition that actually leaves the browser is the one the evaluator
+    // can decide: a number against a scale.
+    expect(JSON.parse(opts.body).config.visible_when).toEqual({
+      question_id: SCALE.id,
+      operator: "equals",
+      value: 2,
+    });
+  });
+
+  it("still asks for an option when the earlier question is a choice", async () => {
+    const CHOICE = {
+      ...SCALE,
+      id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+      question_type: "single_choice" as const,
+      prompt: "How do you usually travel here?",
+      config_json: {},
+      options: [{ id: "opt-bus", question_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", label: "Bus", value: null, is_active: true, sort_order: 0, metadata_json: {} }],
+    };
+    render(<EngagementSurveyBuilder campaignId="c1" categories={[]} initialQuestions={[CHOICE, FOLLOW_UP]} />);
+    fireEvent.click(screen.getByRole("button", { name: /What would make it feel safer\?/ }));
+
+    fireEvent.change(screen.getByLabelText("Show this question only when"), { target: { value: CHOICE.id } });
+    fireEvent.change(await screen.findByLabelText("…that answer"), { target: { value: "equals" } });
+
+    const optionField = await screen.findByLabelText("…this option");
+    expect(Array.from((optionField as HTMLSelectElement).options).map((option) => option.textContent)).toContain("Bus");
+    expect(screen.queryByLabelText("…this value")).toBeNull();
+  });
+});

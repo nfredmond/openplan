@@ -29,12 +29,25 @@ const selectsPlaceColumns = (columns: string) => columns.includes("place_source"
  */
 const selectsContentLocale = (columns: string) => columns.trim() === "default_content_locale";
 
+/**
+ * And a FOURTH: whether this campaign refuses pins outside its own area
+ * (20260730000002). Split out for the same reason as the two above — folding a
+ * brand-new column into the main select would 404 the whole portal in the window
+ * between a deploy and its migration — so the double routes on it separately.
+ */
+const selectsSubmissionGeofence = (columns: string) =>
+  columns.trim() === "submission_geofence_enabled";
+
 const campaignPlaceMaybeSingleMock = vi.fn();
 const campaignContentLocaleMaybeSingleMock = vi.fn();
+const campaignGeofenceMaybeSingleMock = vi.fn();
 const campaignSelectMock = vi.fn((columns: string) => {
   if (selectsPlaceColumns(columns)) return { eq: () => ({ maybeSingle: campaignPlaceMaybeSingleMock }) };
   if (selectsContentLocale(columns)) {
     return { eq: () => ({ maybeSingle: campaignContentLocaleMaybeSingleMock }) };
+  }
+  if (selectsSubmissionGeofence(columns)) {
+    return { eq: () => ({ maybeSingle: campaignGeofenceMaybeSingleMock }) };
   }
   return { eq: campaignEqTokenMock };
 });
@@ -247,6 +260,12 @@ describe("PublicEngagementPage", () => {
       data: { default_content_locale: null },
       error: null,
     });
+    // Off by default, which is what every campaign that existed before
+    // 20260730000002 looks like.
+    campaignGeofenceMaybeSingleMock.mockResolvedValue({
+      data: { submission_geofence_enabled: false },
+      error: null,
+    });
   });
 
   /**
@@ -270,6 +289,67 @@ describe("PublicEngagementPage", () => {
     ).toBeInTheDocument();
     // The continental instruction belongs only to a campaign nothing framed.
     expect(screen.queryByText(/zoom to your neighbourhood before dropping a pin/i)).toBeNull();
+  });
+
+  /**
+   * A PORTAL MUST NOT INVITE A PIN IT IS GOING TO REFUSE.
+   *
+   * The campaign-area check (20260730000002) is enforced in the submit route,
+   * which a resident meets only AFTER writing their comment and placing their
+   * pin. This is the half that reaches them first: one sentence, beside the
+   * sentence that already says where the map opens, on the real page — and it
+   * carries the way through, because a comment with no pin is never refused.
+   */
+  it("warns a resident, before they drop a pin, when a campaign only accepts pins inside its area", async () => {
+    campaignPlaceMaybeSingleMock.mockResolvedValue({
+      data: {
+        place_source: "drawn",
+        place_label: "the Broad Street corridor",
+        place_min_lon: -83.05,
+        place_min_lat: 39.95,
+        place_max_lon: -83.0,
+        place_max_lat: 39.98,
+      },
+      error: null,
+    });
+    campaignGeofenceMaybeSingleMock.mockResolvedValue({
+      data: { submission_geofence_enabled: true },
+      error: null,
+    });
+
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+
+    expect(
+      screen.getByText(/Anything you mark on this map has to be inside the Broad Street corridor/i)
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/a comment sent without a location is accepted from anywhere/i)
+    ).toBeInTheDocument();
+  });
+
+  it("says nothing about a location rule on a campaign that has not asked for one", async () => {
+    // The default, and every campaign that existed before the migration. A
+    // sentence about a rule that is not in force is a false statement to the
+    // public, not a harmless extra.
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+
+    expect(screen.queryByText(/has to be inside/i)).toBeNull();
+  });
+
+  it("asks the database whether this campaign refuses pins outside its area", async () => {
+    // The projection assertion, not the behavioural one: the double answers with
+    // its fixture whatever was selected, so a loader that never asked for the
+    // flag would pass the two tests above.
+    await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) });
+
+    const projections = campaignSelectMock.mock.calls.map((call) => call[0] as string);
+    expect(projections).toContain("submission_geofence_enabled");
+
+    // And it is asked for on its own, never welded onto the gate query — a
+    // column that does not exist yet must not be able to 404 the whole portal.
+    const gateProjection = projections.find((columns) => columns.includes("allow_public_submissions"));
+    expect(gateProjection).toBeDefined();
+    expect(gateProjection).not.toContain("submission_geofence_enabled");
   });
 
   it("shows linked project context on the public engagement page", async () => {

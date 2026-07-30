@@ -6,7 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { SURVEY_QUESTION_TYPES, SURVEY_QUESTION_TYPES_LIST, type SurveyQuestionType } from "@/lib/engagement/survey";
+import {
+  SURVEY_CONDITION_OPERATORS_BY_TYPE,
+  SURVEY_QUESTION_TYPES,
+  SURVEY_CONDITION_OPERATORS_LIST,
+  SURVEY_QUESTION_TYPES_LIST,
+  conditionValueIsNumber,
+  conditionValueIsOptionId,
+  type SurveyConditionOperator,
+  type SurveyQuestionType,
+} from "@/lib/engagement/survey";
 
 const SELECT_CLASS =
   "flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";
@@ -215,7 +224,207 @@ function OptionManager({ campaignId, question, onChange }: { campaignId: string;
   );
 }
 
-function QuestionCard({ campaignId, question, onUpdate, onRemove }: { campaignId: string; question: QuestionRow; onUpdate: (q: QuestionRow) => void; onRemove: (id: string) => void }) {
+
+/** What each operator means, in the words an operator would use. */
+const CONDITION_OPERATOR_LABELS: Record<SurveyConditionOperator, string> = {
+  answered: "was answered",
+  not_answered: "was not answered",
+  equals: "is",
+  not_equals: "is not",
+  includes: "includes",
+  gte: "is at least",
+  lte: "is at most",
+};
+
+const VALUE_FREE_OPERATORS: SurveyConditionOperator[] = ["answered", "not_answered"];
+
+/** A condition as it exists WHILE it is being written, which is not yet valid. */
+type DraftCondition = { question_id: string; operator: SurveyConditionOperator; value?: string | number };
+
+/**
+ * READ A HALF-WRITTEN CONDITION, which `readSurveyVisibilityCondition` will not.
+ *
+ * That function answers "is this a condition the server can evaluate", and the
+ * honest answer for a condition mid-authoring is NO — an operator who has picked
+ * "is" but not yet picked WHICH option has written something the schema rejects,
+ * because `value` must be a non-empty string or a number. Deriving the editor's
+ * own state from the strict parser therefore made every value-carrying condition
+ * unauthorable: the moment the operator chose "is", "is not", "includes", "at
+ * least" or "at most", the parse failed, the editor read back `null`, and their
+ * chosen question silently reverted to "Always show it" in front of them. Only
+ * "was answered" and "was not answered" could ever be saved.
+ *
+ * So the EDITOR reads leniently and the SERVER stays strict. What is still
+ * missing is named on screen rather than discovered as a rejected save, and
+ * `validateSurveyConfig` remains the only thing that decides what may be stored.
+ */
+function readDraftCondition(config: Record<string, unknown>): DraftCondition | null {
+  const raw = config.visible_when;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const record = raw as Record<string, unknown>;
+  if (typeof record.question_id !== "string") return null;
+  const operator = SURVEY_CONDITION_OPERATORS_LIST.find((candidate) => candidate === record.operator);
+  if (!operator) return null;
+  const value =
+    typeof record.value === "string" || typeof record.value === "number" ? record.value : undefined;
+  return { question_id: record.question_id, operator, value };
+}
+
+/**
+ * WHEN THIS QUESTION APPLIES — the authoring half of conditional logic.
+ *
+ * Only questions ABOVE this one are offered, which is the same rule the API
+ * refuses a violation of: a respondent reaching question 3 has not answered
+ * question 7, so a condition pointing forward is a question that never appears.
+ * Enforcing it in the picker means the operator meets the rule as a shorter list
+ * rather than as an error message — the server still refuses it, because a
+ * reorder can turn a valid backward reference into a forward one after the fact.
+ *
+ * The condition is stored in the question's own `config_json` under
+ * `visible_when`, so it saves through the same PATCH as every other setting and
+ * needs no separate write path.
+ */
+function ConditionEditor({
+  earlier,
+  config,
+  onChange,
+}: {
+  earlier: QuestionRow[];
+  config: Record<string, unknown>;
+  onChange: (next: Record<string, unknown>) => void;
+}) {
+  const current = readDraftCondition(config);
+  const controller = earlier.find((q) => q.id === current?.question_id) ?? null;
+  const allowedOperators = controller ? SURVEY_CONDITION_OPERATORS_BY_TYPE[controller.question_type] : [];
+  const operator = current?.operator ?? "answered";
+  // WHICH COMPARISON FIELD TO OFFER IS THE CONTROLLING QUESTION'S DECISION, not
+  // the operator's, and it is read from the same two helpers the server
+  // evaluates with. `is` against a single-choice question names an option; `is`
+  // against a Likert or rating question names a number on the scale, and those
+  // types carry no options at all — deciding from the operator alone offered an
+  // empty option dropdown for a condition that could then never be saved.
+  const needsOption = controller ? conditionValueIsOptionId(controller.question_type, operator) : false;
+  const needsNumber = controller ? conditionValueIsNumber(controller.question_type, operator) : false;
+  const controllerOptions = (controller?.options ?? []).filter((option) => option.is_active);
+  // A comparison with no value yet is refused by the API (the schema requires
+  // one), so it is named here rather than met as "Invalid config" after a save.
+  const valueMissing =
+    controller !== null &&
+    !VALUE_FREE_OPERATORS.includes(operator) &&
+    (needsOption ? typeof current?.value !== "string" || current.value === "" : typeof current?.value !== "number");
+
+  function write(next: { question_id: string; operator: SurveyConditionOperator; value?: string | number } | null) {
+    const rest = { ...config };
+    if (!next) {
+      delete rest.visible_when;
+      onChange(rest);
+      return;
+    }
+    onChange({ ...rest, visible_when: next });
+  }
+
+  function chooseController(questionId: string) {
+    if (!questionId) return write(null);
+    // A new controller resets the comparison: an operator or an option id
+    // carried over from another question is a condition that cannot be true.
+    write({ question_id: questionId, operator: "answered" });
+  }
+
+  function chooseOperator(nextOperator: SurveyConditionOperator) {
+    if (!current) return;
+    // No placeholder value. An operator that needs one starts WITHOUT one and is
+    // told so (`valueMissing` below) — writing an empty string instead made the
+    // whole condition unparseable, which is what erased the operator's work.
+    write({ question_id: current.question_id, operator: nextOperator });
+  }
+
+  if (earlier.length === 0) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        This is the first question in the survey, so there is no earlier answer it could depend on.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2 rounded-[0.5rem] border border-border/60 p-3">
+      <p className={LABEL_CLASS}>When this question applies</p>
+      <p className="text-xs text-muted-foreground">
+        Leave this unset and every respondent sees the question. Set it and only the respondents whose earlier
+        answer matches are asked.
+      </p>
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="text-muted-foreground">Show this question only when</span>
+        <select className={SELECT_CLASS} value={current?.question_id ?? ""} onChange={(e) => chooseController(e.target.value)}>
+          <option value="">Always show it</option>
+          {earlier.map((q) => (
+            <option key={q.id} value={q.id}>
+              {q.prompt}
+            </option>
+          ))}
+        </select>
+      </label>
+      {current && controller ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="text-muted-foreground">…that answer</span>
+            <select
+              className={SELECT_CLASS}
+              value={operator}
+              onChange={(e) => chooseOperator(e.target.value as SurveyConditionOperator)}
+            >
+              {allowedOperators.map((op) => (
+                <option key={op} value={op}>
+                  {CONDITION_OPERATOR_LABELS[op]}
+                </option>
+              ))}
+            </select>
+          </label>
+          {needsOption ? (
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-muted-foreground">…this option</span>
+              <select
+                className={SELECT_CLASS}
+                value={typeof current.value === "string" ? current.value : ""}
+                onChange={(e) => write({ question_id: current.question_id, operator, value: e.target.value })}
+              >
+                <option value="">Choose an option</option>
+                {controllerOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          ) : null}
+          {needsNumber ? (
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-muted-foreground">…this value</span>
+              <Input
+                type="number"
+                value={typeof current.value === "number" ? current.value : ""}
+                onChange={(e) => write({ question_id: current.question_id, operator, value: num(e.target.value) ?? 0 })}
+              />
+            </label>
+          ) : null}
+          {valueMissing ? (
+            <p className="sm:col-span-2 text-xs text-red-700 dark:text-red-300">
+              This condition needs something to compare against. Until it has one, the question would never appear.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+      {current && !controller ? (
+        <p className={ERROR_CLASS}>
+          This question depends on a question that is no longer above it in the survey. Choose another, or set it
+          back to “Always show it”.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function QuestionCard({ campaignId, question, earlier, onUpdate, onRemove }: { campaignId: string; question: QuestionRow; earlier: QuestionRow[]; onUpdate: (q: QuestionRow) => void; onRemove: (id: string) => void }) {
   const [open, setOpen] = useState(false);
   const [prompt, setPrompt] = useState(question.prompt);
   const [helpText, setHelpText] = useState(question.help_text ?? "");
@@ -287,6 +496,7 @@ function QuestionCard({ campaignId, question, onUpdate, onRemove }: { campaignId
             <input type="checkbox" checked={required} onChange={(e) => setRequired(e.target.checked)} /> Required
           </label>
           <ConfigEditor type={question.question_type} config={config} onChange={setConfig} />
+          <ConditionEditor earlier={earlier} config={config} onChange={setConfig} />
           {def.usesOptions ? <OptionManager campaignId={campaignId} question={question} onChange={(options) => onUpdate({ ...question, options })} /> : null}
           {error ? <p className={ERROR_CLASS}>{error}</p> : null}
           <div className="flex flex-wrap items-center gap-2">
@@ -364,11 +574,13 @@ export function EngagementSurveyBuilder({
         {questions.length === 0 ? (
           <p className="text-sm text-muted-foreground">No questions yet. Add your first below.</p>
         ) : (
-          questions.map((question) => (
+          questions.map((question, index) => (
             <QuestionCard
               key={question.id}
               campaignId={campaignId}
               question={question}
+              // Only questions a respondent reaches FIRST can gate this one.
+              earlier={questions.slice(0, index).filter((q) => q.is_active)}
               onUpdate={(next) => setQuestions((prev) => prev.map((q) => (q.id === next.id ? next : q)))}
               onRemove={(id) => setQuestions((prev) => prev.filter((q) => q.id !== id))}
             />

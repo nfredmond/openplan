@@ -3,8 +3,14 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess, validateCampaignCategoryAccess } from "@/lib/engagement/api";
-import { loadSurveyDefinition } from "@/lib/engagement/survey-responses";
-import { isSurveyQuestionType, validateSurveyConfig, type SurveyQuestionType } from "@/lib/engagement/survey";
+import { loadSurveyConditionRefs, loadSurveyDefinition } from "@/lib/engagement/survey-responses";
+import {
+  isSurveyQuestionType,
+  validateSurveyConditionGraph,
+  validateSurveyConfig,
+  type SurveyConditionQuestionRef,
+  type SurveyQuestionType,
+} from "@/lib/engagement/survey";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
@@ -84,6 +90,49 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (categoryAccess.error || !categoryAccess.category) {
         return NextResponse.json({ error: "Category does not belong to this campaign" }, { status: 400 });
       }
+    }
+
+    /**
+     * A CONDITIONAL QUESTION IS CHECKED AGAINST THE SURVEY IT WOULD CREATE, not
+     * against the one that exists.
+     *
+     * `validateSurveyConfig` above can only see this question's own JSON; whether
+     * the question it points at exists, comes earlier, and can be compared that
+     * way is a fact about the whole survey. So the candidate is spliced into the
+     * existing display order at the position its `sortOrder` gives it — ties
+     * after the questions already there, which is where `created_at ASC` will
+     * put it — and the resulting survey is validated as a whole.
+     */
+    const sortOrder = parsed.data.sortOrder ?? 0;
+    const candidate: SurveyConditionQuestionRef & { sortOrder: number } = {
+      id: "__new_question__",
+      prompt: parsed.data.prompt,
+      question_type: parsed.data.questionType,
+      config: configResult.config,
+      optionIds: [],
+      sortOrder,
+    };
+    const existingRefs = await loadSurveyConditionRefs(supabase, access.campaign.id);
+    const proposed = [...existingRefs, candidate].sort((left, right) =>
+      left.sortOrder === right.sortOrder
+        ? (left.id === "__new_question__" ? 1 : right.id === "__new_question__" ? -1 : 0)
+        : left.sortOrder - right.sortOrder
+    );
+    // Only problems this write INTRODUCES are refused. A survey already carrying
+    // a broken condition (a question archived out from under one, say) must not
+    // block an unrelated addition — the operator would be stuck with no way to
+    // reach the fix.
+    const existingProblems = new Set(
+      validateSurveyConditionGraph(existingRefs).map((problem) => `${problem.code}:${problem.questionId}`)
+    );
+    const conditionProblems = validateSurveyConditionGraph(proposed).filter(
+      (problem) => !existingProblems.has(`${problem.code}:${problem.questionId}`)
+    );
+    if (conditionProblems.length > 0) {
+      return NextResponse.json(
+        { error: conditionProblems[0].message, code: conditionProblems[0].code },
+        { status: 400 }
+      );
     }
 
     const { data: question, error: insertError } = await supabase

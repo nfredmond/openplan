@@ -29,6 +29,8 @@ import {
   demographicsRowFromInput,
   type DemographicsInput,
 } from "@/lib/engagement/demographics";
+import type { GeofenceCoordinate } from "@/lib/engagement/geofence";
+import { refuseSubmissionOutsideCampaignArea } from "@/lib/engagement/geofence-enforcement";
 
 const PUBLIC_SUBMISSION_MAX_BODY_BYTES = BODY_LIMITS.smallJson;
 
@@ -71,6 +73,48 @@ const demographicsSchema = z.object({
 type RouteContext = {
   params: Promise<{ shareToken: string }>;
 };
+
+/**
+ * The campaign's opt-in flag and its area, WITHOUT the boundary polygon.
+ *
+ * Read as its own query rather than folded into the campaign lookup above, and
+ * that is a deliberate reversal of what `public-portal-data.ts` does with the
+ * same columns. The portal's select can afford the ship-order note: between a
+ * deploy and its migration the portal shows a disclosure. THIS route's select
+ * cannot — a column that does not exist yet would error the campaign lookup and
+ * every resident, on every campaign in the deployment, would be told the
+ * campaign could not be verified. A consultation that stops accepting comments
+ * is a worse failure than one that accepts a pin it would rather not have.
+ */
+
+
+/**
+ * Every point the geofence has to answer for, for THIS submission.
+ *
+ * The whole shape, not the representative point. `latitude`/`longitude` on the
+ * row are the vertex centroid of a drawn line or area, and a square drawn around
+ * the study area has its centroid squarely inside it — so a centroid-only check
+ * is one an adversary walks straight through while the stored geometry, which is
+ * what the operator's map and the hotspot screen actually draw, was never
+ * tested. A Point submission is unchanged: it is its own single vertex.
+ */
+function geofenceCoordinatesOfSubmission(
+  geometry: EngagementGeometry | null,
+  latitude: number,
+  longitude: number
+): GeofenceCoordinate[] {
+  if (!geometry) return [{ latitude, longitude }];
+
+  const positions =
+    geometry.type === "Point"
+      ? [geometry.coordinates]
+      : geometry.type === "LineString"
+        ? geometry.coordinates
+        : geometry.coordinates[0];
+
+  return positions.map(([lon, lat]) => ({ latitude: lat, longitude: lon }));
+}
+
 
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("engage.public_submit", request);
@@ -149,6 +193,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!campaign.allow_public_submissions || campaign.submissions_closed_at) {
       return NextResponse.json({ error: "This campaign is not currently accepting public submissions" }, { status: 403 });
+    }
+
+    // What a participant marked has to be somewhere this consultation is about
+    // (20260730000002). Checked only when they marked something, and only for a
+    // campaign that asked for the rule — a comment with no location is not
+    // outside anything, and a campaign that never opted in behaves exactly as it
+    // did before this existed, down to the number of queries it runs. The WHOLE
+    // shape is checked, not its centroid; see `geofenceCoordinatesOfSubmission`.
+    if (latitude !== null && longitude !== null) {
+      const outsideArea = await refuseSubmissionOutsideCampaignArea(
+        supabase,
+        audit,
+        campaign.id,
+        geofenceCoordinatesOfSubmission(geometry, latitude, longitude)
+      );
+      if (outsideArea) return outsideArea;
     }
 
     // Validate category belongs to this campaign if provided

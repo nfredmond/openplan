@@ -15,12 +15,23 @@ import {
   isEngagementPhotoPathForCampaign,
   splitEngagementPhotoPath,
 } from "@/lib/engagement/photo";
-import { validateSurveyAnswer, type SurveyQuestionContext } from "@/lib/engagement/survey";
+import {
+  resolveSurveyVisibility,
+  validateSurveyAnswer,
+  type SurveyQuestionContext,
+} from "@/lib/engagement/survey";
+import {
+  hashSurveyDraftResumeToken,
+  surveyDraftResumeTokenSchema,
+} from "@/lib/engagement/survey-drafts";
+import type { GeofenceCoordinate } from "@/lib/engagement/geofence";
+import { refuseSubmissionOutsideCampaignArea } from "@/lib/engagement/geofence-enforcement";
 import { recordOperatorNotification } from "@/lib/notifications/engagement";
 import {
   loadSurveyDefinition,
   loadRecentFingerprintSessions,
   insertSurveyResponse,
+  deleteSurveyDraftByTokenHash,
   type SurveyAnswerInsert,
 } from "@/lib/engagement/survey-responses";
 
@@ -31,11 +42,51 @@ const submitSchema = z.object({
     .array(z.object({ questionId: z.string().uuid(), answer: z.unknown() }))
     .max(300),
   submittedBy: z.string().trim().max(200).optional(),
+  // The draft this response finishes, if the participant saved one. Present so
+  // a submitted response leaves no part-finished copy of itself behind.
+  resumeToken: surveyDraftResumeTokenSchema.optional(),
   // Honeypot: bots fill this in.
   website: z.string().max(500).optional(),
 });
 
 type RouteContext = { params: Promise<{ shareToken: string }> };
+
+/**
+ * Every coordinate a `map_point` answer puts into the record.
+ *
+ * The answer's `geometry` is `unknown` in the schema and validated
+ * structurally elsewhere, so this reads defensively and returns NOTHING it
+ * cannot prove is a coordinate pair. An empty result means "no location to
+ * check", which is the correct outcome for a malformed or absent geometry —
+ * the answer validator is what refuses those, and refusing a resident twice for
+ * one mistake, the second time with a sentence about the consultation area,
+ * would be wrong about why.
+ */
+function geofenceCoordinatesOfMapAnswer(answer: unknown): GeofenceCoordinate[] {
+  const geometry = (answer as { geometry?: unknown } | null)?.geometry as
+    | { type?: unknown; coordinates?: unknown }
+    | null
+    | undefined;
+  if (!geometry || typeof geometry.type !== "string") return [];
+
+  const positions =
+    geometry.type === "Point"
+      ? [geometry.coordinates]
+      : geometry.type === "LineString"
+        ? geometry.coordinates
+        : geometry.type === "Polygon"
+          ? (geometry.coordinates as unknown[])?.[0]
+          : null;
+
+  if (!Array.isArray(positions)) return [];
+
+  return positions.flatMap((position) => {
+    if (!Array.isArray(position)) return [];
+    const [lon, lat] = position as unknown[];
+    if (typeof lon !== "number" || typeof lat !== "number") return [];
+    return [{ latitude: lat, longitude: lon }];
+  });
+}
 
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("engage.survey_submit", request);
@@ -96,11 +147,46 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
     const questionById = new Map(questions.map((q) => [q.id, q]));
 
+    for (const submitted of parsed.data.answers) {
+      if (!questionById.has(submitted.questionId)) {
+        return NextResponse.json({ error: "This survey has changed; please reload and try again.", questionId: submitted.questionId }, { status: 409 });
+      }
+    }
+
+    /**
+     * WHICH QUESTIONS ACTUALLY APPLIED TO THIS RESPONDENT — decided HERE, on the
+     * server, by the same function the browser renders from.
+     *
+     * Two failures are real and neither is hypothetical. A question hidden by an
+     * earlier answer but still marked required would make a form nobody can
+     * submit; a hidden question whose answer arrives anyway (a stale tab, a
+     * changed earlier answer, a crafted request) would put an answer into the
+     * planning record for a question that did not apply to that person, where it
+     * would be tallied like any other. The browser is not the authority on
+     * either, so the visibility rule runs again before anything is stored.
+     *
+     * It is evaluated over the RAW submitted answers rather than the validated
+     * ones because a hidden answer must be dropped BEFORE validation — otherwise
+     * a malformed answer to a question that did not apply would reject an
+     * otherwise-complete response. Conditions only read the structural fields
+     * (`option_id`, `option_ids`, `value`, `ranking`, emptiness), which the
+     * canonical and raw shapes share.
+     */
+    const rawAnswerByQuestion: Record<string, unknown> = {};
+    for (const submitted of parsed.data.answers) rawAnswerByQuestion[submitted.questionId] = submitted.answer;
+    const visibility = resolveSurveyVisibility(
+      questions.map((q) => ({ id: q.id, question_type: q.question_type, config: q.config_json })),
+      rawAnswerByQuestion
+    );
+
     // Validate every submitted answer against its question definition.
     const collected: SurveyAnswerInsert[] = [];
     for (const submitted of parsed.data.answers) {
       const question = questionById.get(submitted.questionId);
-      if (!question) return NextResponse.json({ error: "This survey has changed; please reload and try again.", questionId: submitted.questionId }, { status: 409 });
+      if (!question) continue;
+      // Answers to questions this respondent's own answers made inapplicable are
+      // discarded, not stored and not counted.
+      if (!visibility.visible.has(question.id)) continue;
 
       const options = optionsByQuestion.get(question.id) ?? [];
       const context: SurveyQuestionContext = {
@@ -117,6 +203,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: result.message, code: result.code, questionId: question.id }, { status: 400 });
       }
       if (result.isEmpty) continue; // optional-empty writes no row
+
+      /*
+        THE SECOND DOOR INTO THE RECORD, and for a while the unlocked one.
+
+        A `map_point` answer puts a resident-chosen location into the campaign
+        exactly as a comment pin does, and it is drawn on the same operator map
+        and fed to the same spatial screening. The consultation-area check began
+        life inside the comment route, so a campaign with the check ON still
+        accepted a survey location anywhere on Earth — while the operator console
+        promised "Only accept comments pinned inside <area>" and the map above
+        this very question told the resident the same thing.
+
+        Every vertex is tested, not a centroid: a shape drawn AROUND the study
+        area has its centre inside it.
+      */
+      if (question.question_type === "map_point") {
+        const coordinates = geofenceCoordinatesOfMapAnswer(result.answer);
+        if (coordinates.length > 0) {
+          const refusal = await refuseSubmissionOutsideCampaignArea(
+            supabase,
+            audit,
+            campaign.id,
+            coordinates
+          );
+          if (refusal) return refusal;
+        }
+      }
 
       // file_upload paths are client-supplied: they must (1) match THIS campaign's
       // private-bucket prefix, and (2) actually exist as a recently-uploaded object
@@ -154,9 +267,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
     }
 
-    // Enforce required questions (a required question with no non-empty answer fails).
+    // Enforce required questions (a required question with no non-empty answer
+    // fails) — but only the ones this respondent was actually shown. A required
+    // question hidden by a condition is not a question they declined to answer.
     const answeredIds = new Set(collected.map((c) => c.questionId));
-    const missingRequired = questions.find((q) => q.required && !answeredIds.has(q.id));
+    const missingRequired = questions.find((q) => q.required && visibility.visible.has(q.id) && !answeredIds.has(q.id));
     if (missingRequired) {
       return NextResponse.json({ error: "Please answer all required questions.", questionId: missingRequired.id }, { status: 400 });
     }
@@ -177,6 +292,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       received_at: new Date().toISOString(),
       auto_flag_reason: autoFlagReason,
       answered_count: collected.length,
+      // Answers the server dropped because the question did not apply to this
+      // respondent. Recorded rather than silent: a reviewer looking at a
+      // response with a gap deserves to know the gap was the survey's own logic.
+      inapplicable_answers_discarded: visibility.discarded.length,
     };
 
     const inserted = await insertSurveyResponse(supabase, {
@@ -191,6 +310,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!inserted.ok) {
       audit.error("survey_response_insert_failed", { campaignId: campaign.id, message: inserted.error });
       return NextResponse.json({ error: "Failed to submit your response" }, { status: 500 });
+    }
+
+    // The draft this response finishes is now a duplicate of a real submission,
+    // and a part-finished copy of somebody's answers that outlives the finished
+    // one is data nobody asked us to keep. Best-effort: the response is already
+    // saved, and a failure here must not turn a successful submission into an
+    // error the participant is asked to retry.
+    if (parsed.data.resumeToken) {
+      const discarded = await deleteSurveyDraftByTokenHash(
+        supabase,
+        campaign.id,
+        hashSurveyDraftResumeToken(parsed.data.resumeToken)
+      );
+      if (!discarded.ok) {
+        audit.warn("survey_draft_cleanup_failed", { campaignId: campaign.id, message: discarded.error });
+      }
     }
 
     // Best-effort operator notification — the response is already saved.
