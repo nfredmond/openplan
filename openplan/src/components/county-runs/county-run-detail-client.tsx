@@ -21,6 +21,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { CountyRunModelingEvidence } from "@/components/county-runs/county-run-modeling-evidence";
+import { CountyRunValidationPrep } from "@/components/county-runs/county-run-validation-prep";
 
 const COUNTY_RUN_STUCK_THRESHOLD_MS = 10 * 60 * 1000;
 
@@ -496,6 +497,13 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           </CardContent>
         </Card>
       </div>
+
+      {/*
+        Shown only once a manifest exists, because that is the precondition the
+        readiness check itself requires — offering it earlier would produce a
+        refusal ("no stored onramp manifest yet") that the page already knows.
+      */}
+      {data.manifest ? <CountyRunValidationPrep countyRunId={countyRunId} /> : null}
 
       <Card className="mt-4">
         <CardHeader>

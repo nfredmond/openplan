@@ -5,12 +5,14 @@ import {
   createCountyRunResponseSchema,
   enqueueCountyRunResponseSchema,
   ingestCountyRunManifestRequestSchema,
+  prepareCountyRunValidationResponseSchema,
   type CountyRunDetailResponse,
   type CountyRunListResponse,
   type CreateCountyRunRequest,
   type CreateCountyRunResponse,
   type EnqueueCountyRunResponse,
   type IngestCountyRunManifestRequest,
+  type PrepareCountyRunValidationResponse,
 } from "@/lib/api/county-onramp";
 
 async function parseJson<T>(response: Response): Promise<T> {
@@ -109,4 +111,30 @@ export async function ingestCountyRunManifest(
     return payload as { countyRunId: string; status: "failed" };
   }
   return countyRunDetailResponseSchema.parse(payload);
+}
+
+/**
+ * Ask whether this county run can be validated against observed counts yet,
+ * and — when it can — what to run.
+ *
+ * The sixth wrapper beside list/create/get/enqueue/ingest, and the one that was
+ * missing: `/api/county-runs/[id]/validate` had been built, with the readiness
+ * reasons and the assembled validator command in it, and nothing called it. The
+ * step it covers is the one between "a manifest was ingested" and "this run is
+ * validated screening", which is exactly where an operator gets stuck.
+ *
+ * It is a POST that writes nothing. The verb is not about mutation — the route
+ * probes the filesystem for the run directory, the counts CSV and the project
+ * database, and the answer is specific to this deployment's disk at this moment.
+ */
+export async function prepareCountyRunValidation(
+  countyRunId: string,
+  fetcher: typeof fetch = fetch
+): Promise<PrepareCountyRunValidationResponse> {
+  const response = await fetcher(`/api/county-runs/${countyRunId}/validate`, {
+    method: "POST",
+    headers: { accept: "application/json" },
+  });
+
+  return prepareCountyRunValidationResponseSchema.parse(await parseJson(response));
 }

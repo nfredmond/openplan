@@ -58,18 +58,12 @@ const EXTERNAL_CALLERS: Record<string, string> = {
  * is the point. Adding one requires a reason a reviewer will ask about.
  */
 const KNOWN_UNWIRED = [
-  // Per-run skim matrices, readable and writable, with nothing in the models UI
-  // asking for them.
-  "api/models/[modelId]/runs/[modelRunId]/skims",
   // The scenario spine's three record types. `comparison-snapshots` beside them
   // IS wired, which is what makes these three visibly unfinished rather than
   // undesigned — nothing creates them and the scenario page never reads them.
   "api/scenarios/[scenarioSetId]/spine/assumption-sets",
   "api/scenarios/[scenarioSetId]/spine/data-packages",
   "api/scenarios/[scenarioSetId]/spine/indicator-snapshots",
-  // POST that prepares a county run's validation bundle. `county-onramp-client`
-  // wraps list/create/get/enqueue/manifest and stops short of this one.
-  "api/county-runs/[countyRunId]/validate",
 ] as const;
 
 /** `api/models/[modelId]/runs` -> `/api/models`, plus `["runs"]`. */
