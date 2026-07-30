@@ -81,7 +81,16 @@ const EXPECTED_RESTRICTIVE_POLICIES = 240;
 // three numbers: it adds nullable columns to an existing table, creating no
 // policy and no table. Written down so the migration is not left unaccounted
 // for by someone checking this list against the migration directory.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 201;
+//
+// 204 rather than 201 since 20260729000004 added
+// `engagement_content_translations` with role-aware INSERT, UPDATE and DELETE
+// policies — same reasoning again, and the same reason the two counts above are
+// untouched. What is at stake on this table is the operator/machine distinction
+// itself: `source = 'operator'` is the agency's own words and renders with no
+// caveat, so a viewer who could write a row could publish their own wording as
+// the agency's official Spanish on a page that has no sign-in. "Viewer cannot
+// write" has to hold at the database, not only at whatever route ships next.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 204;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

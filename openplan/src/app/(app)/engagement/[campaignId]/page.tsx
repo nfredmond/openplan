@@ -11,6 +11,15 @@ import { EngagementNotificationsInbox } from "@/components/engagement/notificati
 import { EngagementPublicLinkCompact } from "@/components/engagement/engagement-public-link-compact";
 import { EngagementCampaignCreatedNotice } from "@/components/engagement/campaign-created-notice";
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
+import { EngagementAppendixReadinessNote } from "@/components/engagement/engagement-appendix-readiness-note";
+import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
+import {
+  MACHINE_TRANSLATION_BATCH_MAX,
+  TRANSLATION_ACCEPT_BATCH_MAX,
+  loadCampaignTranslationState,
+} from "@/lib/engagement/campaign-translations";
+import { hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -413,6 +422,29 @@ export default async function EngagementCampaignDetailPage({
     (items ?? []) as Array<{ id: string; body: string; status: string | null; metadata_json?: unknown }>
   );
 
+  // LANGUAGE ACCESS — what this campaign says in each of the eleven languages
+  // the portal can be read in, and what may honestly be claimed about that.
+  //
+  // Read through the CALLER's client on purpose: `engagement_content_translations`
+  // has a member SELECT policy, so this is defense-in-depth with the membership
+  // the campaign read above already proved, and a viewer sees the same coverage
+  // an editor does (they simply get no controls).
+  //
+  // The reads inside are independently failure-tolerant, and one of those
+  // failures is a REAL state right now rather than a hypothesis: the migration
+  // that creates the table is not applied in every environment, and a select
+  // against a missing relation errors. `coverage` then arrives NULL and the panel
+  // says the answer is unknown — it must never draw eleven "not translated"
+  // cards out of a database failure, because that is a claim about the agency.
+  const translationState = await loadCampaignTranslationState(supabase, campaign);
+  // Whether the MODEL is reachable, asked inside the workspace's own integration
+  // context so a workspace holding its own key is not told the deployment has
+  // none. With no key the panel drops the suggestion controls and says why —
+  // hand authoring is the capability, the model is only an accelerator.
+  const machineTranslationAvailable = await withWorkspaceIntegrationContext(campaign.workspace_id, async () =>
+    hasAnthropicAccess()
+  );
+
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
@@ -601,78 +633,10 @@ export default async function EngagementCampaignDetailPage({
               </p>
             </div>
 
-            <div className="module-note border-amber-300/40 bg-amber-50/70 dark:border-amber-900 dark:bg-amber-950/20">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Report appendix readiness</p>
-              <h3 className="mt-2 text-sm font-semibold text-foreground">
-                {appendixReadiness.appendixReadyCount} approved public comment{appendixReadiness.appendixReadyCount === 1 ? "" : "s"} ready for appendix review
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                This is a staff handoff cue, not a representativeness or legal sufficiency finding. Public comments, internal notes, meeting/email items, and duplicate-looking records stay separated before report use.
-              </p>
-              <div className="mt-3">
-                <MetaList>
-                  <MetaItem>{appendixReadiness.publicApprovedCategorizedCount} approved public comment{appendixReadiness.publicApprovedCategorizedCount === 1 ? "" : "s"}</MetaItem>
-                  <MetaItem>{appendixReadiness.nonPublicApprovedCategorizedCount} internal/meeting/email ready item{appendixReadiness.nonPublicApprovedCategorizedCount === 1 ? "" : "s"}</MetaItem>
-                  <MetaItem>{appendixReadiness.duplicateReviewCount} duplicate-review item{appendixReadiness.duplicateReviewCount === 1 ? "" : "s"}</MetaItem>
-                  <MetaItem>{appendixReadiness.duplicateExcludedCount} appendix candidate{appendixReadiness.duplicateExcludedCount === 1 ? "" : "s"} held for duplicate review</MetaItem>
-                </MetaList>
-              </div>
-              <div className="mt-5 rounded-[0.5rem] border border-amber-200/70 bg-background/75 p-4 dark:border-amber-900/70">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Comment matrix export preview</p>
-                    <h4 className="mt-1 text-sm font-semibold text-foreground">
-                      {commentMatrixPreview.counts.includedCount} included · {commentMatrixPreview.counts.heldDuplicateReviewCount} held · {commentMatrixPreview.counts.excludedInternalPrivateCount} internal/private excluded
-                    </h4>
-                  </div>
-                  <StatusBadge tone="warning">Staff cue only</StatusBadge>
-                </div>
-                <p className="mt-2 text-sm text-muted-foreground">{commentMatrixPreview.caveat}</p>
-                <div className="mt-3 space-y-2">
-                  {commentMatrixPreview.rows.map((row) => {
-                    const postureTone =
-                      row.posture === "included"
-                        ? "success"
-                        : row.posture === "held_duplicate_review"
-                          ? "warning"
-                          : row.posture === "excluded_internal_private"
-                            ? "neutral"
-                            : "info";
-
-                    return (
-                      <div key={row.itemId} className="module-record-row bg-background/80">
-                        <div className="module-record-head">
-                          <div className="module-record-main">
-                            <div className="module-record-kicker">
-                              <StatusBadge tone={postureTone}>{row.postureLabel}</StatusBadge>
-                              <StatusBadge tone="neutral">{titleizeEngagementValue(row.sourceType)}</StatusBadge>
-                              {row.categoryLabel ? <StatusBadge tone="info">{row.categoryLabel}</StatusBadge> : null}
-                            </div>
-                            <h5 className="module-record-title text-[0.95rem]">{row.title}</h5>
-                            <p className="module-record-summary">{row.reason}</p>
-                            <p className="module-record-summary">{row.bodyExcerpt}</p>
-                          </div>
-                        </div>
-                        <MetaList>
-                          <MetaItem>{row.submittedBy ? `Submitted by ${row.submittedBy}` : "Submitter not recorded"}</MetaItem>
-                          <MetaItem>Updated {fmtDateTime(row.updatedAt)}</MetaItem>
-                        </MetaList>
-                      </div>
-                    );
-                  })}
-                  {commentMatrixPreview.rows.length === 0 ? (
-                    <div className="rounded-[0.5rem] border border-dashed border-border/80 bg-background/70 px-5 py-6 text-sm text-muted-foreground">
-                      No comments are available for matrix preview yet.
-                    </div>
-                  ) : null}
-                </div>
-                {commentMatrixPreview.counts.previewedRowCount < commentMatrixPreview.counts.totalItemCount ? (
-                  <p className="mt-3 text-xs text-muted-foreground">
-                    Showing {commentMatrixPreview.counts.previewedRowCount} of {commentMatrixPreview.counts.totalItemCount} comments in handoff order.
-                  </p>
-                ) : null}
-              </div>
-            </div>
+            <EngagementAppendixReadinessNote
+              appendixReadiness={appendixReadiness}
+              commentMatrixPreview={commentMatrixPreview}
+            />
 
             <div className="module-note border-slate-300/50 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/30">
               <div className="module-record-kicker">
@@ -1019,6 +983,46 @@ export default async function EngagementCampaignDetailPage({
             campaignId={campaign.id}
             layers={contextLayers.layers}
             readFailure={contextLayers.readFailure}
+            canWrite={canManageContextLayers}
+          />
+
+          {/*
+            Mounted next to the map-layer panel because both answer the same
+            operator question — what does a member of the public actually get on
+            this campaign's portal — and a translation surface filed anywhere
+            else is a surface nobody finds.
+
+            `canManageContextLayers` is reused rather than re-derived: it is the
+            SAME `engagement.write` decision from the SAME `loadCampaignAccess`
+            call the translations route gates on, so the panel and the API cannot
+            disagree about who gets a button. A viewer still sees every language's
+            coverage — "what have we published in Spanish" is a question a viewer
+            is entitled to answer.
+
+            The three readability flags are passed STRAIGHT THROUGH rather than
+            derived here from `coverage !== null`. Deriving them at the render
+            site collapsed three different unknowns into one fact, and the panel
+            says a different sentence about each: translations unreadable is
+            "unknown, not none"; a short inventory means coverage is withheld
+            because the list it would be measured against is known to be
+            incomplete; and a source language that could not be READ must never
+            be reported as a language nobody recorded — that is a finding about
+            the agency, and a failed query does not establish it.
+          */}
+          <CampaignTranslationsPanel
+            campaignId={campaign.id}
+            fields={translationState.fields}
+            entries={translationState.entries}
+            coverage={translationState.coverage}
+            sourceLocale={translationState.sourceLocale}
+            sourceLocaleStated={translationState.sourceLocaleStated}
+            readFailures={translationState.readFailures}
+            translationsReadable={translationState.translationsReadable}
+            inventoryComplete={translationState.inventoryComplete}
+            sourceLocaleReadable={translationState.sourceLocaleReadable}
+            machineTranslationAvailable={machineTranslationAvailable}
+            machineBatchMax={MACHINE_TRANSLATION_BATCH_MAX}
+            acceptBatchMax={TRANSLATION_ACCEPT_BATCH_MAX}
             canWrite={canManageContextLayers}
           />
 

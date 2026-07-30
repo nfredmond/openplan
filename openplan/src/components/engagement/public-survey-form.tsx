@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { CheckCircle2, Loader2, Send, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,10 +20,55 @@ import {
   singleChoiceConfigSchema,
   type SurveyQuestionType,
 } from "@/lib/engagement/survey";
+import {
+  PORTAL_LOCALE_DIRECTION,
+  type PortalLocale,
+  type PortalTextDirection,
+} from "@/lib/engagement/portal-i18n/locales";
+import {
+  createPortalTranslator,
+  type PortalMessageBundle,
+  type PortalTranslator,
+} from "@/lib/engagement/portal-i18n/translator";
+import type { PortalText } from "@/lib/engagement/portal-i18n/operator-text";
+/**
+ * NOTE FOR ANYONE ADDING AN IMPORT HERE: `messages.ts` must never be one, not
+ * even a type-only one that a later edit could turn into a value import. It
+ * holds every locale's catalog, so importing it into this client component would
+ * ship all eleven languages to one resident's phone to render one — the exact
+ * thing `translator.ts` was split out to prevent. The message KEYS this file
+ * names are typed through `portalMessageView`, which is generic over them, so
+ * placeholder interpolation stays a build error with no catalog in reach.
+ */
+import {
+  portalMessageView,
+  portalTextBadge,
+  portalTextDisclosureView,
+  portalTextIsFallback,
+  portalTextLang,
+  type PortalDisclosureView,
+} from "@/lib/engagement/portal-i18n/provenance";
+import { formatPortalMegabytes, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
 import { GeometryPickerMap, type EngagementDrawMode } from "./geometry-picker-map";
 
 // ── Serializable participant-facing question shape (options folded in) ────────
-export type PortalSurveyOption = { id: string; label: string; value: string | null };
+
+/**
+ * One answer option as a participant reads it.
+ *
+ * `label` is the SOURCE string and `labelText` is the one to render. Both are
+ * required, and `labelText` is not optional, because an option label is as
+ * participant-facing as the prompt above it: a Spanish survey whose answers are
+ * listed in English cannot be answered, and an option a machine translated is an
+ * option the agency did not word.
+ */
+export type PortalSurveyOption = {
+  id: string;
+  label: string;
+  value: string | null;
+  labelText: PortalText;
+};
+
 export type PortalSurveyQuestion = {
   id: string;
   questionType: SurveyQuestionType;
@@ -42,8 +87,34 @@ export type PortalSurveyQuestion = {
    * can have it, because the defect it closes was a survey tab that opened on
    * the continental United States in silence while the portal map beside it said
    * so out loud. An optional field is one a caller forgets and nothing catches.
+   *
+   * KNOWN LIMIT: this sentence is composed in ENGLISH by
+   * `describePortalFraming` in src/lib/engagement/public-portal-data.ts, so it
+   * is English on every locale. It is rendered here marked `lang="en"` and
+   * counted as untranslated rather than passed off as the page's language — see
+   * `PENDING_PORTAL_COPY`.
    */
   mapFramingNote: string | null;
+  /**
+   * THE PROMPT AS A PARTICIPANT READS IT, WITH ITS PROVENANCE.
+   *
+   * A survey question a resident MISUNDERSTANDS produces a wrong answer that
+   * enters the planning record and gets counted, which is worse than no answer
+   * at all. So the prompt does not arrive as a bare string: it arrives with the
+   * language it is actually in and with whether a person at the agency wrote
+   * those words or a model did. `prompt` above stays the SOURCE string and is
+   * deliberately not what this component renders.
+   *
+   * REQUIRED rather than optional, for the reason `mapFramingNote` is: this repo
+   * keeps shipping finished capabilities that no caller reaches, and the cheapest
+   * guard against a translated prompt nobody passed is a build error. Every
+   * producer already has it — `loadPublicPortalBundle` resolves it through
+   * `resolveOperatorText`, whose answer is never absent (an untranslated string
+   * is one of its states, not a null).
+   */
+  promptText: PortalText;
+  /** The help text, resolved the same way. Null when the question has none. */
+  helpTextText: PortalText | null;
   options: PortalSurveyOption[];
 };
 
@@ -62,6 +133,386 @@ const GEO_TYPE_TO_MODE: Record<"Point" | "LineString" | "Polygon", EngagementDra
   Polygon: "area",
 };
 
+/**
+ * The language OpenPlan's own copy is WRITTEN IN.
+ *
+ * Not a jurisdiction assumption and not the participant's language — a fact
+ * about the strings below. `messages.ts` derives every key from
+ * `EN_PORTAL_MESSAGES` and falls back to it, so English is structurally the
+ * source language of this product's participant copy. It is named here because
+ * two different things depend on knowing it: the `lang` attribute on a run of
+ * English inside a page that is not English, and the decision to disclose that
+ * such runs exist.
+ */
+const PENDING_COPY_LOCALE: PortalLocale = "en";
+
+/**
+ * COPY THIS FORM STILL HAS NO CATALOG KEY FOR — declared in ONE place, rendered
+ * in English, marked as English, and DISCLOSED to the participant.
+ *
+ * WHY IT EXISTS AT ALL. `EN_PORTAL_MESSAGES` carries the survey's headline
+ * strings (submit, submitting, received, required, the rank/map/budget hints)
+ * but not its widget-level copy: "Other", "Please specify", "Not rated", the
+ * selection-count hints, the character counter, the file-upload limits, and the
+ * two client-side validation messages. Those keys are proposed in this
+ * component's handoff; until they land, the honest options are (a) render
+ * English and say so, or (b) render English and let a resident read it as
+ * something the agency chose to write in English. Under Title VI (b) is the
+ * failure this whole seam exists to remove, so this is (a):
+ *
+ *   1. every string here renders inside `<PendingCopy>`, which sets `lang="en"`
+ *      so a screen reader on a Spanish page does not pronounce it as Spanish;
+ *   2. the form states, once, near the top, that part of it is not available in
+ *      the participant's language — `language.partialNotice`, which is a catalog
+ *      key and so is itself translated wherever a catalog exists, and marked as
+ *      English by `portalMessageView` on the nine locales where one does not yet.
+ *
+ * ENGLISH PLURALS ARE APPLIED HERE ON PURPOSE. These strings are English by
+ * definition, so `file${n === 1 ? "" : "s"}` is correct for them. The catalog
+ * has no plural mechanism, which is a real gap for the keys these become — it
+ * is called out in the handoff rather than papered over with a phrasing nobody
+ * would write.
+ *
+ * WHAT IS NOT IN HERE. Anything a translated key already says well enough is
+ * NOT duplicated here: file-type and file-size errors reuse
+ * `portal.photoWrongType` / `portal.photoTooLarge` / `portal.photoFailed`, the
+ * name field reuses `portal.nameLabel` / `portal.nameHint`, and the "nothing
+ * answered" message reuses `survey.requiredMissing` whenever the survey has a
+ * required question. Reaching for the catalog first is the point; this object
+ * should get smaller and then disappear.
+ */
+const PENDING_PORTAL_COPY = {
+  /** → survey.other */
+  other: "Other",
+  /** → survey.otherPlaceholder */
+  otherPlaceholder: "Please specify",
+  /** → survey.notRated */
+  notRated: "Not rated",
+  /** → survey.textPlaceholder */
+  textPlaceholder: "Type your response",
+  /** → survey.mapNotePlaceholder */
+  mapNotePlaceholder: "Add a short note about this location (optional)",
+  /** → survey.mapZoomHint */
+  mapZoomHint: "Zoom to your neighbourhood before dropping a pin.",
+  /** → survey.fileRemove */
+  remove: "Remove",
+  /** → survey.submitAnother */
+  submitAnother: "Submit another response",
+  /** → survey.noAnswers (only reached when NO question is required) */
+  noAnswers: "Please answer at least one question.",
+  /** → survey.reviewAnswer */
+  reviewAnswer: "Please review this answer.",
+  /** → survey.rankEvery */
+  rankEveryOption: "Rank every option.",
+  /** → survey.budgetUnitPoints */
+  budgetUnitPoints: "pts",
+  /** → survey.selectAtLeast */
+  selectAtLeast: (count: string) => `Select at least ${count}.`,
+  /** → survey.selectAtMost */
+  selectAtMost: (count: string) => `Select at most ${count}.`,
+  /** → survey.selectBetween */
+  selectBetween: (min: string, max: string) => `Select at least ${min} and at most ${max}.`,
+  /** → survey.ratingValue */
+  ratingValue: (value: string, max: string) => `${value} of ${max}`,
+  /** → survey.rankUpTo */
+  rankUpTo: (count: string, one: boolean) =>
+    `Rank up to ${count} option${one ? "" : "s"}, and leave the rest unranked.`,
+  /** → survey.budgetAllocate */
+  budgetAllocate: (amount: string) => `Allocate ${amount} across the options.`,
+  /** → survey.budgetAllocateAll */
+  budgetAllocateAll: (amount: string) => `Allocate the full ${amount} across the options.`,
+  /** → survey.budgetAllocated */
+  budgetAllocated: (allocated: string, total: string) => `Allocated ${allocated} of ${total}.`,
+  /** → survey.budgetOver */
+  budgetOver: (amount: string) => `That is ${amount} more than the total.`,
+  /** → survey.textMinLength */
+  textMinLength: (count: string) => `At least ${count} characters.`,
+  /** → survey.fileHint (the max_files === 1 case reuses portal.photoHint) */
+  fileHint: (count: string, one: boolean, limit: string) =>
+    `Up to ${count} JPEG, PNG, or WebP file${one ? "" : "s"}, each up to ${limit}.`,
+  /** → survey.fileTooMany */
+  fileTooMany: (count: string, one: boolean) => `Attach at most ${count} file${one ? "" : "s"}.`,
+} as const;
+
+/**
+ * A run of text in a NAMED language, wherever that differs from the page's.
+ *
+ * The `lang` attribute is the load-bearing part, not the wrapper: it is what a
+ * screen reader uses to pick a voice, and an English sentence pronounced with
+ * Farsi phonology is close to unintelligible. `dir` travels with it so an
+ * English run inside an Arabic page is laid out left-to-right where it sits,
+ * with its punctuation on the end a reader of THAT run expects.
+ *
+ * Applied UNCONDITIONALLY, including when the run is in the page's own language.
+ * A conditional here is a condition somebody forgets, and the redundant
+ * attribute costs nothing — the same reasoning `OperatorText` below states for
+ * operator content.
+ *
+ * A KNOWN LIMIT of this approach: a string that is an ATTRIBUTE rather than a
+ * text node — a `placeholder`, an `aria-label` — has no element of its own to
+ * mark, and marking the input itself would mislabel the participant's own typed
+ * value. Those are covered by the form-level disclosure instead. An `<option>`
+ * cannot hold a `<span>` either, but it CAN take `lang` directly, so those are
+ * marked on the element rather than left to the page.
+ */
+function Localized({
+  lang,
+  dir,
+  className,
+  children,
+}: {
+  lang: PortalLocale;
+  dir: PortalTextDirection;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span lang={lang} dir={dir} className={className}>
+      {children}
+    </span>
+  );
+}
+
+/** A run of `PENDING_PORTAL_COPY` — English by construction. */
+function PendingCopy({ children }: { children: ReactNode }) {
+  return (
+    <Localized lang={PENDING_COPY_LOCALE} dir={PORTAL_LOCALE_DIRECTION[PENDING_COPY_LOCALE]}>
+      {children}
+    </Localized>
+  );
+}
+
+/**
+ * A sentence that is ENGLISH BY CONSTRUCTION, as a view.
+ *
+ * Two sources produce one: the submit route's validation messages, which are
+ * English literals with a machine-readable `code` this catalog has no key for
+ * yet, and `PENDING_PORTAL_COPY`. Both are held in state rather than rendered
+ * inline, so both need the language travelling with them — an English sentence
+ * stored now and rendered later under the page's `lang` is the same lie either
+ * way, and there is no reason for the two to be told apart here.
+ */
+function englishSentence(text: string): PortalDisclosureView {
+  return {
+    sentence: text,
+    lang: PENDING_COPY_LOCALE,
+    dir: PORTAL_LOCALE_DIRECTION[PENDING_COPY_LOCALE],
+  };
+}
+
+/**
+ * ONE STRING OF PARTICIPANT-FACING COPY, CARRYING THE LANGUAGE IT CAME OUT IN.
+ *
+ * WHY IT IS NEEDED. `translator.t()` returns a plain string whether the catalog
+ * had the participant's language or fell back to English, and nine of the eleven
+ * locales have no catalog at all — so on a Farsi portal EVERY sentence this form
+ * renders is English while the form element around it says `lang="fa"`. Rendering
+ * them bare was sanctioned by `translator.ts` ("mark each fallback, or rely on
+ * the page-level disclosure"), and this form takes the first half of that choice,
+ * because the page-level half alone leaves a screen reader pronouncing English
+ * with Farsi phonology and leaves an English sentence laid out from the wrong
+ * edge of a right-to-left page.
+ *
+ * WHY IT IS `provenance.ts`'s TYPE AND NOT A LOCAL ONE. `portalMessageView` is
+ * already the module's answer to this exact question, and its own doc says so:
+ * "anything that puts one of this catalog's strings on screen inside a page of
+ * another language should get its lang and direction from here rather than
+ * assume the page's". The portal, the close-the-loop list and the language
+ * picker all consume it. A fourth surface with its own `{ text, lang }` would be
+ * a second statement of one idea, and — because it would re-derive `dir` from
+ * the locale itself — a second place for the two to drift apart. `locales.ts`
+ * warns about precisely that: "a component that re-derives is a component that
+ * can be forgotten."
+ *
+ * The shape is deliberately the SAME one a server-authored message arrives in,
+ * so the two travel through one renderer: the survey submit route answers in
+ * English literals, and an English validation message inside a Spanish form is
+ * the same lie as an untranslated prompt.
+ */
+function Copy({ of, className }: { of: PortalDisclosureView; className?: string }) {
+  return (
+    <Localized lang={of.lang} dir={of.dir} className={className}>
+      {of.sentence}
+    </Localized>
+  );
+}
+
+/**
+ * One operator-authored string, rendered with the two things it must never be
+ * rendered without: the language it is ACTUALLY in, and — via
+ * `ProvenanceBadge` beside it — the label saying who wrote it.
+ *
+ * `lang` and `dir` are set unconditionally, including when the text is in the
+ * page's own language, because a conditional here is a condition somebody
+ * forgets. Setting them redundantly costs nothing; omitting them once publishes
+ * an untranslated English prompt as though the agency wrote it in Spanish.
+ *
+ * BUT `dir` IS ONLY CLAIMED FROM A RECORDED LANGUAGE. `PortalText.textLocaleStated`
+ * is false when `textLocale` is a PRESUMPTION rather than a record — the campaign
+ * never said what language it was written in — and that is not an edge case: until
+ * 20260729000004 is applied there is no `default_content_locale` column to state
+ * it in, so EVERY operator string in the product is currently in that state.
+ * Turning that presumption into `dir="ltr"` lays an Arabic-authored prompt out
+ * left-to-right with its punctuation on the wrong side, which is the exact defect
+ * `dir` exists to prevent. `dir="auto"` claims nothing: the browser reads the
+ * first strong directional character of the string itself, which is the only
+ * fact anybody actually has here.
+ *
+ * The `lang` half of the same problem is NOT fixed locally on purpose.
+ * `portalTextLang` asserts `textLocale` as a fact even when it is presumed —
+ * the very claim `portalTextDisclosure` refuses to make for the same value — and
+ * three other surfaces call it. Diverging here would make four renderers
+ * disagree four ways; it belongs in `provenance.ts`, once.
+ */
+function OperatorText({ text, className }: { text: PortalText; className?: string }) {
+  return (
+    <span
+      lang={portalTextLang(text)}
+      dir={text.textLocaleStated ? PORTAL_LOCALE_DIRECTION[text.textLocale] : "auto"}
+      className={className}
+    >
+      {text.text}
+    </span>
+  );
+}
+
+/**
+ * The short label on a string the agency did not write in this language.
+ *
+ * Renders NOTHING for operator-authored text, which is `portalTextBadge`'s
+ * contract and the whole reason a badge means something: a caveat on every
+ * string is a caveat residents learn to skip.
+ *
+ * THE BADGE'S OWN LANGUAGE IS INFERRED FROM ITS DISCLOSURE, and the inference is
+ * named here rather than hidden. `portalTextBadge` returns a bare string, so
+ * this component cannot ask which catalog key produced it — but the badge and
+ * the disclosure sentence for one `PortalText` always come from the same
+ * provenance branch (both are null for `operator` and non-null for the other
+ * three), so they sit in the same section of the same catalog and fall back
+ * together. The one case that would defeat it is a catalog that translates
+ * `provenance.machine.label` but not `provenance.machine.caveat`. The honest fix
+ * is a `portalTextBadgeView` in `provenance.ts` alongside the disclosure one;
+ * that module is owned elsewhere, so it is reported rather than edited here.
+ */
+function ProvenanceBadge({ text, translator }: { text: PortalText; translator: PortalTranslator }) {
+  const label = portalTextBadge(text, translator);
+  if (!label) return null;
+
+  const disclosure = portalTextDisclosureView(text, translator);
+
+  return (
+    <Localized
+      lang={disclosure?.lang ?? translator.locale}
+      dir={disclosure?.dir ?? translator.direction}
+      className={cn(
+        "ms-2 inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 align-middle",
+        "text-[0.65rem] font-medium normal-case tracking-wide",
+        "border-amber-400/60 bg-amber-50 text-amber-900",
+        "dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100"
+      )}
+    >
+      {label}
+    </Localized>
+  );
+}
+
+/**
+ * Operator-authored strings that live INSIDE `config_json` — a Likert scale's
+ * point labels and a map question's guidance paragraph.
+ *
+ * They have NO translation record: `engagement_content_translations` is keyed by
+ * (entity, id, field) over columns, and these are values inside a JSON blob, so
+ * `loadPublicPortalBundle` cannot resolve them and no `PortalText` exists for
+ * them. That is a real gap in the seam, not a gap in this component, and it is
+ * in the handoff.
+ *
+ * Read by field NAME rather than by re-parsing each type's schema, deliberately:
+ * this is one question — "does the operator have prose in here that nobody
+ * translated" — and answering it through nine schemas would put the answer in
+ * nine places. The two names are `likertConfigSchema.labels` and
+ * `mapPointConfigSchema.guidance`; a third such field must be added here too,
+ * and the test named for that keeps it honest.
+ */
+function configAuthoredText(question: PortalSurveyQuestion): string[] {
+  const raw = (question.config ?? {}) as { labels?: unknown; guidance?: unknown };
+  const found: string[] = [];
+
+  if (Array.isArray(raw.labels)) {
+    for (const label of raw.labels) {
+      if (typeof label === "string" && label.trim().length > 0) found.push(label);
+    }
+  }
+  if (typeof raw.guidance === "string" && raw.guidance.trim().length > 0) found.push(raw.guidance);
+
+  return found;
+}
+
+/**
+ * EVERY DISCLOSURE THIS QUESTION OWES ITS PARTICIPANT, deduplicated, in the
+ * participant's language.
+ *
+ * Assembled per QUESTION rather than per string because a resident answers a
+ * question, not a string: a prompt an agency wrote whose options a machine
+ * translated is a question whose answer may not mean what the resident thought.
+ * Deduplicated because the common case is one caveat that applies to all of it,
+ * and repeating the same sentence under every option teaches people to stop
+ * reading it.
+ *
+ * THE CONFIG-TEXT BRANCH, and its known imprecision. Strings inside
+ * `config_json` (see `configAuthoredText`) can never be translated today, so
+ * when the rest of the question IS translated they are the only untranslated
+ * part and nothing else would say so. `provenance.untranslated.unknownSource`
+ * is the right sentence: it states that the team has not published this in the
+ * participant's language and claims nothing about which language it is in —
+ * which is all anyone knows, since `PortalText` cannot distinguish "this string
+ * is the campaign's own language" from "this string is a translation into the
+ * requested language" (both arrive as `operator` + `textLocale === requested`).
+ * The cost of that ambiguity is a needless caveat on a campaign authored in the
+ * participant's language; the cost of the opposite choice is silence about
+ * untranslated scale labels. The safe direction is to over-disclose.
+ */
+function questionDisclosures(question: PortalSurveyQuestion, translator: PortalTranslator): PortalDisclosureView[] {
+  const texts: PortalText[] = [
+    question.promptText,
+    ...(question.helpTextText ? [question.helpTextText] : []),
+    ...question.options.map((option) => option.labelText),
+  ];
+
+  // Keyed by sentence so the dedup is by what a resident READS. Each sentence
+  // keeps the language it came out in, because a disclosure a screen reader
+  // cannot pronounce is a disclosure that was not made.
+  const sentences = new Map<string, PortalDisclosureView>();
+  const remember = (view: PortalDisclosureView) => {
+    if (!sentences.has(view.sentence)) sentences.set(view.sentence, view);
+  };
+
+  for (const text of texts) {
+    const view = portalTextDisclosureView(text, translator);
+    if (view) remember(view);
+  }
+
+  const hasConfigText = configAuthoredText(question).length > 0;
+  const promptAlreadyDiscloses = portalTextIsFallback(question.promptText);
+  if (hasConfigText && !promptAlreadyDiscloses && question.promptText.textLocaleStated) {
+    remember(
+      portalMessageView(translator, "provenance.untranslated.unknownSource", { language: translator.nativeName })
+    );
+  }
+
+  return [...sentences.values()];
+}
+
+/** The badge for the question as a whole: the prompt's, or the first one any of its other strings carries. */
+function questionBadgeText(question: PortalSurveyQuestion, translator: PortalTranslator): PortalText | null {
+  if (portalTextBadge(question.promptText, translator)) return question.promptText;
+
+  const rest: PortalText[] = [
+    ...(question.helpTextText ? [question.helpTextText] : []),
+    ...question.options.map((option) => option.labelText),
+  ];
+  return rest.find((text) => portalTextBadge(text, translator) !== null) ?? null;
+}
+
 function cfgOf<T>(schema: { safeParse: (v: unknown) => { success: boolean; data?: T } }, raw: unknown): T {
   const parsed = schema.safeParse(raw ?? {});
   if (parsed.success && parsed.data !== undefined) return parsed.data;
@@ -71,11 +522,23 @@ function cfgOf<T>(schema: { safeParse: (v: unknown) => { success: boolean; data?
 
 type WidgetProps<T = unknown> = {
   question: PortalSurveyQuestion;
+  /**
+   * The participant's language, as a lookup. Passed EXPLICITLY to every widget
+   * rather than read from a context, because a widget that can render without
+   * one is a widget that will: the type is what guarantees no answer option in
+   * this form can be added in English by accident.
+   */
+  translator: PortalTranslator;
   onChange: (answer: T | undefined) => void;
 };
 
+/** A hint above a widget — the same shape for every question type. */
+function WidgetHint({ children }: { children: ReactNode }) {
+  return <p className="text-xs text-muted-foreground">{children}</p>;
+}
+
 // ── single_choice ─────────────────────────────────────────────────────────────
-function SingleChoiceWidget({ question, onChange }: WidgetProps) {
+function SingleChoiceWidget({ question, translator, onChange }: WidgetProps) {
   const cfg = cfgOf<{ allow_other?: boolean }>(singleChoiceConfigSchema, question.config);
   const [selection, setSelection] = useState<string>("");
   const [otherText, setOtherText] = useState("");
@@ -90,6 +553,9 @@ function SingleChoiceWidget({ question, onChange }: WidgetProps) {
 
   return (
     <div className="space-y-2">
+      <WidgetHint>
+        <Copy of={portalMessageView(translator, "survey.selectOne")} />
+      </WidgetHint>
       {question.options.map((option) => (
         <label key={option.id} className="flex cursor-pointer items-center gap-2.5 text-sm text-foreground">
           <input
@@ -102,7 +568,7 @@ function SingleChoiceWidget({ question, onChange }: WidgetProps) {
               emit(option.id, otherText);
             }}
           />
-          <span>{option.label}</span>
+          <OperatorText text={option.labelText} />
         </label>
       ))}
       {cfg.allow_other ? (
@@ -118,12 +584,12 @@ function SingleChoiceWidget({ question, onChange }: WidgetProps) {
                 emit(OTHER_SENTINEL, otherText);
               }}
             />
-            <span>Other</span>
+            <PendingCopy>{PENDING_PORTAL_COPY.other}</PendingCopy>
           </label>
           {selection === OTHER_SENTINEL ? (
             <Input
               value={otherText}
-              placeholder="Please specify"
+              placeholder={PENDING_PORTAL_COPY.otherPlaceholder}
               maxLength={500}
               onChange={(event) => {
                 setOtherText(event.target.value);
@@ -138,7 +604,7 @@ function SingleChoiceWidget({ question, onChange }: WidgetProps) {
 }
 
 // ── multiple_choice ───────────────────────────────────────────────────────────
-function MultipleChoiceWidget({ question, onChange }: WidgetProps) {
+function MultipleChoiceWidget({ question, translator, onChange }: WidgetProps) {
   const cfg = cfgOf<{ allow_other?: boolean; min_select?: number; max_select?: number }>(
     multipleChoiceConfigSchema,
     question.config
@@ -154,16 +620,30 @@ function MultipleChoiceWidget({ question, onChange }: WidgetProps) {
     onChange(other ? { option_ids: optionIds, other_text: other } : { option_ids: optionIds });
   }
 
-  const hint =
-    cfg.min_select !== undefined || cfg.max_select !== undefined
-      ? `Select ${cfg.min_select !== undefined ? `at least ${cfg.min_select}` : ""}${
-          cfg.min_select !== undefined && cfg.max_select !== undefined ? ", " : ""
-        }${cfg.max_select !== undefined ? `at most ${cfg.max_select}` : ""}.`
-      : null;
+  // The counts are formatted for the participant's locale, not stringified:
+  // Arabic and Farsi use different digits, and a limit a resident cannot read is
+  // a limit the server will enforce anyway.
+  const min = cfg.min_select !== undefined ? formatPortalNumber(cfg.min_select, translator.bcp47) : null;
+  const max = cfg.max_select !== undefined ? formatPortalNumber(cfg.max_select, translator.bcp47) : null;
+  const countHint =
+    min && max
+      ? PENDING_PORTAL_COPY.selectBetween(min, max)
+      : min
+        ? PENDING_PORTAL_COPY.selectAtLeast(min)
+        : max
+          ? PENDING_PORTAL_COPY.selectAtMost(max)
+          : null;
 
   return (
     <div className="space-y-2">
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      <WidgetHint>
+        <Copy of={portalMessageView(translator, "survey.selectMany")} />
+      </WidgetHint>
+      {countHint ? (
+        <WidgetHint>
+          <PendingCopy>{countHint}</PendingCopy>
+        </WidgetHint>
+      ) : null}
       {question.options.map((option) => (
         <label key={option.id} className="flex cursor-pointer items-center gap-2.5 text-sm text-foreground">
           <input
@@ -178,7 +658,7 @@ function MultipleChoiceWidget({ question, onChange }: WidgetProps) {
               emit(next, otherChecked, otherText);
             }}
           />
-          <span>{option.label}</span>
+          <OperatorText text={option.labelText} />
         </label>
       ))}
       {cfg.allow_other ? (
@@ -193,12 +673,12 @@ function MultipleChoiceWidget({ question, onChange }: WidgetProps) {
                 emit(selected, event.target.checked, otherText);
               }}
             />
-            <span>Other</span>
+            <PendingCopy>{PENDING_PORTAL_COPY.other}</PendingCopy>
           </label>
           {otherChecked ? (
             <Input
               value={otherText}
-              placeholder="Please specify"
+              placeholder={PENDING_PORTAL_COPY.otherPlaceholder}
               maxLength={500}
               onChange={(event) => {
                 setOtherText(event.target.value);
@@ -213,7 +693,7 @@ function MultipleChoiceWidget({ question, onChange }: WidgetProps) {
 }
 
 // ── likert ────────────────────────────────────────────────────────────────────
-function LikertWidget({ question, onChange }: WidgetProps) {
+function LikertWidget({ question, translator, onChange }: WidgetProps) {
   const cfg = cfgOf<{ scale: 5 | 7; labels?: string[] }>(likertConfigSchema, question.config);
   const [value, setValue] = useState<number | null>(null);
   const points = Array.from({ length: cfg.scale }, (_, i) => i + 1);
@@ -239,8 +719,25 @@ function LikertWidget({ question, onChange }: WidgetProps) {
                 : "border-border text-muted-foreground hover:border-[color:var(--pine)] hover:text-foreground"
             )}
           >
-            <span>{point}</span>
-            {label ? <span className="max-w-[7rem] text-center text-[0.65rem] font-medium leading-tight">{label}</span> : null}
+            <span>{formatPortalNumber(point, translator.bcp47)}</span>
+            {/*
+              A scale label is operator prose with no translation record (see
+              `configAuthoredText`), so no `lang` is claimed for it: nobody
+              recorded which language it is in, and asserting the page's would be
+              a claim this component is not entitled to make. The question-level
+              disclosure says it is not published in the participant's language.
+
+              `dir="auto"` for the same reason the direction is not claimed in
+              `OperatorText` either: an unrecorded language cannot yield a
+              direction, and inheriting the page's would lay an Arabic scale
+              label out left-to-right on a Spanish page. The browser reading the
+              string's own first strong character is the only available fact.
+            */}
+            {label ? (
+              <span dir="auto" className="max-w-[7rem] text-center text-[0.65rem] font-medium leading-tight">
+                {label}
+              </span>
+            ) : null}
           </button>
         );
       })}
@@ -249,9 +746,13 @@ function LikertWidget({ question, onChange }: WidgetProps) {
 }
 
 // ── rating ──────────────────────────────────────────────────────────────────
-function RatingWidget({ question, onChange }: WidgetProps) {
+function RatingWidget({ question, translator, onChange }: WidgetProps) {
   const cfg = cfgOf<{ max: number; allow_half?: boolean; icon?: "star" | "number" }>(ratingConfigSchema, question.config);
   const [value, setValue] = useState<number | null>(null);
+
+  const maxLabel = formatPortalNumber(cfg.max, translator.bcp47);
+  const scaleLabel = (step: number) =>
+    PENDING_PORTAL_COPY.ratingValue(formatPortalNumber(step, translator.bcp47), maxLabel);
 
   // Half-steps or a numeric icon render as a plain value picker (a star strip
   // cannot express half selections accessibly). Values start at 1 — the server
@@ -269,10 +770,19 @@ function RatingWidget({ question, onChange }: WidgetProps) {
           onChange(next === null ? undefined : { value: next });
         }}
       >
-        <option value="">Not rated</option>
+        {/*
+          The VALUES stay raw — `Number(event.target.value)` parses them and the
+          server validates them, so a localized numeral here would break the
+          answer. Only what a resident READS is localized.
+        */}
+        <option value="" lang={PENDING_COPY_LOCALE}>
+          {PENDING_PORTAL_COPY.notRated}
+        </option>
         {steps.map((step) => (
-          <option key={step} value={step}>
-            {step} of {cfg.max}
+          // `lang` on the option itself: "3 of 5" carries an English word and an
+          // `<option>` cannot hold a span to mark it with.
+          <option key={step} value={step} lang={PENDING_COPY_LOCALE}>
+            {scaleLabel(step)}
           </option>
         ))}
       </select>
@@ -287,7 +797,7 @@ function RatingWidget({ question, onChange }: WidgetProps) {
           <button
             key={star}
             type="button"
-            aria-label={`${star} of ${cfg.max}`}
+            aria-label={scaleLabel(star)}
             aria-pressed={active}
             onClick={() => {
               const next = value === star ? null : star;
@@ -301,8 +811,8 @@ function RatingWidget({ question, onChange }: WidgetProps) {
         );
       })}
       {value !== null ? (
-        <span className="ml-2 text-sm text-muted-foreground">
-          {value} of {cfg.max}
+        <span className="ms-2 text-sm text-muted-foreground">
+          <PendingCopy>{scaleLabel(value)}</PendingCopy>
         </span>
       ) : null}
     </div>
@@ -310,7 +820,7 @@ function RatingWidget({ question, onChange }: WidgetProps) {
 }
 
 // ── ranking ──────────────────────────────────────────────────────────────────
-function RankingWidget({ question, onChange }: WidgetProps) {
+function RankingWidget({ question, translator, onChange }: WidgetProps) {
   const cfg = cfgOf<{ max_ranked?: number; require_full: boolean }>(rankingConfigSchema, question.config);
   const [ranks, setRanks] = useState<Record<string, number>>({});
   const rankCap = cfg.max_ranked ?? question.options.length;
@@ -326,9 +836,16 @@ function RankingWidget({ question, onChange }: WidgetProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">
-        {cfg.require_full ? "Rank every option." : `Rank up to ${rankCap} option${rankCap === 1 ? "" : "s"} (leave the rest unranked).`}
-      </p>
+      <WidgetHint>
+        <Copy of={portalMessageView(translator, "survey.rankHint")} />
+      </WidgetHint>
+      <WidgetHint>
+        <PendingCopy>
+          {cfg.require_full
+            ? PENDING_PORTAL_COPY.rankEveryOption
+            : PENDING_PORTAL_COPY.rankUpTo(formatPortalNumber(rankCap, translator.bcp47), rankCap === 1)}
+        </PendingCopy>
+      </WidgetHint>
       {question.options.map((option) => {
         const current = ranks[option.id];
         // Ranks already taken by OTHER options are hidden so two options can
@@ -342,8 +859,9 @@ function RankingWidget({ question, onChange }: WidgetProps) {
         );
         return (
           <div key={option.id} className="flex items-center justify-between gap-3">
-            <span className="text-sm text-foreground">{option.label}</span>
+            <OperatorText text={option.labelText} className="text-sm text-foreground" />
             <select
+              aria-label={option.labelText.text}
               className="h-9 w-28 rounded-lg border border-input bg-background px-2.5 text-sm shadow-xs outline-none focus-visible:border-primary/50 focus-visible:ring-3 focus-visible:ring-primary/20"
               value={current ? String(current) : ""}
               onChange={(event) => {
@@ -358,8 +876,9 @@ function RankingWidget({ question, onChange }: WidgetProps) {
               {Array.from({ length: maxRank }, (_, i) => i + 1)
                 .filter((rank) => rank === current || !takenByOthers.has(rank))
                 .map((rank) => (
+                  // Raw value, localized label — same rule as the rating picker.
                   <option key={rank} value={rank}>
-                    {rank}
+                    {formatPortalNumber(rank, translator.bcp47)}
                   </option>
                 ))}
             </select>
@@ -371,7 +890,7 @@ function RankingWidget({ question, onChange }: WidgetProps) {
 }
 
 // ── map_point ────────────────────────────────────────────────────────────────
-function MapPointWidget({ question, onChange }: WidgetProps) {
+function MapPointWidget({ question, translator, onChange }: WidgetProps) {
   const cfg = cfgOf<{
     geometry_types: ("Point" | "LineString" | "Polygon")[];
     guidance?: string;
@@ -390,18 +909,36 @@ function MapPointWidget({ question, onChange }: WidgetProps) {
 
   return (
     <div className="space-y-2">
-      {cfg.guidance ? <p className="text-xs text-muted-foreground">{cfg.guidance}</p> : null}
+      <WidgetHint>
+        <Copy of={portalMessageView(translator, "survey.mapHint")} />
+      </WidgetHint>
+      {/*
+        Operator prose with no translation record — see `configAuthoredText`. No
+        `lang` is claimed and `dir="auto"` is used for the reason the Likert scale
+        labels use it: nobody recorded which language this paragraph is in, so its
+        direction is read off the text rather than presumed from the page.
+      */}
+      {cfg.guidance ? (
+        <WidgetHint>
+          <span dir="auto">{cfg.guidance}</span>
+        </WidgetHint>
+      ) : null}
       {/*
         Say where this map is, on the same terms as the portal's own map one tab
         over. `cfg.center` is what the picker will actually use, so the "you are
         looking at a continent" hint is keyed off the camera that exists rather
         than off a second guess about it.
+
+        The sentence itself is composed in English server-side, so it is marked
+        as English rather than shown as though it were the page's language.
       */}
       {question.mapFramingNote ? (
-        <p className="text-xs text-muted-foreground">
-          {question.mapFramingNote}
-          {cfg.center ? null : " Zoom to your neighbourhood before dropping a pin."}
-        </p>
+        <WidgetHint>
+          <PendingCopy>
+            {question.mapFramingNote}
+            {cfg.center ? null : ` ${PENDING_PORTAL_COPY.mapZoomHint}`}
+          </PendingCopy>
+        </WidgetHint>
       ) : null}
       <div className="public-map-frame public-map-frame--editor">
         <GeometryPickerMap
@@ -417,7 +954,7 @@ function MapPointWidget({ question, onChange }: WidgetProps) {
       </div>
       <Input
         value={note}
-        placeholder="Add a short note about this location (optional)"
+        placeholder={PENDING_PORTAL_COPY.mapNotePlaceholder}
         maxLength={500}
         onChange={(event) => {
           setNote(event.target.value);
@@ -429,16 +966,77 @@ function MapPointWidget({ question, onChange }: WidgetProps) {
 }
 
 // ── budget_allocation ─────────────────────────────────────────────────────────
-function BudgetWidget({ question, onChange }: WidgetProps) {
+
+/**
+ * A budget amount in the participant's locale, in the unit the OPERATOR chose.
+ *
+ * `usd` and `percent` are formatted by `Intl`, which places the symbol where the
+ * reader's language places it — a `$` glued to the front of a number is wrong in
+ * most of the eleven languages and reads backwards in two of them. The currency
+ * code is not a jurisdiction assumption invented here: it is the config's own
+ * declared `unit`, and `budgetConfigSchema` offering only `usd` is an upstream
+ * limit worth widening in survey.ts, not one this component may guess around.
+ *
+ * `points` returns the bare number. Its unit word has no catalog key, so it is
+ * rendered separately beside the inputs as pending English rather than being
+ * spliced into an otherwise-translated sentence.
+ */
+function formatBudgetAmount(amount: number, unit: "usd" | "points" | "percent", bcp47: string): string {
+  if (unit === "usd") {
+    return formatPortalNumber(amount, bcp47, {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  }
+  // `style: "percent"` reads a fraction, and the config states whole percents.
+  if (unit === "percent") {
+    return formatPortalNumber(amount / 100, bcp47, { style: "percent", maximumFractionDigits: 2 });
+  }
+  return formatPortalNumber(amount, bcp47);
+}
+
+/**
+ * The unit mark beside a budget input, WRITTEN THE WAY THIS LANGUAGE WRITES IT.
+ *
+ * A literal `"$"` / `"%"` stood here, and both are wrong in some of the eleven:
+ * Arabic writes the percent sign as ٪, and several locales set a currency mark
+ * after the number rather than before it. `Intl` already carries that data, so
+ * the mark is READ OUT of a formatted zero rather than typed in — which also
+ * means this component holds no currency glyph of its own. The currency CODE is
+ * still the config's declared unit, never a guess about where the agency is.
+ *
+ * Null when there is nothing to show. `points` has no `Intl` unit, and the
+ * allocation sentence above the inputs states the unit in full either way, so a
+ * missing mark costs no fact.
+ */
+function budgetUnitSymbol(unit: "usd" | "points" | "percent", bcp47: string): string | null {
+  if (unit === "points") return null;
+
+  try {
+    const parts = new Intl.NumberFormat(
+      bcp47,
+      unit === "usd" ? { style: "currency", currency: "USD" } : { style: "percent" }
+    ).formatToParts(0);
+    return parts.find((part) => part.type === "currency" || part.type === "percentSign")?.value ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function BudgetWidget({ question, translator, onChange }: WidgetProps) {
   const cfg = cfgOf<{ total: number; unit: "usd" | "points" | "percent"; must_allocate_all: boolean }>(
     budgetConfigSchema,
     question.config
   );
   const [amounts, setAmounts] = useState<Record<string, string>>({});
 
-  const unitLabel = cfg.unit === "usd" ? "$" : cfg.unit === "percent" ? "%" : "pts";
-  const sum = question.options.reduce((total, option) => total + (Number(amounts[option.id]) || 0), 0);
-  const remaining = (cfg.total ?? 0) - sum;
+  const total = cfg.total ?? 0;
+  const sum = question.options.reduce((carried, option) => carried + (Number(amounts[option.id]) || 0), 0);
+  const remaining = total - sum;
+  const amount = (value: number) => formatBudgetAmount(value, cfg.unit, translator.bcp47);
+  const unitSymbol = budgetUnitSymbol(cfg.unit, translator.bcp47);
 
   function emit(nextAmounts: Record<string, string>) {
     const allocations = question.options
@@ -449,21 +1047,31 @@ function BudgetWidget({ question, onChange }: WidgetProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">
-        Allocate {cfg.unit === "usd" ? "$" : ""}
-        {(cfg.total ?? 0).toLocaleString()}
-        {cfg.unit === "percent" ? "%" : cfg.unit === "points" ? " points" : ""} across the options
-        {cfg.must_allocate_all ? " (allocate the full amount)" : ""}.
-      </p>
+      <WidgetHint>
+        <PendingCopy>
+          {cfg.must_allocate_all
+            ? PENDING_PORTAL_COPY.budgetAllocateAll(amount(total))
+            : PENDING_PORTAL_COPY.budgetAllocate(amount(total))}
+        </PendingCopy>
+      </WidgetHint>
       {question.options.map((option) => (
         <div key={option.id} className="flex items-center justify-between gap-3">
-          <span className="text-sm text-foreground">{option.label}</span>
+          <OperatorText text={option.labelText} className="text-sm text-foreground" />
           <div className="flex items-center gap-1.5">
-            <span className="text-xs text-muted-foreground">{unitLabel}</span>
+            {cfg.unit === "points" ? (
+              <span className="text-xs text-muted-foreground">
+                <PendingCopy>{PENDING_PORTAL_COPY.budgetUnitPoints}</PendingCopy>
+              </span>
+            ) : unitSymbol ? (
+              // No `lang`: a currency or percent mark is a symbol rather than a
+              // word, and this one came out of the participant's own locale data.
+              <span className="text-xs text-muted-foreground">{unitSymbol}</span>
+            ) : null}
             <Input
               type="number"
               inputMode="decimal"
               min={0}
+              aria-label={option.labelText.text}
               className="h-9 w-28"
               value={amounts[option.id] ?? ""}
               onChange={(event) => {
@@ -476,14 +1084,21 @@ function BudgetWidget({ question, onChange }: WidgetProps) {
         </div>
       ))}
       <p className={cn("text-xs", remaining < 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground")}>
-        Allocated {sum.toLocaleString()} of {(cfg.total ?? 0).toLocaleString()} — {remaining.toLocaleString()} remaining.
+        <PendingCopy>{PENDING_PORTAL_COPY.budgetAllocated(amount(sum), amount(total))}</PendingCopy>{" "}
+        {remaining < 0 ? (
+          <PendingCopy>{PENDING_PORTAL_COPY.budgetOver(amount(Math.abs(remaining)))}</PendingCopy>
+        ) : (
+          // The one budget sentence the catalog carries — in the participant's
+          // language where the catalog has it, marked English where it does not.
+          <Copy of={portalMessageView(translator, "survey.budgetRemaining", { amount: amount(remaining) })} />
+        )}
       </p>
     </div>
   );
 }
 
 // ── free_text ────────────────────────────────────────────────────────────────
-function FreeTextWidget({ question, onChange }: WidgetProps) {
+function FreeTextWidget({ question, translator, onChange }: WidgetProps) {
   const cfg = cfgOf<{ max_length: number; min_length?: number; multiline: boolean }>(freeTextConfigSchema, question.config);
   const [text, setText] = useState("");
 
@@ -491,14 +1106,19 @@ function FreeTextWidget({ question, onChange }: WidgetProps) {
     onChange(next.trim() ? { text: next } : undefined);
   }
 
+  const shared = {
+    value: text,
+    maxLength: cfg.max_length,
+    placeholder: PENDING_PORTAL_COPY.textPlaceholder,
+    "aria-label": question.promptText.text,
+  };
+
   return (
     <div className="space-y-1">
       {cfg.multiline ? (
         <Textarea
-          value={text}
+          {...shared}
           rows={4}
-          maxLength={cfg.max_length}
-          placeholder="Type your response"
           onChange={(event) => {
             setText(event.target.value);
             emit(event.target.value);
@@ -506,18 +1126,27 @@ function FreeTextWidget({ question, onChange }: WidgetProps) {
         />
       ) : (
         <Input
-          value={text}
-          maxLength={cfg.max_length}
-          placeholder="Type your response"
+          {...shared}
           onChange={(event) => {
             setText(event.target.value);
             emit(event.target.value);
           }}
         />
       )}
-      <p className="text-right text-xs text-muted-foreground">
-        {text.length}/{cfg.max_length}
-        {cfg.min_length ? ` · min ${cfg.min_length}` : ""}
+      {/*
+        `text-end` rather than `text-right`: on an Arabic or Farsi page the
+        counter belongs on the left, which is where that page's line ends.
+      */}
+      <p className="text-end text-xs text-muted-foreground">
+        {formatPortalNumber(text.length, translator.bcp47)}/{formatPortalNumber(cfg.max_length, translator.bcp47)}
+        {cfg.min_length ? (
+          <>
+            {" · "}
+            <PendingCopy>
+              {PENDING_PORTAL_COPY.textMinLength(formatPortalNumber(cfg.min_length, translator.bcp47))}
+            </PendingCopy>
+          </>
+        ) : null}
       </p>
     </div>
   );
@@ -526,12 +1155,20 @@ function FreeTextWidget({ question, onChange }: WidgetProps) {
 // ── file_upload ──────────────────────────────────────────────────────────────
 type UploadedFile = { path: string; mime: string; size: number; original_name?: string };
 
-function FileUploadWidget({ question, shareToken, onChange }: WidgetProps & { shareToken: string }) {
+function FileUploadWidget({
+  question,
+  translator,
+  shareToken,
+  onChange,
+}: WidgetProps & { shareToken: string }) {
   const cfg = cfgOf<{ max_files: number; max_size_bytes: number; accept: string[] }>(fileUploadConfigSchema, question.config);
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<PortalDisclosureView | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const sizeLimit = formatPortalMegabytes(cfg.max_size_bytes, translator.bcp47);
+  const fileCount = formatPortalNumber(cfg.max_files, translator.bcp47);
 
   function emit(next: UploadedFile[]) {
     onChange(next.length ? { files: next } : undefined);
@@ -541,15 +1178,19 @@ function FileUploadWidget({ question, shareToken, onChange }: WidgetProps & { sh
     setUploadError(null);
     if (!file) return;
     if (files.length >= cfg.max_files) {
-      setUploadError(`Attach at most ${cfg.max_files} file${cfg.max_files === 1 ? "" : "s"}.`);
+      setUploadError(englishSentence(PENDING_PORTAL_COPY.fileTooMany(fileCount, cfg.max_files === 1)));
       return;
     }
     if (!cfg.accept.includes(file.type)) {
-      setUploadError("Unsupported file type.");
+      // The catalog already says this well for the portal's photo field, and the
+      // accepted types are the same three. `portalMessageView` reports whether THIS locale
+      // actually carries it — an English sentence a Farsi resident is told is
+      // Farsi is the same defect as an unlabelled untranslated prompt.
+      setUploadError(portalMessageView(translator, "portal.photoWrongType"));
       return;
     }
     if (file.size > cfg.max_size_bytes) {
-      setUploadError("File exceeds the size limit.");
+      setUploadError(portalMessageView(translator, "portal.photoTooLarge", { limit: sizeLimit }));
       return;
     }
 
@@ -562,13 +1203,16 @@ function FileUploadWidget({ question, shareToken, onChange }: WidgetProps & { sh
       });
       const payload = (await response.json()) as { error?: string; photoPath?: string };
       if (!response.ok || !payload.photoPath) {
-        throw new Error(payload.error || "Upload failed");
+        // The route's own words, which are English. Thrown so the catch below
+        // marks it as the source language rather than as the participant's.
+        throw new Error(payload.error || "");
       }
       const next = [...files, { path: payload.photoPath, mime: file.type, size: file.size, original_name: file.name }];
       setFiles(next);
       emit(next);
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : "Upload failed");
+      const fromServer = error instanceof Error ? error.message : "";
+      setUploadError(fromServer ? englishSentence(fromServer) : portalMessageView(translator, "portal.photoFailed"));
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -585,13 +1229,21 @@ function FileUploadWidget({ question, shareToken, onChange }: WidgetProps & { sh
     <div className="space-y-2">
       {files.map((file) => (
         <div key={file.path} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 px-3 py-2 text-sm">
-          <span className="truncate text-foreground">{file.original_name ?? file.path.split("/").pop()}</span>
+          {/*
+            The participant's own filename — no language is claimed for it, and
+            `dir="auto"` so a resident who named their photo in Arabic sees the
+            name laid out the way they typed it rather than reversed into the
+            page's direction.
+          */}
+          <span dir="auto" className="truncate text-foreground">
+            {file.original_name ?? file.path.split("/").pop()}
+          </span>
           <button
             type="button"
             onClick={() => removeFile(file.path)}
             className="shrink-0 text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
-            Remove
+            <PendingCopy>{PENDING_PORTAL_COPY.remove}</PendingCopy>
           </button>
         </div>
       ))}
@@ -602,53 +1254,79 @@ function FileUploadWidget({ question, shareToken, onChange }: WidgetProps & { sh
             type="file"
             accept={cfg.accept.join(",")}
             disabled={uploading}
-            className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-lg file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:border-[color:var(--pine)]"
+            aria-label={question.promptText.text}
+            // `file:me-3`, not `file:mr-3` — the gap belongs after the button in
+            // reading order, which is its left on an Arabic page.
+            className="block w-full text-sm text-muted-foreground file:me-3 file:rounded-lg file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-foreground hover:file:border-[color:var(--pine)]"
             onChange={(event) => void handleFile(event.target.files?.[0] ?? null)}
           />
           {uploading ? <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" /> : null}
         </label>
       ) : null}
-      {uploadError ? <p className="text-xs text-destructive">{uploadError}</p> : null}
-      <p className="text-xs text-muted-foreground">
-        Up to {cfg.max_files} file{cfg.max_files === 1 ? "" : "s"} · JPEG, PNG, or WebP · max {Math.round(cfg.max_size_bytes / 1024 / 1024)} MB each.
-      </p>
+      {uploadError ? (
+        <p className="text-xs text-destructive">
+          <Copy of={uploadError} />
+        </p>
+      ) : null}
+      <WidgetHint>
+        {cfg.max_files === 1 ? (
+          // The catalog carries the single-file case, which is the common one.
+          <Copy of={portalMessageView(translator, "portal.photoHint", { limit: sizeLimit })} />
+        ) : (
+          <PendingCopy>
+            {PENDING_PORTAL_COPY.fileHint(fileCount, cfg.max_files === 1, sizeLimit)}
+          </PendingCopy>
+        )}
+      </WidgetHint>
     </div>
   );
 }
 
 function QuestionField({
   question,
+  translator,
   shareToken,
   error,
   onChange,
 }: {
   question: PortalSurveyQuestion;
+  translator: PortalTranslator;
   shareToken: string;
+  /** The server validator's own words — English. See `englishSentence`. */
   error?: string;
   onChange: (answer: unknown) => void;
 }) {
   const def = SURVEY_QUESTION_TYPES[question.questionType];
+  const badgeText = questionBadgeText(question, translator);
+  const disclosures = questionDisclosures(question, translator);
 
   function renderWidget() {
     switch (question.questionType) {
       case "single_choice":
-        return <SingleChoiceWidget question={question} onChange={onChange} />;
+        return <SingleChoiceWidget question={question} translator={translator} onChange={onChange} />;
       case "multiple_choice":
-        return <MultipleChoiceWidget question={question} onChange={onChange} />;
+        return <MultipleChoiceWidget question={question} translator={translator} onChange={onChange} />;
       case "likert":
-        return <LikertWidget question={question} onChange={onChange} />;
+        return <LikertWidget question={question} translator={translator} onChange={onChange} />;
       case "rating":
-        return <RatingWidget question={question} onChange={onChange} />;
+        return <RatingWidget question={question} translator={translator} onChange={onChange} />;
       case "ranking":
-        return <RankingWidget question={question} onChange={onChange} />;
+        return <RankingWidget question={question} translator={translator} onChange={onChange} />;
       case "map_point":
-        return <MapPointWidget question={question} onChange={onChange} />;
+        return <MapPointWidget question={question} translator={translator} onChange={onChange} />;
       case "budget_allocation":
-        return <BudgetWidget question={question} onChange={onChange} />;
+        return <BudgetWidget question={question} translator={translator} onChange={onChange} />;
       case "free_text":
-        return <FreeTextWidget question={question} onChange={onChange} />;
+        return <FreeTextWidget question={question} translator={translator} onChange={onChange} />;
       case "file_upload":
-        return <FileUploadWidget question={question} shareToken={shareToken} onChange={onChange} />;
+        return (
+          <FileUploadWidget
+            question={question}
+            translator={translator}
+            shareToken={shareToken}
+            onChange={onChange}
+          />
+        );
       default:
         return null;
     }
@@ -657,13 +1335,64 @@ function QuestionField({
   return (
     <fieldset className="rounded-xl border border-border/60 p-4">
       <legend className="px-1 text-sm font-semibold text-foreground">
-        {question.prompt}
-        {question.required ? <span className="ml-1 text-red-600 dark:text-red-400">*</span> : null}
+        <OperatorText text={question.promptText} />
+        {question.required ? (
+          <>
+            {/*
+              The asterisk is decoration; the word is the accessible name. A
+              screen reader reading "asterisk" tells a resident nothing, and the
+              word for it belongs in their language.
+            */}
+            <span className="ms-1 text-red-600 dark:text-red-400" aria-hidden="true">
+              *
+            </span>
+            <Copy of={portalMessageView(translator, "survey.required")} className="sr-only" />
+          </>
+        ) : null}
+        {/*
+          NEAR THE QUESTION, not in a footer. A resident deciding what a question
+          asks needs to know a machine worded it at the moment they read it.
+        */}
+        {badgeText ? <ProvenanceBadge text={badgeText} translator={translator} /> : null}
       </legend>
-      {question.helpText ? <p className="mb-3 text-xs text-muted-foreground">{question.helpText}</p> : null}
+      {question.helpTextText ? (
+        <p className="mb-3 text-xs text-muted-foreground">
+          <OperatorText text={question.helpTextText} />
+        </p>
+      ) : null}
+      {disclosures.length > 0 ? (
+        <p
+          className={cn(
+            "mb-3 rounded-lg border px-3 py-2 text-xs",
+            "border-amber-300/70 bg-amber-50/70 text-amber-900",
+            "dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100"
+          )}
+        >
+          {/*
+            Each sentence carries its OWN language rather than being joined into
+            one string under the page's. Nine of the eleven locales have no
+            catalog, so on those pages this disclosure is itself English — and a
+            disclosure a screen reader mispronounces, or lays out from the wrong
+            edge of a right-to-left page, is a disclosure that was not made.
+          */}
+          {disclosures.map((disclosure, index) => (
+            <span key={disclosure.sentence}>
+              {index > 0 ? " " : null}
+              <Copy of={disclosure} />
+            </span>
+          ))}
+        </p>
+      ) : null}
       <div className="mt-1">{renderWidget()}</div>
-      {error ? <p className="mt-2 text-xs text-destructive">{error}</p> : null}
-      <p className="sr-only">{def?.label}</p>
+      {error ? (
+        <p className="mt-2 text-xs text-destructive">
+          <PendingCopy>{error}</PendingCopy>
+        </p>
+      ) : null}
+      {/* The question TYPE, from the operator taxonomy in survey.ts — English. */}
+      <p className="sr-only">
+        <PendingCopy>{def?.label}</PendingCopy>
+      </p>
     </fieldset>
   );
 }
@@ -673,13 +1402,39 @@ function QuestionField({
  * emits the canonical answer_json shape that the submit route re-validates via
  * validateSurveyAnswer), then POSTs the whole response to the confined survey
  * submit path. Mirrors the comment SubmissionForm's honeypot + banner posture.
+ *
+ * THE HIGHEST-STAKES PARTICIPANT SURFACE IN THE PRODUCT, and why that decides
+ * how this component is typed. A comment a resident writes in the wrong language
+ * is still their comment; a survey question a resident MISUNDERSTANDS produces a
+ * wrong answer that enters the planning record and gets counted, and a wrong
+ * answer is worse than no answer. So neither the participant's language nor a
+ * question's provenance is optional here: `messages` and `PortalText` are
+ * required props, and a caller that has not resolved them does not compile.
  */
 export function PublicSurveyForm({
   shareToken,
   questions,
+  messages,
 }: {
   shareToken: string;
   questions: PortalSurveyQuestion[];
+  /**
+   * OpenPlan's own participant copy in the participant's language, already
+   * resolved server-side, plus which keys fell back to English.
+   *
+   * A bundle rather than a lookup function because functions cannot cross the
+   * server/client boundary, and rather than a locale code because that would
+   * make this component import the catalog and ship all eleven languages to one
+   * resident's phone. `loadPublicPortalBundle` puts it on `PublicPortalProps`,
+   * so the render site already has it.
+   *
+   * REQUIRED. The defect that has bitten this repo repeatedly is a finished
+   * capability made unreachable by a prop nobody passed; a default English
+   * bundle here would turn "the portal forgot to pass the language" into a
+   * silently English survey inside a Spanish page, which is precisely the
+   * failure this work exists to remove.
+   */
+  messages: PortalMessageBundle;
 }) {
   // Answers keyed by questionId; undefined = unanswered (skipped on submit).
   const [answers, setAnswers] = useState<Record<string, unknown>>({});
@@ -687,10 +1442,12 @@ export function PublicSurveyForm({
   const [website, setWebsite] = useState(""); // honeypot
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<PortalDisclosureView | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   // Remounts every widget on "submit another" so local widget state resets.
   const [formNonce, setFormNonce] = useState(0);
+
+  const translator = useMemo(() => createPortalTranslator(messages), [messages]);
 
   function setAnswer(questionId: string, answer: unknown) {
     setAnswers((previous) => {
@@ -713,7 +1470,20 @@ export function PublicSurveyForm({
       .map(([questionId, answer]) => ({ questionId, answer }));
 
     if (payloadAnswers.length === 0) {
-      setError("Please answer at least one question.");
+      // SAME CHECK, translated words. The condition is unchanged — nothing
+      // answered, no request — because the server validator is the authority on
+      // what a valid response is and its contract must not move. Only what the
+      // resident READS changes.
+      //
+      // Which sentence: with a required question on the form, "answer the
+      // required questions" is both true and in the catalog, so a Spanish
+      // resident gets Spanish. With nothing required it would be false, so the
+      // weaker English sentence is used and marked as English.
+      setError(
+        questions.some((question) => question.required)
+          ? portalMessageView(translator, "survey.requiredMissing")
+          : englishSentence(PENDING_PORTAL_COPY.noAnswers)
+      );
       return;
     }
 
@@ -730,27 +1500,84 @@ export function PublicSurveyForm({
       });
       const payload = (await response.json()) as { error?: string; questionId?: string };
       if (!response.ok) {
+        // The route's validation messages are English literals (it returns a
+        // `code` beside them, but the catalog has no key per
+        // `SurveyAnswerErrorCode` yet — see the handoff). They are shown as the
+        // server's own words, marked English, rather than passed off as the
+        // participant's language.
         if (payload.questionId) {
-          setFieldErrors({ [payload.questionId]: payload.error || "Please review this answer." });
+          setFieldErrors({ [payload.questionId]: payload.error || PENDING_PORTAL_COPY.reviewAnswer });
         }
-        throw new Error(payload.error || "Submission failed");
+        throw new Error(payload.error || "");
       }
       setSubmitted(true);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Submission failed");
+      const fromServer = submitError instanceof Error ? submitError.message : "";
+      setError(fromServer ? englishSentence(fromServer) : portalMessageView(translator, "survey.submitFailed"));
     } finally {
       setIsSubmitting(false);
     }
   }
 
+  /**
+   * WHAT THIS FORM IS NOT SAYING IN THE PARTICIPANT'S LANGUAGE.
+   *
+   * Rendered whenever the page is not in the language OpenPlan's copy is written
+   * in. TWO different things make that necessary and one condition covers both:
+   * `PENDING_PORTAL_COPY` is not empty, so some of this form's widget copy has
+   * no catalog key and is English on every locale; and a locale with no catalog
+   * at all falls every key back to English, which `PortalMessageBundle` reports
+   * but which `translator.t` returns as a plain string. `translator.ts` offers a
+   * surface two ways to be honest about that — "mark each fallback, or rely on
+   * the page-level disclosure that `hasFallbacks` drives" — and this form does
+   * BOTH: `portalMessageView` marks each fallback run with `lang="en"` for a screen reader,
+   * and this sentence tells a reader who is not using one. Neither substitutes
+   * for the other, because unlabelled English inside an otherwise-Spanish form
+   * tells a resident the agency chose to write it that way, and under Title VI an
+   * agency can be held to what it appears to have published.
+   *
+   * It uses `language.partialNotice`, a catalog key, so the disclosure is in the
+   * participant's language wherever a catalog exists — and on the nine locales
+   * where none does yet, the disclosure is itself one of the English runs it is
+   * disclosing, and is marked as English like the rest. The page may carry the
+   * same sentence from `PortalLanguageNotice`; that duplication is accepted
+   * deliberately, because this form is reached through a tab and a disclosure a
+   * resident has to scroll away to find is one they will not read.
+   *
+   * THE CONDITION IS THE PAGE'S LANGUAGE ALONE, and that is not a shortcut for
+   * the two reasons above — it is a third fact that outlives both. The
+   * question-TYPE label rendered `sr-only` in every fieldset is
+   * `SURVEY_QUESTION_TYPES[...].label`, an operator-taxonomy string from
+   * `survey.ts` that this catalog has no key for and is not proposed one, so a
+   * screen-reader participant meets English on this form on every non-English
+   * locale no matter how complete the catalog becomes. Landing the proposed keys
+   * shrinks what is untranslated; it does not make this notice false, and
+   * retiring it would have to wait on that label too.
+   */
+  const hasUntranslatedCopy = translator.locale !== PENDING_COPY_LOCALE;
+
+  // The whole form is one language and one direction. Set here rather than
+  // inherited: this is a client island reached through a tab, and a `dir` that
+  // depends on an ancestor another surface owns is a `dir` that goes missing.
+  const rootLanguage = { lang: translator.bcp47, dir: translator.direction } as const;
+
   if (submitted) {
     return (
-      <div className="public-success-state">
+      <div className="public-success-state" {...rootLanguage}>
         <CheckCircle2 className="mx-auto h-9 w-9 text-[color:var(--pine)]" />
-        <h3 className="mt-4 text-xl font-semibold text-foreground">Your survey response has been received</h3>
+        <h3 className="mt-4 text-xl font-semibold text-foreground">
+          <Copy of={portalMessageView(translator, "survey.received")} />
+        </h3>
         <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-          <p>Your response has been received by the project team.</p>
-          <p>It will be reviewed before it is used in engagement summaries or project reporting.</p>
+          <p className="font-medium text-foreground">
+            <Copy of={portalMessageView(translator, "portal.whatHappensNext")} />
+          </p>
+          <p>
+            <Copy of={portalMessageView(translator, "portal.receivedDetail")} />
+          </p>
+          <p>
+            <Copy of={portalMessageView(translator, "portal.reviewNotice")} />
+          </p>
         </div>
         <Button
           type="button"
@@ -766,19 +1593,32 @@ export function PublicSurveyForm({
             setFormNonce((nonce) => nonce + 1);
           }}
         >
-          Submit another response
+          <PendingCopy>{PENDING_PORTAL_COPY.submitAnother}</PendingCopy>
         </Button>
       </div>
     );
   }
 
   return (
-    <form className="public-form-shell" onSubmit={handleSubmit}>
+    <form className="public-form-shell" onSubmit={handleSubmit} {...rootLanguage}>
+      {hasUntranslatedCopy ? (
+        <p
+          className={cn(
+            "mb-4 rounded-lg border px-3 py-2 text-xs",
+            "border-amber-300/70 bg-amber-50/70 text-amber-900",
+            "dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-100"
+          )}
+        >
+          <Copy of={portalMessageView(translator, "language.partialNotice", { language: translator.nativeName })} />
+        </p>
+      ) : null}
+
       <div key={formNonce} className="space-y-4">
         {questions.map((question) => (
           <QuestionField
             key={question.id}
             question={question}
+            translator={translator}
             shareToken={shareToken}
             error={fieldErrors[question.id]}
             onChange={(answer) => setAnswer(question.id, answer)}
@@ -787,20 +1627,40 @@ export function PublicSurveyForm({
 
         <div className="space-y-1.5">
           <label htmlFor="survey-submitted-by" className="text-sm font-medium text-foreground">
-            Your name (optional)
+            <Copy of={portalMessageView(translator, "portal.nameLabel")} />{" "}
+            <span className="font-normal text-muted-foreground">
+              (<Copy of={portalMessageView(translator, "survey.optional")} />)
+            </span>
           </label>
+          {/*
+            The translated hint replaces the old English "Leave blank to respond
+            anonymously" placeholder: it carries the same fact — this is
+            optional — in the participant's language, and a placeholder cannot be
+            marked with a `lang` of its own.
+          */}
+          <p id="survey-submitted-by-hint" className="text-xs text-muted-foreground">
+            <Copy of={portalMessageView(translator, "portal.nameHint")} />
+          </p>
           <Input
             id="survey-submitted-by"
+            aria-describedby="survey-submitted-by-hint"
             value={submittedBy}
             maxLength={200}
-            placeholder="Leave blank to respond anonymously"
             onChange={(event) => setSubmittedBy(event.target.value)}
           />
         </div>
       </div>
 
-      {/* Honeypot — hidden from real users; bots fill it in. */}
-      <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
+      {/*
+        Honeypot — hidden from real users; bots fill it in. Deliberately NOT
+        translated: it is `aria-hidden`, so no participant and no screen reader
+        ever reads it, and a translated honeypot would be a tell.
+
+        `-start-[9999px]` rather than `-left-[9999px]`: on an Arabic page the
+        offscreen direction that keeps it out of the reading flow is the other
+        one.
+      */}
+      <div className="absolute -start-[9999px] opacity-0" aria-hidden="true">
         <label htmlFor="survey-website">Website</label>
         <input
           id="survey-website"
@@ -815,17 +1675,17 @@ export function PublicSurveyForm({
 
       {error ? (
         <p className="mb-4 mt-4 rounded-xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
-          {error}
+          <Copy of={error} />
         </p>
       ) : null}
 
       <div className="mt-5 flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">
-          Responses are reviewed by the project team before they inform summaries or reporting.
+          <Copy of={portalMessageView(translator, "portal.reviewNotice")} />
         </p>
         <Button type="submit" disabled={isSubmitting} className="min-w-[13rem] justify-center">
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-          Submit survey
+          <Copy of={isSubmitting ? portalMessageView(translator, "survey.submitting") : portalMessageView(translator, "survey.submit")} />
         </Button>
       </div>
     </form>

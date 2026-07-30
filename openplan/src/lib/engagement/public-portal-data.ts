@@ -22,6 +22,17 @@ import {
 } from "@/lib/engagement/context-layers";
 import { resolveMapPointQuestionView } from "@/lib/engagement/survey";
 import { EMPTY_PLACE_OF_RECORD, type PlaceOfRecord } from "@/lib/geographies/place-of-record";
+import { resolvePortalLocale, type ResolvedPortalLocale } from "@/lib/engagement/portal-i18n/locales";
+import { buildPortalMessageBundle } from "@/lib/engagement/portal-i18n/messages";
+import type { PortalMessageBundle } from "@/lib/engagement/portal-i18n/translator";
+import { readAcceptLanguageHeader } from "@/lib/engagement/portal-i18n/request-locale";
+import {
+  loadPortalTranslationIndex,
+  resolveOperatorText,
+  resolveOptionalOperatorText,
+  type PortalText,
+  type PortalTranslationIndex,
+} from "@/lib/engagement/portal-i18n/operator-text";
 import type { PortalSurveyQuestion } from "@/components/engagement/public-survey-form";
 import type { PublicCloseLoopEntry } from "@/components/engagement/public-close-loop";
 
@@ -540,12 +551,60 @@ type ApprovedItemRow = {
   created_at: string;
 };
 
+/**
+ * A category as a participant reads it — the operator's own words, in the
+ * participant's language, WITH the provenance that decides how they must be
+ * labelled.
+ *
+ * `label` and `description` are kept as plain strings and kept in the SOURCE
+ * language, unchanged. They are not the translated answer and must not be
+ * rendered as one: `labelText.text` is. The plain fields survive only so the
+ * portal component keeps compiling while its strings are migrated, and the
+ * split is deliberate — swapping `label` to the translated string silently
+ * would have published machine output with no caveat on any surface that had
+ * not yet been taught to render one.
+ */
+export type PortalCategoryView = {
+  id: string;
+  label: string;
+  description: string | null;
+  color: string | null;
+  labelText: PortalText;
+  descriptionText: PortalText | null;
+};
+
+/**
+ * A survey question with its operator-authored text resolved. Structurally a
+ * `PortalSurveyQuestion`, so it can be passed anywhere one is expected while
+ * carrying more.
+ */
+export type PortalSurveyQuestionView = Omit<PortalSurveyQuestion, "options"> & {
+  promptText: PortalText;
+  helpTextText: PortalText | null;
+  options: Array<PortalSurveyQuestion["options"][number] & { labelText: PortalText }>;
+};
+
+/** A close-the-loop entry with its operator-authored text resolved. */
+export type PortalCloseLoopEntryView = PublicCloseLoopEntry & {
+  themeTitleText: PortalText;
+  youSaidText: PortalText;
+  weDidText: PortalText;
+  categoryLabelText: PortalText | null;
+};
+
+/** The campaign's own operator-authored text, resolved. */
+export type PortalCampaignText = {
+  title: PortalText;
+  summary: PortalText | null;
+  publicDescription: PortalText | null;
+};
+
 // The prop object PublicEngagementPortal consumes (kept structural so both pages
 // pass it through with a spread).
 export type PublicPortalProps = {
   shareToken: string;
   acceptingSubmissions: boolean;
-  categories: { id: string; label: string; description: string | null; color: string | null }[];
+  categories: PortalCategoryView[];
   approvedItems: {
     id: string;
     categoryId: string | null;
@@ -563,8 +622,8 @@ export type PublicPortalProps = {
   engagementType: string;
   demographicsEnabled: boolean;
   projectContext: { name: string; summary: string | null } | null;
-  surveyQuestions: PortalSurveyQuestion[];
-  closeLoopEntries: PublicCloseLoopEntry[];
+  surveyQuestions: PortalSurveyQuestionView[];
+  closeLoopEntries: PortalCloseLoopEntryView[];
   // Only true when an email transport is actually configured — the "notify me"
   // affordance is hidden otherwise so the UI never promises email it can't send.
   emailUpdatesAvailable: boolean;
@@ -584,19 +643,84 @@ export type PublicPortalProps = {
    * a fact about this campaign.
    */
   contextLayers: ParticipantContextLayerSet;
+  /**
+   * WHICH LANGUAGE THIS PAGE IS IN, and how that was decided.
+   *
+   * Resolved here, once, for the same reason `mapFraming` is: two participant
+   * surfaces render this portal and a language they compute separately is a
+   * language they can disagree about. A page whose heading is Spanish and whose
+   * form is English does not look partly translated — it looks like the agency
+   * answered in English on purpose.
+   *
+   * Carries `direction`, so `dir="rtl"` for Arabic and Farsi is a value that
+   * travels rather than a derivation each component has to remember. Two of the
+   * eleven languages render visibly broken without it.
+   */
+  locale: ResolvedPortalLocale;
+  /**
+   * OpenPlan's OWN participant-facing copy in that language, already resolved:
+   * this locale's strings plus the list of keys that fell back to English.
+   *
+   * A plain object rather than a lookup function, because functions do not
+   * cross the server/client boundary — the client component rebuilds the
+   * translator from this with `createPortalTranslator`. It also means a
+   * participant downloads their own language and not the other ten.
+   */
+  messages: PortalMessageBundle;
 };
 
 export type PublicPortalBundle = {
   campaign: PublicPortalCampaign;
   project: PublicPortalProject | null;
   acceptingSubmissions: boolean;
+  /**
+   * The campaign's own operator-authored text in the participant's language,
+   * with provenance. The raw `campaign.title` / `.summary` /
+   * `.public_description` above are the SOURCE strings and stay untranslated —
+   * a surface that renders them is rendering the original, which is sometimes
+   * right (an operator console) and never right on a participant page.
+   */
+  campaignText: PortalCampaignText;
+  locale: ResolvedPortalLocale;
+  messages: PortalMessageBundle;
   portalProps: PublicPortalProps;
 };
 
-export async function loadPublicPortalBundle(shareToken: string): Promise<PublicPortalBundle | null> {
+/**
+ * What the CALLER knows about the participant's language that this loader
+ * cannot work out for itself: the explicit choice in the URL.
+ *
+ * `Accept-Language` is read here rather than passed, so a surface that forgets
+ * this argument still honours the resident's device — the degradation is to
+ * "no explicit choice", never to "English regardless".
+ */
+export type PublicPortalLocaleRequest = {
+  /** The raw `?lang=` value. An unsupported one falls back and is disclosed. */
+  requestedLocale?: string | null;
+  /**
+   * Overrides the request header. Tests pass it; production does not need to.
+   */
+  acceptLanguage?: string | null;
+};
+
+export async function loadPublicPortalBundle(
+  shareToken: string,
+  localeRequest?: PublicPortalLocaleRequest
+): Promise<PublicPortalBundle | null> {
   if (!shareToken || shareToken.length < 8) return null;
 
   const supabase = createServiceRoleClient();
+
+  const acceptLanguage =
+    localeRequest?.acceptLanguage !== undefined
+      ? localeRequest.acceptLanguage
+      : await readAcceptLanguageHeader();
+
+  const locale = resolvePortalLocale({
+    requested: localeRequest?.requestedLocale ?? null,
+    acceptLanguage,
+  });
+  const messages = buildPortalMessageBundle(locale);
 
   const { data: campaignData } = await supabase
     .from("engagement_campaigns")
@@ -616,6 +740,7 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
     { data: approvedItemsData },
     surveyDefinition,
     closeLoopRows,
+    translationIndex,
   ] = await Promise.all([
     campaign.project_id
       ? supabase.from("projects").select("id, name, summary").eq("id", campaign.project_id).maybeSingle()
@@ -639,6 +764,15 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
     loadSurveyDefinition(supabase, campaign.id),
     // Published entries only — drafts never leave the operator.
     loadPublishedCloseLoopEntries(supabase, campaign.id),
+    // ONE read for every operator translation this campaign has in the
+    // participant's language. Not one per string: a portal resolves the
+    // campaign, its categories, its questions, its options and its close-loop
+    // entries, which is easily a hundred lookups on a page that opens from a
+    // phone. A failed read here becomes `unreadable` on every string it would
+    // have answered, never `untranslated` — a lookup that broke and an agency
+    // that chose not to translate are different facts, and only one of them is
+    // about this campaign.
+    loadPortalTranslationIndex(supabase, { campaignId: campaign.id, locale: locale.locale }),
   ]);
 
   const project = (projectData ?? null) as PublicPortalProject | null;
@@ -653,7 +787,7 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
     approvedItems,
   });
 
-  const surveyQuestions: PortalSurveyQuestion[] = surveyDefinition.questions.map((question) => {
+  const surveyQuestions: PortalSurveyQuestionView[] = surveyDefinition.questions.map((question) => {
     // A `map_point` question that names no camera of its own inherits the
     // campaign's framing instead of opening on the continent, and carries the
     // sentence saying which. The question's own camera always wins — see
@@ -672,22 +806,67 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
       required: question.required,
       config: mapPoint ? mapPoint.config : question.config_json,
       mapFramingNote: mapPoint ? mapPoint.framingNote : null,
+      promptText: resolveOperatorText(
+        translationIndex,
+        { entity: "survey_question", id: question.id, field: "prompt" },
+        question.prompt
+      ),
+      helpTextText: resolveOptionalOperatorText(
+        translationIndex,
+        { entity: "survey_question", id: question.id, field: "help_text" },
+        question.help_text
+      ),
       options: (surveyDefinition.optionsByQuestion.get(question.id) ?? []).map((option) => ({
         id: option.id,
         label: option.label,
         value: option.value,
+        // An option label is as participant-facing as the prompt above it: a
+        // Spanish survey whose answers are in English cannot be answered.
+        labelText: resolveOperatorText(
+          translationIndex,
+          { entity: "survey_question_option", id: option.id, field: "label" },
+          option.label
+        ),
       })),
     };
   });
 
-  const categoryLabelById = new Map(categories.map((category) => [category.id, category.label]));
-  const closeLoopEntries: PublicCloseLoopEntry[] = closeLoopRows.map((entry) => ({
-    id: entry.id,
-    themeTitle: entry.theme_title,
-    youSaid: entry.you_said,
-    weDid: entry.we_did,
-    categoryLabel: entry.category_id ? categoryLabelById.get(entry.category_id) ?? null : null,
-  }));
+  const categoryById = new Map(categories.map((category) => [category.id, category]));
+  const closeLoopEntries: PortalCloseLoopEntryView[] = closeLoopRows.map((entry) => {
+    const category = entry.category_id ? categoryById.get(entry.category_id) ?? null : null;
+
+    return {
+      id: entry.id,
+      themeTitle: entry.theme_title,
+      youSaid: entry.you_said,
+      weDid: entry.we_did,
+      categoryLabel: category?.label ?? null,
+      themeTitleText: resolveOperatorText(
+        translationIndex,
+        { entity: "close_loop_entry", id: entry.id, field: "theme_title" },
+        entry.theme_title
+      ),
+      youSaidText: resolveOperatorText(
+        translationIndex,
+        { entity: "close_loop_entry", id: entry.id, field: "you_said" },
+        entry.you_said
+      ),
+      weDidText: resolveOperatorText(
+        translationIndex,
+        { entity: "close_loop_entry", id: entry.id, field: "we_did" },
+        entry.we_did
+      ),
+      // The category's OWN translation, not a second one keyed to the entry —
+      // one category label translated once, wherever it appears.
+      categoryLabelText: category
+        ? resolveOperatorText(
+            translationIndex,
+            { entity: "category", id: category.id, field: "label" },
+            category.label
+          )
+        : null,
+    };
+  });
 
   // Photos live in a PRIVATE service-role-only bucket. Short-TTL signed URLs are
   // minted here for APPROVED items only (the query filters status) — pending or
@@ -712,7 +891,18 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
   const portalProps: PublicPortalProps = {
     shareToken,
     acceptingSubmissions,
-    categories: categories.map((c) => ({ id: c.id, label: c.label, description: c.description, color: c.color })),
+    categories: categories.map((c) => ({
+      id: c.id,
+      label: c.label,
+      description: c.description,
+      color: c.color,
+      labelText: resolveOperatorText(translationIndex, { entity: "category", id: c.id, field: "label" }, c.label),
+      descriptionText: resolveOptionalOperatorText(
+        translationIndex,
+        { entity: "category", id: c.id, field: "description" },
+        c.description
+      ),
+    })),
     approvedItems: approvedItems.map((item) => ({
       id: item.id,
       categoryId: item.category_id,
@@ -746,7 +936,34 @@ export async function loadPublicPortalBundle(shareToken: string): Promise<Public
     // unreadable one look identical on a map, and only one of them is a fact
     // about this campaign.
     contextLayers: await loadParticipantContextLayers(supabase, campaign.id),
+    locale,
+    messages,
   };
 
-  return { campaign, project, acceptingSubmissions, portalProps };
+  const campaignText: PortalCampaignText = {
+    title: resolveOperatorText(
+      translationIndex,
+      { entity: "campaign", id: campaign.id, field: "title" },
+      campaign.title
+    ),
+    summary: resolveOptionalOperatorText(
+      translationIndex,
+      { entity: "campaign", id: campaign.id, field: "summary" },
+      campaign.summary
+    ),
+    publicDescription: resolveOptionalOperatorText(
+      translationIndex,
+      { entity: "campaign", id: campaign.id, field: "public_description" },
+      campaign.public_description
+    ),
+  };
+
+  return { campaign, project, acceptingSubmissions, campaignText, locale, messages, portalProps };
 }
+
+/**
+ * Exported so a test can build a resolver index without a database. Re-exported
+ * rather than re-implemented, so a test can never assert against a second copy
+ * of the resolution rules.
+ */
+export type { PortalText, PortalTranslationIndex };

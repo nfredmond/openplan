@@ -439,10 +439,19 @@ describe("the participant maps render the operator's layers and their legend", (
 
 describe("the public engagement portal", () => {
   async function renderPortal(contextLayers: ParticipantContextLayerSet, acceptingSubmissions = true) {
-    const [{ PublicEngagementPortal }, { resolvePortalMapFraming }] = await Promise.all([
-      import("@/components/engagement/public-engagement-portal"),
-      import("@/lib/engagement/public-portal-data"),
-    ]);
+    const [{ PublicEngagementPortal }, { resolvePortalMapFraming }, { resolvePortalLocale }, { buildPortalMessageBundle }] =
+      await Promise.all([
+        import("@/components/engagement/public-engagement-portal"),
+        import("@/lib/engagement/public-portal-data"),
+        import("@/lib/engagement/portal-i18n/locales"),
+        import("@/lib/engagement/portal-i18n/messages"),
+      ]);
+
+    // The portal cannot render without knowing which language it is in — the
+    // props are required so a render site cannot silently answer a Vietnamese
+    // participant in English. Resolved rather than hand-written, so this fixture
+    // cannot describe a locale the resolver would never produce.
+    const locale = resolvePortalLocale({});
 
     return render(
       <PublicEngagementPortal
@@ -457,6 +466,8 @@ describe("the public engagement portal", () => {
         categories={[]}
         approvedItems={[]}
         contextLayers={contextLayers}
+        locale={locale}
+        messages={buildPortalMessageBundle(locale)}
       />
     );
   }

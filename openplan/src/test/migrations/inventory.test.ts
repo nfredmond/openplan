@@ -53,16 +53,33 @@ const EXPECTED = {
   // and already has its policies, so no count below changes. Recorded because a
   // reader diffing the migration list against these notes would otherwise find
   // it unaccounted for and have to re-derive that absence.
-  policies: 548,
-  permissive: 308,
+  //
+  // +4 permissive policies (SELECT + INSERT + UPDATE + DELETE) from
+  // 20260729000004 (engagement_content_translations), the per-locale variants of
+  // the text an agency wrote for its participant surfaces. All three writes are
+  // role-AWARE — each calls workspace_member_can_write — so `restrictive` again
+  // does not move, which is the intended shape for a new table. +1 table,
+  // +1 RLS-enabled table, +1 table with policies, and no new view. The same
+  // migration also adds engagement_campaigns.default_content_locale, which
+  // changes no count here for the reason 20260729000003 did not.
+  //
+  // These four are the only numbers in this block NOT standing on a live schema:
+  // 20260729000004 is in the tree and not yet applied. They were verified the
+  // nearest available way instead — the migration was executed inside a
+  // BEGIN/ROLLBACK against the local database, where `pg_policies` returned
+  // exactly these four policies (one SELECT, three role-aware writes),
+  // `relrowsecurity` was true, and the constraint list matched the file. Re-check
+  // against `pg_policies` once it is applied for real.
+  policies: 552,
+  permissive: 312,
   restrictive: 240,
-  permissiveWrites: 201,
+  permissiveWrites: 204,
   expanded: 252,
-  tablesWithPolicies: 107,
-  relations: 124,
-  tables: 118,
+  tablesWithPolicies: 108,
+  relations: 125,
+  tables: 119,
   views: 6,
-  rlsEnabledTables: 108,
+  rlsEnabledTables: 109,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
