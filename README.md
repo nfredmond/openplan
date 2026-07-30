@@ -40,13 +40,33 @@ data are yours.
 
 ## Development quick start
 
+You need Node and a running Docker daemon — the local Supabase stack is
+containerised, and `supabase start` waits indefinitely without it.
+
 ```bash
-cd openplan
+cd openplan                     # the app lives here; there is no root package.json
 npm install
-npm exec supabase start      # local Postgres + Auth + Storage (Docker)
-npm exec supabase db reset   # apply all migrations
-npm run dev                  # http://localhost:3000
+npm exec -- supabase start      # local Postgres + Auth + Storage; prints your keys
+cp .env.example .env.local      # then fill in the four required values (below)
+npm exec -- supabase db reset   # apply all migrations to the empty local database
+npm run dev                     # http://localhost:3000
 ```
+
+**The `--` is required.** `npm exec supabase start` fails with *"Must specify one
+of --local, --linked…"* because npm consumes the flag before the Supabase CLI
+sees it.
+
+`.env.example` lists every variable OpenPlan reads, and marks the four the app
+does not work without: the three Supabase values — all three printed by
+`supabase start` — and a **public** Mapbox token (`pk.`, free from mapbox.com).
+Without the Mapbox token every map renders blank, which is most of the product.
+Add `ANTHROPIC_API_KEY` for the planning assistant, comment synthesis, moderation
+and machine translation. Everything else is optional and degrades honestly when
+unset, saying what is missing rather than failing quietly.
+
+**`db reset` destroys local data.** It is right on a fresh machine, where the
+database is empty. On a machine you have been working on, use
+`npm exec -- supabase migration up`, which applies only the new migrations.
 
 Useful gates:
 
