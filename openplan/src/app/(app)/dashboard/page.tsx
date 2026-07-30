@@ -3,6 +3,7 @@ import { FileText, FolderKanban, Landmark, Radar, ShieldCheck } from "lucide-rea
 import { DashboardKpiGrid } from "@/components/dashboard/dashboard-kpi-grid";
 import { DashboardOperatorGuidance } from "@/components/dashboard/dashboard-operator-guidance";
 import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
+import { BuildIdentityLine } from "@/components/dashboard/build-identity-line";
 import { DeploymentHealthPanel } from "@/components/dashboard/deployment-health-panel";
 import { FirstRunChecklist } from "@/components/onboarding/first-run-checklist";
 import { DashboardWorkspaceIntro } from "@/components/dashboard/dashboard-workspace-intro";
@@ -367,6 +368,10 @@ export default async function DashboardPage() {
       </div>
 
       <RunHistory workspaceId={workspaceId} />
+
+      {/* Last, and always. A self-hosted instance that cannot name its own
+          version makes every bug report unanswerable — see `app-version.ts`. */}
+      <BuildIdentityLine />
     </section>
   );
 }
