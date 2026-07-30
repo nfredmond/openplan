@@ -14,6 +14,7 @@ import { EngagementBulkModeration } from "@/components/engagement/engagement-bul
 import { EngagementAppendixReadinessNote } from "@/components/engagement/engagement-appendix-readiness-note";
 import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
 import { CampaignAccessibilityEditor } from "@/components/engagement/campaign-accessibility-editor";
+import { CommentImportPanel } from "@/components/engagement/comment-import-panel";
 import {
   MACHINE_TRANSLATION_BATCH_MAX,
   TRANSLATION_ACCEPT_BATCH_MAX,
@@ -988,6 +989,25 @@ export default async function EngagementCampaignDetailPage({
             readFailure={contextLayers.readFailure}
             canWrite={canManageContextLayers}
           />
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Offline input</p>
+                <h2 className="module-section-title">Comments that did not come through the portal</h2>
+                <p className="module-section-description">
+                  The open house, the comment cards, the project inbox, the council transcript. Everything
+                  this page says about the campaign is computed over the comments it holds, so input that
+                  never got entered is missing from the synthesis, the representativeness reading and the
+                  appendix — and it is missing in a predictable direction, because portal submissions skew
+                  toward people with a device and a data plan.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <CommentImportPanel campaignId={campaign.id} />
+            </div>
+          </article>
 
           <article className="module-section-surface">
             <div className="module-section-header">

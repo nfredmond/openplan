@@ -9,6 +9,13 @@ export const BODY_LIMITS = {
   // Public engagement photo upload: 5 MB image payload (matches the
   // engagement-photos bucket file_size_limit) plus small headroom.
   publicPhotoRaw: 5 * 1024 * 1024,
+  // Offline comment import: the CSV arrives as a JSON string field capped at
+  // 4,000,000 characters by the route's own schema. 5 MiB leaves room for the
+  // JSON envelope and for multi-byte characters — a file of comments in Arabic
+  // or Chinese is several bytes per character, and refusing it on size while
+  // accepting the same number of English comments would be a limit that falls
+  // hardest on the languages this product exists to serve.
+  commentImportJson: 5 * 1024 * 1024,
   // Knowledge Base document upload: 25 MiB raw bytes (matches the kb-documents
   // bucket file_size_limit in 20260723000001_knowledge_base.sql).
   kbDocumentRaw: 25 * 1024 * 1024,
