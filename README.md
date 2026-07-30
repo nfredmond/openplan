@@ -38,35 +38,217 @@ data are yours.
 - `schemas/` — reusable schemas.
 - `workers/` — Python modeling workers (AequilibraE screening runs, county validation).
 
-## Development quick start
+## Running OpenPlan on one computer
 
-You need Node and a running Docker daemon — the local Supabase stack is
-containerised, and `supabase start` waits indefinitely without it.
+**Who this is for.** Whoever at your organisation installs software — an IT
+person, a GIS analyst, anyone comfortable installing a program and typing in a
+terminal. It assumes **no prior experience** with any of the tools involved and
+explains each one. You do not need to be a programmer.
+
+**Who this is NOT for.** Planners. A planner should be handed a web address and
+a sign-up form, not asked to install anything. That means one person does the
+setup below once, on a server, and everyone else just visits the URL — see
+[`openplan/docs/SELF_HOSTING.md`](openplan/docs/SELF_HOSTING.md) for the
+deployed version. The instructions here put OpenPlan on **one** computer, which
+is the right way to evaluate it before committing to a deployment.
+
+**Roughly 30–60 minutes**, most of it waiting for downloads.
+
+### Step 1 — install the two programs OpenPlan needs
+
+OpenPlan is a website that runs on your own machine. Two free programs make that
+possible.
+
+**Node.js** runs the website itself. **Docker Desktop** runs the database —
+"Desktop" is just the name; it is a normal application with an icon.
+
+You install both once and then mostly forget them.
+
+<details>
+<summary><b>Windows</b></summary>
+
+1. **Node.js** — go to [nodejs.org](https://nodejs.org). Click the button
+   labelled **LTS** (that means "long-term support" — the stable one). Run the
+   downloaded `.msi` file and click Next until it finishes. Accept every default.
+2. **Docker Desktop** — go to
+   [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)
+   and download for Windows. Run the installer.
+   - If it offers "Use WSL 2", say yes. It may ask you to restart.
+   - **After it finishes, open Docker Desktop from the Start menu and leave it
+     running.** Look for the whale icon near the clock. Wait until it stops
+     animating — that can take a minute or two. If Docker Desktop is not open,
+     nothing later in this guide will work.
+3. Open **PowerShell** (Start menu → type "PowerShell").
+
+</details>
+
+<details>
+<summary><b>macOS</b></summary>
+
+1. **Node.js** — go to [nodejs.org](https://nodejs.org). Click the button
+   labelled **LTS**. Open the downloaded `.pkg` and click through the installer.
+2. **Docker Desktop** — go to
+   [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/).
+   **You must pick the right one:** click the Apple menu → *About This Mac*. If
+   it says **Apple** (M1/M2/M3/M4), download the Apple Silicon version. If it
+   says **Intel**, download the Intel version. The wrong one fails in a confusing
+   way.
+   - Open the downloaded `.dmg` and drag the Docker whale into Applications.
+   - **Open Docker from Applications and leave it running.** It will ask for your
+     password the first time — that is expected. Wait for the whale in the menu
+     bar to stop animating.
+3. Open **Terminal** (Applications → Utilities → Terminal).
+
+</details>
+
+<details>
+<summary><b>Ubuntu / Debian Linux</b></summary>
+
+There is no click-through installer worth using here; paste these into a
+terminal. You will be asked for your password.
 
 ```bash
-cd openplan                     # the app lives here; there is no root package.json
-npm install
-npm exec -- supabase start      # local Postgres + Auth + Storage; prints your keys
-cp .env.example .env.local      # then fill in the four required values (below)
-npm exec -- supabase db reset   # apply all migrations to the empty local database
-npm run dev                     # http://localhost:3000
+# Node.js. The version in Ubuntu's own catalogue is too old for OpenPlan,
+# so this adds the official Node.js source first.
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Docker.
+curl -fsSL https://get.docker.com | sudo sh
+sudo usermod -aG docker $USER
 ```
 
-**The `--` is required.** `npm exec supabase start` fails with *"Must specify one
-of --local, --linked…"* because npm consumes the flag before the Supabase CLI
-sees it.
+**Now log out of the computer and log back in.** The last line gives your
+account permission to use Docker, and that permission only takes effect on a
+fresh login. Skipping this is the single most common reason the next steps fail.
 
-`.env.example` lists every variable OpenPlan reads, and marks the four the app
-does not work without: the three Supabase values — all three printed by
-`supabase start` — and a **public** Mapbox token (`pk.`, free from mapbox.com).
-Without the Mapbox token every map renders blank, which is most of the product.
-Add `ANTHROPIC_API_KEY` for the planning assistant, comment synthesis, moderation
-and machine translation. Everything else is optional and degrades honestly when
-unset, saying what is missing rather than failing quietly.
+</details>
 
-**`db reset` destroys local data.** It is right on a fresh machine, where the
-database is empty. On a machine you have been working on, use
-`npm exec -- supabase migration up`, which applies only the new migrations.
+**Check both installed correctly.** In your terminal, type each of these and
+press Enter:
+
+```bash
+node --version
+docker info
+```
+
+- `node --version` should print `v20.` or higher — for example `v22.11.0`.
+  A lower number, or "command not found", means Node.js did not install; try
+  step 1 again.
+- `docker info` should print about thirty lines of details. If it says
+  **"Cannot connect to the Docker daemon"**, Docker is installed but not
+  *running* — open Docker Desktop and wait for the whale to settle, then try
+  again.
+
+> Use `docker info`, not `docker --version`. The version command answers even
+> when Docker is switched off, so it will tell you everything is fine when it
+> is not.
+
+### Step 2 — get the OpenPlan code and set it up
+
+Type these one at a time, waiting for each to finish.
+
+```bash
+git clone https://github.com/nfredmond/openplan.git
+cd openplan/openplan
+npm install
+```
+
+`git clone` copies OpenPlan to your computer. `npm install` downloads the
+hundreds of building blocks it depends on — including the database tool used in
+the next step, so there is nothing else to install by hand. It takes a minute.
+
+> `npm install` prints a yellow warning about "install scripts not yet covered
+> by allowScripts", naming Docker- and database-related packages. **This is
+> normal and nothing is broken.** Carry on.
+
+Note the `cd openplan/openplan` — the folder really does contain a folder of the
+same name, and the second one is where every command below is run.
+
+### Step 3 — start the database
+
+```bash
+npm exec -- supabase start
+```
+
+The first time, this downloads several gigabytes and can take **ten minutes or
+more** with no visible progress for long stretches. That is expected. Leave it
+alone. Later runs take seconds.
+
+When it finishes it prints a block of text containing an **API URL** and two
+long strings labelled **anon key** and **service_role key**. **Leave this window
+open — you need to copy those three values in the next step.**
+
+> Those two dashes in `npm exec -- supabase` are required. Without them you get
+> the error *"Must specify one of --local, --linked…"*.
+
+### Step 4 — fill in the settings file
+
+```bash
+cp .env.example .env.local
+```
+
+That makes a settings file. Open `.env.local` in any text editor — Notepad,
+TextEdit, or `nano .env.local` — and fill in four lines. The file explains every
+setting; these four are the ones OpenPlan cannot start without.
+
+| Setting | What to paste |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | the **API URL** printed in step 3 |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | the **anon key** printed in step 3 |
+| `SUPABASE_SERVICE_ROLE_KEY` | the **service_role key** printed in step 3 |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | a free map key — see below |
+
+**The map key.** OpenPlan draws maps using a free service called Mapbox. Make a
+free account at [mapbox.com](https://mapbox.com), find "Access tokens", and copy
+the **default public token**. It starts with `pk.` — the public prefix matters,
+because a secret token (`sk.`) will not work in a browser. Without this key
+OpenPlan still runs, but every map is blank, and the map is most of the product.
+
+Everything else in the file is optional. OpenPlan works without it and says
+plainly which feature is unavailable rather than failing silently. The one worth
+adding later is `ANTHROPIC_API_KEY`, which turns on the AI assistant, comment
+summarising, and translation.
+
+### Step 5 — build the database tables
+
+```bash
+npm exec -- supabase db reset
+```
+
+This creates the ~157 tables OpenPlan uses. It prints a long list. Takes a
+minute.
+
+> **Only ever run this on a fresh install.** `db reset` erases everything in the
+> local database and rebuilds it. Once you have real data, use
+> `npm exec -- supabase migration up` instead, which only adds what is new.
+
+### Step 6 — start OpenPlan
+
+```bash
+npm run dev
+```
+
+Wait for it to print `Ready`, then open **http://localhost:3000** in your
+browser. Click **Create your free workspace** and make an account. The account
+lives only on this computer.
+
+**To stop OpenPlan**, click the terminal window and press `Ctrl+C`. To start it
+again later, open a terminal, `cd` back into the `openplan/openplan` folder, and
+run `npm run dev`. Docker Desktop needs to be running first — the database lives
+there.
+
+### If something goes wrong
+
+| What you see | What it means |
+|---|---|
+| `Cannot connect to the Docker daemon` | Docker Desktop is not running. Open it and wait for the whale icon to settle. |
+| `supabase start` seems frozen | On a first run this is normal for up to ten minutes. Leave it. |
+| `Must specify one of --local, --linked` | You left out the two dashes: it is `npm exec -- supabase …` |
+| `command not found: node` or `npm` | Node.js did not install, or the terminal was open before you installed it. Close the terminal, open a new one, try again. |
+| `EADDRINUSE` / `port 3000 already in use` | OpenPlan is already running in another window, or something else is using that port. Use `npm run dev -- --port 3001`. |
+| Pages load but every map is blank | The Mapbox key is missing or wrong. It must start with `pk.` |
+| `permission denied` from Docker (Linux) | You skipped the log-out-and-back-in after the Docker install in step 1. |
 
 Useful gates:
 
