@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { type WorkspaceRole, WORKSPACE_ROLES } from "@/lib/auth/role-matrix";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { invitationPath } from "@/lib/workspaces/invitation-path";
 
 export const WORKSPACE_INVITATION_STATUSES = ["pending", "accepted", "declined", "revoked", "expired"] as const;
 
@@ -66,6 +67,22 @@ const ROLE_RANK: Record<WorkspaceRole, number> = {
   owner: 3,
 };
 
+/**
+ * WHAT ACCEPTING ACTUALLY GRANTS, in words the person deciding can act on.
+ *
+ * Kept beside `ROLE_RANK` so the sentence and the authority it describes are
+ * edited together — a role whose powers change and whose description does not
+ * is a consent screen that misinforms. `Record<WorkspaceRole, …>` rather than
+ * `Record<string, …>` makes a new role a build error here rather than a blank
+ * space on the page where the grant should be stated.
+ */
+export const WORKSPACE_ROLE_DESCRIPTIONS: Record<WorkspaceRole, string> = {
+  owner: "Full control, including billing-free workspace settings and ownership transfer.",
+  admin: "Manage the team and all workspace content.",
+  member: "Create and edit workspace content.",
+  viewer: "Read everything, change nothing.",
+};
+
 function isWorkspaceRole(value: string): value is WorkspaceRole {
   return (WORKSPACE_ROLES as readonly string[]).includes(value);
 }
@@ -99,12 +116,35 @@ export function defaultInvitationExpiresAt(now = new Date()): Date {
   return new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 }
 
+/**
+ * WHERE AN INVITATION LINK LANDS, and why it is no longer `/sign-up`.
+ *
+ * It used to point at `/sign-up?invite=…&redirect=/dashboard`, and the sign-in
+ * form that followed POSTed the token to `/accept` on the way past. Signing in
+ * WAS accepting: a person who followed the link to see what they had been sent
+ * joined a workspace without being shown its name, the role they were given, or
+ * who invited them — and there was no way to say no, because
+ * `/api/workspaces/invitations/decline` existed with nothing calling it.
+ *
+ * Now the link lands on the invitation itself. That page states what is being
+ * offered and by whom, and accepting and declining are two buttons a person
+ * chooses between. Signing in is authentication again, not a decision.
+ *
+ * The token stays in the PATH rather than the query so it survives the
+ * sign-up → sign-in hop as a plain redirect target, which is one fewer place
+ * for it to be dropped.
+ */
 export function buildInvitationUrl(origin: string, token: string): string {
-  const url = new URL("/sign-up", origin);
-  url.searchParams.set("invite", token);
-  url.searchParams.set("redirect", "/dashboard");
-  return url.toString();
+  return new URL(invitationPath(token), origin).toString();
 }
+
+/**
+ * Re-exported so server callers have one import for the invitation vocabulary.
+ * It is DEFINED in `invitation-path.ts` because this module imports
+ * `node:crypto`, and the sign-in form that also needs the path runs in the
+ * browser — see that file.
+ */
+export { invitationPath };
 
 export function higherWorkspaceRole(left: WorkspaceRole, right: WorkspaceRole): WorkspaceRole {
   return ROLE_RANK[left] >= ROLE_RANK[right] ? left : right;

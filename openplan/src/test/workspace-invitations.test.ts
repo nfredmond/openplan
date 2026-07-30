@@ -86,9 +86,25 @@ describe("workspace invitation helpers", () => {
     expect(tokenPrefixFromHash(tokenHash)).toBe(tokenHash.slice(0, 12));
   });
 
-  it("builds sign-up URLs that carry invite and dashboard redirect context", () => {
+  /**
+   * The link lands on the INVITATION, not on sign-up.
+   *
+   * It used to point at `/sign-up?invite=…&redirect=/dashboard`, and the
+   * sign-in form accepted the invitation on the way past — so following the
+   * link to read it joined the workspace. The destination is now the page that
+   * states what is being offered and carries both answers.
+   */
+  it("builds invitation URLs that land on the invitation itself", () => {
     expect(buildInvitationUrl("https://openplan.example", "token-123")).toBe(
-      "https://openplan.example/sign-up?invite=token-123&redirect=%2Fdashboard"
+      "https://openplan.example/invitations/token-123"
+    );
+  });
+
+  it("escapes a token that would otherwise change the path it lands on", () => {
+    // A token is generated, not user-supplied, but the URL builder must not be
+    // the thing standing between a stray `/` or `?` and a different route.
+    expect(buildInvitationUrl("https://openplan.example", "a/b?c=d")).toBe(
+      "https://openplan.example/invitations/a%2Fb%3Fc%3Dd"
     );
   });
 
@@ -120,7 +136,10 @@ describe("workspace invitation helpers", () => {
     expect(result.ok).toBe(true);
     if (!result.ok) throw new Error("expected an invitation");
     expect(result.reissued).toBe(false);
-    expect(result.invitationUrl).toContain("/sign-up?invite=");
+    expect(result.invitationUrl).toContain("/invitations/");
+    // The token must not ride in a query string on the link that gets emailed
+    // around: the path is the redirect target the sign-up hop carries forward.
+    expect(result.invitationUrl).not.toContain("?invite=");
     expect(insertMock).toHaveBeenCalledTimes(1);
     expect(storedRows[0]).toMatchObject({
       workspace_id: "11111111-1111-4111-8111-111111111111",

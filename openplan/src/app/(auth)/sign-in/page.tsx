@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { invitationPath } from "@/lib/workspaces/invitation-path";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -59,22 +60,27 @@ function SignInForm() {
       return;
     }
 
-    if (inviteToken) {
-      const invitationResponse = await fetch("/api/workspaces/invitations/accept", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token: inviteToken }),
-      });
+    /*
+      SIGNING IN IS NOT ACCEPTING.
 
-      if (!invitationResponse.ok) {
-        const result = await invitationResponse.json().catch(() => null);
-        setError(result?.error ?? "Could not accept this workspace invitation");
-        setLoading(false);
-        return;
-      }
-    }
+      This form used to POST the invite token to
+      `/api/workspaces/invitations/accept` right here, so a person who followed
+      an invitation link to SEE what they had been sent joined the workspace by
+      the act of authenticating — never shown its name, the role they were
+      granted, or who invited them, and with no way to decline. The decision now
+      belongs to `/invitations/[token]`, which the invitation link points at and
+      which `redirectTarget` carries us to.
 
-    const nextPath = redirectTarget && redirectTarget.startsWith("/") ? redirectTarget : "/dashboard";
+      The token is still read from the URL, but only to keep it attached to the
+      sign-up link and the redirect. Authentication decides who you are; it does
+      not answer a question on your behalf.
+    */
+    const nextPath =
+      inviteToken && !redirectTarget.startsWith("/invitations/")
+        ? invitationPath(inviteToken)
+        : redirectTarget && redirectTarget.startsWith("/")
+          ? redirectTarget
+          : "/dashboard";
     router.push(nextPath);
     router.refresh();
   }
@@ -93,12 +99,12 @@ function SignInForm() {
         {createdState === "1" ? (
           <article className={noticeClass("info")}>
             <p className="font-semibold">
-              {inviteToken ? "Account created — next step is invitation acceptance." : "Account created — next step is your first workspace."}
+              {inviteToken ? "Account created — next step is the invitation itself." : "Account created — next step is your first workspace."}
             </p>
             <ol className="mt-2 list-decimal space-y-1.5 pl-5">
               <li>Sign in with the email and password you just created.</li>
               {inviteToken ? (
-                <li>OpenPlan will accept the workspace invitation before loading the dashboard.</li>
+                <li>OpenPlan will show you the invitation — what workspace, what role, who sent it — to accept or decline.</li>
               ) : (
                 <li>Your workspace is already provisioned — the dashboard opens straight into it.</li>
               )}
@@ -122,7 +128,7 @@ function SignInForm() {
         {inviteToken && createdState !== "1" ? (
           <article className={noticeClass("info")}>
             <p className="font-semibold">Workspace invitation link detected.</p>
-            <p className="mt-1.5">Sign in with the invited work email to join the workspace.</p>
+            <p className="mt-1.5">Sign in with the invited work email and OpenPlan will show you the invitation to accept or decline.</p>
           </article>
         ) : null}
 

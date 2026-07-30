@@ -79,7 +79,18 @@ describe("SignInPage", () => {
     );
   });
 
-  it("accepts an invitation token after sign-in before redirecting", async () => {
+  /**
+   * SIGNING IN IS AUTHENTICATION, NOT A DECISION.
+   *
+   * This form used to POST the invite token to
+   * `/api/workspaces/invitations/accept` the moment sign-in succeeded, so a
+   * person who followed an invitation link to SEE what they had been sent
+   * joined the workspace by the act of authenticating — never shown its name,
+   * the role they had been granted, or who invited them, and with no way to
+   * decline. The old test asserted exactly that behaviour, which is why it had
+   * to be rewritten rather than deleted: the contract inverted.
+   */
+  it("takes an invited user to the invitation instead of accepting it for them", async () => {
     searchParamsValue.set("redirect", "/dashboard");
     searchParamsValue.set("invite", "invite-token-123");
 
@@ -97,12 +108,29 @@ describe("SignInPage", () => {
     });
 
     await waitFor(() => {
-      expect(fetch).toHaveBeenCalledWith("/api/workspaces/invitations/accept", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ token: "invite-token-123" }),
-      });
+      expect(pushMock).toHaveBeenCalledWith("/invitations/invite-token-123");
     });
-    expect(pushMock).toHaveBeenCalledWith("/dashboard");
+    // Nothing was answered on their behalf.
+    expect(fetch).not.toHaveBeenCalledWith(
+      "/api/workspaces/invitations/accept",
+      expect.anything()
+    );
+  });
+
+  it("honours an explicit redirect that is already the invitation page", async () => {
+    // The invitation page sends signed-out visitors through sign-up with
+    // `redirect=/invitations/<token>`; that must not be rewritten into itself.
+    searchParamsValue.set("redirect", "/invitations/invite-token-123");
+    searchParamsValue.set("invite", "invite-token-123");
+
+    render(<SignInPage />);
+
+    fireEvent.change(await screen.findByLabelText(/Work email/i), { target: { value: "planner@example.com" } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "OpenPlan!2026" } });
+    fireEvent.click(screen.getByRole("button", { name: /Sign in/i }));
+
+    await waitFor(() => {
+      expect(pushMock).toHaveBeenCalledWith("/invitations/invite-token-123");
+    });
   });
 });

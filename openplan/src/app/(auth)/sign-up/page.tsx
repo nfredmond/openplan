@@ -114,7 +114,7 @@ function SignUpForm() {
           <article className={noticeClass("info")}>
             <p className="font-semibold">Workspace invitation link detected.</p>
             <p className="mt-1.5">
-              Create the account with the invited work email, then sign in from this flow to join the workspace.
+              Create the account with the invited work email, then sign in — OpenPlan will show you the invitation to accept or decline.
             </p>
           </article>
         ) : null}
