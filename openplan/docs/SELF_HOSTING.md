@@ -4,11 +4,11 @@ OpenPlan is free and open source. Any agency, MPO/RTPA, city, county, tribe, non
 planning/environmental consultancy can run its own copy — your geography, your data, your database,
 no involvement from anyone else.
 
-**Who this is for.** Whoever at your organisation puts software on the internet — an IT person, a
-GIS analyst, a technically-minded planner. It assumes no prior knowledge of the codebase, of
-Next.js, of Supabase, or of Vercel, and explains each service before asking you to sign up for it.
-You do not need to be a programmer, but you will be creating accounts and copying keys between
-them, so set aside an uninterrupted hour.
+**Who this is for.** Whoever is putting OpenPlan on the internet for your team — often a planner
+doing it themselves, sometimes a GIS analyst or whoever handles software at your agency. It assumes
+no prior knowledge of the codebase, or of the services involved, and explains each one before asking
+you to sign up for it. You do not need to be a programmer, but you will be creating accounts and
+copying keys between them, so set aside an uninterrupted hour.
 
 **In a hurry?** [`FIRST_DEPLOYMENT.md`](FIRST_DEPLOYMENT.md) is the same path as a
 20-minute checklist with no explanation. Use that to work through it; use this document when

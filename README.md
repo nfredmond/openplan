@@ -43,19 +43,27 @@ schema, and your data are yours.
 
 ## Running OpenPlan on one computer
 
-**Who this is for.** Whoever at your organisation installs software — an IT
-person, a GIS analyst, anyone comfortable installing a program and typing in a
-terminal. It assumes **no prior experience** with any of the tools involved and
-explains each one. You do not need to be a programmer.
+OpenPlan is free, and there is no sign-up queue or hosted account to wait for —
+you run your own copy. That means one setup step before you can open it, which
+is what this section walks through.
 
-**Who this is NOT for.** Planners. A planner should be handed a web address and
-a sign-up form, not asked to install anything. That means one person does the
-setup below once, on a server, and everyone else just visits the URL — see
-[`openplan/docs/SELF_HOSTING.md`](openplan/docs/SELF_HOSTING.md) for the
-deployed version. The instructions here put OpenPlan on **one** computer, which
-is the right way to evaluate it before committing to a deployment.
+**You do not need to be a programmer.** You need to be comfortable installing a
+program and typing a few commands into a terminal window. Every step below says
+what to do, what it is doing, and what "it worked" looks like. If your agency has
+someone who installs software, this is a natural thing to hand them — but plenty
+of planners do it themselves.
 
-**Roughly 30–60 minutes**, most of it waiting for downloads.
+**If anything goes sideways, there is one command — `npm run doctor` — that
+checks your machine and tells you in plain language what is wrong.** It is worth
+knowing about before you start.
+
+**Roughly 30–60 minutes**, most of it waiting for things to download.
+
+Once it is running it belongs to you: your data stays on your machine, and
+nothing is sent anywhere. When you are ready for your whole team to use it from
+their own browsers, the same software deploys to the web — see
+[`openplan/docs/FIRST_DEPLOYMENT.md`](openplan/docs/FIRST_DEPLOYMENT.md). Running
+it on one computer first is the sensible way to look around before deciding.
 
 ### Step 1 — install the two programs OpenPlan needs
 
