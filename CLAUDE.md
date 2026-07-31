@@ -141,6 +141,16 @@ packets it scanned. The honesty gates that matter now all scan LIVE surfaces:
 `safety-claim-boundaries.test.ts`). New modules add their own claim-boundary guard over `src/`,
 never a docs-scanning one.
 
+**NARROWED 2026-07-30 — a deliberate change to this rule, not a new one.** The insight above is
+right and survives: never guard a *claim* by scanning a document, because a doc is a copy and
+guarding the copy lets the original drift. That is why the proof-packet guards were deleted. But it
+over-generalised. **DO guard mechanical cross-references in documentation** — that every `npm run`
+command named in a doc exists in `package.json`, that referenced file paths resolve, that named env
+vars appear in `.env.example`, that internal links resolve. For those the document IS the artifact
+and there is no live surface to check instead. Evidence: the root README documented
+`npm exec supabase start`, which fails because npm consumes the flag, and it was the second command
+a new person would type — no permitted guard could have caught it.
+
 ## The ultimate goal — agentic control of OpenPlan (DEFERRED, do not start)
 
 **Decided 2026-07-28 (Nathaniel). This is the destination the product is being built toward.**
@@ -306,6 +316,177 @@ change. But `src/test/no-paid-tier-guard.test.ts` fails the build on `/managed h
 `/managed services?\b/i` appearing on any PUBLIC page. Advertising setup services inside the product is
 therefore a deliberate change to that guard, made as its own decision — never worked around, and never
 tripped by accident mid-feature.
+
+## Evidence, proof, and what survives a model handoff
+
+### A green suite is not evidence. Mutation is the only proof.
+
+**Established 2026-07-30, four times in one session.** A test that looks protective and proves
+nothing is worse than no test: it converts an unchecked area into one everybody believes is checked,
+so nobody looks again. All four were found by breaking the code the test claimed to guard and
+watching the test pass anyway:
+
+- a guard "proving" an import payload could not set `status` passed with the guard REMOVED, because
+  zod strips unknown keys, so the field never reached the code under test;
+- a guard "requiring" every location-writing route to call the shared geofence matched the **import
+  statement** rather than the call;
+- `every-api-route-has-a-caller` matched a route path written inside an operator-facing **sentence**
+  ("retry through POST /api/..."), excusing a route nothing called — defeated by its own docs;
+- a claim-tier guard read only `route.ts`, while every route delegates writes to a library, so
+  moving a tier write one function away left it green.
+
+**THE RULE. For every test written or changed: revert the code it guards, RUN it, confirm it fails
+for the RIGHT reason, then restore.** Report which mutation produced which failure. A mutation that
+changes nothing means the test proves nothing — say so plainly rather than claiming coverage that
+does not exist. This applies to agents and to Claude equally; most of the above were written by
+agents who sincerely reported them as non-vacuous.
+
+**Corollary — a test that stubs the thing it is named for cannot prove that thing.** If it doubles
+the loader, it tests the renderer. Put the reachability assertion where the real call happens.
+
+**Corollary — a mocked Supabase client cannot catch a missing projection.** Page tests return the
+fixture whatever columns were asked for, and the clients are deliberately untyped, so deleting a
+column from a `.select()` leaves every assertion green while the real page renders `undefined`.
+**Assert on the projection string itself** — see `public-engagement-page.test.tsx`, "asks the
+database for the columns it renders". Do this for every migration adding a column something renders.
+
+### The foundation is unmeasured, and it is re-stratified every few weeks
+
+**Nathaniel's framing, 2026-07-30.** The repo is ~1,875 commits of largely vibe-coded work, the
+older commits written by materially weaker models, none of it audited. What is verifiably true: the
+suite passes, ~21 tree-scanning guard tests exist, and the claim-tier firewall is structural. What is
+NOT known: what fraction of those tests protect anything, and whether older modules carry the same
+defect classes found this week. **Everything adversarially reviewed so far has been NEW code** — the
+opposite of where the risk sits.
+
+**AND THIS IS NOT A ONE-TIME CLEANUP.** A materially better frontier model arrives roughly every six
+to eight weeks and each is put to work here. The codebase is not "good new code plus a block of weak
+old code" — it is STRATA, each laid down by whatever was strongest at the time. **Today's work
+becomes the weak old layer within months.**
+
+1. **The work you are reading was written by something weaker than you; the work you are writing will
+   be read by something stronger.** Neither is an insult. The audit is PERIODIC, not a project with
+   an end, and the most valuable thing any session can do is make the successor's job easier rather
+   than behaving as though it is the last one.
+
+2. **Only executable things survive the handoff.** A future model inherits no memory of the session
+   that wrote the code — it inherits the repository. A convention, a comment, or a paragraph in THIS
+   FILE is a *suggestion* a capable successor may reasonably override; **a test that fails is a fact
+   it must engage with.** When you learn something, encode it as a guard that fails, not a note
+   asking people to be careful. Every `*-guard.test.ts` is knowledge that survived a handoff; every
+   convention that was only written down has been violated at least once.
+
+**This file is itself a stratum.** Nathaniel's standing instruction (2026-07-30): CLAUDE.md may have
+been written by a weaker model — treat it as strong evidence, not scripture. When a rule here is
+wrong or over-broad, sharpen it and record WHY it changed, so the next model inherits the reasoning
+instead of re-litigating it. Do not silently ignore it, and do not obey it against the evidence.
+
+**The audit that closes the gap, in value order:** a reachability sweep across the whole repo (not
+just routes — components never mounted, exports never imported, columns never selected); a mutation
+sample of the oldest, highest-stakes tests, to convert a feeling into a number; adversarial review of
+the oldest high-stakes modules (claim tiers, RLS, `[fact:id]` grounding, anything feeding a CEQA
+determination); and a ratchet on each so the number only improves. **Prefer this over new capability
+when the two compete.**
+
+### The shipped-invisible defect class — ELEVEN instances and counting
+
+A capability that is complete, tested, access-gated, reviewed — and that no person can reach. The
+suite is green because it tests the unit, not the path to the unit. Recent instances: an embed route
+publishing raw untranslated strings under a translated body; GIS layers whose loader had no caller;
+aerial artifact custody no page could display; a condition editor that could author two of seven
+operators; a stage-gate action whose offer required two mutually exclusive conditions.
+
+`src/test/every-api-route-has-a-caller.test.ts` fails the build when a route under `src/app/api` is
+called by nothing outside `src/app/api` and `src/test`. Routes with genuinely external callers are
+allowlisted BY NAME; a `KNOWN_UNWIRED` ratchet holds the rest and fails if an entry goes stale, so
+the list can only shrink. **It catches only "no caller at all."** It cannot see a caller no planner
+can reach, a control gated on the wrong permission, or a column missing from a `.select()` — all
+three of which this repo has shipped. Those need a test that renders the real surface.
+
+**A shared capability that lives inside one of its two callers will be reimplemented wrongly by the
+other.** Extract it, and the divergence becomes impossible rather than merely unlikely. Two seam
+defects this week — a geofence enforced on one of two submission doors, and custody no page could
+display — were invisible from inside either lane.
+
+### What to keep, what to delete, and why nothing is lost
+
+**GIT HISTORY IS THE ARCHIVE. Nothing deleted is lost.** "Do not waste the work" is guaranteed by
+version control, not by keeping files in the tree. Deletion costs DISCOVERABILITY, not existence — so
+the question is never "will this be lost?" (no) but "will anyone need to find it?" (usually no).
+
+**PRESERVE THE DECISION, NOT THE IMPLEMENTATION.** The value of past work is the constraints
+discovered and the approaches that failed, most of which survives deleting the code PROVIDED it is
+recorded first. **The test: does deleting this lose knowledge not recorded elsewhere?** If yes,
+record it — in a guard, here, or in the commit message — then delete freely.
+
+- **Code.** Orphaned but working -> WIRE IT UP; that is past work finally paying off. Of seven
+  orphaned routes found 2026-07-30, six needed wiring and exactly one deserved deletion. **A
+  dead-code report is a work-list, not a delete-list.**
+- **Tests.** A vacuous test is WORSE than no test. Fix or delete, decided by whether the thing it
+  claims to check is worth checking.
+- **Documentation.** Docs describing WHAT THE CODE DOES drift and become confidently wrong; docs
+  recording WHY A DECISION WAS MADE are the most durable thing in the repo.
+
+**Schema is the exception: do not sweep it, and the naming is treacherous.** Of five tables matching
+billing/subscription patterns, TWO are load-bearing — `billing_invoice_records` holds real Caltrans
+LAPM grant-reimbursement invoices, and `engagement_subscriptions` holds members of the public's email
+addresses and unsubscribe tokens. A sweep matching names would destroy both.
+`billing_webhook_receipts` is genuinely dead but is NOT empty, so even a drop-if-empty guard would
+not fire. Deployment makes this stricter, not looser: once agencies self-host, a destructive
+migration ships to databases nobody can inspect or roll back.
+
+## Releases, versioning, and what a deployment can say about itself
+
+**Established 2026-07-30; `v0.2.0` is the first tagged release.** The version read `0.1.0` for 1,875
+commits because nothing read it and nothing displayed it. A version nothing surfaces is decoration.
+
+- **Semver, and `0.x` is meant literally**: the schema still changes in ways needing care on upgrade.
+  `1.0` will mean an agency can be told their data is safe across upgrades indefinitely.
+- **Bump the MINOR when a set of real, user-visible capability lands.** Not fixes, not docs, and
+  never automatically — the commit SHA is the automatic part; the version is a judgment.
+- **`CHANGELOG.md` is written for whoever OPERATES a deployment**, not from commit messages. It leads
+  with which migrations are required and that they run BEFORE the app deploys.
+- **Tag the release** (`git tag -a vX.Y.Z`) and push the tag.
+- **The instance names itself** — `src/lib/runtime/app-version.ts` reads the version from
+  `package.json` (never restated) and the commit from `VERCEL_GIT_COMMIT_SHA` or
+  `OPENPLAN_COMMIT_SHA`. Unset -> it says the commit is **unrecorded** rather than inventing one.
+
+A self-hosted product whose instances cannot name themselves makes every bug report unanswerable.
+
+## Who the documentation is for
+
+**A planner installs nothing — eventually.** Asking a planner to install a container runtime is a
+larger barrier than the access gate that was deliberately removed. **But that is the destination, not
+today.** Nathaniel is unemployed with no budget for hosting, so **the local install is currently how
+planners see OpenPlan at all** — he walks them through it in person or over Zoom. Treat the local
+path as FIRST-CLASS, not a stepping stone, and do not abandon it when hosting arrives.
+
+| Document | Reader | Assumes |
+|---|---|---|
+| `README.md` -> "Running OpenPlan on one computer" | whoever installs software at an agency | **nothing** — installs Node and Docker step by step for Windows, macOS, Linux |
+| `openplan/docs/FIRST_DEPLOYMENT.md` | same person, deploying for a team | a 20-minute checklist, no prose |
+| `openplan/docs/SELF_HOSTING.md` | same person, when something misbehaves | explains every service before asking them to sign up |
+
+**Every failure in the setup path is silent** — `docker --version` answers while Docker is off,
+`supabase start` looks frozen for ten minutes when working correctly, `npm install` prints an
+alarming-but-harmless warning. So each step must state what success looks like.
+
+**Verify setup instructions by actually running them.** A fresh-clone test on 2026-07-30 found the
+documented `npm exec supabase start` was broken (npm eats the flag; it needs `--`) and that the
+environment-variable step was missing entirely.
+
+## Never edit the tree while agents are working in it
+
+**Cost established 2026-07-30:** a reviewer ran `git checkout` on a file whose changes were
+uncommitted and destroyed 154 lines of another agent's work, reconstructed only by luck.
+
+- **Do not `git checkout` a file to undo a mutation.** Revert by editing the string back. On a
+  TRACKED file it silently discards uncommitted work; on an UNTRACKED file it does nothing at all and
+  leaves the mutation in place, which then reads as a real failure.
+- **Read-only investigation while a workflow runs is fine; editing is not.** Land agent work in
+  pieces as each lane clears rather than one commit at the end.
+- **Give concurrent agents disjoint file ownership, and name the seam between them.** Two lanes that
+  each own half of a feature will both miss the join.
 
 ## Engineering Philosophy
 
