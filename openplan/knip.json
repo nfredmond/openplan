@@ -1,0 +1,21 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/app/**/{page,layout,route,error,loading,not-found,global-error}.tsx",
+    "src/app/**/{page,layout,route,error,loading,not-found,global-error}.ts",
+    "src/test/**/*.{test,spec}.{ts,tsx}",
+    "scripts/**/*.mjs",
+    "supabase/**"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "scripts/**/*.mjs"
+  ],
+  "ignore": [
+    "src/components/ui/**"
+  ],
+  "ignoreDependencies": [
+    "tailwindcss",
+    "tw-animate-css"
+  ]
+}

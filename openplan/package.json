@@ -26,7 +26,8 @@
     "ops:check-migration-inventory": "node scripts/ops/check-migration-inventory.mjs",
     "ops:check-pilot-preflight": "node scripts/ops/check-pilot-preflight.mjs",
     "test:guardrail-suite": "vitest run src/test/no-paid-tier-guard.test.ts src/test/qa-harness-route-contract-guard.test.ts src/test/public-page-claims-guardrails.test.ts src/test/public-open-source-posture-guardrail.test.ts src/test/public-page-metadata-canonical-url.test.ts src/test/workspace-provision-route.test.ts src/test/workspace-membership-current.test.ts src/test/workspace-membership-required.test.tsx",
-    "doctor": "node scripts/doctor.mjs"
+    "doctor": "node scripts/doctor.mjs",
+    "deadcode": "knip --no-progress"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.46",
@@ -66,6 +67,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.11",
     "jsdom": "^28.1.0",
+    "knip": "^6.29.0",
     "shadcn": "^3.8.5",
     "supabase": "^2.76.11",
     "tailwindcss": "^4",
