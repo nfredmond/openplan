@@ -7,6 +7,15 @@ project_id: 73f7375b-a8b0-4a4a-9dfe-67f3a1066515
 report_id: e7502b16-8ec0-4b88-8501-7e8e02ea5afd
 ---
 
+> **DATED RECORD — 2026-04-17.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 # Scenario writeback live-proof (T4)
 
 Closes the loop on T4 — the deep-dive's scenario-report writeback — promoted

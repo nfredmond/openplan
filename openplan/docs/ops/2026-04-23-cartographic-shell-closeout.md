@@ -1,5 +1,14 @@
 # Cartographic shell close-out
 
+> **DATED RECORD — 2026-04-23.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 **Shipped:** 2026-04-23 Pacific
 **Scope:** Close-out for the `directions/02-cartographic.html` implementation line: cartographic shell, selection loop, data-driven backdrop layers, live counts, legend, seeded NCTC proof data, and user-owned production smoke checklist.
 

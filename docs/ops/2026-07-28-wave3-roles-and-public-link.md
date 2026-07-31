@@ -1,5 +1,14 @@
 # Wave 3 — team roles and the public engagement link (2026-07-28)
 
+> **DATED RECORD — 2026-07-28.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 The last wave of the recorded queue (`docs/ops/2026-07-27-next-session-plan.md`). Two lanes:
 workspace membership finally became manageable and gained a read-only tier, and the public
 engagement portal link stopped being buried at the bottom of a 1,275-line console.

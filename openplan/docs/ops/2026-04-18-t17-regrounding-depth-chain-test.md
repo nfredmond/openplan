@@ -4,6 +4,15 @@ date: 2026-04-18
 head_sha_before: 5eb4bc2
 ---
 
+> **DATED RECORD — 2026-04-18.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 # T17 regrounding-depth guard — closing the retro's last deferred item
 
 T17 (`MAX_REGROUNDING_DEPTH=2` in `src/lib/runtime/action-registry.ts`)

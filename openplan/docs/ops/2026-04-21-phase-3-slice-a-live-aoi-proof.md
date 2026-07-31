@@ -1,5 +1,14 @@
 # Phase 3 Slice A — Live mission AOIs on cartographic backdrop (2026-04-21)
 
+> **DATED RECORD — 2026-04-21.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 ## What shipped
 
 The cartographic shell backdrop was a parchment Mapbox style with no workspace data on it. Phase 3 Slice A makes it data-driven: authenticated workspace sessions now see their own aerial-mission AOI polygons drawn over the basemap, with the layers-panel "Aerial missions" toggle wired through.

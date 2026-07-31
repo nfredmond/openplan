@@ -1,5 +1,14 @@
 # Phase 3 Slice C — Feature-state highlight on selection (2026-04-21)
 
+> **DATED RECORD — 2026-04-21.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 ## What shipped
 
 Slice B made AOI polygons clickable, but the clicked polygon didn't visually lift — the selection lived in the inspector dock only, and the map gave no feedback about which feature was currently selected. Slice C closes that cosmetic gap with Mapbox feature-state driving paint expressions on the AOI fill + outline layers.

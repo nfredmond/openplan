@@ -1,5 +1,14 @@
 # Security-advisor backlog — scoping doc (2026-04-20)
 
+> **DATED RECORD — 2026-04-20.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 ## Why this doc exists
 
 The NCTC demo workspace went live on prod Supabase (`aggphdqkanxsfzzoxlbk`) on 2026-04-19 late session. Before the first **external** customer touches the system, the Supabase security advisor backlog needs to be inventoried, triaged, and closed in two waves: (1) mechanical hardening we can ship now, (2) design calls that need an explicit posture decision before becoming code.

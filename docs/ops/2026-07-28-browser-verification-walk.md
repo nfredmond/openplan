@@ -1,5 +1,14 @@
 # Live-browser verification walk — 2026-07-28
 
+> **DATED RECORD — 2026-07-28.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 The 2026-07-27 vision push shipped ~50 commits with unit/route/build coverage but no browser
 proof. This session walked every new surface in a real browser (Playwright-driven Chrome against
 `next dev --webpack` on :3001, local Supabase, freshly seeded NCTC demo workspace, real

@@ -9,6 +9,15 @@ opportunity_id: fffef8a6-e290-4180-ab4b-b94e51b27203
 award_id: 345e47fd-b30d-4fdd-9d70-67f8c10084c8
 ---
 
+> **DATED RECORD — 2026-04-16.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 # OpenPlan write-back loop — API proof
 
 This doc proves, end-to-end against a fresh local Supabase, that a funding-award create

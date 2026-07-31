@@ -1,5 +1,14 @@
 # OpenPlan v1 — Demo Runbook
 
+> **DATED RECORD — 2026-07-17.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 How to take OpenPlan from a cold laptop to a live, public demo URL. Written for solo operation; every command runs from `openplan/` unless noted. Budget ~15 minutes before the call.
 
 ## 1. One-time prerequisites (already true on the dev machine)

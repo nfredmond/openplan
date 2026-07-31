@@ -1,5 +1,14 @@
 # Phase 2 — Cartographic selection wiring + AOI enrichment (2026-04-21)
 
+> **DATED RECORD — 2026-04-21.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 ## What shipped
 
 Phase 1 mounted the D2 cartographic shell (rail / worksurface / inspector dock / Mapbox backdrop / layers panel) but the interaction loop was inert — hovering list rows didn't preview anything, detail pages still rendered at the narrow default width, the Mapbox backdrop defaulted to a null center, and no workspace data ever reached the map. Phase 2 wires that loop end-to-end and enriches the NCTC demo seed so Phase 3 Slice A has real polygons to render.

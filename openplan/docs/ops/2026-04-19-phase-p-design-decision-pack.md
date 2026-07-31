@@ -5,6 +5,15 @@ audience: Nathaniel
 purpose: unblock Phases O, Q, S, R.1 + the T16 escalation with one sitting of design calls
 ---
 
+> **DATED RECORD — 2026-04-19.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 # Phase P design decision pack
 
 Five decisions gate everything design-flavored in OpenPlan right now. None of them is a coding question — each needs a judgment call only you can make. Nothing else in the codebase is meaningfully unblockable until these land.

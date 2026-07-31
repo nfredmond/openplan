@@ -1,5 +1,14 @@
 # OpenPlan v1 — Handoff for the Next Agent
 
+> **DATED RECORD — 2026-07-18.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 Written 2026-07-18, immediately after v1 shipped. Read this before touching anything. The stated next mission: **make the transportation demand modeling substantially better** — §7 is your brief.
 
 ## 1. Who you're working with

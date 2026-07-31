@@ -6,6 +6,15 @@ supersedes_ledger_in: docs/ops/2026-04-18-program-retrospective-update.md
 phase: M-bookkeeping
 ---
 
+> **DATED RECORD — 2026-04-18.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 # Ledger reconciliation (post-Phase M)
 
 Phase M moved T5+T6 from unit-only → live (`docs/ops/2026-04-18-assistant-action-audit-live-proof.md`). While scoping Phase N, a recon pass against the 2026-04-18 retrospective's ticket ledger surfaced three tickets whose code is already shipped and proven but whose bookkeeping was never updated. This doc closes that gap.

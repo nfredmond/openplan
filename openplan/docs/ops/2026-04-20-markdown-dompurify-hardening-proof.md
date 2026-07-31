@@ -1,5 +1,14 @@
 # Markdown renderer DOM-free hardening (2026-04-20)
 
+> **DATED RECORD — 2026-04-20.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 ## What shipped
 
 Replaced the regex-only `stripUnsafeHtml` path in `src/lib/markdown/render.ts` with a DOM-free safe `marked` renderer. The public `renderChapterMarkdownToHtml(markdown)` signature is unchanged — chapter editor preview, both RTP read sites, and `buildRtpExportHtml` keep the same call shape and table wrapping behavior.

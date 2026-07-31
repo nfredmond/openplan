@@ -1,5 +1,14 @@
 # Cold-start agent handoff — OpenPlan defensive-hardening lane (2026-04-20)
 
+> **DATED RECORD — 2026-04-20.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 This document is a self-contained brief for a **fresh AI agent with zero prior context** that is picking up the OpenPlan defensive-hardening work. It is structured in two parts:
 
 1. **The pastable prompt** — paste this verbatim as the opening user message in a new Claude Code session. It contains everything the agent needs to orient without reading this wrapper.

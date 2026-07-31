@@ -1,5 +1,14 @@
 # Modeling evidence reader proof
 
+> **DATED RECORD — 2026-04-24.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 **Shipped:** 2026-04-24 Pacific
 **Scope:** Read-side follow-through for the modeling evidence backbone. County-run detail now consumes structured assignment evidence instead of leaving operators to infer claim posture from manifest prose.
 

@@ -1,5 +1,14 @@
 # Next-session plan — written 2026-07-27, after the four-wave vision push
 
+> **DATED RECORD — 2026-07-27.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 **Audience:** the next Claude session (possibly Opus, with NO memory of today). Everything you
 need is in this file, `CLAUDE.md` (binding — read it first), and the memory index. Do not
 re-derive today's decisions; they are recorded here and in

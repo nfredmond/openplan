@@ -1,5 +1,14 @@
 # Phase C.2 — explore decomposition proof (2026-04-18 evening, slice 1)
 
+> **DATED RECORD — 2026-04-18.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 ## What landed
 
 `src/app/(app)/explore/page.tsx` dropped from **3814 → 3256 LOC** (−558, −14.6%) on a deliberately conservative first slice. Pure-structure extraction only: 11 types + 15 pure helpers moved to sibling modules, and 2 state-light JSX sections swapped for component invocations. Pattern follows Phase C.1 (`projects/[projectId]`), C.3 (`reports/[reportId]`), and C.4 (`rtp/page.tsx`) — now four surfaces on the same template.

@@ -1,5 +1,14 @@
 # Phase Q polish — chapter `content_markdown` rendering
 
+> **DATED RECORD — 2026-04-19.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 **Date:** 2026-04-19
 **Slice:** Follow-up polish after Phase Q.2 shipped the NCTC Existing Conditions chapter.
 **Status:** Live on main. Tests green (797/172, +8 from the new renderer suite). Production build clean.

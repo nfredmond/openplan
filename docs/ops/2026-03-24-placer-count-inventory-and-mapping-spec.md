@@ -1,5 +1,14 @@
 # 2026-03-24 — Placer count inventory and mapping spec
 
+> **DATED RECORD — 2026-03-24.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 ## Topic
 Canonical spec for the first Placer County observed-count inventory and station-to-model-link mapping table used to move the preserved proof checkpoint toward **validation-ready screening**.
 

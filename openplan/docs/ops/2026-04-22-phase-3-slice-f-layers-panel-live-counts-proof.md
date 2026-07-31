@@ -1,5 +1,14 @@
 # Phase 3 Slice F — layers panel live counts
 
+> **DATED RECORD — 2026-04-22.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 **Date:** 2026-04-22
 **Parent:** Phase 3 cartographic shell (Slices A–E shipped 2026-04-21)
 **Status:** shipped on `main`, tests 928/193 → 939/195 (+11 tests / +2 files), `pnpm qa:gate` clean.

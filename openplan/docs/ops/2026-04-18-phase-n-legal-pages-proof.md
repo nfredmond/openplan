@@ -6,6 +6,15 @@ supersedes_section_in: docs/ops/2026-04-18-ledger-reconciliation-t2-t3-t10.md
 phase: N-slice-1
 ---
 
+> **DATED RECORD — 2026-04-18.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 # Phase N — legal pages (3 public routes)
 
 The 2026-04-18 ledger-reconciliation doc closed the 18-ticket

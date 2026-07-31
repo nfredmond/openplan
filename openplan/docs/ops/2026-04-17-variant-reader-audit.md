@@ -6,6 +6,15 @@ scope: projects.rtp_posture, projects.aerial_posture, variant-component delegati
 triggered_by: 2026-04-17-scenario-writeback-proof.md finding — T4-on-RtpReportDetail
 ---
 
+> **DATED RECORD — 2026-04-17.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 # Variant-reader audit (2026-04-17)
 
 ## Why this exists

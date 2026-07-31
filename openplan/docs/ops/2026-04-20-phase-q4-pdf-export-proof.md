@@ -1,5 +1,14 @@
 # Phase Q.4 — Report PDF export proof (2026-04-20)
 
+> **DATED RECORD — 2026-04-20.** This describes what was true on the day it was written.
+> It is kept because it records *why* decisions were made, which nothing else captures.
+> **Do not treat any factual claim here as current** — verify against the code, the
+> database, or `CHANGELOG.md` before acting on it. A stale doc that reads as current
+> costs more than a missing one: on 2026-07-30 a roadmap in this folder listed two
+> "remaining" items that had both already shipped, and nearly cost a full rebuild of a
+> feature that already exists.
+
+
 ## What shipped
 
 `POST /api/reports/[reportId]/generate` now honors `format: "pdf"` end-to-end. The prior 501 stub is gone. Both route branches (RTP cycle packet + structured project report) render the same HTML they already produced, pipe it through headless Chromium, upload the PDF to a new workspace-scoped Supabase Storage bucket, and persist the artifact row with `artifact_kind: "pdf"` + `storage_path`. The report row's `latest_artifact_kind` is updated to match.
