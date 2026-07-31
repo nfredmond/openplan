@@ -127,8 +127,22 @@ fresh login. Skipping this is the single most common reason the next steps fail.
 
 </details>
 
-**Check both installed correctly.** In your terminal, type each of these and
-press Enter:
+**Check both installed correctly.** Once you have the OpenPlan code (step 2),
+one command checks everything at once and tells you in plain language what is
+wrong:
+
+```bash
+npm run doctor
+```
+
+It checks your Node version, whether Docker is actually *running* (not just
+installed), whether the ports are free, and whether your settings file is
+complete — and for anything wrong it says what to do about it. **If you get
+stuck at any point in this guide, run it and read the output.** It never prints
+your keys, so the output is safe to paste to someone helping you.
+
+Before you have the code, check the two by hand — type each of these and press
+Enter:
 
 ```bash
 node --version
@@ -242,6 +256,10 @@ run `npm run dev`. Docker Desktop needs to be running first — the database liv
 there.
 
 ### If something goes wrong
+
+**First: run `npm run doctor`.** It diagnoses everything in this table
+automatically and says what to do. The table is here for the cases it cannot
+see.
 
 | What you see | What it means |
 |---|---|
