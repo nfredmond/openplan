@@ -25,7 +25,8 @@ const SRC_ROOT = path.join(process.cwd(), "src");
 const MAP_SURFACES = [
   "components/cartographic/cartographic-map-backdrop.tsx",
   "app/(app)/explore/_components/use-explore-map-instance.ts",
-  "components/engagement/location-picker-map.tsx",
+  // location-picker-map.tsx was deleted 2026-08-03: superseded by
+  // geometry-picker-map.tsx (below), which this guard still covers.
   "components/engagement/location-display-map.tsx",
   "components/engagement/participation-heatmap-map.tsx",
   "components/models/traffic-volume-map.tsx",

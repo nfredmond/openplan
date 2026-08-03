@@ -35,17 +35,31 @@ the list is triaged.
 | Unused exports | 253 | mostly internal-use exports; low priority |
 | Unused exported types | 367 | same; low priority |
 
-### The six files, untriaged
+### The six files — triaged 2026-08-03, all DELETED, decisions recorded
 
-Each needs the wire-it-up-or-delete decision, with the reason recorded:
+Every one turned out to be residue of a superseded or dismantled era — none was
+an unfinished feature, which bucks this repo's usual pattern (the commit that
+deleted them records each supersession):
 
-- `src/components/engagement/location-picker-map.tsx`
-- `src/components/nav/app-sidebar-link.tsx`
-- `src/lib/api/county-geographies-client.ts`
-- `src/lib/models/county-runtime-presets.ts`
-- `src/lib/observability/operational-events.ts`
-- `src/test/markdown-proof-helpers.ts` — likely residue of the deleted
-  proof-packet lane; check before assuming
+- `location-picker-map.tsx` — point-only picker superseded by
+  `geometry-picker-map.tsx` (points, lines, polygons) in the "engagement full
+  vision" commit, which removed the import and left the file.
+- `app-sidebar-link.tsx` — command-center-era nav for the deleted `/admin` console.
+- `county-geographies-client.ts` — county-search client superseded by the
+  TIGERweb place-resolver front door.
+- `county-runtime-presets.ts` — preset picker removed on purpose in April's
+  "Simplify county run surfaces" (−884 lines); its ActivitySim-smoke preset is
+  the capability CLAUDE-era notes record as deferred.
+- `operational-events.ts` — pilot-workflow-spine residue.
+- `markdown-proof-helpers.ts` — helper for the deleted proof-packet lane.
+
+**The triage also caught a two-hop orphan the route guard could not see:**
+`/api/geographies/counties`'s only "caller" was `county-geographies-client.ts` —
+a file nothing imported. The route-caller guard credited the route via a string
+in dead code. Deleting the dead client made the truth visible and the route went
+with it (the place-resolver uses the county lib directly). And `/api/csp-report`
+turned out to be genuinely browser-called via the CSP header's `report-uri` —
+now allowlisted with its real caller named.
 
 ### Unlisted dependencies — fix these first
 

@@ -47,6 +47,8 @@ const EXTERNAL_CALLERS: Record<string, string> = {
     "Operator/CI data load, authenticated by a shared secret with timingSafeEqual — cross-tenant public reference data, deliberately not driven from a workspace UI.",
   "api/county-runs/[countyRunId]/validate/refresh":
     "County worker callback, authenticated by isAuthenticatedCountyWorkerCallback — the Python worker posts its validation summary back here.",
+  "api/csp-report":
+    "Browsers post Content-Security-Policy violation reports here — next.config.ts names it in the CSP header's report-uri. Its only in-src mention was a dead file; the real caller was never in src/.",
   "api/aerial/processing-callback":
     "Photogrammetry worker callback — the processing platform posts job status and artifact descriptors here. Authenticated by the callback contract, not by a session.",
 };
