@@ -1,10 +1,15 @@
 import type { ProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
-import type { RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
+import type { RtpEvidenceRunDisclosure, RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
+import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 export type AvailableModelRun = {
   id: string;
   title: string;
   engineKey: string;
+  /** Run status + strongest recorded claim tier — disclosed beside every citation offer. */
+  status: string | null;
+  claimStatus: ModelingClaimStatus | null;
+  claimReadFailed: boolean;
 };
 
 export type ProjectRow = {
@@ -286,6 +291,8 @@ export type ExistingRtpLink = {
   priorityScores: Record<string, number>;
   evidenceModelRunId: string | null;
   modelingEvidence: RtpModelingEvidence | null;
+  /** Engine + status + claim tier of the cited run. Disclosure only — never a reason to refuse the citation. */
+  evidenceRunDisclosure: RtpEvidenceRunDisclosure | null;
 };
 
 export type AerialMission = {

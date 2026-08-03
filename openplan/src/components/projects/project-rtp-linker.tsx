@@ -15,7 +15,8 @@ import {
 } from "@/lib/rtp/catalog";
 import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score-editor";
 import type { RtpPriorityScores } from "@/lib/rtp/priority-scoring";
-import type { RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
+import type { RtpEvidenceRunDisclosure, RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
+import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 type AvailableCycle = {
   id: string;
@@ -39,12 +40,17 @@ type ExistingLink = {
   priorityScores: RtpPriorityScores;
   evidenceModelRunId: string | null;
   modelingEvidence: RtpModelingEvidence | null;
+  /** Engine + status + claim tier of the cited run — rendered beside the citation, never used to refuse it. */
+  evidenceRunDisclosure: RtpEvidenceRunDisclosure | null;
 };
 
 type AvailableRun = {
   id: string;
   title: string;
   engineKey: string;
+  status: string | null;
+  claimStatus: ModelingClaimStatus | null;
+  claimReadFailed: boolean;
 };
 
 export function ProjectRtpLinker({
@@ -195,6 +201,7 @@ export function ProjectRtpLinker({
                     availableRuns={availableRuns}
                     initialEvidenceRunId={link.evidenceModelRunId}
                     modelingEvidence={link.modelingEvidence}
+                    evidenceRunDisclosure={link.evidenceRunDisclosure}
                   />
                 </div>
               </div>

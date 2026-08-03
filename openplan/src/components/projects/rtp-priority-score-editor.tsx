@@ -18,7 +18,14 @@ import {
   priorityTierTone,
   type RtpPriorityScores,
 } from "@/lib/rtp/priority-scoring";
-import { formatRtpModelingEvidenceLine, type RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
+import {
+  formatRtpEvidenceRunDisclosureLine,
+  formatRtpModelingEvidenceLine,
+  rtpEvidenceRunWarnings,
+  type RtpEvidenceRunDisclosure,
+  type RtpModelingEvidence,
+} from "@/lib/rtp/modeling-evidence";
+import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 function serialize(scores: RtpPriorityScores): string {
   const parsed = parsePriorityScores(scores);
@@ -40,13 +47,23 @@ export function RtpPriorityScoreEditor({
   availableRuns,
   initialEvidenceRunId,
   modelingEvidence,
+  evidenceRunDisclosure,
 }: {
   projectId: string;
   linkId: string;
   initialScores: RtpPriorityScores;
-  availableRuns: Array<{ id: string; title: string; engineKey: string }>;
+  availableRuns: Array<{
+    id: string;
+    title: string;
+    engineKey: string;
+    status: string | null;
+    claimStatus: ModelingClaimStatus | null;
+    claimReadFailed: boolean;
+  }>;
   initialEvidenceRunId: string | null;
   modelingEvidence: RtpModelingEvidence | null;
+  /** Engine + status + claim tier of the currently linked run. Disclosure only — a warning never blocks or unlinks a citation. */
+  evidenceRunDisclosure: RtpEvidenceRunDisclosure | null;
 }) {
   const router = useRouter();
   const [scores, setScores] = useState<RtpPriorityScores>(initialScores ?? {});
@@ -158,9 +175,24 @@ export function RtpPriorityScoreEditor({
               className="mt-1 h-9 w-full rounded-lg border border-input bg-background px-2.5 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <option value="">No run linked — VMT/GHG scored by planner judgment</option>
+              {evidenceRunId && !availableRuns.some((run) => run.id === evidenceRunId) && evidenceRunDisclosure ? (
+                // The cited run is not in the picker window (older, or no longer
+                // succeeded). Without this option the select would silently show
+                // "No run linked" while a citation exists. Disclosure, not a block.
+                <option value={evidenceRunId}>
+                  {modelingEvidence?.runTitle ?? "Currently cited run"} — {formatRtpEvidenceRunDisclosureLine(evidenceRunDisclosure)}
+                </option>
+              ) : null}
               {availableRuns.map((run) => (
                 <option key={run.id} value={run.id}>
-                  {run.title}
+                  {run.title} —{" "}
+                  {formatRtpEvidenceRunDisclosureLine({
+                    engineKey: run.engineKey || null,
+                    status: run.status,
+                    claimStatus: run.claimStatus,
+                    claimReadFailed: run.claimReadFailed,
+                    runReadFailed: false,
+                  })}
                 </option>
               ))}
             </select>
@@ -174,6 +206,22 @@ export function RtpPriorityScoreEditor({
                 Link a run to show its screening-grade VMT/GHG next to those criteria. The run is named with its numbers — it informs the score, it doesn&apos;t set it.
               </p>
             )}
+            {evidenceRunDisclosure ? (
+              <p className="mt-1 text-xs text-muted-foreground">
+                <span className="font-medium text-foreground">Cited run</span>:{" "}
+                {formatRtpEvidenceRunDisclosureLine(evidenceRunDisclosure)}
+              </p>
+            ) : null}
+            {evidenceRunDisclosure
+              ? rtpEvidenceRunWarnings(evidenceRunDisclosure).map((warning) => (
+                  <p
+                    key={warning}
+                    className="mt-1 rounded border border-amber-300/60 bg-amber-50/60 px-2 py-1 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
+                  >
+                    {warning} You can keep this citation — the warning is disclosure, not a block.
+                  </p>
+                ))
+              : null}
           </div>
 
           <ul className="space-y-2">

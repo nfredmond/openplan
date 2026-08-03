@@ -37,7 +37,7 @@ import {
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { loadReportRunCitationLinksForReports, resolveCitedRuns } from "@/lib/reports/run-citations";
-import { RTP_EVIDENCE_KPI_NAMES, summarizeRtpModelingEvidence, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
+import { RTP_EVIDENCE_KPI_NAMES, loadRtpEvidenceRunDisclosures, summarizeRtpModelingEvidence, type RtpEvidenceRunRow, type RtpEvidenceSupabaseLike, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
 import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -291,7 +291,7 @@ export default async function ProjectDetailPage({
   const [availableRunsResult, evidenceKpisResult] = await Promise.all([
     supabase
       .from("model_runs")
-      .select("id, run_title, engine_key")
+      .select("id, run_title, engine_key, status")
       .eq("workspace_id", project.workspace_id)
       .eq("status", "succeeded")
       .order("created_at", { ascending: false })
@@ -304,14 +304,14 @@ export default async function ProjectDetailPage({
           .in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
       : Promise.resolve({ data: [], error: null }),
   ]);
-  const availableModelRuns = looksLikePendingSchema(availableRunsResult.error?.message)
+  const availableRunRows = looksLikePendingSchema(availableRunsResult.error?.message)
     ? []
-    : ((availableRunsResult.data ?? []) as Array<{ id: string; run_title: string; engine_key: string }>).map((run) => ({
-        id: run.id,
-        title: run.run_title,
-        engineKey: run.engine_key,
-      }));
-  const runTitleById = new Map(availableModelRuns.map((run) => [run.id, run.title]));
+    : ((availableRunsResult.data ?? []) as RtpEvidenceRunRow[]);
+  // Engine + status + claim tier for every offered and cited run — even one outside
+  // the 50-succeeded-run picker window. Disclosure only; nothing here writes a tier.
+  const evidenceDisclosures = await loadRtpEvidenceRunDisclosures(supabase as unknown as RtpEvidenceSupabaseLike, evidenceRunIds, { knownRuns: availableRunRows });
+  const availableModelRuns = evidenceDisclosures.pickerRuns;
+  const runTitleById = evidenceDisclosures.titleByRunId;
   const evidenceKpiRows = (evidenceKpisResult.data ?? []) as RtpModelingEvidenceKpiRow[];
   // A failed read renders as "could not be read", never "No VMT/GHG KPIs".
   const evidenceKpiOptions = { kpiReadFailed: Boolean(evidenceKpisResult.error) };
@@ -339,6 +339,7 @@ export default async function ProjectDetailPage({
         modelingEvidence: link.evidence_model_run_id
           ? modelingEvidenceByRunId.get(link.evidence_model_run_id) ?? null
           : null,
+        evidenceRunDisclosure: link.evidence_model_run_id ? evidenceDisclosures.disclosureFor(link.evidence_model_run_id) : null,
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
