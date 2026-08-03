@@ -87,6 +87,38 @@ describe("model readiness helpers", () => {
     });
   });
 
+  it("does not claim run evidence is present when no run is linked", () => {
+    const readiness = buildModelReadiness({
+      hasProject: true,
+      hasScenario: true,
+      configVersion: "abm-v1.3",
+      ownerLabel: "Model Ops",
+      assumptionsSummary: "Validated 2045 land use and pricing assumptions.",
+      inputDatasetCount: 2,
+      inputSummary: "Land use, network, and policy levers attached.",
+      outputReportCount: 0,
+      outputRunCount: 0,
+      outputSummary: null,
+      lastValidatedAt: "2026-03-15T08:00:00.000Z",
+    });
+
+    expect(
+      buildModelWorkflowSummary({
+        modelStatus: "ready_for_review",
+        readiness,
+        linkedScenarioCount: 1,
+        linkedDatasetCount: 2,
+        linkedRunCount: 0,
+        linkedReportCount: 0,
+        lastRunRecordedAt: null,
+      })
+    ).toMatchObject({
+      label: "Awaiting operator review",
+      packageLabel: "Run evidence missing",
+      packageTone: "warning",
+    });
+  });
+
   it("counts linkage types with primary project and scenario anchors included", () => {
     expect(
       buildModelLinkageCounts({

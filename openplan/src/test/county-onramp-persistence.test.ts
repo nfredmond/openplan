@@ -102,6 +102,33 @@ describe("county onramp persistence helpers", () => {
     ]);
   });
 
+  it("skips artifact rows whose manifest path is null instead of persisting them", () => {
+    const runtimeOnly = countyOnrampManifestSchema.parse({
+      ...manifest,
+      stage: "runtime-complete",
+      artifacts: {
+        ...manifest.artifacts,
+        validation_summary_json: null,
+        bundle_manifest_json: null,
+      },
+      summary: { ...manifest.summary, validation: null },
+    });
+
+    const artifacts = buildCountyRunArtifacts({
+      workspaceId: "123e4567-e89b-12d3-a456-426614174000",
+      manifest: runtimeOnly,
+    });
+
+    // county_run_artifacts.path is NOT NULL — a null-path row would fail the
+    // insert (or persist a phantom artifact nothing can open).
+    expect(artifacts.map((artifact) => artifact.artifact_type)).toEqual([
+      "validation_scaffold_csv",
+      "validation_review_packet_md",
+      "run_summary_json",
+    ]);
+    expect(artifacts.every((artifact) => typeof artifact.path === "string" && artifact.path.length > 0)).toBe(true);
+  });
+
   it("derives a nullable status label when validation is absent", () => {
     expect(deriveCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
 
@@ -115,5 +142,27 @@ describe("county onramp persistence helpers", () => {
     });
 
     expect(deriveCountyRunStatusLabel(runtimeOnly)).toBeNull();
+  });
+
+  it("records the manifest's own stage instead of inflating an unvalidated run", () => {
+    const runtimeOnly = countyOnrampManifestSchema.parse({
+      ...manifest,
+      stage: "runtime-complete",
+      summary: {
+        ...manifest.summary,
+        validation: null,
+      },
+    });
+
+    const record = buildCountyRunRecord({
+      workspaceId: "123e4567-e89b-12d3-a456-426614174000",
+      geographyId: "06057",
+      geographyLabel: "Nevada County, CA",
+      manifest: runtimeOnly,
+    });
+
+    // A run that has not been validated must never be stored as validated-screening.
+    expect(record.stage).toBe("runtime-complete");
+    expect(record.status_label).toBeNull();
   });
 });

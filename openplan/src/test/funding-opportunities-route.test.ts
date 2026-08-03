@@ -313,6 +313,31 @@ describe("/api/funding-opportunities", () => {
     expect((await response.json()).error).toContain("20260727000015_pursuit_kind_and_solicitation");
   });
 
+  // Added 2026-08-03 (mutation audit): with `allowed: true` hardcoded in
+  // resolveWorkspaceContext, every test in this file still passed — nothing
+  // exercised a role the role matrix denies. A viewer must not be able to
+  // create funding opportunities.
+  it("POST returns 403 when the member's role cannot write programs", async () => {
+    membershipMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        workspace_id: WORKSPACE_ID,
+        role: "viewer",
+      },
+      error: null,
+    });
+
+    const response = await postFundingOpportunities(
+      jsonRequest({
+        programId: PROGRAM_ID,
+        title: "Viewer should be refused",
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
+    expect(fundingOpportunitiesInsertMock).not.toHaveBeenCalled();
+  });
+
   it("POST without programId or projectId uses the helper-selected current workspace", async () => {
     loadCurrentWorkspaceMembershipMock.mockResolvedValueOnce({
       membership: {

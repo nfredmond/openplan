@@ -201,6 +201,29 @@ describe("engagement category and item routes", () => {
     expect(await response.json()).toMatchObject({ error: "Engagement category not found for this campaign" });
   });
 
+  it("PATCH /items denies a signed-in user who is not a member of the campaign's workspace", async () => {
+    // Kills the mutation `allowed: true` in loadCampaignAccess (src/lib/engagement/api.ts):
+    // without this test, hollowing the membership gate left every test here green.
+    membershipMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await patchItem(
+      new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ status: "approved" }),
+      }),
+      {
+        params: Promise.resolve({
+          campaignId: "11111111-1111-4111-8111-111111111111",
+          itemId: "66666666-6666-4666-8666-666666666666",
+        }),
+      }
+    );
+
+    expect(response.status).toBe(403);
+    expect(itemUpdateMock).not.toHaveBeenCalled();
+  });
+
   it("PATCH /items updates moderation fields", async () => {
     const response = await patchItem(
       new NextRequest("http://localhost/api/engagement/campaigns/1/items/1", {

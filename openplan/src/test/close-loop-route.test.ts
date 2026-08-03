@@ -49,10 +49,13 @@ vi.mock("@/lib/supabase/server", () => ({
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn() }),
 }));
-// On publish the route fires best-effort notifications/subscriber emails — no-op them.
+// On publish the route fires best-effort notifications/subscriber emails — no-op
+// them, but keep handles: a publish that silently notifies nobody must fail here.
+const recordOperatorNotificationMock = vi.hoisted(() => vi.fn(async () => ({ ok: true })));
+const enqueueCampaignSubscriberEmailsMock = vi.hoisted(() => vi.fn(async () => ({ enqueued: 0 })));
 vi.mock("@/lib/notifications/engagement", () => ({
-  recordOperatorNotification: vi.fn(async () => ({ ok: true })),
-  enqueueCampaignSubscriberEmails: vi.fn(async () => ({ enqueued: 0 })),
+  recordOperatorNotification: recordOperatorNotificationMock,
+  enqueueCampaignSubscriberEmails: enqueueCampaignSubscriberEmailsMock,
 }));
 vi.mock("@/lib/engagement/api", () => ({
   loadCampaignAccess: (...args: unknown[]) => loadCampaignAccess(...args),
@@ -170,6 +173,11 @@ describe("close-loop operator routes", () => {
     const res = await PATCH(req, entryCtx);
     expect(res.status).toBe(200);
     expect((await res.json()).entry.status).toBe("published");
+    // A draft -> published transition must notify the operator inbox and enqueue
+    // subscriber emails exactly once. Inverting the transition check (so a real
+    // publish notifies nobody) previously survived this whole file.
+    expect(recordOperatorNotificationMock).toHaveBeenCalledTimes(1);
+    expect(enqueueCampaignSubscriberEmailsMock).toHaveBeenCalledTimes(1);
   });
 
   it("still returns 200 on publish when the best-effort notify path throws (e.g. missing service-role key)", async () => {

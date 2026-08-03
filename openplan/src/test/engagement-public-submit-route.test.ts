@@ -303,6 +303,22 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     expect(itemInsertMock).not.toHaveBeenCalled();
   });
 
+  it("fingerprints discriminate: different IPs and different bodies hash differently", () => {
+    // The rate-limit and duplicate tests build their fixtures FROM these
+    // production functions, so a degenerate hash (constant output) leaves them
+    // green while, in production, any one resident's comment would rate-limit
+    // and 409 every other resident. This assertion is what kills that mutation.
+    const requestA = jsonRequest("test-share-token-12345", { body: "a" });
+    const requestB = jsonRequest("test-share-token-12345", { body: "a" }, { "x-forwarded-for": "198.51.100.7" });
+    expect(buildPublicSubmissionClientFingerprint(requestA)).not.toBe(
+      buildPublicSubmissionClientFingerprint(requestB)
+    );
+
+    expect(buildPublicSubmissionBodyFingerprint({ title: null, body: "The crosswalk needs work." })).not.toBe(
+      buildPublicSubmissionBodyFingerprint({ title: null, body: "The bus stop needs a shelter." })
+    );
+  });
+
   it("rejects a recent duplicate submission", async () => {
     const request = jsonRequest("test-share-token-12345", {
       title: "Main Street",

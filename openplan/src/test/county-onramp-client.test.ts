@@ -190,9 +190,19 @@ describe("county onramp client helpers", () => {
 
     const detail = await getCountyRunDetail("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
     expect(detail.stage).toBe("validated-screening");
+    expect(fetcher).toHaveBeenNthCalledWith(
+      1,
+      "/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      expect.objectContaining({ method: "GET" })
+    );
 
     const enqueued = await enqueueCountyRun("aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", fetcher as typeof fetch);
     expect(enqueued.status).toBe("prepared");
+    expect(fetcher).toHaveBeenNthCalledWith(
+      2,
+      "/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/enqueue",
+      expect.objectContaining({ method: "POST" })
+    );
 
     const completed = await ingestCountyRunManifest(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -200,6 +210,11 @@ describe("county onramp client helpers", () => {
       fetcher as typeof fetch
     );
     expect("stage" in completed && completed.stage).toBe("validated-screening");
+    expect(fetcher).toHaveBeenNthCalledWith(
+      3,
+      "/api/county-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/manifest",
+      expect.objectContaining({ method: "POST" })
+    );
 
     const failed = await ingestCountyRunManifest(
       "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",

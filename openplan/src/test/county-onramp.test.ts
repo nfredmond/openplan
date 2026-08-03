@@ -76,6 +76,17 @@ describe("county onramp primitives", () => {
     expect(parsed.summary.validation?.screening_gate?.status_label).toBe("bounded screening-ready");
   });
 
+  it("rejects a manifest whose stage is outside the documented vocabulary", () => {
+    // The stage vocabulary is the claim ladder. A worker inventing a stage
+    // (e.g. "certified-modeling") must be refused at the ingest contract, not
+    // stored and interpreted downstream.
+    const unknownStage = countyOnrampManifestSchema.safeParse({
+      ...validatedManifestFixture,
+      stage: "certified-modeling",
+    });
+    expect(unknownStage.success).toBe(false);
+  });
+
   it("validates county run creation payloads", () => {
     const parsed = createCountyRunRequestSchema.parse({
       workspaceId: "123e4567-e89b-12d3-a456-426614174000",
@@ -104,10 +115,15 @@ describe("county onramp primitives", () => {
     const invalid = ingestCountyRunManifestRequestSchema.safeParse({
       status: "failed",
     });
+    const completedWithoutManifest = ingestCountyRunManifestRequestSchema.safeParse({
+      status: "completed",
+    });
 
     expect(completed.success).toBe(true);
     expect(failed.success).toBe(true);
     expect(invalid.success).toBe(false);
+    // A worker claiming completion must hand over the manifest it produced.
+    expect(completedWithoutManifest.success).toBe(false);
   });
 
   it("derives UI card state from a validated county manifest", () => {

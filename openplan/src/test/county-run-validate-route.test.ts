@@ -127,6 +127,20 @@ describe("POST /api/county-runs/[countyRunId]/validate", () => {
     });
   });
 
+  it("refuses an unauthenticated caller before disclosing any filesystem paths", async () => {
+    authGetUserMock.mockResolvedValueOnce({ data: { user: null } });
+
+    const response = await prepareCountyRunValidation(request(), {
+      params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),
+    });
+
+    expect(response.status).toBe(401);
+    const payload = await response.json();
+    expect(payload).toEqual({ error: "Unauthorized" });
+    // The county-run row (and its run_dir paths) must never have been read.
+    expect(countyRunSelectMock).not.toHaveBeenCalled();
+  });
+
   it("prepares a validator rerun command when scaffold and runtime outputs are ready", async () => {
     const response = await prepareCountyRunValidation(request(), {
       params: Promise.resolve({ countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }),

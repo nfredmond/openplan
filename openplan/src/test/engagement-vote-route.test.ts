@@ -55,6 +55,7 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import { DELETE, POST } from "@/app/api/engage/[shareToken]/items/[itemId]/vote/route";
 import { PUBLIC_VOTE_MAX_PER_WINDOW } from "@/lib/engagement/votes";
+import { buildPublicSubmissionClientFingerprint } from "@/lib/engagement/public-submit";
 
 const CAMPAIGN_ID = "11111111-1111-4111-8111-111111111111";
 const ITEM_ID = "22222222-2222-4222-8222-222222222222";
@@ -106,11 +107,15 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/vote", () => {
     expect(json.alreadyVoted).toBe(false);
     expect(json.votesCount).toBe(5);
 
+    // The fingerprint must be the shared per-client one, not any string: with a
+    // constant here, the UNIQUE (item_id, voter_fingerprint) constraint caps
+    // every item at one supporter total and tells everyone else "alreadyVoted".
+    // expect.any(String) let exactly that mutation survive.
     expect(voteInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         item_id: ITEM_ID,
         campaign_id: CAMPAIGN_ID,
-        voter_fingerprint: expect.any(String),
+        voter_fingerprint: buildPublicSubmissionClientFingerprint(voteRequest()),
       })
     );
   });
