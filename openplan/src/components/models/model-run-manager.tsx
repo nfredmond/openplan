@@ -18,6 +18,7 @@ import { ModelRunEngagementPanel } from "@/components/models/model-run-engagemen
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { formatDurationSeconds, formatFileSize, labelForArtifactType, labelForEngineKey } from "@/lib/models/evidence-packet";
 import { MANAGED_RUN_MODE_DEFINITIONS, getManagedRunModeDefinition, type ManagedRunModeKey } from "@/lib/models/run-modes";
+import { resolveVmtDeterminationRunEligibility } from "@/lib/planner-pack/vmt-determination-inputs";
 import {
   IN_PROCESS_ENGINE_KEYS,
   assessWorkerLaunchReadiness,
@@ -1101,8 +1102,18 @@ function ModelRunStagingAndArtifacts({
         />
       ) : null}
 
-      {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
-        <ModelRunCeqaVmtScreen modelId={modelId} modelRunId={run.id} runTitle={run.run_title} />
+      {/* Mounting is a courtesy filter; the panel re-checks eligibility itself
+          (and the save route enforces it again server-side), so this condition
+          drifting can hide the screen but can never show a determination from
+          an ineligible run. */}
+      {resolveVmtDeterminationRunEligibility({ status: run.status, engineKey: run.engine_key }).ok ? (
+        <ModelRunCeqaVmtScreen
+          modelId={modelId}
+          modelRunId={run.id}
+          runTitle={run.run_title}
+          runStatus={run.status}
+          engineKey={run.engine_key}
+        />
       ) : null}
 
       {run.status === "succeeded" && run.engine_key === "ite_trip_generation" ? (

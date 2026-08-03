@@ -196,7 +196,16 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   // 4 -> 3: the relaunch re-queue now chains `.select("id").maybeSingle()` and
   // answers zero matched rows through write-outcome.ts, because that write also
   // carries the run's rebuilt demographics.
-  "src/app/api/models/[modelId]/runs/[modelRunId]/launch/route.ts": 3,
+  //
+  // 3 -> 5 (2026-07-30): relaunch now also deletes the prior attempt's
+  // `modeling_claim_decisions` and `modeling_validation_results` — the worker
+  // writes tiers mid-run, so a relaunched run could otherwise display a tier
+  // (up to calibrated_to_counts) over KPIs the relaunch had deleted. These two
+  // deletes deliberately do NOT observe their row count: zero rows matched is
+  // the COMMON case (a run that never earned a tier has nothing to clear), so a
+  // count proves nothing. Both check `.error`, which is the failure that matters
+  // — a delete refused by RLS or a missing table must not report a clean slate.
+  "src/app/api/models/[modelId]/runs/[modelRunId]/launch/route.ts": 5,
   "src/app/api/models/[modelId]/runs/[modelRunId]/route.ts": 2,
   "src/app/api/models/[modelId]/runs/route.ts": 15,
   "src/app/api/plans/[planId]/route.ts": 1,

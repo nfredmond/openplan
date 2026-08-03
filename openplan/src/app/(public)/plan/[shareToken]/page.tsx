@@ -95,12 +95,16 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
 
   const [kpiResult, runTitleResult] = evidenceRunIds.length
     ? await Promise.all([
-        supabase.from("model_run_kpis").select("run_id, kpi_name, value").in("run_id", evidenceRunIds).in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES]),
+        supabase.from("model_run_kpis").select("run_id, kpi_name, value, geometry_ref").in("run_id", evidenceRunIds).in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES]),
         supabase.from("model_runs").select("id, run_title").in("id", evidenceRunIds),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [], error: null }, { data: [], error: null }];
 
   const kpiRows = (kpiResult.data ?? []) as RtpModelingEvidenceKpiRow[];
+  // A failed KPI read must not publish "No VMT/GHG KPIs on this run" (or a
+  // silent omission of attributed evidence) on a public page. The failure
+  // travels into the evidence summary as its own state.
+  const evidenceKpiReadFailed = Boolean(kpiResult.error);
   const runTitleById = new Map(((runTitleResult.data ?? []) as Array<{ id: string; run_title: string }>).map((run) => [run.id, run.run_title]));
 
   const portfolio = buildPortfolioPriorityNarrative(links.map((link) => link.priority_scores ?? {}));
@@ -110,7 +114,9 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
       const project = normalizeProject(link.projects);
       const priority = buildRtpPriorityRationale(link.priority_scores ?? {});
       const evidence = link.evidence_model_run_id
-        ? summarizeRtpModelingEvidence(link.evidence_model_run_id, runTitleById.get(link.evidence_model_run_id) ?? null, kpiRows)
+        ? summarizeRtpModelingEvidence(link.evidence_model_run_id, runTitleById.get(link.evidence_model_run_id) ?? null, kpiRows, {
+            kpiReadFailed: evidenceKpiReadFailed,
+          })
         : null;
       const awards = project ? awardsByProject.get(project.id) ?? [] : [];
       return { id: link.id, project, portfolioRole: link.portfolio_role, priorityRationale: link.priority_rationale, priority, evidence, awards };
@@ -167,7 +173,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
                   ? entry.priority.narrative
                   : entry.priorityRationale?.trim() || entry.project?.summary?.trim() || "Prioritization rationale to be published."}
               </p>
-              {entry.evidence && (entry.evidence.hasVmt || entry.evidence.hasGhg) ? (
+              {entry.evidence && (entry.evidence.hasVmt || entry.evidence.hasGhg || entry.evidence.kpiReadFailed) ? (
                 <p className="mt-2 text-xs text-muted-foreground">
                   <span className="font-medium text-foreground">Modeling evidence</span>
                   {entry.evidence.runTitle ? ` (${entry.evidence.runTitle})` : ""}: {formatRtpModelingEvidenceLine(entry.evidence)}

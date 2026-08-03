@@ -169,7 +169,7 @@ export function resolveVmtDeterminationRunEligibility(
       reason:
         "No engine is recorded for this run, so OpenPlan cannot establish that the model behind these " +
         `KPIs is one whose VMT may carry a significance determination. Determinations are computed only from ${eligible}. ` +
-        "Nothing was saved, because a determination that cannot name the model it came from is not citable.",
+        "A determination that cannot name the model it came from is not citable, so none is issued from this run.",
     };
   }
 
@@ -190,8 +190,8 @@ export function resolveVmtDeterminationRunEligibility(
       kind: "run_not_succeeded",
       reason:
         `This run's status is ${run.status ? `"${run.status}"` : "not recorded"}, not "succeeded", so its stored KPIs are ` +
-        "partial or abandoned rather than the run's final result. A stored determination is permanent and citable, " +
-        "so OpenPlan will not compute one from a run that has not finished successfully. Nothing was saved. If the " +
+        "partial or abandoned rather than the run's final result. A determination is permanent and citable, " +
+        "so OpenPlan will not compute one from a run that has not finished successfully. If the " +
         "run is still going, screen it again once it succeeds.",
     };
   }

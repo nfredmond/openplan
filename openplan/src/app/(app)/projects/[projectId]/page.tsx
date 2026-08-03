@@ -299,7 +299,7 @@ export default async function ProjectDetailPage({
     evidenceRunIds.length
       ? supabase
           .from("model_run_kpis")
-          .select("run_id, kpi_name, value")
+          .select("run_id, kpi_name, value, geometry_ref")
           .in("run_id", evidenceRunIds)
           .in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
       : Promise.resolve({ data: [], error: null }),
@@ -313,8 +313,10 @@ export default async function ProjectDetailPage({
       }));
   const runTitleById = new Map(availableModelRuns.map((run) => [run.id, run.title]));
   const evidenceKpiRows = (evidenceKpisResult.data ?? []) as RtpModelingEvidenceKpiRow[];
+  // A failed read renders as "could not be read", never "No VMT/GHG KPIs".
+  const evidenceKpiOptions = { kpiReadFailed: Boolean(evidenceKpisResult.error) };
   const modelingEvidenceByRunId = new Map(
-    evidenceRunIds.map((runId) => [runId, summarizeRtpModelingEvidence(runId, runTitleById.get(runId) ?? null, evidenceKpiRows)])
+    evidenceRunIds.map((runId) => [runId, summarizeRtpModelingEvidence(runId, runTitleById.get(runId) ?? null, evidenceKpiRows, evidenceKpiOptions)])
   );
 
   const rtpCycleById = new Map(linkedRtpCycles.map((cycle) => [cycle.id, cycle]));

@@ -179,8 +179,15 @@ type SketchAbmKpiRow = {
 
 /**
  * Shape sketch ABM outputs into `model_run_kpis` rows. KPI names
- * `daily_vmt`, `vmt_per_capita`, and `population_total` are load-bearing —
- * the CEQA §15064.3 screen consumes them by exact name.
+ * `daily_vmt`, `vmt_per_capita`, and `population_total` are the shared VMT
+ * KPI vocabulary (cross-run comparison reads them by exact name) — but the
+ * CEQA §15064.3 screen must NOT consume them from a sketch run, and does not:
+ * sketch VMT runs far below the CARB reference (documented ~56% low), which is
+ * how a false "less than significant" gets issued. The determination boundary
+ * is `VMT_DETERMINATION_ELIGIBLE_ENGINE_KEYS` (aequilibrae only), enforced in
+ * the vmt-significance route, in `ModelRunCeqaVmtScreen` itself, and at the
+ * mount site. Do not read the shared names as an invitation to point the CEQA
+ * screen at this engine.
  *
  * Trip-derived totals (total_tours, total_trips, daily_vmt) are computed at
  * the capped synthetic-sample scale and expansion-weighted back to the full

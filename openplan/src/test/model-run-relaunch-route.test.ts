@@ -28,6 +28,8 @@ const stageUpdateMock = vi.fn();
 const stageInsertMock = vi.fn();
 const artifactDeleteEqMock = vi.fn();
 const kpiDeleteEqMock = vi.fn();
+const claimDecisionDeleteEqMock = vi.fn();
+const validationResultDeleteEqMock = vi.fn();
 
 const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const MODEL_RUN_ID = "22222222-2222-4222-8222-222222222222";
@@ -72,6 +74,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "model_run_kpis") {
     return { delete: vi.fn(() => ({ eq: kpiDeleteEqMock })) };
+  }
+  if (table === "modeling_claim_decisions") {
+    return { delete: vi.fn(() => ({ eq: claimDecisionDeleteEqMock })) };
+  }
+  if (table === "modeling_validation_results") {
+    return { delete: vi.fn(() => ({ eq: validationResultDeleteEqMock })) };
   }
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -193,6 +201,8 @@ function givenARelaunchableRun() {
     stageInsertMock.mockResolvedValue({ error: null });
     artifactDeleteEqMock.mockResolvedValue({ error: null });
     kpiDeleteEqMock.mockResolvedValue({ error: null });
+    claimDecisionDeleteEqMock.mockResolvedValue({ error: null });
+    validationResultDeleteEqMock.mockResolvedValue({ error: null });
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
 }
 
@@ -280,6 +290,38 @@ describe("/api/models/[modelId]/runs/[modelRunId]/launch", () => {
     const res = await relaunchRun(request(), routeContext());
     expect(res.status).toBe(400);
     expect(runUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes the run's claim-tier evidence alongside the KPIs it graded", async () => {
+    // The worker writes modeling_claim_decisions / modeling_validation_results
+    // MID-RUN (inside Artifact Extraction, before terminal status), so a run
+    // that failed late already carries a tier — possibly calibrated_to_counts.
+    // A relaunch that deleted the KPIs but kept those rows left a run that
+    // could die early on its second attempt and permanently display a
+    // calibrated badge over outputs this route destroyed. Neither
+    // loadModelRunClaimStatuses nor the vmt-significance GET checks run status,
+    // so the stale tier would render unchallenged.
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(200);
+    expect(claimDecisionDeleteEqMock).toHaveBeenCalledWith("model_run_id", MODEL_RUN_ID);
+    expect(validationResultDeleteEqMock).toHaveBeenCalledWith("model_run_id", MODEL_RUN_ID);
+  });
+
+  it("refuses the relaunch when the claim-tier evidence cannot be deleted", async () => {
+    // Proceeding would requeue a run still wearing its old grade — the exact
+    // stale-tier display the delete exists to prevent.
+    claimDecisionDeleteEqMock.mockResolvedValue({
+      error: { message: "delete refused", code: "42501" },
+    });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(500);
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "model_run_cleanup_failed",
+      expect.objectContaining({ claimDecisionDeleteCode: "42501" }),
+    );
   });
 
   it("logs and 500s when the requeue update fails", async () => {

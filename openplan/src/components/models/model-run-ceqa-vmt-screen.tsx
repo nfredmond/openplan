@@ -15,6 +15,7 @@ import {
   type VmtSignificanceScreeningRecord,
 } from "@/lib/planner-pack/vmt-screening-records";
 import type { VmtFrameworkResolution } from "@/lib/planner-pack/vmt-significance-frameworks";
+import { resolveVmtDeterminationRunEligibility } from "@/lib/planner-pack/vmt-determination-inputs";
 
 /**
  * VMT significance screen for a succeeded model run.
@@ -36,6 +37,17 @@ type ModelRunCeqaVmtScreenProps = {
   modelId: string;
   modelRunId: string;
   runTitle: string;
+  /**
+   * The run's own state, so THIS COMPONENT enforces the eligibility rule rather
+   * than trusting whoever mounted it. The save route already refuses an
+   * ineligible run (`resolveVmtDeterminationRunEligibility` server-side), but
+   * the on-screen determination and the memo download are client-only — a mount
+   * condition upstream is a rendering courtesy, not a gate, and a sketch-ABM
+   * run's KPIs use exactly the names this screen prefers. Both are required:
+   * omitting them must be a compile error, never an assumed-eligible run.
+   */
+  runStatus: string | null;
+  engineKey: string | null;
 };
 
 type ScreenState = {
@@ -62,7 +74,13 @@ function formatSavedAt(createdAt: string | null): string {
     : parsed.toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
-export function ModelRunCeqaVmtScreen({ modelId, modelRunId, runTitle }: ModelRunCeqaVmtScreenProps) {
+export function ModelRunCeqaVmtScreen({
+  modelId,
+  modelRunId,
+  runTitle,
+  runStatus,
+  engineKey,
+}: ModelRunCeqaVmtScreenProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -209,6 +227,36 @@ export function ModelRunCeqaVmtScreen({ modelId, modelRunId, runTitle }: ModelRu
   }
 
   const latest = screenState.screenings[0] ?? null;
+
+  // THE DISPLAY-SIDE GATE, sharing the server's one rule. An ineligible run gets
+  // the refusal — with the server's own wording — instead of a determination it
+  // could render on screen and export as a memo. This makes the model-run
+  // list's mount condition a courtesy rather than the boundary.
+  const eligibility = resolveVmtDeterminationRunEligibility({ status: runStatus, engineKey });
+  if (!eligibility.ok) {
+    return (
+      <article className="module-section-surface" data-testid="model-run-ceqa-vmt-screen">
+        <div className="module-section-header">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
+              <Scale className="h-5 w-5" />
+            </span>
+            <div className="module-section-heading">
+              <p className="module-section-label">CEQA VMT screen</p>
+              <h2 className="module-section-title">§15064.3 transportation-impact screening</h2>
+            </div>
+          </div>
+          <StatusBadge tone="warning">Not available for this run</StatusBadge>
+        </div>
+        <p
+          className="mt-4 rounded-[0.75rem] border border-dashed border-border/60 bg-background/60 px-5 py-4 text-sm text-muted-foreground"
+          data-testid="model-run-ceqa-vmt-ineligible"
+        >
+          {eligibility.reason}
+        </p>
+      </article>
+    );
+  }
 
   return (
     <article className="module-section-surface" data-testid="model-run-ceqa-vmt-screen">

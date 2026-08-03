@@ -196,6 +196,27 @@ export function inputBasisLabel(inputBasis: VmtScreeningInputBasis): string {
 }
 
 /**
+ * The claim-tier sentence that rides with an UNSAVED (on-screen or exported)
+ * determination. One definition on purpose: the screen panel and the downloaded
+ * memo must state the tier — or its honest absence — in the same words, so the
+ * artifact that leaves the tool can never claim more than the screen it came
+ * from. `undefined`/`null` means the surface never read the tier, which is a
+ * different fact from "read it and found none recorded", and both absences are
+ * stated rather than left blank.
+ */
+export function describeClaimTierForDetermination(
+  claimTier: VmtClaimTierEvidence | null | undefined
+): string {
+  if (!claimTier) {
+    return "not established on this surface. The run's recorded claim tier is not read here, so how strongly this determination may be claimed is unknown.";
+  }
+  if (claimTier.claimStatusSource === "recorded_claim_decision") {
+    return `${claimStatusLabel(claimTier.claimStatus)} — recorded for this run.`;
+  }
+  return "not recorded for this run. No modeling claim decision exists, so OpenPlan will not assume a tier for it.";
+}
+
+/**
  * Everything a determination must carry to be shown anywhere at all.
  *
  * All five fields are REQUIRED (the tier may be null, but the field may not be

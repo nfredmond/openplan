@@ -152,6 +152,121 @@ describe("/api/models/[modelId]/runs/[modelRunId]/kpis", () => {
     });
   });
 
+  it("refuses to diff KPIs against a baseline run from a different engine", async () => {
+    // Current run: AequilibraE worker (network daily_vmt). Baseline: sketch ABM
+    // (synthetic-population daily_vmt, documented as running far below
+    // reference). Both publish `daily_vmt`, so a name-matched diff would render
+    // an estimator artifact as a scenario finding.
+    const BASELINE_RUN_ID = "55555555-5555-4555-8555-555555555555";
+    runMaybeSingleMock
+      .mockResolvedValueOnce({
+        data: { id: MODEL_RUN_ID, model_id: MODEL_ID, engine_key: "aequilibrae", status: "succeeded" },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { id: BASELINE_RUN_ID, engine_key: "sketch_abm", status: "succeeded" },
+        error: null,
+      });
+    modelRunKpisOrderSecondMock.mockResolvedValue({
+      data: [
+        {
+          run_id: MODEL_RUN_ID,
+          kpi_category: "general",
+          kpi_name: "daily_vmt",
+          kpi_label: "Daily VMT",
+          value: 300000,
+          geometry_ref: null,
+        },
+      ],
+      error: null,
+    });
+
+    const response = await getModelRunKpis(
+      new NextRequest(
+        `http://localhost/api/models/${MODEL_ID}/runs/${MODEL_RUN_ID}/kpis?baseline_run_id=${BASELINE_RUN_ID}`
+      ),
+      { params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }) }
+    );
+
+    expect(response).toBeDefined();
+    if (!response) throw new Error("Expected cross-engine KPI comparison response");
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    // No delta rows at all — an empty comparison plus a stated refusal, never a
+    // name-matched diff between two different estimators.
+    expect(payload.comparison).toEqual([]);
+    expect(payload.cross_engine_comparison).toMatchObject({
+      status: "cross_engine_comparison_blocked",
+      current_engine_key: "aequilibrae",
+      baseline_engine_key: "sketch_abm",
+    });
+    expect(payload.cross_engine_comparison.message).toMatch(/estimator/i);
+    // The baseline run's KPI rows were never even fetched.
+    expect(modelRunKpisOrderSecondMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("still diffs KPIs when the baseline run uses the same engine", async () => {
+    const BASELINE_RUN_ID = "55555555-5555-4555-8555-555555555555";
+    runMaybeSingleMock
+      .mockResolvedValueOnce({
+        data: { id: MODEL_RUN_ID, model_id: MODEL_ID, engine_key: "aequilibrae", status: "succeeded" },
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: { id: BASELINE_RUN_ID, engine_key: "aequilibrae", status: "succeeded" },
+        error: null,
+      });
+    modelRunKpisOrderSecondMock
+      .mockResolvedValueOnce({
+        data: [
+          {
+            run_id: MODEL_RUN_ID,
+            kpi_category: "general",
+            kpi_name: "daily_vmt",
+            kpi_label: "Daily VMT",
+            value: 300000,
+            geometry_ref: null,
+          },
+        ],
+        error: null,
+      })
+      .mockResolvedValueOnce({
+        data: [
+          {
+            run_id: BASELINE_RUN_ID,
+            kpi_category: "general",
+            kpi_name: "daily_vmt",
+            kpi_label: "Daily VMT",
+            value: 200000,
+            geometry_ref: null,
+          },
+        ],
+        error: null,
+      });
+
+    const response = await getModelRunKpis(
+      new NextRequest(
+        `http://localhost/api/models/${MODEL_ID}/runs/${MODEL_RUN_ID}/kpis?baseline_run_id=${BASELINE_RUN_ID}`
+      ),
+      { params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }) }
+    );
+
+    expect(response).toBeDefined();
+    if (!response) throw new Error("Expected same-engine KPI comparison response");
+
+    expect(response.status).toBe(200);
+    const payload = await response.json();
+    expect(payload.cross_engine_comparison).toBeUndefined();
+    expect(payload.comparison).toHaveLength(1);
+    expect(payload.comparison[0]).toMatchObject({
+      kpi_name: "daily_vmt",
+      baseline_value: 200000,
+      absolute_delta: 100000,
+      percent_delta: 50,
+    });
+  });
+
   it("rejects behavioral-onramp KPI registration through the model-run write route", async () => {
     const response = await postModelRunKpis(
       postRequest({

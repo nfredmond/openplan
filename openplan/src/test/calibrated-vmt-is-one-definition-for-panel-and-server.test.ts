@@ -112,7 +112,10 @@ describe("a run that cannot support a determination is refused with the reason t
       if (eligibility.ok) throw new Error("unreachable");
       expect(eligibility.kind).toBe("run_not_succeeded");
       expect(eligibility.reason).toMatch(/succeeded/i);
-      expect(eligibility.reason).toMatch(/nothing was saved/i);
+      // Wording is surface-neutral on purpose: the same reason renders in the
+      // panel's refusal (where nothing was ever going to be saved) and in the
+      // route's (where a save was just refused). It must still name the wait.
+      expect(eligibility.reason).toMatch(/screen it again once it succeeds/i);
     }
   });
 

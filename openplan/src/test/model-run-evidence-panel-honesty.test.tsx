@@ -444,3 +444,68 @@ describe("ModelRunEvidencePanel transit-feed provenance", () => {
     expect(screen.queryByTestId("evidence-transit-provenance")).toBeNull();
   });
 });
+
+describe("ModelRunEvidencePanel cross-engine comparison refusal", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const BASELINE_RUN_ID = "55555555-5555-4555-8555-555555555555";
+
+  it("renders the route's refusal instead of a flat/zero-shift summary when the baseline engine differs", async () => {
+    // Two estimators share the KPI name daily_vmt (worker network VMT vs sketch
+    // VMT); the route refuses the diff and the panel must render that refusal,
+    // never "All compared KPIs flat" — which would assert the runs agree.
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("baseline_run_id")) {
+        return {
+          ok: true,
+          json: async () => ({
+            run_id: MODEL_RUN_ID,
+            baseline_run_id: BASELINE_RUN_ID,
+            comparison: [],
+            cross_engine_comparison: {
+              status: "cross_engine_comparison_blocked",
+              current_engine_key: "aequilibrae",
+              baseline_engine_key: "sketch_abm",
+              message:
+                "KPI deltas are only computed between runs of the same engine. The two engines derive same-named KPIs with different estimators.",
+            },
+          }),
+        };
+      }
+      return { ok: true, json: async () => AEQUILIBRAE_PACKET };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ModelRunEvidencePanel
+        modelId={MODEL_ID}
+        modelRunId={MODEL_RUN_ID}
+        runTitle="Davis screening run"
+        runStatus="succeeded"
+        engineKey="aequilibrae"
+        comparisonCandidates={[
+          { id: BASELINE_RUN_ID, runTitle: "Sketch baseline", completedAt: null, scenarioLabel: null },
+        ]}
+        claimStatus={null}
+      />
+    );
+    await openEvidence();
+
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: BASELINE_RUN_ID } });
+
+    await waitFor(() =>
+      expect(screen.getByTestId("cross-engine-comparison-blocked")).toBeInTheDocument()
+    );
+    expect(screen.getByTestId("cross-engine-comparison-blocked")).toHaveTextContent(
+      /different estimators/i
+    );
+    // The refusal must not co-exist with a comparison summary that reads as a
+    // result ("flat" asserts agreement; "0 KPI shifts" asserts a comparison ran).
+    expect(screen.queryByText(/All compared KPIs flat/i)).toBeNull();
+    expect(screen.queryByText(/KPI shifts/)).toBeNull();
+    expect(screen.queryByText(/Comparable KPIs/)).toBeNull();
+  });
+});

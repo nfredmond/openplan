@@ -291,12 +291,28 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const [{ error: artifactDeleteError }, { error: kpiDeleteError }] = await Promise.all([
+    // The claim-tier evidence rows are deleted ALONGSIDE the KPIs they grade.
+    // The worker writes `modeling_claim_decisions` / `modeling_validation_results`
+    // mid-run (inside Artifact Extraction, before the run's terminal status is
+    // decided), so a run that failed after that point already carries a tier —
+    // including `calibrated_to_counts`. Leaving those rows here while deleting
+    // the KPIs let a relaunch that died early display a calibrated badge over
+    // outputs this route had destroyed: a tier with no evidence under it. A
+    // failed delete refuses the relaunch for the same reason the KPI delete
+    // does — proceeding would requeue a run still wearing its old grade.
+    const [
+      { error: artifactDeleteError },
+      { error: kpiDeleteError },
+      { error: claimDecisionDeleteError },
+      { error: validationResultDeleteError },
+    ] = await Promise.all([
       supabase.from("model_run_artifacts").delete().eq("run_id", modelRun.id),
       supabase.from("model_run_kpis").delete().eq("run_id", modelRun.id),
+      supabase.from("modeling_claim_decisions").delete().eq("model_run_id", modelRun.id),
+      supabase.from("modeling_validation_results").delete().eq("model_run_id", modelRun.id),
     ]);
 
-    if (artifactDeleteError || kpiDeleteError) {
+    if (artifactDeleteError || kpiDeleteError || claimDecisionDeleteError || validationResultDeleteError) {
       audit.error("model_run_cleanup_failed", {
         modelId: access.model.id,
         modelRunId: modelRun.id,
@@ -304,6 +320,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         artifactDeleteCode: artifactDeleteError?.code ?? null,
         kpiDeleteMessage: kpiDeleteError?.message ?? null,
         kpiDeleteCode: kpiDeleteError?.code ?? null,
+        claimDecisionDeleteMessage: claimDecisionDeleteError?.message ?? null,
+        claimDecisionDeleteCode: claimDecisionDeleteError?.code ?? null,
+        validationResultDeleteMessage: validationResultDeleteError?.message ?? null,
+        validationResultDeleteCode: validationResultDeleteError?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to clear prior run artifacts" }, { status: 500 });
     }

@@ -13,6 +13,7 @@ import {
   buildBehavioralDemandComparison,
   normalizeBehavioralComparisonSource,
 } from "@/lib/models/behavioral-kpi-comparison";
+import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -199,6 +200,35 @@ export async function GET(req: NextRequest, context: RouteContext) {
         baseline_run_id: baselineRunId,
         comparison: behavioralComparison.comparison.rows,
         behavioral_comparison: behavioralComparison,
+      });
+    }
+
+    // CROSS-ENGINE DELTAS ARE NOT COMPUTED. Different engines publish KPIs
+    // under shared names that are DIFFERENT ESTIMATORS: the AequilibraE worker's
+    // `daily_vmt` is link volume × network length (through traffic included),
+    // while the sketch lane's `daily_vmt` is a synthetic-population sketch
+    // figure the repo's own record documents running far below reference. A
+    // delta between two estimators measures the estimators, not the scenarios —
+    // so an engine-mismatched baseline gets a refusal that says why, never a
+    // silent name-matched diff. The behavioral lane above enforces the same
+    // rule with its own richer comparison shape.
+    if (baselineRun.engine_key !== auth.run.engine_key) {
+      const currentMode = getManagedRunModeDefinition(auth.run.engine_key);
+      const baselineMode = getManagedRunModeDefinition(baselineRun.engine_key);
+      return NextResponse.json({
+        run_id: parsedParams.data.modelRunId,
+        baseline_run_id: baselineRunId,
+        comparison: [],
+        cross_engine_comparison: {
+          status: "cross_engine_comparison_blocked",
+          current_engine_key: auth.run.engine_key,
+          baseline_engine_key: baselineRun.engine_key,
+          message:
+            `KPI deltas are only computed between runs of the same engine. This run came from ${currentMode.engineLabel} ` +
+            `and the selected baseline from ${baselineMode.engineLabel}. The two engines derive same-named KPIs ` +
+            `(for example daily_vmt) with different estimators, so a delta between them would measure the difference ` +
+            `between the estimators, not between the scenarios. Compare runs launched with the same engine instead.`,
+        },
       });
     }
 

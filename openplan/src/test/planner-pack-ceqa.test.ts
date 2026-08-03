@@ -276,6 +276,83 @@ describe("renderCeqaVmtMarkdown", () => {
     const markdown = renderCeqaVmtMarkdown(result, options);
     expect(markdown).toContain("_No scenarios were available for CEQA screening._");
   });
+
+  /**
+   * The memo is the artifact that LEAVES the tool, so it must carry the same
+   * two facts the on-screen panel refuses to omit: whose law (if anyone's)
+   * stands behind the determination, and how good the model behind it is. A
+   * caller that passes neither gets the CONSERVATIVE arms — the memo may
+   * under-claim by default, never present California law as authority over a
+   * workspace nobody resolved.
+   */
+  it("defaults the exported memo to 'no jurisdiction basis established' and an unestablished claim tier", () => {
+    const result = computeCeqaVmt([{ scenario_id: "a", population: 10, daily_vmt: 100 }], {
+      referenceVmtPerCapita: 22.0,
+    });
+    const markdown = renderCeqaVmtMarkdown(result, options);
+
+    expect(markdown).toContain("## Jurisdiction basis and modeling claim tier");
+    expect(markdown).toContain("**Jurisdiction basis: none established.**");
+    expect(markdown).toContain(
+      "not authority over a project in your area — the determinations in this memo are arithmetic screening results, not significance determinations for your area."
+    );
+    expect(markdown).toContain(
+      "**Modeling claim tier:** not established on this surface."
+    );
+  });
+
+  it("carries the surface's own no-framework reason into the memo", () => {
+    const result = computeCeqaVmt([{ scenario_id: "a", population: 10, daily_vmt: 100 }], {
+      referenceVmtPerCapita: 22.0,
+    });
+    const markdown = renderCeqaVmtMarkdown(result, {
+      ...options,
+      jurisdictionBasis: {
+        kind: "none",
+        reason: "No VMT significance framework is registered for An Ohio county (US-OH).",
+      },
+    });
+    expect(markdown).toContain("**Jurisdiction basis: none established.**");
+    expect(markdown).toContain(
+      "No VMT significance framework is registered for An Ohio county (US-OH)."
+    );
+  });
+
+  it("states the governing framework as the jurisdiction basis when one is resolved", () => {
+    const result = computeCeqaVmt([{ scenario_id: "a", population: 10, daily_vmt: 100 }], {
+      referenceVmtPerCapita: 22.0,
+    });
+    const markdown = renderCeqaVmtMarkdown(result, {
+      ...options,
+      jurisdictionBasis: {
+        kind: "framework",
+        frameworkName: "CEQA §15064.3 VMT significance screening",
+        jurisdictionLabel: "California, United States",
+        scopeStatement:
+          "CEQA §15064.3 applies to projects subject to review under the California Environmental Quality Act.",
+      },
+      claimTier: { claimStatus: "screening_grade", claimStatusSource: "recorded_claim_decision" },
+    });
+
+    expect(markdown).toContain(
+      "- **Jurisdiction basis:** CEQA §15064.3 VMT significance screening, California, United States. CEQA §15064.3 applies to projects subject to review under the California Environmental Quality Act."
+    );
+    expect(markdown).not.toContain("none established");
+    expect(markdown).toContain("**Modeling claim tier:** Screening-grade — recorded for this run.");
+  });
+
+  it("states an honestly absent tier when the run has no recorded claim decision", () => {
+    const result = computeCeqaVmt([{ scenario_id: "a", population: 10, daily_vmt: 100 }], {
+      referenceVmtPerCapita: 22.0,
+    });
+    const markdown = renderCeqaVmtMarkdown(result, {
+      ...options,
+      claimTier: { claimStatus: null, claimStatusSource: "not_recorded" },
+    });
+    expect(markdown).toContain(
+      "**Modeling claim tier:** not recorded for this run. No modeling claim decision exists, so OpenPlan will not assume a tier for it."
+    );
+  });
 });
 
 // JS-specific: the Python-parity helpers that keep determinations and

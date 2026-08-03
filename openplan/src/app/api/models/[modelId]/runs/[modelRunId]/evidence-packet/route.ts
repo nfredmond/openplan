@@ -265,7 +265,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: "Model run not found." }, { status: 404 });
   }
 
-  const [{ data: stages }, { data: artifacts }, { data: kpis }, scenarioBasisResult] = await Promise.all([
+  const [stagesResult, artifactsResult, kpisResult, scenarioBasisResult] = await Promise.all([
     supabase
       .from("model_run_stages")
       .select("*")
@@ -293,9 +293,42 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }),
   ]);
 
-  const artifactRows = (artifacts ?? []) as Array<Record<string, unknown>>;
-  const stageRows = (stages ?? []) as Array<Record<string, unknown>>;
-  const kpiRows = (kpis ?? []) as Array<Record<string, unknown>>;
+  // A FAILED READ IS NOT AN EMPTY RESULT. The packet this route returns states
+  // facts about the run — "No KPIs were extracted", "N stage(s) failed",
+  // "No stored evidence artifact was available" — and every one of those
+  // sentences is derived from these three queries. Building the packet from a
+  // query that errored would assert an absence nobody established (a planner
+  // reading "No KPIs were extracted for this run" when the KPI read failed),
+  // so a read failure is refused as itself, matching the sibling KPI route.
+  const failedRead = stagesResult.error
+    ? { what: "execution stages", error: stagesResult.error }
+    : artifactsResult.error
+      ? { what: "artifacts", error: artifactsResult.error }
+      : kpisResult.error
+        ? { what: "KPIs", error: kpisResult.error }
+        : null;
+  if (failedRead) {
+    audit.error("evidence_packet_run_records_read_failed", {
+      modelRunId: parsedParams.data.modelRunId,
+      what: failedRead.what,
+      message: failedRead.error.message,
+      code: failedRead.error.code ?? null,
+    });
+    return NextResponse.json(
+      {
+        error: `Could not read this run's ${failedRead.what}`,
+        details:
+          `The evidence packet describes the run's stored ${failedRead.what}, and that query failed: ` +
+          `${failedRead.error.message}. No packet is returned, because a packet built from a failed read ` +
+          `would present the failure as "this run has none".`,
+      },
+      { status: 500 }
+    );
+  }
+
+  const artifactRows = (artifactsResult.data ?? []) as Array<Record<string, unknown>>;
+  const stageRows = (stagesResult.data ?? []) as Array<Record<string, unknown>>;
+  const kpiRows = (kpisResult.data ?? []) as Array<Record<string, unknown>>;
   const evidenceArtifact = artifactRows.find(
     (artifact) =>
       artifact.artifact_type === "evidence_packet" &&

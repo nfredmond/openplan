@@ -78,6 +78,7 @@ export default async function CountyRunDetailPage({ params, searchParams }: Coun
           kpis={kpisForThisRun}
           heldBackByScreeningGate={isThisRunRejected && !acceptingScreeningGrade}
           includeScreeningHref={`${basePathname}?includeScreening=1`}
+          kpiReadError={kpiResult.error?.message ?? null}
         />
       </section>
     </>

@@ -17,6 +17,12 @@ export interface RtpModelingEvidenceKpiRow {
   run_id: string;
   kpi_name: string;
   value: number | null;
+  /**
+   * KPI scope marker from `model_run_kpis`. A geometry-scoped row (e.g. one
+   * corridor's slice) is not the run's figure, and callers must select this
+   * column so the run-level filter below can see it.
+   */
+  geometry_ref?: string | null;
 }
 
 export interface RtpModelingEvidence {
@@ -28,6 +34,14 @@ export interface RtpModelingEvidence {
   ghgKgPerCapitaDay: number | null;
   hasVmt: boolean;
   hasGhg: boolean;
+  /**
+   * True when the KPI read itself failed. Kept distinct from "no KPI rows",
+   * because "No VMT/GHG KPIs on this run" is a statement about the run that a
+   * failed read cannot establish — rendering it after a query error told a
+   * planner (and, on the public plan page, the public) that evidence was
+   * absent when it was only unread.
+   */
+  kpiReadFailed: boolean;
 }
 
 function num(value: number | null | undefined): number | null {
@@ -42,8 +56,18 @@ export function summarizeRtpModelingEvidence(
   runId: string,
   runTitle: string | null,
   kpiRows: RtpModelingEvidenceKpiRow[],
+  options?: { kpiReadFailed?: boolean },
 ): RtpModelingEvidence {
-  const byName = new Map(kpiRows.filter((row) => row.run_id === runId).map((row) => [row.kpi_name, row.value]));
+  const kpiReadFailed = options?.kpiReadFailed ?? false;
+  // Run-level rows only: a geometry-scoped row (one corridor, one zone group)
+  // is a slice of the run, not the run's VMT/GHG — the same rule the CEQA
+  // screen's findRunLevelKpi applies. Enforced here, in the one pure function
+  // both surfaces call, rather than by each caller remembering a query filter.
+  const byName = new Map(
+    kpiRows
+      .filter((row) => row.run_id === runId && !row.geometry_ref)
+      .map((row) => [row.kpi_name, row.value])
+  );
   const residentVmtPerCapita = num(byName.get("resident_vmt_per_capita"));
   const vmtPerCapita = num(byName.get("vmt_per_capita"));
   const ghgTonsPerYear = num(byName.get("co2e_metric_tons_year"));
@@ -58,6 +82,7 @@ export function summarizeRtpModelingEvidence(
     ghgKgPerCapitaDay,
     hasVmt: residentVmtPerCapita !== null || vmtPerCapita !== null,
     hasGhg: ghgTonsPerYear !== null || ghgKgPerCapitaDay !== null,
+    kpiReadFailed,
   };
 }
 
@@ -74,5 +99,11 @@ export function formatRtpModelingEvidenceLine(evidence: RtpModelingEvidence): st
   } else if (evidence.ghgKgPerCapitaDay !== null) {
     parts.push(`GHG ${evidence.ghgKgPerCapitaDay.toLocaleString(undefined, { maximumFractionDigits: 2 })} kg CO₂e/capita·day`);
   }
-  return parts.length > 0 ? `${parts.join(" · ")} (screening-grade)` : "No VMT/GHG KPIs on this run.";
+  if (parts.length > 0) {
+    return `${parts.join(" · ")} (screening-grade)`;
+  }
+  // "No KPIs" is a claim about the run; a failed read cannot make it.
+  return evidence.kpiReadFailed
+    ? "This run's VMT/GHG KPIs could not be read — a lookup failure, not evidence that the run has none."
+    : "No VMT/GHG KPIs on this run.";
 }

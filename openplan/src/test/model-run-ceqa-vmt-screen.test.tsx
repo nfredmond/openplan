@@ -16,9 +16,15 @@ function mockKpisFetch(kpis: Array<Record<string, unknown>>) {
   return fetchMock;
 }
 
-function renderPanel() {
+function renderPanel(overrides?: { runStatus?: string | null; engineKey?: string | null }) {
   return render(
-    <ModelRunCeqaVmtScreen modelId={MODEL_ID} modelRunId={MODEL_RUN_ID} runTitle="Live worker run" />
+    <ModelRunCeqaVmtScreen
+      modelId={MODEL_ID}
+      modelRunId={MODEL_RUN_ID}
+      runTitle="Live worker run"
+      runStatus={overrides?.runStatus === undefined ? "succeeded" : overrides.runStatus}
+      engineKey={overrides?.engineKey === undefined ? "aequilibrae" : overrides.engineKey}
+    />
   );
 }
 
@@ -229,6 +235,46 @@ describe("ModelRunCeqaVmtScreen", () => {
     renderPanel();
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  /**
+   * THE PANEL-SIDE ENGINE GATE. The save route refuses an ineligible run, but
+   * the on-screen determination and memo download are client-only — and a
+   * sketch run's KPI names (`daily_vmt`, `vmt_per_capita`, `population_total`)
+   * pass the CEQA name filter, so if this panel trusted its mount site, a
+   * drifted mount condition would render a determination from VMT documented
+   * ~56% low. The panel enforces the shared rule itself.
+   */
+  it("refuses a sketch_abm run with the engine reason instead of any screen", () => {
+    const fetchMock = mockKpisFetch([]);
+    renderPanel({ engineKey: "sketch_abm" });
+
+    expect(screen.getByTestId("model-run-ceqa-vmt-ineligible")).toHaveTextContent(
+      /not accepted as the basis for a VMT significance determination/i
+    );
+    expect(screen.queryByRole("button", { name: /run ceqa screen/i })).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses an unfinished run as unfinished, not as a wrong engine", () => {
+    renderPanel({ runStatus: "running" });
+
+    expect(screen.getByTestId("model-run-ceqa-vmt-ineligible")).toHaveTextContent(
+      /has not finished successfully/i
+    );
+    expect(screen.getByTestId("model-run-ceqa-vmt-ineligible")).not.toHaveTextContent(
+      /not accepted as the basis/i
+    );
+    expect(screen.queryByRole("button", { name: /run ceqa screen/i })).toBeNull();
+  });
+
+  it("refuses a run whose engine was never recorded rather than assuming one", () => {
+    renderPanel({ engineKey: null });
+
+    expect(screen.getByTestId("model-run-ceqa-vmt-ineligible")).toHaveTextContent(
+      /no engine is recorded for this run/i
+    );
+    expect(screen.queryByRole("button", { name: /run ceqa screen/i })).toBeNull();
+  });
 });
 
 /**
@@ -380,6 +426,46 @@ describe("ModelRunCeqaVmtScreen — jurisdiction basis, claim tier, and persiste
     expect(screen.getByTestId("ceqa-vmt-save-blocked")).toHaveTextContent(
       /whose rules it was issued under/i
     );
+  });
+
+  it("exports the memo with the jurisdiction basis and claim tier the screen established", async () => {
+    // The memo is the artifact that leaves the tool; this proves the panel
+    // actually WIRES its framework and tier into the download, rather than the
+    // renderer merely being capable of carrying them.
+    let capturedBlob: Blob | null = null;
+    const createObjectURL = vi.fn((blob: Blob) => {
+      capturedBlob = blob;
+      return "blob:mock-memo";
+    });
+    const revokeObjectURL = vi.fn();
+    Object.defineProperty(URL, "createObjectURL", { value: createObjectURL, configurable: true, writable: true });
+    Object.defineProperty(URL, "revokeObjectURL", { value: revokeObjectURL, configurable: true, writable: true });
+
+    try {
+      mockScreenEndpoints({
+        significance: {
+          framework: CALIFORNIA_FRAMEWORK,
+          claimTier: { claimStatus: "screening_grade", claimStatusSource: "recorded_claim_decision" },
+          screenings: [],
+        },
+      });
+      renderPanel();
+      await openScreen();
+      await waitFor(() => expect(screen.getByTestId("ceqa-vmt-determination")).toBeInTheDocument());
+
+      fireEvent.click(screen.getByRole("button", { name: /download memo/i }));
+
+      expect(capturedBlob).not.toBeNull();
+      const memo = await (capturedBlob as unknown as Blob).text();
+      expect(memo).toContain(
+        "- **Jurisdiction basis:** CEQA §15064.3 VMT significance screening, California, United States."
+      );
+      expect(memo).toContain("**Modeling claim tier:** Screening-grade — recorded for this run.");
+      expect(memo).not.toContain("none established");
+    } finally {
+      delete (URL as unknown as Record<string, unknown>).createObjectURL;
+      delete (URL as unknown as Record<string, unknown>).revokeObjectURL;
+    }
   });
 
   it("says the claim tier is not recorded rather than assuming one", async () => {

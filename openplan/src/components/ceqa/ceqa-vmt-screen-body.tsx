@@ -27,7 +27,7 @@ import {
   type CeqaVmtScreeningInputs,
 } from "@/lib/models/ceqa-vmt-screen";
 import {
-  claimStatusLabel,
+  describeClaimTierForDetermination,
   type VmtClaimTierEvidence,
   type VmtDeterminationSaveRequest,
 } from "@/lib/planner-pack/vmt-screening-records";
@@ -102,6 +102,18 @@ export function CeqaVmtScreenBody({
   // framework, but they are a California statewide figure and OPR's percentage —
   // presenting them as universal is the hardcode this branch removes.
   const framework = frameworkResolution?.kind === "covered" ? frameworkResolution.framework : null;
+  // The one no-framework explanation, used by BOTH the on-screen panel and the
+  // exported memo. Two different absences, and they must not be worded alike —
+  // see the jurisdiction-basis JSX below for why a resolved "none covers you"
+  // is a fact while an unresolved surface must not claim one.
+  const noFrameworkReason =
+    frameworkResolution?.kind === "not_covered" ||
+    frameworkResolution?.kind === "jurisdiction_unknown" ||
+    frameworkResolution?.kind === "ambiguous"
+      ? frameworkResolution.reason
+      : (frameworkUnavailableReason ??
+        "This surface does not resolve which jurisdiction's VMT significance rules apply, so " +
+          "OpenPlan cannot say whose determination this would be and will not record one.");
   const [referenceInput, setReferenceInput] = useState(
     String(framework?.defaultReferenceVmtPerCapita ?? DEFAULT_REFERENCE_VMT_PER_CAPITA)
   );
@@ -182,8 +194,20 @@ export function CeqaVmtScreenBody({
       runId: scenarioId,
       engineVersion: CEQA_MEMO_ENGINE_VERSION,
       // Disclose the calibrated basis in the exported artifact — the on-screen
-      // label must travel into the memo that leaves the tool.
+      // label must travel into the memo that leaves the tool. The jurisdiction
+      // basis and the claim tier travel for the same reason: the memo is the
+      // quotable artifact, and it may not assert more than the screen it came
+      // from established.
       calibratedBasis: calibratedActive,
+      jurisdictionBasis: framework
+        ? {
+            kind: "framework",
+            frameworkName: framework.frameworkName,
+            jurisdictionLabel: framework.jurisdiction.label,
+            scopeStatement: framework.scopeStatement,
+          }
+        : { kind: "none", reason: noFrameworkReason },
+      claimTier,
     });
     const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -443,24 +467,17 @@ export function CeqaVmtScreenBody({
                   ? "No VMT significance framework has been established for this workspace, so the comparison above is arithmetic — not a significance determination for your area."
                   : "This screen has not established which VMT significance framework applies here, so the comparison above is arithmetic — not a significance determination for your area."}
               </span>{" "}
-              {frameworkResolution?.kind === "not_covered" ||
-              frameworkResolution?.kind === "jurisdiction_unknown" ||
-              frameworkResolution?.kind === "ambiguous"
-                ? frameworkResolution.reason
-                : (frameworkUnavailableReason ??
-                  "This surface does not resolve which jurisdiction's VMT significance rules apply, so " +
-                    "OpenPlan cannot say whose determination this would be and will not record one.")}
+              {noFrameworkReason}
             </p>
           )}
           {/* The claim tier rides with it for the same reason: the arithmetic is
               identical whether the VMT behind it is validated or a prototype. */}
           <p className="mt-2 text-xs text-muted-foreground" data-testid="ceqa-vmt-claim-tier">
             <span className="font-semibold">Modeling claim tier:</span>{" "}
-            {!claimTier
-              ? "not established on this surface. The run's recorded claim tier is not read here, so how strongly this determination may be claimed is unknown."
-              : claimTier.claimStatusSource === "recorded_claim_decision"
-                ? `${claimStatusLabel(claimTier.claimStatus)} — recorded for this run.`
-                : "not recorded for this run. No modeling claim decision exists, so OpenPlan will not assume a tier for it."}
+            {/* The one shared sentence — the memo download above renders the
+                same words via the same function, so screen and export cannot
+                drift apart. */}
+            {describeClaimTierForDetermination(claimTier)}
           </p>
           {/* A citation means two different things depending on the jurisdiction
               basis. Under a framework that governs here, it is the AUTHORITY the

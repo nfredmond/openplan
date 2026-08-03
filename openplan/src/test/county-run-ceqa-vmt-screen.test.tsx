@@ -164,4 +164,25 @@ describe("CountyRunCeqaVmtScreen", () => {
     expect(screen.queryByTestId("ceqa-vmt-empty-state")).not.toBeInTheDocument();
     expect(screen.queryByTestId("ceqa-vmt-determination")).not.toBeInTheDocument();
   });
+
+  it("reports a failed KPI read as a read failure, never as 'no VMT KPI stored'", () => {
+    render(
+      <CountyRunCeqaVmtScreen
+        countyRunId={COUNTY_RUN_ID}
+        runName="nevada-run"
+        kpis={[]}
+        heldBackByScreeningGate={false}
+        includeScreeningHref={`/county-runs/${COUNTY_RUN_ID}?includeScreening=1`}
+        kpiReadError="permission denied for table model_run_kpis"
+      />
+    );
+
+    const readError = screen.getByTestId("ceqa-vmt-kpi-read-error");
+    expect(readError).toHaveTextContent("could not be read");
+    expect(readError).toHaveTextContent("permission denied for table model_run_kpis");
+    expect(readError).toHaveTextContent("not a finding that the run stores no VMT KPI");
+    // The empty state asserts an absence a failed read cannot establish.
+    expect(screen.queryByTestId("ceqa-vmt-empty-state")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("ceqa-vmt-determination")).not.toBeInTheDocument();
+  });
 });

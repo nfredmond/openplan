@@ -39,6 +39,17 @@ type ModelRunComparisonCandidate = {
   scenarioLabel: string | null;
 };
 
+/** The KPI route's refusal to diff runs from different engines (same-named
+ * KPIs across engines are different estimators, so a delta between them is an
+ * estimator artifact, not a scenario finding). Rendered as a refusal with its
+ * reason — never as "0 KPI shifts", which would assert the runs agree. */
+type CrossEngineComparisonBlock = {
+  status: string;
+  current_engine_key: string | null;
+  baseline_engine_key: string | null;
+  message: string;
+};
+
 function claimStatusTone(status: ModelingClaimStatus): StatusTone {
   if (status === "calibrated_to_counts" || status === "claim_grade_passed") return "success";
   if (status === "screening_grade") return "warning";
@@ -259,6 +270,7 @@ export function ModelRunEvidencePanel({
   const [executionOutlook, setExecutionOutlook] = useState<ModelRunExecutionOutlook | null>(null);
   const [comparisonRows, setComparisonRows] = useState<Array<Record<string, unknown>> | null>(null);
   const [behavioralComparison, setBehavioralComparison] = useState<BehavioralDemandComparison | null>(null);
+  const [crossEngineBlock, setCrossEngineBlock] = useState<CrossEngineComparisonBlock | null>(null);
 
   const canInspect = runStatus === "succeeded";
   const canRelaunch = engineKey === "aequilibrae" && runStatus !== "running" && runStatus !== "succeeded";
@@ -335,6 +347,7 @@ export function ModelRunEvidencePanel({
     if (!baselineRunId) {
       setComparisonRows(null);
       setBehavioralComparison(null);
+      setCrossEngineBlock(null);
       setComparisonError(null);
       return;
     }
@@ -349,17 +362,30 @@ export function ModelRunEvidencePanel({
       const payload = (await response.json()) as {
         comparison?: Array<Record<string, unknown>>;
         behavioral_comparison?: BehavioralDemandComparison;
+        cross_engine_comparison?: CrossEngineComparisonBlock;
         error?: string;
       };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to load KPI comparison");
       }
 
+      if (payload.cross_engine_comparison) {
+        // A blocked pair renders the refusal alone: setting rows would produce
+        // a summary grid reading "0 changed / 0 flat", which asserts agreement
+        // between two estimators that were never compared.
+        setComparisonRows(null);
+        setBehavioralComparison(null);
+        setCrossEngineBlock(payload.cross_engine_comparison);
+        return;
+      }
+
       setComparisonRows(payload.comparison ?? []);
       setBehavioralComparison(payload.behavioral_comparison ?? null);
+      setCrossEngineBlock(null);
     } catch (comparisonLoadError) {
       setComparisonRows(null);
       setBehavioralComparison(null);
+      setCrossEngineBlock(null);
       setComparisonError(
         comparisonLoadError instanceof Error ? comparisonLoadError.message : "Failed to load KPI comparison"
       );
@@ -885,7 +911,9 @@ export function ModelRunEvidencePanel({
                           Pick another completed managed run as the baseline and review KPI deltas without leaving the model page.
                         </p>
                       </div>
-                      {comparisonSummary ? (
+                      {crossEngineBlock ? (
+                        <StatusBadge tone="warning">Cross-engine comparison blocked</StatusBadge>
+                      ) : comparisonSummary ? (
                         <StatusBadge
                           tone={
                             behavioralComparison?.support.status === "behavioral_comparison_blocked"
@@ -976,6 +1004,16 @@ export function ModelRunEvidencePanel({
                                 ))}
                               </ul>
                             ) : null}
+                          </div>
+                        ) : null}
+
+                        {crossEngineBlock ? (
+                          <div
+                            className="mt-3 rounded-[0.5rem] border border-amber-300/60 bg-amber-50/70 px-3 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
+                            data-testid="cross-engine-comparison-blocked"
+                          >
+                            <p className="font-semibold">Cross-engine KPI comparison blocked</p>
+                            <p className="mt-1">{crossEngineBlock.message}</p>
                           </div>
                         ) : null}
 

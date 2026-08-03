@@ -21,6 +21,33 @@ describe("summarizeRtpModelingEvidence", () => {
     expect(evidence.hasVmt).toBe(false);
     expect(evidence.hasGhg).toBe(false);
     expect(evidence.residentVmtPerCapita).toBeNull();
+    expect(evidence.kpiReadFailed).toBe(false);
+  });
+
+  it("ignores geometry-scoped KPI slices — a corridor's VMT is not the run's VMT", () => {
+    const rows = [
+      // Only a geometry-scoped slice exists: it must not become run evidence.
+      { run_id: "run-1", kpi_name: "resident_vmt_per_capita", value: 99.9, geometry_ref: "corridor-1" },
+      // A run-level row alongside a slice: the run-level value must win
+      // regardless of row order.
+      { run_id: "run-2", kpi_name: "vmt_per_capita", value: 88.8, geometry_ref: "corridor-2" },
+      { run_id: "run-2", kpi_name: "vmt_per_capita", value: 24.5, geometry_ref: null },
+    ];
+    const sliceOnly = summarizeRtpModelingEvidence("run-1", null, rows);
+    expect(sliceOnly.hasVmt).toBe(false);
+    expect(sliceOnly.residentVmtPerCapita).toBeNull();
+
+    const mixed = summarizeRtpModelingEvidence("run-2", null, rows);
+    expect(mixed.vmtPerCapita).toBe(24.5);
+  });
+
+  it("carries a failed KPI read as its own state, never as absence", () => {
+    const evidence = summarizeRtpModelingEvidence("run-x", null, [], { kpiReadFailed: true });
+    expect(evidence.kpiReadFailed).toBe(true);
+    expect(evidence.hasVmt).toBe(false);
+    const line = formatRtpModelingEvidenceLine(evidence);
+    expect(line).toMatch(/could not be read/);
+    expect(line).not.toMatch(/No VMT\/GHG KPIs/);
   });
 });
 
