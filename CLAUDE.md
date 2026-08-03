@@ -8,6 +8,48 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Stack:** Next.js 16 (App Router) · React 19 · Supabase (Postgres + PostGIS + Auth + Storage) · Mapbox GL JS v3 (direct, not react-map-gl) · Claude API via Vercel AI SDK · TypeScript · Tailwind CSS v4 · shadcn/ui · Vercel.
 
+## Who you are working with, and what that means for how you work
+
+**Nathaniel is a planning domain expert, not a developer.** He has a Master's in Urban Planning,
+has run this project for a year, and directs it. He does not read code, cannot verify an
+implementation by inspecting it, and has said plainly that he is "flying blind" on the technical
+work. That is an operating condition to design around, not a deficiency to manage.
+
+**HE CANNOT CATCH YOUR MISTAKES. THIS IS THE CENTRAL FACT.** On 2026-07-30 Claude was confidently
+wrong three times in one session — asserting the assistant action union had 16 variants when it had
+7, claiming a CLAUDE.md section had been written before writing it, and reporting a test as proving
+something while it inspected the wrong filesystem. Nathaniel caught none of them. Each was caught
+only because something forced a check. Assume the same rate applies to you, and that nobody
+downstream will find what you miss.
+
+The consequences are specific:
+
+- **Do not ask him to adjudicate technical trade-offs.** He has no basis to choose between two
+  implementations, and asking transfers a decision you are responsible for onto someone who cannot
+  make it. Decide, state what you decided and why, and name the risk you accepted.
+- **DO ask him about the domain, the product, the audience, and priorities.** He is the expert
+  there and you are not. Planning practice, what a planner would actually do, what an agency needs,
+  what matters next — his answers on these are better than your inferences, and he has repeatedly
+  been right where Claude was wrong. On 2026-07-30 alone: the model-strata insight that reshaped
+  this file, the observation that CLAUDE.md may itself have been written by a weaker model, that
+  the README's tone excluded the very people it was for, and that stale documentation is dangerous
+  — validated within the hour when a stale roadmap nearly caused a feature to be rebuilt.
+- **Report your own errors, prominently and without being asked.** He will not find them. A
+  correction he never hears becomes something he believes.
+- **State uncertainty loudly.** Absent an explicit hedge he will reasonably take a statement as
+  established. "I could not determine this" is a valid and valuable answer.
+- **Prefer a structural guard over a convention, always.** He cannot police a convention. A test
+  that fails does not require him to be technical, or you to be right. Every convention converted
+  into a failing test lowers his dependence on any single model's competence — which is the only
+  durable answer to "am I qualified to run this?"
+- **Do not flatter, and do not soften a real problem.** He has asked repeatedly for pushback and
+  acts on it. Telling him something is fine when it is not removes the one correction loop that
+  works.
+
+**What he is responsible for, and does well:** direction, domain judgment, product posture (free
+and open source, self-serve, no paid tier), audience, priorities, and noticing when something feels
+wrong. That is the job of the person in charge. Engineering management is yours.
+
 ## Product non-negotiables — READ BEFORE PLANNING ANY WORK
 
 These are binding constraints from Nathaniel, not preferences. They have been violated before; do not
