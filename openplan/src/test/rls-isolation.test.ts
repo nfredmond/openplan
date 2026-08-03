@@ -853,3 +853,302 @@ liveDescribe("workspace RLS live isolation", () => {
     );
   });
 });
+
+/**
+ * LIVE — the hardening of 2026-08-03, asserted where it can regress.
+ *
+ * The block above enumerates workspace-scoped tables BY NAME, which is exactly
+ * why the defects below survived: reference tables and service-role ledgers were
+ * never on the list, so nothing here ever looked at them. These probes are the
+ * three verdicts that live curl proved once and that must keep holding.
+ *
+ * Each asserts a DENIAL that is distinguishable from an accident. "Zero rows" is
+ * not evidence — a broken query, an empty table and a working boundary all
+ * return zero rows. So the reads assert `permission denied` where the grant was
+ * revoked, and every write probe READS THE ROW BACK to confirm the write did not
+ * land, because PostgREST answers 204 for a zero-row DELETE exactly as it does
+ * for a successful one.
+ */
+liveDescribe("hardening of 2026-08-03 stays in force", () => {
+  let env: LocalSupabaseEnv;
+  let service: SupabaseClient;
+  let anon: SupabaseClient;
+  let member: SupabaseClient;
+  let suffix: string;
+  let userId: string;
+  let workspaceId: string;
+  let feedId: string;
+
+  const password = "OpenPlanHardening!2026";
+
+  /**
+   * Tables written only by the service role, whose `anon` and `authenticated`
+   * grants 20260730000008 removed. They have RLS on and ZERO policies, so both
+   * roles were already denied every row — the revoke removes the grant that was
+   * the only thing left between a future permissive policy and full exposure.
+   */
+  const GRANT_REVOKED_TABLES = [
+    "assistant_action_approvals",
+    "engagement_item_votes",
+    "aerial_processing_callbacks",
+    "billing_webhook_receipts",
+  ];
+
+  /** Public reference data: reads stay open, writes were revoked (20260730000009). */
+  const REFERENCE_TABLES = ["census_tracts", "lodes_od"];
+
+  const GTFS_CHILD_TABLES = [
+    "agencies",
+    "routes",
+    "stops",
+    "trips",
+    "stop_times",
+    "shapes",
+    "calendar",
+    "calendar_dates",
+  ];
+
+  beforeAll(async () => {
+    env = getLocalSupabaseEnv();
+    service = client(env.API_URL, env.SERVICE_ROLE_KEY);
+    anon = client(env.API_URL, env.ANON_KEY);
+    member = client(env.API_URL, env.ANON_KEY);
+
+    suffix = randomUUID().replace(/-/g, "").slice(0, 10);
+    const email = `rls-harden-${suffix}@example.test`;
+    const created = await service.auth.admin.createUser({ email, password, email_confirm: true });
+    if (created.error || !created.data.user) {
+      throw new Error(`Failed to create hardening probe user: ${created.error?.message ?? "missing user"}`);
+    }
+    userId = created.data.user.id;
+
+    const signIn = await member.auth.signInWithPassword({ email, password });
+    if (signIn.error) throw new Error(`Failed to sign in hardening probe user: ${signIn.error.message}`);
+
+    workspaceId = randomUUID();
+    await mustInsert(service, "workspaces", {
+      id: workspaceId,
+      name: `RLS hardening ${suffix}`,
+      slug: `rls-harden-${suffix}`,
+      plan: "pilot",
+    });
+    await mustInsert(service, "workspace_members", {
+      workspace_id: workspaceId,
+      user_id: userId,
+      role: "owner",
+    });
+
+    // A transit feed owned by this workspace, with one row in each child table.
+    // The child rows are what an anonymous caller must not be able to reach.
+    feedId = randomUUID();
+    await mustInsert(service, "gtfs_feeds", {
+      id: feedId,
+      workspace_id: workspaceId,
+      agency_name: `RLS hardening agency ${suffix}`,
+      city: `RlsHardenCity${suffix}`,
+      state: "ZZ",
+      status: "loaded",
+    });
+
+    const childRows: Record<string, ProbeRow> = {
+      agencies: { feed_id: feedId, agency_id: `${suffix}-ag`, name: `RLS hardening agency ${suffix}` },
+      routes: { feed_id: feedId, route_id: `${suffix}-rt`, short_name: `${suffix}-RT`, type: 3 },
+      stops: {
+        feed_id: feedId,
+        stop_id: `${suffix}-st`,
+        name: `RLS hardening stop ${suffix}`,
+        geometry: "SRID=4326;POINT(-121.1 39.1)",
+      },
+      trips: { feed_id: feedId, trip_id: `${suffix}-tp`, route_id: `${suffix}-rt`, service_id: `${suffix}-sv` },
+      stop_times: { feed_id: feedId, trip_id: `${suffix}-tp`, stop_id: `${suffix}-st`, stop_sequence: 1 },
+      shapes: {
+        feed_id: feedId,
+        shape_id: `${suffix}-sh`,
+        geometry: "SRID=4326;LINESTRING(-121.1 39.1,-121 39.2)",
+      },
+      calendar: {
+        feed_id: feedId,
+        service_id: `${suffix}-sv`,
+        monday: true,
+        tuesday: true,
+        wednesday: true,
+        thursday: true,
+        friday: true,
+        saturday: false,
+        sunday: false,
+        start_date: "2026-01-01",
+        end_date: "2026-12-31",
+      },
+      calendar_dates: { feed_id: feedId, service_id: `${suffix}-sv`, date: "2026-07-04", exception_type: 2 },
+    };
+
+    for (const table of GTFS_CHILD_TABLES) {
+      await mustInsert(service, table, childRows[table]);
+    }
+  }, 60_000);
+
+  afterAll(async () => {
+    if (!service) return;
+    await member?.auth.signOut();
+    if (feedId) await service.from("gtfs_feeds").delete().eq("id", feedId);
+    if (workspaceId) await service.from("workspaces").delete().eq("id", workspaceId);
+    if (userId) {
+      // Delete the trigger-provisioned personal workspace by MEMBERSHIP. Matching
+      // on a slug pattern happens to work for the `rls-` prefix above and would
+      // silently strand rows for any other prefix.
+      const { data: memberships } = await service
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", userId);
+      for (const row of (memberships ?? []) as { workspace_id: string }[]) {
+        await service.from("workspaces").delete().eq("id", row.workspace_id);
+      }
+      const removed = await service.auth.admin.deleteUser(userId);
+      if (removed.error) {
+        throw new Error(`Hardening probe left user ${userId} behind: ${removed.error.message}`);
+      }
+    }
+  });
+
+  it("seeds a tenant-owned transit feed, so the denials below are not vacuous", async () => {
+    for (const table of GTFS_CHILD_TABLES) {
+      const { data } = await service.from(table).select("feed_id").eq("feed_id", feedId);
+      expect(data?.length ?? 0, `${table} service fixture count`).toBeGreaterThan(0);
+    }
+  });
+
+  it("refuses anon and authenticated callers on the service-role-only tables (20260730000008)", async () => {
+    for (const table of GRANT_REVOKED_TABLES) {
+      const asAnon = await anon.from(table).select("*").limit(1);
+      const asMember = await member.from(table).select("*").limit(1);
+
+      // The GRANT is what this asserts, not the policy. Before the revoke both
+      // roles got `200 []` — RLS held, but the privilege was still there. The
+      // change from empty-success to permission-denied is the whole proof.
+      expect(asAnon.error?.message ?? "", `${table} anon read`).toMatch(/permission denied/i);
+      expect(asMember.error?.message ?? "", `${table} authenticated read`).toMatch(/permission denied/i);
+    }
+  });
+
+  it("keeps public reference data readable while refusing anonymous writes (20260730000009)", async () => {
+    for (const table of REFERENCE_TABLES) {
+      const read = await anon.from(table).select("*").limit(1);
+      // Over-restriction is its own defect: the equity choropleth reads
+      // `census_tracts` through a security_invoker view as the calling role.
+      expect(read.error, `${table} anon read must keep working`).toBeNull();
+    }
+
+    const forgedGeoid = `99${suffix}`.slice(0, 11);
+    const insert = await anon.from("census_tracts").insert({
+      geoid: forgedGeoid,
+      state_fips: "99",
+      county_fips: "999",
+      name: `RLS hardening forged tract ${suffix}`,
+      pop_total: 999999,
+      geometry: "SRID=4326;MULTIPOLYGON(((-121 39,-121 39.1,-120.9 39.1,-120.9 39,-121 39)))",
+    });
+
+    // Read back as the service role BEFORE asserting anything. An error alone is
+    // not proof the row is absent, and a fabricated tract silently added to
+    // shared equity data is the failure this guards.
+    const { data: landed } = await service.from("census_tracts").select("geoid").eq("geoid", forgedGeoid);
+
+    // Then remove it UNCONDITIONALLY, before the expectations below can throw.
+    // Learned the hard way on 2026-08-03: an earlier version cleaned up after
+    // the assertion, so the one run where the guard correctly FAILED — during
+    // the mutation check that proved it non-vacuous — stranded a forged tract in
+    // `census_tracts` and left the shared table at 530 rows. A probe whose
+    // cleanup is skipped precisely when it detects the defect is a probe that
+    // corrupts the database it is protecting.
+    await service.from("census_tracts").delete().eq("geoid", forgedGeoid);
+
+    expect(insert.error?.message ?? "", "anon census_tracts insert").toMatch(/permission denied/i);
+    expect(landed ?? [], "forged tract must not exist").toEqual([]);
+  });
+
+  it("refuses anonymous updates to real shared reference rows (20260730000009)", async () => {
+    const { data: real } = await service
+      .from("census_tracts")
+      .select("geoid, median_household_income")
+      .not("median_household_income", "is", null)
+      .limit(1);
+
+    // Skipping silently would make this pass on an empty database, so require it.
+    expect(real?.length ?? 0, "a real tract must exist for this probe to mean anything").toBeGreaterThan(0);
+
+    const target = (real as { geoid: string; median_household_income: number }[])[0];
+    await anon.from("census_tracts").update({ median_household_income: 1 }).eq("geoid", target.geoid);
+
+    const { data: after } = await service
+      .from("census_tracts")
+      .select("median_household_income")
+      .eq("geoid", target.geoid)
+      .single();
+
+    // Restore from the captured original BEFORE asserting, and unconditionally.
+    // This probe attacks a REAL row of shared reference data, so the run where
+    // it correctly fails is exactly the run that has just corrupted the equity
+    // inputs for every workspace. Repairing only on success would mean the guard
+    // does damage in proportion to how well it works.
+    await service
+      .from("census_tracts")
+      .update({ median_household_income: target.median_household_income })
+      .eq("geoid", target.geoid);
+
+    expect(
+      (after as { median_household_income: number } | null)?.median_household_income,
+      `tract ${target.geoid} median income must be unchanged by an anonymous caller`
+    ).toBe(target.median_household_income);
+  });
+
+  it("hides a workspace's GTFS child rows from anonymous callers (20260730000010)", async () => {
+    for (const table of GTFS_CHILD_TABLES) {
+      const { data } = await anon.from(table).select("*").eq("feed_id", feedId);
+      expect(data ?? [], `${table} anon rows`).toEqual([]);
+    }
+
+    // The control that makes the result meaningful: the PARENT already denied
+    // before the fix. Parent denying while children published is what proved the
+    // boundary was designed and never switched on.
+    const { data: parent } = await anon.from("gtfs_feeds").select("id").eq("id", feedId);
+    expect(parent ?? [], "gtfs_feeds parent control").toEqual([]);
+  });
+
+  it("still shows a workspace its own GTFS child rows (20260730000010 did not over-restrict)", async () => {
+    for (const table of GTFS_CHILD_TABLES) {
+      const { data, error } = await member.from(table).select("*").eq("feed_id", feedId);
+      expect(error, `${table} owning-member read error`).toBeNull();
+      expect(data?.length ?? 0, `${table} owning-member rows`).toBeGreaterThan(0);
+    }
+  });
+
+  it("refuses anonymous writes to a workspace's GTFS child rows (20260730000010)", async () => {
+    const injected = await anon
+      .from("agencies")
+      .insert({ feed_id: feedId, agency_id: `${suffix}-injected`, name: "anon injected" });
+    expect(injected.error?.message ?? "", "anon agencies insert").toMatch(
+      /permission denied|row-level security/i
+    );
+
+    await anon.from("routes").update({ short_name: "defaced" }).eq("feed_id", feedId);
+    await anon.from("stops").delete().eq("feed_id", feedId);
+
+    // Every write probe reads back through the service role. PostgREST returns
+    // 204 for a zero-row DELETE and for a successful one alike, so the response
+    // status cannot distinguish a denial from a deletion.
+    const { data: injectedRows } = await service
+      .from("agencies")
+      .select("agency_id")
+      .eq("agency_id", `${suffix}-injected`);
+    expect(injectedRows ?? [], "anon-injected agency must not exist").toEqual([]);
+
+    const { data: routeRows } = await service.from("routes").select("short_name").eq("feed_id", feedId);
+    expect(
+      (routeRows as { short_name: string }[] | null)?.[0]?.short_name,
+      "route short_name must be unchanged"
+    ).toBe(`${suffix}-RT`);
+
+    const { data: stopRows } = await service.from("stops").select("stop_id").eq("feed_id", feedId);
+    expect(stopRows?.length ?? 0, "stop must survive an anonymous delete").toBeGreaterThan(0);
+  });
+});

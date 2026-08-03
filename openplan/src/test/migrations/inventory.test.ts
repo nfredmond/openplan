@@ -97,6 +97,23 @@ const EXPECTED = {
   // its sibling aerial_processing_jobs.
   // +1 relation, +1 table, +1 RLS-enabled table. Verified by parsing the
   // migration file; it is in the tree and not yet applied to a live database.
+  // 20260730000008 / 20260730000009 move NOTHING here, and that is worth
+  // recording rather than leaving unaccounted for: both are pure GRANT/REVOKE
+  // migrations. This inventory tracks relations, policies and RLS flags, none of
+  // which a privilege change touches. The revokes they perform are asserted
+  // live instead, in `rls-isolation.test.ts` ("hardening of 2026-08-03 stays in
+  // force"), because a grant is not visible in the schema shapes parsed here.
+  //
+  // +10 rlsEnabledTables from 20260730000010 (the eight GTFS child tables:
+  // agencies, routes, stops, trips, stop_times, shapes, calendar,
+  // calendar_dates) and 20260730000011 (census_tracts, lodes_od). No new
+  // relation, no new policy — every one of these ten ALREADY had its policy and
+  // had carried it, unenforced, since 20260420000062. `ALTER TABLE … ENABLE ROW
+  // LEVEL SECURITY` had never been run on any of them, so `policies`,
+  // `tablesWithPolicies`, `relations`, `tables` and `views` all hold exactly
+  // where they were and only the RLS count moves. That +10 with +0 policies is
+  // the signature of this defect class, and it is the number to look at first if
+  // it ever appears again.
   policies: 552,
   permissive: 312,
   restrictive: 240,
@@ -106,7 +123,7 @@ const EXPECTED = {
   relations: 127,
   tables: 121,
   views: 6,
-  rlsEnabledTables: 111,
+  rlsEnabledTables: 121,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -379,21 +396,34 @@ describe("migration schema inventory", () => {
   });
 
   it("distinguishes a table with no RLS from a table with no policy", () => {
-    // Opposite conditions with opposite severities. A write to a reference
-    // table with RLS off is fine; a workspace table losing RLS is a breach.
-    expect(schema.tables().filter((t) => !schema.rlsEnabled(t))).toEqual([
-      "agencies",
-      "calendar",
-      "calendar_dates",
-      "census_tracts",
-      "lodes_od",
-      "routes",
-      "shapes",
-      "stop_times",
-      "stops",
-      "trips",
-    ]);
+    // THIS LIST WAS TEN TABLES UNTIL 2026-08-03, AND THE COMMENT ABOVE IT SAID
+    // "a write to a reference table with RLS off is fine". That was wrong twice
+    // over, and both halves are worth recording because the sentence is what
+    // made the list look benign:
+    //
+    //   * Eight of the ten were not reference tables at all. `agencies`,
+    //     `routes`, `stops`, `trips`, `stop_times`, `shapes`, `calendar` and
+    //     `calendar_dates` are TENANT data — GTFS children whose visibility is
+    //     inherited from `gtfs_feeds.workspace_id`. Each carried a correct
+    //     workspace-scoped policy that had never been enforced, so an anonymous
+    //     caller could read any workspace's entire transit network.
+    //   * And the write WAS NOT fine. With RLS off and default grants live, an
+    //     anonymous caller rewrote a real `census_tracts` row's
+    //     `median_household_income` from 67970 to 1 — shared reference data
+    //     feeding the equity choropleth for every workspace at once.
+    //
+    // 20260730000010 and 20260730000011 enable RLS on all ten; 20260730000009
+    // revokes the write grants. The list is now empty and must stay empty:
+    // `src/test/policies-are-enforced-guard.test.ts` asserts the same invariant
+    // against a LIVE catalog, which is what would have caught this originally.
+    expect(schema.tables().filter((t) => !schema.rlsEnabled(t))).toEqual([]);
+
+    // Positive and negative controls, so an empty list above cannot be an
+    // artifact of `rlsEnabled` always answering true. It is a set membership
+    // test, so a view — which cannot have RLS — must answer false.
     expect(schema.rlsEnabled("projects")).toBe(true);
+    expect(schema.rlsEnabled("census_tracts_map")).toBe(false);
+    expect(schema.rlsEnabled("no_such_table_exists")).toBe(false);
   });
 
   it("reports a view's columns as unknown rather than as a short list", () => {

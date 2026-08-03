@@ -1,0 +1,49 @@
+-- `census_tracts` and `lodes_od` get row-level security switched ON, so that
+-- "a policy exists" and "a policy is enforced" stop being two different things
+-- anywhere in this schema.
+--
+-- WHY THIS EXISTS, WHEN IT CHANGES NO READ. These are the last two tables in the
+-- database carrying a policy while `pg_class.relrowsecurity = false`. Their
+-- policies — `public_read_census_tracts` and `public_read_lodes_od`, both
+-- `FOR SELECT USING (true)` to `public` — are DELIBERATE. This is public-domain
+-- Census and LODES reference data that every workspace reads identically, and
+-- there is no tenant dimension to protect: `lodes_od` has no `workspace_id`
+-- column at all. Enabling RLS with a `USING (true)` SELECT policy permits
+-- exactly the same reads it permits today. Verified live before and after: an
+-- anonymous `SELECT` on `census_tracts` and on the `census_tracts_map` view
+-- returns rows in both states.
+--
+-- SO THE POINT IS NOT THE DATA. IT IS THE INVARIANT. 20260730000010 fixed eight
+-- tables whose workspace-scoped policies had never been enforced, and the reason
+-- that survived four months undetected is that nothing in the repository could
+-- state the rule "a policy that exists is a policy that runs". A guard for that
+-- rule is only worth having if it is absolute. With these two left RLS-off, the
+-- guard needs an allowlist; an allowlist is a place for the next real defect to
+-- hide, because the honest entry ("deliberate, public reference data") and the
+-- accident ("someone forgot ENABLE ROW LEVEL SECURITY") look identical from
+-- inside it — which is precisely how the GTFS tables passed review. Removing the
+-- last two exceptions lets `src/test/policies-are-enforced-guard.test.ts` assert
+-- a rule with no exceptions: in `public`, no table may carry a policy while RLS
+-- is off. A rule with no exceptions cannot rot, and cannot be widened by someone
+-- adding "just one more" entry.
+--
+-- WHAT THIS ALSO BUYS, AS A SIDE EFFECT WORTH NAMING. Both policies are
+-- SELECT-only, so enabling RLS denies every INSERT/UPDATE/DELETE from any role
+-- that does not bypass RLS. That is a second, independent lock on the anonymous
+-- write path 20260730000009 closed with a grant revoke. The two fail
+-- independently: a future migration that re-grants writes (a `GRANT ALL … TO
+-- authenticated` written for convenience) would still be refused by RLS, and a
+-- future permissive write policy would still be refused by the missing grant.
+-- 20260730000009's live evidence — an anonymous caller rewriting a real tract's
+-- `median_household_income` from 67970 to 1 — is why this deserves two locks and
+-- not one.
+--
+-- WHAT THIS DOES NOT CHANGE. Public reads, which are the entire purpose of these
+-- tables and are preserved by the existing policies. The equity choropleth reads
+-- `census_tracts_map`, which is `security_invoker = true` and therefore runs as
+-- the calling role and matches `USING (true)`. The ingest path uses the service
+-- role, which bypasses RLS. No policy is created, dropped or altered here, and
+-- no application code changes.
+
+alter table public.census_tracts enable row level security;
+alter table public.lodes_od enable row level security;

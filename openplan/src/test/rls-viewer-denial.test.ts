@@ -74,11 +74,39 @@ liveDescribe("viewer write denial (live)", () => {
     if (signIn.error) throw new Error(`Failed to sign in viewer: ${signIn.error.message}`);
   }, 60_000);
 
+  /**
+   * Deleting the workspace this test created is not enough, and the old version
+   * of this hook silently proved it: signing up fires the `on_auth_user_created`
+   * trigger, which provisions a PERSONAL workspace as well. That second
+   * workspace still referenced the user, so `deleteUser` failed — and because
+   * its error was never checked, every run of this file left a throwaway account
+   * behind. Eleven had accumulated by 2026-08-03.
+   *
+   * So: delete workspaces by MEMBERSHIP rather than by the id this test knows
+   * about, and make a failed deletion fail the run instead of disappearing. An
+   * orphaned throwaway user is a defect, not untidiness — it is a real account
+   * with a real password sitting in the auth table of whatever database the
+   * suite last pointed at.
+   */
   afterAll(async () => {
     if (!service) return;
     await viewer?.auth.signOut();
     await service.from("workspaces").delete().eq("id", workspaceId);
-    if (userId) await service.auth.admin.deleteUser(userId);
+
+    if (userId) {
+      const { data: memberships } = await service
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", userId);
+      for (const row of (memberships ?? []) as { workspace_id: string }[]) {
+        await service.from("workspaces").delete().eq("id", row.workspace_id);
+      }
+
+      const removed = await service.auth.admin.deleteUser(userId);
+      if (removed.error) {
+        throw new Error(`Viewer-denial probe left user ${userId} behind: ${removed.error.message}`);
+      }
+    }
   });
 
   it("lets a viewer READ workspace content", async () => {

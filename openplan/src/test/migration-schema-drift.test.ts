@@ -1,6 +1,6 @@
-import { execFileSync } from "node:child_process";
 import { beforeAll, describe, expect, it } from "vitest";
-import { LIVE_RLS, getLocalSupabaseEnv } from "./local-supabase-env";
+import { LIVE_RLS } from "./local-supabase-env";
+import { resolveLocalDbContainer, queryCatalog } from "./helpers/live-catalog";
 import { loadPolicyInventory } from "./migrations/policy-inventory";
 import { loadSchemaInventory } from "./migrations/schema-inventory";
 
@@ -47,46 +47,15 @@ liveDescribe("migration inventory vs the live database", () => {
   let container = "";
 
   /**
-   * PostgREST does not expose `pg_policies` or `information_schema`, and this
-   * repo has no Postgres driver. It also, correctly, has no arbitrary-SQL RPC:
-   * `execute_safe_query` was a SECURITY DEFINER function taking a query string
-   * and 20260418000058 DROPPED it. Reintroducing one so a test could read the
-   * catalog would trade a real security boundary for test convenience.
-   *
-   * So the catalog is read through `psql` inside the database container the
-   * local stack is already running. The container is located by the PORT that
-   * `supabase status` reports, not by name — this machine has two Supabase
-   * stacks up at once, and matching on a name prefix would pick the wrong one.
+   * The catalog is read through `psql` inside the database container the local
+   * stack is already running — see `helpers/live-catalog.ts` for why there is
+   * no driver and no arbitrary-SQL RPC to use instead.
    */
   beforeAll(() => {
-    const port = new URL(getLocalSupabaseEnv().DB_URL).port;
-    const listing = execFileSync("docker", ["ps", "--format", "{{.Names}}|{{.Ports}}"], {
-      encoding: "utf8",
-    });
-
-    const match = listing
-      .split(/\r?\n/)
-      .filter(Boolean)
-      .map((line) => line.split("|"))
-      .find(([name, ports]) => name.startsWith("supabase_db_") && ports.includes(`:${port}->5432`));
-
-    if (!match) {
-      throw new Error(
-        `No supabase_db_* container publishes port ${port}. Run \`npm exec -- supabase start\` first.`
-      );
-    }
-    container = match[0];
+    container = resolveLocalDbContainer();
   });
 
-  /** One row per line, `-tA` so there is no padding or header to strip. */
-  function catalog(query: string): string[] {
-    const output = execFileSync(
-      "docker",
-      ["exec", container, "psql", "-U", "postgres", "-d", "postgres", "-tAc", query],
-      { encoding: "utf8", maxBuffer: 32 * 1024 * 1024 }
-    );
-    return output.split(/\r?\n/).filter((line) => line.trim().length > 0);
-  }
+  const catalog = (query: string) => queryCatalog(container, query);
 
   it("declares every policy the database has, and no policy it does not", () => {
     const live = catalog(
