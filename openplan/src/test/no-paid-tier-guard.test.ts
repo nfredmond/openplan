@@ -39,6 +39,51 @@ function sourceFiles(): string[] {
   return walk(SRC).filter((file) => !file.startsWith(path.join(SRC, "test")));
 }
 
+describe("the app declares no payment dependency", () => {
+  /**
+   * The code that USED Stripe was deleted on 2026-07-24; the `stripe` npm
+   * dependency was not, and stayed declared in this package.json for months
+   * afterwards with nothing importing it anywhere — not in `src`, not in the QA
+   * harness, not in `scripts`. Found by a reachability sweep on 2026-08-03.
+   *
+   * Why a dead dependency is worth failing the build over. It ships a payment
+   * SDK inside a product that takes no payments, which is a supply-chain surface
+   * maintained for nothing and a standing invitation to "just import it" the
+   * next time someone reaches for a paywall. The guards below scan SOURCE for
+   * billing symbols and the QA HARNESS for its own package.json — neither ever
+   * looked at the app's own dependency list, so the one artifact that still
+   * named Stripe was the one nothing checked.
+   */
+  const PAYMENT_PACKAGES = [/^stripe$/, /^@stripe\//, /^braintree/, /^paypal/, /^@paddle\//, /^lemonsqueezy/];
+
+  function declaredDependencies(): string[] {
+    const manifest = JSON.parse(readFileSync(path.join(process.cwd(), "package.json"), "utf8")) as {
+      dependencies?: Record<string, string>;
+      devDependencies?: Record<string, string>;
+    };
+    return [...Object.keys(manifest.dependencies ?? {}), ...Object.keys(manifest.devDependencies ?? {})];
+  }
+
+  it("names no payment processor in its dependencies", () => {
+    const offenders = declaredDependencies().filter((name) =>
+      PAYMENT_PACKAGES.some((pattern) => pattern.test(name))
+    );
+    expect(
+      offenders,
+      "OpenPlan is free and takes no payments — a payment SDK here is dead weight and an invitation"
+    ).toEqual([]);
+  });
+
+  it("guards the guard — it reads a real, populated manifest", () => {
+    // Without this, the assertion above passes just as happily against an
+    // unreadable path or an empty object, which is how a scan-based guard
+    // silently stops guarding.
+    const declared = declaredDependencies();
+    expect(declared.length).toBeGreaterThan(20);
+    expect(declared).toContain("next");
+  });
+});
+
 describe("the paid-tier subsystem stays deleted", () => {
   it("has no billing module left to import", () => {
     const offenders = sourceFiles().filter((file) =>
