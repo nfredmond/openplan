@@ -6,12 +6,100 @@ for whoever wrote the code. Each entry says what is new, and — where it matter
 
 **Upgrading, in short:** pull the new code, run
 `npm exec -- supabase migration up --linked` **before** the app deploys, then
-deploy. That order matters; see the note under 0.2.0.
+deploy. That order matters; see the note under 0.2.0. **If you are upgrading from
+0.2.0 or earlier, read the security note under 0.3.0 first** — that fix lives
+entirely in the migrations, so it takes effect as soon as they run.
 
 OpenPlan uses [semantic versioning](https://semver.org). While the major version
 is `0`, the database schema is still changing in ways that need care on upgrade —
 which is exactly what a `0.x` version is for. `1.0` will mean the schema is
 stable enough to promise smooth upgrades indefinitely.
+
+---
+
+## 0.3.0 — 2026-08-03
+
+**This release contains a security fix. Upgrade promptly.** If you run a
+deployment that has ever loaded a transit feed, treat this as urgent; if you have
+not, it is still worth doing now, because the hole opens the moment you do.
+
+**Requires migrations — and for the security fix, the migrations *are* the fix.**
+This release adds six. Four of them (`…000008` through `…000011`) are the
+security repair, and they are pure SQL: ten `ALTER TABLE` and fourteen `REVOKE`,
+with no application code involved. That means **running the migrations closes the
+hole on its own**, even if you cannot deploy new code today. Run
+`npm exec -- supabase migration up --linked` **before** deploying the app, as
+always.
+
+### Security: eight tables had a tenant boundary that had never been switched on
+
+Eight tables holding transit-network data — agencies, routes, stops, trips, stop
+times, shapes and both calendar tables — each carried a correct access rule
+restricting them to the workspace that owns the feed. On none of them had that
+rule ever been *switched on*. In Postgres a policy and the setting that enforces
+it are two separate things, and only the first had ever been written. The
+database stored the rule, listed it, and applied it to nothing.
+
+What that meant in practice, confirmed against a running database using only the
+public key and no account at all: an anonymous visitor could read a workspace's
+private transit network, add to it, rename a route, and delete a stop. In the
+same test the **parent** table correctly refused the same visitor — which is what
+made the diagnosis certain. The boundary had been designed and reviewed, and then
+never armed.
+
+**Honest scope.** No feature in OpenPlan writes those eight tables yet, so on most
+deployments there was little or nothing in them to expose. This is fixed now
+because it stops being harmless the first time an agency imports a GTFS feed.
+
+**What the fix changes, and what it does not.** It switches the existing rules on
+and removes anonymous write access as a second, independent lock. It does not
+alter a single access rule — all 552 were already correct. Members' access to
+their own data was measured before and after and is unchanged, and genuinely
+public feeds stay public. Two reference tables (census tracts and LODES) also had
+anonymous write access removed while staying publicly readable.
+
+**Why it went unnoticed for four months.** The test guarding those rules read the
+*text of the migration files* rather than asking the database, so it could not see
+that what it was reading had never taken effect. It has been replaced by a live
+check, with no exception list, that fails the build if any table ever again
+carries a rule that is not switched on.
+
+### The assistant records who did the work
+
+When the planning assistant performs an action, the record now distinguishes the
+agent that authored it from the person who approved it and the session it ran
+under — three different things that had been collapsed into one. An agent acting
+on its own behalf is recorded as itself rather than as the person, because
+authorising an action is not the same as having written it.
+
+### Regional transportation plans
+
+A model run cited as evidence now travels with its engine, its status and its
+claim tier, and a run that failed or is screening-grade carries a plain warning
+next to the citation. Nothing is hidden or refused — a planner may still cite any
+run, including a preliminary one, which is often the right thing to do in a draft.
+The defect was that a reader could not tell a calibrated run from a failed sketch,
+not that the citation existed.
+
+### Setting up and operating a deployment
+
+- **`npm run doctor`** checks an installation and says what is wrong in plain
+  language. Most failures in the setup path are silent — Docker answers while it
+  is off, and a working `supabase start` looks frozen for ten minutes — so the
+  install now reports its own state instead of leaving you to infer it.
+- **The dead billing schema is labelled in the database itself,** so nobody
+  mistakes the leftover Stripe tables for something the product uses. OpenPlan is
+  free and has no paid tier; those tables are inert and are being left in place
+  deliberately rather than dropped against a hosted database.
+- **Two dependencies the build had been using by accident are now declared,** so a
+  clean install builds the same way yours does.
+
+### Documentation
+
+The install guide no longer implies it is written for someone other than the
+planner reading it, every dated record now says on its face that it describes a
+moment rather than the current state, and product copy that read like the tooling
+that generated it has been rewritten.
 
 ---
 
