@@ -237,7 +237,7 @@ export function ProjectDeliveryBoard({
             <p className="mt-2 text-sm text-muted-foreground">
               {projectControlsSummary.deadlineSummary.nextDeadline
                 ? `${projectControlsSummary.deadlineSummary.nextDeadline.label} · ${fmtDateTime(projectControlsSummary.deadlineSummary.nextDeadline.deadlineAt)}`
-                : "Add milestone, submittal, or invoice due dates so the control room can surface real deadline pressure."}
+                : "Add milestone, submittal, or invoice due dates so real deadline pressure shows up here."}
             </p>
             <div className="mt-3 flex flex-wrap gap-2">
               {projectControlsSummary.deadlineSummary.nextDeadline ? (

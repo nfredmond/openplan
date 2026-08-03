@@ -82,9 +82,9 @@ describe("what a planner sees after relaunching a run that died", () => {
       status: "queued",
       executionOutlook: {
         state: "unattended",
-        headline: "Nothing on this deployment is going to execute this run.",
+        headline: "Nothing on this OpenPlan installation is going to execute this run.",
         detail:
-          "This deployment configures no worker for OpenPlan to push runs to, so the run sits on the queue until something polls for it. There is nothing to buy — OpenPlan is free.",
+          "This OpenPlan installation is not set up to hand runs straight to a worker, so the run sits on the queue until a worker checks for it. There is nothing to buy — OpenPlan is free.",
       },
     });
 
@@ -93,7 +93,7 @@ describe("what a planner sees after relaunching a run that died", () => {
 
     const outlook = await screen.findByTestId("model-run-execution-outlook");
     expect(outlook).toHaveAttribute("data-outlook-state", "unattended");
-    expect(outlook).toHaveTextContent(/Nothing on this deployment is going to execute this run/i);
+    expect(outlook).toHaveTextContent(/Nothing on this OpenPlan installation is going to execute this run/i);
     expect(outlook.textContent ?? "").not.toMatch(
       /upgrade|subscription|billing|pricing|paid tier|contact sales/i
     );

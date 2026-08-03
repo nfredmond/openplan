@@ -75,7 +75,7 @@ describe("WorkspaceRuntimeCue", () => {
 
     expect(
       screen.getByText(
-        "Shared runtime cue: Grants OS next command is anchor project funding needs. 1 project funding lane has linked opportunities but still no recorded funding-need anchor."
+        "Next across this workspace: the lead Grants action is anchor project funding needs. 1 project funding lane has linked opportunities but still no recorded funding-need anchor."
       )
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Grants OS" })).toHaveAttribute(
@@ -108,7 +108,7 @@ describe("WorkspaceRuntimeCue", () => {
 
     expect(
       screen.getByText(
-        "Shared runtime cue: start the lead reimbursement packet in Gap Project before delivery work outruns the funding trail."
+        "Next across this workspace: start the lead reimbursement packet in Gap Project so delivery work does not get ahead of the funding paper trail."
       )
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open reimbursement start" })).toHaveAttribute(
@@ -139,7 +139,7 @@ describe("WorkspaceRuntimeCue", () => {
 
     expect(
       screen.getByText(
-        "Shared runtime cue: 1 current RTP packet still carries linked-project grant follow-through, so Grants OS now outranks local packet polish before those packets are treated as truly settled."
+        "Next across this workspace: 1 current RTP packet still carries grant follow-through from linked projects — finish that in Grants before treating it as settled."
       )
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Grants follow-through" })).toHaveAttribute(

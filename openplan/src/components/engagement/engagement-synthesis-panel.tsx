@@ -107,7 +107,7 @@ export function EngagementSynthesisPanel({
             </span>
             {isOffline ? (
               <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-300">
-                <ShieldAlert className="h-3.5 w-3.5" /> AI offline — deterministic summary
+                <ShieldAlert className="h-3.5 w-3.5" /> AI unavailable — automatic summary (no AI used)
               </span>
             ) : null}
             {synthesizedAt ? <span>Generated {new Date(synthesizedAt).toLocaleString()}</span> : null}

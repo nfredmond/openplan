@@ -88,7 +88,7 @@ describe("model run launch helpers", () => {
     // but still screening-grade — the caveat must never soften to forecast
     // language even though the UI now offers it directly.
     expect(runMode.availability).toBe("launchable");
-    expect(runMode.runtimeExpectation).toContain("synchronously in-process");
+    expect(runMode.runtimeExpectation).toContain("inside this app");
     expect(runMode.runtimeExpectation).toContain("seconds");
     expect(runMode.caveatSummary).toContain("Screening-grade");
     expect(runMode.caveatSummary).toContain("Do not treat it as a validated travel model");

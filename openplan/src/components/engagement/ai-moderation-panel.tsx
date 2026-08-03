@@ -56,7 +56,7 @@ export function AiModerationPanel({
         throw new Error(payload.error || "Failed to run moderation scan");
       }
       setNote(
-        `Scanned ${payload.moderation.item_count} queued comment${payload.moderation.item_count === 1 ? "" : "s"}; ${payload.moderation.flagged_count} flagged${payload.moderation.source === "deterministic-fallback" ? " (AI offline — heuristic PII/spam only)" : ""}.`
+        `Scanned ${payload.moderation.item_count} queued comment${payload.moderation.item_count === 1 ? "" : "s"}; ${payload.moderation.flagged_count} flagged${payload.moderation.source === "deterministic-fallback" ? " (AI unavailable — automatic checks covered personal information and spam only)" : ""}.`
       );
       router.refresh();
     } catch (scanError) {

@@ -213,8 +213,8 @@ export function describeWorkerAbsenceEvidence(readiness: WorkerLaunchReadiness):
   if (readiness.state !== "no_worker_observed") return null;
   const { abandonedRunCount } = readiness;
   return abandonedRunCount === 1
-    ? "The last worker-backed run on this model was queued and never started by anything."
-    : `The last ${abandonedRunCount} worker-backed runs on this model were queued and never started by anything.`;
+    ? "The last run on this model that needed the modeling worker was queued and never started by anything."
+    : `The last ${abandonedRunCount} runs on this model that needed the modeling worker were queued and never started by anything.`;
 }
 
 /** Why a launch is being refused before enqueue. Null when it is not. */
@@ -347,7 +347,7 @@ export function describeWorkerLaunchRefusal(
   modeLabel: string,
   evidence: string | null
 ): WorkerLaunchRefusalCopy {
-  const doesNotRunHere = `${modeLabel} does not run inside OpenPlan. Launching it puts stages on a queue that a separate AequilibraE worker polls and executes.`;
+  const doesNotRunHere = `${modeLabel} does not run inside OpenPlan. Launching it puts the run on a queue that a separate AequilibraE modeling worker picks up and executes.`;
   const whatWouldHappen =
     "this launch would report success, the run would sit queued, and it would be failed some minutes later with nothing to show.";
   const nothingToBuy =
@@ -355,24 +355,24 @@ export function describeWorkerLaunchRefusal(
 
   if (reason === "deployment_declares_no_worker") {
     return {
-      heading: `${modeLabel} needs a processing worker, and this deployment declares that it runs none`,
-      body: `${doesNotRunHere} This deployment's configuration states that no such worker runs against it, so nothing would serve that queue: ${whatWouldHappen}${evidence ? ` ${evidence}` : ""}`,
-      operatorAction: `${nothingToBuy} Whoever operates this deployment starts the worker — the steps are in workers/aequilibrae_worker/DEPLOY.md — and updates the declaration (OPENPLAN_MODELING_WORKER) to say so. Until the deployment says otherwise, this control refuses rather than queueing a run that cannot finish; a checkbox here would only override the operator's own answer.`,
+      heading: `${modeLabel} needs a processing worker, and this OpenPlan installation declares that it runs none`,
+      body: `${doesNotRunHere} This installation's configuration states that no such worker runs against it, so nothing would serve that queue: ${whatWouldHappen}${evidence ? ` ${evidence}` : ""}`,
+      operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation starts the worker — the steps are in workers/aequilibrae_worker/DEPLOY.md — and updates the declaration (OPENPLAN_MODELING_WORKER) to say so. Until the installation says otherwise, this control refuses rather than queueing a run that cannot finish; a checkbox here would only override the operator's own answer.`,
     };
   }
 
   if (reason === "declared_worker_never_started") {
     return {
-      heading: `${modeLabel} needs a processing worker, and the one this deployment declares has not been picking up its runs`,
-      body: `${doesNotRunHere} This deployment declares that an AequilibraE worker runs against it. ${evidence ?? ""} A declaration is a statement of configuration, not a heartbeat — the worker polls and cannot be probed from here — so what is on screen is the run history contradicting the configuration. On this evidence ${whatWouldHappen}`,
-      operatorAction: `${nothingToBuy} Whoever operates this deployment checks that the worker is running and pointed at this deployment's own Supabase project, and reads its logs; the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
+      heading: `${modeLabel} needs a processing worker, and the one this OpenPlan installation declares has not been picking up its runs`,
+      body: `${doesNotRunHere} This installation declares that an AequilibraE worker runs against it. ${evidence ?? ""} A declaration is a statement of configuration, not a live check — the worker looks for runs on its own schedule, and OpenPlan cannot check on it from here — so what is on screen is the run history contradicting the configuration. On this evidence ${whatWouldHappen}`,
+      operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation checks that the worker is running and pointed at this installation's own Supabase project, and reads its logs; the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
     };
   }
 
   return {
-    heading: `${modeLabel} needs a processing worker, and nothing has been picking up the worker-backed runs on this model`,
+    heading: `${modeLabel} needs a processing worker, and nothing has been picking up the runs on this model that need one`,
     body: `${doesNotRunHere} ${evidence ?? ""} That is what an absent worker looks like: ${whatWouldHappen}`,
-    operatorAction: `${nothingToBuy} Whoever operates this deployment starts the worker; the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
+    operatorAction: `${nothingToBuy} Whoever operates this OpenPlan installation starts the worker; the steps are in workers/aequilibrae_worker/DEPLOY.md.`,
   };
 }
 
@@ -392,16 +392,16 @@ export function describeWorkerQueueRisk(
   const observed = evidence ? `${evidence} ` : "";
 
   if (declaration === "absent") {
-    return `${observed}This deployment declares that no AequilibraE worker runs against it, so this run will sit queued and then be failed rather than finishing.`;
+    return `${observed}This OpenPlan installation declares that no AequilibraE worker runs against it, so this run will sit queued and then be failed rather than finishing.`;
   }
 
   if (declaration === "deployed") {
     return observed
-      ? `${observed}This deployment declares that an AequilibraE worker runs against it, so the configuration and the history disagree — the worker polls and has no heartbeat, so both can only be reported, not resolved.`
-      : "This deployment declares that an AequilibraE worker runs against it, which is a statement of configuration rather than a live check — the worker polls and has no heartbeat.";
+      ? `${observed}This OpenPlan installation declares that an AequilibraE worker runs against it, so the configuration and the history disagree — the worker looks for runs on its own schedule and OpenPlan cannot check on it, so both can only be reported, not resolved.`
+      : "This OpenPlan installation declares that an AequilibraE worker runs against it, which is a statement of configuration rather than a live check — the worker looks for runs on its own schedule, and OpenPlan cannot check on it.";
   }
 
   return observed
-    ? `${observed}Unless a worker has been started on this deployment since then, this run will sit queued and then be failed rather than finishing.`
-    : "It finishes only while a worker is polling this deployment.";
+    ? `${observed}Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing.`
+    : "It finishes only while a modeling worker is checking this installation for runs.";
 }

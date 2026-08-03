@@ -795,7 +795,7 @@ export function ExploreWorkbench({
                     summary={analysisContext.operationsSummary}
                     label="Workspace command board"
                     title="What should move around this analysis workspace"
-                    description="Analysis Studio now inherits the same shared workspace command queue as the rest of the runtime, so packet pressure, funding windows, and setup gaps stay visible while you work corridor and map analysis."
+                    description="Workspace priorities — packet pressure, funding windows, and setup gaps — stay visible here while you work corridor and map analysis."
                   />
 
                   {analysisContext.migrationPending ? (

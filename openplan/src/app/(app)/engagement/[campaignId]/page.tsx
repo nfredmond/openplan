@@ -479,7 +479,7 @@ export default async function EngagementCampaignDetailPage({
             <h1 className="module-intro-title">{campaign.title}</h1>
             <p className="module-intro-description">
               {campaign.summary ||
-                "This campaign is ready for category setup, item intake, and operator moderation review."}
+                "This campaign is ready for categories, incoming comments, and moderation."}
             </p>
           </div>
 
@@ -699,7 +699,7 @@ export default async function EngagementCampaignDetailPage({
                     <h3 className="module-record-title text-[1rem]">Recent intake signal</h3>
                     <p className="module-record-summary">
                       {primarySource
-                        ? `${titleizeEngagementValue(primarySource.sourceType)} is currently the largest intake lane with ${primarySource.count} items.`
+                        ? `${titleizeEngagementValue(primarySource.sourceType)} is currently the largest source of input, with ${primarySource.count} items.`
                         : "No intake items yet."}
                     </p>
                   </div>
@@ -865,7 +865,7 @@ export default async function EngagementCampaignDetailPage({
                 <p className="module-section-label">Category Registry</p>
                 <h2 className="module-section-title">Current categories</h2>
                 <p className="module-section-description">
-                  Category structure stays intentionally light, but each lane now exposes item volume and moderation load.
+                  Category structure stays intentionally light, and each category shows its item volume and moderation load.
                 </p>
               </div>
             </div>
@@ -946,7 +946,7 @@ export default async function EngagementCampaignDetailPage({
 
             {sourceSummaries.every((source) => source.count === 0) ? (
               <div className="mt-5">
-                <EmptyState title="No source mix yet" description="Register items to expose source, moderation, and map coverage patterns." compact />
+                <EmptyState title="No source mix yet" description="Add comments to see where input comes from and how coverage looks on the map." compact />
               </div>
             ) : (
               <div className="mt-5 space-y-3">
@@ -1330,7 +1330,7 @@ export default async function EngagementCampaignDetailPage({
               <div className="mt-5">
                 <EmptyState
                   title="No intake items yet"
-                  description="Register internal notes, meeting observations, or moderated public input to start the campaign record."
+                  description="Add internal notes, meeting observations, or moderated public input to start the campaign record."
                 />
               </div>
             </article>

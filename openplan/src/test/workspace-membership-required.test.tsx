@@ -17,7 +17,7 @@ describe("WorkspaceMembershipRequired", () => {
     render(<WorkspaceMembershipRequired moduleLabel="Projects" />);
 
     expect(screen.getByText("Workspace membership required")).toBeInTheDocument();
-    expect(screen.getByText(/records are workspace-scoped/i)).toBeInTheDocument();
+    expect(screen.getByText(/records belong to a workspace/i)).toBeInTheDocument();
     // The default must not point at the deleted /request-access route (a 404).
     expect(screen.getByRole("link", { name: /go to your workspace/i })).toHaveAttribute(
       "href",

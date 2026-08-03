@@ -79,10 +79,10 @@ function describeRunState(
 ): { label: string; detail: string } {
   if (isCurrent) {
     return {
-      label: hasActiveComparison ? "Active pair · current side" : "Driving result stack",
+      label: hasActiveComparison ? "Active pair · current side" : "Loaded as current results",
       detail: hasActiveComparison
-        ? "This row is driving the current side of the active Current ↔ Baseline pair above. Reloading another run here replaces the live result surface."
-        : "This run is currently loaded into Analysis Studio and is anchoring the live result surfaces above.",
+        ? "This run is the current side of the Current ↔ Baseline pair above. Loading another run here replaces what the results above show."
+        : "This run is loaded in Analysis Studio and is what the results above are showing.",
     };
   }
 
@@ -90,20 +90,20 @@ function describeRunState(
     return {
       label: "Active pair · pinned baseline",
       detail:
-        "This exact row is feeding the pinned baseline in the active pair above. Replace it, clear it, or reload it as current without leaving Run History.",
+        "This run is the pinned baseline in the pair above. Replace it, clear it, or load it as current without leaving Run History.",
     };
   }
 
   if (hasActiveComparison) {
     return {
-      label: "Stored replacement candidate",
-      detail: "Ready to replace the pinned baseline or reload into the live result stack without disturbing the current side of the active pair.",
+      label: "Stored run",
+      detail: "Ready to replace the pinned baseline, or to load as the current results without disturbing the current side of the pair.",
     };
   }
 
   return {
     label: "Stored run",
-    detail: "Available to load into the live result stack or promote to the active comparison baseline.",
+    detail: "Ready to load as the current results, or to pin as the comparison baseline.",
   };
 }
 
@@ -213,8 +213,8 @@ export function RunHistory({
           <h2 className="module-section-title">Analysis run history</h2>
           <p className="module-section-description">
             {hasActiveComparison
-              ? "The baseline lifecycle stays pinned here — replace it from the stored rows, clear it, or reload a prior run without leaving the operator record."
-              : "The operator record directly beneath the live result stack — reload a prior run, promote a baseline, or retire stale work."}
+              ? "The pinned baseline is managed here — replace it from the stored runs, clear it, or load an earlier run as current, all without leaving Run History."
+              : "Every stored run for this workspace — load an earlier run, pin a baseline to compare against, or delete work you no longer need."}
           </p>
         </div>
 
@@ -230,17 +230,17 @@ export function RunHistory({
         <div className={["module-run-history-bridge", hasActiveComparison ? "is-active" : "is-idle"].join(" ")}>
           <div className="module-run-history-bridge-grid">
             <div className="module-run-history-bridge-block">
-              <p className="module-run-history-bridge-label">Current stack</p>
+              <p className="module-run-history-bridge-label">Current results</p>
               <p className="module-run-history-bridge-value">
-                {currentRunTitle ?? (hasActiveComparison ? "Live result stack held steady" : "Single-run review active")}
+                {currentRunTitle ?? (hasActiveComparison ? "Current results unchanged" : "Reviewing one run")}
               </p>
               <p className="module-run-history-bridge-meta">
-                {formattedCurrentTimestamp ?? (hasActiveComparison ? "Current side of active pair" : "Live operator review")}
+                {formattedCurrentTimestamp ?? (hasActiveComparison ? "Current side of the pair" : "Currently loaded")}
               </p>
               <p className="module-run-history-bridge-copy">
                 {hasActiveComparison
-                  ? "Keep this current run loaded while the rows below replace or retire the pinned baseline without breaking the live review posture."
-                  : "Promote any stored run below when you need a baseline reference for the current result stack."}
+                  ? "This run stays loaded as current while the rows below replace or clear the pinned baseline — the results above stay put."
+                  : "Pin any stored run below as a baseline when you want to compare it against the current results."}
               </p>
             </div>
 
@@ -249,15 +249,15 @@ export function RunHistory({
             </div>
 
             <div className="module-run-history-bridge-block">
-              <p className="module-run-history-bridge-label">Baseline lifecycle</p>
-              <p className="module-run-history-bridge-value">{comparisonRunTitle ?? "Awaiting baseline selection"}</p>
+              <p className="module-run-history-bridge-label">Pinned baseline</p>
+              <p className="module-run-history-bridge-value">{comparisonRunTitle ?? "No baseline chosen yet"}</p>
               <p className="module-run-history-bridge-meta">
                 {formattedComparisonTimestamp ?? (comparisonRunTitle ? "Pinned from Run History" : "No baseline pinned")}
               </p>
               <p className="module-run-history-bridge-copy">
                 {comparisonRunTitle
-                  ? `Pinned from Run History${formattedComparisonTimestamp ? ` on ${formattedComparisonTimestamp}` : " for this review cycle"}. Select another stored run below to replace it, or clear it to return to single-run review.`
-                  : "No baseline is pinned yet. Choose a stored run below to send it into the active pair above."}
+                  ? `Pinned from Run History${formattedComparisonTimestamp ? ` on ${formattedComparisonTimestamp}` : ""}. Select another stored run below to replace it, or clear it to go back to reviewing one run.`
+                  : "No baseline is pinned yet. Choose a stored run below to pin it as the baseline in the comparison above."}
               </p>
             </div>
 
@@ -274,7 +274,7 @@ export function RunHistory({
 
       <div className="mt-5 module-record-list">
         {isLoading ? (
-          <LoadingState compact label="Loading run history" description="Refreshing workspace records." />
+          <LoadingState compact label="Loading run history" description="Loading this workspace's stored runs." />
         ) : null}
         {error ? <ErrorState compact title="Run history unavailable" description={error} /> : null}
 
@@ -282,7 +282,7 @@ export function RunHistory({
           <EmptyState
             compact
             title="No analysis runs yet"
-            description="Run your first corridor analysis to populate this timeline."
+            description="Run your first corridor analysis and it will appear here."
           />
         ) : null}
 
@@ -309,23 +309,23 @@ export function RunHistory({
           const loadLabel = isCurrent ? "Loaded current" : isComparison ? "Reload as current" : "Load current";
           const pairLinkState = isCurrent
             ? {
-                label: hasActiveComparison ? "Active pair · current row" : "Current live row",
+                label: hasActiveComparison ? "Active pair · current row" : "Loaded as current",
                 copy: hasActiveComparison
-                  ? "This row is holding the current side of the active pair above. Loading another run here replaces that current side."
-                  : "This row is the live current review surface above.",
+                  ? "This run is the current side of the pair above. Loading another run here replaces it."
+                  : "This run is what the results above are showing.",
                 tone: "is-current",
               }
             : isComparison
               ? {
                   label: "Active pair · pinned baseline row",
                   copy:
-                    "This exact row is feeding the pinned baseline above. Replace baseline, clear baseline, or reload it as current from here.",
+                    "This run is the pinned baseline above. Replace it, clear it, or load it as current from here.",
                   tone: "is-baseline",
                 }
               : hasActiveComparison
                 ? {
-                    label: "Baseline replacement candidate",
-                    copy: "Replacing the baseline from this row updates the active pair above without disturbing the current side.",
+                    label: "Stored run",
+                    copy: "Pinning this run as the baseline updates the comparison above without disturbing the current side.",
                     tone: "is-candidate",
                   }
                 : null;
@@ -363,7 +363,7 @@ export function RunHistory({
                       <p className="module-record-stamp">{formatDate(run.created_at)}</p>
                     </div>
                     <p className="module-record-summary line-clamp-2">
-                      {run.query_text || "Run record captured without a saved query prompt."}
+                      {run.query_text || "No query text was saved with this run."}
                     </p>
                   </div>
 
@@ -390,7 +390,7 @@ export function RunHistory({
                         </div>
                       ) : (
                         <p className="module-run-history-detail-copy">
-                          No saved tract / crash / overlay posture on this run yet.
+                          No saved tract, crash, or overlay map context on this run yet.
                         </p>
                       )}
                     </div>
@@ -407,7 +407,7 @@ export function RunHistory({
                         </div>
                       ) : (
                         <p className="module-run-history-detail-copy">
-                          Core run record only — no summary, AI brief, or geometry package has been captured yet.
+                          Only the core run record — no summary, AI brief, or map geometry has been saved yet.
                         </p>
                       )}
                     </div>

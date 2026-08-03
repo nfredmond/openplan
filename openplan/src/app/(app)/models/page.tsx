@@ -133,8 +133,8 @@ export default async function ModelsPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Models"
-        title="Models need a provisioned workspace"
-        description="Model records, scenario anchors, and downstream traceability are workspace-scoped. Without a provisioned workspace, this surface should explain the gap instead of pretending nothing exists."
+        title="Models need a workspace"
+        description="Models belong to a workspace, and this account is not in one yet. Join or create a workspace to see them."
       />
     );
   }
@@ -466,7 +466,7 @@ export default async function ModelsPage({
                 description={
                   hasActiveFilters
                     ? filteredEmptyDescription
-                    : "Create the first model record to establish config versioning, readiness checks, and traceability across scenarios, datasets, reports, and linked plans."
+                    : "Create the first model record to track versions, readiness, and how each model connects to scenarios, datasets, reports, and linked plans."
                 }
               />
             </div>

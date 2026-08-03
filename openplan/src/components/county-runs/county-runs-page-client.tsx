@@ -178,8 +178,8 @@ export function CountyRunsPageClient({
           </div>
           <h1 className="module-intro-title">County runs</h1>
           <p className="module-intro-description">
-            Track geography-first county onboarding from bootstrap through validation scaffolding. This page is meant to
-            stay operational: launch a run, check stage truth, then open detail for artifacts, worker handoff, and caveats.
+            Bring a county into the modeling lane, from first setup through validation. Launch a run,
+            check its current stage, then open the detail page for its files, worker handoff, and caveats.
           </p>
         </div>
         <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -196,7 +196,7 @@ export function CountyRunsPageClient({
       <StateBlock
         className="mt-4"
         title="What this page can confirm"
-        description="County stages, operator-safe status labels, and bootstrap state shown here reflect recorded application state. Validation quality still depends on the underlying scaffold and rerun evidence on each detail page."
+        description="The stages, status labels, and setup state shown here reflect what OpenPlan has recorded. Validation quality still depends on the underlying evidence on each run's detail page."
         tone="info"
         compact
       />
@@ -244,7 +244,7 @@ export function CountyRunsPageClient({
                 className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
               >
                 <p className="font-semibold">
-                  On this deployment, launching produces a handoff — not a run that starts itself
+                  On this OpenPlan installation, launching produces a handoff — not a run that starts itself
                 </p>
                 <p className="mt-2">
                   {/* Two sentences for the same conclusion, and which one is on
@@ -253,15 +253,15 @@ export function CountyRunsPageClient({
                       the records it was drawn from. Blurring them would let a
                       guess borrow the authority of a fact. */}
                   {workerAbsenceIsDeclared
-                    ? "This deployment has no county onramp worker configured to receive the job, so nothing will be submitted anywhere."
+                    ? "This installation has no county onramp worker configured to receive the job, so nothing will be sent anywhere."
                     : `${
                         preparedOnlyRunCount === 1
-                          ? "A county run here was prepared rather than submitted"
-                          : `${preparedOnlyRunCount} county runs here were prepared rather than submitted`
+                          ? "A county run here was prepared rather than sent"
+                          : `${preparedOnlyRunCount} county runs here were prepared rather than sent`
                       }, which OpenPlan records only when no county onramp worker is configured to receive the job.`}{" "}
                   Launching still creates the run record and the full worker payload, and that
-                  payload is usable — but the bootstrap does not execute until whoever operates this
-                  deployment either configures a worker (
+                  payload is usable — but the setup does not run until whoever operates this
+                  OpenPlan installation either configures a worker (
                   <code>workers/county_onramp_worker/DEPLOY.md</code>) or runs the prepared handoff
                   themselves and posts the manifest back.
                 </p>
@@ -274,7 +274,7 @@ export function CountyRunsPageClient({
               {createError ? <span className="text-sm text-destructive">{createError}</span> : null}
               {!createError ? (
                 <span className="text-sm text-muted-foreground">
-                  This creates the county run record and initial stage state. Bootstrap and validation evidence continue on the detail surface.
+                  This creates the county run record. Setup progress and validation evidence appear on the run&apos;s detail page.
                 </span>
               ) : null}
             </div>
@@ -334,7 +334,7 @@ export function CountyRunsPageClient({
           // same screen. Every other status keeps the shared wording.
           const enqueueHelp =
             item.enqueueStatus === "prepared"
-              ? "County bootstrap handoff is prepared, not submitted — no county onramp worker was configured to receive it, so it will not start until an operator runs it or configures a worker."
+              ? "This county setup handoff is prepared, not sent — no county onramp worker was configured to receive it, so it will not start until an operator runs it or configures a worker."
               : getCountyRunEnqueueHelpText(item.enqueueStatus ?? "not-enqueued");
 
           return (
@@ -372,7 +372,7 @@ export function CountyRunsPageClient({
                   <p className="mt-1 text-muted-foreground">{enqueueHelp}</p>
                   {item.lastEnqueuedAt ? (
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Last enqueued {new Date(item.lastEnqueuedAt).toLocaleString()}
+                      Last handoff attempt {new Date(item.lastEnqueuedAt).toLocaleString()}
                     </p>
                   ) : null}
                 </div>

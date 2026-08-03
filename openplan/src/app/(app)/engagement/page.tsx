@@ -125,8 +125,8 @@ export default async function EngagementPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Engagement"
-        title="Engagement needs a provisioned workspace"
-        description="Campaigns, moderation queues, and intake categories only exist inside a real workspace. You are signed in, but this account has not been provisioned into one yet."
+        title="Engagement needs a workspace"
+        description="Campaigns, moderation queues, and comment categories only exist inside a workspace. You are signed in, but this account is not in a workspace yet."
       />
     );
   }
@@ -357,7 +357,7 @@ export default async function EngagementPage({
                 description={
                   hasActiveFilters
                     ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
-                    : "Create the first campaign to open a real moderation and public-input registry inside OpenPlan."
+                    : "Create the first campaign to start collecting and moderating public input inside OpenPlan."
                 }
               />
             </div>

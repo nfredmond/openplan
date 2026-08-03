@@ -157,7 +157,7 @@ describe("what a planner is told, given the declaration the model page reads", (
     renderAsThePageDoes();
 
     const refusal = screen.getByTestId("worker-launch-refusal");
-    expect(refusal).toHaveTextContent(/this deployment declares that it runs none/i);
+    expect(refusal).toHaveTextContent(/this OpenPlan installation declares that it runs none/i);
     expect(refusal).toHaveTextContent(/configuration states that no such worker runs against it/i);
     expect(screen.getByRole("button", { name: /Launch refused/i })).toHaveProperty("disabled", true);
   });
@@ -172,7 +172,7 @@ describe("what a planner is told, given the declaration the model page reads", (
     renderAsThePageDoes();
 
     expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
-    expect(screen.getByRole("button", { name: /Launch managed run/i })).toHaveProperty("disabled", false);
+    expect(screen.getByRole("button", { name: /Launch run/i })).toHaveProperty("disabled", false);
   });
 
   it("ignores a declaration it does not understand rather than acting on a typo", () => {
@@ -203,7 +203,7 @@ describe("what a planner is told, given the declaration the model page reads", (
     renderAsThePageDoes();
 
     expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
-    expect(screen.getByRole("button", { name: /Launch managed run/i })).toHaveProperty("disabled", false);
+    expect(screen.getByRole("button", { name: /Launch run/i })).toHaveProperty("disabled", false);
   });
 });
 

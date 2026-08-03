@@ -64,13 +64,13 @@ export function ProjectSpineCrosslinkBoard({
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
               {isLoading
-                ? "Checking the shared project spine without hiding the worksurface. Rows will resolve into ready evidence, setup gaps, or schema actions."
+                ? "Checking this project's links to plans, programs, and funding. Each row will resolve into ready evidence, a setup gap, or a next step."
                 : summary.stateDetail}
             </p>
           </div>
           <p className="text-sm leading-relaxed text-muted-foreground">
             <span className="font-semibold text-foreground">Next:</span>{" "}
-            {isLoading ? "Keep the board visible while source reads finish." : summary.stateNextAction}
+            {isLoading ? "Keep the board open while it finishes loading." : summary.stateNextAction}
           </p>
         </div>
       </div>

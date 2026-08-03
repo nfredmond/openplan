@@ -61,7 +61,7 @@ function stubLaunchResponse(body: Record<string, unknown>) {
 
 async function launchAequilibrae() {
   fireEvent.change(screen.getByLabelText(/Run mode/i), { target: { value: "aequilibrae" } });
-  fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+  fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
 }
 
 /** The rendered outlook block, or null when the panel rendered none. */
@@ -111,11 +111,11 @@ describe("what a planner sees after launching a worker-backed run", () => {
 
     renderManager("absent");
     fireEvent.change(screen.getByLabelText(/Run mode/i), { target: { value: "sketch_abm" } });
-    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
 
     await waitFor(() => expect(outlook()).not.toBeNull());
     expect(outlook()?.getAttribute("data-outlook-state")).toBe("unattended");
-    expect(outlook()?.textContent).toMatch(/Nothing on this deployment is going to execute this run/i);
+    expect(outlook()?.textContent).toMatch(/Nothing on this OpenPlan installation is going to execute this run/i);
     // Never the planner's fault, and never anything to buy.
     expect(outlook()?.textContent).toMatch(/nothing to buy/i);
     expect(outlook()?.textContent).not.toMatch(
@@ -135,7 +135,7 @@ describe("what a planner sees after launching a worker-backed run", () => {
 
     await waitFor(() => expect(outlook()).not.toBeNull());
     expect(outlook()?.getAttribute("data-outlook-state")).toBe("waiting_for_poller");
-    expect(outlook()?.textContent).toMatch(/waiting for a polling worker/i);
+    expect(outlook()?.textContent).toMatch(/waiting for the modeling worker/i);
   });
 
   it("admits it cannot tell, rather than guessing, on an undeclared deployment with nowhere to push", async () => {
@@ -179,7 +179,7 @@ describe("what a planner sees after launching a worker-backed run", () => {
     stubLaunchResponse({ modelRunId: "run-6", runId: "analysis-1" });
 
     renderManager("absent");
-    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
 
     await waitFor(() => expect(screen.queryByText(/Failed to launch/i)).toBeNull());
     expect(outlook()).toBeNull();
@@ -199,14 +199,14 @@ describe("what a planner sees after launching a worker-backed run", () => {
 
     renderManager("undeclared");
     fireEvent.change(screen.getByLabelText(/Run mode/i), { target: { value: "sketch_abm" } });
-    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
 
     await waitFor(() => expect(outlook()).not.toBeNull());
     expect(screen.getByText(/402 census tracts/)).toBeTruthy();
     expect(outlook()?.textContent).toMatch(/pool\.internal/);
     // And the older, weaker sentence must not still be on screen contradicting
-    // it: "it finishes only while a worker is polling this deployment" is false
-    // about a run a pushed worker has already accepted.
-    expect(screen.queryByText(/finishes only while a worker is polling/i)).toBeNull();
+    // it: "it finishes only while a modeling worker is checking this installation"
+    // is false about a run a pushed worker has already accepted.
+    expect(screen.queryByText(/finishes only while a modeling worker is checking/i)).toBeNull();
   });
 });

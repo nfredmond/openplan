@@ -345,7 +345,7 @@ describe("the operator's optional bound on the worker queue", () => {
 
     expect(isQueueDepthExceeded(result)).toBe(true);
     const message = modelingQueueDepthMessage(2, 2);
-    expect(message).toMatch(/whoever operates this deployment/i);
+    expect(message).toMatch(/whoever operates this installation/i);
     expect(message).toMatch(/free and has no usage tiers/i);
     expect(message).not.toMatch(
       /upgrade|subscription|billing|pricing|paid tier|plan tier|contact sales/i
@@ -559,7 +559,7 @@ describe("the launch route reaches the dispatcher and hands its answer back", ()
       const body = (await response.json()) as { error: string };
 
       expect(response.status).toBe(429);
-      expect(body.error).toMatch(/whoever operates this deployment/i);
+      expect(body.error).toMatch(/whoever operates this installation/i);
       expect(body.error).not.toMatch(
         /upgrade|subscription|billing|pricing|paid tier|plan tier|contact sales/i
       );

@@ -191,8 +191,10 @@ describe("CommandCenterPage", () => {
     expect(screen.getByText(/report report-1/i)).toBeInTheDocument();
     expect(screen.getByText(/1 linked run/i)).toBeInTheDocument();
 
-    // Domain jump lane
-    expect(screen.getByText("Jump into a lane")).toBeInTheDocument();
+    // Domain jump links — pins the planner-voiced heading and rejects the old
+    // dev-voiced "Jump into a lane".
+    expect(screen.getByText("Jump into a module")).toBeInTheDocument();
+    expect(screen.queryByText("Jump into a lane")).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /RTP/i })).toHaveAttribute("href", "/rtp");
 
     // The founder-era buyer-demo / sales rehearsal / operator-console scaffolding

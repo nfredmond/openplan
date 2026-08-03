@@ -177,7 +177,7 @@ export default async function ProjectsPage({
       <WorkspaceMembershipRequired
         moduleLabel="Projects"
         title="Projects need a workspace"
-        description="The project workbench is workspace-scoped. You are signed in, but this account is not attached to a workspace yet — sign-up normally provisions one automatically. Reload your workspace, or ask an owner/admin to add you to the correct one."
+        description="Projects belong to a workspace. You are signed in, but this account is not in a workspace yet — a workspace is normally created for you when you sign up. Reload your workspace, or ask an owner/admin to add you to the correct one."
       />
     );
   }

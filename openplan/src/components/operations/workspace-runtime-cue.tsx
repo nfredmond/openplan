@@ -10,7 +10,7 @@ function buildWorkspaceRuntimeCue(summary: WorkspaceOperationsSummary) {
 
   if (command.key === "start-project-reimbursement-packets") {
     return {
-      message: `Shared runtime cue: start the lead reimbursement packet in ${command.targetProjectName ?? "the linked project"} before delivery work outruns the funding trail.`,
+      message: `Next across this workspace: start the lead reimbursement packet in ${command.targetProjectName ?? "the linked project"} so delivery work does not get ahead of the funding paper trail.`,
       href,
       ctaLabel: "Open reimbursement start",
     };
@@ -18,7 +18,7 @@ function buildWorkspaceRuntimeCue(summary: WorkspaceOperationsSummary) {
 
   if (command.key === "advance-project-reimbursement-invoicing") {
     return {
-      message: `Shared runtime cue: reimbursement work is already underway in ${command.targetProjectName ?? "the linked project"}, and invoice follow-through now outranks more local polish.`,
+      message: `Next across this workspace: reimbursement is already underway in ${command.targetProjectName ?? "the linked project"} — invoice follow-through is now the priority.`,
       href,
       ctaLabel: "Open reimbursement triage",
     };
@@ -28,8 +28,8 @@ function buildWorkspaceRuntimeCue(summary: WorkspaceOperationsSummary) {
     return {
       message:
         command.moduleKey === "grants"
-          ? `Shared runtime cue: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} linked-project grant follow-through, so Grants OS now outranks local packet polish before those packets are treated as truly settled.`
-          : `Shared runtime cue: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} linked-project funding follow-up, so release review should verify funding posture before treating the packet as truly settled.`,
+          ? `Next across this workspace: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} grant follow-through from linked projects — finish that in Grants before treating ${summary.counts.rtpFundingReviewPackets === 1 ? "it" : "them"} as settled.`
+          : `Next across this workspace: ${summary.counts.rtpFundingReviewPackets} current RTP packet${summary.counts.rtpFundingReviewPackets === 1 ? " still carries" : "s still carry"} funding follow-up from linked projects — release review should confirm funding status before treating ${summary.counts.rtpFundingReviewPackets === 1 ? "it" : "them"} as settled.`,
       href,
       ctaLabel: command.moduleKey === "grants" ? "Open Grants follow-through" : "Open RTP funding review",
     };
@@ -37,7 +37,7 @@ function buildWorkspaceRuntimeCue(summary: WorkspaceOperationsSummary) {
 
   if (isGrantsCommand(command)) {
     return {
-      message: `Shared runtime cue: Grants OS next command is ${command.title.toLowerCase()}. ${command.detail}`,
+      message: `Next across this workspace: the lead Grants action is ${command.title.toLowerCase()}. ${command.detail}`,
       href,
       ctaLabel: `Open ${resolveGrantsRuntimeCueCtaTarget(command)}`,
     };

@@ -67,7 +67,7 @@ describe("ModelRunManager per-run calibration toggle", () => {
     renderManager();
     selectRunMode("aequilibrae");
     fireEvent.click(screen.getByRole("checkbox", { name: CALIBRATION_LABEL }));
-    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, { body: string }];
@@ -82,7 +82,7 @@ describe("ModelRunManager per-run calibration toggle", () => {
 
     renderManager();
     selectRunMode("aequilibrae");
-    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, { body: string }];

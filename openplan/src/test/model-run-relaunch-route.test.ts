@@ -487,7 +487,7 @@ describe("relaunching says whether anything will execute the run this time", () 
     expect(res.status).toBe(200);
     expect(body.dispatch).toEqual({ state: "not_configured" });
     expect(body.executionOutlook.state).toBe("unattended");
-    expect(body.executionOutlook.headline).toMatch(/nothing on this deployment/i);
+    expect(body.executionOutlook.headline).toMatch(/nothing on this openplan installation/i);
     // Free product: the way out is an operator running a worker, never a purchase.
     expect(`${body.executionOutlook.headline} ${body.executionOutlook.detail}`).not.toMatch(
       /upgrade|subscription|billing|pricing|paid tier|contact sales/i

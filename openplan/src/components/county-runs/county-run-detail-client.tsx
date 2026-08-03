@@ -103,7 +103,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
   if (!data && loading) {
     return (
       <section className="module-page pb-10">
-        <StateBlock title="Loading county run" description="Fetching county run detail and artifact state…" tone="info" />
+        <StateBlock title="Loading county run" description="Loading this county run…" tone="info" />
       </section>
     );
   }
@@ -171,8 +171,8 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           </div>
           <h1 className="module-intro-title">{data.geographyLabel}</h1>
           <p className="module-intro-description">
-            {data.runName}. This page is the operational truth surface for the selected county run: recorded artifacts,
-            bootstrap posture, stage rationale, and the next safe operator move.
+            {data.runName}. This page is the record for this county run: the files it produced, its
+            setup status, why it is at this stage, and the next safe step.
           </p>
         </div>
         <div className="mt-5 flex flex-wrap gap-3">
@@ -182,7 +182,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           </Button>
           <Button onClick={() => void runEnqueue()} disabled={actionLoading || !canEnqueue}>
             {enqueueStatus === "submitted"
-              ? "Worker submitted"
+              ? "Sent to the worker"
               : enqueueRefused
                 ? "No worker to hand this to"
                 : "Prepare run handoff"}
@@ -204,11 +204,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             className="mt-3 rounded-xl border border-amber-300/80 bg-amber-50/70 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-200"
           >
             <p className="font-semibold">
-              This handoff was prepared, not submitted — nothing is going to run it
+              This handoff was prepared, not sent — nothing is going to run it
             </p>
             <p className="mt-2">
-              The last attempt found no county onramp worker configured on this deployment, so no
-              request was made and no bootstrap started. The payload below is complete and usable:
+              The last attempt found no county onramp worker configured on this OpenPlan
+              installation, so no request was made and no setup started. The payload below is
+              complete and usable:
               an operator can run <code>scripts/modeling/bootstrap_county_validation_onramp.py</code>{" "}
               and POST the resulting manifest to the callback URL, and this page will pick it up.
               Configuring a worker instead is described in{" "}
@@ -223,9 +224,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
                 onChange={(event) => setWorkerConfiguredSinceLastAttempt(event.target.checked)}
               />
               <span>
-                A county onramp worker has been configured on this deployment since that attempt —
-                prepare the handoff again. (This page reads the stored result, not the deployment&apos;s
-                environment, so only you can tell it that changed.)
+                A county onramp worker has been configured on this OpenPlan installation since that
+                attempt — prepare the handoff again. (This page reads the stored result, not the
+                installation&apos;s configuration, so only you can tell it that changed.)
               </span>
             </label>
           </div>
@@ -259,13 +260,13 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-sm text-muted-foreground">
             <div className="font-medium text-foreground">
               {enqueueState.status === "submitted"
-                ? "Bootstrap handoff submitted to the worker"
-                : "Bootstrap handoff prepared — nothing was submitted"}
+                ? "Setup handoff sent to the worker"
+                : "Setup handoff prepared — nothing was sent"}
             </div>
             {enqueueState.status === "prepared" ? (
               <div className="mt-1">
-                No county onramp worker is configured on this deployment, so this payload is waiting
-                for a person to run it. It will not start on its own.
+                No county onramp worker is configured on this OpenPlan installation, so this payload
+                is waiting for a person to run it. It will not start on its own.
               </div>
             ) : null}
             <div className="mt-1 break-all">Callback: {enqueueState.manifestIngestUrl}</div>
@@ -296,7 +297,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
       <StateBlock
         className="mt-4"
         title="How to read this page"
-        description="Use the stage/status badges for the current recorded posture, use the guidance card for safe claims and next actions, and treat artifacts below as evidence inventory rather than implied completion."
+        description="Use the stage and status badges for the current recorded state, use the guidance card for safe claims and next actions, and read the files below as evidence of what happened — not proof the run finished."
         tone="info"
         compact
       />
@@ -310,8 +311,9 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <StatusBadge tone={manifestProof.proofStatusTone}>{manifestProof.proofStatusLabel}</StatusBadge>
           </div>
           <CardDescription>
-            Read this as the county-run audit surface: inputs captured, generated artifacts, validation posture,
-            operator next action, and boundaries that must travel with downstream reports.
+            The audit record for this county run: the inputs it captured, the files it generated, its
+            validation status, the next operator action, and the caveats that must travel with any
+            report built on it.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-5 text-sm xl:grid-cols-[1.1fr_1.1fr_1fr]">
@@ -398,7 +400,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         <Card>
           <CardHeader>
             <CardTitle>Guidance</CardTitle>
-            <CardDescription>Truth constraints preserved at the UI layer.</CardDescription>
+            <CardDescription>What this run&apos;s results can and cannot support.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
             <div>
@@ -417,11 +419,11 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         <Card>
           <CardHeader>
             <CardTitle>Artifacts</CardTitle>
-            <CardDescription>Current county-run files exposed through the backend artifact list.</CardDescription>
+            <CardDescription>Files recorded for this county run.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             {data.artifacts.length === 0 ? (
-              <p className="text-muted-foreground">No artifacts are currently registered for this county run.</p>
+              <p className="text-muted-foreground">No files have been recorded for this county run yet.</p>
             ) : (
               data.artifacts.map((artifact) => (
                 <div key={`${artifact.artifactType}:${artifact.path}`} className="rounded-xl border border-border/70 p-3">
@@ -436,7 +438,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         <Card>
           <CardHeader>
             <CardTitle>Worker handoff</CardTitle>
-            <CardDescription>Stored launch state and next-step execution contract for background bootstrap.</CardDescription>
+            <CardDescription>The stored handoff for this run: what a worker or an operator needs to run the county setup.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-sm text-muted-foreground">
             {data.workerPayload ? (

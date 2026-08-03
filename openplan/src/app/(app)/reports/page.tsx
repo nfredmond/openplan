@@ -857,7 +857,7 @@ export default async function ReportsPage({
             summary={operationsSummary}
             label="Workspace command board"
             title="What should move around reports"
-            description="The reports lane now inherits the shared workspace runtime too, so packet refresh pressure, funding timing, and plan/program setup gaps stay visible while operators manage evidence, exports, and governance review."
+            description="Workspace priorities — packet refresh pressure, funding timing, and plan/program setup gaps — stay visible here while you manage evidence, exports, and governance review."
           />
         </div>
 

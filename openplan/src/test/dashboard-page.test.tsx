@@ -399,7 +399,9 @@ describe("DashboardPage", () => {
     expect(
       screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
     ).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /Open Reports Surface/i })).toHaveAttribute("href", "/reports");
+    // Pins the planner-voiced title: starts with "Open Reports" and is not the
+    // old dev-voiced "Open Reports Surface".
+    expect(screen.getByRole("link", { name: /^Open Reports\b(?! Surface)/ })).toHaveAttribute("href", "/reports");
   });
 
   it("explains why modeling-ready grant decisions are rising from the dashboard overview", async () => {
@@ -515,7 +517,9 @@ describe("DashboardPage", () => {
       screen.getByText(/ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready/i)
     ).toBeInTheDocument();
     expect(screen.getByText(/Recommended next move: Advance to pursue now/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open Grants Surface/i })).toHaveAttribute(
+    // Pins the planner-voiced title: starts with "Open Grants" and is not the
+    // old dev-voiced "Open Grants Surface".
+    expect(screen.getByRole("link", { name: /^Open Grants\b(?! Surface)/ })).toHaveAttribute(
       "href",
       "/grants?focusOpportunityId=opp-1#funding-opportunity-opp-1"
     );

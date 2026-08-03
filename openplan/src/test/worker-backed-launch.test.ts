@@ -301,7 +301,7 @@ describe("refusing the first launch a deployment has ever been asked for", () =>
 
     expect(result.refused).toBe(true);
     expect(result.reason).toBe("declared_worker_never_started");
-    expect(result.evidence).toContain("The last 2 worker-backed runs");
+    expect(result.evidence).toContain("The last 2 runs on this model that needed the modeling worker");
   });
 
   it("does not refuse an engine that runs inside this app, whatever is declared", () => {
@@ -364,12 +364,12 @@ describe("what each refusal is allowed to say", () => {
   it("attributes a declared absence to the deployment, not to an observation", () => {
     const copy = describeWorkerLaunchRefusal("deployment_declares_no_worker", "Fast Screening", null);
 
-    expect(copy.heading).toMatch(/this deployment declares that it runs none/i);
+    expect(copy.heading).toMatch(/this OpenPlan installation declares that it runs none/i);
     expect(copy.body).toMatch(/configuration states that no such worker runs against it/i);
     // It may not claim to have looked and found nothing.
     expect(`${copy.heading} ${copy.body}`).not.toMatch(/we (checked|found)|no worker was found/i);
     // The party who acts is the operator, and nothing is for sale.
-    expect(copy.operatorAction).toMatch(/Whoever operates this deployment/);
+    expect(copy.operatorAction).toMatch(/Whoever operates this OpenPlan installation/);
     expect(`${copy.heading} ${copy.body} ${copy.operatorAction}`).not.toMatch(
       /upgrade|subscription|billing|pricing|paid tier|plan tier|contact sales/i
     );
@@ -379,11 +379,11 @@ describe("what each refusal is allowed to say", () => {
     const copy = describeWorkerLaunchRefusal(
       "declared_worker_never_started",
       "Fast Screening",
-      "The last worker-backed run on this model was queued and never started by anything."
+      "The last run on this model that needed the modeling worker was queued and never started by anything."
     );
 
     expect(copy.body).toMatch(/never started by anything/);
-    expect(copy.body).toMatch(/not a heartbeat/i);
+    expect(copy.body).toMatch(/not a live check/i);
     expect(copy.operatorAction).toMatch(/workers\/aequilibrae_worker\/DEPLOY\.md/);
   });
 
@@ -391,17 +391,17 @@ describe("what each refusal is allowed to say", () => {
     const copy = describeWorkerLaunchRefusal(
       "runs_were_never_started",
       "Fast Screening",
-      "The last worker-backed run on this model was queued and never started by anything."
+      "The last run on this model that needed the modeling worker was queued and never started by anything."
     );
 
-    expect(copy.heading).toMatch(/nothing has been picking up the worker-backed runs/i);
+    expect(copy.heading).toMatch(/nothing has been picking up the runs on this model/i);
     // Never the conclusion "this deployment has no worker" — unobservable here.
     expect(copy.heading).not.toMatch(/has no worker|runs none/i);
   });
 });
 
 describe("what a run already queued on the worker may be told", () => {
-  const evidence = "The last worker-backed run on this model was queued and never started by anything.";
+  const evidence = "The last run on this model that needed the modeling worker was queued and never started by anything.";
 
   it("says plainly that a declared-worker-less deployment will not finish it", () => {
     // This fires after a large sketch run is rerouted onto the worker queue
@@ -424,10 +424,10 @@ describe("what a run already queued on the worker may be told", () => {
 
   it("falls back to exactly what it said before anything was declared", () => {
     expect(describeWorkerQueueRisk("undeclared", evidence)).toBe(
-      `${evidence} Unless a worker has been started on this deployment since then, this run will sit queued and then be failed rather than finishing.`
+      `${evidence} Unless a worker has been started on this installation since then, this run will sit queued and then be failed rather than finishing.`
     );
     expect(describeWorkerQueueRisk("undeclared", null)).toBe(
-      "It finishes only while a worker is polling this deployment."
+      "It finishes only while a modeling worker is checking this installation for runs."
     );
   });
 });
@@ -442,8 +442,8 @@ describe("the sentence a refusal is allowed to assert", () => {
     const one = describeWorkerAbsenceEvidence({ state: "no_worker_observed", abandonedRunCount: 1 });
     const many = describeWorkerAbsenceEvidence({ state: "no_worker_observed", abandonedRunCount: 3 });
 
-    expect(one).toBe("The last worker-backed run on this model was queued and never started by anything.");
-    expect(many).toContain("The last 3 worker-backed runs");
+    expect(one).toBe("The last run on this model that needed the modeling worker was queued and never started by anything.");
+    expect(many).toContain("The last 3 runs on this model that needed the modeling worker");
     // The observation is a claim about runs, not a claim about the operator's
     // infrastructure, which is unobservable from here.
     expect(one).not.toMatch(/no worker (is|has been) deployed/i);

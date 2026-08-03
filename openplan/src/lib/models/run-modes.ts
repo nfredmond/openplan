@@ -18,9 +18,10 @@ export type ManagedRunModeDefinition = {
   runtimeExpectation: string;
   caveatSummary: string;
   comparisonMessage: string;
-  // "launchable" = full managed run. "preflight" = launchable, but produces an
-  // honest input-validation / runtime-staging PREFLIGHT, never a forecast (the
-  // UI badges it distinctly). "prototype" = surfaced but launch disabled.
+  // "launchable" = a full run. "preflight" — shown to planners as a "readiness
+  // check" — is launchable, but produces an honest input-validation / model-prep
+  // check, never a forecast (the UI badges it distinctly). "prototype" = shown
+  // but launch disabled. These token values are API strings; do not rename them.
   availability: "launchable" | "prototype" | "preflight";
 };
 
@@ -29,51 +30,51 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     key: "deterministic_corridor_v1",
     label: "Deterministic Corridor",
     shortLabel: "Deterministic Corridor",
-    launchLabel: "Deterministic Corridor (Synchronous)",
+    launchLabel: "Deterministic Corridor (returns right away)",
     engineLabel: "Deterministic Corridor",
-    summaryDetail: "Original synchronous corridor analysis path.",
-    runtimeExpectation: "Usually returns in the current request cycle for corridor-scale queries.",
-    caveatSummary: "Deterministic scorecard output, not a worker-backed network assignment or behavioral model.",
-    comparisonMessage: "Comparison is based on the existing deterministic analysis scorecard and map posture.",
+    summaryDetail: "The original corridor scorecard. Runs inside OpenPlan and returns right away.",
+    runtimeExpectation: "Results usually appear in seconds for a corridor-scale study area.",
+    caveatSummary: "A rules-based scorecard — not a network assignment and not a travel-behavior model.",
+    comparisonMessage: "Comparison uses the deterministic scorecard and its map results.",
     availability: "launchable",
   },
   {
     key: "aequilibrae",
     label: "Fast Screening",
     shortLabel: "Fast Screening",
-    launchLabel: "Fast Screening (AequilibraE worker prototype)",
+    launchLabel: "Fast Screening (prototype)",
     engineLabel: "Fast Screening",
-    summaryDetail: "Worker-backed AequilibraE screening lane for assignment and accessibility review.",
-    runtimeExpectation: "Expected runtime is on the order of minutes and completes asynchronously through the worker queue.",
+    summaryDetail: "Screening-grade traffic assignment and accessibility review, run by AequilibraE outside this app.",
+    runtimeExpectation: "Keeps working after you leave the page — expect results in a few minutes.",
     caveatSummary: "Screening-grade prototype output. Do not treat it as behavioral demand or forecast-ready calibration.",
-    comparisonMessage: "Direct KPI comparison is available when both runs register comparable screening KPIs.",
+    comparisonMessage: "Direct KPI comparison is available when both runs report comparable screening KPIs.",
     availability: "launchable",
   },
   {
     key: "behavioral_demand",
     label: "Behavioral Demand",
     shortLabel: "Behavioral Demand",
-    launchLabel: "Launch preflight run (ActivitySim input validation & runtime staging)",
+    launchLabel: "Behavioral Demand (readiness check — not a forecast)",
     engineLabel: "Behavioral Demand",
-    summaryDetail: "Planner-facing ActivitySim-backed run class. Launching runs an input-validation & runtime-staging preflight, not a behavioral forecast.",
+    summaryDetail: "Backed by ActivitySim. Launching checks your inputs and prepares the model — it does not produce a behavioral forecast.",
     runtimeExpectation:
-      "The preflight completes asynchronously in minutes. A calibrated behavioral run is materially longer (tens of minutes to hours) and requires a dedicated modeling host.",
+      "The readiness check finishes in a few minutes and keeps working after you leave the page. A calibrated behavioral run takes materially longer (tens of minutes to hours) and needs a dedicated modeling computer.",
     caveatSummary:
-      "Launching this validates inputs and stages the ActivitySim runtime — it is NOT a behavioral forecast. Do not read preflight or uncalibrated output as calibrated behavioral forecasting, county-transferable validation, or client-ready demand prediction.",
+      "Launching this checks inputs and prepares the ActivitySim model — it is NOT a behavioral forecast. Do not read readiness-check or uncalibrated output as calibrated behavioral forecasting, county-transferable validation, or client-ready demand prediction.",
     comparisonMessage:
-      "Comparison surfaces behavioral artifacts and KPI summaries when present. Where the lane only reaches preflight or partial ingestion, comparison stays caveated instead of implying full run-to-run parity.",
+      "Comparison shows behavioral outputs and KPI summaries when a run produced them. A run that only reached the readiness check or partial data ingestion is labeled that way — never shown as if it were a complete run.",
     availability: "preflight",
   },
   {
     key: "sketch_abm",
     label: "Sketch Activity Model",
     shortLabel: "Sketch Activity Model",
-    launchLabel: "Sketch Activity Model (in-process sketch prototype)",
+    launchLabel: "Sketch Activity Model (runs in this app)",
     engineLabel: "Sketch Activity Model",
     summaryDetail:
-      "In-process sketch activity-based model over a synthetic population and distance-based screening skims.",
+      "Runs inside this app: a sketch activity-based model over a synthetic population and distance-based screening skims.",
     runtimeExpectation:
-      "Runs synchronously in-process and usually completes in seconds for corridor-scale zone counts.",
+      "Runs inside this app and usually finishes in seconds for corridor-scale study areas.",
     caveatSummary:
       "Screening-grade sketch output over a synthetic population and distance-based skims. Do not treat it as a validated travel model, calibrated behavioral demand, or forecast-ready prediction.",
     comparisonMessage:
@@ -84,11 +85,11 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
     key: "ite_trip_generation",
     label: "Trip Generation (ITE-style)",
     shortLabel: "Trip Generation",
-    launchLabel: "Trip Generation (in-process screening worksheet)",
+    launchLabel: "Trip Generation (screening worksheet — runs in this app)",
     engineLabel: "Trip Generation",
     summaryDetail:
-      "In-process average-rate trip generation over a scenario entry's land-use program, with a rate-based VMT screen.",
-    runtimeExpectation: "Runs synchronously in-process and completes in under a second.",
+      "Runs inside this app: average-rate trip generation over a scenario entry's land-use program, with a rate-based VMT screen.",
+    runtimeExpectation: "Runs inside this app and finishes in under a second.",
     caveatSummary:
       "Screening-level trip-generation worksheet using published public-agency reference rates. NOT a traffic impact study and NOT a CEQA §15064.3 VMT determination; its rate-based VMT never feeds the CEQA screen. Verify rates against the locally adopted or licensed manual before regulatory, funding, or design use.",
     comparisonMessage:
@@ -115,10 +116,10 @@ export function getManagedRunModeDefinition(runModeKey: string | null | undefine
       shortLabel: "Unknown mode",
       launchLabel: "Unknown mode",
       engineLabel: "Unknown mode",
-      summaryDetail: "Planner-facing metadata has not been registered for this run mode yet.",
-      runtimeExpectation: "Runtime expectation unavailable.",
+      summaryDetail: "OpenPlan does not have a description for this run mode yet.",
+      runtimeExpectation: "How long it takes is not known.",
       caveatSummary: "Interpret outputs conservatively until the run mode is documented.",
-      comparisonMessage: "Comparison posture is unavailable for this run mode.",
+      comparisonMessage: "No comparison guidance is available for this run mode.",
       availability: "prototype",
     }
   );
@@ -126,8 +127,8 @@ export function getManagedRunModeDefinition(runModeKey: string | null | undefine
 
 export function getBehavioralDemandDefaultCaveats(): string[] {
   return [
-    "Behavioral demand is currently surfaced as a prototype/preflight-backed lane.",
+    "Behavioral demand is a prototype: launching it runs a readiness check, not a forecast.",
     "Do not present this as calibrated behavioral forecasting or client-ready demand prediction.",
-    "County-specific prototype artifacts or partial ingestion outputs may exist without a full ActivitySim runtime success.",
+    "Partial county outputs may exist even where no full ActivitySim run ever succeeded.",
   ];
 }

@@ -69,8 +69,8 @@ export default async function DashboardPage() {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Overview"
-        title="Overview needs a provisioned workspace"
-        description="Dashboard metrics, run history, and workspace KPIs are only available after this account is attached to a workspace. Create a project workspace first or ask an owner/admin to add you to the correct workspace."
+        title="Overview needs a workspace"
+        description="Dashboard metrics, run history, and workspace KPIs only appear once this account is in a workspace. Create a project workspace first, or ask an owner/admin to add you to the correct one."
         primaryHref="/projects"
         primaryLabel="Create or open project workspace"
       />
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
                 ? `Jump straight into Grants OS for the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} that still need linked-project funding follow-through.`
                 : rtpFundingReviewCount > 0
                 ? `Jump straight into the ${rtpFundingReviewCount} current RTP packet${rtpFundingReviewCount === 1 ? "" : "s"} still carrying funding-backed release-review follow-up.`
-                : "Jump straight into the current RTP packet release-review lane.",
+                : "Jump straight into the current RTP packets awaiting release review.",
             icon: FileText,
           },
         ]
@@ -190,8 +190,8 @@ export default async function DashboardPage() {
                 : "Advance reimbursement invoicing",
             description:
               operationsSummary.nextCommand.key === "start-project-reimbursement-packets"
-                ? "Jump straight into the lead grants reimbursement lane and start the first reimbursement packet."
-                : "Jump straight into the lead grants reimbursement lane and advance follow-through already in motion.",
+                ? "Jump straight into reimbursement in Grants and start the first reimbursement packet."
+                : "Jump straight into reimbursement in Grants and advance follow-through already in motion.",
             icon: ShieldCheck,
           },
         ]
@@ -213,23 +213,23 @@ export default async function DashboardPage() {
     {
       key: "grants-surface",
       href: leadGrantsCommand ? resolveSharedGrantsQueueHref(leadGrantsCommand) : "/grants",
-      title: "Open Grants Surface",
+      title: "Open Grants",
       description:
         leadGrantsCommand?.key === "advance-project-funding-decisions" && grantModelingSummary?.leadDecisionDetail
           ? grantModelingSummary.leadDecisionDetail
           : leadGrantsCommand
             ? `Jump straight into the current lead grants action: ${leadGrantsCommand.title.toLowerCase()}.`
-            : "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one shared operating lane.",
+            : "Track funding opportunities, pursue decisions, awards, and reimbursement follow-through, all in one place.",
       icon: Landmark,
     },
     {
       key: "reports-surface",
       href: "/reports",
-      title: "Open Reports Surface",
+      title: "Open Reports",
       description:
         comparisonBackedReportCount > 0
           ? `${comparisonBackedReportCount} comparison-backed report packet${comparisonBackedReportCount === 1 ? " can" : "s can"} support grant planning language or prioritization framing. Treat that context as planning support, not proof of award likelihood or a replacement for funding-source review.`
-          : "Review where evidence packs, board-ready exports, and grant artifacts will converge.",
+          : "Review where evidence packs, board-ready exports, and grant documents come together.",
       icon: FileText,
     },
   ];

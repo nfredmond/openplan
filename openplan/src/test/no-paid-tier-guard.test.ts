@@ -176,8 +176,10 @@ describe("the paid-tier subsystem stays deleted", () => {
     // assistant's human-in-the-loop action triage uses it legitimately —
     // only the sales-era pairings are.
     const COMMERCIAL_CLAIMS = [
-      /managed hosting/i,
-      /managed services?\b/i,
+      // `managed[- ]` catches the hyphenated "managed-services" spelling, which
+      // outlived the spaced one on the public top-nav until 2026-08-03.
+      /managed[- ]hosting/i,
+      /managed[- ]services?\b/i,
       /service[- ]lanes?\b/i,
       /\bretainer\b/i,
       /\bbuyers?\b/i,

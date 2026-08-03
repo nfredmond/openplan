@@ -217,12 +217,12 @@ function ManagedRunPromotionControl({
 
       const payload = (await response.json()) as { error?: string };
       if (!response.ok) {
-        throw new Error(payload.error || "Failed to promote managed run");
+        throw new Error(payload.error || "Could not attach this run to the scenario entry");
       }
 
       router.refresh();
     } catch (promotionError) {
-      setError(promotionError instanceof Error ? promotionError.message : "Failed to promote managed run");
+      setError(promotionError instanceof Error ? promotionError.message : "Could not attach this run to the scenario entry");
     } finally {
       setIsSubmitting(false);
     }
@@ -238,7 +238,7 @@ function ManagedRunPromotionControl({
           <p className="mt-1 text-sm text-muted-foreground">
             {currentLabel
               ? `Currently attached to ${currentLabel}. Reassign if the evidence belongs to a different scenario entry.`
-              : "This succeeded run is not attached to a scenario entry yet. Promote it into one now."}
+              : "This run succeeded but is not attached to a scenario entry yet. Promote it into one now."}
           </p>
         </div>
         {currentLabel ? <StatusBadge tone="neutral">Attached: {currentLabel}</StatusBadge> : null}
@@ -281,7 +281,7 @@ export function ModelRunManager({
   modelingWorkerDeclaration = "undeclared",
 }: ModelRunManagerProps) {
   const router = useRouter();
-  const [title, setTitle] = useState(`${modelTitle} managed run`);
+  const [title, setTitle] = useState(`${modelTitle} run`);
   // Non-ITE engines require BOTH a study area AND non-empty query text, so a
   // brand-new model (empty template) must not default the query box to "" —
   // that produced a launch 400 that read like a study-area error. Prefill a
@@ -481,10 +481,10 @@ export function ModelRunManager({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Execution</p>
-          <h2 className="module-section-title">Managed scenario → run execution</h2>
+          <p className="module-section-label">Runs</p>
+          <h2 className="module-section-title">Launch and track this model&apos;s runs</h2>
           <p className="module-section-description">
-            Launch a managed run with immutable input snapshots, then promote or reassign the resulting analysis run into the right scenario entry.
+            Each launch keeps an exact copy of its inputs, so a run can always be traced back to what went into it. Attach the results to the right scenario entry when they arrive.
           </p>
         </div>
         <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-sky-500/12 text-sky-700 dark:text-sky-300">
@@ -494,19 +494,19 @@ export function ModelRunManager({
 
         <div className="module-summary-grid cols-4 mt-5">
         <div className="module-summary-card">
-          <p className="module-summary-label">Managed runs</p>
+          <p className="module-summary-label">Runs</p>
           <p className="module-summary-value">{modelRuns.length}</p>
-          <p className="module-summary-detail">Execution records tied to this model.</p>
+          <p className="module-summary-detail">Runs recorded for this model.</p>
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Latest status</p>
           <p className="module-summary-value text-base">{latestRun ? latestRun.status : "None"}</p>
-          <p className="module-summary-detail">{latestRun ? latestRun.run_title : "No managed runs launched yet."}</p>
+          <p className="module-summary-detail">{latestRun ? latestRun.run_title : "No runs launched yet."}</p>
         </div>
         <div className="module-summary-card">
-          <p className="module-summary-label">Scenario attach</p>
+          <p className="module-summary-label">Scenario entries</p>
           <p className="module-summary-value">{scenarioEntries.length}</p>
-          <p className="module-summary-detail">Scenario entries available for direct evidence promotion.</p>
+          <p className="module-summary-detail">Scenario entries a run&apos;s results can be attached to.</p>
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Run modes available</p>
@@ -517,7 +517,7 @@ export function ModelRunManager({
 
       {schemaPending ? (
         <div className="module-empty-state mt-5 text-sm">
-          The `model_runs` table is not live yet. Apply the newest database migration to activate managed execution.
+          This OpenPlan installation&apos;s database has not been updated for model runs yet (the `model_runs` table is missing). Whoever operates this installation applies the newest database migration; runs cannot be launched until then.
         </div>
       ) : null}
 
@@ -526,7 +526,7 @@ export function ModelRunManager({
           <div>
             <p className="text-sm font-semibold text-foreground">Launch run</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Use model defaults, then optionally bind the result back into a specific scenario entry.
+              Use the model&apos;s defaults, then optionally attach the results to a specific scenario entry.
             </p>
           </div>
 
@@ -553,8 +553,8 @@ export function ModelRunManager({
                   {selectedRunMode.availability === "launchable"
                     ? "Launchable"
                     : selectedRunMode.availability === "preflight"
-                      ? "Preflight"
-                      : "Prototype surface"}
+                      ? "Readiness check"
+                      : "Prototype"}
                 </StatusBadge>
               </div>
               <p className="mt-2 text-muted-foreground">{selectedRunMode.summaryDetail}</p>
@@ -568,7 +568,7 @@ export function ModelRunManager({
                 <p className="mt-2 text-muted-foreground">
                   <span className="text-foreground">Where it runs:</span> not in this app. Launching
                   queues the run for a separate AequilibraE processing worker, which whoever operates
-                  this deployment has to be running for it to finish.
+                  this OpenPlan installation has to be running for it to finish.
                 </p>
               ) : null}
               {engineKey === "sketch_abm" ? (
@@ -580,18 +580,18 @@ export function ModelRunManager({
                    that number and states it in the reroute notice, and a second
                    copy in the UI is a number that can silently drift. */
                 <p className="mt-2 text-muted-foreground">
-                  <span className="text-foreground">Where it runs:</span> in-process for study areas
-                  within the sketch lane&apos;s zone cap. A larger area — a mid-size city or a metro —
-                  is handed to the AequilibraE worker queue instead, so it depends on a processing
-                  worker the same way Fast Screening does. The launch tells you when that happens.
+                  <span className="text-foreground">Where it runs:</span> in this app for study areas
+                  within the sketch model&apos;s size limit. A larger area — a mid-size city or a metro —
+                  is sent to the same modeling worker queue Fast Screening uses, so it needs that
+                  worker running to finish. The launch tells you when that happens.
                 </p>
               ) : null}
               {engineKey === "ite_trip_generation" ? (
                 <p className="mt-2 text-muted-foreground">
-                  <span className="text-foreground">Input:</span> this engine ignores query text and
-                  corridor GeoJSON. It reads a land-use program from the selected scenario
-                  entry&apos;s assumptions JSON (<code>tripGenProgram</code>); launching without one
-                  fails with a clear error.
+                  <span className="text-foreground">Input:</span> Trip Generation ignores the query
+                  text and study area. It uses the land-use program saved on the selected scenario
+                  entry (its <code>tripGenProgram</code> assumption); launching without one stops
+                  with an error saying what to add.
                 </p>
               ) : null}
             </div>
@@ -660,7 +660,7 @@ export function ModelRunManager({
               value={scenarioEntryId}
               onChange={(event) => setScenarioEntryId(event.target.value)}
             >
-              <option value="">No direct scenario attach</option>
+              <option value="">Not attached to a scenario entry</option>
               {scenarioEntries.map((entry) => (
                 <option key={entry.id} value={entry.id}>
                   {entry.label} · {entry.entryType} · {entry.assumptionCount} assumptions
@@ -694,7 +694,7 @@ export function ModelRunManager({
               value={queryText}
               onChange={(event) => setQueryText(event.target.value)}
               rows={5}
-              placeholder="Describe what this managed run is analyzing."
+              placeholder="Describe what this run is analyzing."
             />
           </div>
 
@@ -757,9 +757,9 @@ export function ModelRunManager({
                       OpenPlan pushed to actually answered — so keeping this
                       sentence alongside it would let the panel contradict
                       itself: on a deployment that declares nothing, this one
-                      says the run "finishes only while a worker is polling",
-                      which is plainly false about a run a pushed worker has
-                      already accepted. It still renders when no outlook exists,
+                      says the run "finishes only while a modeling worker is
+                      checking this installation for runs", which is plainly
+                      false about a run a pushed worker has already accepted. It still renders when no outlook exists,
                       which is the pre-push behaviour, unchanged. */}
                   {executionOutlook
                     ? null
@@ -801,11 +801,11 @@ export function ModelRunManager({
 
           {selectedRunMode.availability === "prototype" ? (
             <div className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
-              {selectedRunMode.label} is a prototype surface — managed launch from this form is not enabled for it yet. {selectedRunMode.runtimeExpectation} {selectedRunMode.caveatSummary}
+              {selectedRunMode.label} is a prototype — it cannot be launched from this form yet. {selectedRunMode.runtimeExpectation} {selectedRunMode.caveatSummary}
             </div>
           ) : selectedRunMode.availability === "preflight" ? (
             <div className="rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200">
-              Launching {selectedRunMode.label} runs an input-validation & runtime-staging <span className="font-semibold">preflight</span> — it is <span className="font-semibold">NOT a behavioral forecast</span>. {selectedRunMode.caveatSummary}
+              Launching {selectedRunMode.label} runs a <span className="font-semibold">readiness check</span> — it checks your inputs and prepares the model, and it is <span className="font-semibold">NOT a behavioral forecast</span>. {selectedRunMode.caveatSummary}
             </div>
           ) : null}
 
@@ -849,9 +849,9 @@ export function ModelRunManager({
                 ))}
               </div>
               <p className="mt-2 text-xs">
-                One caveat on the sketch lane: it runs in-process only up to its zone cap. A study
-                area above that cap is handed to this same worker queue, so a metro-scale sketch run
-                depends on the worker too.
+                One caveat on the sketch model: it runs in this app only up to its study-area size
+                limit. A larger study area is sent to this same modeling worker queue, so a
+                metro-scale sketch run depends on the worker too.
               </p>
               {/* Offered only where the refusal rests on inference. A deployment
                   that declares no worker has been answered by the person who
@@ -871,11 +871,10 @@ export function ModelRunManager({
                     }
                   />
                   <span>
-                    A modeling worker has been started on this deployment since those runs — queue
-                    this one anyway. (The worker is a poller with no heartbeat, so OpenPlan cannot
-                    see that for itself; only you can tell it. If another run is abandoned after
-                    this, the refusal comes back — the tick answers the runs on screen now, not
-                    every run from here on.)
+                    A modeling worker has been started on this OpenPlan installation since those
+                    runs — queue this one anyway. (OpenPlan has no way to check this on its own —
+                    only you can tell it. If another run is abandoned after this, the refusal comes
+                    back — the tick answers the runs on screen now, not every run from here on.)
                   </span>
                 </label>
               ) : null}
@@ -886,14 +885,14 @@ export function ModelRunManager({
             {isLaunching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {workerRefusesLaunch && !workerAcknowledged
               ? workerGate.reason === "deployment_declares_no_worker"
-                ? "Launch refused — this deployment declares no modeling worker"
+                ? "Launch refused — this installation declares no modeling worker"
                 : workerGate.reason === "declared_worker_never_started"
                   ? "Launch refused — the declared worker has not been picking these runs up"
                   : "Launch refused — nothing has been picking these runs up"
               : selectedRunMode.availability === "launchable"
-                ? "Launch managed run"
+                ? "Launch run"
                 : selectedRunMode.availability === "preflight"
-                  ? "Launch preflight run"
+                  ? "Run readiness check"
                   : `${selectedRunMode.label} launch not yet available`}
           </Button>
         </div>
@@ -902,7 +901,7 @@ export function ModelRunManager({
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-semibold text-foreground">Run history</p>
-              <p className="mt-1 text-sm text-muted-foreground">Latest orchestrated executions tied to this model.</p>
+              <p className="mt-1 text-sm text-muted-foreground">The latest runs launched from this model.</p>
             </div>
             <StatusBadge tone={modelRuns.length > 0 ? "info" : "neutral"}>{modelRuns.length} stored</StatusBadge>
           </div>
@@ -940,7 +939,7 @@ export function ModelRunManager({
 
           {modelRuns.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No managed runs yet. The first successful launch will persist an orchestration record and point to the resulting analysis run.
+              No runs yet. Every launch is recorded here, with a link to its results once they exist.
             </div>
           ) : (
             <div className="mt-5 module-record-list">
@@ -967,7 +966,7 @@ export function ModelRunManager({
                         <StatusBadge tone="neutral">{labelForEngineKey(run.engine_key)}</StatusBadge>
                         {scenarioLabel ? <StatusBadge tone="neutral">{scenarioLabel}</StatusBadge> : null}
                         {overallScore !== null ? <StatusBadge tone="success">Overall {overallScore}/100</StatusBadge> : null}
-                        {runMode.availability !== "launchable" ? <StatusBadge tone="warning">{runMode.availability === "preflight" ? "Preflight" : "Prototype / preflight"}</StatusBadge> : null}
+                        {runMode.availability !== "launchable" ? <StatusBadge tone="warning">{runMode.availability === "preflight" ? "Readiness check" : "Prototype"}</StatusBadge> : null}
                       </div>
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -978,7 +977,7 @@ export function ModelRunManager({
                           {run.error_message ||
                             (run.source_analysis_run_id
                               ? `Backed by analysis run ${run.source_analysis_run_id}.`
-                              : "Managed execution record created without a linked analysis run yet.")}
+                              : "Run recorded — no linked analysis results yet.")}
                         </p>
                         <p className="text-sm text-muted-foreground">{runMode.runtimeExpectation}</p>
                         <p className="text-sm text-muted-foreground">{runMode.caveatSummary}</p>

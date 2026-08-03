@@ -83,15 +83,15 @@ describe("county run handoff where no county onramp worker is configured", () =>
     expect(enqueueMock).not.toHaveBeenCalled();
   });
 
-  it("replaces 'prepared for background execution' with what actually happened", () => {
+  it("replaces the generic prepared help text with what actually happened", () => {
     render(<CountyRunDetailClient countyRunId={COUNTY_RUN_ID} />);
 
     const refusal = screen.getByTestId("county-enqueue-refusal");
-    expect(refusal).toHaveTextContent(/no county onramp worker configured on this deployment/i);
-    expect(refusal).toHaveTextContent(/no request was made and no bootstrap started/i);
-    // The generic label promised background execution that was never going to
-    // happen; it must not be on screen alongside the truth.
-    expect(screen.queryByText(/prepared for background execution/i)).toBeNull();
+    expect(refusal).toHaveTextContent(/no county onramp worker configured on this OpenPlan installation/i);
+    expect(refusal).toHaveTextContent(/no request was made and no setup started/i);
+    // The generic help text does not say who will run the handoff; it must
+    // not be on screen alongside the refusal, which does.
+    expect(screen.queryByText(/prepared but has not been sent anywhere/i)).toBeNull();
   });
 
   it("keeps the manual lane usable instead of calling the run impossible", () => {
@@ -106,7 +106,7 @@ describe("county run handoff where no county onramp worker is configured", () =>
   it("lets an operator who has configured a worker try again", () => {
     render(<CountyRunDetailClient countyRunId={COUNTY_RUN_ID} />);
 
-    fireEvent.click(screen.getByRole("checkbox", { name: /worker has been configured on this deployment/i }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /worker has been configured on this OpenPlan installation/i }));
     fireEvent.click(screen.getByRole("button", { name: /Prepare run handoff/i }));
 
     expect(enqueueMock).toHaveBeenCalledWith(COUNTY_RUN_ID);
@@ -151,14 +151,14 @@ describe("county run launch control on a deployment with no worker", () => {
     render(<CountyRunsPageClient workspaceId="123e4567-e89b-12d3-a456-426614174000" />);
 
     const disclosure = screen.getByTestId("county-worker-absent-disclosure");
-    expect(disclosure).toHaveTextContent(/prepared rather than submitted/i);
-    expect(disclosure).toHaveTextContent(/does not execute until whoever operates this deployment/i);
+    expect(disclosure).toHaveTextContent(/prepared rather than sent/i);
+    expect(disclosure).toHaveTextContent(/does not run until whoever operates this OpenPlan installation/i);
 
     // The card for that same run must not contradict the disclosure two
-    // elements above it: the shared help text's "prepared for background
-    // execution" describes execution that nothing is going to perform.
-    expect(screen.queryByText(/prepared for background execution/i)).toBeNull();
-    expect(screen.getByText(/prepared, not submitted/i)).toBeInTheDocument();
+    // elements above it: the shared prepared help text does not say that
+    // nothing is going to run this handoff, and the card override does.
+    expect(screen.queryByText(/prepared but has not been sent anywhere/i)).toBeNull();
+    expect(screen.getByText(/prepared, not sent/i)).toBeInTheDocument();
   });
 
   /**

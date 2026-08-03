@@ -38,7 +38,7 @@ import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 export const metadata = {
   title: "Command Center · OpenPlan",
   description:
-    "Operational view of the workspace lanes the shared operations summary reads: RTP, grants, projects, reports, invoicing, engagement, safety, modeling, data and knowledge, and aerial.",
+    "One view of everything in motion across this workspace: RTP, grants, projects, reports, invoicing, engagement, safety, modeling, data and knowledge, and aerial.",
 };
 
 /**
@@ -79,8 +79,8 @@ export default async function CommandCenterPage() {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Command Center"
-        title="Command Center needs a provisioned workspace"
-        description="Command Center surfaces delivery, funding, engagement, safety, modeling, evidence, invoicing, and aerial state against a single workspace. Join or create a workspace first."
+        title="Command Center needs a workspace"
+        description="Command Center shows delivery, funding, engagement, safety, modeling, evidence, invoicing, and aerial work for a single workspace. Join or create a workspace first."
         primaryHref="/projects"
         primaryLabel="Create or open project workspace"
       />
@@ -240,9 +240,9 @@ export default async function CommandCenterPage() {
             </div>
             <h1 className="module-intro-title">Command Center</h1>
             <p className="module-intro-description">
-              One operational view of the runtime cue, command queue, and lane counts for the active workspace —
-              delivery and funding, engagement, safety, modeling, evidence supply, invoicing, and aerial. Dashboard
-              stays your workspace home; Command Center is the operational cut of the same state.
+              One view of what needs attention across the active workspace — delivery and funding, engagement,
+              safety, modeling, evidence supply, invoicing, and aerial. Dashboard stays your workspace home;
+              Command Center shows the same workspace state, cut for day-to-day operations.
             </p>
           </div>
         </div>
@@ -253,8 +253,8 @@ export default async function CommandCenterPage() {
       <div className="mt-4">
         <WorkspaceCommandBoard summary={summary}>
           <p className="text-[0.8rem] text-muted-foreground">
-            Counts and cues come from the shared workspace operations summary. The action activity lane reads completed
-            operator actions from the same workspace audit log.
+            Counts and cues come from the shared workspace operations summary. The recent-actions list below reads
+            completed actions from the same workspace audit log.
           </p>
         </WorkspaceCommandBoard>
       </div>
@@ -272,9 +272,9 @@ export default async function CommandCenterPage() {
         <div className="module-section-header">
           <div className="module-section-heading">
             <p className="module-section-label">Domains</p>
-            <h2 className="module-section-title">Jump into a lane</h2>
+            <h2 className="module-section-title">Jump into a module</h2>
             <p className="module-section-description">
-              Each row links to the underlying surface with the current count context.
+              Each row links to the module&apos;s own page, with its current counts alongside.
             </p>
           </div>
         </div>
@@ -306,7 +306,7 @@ export default async function CommandCenterPage() {
       <StateBlock
         className="mt-6"
         title="Operational scope"
-        description="Every lane above comes from the shared workspace operations summary, and the activity ledger comes from this workspace's audit log. Analysis Studio corridor runs are the one registered surface the summary does not read yet, so they are absent from this page rather than shown as empty. A lane the summary could not read says so instead of reporting zero. Per-record truth-state locks in RTP, grants, safety, and modeling still apply on their own surfaces."
+        description="Every section above comes from the shared workspace operations summary, and the activity ledger comes from this workspace's audit log. Analysis Studio corridor runs are the one registered module the summary does not read yet, so they are absent from this page rather than shown as empty. A section the summary could not read says so instead of reporting zero. Per-record truth-state locks in RTP, grants, safety, and modeling still apply on their own pages."
         tone="info"
         compact
       />

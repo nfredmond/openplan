@@ -208,7 +208,7 @@ describe("ProjectSpineCrosslinkBoard", () => {
 
     expect(screen.getByText("Loading state")).toBeInTheDocument();
     expect(screen.getByText("Loading crosslink queue")).toBeInTheDocument();
-    expect(screen.getByText(/Keep the board visible while source reads finish/i)).toBeInTheDocument();
+    expect(screen.getByText(/Keep the board open while it finishes loading/i)).toBeInTheDocument();
     // Derived from PROJECT_SPINE_CROSSLINK_ROW_COUNT rather than hard-coded, so
     // the skeleton renders the shape the board will actually take.
     expect(screen.getAllByLabelText("Loading crosslink row")).toHaveLength(

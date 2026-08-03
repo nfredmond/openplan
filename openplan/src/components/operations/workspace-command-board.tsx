@@ -206,7 +206,7 @@ export function WorkspaceCommandBoard({
           <p className="module-summary-detail">
             {reimbursementPressure === 0
               ? "No reimbursement packet or invoice follow-through pressure is visible in this workspace snapshot."
-              : `${reimbursementStartCount} need first reimbursement packet${reimbursementStartCount === 1 ? "" : "s"}, ${reimbursementAdvanceCount} already in the invoice follow-through lane.`}
+              : `${reimbursementStartCount} need first reimbursement packet${reimbursementStartCount === 1 ? "" : "s"}, ${reimbursementAdvanceCount} already in invoice follow-through.`}
           </p>
         </div>
         {engagementObservation ? (
@@ -273,8 +273,8 @@ export function WorkspaceCommandBoard({
           {unreadableLaneLabels.length === 1
             ? unreadableLaneLabels[0]
             : `${unreadableLaneLabels.slice(0, -1).join(", ")} and ${unreadableLaneLabels[unreadableLaneLabels.length - 1]}`}
-          . Those lanes are shown as unmeasured rather than as zero — an empty lane here would not mean the records
-          are absent.
+          . Those sections are shown as unmeasured rather than as zero — an empty section here would not mean the
+          records are absent.
         </p>
       ) : null}
 
@@ -312,7 +312,7 @@ export function WorkspaceCommandBoard({
             Workflow next-action groups
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Review, check, inspect, or regenerate work by lane before treating the Command Center queue as clear.
+            Review, check, inspect, or regenerate work in each module before treating the Command Center queue as clear.
           </p>
         </div>
         <div className="divide-y divide-border/60">
@@ -377,7 +377,7 @@ export function WorkspaceCommandBoard({
       </div>
 
       <div className="mt-5 space-y-1">
-        <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Command queue</p>
+        <p className="mb-2 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Next actions</p>
         {summary.commandQueue.length > 0 ? (
           summary.commandQueue.map((item) => (
             <Link key={item.key} href={isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href} className="module-subpanel block transition-colors hover:border-primary/35">

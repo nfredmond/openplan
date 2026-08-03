@@ -109,7 +109,7 @@ describe("launching a worker-backed run where nothing is processing runs", () =>
 
     const refusal = screen.getByTestId("worker-launch-refusal");
     expect(refusal).toHaveTextContent(/does not run inside OpenPlan/i);
-    expect(refusal).toHaveTextContent(/AequilibraE worker/i);
+    expect(refusal).toHaveTextContent(/AequilibraE modeling worker/i);
     expect(refusal).toHaveTextContent(/workers\/aequilibrae_worker\/DEPLOY\.md/);
     // A refusal may never point at a plan, a tier, or a payment: there are
     // none. (The word "plan" itself is unusable as a signal here — "OpenPlan"
@@ -124,7 +124,7 @@ describe("launching a worker-backed run where nothing is processing runs", () =>
     selectRunMode("aequilibrae");
 
     const refusal = screen.getByTestId("worker-launch-refusal");
-    expect(refusal).toHaveTextContent(/The last 2 worker-backed runs on this model were queued and never started/i);
+    expect(refusal).toHaveTextContent(/The last 2 runs on this model that needed the modeling worker were queued and never started/i);
   });
 
   it("hands the planner the run modes that do execute here", () => {
@@ -136,7 +136,7 @@ describe("launching a worker-backed run where nothing is processing runs", () =>
     // Switching lands on an engine that runs in-process, so the refusal is gone
     // and the launch button is live again.
     expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
-    expect(screen.getByRole("button", { name: /Launch managed run/i })).toHaveProperty("disabled", false);
+    expect(screen.getByRole("button", { name: /Launch run/i })).toHaveProperty("disabled", false);
   });
 
   it("lets the planner launch once they say a worker has been started", async () => {
@@ -146,8 +146,8 @@ describe("launching a worker-backed run where nothing is processing runs", () =>
     renderManager([abandonedAequilibraeRun("run-1")]);
     selectRunMode("aequilibrae");
 
-    fireEvent.click(screen.getByRole("checkbox", { name: /worker has been started on this deployment/i }));
-    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /worker has been started on this OpenPlan installation/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
     const [, init] = fetchMock.mock.calls[0] as unknown as [string, { body: string }];
@@ -168,7 +168,7 @@ describe("launching a worker-backed run where nothing is processing runs", () =>
     selectRunMode("aequilibrae");
 
     expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
-    expect(screen.getByRole("button", { name: /Launch managed run/i })).toHaveProperty("disabled", false);
+    expect(screen.getByRole("button", { name: /Launch run/i })).toHaveProperty("disabled", false);
   });
 
   it("does not refuse a model that has never run a worker-backed engine", () => {
@@ -199,7 +199,7 @@ describe("launching where the deployment itself declares no modeling worker", ()
     selectRunMode("aequilibrae");
 
     const refusal = screen.getByTestId("worker-launch-refusal");
-    expect(refusal).toHaveTextContent(/this deployment declares that it runs none/i);
+    expect(refusal).toHaveTextContent(/this OpenPlan installation declares that it runs none/i);
     fireEvent.click(screen.getByRole("button", { name: /Launch refused/i }));
     await waitFor(() => expect(fetchMock).not.toHaveBeenCalled());
   });
@@ -216,7 +216,7 @@ describe("launching where the deployment itself declares no modeling worker", ()
     expect(refusal.textContent ?? "").not.toMatch(
       /upgrade|subscription|billing|pricing|paid tier|plan tier|contact sales/i
     );
-    expect(refusal).toHaveTextContent(/Whoever operates this deployment/i);
+    expect(refusal).toHaveTextContent(/Whoever operates this OpenPlan installation/i);
   });
 
   it("does not offer a planner a tick-box override of the operator's answer", () => {
@@ -235,7 +235,7 @@ describe("launching where the deployment itself declares no modeling worker", ()
     selectRunMode("aequilibrae");
 
     expect(screen.queryByTestId("worker-launch-refusal")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalled());
   });
 
@@ -254,7 +254,7 @@ describe("launching where the deployment itself declares no modeling worker", ()
 
     const refusal = screen.getByTestId("worker-launch-refusal");
     expect(refusal).toHaveTextContent(/declares that an AequilibraE worker runs against it/i);
-    expect(refusal).toHaveTextContent(/not a heartbeat/i);
+    expect(refusal).toHaveTextContent(/not a live check/i);
     expect(refusal).toHaveTextContent(/queued and never started by anything/i);
   });
 
@@ -273,9 +273,9 @@ describe("launching where the deployment itself declares no modeling worker", ()
     selectRunMode("aequilibrae");
 
     const refusal = screen.getByTestId("worker-launch-refusal");
-    expect(refusal).toHaveTextContent(/nothing has been picking up the worker-backed runs/i);
+    expect(refusal).toHaveTextContent(/nothing has been picking up the runs on this model/i);
     // It may not borrow the certainty of a declaration it does not have.
-    expect(refusal).not.toHaveTextContent(/this deployment declares/i);
+    expect(refusal).not.toHaveTextContent(/installation declares/i);
   });
 });
 
@@ -287,7 +287,7 @@ describe("an acknowledgement that a worker was started", () => {
     const { rerender } = renderManager([abandonedAequilibraeRun("run-1")]);
     selectRunMode("aequilibrae");
     fireEvent.click(screen.getByRole("checkbox", { name: /worker has been started/i }));
-    expect(screen.getByRole("button", { name: /Launch managed run/i })).toHaveProperty(
+    expect(screen.getByRole("button", { name: /Launch run/i })).toHaveProperty(
       "disabled",
       false
     );
@@ -330,7 +330,7 @@ describe("an acknowledgement that a worker was started", () => {
       />
     );
 
-    expect(screen.getByRole("button", { name: /Launch managed run/i })).toHaveProperty(
+    expect(screen.getByRole("button", { name: /Launch run/i })).toHaveProperty(
       "disabled",
       false
     );
@@ -342,7 +342,7 @@ describe("the in-app sketch lane's dependence on the same worker", () => {
     renderManager([]);
     selectRunMode("sketch_abm");
 
-    expect(screen.getByText(/handed to the AequilibraE worker queue/i)).toBeInTheDocument();
+    expect(screen.getByText(/sent to the same modeling worker queue/i)).toBeInTheDocument();
   });
 
   it("warns when a rerouted run lands on a queue nothing has been servicing", async () => {
@@ -361,7 +361,7 @@ describe("the in-app sketch lane's dependence on the same worker", () => {
 
     renderManager([abandonedAequilibraeRun("run-1")]);
     selectRunMode("sketch_abm");
-    fireEvent.click(screen.getByRole("button", { name: /Launch managed run/i }));
+    fireEvent.click(screen.getByRole("button", { name: /Launch run/i }));
 
     // The server's own notice reads as "expect a longer runtime". With runs
     // already abandoned on that queue, presenting it that calmly would be the

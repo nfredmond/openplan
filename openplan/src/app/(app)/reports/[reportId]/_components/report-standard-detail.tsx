@@ -283,7 +283,7 @@ export function ReportStandardDetail({
         summary={operationsSummary}
         label="Workspace command board"
         title="What should move around this report"
-        description="Report detail now inherits the shared workspace runtime too, so broader packet pressure, funding timing, and setup gaps stay visible while you review drift, provenance, and governance posture on this record."
+        description="Workspace priorities — packet pressure, funding timing, and setup gaps — stay visible here while you review drift, provenance, and governance posture on this record."
       />
 
       <PilotWorkflowHandoff

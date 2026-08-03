@@ -50,12 +50,12 @@ export async function TopNav() {
         <div className="grid gap-3 lg:justify-items-end">
           <div className="hidden space-y-1 text-left sm:block lg:text-right">
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-              {user ? "Authenticated workspace" : "Public access lane"}
+              {user ? "Your workspace" : "Public pages"}
             </p>
             <p className="text-sm text-muted-foreground">
               {user
-                ? "Move between the public services surface and the live workspace without dropping planning context."
-                : "Review the open-source posture, managed-services options, and live public engagement views before requesting a signed-in workspace."}
+                ? "Move between the public pages and your workspace without losing your place."
+                : "OpenPlan is free and open source. Browse the live public engagement views, or create a workspace for your team — nothing gates access."}
             </p>
           </div>
 

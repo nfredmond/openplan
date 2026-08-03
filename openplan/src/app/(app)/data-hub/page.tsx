@@ -462,7 +462,7 @@ export default async function DataHubPage() {
             summary={operationsSummary}
             label="Workspace command board"
             title="What should move around Data Hub"
-            description="Data Hub now inherits the same shared workspace command queue as the rest of the runtime, so packet pressure, funding timing, and setup gaps stay visible while you work provenance, refresh posture, and dataset linkage."
+            description="Workspace priorities — packet pressure, funding timing, and setup gaps — stay visible here while you work provenance, refresh posture, and dataset linkage."
           />
         </div>
 

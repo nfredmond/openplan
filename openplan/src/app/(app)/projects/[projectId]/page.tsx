@@ -1251,7 +1251,7 @@ export default async function ProjectDetailPage({
             summary={operationsSummary}
             label="Workspace command board"
             title="What should move around this project"
-            description={`This project now sits inside the same shared workspace command queue as the dashboard, registries, detail pages, and assistant runtime. Use it to keep ${project.name} aligned with broader packet, funding-window, and setup pressure across the workspace.`}
+            description={`Workspace priorities — packet, funding-window, and setup pressure — stay visible while you work on ${project.name}. Use this board to keep the project aligned with the rest of the workspace.`}
           />
         </div>
 

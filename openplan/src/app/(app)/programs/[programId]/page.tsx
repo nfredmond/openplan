@@ -683,7 +683,7 @@ export default async function ProgramDetailPage({
             summary={operationsSummary}
             label="Workspace command board"
             title="What should move around this program"
-            description={`This package now sits inside the same shared workspace command queue as the dashboard, plans, programs, and assistant runtime. Use it to keep ${program.title} aligned with broader packet, funding-window, and setup pressure.`}
+            description={`Workspace priorities — packet, funding-window, and setup pressure — stay visible while you work on ${program.title}. Use this board to keep the package aligned with the rest of the workspace.`}
           />
         </div>
       </header>

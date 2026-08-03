@@ -457,7 +457,7 @@ export function RtpReportDetail({
             summary={operationsSummary}
             label="Workspace command board"
             title="What should move around this RTP packet"
-            description="This RTP packet detail now inherits the shared workspace runtime too, so broader report pressure, funding timing, and setup gaps stay visible while you review cycle drift and packet posture."
+            description="Workspace priorities — report pressure, funding timing, and setup gaps — stay visible here while you review cycle drift and packet posture."
           />
 
           <article id="packet-release-review" className="module-section-surface">

@@ -714,7 +714,7 @@ export default async function PlanDetailPage({
             summary={operationsSummary}
             label="Workspace command board"
             title="What should move around this plan"
-            description={`This plan now sits inside the same shared workspace command queue as the dashboard, plans registry, programs registry, and assistant runtime. Use it to keep local plan work aligned with broader packet, funding, and setup pressure in ${plan.title}.`}
+            description={`Workspace priorities — packet, funding, and setup pressure — stay visible while you work on ${plan.title}. Use this board to keep local plan work aligned with the rest of the workspace.`}
           />
         </div>
 

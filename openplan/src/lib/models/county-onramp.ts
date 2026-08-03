@@ -205,14 +205,14 @@ export function getCountyRunCaveats(stage: CountyRunStage): string[] {
 export function getCountyRunEnqueueStatusLabel(status: CountyRunEnqueueStatus): string {
   switch (status) {
     case "prepared":
-      return "Enqueue Prepared";
+      return "Prepared — not sent";
     case "submitted":
-      return "Worker Submitted";
+      return "Sent to the worker";
     case "failed":
-      return "Enqueue Failed";
+      return "Send failed";
     case "not-enqueued":
     default:
-      return "Not Enqueued";
+      return "Not started";
   }
 }
 
@@ -232,13 +232,13 @@ export function getCountyRunEnqueueStatusTone(status: CountyRunEnqueueStatus): "
 export function getCountyRunEnqueueHelpText(status: CountyRunEnqueueStatus): string {
   switch (status) {
     case "prepared":
-      return "County bootstrap handoff is prepared for background execution.";
+      return "The county setup handoff is prepared but has not been sent anywhere yet.";
     case "submitted":
-      return "County bootstrap handoff was submitted to the configured worker.";
+      return "The county setup job was sent to the configured worker.";
     case "failed":
-      return "Most recent enqueue/bootstrap attempt failed and needs operator review.";
+      return "The last attempt to send this county setup job failed and needs operator review.";
     case "not-enqueued":
     default:
-      return "County run has not yet been prepared for background bootstrap.";
+      return "This county run has not been prepared for background setup yet.";
   }
 }

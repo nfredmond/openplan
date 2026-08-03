@@ -387,7 +387,7 @@ export function describeModelRunDispatch(
   // run did not reach a worker, and it is still queued.
   const pushFailure = pushFailed
     ? `OpenPlan could not hand this run to a worker. ${outcome.detail} The run is still on the queue.`
-    : "This deployment configures no worker for OpenPlan to push runs to, so the run sits on the queue until something polls for it.";
+    : "This OpenPlan installation is not set up to hand runs straight to a worker, so the run sits on the queue until a worker checks for it.";
 
   /**
    * What the operator could do next — which is NOT the same sentence in both
@@ -397,17 +397,17 @@ export function describeModelRunDispatch(
    * scale-to-zero pool that fails to wake is exactly the case push exists for.
    */
   const operatorNext = pushFailed
-    ? `The message above came back from the push endpoint this deployment already configures, so whoever operates it has something specific to check rather than something to set up.`
-    : `Whoever operates this deployment can also configure a push endpoint (${MODELING_WORKER_URL_ENV} / ${MODELING_WORKER_TOKEN_ENV}), which OpenPlan calls at launch and gets an answer from.`;
+    ? `The message above came back from the push endpoint this installation already configures, so whoever operates it has something specific to check rather than something to set up.`
+    : `Whoever operates this OpenPlan installation can also configure a push endpoint (${MODELING_WORKER_URL_ENV} / ${MODELING_WORKER_TOKEN_ENV}), which OpenPlan calls at launch and gets an answer from.`;
 
   if (declaration === "absent") {
     return {
       state: "unattended",
-      headline: "Nothing on this deployment is going to execute this run.",
-      detail: `${pushFailure} This deployment also declares that no AequilibraE worker polls it, so the run will sit queued and then be failed rather than finishing. Nothing about this workspace or this study area caused that, and there is nothing to buy — OpenPlan is free. ${
+      headline: "Nothing on this OpenPlan installation is going to execute this run.",
+      detail: `${pushFailure} This installation also declares that no AequilibraE worker checks it for runs, so the run will sit queued and then be failed rather than finishing. Nothing about this workspace or this study area caused that, and there is nothing to buy — OpenPlan is free. ${
         pushFailed
           ? operatorNext
-          : `Whoever operates this deployment either runs the worker as a poller or configures it as a push endpoint (${MODELING_WORKER_URL_ENV} / ${MODELING_WORKER_TOKEN_ENV}).`
+          : `Whoever operates this OpenPlan installation either runs the polling worker or configures a push endpoint (${MODELING_WORKER_URL_ENV} / ${MODELING_WORKER_TOKEN_ENV}).`
       }`,
     };
   }
@@ -415,15 +415,15 @@ export function describeModelRunDispatch(
   if (declaration === "deployed") {
     return {
       state: "waiting_for_poller",
-      headline: "This run is waiting for a polling worker to pick it up.",
-      detail: `${pushFailure} This deployment declares that an AequilibraE worker polls it, which is a statement of configuration and not a live check — the poller exposes nothing to probe. If that worker is running, it will claim this run on its next poll.`,
+      headline: "This run is waiting for the modeling worker to pick it up.",
+      detail: `${pushFailure} This installation declares that an AequilibraE worker checks it for runs, which is a statement of configuration and not a live check — the worker cannot be probed from here. If that worker is running, it will claim this run the next time it checks.`,
     };
   }
 
   return {
     state: "unknown",
     headline: "OpenPlan cannot tell whether anything will execute this run.",
-    detail: `${pushFailure} Nothing declares whether an AequilibraE worker polls this deployment, and a poller has no endpoint to probe and no heartbeat, so there is no evidence either way until the run either starts or is failed for having been abandoned. ${operatorNext}`,
+    detail: `${pushFailure} Nothing declares whether an AequilibraE worker checks this installation for runs, and the worker cannot be probed and reports no status of its own, so there is no evidence either way until the run either starts or is failed for having been abandoned. ${operatorNext}`,
   };
 }
 
@@ -461,8 +461,8 @@ export function resolveModelingQueueDepth(env: NodeJS.ProcessEnv = process.env):
 
 export function modelingQueueDepthMessage(limit: number, inFlight: number): string {
   return (
-    `This OpenPlan deployment limits a workspace to ${limit} model run${limit === 1 ? "" : "s"} on the processing worker at once, and this workspace has ${inFlight} in flight. ` +
-    `Wait for one to finish, or contact whoever operates this deployment to raise or remove the limit — OpenPlan itself is free and has no usage tiers.`
+    `This OpenPlan installation limits a workspace to ${limit} model run${limit === 1 ? "" : "s"} on the processing worker at once, and this workspace has ${inFlight} in flight. ` +
+    `Wait for one to finish, or contact whoever operates this installation to raise or remove the limit — OpenPlan itself is free and has no usage tiers.`
   );
 }
 

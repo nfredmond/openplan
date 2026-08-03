@@ -284,7 +284,7 @@ export default async function PlansPage({
             summary={operationsSummary}
             label="Workspace command board"
             title="What should move before another plan revision"
-            description="The Plans lane now shares the same workspace command queue used by the dashboard and assistant runtime, so packet pressure and setup gaps stay visible while you work the registry."
+            description="Workspace priorities — packet pressure and setup gaps — stay visible here while you work the plan registry."
           />
         </div>
 

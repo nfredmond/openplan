@@ -179,7 +179,7 @@ describe("CountyRunDetailClient", () => {
 
     expect(screen.getByText("County onboarding")).toBeInTheDocument();
     expect(screen.getByText("Nevada County, CA")).toBeInTheDocument();
-    expect(screen.getByText(/this page is the operational truth surface/i)).toBeInTheDocument();
+    expect(screen.getByText(/this page is the record for this county run/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /prepare run handoff/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /copy page link/i })).toBeInTheDocument();
   });

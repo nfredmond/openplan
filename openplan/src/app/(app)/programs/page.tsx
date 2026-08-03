@@ -168,8 +168,8 @@ export default async function ProgramsPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Programs"
-        title="Programs need a provisioned workspace"
-        description="Programming-cycle records are workspace-scoped. This account is authenticated but not provisioned into a workspace yet, so showing an empty catalog here would be misleading."
+        title="Programs need a workspace"
+        description="Programming-cycle records belong to a workspace. You are signed in, but this account is not in a workspace yet — showing an empty catalog here would be misleading."
       />
     );
   }
@@ -630,7 +630,7 @@ export default async function ProgramsPage({
             summary={operationsSummary}
             label="Workspace command board"
             title="What should move before another program revision"
-            description="The Programs lane now shares the same workspace command queue used by the dashboard, Plans, and assistant runtime, so packet pressure, funding timing, and setup gaps stay visible while you work package records."
+            description="Workspace priorities — packet pressure, funding timing, and setup gaps — stay visible here while you work package records."
           />
         </div>
 
