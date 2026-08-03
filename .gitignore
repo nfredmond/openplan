@@ -72,3 +72,11 @@ docs/ops/*-test-output/
 
 # Local Python venv (dir in the main checkout; symlink in worktrees) — never track
 workers/aequilibrae_worker/.venv311
+
+# Agent-session working files — local to this machine, never in the public repo.
+# CLAUDE.md is deliberately local-only (owner's call, 2026-08-03): it is a
+# working document between the owner and his agents, not project documentation.
+CLAUDE.md
+.playwright-mcp/
+.mcp.json
+opencode.json

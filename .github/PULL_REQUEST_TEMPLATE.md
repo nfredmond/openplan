@@ -8,7 +8,7 @@
 - [ ] Python worker changes: the matching `workers/**/test_*.py` scripts pass (`python3 <file>`)
 - [ ] New/changed behavior has a test
 
-## Constraint check (see CLAUDE.md)
+## Constraint check (see README.md and CONTRIBUTING.md)
 
 - [ ] Nothing hardcoded: no place, agency, FIPS, bbox, or jurisdiction literal in core code —
       anything that varies between users is configuration, data, or a registry descriptor
