@@ -35,10 +35,20 @@ const modelRunsStatusEqMock = vi.fn(() => ({ order: modelRunsOrderMock }));
 // project-provenance count is select→eq(project_id)→limit.
 const modelRunsProjectLimitMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
 const modelRunsWsEqMock = vi.fn(() => ({ eq: modelRunsStatusEqMock, limit: modelRunsProjectLimitMock }));
-const modelRunsSelectMock = vi.fn(() => ({ eq: modelRunsWsEqMock }));
+// The evidence-disclosure loader resolves cited runs not in the picker window
+// via select→in("id", …).
+const modelRunsByIdInMock = vi.fn(() =>
+  Promise.resolve({
+    data: [{ id: "run-9", run_title: "Cited run", engine_key: "aequilibrae", status: "succeeded" }],
+    error: null,
+  })
+);
+const modelRunsSelectMock = vi.fn(() => ({ eq: modelRunsWsEqMock, in: modelRunsByIdInMock }));
+const claimDecisionsInMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
+const claimDecisionsSelectMock = vi.fn(() => ({ in: claimDecisionsInMock }));
 const modelRunKpisInKpiMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
 const modelRunKpisInRunMock = vi.fn(() => ({ in: modelRunKpisInKpiMock }));
-const modelRunKpisSelectMock = vi.fn(() => ({ in: modelRunKpisInRunMock }));
+const modelRunKpisSelectMock = vi.fn((_columns: string) => ({ in: modelRunKpisInRunMock }));
 
 const reportsLimitMock = vi.fn();
 const reportsOrderMock = vi.fn(() => ({ limit: reportsLimitMock }));
@@ -201,6 +211,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "model_runs") {
     return { select: modelRunsSelectMock };
+  }
+  if (table === "modeling_claim_decisions") {
+    return { select: claimDecisionsSelectMock };
   }
   if (table === "kb_documents") {
     // Head-count of project-linked knowledge-base documents.
@@ -774,6 +787,37 @@ describe("ProjectDetailPage", () => {
     // It renders (no notFound), and the page scopes to the PROJECT's workspace.
     expect(notFoundMock).not.toHaveBeenCalled();
     expect(workspaceEqMock).toHaveBeenCalledWith("id", "workspace-1");
+  });
+
+  it("asks the database for geometry_ref on model_run_kpis (the run-level filter's load-bearing column)", async () => {
+    // The KPI read fires only when a link cites an evidence run, so seed one.
+    projectRtpLinksOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "link-1",
+          rtp_cycle_id: "cycle-1",
+          portfolio_role: "constrained",
+          priority_rationale: null,
+          priority_scores: {},
+          evidence_model_run_id: "run-9",
+          created_at: "2026-07-01T00:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+
+    // The mocked client returns the fixture whatever columns are asked for,
+    // and `!row.geometry_ref` passes on undefined — so dropping the column
+    // from the .select() publishes corridor-slice KPIs as run-level evidence
+    // with the suite green. The projection string is the artifact under test
+    // (2026-08-03 review, top finding; same assertion on the public plan
+    // page in rtp-evidence-citation-disclosure.test.tsx).
+    const kpiSelects = modelRunKpisSelectMock.mock.calls.map((call) => String(call[0]));
+    expect(kpiSelects.length).toBeGreaterThan(0);
+    for (const columns of kpiSelects) {
+      expect(columns).toContain("geometry_ref");
+    }
   });
 
   it("says the stage-gate template was assumed when the workspace has stated no geography", async () => {

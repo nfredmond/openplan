@@ -157,6 +157,18 @@ describe("public RTP plan page — a citation travels with engine, status, and c
     expect(runSelects.some((columns) => columns.includes("engine_key") && columns.includes("status"))).toBe(true);
     const claimSelects = selectCalls["modeling_claim_decisions"] ?? [];
     expect(claimSelects.some((columns) => columns.includes("claim_status") && columns.includes("model_run_id"))).toBe(true);
+    // geometry_ref is load-bearing: the run-level KPI filter is
+    // `!row.geometry_ref` (modeling-evidence.ts), the field is optional in
+    // the type, and the clients are untyped — so dropping the column from
+    // the .select() makes every row arrive undefined, corridor-slice KPIs
+    // pass as run-level evidence on the PUBLIC plan page, and the whole
+    // suite stays green. The projection string is the only artifact that
+    // can catch it (2026-08-03 review, the review's top finding).
+    const kpiSelects = selectCalls["model_run_kpis"] ?? [];
+    expect(kpiSelects.length).toBeGreaterThan(0);
+    for (const columns of kpiSelects) {
+      expect(columns).toContain("geometry_ref");
+    }
   });
 });
 

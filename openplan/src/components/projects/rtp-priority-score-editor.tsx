@@ -87,6 +87,12 @@ export function RtpPriorityScoreEditor({
       router.refresh();
     } catch (runError) {
       setError(runError instanceof Error ? runError.message : "Failed to link the model run");
+      // Revert the select to the server-saved citation. Without this, a
+      // failed PATCH left the select naming the never-saved run while the
+      // prop-driven "Cited run" disclosure and warnings underneath still
+      // described the saved one — two different runs on one control
+      // (2026-08-03 review, CONFIRMED).
+      setEvidenceRunId(initialEvidenceRunId ?? "");
     } finally {
       setSavingEvidence(false);
     }
