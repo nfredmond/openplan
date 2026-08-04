@@ -246,8 +246,11 @@ export const EXAMPLES_REQUIRED_MARKERS = [
   "One completed run, verbatim",
   // The screening gate exactly as the run recorded it.
   "internal prototype only",
-  // The worst number, on the page rather than buried.
-  "237.62%",
+  // The worst number, on the page rather than buried. Digits without the
+  // percent sign: the source now derives the figure from
+  // NEVADA_COUNTY_MAX_APE_PERCENT (a number) and renders `${…}%`, so the
+  // digits are what both the source approximation and the live page contain.
+  "237.62",
   // …and why that number disqualifies the run from outward modeling claims.
   "Above the 50% critical-facility threshold",
   // The first caveat, quoted verbatim from the validation artifact.

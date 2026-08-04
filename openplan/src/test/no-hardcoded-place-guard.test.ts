@@ -50,6 +50,10 @@ const BANNED_PLACE_PATTERNS: readonly { label: string; pattern: RegExp }[] = [
  */
 const ALLOWLIST: readonly string[] = [
   path.join("src", "lib", "examples", "nevada-county-2026-03-24.ts"),
+  // The published-ceiling module is part of the same evidence catalog: it
+  // computes /legal's worst-published-figure from the dated records above,
+  // naming each record's source run (2026-08-04, decision #7).
+  path.join("src", "lib", "examples", "published-ceiling.ts"),
   path.join("src", "app", "(public)", "examples", "page.tsx"),
 ];
 
