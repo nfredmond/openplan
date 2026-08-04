@@ -73,6 +73,11 @@ type KnowledgeBaseWorkspaceProps = {
   projects?: KnowledgeBaseProjectOption[];
   /** Deep-link filter (?projectId=), pre-validated against `projects` by the page. */
   initialProjectId?: string | null;
+  /**
+   * Which of the page's reads failed. Without this the list cannot tell an empty
+   * corpus from an unreadable one, and says the first.
+   */
+  readFailures?: { documents: boolean; projects: boolean };
 };
 
 export function KnowledgeBaseWorkspace({
@@ -80,6 +85,7 @@ export function KnowledgeBaseWorkspace({
   initialDocuments,
   projects = [],
   initialProjectId = null,
+  readFailures = { documents: false, projects: false },
 }: KnowledgeBaseWorkspaceProps) {
   const [documents, setDocuments] = useState<KbDocumentRow[]>(initialDocuments);
   const [mode, setMode] = useState<"upload" | "paste">("upload");
@@ -374,9 +380,11 @@ export function KnowledgeBaseWorkspace({
 
         {documents.length === 0 ? (
           <div className="module-empty-state">
-            {projectId
-              ? "No documents are attached to this project yet. Pick it in the selector above and upload — or switch back to all documents. Other workspace documents may still exist."
-              : "No documents yet. Upload a plan or paste text above to start building this workspace's corpus."}
+            {readFailures.documents
+              ? "The document list could not be read, so it is not shown. This does not mean the workspace has no documents — do not re-upload on the strength of this screen."
+              : projectId
+                ? "No documents are attached to this project yet. Pick it in the selector above and upload — or switch back to all documents. Other workspace documents may still exist."
+                : "No documents yet. Upload a plan or paste text above to start building this workspace's corpus."}
           </div>
         ) : (
           <ul className="module-record-list">

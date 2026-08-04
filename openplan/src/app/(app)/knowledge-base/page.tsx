@@ -56,13 +56,13 @@ export default async function KnowledgeBasePage({
   // The workspace's projects power the attach-on-upload selector and the
   // per-project filter. Documents stay readable even if this read fails —
   // the component simply renders without a selector.
-  const { data: projectRows } = await supabase
+  const projectsResult = await supabase
     .from("projects")
     .select("id, name, status")
     .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false })
     .limit(200);
-  const projects = (projectRows ?? []) as KnowledgeBaseProjectOption[];
+  const projects = (projectsResult.data ?? []) as KnowledgeBaseProjectOption[];
 
   // ?projectId= is the deep-link entry from a project's control room. It is
   // honored only when it names one of THIS workspace's projects — a foreign or
@@ -88,14 +88,21 @@ export default async function KnowledgeBasePage({
   if (initialProjectId) {
     documentsQuery = documentsQuery.eq("project_id", initialProjectId);
   }
-  const { data } = await documentsQuery;
+  // "No documents yet" is a claim about this workspace's corpus. A failed read
+  // cannot make it — and here it invites a planner to re-upload a plan the
+  // workspace already holds.
+  const documentsResult = await documentsQuery;
 
   return (
     <KnowledgeBaseWorkspace
       workspaceId={workspaceId}
-      initialDocuments={(data ?? []) as KbDocumentRow[]}
+      initialDocuments={(documentsResult.data ?? []) as KbDocumentRow[]}
       projects={projects}
       initialProjectId={initialProjectId}
+      readFailures={{
+        documents: Boolean(documentsResult.error),
+        projects: Boolean(projectsResult.error),
+      }}
     />
   );
 }
