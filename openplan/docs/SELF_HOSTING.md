@@ -200,7 +200,7 @@ A Census API key is **free** and issued instantly at
 | `OPENPLAN_MODELING_WORKER` | Declares whether a **polling** AequilibraE worker serves this deployment: `deployed` or `absent`. A poller reads your database, so the app has nothing to probe and cannot find out for itself. **Unset means "not declared"** — nothing changes, and the model launch controls go on inferring a missing worker from runs that were queued and then reaped. Declaring it is what lets the *first* launch be honest instead of the second: with `absent`, worker-backed runs are refused at the launch button naming this deployment; with `deployed`, they launch normally, and a run that is never picked up still refuses the next one, because run history outranks the declaration. Not a plan or a tier — nothing here is for sale. |
 | `OPENPLAN_MODELING_WORKER_URL` / `_TOKEN` | Optional. A worker OpenPlan **pushes** each queued model run to, instead of waiting for one to poll — which is what lets you run a stateless pool rather than an always-on machine, and is the only configuration in which a planner is told *at launch* whether anything took their run. Both are required together: a URL with no token is refused rather than used, because the endpoint starts minutes of compute on request. Give the base URL; the contract path is appended. Run the worker with `AEQ_WORKER_MODE=push` (or `both`) and the same token. It composes with the declaration above rather than replacing it — every stage is claimed atomically, so a poller and a push pool can both serve one deployment with no coordination. |
 | `OPENPLAN_MODELING_QUEUE_DEPTH` | Optional operator bound on how many model runs one workspace may have waiting on the processing worker at once. **Unset means unlimited** and the counting query is never even run — the default, and the right setting for a self-hosted deployment. Set it only to protect compute you pay for; the refusal names you rather than offering anyone an upgrade. |
-| `CRON_SECRET` | Authorizes `/api/cron/reap-model-runs`, which marks crashed model runs as failed instead of leaving them queued forever. Vercel sets and sends this automatically; on another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. |
+| `CRON_SECRET` | Authorizes `/api/cron/reap-model-runs`, which marks crashed model runs as failed instead of leaving them queued forever. **You must set this yourself, on Vercel too** — Vercel *sends* the header automatically on scheduled invocations once the variable exists, but it does not create the variable, and while it is unset the reap cron answers 401 on every run (the model pages' reconcile-on-read then becomes the only rescue for stuck runs). On another host, set it and send `Authorization: Bearer $CRON_SECRET` from your scheduler. *(Corrected 2026-08-04: this row previously said Vercel "sets" it.)* |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Outbound email. Without them the app does not pretend to send: teammate invitations produce a link the inviter copies and sends themselves. |
 | `OPENPLAN_COUNTY_ONRAMP_WORKER_URL` / `_TOKEN` / `_CALLBACK_BEARER_TOKEN` | Dispatches county-onramp jobs to a worker. Without the URL the app prepares the job and reports `deliveryMode: "prepared"` rather than claiming it was submitted — and `/county-runs` says so *before* the first launch rather than after it, since the URL is the same test the dispatcher itself applies. Unlike the modeling worker there is nothing extra to declare: configuring the URL is the declaration. |
 | `OPENPLAN_AERIAL_PROCESSING_*` | Aerial Ops integration with an external processing platform. |
@@ -426,6 +426,48 @@ unused.
 > **Open question for the project, not for you:** whether OpenPlan should offer a shared hosted
 > worker so self-hosting agencies do not each stand one up. That is a cost and trust decision that
 > has not been made; today, each deployment runs its own.
+
+---
+
+## Upgrading a running deployment
+
+The one rule: **migrations run before the new code deploys.** OpenPlan is
+written to degrade honestly when the code is newer than the schema for a few
+minutes, but the safe order costs nothing, so use it every time. `CHANGELOG.md`
+at the repository root is the per-release manifest — it leads with whether a
+release added migrations and anything else an operator must do.
+
+1. **Back up first.** Local Docker stack:
+   `docker exec supabase_db_openplan pg_dump -U postgres postgres > backup-$(date +%Y%m%d).sql`
+   Hosted Supabase project: `npm exec -- supabase db dump -f backup-$(date +%Y%m%d).sql --linked`.
+   Success looks like: a non-empty `.sql` file. The hosted **free tier takes no
+   automatic backups**, and there is no down-migration path (next point), so
+   this file is the entire rollback story.
+2. **Know what "rollback" means here.** Migrations are **forward-only** —
+   Supabase has no down migrations and OpenPlan ships none. Recovering from a
+   bad upgrade means restoring the backup from step 1
+   (`psql "$DATABASE_URL" < backup-….sql`), not un-running a migration.
+3. **Pull the new code** into the checkout that runs your deployment (for a
+   Vercel fork setup, pull into your local clone first and do not push yet —
+   pushing is what triggers the deploy).
+4. **Apply migrations:** `npm exec -- supabase migration up` (add `--linked`
+   for a hosted project). This applies only versions your database has not
+   seen; it never re-runs old ones and never destroys data — a build guard
+   (`src/test/migrations/no-destructive-migration.test.ts`) refuses
+   destructive statements from entering the migration set at all.
+5. **Deploy the new code** (push the fork / restart the app).
+
+**If a migration fails partway:** applied ones stay applied; re-running
+`migration up` resumes from the failure. A transient error clears on retry; a
+deterministic failure means stop — do not deploy the new code — and either ask
+for help with the exact error text or restore the step-1 backup. The app
+running the OLD code against the partially-upgraded schema keeps working:
+surfaces that need the missing pieces say "could not be read" rather than
+showing wrong numbers.
+
+`npm run doctor` (from `openplan/`) reports whether your database is behind
+the migration files on disk, so "did the migrations actually run?" has a
+one-command answer.
 
 ---
 

@@ -35,6 +35,42 @@ Good OpenPlan copy is plain, grounded, and accountable:
 - say `human-reviewed` when professional judgment is required;
 - avoid black-box claims, unsupported forecasting promises, or vague AI productivity language.
 
+## Product constraints (the non-negotiables)
+
+These are binding for every change, and the pull-request template's constraint
+checklist points here. A change that conflicts with one of these needs the
+conflict named in the PR description, not worked around.
+
+1. **Nothing is hardcoded.** No place, jurisdiction, agency, organization, or
+   person may be baked into code as a constant — no county names, FIPS codes,
+   bounding boxes, agency names, or brand strings. Anything that varies between
+   users is configuration, data, or a registry descriptor. The test: could a
+   planner in a different place, with different data, use this without a code
+   change? Jurisdiction-specific behavior (a state's crash feed, a state's
+   grant programs, CEQA) lives behind an adapter or registry, never in a core
+   type.
+2. **It works for anyone in the United States, or says plainly that it
+   doesn't.** No feature ships fitted to one county or one agency. Where a data
+   source genuinely cannot cover an area, the UI states the limit and the
+   reason — an empty result must never present as "nothing found here", and a
+   failed read must never present as an absence.
+3. **OpenPlan is free and open source.** No plans, tiers, usage quotas, paid
+   gating, or payment steps, ever (`src/test/no-paid-tier-guard.test.ts`
+   enforces this).
+4. **Self-service is the bar.** Any agency must be able to sign up and use a
+   feature fully on their own. A change that requires operator setup or a
+   manual founder step is a defect to design out.
+5. **Deepen existing modules; do not add new ones.** Extending an existing
+   module is almost always right; proposing a new one is almost always wrong.
+6. **Migrations are additive.** Never `DROP` a table or column a hosted
+   deployment may hold data in; destructive statements fail the build unless
+   allowlisted with a documented backfill
+   (`src/test/migrations/no-destructive-migration.test.ts`).
+7. **A new guard test must be proven non-vacuous.** Revert the code it guards,
+   run it, confirm it fails for the right reason, restore — and say so in the
+   PR. A test that stays green when its subject is broken is worse than no
+   test.
+
 ## Issues and pull requests
 
 - File bugs and feature requests as GitHub issues on this repository. Include reproduction steps

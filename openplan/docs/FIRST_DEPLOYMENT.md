@@ -174,7 +174,36 @@ which feature is unavailable rather than failing quietly.
 
 ## Keeping it up to date
 
-Vercel redeploys automatically when your fork changes. To pull in upstream
-work: sync your fork on GitHub, then — **before** the deploy finishes — run
-`npm exec -- supabase migration up --linked` again if the update added
-migrations. Same ordering rule as step 3, for the same reason.
+Vercel redeploys automatically when your fork changes — so the order below
+matters: it applies the new migrations **before** anything can trigger that
+deploy, instead of racing it. *(An earlier version of this page said to sync
+the fork first and then beat the deploy by hand. That is a race you can lose;
+this order has no race.)*
+
+1. **Read the release notes first.** `CHANGELOG.md` at the top of the
+   repository says what each release changes and whether it added migrations —
+   it is written for you, the operator.
+2. **Back up the database.** From your local clone:
+   `npm exec -- supabase db dump -f backup-$(date +%Y%m%d).sql --linked`
+   Success looks like: a `backup-….sql` file appears and is not empty. Do this
+   every time — the hosted free tier takes **no automatic backups**, and
+   OpenPlan's migrations are **forward-only**: there is no "undo migration"
+   command, so this file is the recovery plan.
+3. **Pull the new code into your local clone only** (this does not touch your
+   fork on GitHub, so nothing deploys yet):
+   `git pull https://github.com/nfredmond/openplan.git main`
+4. **Apply the new migrations:**
+   `npm exec -- supabase migration up --linked`
+   Success looks like: each new migration named as "Applying…", then a clean
+   exit. The running app keeps working during this — migrations are written to
+   be safe under the previous version.
+5. **Now update your fork** (this triggers the deploy): `git push`, or the
+   "Sync fork" button on GitHub.
+
+**If a migration fails partway:** everything already applied stays applied;
+nothing is half-applied inside one migration. Running
+`npm exec -- supabase migration up --linked` again resumes from the failed one
+— transient network hiccups usually clear on the second run. If the same
+migration fails the same way twice, stop, do not sync the fork, and restore
+from the step-2 backup if the app is misbehaving:
+`psql "$DATABASE_URL" < backup-….sql` (or ask for help — see the README).

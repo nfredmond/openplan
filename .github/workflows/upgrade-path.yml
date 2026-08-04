@@ -1,0 +1,96 @@
+# Rehearses the one operation every self-hosted deployment performs on every
+# upgrade and that nothing else ever tests: applying HEAD's migrations onto a
+# POPULATED database built by the previous release. `db reset` on an empty
+# database (the ci/rls jobs) cannot catch a migration that only fails against
+# existing rows — and "data safe across upgrades" is the project's own 1.0
+# criterion, so it gets rehearsed nightly rather than asserted.
+name: Upgrade Path
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "47 10 * * *"
+
+jobs:
+  upgrade-in-place:
+    name: previous release -> seed -> HEAD migration up
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./openplan
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # need tags and history to check out the previous release
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: openplan/package-lock.json
+
+      - name: Resolve previous release tag
+        id: prev
+        run: |
+          TAG=$(git -C .. describe --tags --abbrev=0)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Rehearsing upgrade from $TAG to $GITHUB_SHA"
+
+      - name: Check out the previous release
+        run: git -C .. checkout "${{ steps.prev.outputs.tag }}"
+
+      - name: Install (previous release)
+        run: npm ci
+
+      - name: Start Supabase and apply the previous release's migrations
+        run: |
+          npm exec -- supabase start
+          npm exec -- supabase db reset
+
+      - name: Seed representative workspace data
+        run: |
+          CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+          docker exec "$CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+          -- A workspace with a member-shaped row and rows in high-stakes tables,
+          -- so a migration that rewrites or drops data has something to destroy.
+          INSERT INTO auth.users (id, email) VALUES ('00000000-0000-4000-8000-000000000001', 'upgrade-probe@example.com');
+          INSERT INTO workspaces (id, name, slug) VALUES ('00000000-0000-4000-8000-00000000000a', 'Upgrade Probe Workspace', 'upgrade-probe');
+          INSERT INTO workspace_members (workspace_id, user_id, role)
+            VALUES ('00000000-0000-4000-8000-00000000000a', '00000000-0000-4000-8000-000000000001', 'owner');
+          INSERT INTO projects (id, workspace_id, name)
+            VALUES ('00000000-0000-4000-8000-00000000000b', '00000000-0000-4000-8000-00000000000a', 'Upgrade Probe Project');
+          SQL
+
+      - name: Record the seeded row counts
+        run: |
+          CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+          docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
+            "SELECT (SELECT count(*) FROM workspaces) || ':' || (SELECT count(*) FROM workspace_members) || ':' || (SELECT count(*) FROM projects)" \
+            > /tmp/seed-counts.txt
+          cat /tmp/seed-counts.txt
+
+      - name: Check out HEAD
+        run: git -C .. checkout "$GITHUB_SHA"
+
+      - name: Install (HEAD)
+        run: npm ci
+
+      - name: Apply HEAD's migrations onto the populated previous-release schema
+        run: npm exec -- supabase migration up
+
+      - name: Assert the seeded rows survived
+        run: |
+          CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+          AFTER=$(docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
+            "SELECT (SELECT count(*) FROM workspaces) || ':' || (SELECT count(*) FROM workspace_members) || ':' || (SELECT count(*) FROM projects)")
+          BEFORE=$(cat /tmp/seed-counts.txt)
+          echo "before=$BEFORE after=$AFTER"
+          test "$BEFORE" = "$AFTER" || { echo "::error::Rows changed across the upgrade: $BEFORE -> $AFTER"; exit 1; }
+          NAME=$(docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
+            "SELECT name FROM projects WHERE id = '00000000-0000-4000-8000-00000000000b'")
+          test "$NAME" = "Upgrade Probe Project" || { echo "::error::Seeded project content changed: '$NAME'"; exit 1; }
+
+      - name: Stop Supabase
+        if: always()
+        run: npm exec -- supabase stop

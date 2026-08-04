@@ -31,7 +31,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { createServer } from "node:net";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -167,6 +167,67 @@ if (!existsSync(envPath)) {
     const problem = check?.(value);
     if (problem) bad(`${key} looks wrong`, problem);
     else ok(`${key} is set`);
+  }
+}
+
+// ── Database migrations ──────────────────────────────────────────────────────
+// "The app deployed but many surfaces say could not be read" is almost always
+// a database that is behind the code. This answers "did the migrations
+// actually run?" in one command instead of a support conversation.
+const migrationsDir = join(APP_DIR, "supabase", "migrations");
+if (existsSync(migrationsDir)) {
+  const fileVersions = readdirSync(migrationsDir)
+    .filter((name) => name.endsWith(".sql"))
+    .map((name) => name.slice(0, 14))
+    .sort();
+
+  // The local database container is named after supabase/config.toml's
+  // project_id, which itself defaults to the app directory's name when the
+  // config does not set one (Supabase's own rule) — never hardcoded, so any
+  // checkout name works.
+  const configPath = join(APP_DIR, "supabase", "config.toml");
+  const projectId =
+    (existsSync(configPath)
+      ? /^\s*project_id\s*=\s*"([^"]+)"/m.exec(readFileSync(configPath, "utf8"))?.[1]
+      : null) ?? APP_DIR.split(/[\\/]/).filter(Boolean).pop();
+  const container = projectId ? `supabase_db_${projectId}` : null;
+  const containerUp =
+    container && run("docker", ["ps", "--format", "{{.Names}}"]).out?.split("\n").includes(container);
+
+  if (!containerUp) {
+    warn(
+      "Could not check whether the database has all migrations",
+      "The local database is not running (that is fine if you use a hosted project — compare with `npm exec -- supabase migration list --linked` instead)."
+    );
+  } else {
+    const applied = run("docker", [
+      "exec",
+      container,
+      "psql",
+      "-U",
+      "postgres",
+      "-d",
+      "postgres",
+      "-tAc",
+      "SELECT version FROM supabase_migrations.schema_migrations ORDER BY version",
+    ]);
+    if (!applied.ok) {
+      warn(
+        "Could not read the database's applied-migrations list",
+        "The database is running but did not answer. If OpenPlan otherwise works, this is safe to ignore."
+      );
+    } else {
+      const appliedVersions = new Set(applied.out.split("\n").map((line) => line.trim()).filter(Boolean));
+      const behind = fileVersions.filter((version) => !appliedVersions.has(version));
+      if (behind.length === 0) {
+        ok(`Database has all ${fileVersions.length} migrations applied`);
+      } else {
+        bad(
+          `Database is ${behind.length} migration${behind.length === 1 ? "" : "s"} behind the code`,
+          'Run `npm exec -- supabase migration up`. Until then, some pages will say "could not be read" — that is this, not a bug.'
+        );
+      }
+    }
   }
 }
 
