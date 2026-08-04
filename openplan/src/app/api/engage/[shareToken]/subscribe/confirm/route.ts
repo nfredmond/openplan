@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import { confirmSubscription } from "@/lib/notifications/engagement";
 
 function htmlPage(title: string, message: string, status = 200): Response {
@@ -11,9 +12,14 @@ function htmlPage(title: string, message: string, status = 200): Response {
 type RouteContext = { params: Promise<{ shareToken: string }> };
 
 export async function GET(request: NextRequest, context: RouteContext) {
+  // This route mutates a member of the public's email-subscription state, so
+  // it audits like every other write route (it logged nothing until
+  // 2026-08-04). Outcomes only — never the token and never the email address.
+  const audit = createApiAuditLogger("engagement.subscribe.confirm", request);
   const { shareToken } = await context.params;
   const token = request.nextUrl.searchParams.get("token") ?? "";
   if (!shareToken || shareToken.length < 8 || !token) {
+    audit.warn("invalid_link");
     return htmlPage("Invalid confirmation link", "This confirmation link is missing or malformed.");
   }
 
@@ -24,6 +30,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     .eq("share_token", shareToken)
     .maybeSingle();
   if (!campaign) {
+    audit.warn("campaign_not_found");
     return htmlPage("Confirmation link expired", "We couldn't find that campaign. The link may have expired.");
   }
 
@@ -32,6 +39,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   // participant their link was already used would send them away from a
   // subscription that is still unconfirmed and still fixable by trying again.
   if (!result.ok) {
+    audit.error("confirm_write_failed", { campaignId: campaign.id });
     return htmlPage(
       "We couldn't confirm you just now",
       "Something went wrong on our side, so you are not subscribed yet. Please open this link again in a few minutes.",
@@ -39,7 +47,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
   }
   if (!result.found) {
+    audit.info("token_not_recognized", { campaignId: campaign.id });
     return htmlPage("Confirmation link not recognized", "This link is no longer valid. It may already have been used.");
   }
+  audit.info("subscription_confirmed", { campaignId: campaign.id });
   return htmlPage("You're subscribed", `You'll now receive email updates for "${campaign.title}". You can unsubscribe from any update email.`);
 }

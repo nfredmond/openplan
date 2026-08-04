@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { createApiAuditLogger } from "@/lib/observability/audit";
 import { unsubscribeByToken } from "@/lib/notifications/engagement";
 
 function htmlPage(title: string, message: string, status = 200): Response {
@@ -11,8 +12,13 @@ function htmlPage(title: string, message: string, status = 200): Response {
 type RouteContext = { params: Promise<{ shareToken: string }> };
 
 export async function GET(request: NextRequest, _context: RouteContext) {
+  // Mutates a member of the public's subscription state, so it audits like
+  // every other write route (it logged nothing until 2026-08-04). Outcomes
+  // only — never the token and never the email address.
+  const audit = createApiAuditLogger("engagement.subscribe.unsubscribe", request);
   const token = request.nextUrl.searchParams.get("token") ?? "";
   if (!token) {
+    audit.warn("invalid_link");
     return htmlPage("Invalid unsubscribe link", "This unsubscribe link is missing its token.");
   }
 
@@ -24,6 +30,7 @@ export async function GET(request: NextRequest, _context: RouteContext) {
   // the database refused — they are still subscribed, and would only find out
   // when the next email arrives.
   if (!result.ok) {
+    audit.error("unsubscribe_write_failed");
     return htmlPage(
       "We couldn't unsubscribe you just now",
       "Something went wrong on our side, so you are still subscribed. Please open this link again in a few minutes.",
@@ -31,7 +38,9 @@ export async function GET(request: NextRequest, _context: RouteContext) {
     );
   }
   if (!result.found) {
+    audit.info("token_not_active");
     return htmlPage("Already unsubscribed", "This link is no longer active — you may already be unsubscribed.");
   }
+  audit.info("unsubscribed");
   return htmlPage("You're unsubscribed", "You will no longer receive email updates for this campaign.");
 }
