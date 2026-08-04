@@ -139,15 +139,21 @@ export default async function ModelsPage({
     );
   }
 
+  // Scoped to the active workspace — RLS grants ALL memberships, so without
+  // the filter a multi-workspace member saw every workspace's models merged
+  // under summary tiles claiming "the current workspace" (2026-08-03 review,
+  // unscoped-list-page class). The creator pickers scope too, so a model
+  // cannot be linked to another workspace's project or scenario set.
   const [{ data: modelsData }, { data: projectsData, error: projectsError }, { data: scenarioSetsData }] = await Promise.all([
     supabase
       .from("models")
       .select(
         "id, workspace_id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, horizon_label, assumptions_summary, input_summary, output_summary, summary, last_validated_at, last_run_recorded_at, created_at, updated_at, projects(id, name), scenario_sets(id, title)"
       )
+      .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
-    supabase.from("projects").select("id, name").order("updated_at", { ascending: false }),
-    supabase.from("scenario_sets").select("id, title").order("updated_at", { ascending: false }),
+    supabase.from("projects").select("id, name").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
+    supabase.from("scenario_sets").select("id, title").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
   ]);
 
   const modelIds = ((modelsData ?? []) as ModelRow[]).map((model) => model.id);

@@ -12,14 +12,17 @@ const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 const reportCreatorMock = vi.hoisted(() => vi.fn());
 
 const reportsOrderMock = vi.fn();
-const reportsSelectMock = vi.fn(() => ({ order: reportsOrderMock }));
+const reportsEqMock = vi.fn(() => ({ order: reportsOrderMock }));
+const reportsSelectMock = vi.fn(() => ({ eq: reportsEqMock }));
 
 const projectsOrderMock = vi.fn();
-const projectsSelectMock = vi.fn(() => ({ order: projectsOrderMock }));
+const projectsEqMock = vi.fn(() => ({ order: projectsOrderMock }));
+const projectsSelectMock = vi.fn(() => ({ eq: projectsEqMock }));
 
 const runsLimitMock = vi.fn();
 const runsOrderMock = vi.fn(() => ({ limit: runsLimitMock }));
-const runsSelectMock = vi.fn(() => ({ order: runsOrderMock }));
+const runsEqMock = vi.fn(() => ({ order: runsOrderMock }));
+const runsSelectMock = vi.fn(() => ({ eq: runsEqMock }));
 
 const countyRunsLimitMock = vi.fn();
 const countyRunsOrderMock = vi.fn(() => ({ limit: countyRunsLimitMock }));

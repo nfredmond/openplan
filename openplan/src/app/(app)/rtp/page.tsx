@@ -165,11 +165,16 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
   }
 
   const [rtpCyclesResult, defaultModelingClaimResult] = await Promise.all([
+    // Scoped to the active workspace — RLS grants ALL memberships, so the
+    // filter-free version merged every workspace's cycles into one registry
+    // (2026-08-04: caught by the scoping guard after a hand review had
+    // wrongly marked this page scoped, citing the NEIGHBORING query's .eq).
     supabase
       .from("rtp_cycles")
       .select(
         "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, created_at, updated_at"
       )
+      .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
     supabase
       .from("modeling_claim_decisions")

@@ -11,13 +11,16 @@ const loadCurrentWorkspaceMembershipMock = vi.fn();
 const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 
 const programsOrderMock = vi.fn();
-const programsSelectMock = vi.fn(() => ({ order: programsOrderMock }));
+const programsEqMock = vi.fn(() => ({ order: programsOrderMock }));
+const programsSelectMock = vi.fn(() => ({ eq: programsEqMock }));
 
 const projectsOrderMock = vi.fn();
-const projectsSelectMock = vi.fn(() => ({ order: projectsOrderMock }));
+const projectsEqMock = vi.fn(() => ({ order: projectsOrderMock }));
+const projectsSelectMock = vi.fn(() => ({ eq: projectsEqMock }));
 
 const fundingOpportunitiesOrderMock = vi.fn();
-const fundingOpportunitiesSelectMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock }));
 
 const workspacePlansOrderMock = vi.fn();
 const workspacePlansEqMock = vi.fn(() => ({ order: workspacePlansOrderMock }));

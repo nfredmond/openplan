@@ -81,10 +81,15 @@ const REPORT_REGISTRY_COLUMNS_WITH_CAMPAIGN = `${REPORT_REGISTRY_COLUMNS}, engag
 type RegistryQueryClientLike = {
   from: (table: string) => {
     select: (columns: string) => {
-      order: (
+      eq: (
         column: string,
-        options: { ascending: boolean }
-      ) => Promise<{ data: unknown; error: QueryError }>;
+        value: string
+      ) => {
+        order: (
+          column: string,
+          options: { ascending: boolean }
+        ) => Promise<{ data: unknown; error: QueryError }>;
+      };
     };
   };
 };
@@ -96,12 +101,16 @@ type RegistryQueryClientLike = {
  * pending-schema error falls back to the legacy column list.
  */
 export async function loadReportRegistryRows(
-  supabase: unknown
+  supabase: unknown,
+  // Required: RLS grants every workspace the user belongs to, so an
+  // unscoped registry read merges workspaces (2026-08-03 review).
+  workspaceId: string
 ): Promise<{ data: ReportRegistryRow[]; error: QueryError }> {
   const client = supabase as RegistryQueryClientLike;
   const primary = await client
     .from("reports")
     .select(REPORT_REGISTRY_COLUMNS_WITH_CAMPAIGN)
+    .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
 
   if (
@@ -111,6 +120,7 @@ export async function loadReportRegistryRows(
     const fallback = await client
       .from("reports")
       .select(REPORT_REGISTRY_COLUMNS)
+      .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false });
     return {
       data: (fallback.data ?? []) as ReportRegistryRow[],

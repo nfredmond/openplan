@@ -131,14 +131,34 @@ export default async function EngagementPage({
     );
   }
 
-  const [{ data: campaignsData }, { data: projectsData, error: projectsError }, { data: itemsData }, { data: categoriesData }] = await Promise.all([
+  // Every read is scoped to the ACTIVE workspace. RLS alone is not scoping:
+  // it grants every workspace the user belongs to, so a consultant in two
+  // agencies saw both agencies' campaigns merged under one workspace's header
+  // (2026-08-03 review, unscoped-list-page class). Items and categories carry
+  // only campaign_id, so they scope through this workspace's campaign ids.
+  const [{ data: campaignsData }, { data: projectsData, error: projectsError }] = await Promise.all([
     supabase
       .from("engagement_campaigns")
       .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, allow_public_submissions, submissions_closed_at, created_at, updated_at, projects(id, name)")
+      .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
-    supabase.from("projects").select("id, name").order("updated_at", { ascending: false }),
-    supabase.from("engagement_items").select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"),
-    supabase.from("engagement_categories").select("id, campaign_id, label, slug, description, sort_order, created_at, updated_at"),
+    supabase.from("projects").select("id, name").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
+  ]);
+
+  const campaignIds = ((campaignsData ?? []) as { id: string }[]).map((campaign) => campaign.id);
+  const [{ data: itemsData }, { data: categoriesData }] = await Promise.all([
+    campaignIds.length
+      ? supabase
+          .from("engagement_items")
+          .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
+          .in("campaign_id", campaignIds)
+      : Promise.resolve({ data: [] }),
+    campaignIds.length
+      ? supabase
+          .from("engagement_categories")
+          .select("id, campaign_id, label, slug, description, sort_order, created_at, updated_at")
+          .in("campaign_id", campaignIds)
+      : Promise.resolve({ data: [] }),
   ]);
 
   const itemsByCampaign = new Map<string, CampaignItemSummaryRow[]>();

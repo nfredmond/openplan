@@ -255,14 +255,20 @@ export default async function ReportsPage({
     operationsSummary,
   ] =
     await Promise.all([
-      loadReportRegistryRows(supabase),
+      loadReportRegistryRows(supabase, membership.workspace_id),
+      // Scoped like the county_runs/claims reads below always were — the page
+      // was internally inconsistent about which workspace it described, and
+      // the unscoped runs .limit(30) could crowd the active workspace's runs
+      // out of its own picker for multi-workspace members (2026-08-03 review).
       supabase
         .from("projects")
         .select("id, workspace_id, name")
+        .eq("workspace_id", membership.workspace_id)
         .order("updated_at", { ascending: false }),
       supabase
         .from("runs")
         .select("id, workspace_id, title, created_at")
+        .eq("workspace_id", membership.workspace_id)
         .order("created_at", { ascending: false })
         .limit(30),
       supabase

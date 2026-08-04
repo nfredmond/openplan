@@ -107,16 +107,25 @@ export default async function ScenariosPage({
     );
   }
 
-  const [{ data: scenarioSetsData }, { data: projectsData, error: projectsError }, { data: entriesData }] = await Promise.all([
+  // Scoped to the active workspace — RLS grants ALL memberships, so without
+  // the filter a multi-workspace member saw every workspace's scenario sets
+  // merged (2026-08-03 review, unscoped-list-page class). Entries carry only
+  // scenario_set_id, so they scope through this workspace's set ids.
+  const [{ data: scenarioSetsData }, { data: projectsData, error: projectsError }] = await Promise.all([
     supabase
       .from("scenario_sets")
       .select(
         "id, workspace_id, project_id, title, summary, planning_question, status, baseline_entry_id, created_at, updated_at, projects(id, name)"
       )
+      .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
-    supabase.from("projects").select("id, workspace_id, name").order("updated_at", { ascending: false }),
-    supabase.from("scenario_entries").select("scenario_set_id, entry_type"),
+    supabase.from("projects").select("id, workspace_id, name").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
   ]);
+
+  const scopedSetIds = ((scenarioSetsData ?? []) as { id: string }[]).map((set) => set.id);
+  const { data: entriesData } = scopedSetIds.length
+    ? await supabase.from("scenario_entries").select("scenario_set_id, entry_type").in("scenario_set_id", scopedSetIds)
+    : { data: [] };
 
   const counts = new Map<string, { baselineCount: number; alternativeCount: number }>();
   for (const entry of entriesData ?? []) {

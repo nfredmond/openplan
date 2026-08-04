@@ -7,7 +7,8 @@ const loadCurrentWorkspaceMembershipMock = vi.fn();
 const authGetUserMock = vi.fn();
 
 const campaignsOrderMock = vi.fn();
-const campaignSelectMock = vi.fn((..._args: unknown[]) => ({ order: campaignsOrderMock }));
+const campaignsEqMock = vi.fn((..._args: unknown[]) => ({ order: campaignsOrderMock }));
+const campaignSelectMock = vi.fn((..._args: unknown[]) => ({ eq: campaignsEqMock }));
 
 const projectsOrderMock = vi.fn();
 
@@ -16,13 +17,13 @@ const fromMock = vi.fn((table: string) => {
     return { select: campaignSelectMock };
   }
   if (table === "projects") {
-    return { select: () => ({ order: projectsOrderMock }) };
+    return { select: () => ({ eq: () => ({ order: projectsOrderMock }) }) };
   }
   if (table === "engagement_items") {
-    return { select: () => Promise.resolve({ data: [], error: null }) };
+    return { select: () => ({ in: () => Promise.resolve({ data: [], error: null }) }) };
   }
   if (table === "engagement_categories") {
-    return { select: () => Promise.resolve({ data: [], error: null }) };
+    return { select: () => ({ in: () => Promise.resolve({ data: [], error: null }) }) };
   }
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -122,6 +123,10 @@ describe("EngagementPage portal status chips", () => {
     for (const column of ["share_token", "allow_public_submissions", "submissions_closed_at", "status"]) {
       expect(selectColumns).toContain(column);
     }
+    // Scoping assertion: the campaigns read must filter to the ACTIVE
+    // workspace — RLS grants all memberships, so an unfiltered read merges
+    // workspaces (2026-08-03 review, unscoped-list-page class).
+    expect(campaignsEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
   });
 
   it("shows a Private / Staged / Live chip per campaign from the shared portal-state rules", async () => {

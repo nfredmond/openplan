@@ -10,7 +10,8 @@ const authGetUserMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 
 const rtpCyclesOrderMock = vi.fn();
-const rtpCyclesSelectMock = vi.fn(() => ({ order: rtpCyclesOrderMock }));
+const rtpCyclesEqMock = vi.fn(() => ({ order: rtpCyclesOrderMock }));
+const rtpCyclesSelectMock = vi.fn(() => ({ eq: rtpCyclesEqMock }));
 
 const projectRtpLinksInMock = vi.fn();
 const projectRtpLinksSelectMock = vi.fn(() => ({ in: projectRtpLinksInMock }));

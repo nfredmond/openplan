@@ -96,14 +96,23 @@ export default async function PlansPage({
     );
   }
 
+  // Scoped to the active workspace — RLS grants ALL memberships, so without
+  // the filter a multi-workspace member saw every workspace's plans merged,
+  // and the .in() follow-ups below inherited the cross-workspace id set
+  // (2026-08-03 review, unscoped-list-page class).
   const [{ data: plansData }, { data: projectsData }] = await Promise.all([
     supabase
       .from("plans")
       .select(
         "id, workspace_id, project_id, title, plan_type, status, geography_label, horizon_year, summary, created_at, updated_at, projects(id, name)"
       )
+      .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
-    supabase.from("projects").select("id, workspace_id, name, status, delivery_phase, updated_at").order("updated_at", { ascending: false }),
+    supabase
+      .from("projects")
+      .select("id, workspace_id, name, status, delivery_phase, updated_at")
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
   ]);
 
   const plans = (plansData ?? []) as PlanRow[];

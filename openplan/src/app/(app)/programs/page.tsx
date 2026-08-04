@@ -179,18 +179,27 @@ export default async function ProgramsPage({
     { data: projectsData },
     { data: fundingOpportunitiesData },
   ] = await Promise.all([
+    // Scoped to the active workspace — RLS grants ALL memberships, so without
+    // the filter a multi-workspace member saw every workspace's programs,
+    // opportunities, and projects mixed (2026-08-03 review).
     supabase
       .from("programs")
       .select(
         "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at, projects(id, name)"
       )
+      .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
-    supabase.from("projects").select("id, workspace_id, name, status, delivery_phase, updated_at").order("updated_at", { ascending: false }),
+    supabase
+      .from("projects")
+      .select("id, workspace_id, name, status, delivery_phase, updated_at")
+      .eq("workspace_id", membership.workspace_id)
+      .order("updated_at", { ascending: false }),
     supabase
       .from("funding_opportunities")
       .select(
         "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, programs(id, title, funding_classification), projects(id, name)"
       )
+      .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
   ]);
 
