@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
+import { resolveDecisionUseDisclosure } from "@/lib/analysis/decision-use";
+import { resolveCensusScoreInputCoverage } from "@/lib/analysis/census-score-inputs";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
@@ -89,18 +91,30 @@ function esc(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+/**
+ * "Not measured", not "N/A".
+ *
+ * Every null in a run's metrics got here the same way: a source did not answer,
+ * or an ACS universe was empty. "N/A" reads as *not applicable to this corridor*,
+ * which is a claim about the place. "Not measured" is a claim about the read, and
+ * it is the true one. In a grant-ready PDF the difference is the whole point:
+ * a reviewer must be able to tell a corridor with no transit riders from a
+ * corridor nobody counted.
+ */
+const NOT_MEASURED = "Not measured";
+
 function fmt(n: number | null | undefined): string {
-  if (n === null || n === undefined) return "N/A";
+  if (n === null || n === undefined) return NOT_MEASURED;
   return n.toLocaleString("en-US");
 }
 
 function fmtCurrency(n: number | null | undefined): string {
-  if (n === null || n === undefined) return "N/A";
+  if (n === null || n === undefined) return NOT_MEASURED;
   return "$" + n.toLocaleString("en-US");
 }
 
 function pct(n: number | null | undefined): string {
-  if (n === null || n === undefined) return "N/A";
+  if (n === null || n === undefined) return NOT_MEASURED;
   return n + "%";
 }
 
@@ -108,6 +122,45 @@ function scoreColor(score: number): string {
   if (score >= 70) return "#059669"; // green
   if (score >= 40) return "#d97706"; // amber
   return "#dc2626"; // red
+}
+
+/**
+ * A headline score card, or an honest blank.
+ *
+ * The defect this closes: each card read `scoreColor(Number(m.safetyScore) || 0)`
+ * with `fmt(m.safetyScore)` inside it. `safetyScore` is null whenever no crash
+ * source answered — the ordinary case outside a registered adapter's coverage —
+ * so the card rendered "N/A" in the RED reserved for a score below 40. A corridor
+ * nobody could measure looked, in a grant-ready PDF, like the most dangerous
+ * corridor on the page.
+ */
+function scoreCard(
+  value: unknown,
+  label: string,
+  missingNote: string,
+  /**
+   * Attached when the score EXISTS but was built on demographic inputs that were
+   * never read. A grant reviewer holding this PDF has no other way to tell an
+   * "Equity 0" that was measured from one that was computed over zero tracts.
+   */
+  computedNote: string | null = null
+): string {
+  const numeric = typeof value === "number" && Number.isFinite(value) ? value : null;
+  if (numeric === null) {
+    return `
+  <div class="score-card">
+    <div class="value" style="color:#6b7280;font-size:20px;">Not measured</div>
+    <div class="label">${esc(label)}</div>
+    <div class="muted" style="margin-top:6px;">${esc(missingNote)}</div>
+  </div>`;
+  }
+  return `
+  <div class="score-card">
+    <div class="value" style="color:${scoreColor(numeric)}">${fmt(numeric)}</div>
+    <div class="label">${esc(label)}</div>${
+      computedNote ? `\n    <div class="muted" style="margin-top:6px;">${esc(computedNote)}</div>` : ""
+    }
+  </div>`;
 }
 
 function scoreBar(score: number, label: string): string {
@@ -229,6 +282,15 @@ function buildHtml(
   const mapViewSummary = buildMapViewSummary(mapViewState);
 
   const confidence = (m.confidence as string) ?? "unknown";
+  // Every run has recorded this since the traceability block existed; no report
+  // ever printed it. A grant-ready PDF that does not state how far its own
+  // numbers may be carried is the artifact most likely to be over-read.
+  const decisionUse = resolveDecisionUseDisclosure(m);
+  // Whether the ACS read behind the Accessibility and Equity scores answered at
+  // all. When it did not, both scores were computed over placeholder zeros and
+  // are deflated; the PDF is the artifact most likely to be read by someone who
+  // cannot ask, so the caveat rides on the cards themselves.
+  const censusScoreInputs = resolveCensusScoreInputCoverage(m);
   const title6Flags = (m.title6Flags ?? []) as string[];
   // Real federal Justice40 determination for this run, or null for a legacy run.
   const federalJ40 = reconstructFederalJustice40(m);
@@ -286,27 +348,18 @@ function buildHtml(
   </div>
 </div>
 
+<!-- DECISION USE -->
+<div class="flag">
+  <strong>${esc(decisionUse.label)}</strong><br/>
+  ${esc(decisionUse.detail)}
+</div>
+
 <!-- SCORES -->
 <h2>Corridor Scores</h2>
 <div class="scores-grid">
-  <div class="score-card">
-    <div class="value" style="color:${scoreColor(Number(m.accessibilityScore) || 0)}">
-      ${fmt(m.accessibilityScore as number)}
-    </div>
-    <div class="label">Accessibility</div>
-  </div>
-  <div class="score-card">
-    <div class="value" style="color:${scoreColor(Number(m.safetyScore) || 0)}">
-      ${fmt(m.safetyScore as number)}
-    </div>
-    <div class="label">Safety</div>
-  </div>
-  <div class="score-card">
-    <div class="value" style="color:${scoreColor(Number(m.equityScore) || 0)}">
-      ${fmt(m.equityScore as number)}
-    </div>
-    <div class="label">Equity</div>
-  </div>
+  ${scoreCard(m.accessibilityScore, "Accessibility", "No accessibility score was recorded for this run.", censusScoreInputs.caveat)}
+  ${scoreCard(m.safetyScore, "Safety", "No crash source covered this study area, so no safety score was produced. An unmeasured corridor is not a safe one.")}
+  ${scoreCard(m.equityScore, "Equity", "No equity screening score was recorded for this run.", censusScoreInputs.caveat)}
 </div>
 ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
 

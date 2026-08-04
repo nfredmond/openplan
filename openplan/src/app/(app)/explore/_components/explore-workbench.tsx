@@ -342,7 +342,9 @@ export function ExploreWorkbench({
     const trimmedName = bootstrapWorkspaceName.trim();
 
     if (!trimmedName) {
-      setError("Enter a workspace name to bootstrap your pilot environment.");
+      // No "pilot": OpenPlan is self-serve, and the person reading this is
+      // creating their own workspace with nobody supervising it.
+      setError("Enter a name for your workspace before creating it.");
       return;
     }
 
@@ -688,7 +690,7 @@ export function ExploreWorkbench({
 
                 {bootstrapChecklist.length > 0 ? (
                   <div className="analysis-studio-inline-meta">
-                    <p className="analysis-studio-inline-meta-label">Pilot onboarding checklist</p>
+                    <p className="analysis-studio-inline-meta-label">Getting started in this workspace</p>
                     <ul className="analysis-studio-checklist">
                       {bootstrapChecklist.map((item) => (
                         <li key={item}>{item}</li>

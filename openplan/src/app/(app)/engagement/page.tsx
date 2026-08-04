@@ -13,7 +13,8 @@ const ENGAGEMENT_STATUS_FILTER_OPTIONS = [
 import { EngagementCampaignCreator } from "@/components/engagement/engagement-campaign-creator";
 import { EngagementPortalStatusChip } from "@/components/engagement/portal-status-chip";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { getEngagementHandoffReadiness } from "@/lib/engagement/readiness";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
@@ -136,7 +137,20 @@ export default async function EngagementPage({
   // agencies saw both agencies' campaigns merged under one workspace's header
   // (2026-08-03 review, unscoped-list-page class). Items and categories carry
   // only campaign_id, so they scope through this workspace's campaign ids.
-  const [{ data: campaignsData }, { data: projectsData, error: projectsError }] = await Promise.all([
+  //
+  // AND EVERY READ KEEPS ITS ERROR. Destructuring only the data half of a
+  // Supabase read hands back the same `null` for "this workspace runs no
+  // campaigns" and "the query failed", so the empty state below — written for
+  // the first — used to state the second as fact: an agency told, on its own
+  // console, that it has never engaged anybody, because a query broke. The
+  // failures are collected and disclosed; whatever loaded is still rendered.
+  //
+  // (Spelling the discarded shape out literally here would trip
+  // `a-page-may-not-discard-a-read-error.test.ts`, which scans page source and
+  // cannot tell a quotation from the defect. That is deliberate on its part.)
+  const reads = new ReadFailureLog();
+
+  const [campaignsResult, projectsResult] = await Promise.all([
     supabase
       .from("engagement_campaigns")
       .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, allow_public_submissions, submissions_closed_at, created_at, updated_at, projects(id, name)")
@@ -145,21 +159,33 @@ export default async function EngagementPage({
     supabase.from("projects").select("id, name").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
   ]);
 
+  const campaignsUnreadable = reads.check("this workspace's engagement campaigns", campaignsResult);
+  const projectsUnreadable = reads.check("this workspace's projects", projectsResult);
+  const campaignsData = campaignsResult.data;
+  const projectsData = projectsResult.data;
+
   const campaignIds = ((campaignsData ?? []) as { id: string }[]).map((campaign) => campaign.id);
-  const [{ data: itemsData }, { data: categoriesData }] = await Promise.all([
+  const [itemsResult, categoriesResult] = await Promise.all([
     campaignIds.length
       ? supabase
           .from("engagement_items")
           .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
           .in("campaign_id", campaignIds)
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [], error: null }),
     campaignIds.length
       ? supabase
           .from("engagement_categories")
           .select("id, campaign_id, label, slug, description, sort_order, created_at, updated_at")
           .in("campaign_id", campaignIds)
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [], error: null }),
   ]);
+
+  // Counted per campaign in the rows below. A failure here is not a campaign
+  // with nothing in it, and the tiles say so rather than rendering a zero.
+  const itemsUnreadable = reads.check("comments on these campaigns", itemsResult);
+  const categoriesUnreadable = reads.check("comment categories on these campaigns", categoriesResult);
+  const itemsData = itemsResult.data;
+  const categoriesData = categoriesResult.data;
 
   const itemsByCampaign = new Map<string, CampaignItemSummaryRow[]>();
   for (const item of (itemsData ?? []) as CampaignItemSummaryRow[]) {
@@ -240,6 +266,22 @@ export default async function EngagementPage({
 
   return (
     <section className="module-page">
+      {/*
+        Named before anything else on the page, because every count and every
+        empty state below is only as true as the reads that fed it. This is an
+        operator surface, so the database's own message is shown — an operator
+        can act on it, and it is not visible to the public.
+      */}
+      {reads.any ? (
+        <div className="mb-4">
+          <StateBlock
+            tone="danger"
+            title="Part of this page could not be read"
+            description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+          />
+        </div>
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -269,35 +311,48 @@ export default async function EngagementPage({
               // this workspace does not have produce the same empty catalog, and
               // only one of them is a statement about the project.
               <p className="module-intro-description">
-                {projectsError
+                {projectsUnreadable
                   ? "This workspace's project list could not be read, so the filter above is named by id. An empty catalog below would not mean that project has no campaigns."
                   : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
               </p>
             ) : null}
           </div>
 
+          {/*
+            A tile is a number offered as a fact. When the read behind one
+            failed, the honest value is "Unavailable" — a zero here is a claim
+            the query never established.
+          */}
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Campaigns</p>
-              <p className="module-summary-value">{campaigns.length}</p>
+              <p className="module-summary-value">{campaignsUnreadable ? "Unavailable" : campaigns.length}</p>
               <p className="module-summary-detail">
-                {hasActiveFilters
-                  ? "Matching the current filters."
-                  : "Workspace-scoped engagement containers with auditable ownership."}
+                {campaignsUnreadable
+                  ? "The campaign list could not be read, so this is not a count of zero."
+                  : hasActiveFilters
+                    ? "Matching the current filters."
+                    : "Workspace-scoped engagement containers with auditable ownership."}
               </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Status mix</p>
-              <p className="module-summary-value">{activeCount}</p>
+              <p className="module-summary-value">{campaignsUnreadable ? "Unavailable" : activeCount}</p>
               <p className="module-summary-detail">
-                {draftCount} draft, {closedCount} closed, {campaigns.filter((campaign) => campaign.status === "archived").length} archived.
+                {campaignsUnreadable
+                  ? "Status counts come from the campaign list, which could not be read."
+                  : `${draftCount} draft, ${closedCount} closed, ${campaigns.filter((campaign) => campaign.status === "archived").length} archived.`}
               </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Active items</p>
-              <p className="module-summary-value">{totalItems}</p>
+              <p className="module-summary-value">
+                {campaignsUnreadable || itemsUnreadable ? "Unavailable" : totalItems}
+              </p>
               <p className="module-summary-detail">
-                {totalCategories} categories and {recentActivityItems} recently active items across listed campaigns.
+                {campaignsUnreadable || itemsUnreadable || categoriesUnreadable
+                  ? "Comment and category totals could not be read for these campaigns."
+                  : `${totalCategories} categories and ${recentActivityItems} recently active items across listed campaigns.`}
               </p>
             </div>
           </div>
@@ -340,7 +395,7 @@ export default async function EngagementPage({
             <span className="module-record-chip">
               <FolderKanban className="h-3.5 w-3.5" />
               <span>Total</span>
-              <strong>{campaigns.length}</strong>
+              <strong>{campaignsUnreadable ? "Unavailable" : campaigns.length}</strong>
             </span>
           </div>
 
@@ -350,7 +405,9 @@ export default async function EngagementPage({
               href={engagementTabHref(projectFilterId, null)}
               className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
             >
-              All ({scopedCampaignCount})
+              {/* A tab count is derived from the campaign list; with that list
+                  unread every tab would read "(0)", which is a claim. */}
+              All{campaignsUnreadable ? "" : ` (${scopedCampaignCount})`}
             </Link>
             {ENGAGEMENT_STATUS_FILTER_OPTIONS.map((option) => (
               <Link
@@ -358,7 +415,8 @@ export default async function EngagementPage({
                 href={engagementTabHref(projectFilterId, option.value)}
                 className={cn("rounded px-2 py-0.5 transition-colors", statusFilter === option.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}
               >
-                {option.label} ({statusCountsInScope[option.value] ?? 0})
+                {option.label}
+                {campaignsUnreadable ? "" : ` (${statusCountsInScope[option.value] ?? 0})`}
               </Link>
             ))}
             {hasActiveFilters ? (
@@ -372,14 +430,25 @@ export default async function EngagementPage({
 
           {campaigns.length === 0 ? (
             <div className="mt-5">
-              <EmptyState
-                title={hasActiveFilters ? "No campaigns match these filters" : "No engagement campaigns yet"}
-                description={
-                  hasActiveFilters
-                    ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
-                    : "Create the first campaign to start collecting and moderating public input inside OpenPlan."
-                }
-              />
+              {campaignsUnreadable ? (
+                // NOT "No engagement campaigns yet". That sentence is a claim
+                // about the agency, and a query that never returned cannot
+                // make it — this render does not know whether any exist.
+                <StateBlock
+                  tone="danger"
+                  title="This workspace's campaigns could not be listed"
+                  description="The campaign list could not be read, so OpenPlan cannot say whether this workspace has campaigns. This is not an empty workspace — reload, and if it keeps failing the error is reported at the top of this page."
+                />
+              ) : (
+                <EmptyState
+                  title={hasActiveFilters ? "No campaigns match these filters" : "No engagement campaigns yet"}
+                  description={
+                    hasActiveFilters
+                      ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every campaign in this workspace — an empty filtered list is not a statement that none exist.`
+                      : "Create the first campaign to start collecting and moderating public input inside OpenPlan."
+                  }
+                />
+              )}
             </div>
           ) : (
             <div className="mt-5 module-record-list">

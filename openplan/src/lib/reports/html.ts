@@ -15,7 +15,7 @@ import {
 } from "@/lib/reports/evidence-chain";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
-import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
+import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import {
   buildReportModelingEvidenceExportProof,
   formatModelingValidationStatusLabel,
@@ -68,6 +68,18 @@ export type ReportCitedModelRun = {
   engine_key: string;
   status: string;
   result_summary_json: Record<string, unknown> | null;
+  /**
+   * The run's recorded claim tier (`modeling_claim_decisions`), resolved by
+   * `withCitedModelRunClaimTiers` in src/lib/reports/run-citations.ts.
+   *
+   * OPTIONAL ONLY FOR CALLERS THAT PREDATE THE LOOKUP. A packet whose cited runs
+   * carry no tier renders no tier claim at all — it does NOT say "not recorded",
+   * because the packet builder never asked. `null` here is the different, real
+   * fact: the lookup ran and no claim decision exists.
+   */
+  claimStatus?: ModelingClaimStatus | null;
+  /** True when the claim-tier read FAILED — distinct from `claimStatus: null`. */
+  claimReadFailed?: boolean;
 };
 
 /** A county validation run cited by the report (report_runs.county_run_id). */
@@ -322,9 +334,32 @@ export function compactModelRunKpiLine(resultSummary: Record<string, unknown> | 
   return numericEntries.length > 0 ? numericEntries.join(" • ") : null;
 }
 
+/**
+ * The claim-tier sentence for a cited model run, or null when this packet's
+ * builder did not resolve one. Three states, three different facts:
+ * read-failed, resolved-and-absent, resolved-to-a-tier. A fourth — "never
+ * looked" — renders nothing rather than asserting absence.
+ */
+function citedModelRunClaimTierLine(run: ReportCitedModelRun): string | null {
+  if (run.claimReadFailed) {
+    return "Claim tier could not be read — a lookup failure, not evidence that no claim decision exists for this run.";
+  }
+  if (run.claimStatus === undefined && run.claimReadFailed === undefined) {
+    return null;
+  }
+  return run.claimStatus
+    ? `Claim tier: ${modelingClaimStatusLabel(run.claimStatus)}`
+    : modelingClaimStatusLabel(null);
+}
+
 function citedModelRunMarkup(run: ReportCitedModelRun): string {
   const runMode = getManagedRunModeDefinition(run.engine_key);
   const kpiLine = compactModelRunKpiLine(run.result_summary_json);
+  // Engine and status are already on this card; the claim tier is the third
+  // thing a reader needs before trusting the figures, and the packet is the
+  // artifact an agency hands a funder. The public plan page has disclosed all
+  // three beside every citation since the RTP lane settled it.
+  const claimTierLine = citedModelRunClaimTierLine(run);
 
   return `<article class="run-card">
     <div class="run-head">
@@ -335,6 +370,7 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
       <span class="pill ${run.status === "succeeded" ? "pill-pass" : "pill-hold"}">${esc(titleize(run.status))}</span>
     </div>
     ${kpiLine ? `<p>${esc(kpiLine)}</p>` : `<p class="empty">No KPI summary is recorded for this run.</p>`}
+    ${claimTierLine ? `<p class="meta">${esc(claimTierLine)}</p>` : ""}
     <p class="meta">${esc(runMode.caveatSummary)}</p>
   </article>`;
 }

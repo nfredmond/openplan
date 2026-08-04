@@ -12,7 +12,12 @@ import { RunHistory } from "@/components/runs/RunHistory";
 import { WorkspaceGeographyPanel } from "@/components/workspaces/workspace-geography-panel";
 import { WorkspaceIntegrationKeysPanel } from "@/components/workspaces/workspace-integration-keys-panel";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { WorkspaceStageGatePanel } from "@/components/workspaces/workspace-stage-gate-panel";
 import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
+import {
+  buildStageGateRebindChoices,
+  STAGE_GATE_BINDING_WORKSPACE_COLUMNS,
+} from "@/lib/stage-gates/rebind";
 import { isGrantsCommand, resolveSharedGrantsQueueHref } from "@/lib/operations/grants-links";
 import { buildWorkspaceKpis, formatTimeToFirstResult } from "@/lib/metrics/workspace-kpis";
 import {
@@ -30,7 +35,6 @@ import {
   loadCurrentWorkspaceMembership,
 } from "@/lib/workspaces/current";
 import {
-  HOME_GEOGRAPHY_SCOPE_COLUMNS,
   homeGeographyLabel,
   parseWorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
@@ -105,9 +109,17 @@ export default async function DashboardPage() {
         // cartographic-shell.tsx uses. An error, including the migration not
         // being applied, leaves `data` null, which parses to null, which reads
         // honestly as "not set".
+        //
+        // The projection is WIDER than the scope set because the SAME row
+        // answers the second question this page asks of it: which stage-gate
+        // template the workspace delivers under. That needs the stored
+        // binding and the workspace's SUBDIVISION, neither of which is in the
+        // scope set — see STAGE_GATE_BINDING_WORKSPACE_COLUMNS for what each
+        // one changes. It is a superset, so the geography parse below is
+        // unaffected.
         supabase
           .from("workspaces")
-          .select(HOME_GEOGRAPHY_SCOPE_COLUMNS)
+          .select(STAGE_GATE_BINDING_WORKSPACE_COLUMNS)
           .eq("id", workspaceId)
           .maybeSingle(),
       ])
@@ -126,6 +138,24 @@ export default async function DashboardPage() {
   const runsData = runsResult.data ?? [];
   const homeGeography = parseWorkspaceHomeGeography(homeGeographyResult.data);
   const homeGeographyIsSet = homeGeography !== null;
+
+  // Which stage-gate template this workspace delivers under, and what changing
+  // it would mean — resolved from the row on the server so the panel renders the
+  // same reconciliation the project boards and the decisions route perform,
+  // rather than a second answer computed in the browser.
+  //
+  // THE READ ERROR IS HANDED IN, and that is the whole point. A failed read
+  // leaves `data` null, and a null row resolves to the interim default with the
+  // reason `no_workspace_jurisdiction`, whose disclosure states "This workspace
+  // has not stated where it works" and tells the planner to set a home geography
+  // they may already have set. That is a claim about the agency, and a query
+  // that failed cannot make it. With the error in hand the panel says the
+  // binding could not be read instead — a different fact, stated as itself.
+  const stageGateReadError =
+    "error" in homeGeographyResult ? homeGeographyResult.error : null;
+  const stageGateChoices = buildStageGateRebindChoices(homeGeographyResult.data, {
+    readError: stageGateReadError,
+  });
 
   // What this deployment cannot currently do, and why. Only owners and admins
   // see it — it is operator information, and a member cannot act on it. Silent
@@ -321,6 +351,21 @@ export default async function DashboardPage() {
           <WorkspaceTeamPanel workspaceId={workspaceId} canManage={canManageWorkspace} />
         </div>
       </div>
+
+      {/* Which delivery process this workspace's gate boards follow. It sits
+          directly under the geography because it is downstream of it: the
+          registry binds a template from the workspace's own jurisdiction when
+          one is registered, and until a geography is set every workspace holds
+          an explicitly-labeled interim default nobody chose. Unlike the team and
+          key panels this renders for every member — an assumed template changes
+          the gate names and evidence ids they read on every project board, and a
+          member who cannot change it still has to know not to file them as their
+          agency's own requirements. */}
+      <WorkspaceStageGatePanel
+        workspaceId={workspaceId}
+        canManage={canManageWorkspace}
+        choices={stageGateChoices}
+      />
 
       {/* Integration keys take their own full-width row rather than a third
           slot in the pair above: three items in a two-column grid leave a lone

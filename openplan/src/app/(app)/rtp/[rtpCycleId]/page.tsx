@@ -6,8 +6,9 @@ import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
 import { RtpCyclePhaseControls } from "@/components/rtp/rtp-cycle-phase-controls";
 import { RtpEngagementCampaignCreator } from "@/components/rtp/rtp-engagement-campaign-creator";
 import { RtpReportCreator } from "@/components/rtp/rtp-report-creator";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
@@ -186,6 +187,27 @@ function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
 }
 
+/**
+ * What happened to one read on this page.
+ *
+ * `pending_schema` is a deployment that has not run a migration yet — already
+ * classified, and it has a truer thing to say than "could not be read", so it
+ * keeps its existing fallback and stays out of the failure log. Everything else
+ * is collected, because a read that failed may not be rendered as an answer:
+ * without this, a 400 on `project_rtp_cycle_links` renders "No linked projects
+ * yet", which is this page telling a planner their portfolio is empty.
+ */
+type SectionReadState = "ok" | "pending_schema" | "failed";
+
+function classifyRead(
+  reads: ReadFailureLog,
+  label: string,
+  result: { error?: { message?: string | null } | null } | null | undefined
+): SectionReadState {
+  if (looksLikePendingSchema(result?.error?.message)) return "pending_schema";
+  return reads.check(label, result) ? "failed" : "ok";
+}
+
 function formatProjectStatusLabel(value: string | null | undefined): string {
   return titleizeRtpValue(value);
 }
@@ -213,7 +235,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     );
   }
 
-  const { data: cycleData } = await supabase
+  const cycleResult = await supabase
     .from("rtp_cycles")
     .select(
       "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, public_share_token, public_share_enabled, created_at, updated_at"
@@ -222,10 +244,42 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     .eq("workspace_id", membership.workspace_id)
     .maybeSingle();
 
-  const cycle = cycleData as RtpCycleRow | null;
+  // A FAILED READ IS NOT A MISSING CYCLE. The error and the empty row were one
+  // branch, so any database failure on `rtp_cycles` rendered the 404 page — this
+  // page telling a planner that their RTP cycle does not exist, which is the one
+  // sentence that makes someone re-create a plan update that is still there. A
+  // genuine absence still 404s; a read that failed says it failed.
+  if (cycleResult.error) {
+    return (
+      <section className="module-page">
+        <div className="mx-auto w-full max-w-2xl px-2 py-10">
+          <StateBlock
+            tone="danger"
+            title="This RTP cycle could not be read"
+            description={`The query for this cycle did not complete: ${
+              cycleResult.error.message ?? "no reason was returned"
+            }. That is not the same as the cycle not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the cycle is gone.`}
+          />
+          <div className="mt-4">
+            <Link href="/rtp" className="module-inline-action w-fit">
+              <ArrowLeft className="h-4 w-4" />
+              Back to RTP registry
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const cycle = cycleResult.data as RtpCycleRow | null;
   if (!cycle) {
     notFound();
   }
+
+  // Every read below is classified and, where it is a real failure, collected —
+  // so the page can render what loaded and disclose the rest by name instead of
+  // presenting the gaps as findings. See src/lib/ui/read-failures.ts.
+  const reads = new ReadFailureLog();
 
   const [chaptersResult, projectLinksResult, campaignsResult, packetReportsResult, defaultModelingClaimResult] = await Promise.all([
     supabase
@@ -259,11 +313,13 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       .order("decided_at", { ascending: false })
       .limit(1),
   ]);
-  const defaultModelingCountyRunId = looksLikePendingSchema(defaultModelingClaimResult.error?.message)
+  classifyRead(reads, "the default modeling run for this workspace", defaultModelingClaimResult);
+  const defaultModelingCountyRunId = defaultModelingClaimResult.error
     ? null
     : (((defaultModelingClaimResult.data ?? []) as ModelingClaimDecisionDefaultRow[])[0]?.county_run_id ?? null);
 
-  const chapters = looksLikePendingSchema(chaptersResult.error?.message)
+  const chaptersState = classifyRead(reads, "the chapter sections of this cycle", chaptersResult);
+  const chapters = chaptersState === "pending_schema"
     ? RTP_CHAPTER_TEMPLATES.map((template) => ({
         id: `template-${template.chapterKey}`,
         chapter_key: template.chapterKey,
@@ -279,7 +335,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       }))
     : ((chaptersResult.data ?? []) as RtpCycleChapterRow[]);
 
-  const projectLinks = looksLikePendingSchema(projectLinksResult.error?.message)
+  const projectLinksState = classifyRead(reads, "the projects linked to this cycle", projectLinksResult);
+  const projectLinks = projectLinksResult.error
     ? []
     : ((projectLinksResult.data ?? []) as ProjectRtpLinkRow[]).map((link) => ({
         ...link,
@@ -314,16 +371,26 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
+  // One label for the four funding reads: the planner reads them as one number,
+  // and naming four tables in the disclosure sentence would tell them nothing
+  // they can act on that "funding records" does not.
+  const fundingStates = [
+    classifyRead(reads, "funding records for the linked projects", fundingProfilesResult),
+    classifyRead(reads, "committed awards for the linked projects", fundingAwardsResult),
+    classifyRead(reads, "pursued funding for the linked projects", fundingOpportunitiesResult),
+    classifyRead(reads, "reimbursement invoices for the linked projects", billingInvoicesResult),
+  ];
+  const fundingReadFailed = fundingStates.includes("failed");
+  const fundingProfiles = fundingProfilesResult.error
     ? []
     : ((fundingProfilesResult.data ?? []) as ProjectFundingProfileRow[]);
-  const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
+  const fundingAwards = fundingAwardsResult.error
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
-  const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
+  const fundingOpportunities = fundingOpportunitiesResult.error
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]);
-  const billingInvoices = looksLikePendingSchema(billingInvoicesResult.error?.message)
+  const billingInvoices = billingInvoicesResult.error
     ? []
     : ((billingInvoicesResult.data ?? []) as BillingInvoiceRow[]);
   const fundingProfileByProjectId = new Map(fundingProfiles.map((profile) => [profile.project_id, profile]));
@@ -347,7 +414,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     fundingInvoicesByProjectId.set(invoice.project_id, current);
   }
 
-  const engagementCampaigns = looksLikePendingSchema(campaignsResult.error?.message)
+  const campaignsState = classifyRead(reads, "the engagement campaigns for this cycle", campaignsResult);
+  const engagementCampaigns = campaignsResult.error
     ? []
     : ((campaignsResult.data ?? []) as EngagementCampaignRow[]).map((campaign) => ({
         ...campaign,
@@ -360,19 +428,23 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
         .in("campaign_id", engagementCampaignIds)
     : { data: [], error: null };
-  const engagementItems = looksLikePendingSchema(engagementItemsResult.error?.message)
+  const engagementItemsState = classifyRead(reads, "public comments on this cycle", engagementItemsResult);
+  const engagementItems = engagementItemsResult.error
     ? []
     : ((engagementItemsResult.data ?? []) as EngagementItemSummaryRow[]);
 
-  const packetReports = (packetReportsResult.data ?? []) as RtpPacketReportRow[];
+  const packetReportsState = classifyRead(reads, "the board packet records for this cycle", packetReportsResult);
+  const packetReports = packetReportsResult.error ? [] : ((packetReportsResult.data ?? []) as RtpPacketReportRow[]);
   const packetReportIds = packetReports.map((report) => report.id);
-  const { data: packetArtifactsData } = packetReportIds.length
+  const packetArtifactsResult = packetReportIds.length
     ? await supabase
         .from("report_artifacts")
         .select("report_id, generated_at, metadata_json")
         .in("report_id", packetReportIds)
         .order("generated_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
+  const packetArtifactsState = classifyRead(reads, "the generated packet artifacts", packetArtifactsResult);
+  const packetArtifactsData = packetArtifactsResult.error ? [] : packetArtifactsResult.data;
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
   for (const artifact of (packetArtifactsData ?? []) as ReportArtifactRow[]) {
     if (!latestArtifactByReportId.has(artifact.report_id)) {
@@ -403,6 +475,23 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
 
   const engagementSummary = summarizeEngagementItems([], engagementItems);
   const generatedPacketCount = packetReportsWithComparison.filter((report) => Boolean(report.generatedAt)).length;
+
+  // Which of the public-review numbers below are answers and which are only the
+  // shape of a failed query. `generatedPacketCount` is derived from the packet
+  // ARTIFACT read as well as the packet record read, so both invalidate it.
+  const packetRecordsUnavailable = packetReportsState === "failed" || packetArtifactsState === "failed";
+  // The comment counts are filtered by campaign id, so a failed CAMPAIGN read
+  // leaves the item query nothing to ask for: it then succeeds and answers
+  // "none", which is true about the query and false about the cycle.
+  const commentCountsUnavailable = engagementItemsState === "failed" || campaignsState === "failed";
+  // The recommendations are computed from the same reads, and they are phrased
+  // as instructions ("Create one whole-cycle engagement campaign…"). Acting on
+  // one that a failed read produced creates a duplicate of a record that is
+  // already there, which is worse than a wrong number.
+  // `commentCountsUnavailable` already covers a failed campaign read — the
+  // compiler proves the extra clause unreachable, which is the honest signal
+  // that the campaign read is what makes the comment counts unanswerable.
+  const publicReviewInputsUnavailable = packetRecordsUnavailable || commentCountsUnavailable;
 
   const readiness = buildRtpCycleReadiness({
     geographyLabel: cycle.geography_label,
@@ -468,6 +557,11 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         projectIds: linkedProjectIds,
       })
     : { rows: [], scenarioSetProjectMap: new Map<string, string>(), error: null };
+  const scenarioComparisonState = classifyRead(
+    reads,
+    "scenario comparisons for the linked projects",
+    scenarioComparisonSummary
+  );
   const scenarioComparisonRows = scenarioComparisonSummary.rows;
   const scenarioComparisonIndicatorCount = new Set(scenarioComparisonRows.map((row) => row.indicator_key)).size;
   const scenarioComparisonReadyCount = totalReadySnapshotCount(scenarioComparisonRows);
@@ -491,6 +585,21 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
+
+      {/*
+        Disclosed, not logged. This is an internal page, so the database's own
+        message is shown — an operator can act on it, and without it the notice
+        only says something is wrong. The point of the sentence is that the empty
+        lists and zero counts below are NOT findings about this cycle.
+      */}
+      {reads.any ? (
+        <StateBlock
+          tone="danger"
+          title="Part of this cycle could not be read"
+          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <Link href="/rtp" className="module-inline-action w-fit">
@@ -519,38 +628,69 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
           </p>
 
           <div className="module-summary-grid cols-5">
+            {/*
+              A count is an assertion. Where the read behind one failed, the card
+              shows an em dash and says so — "0" here would be the page telling a
+              planner their cycle has no chapters, no projects, no funding.
+            */}
             <div className="module-summary-card">
               <p className="module-summary-label">Chapters</p>
-              <p className="module-summary-value">{chapters.length}</p>
-              <p className="module-summary-detail">Initial RTP shell sections seeded for this cycle.</p>
+              <p className="module-summary-value">{chaptersState === "failed" ? "—" : chapters.length}</p>
+              <p className="module-summary-detail">
+                {chaptersState === "failed"
+                  ? "The chapter sections could not be read, so this is not a count of zero."
+                  : "Initial RTP shell sections seeded for this cycle."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Ready for review</p>
-              <p className="module-summary-value">{chapterReadyForReviewCount}</p>
-              <p className="module-summary-detail">Sections that can move into coordinated review.</p>
+              <p className="module-summary-value">{chaptersState === "failed" ? "—" : chapterReadyForReviewCount}</p>
+              <p className="module-summary-detail">
+                {chaptersState === "failed"
+                  ? "Unavailable while the chapter sections cannot be read."
+                  : "Sections that can move into coordinated review."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Complete</p>
-              <p className="module-summary-value">{chapterCompleteCount}</p>
-              <p className="module-summary-detail">Sections already marked complete.</p>
+              <p className="module-summary-value">{chaptersState === "failed" ? "—" : chapterCompleteCount}</p>
+              <p className="module-summary-detail">
+                {chaptersState === "failed"
+                  ? "Unavailable while the chapter sections cannot be read."
+                  : "Sections already marked complete."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Linked projects</p>
-              <p className="module-summary-value">{projectLinks.length}</p>
-              <p className="module-summary-detail">Portfolio records currently attached to this cycle.</p>
+              <p className="module-summary-value">{projectLinksState === "failed" ? "—" : projectLinks.length}</p>
+              <p className="module-summary-detail">
+                {projectLinksState === "failed"
+                  ? "The project links could not be read, so this is not a count of zero."
+                  : "Portfolio records currently attached to this cycle."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Funding posture</p>
-              <p className="module-summary-value">{fundedProjectCount}/{projectLinks.length}</p>
-              <p className="module-summary-detail">{likelyCoveredProjectCount} more look coverable from pursued funding, while {unfundedProjectCount} still carry a remaining gap.</p>
+              <p className="module-summary-value">
+                {projectLinksState === "failed" || fundingReadFailed ? "—" : `${fundedProjectCount}/${projectLinks.length}`}
+              </p>
+              <p className="module-summary-detail">
+                {projectLinksState === "failed" || fundingReadFailed
+                  ? "Funding posture is unavailable because part of the funding record could not be read — this is not a finding that nothing is funded."
+                  : `${likelyCoveredProjectCount} more look coverable from pursued funding, while ${unfundedProjectCount} still carry a remaining gap.`}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Scenario signals</p>
-              <p className="module-summary-value">{scenarioComparisonIndicatorCount}</p>
+              <p className="module-summary-value">
+                {scenarioComparisonState === "failed" ? "—" : scenarioComparisonIndicatorCount}
+              </p>
               <p className="module-summary-detail">
-                {scenarioComparisonIndicatorCount === 0
-                  ? "No ready scenario comparisons are linked to these projects yet."
-                  : `${scenarioComparisonReadyCount} ready comparison snapshot${scenarioComparisonReadyCount === 1 ? "" : "s"} aggregated across linked projects.`}
+                {scenarioComparisonState === "failed"
+                  ? "Scenario comparisons could not be read, so this page cannot say whether any are linked."
+                  : scenarioComparisonIndicatorCount === 0
+                    ? "No ready scenario comparisons are linked to these projects yet."
+                    : `${scenarioComparisonReadyCount} ready comparison snapshot${scenarioComparisonReadyCount === 1 ? "" : "s"} aggregated across linked projects.`}
               </p>
             </div>
           </div>
@@ -617,7 +757,13 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               </span>
             </div>
 
-            {chapters.length === 0 ? (
+            {chaptersState === "failed" ? (
+              <StateBlock
+                tone="danger"
+                title="Chapter sections could not be read"
+                description="The chapters of this cycle could not be loaded, so none are shown. This is not the same as the cycle having no chapters — nothing here should be read as evidence that the shell is missing or that work was lost."
+              />
+            ) : chapters.length === 0 ? (
               <EmptyState
                 title="No chapter shell yet"
                 description="This cycle does not have seeded chapter scaffolding yet. Apply the latest migration and reopen the cycle."
@@ -815,7 +961,13 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               </span>
             </div>
 
-            {projectLinks.length === 0 ? (
+            {projectLinksState === "failed" ? (
+              <StateBlock
+                tone="danger"
+                title="Linked projects could not be read"
+                description="The projects attached to this cycle could not be loaded, so none are listed and the funding posture above is unavailable. This is not a finding that the cycle has no portfolio — do not re-attach projects on the strength of this page."
+              />
+            ) : projectLinks.length === 0 ? (
               <EmptyState
                 title="No linked projects yet"
                 description="Attach projects to this cycle from the project detail view so constrained and illustrative portfolio posture becomes visible here."
@@ -936,26 +1088,71 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
 
               <p className="text-sm text-muted-foreground">{publicReviewSummary.detail}</p>
 
+              {publicReviewInputsUnavailable ? (
+                <p className="rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                  This public-review posture, and the recommendations below it, are computed from records that could
+                  not be read. Do not act on a recommendation to create a campaign or a packet from this page — it may
+                  already exist and this page cannot currently see it.
+                </p>
+              ) : null}
+
+              {/*
+                The SECOND count grid on this page. The six cards in the header
+                were gated against a failed read; these four were not, and they
+                are the ones a planner reads during public-review closeout —
+                "Pending comments 0" from a broken query is the page telling
+                someone the comment record is clear.
+
+                The comment counts depend on the CAMPAIGN read as well as their
+                own: campaign ids are what the item query is filtered by, so a
+                failed campaign read leaves the item query with nothing to ask
+                for and it succeeds with an empty answer. A zero here would then
+                be honest about the query and false about the world.
+              */}
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="module-metric-card">
                   <p className="module-metric-label">Generated packets</p>
-                  <p className="module-metric-value text-sm">{generatedPacketCount}/{packetReportsWithComparison.length}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Current rendered packet artifacts available for review and export.</p>
+                  <p className="module-metric-value text-sm">
+                    {packetRecordsUnavailable ? "—" : `${generatedPacketCount}/${packetReportsWithComparison.length}`}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {packetRecordsUnavailable
+                      ? "The packet records could not be read, so this is not a count of zero — a packet may already be generated."
+                      : "Current rendered packet artifacts available for review and export."}
+                  </p>
                 </div>
                 <div className="module-metric-card">
                   <p className="module-metric-label">Review targets</p>
-                  <p className="module-metric-value text-sm">{cycleLevelCampaigns.length}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Whole-cycle campaigns, plus {engagementCampaigns.length - cycleLevelCampaigns.length} chapter-targeted campaigns.</p>
+                  <p className="module-metric-value text-sm">
+                    {campaignsState === "failed" ? "—" : cycleLevelCampaigns.length}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {campaignsState === "failed"
+                      ? "The engagement campaigns could not be read, so this is not a count of zero."
+                      : `Whole-cycle campaigns, plus ${engagementCampaigns.length - cycleLevelCampaigns.length} chapter-targeted campaigns.`}
+                  </p>
                 </div>
                 <div className="module-metric-card">
                   <p className="module-metric-label">Approved comments</p>
-                  <p className="module-metric-value text-sm">{engagementSummary.moderationQueue.readyForHandoffCount}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Categorized items ready for packet handoff and response summary work.</p>
+                  <p className="module-metric-value text-sm">
+                    {commentCountsUnavailable ? "—" : engagementSummary.moderationQueue.readyForHandoffCount}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {commentCountsUnavailable
+                      ? "Public comments could not be read, so this is not a count of zero."
+                      : "Categorized items ready for packet handoff and response summary work."}
+                  </p>
                 </div>
                 <div className="module-metric-card">
                   <p className="module-metric-label">Pending comments</p>
-                  <p className="module-metric-value text-sm">{engagementSummary.moderationQueue.pendingCount}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Items still waiting for operator review before packet closeout.</p>
+                  <p className="module-metric-value text-sm">
+                    {commentCountsUnavailable ? "—" : engagementSummary.moderationQueue.pendingCount}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {commentCountsUnavailable
+                      ? "Public comments could not be read, so an empty moderation queue here is not a finding that nothing is waiting."
+                      : "Items still waiting for operator review before packet closeout."}
+                  </p>
                 </div>
               </div>
 
@@ -975,6 +1172,24 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                     </p>
                   </div>
                 </div>
+
+                {/*
+                  These checks are computed from the chapter, packet and comment
+                  reads above. When one of those failed, a check reading "Needs
+                  operator" may only mean OpenPlan could not look — and this
+                  block is what a planner shows a board, so the difference has to
+                  be on the same screen as the verdict.
+                */}
+                {chaptersState === "failed" ||
+                packetReportsState === "failed" ||
+                packetArtifactsState === "failed" ||
+                engagementItemsState === "failed" ? (
+                  <p className="mt-3 rounded-[0.5rem] border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+                    Some records these checks depend on could not be read, so a check shown as “Needs operator” may
+                    only mean OpenPlan could not look. Do not treat this block as an adoption record until the notice
+                    at the top of this page clears.
+                  </p>
+                ) : null}
 
                 <div className="mt-3 grid gap-2 md:grid-cols-2">
                   {adoptionRecordProof.checks.map((check) => (
@@ -1011,7 +1226,13 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               </span>
             </div>
 
-            {cycleLevelCampaigns.length === 0 ? (
+            {campaignsState === "failed" ? (
+              <StateBlock
+                tone="danger"
+                title="Engagement campaigns could not be read"
+                description="The campaigns attached to this cycle could not be loaded, so none are listed here or against the chapters above. This is not a finding that no public review target exists — creating a second one from this page would duplicate it."
+              />
+            ) : cycleLevelCampaigns.length === 0 ? (
               <EmptyState
                 title="No whole-cycle campaigns yet"
                 description="Create one above if you want a planwide comment or review target for this RTP update."

@@ -46,13 +46,59 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
 
   const supabase = createServiceRoleClient();
 
-  const { data: cycleData } = await supabase
+  // A read that failed may not be rendered as an answer — least of all here,
+  // where the reader is a member of the public who has no way to tell an empty
+  // plan from a broken query. Every read on this page keeps its `error`.
+  const reads = new ReadFailureLog();
+
+  const cycleResult = await supabase
     .from("rtp_cycles")
     .select("id, title, status, geography_label, horizon_start_year, horizon_end_year, summary")
     .eq("public_share_token", shareToken)
     .eq("public_share_enabled", true)
     .maybeSingle();
 
+  // "This plan does not exist" and "this plan could not be read" are DIFFERENT
+  // FACTS, and a 404 states the first one. A token that is wrong, revoked, or
+  // whose sharing was switched off is a genuine absence and still 404s. A read
+  // that FAILED tells us nothing about whether the plan exists, so it may not
+  // borrow that page: answering 404 over a dropped column or a policy change
+  // tells a resident an agency's published plan is gone, which is the same
+  // defect as telling them the agency funded nothing.
+  if (reads.check("this plan", cycleResult)) {
+    return (
+      <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:py-14">
+        <header className="border-b border-border pb-6">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            Regional Transportation Plan · Public view
+          </p>
+          <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
+            This plan could not be loaded
+          </h1>
+        </header>
+        {/*
+          The database's own message is deliberately NOT rendered — that is
+          operator detail, and this page is public. What a resident needs is
+          the fact that the page failed to load, stated so that it cannot be
+          mistaken for the plan being withdrawn or never published.
+        */}
+        <section
+          role="status"
+          className="mt-6 rounded-lg border border-amber-300/60 bg-amber-50/60 p-4 dark:border-amber-900/50 dark:bg-amber-950/30"
+        >
+          <p className="text-sm text-amber-900/90 dark:text-amber-200/90">
+            Something went wrong reading this plan, so none of it is shown. This is a problem loading
+            the page — it does not mean the plan is missing, unpublished, or withdrawn.
+          </p>
+          <p className="mt-1 text-sm text-amber-900/90 dark:text-amber-200/90">
+            Please try again shortly, or contact the agency that published this plan.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
+  const cycleData = cycleResult.data;
   if (!cycleData) {
     notFound();
   }
@@ -66,11 +112,6 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
     horizon_end_year: number | null;
     summary: string | null;
   };
-
-  // A read that failed may not be rendered as an answer — least of all here,
-  // where the reader is a member of the public who has no way to tell an empty
-  // plan from a broken query. Both reads below keep their `error`.
-  const reads = new ReadFailureLog();
 
   const linksResult = await supabase
     .from("project_rtp_cycle_links")

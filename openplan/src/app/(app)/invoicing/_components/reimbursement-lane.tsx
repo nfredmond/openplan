@@ -4,6 +4,7 @@ import { InvoiceTriageLinkCopy } from "@/components/invoicing/invoice-triage-lin
 import { InvoiceFundingAwardLinker } from "@/components/invoicing/invoice-funding-award-linker";
 import { InvoiceRecordComposer } from "@/components/invoicing/invoice-record-composer";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
+import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
   buildBillingInvoicePriorityQueue,
@@ -30,6 +31,7 @@ import { buildInvoicingHref, buildInvoiceTriageHref } from "@/lib/invoicing/tria
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
 import { loadWorkspaceOperationsSummaryForWorkspace, type WorkspaceOperationsSupabaseLike } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
 import {
   billingRowNoticeClass,
@@ -98,11 +100,22 @@ export async function ReimbursementLane({
   const reimbursementProfile =
     reimbursementProfileResolution.kind === "resolved" ? reimbursementProfileResolution.binding : null;
 
-  const { data: workspaceProjectsData } = await supabase
+  // Every read below that can fail without a truer classification of its own is
+  // registered here, so an outage arrives on screen as an outage. On this lane
+  // the alternative is specific and bad: a failed register read renders "No
+  // invoice records recorded yet for this workspace" and a $0 outstanding
+  // balance — an agency told it is owed nothing by its funder because a query
+  // broke. Pending-schema failures are classified FIRST and stay out of this
+  // log, because "apply the migration" is a truer thing to say than "could not
+  // be read".
+  const reads = new ReadFailureLog();
+
+  const workspaceProjectsResult = await supabase
     .from("projects")
     .select("id, name, status, delivery_phase")
     .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
+  reads.check("this workspace's projects", workspaceProjectsResult);
 
   const fundingAwardsResult = await supabase
     .from("funding_awards")
@@ -144,8 +157,24 @@ export async function ReimbursementLane({
 
   const invoiceRegisterPending = looksLikePendingSchema(invoiceRecordsResult.error?.message);
   const fundingAwardsPending = looksLikePendingSchema(fundingAwardsResult.error?.message);
+  // Classified first, collected second: whatever is left after the pending-schema
+  // check is a read that failed for a reason this page cannot name, and the
+  // register is the one whose emptiness would be read as money.
+  const invoiceRegisterUnreadable =
+    !invoiceRegisterPending &&
+    reads.check("this workspace's reimbursement invoice register", invoiceRecordsResult);
+  if (!fundingAwardsPending) {
+    reads.check("this workspace's funding awards", fundingAwardsResult);
+  }
+  /**
+   * Everything derived from the register — the totals, the linkage split, the
+   * priority queue, the filter counts — is suppressed under either of these,
+   * because each of those numbers is a statement about reimbursement posture
+   * that an empty array cannot support.
+   */
+  const invoiceRegisterUnavailable = invoiceRegisterPending || invoiceRegisterUnreadable;
   const workspaceFundingAwards = fundingAwardsPending ? [] : ((fundingAwardsResult.data ?? []) as FundingAwardListRow[]);
-  const invoiceRecords = invoiceRegisterPending
+  const invoiceRecords = invoiceRegisterUnavailable
     ? []
     : ((invoiceRecordsResult.data ?? []) as InvoiceRegisterRow[]).map((invoice) => ({
         ...invoice,
@@ -180,6 +209,10 @@ export async function ReimbursementLane({
   const awardSubstantiationPending =
     looksLikePendingSchema(awardMilestonesResult.error?.message) ||
     looksLikePendingSchema(awardSubmittalsResult.error?.message);
+  if (!awardSubstantiationPending) {
+    reads.check("award milestone substantiation", awardMilestonesResult);
+    reads.check("award submittal substantiation", awardSubmittalsResult);
+  }
   const awardSubstantiationAvailable =
     !awardSubstantiationPending && !awardMilestonesResult.error && !awardSubmittalsResult.error;
   const awardSubstantiation = awardSubstantiationAvailable
@@ -191,7 +224,7 @@ export async function ReimbursementLane({
     : new Map<string, FundingAwardSubstantiationSummary>();
   const invoiceSummary = summarizeBillingInvoiceRecords(invoiceRecords);
   const invoiceLinkageSummary = summarizeBillingInvoiceLinkage(invoiceRecords);
-  const workspaceProjects = (workspaceProjectsData ?? []) as Array<{
+  const workspaceProjects = (workspaceProjectsResult.data ?? []) as Array<{
     id: string;
     name: string;
     status: string;
@@ -332,6 +365,14 @@ export async function ReimbursementLane({
 
   return (
     <section className="space-y-4">
+      {reads.any ? (
+        <StateBlock
+          tone="danger"
+          title="Part of this reimbursement lane could not be read"
+          description={`${reads.describe()} Treat no figure here as a statement of what this workspace is owed or has claimed until the read succeeds. ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
+
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Consulting invoices</p>
@@ -393,6 +434,10 @@ export async function ReimbursementLane({
             <div className="mt-4 border-l-2 border-amber-300/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
               Invoice register tables are pending in the current database. Apply the Lane C migration before expecting workspace invoice records to render here.
             </div>
+          ) : invoiceRegisterUnreadable ? (
+            <div className="mt-4 border-l-2 border-rose-300/80 bg-rose-50/80 px-4 py-3 text-sm text-rose-950 dark:border-rose-700/60 dark:bg-rose-950/25 dark:text-rose-100">
+              The reimbursement invoice register could not be read, so no register total is shown. Nothing here says this workspace has claimed nothing or is owed nothing — the totals are unknown until the read succeeds.
+            </div>
           ) : (
             <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2 xl:grid-cols-3">
               <div className="bg-background/70 px-4 py-4">
@@ -428,7 +473,7 @@ export async function ReimbursementLane({
             </div>
           )}
 
-          {!invoiceRegisterPending && invoiceLinkageSummary.unlinkedCount > 0 ? (
+          {!invoiceRegisterUnavailable && invoiceLinkageSummary.unlinkedCount > 0 ? (
             <div className="mt-4 border-l-2 border-amber-300/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
               {invoiceLinkageSummary.unlinkedCount} invoice record{invoiceLinkageSummary.unlinkedCount === 1 ? " is" : "s are"} still unlinked to a funding award, totaling <strong>{formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)}</strong>.
               {invoiceLinkageSummary.unlinkedOverdueCount > 0
@@ -438,7 +483,7 @@ export async function ReimbursementLane({
             </div>
           ) : null}
 
-          {!invoiceRegisterPending && invoicePriorityQueue.length > 0 ? (
+          {!invoiceRegisterUnavailable && invoicePriorityQueue.length > 0 ? (
             <div className="mt-4 border border-border/60 bg-background/70 px-4 py-4">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
                 <div>
@@ -510,7 +555,7 @@ export async function ReimbursementLane({
           <h3 className="text-lg font-semibold tracking-tight">Consulting invoice records</h3>
         </div>
 
-        {!invoiceRegisterPending && activeProjectFilterId && activeProjectFilterName ? (
+        {!invoiceRegisterUnavailable && activeProjectFilterId && activeProjectFilterName ? (
           <div className="mt-4 flex flex-wrap items-center gap-2 border border-border/60 bg-background/70 px-3 py-3 text-sm">
             <StatusBadge tone="info">Project scope</StatusBadge>
             <span className="font-semibold text-foreground">{activeProjectFilterName}</span>
@@ -533,7 +578,7 @@ export async function ReimbursementLane({
           </div>
         ) : null}
 
-        {!invoiceRegisterPending && activeFocusedInvoiceId ? (
+        {!invoiceRegisterUnavailable && activeFocusedInvoiceId ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 border border-sky-300/70 bg-sky-50/70 px-3 py-3 text-sm text-sky-950 dark:border-sky-800/60 dark:bg-sky-950/25 dark:text-sky-100">
             <StatusBadge tone="info">Focused row</StatusBadge>
             <span>The register is highlighting the invoice you opened from invoice triage.</span>
@@ -564,7 +609,7 @@ export async function ReimbursementLane({
           </div>
         ) : null}
 
-        {!invoiceRegisterPending ? (
+        {!invoiceRegisterUnavailable ? (
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {linkageFilterOptions.map((option) => {
               const active = linkageFilter === option.value;
@@ -589,7 +634,7 @@ export async function ReimbursementLane({
           </div>
         ) : null}
 
-        {!invoiceRegisterPending ? (
+        {!invoiceRegisterUnavailable ? (
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {overdueFilterOptions.map((option) => {
               const active = overdueFilter === option.value;
@@ -614,7 +659,7 @@ export async function ReimbursementLane({
           </div>
         ) : null}
 
-        {!invoiceRegisterPending ? (
+        {!invoiceRegisterUnavailable ? (
           <p className="mt-3 text-xs text-muted-foreground">
             {linkageFilter === "all"
               ? `${activeProjectFilterName ? `${activeProjectFilterName} register scope currently tracks` : `Workspace invoice register currently tracks`} ${formatCurrency(registerScopedInvoiceSummary.totalNetAmount)} net requested, with ${formatCurrency(registerScopedInvoiceSummary.outstandingNetAmount)} still in review or payment flow.`
@@ -632,6 +677,14 @@ export async function ReimbursementLane({
 
         {invoiceRegisterPending ? (
           <p className="mt-4 text-sm text-muted-foreground">Apply the Lane C migration to enable invoice register visibility for this workspace.</p>
+        ) : invoiceRegisterUnreadable ? (
+          // NOT "no invoice records recorded yet". The register read failed, so
+          // this workspace's reimbursement claims are UNKNOWN here — which is a
+          // different fact from there being none, and the difference is money
+          // an agency may be owed by its funder.
+          <p className="mt-4 text-sm text-muted-foreground">
+            The invoice register could not be read, so no invoice records are listed. This is not a finding that this workspace has no reimbursement invoices.
+          </p>
         ) : filteredInvoiceRecords.length === 0 ? (
           <p className="mt-4 text-sm text-muted-foreground">
             {overdueFilter === "overdue"

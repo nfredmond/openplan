@@ -5,25 +5,94 @@ import Link from "next/link";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { summarizeCorridorText, type StudyAreaOrigin } from "@/lib/models/study-area";
 import { ccrsCountyCodeFromGeoid } from "@/lib/safety/county-code";
+import { recentCrashYears } from "@/lib/safety/crash-years";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { SafetyCrashMap } from "./safety-crash-map";
 import {
   COVERAGE_STATE_COPY,
   SEVERITY_LABELS,
   type SafetyCrashCollection,
+  type SafetyCrashFeature,
   type SafetyCrashQueryResponse,
   type SafetyIngestHistoryEntry,
   type SafetyIngestSummary,
+  type SafetyLiveCrashRead,
   type SafetyProjectOption,
 } from "@/lib/safety/client-types";
 import {
   SAFETY_CRASH_DATA_CAVEAT,
+  SAFETY_FATAL_ONLY_CAVEAT,
   SAFETY_GEOCODING_CAVEAT,
+  SAFETY_LIVE_READ_CAVEAT,
   SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
 } from "@/lib/safety/caveats";
 import type { CrashSeverity } from "@/lib/safety/sources/types";
 
 const SEVERITY_ORDER: CrashSeverity[] = ["fatal", "severe_injury", "injury", "pdo"];
+
+type CrashModeFilter = "all" | "pedestrian" | "bicyclist" | "vru";
+
+/**
+ * Apply the severity and mode filters to LIVE crash points.
+ *
+ * Stored crashes are filtered by the query route in Postgres. A live read never
+ * reaches Postgres, so the same two filters have to be applied here or the
+ * controls would be dead for exactly the planners the live lane exists for —
+ * the shipped-invisible failure repeated one level down. The predicates are
+ * written to mirror the route's (`severity IN (…)`, `mode` over the two VRU
+ * booleans) so the two lanes cannot answer differently.
+ */
+export function filterLiveCrashFeatures(
+  features: SafetyCrashFeature[],
+  severities: CrashSeverity[],
+  mode: CrashModeFilter
+): SafetyCrashFeature[] {
+  return features.filter((feature) => {
+    const properties = feature.properties;
+    if (severities.length > 0 && !severities.includes(properties.severity)) return false;
+    if (mode === "pedestrian") return properties.pedestrianInvolved;
+    if (mode === "bicyclist") return properties.bicyclistInvolved;
+    if (mode === "vru") return properties.pedestrianInvolved || properties.bicyclistInvolved;
+    return true;
+  });
+}
+
+/**
+ * Split the years a live read ASKED FOR into the ones that came back with
+ * records and the ones that came back with none.
+ *
+ * WHY THIS IS NOT COSMETIC. A crash source is not obliged to hold every year in
+ * the rolling window, and a fatality census in particular publishes its annual
+ * file well after the year ends — so a four-year window routinely returns two
+ * years of records. The banner then shows one number, and a planner sizing a
+ * safety problem reads it as four years of crashes when it is two. Halving a
+ * study area's apparent crash burden is not a rounding error in a document that
+ * competes for safety funding.
+ *
+ * The disclosure that was here could not say this: it fired only when the source
+ * reported crashes AND no year carried a mappable record, which is very nearly
+ * unreachable. The common case — some years answered, some did not — went
+ * entirely unstated. This is the same defect class as the branch nothing can
+ * satisfy, one level down.
+ *
+ * WHAT IT DELIBERATELY DOES NOT SAY IS *WHY* A YEAR IS SILENT. Nothing in the
+ * adapter contract can distinguish "no crashes were reported", "records came
+ * back but none could be mapped", and "this year is not published yet" — so the
+ * copy names all three and asserts none. Guessing would turn an unpublished year
+ * into a finding that the roads were safe.
+ *
+ * Jurisdiction- and source-neutral: it compares two lists of integers.
+ */
+export function splitLiveReadYears(
+  yearsRequested: number[],
+  yearsCovered: number[]
+): { answered: number[]; silent: number[] } {
+  const covered = new Set(yearsCovered);
+  return {
+    answered: yearsRequested.filter((year) => covered.has(year)),
+    silent: yearsRequested.filter((year) => !covered.has(year)),
+  };
+}
 
 /**
  * The area this page opens on, already resolved on the server.
@@ -111,8 +180,17 @@ export function SafetyWorkspace({
     return offered(lastProjectId) ? lastProjectId : "";
   });
   const [response, setResponse] = useState<SafetyCrashQueryResponse | null>(null);
+  /**
+   * Crashes read live from a source this workspace may not store.
+   *
+   * Held separately from `ingest` because it is a different fact: nothing was
+   * acquired, nothing is in `safety_crashes`, and nothing will survive this
+   * visit. Merging it into the ingest summary would make the coverage banner
+   * claim a stored record that does not exist.
+   */
+  const [liveRead, setLiveRead] = useState<SafetyLiveCrashRead | null>(null);
   const [severities, setSeverities] = useState<CrashSeverity[]>([]);
-  const [mode, setMode] = useState<"all" | "pedestrian" | "bicyclist" | "vru">("all");
+  const [mode, setMode] = useState<CrashModeFilter>("all");
   const [loading, setLoading] = useState(false);
   const [ingesting, setIngesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -179,12 +257,18 @@ export function SafetyWorkspace({
     void loadCrashes();
   }, [loadCrashes]);
 
+  // The rolling window every crash lane asks for, from the one shared helper.
+  // It was a hardcoded `[2025, 2024, 2023, 2022, 2021]` here — already stale
+  // when written, and silently wrong from each January onward — while the
+  // corridor scorecard derived its window from the clock. The two lanes read the
+  // same registry, so they must ask it the same question.
+  const years = useMemo(() => recentCrashYears(), []);
+
   const runIngest = useCallback(async () => {
     if (!bbox) return;
     setIngesting(true);
     setError(null);
     try {
-      const years = [2025, 2024, 2023, 2022, 2021];
       const res = await fetch("/api/safety/crashes/ingest", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -198,6 +282,39 @@ export function SafetyWorkspace({
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.error ?? "Crash ingest failed");
+
+      // A LIVE READ is a different outcome from an acquisition, and is kept as
+      // one all the way to the screen. It writes no acquisition row, so it must
+      // not enter the acquisition history or the stored-coverage banner — a
+      // history entry for crashes no table holds would send a planner looking
+      // for data that was never there.
+      if (body.status === "read_only") {
+        const collection =
+          body.crashes && Array.isArray(body.crashes.features)
+            ? (body.crashes as SafetyCrashCollection)
+            : ({ type: "FeatureCollection", features: [] } as SafetyCrashCollection);
+        const count = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
+        setLiveRead({
+          sourceLabel: typeof body.sourceLabel === "string" ? body.sourceLabel : "Unnamed source",
+          attribution: typeof body.attribution === "string" ? body.attribution : null,
+          coverageState:
+            typeof body.coverageState === "string" ? body.coverageState : "source_unavailable",
+          severityCompleteness:
+            typeof body.severityCompleteness === "string" ? body.severityCompleteness : "fatal_only",
+          crashCount: count(body.crashCount),
+          geocodedCount: count(body.geocodedCount),
+          truncated: Boolean(body.truncated),
+          yearsRequested: years,
+          yearsCovered: Array.isArray(body.yearsCovered) ? (body.yearsCovered as number[]) : [],
+          collection,
+          retrievedAt: new Date().toISOString(),
+        });
+        return;
+      }
+
+      // Anything else is an acquisition attempt, so a stale live read from a
+      // previous study area must not survive alongside it.
+      setLiveRead(null);
 
       // Normalize at the boundary. The banner renders these directly, so a
       // malformed or unexpected response body must not be able to white-screen
@@ -217,6 +334,14 @@ export function SafetyWorkspace({
         yearsRequested: years,
         fetchError: typeof body.error === "string" ? body.error : null,
         createdAt: new Date().toISOString(),
+        // What the resolver actually consulted. Present only on a fresh
+        // retrieval — the acquisition row does not store it — so a coverage gap
+        // can name what was checked instead of asserting nothing exists.
+        checkedSourceLabels: Array.isArray(body.checkedSources)
+          ? (body.checkedSources as Array<{ label?: unknown }>)
+              .map((entry) => (typeof entry?.label === "string" ? entry.label : null))
+              .filter((label): label is string => Boolean(label))
+          : undefined,
       };
       setIngest(summary);
       setHistory((current) => [
@@ -239,20 +364,44 @@ export function SafetyWorkspace({
     } finally {
       setIngesting(false);
     }
-  }, [workspaceId, loadCrashes, bbox, countyCode, projectId]);
+  }, [workspaceId, loadCrashes, bbox, countyCode, projectId, years]);
+
+  // A live read belongs to the area it was retrieved for and to no other.
+  // Leaving it on screen after the planner moves the study area would plot one
+  // place's fatalities over another's boundary — the most consequential thing
+  // this page could get wrong.
+  useEffect(() => {
+    setLiveRead(null);
+  }, [corridorText]);
+
+  // The points actually on screen. A live read supplies its own, filtered here
+  // because they never passed through the query route that filters stored ones.
+  const visibleFeatures: SafetyCrashFeature[] = useMemo(
+    () =>
+      liveRead
+        ? filterLiveCrashFeatures(liveRead.collection.features, severities, mode)
+        : (response?.features ?? []),
+    [liveRead, response, severities, mode]
+  );
+
+  // Which of the requested years the source actually answered with records.
+  // Computed even when there is no live read so the hook order never varies.
+  const liveYears = useMemo(
+    () => splitLiveReadYears(liveRead?.yearsRequested ?? [], liveRead?.yearsCovered ?? []),
+    [liveRead]
+  );
 
   const severityCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const feature of response?.features ?? []) {
+    for (const feature of visibleFeatures) {
       const severity = feature.properties.severity;
       counts[severity] = (counts[severity] ?? 0) + 1;
     }
     return counts;
-  }, [response]);
+  }, [visibleFeatures]);
 
-  const collection: SafetyCrashCollection | null = response
-    ? { type: "FeatureCollection", features: response.features }
-    : null;
+  const collection: SafetyCrashCollection | null =
+    liveRead || response ? { type: "FeatureCollection", features: visibleFeatures } : null;
 
   const toggleSeverity = (severity: CrashSeverity) => {
     setSeverities((current) =>
@@ -269,11 +418,17 @@ export function SafetyWorkspace({
   // never hide: an ungeocoded crash is a real crash that cannot be plotted.
   const ungeocoded = ingest ? Math.max(0, ingest.crashCount - ingest.geocodedCount) : 0;
 
+  // The completeness of the source behind the points ON SCREEN, which is the
+  // live read whenever there is one. Reading it off `ingest` would let a stale
+  // acquisition's `kabco_full` describe a fatality census's points and produce a
+  // KSI figure from crashes whose source never recorded an injury.
+  const activeCompleteness = liveRead ? liveRead.severityCompleteness : ingest?.severityCompleteness;
+
   // KSI — killed or seriously injured — is the measure SS4A and HSIP run on, so
   // it is only shown when the source could actually separate KABCO A. Otherwise
   // the completeness caveat below explains why there is no KSI figure, rather
   // than a "0" that would read as "no serious injuries occurred".
-  const ksiAvailable = ingest?.severityCompleteness === "kabco_full";
+  const ksiAvailable = activeCompleteness === "kabco_full";
   const ksiCount = ksiAvailable
     ? (severityCounts.fatal ?? 0) + (severityCounts.severe_injury ?? 0)
     : null;
@@ -376,7 +531,53 @@ export function SafetyWorkspace({
 
       {/* Coverage banner — source, attribution, and what the data does NOT establish. */}
       <section className="rounded-lg border p-4 text-sm" aria-label="Crash data coverage">
-        {ingest ? (
+        {liveRead ? (
+          /* A LIVE READ. Deliberately its own branch rather than a variant of
+             the acquisition banner: every number here describes data that is in
+             this browser and nowhere else, and the sentence that says so has to
+             sit next to the counts, not under them. */
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-medium">{liveRead.sourceLabel}</span>
+              <span className="text-muted-foreground">·</span>
+              <span className="text-muted-foreground">
+                {liveRead.crashCount.toLocaleString()} reported ·{" "}
+                {liveRead.geocodedCount.toLocaleString()} mappable
+              </span>
+              <span className="rounded-full border px-2 py-0.5 text-xs text-muted-foreground">
+                Live read — not saved
+              </span>
+            </div>
+            <p className="text-muted-foreground">
+              {COVERAGE_STATE_COPY[liveRead.coverageState] ?? liveRead.coverageState}
+            </p>
+            <p className="text-muted-foreground">{SAFETY_LIVE_READ_CAVEAT}</p>
+            {liveRead.severityCompleteness === "fatal_only" && (
+              <p className="text-muted-foreground">{SAFETY_FATAL_ONLY_CAVEAT}</p>
+            )}
+            {liveRead.severityCompleteness === "fatal_injury_only" && (
+              <p className="text-muted-foreground">{SAFETY_SEVERITY_COMPLETENESS_CAVEAT}</p>
+            )}
+            {/* WHICH YEARS ACTUALLY ANSWERED. The counts above are a total over
+                the years that came back, not over the years that were asked for,
+                and those are routinely different — see `splitLiveReadYears`. A
+                planner told "12 fatal crashes" for a four-year window has been
+                told something false if two of those years returned nothing. */}
+            {liveYears.silent.length > 0 && (
+              <p className="text-muted-foreground">
+                {liveYears.answered.length > 0
+                  ? `Records came back for ${liveYears.answered.join(", ")}, and the counts above cover only ${liveYears.answered.length === 1 ? "that year" : "those years"}. `
+                  : "No records came back for any year requested. "}
+                {`The source returned nothing for ${liveYears.silent.join(", ")}. That may mean no qualifying crashes were reported, that none could be mapped, or that the source has not published ${liveYears.silent.length === 1 ? "that year" : "those years"} yet — it is not evidence that no crashes occurred.`}
+              </p>
+            )}
+            {liveRead.truncated && (
+              <p className="text-muted-foreground">
+                Retrieval stopped at the record cap, so this is a partial extract of the study area.
+              </p>
+            )}
+          </div>
+        ) : ingest ? (
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-medium">{ingest.sourceLabel ?? "No source"}</span>
@@ -389,6 +590,15 @@ export function SafetyWorkspace({
             <p className="text-muted-foreground">
               {COVERAGE_STATE_COPY[ingest.coverageState] ?? ingest.coverageState}
             </p>
+            {/* Name what was consulted. A coverage gap that can list the sources
+                it checked is a far more useful — and more falsifiable — statement
+                than one that only asserts a gap, and it is the disclosure that
+                stops "no source covers you" reading as "we did not look". */}
+            {ingest.checkedSourceLabels && ingest.checkedSourceLabels.length > 0 && (
+              <p className="text-muted-foreground">
+                Sources checked for this study area: {ingest.checkedSourceLabels.join(", ")}.
+              </p>
+            )}
             {ungeocoded > 0 && (
               <p className="text-muted-foreground">
                 {ungeocoded.toLocaleString()} reported crashes have no coordinates from the source
@@ -406,6 +616,9 @@ export function SafetyWorkspace({
             {ingest.severityCompleteness === "fatal_injury_only" && (
               <p className="text-muted-foreground">{SAFETY_SEVERITY_COMPLETENESS_CAVEAT}</p>
             )}
+            {ingest.severityCompleteness === "fatal_only" && (
+              <p className="text-muted-foreground">{SAFETY_FATAL_ONLY_CAVEAT}</p>
+            )}
             {ingest.status === "failed" && ingest.fetchError && (
               <p className="text-destructive">Last retrieval failed: {ingest.fetchError}</p>
             )}
@@ -421,10 +634,18 @@ export function SafetyWorkspace({
             that is not evidence that no crashes occurred.
           </p>
         ) : (
+          /* NO JURISDICTION IS NAMED HERE. This sentence used to say crash
+             coverage was "currently California-only", which was a hardcoded
+             jurisdiction in UI copy and — once the national fatality adapter was
+             registered — no longer true. Which sources cover a place is the
+             registry's answer, given per study area, so the promise made here is
+             the one the product can actually keep: it will name the source, or
+             name the gap. */
           <p className="text-muted-foreground">
-            Choose a study area above to retrieve reported crashes for it. Crash coverage is
-            currently California-only (California Crash Reporting System); anywhere else will report
-            that plainly rather than showing an empty map.
+            Choose a study area above to retrieve reported crashes for it. What is available depends
+            on where you are: OpenPlan names the source that covers your study area, says what that
+            source does and does not record, and tells you plainly when nothing covers it — rather
+            than showing an empty map.
           </p>
         )}
       </section>
@@ -505,9 +726,14 @@ export function SafetyWorkspace({
       <p className="text-xs text-muted-foreground">
         {loading
           ? "Loading crashes…"
-          : response
-            ? `Showing ${response.returnedCount.toLocaleString()} of ${response.matchedCount.toLocaleString()} crashes matching these filters in view.`
-            : "No crashes loaded."}{" "}
+          : liveRead
+            ? /* Counted off the LIVE points, and against the source's own
+                 mappable total rather than the stored query's — mixing the two
+                 would describe one dataset with another's denominator. */
+              `Showing ${visibleFeatures.length.toLocaleString()} of ${liveRead.geocodedCount.toLocaleString()} mappable crashes from this live read, matching these filters.`
+            : response
+              ? `Showing ${response.returnedCount.toLocaleString()} of ${response.matchedCount.toLocaleString()} crashes matching these filters in view.`
+              : "No crashes loaded."}{" "}
         {SAFETY_CRASH_DATA_CAVEAT}
       </p>
     </div>

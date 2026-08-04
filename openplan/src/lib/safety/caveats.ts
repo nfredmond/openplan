@@ -34,6 +34,25 @@ export const SAFETY_SEVERITY_COMPLETENESS_CAVEAT =
   "This source distinguishes fatal, injury, and property-damage-only crashes but does not separate suspected serious injuries, so a killed-or-seriously-injured (KSI) total cannot be derived from it.";
 
 /**
+ * A fatality census records nothing else. Where the covering source is one
+ * (FARS is, nationally), the absence of injury crashes is a property of the
+ * source and must never read as a property of the road.
+ */
+export const SAFETY_FATAL_ONLY_CAVEAT =
+  "This source is a fatality census: it records only crashes in which someone was killed. Injury and property-damage collisions are absent from it, so their absence here is not a finding that none occurred.";
+
+/**
+ * A live read is not an acquisition, and saying so is not optional.
+ *
+ * `safety_crashes.source_id` is a closed CHECK domain, so a covering source
+ * outside it can be READ but not stored. The crashes are real; what a planner
+ * must not assume is that they are now part of the workspace's record, attached
+ * to a project, or still here tomorrow.
+ */
+export const SAFETY_LIVE_READ_CAVEAT =
+  "These crashes were read directly from the source agency just now and were not saved into this workspace, so they cannot be attached to a project and will be gone when you leave this page. Retrieve again to bring them back.";
+
+/**
  * The module is a screening aid. It does not produce an adopted plan, and it is
  * not a substitute for an engineering study.
  */

@@ -1,7 +1,6 @@
 import { Clock3, Hash, Sparkles } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
-import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import { formatDateTime, titleize } from "@/lib/reports/catalog";
 import type { LinkedRunRow, ReportArtifact, ReportSectionRow, TypedRunCitation } from "./_types";
 
@@ -118,15 +117,30 @@ export function ReportCompositionAudit({
                     <h4 className="text-sm font-semibold tracking-tight">
                       {citation.title}
                     </h4>
-                    <StatusBadge tone="info" className="shrink-0">
+                    <StatusBadge tone={citation.unresolved ? "warning" : "info"} className="shrink-0">
                       {citation.kind === "model" ? "Model run" : "County run"}
                     </StatusBadge>
                   </div>
-                  <p className="mt-2 text-[0.68rem] uppercase tracking-[0.12em] text-muted-foreground">
-                    {citation.kind === "model" && citation.engineKey
-                      ? `${getManagedRunModeDefinition(citation.engineKey).engineLabel} · ${titleize(citation.status ?? "unknown")}`
-                      : titleize(citation.status ?? "unknown")}
+                  {/*
+                   * The SHARED disclosure line, not a second one assembled here.
+                   * This panel used to render `engine · status`, which is the
+                   * same run described two ways: with a claim tier on the public
+                   * plan page and without one on the page a planner uses to
+                   * decide what the packet may say. `disclosureLine` is built by
+                   * `formatRtpEvidenceRunDisclosureLine` — one definition, and
+                   * it already distinguishes "no tier recorded" from "the tier
+                   * could not be read".
+                   */}
+                  <p className="mt-2 text-[0.72rem] leading-relaxed text-muted-foreground">
+                    {citation.disclosureLine}
                   </p>
+                  {citation.warnings.length > 0 && (
+                    <ul className="mt-2 space-y-1 text-[0.72rem] leading-relaxed text-amber-700 dark:text-amber-300">
+                      {citation.warnings.map((warning) => (
+                        <li key={warning}>{warning}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               ))}
             </>

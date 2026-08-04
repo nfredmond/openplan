@@ -260,4 +260,61 @@ describe("ProgramsPage", () => {
     ).toBeInTheDocument();
     expect(screen.queryByText("No programming cycles yet")).not.toBeInTheDocument();
   });
+
+  /**
+   * A FAILED READ MAY NOT BE RENDERED AS AN ANSWER.
+   *
+   * "No programming cycles yet. Create a program record…" is a claim about this
+   * workspace. A Supabase result destructured down to its `data` half gives the
+   * same `null` for a failed query as for an empty table, so a broken read made
+   * this page tell an agency its programming registry was empty.
+   *
+   * The first test is the control: without a case where the read SUCCEEDS and
+   * there is genuinely nothing, a page that printed the warning unconditionally
+   * would pass every other assertion here.
+   */
+  describe("a failed read may not be rendered as an answer", () => {
+    it("still shows the ordinary empty state when the catalog read SUCCEEDS and the workspace is genuinely empty", async () => {
+      programsOrderMock.mockResolvedValue({ data: [], error: null });
+
+      await renderPage();
+
+      expect(screen.getByText("No programming cycles yet")).toBeInTheDocument();
+      expect(screen.getByText("No funding opportunities logged yet")).toBeInTheDocument();
+      expect(screen.queryByText("Part of this page could not be read")).not.toBeInTheDocument();
+      expect(screen.queryByText("The programming-cycle catalog could not be read")).not.toBeInTheDocument();
+    });
+
+    it("does not tell an agency its programming registry is empty when the catalog read failed", async () => {
+      programsOrderMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table programs" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText("No programming cycles yet")).not.toBeInTheDocument();
+      expect(screen.getByText("The programming-cycle catalog could not be read")).toBeInTheDocument();
+      expect(screen.getByText("Part of this page could not be read")).toBeInTheDocument();
+      expect(
+        screen.getByText(/the programming-cycle catalog: permission denied for table programs/)
+      ).toBeInTheDocument();
+    });
+
+    it("does not claim no opportunities are logged when the opportunity read failed, and leaves the program catalog alone", async () => {
+      fundingOpportunitiesOrderMock.mockResolvedValue({
+        data: null,
+        error: { message: "relation funding_opportunities does not exist" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText("No funding opportunities logged yet")).not.toBeInTheDocument();
+      expect(screen.getByText("The funding-opportunity catalog could not be read")).toBeInTheDocument();
+
+      // The program catalog read succeeded, so it still renders its real rows.
+      expect(screen.getAllByText(/2027 RTIP/i).length).toBeGreaterThan(0);
+      expect(screen.queryByText("The programming-cycle catalog could not be read")).not.toBeInTheDocument();
+    });
+  });
 });

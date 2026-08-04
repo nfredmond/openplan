@@ -39,6 +39,9 @@ import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { loadReportRunCitationLinksForReports, resolveCitedRuns } from "@/lib/reports/run-citations";
 import { RTP_EVIDENCE_KPI_NAMES, loadRtpEvidenceRunDisclosures, summarizeRtpModelingEvidence, type RtpEvidenceRunRow, type RtpEvidenceSupabaseLike, type RtpModelingEvidenceKpiRow } from "@/lib/rtp/modeling-evidence";
 import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
+import { POSTGREST_NO_ROWS_MATCHED } from "@/lib/http/write-outcome";
+import { StateBlock } from "@/components/ui/state-block";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
@@ -47,6 +50,12 @@ import {
 } from "@/lib/stage-gates/decision-queries";
 import { resolveWorkspaceStageGateBinding } from "@/lib/stage-gates/template-loader";
 import { buildProjectTimelineItems } from "./_components/_timeline";
+import { buildProjectReportQueueItems } from "./_components/_report-queue";
+import {
+  loadProjectRecordLanes,
+  type ProjectRecordLaneSupabaseLike,
+} from "./_components/_record-lanes";
+import { ProjectUnreadableNotice } from "./_components/project-unreadable-notice";
 import { ProjectPostureHeader } from "./_components/project-posture-header";
 import { ProjectPostureUnified } from "./_components/project-posture-unified";
 import { ProjectSpineReadinessRollup } from "./_components/project-spine-readiness-rollup";
@@ -182,19 +191,36 @@ export default async function ProjectDetailPage({
   // the workspace-per-project fork was removed). Access = membership of the
   // project's own workspace, which RLS enforces; the page scopes every
   // subsequent query to project.workspace_id, not the current one.
-  const { data: projectData } = await supabase
+  const projectResult = await supabase
     .from("projects")
     .select(
       "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     )
     .eq("id", projectId)
     .single();
+  const projectData = projectResult.data ?? null;
 
+  // A 404 IS A CLAIM, AND A FAILED READ MAY NOT MAKE IT. `.single()` reports
+  // "no row matched" as PGRST116 with a null row — that is a genuine absence
+  // (including the RLS case: a non-member simply sees no row), and notFound()
+  // is the truthful answer. Any OTHER error is the query FAILING, and "this
+  // project does not exist" is a different fact from "this project could not be
+  // read". Both used to arrive here as `data: null` and both rendered as a
+  // 404, so a dropped column or a broken policy told a planner their project
+  // was gone. The distinction is drawn on the error, never on the empty row.
   if (!projectData) {
+    if (projectResult.error && projectResult.error.code !== POSTGREST_NO_ROWS_MATCHED) {
+      return <ProjectUnreadableNotice message={projectResult.error.message} />;
+    }
+
     notFound();
   }
 
   const project = projectData as ProjectRow;
+
+  // Every optional read on this page registers here so an empty panel can be
+  // told apart from a panel whose query failed. See src/lib/ui/read-failures.ts.
+  const reads = new ReadFailureLog();
 
   // The home-geography columns come along because the stage-gate binding is only
   // honest next to them: the stored template id has a database default, so
@@ -492,33 +518,23 @@ export default async function ProjectDetailPage({
   // budget snapshot above deliberately sees the full deliverable list.
   const deliverables = budgetInputs.deliverables.slice(0, 6);
 
-  const { data: risks } = await supabase
-    .from("project_risks")
-    .select("id, title, description, severity, status, mitigation, created_at")
-    .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
-
-  const { data: issues } = await supabase
-    .from("project_issues")
-    .select("id, title, description, severity, status, owner_label, created_at")
-    .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
-
-  const { data: decisions } = await supabase
-    .from("project_decisions")
-    .select("id, title, rationale, status, impact_summary, decided_at, created_at")
-    .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
-
-  const { data: meetings } = await supabase
-    .from("project_meetings")
-    .select("id, title, notes, meeting_at, attendees_summary, created_at")
-    .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
+  // The four narrative record lanes, each of which renders its own
+  // "No X recorded yet." and feeds a header count. See _record-lanes.ts for why
+  // they carry an explicit per-lane failure flag rather than an empty array.
+  const {
+    risks,
+    issues,
+    decisions,
+    meetings,
+    risksReadFailed,
+    issuesReadFailed,
+    decisionsReadFailed,
+    meetingsReadFailed,
+  } = await loadProjectRecordLanes(
+    supabase as unknown as ProjectRecordLaneSupabaseLike,
+    project.id,
+    reads
+  );
 
   const engagementCampaignsResult = await supabase
     .from("engagement_campaigns")
@@ -633,6 +649,15 @@ export default async function ProjectDetailPage({
         program: Array.isArray(item.programs) ? (item.programs[0] ?? null) : item.programs ?? null,
       }));
   const fundingAwardsPending = looksLikePendingSchema(fundingAwardsResult.error?.message);
+  // CLASSIFY FIRST, THEN COLLECT WHAT IS LEFT. `looksLikePendingSchema` answers
+  // exactly one question — is this deployment behind a migration — and every
+  // other error falls through it into `data ?? []`, which the panel renders as
+  // "No funding awards are recorded for this project yet." and the tiles total
+  // to $0. A revoked grant or a changed policy is not a finding about an
+  // agency's money, so anything the classifier does not own is collected here.
+  const fundingAwardsReadFailed = fundingAwardsPending
+    ? false
+    : reads.check("project funding awards", fundingAwardsResult);
 
   const fundingOpportunitiesResult = await supabase
     .from("funding_opportunities")
@@ -947,39 +972,7 @@ export default async function ProjectDetailPage({
     .map((report) => report.evidenceChainSummary)
     .filter((summary): summary is NonNullable<typeof summary> => Boolean(summary))
     .sort((left, right) => right.engagementItemCount - left.engagementItemCount)[0] ?? null;
-  const projectReportQueueItems = projectReports.slice(0, 4).map((report) => {
-    const badges: Array<{ label: string; value?: string | number | null }> = [];
-    if (report.packetFreshness.label !== PACKET_FRESHNESS_LABELS.CURRENT) {
-      badges.push({ label: report.packetFreshness.label });
-    }
-    if (report.comparisonDigest) {
-      badges.push({ label: "Comparison-backed" });
-    }
-    if (report.evidenceChainDigest?.blockedGateDetail) {
-      badges.push({ label: "Governance hold" });
-    }
-
-    return {
-      key: report.id,
-      href: getReportNavigationHref(report.id, report.packetFreshness.label),
-      title: report.title,
-      subtitle:
-        report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED
-          ? `First action: refresh ${report.title}`
-          : report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET
-            ? `First action: generate ${report.title}`
-            : report.evidenceChainDigest?.blockedGateDetail
-              ? `First action: review governance hold in ${report.title}`
-              : report.comparisonDigest
-                ? `First action: review comparison-backed packet ${report.title}`
-                : `First action: review ${report.title}`,
-      detail:
-        report.evidenceChainDigest?.blockedGateDetail ??
-        report.comparisonDigest?.detail ??
-        report.packetFreshness.detail,
-      badges,
-    };
-  });
+  const projectReportQueueItems = buildProjectReportQueueItems(projectReports);
   const projectControlsSummary = buildProjectControlsSummary(
     milestones,
     submittals,
@@ -1182,8 +1175,16 @@ export default async function ProjectDetailPage({
     recentGateDecisions,
   });
 
-  const openRiskCount = (risks ?? []).filter((risk) => risk.status !== "closed" && risk.status !== "mitigated").length;
-  const openIssueCount = (issues ?? []).filter((issue) => issue.status !== "resolved").length;
+  // Null, not 0, when the read failed: a count is an assertion about the
+  // project, and "we counted none" is not what a broken query established. The
+  // header renders null the way it already renders an unreadable Knowledge Base
+  // count — as "—" with the reason, never as a number.
+  const openRiskCount = risksReadFailed
+    ? null
+    : risks.filter((risk) => risk.status !== "closed" && risk.status !== "mitigated").length;
+  const openIssueCount = issuesReadFailed
+    ? null
+    : issues.filter((issue) => issue.status !== "resolved").length;
 
   return (
     <section className="module-page">
@@ -1195,6 +1196,14 @@ export default async function ProjectDetailPage({
         <ArrowRight className="h-4 w-4" />
         <span className="text-foreground">{project.name}</span>
       </div>
+
+      {reads.any ? (
+        <StateBlock
+          tone="danger"
+          title="Part of this page could not be read"
+          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
 
       <ProjectPostureHeader
         project={project}
@@ -1293,6 +1302,7 @@ export default async function ProjectDetailPage({
         projectFundingProfile={projectFundingProfile}
         projectFundingProfilePending={projectFundingProfilePending}
         fundingAwardsPending={fundingAwardsPending}
+        fundingAwardsReadFailed={fundingAwardsReadFailed}
         fundingOpportunitiesPending={fundingOpportunitiesPending}
         fundingAwards={fundingAwards}
         fundingOpportunities={fundingOpportunities}
@@ -1353,10 +1363,15 @@ export default async function ProjectDetailPage({
       />
 
       <ProjectRiskAndDecisionLog
+        projectId={project.id}
         risks={risks}
         issues={issues}
         decisions={decisions}
         meetings={meetings}
+        risksReadFailed={risksReadFailed}
+        issuesReadFailed={issuesReadFailed}
+        decisionsReadFailed={decisionsReadFailed}
+        meetingsReadFailed={meetingsReadFailed}
       />
 
       <ProjectEvidenceAndActivity

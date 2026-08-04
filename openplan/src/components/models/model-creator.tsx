@@ -35,12 +35,28 @@ function FormError({ error }: { error: string | null }) {
   );
 }
 
+/**
+ * An option list that could not be read arrives here as `[]`, exactly like a
+ * workspace that genuinely has no projects — and a `<select>` renders both as
+ * the same empty dropdown under "No primary project". That is a false absence
+ * on a DECISION surface: the planner concludes there is nothing to link to and
+ * creates a model with no project basis, which the catalog then reports as a
+ * readiness gap the planner cannot explain.
+ *
+ * The picker is never disabled for this. The planner keeps every option that
+ * did load and can still create the model; the page only stops implying that
+ * the missing options are absent.
+ */
 export function ModelCreator({
   projects,
   scenarioSets,
+  projectsReadFailed = false,
+  scenarioSetsReadFailed = false,
 }: {
   projects: ProjectOption[];
   scenarioSets: ScenarioSetOption[];
+  projectsReadFailed?: boolean;
+  scenarioSetsReadFailed?: boolean;
 }) {
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -153,6 +169,15 @@ export function ModelCreator({
                     </option>
                   ))}
                 </select>
+                {projectsReadFailed ? (
+                  <p
+                    className="text-[0.72rem] text-amber-700 dark:text-amber-300"
+                    data-testid="model-creator-projects-unreadable"
+                  >
+                    This workspace&apos;s project list could not be read, so this picker may be
+                    missing projects. An empty list here does not mean there are none.
+                  </p>
+                ) : null}
               </div>
 
               <div className="space-y-1.5">
@@ -172,6 +197,15 @@ export function ModelCreator({
                     </option>
                   ))}
                 </select>
+                {scenarioSetsReadFailed ? (
+                  <p
+                    className="text-[0.72rem] text-amber-700 dark:text-amber-300"
+                    data-testid="model-creator-scenario-sets-unreadable"
+                  >
+                    This workspace&apos;s scenario sets could not be read, so this picker may be
+                    missing sets. An empty list here does not mean there are none.
+                  </p>
+                ) : null}
               </div>
             </div>
 

@@ -303,6 +303,196 @@ describe("POST /api/report", () => {
   });
 
   /**
+   * The corridor report must state how far its own numbers may be carried.
+   *
+   * `decisionUseStatus` has been stamped on every analysis run since the
+   * traceability block existed and was read by NOTHING — not this report, not the
+   * results board. A grant-ready PDF with no use boundary is the artifact most
+   * likely to be over-read into a determination it cannot support.
+   */
+  it("states the run's decision-use boundary in the exported report", async () => {
+    runsSingleMock.mockResolvedValue({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "Test Corridor",
+        query_text: "Evaluate this corridor",
+        summary_text: "Summary text",
+        ai_interpretation: null,
+        metrics: {
+          overallScore: 70,
+          accessibilityScore: 68,
+          safetyScore: 72,
+          equityScore: 74,
+          confidence: "high",
+          decisionUseStatus: "concept-level",
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            crashes: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+          },
+        },
+        created_at: "2025-01-01T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+    const html = await response.text();
+
+    expect(html).toContain("Decision use: concept-level");
+    expect(html).toContain("CEQA determination");
+  });
+
+  /** A run that recorded no boundary says so, rather than inheriting one. */
+  it("says the decision-use boundary was not recorded on a legacy run", async () => {
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+    const html = await response.text();
+
+    expect(html).toContain("Decision use: not recorded");
+    expect(html).not.toContain("Decision use: concept-level");
+  });
+
+  /**
+   * A missing safety score may not render as a bad one.
+   *
+   * Each score card read `scoreColor(Number(m.safetyScore) || 0)` around
+   * `fmt(m.safetyScore)`. `safetyScore` is null whenever no crash source answered
+   * — the ordinary case outside a registered adapter's coverage — so the card
+   * printed the missing-value text in the RED reserved for a score below 40. In a
+   * grant-ready PDF, a corridor nobody could measure looked like the most
+   * dangerous one on the page.
+   */
+  it("renders an unmeasured safety score as not measured, not as a red zero", async () => {
+    runsSingleMock.mockResolvedValue({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "Test Corridor",
+        query_text: "Evaluate this corridor",
+        summary_text: "Summary text",
+        ai_interpretation: null,
+        metrics: {
+          overallScore: 63,
+          accessibilityScore: 68,
+          safetyScore: null,
+          equityScore: 74,
+          confidence: "medium",
+          totalPopulation: null,
+          pctTransit: null,
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            crashes: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+          },
+        },
+        created_at: "2025-01-01T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+    const html = await response.text();
+
+    expect(html).toContain("No crash source covered this study area");
+    // The danger red belongs to a measured low score, never to an absent one.
+    expect(html).not.toMatch(/color:#dc2626[^>]*>\s*(Not measured|N\/A)/);
+    // Unmeasured demographics read as unmeasured, not "not applicable" and not
+    // as a zero. (`?? "N/A"` survives on a few non-census rows this change did
+    // not touch — those are called out in the handoff, not silently asserted.)
+    expect(html).toContain("<td>Total Population</td><td>Not measured</td>");
+    expect(html).toContain("<td>Public Transit</td><td>Not measured</td>");
+    expect(html).not.toContain("<td>Total Population</td><td>0</td>");
+  });
+
+  /**
+   * A score that EXISTS but was computed over an unread census is not a
+   * measurement, and the PDF is where that matters most.
+   *
+   * Nulling the census FIGURES did not null the SCORES. `computeAccessibility`
+   * and `computeEquity` read the summarizer's placeholder zeros, so a corridor
+   * whose ACS read returned nothing still exports "Accessibility 5 / Equity 0".
+   * A grant reviewer holding this page has no way to tell that Equity 0 from a
+   * measured one. Proven against what the route really persists in
+   * `corridor-lane-honesty.test.tsx`, which asserts the same
+   * `censusMeasuredUniverses.tracts: false` this fixture carries.
+   */
+  it("says an Accessibility and Equity score was computed over an unread census", async () => {
+    runsSingleMock.mockResolvedValue({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "Test Corridor",
+        query_text: "Evaluate this corridor",
+        summary_text: "Summary text",
+        ai_interpretation: null,
+        metrics: {
+          overallScore: 3,
+          accessibilityScore: 5,
+          safetyScore: null,
+          equityScore: 0,
+          confidence: "low",
+          tractCount: 0,
+          censusMeasuredUniverses: { tracts: false, population: false },
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            crashes: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+          },
+        },
+        created_at: "2025-01-01T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+    const html = await response.text();
+
+    const caveat = /computed as though every demographic input were zero/g;
+    // On the Accessibility card AND the Equity card — not once at the top where
+    // it is read as being about something else.
+    expect(html.match(caveat) ?? []).toHaveLength(2);
+    // And the numbers are still there: disclose, never withhold a planner's run.
+    expect(html).toContain(">5</div>");
+    expect(html).toContain(">0</div>");
+  });
+
+  /** The caveat must be absent when the census answered — an always-on warning teaches nothing. */
+  it("does not caveat the scores when the census answered", async () => {
+    runsSingleMock.mockResolvedValue({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "Test Corridor",
+        query_text: "Evaluate this corridor",
+        summary_text: "Summary text",
+        ai_interpretation: null,
+        metrics: {
+          overallScore: 70,
+          accessibilityScore: 68,
+          safetyScore: 72,
+          equityScore: 74,
+          confidence: "high",
+          tractCount: 12,
+          censusMeasuredUniverses: { tracts: true, population: true },
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            crashes: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+          },
+        },
+        created_at: "2025-01-01T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+    const html = await response.text();
+
+    expect(html).not.toContain("computed as though every demographic input were zero");
+  });
+
+  /**
    * The PDF is the SAME document as the HTML export, rendered.
    *
    * It used to be a separate, thinner text document — ~9 labelled values

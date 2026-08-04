@@ -62,16 +62,14 @@ const EXTERNAL_CALLERS: Record<string, string> = {
  * is the point. Adding one requires a reason a reviewer will ask about.
  */
 const KNOWN_UNWIRED: readonly string[] = [
-  // Network package ingest, which the product ITSELF describes as unbuilt:
-  // `network-packages-panel.tsx` tells a planner in as many words that "Ingest
-  // is API-only for now — there is no in-app upload form yet." Honest, and a
-  // real gap; listed here so it stays counted rather than excused.
-  "api/network-packages",
-  "api/network-packages/[packageId]/versions",
-  "api/network-packages/[packageId]/versions/[versionId]/connectors",
-  "api/network-packages/[packageId]/versions/[versionId]/corridors",
-  "api/network-packages/[packageId]/versions/[versionId]/ingest",
-  "api/network-packages/[packageId]/versions/[versionId]/zones",
+  // The six network-package routes that stood here are WIRED as of 2026-08-03:
+  // `models/_components/network-package-upload-form.tsx` creates the package,
+  // adds the version, posts nodes/links for QA, and creates the zones,
+  // corridors and connectors — and the panel that used to say "Ingest is
+  // API-only for now" now renders that form. Removing them is what this
+  // ratchet is for; see `a-planner-can-upload-a-network-package.test.tsx`,
+  // which drives the real panel rather than the form alone.
+  //
   // A GET that duplicates work the page already does. `/assistant-activity`
   // imports `buildAssistantActivitySummary` from inside this route's own folder
   // and runs its own query, so the HTTP endpoint beside it answers to nobody.

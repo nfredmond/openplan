@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
-import { loadOperatorNotifications, markAllNotificationsRead, markNotificationRead } from "@/lib/notifications/engagement";
+import {
+  loadCampaignEmailDeliverySummary,
+  loadOperatorNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  type EmailDeliverySummary,
+} from "@/lib/notifications/engagement";
+import { emailTransportName } from "@/lib/notifications/email";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid() });
@@ -34,7 +41,32 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const notifications = await loadOperatorNotifications(supabase, access.campaign.id, { limit: 50 });
     const unreadCount = notifications.filter((n) => !n.is_read).length;
-    return NextResponse.json({ notifications, unreadCount });
+
+    // Delivery status for this campaign's outbox. The outbox holds participant
+    // email addresses, so it is service-role-only and the summary carries counts
+    // rather than recipients. Every message written since 2026-07-22 has been
+    // recorded there and NOTHING displayed it, so an operator who broadcast a
+    // "You said / We did" update could not find out whether it left the building.
+    // Failing to read it must not take the notification list down with it, and a
+    // deployment with no service-role key must say THAT rather than report zero.
+    let emailDelivery: EmailDeliverySummary;
+    try {
+      emailDelivery = await loadCampaignEmailDeliverySummary(createServiceRoleClient(), access.campaign.id);
+    } catch (deliveryError) {
+      emailDelivery = {
+        ok: false,
+        message: deliveryError instanceof Error ? deliveryError.message : String(deliveryError),
+      };
+    }
+
+    return NextResponse.json({
+      notifications,
+      unreadCount,
+      emailDelivery,
+      // The transport in effect right now, which is a different fact from what
+      // the historical rows were sent through.
+      emailTransport: emailTransportName(),
+    });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Unexpected error while listing notifications" }, { status: 500 });

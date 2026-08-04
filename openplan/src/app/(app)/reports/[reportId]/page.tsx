@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { ReportReadFailureDisclosure, ReportUnreadableShell } from "@/components/reports/report-read-failure-notice";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import {
@@ -15,6 +16,7 @@ import {
   buildRtpPublicReviewSummary,
 } from "@/lib/rtp/catalog";
 import { createClient } from "@/lib/supabase/server";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
@@ -59,7 +61,6 @@ import {
   asStageGateSnapshot,
   buildCurrentProjectRecordEntry,
   formatCompactDateTime,
-  formatCurrency,
   loadAiNarrativeDraftPanelInputs,
   loadProjectFundingSourceRows,
   loadReportDetailRow,
@@ -79,6 +80,15 @@ import type {
   ReportArtifact,
   ScenarioSpineRow,
 } from "./_components/_types";
+import { buildFundingPostureDriftItem } from "./_components/_funding-drift";
+import {
+  checkLiveScenarioSpineReads,
+  checkRtpFundingReads,
+  collectProjectRecordReadFailures,
+  describeUncoveredProjectRecords,
+  PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE,
+  registerReportDetailReads,
+} from "./_components/_read-failures";
 import { ReportStandardDetail } from "./_components/report-standard-detail";
 
 type RouteParams = {
@@ -97,22 +107,43 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     redirect("/sign-in");
   }
 
-  const { data: report } = await loadReportDetailRow(supabase, reportId);
+  const reportResult = await loadReportDetailRow(supabase, reportId);
+
+  // A 404 on a FAILED read is the same defect wearing a different face: it tells
+  // a planner "this report does not exist" when the truth is "this report could
+  // not be read". A genuine absence still 404s below; a failed read renders the
+  // page shell and says which one happened. This is an internal page, so the
+  // database's own message is shown to the person who can act on it.
+  if (reportResult.error) {
+    return <ReportUnreadableShell message={reportResult.error.message} />;
+  }
+
+  const report = reportResult.data;
 
   if (!report) {
     notFound();
   }
 
+  /**
+   * What this render could not read. Everything below is a side panel or a
+   * comparison input: one failing does not make the packet worthless, but every
+   * one of them, on failure, produces an EMPTY value that this page would
+   * otherwise render as an answer — no generated packet, no sections, no linked
+   * projects, and drift rows reporting an outage as records lost since
+   * generation. Collect, render what loaded, and disclose the rest by name.
+   */
+  const reads = new ReadFailureLog();
+
   const [
-    { data: project },
-    { data: rtpCycle },
-    { data: workspace },
-    { data: sections },
+    projectResult,
+    rtpCycleResult,
+    workspaceResult,
+    sectionsResult,
     reportRunCitationLinks,
-    { data: artifacts },
-    { data: rtpChapters },
-    { data: rtpProjectLinks },
-    { data: rtpCampaigns },
+    artifactsResult,
+    rtpChaptersResult,
+    rtpProjectLinksResult,
+    rtpCampaignsResult,
     operationsSummary,
   ] = await Promise.all([
     supabase
@@ -130,7 +161,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           )
           .eq("id", report.rtp_cycle_id)
           .maybeSingle()
-      : Promise.resolve({ data: null }),
+      : Promise.resolve({ data: null, error: null }),
     supabase
       .from("workspaces")
       .select("id, name, slug")
@@ -152,27 +183,63 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           .from("rtp_cycle_chapters")
           .select("id, status")
           .eq("rtp_cycle_id", report.rtp_cycle_id)
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [], error: null }),
     report.rtp_cycle_id
       ? supabase
           .from("project_rtp_cycle_links")
           .select("id, project_id")
           .eq("rtp_cycle_id", report.rtp_cycle_id)
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [], error: null }),
     report.rtp_cycle_id
       ? supabase
           .from("engagement_campaigns")
           .select("id, rtp_cycle_chapter_id")
           .eq("workspace_id", report.workspace_id)
           .eq("rtp_cycle_id", report.rtp_cycle_id)
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [], error: null }),
     loadWorkspaceOperationsSummaryForWorkspace(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       report.workspace_id
     ),
   ]);
 
+  const {
+    artifactsUnreadable,
+    sectionsUnreadable,
+    rtpChaptersUnreadable,
+    rtpProjectLinksUnreadable,
+    rtpCampaignsUnreadable,
+  } = registerReportDetailReads(reads, {
+    project: projectResult,
+    rtpCycle: rtpCycleResult,
+    workspace: workspaceResult,
+    sections: sectionsResult,
+    artifacts: artifactsResult,
+    rtpChapters: rtpChaptersResult,
+    rtpProjectLinks: rtpProjectLinksResult,
+    rtpCampaigns: rtpCampaignsResult,
+  });
+
+  const project = projectResult.data;
+  const rtpCycle = rtpCycleResult.data;
+  const workspace = workspaceResult.data;
+  const sections = sectionsResult.data;
+  const artifacts = artifactsResult.data;
+  const rtpChapters = rtpChaptersResult.data;
+  const rtpProjectLinks = rtpProjectLinksResult.data;
+  const rtpCampaigns = rtpCampaignsResult.data;
+
   const projectFundingRows = await loadProjectFundingSourceRows(supabase, report.project_id);
+  // The live funding board behind this project's posture. The loader keeps its
+  // empty arrays on failure (a page that 500s because one panel broke is worse),
+  // so the failure is registered here and the DRIFT COMPARISON is withheld
+  // below — an unread awards table otherwise publishes "Committed awards:
+  // $8,000,000 -> $0." against the packet's frozen snapshot.
+  if (projectFundingRows.unreadable) {
+    reads.check("this project's live funding awards, opportunities and invoices", {
+      error: { message: projectFundingRows.unreadableMessage },
+    });
+  }
 
   const projectDatasetLinksResult = report.project_id
     ? await supabase
@@ -240,6 +307,13 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           { data: [], error: null },
           { data: [], error: null },
         ];
+
+  const rtpFundingUnreadable = checkRtpFundingReads(reads, {
+    profiles: rtpFundingProfilesResult,
+    awards: rtpFundingAwardsResult,
+    opportunities: rtpFundingOpportunitiesResult,
+    invoices: rtpBillingInvoicesResult,
+  });
 
   const reportRunLinks = reportRunCitationLinks.links;
   const runIds = reportRunLinks.map((item) => item.run_id).filter((value): value is string => Boolean(value));
@@ -466,6 +540,15 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           )
           .in("campaign_id", currentRtpCampaignIds)
       : { data: [], error: null };
+    // The comment counts below drive this cycle's public-review posture. An
+    // unread items table would report a zero pending queue — "nothing is waiting
+    // on you" — from a broken query, so the failure is disclosed AND the counts
+    // are withheld: disclosure alone leaves the drift table still publishing
+    // "Pending comments: generated with 31, current source is 0".
+    const rtpCommentsUnreadable = reads.check(
+      "the public comments on this RTP cycle",
+      rtpEngagementItemsResult
+    );
     const currentRtpEngagementCounts = summarizeEngagementItems(
       [],
       (rtpEngagementItemsResult.data ?? []) as Array<{
@@ -498,6 +581,8 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         })
       : null;
     return (
+      <>
+      <ReportReadFailureDisclosure reads={reads} />
       <RtpReportDetail
         report={report}
         workspace={workspace}
@@ -543,36 +628,54 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           approvedCommentCount: asNullableNumber(sourceContext?.engagementApprovedCommentCount),
           readyCommentCount: asNullableNumber(sourceContext?.engagementReadyCommentCount),
         }}
+        // EVERY live value here is one half of a published comparison, so a read
+        // that failed is passed as `null` — "unknown" — rather than as the zero
+        // its empty array produces. `null` makes the drift row withhold itself;
+        // the disclosure at the top of the page names which read failed. The
+        // alternative is the defect this whole lane exists for, wearing a drift
+        // row: an outage printed to a funder as chapters, projects, comments and
+        // committed dollars that disappeared since the packet was generated.
         currentContext={{
-          enabledSectionKeys: (sections ?? [])
-            .filter((section) => section.enabled)
-            .map((section) => section.section_key),
+          enabledSectionKeys: sectionsUnreadable
+            ? null
+            : (sections ?? []).filter((section) => section.enabled).map((section) => section.section_key),
           readinessLabel: currentRtpReadiness?.label ?? null,
           readinessReason: currentRtpReadiness?.reason ?? null,
           workflowLabel: currentRtpWorkflow?.label ?? null,
           workflowDetail: currentRtpWorkflow?.detail ?? null,
-          chapterCount: currentRtpChapterRows.length,
-          chapterCompleteCount: currentRtpChapterRows.filter((chapter) => chapter.status === "complete").length,
-          chapterReadyForReviewCount: currentRtpChapterRows.filter((chapter) => chapter.status === "ready_for_review").length,
-          linkedProjectCount: currentRtpProjectLinks.length,
-          engagementCampaignCount: currentRtpCampaigns.length,
+          chapterCount: rtpChaptersUnreadable ? null : currentRtpChapterRows.length,
+          chapterCompleteCount: rtpChaptersUnreadable
+            ? null
+            : currentRtpChapterRows.filter((chapter) => chapter.status === "complete").length,
+          chapterReadyForReviewCount: rtpChaptersUnreadable
+            ? null
+            : currentRtpChapterRows.filter((chapter) => chapter.status === "ready_for_review").length,
+          linkedProjectCount: rtpProjectLinksUnreadable ? null : currentRtpProjectLinks.length,
+          engagementCampaignCount: rtpCampaignsUnreadable ? null : currentRtpCampaigns.length,
           cycleUpdatedAt: rtpCycle?.updated_at ?? null,
           presetStage: currentPacketPresetAlignment.presetStage,
           presetLabel: currentPacketPresetAlignment.presetLabel,
           presetStatusLabel: currentPacketPresetAlignment.statusLabel,
           presetDetail: currentPacketPresetAlignment.detail,
-          fundingSnapshot: currentRtpFundingSnapshot,
+          fundingSnapshot: rtpFundingUnreadable ? null : currentRtpFundingSnapshot,
           publicReviewLabel: currentRtpPublicReview?.label ?? null,
           publicReviewDetail: currentRtpPublicReview?.detail ?? null,
           publicReviewTone: currentRtpPublicReview?.tone ?? null,
-          cycleLevelCampaignCount,
-          chapterLevelCampaignCount,
-          pendingCommentCount: currentRtpEngagementCounts.moderationQueue.pendingCount,
-          approvedCommentCount: currentRtpEngagementCounts.moderationQueue.approvedCount,
-          readyCommentCount: currentRtpEngagementCounts.moderationQueue.readyForHandoffCount,
+          cycleLevelCampaignCount: rtpCampaignsUnreadable ? null : cycleLevelCampaignCount,
+          chapterLevelCampaignCount: rtpCampaignsUnreadable ? null : chapterLevelCampaignCount,
+          pendingCommentCount: rtpCommentsUnreadable
+            ? null
+            : currentRtpEngagementCounts.moderationQueue.pendingCount,
+          approvedCommentCount: rtpCommentsUnreadable
+            ? null
+            : currentRtpEngagementCounts.moderationQueue.approvedCount,
+          readyCommentCount: rtpCommentsUnreadable
+            ? null
+            : currentRtpEngagementCounts.moderationQueue.readyForHandoffCount,
         }}
         operationsSummary={operationsSummary}
       />
+      </>
     );
   }
 
@@ -747,7 +850,32 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  const liveEngagementCounts = engagementCampaign
+  /**
+   * A drift row is a COMPARISON, and every status one could carry — "unchanged",
+   * "count changed" — is a claim about the LIVE side. When the live read failed
+   * the live side is unknown, and its zero counts would be published as
+   * "Deliverables: 12 -> 0", i.e. an outage reported to a funder as records
+   * deleted since this packet was generated. The precedent is the stage-gate
+   * block below, which already withholds its verdict for exactly this reason;
+   * these follow it rather than inventing a second rule.
+   *
+   * Written as separate statements, not `a || b`, because `||` short-circuits
+   * and the second read would then never be registered.
+   */
+  const liveEngagementReadFailure = [
+    reads.check("this campaign's live engagement categories", engagementCategoriesResult),
+    reads.check("this campaign's live engagement items", engagementItemsResult),
+  ].some(Boolean);
+
+  const projectRecordReadFailures = collectProjectRecordReadFailures(reads, {
+    deliverables: deliverablesResult,
+    risks: risksResult,
+    issues: issuesResult,
+    decisions: decisionsResult,
+    meetings: meetingsResult,
+  });
+
+  const liveEngagementCounts = engagementCampaign && !liveEngagementReadFailure
     ? summarizeEngagementItems(
         (engagementCategoriesResult.data ?? []) as EngagementCategoryRow[],
         (engagementItemsResult.data ?? []) as EngagementItemRow[]
@@ -765,6 +893,17 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     scenarioIndicatorSnapshotsResult.error,
     scenarioComparisonSnapshotsResult.error,
   ].some((error) => looksLikePendingScenarioSpineSchema(error?.message));
+  // Classified first (a pending spine migration has a truer thing to say), then
+  // collected: a spine read that failed for any other reason leaves every live
+  // count at zero, which the comparison below would publish as the scenario
+  // basis having lost its assumption sets since the packet was generated.
+  const liveScenarioReadFailure = checkLiveScenarioSpineReads(reads, liveScenarioSpinePending, {
+    sets: scenarioSetsResult,
+    assumptionSets: scenarioAssumptionSetsResult,
+    dataPackages: scenarioDataPackagesResult,
+    indicatorSnapshots: scenarioIndicatorSnapshotsResult,
+    comparisonSnapshots: scenarioComparisonSnapshotsResult,
+  });
   const liveScenarioAssumptionRows = liveScenarioSpinePending
     ? []
     : ((scenarioAssumptionSetsResult.data ?? []) as ScenarioSpineRow[]);
@@ -914,7 +1053,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     });
   }
 
-  if (scenarioSetLinks.length > 0) {
+  if (scenarioSetLinks.length > 0 && !liveScenarioReadFailure) {
     const scenarioChanges = scenarioSetLinks
       .map((link) => {
         const snapshotAt = maxTimestamp(
@@ -970,11 +1109,18 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     });
   }
 
-  if (projectRecordsSnapshot.length > 0) {
+  const comparableProjectRecords = projectRecordsSnapshot.filter(
+    (item) => !projectRecordReadFailures.has(item.key as ProjectRecordSnapshotKey)
+  );
+
+  // No drift row at all when NONE of the snapshotted record types could be read
+  // live: with nothing comparable left there is no comparison to report, and
+  // "unchanged" would be a verdict on a live board this render never saw.
+  if (comparableProjectRecords.length > 0) {
     const countChanges: string[] = [];
     const timingChanges: string[] = [];
 
-    for (const item of projectRecordsSnapshot) {
+    for (const item of comparableProjectRecords) {
       const currentEntry = currentProjectRecordsByKey.get(
         item.key as ProjectRecordSnapshotKey
       );
@@ -1006,106 +1152,26 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           : timingChanges.length > 0
             ? "updated"
             : "unchanged",
-      detail: summarizeProjectRecordDrift(
-        countChanges.length > 0 ? countChanges : timingChanges
-      ),
+      // The second half names what this comparison did NOT cover, so a partial
+      // check is not read as a whole one.
+      detail: [
+        summarizeProjectRecordDrift(countChanges.length > 0 ? countChanges : timingChanges),
+        describeUncoveredProjectRecords(projectRecordReadFailures),
+      ]
+        .filter((value): value is string => Boolean(value))
+        .join(" "),
     });
   }
 
-  if (storedFundingSnapshot && liveFundingSnapshot) {
-    const fundingCountChanges: string[] = [];
-    const fundingValueChanges: string[] = [];
-    const fundingLabelChanges: string[] = [];
-
-    if (storedFundingSnapshot.awardCount !== liveFundingSnapshot.awardCount) {
-      fundingCountChanges.push(
-        `Awards: ${storedFundingSnapshot.awardCount} -> ${liveFundingSnapshot.awardCount}.`
-      );
-    }
-    if (
-      storedFundingSnapshot.pursuedOpportunityCount !==
-      liveFundingSnapshot.pursuedOpportunityCount
-    ) {
-      fundingCountChanges.push(
-        `Pursued opportunities: ${storedFundingSnapshot.pursuedOpportunityCount} -> ${liveFundingSnapshot.pursuedOpportunityCount}.`
-      );
-    }
-    if (
-      storedFundingSnapshot.reimbursementPacketCount !==
-      liveFundingSnapshot.reimbursementPacketCount
-    ) {
-      fundingCountChanges.push(
-        `Reimbursement packets: ${storedFundingSnapshot.reimbursementPacketCount} -> ${liveFundingSnapshot.reimbursementPacketCount}.`
-      );
-    }
-
-    if (
-      storedFundingSnapshot.committedFundingAmount !==
-      liveFundingSnapshot.committedFundingAmount
-    ) {
-      fundingValueChanges.push(
-        `Committed awards: ${formatCurrency(storedFundingSnapshot.committedFundingAmount)} -> ${formatCurrency(liveFundingSnapshot.committedFundingAmount)}.`
-      );
-    }
-    if (
-      storedFundingSnapshot.unfundedAfterLikelyAmount !==
-      liveFundingSnapshot.unfundedAfterLikelyAmount
-    ) {
-      fundingValueChanges.push(
-        `Uncovered after likely dollars: ${formatCurrency(storedFundingSnapshot.unfundedAfterLikelyAmount)} -> ${formatCurrency(liveFundingSnapshot.unfundedAfterLikelyAmount)}.`
-      );
-    }
-    if (
-      storedFundingSnapshot.uninvoicedAwardAmount !==
-      liveFundingSnapshot.uninvoicedAwardAmount
-    ) {
-      fundingValueChanges.push(
-        `Uninvoiced awards: ${formatCurrency(storedFundingSnapshot.uninvoicedAwardAmount)} -> ${formatCurrency(liveFundingSnapshot.uninvoicedAwardAmount)}.`
-      );
-    }
-
-    if (storedFundingSnapshot.label !== liveFundingSnapshot.label) {
-      fundingLabelChanges.push(
-        `Funding posture: ${storedFundingSnapshot.label} -> ${liveFundingSnapshot.label}.`
-      );
-    }
-    if (storedFundingSnapshot.pipelineLabel !== liveFundingSnapshot.pipelineLabel) {
-      fundingLabelChanges.push(
-        `Pipeline posture: ${storedFundingSnapshot.pipelineLabel} -> ${liveFundingSnapshot.pipelineLabel}.`
-      );
-    }
-    if (
-      storedFundingSnapshot.reimbursementLabel !==
-      liveFundingSnapshot.reimbursementLabel
-    ) {
-      fundingLabelChanges.push(
-        `Reimbursement posture: ${storedFundingSnapshot.reimbursementLabel} -> ${liveFundingSnapshot.reimbursementLabel}.`
-      );
-    }
-
-    const fundingTimingChanged =
-      storedFundingSnapshot.latestSourceUpdatedAt !== liveFundingSnapshot.latestSourceUpdatedAt;
-
-    driftItems.push({
-      key: "funding-posture",
-      label: "Funding posture",
-      status:
-        fundingCountChanges.length > 0
-          ? "count changed"
-          : fundingValueChanges.length > 0 || fundingLabelChanges.length > 0 || fundingTimingChanged
-            ? "updated"
-            : "unchanged",
-      detail:
-        [
-          ...fundingCountChanges,
-          ...fundingValueChanges,
-          ...fundingLabelChanges,
-          fundingTimingChanged
-            ? `Funding source timing: ${formatCompactDateTime(storedFundingSnapshot.latestSourceUpdatedAt)} -> ${formatCompactDateTime(liveFundingSnapshot.latestSourceUpdatedAt)}.`
-            : null,
-        ].filter((value): value is string => Boolean(value)).join(" ") ||
-        "Funding counts, posture labels, and reimbursement state still match the latest artifact snapshot.",
-    });
+  // Withheld when the live funding reads failed, for the same reason the
+  // scenario, engagement and project-record rows above are: every status this
+  // row can carry — "unchanged" included — is a claim about a live side this
+  // render never saw, and here the claim is denominated in dollars.
+  const fundingPostureDrift = projectFundingRows.unreadable
+    ? null
+    : buildFundingPostureDriftItem(storedFundingSnapshot, liveFundingSnapshot);
+  if (fundingPostureDrift) {
+    driftItems.push(fundingPostureDrift);
   }
 
   // No drift row when the live log did not load, and deliberately none: a drift
@@ -1152,7 +1218,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   // current": one of the sources this check covers was never checked, so the
   // packet cannot be called clean, and the detail says plainly that no change
   // was observed — only that observation failed.
-  const currentReportPacketFreshness = latestArtifact?.generated_at ?? report.generated_at
+  const currentReportPacketFreshness = artifactsUnreadable
+    ? PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE
+    : latestArtifact?.generated_at ?? report.generated_at
     ? driftedItems.length > 0 || stageGateLiveReadFailure
       ? {
           label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
@@ -1195,6 +1263,8 @@ export default async function ReportDetailPage({ params }: RouteParams) {
   const narrativeDraftPanelProps = await loadAiNarrativeDraftPanelInputs(supabase, report, sectionList);
 
   return (
+    <>
+    <ReportReadFailureDisclosure reads={reads} />
     <ReportStandardDetail
       report={report}
       project={project}
@@ -1255,5 +1325,6 @@ export default async function ReportDetailPage({ params }: RouteParams) {
         latestArtifact,
       }}
     />
+    </>
   );
 }

@@ -29,7 +29,21 @@ function FormError({ error }: { error: string | null }) {
   );
 }
 
-export function ScenarioSetCreator({ projects }: { projects: ProjectOption[] }) {
+/**
+ * `projectsUnreadable` is the catalog page telling this panel that its project
+ * list is an empty array because the READ FAILED, not because the workspace has
+ * no projects. Without it the panel answered a failed read with "No projects
+ * available — create a project before opening a scenario set", which is both a
+ * claim about the workspace and an instruction that would send a planner to
+ * create a duplicate of a project they already have.
+ */
+export function ScenarioSetCreator({
+  projects,
+  projectsUnreadable = false,
+}: {
+  projects: ProjectOption[];
+  projectsUnreadable?: boolean;
+}) {
   const router = useRouter();
   const [projectId, setProjectId] = useState(projects[0]?.id ?? "");
   const [title, setTitle] = useState("");
@@ -85,7 +99,15 @@ export function ScenarioSetCreator({ projects }: { projects: ProjectOption[] }) 
         </span>
       </div>
 
-      {projects.length === 0 ? (
+      {projectsUnreadable ? (
+        <div className="mt-5">
+          <EmptyState
+            title="Projects could not be read"
+            description="This workspace's project list could not be loaded, so no project can be offered here. That is a failed read, not a workspace without projects — do not create a duplicate project on the strength of it."
+            compact
+          />
+        </div>
+      ) : projects.length === 0 ? (
         <div className="mt-5">
           <EmptyState
             title="No projects available"

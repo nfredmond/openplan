@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
+import { DeliverableUpdateControls } from "@/components/projects/deliverable-update-controls";
 import type { BillingInvoiceSummary } from "@/lib/invoicing/invoice-records";
 import { postureLabel } from "@/lib/invoicing/reimbursement-profile-binding";
 import { reimbursementProfileRegistry } from "@/lib/invoicing/reimbursement-profiles";
@@ -634,6 +635,19 @@ export function ProjectDeliveryBoard({
                       </div>
                       <p className="module-record-summary">{deliverable.summary || "No summary yet."}</p>
                     </div>
+                    {/*
+                      The deliverable lane's write control. Budget and progress
+                      seed src/lib/projects/budget.ts, which refuses a pace
+                      verdict without them — so without this control the chips
+                      above are stuck at their refusal forever.
+                    */}
+                    <DeliverableUpdateControls
+                      projectId={project.id}
+                      deliverableId={deliverable.id}
+                      currentStatus={deliverable.status}
+                      currentBudgetAmount={budgetSummary?.budgetAmount ?? null}
+                      currentPercentComplete={budgetSummary?.percentComplete ?? null}
+                    />
                   </div>
                 </div>
               );

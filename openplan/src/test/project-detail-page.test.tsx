@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -1214,6 +1214,23 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByTestId("project-spend-entry-form")).toBeInTheDocument();
   });
 
+  /**
+   * The delivery board is where the deliverable status, budget and
+   * percent-complete controls live. Nothing above pins it: every assertion
+   * this file makes about deliverables ("On pace", "No budget entered") is
+   * satisfied by the budget PANEL alone, so removing `<ProjectDeliveryBoard>`
+   * from the page would fail no test and silently take four write controls off
+   * the screen. These anchors are rendered only by the board.
+   */
+  it("mounts the delivery board, which is the only surface carrying the record write controls", async () => {
+    await renderPage();
+
+    expect(document.querySelector("#project-deliverables")).not.toBeNull();
+    expect(document.querySelector("#project-milestones")).not.toBeNull();
+    expect(document.querySelector("#project-submittals")).not.toBeNull();
+    expect(screen.getByText("Outputs to ship")).toBeInTheDocument();
+  });
+
   it("shows an empty reporting state when no reports are linked", async () => {
     reportsLimitMock.mockResolvedValueOnce({ data: [], count: 0, error: null });
 
@@ -1334,5 +1351,154 @@ describe("ProjectDetailPage", () => {
       screen.getByText(/award records will appear after the funding award migrations are applied/i)
     ).toBeInTheDocument();
     expect(screen.queryByText(/No funding awards are recorded for this project yet\./i)).toBeNull();
+  });
+
+  /**
+   * A READ THAT FAILED MAY NOT BE RENDERED AS AN ANSWER.
+   *
+   * `const { data } = await supabase…` hands back `null` for both "there is
+   * nothing here" and "this query failed", and this page had five of them. The
+   * four record lanes below each printed "No X recorded yet." — a claim about
+   * the project — on the strength of a broken query, and the project read
+   * itself answered notFound(), telling a planner their project did not exist.
+   *
+   * Each case is asserted three ways on purpose: the false sentence is gone,
+   * the disclosure is present, AND the ordinary empty state still appears when
+   * the read SUCCEEDS with nothing. Without that third assertion a page that
+   * always warns would pass.
+   */
+  describe("a failed read is disclosed, never rendered as an answer", () => {
+    it("does not 404 when the project read FAILS — that is not the same fact as absent", async () => {
+      projectSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { code: "42703", message: 'column projects.place_set_at does not exist' },
+      });
+
+      render(await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) }));
+
+      expect(notFoundMock).not.toHaveBeenCalled();
+      expect(screen.getByText(/This project could not be read/i)).toBeInTheDocument();
+      // The honest half: it must NOT claim the project is missing.
+      expect(
+        screen.getByText(/not a statement that the project is missing/i)
+      ).toBeInTheDocument();
+      // Internal page, so the operator detail is shown rather than hidden.
+      expect(screen.getByText(/column projects\.place_set_at does not exist/i)).toBeInTheDocument();
+    });
+
+    it("still 404s on PostgREST's real 'no row matched', which IS an absence", async () => {
+      projectSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" },
+      });
+
+      await expect(
+        ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) })
+      ).rejects.toThrow("notFound");
+      expect(notFoundMock).toHaveBeenCalled();
+    });
+
+    it("says the risk register could not be read instead of 'No risks recorded yet.'", async () => {
+      risksLimitMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table project_risks" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText(/No risks recorded yet\./i)).toBeNull();
+      expect(screen.getByText(/Project risks could not be read/i)).toBeInTheDocument();
+      // The page-level disclosure names the lane and disowns the empty panels.
+      expect(screen.getByText(/This page could not read project risks\./i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/permission denied for table project_risks/i)
+      ).toBeInTheDocument();
+      // And the header count is unknown, not zero — a 0 here reads as "no open
+      // risks on this project", which is the reassuring direction of the error.
+      const openRisks = screen.getByText("Open risks").closest("div") as HTMLElement;
+      expect(within(openRisks).getByText("—")).toBeInTheDocument();
+      expect(within(openRisks).queryByText("0")).toBeNull();
+      expect(within(openRisks).getByText(/Risk count unavailable/i)).toBeInTheDocument();
+    });
+
+    it("says the issue log could not be read instead of 'No issues logged yet.'", async () => {
+      issuesLimitMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table project_issues" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText(/No issues logged yet\./i)).toBeNull();
+      expect(screen.getByText(/Project issues could not be read/i)).toBeInTheDocument();
+      const openIssues = screen.getByText("Open issues").closest("div") as HTMLElement;
+      expect(within(openIssues).getByText("—")).toBeInTheDocument();
+      expect(within(openIssues).getByText(/Issue count unavailable/i)).toBeInTheDocument();
+    });
+
+    it("says the decision and meeting logs could not be read, and names both", async () => {
+      decisionsLimitMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table project_decisions" },
+      });
+      meetingsLimitMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table project_meetings" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText(/No decisions logged yet\./i)).toBeNull();
+      expect(screen.queryByText(/No meetings logged yet\./i)).toBeNull();
+      expect(screen.getByText(/Project decisions could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/Project meetings could not be read/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/could not read project decisions and project meetings\./i)
+      ).toBeInTheDocument();
+    });
+
+    /**
+     * CLASSIFY FIRST, THEN COLLECT WHAT IS LEFT.
+     *
+     * Most reads on this page are written
+     * `looksLikePendingSchema(x.error?.message) ? [] : (x.data ?? [])`, which
+     * looks like error handling but classifies exactly ONE failure — a database
+     * behind a migration. Every other error (a revoked grant, an RLS policy
+     * change, a dropped connection) fails that test, falls into the else branch,
+     * and becomes `[]` — an answer. The award lane then states "No funding
+     * awards are recorded for this project yet." over an agency's real money,
+     * and the summary tiles above it total that money to $0.
+     *
+     * The pending-migration case is already covered above; this is the other,
+     * larger half of the same read.
+     */
+    it("does not report an empty award stack when the award read failed for a reason that is NOT a pending migration", async () => {
+      fundingAwardsLimitMock.mockResolvedValue({
+        data: null,
+        error: { code: "42501", message: "permission denied for table funding_awards" },
+      });
+
+      await renderPage();
+
+      expect(
+        screen.queryByText(/No funding awards are recorded for this project yet\./i)
+      ).toBeNull();
+      expect(screen.getByText(/could not read project funding awards/i)).toBeInTheDocument();
+    });
+
+    it("keeps the ordinary empty states when the reads SUCCEED and there is genuinely nothing", async () => {
+      // The default harness returns `{ data: [], error: null }` for all four.
+      await renderPage();
+
+      expect(screen.getByText(/No risks recorded yet\./i)).toBeInTheDocument();
+      expect(screen.getByText(/No issues logged yet\./i)).toBeInTheDocument();
+      expect(screen.getByText(/No decisions logged yet\./i)).toBeInTheDocument();
+      expect(screen.getByText(/No meetings logged yet\./i)).toBeInTheDocument();
+      // And no disclosure at all — otherwise the banner proves nothing.
+      expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
+      expect(screen.queryByText(/could not be read, so this panel is unavailable/i)).toBeNull();
+      const openRisks = screen.getByText("Open risks").closest("div") as HTMLElement;
+      expect(within(openRisks).getByText("0")).toBeInTheDocument();
+    });
   });
 });

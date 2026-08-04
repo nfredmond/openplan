@@ -92,12 +92,28 @@ export async function POST(request: NextRequest) {
     if (!membership.ok) {
       return membershipErrorResponse(membership);
     }
-    if (isReadOnlyWorkspaceRole(membership.role)) {
-      return NextResponse.json(
-        { error: "Viewers have read-only access to this workspace" },
-        { status: 403 }
-      );
-    }
+    /*
+     * A VIEWER IS NOT REFUSED AT THE DOOR, BECAUSE THIS DOOR HAS TWO ROOMS.
+     *
+     * This route is the only way into the crash lane, and the lane has two
+     * outcomes. Where a STORABLE source covers the study area it writes
+     * `safety_crash_ingests` and `safety_crashes` — a write, and one a viewer
+     * must not make. Where none does, it falls through to the READ-ONLY path
+     * (FARS today), which returns live points, writes nothing, and is the only
+     * crash data available anywhere outside California.
+     *
+     * Refusing 403 on the role alone meant a viewer in Ohio saw no crashes at
+     * all, from a request that would have stored nothing — restriction standing
+     * in for a permission the request never needed. Disclose, never restrict.
+     *
+     * The capability is PASSED DOWN rather than predicted here. A gate built on
+     * this route guessing which branch the lane would take would be a
+     * permission decision resting on a comment claiming a branch is
+     * unreachable, and `ingestCrashesForStudyArea` has a no-coverage path that
+     * writes an acquisition row precisely where such a guess says it will not.
+     * With `mayStore: false` the lane refuses at each write instead.
+     */
+    const mayStore = !isReadOnlyWorkspaceRole(membership.role);
 
     // A project link must name a project of THIS workspace — same posture as
     // the Knowledge Base upload route. RLS would hide a foreign project anyway;
@@ -134,6 +150,7 @@ export async function POST(request: NextRequest) {
       countyCode: parsed.data.countyCode,
       maxRecords: parsed.data.maxRecords,
       requestedBy: user.id,
+      mayStore,
       signal: request.signal,
     });
 

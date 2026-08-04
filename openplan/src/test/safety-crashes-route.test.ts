@@ -149,6 +149,39 @@ describe("POST /api/safety/crashes/ingest guards", () => {
     expect(res.status).toBe(503);
   });
 
+  /**
+   * A VIEWER MAY READ CRASHES THEY MAY NOT STORE.
+   *
+   * This route used to answer a viewer 403 outright. It is the ONLY door into
+   * the crash lane, and the lane's read-only path (FARS today) writes nothing —
+   * so a viewer anywhere a storable source does not reach, i.e. every state but
+   * California, saw no crash data at all from a request that would have stored
+   * nothing. Restriction standing in for a permission the request never needed.
+   *
+   * The route no longer predicts which branch the lane will take; it passes the
+   * capability down and the lane refuses at each write. These two tests pin the
+   * route's half of that seam — the lane's half is in
+   * `safety-read-only-lane.test.ts`, where the writes are actually counted.
+   */
+  it("lets a viewer through, telling the lane it may not store", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "viewer" }, error: null });
+
+    const res = await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025] }));
+
+    expect(res.status).not.toBe(403);
+    expect(res.status).toBe(200);
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ mayStore: false }));
+  });
+
+  it("tells the lane an editor may store", async () => {
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
+
+    const res = await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025] }));
+
+    expect(res.status).toBe(200);
+    expect(ingestMock).toHaveBeenCalledWith(expect.objectContaining({ mayStore: true }));
+  });
+
   it("200 with reported-vs-mappable counts on success", async () => {
     const res = await POST(ingestRequest({ workspaceId: WORKSPACE_ID, bbox: BBOX, years: [2025] }));
     expect(res.status).toBe(200);

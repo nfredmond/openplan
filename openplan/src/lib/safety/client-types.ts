@@ -51,6 +51,45 @@ export type SafetyIngestSummary = {
   yearsRequested: number[];
   fetchError: string | null;
   createdAt: string;
+  /**
+   * The sources that were consulted, when coverage decided the outcome.
+   *
+   * Optional because `safety_crash_ingests` does not store it — only a fresh
+   * retrieval knows it. A coverage gap that can name what it checked is a
+   * different statement from one that cannot, and the UI says whichever is
+   * true rather than implying the fuller one.
+   */
+  checkedSourceLabels?: string[];
+};
+
+/**
+ * A LIVE READ — crashes retrieved from a registered source that this workspace
+ * may not store, held for the current visit only.
+ *
+ * It is deliberately a separate type from `SafetyIngestSummary` rather than a
+ * flag on it. An ingest summary describes a row in `safety_crash_ingests`, and
+ * everything that reads one — the coverage banner, the acquisition history, the
+ * project spine — is entitled to assume the crashes it counts are in
+ * `safety_crashes`. A live read breaks that assumption, so it gets its own
+ * shape and its own banner instead of quietly widening the meaning of an
+ * existing one.
+ */
+export type SafetyLiveCrashRead = {
+  sourceLabel: string;
+  attribution: string | null;
+  coverageState: string;
+  severityCompleteness: string;
+  /** Reported crashes matching the query, geocoded or not. */
+  crashCount: number;
+  /** Of those, how many carry coordinates and are in `collection`. */
+  geocodedCount: number;
+  truncated: boolean;
+  yearsRequested: number[];
+  /** Years the source actually returned records for. */
+  yearsCovered: number[];
+  /** The crash points themselves. They exist nowhere else. */
+  collection: SafetyCrashCollection;
+  retrievedAt: string;
 };
 
 /** A workspace project offered on the ingest launcher's attach selector. */
@@ -96,8 +135,22 @@ export const COVERAGE_STATE_COPY: Record<string, string> = {
     "NHTSA FARS — fatal crashes only. Injury and property-damage collisions are not included.",
   switrs_legacy_local:
     "Legacy SWITRS extract — a discontinued system frozen at 2025-01-08. Historical use only.",
+  /**
+   * WORDED FOR WHAT THE STATE ACTUALLY MEANS, which is narrower than it used to
+   * claim. This sentence read "No registered crash source covers this study
+   * area" — a claim about the WHOLE registry — but both surfaces that render it
+   * reach it after checking only a SUBSET: the Safety ingest resolves only
+   * adapters `safety_crashes.source_id` will admit, and the shared map's crash
+   * layer asks the same storable-only question of the workspace's home
+   * geography. A registered national adapter covering the place was therefore
+   * routinely present while this sentence denied it existed.
+   *
+   * Every call site names the sources it checked alongside this copy, so the
+   * sentence carries only what it can support: nothing that was checked covered
+   * the area, and that is not a finding about crashes.
+   */
   out_of_coverage:
-    "No registered crash source covers this study area, so no crashes could be retrieved. This is not evidence that no crashes occurred.",
+    "No crashes were retrieved, because none of the crash sources checked for this study area covers it. This is not evidence that no crashes occurred.",
   source_unavailable:
     "The crash source could not be reached, so no crashes were retrieved. This is not evidence that no crashes occurred.",
 };

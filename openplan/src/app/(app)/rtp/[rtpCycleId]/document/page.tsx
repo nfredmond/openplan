@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft, BookOpenText, FolderKanban, MessageSquare, Route as RouteIcon } from "lucide-react";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
@@ -89,6 +90,24 @@ function looksLikePendingSchema(message: string | null | undefined): boolean {
   return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
 }
 
+/**
+ * What happened to one read on this page. `pending_schema` is a deployment that
+ * has not run a migration yet — already classified, so it keeps its existing
+ * fallback and stays out of the failure log. Everything else is collected: this
+ * page is the compiled reading view of the plan, and a chapter list that failed
+ * to load renders here as a document with no chapters in it.
+ */
+type SectionReadState = "ok" | "pending_schema" | "failed";
+
+function classifyRead(
+  reads: ReadFailureLog,
+  label: string,
+  result: { error?: { message?: string | null } | null } | null | undefined
+): SectionReadState {
+  if (looksLikePendingSchema(result?.error?.message)) return "pending_schema";
+  return reads.check(label, result) ? "failed" : "ok";
+}
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -120,7 +139,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
     );
   }
 
-  const { data: cycleData } = await supabase
+  const cycleResult = await supabase
     .from("rtp_cycles")
     .select(
       "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, updated_at"
@@ -129,8 +148,38 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
     .eq("workspace_id", membership.workspace_id)
     .maybeSingle();
 
-  const cycle = cycleData as RtpCycleRow | null;
+  // A FAILED READ IS NOT A MISSING CYCLE. The error and the empty row shared one
+  // branch, so a database failure rendered the 404 page and told a planner that
+  // the RTP cycle behind this document does not exist. A genuine absence still
+  // 404s; a read that failed says it failed.
+  if (cycleResult.error) {
+    return (
+      <section className="module-page">
+        <div className="mx-auto w-full max-w-2xl px-2 py-10">
+          <StateBlock
+            tone="danger"
+            title="This RTP cycle could not be read"
+            description={`The query for this cycle did not complete: ${
+              cycleResult.error.message ?? "no reason was returned"
+            }. That is not the same as the cycle not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the cycle or its document is gone.`}
+          />
+          <div className="mt-4">
+            <Link href="/rtp" className="module-inline-action w-fit">
+              <ArrowLeft className="h-4 w-4" />
+              Back to RTP registry
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const cycle = cycleResult.data as RtpCycleRow | null;
   if (!cycle) notFound();
+
+  // Collected rather than swallowed, so the assembled document can say which of
+  // its sections failed to load instead of reading as a plan that has none.
+  const reads = new ReadFailureLog();
 
   const [chaptersResult, linksResult, campaignsResult] = await Promise.all([
     supabase
@@ -150,14 +199,17 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
       .order("updated_at", { ascending: false }),
   ]);
 
-  const chapters = looksLikePendingSchema(chaptersResult.error?.message) ? [] : ((chaptersResult.data ?? []) as ChapterRow[]);
-  const linkedProjects = looksLikePendingSchema(linksResult.error?.message)
+  const chaptersState = classifyRead(reads, "the chapters of this plan", chaptersResult);
+  const chapters = chaptersResult.error ? [] : ((chaptersResult.data ?? []) as ChapterRow[]);
+  const linksState = classifyRead(reads, "the projects linked to this plan", linksResult);
+  const linkedProjects = linksResult.error
     ? []
     : ((linksResult.data ?? []) as LinkedProjectRow[]).map((link) => ({
         ...link,
         project: Array.isArray(link.projects) ? (link.projects[0] ?? null) : link.projects,
       }));
-  const campaigns = looksLikePendingSchema(campaignsResult.error?.message) ? [] : ((campaignsResult.data ?? []) as CampaignRow[]);
+  const campaignsState = classifyRead(reads, "the engagement targets for this plan", campaignsResult);
+  const campaigns = campaignsResult.error ? [] : ((campaignsResult.data ?? []) as CampaignRow[]);
 
   const campaignsByChapter = new Map<string, CampaignRow[]>();
   const cycleLevelCampaigns: CampaignRow[] = [];
@@ -183,6 +235,21 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
+
+      {/*
+        This page reads as the plan itself, which makes a silent gap worse here
+        than anywhere else in the module: a chapter list that failed to load
+        renders as a document with no chapters. The database's own message is
+        shown because this is an internal surface and an operator can act on it.
+      */}
+      {reads.any ? (
+        <StateBlock
+          tone="danger"
+          title="Part of this document could not be assembled"
+          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="flex flex-wrap gap-3">
@@ -212,9 +279,16 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
           <div className="flex flex-wrap gap-2">
             <StatusBadge tone={rtpCycleStatusTone(cycle.status)}>{formatRtpCycleStatusLabel(cycle.status)}</StatusBadge>
             <StatusBadge tone={readiness.tone}>{readiness.label}</StatusBadge>
-            <StatusBadge tone="neutral">{chapters.length} chapters</StatusBadge>
-            <StatusBadge tone="neutral">{linkedProjects.length} linked projects</StatusBadge>
-            <StatusBadge tone="neutral">{campaigns.length} engagement targets</StatusBadge>
+            {/* A count is an assertion; "0 chapters" from a failed read is a lie. */}
+            <StatusBadge tone={chaptersState === "failed" ? "danger" : "neutral"}>
+              {chaptersState === "failed" ? "Chapters unavailable" : `${chapters.length} chapters`}
+            </StatusBadge>
+            <StatusBadge tone={linksState === "failed" ? "danger" : "neutral"}>
+              {linksState === "failed" ? "Linked projects unavailable" : `${linkedProjects.length} linked projects`}
+            </StatusBadge>
+            <StatusBadge tone={campaignsState === "failed" ? "danger" : "neutral"}>
+              {campaignsState === "failed" ? "Engagement targets unavailable" : `${campaigns.length} engagement targets`}
+            </StatusBadge>
           </div>
 
           <p className="text-sm text-muted-foreground">
@@ -324,7 +398,13 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
               </span>
             </div>
 
-            {linkedProjects.length === 0 ? (
+            {linksState === "failed" ? (
+              <StateBlock
+                tone="danger"
+                title="The portfolio section could not be assembled"
+                description="The projects linked to this plan could not be read, so this section is blank. It is not a finding that the plan has no portfolio, and this document must not be exported or circulated in this state."
+              />
+            ) : linkedProjects.length === 0 ? (
               <EmptyState title="No linked projects yet" description="Attach projects in the cycle workspace to populate the portfolio section of this RTP document." />
             ) : (
               <div className="space-y-3">
@@ -356,7 +436,13 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
               </span>
             </div>
 
-            {campaigns.length === 0 ? (
+            {campaignsState === "failed" ? (
+              <StateBlock
+                tone="danger"
+                title="The engagement section could not be assembled"
+                description="The engagement targets attached to this plan could not be read, so this section is blank and no chapter below lists its campaigns. It is not a finding that no public engagement was carried out."
+              />
+            ) : campaigns.length === 0 ? (
               <EmptyState title="No engagement targets yet" description="Create RTP-linked engagement campaigns from the cycle workspace to make this section meaningful." />
             ) : (
               <div className="space-y-3">
@@ -376,6 +462,20 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
               </div>
             )}
           </article>
+
+          {/*
+            Chapters have no empty state of their own — they simply stop
+            rendering — so a failed read would silently produce a plan document
+            with no chapter text at all, which is the most convincing lie this
+            page can tell.
+          */}
+          {chaptersState === "failed" ? (
+            <StateBlock
+              tone="danger"
+              title="The chapters of this plan could not be read"
+              description="No chapter text is shown below because the chapter records could not be loaded, not because the plan has none. This document is incomplete in an unknown way — do not export it, and do not start rewriting sections that may already exist."
+            />
+          ) : null}
 
           {chapters.map((chapter, index) => {
             const chapterCampaigns = campaignsByChapter.get(chapter.id) ?? [];

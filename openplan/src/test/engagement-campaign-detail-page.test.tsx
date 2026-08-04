@@ -929,4 +929,202 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.queryByRole("button", { name: /save as our wording/i })).not.toBeInTheDocument();
     });
   });
+
+  /**
+   * A READ THAT FAILED MAY NOT BE RENDERED AS AN ANSWER.
+   *
+   * Every read on this console used to be destructured as `const { data } =
+   * await …`, which is the same `null` for "this campaign has no comments" and
+   * "the query failed". The console's empty states are written for the first,
+   * so a broken query rendered sentences a moderator has no way to doubt:
+   * "No intake items yet" on a live campaign says the community did not
+   * respond, and "No categories yet" says the backlog is unclassified.
+   *
+   * The campaign read was worse than that: it was `if (!campaignData)
+   * notFound()`, so a database error rendered the 404 page — a moderator told
+   * their campaign does not exist while its share token is public and comments
+   * are still arriving. "Could not be read" and "not there" are different
+   * facts.
+   *
+   * Each case below pairs the failure with the success that must still read
+   * normally. Without that pair a page that warned unconditionally would pass.
+   */
+  describe("a read that failed is not rendered as an answer", () => {
+    it("says the campaign could not be read instead of 404ing it out of existence", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table engagement_campaigns" },
+      });
+
+      await renderPage();
+
+      expect(notFoundMock).not.toHaveBeenCalled();
+      expect(screen.getByText(/This campaign could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/permission denied for table engagement_campaigns/)).toBeInTheDocument();
+      expect(screen.getByText(/not the same as the campaign not existing/i)).toBeInTheDocument();
+    });
+
+    it("still 404s a campaign that genuinely is not there", async () => {
+      // The control for the case above: a real absence is still a 404. Without
+      // it, "never call notFound" would pass and the page would render a
+      // reassuring shell for a campaign that does not exist.
+      campaignMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+      await expect(renderPage()).rejects.toThrow("notFound");
+      expect(notFoundMock).toHaveBeenCalled();
+    });
+
+    it("does not tell a moderator nobody commented when the comments could not be read", async () => {
+      itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
+
+      await renderPage();
+
+      expect(screen.queryByText("No intake items yet")).not.toBeInTheDocument();
+      expect(screen.queryByText("No flagged items")).not.toBeInTheDocument();
+      expect(screen.getByText(/Part of this campaign could not be read/i)).toBeInTheDocument();
+      // Named in the top-of-page disclosure and again where the list would be.
+      expect(screen.getAllByText(/the comments on this campaign/i).length).toBeGreaterThan(0);
+      expect(screen.getByText(/statement timeout/)).toBeInTheDocument();
+      expect(screen.getByText(/This campaign's comments could not be read/i)).toBeInTheDocument();
+      // The verdict above is computed over those comments, so it says so.
+      expect(screen.getByText(/incomplete rather than a finding/i)).toBeInTheDocument();
+      // …and the moderation workload is withheld rather than reported as zero.
+      expect(screen.getByText(/Moderation workload unavailable/i)).toBeInTheDocument();
+      expect(screen.queryByText("Pending: 0")).not.toBeInTheDocument();
+    });
+
+    /**
+     * THE FIRST PASS AT THE ABOVE GATED THE HEADER TILES AND THE WORKLOAD LIST
+     * AND STOPPED THERE, while the handoff-readiness section below went on
+     * rendering every comment-derived figure as a zero. The page's own
+     * disclosure sentence promises the opposite in so many words — "shown as
+     * unavailable rather than as zero" — so the banner was making a claim about
+     * the page that the page did not honour.
+     *
+     * The sharpest of them was "0 uncategorized" carrying a SUCCESS tone: a
+     * green verdict that the moderation backlog is clean, rendered out of a
+     * comment table that could not be read. A tone is a finding, and no failed
+     * query reaches one.
+     */
+    it("withholds every comment-derived figure in the handoff section, not just the header tiles", async () => {
+      itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
+
+      await renderPage();
+
+      // The green "clean backlog" verdict, and the coverage/export figures.
+      expect(screen.queryByText(/0 uncategorized/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/0 handoff-ready/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/still need classification/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/ready for GIS\/map export/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/0 approved total/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/0 total items/)).not.toBeInTheDocument();
+      expect(screen.queryByText("0%")).not.toBeInTheDocument();
+      // Withheld as a block, and said once rather than left to be inferred.
+      expect(screen.getByText(/coverage and workload figures could not be computed/i)).toBeInTheDocument();
+    });
+
+    /**
+     * The packet button does not merely display the counts — it writes them into
+     * the report's stored provenance through `buildEngagementHandoffProvenance`.
+     * Seeded from an unread comment table it would record "0 total items" as a
+     * captured fact about this campaign, and that record leaves the app with the
+     * packet. This is the one place on the console where a failed read outlives
+     * the render.
+     */
+    it("does not offer to seed a packet whose provenance would record unread counts as zero", async () => {
+      itemsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
+
+      await renderPage();
+
+      expect(screen.queryByTestId("engagement-report-create-button")).not.toBeInTheDocument();
+      expect(screen.getByText(/Packet creation is unavailable until the comments can be read/i)).toBeInTheDocument();
+    });
+
+    it("still offers the packet button and the coverage figures when the comments read succeeds", async () => {
+      // The control for both cases above. Without it, a console that withheld
+      // the packet button and every figure unconditionally would pass them —
+      // and withholding a planner's own data is its own defect.
+      itemsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+      await renderPage();
+
+      expect(screen.getByTestId("engagement-report-create-button")).toBeInTheDocument();
+      expect(screen.queryByText(/Packet creation is unavailable/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/coverage and workload figures could not be computed/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/0 uncategorized/)).toBeInTheDocument();
+      expect(screen.getByText(/still need classification/)).toBeInTheDocument();
+      expect(screen.getByText(/ready for GIS\/map export/)).toBeInTheDocument();
+    });
+
+    it("still shows the ordinary empty intake state when the read succeeds and there is nothing", async () => {
+      itemsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+      await renderPage();
+
+      expect(screen.getByText("No intake items yet")).toBeInTheDocument();
+      expect(screen.getByText("No flagged items")).toBeInTheDocument();
+      expect(screen.getByText("Pending: 0")).toBeInTheDocument();
+      expect(screen.queryByText(/Moderation workload unavailable/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Part of this campaign could not be read/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/This campaign's comments could not be read/i)).not.toBeInTheDocument();
+    });
+
+    it("does not present an unread category list as a campaign with no categories", async () => {
+      categoriesOrderCreatedMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "connection reset" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText("No categories yet")).not.toBeInTheDocument();
+      expect(screen.getByText(/This campaign's categories could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/this campaign's comment categories/i)).toBeInTheDocument();
+    });
+
+    it("still shows the ordinary empty category state when the read succeeds", async () => {
+      categoriesOrderCreatedMock.mockResolvedValueOnce({ data: [], error: null });
+
+      await renderPage();
+
+      expect(screen.getByText("No categories yet")).toBeInTheDocument();
+      expect(screen.queryByText(/This campaign's categories could not be read/i)).not.toBeInTheDocument();
+    });
+
+    it("does not call a linked campaign unlinked because the project could not be read", async () => {
+      projectMaybeSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "connection reset" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText("Unlinked")).not.toBeInTheDocument();
+      expect(screen.queryByText("No project linked yet")).not.toBeInTheDocument();
+      expect(screen.queryByText("Unlinked project")).not.toBeInTheDocument();
+      // Said where the project would be named, and again where its reports
+      // would have been listed.
+      expect(screen.getAllByText(/The linked project could not be read/i).length).toBeGreaterThan(1);
+      expect(screen.getByText(/this is not an unlinked campaign/i)).toBeInTheDocument();
+    });
+
+    it("does not say a project has no reports when the report list could not be read", async () => {
+      reportsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "statement timeout" } });
+
+      await renderPage();
+
+      expect(screen.queryByText(/No reports linked through this project yet/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/Reports on this project could not be listed/i)).toBeInTheDocument();
+      expect(screen.getByText(/reports on the linked project/i)).toBeInTheDocument();
+    });
+
+    it("does not label every report project-linked-only out of a failed section read", async () => {
+      reportSectionsInMock.mockResolvedValueOnce({ data: null, error: { message: "connection reset" } });
+
+      await renderPage();
+
+      expect(screen.getByText(/Which reports source this campaign could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/That is the fallback label, not a finding/i)).toBeInTheDocument();
+    });
+  });
 });

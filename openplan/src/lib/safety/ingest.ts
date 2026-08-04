@@ -10,6 +10,13 @@
  *   1. `out_of_coverage` is a RECORDED OUTCOME, not an error and not an empty
  *      map. The ingest row is written with that status so the UI can explain
  *      why there are no crashes, rather than showing an unexplained blank.
+ *      AND IT MEANS WHAT IT SAYS: before it is recorded, the READ-ONLY lane
+ *      (`read-only-lane.ts`) is consulted, because `resolveCrashSource` in
+ *      `ingest` mode only sees adapters the `safety_crashes` CHECK domain
+ *      admits. Skipping that step reported "no registered crash source covers
+ *      this study area" to every planner outside California while a registered
+ *      national adapter covered them — see that file's header for the full
+ *      account. A read-only outcome stores nothing and writes no ingest row.
  *   2. `crashCount` (reported) and `geocodedCount` (mappable) are stored
  *      separately, because ungeocoded crashes are real crashes that simply
  *      cannot be plotted. Collapsing them would silently understate the study
@@ -18,6 +25,8 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
+import type { SafetyCrashCollection, SafetyCrashFeature } from "./client-types";
+import { readCrashesForStudyArea, type CrashSourceIdentity } from "./read-only-lane";
 import { CCRS_SOURCE_ID } from "./sources/ccrs";
 import { fetchSeriousInjuryCollisionIds } from "./sources/ccrs-injury";
 import { resolveCrashSource } from "./sources/registry";
@@ -41,24 +50,76 @@ export type IngestCrashesParams = {
    * SS4A and HSIP actually run on.
    */
   enrichSeriousInjury?: boolean;
+  /**
+   * Whether this caller is permitted to WRITE. Defaults to `true`, so every
+   * existing caller is unchanged.
+   *
+   * This lane has two outcomes and only one of them is a write. When no
+   * storable source covers the study area it falls through to the read-only
+   * path, which returns live points and touches no table — and gating that on
+   * write access meant a viewer outside a storable source's footprint (i.e.
+   * every state but California today) could see no crash data at all, from a
+   * request that would have written nothing.
+   *
+   * The route could have PREDICTED which outcome it would get and gated on
+   * that, and the first version of this fix did. It is wrong: `resolveCrashSource`
+   * says whether a STORABLE source covers the area, but the no-coverage branch
+   * below still records an acquisition row, and `readCrashesForStudyArea` has a
+   * defensive path that reaches it even when a read-only source resolved. A
+   * permission decision may not rest on a comment claiming a branch is
+   * unreachable. So the constraint is enforced HERE, where the write happens:
+   * with `mayStore: false` the lane refuses rather than writing, and there is
+   * no path from a read-only caller to an INSERT.
+   */
+  mayStore?: boolean;
   signal?: AbortSignal;
 };
 
 export type IngestCrashesResult = {
-  ingestId: string;
-  status: "ready" | "failed" | "no_coverage";
+  /**
+   * The acquisition row's id, or null when nothing was acquired.
+   *
+   * A `read_only` outcome writes NO row: `safety_crash_ingests` is the record of
+   * what this workspace has taken into its own keeping, and a live read takes
+   * nothing. Recording one would put counts in the coverage banner that no
+   * `safety_crashes` row backs, so the banner and the map would contradict each
+   * other on the next page load.
+   */
+  ingestId: string | null;
+  /**
+   * `read_only` — a registered source covers this area but may not be stored
+   * (`safety_crashes.source_id` is a closed CHECK domain). The crashes are real,
+   * observed and returned in `crashes`; they simply live only in this response.
+   */
+  status: "ready" | "failed" | "no_coverage" | "read_only";
   sourceId: string | null;
   sourceLabel: string | null;
+  /** Required attribution for the source that answered, when one did. */
+  attribution: string | null;
   coverageState: string;
   crashCount: number;
   geocodedCount: number;
   storedCount: number;
+  /** False when the crashes were read live and NOT written to this workspace. */
+  stored: boolean;
   truncated: boolean;
   yearsCovered: number[];
   /** How completely severity could be expressed after any KSI enrichment. */
   severityCompleteness: string;
   /** Injury crashes upgraded to KABCO A by the injured-person join. */
   seriousInjuryUpgrades: number;
+  /**
+   * Live crash points, present ONLY for `read_only`. A stored acquisition
+   * returns null here because its points are read back from `safety_crashes`,
+   * which is the one place a persisted crash may come from.
+   */
+  crashes: SafetyCrashCollection | null;
+  /**
+   * Every adapter consulted, when the answer was decided by coverage. Empty for
+   * a resolved storable source, where the question never arose. This is what
+   * lets a caller name what it checked instead of asserting that nothing exists.
+   */
+  checkedSources: CrashSourceIdentity[];
   error: string | null;
 };
 
@@ -102,6 +163,45 @@ export function toCrashRows(
     latitude: record.latitude,
     longitude: record.longitude,
   }));
+}
+
+/**
+ * Live crash records, in the same GeoJSON shape `/api/safety/crashes` returns
+ * for STORED crashes, so one map component renders both without learning which
+ * lane it is looking at.
+ *
+ * `id` is synthesized from the source and the case id rather than left blank:
+ * these points have no database row, and React keys plus the map's feature
+ * identity still need something stable and unique. It is deliberately NOT a
+ * uuid-shaped value — nothing downstream may mistake it for a `safety_crashes`
+ * primary key.
+ */
+export function toLiveCrashCollection(
+  records: CrashRecord[],
+  fallbackSourceId: string
+): SafetyCrashCollection {
+  const features: SafetyCrashFeature[] = records.map((record) => {
+    const sourceId = record.sourceId ?? fallbackSourceId;
+    return {
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [record.longitude, record.latitude] },
+      properties: {
+        kind: "safety_crash",
+        id: `live:${sourceId}:${record.externalId}`,
+        externalId: record.externalId,
+        sourceId,
+        collisionDate: record.collisionDate,
+        collisionYear: record.collisionYear,
+        severity: record.severity,
+        killedCount: record.killedCount,
+        injuredCount: record.injuredCount,
+        pedestrianInvolved: record.pedestrianInvolved,
+        bicyclistInvolved: record.bicyclistInvolved,
+      },
+    };
+  });
+
+  return { type: "FeatureCollection", features };
 }
 
 /**
@@ -169,17 +269,139 @@ export async function ingestCrashesForStudyArea(
   params: IngestCrashesParams
 ): Promise<IngestCrashesResult> {
   const resolution = resolveCrashSource(params.bbox);
+  const mayStore = params.mayStore ?? true;
 
-  // No adapter covers this study area. Record that plainly and stop — the UI
-  // renders "no crash source covers this area", never an estimate.
+  // A caller that may not write is refused BEFORE any storable path runs, and
+  // the refusal names the reason rather than presenting itself as a coverage
+  // gap. The read-only path below is still open to them, because it writes
+  // nothing.
+  if (resolution.kind === "resolved" && !mayStore) {
+    return {
+      ingestId: null,
+      status: "failed",
+      sourceId: resolution.adapter.id,
+      sourceLabel: resolution.adapter.label,
+      attribution: resolution.adapter.attribution,
+      coverageState: resolution.adapter.coverageState,
+      crashCount: 0,
+      geocodedCount: 0,
+      storedCount: 0,
+      stored: false,
+      truncated: false,
+      yearsCovered: [],
+      severityCompleteness: resolution.adapter.severityCompleteness,
+      seriousInjuryUpgrades: 0,
+      crashes: null,
+      checkedSources: [{ id: resolution.adapter.id, label: resolution.adapter.label }],
+      error:
+        "This study area is covered by a source whose crashes are stored in the workspace, and storing them needs write access. Ask an editor to run the acquisition.",
+    };
+  }
+
+  // NO STORABLE SOURCE COVERS THIS AREA — which is NOT the same thing as no
+  // source covering it, and treating the two as one is what made the Safety
+  // module useless outside California. `resolveCrashSource(bbox, "ingest")`
+  // filters the registry down to adapters `safety_crashes.source_id` will
+  // admit; anything else is invisible to it, however well it covers the place.
+  // So consult the READ path before claiming a coverage gap.
   if (resolution.kind === "out_of_coverage") {
+    const live = await readCrashesForStudyArea({
+      bbox: params.bbox,
+      years: params.years,
+      maxRecords: params.maxRecords,
+      signal: params.signal,
+    });
+
+    if (live.kind === "read_only") {
+      const records = dedupeRecords(live.fetched.records);
+      return {
+        ingestId: null,
+        status: "read_only",
+        sourceId: live.adapter.id,
+        sourceLabel: live.adapter.label,
+        attribution: live.adapter.attribution,
+        coverageState: live.adapter.coverageState,
+        crashCount: live.fetched.matchedTotal,
+        geocodedCount: live.fetched.geocodedTotal,
+        // Nothing was written, and the field that says so is the count itself —
+        // not a flag a caller might forget to read.
+        storedCount: 0,
+        stored: false,
+        truncated: live.fetched.truncated,
+        yearsCovered: live.fetched.yearsCovered,
+        severityCompleteness: live.adapter.severityCompleteness,
+        seriousInjuryUpgrades: 0,
+        crashes: toLiveCrashCollection(records, live.adapter.id),
+        checkedSources: live.checked,
+        error: null,
+      };
+    }
+
+    if (live.kind === "source_unavailable") {
+      // A source that could not be reached is NOT a source that found nothing.
+      // No acquisition row is written because nothing was acquired, and the
+      // outage travels back as itself.
+      return {
+        ingestId: null,
+        status: "failed",
+        sourceId: live.adapter.id,
+        sourceLabel: live.adapter.label,
+        attribution: live.adapter.attribution,
+        coverageState: "source_unavailable",
+        crashCount: 0,
+        geocodedCount: 0,
+        storedCount: 0,
+        stored: false,
+        truncated: false,
+        yearsCovered: [],
+        severityCompleteness: live.adapter.severityCompleteness,
+        seriousInjuryUpgrades: 0,
+        crashes: null,
+        checkedSources: live.checked,
+        error: live.message,
+      };
+    }
+
+    // Genuinely nothing covers this study area — every registered adapter,
+    // storable or not, was asked. Record that plainly and stop; the UI renders
+    // the gap and names what was checked, never an estimate.
+    //
+    // This branch WRITES, which is easy to miss because everything above it in
+    // the out-of-coverage path does not. A read-only caller reaches it whenever
+    // no adapter covers their area, so the answer they get is the same coverage
+    // gap without the acquisition row — the finding is identical, and nothing
+    // in `safety_crash_ingests` is authored by someone who may not write.
+    if (!mayStore) {
+      return {
+        ingestId: null,
+        status: "no_coverage",
+        sourceId: null,
+        sourceLabel: null,
+        attribution: null,
+        coverageState: "out_of_coverage",
+        crashCount: 0,
+        geocodedCount: 0,
+        storedCount: 0,
+        stored: false,
+        truncated: false,
+        yearsCovered: [],
+        severityCompleteness: "fatal_only",
+        seriousInjuryUpgrades: 0,
+        crashes: null,
+        checkedSources: live.checked,
+        error: null,
+      };
+    }
+
     const { data, error } = await params.service
       .from("safety_crash_ingests")
       .insert({
         ...toIngestRow(params),
         source_id: "none",
         source_label: "No covering source",
-        attribution: "No registered crash source covers this study area.",
+        attribution: `No crash source covers this study area. Checked: ${
+          live.checked.map((entry) => entry.label).join(", ") || "no adapters registered"
+        }.`,
         coverage_state: "out_of_coverage",
         severity_completeness: "fatal_only",
         status: "no_coverage",
@@ -194,14 +416,18 @@ export async function ingestCrashesForStudyArea(
       status: "no_coverage",
       sourceId: null,
       sourceLabel: null,
+      attribution: null,
       coverageState: "out_of_coverage",
       crashCount: 0,
       geocodedCount: 0,
       storedCount: 0,
+      stored: false,
       truncated: false,
       yearsCovered: [],
       severityCompleteness: "fatal_only",
       seriousInjuryUpgrades: 0,
+      crashes: null,
+      checkedSources: live.checked,
       error: null,
     };
   }
@@ -282,14 +508,20 @@ export async function ingestCrashesForStudyArea(
       status: "ready",
       sourceId: adapter.id,
       sourceLabel: adapter.label,
+      attribution: adapter.attribution,
       coverageState: adapter.coverageState,
       crashCount: fetched.matchedTotal,
       geocodedCount: fetched.geocodedTotal,
       storedCount: records.length,
+      stored: true,
       truncated: fetched.truncated,
       yearsCovered: fetched.yearsCovered,
       severityCompleteness,
       seriousInjuryUpgrades,
+      // Stored crashes are read back from `safety_crashes` — the one place a
+      // persisted crash point may come from — so none travel in this response.
+      crashes: null,
+      checkedSources: [],
       error: null,
     };
   } catch (error) {
@@ -305,14 +537,18 @@ export async function ingestCrashesForStudyArea(
       status: "failed",
       sourceId: adapter.id,
       sourceLabel: adapter.label,
+      attribution: adapter.attribution,
       coverageState: "source_unavailable",
       crashCount: 0,
       geocodedCount: 0,
       storedCount: 0,
+      stored: false,
       truncated: false,
       yearsCovered: [],
       severityCompleteness: adapter.severityCompleteness,
       seriousInjuryUpgrades: 0,
+      crashes: null,
+      checkedSources: [],
       error: message,
     };
   }

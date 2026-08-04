@@ -113,6 +113,19 @@ describe("a write that matched no rows is answered as its own outcome", () => {
   it("keeps the PostgREST code itself in one place", () => {
     // A route that re-spells "PGRST116" inline has reimplemented the decision
     // rather than adopted it, and the next reader has two sources of truth.
+    //
+    // COMMENTS ARE STRIPPED FIRST, and that is a correctness fix, not a
+    // loophole. This guard used to scan raw text, so it fired on the project
+    // detail page for a comment EXPLAINING why the shared constant is used —
+    // the page imports `POSTGREST_NO_ROWS_MATCHED` and spells the code
+    // nowhere. A guard that punishes documenting the rule it enforces teaches
+    // people to delete the reasoning, which is the opposite of what it is for.
+    // (Same defect as `every-api-route-has-a-caller` excusing a route because
+    // its path appeared in an operator-facing sentence: match code, not prose.)
+    // Nothing executable can hide in a comment, so this cannot weaken it.
+    const stripComments = (source: string) =>
+      source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+
     const offenders: string[] = [];
     const root = path.resolve(__dirname, "..");
     const allowed = path.join(root, "lib", "http", "write-outcome.ts");
@@ -127,13 +140,20 @@ describe("a write that matched no rows is answered as its own outcome", () => {
         }
         if (!/\.tsx?$/.test(entry.name)) continue;
         if (full === allowed) continue;
-        if (fs.readFileSync(full, "utf8").includes("PGRST116")) {
+        if (stripComments(fs.readFileSync(full, "utf8")).includes("PGRST116")) {
           offenders.push(path.relative(root, full));
         }
       }
     };
 
     walk(root);
+
+    // Guard the guard: comment-stripping must not have eaten the code it scans.
+    // If this ever passes because `stripComments` returned nothing useful, the
+    // assertion below would be vacuous for every file in the tree.
+    expect(stripComments('const x = "PGRST116"; // PGRST116 in a comment')).toContain("PGRST116");
+    expect(stripComments("// only PGRST116 in a comment")).not.toContain("PGRST116");
+    expect(stripComments("/* block PGRST116 */ const ok = 1;")).not.toContain("PGRST116");
 
     expect(
       offenders,

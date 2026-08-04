@@ -336,11 +336,15 @@ type ProjectFundingQueryClientLike = {
         column: string,
         value: string
       ) => {
-        maybeSingle: () => Promise<{ data: unknown; error: unknown }>;
+        // `error` is narrowed to its message here — unlike the loose `unknown`
+        // elsewhere in this file — because the caller has to be able to SAY
+        // which read failed, and a page that cannot name the failure ends up
+        // presenting the empty result instead.
+        maybeSingle: () => Promise<{ data: unknown; error?: { message?: string | null } | null }>;
         order: (
           column: string,
           options: { ascending: boolean }
-        ) => Promise<{ data: unknown; error: unknown }>;
+        ) => Promise<{ data: unknown; error?: { message?: string | null } | null }>;
       };
     };
   };
@@ -359,9 +363,14 @@ export async function loadProjectFundingSourceRows(
   awards: Array<Record<string, unknown>>;
   opportunities: Array<Record<string, unknown>>;
   invoices: Array<Record<string, unknown>>;
+  unreadable: boolean;
+  unreadableMessage: string | null;
 }> {
   if (!projectId) {
-    return { profile: null, awards: [], opportunities: [], invoices: [] };
+    // No project target is a genuine ABSENCE, not a failed read: there is no
+    // funding board to fail. `unreadable` stays false so the caller keeps
+    // comparing, which is the honest thing to do here.
+    return { profile: null, awards: [], opportunities: [], invoices: [], unreadable: false, unreadableMessage: null };
   }
 
   const client = supabase as ProjectFundingQueryClientLike;
@@ -395,6 +404,24 @@ export async function loadProjectFundingSourceRows(
     awards: (awardsResult.data ?? []) as Array<Record<string, unknown>>,
     opportunities: (opportunitiesResult.data ?? []) as Array<Record<string, unknown>>,
     invoices: (invoicesResult.data ?? []) as Array<Record<string, unknown>>,
+    /**
+     * Whether any of the four reads FAILED, and the message if so.
+     *
+     * Added because the four `?? []` above are lossy in the one way that
+     * matters: they turn a permission failure into a project with no money,
+     * and the caller builds a funding snapshot from the result and publishes it
+     * as drift against the packet's frozen one — "Committed awards: $8,000,000
+     * -> $0." on a report an agency sends to a funder. The empty arrays are kept
+     * (a page that 500s because a side panel failed is worse), so this flag is
+     * how the caller learns not to treat them as an answer.
+     */
+    unreadable: [profileResult, awardsResult, opportunitiesResult, invoicesResult].some(
+      (result) => Boolean(result?.error)
+    ),
+    unreadableMessage:
+      [profileResult, awardsResult, opportunitiesResult, invoicesResult].find((result) =>
+        Boolean(result?.error)
+      )?.error?.message ?? null,
   };
 }
 

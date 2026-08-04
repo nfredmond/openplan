@@ -136,6 +136,79 @@ const LINK_TARGET_CONFIG: Record<
   },
 };
 
+/**
+ * How many candidate records per link type the picker is given.
+ *
+ * A truncated list that says nothing is a lie by omission — a planner scrolls,
+ * does not find their report, and concludes it is not linkable. So the loader
+ * asks for one row more than it will return and reports `truncated`, and the
+ * editor says so and preserves any stored link that fell outside the window.
+ */
+const PLAN_LINK_OPTION_LIMIT = 200;
+
+export type PlanLinkOptionRecord = {
+  id: string;
+  label: string;
+};
+
+export type PlanLinkOptionSet = {
+  records: PlanLinkOptionRecord[];
+  /** The read failed. NOT "there are none" — the editor must say which. */
+  unreadable: boolean;
+  truncated: boolean;
+};
+
+export type PlanLinkOptionsByType = Record<PlanLinkType, PlanLinkOptionSet>;
+
+/**
+ * The records in THIS workspace that a plan may be linked to, one list per link
+ * type, resolved through the same `LINK_TARGET_CONFIG` the PATCH validator uses
+ * — so what the picker offers and what the route will accept cannot drift.
+ *
+ * Each type is reported independently: one failed read must not blank the other
+ * three, and must not be presentable as an empty list.
+ */
+async function loadPlanLinkOptions(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  workspaceId: string
+): Promise<PlanLinkOptionsByType> {
+  const linkTypes = Object.keys(LINK_TARGET_CONFIG) as PlanLinkType[];
+
+  const entries = await Promise.all(
+    linkTypes.map(async (linkType) => {
+      const config = LINK_TARGET_CONFIG[linkType];
+
+      const { data, error } = await supabase
+        .from(config.table)
+        .select(`${config.select}, updated_at`)
+        .eq("workspace_id", workspaceId)
+        .order("updated_at", { ascending: false })
+        .limit(PLAN_LINK_OPTION_LIMIT + 1);
+
+      if (error) {
+        return [linkType, { records: [], unreadable: true, truncated: false }] as const;
+      }
+
+      const rows = (data ?? []) as unknown as LinkTargetRow[];
+      const truncated = rows.length > PLAN_LINK_OPTION_LIMIT;
+
+      return [
+        linkType,
+        {
+          records: rows.slice(0, PLAN_LINK_OPTION_LIMIT).map((row) => ({
+            id: row.id,
+            label: (row[config.labelField] ?? "").trim() || "Untitled record",
+          })),
+          unreadable: false,
+          truncated,
+        },
+      ] as const;
+    })
+  );
+
+  return Object.fromEntries(entries) as PlanLinkOptionsByType;
+}
+
 function dedupeLinks(links: LinkInput[] | undefined): LinkInput[] {
   if (!links?.length) return [];
 
@@ -266,6 +339,46 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const detailSupabase = access.supabase as Awaited<ReturnType<typeof createClient>>;
+
+    /**
+     * `?view=links` — what the plan's link EDITOR needs, and nothing else.
+     *
+     * The full response below assembles every linked scenario, campaign, report
+     * and their per-record statistics across ~15 queries. The editor needs two
+     * things: the links stored on this plan, and the records in the workspace it
+     * could link to. Serving that from the same route keeps one link vocabulary
+     * (`LINK_TARGET_CONFIG`) and one permission check (`plans.read`), without
+     * making a picker pay for a page's worth of reads.
+     */
+    if (request.nextUrl.searchParams.get("view") === "links") {
+      const [editorLinksResult, linkOptions] = await Promise.all([
+        detailSupabase
+          .from("plan_links")
+          .select("id, plan_id, link_type, linked_id, label, created_at, updated_at")
+          .eq("plan_id", access.plan.id),
+        loadPlanLinkOptions(detailSupabase, access.plan.workspace_id),
+      ]);
+
+      // The stored link set is the one read the editor cannot proceed without:
+      // saving replaces the whole set, so an editor that does not know what is
+      // there would delete it. Refuse rather than hand back an empty list.
+      if (editorLinksResult.error) {
+        audit.error("plan_link_editor_lookup_failed", {
+          planId: access.plan.id,
+          message: editorLinksResult.error.message,
+          code: editorLinksResult.error.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to load this plan's stored links" }, { status: 500 });
+      }
+
+      return NextResponse.json(
+        {
+          planLinks: (editorLinksResult.data ?? []) as PlanLinkRow[],
+          linkOptions,
+        },
+        { status: 200 }
+      );
+    }
 
     const [projectResult, planLinksResult, projectScenariosResult, projectCampaignsResult, projectReportsResult] =
       await Promise.all([

@@ -24,7 +24,9 @@ import {
   parseStoredEvidenceChainSummary,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { StateBlock } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type ProjectRow = {
@@ -100,20 +102,37 @@ function getProjectPacketCommandPriority(project: {
   return 3;
 }
 
-function describeProjectPacketCommand(project: {
-  reportSummary: {
-    attentionCount: number;
-    refreshRecommendedCount: number;
-    noPacketCount: number;
-    comparisonBackedCount: number;
-    governanceHoldCount: number;
-    recommendedReport: {
-      title: string;
-      packetFreshness: { label: string; detail: string };
-    } | null;
-  };
-}) {
+/** What a card says when the reports read failed, in place of a count of zero. */
+const REPORTS_UNREADABLE_DETAIL =
+  "Linked report records could not be read for this project, so the packet trail is unavailable rather than empty — this is not a finding that no reports exist.";
+
+function describeProjectPacketCommand(
+  project: {
+    reportSummary: {
+      attentionCount: number;
+      refreshRecommendedCount: number;
+      noPacketCount: number;
+      comparisonBackedCount: number;
+      governanceHoldCount: number;
+      recommendedReport: {
+        title: string;
+        packetFreshness: { label: string; detail: string };
+      } | null;
+    };
+  },
+  reportsReadFailed: boolean
+) {
   const report = project.reportSummary.recommendedReport;
+
+  // Checked before every packet rule below, because each of them reads an
+  // absence as a finding — "generate the first packet" over a project whose
+  // reports the database refused to hand over is a false instruction.
+  if (reportsReadFailed && !report) {
+    return {
+      label: "First action: unavailable — the report records could not be read",
+      detail: REPORTS_UNREADABLE_DETAIL,
+    };
+  }
 
   if (project.reportSummary.refreshRecommendedCount > 0 && report) {
     return {
@@ -184,16 +203,26 @@ export default async function ProjectsPage({
 
   const workspaceId = membership.workspace_id;
 
-  const { data: projectsData } = await supabase
+  // Every read behind this registry is collected rather than discarded. The
+  // portfolio read is the one that mattered most: `const { data }` gave `null`
+  // for both "this workspace has no projects" and "the query failed", and the
+  // page then told an agency "No project records yet. Create your first
+  // project" over a portfolio it simply could not see. The other three feed the
+  // per-card packet copy, which has its own false-absence sentence.
+  const reads = new ReadFailureLog();
+
+  const projectsResult = await supabase
     .from("projects")
     .select(
       "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, workspaces(name, created_at)"
     )
     .eq("workspace_id", workspaceId)
     .order("updated_at", { ascending: false });
+  const projectsReadFailed = reads.check("project records", projectsResult);
+  const projectsData = projectsReadFailed ? [] : projectsResult.data;
 
   const projectIds = ((projectsData ?? []) as ProjectRow[]).map((project) => project.id);
-  const { data: projectReportsData } = projectIds.length
+  const projectReportsResult = projectIds.length
     ? await supabase
         .from("reports")
         .select(
@@ -201,25 +230,34 @@ export default async function ProjectsPage({
         )
         .in("project_id", projectIds)
         .order("updated_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
+  const reportsReadFailed = reads.check("linked report records", projectReportsResult);
+  const projectReportsData = reportsReadFailed ? [] : projectReportsResult.data;
 
-  const { data: projectRtpLinksData } = projectIds.length
+  const projectRtpLinksResult = projectIds.length
     ? await supabase
         .from("project_rtp_cycle_links")
         .select("id, project_id, portfolio_role")
         .in("project_id", projectIds)
-    : { data: [] };
+    : { data: [], error: null };
+  const rtpLinksReadFailed = reads.check("RTP cycle links", projectRtpLinksResult);
+  const projectRtpLinksData = rtpLinksReadFailed ? [] : projectRtpLinksResult.data;
 
   const reportIds = ((projectReportsData ?? []) as ProjectReportRow[]).map(
     (report) => report.id
   );
-  const { data: reportArtifactsData } = reportIds.length
+  const reportArtifactsResult = reportIds.length
     ? await supabase
         .from("report_artifacts")
         .select("report_id, generated_at, metadata_json")
         .in("report_id", reportIds)
         .order("generated_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
+  // An unreadable artifact list makes every packet look ungenerated, which the
+  // freshness rules turn into "First action: generate <report>" — an instruction
+  // to redo work that may already exist.
+  reads.check("report packet artifacts", reportArtifactsResult);
+  const reportArtifactsData = reportArtifactsResult.error ? [] : reportArtifactsResult.data;
 
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
   for (const artifact of (reportArtifactsData ?? []) as ReportArtifactRow[]) {
@@ -362,7 +400,7 @@ export default async function ProjectsPage({
       },
     };
 
-    const packetCommand = describeProjectPacketCommand(projectRecord);
+    const packetCommand = describeProjectPacketCommand(projectRecord, reportsReadFailed);
     if (
       projectRecord.reportSummary.comparisonBackedCount > 0 &&
       projectRecord.grantModelingEvidence
@@ -410,6 +448,26 @@ export default async function ProjectsPage({
     (sum, project) => sum + project.reportSummary.governanceHoldCount,
     0
   );
+
+  /**
+   * A COUNT IS A CLAIM, AND A FAILED READ CANNOT MAKE ONE.
+   *
+   * Every tile above is derived from `projects`, which is `[]` when the
+   * portfolio read failed — so the header rendered "Projects 0 · Active 0 ·
+   * Plan types 0" and a row of zeroed chips over an agency that may have
+   * hundreds. Those are the largest numbers on the page and they read as
+   * findings. "—" is the honest answer, and it is the same one the project
+   * detail page already gives for an unreadable risk or issue count.
+   *
+   * Each count names the reads it actually depends on: the report chips are
+   * unknown if EITHER the portfolio or the reports read failed, because a
+   * complete project list with no reports attached produces the same zero.
+   */
+  const unknownIfUnread = (failed: boolean, value: number): number | string =>
+    failed ? "—" : value;
+  const portfolioCountsUnknown = projectsReadFailed;
+  const reportCountsUnknown = projectsReadFailed || reportsReadFailed;
+  const rtpCountsUnknown = projectsReadFailed || rtpLinksReadFailed;
   const packetQueueProjects = projects.filter(
     (project) =>
       project.reportSummary.attentionCount > 0 ||
@@ -419,6 +477,14 @@ export default async function ProjectsPage({
 
   return (
     <section className="module-page">
+      {reads.any ? (
+        <StateBlock
+          tone="danger"
+          title="Part of this page could not be read"
+          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -436,41 +502,53 @@ export default async function ProjectsPage({
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Projects</p>
-              <p className="module-summary-value">{projects.length}</p>
-              <p className="module-summary-detail">Project records connected to the rest of the workspace.</p>
+              <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, projects.length)}</p>
+              <p className="module-summary-detail">
+                {portfolioCountsUnknown
+                  ? "Unavailable — the project registry could not be read, so this is not a count of zero."
+                  : "Project records connected to the rest of the workspace."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Active</p>
-              <p className="module-summary-value">{activeCount}</p>
-              <p className="module-summary-detail">Currently in motion across the workspace portfolio.</p>
+              <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, activeCount)}</p>
+              <p className="module-summary-detail">
+                {portfolioCountsUnknown
+                  ? "Unavailable — nothing here was counted, because the project registry could not be read."
+                  : "Currently in motion across the workspace portfolio."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Plan types</p>
-              <p className="module-summary-value">{planningTypes}</p>
-              <p className="module-summary-detail">Including {scopingCount} projects still in scoping posture.</p>
+              <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, planningTypes)}</p>
+              <p className="module-summary-detail">
+                {portfolioCountsUnknown
+                  ? "Unavailable — scoping posture cannot be summarised from a registry that could not be read."
+                  : `Including ${scopingCount} projects still in scoping posture.`}
+              </p>
             </div>
           </div>
 
           <div className="mt-4 grid gap-2 sm:grid-cols-3">
             <div className="module-record-chip">
               <span>Report attention</span>
-              <strong>{projectsWithReportAttentionCount}</strong>
+              <strong>{unknownIfUnread(reportCountsUnknown, projectsWithReportAttentionCount)}</strong>
             </div>
             <div className="module-record-chip">
               <span>Evidence-backed</span>
-              <strong>{projectsWithEvidenceBackedReportsCount}</strong>
+              <strong>{unknownIfUnread(reportCountsUnknown, projectsWithEvidenceBackedReportsCount)}</strong>
             </div>
             <div className="module-record-chip">
               <span>Comparison-backed</span>
-              <strong>{projectsWithComparisonBackedReportsCount}</strong>
+              <strong>{unknownIfUnread(reportCountsUnknown, projectsWithComparisonBackedReportsCount)}</strong>
             </div>
             <div className="module-record-chip">
               <span>Governance hold</span>
-              <strong>{governanceHoldReportCount}</strong>
+              <strong>{unknownIfUnread(reportCountsUnknown, governanceHoldReportCount)}</strong>
             </div>
             <div className="module-record-chip">
               <span>RTP-linked</span>
-              <strong>{projectsLinkedToRtpCount}</strong>
+              <strong>{unknownIfUnread(rtpCountsUnknown, projectsLinkedToRtpCount)}</strong>
             </div>
             {(() => {
               const aerialCoverageCount = projects.filter((p) => (p.aerialPosture?.missionCount ?? 0) > 0).length;
@@ -548,7 +626,16 @@ export default async function ProjectsPage({
               ))}
           </div>
 
-          {projects.length === 0 ? (
+          {projectsReadFailed ? (
+            /* Never "No project records yet" on a failed read: that sentence
+               tells an agency it has no portfolio, and invites a planner to
+               create a duplicate of a project that already exists. */
+            <div className="module-empty-state mt-5 text-sm">
+              The project registry could not be read, so this list is unavailable rather than empty.
+              This is not a finding that the workspace has no projects. Reload; the banner above
+              carries the database&apos;s own message for an operator.
+            </div>
+          ) : projects.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
               No project records yet. Create your first project to start tracking work here.
             </div>
@@ -581,7 +668,11 @@ export default async function ProjectsPage({
                       badges,
                     };
                   })}
-                  emptyLabel="No queued packet work across the portfolio."
+                  emptyLabel={
+                    reportsReadFailed
+                      ? "The packet queue is unavailable — linked report records could not be read, so this is not a finding that nothing is queued."
+                      : "No queued packet work across the portfolio."
+                  }
                 />
               </div>
 
@@ -651,7 +742,8 @@ export default async function ProjectsPage({
                       {project.rtpSummary.constrainedCount > 0 ? (
                         <span className="module-record-chip"><span>Constrained</span><strong>{project.rtpSummary.constrainedCount}</strong></span>
                       ) : null}
-                      <span className="module-record-chip"><span>Reports</span><strong>{project.reportSummary.totalCount}</strong></span>
+                      {/* "—", not 0: the count is unknown when the read failed. */}
+                      <span className="module-record-chip"><span>Reports</span><strong>{reportsReadFailed ? "—" : project.reportSummary.totalCount}</strong></span>
                       {project.reportSummary.attentionCount > 0 ? (
                         <span className="module-record-chip"><span>Need attention</span><strong>{project.reportSummary.attentionCount}</strong></span>
                       ) : null}
@@ -735,7 +827,9 @@ export default async function ProjectsPage({
                         </>
                       ) : (
                         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                          No report records linked yet. Open the project to create the first packet trail.
+                          {reportsReadFailed
+                            ? REPORTS_UNREADABLE_DETAIL
+                            : "No report records linked yet. Open the project to create the first packet trail."}
                         </p>
                       )}
                     </div>

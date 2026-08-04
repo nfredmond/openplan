@@ -14,7 +14,101 @@ const SELECT_CLASS =
 const ERROR_CLASS =
   "rounded-[0.5rem] border border-red-300/80 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-200";
 
+const NOTICE_CLASS =
+  "rounded-[0.5rem] border border-border/70 bg-muted/40 px-3 py-2 text-xs text-muted-foreground";
+const NOTICE_WARNING_CLASS =
+  "rounded-[0.5rem] border border-amber-300/80 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200";
+
 type Category = { id: string; label: string };
+
+/**
+ * What the PATCH route reports about the subscriber broadcast a publish owed.
+ * `outcome: null` means this PATCH was not a draft->published transition, so no
+ * broadcast was owed and there is nothing to say.
+ */
+type BroadcastResult = { enqueued: number; delivered: number; skipped: number; failed: number; transport: string };
+type BroadcastReport = { outcome: "attempted" | "no_share_token" | "unknown" | null; result: BroadcastResult | null };
+
+function plural(count: number, one: string, many: string): string {
+  return `${count} ${count === 1 ? one : many}`;
+}
+
+/**
+ * Turn the route's broadcast report into sentences an operator can act on.
+ *
+ * The distinctions here are the whole point of the panel: "nobody is subscribed",
+ * "queued but this deployment cannot send email", "the provider refused" and "we
+ * do not know" are four different facts, and the enqueue count alone conflates
+ * all of them. `unknown` is never rendered as "nobody was emailed" — a step that
+ * did not report back is not evidence that no one was reached.
+ *
+ * KNOWN GAP, and the reason the zero branch below hedges. A FIFTH fact — "the
+ * subscriber list could not be read" — has no representation in this payload:
+ * `enqueueCampaignSubscriberEmails` (src/lib/notifications/engagement.ts) selects
+ * from the engagement_subscriptions table destructuring only `data`, and drops
+ * the error, so a permission or connectivity failure arrives here as
+ * `enqueued: 0`. Verified 2026-08-04 by calling it with a client that answers
+ * `{ data: null, error }`: the result is `{ enqueued: 0, … }`, byte-identical to
+ * a campaign nobody subscribed to. The durable fix belongs in that lib (report
+ * the read failure alongside the counts and give this function a
+ * `subscribers_unreadable` outcome); until then this component may only say what
+ * OpenPlan FOUND, never what is true.
+ */
+export function describeBroadcast(report: BroadcastReport): { tone: "neutral" | "warning"; lines: string[] } | null {
+  if (!report.outcome) return null;
+
+  if (report.outcome === "no_share_token") {
+    return {
+      tone: "warning",
+      lines: [
+        "No update emails were sent: this campaign has no public share link, so there is no working unsubscribe link to put in them.",
+        "Publish the share link first if you want subscribers notified of future updates.",
+      ],
+    };
+  }
+
+  if (report.outcome === "unknown" || !report.result) {
+    return {
+      tone: "warning",
+      lines: [
+        "The entry was published, but OpenPlan could not determine whether subscriber update emails were queued — the notification step did not report back.",
+        "This is not the same as nobody being emailed. Check Activity → Email delivery for what actually reached the outbox.",
+      ],
+    };
+  }
+
+  const { enqueued, delivered, skipped, failed, transport } = report.result;
+
+  // A zero here is NOT evidence that nobody subscribed.
+  // enqueueCampaignSubscriberEmails() reads engagement_subscriptions with the
+  // error discarded, so a subscriber list that could not be read arrives as an
+  // empty one and lands in this exact branch. Until that read reports its own
+  // failure (see the note above describeBroadcast), this branch may report what
+  // OpenPlan FOUND and must not assert what is TRUE of the world.
+  if (enqueued === 0) {
+    return {
+      tone: "neutral",
+      lines: [
+        "No update emails were queued: OpenPlan found no confirmed email subscriptions for this campaign.",
+        "If you know people have subscribed, tell whoever runs this deployment — OpenPlan cannot yet tell an empty subscriber list apart from one it failed to read, so this is “none found”, not a confirmed count.",
+      ],
+    };
+  }
+
+  const lines: string[] = [];
+  if (delivered > 0) lines.push(`${plural(delivered, "update email", "update emails")} delivered via ${transport}.`);
+  if (skipped > 0) {
+    lines.push(
+      `${plural(skipped, "update email was", "update emails were")} recorded in the outbox but not delivered — this deployment has no email service configured (transport: ${transport}).`
+    );
+  }
+  if (failed > 0) {
+    lines.push(
+      `${plural(failed, "update email", "update emails")} could not be delivered — the email service refused them. See Activity → Email delivery for the reason.`
+    );
+  }
+  return { tone: delivered === enqueued ? "neutral" : "warning", lines };
+}
 
 type Draft = { themeTitle: string; youSaid: string; sourceItemIds: string[] };
 type DraftResponse = {
@@ -57,8 +151,10 @@ function CloseLoopCard({
   const [categoryId, setCategoryId] = useState(entry.category_id ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [broadcast, setBroadcast] = useState<BroadcastReport | null>(null);
 
   const categoryLabel = entry.category_id ? categories.find((c) => c.id === entry.category_id)?.label ?? null : null;
+  const broadcastNotice = broadcast ? describeBroadcast(broadcast) : null;
 
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
@@ -66,6 +162,13 @@ function CloseLoopCard({
     try {
       const payload = await api(`/api/engagement/campaigns/${campaignId}/closeloop/${entry.id}`, "PATCH", body);
       onUpdate(payload.entry as CloseLoopEntryRow);
+      // Publishing broadcasts to confirmed subscribers. The route now reports
+      // what became of that; anything else (an edit, an unpublish) reports a
+      // null outcome and clears whatever the last publish said.
+      setBroadcast({
+        outcome: (payload.broadcastOutcome as BroadcastReport["outcome"]) ?? null,
+        result: (payload.broadcast as BroadcastResult | null) ?? null,
+      });
       return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Update failed");
@@ -166,6 +269,19 @@ function CloseLoopCard({
             </p>
           ) : null}
           {error ? <p className={ERROR_CLASS}>{error}</p> : null}
+          {broadcastNotice ? (
+            <div
+              className={broadcastNotice.tone === "warning" ? NOTICE_WARNING_CLASS : NOTICE_CLASS}
+              data-testid="closeloop-broadcast-notice"
+            >
+              <p className="font-semibold">Subscriber update emails</p>
+              {broadcastNotice.lines.map((line) => (
+                <p key={line} className="mt-1">
+                  {line}
+                </p>
+              ))}
+            </div>
+          ) : null}
           <div className="flex flex-wrap gap-2">
             <Button type="button" variant="outline" size="sm" onClick={() => setEditing(true)} disabled={busy}>
               Edit

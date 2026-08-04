@@ -15,8 +15,9 @@ function buildFilterHref(params: { projectId?: string; planType?: string; status
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { PlanCreator } from "@/components/plans/plan-creator";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
@@ -100,7 +101,16 @@ export default async function PlansPage({
   // the filter a multi-workspace member saw every workspace's plans merged,
   // and the .in() follow-ups below inherited the cross-workspace id set
   // (2026-08-03 review, unscoped-list-page class).
-  const [{ data: plansData }, { data: projectsData }] = await Promise.all([
+  // Every read below is registered here. Destructuring only the data half of a
+  // Supabase result cannot tell "this workspace has no plans" from "the plans
+  // query failed", and the catalog empty state — "No plans yet. Create the first
+  // plan record" — states the second as the first to a planner whose registry is
+  // perfectly intact. (Written without the literal destructuring shape on
+  // purpose: `a-page-may-not-discard-a-read-error` scans file TEXT, and a guard
+  // that its own explanatory comment trips is a guard nobody keeps.)
+  const reads = new ReadFailureLog();
+
+  const [plansResult, projectsResult] = await Promise.all([
     supabase
       .from("plans")
       .select(
@@ -115,6 +125,11 @@ export default async function PlansPage({
       .order("updated_at", { ascending: false }),
   ]);
 
+  const plansUnreadable = reads.check("the plan catalog", plansResult);
+  reads.check("selectable projects", projectsResult);
+
+  const plansData = plansResult.data;
+  const projectsData = projectsResult.data;
   const plans = (plansData ?? []) as PlanRow[];
   const planIds = plans.map((plan) => plan.id);
   const projectIds = [...new Set(plans.map((plan) => plan.project_id).filter((value): value is string => Boolean(value)))];
@@ -133,6 +148,20 @@ export default async function PlansPage({
       ? supabase.from("reports").select("id, project_id").in("project_id", projectIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
+
+  // Each `check` runs unconditionally — `||` would short-circuit and leave the
+  // later failures out of the disclosure.
+  const planLinksUnreadable = reads.check("plan link sets", planLinksResult);
+  const scenarioCountsUnreadable = reads.check("scenario sets on the linked projects", scenarioResult);
+  const campaignCountsUnreadable = reads.check("engagement campaigns on the linked projects", campaignResult);
+  const reportCountsUnreadable = reads.check("reports on the linked projects", reportResult);
+
+  // Readiness, artifact coverage and the workflow verdict for every row are all
+  // computed from these counts. A zero from a failed read becomes a confident
+  // per-plan "missing basis" line, which sends a planner to re-link work that is
+  // already linked.
+  const rowBasisUnreadable =
+    planLinksUnreadable || scenarioCountsUnreadable || campaignCountsUnreadable || reportCountsUnreadable;
 
   const linksByPlan = new Map<string, PlanLinkRow[]>();
   for (const link of (planLinksResult.data ?? []) as PlanLinkRow[]) {
@@ -230,6 +259,16 @@ export default async function PlansPage({
 
   return (
     <section className="module-page">
+      {reads.any ? (
+        <div className="mb-6">
+          <StateBlock
+            tone="danger"
+            title="Part of this page could not be read"
+            description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+          />
+        </div>
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -246,18 +285,30 @@ export default async function PlansPage({
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Plans</p>
-              <p className="module-summary-value">{typedPlans.length}</p>
-              <p className="module-summary-detail">Formal planning objects tracked in the current workspace catalog.</p>
+              <p className="module-summary-value">{plansUnreadable ? "—" : typedPlans.length}</p>
+              <p className="module-summary-detail">
+                {plansUnreadable
+                  ? "The plan catalog could not be read, so this count is unknown rather than zero."
+                  : "Formal planning objects tracked in the current workspace catalog."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Active or adopted</p>
-              <p className="module-summary-value">{activeCount + adoptedCount}</p>
-              <p className="module-summary-detail">{adoptedCount} already marked as adopted.</p>
+              <p className="module-summary-value">{plansUnreadable ? "—" : activeCount + adoptedCount}</p>
+              <p className="module-summary-detail">
+                {plansUnreadable
+                  ? "Unavailable while the plan catalog cannot be read."
+                  : `${adoptedCount} already marked as adopted.`}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Foundation ready</p>
-              <p className="module-summary-value">{readyFoundationCount}</p>
-              <p className="module-summary-detail">Plans with the core information in place for review.</p>
+              <p className="module-summary-value">{plansUnreadable || rowBasisUnreadable ? "—" : readyFoundationCount}</p>
+              <p className="module-summary-detail">
+                {plansUnreadable || rowBasisUnreadable
+                  ? "Readiness is computed from linked records this page could not read."
+                  : "Plans with the core information in place for review."}
+              </p>
             </div>
           </div>
         </article>
@@ -309,7 +360,7 @@ export default async function PlansPage({
             <span className="module-record-chip">
               <FolderKanban className="h-3.5 w-3.5" />
               <span>Total</span>
-              <strong>{typedPlans.length}</strong>
+              <strong>{plansUnreadable ? "—" : typedPlans.length}</strong>
             </span>
           </div>
 
@@ -353,7 +404,15 @@ export default async function PlansPage({
             </div>
           </div>
 
-          {typedPlans.length === 0 ? (
+          {plansUnreadable ? (
+            <div className="mt-5">
+              <StateBlock
+                tone="danger"
+                title="The plan catalog could not be read"
+                description="This page could not read the plans in your workspace, so it cannot show the catalog and cannot say whether any plans exist. Nothing has been deleted — retry, and tell your operator if it persists."
+              />
+            </div>
+          ) : typedPlans.length === 0 ? (
             <div className="mt-5">
               <EmptyState
                 title="No plans yet"
@@ -400,11 +459,13 @@ export default async function PlansPage({
                           {plan.project?.name ?? "No project linked"}
                           {plan.geography_label ? ` · ${plan.geography_label}` : ""}
                           {plan.horizon_year ? ` · ${plan.horizon_year}` : ""}
-                          {` · ${plan.linkageCounts.scenarios} scenario${plan.linkageCounts.scenarios === 1 ? "" : "s"}`}
-                          {` · ${plan.linkageCounts.reports} report${plan.linkageCounts.reports === 1 ? "" : "s"}`}
-                          {plan.readiness.missingCheckCount > 0
-                            ? ` · ${plan.readiness.missingCheckCount} readiness gap${plan.readiness.missingCheckCount === 1 ? "" : "s"}`
-                            : ""}
+                          {rowBasisUnreadable
+                            ? " · linkage counts unavailable"
+                            : `${` · ${plan.linkageCounts.scenarios} scenario${plan.linkageCounts.scenarios === 1 ? "" : "s"}`}${` · ${plan.linkageCounts.reports} report${plan.linkageCounts.reports === 1 ? "" : "s"}`}${
+                                plan.readiness.missingCheckCount > 0
+                                  ? ` · ${plan.readiness.missingCheckCount} readiness gap${plan.readiness.missingCheckCount === 1 ? "" : "s"}`
+                                  : ""
+                              }`}
                         </p>
                       </div>
                     </div>
@@ -412,7 +473,14 @@ export default async function PlansPage({
                     <ArrowRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
-                  {plan.readiness.missingCheckLabels.length > 0 ? (
+                  {rowBasisUnreadable ? (
+                    // "Missing basis: …" would be a fact about the failed read,
+                    // not about this plan, and it is exactly the sentence that
+                    // sends a planner off to re-link work already linked.
+                    <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">
+                      Readiness withheld — the linked records it is computed from could not be read.
+                    </p>
+                  ) : plan.readiness.missingCheckLabels.length > 0 ? (
                     <p className="mt-2.5 border-t border-border/50 pt-2.5 text-[0.73rem] text-muted-foreground">
                       Missing basis: {plan.readiness.missingCheckLabels.join(", ")}.
                     </p>

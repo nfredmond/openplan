@@ -1,0 +1,390 @@
+import { render, screen } from "@testing-library/react";
+import type { ComponentPropsWithoutRef } from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+/**
+ * A READ THAT FAILED MAY NOT BE RENDERED AS AN ANSWER — the RTP module.
+ *
+ * `const { data } = await supabase…` hands back `null` for both "there is
+ * nothing here" and "this query failed". The three RTP pages each turned that
+ * into a sentence a planner reads and believes:
+ *
+ *   - the cycle detail and document pages shared ONE branch for "no row" and
+ *     "the query failed", so any database error rendered the 404 page — the app
+ *     telling a planner that their RTP cycle does not exist. That is the single
+ *     most expensive false sentence in the module: the response to it is to
+ *     re-create a plan update that is still there.
+ *   - a failed `project_rtp_cycle_links` read rendered "No linked projects yet";
+ *     a failed `rtp_cycle_chapters` read rendered a compiled RTP document with
+ *     no chapters in it and no indication why.
+ *
+ * These tests drive the REAL page functions — not a stub of their loaders — with
+ * a failing read, and assert three things, because only the three together
+ * distinguish disclosure from a page that always shows a warning:
+ *
+ *   (a) the false-absence sentence is gone,
+ *   (b) the disclosure naming what failed is present,
+ *   (c) the ORDINARY empty state still appears when the read SUCCEEDS and there
+ *       is genuinely nothing.
+ */
+
+const notFoundMock = vi.fn(() => {
+  throw new Error("NEXT_NOT_FOUND");
+});
+const redirectMock = vi.fn(() => {
+  throw new Error("NEXT_REDIRECT");
+});
+
+const createClientMock = vi.fn();
+const loadCurrentWorkspaceMembershipMock = vi.fn();
+
+type QueryResult = { data: unknown; error: { message: string } | null };
+
+/** Per-table results for one render. Anything unset resolves to an empty read. */
+let tableResults: Record<string, QueryResult> = {};
+
+const OK: QueryResult = { data: [], error: null };
+
+/**
+ * A thenable query builder: every chained method returns itself and awaiting it
+ * yields the table's result. Deliberately generic — a per-method mock chain has
+ * to be rewritten every time a page adds a `.limit()`, and the thing under test
+ * here is what the page does with `error`, not the shape of the query.
+ */
+function makeQuery(result: QueryResult) {
+  const query: Record<string, unknown> = {};
+  for (const method of ["select", "eq", "in", "not", "is", "order", "limit", "gte", "lte", "neq", "filter", "or"]) {
+    query[method] = vi.fn(() => query);
+  }
+  query.maybeSingle = vi.fn(async () => result);
+  query.single = vi.fn(async () => result);
+  query.then = (resolve: (value: QueryResult) => unknown, reject?: (reason: unknown) => unknown) =>
+    Promise.resolve(result).then(resolve, reject);
+  return query;
+}
+
+const fromMock = vi.fn((table: string) => makeQuery(tableResults[table] ?? OK));
+
+const CYCLE_ROW = {
+  id: "rtp-1",
+  workspace_id: "workspace-1",
+  title: "Regional Transportation Plan 2050",
+  status: "draft",
+  geography_label: "Example Region",
+  horizon_start_year: 2025,
+  horizon_end_year: 2050,
+  adoption_target_date: "2026-10-01",
+  public_review_open_at: null,
+  public_review_close_at: null,
+  summary: "Regional plan update.",
+  public_share_token: null,
+  public_share_enabled: false,
+  created_at: "2026-04-01T18:00:00.000Z",
+  updated_at: "2026-04-14T06:30:00.000Z",
+};
+
+vi.mock("next/navigation", () => ({
+  notFound: () => notFoundMock(),
+  redirect: () => redirectMock(),
+}));
+
+vi.mock("next/link", () => ({
+  default: ({ href, children, ...props }: ComponentPropsWithoutRef<"a"> & { href: string }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+vi.mock("@/lib/supabase/server", () => ({
+  createClient: (...args: unknown[]) => createClientMock(...args),
+}));
+
+vi.mock("@/lib/workspaces/current", () => ({
+  loadCurrentWorkspaceMembership: (...args: unknown[]) => loadCurrentWorkspaceMembershipMock(...args),
+}));
+
+vi.mock("@/components/cartographic/cartographic-surface-wide", () => ({
+  CartographicSurfaceWide: () => <div data-testid="cartographic-surface" />,
+}));
+
+vi.mock("@/components/rtp/rtp-chapter-controls", () => ({
+  RtpChapterControls: () => <div data-testid="rtp-chapter-controls" />,
+}));
+vi.mock("@/components/rtp/rtp-cycle-phase-controls", () => ({
+  RtpCyclePhaseControls: () => <div data-testid="rtp-cycle-phase-controls" />,
+}));
+vi.mock("@/components/rtp/rtp-engagement-campaign-creator", () => ({
+  RtpEngagementCampaignCreator: () => <div data-testid="rtp-engagement-campaign-creator" />,
+}));
+vi.mock("@/components/rtp/rtp-report-creator", () => ({
+  RtpReportCreator: () => <div data-testid="rtp-report-creator" />,
+}));
+vi.mock("@/components/rtp/rtp-public-share-controls", () => ({
+  RtpPublicShareControls: () => <div data-testid="rtp-public-share-controls" />,
+}));
+vi.mock("@/components/rtp/rtp-cycle-creator", () => ({
+  RtpCycleCreator: () => <div data-testid="rtp-cycle-creator" />,
+}));
+vi.mock("@/components/rtp/rtp-registry-packet-bulk-generate-actions", () => ({
+  RtpRegistryPacketBulkGenerateActions: () => <div data-testid="rtp-bulk-generate" />,
+}));
+vi.mock("@/components/rtp/rtp-registry-packet-bulk-refresh-actions", () => ({
+  RtpRegistryPacketBulkRefreshActions: () => <div data-testid="rtp-bulk-refresh" />,
+}));
+vi.mock("@/components/rtp/rtp-registry-packet-bulk-actions", () => ({
+  RtpRegistryPacketBulkActions: () => <div data-testid="rtp-bulk-actions" />,
+}));
+vi.mock("@/components/rtp/rtp-registry-packet-queue-command-board", () => ({
+  RtpRegistryPacketQueueCommandBoard: () => <div data-testid="rtp-queue-command-board" />,
+}));
+vi.mock("@/components/rtp/rtp-registry-next-action-shortcut", () => ({
+  RtpRegistryNextActionShortcut: () => <div data-testid="rtp-next-action-shortcut" />,
+}));
+vi.mock("@/components/rtp/rtp-registry-packet-row-action", () => ({
+  RtpRegistryPacketRowAction: () => <div data-testid="rtp-packet-row-action" />,
+}));
+
+import RtpCycleDetailPage from "@/app/(app)/rtp/[rtpCycleId]/page";
+import RtpCycleDocumentPage from "@/app/(app)/rtp/[rtpCycleId]/document/page";
+import RtpRegistryPage from "@/app/(app)/rtp/page";
+
+async function renderDetail() {
+  render(await RtpCycleDetailPage({ params: Promise.resolve({ rtpCycleId: "rtp-1" }) }));
+}
+
+async function renderDocument() {
+  render(await RtpCycleDocumentPage({ params: Promise.resolve({ rtpCycleId: "rtp-1" }) }));
+}
+
+async function renderRegistry() {
+  render(await RtpRegistryPage({ searchParams: Promise.resolve({}) }));
+}
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  tableResults = {
+    rtp_cycles: { data: CYCLE_ROW, error: null },
+  };
+
+  loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+    membership: { workspace_id: "workspace-1", role: "owner" },
+    workspace: { id: "workspace-1", name: "Example Agency" },
+  });
+
+  createClientMock.mockResolvedValue({
+    auth: { getUser: vi.fn(async () => ({ data: { user: { id: "user-1" } } })) },
+    from: fromMock,
+  });
+});
+
+describe("the RTP cycle detail page separates a failed read from an absence", () => {
+  it("does not 404 when the cycle read FAILS — that would say the cycle does not exist", async () => {
+    tableResults.rtp_cycles = { data: null, error: { message: "permission denied for table rtp_cycles" } };
+
+    await renderDetail();
+
+    expect(notFoundMock).not.toHaveBeenCalled();
+    expect(screen.getByText("This RTP cycle could not be read")).toBeInTheDocument();
+    expect(screen.getByText(/not the same as the cycle not existing/i)).toBeInTheDocument();
+    // Internal page: the operator gets the database's own reason.
+    expect(screen.getByText(/permission denied for table rtp_cycles/)).toBeInTheDocument();
+  });
+
+  it("still 404s when the cycle genuinely is not there", async () => {
+    tableResults.rtp_cycles = { data: null, error: null };
+
+    await expect(renderDetail()).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  it("replaces 'No linked projects yet' with a disclosure when that read fails", async () => {
+    tableResults.project_rtp_cycle_links = {
+      data: null,
+      error: { message: "permission denied for table project_rtp_cycle_links" },
+    };
+
+    await renderDetail();
+
+    // (a) the false absence is gone
+    expect(screen.queryByText("No linked projects yet")).not.toBeInTheDocument();
+    // (b) the disclosure is present, and names what failed
+    expect(screen.getByText("Linked projects could not be read")).toBeInTheDocument();
+    expect(screen.getByText("Part of this cycle could not be read")).toBeInTheDocument();
+    expect(
+      screen.getByText(/could not read the projects linked to this cycle/i)
+    ).toBeInTheDocument();
+    // and the count is withheld rather than shown as zero
+    expect(screen.getByText(/this is not a count of zero/i)).toBeInTheDocument();
+  });
+
+  it("discloses a failed chapter read instead of 'No chapter shell yet'", async () => {
+    tableResults.rtp_cycle_chapters = {
+      data: null,
+      error: { message: "permission denied for table rtp_cycle_chapters" },
+    };
+
+    await renderDetail();
+
+    expect(screen.queryByText("No chapter shell yet")).not.toBeInTheDocument();
+    expect(screen.getByText("Chapter sections could not be read")).toBeInTheDocument();
+    // The adoption-record proof block is computed from this read, so it must say
+    // that a "Needs operator" verdict may only mean OpenPlan could not look.
+    expect(screen.getByText(/may\s+only mean OpenPlan could not look/i)).toBeInTheDocument();
+  });
+
+  /**
+   * The SECOND count grid. The six header cards were gated when this page was
+   * first fixed; the four public-review cards below them were not, and they are
+   * the ones read at closeout. Worse, the recommendations under them are
+   * INSTRUCTIONS built from the same reads — "Create one whole-cycle engagement
+   * campaign…" offered because a query failed sends a planner to duplicate a
+   * campaign that already exists.
+   */
+  it("withholds the public-review comment counts when the CAMPAIGN read fails", async () => {
+    // The item query is filtered by campaign id, so a failed campaign read
+    // leaves it nothing to ask for: it succeeds, answers "none", and the counts
+    // would otherwise render an honest zero about a question never asked.
+    tableResults.engagement_campaigns = {
+      data: null,
+      error: { message: "permission denied for table engagement_campaigns" },
+    };
+
+    await renderDetail();
+
+    expect(screen.getByText("Pending comments")).toBeInTheDocument();
+    expect(
+      screen.getByText(/an empty moderation queue here is not a finding that nothing is waiting/i)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Public comments could not be read, so this is not a count of zero/i)).toBeInTheDocument();
+  });
+
+  it("does not tell a planner to create a packet that a failed read simply could not see", async () => {
+    tableResults.reports = {
+      data: null,
+      error: { message: "permission denied for table reports" },
+    };
+
+    await renderDetail();
+
+    expect(
+      screen.getByText(/Do not act on a recommendation to create a campaign or a packet from this page/i)
+    ).toBeInTheDocument();
+    // and the packet count is withheld rather than shown as 0/0
+    expect(screen.getByText(/a packet may already be generated/i)).toBeInTheDocument();
+  });
+
+  it("(c) still shows the ordinary empty states when every read SUCCEEDS and there is nothing", async () => {
+    await renderDetail();
+
+    expect(screen.getByText("No linked projects yet")).toBeInTheDocument();
+    expect(screen.getByText("No whole-cycle campaigns yet")).toBeInTheDocument();
+    expect(screen.queryByText("Part of this cycle could not be read")).not.toBeInTheDocument();
+    expect(screen.queryByText(/this is not a count of zero/i)).not.toBeInTheDocument();
+    // (c) for the public-review block: the real counts and the real
+    // recommendations still render when nothing failed.
+    expect(screen.queryByText(/Do not act on a recommendation to create a campaign or a packet/i)).not.toBeInTheDocument();
+    expect(
+      screen.getByText("Current rendered packet artifacts available for review and export.")
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText("Items still waiting for operator review before packet closeout.")
+    ).toBeInTheDocument();
+  });
+});
+
+describe("the compiled RTP document page separates a failed read from an absence", () => {
+  it("does not 404 when the cycle read FAILS", async () => {
+    tableResults.rtp_cycles = { data: null, error: { message: "could not connect to server" } };
+
+    await renderDocument();
+
+    expect(notFoundMock).not.toHaveBeenCalled();
+    expect(screen.getByText("This RTP cycle could not be read")).toBeInTheDocument();
+  });
+
+  it("still 404s when the cycle genuinely is not there", async () => {
+    tableResults.rtp_cycles = { data: null, error: null };
+
+    await expect(renderDocument()).rejects.toThrow("NEXT_NOT_FOUND");
+    expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  it("says the chapters could not be read rather than compiling a document with none", async () => {
+    tableResults.rtp_cycle_chapters = {
+      data: null,
+      error: { message: "permission denied for table rtp_cycle_chapters" },
+    };
+
+    await renderDocument();
+
+    expect(screen.getByText("The chapters of this plan could not be read")).toBeInTheDocument();
+    expect(screen.getByText("Part of this document could not be assembled")).toBeInTheDocument();
+    // "0 chapters" is an assertion about the plan; it must not be made here.
+    expect(screen.queryByText("0 chapters")).not.toBeInTheDocument();
+    expect(screen.getByText("Chapters unavailable")).toBeInTheDocument();
+  });
+
+  it("replaces the portfolio and engagement empty states when those reads fail", async () => {
+    tableResults.project_rtp_cycle_links = { data: null, error: { message: "permission denied" } };
+    tableResults.engagement_campaigns = { data: null, error: { message: "permission denied" } };
+
+    await renderDocument();
+
+    expect(screen.queryByText("No linked projects yet")).not.toBeInTheDocument();
+    expect(screen.queryByText("No engagement targets yet")).not.toBeInTheDocument();
+    expect(screen.getByText("The portfolio section could not be assembled")).toBeInTheDocument();
+    expect(screen.getByText("The engagement section could not be assembled")).toBeInTheDocument();
+  });
+
+  it("(c) still shows the ordinary empty states when every read SUCCEEDS and there is nothing", async () => {
+    await renderDocument();
+
+    expect(screen.getByText("No linked projects yet")).toBeInTheDocument();
+    expect(screen.getByText("No engagement targets yet")).toBeInTheDocument();
+    expect(screen.getByText("0 chapters")).toBeInTheDocument();
+    expect(screen.queryByText("Part of this document could not be assembled")).not.toBeInTheDocument();
+  });
+});
+
+describe("the RTP registry discloses a failed cycle read", () => {
+  it("says the cycle list could not be read rather than letting an empty registry answer", async () => {
+    tableResults.rtp_cycles = { data: null, error: { message: "permission denied for table rtp_cycles" } };
+
+    await renderRegistry();
+
+    expect(screen.getByText("The RTP cycle list could not be read")).toBeInTheDocument();
+    expect(
+      screen.getByText(/No cycle is listed below because the query failed, not because this workspace has none/i)
+    ).toBeInTheDocument();
+  });
+
+  /**
+   * A DISCLOSURE MAY NOT OVER-CLAIM EITHER. The shared `ReadFailureLog.describe()`
+   * sentence promises that "anything below that depends on it is shown as
+   * unavailable rather than as zero". That is true on the two cycle pages, which
+   * render an em dash. It is NOT true here: `RtpRegistryOverview` takes `number`
+   * props, so the cards still render "Cycles 0" and "$0 outstanding". Using the
+   * shared sentence would make the notice itself the false statement.
+   */
+  it("does not promise the counts below are withheld, because this page cannot withhold them", async () => {
+    tableResults.rtp_cycles = { data: null, error: { message: "permission denied for table rtp_cycles" } };
+
+    await renderRegistry();
+
+    expect(
+      screen.getByText(/The summary counts and dollar totals below are computed only from what did load/i)
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/shown as unavailable rather than as zero/i)).not.toBeInTheDocument();
+  });
+
+  it("(c) shows no disclosure when the read SUCCEEDS and the workspace genuinely has no cycles", async () => {
+    tableResults.rtp_cycles = { data: [], error: null };
+
+    await renderRegistry();
+
+    expect(screen.queryByText("The RTP cycle list could not be read")).not.toBeInTheDocument();
+    expect(screen.queryByText("Part of this registry could not be read")).not.toBeInTheDocument();
+    expect(screen.getByText("No RTP cycles yet")).toBeInTheDocument();
+  });
+});

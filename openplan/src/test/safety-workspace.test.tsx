@@ -1,7 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
+import { ingestCrashesForStudyArea } from "@/lib/safety/ingest";
 import type { SafetyIngestSummary } from "@/lib/safety/client-types";
+import type { CrashRecord } from "@/lib/safety/sources/types";
+import { findReadOnlyOnlyStudyArea } from "./helpers/crash-coverage-probe";
 
 // The map is Mapbox-backed; this suite is about the honesty copy around it.
 vi.mock("@/components/safety/safety-crash-map", () => ({
@@ -20,26 +23,41 @@ vi.mock("@/components/models/study-area-picker", () => ({
     onCorridorChange: (t: string) => void;
     onPlaceResolved?: (p: unknown) => void;
   }) => {
-    const poly = JSON.stringify({
-      type: "Polygon",
-      coordinates: [[[-121.3, 39.1], [-120.0, 39.1], [-120.0, 39.6], [-121.3, 39.6], [-121.3, 39.1]]],
-    });
-    const pick = (kind: string, geoid: string) => () => {
-      onCorridorChange(poly);
-      onPlaceResolved?.({ kind, geoid, label: geoid, geojson: JSON.parse(poly), bbox: {} });
+    const ring = (west: number, south: number) =>
+      JSON.stringify({
+        type: "Polygon",
+        coordinates: [
+          [
+            [west, south],
+            [west + 1, south],
+            [west + 1, south + 0.5],
+            [west, south + 0.5],
+            [west, south],
+          ],
+        ],
+      });
+    const poly = ring(-121.3, 39.1);
+    const pick = (kind: string, geoid: string, shape = poly) => () => {
+      onCorridorChange(shape);
+      onPlaceResolved?.({ kind, geoid, label: geoid, geojson: JSON.parse(shape), bbox: {} });
     };
     return (
       <div>
         <button onClick={pick("county", "06057")}>pick-ca-county</button>
         <button onClick={pick("city", "0618100")}>pick-ca-city</button>
         <button onClick={pick("county", "48201")}>pick-tx-county</button>
+        {/* A DIFFERENT boundary, for proving that changing the study area
+            discards a live read rather than replotting it on new ground. */}
+        <button onClick={pick("county", "39049", ring(-83.2, 39.8))}>pick-far-county</button>
       </div>
     );
   },
 }));
 
 /** Choose a study area, since nothing loads until the user picks one. */
-function selectStudyArea(which: "ca-county" | "ca-city" | "tx-county" = "ca-county") {
+function selectStudyArea(
+  which: "ca-county" | "ca-city" | "tx-county" | "far-county" = "ca-county"
+) {
   fireEvent.click(screen.getByText(`pick-${which}`));
 }
 
@@ -166,9 +184,16 @@ describe("SafetyWorkspace coverage disclosure", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("discloses that crash coverage is California-only rather than implying nationwide data", async () => {
+  it("promises to name the source or the gap, without naming a jurisdiction up front", async () => {
+    // This sentence used to read "crash coverage is currently California-only",
+    // which was a hardcoded jurisdiction in UI copy AND — once the national
+    // read-only adapter became reachable from this page — false. Which sources
+    // cover a place is the registry's answer, given per study area.
     render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
-    expect(await screen.findByText(/California-only/i)).toBeInTheDocument();
+    const intro = await screen.findByText(/Choose a study area above/i);
+    expect(intro).toHaveTextContent(/names the source that covers your study area/i);
+    expect(intro).toHaveTextContent(/tells you plainly when nothing covers it/i);
+    expect(intro.textContent ?? "").not.toMatch(/California/i);
   });
 
   it("sends the derived CCRS county code for a California county selection", async () => {
@@ -229,13 +254,25 @@ describe("SafetyWorkspace coverage disclosure", () => {
     render(
       <SafetyWorkspace
         workspaceId="ws-1"
-        latestIngest={ingest({ coverageState: "out_of_coverage", status: "no_coverage", crashCount: 0, geocodedCount: 0 })}
+        latestIngest={ingest({
+          coverageState: "out_of_coverage",
+          status: "no_coverage",
+          crashCount: 0,
+          geocodedCount: 0,
+          checkedSourceLabels: ["Source A", "Source B"],
+        })}
       />
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/No registered crash source covers this study area/i)).toBeInTheDocument();
+      // Scoped to what was CHECKED. The old sentence claimed no *registered*
+      // source covered the area, which the read-only registry routinely refuted.
+      expect(
+        screen.getByText(/none of the crash sources checked for this study area covers it/i)
+      ).toBeInTheDocument();
     });
+    expect(screen.getByText(/Sources checked for this study area: Source A, Source B/i)).toBeInTheDocument();
+    expect(screen.getByText(/not evidence that no crashes occurred/i)).toBeInTheDocument();
   });
 
   it("surfaces a source outage instead of silently showing nothing", async () => {
@@ -333,6 +370,209 @@ describe("SafetyWorkspace coverage disclosure", () => {
     await waitFor(() => {
       expect(screen.getByText(/2 killed or seriously injured/)).toBeInTheDocument();
     });
+  });
+
+  /**
+   * THE PATH TO THE UNIT.
+   *
+   * The response driving these tests is NOT hand-written. It is produced by
+   * calling the real `ingestCrashesForStudyArea` against a study area SEARCHED
+   * for with the registry's own `covers()` predicates — a place a registered
+   * adapter serves but `safety_crashes.source_id` will not admit. A described
+   * fixture would only prove the renderer; this proves the shape the server
+   * actually emits arrives on screen.
+   */
+  async function realReadOnlyResponse(records: CrashRecord[]) {
+    const probe = findReadOnlyOnlyStudyArea();
+    expect(probe, "no read-only crash source covers anywhere — the lane is unreachable").not.toBeNull();
+
+    const spy = vi.spyOn(probe!.adapter, "fetch").mockResolvedValue({
+      records,
+      matchedTotal: records.length + 3, // some reported crashes are ungeocoded
+      geocodedTotal: records.length,
+      yearsCovered: [2024],
+      truncated: false,
+    });
+
+    const service = {
+      from: () => ({
+        insert: () => ({ select: () => ({ single: async () => ({ data: { id: "i" }, error: null }) }) }),
+        update: () => ({ eq: async () => ({ error: null }) }),
+        upsert: async () => ({ error: null }),
+      }),
+    };
+
+    const result = await ingestCrashesForStudyArea({
+      service: service as never,
+      workspaceId: "ws-1",
+      bbox: probe!.bbox,
+      years: [2024, 2023],
+    });
+    spy.mockRestore();
+
+    expect(result.status, "the lane did not produce a read-only result to render").toBe("read_only");
+    return { ok: true, json: async () => result } as Response;
+  }
+
+  function liveRecord(over: Partial<CrashRecord> = {}): CrashRecord {
+    return {
+      externalId: "case-1",
+      collisionDate: "2024-05-06",
+      collisionYear: 2024,
+      severity: "fatal",
+      killedCount: 1,
+      injuredCount: 0,
+      pedestrianInvolved: false,
+      bicyclistInvolved: false,
+      latitude: 1,
+      longitude: 2,
+      ...over,
+    };
+  }
+
+  it("renders live crashes for an area no storable source covers, and says they were not saved", async () => {
+    const response = await realReadOnlyResponse([liveRecord({ externalId: "a" }), liveRecord({ externalId: "b" })]);
+    const fetchMock = routedFetch(mockCrashResponse(), response);
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("tx-county");
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+
+    // The counts the source reported, both of them.
+    await waitFor(() => expect(screen.getByText(/5 reported/)).toBeInTheDocument());
+    // Reported AND mappable, both, in the coverage banner — three of the five
+    // crashes the source reported carry no coordinates and cannot be plotted.
+    expect(screen.getByText(/5 reported/)).toHaveTextContent(/2 mappable/);
+    // The points are on screen…
+    expect(screen.getByText(/Showing 2 of 2 mappable crashes from this live read/i)).toBeInTheDocument();
+    // …and the page says what they are NOT.
+    expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument();
+    expect(screen.getByText(/were not saved into this workspace/i)).toBeInTheDocument();
+  });
+
+  it("does not claim an acquisition happened when nothing was stored", async () => {
+    // A live read writes no `safety_crash_ingests` row, so an entry in the
+    // acquisition history would send a planner looking for data no table holds.
+    const response = await realReadOnlyResponse([liveRecord()]);
+    vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response) as unknown as typeof fetch);
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("tx-county");
+    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+
+    await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
+    expect(screen.queryByLabelText(/Acquisition history/i)).not.toBeInTheDocument();
+  });
+
+  it("shows no KSI figure for a fatality census, and says why", async () => {
+    // Every record from a fatality census is fatal, so a naive KSI would equal
+    // the fatal count and read as "no serious injuries occurred" — from a source
+    // that never recorded an injury.
+    //
+    // WHAT THIS TEST PROVES, precisely: the fatality-census caveat renders and
+    // no KSI figure appears. Deleting the caveat fails it. It does NOT isolate
+    // the `activeCompleteness` expression — mutating that to read the stale
+    // acquisition's `kabco_full` left this green, because the KSI block lives
+    // inside the acquisition branch of the banner and a live read renders the
+    // other branch. The protection there is structural, not conditional.
+    const response = await realReadOnlyResponse([liveRecord({ externalId: "a" })]);
+    vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response) as unknown as typeof fetch);
+
+    render(
+      // A stale CCRS acquisition is deliberately present, so a regression that
+      // let it describe the live points would have something to describe.
+      <SafetyWorkspace workspaceId="ws-1" latestIngest={ingest({ severityCompleteness: "kabco_full" })} />
+    );
+    selectStudyArea("tx-county");
+    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+
+    await waitFor(() => expect(screen.getByText(/fatality census/i)).toBeInTheDocument());
+    expect(screen.queryByText(/killed or seriously injured/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps the severity and mode filters live for crashes that never touched the database", async () => {
+    const response = await realReadOnlyResponse([
+      liveRecord({ externalId: "a", pedestrianInvolved: true }),
+      liveRecord({ externalId: "b" }),
+    ]);
+    vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response) as unknown as typeof fetch);
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("tx-county");
+    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+
+    await waitFor(() => expect(screen.getByText(/Showing 2 of 2 mappable/i)).toBeInTheDocument());
+
+    fireEvent.change(screen.getByRole("combobox", { name: /Mode/i }), {
+      target: { value: "pedestrian" },
+    });
+
+    await waitFor(() => expect(screen.getByText(/Showing 1 of 2 mappable/i)).toBeInTheDocument());
+  });
+
+  it("drops a live read when the study area changes, so one place's fatalities never plot on another", async () => {
+    const response = await realReadOnlyResponse([liveRecord()]);
+    vi.stubGlobal("fetch", routedFetch(mockCrashResponse(), response) as unknown as typeof fetch);
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("tx-county");
+    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+    await waitFor(() => expect(screen.getByText(/Live read — not saved/i)).toBeInTheDocument());
+
+    // The mocked picker emits a different polygon for a different pick.
+    selectStudyArea("far-county");
+
+    await waitFor(() => expect(screen.queryByText(/Live read — not saved/i)).not.toBeInTheDocument());
+  });
+
+  it("names the sources it checked when a real coverage gap comes back from the lane", async () => {
+    // The gap disclosure, end to end and NOT from a described fixture: the
+    // response is what `ingestCrashesForStudyArea` really emits for a study area
+    // no registered adapter covers, so the `checkedSources` → banner mapping is
+    // exercised rather than assumed.
+    const { findUncoveredStudyArea } = await import("./helpers/crash-coverage-probe");
+    const { CRASH_SOURCE_ADAPTERS } = await import("@/lib/safety/sources/registry");
+    const bbox = findUncoveredStudyArea();
+    expect(bbox).not.toBeNull();
+
+    const service = {
+      from: () => ({
+        insert: () => ({ select: () => ({ single: async () => ({ data: { id: "i" }, error: null }) }) }),
+        update: () => ({ eq: async () => ({ error: null }) }),
+        upsert: async () => ({ error: null }),
+      }),
+    };
+    const result = await ingestCrashesForStudyArea({
+      service: service as never,
+      workspaceId: "ws-1",
+      bbox: bbox!,
+      years: [2024],
+    });
+    expect(result.status).toBe("no_coverage");
+
+    vi.stubGlobal(
+      "fetch",
+      routedFetch(mockCrashResponse(), { ok: true, json: async () => result } as Response) as unknown as typeof fetch
+    );
+
+    render(<SafetyWorkspace workspaceId="ws-1" latestIngest={null} />);
+    selectStudyArea("tx-county");
+    await waitFor(() => expect(screen.getByText(/Retrieve crash data/i)).toBeInTheDocument());
+    fireEvent.click(screen.getByText(/Retrieve crash data/i));
+
+    await waitFor(() =>
+      expect(screen.getByText(/Sources checked for this study area:/i)).toBeInTheDocument()
+    );
+    const checked = screen.getByText(/Sources checked for this study area:/i);
+    for (const adapter of CRASH_SOURCE_ADAPTERS) {
+      expect(checked).toHaveTextContent(adapter.label);
+    }
   });
 
   it("reports how many of the matching crashes are actually in view", async () => {

@@ -43,7 +43,7 @@ const projectsEqMock = vi.fn((column: string) => {
 });
 const projectsSelectMock = vi.fn(() => ({ eq: projectsEqMock, in: projectsInMock }));
 
-const programLinksEqMock = vi.fn(() => ({ data: [], error: null }));
+const programLinksEqMock = vi.fn<() => Promise<{ data: unknown; error: { message: string } | null }>>();
 const programLinksSelectMock = vi.fn(() => ({ eq: programLinksEqMock }));
 
 const plansProjectOrderMock = vi.fn();
@@ -128,6 +128,22 @@ const modelsEqMock = vi.fn((column: string) => {
 });
 const modelsSelectMock = vi.fn(() => ({ eq: modelsEqMock, in: modelsInMock }));
 
+/**
+ * Two different reads land on `model_links`:
+ *   `.eq("link_type","plan").in("linked_id", planIds)` — which models the
+ *      program's plans point at; and
+ *   `.in("model_id", modelIds)` — those models' OWN link sets, which is what
+ *      the readiness verdict and the run/report counts are computed from.
+ * They must be separately controllable, or a test cannot fail only the second.
+ */
+const planModelLinksInMock = vi.fn();
+const supportingModelLinksInMock = vi.fn();
+const modelLinksEqMock = vi.fn((column: string) => {
+  if (column === "link_type") return { in: planModelLinksInMock };
+  throw new Error(`Unexpected model_links eq column: ${column}`);
+});
+const modelLinksSelectMock = vi.fn(() => ({ eq: modelLinksEqMock, in: supportingModelLinksInMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "programs") {
     return { select: programSelectMock };
@@ -158,6 +174,9 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "models") {
     return { select: modelsSelectMock };
+  }
+  if (table === "model_links") {
+    return { select: modelLinksSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -273,6 +292,8 @@ describe("ProgramDetailPage", () => {
       error: null,
     });
 
+    programLinksEqMock.mockResolvedValue({ data: [], error: null });
+
     plansProjectOrderMock.mockResolvedValue({ data: [], error: null });
     plansWorkspaceOrderMock.mockResolvedValue({ data: [], error: null });
 
@@ -314,6 +335,9 @@ describe("ProgramDetailPage", () => {
     });
 
     modelsProjectOrderMock.mockResolvedValue({ data: [], error: null });
+    modelsInMock.mockResolvedValue({ data: [], error: null });
+    planModelLinksInMock.mockResolvedValue({ data: [], error: null });
+    supportingModelLinksInMock.mockResolvedValue({ data: [], error: null });
 
     loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
       nextCommand: null,
@@ -338,5 +362,164 @@ describe("ProgramDetailPage", () => {
     expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
     expect(screen.queryByText(/^Not generated$/i)).not.toBeInTheDocument();
     expect(screen.getByText(/^Generated .*2026/i)).toBeInTheDocument();
+  });
+
+  /**
+   * A FAILED READ MAY NOT BE RENDERED AS AN ANSWER.
+   *
+   * This page's empty states were written for "there is genuinely nothing here",
+   * and a Supabase result destructured down to its `data` half gives the same
+   * `null` for a failed query. So a broken read made a programming cycle say
+   * "No plan basis linked" and "No funding opportunities linked yet" — a package
+   * disowning basis it actually has, in front of the person assembling it for a
+   * funder.
+   *
+   * These drive the real page with the real loading code and only the Supabase
+   * client doubled. The first test is the control: without it, a page that
+   * printed the warning unconditionally would pass all of the others.
+   */
+  describe("a failed read may not be rendered as an answer", () => {
+    it("still shows the ordinary empty states when every read SUCCEEDS and there is genuinely nothing", async () => {
+      await renderPage();
+
+      expect(screen.getByText("No plan basis linked")).toBeInTheDocument();
+      expect(screen.getByText("No engagement evidence linked")).toBeInTheDocument();
+      expect(screen.getByText("No funding opportunities linked yet")).toBeInTheDocument();
+      expect(screen.getByText("No supporting models visible")).toBeInTheDocument();
+
+      expect(screen.queryByText("Part of this page could not be read")).not.toBeInTheDocument();
+      expect(screen.queryByText("Plan links could not be read")).not.toBeInTheDocument();
+    });
+
+    it("replaces the plan empty state with a disclosure when the plan read fails, and leaves the other sections alone", async () => {
+      plansProjectOrderMock.mockResolvedValue({
+        data: null,
+        error: { message: "column plans.horizon_year does not exist" },
+      });
+
+      await renderPage();
+
+      // (a) the false absence sentence is gone
+      expect(screen.queryByText("No plan basis linked")).not.toBeInTheDocument();
+
+      // (b) the disclosure is present, by name, with the operator detail an
+      //     internal page is allowed to show
+      expect(screen.getByText("Part of this page could not be read")).toBeInTheDocument();
+      expect(screen.getByText("Plan links could not be read")).toBeInTheDocument();
+      expect(
+        screen.getByText(/plans on the primary project: column plans\.horizon_year does not exist/)
+      ).toBeInTheDocument();
+
+      // (c) the sections whose reads SUCCEEDED still say what is true about them
+      expect(screen.getByText("No engagement evidence linked")).toBeInTheDocument();
+      expect(screen.getByText("No funding opportunities linked yet")).toBeInTheDocument();
+    });
+
+    it("does not claim a cycle has no funding opportunities when the opportunity read failed", async () => {
+      fundingOpportunitiesProgramOrderMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table funding_opportunities" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText("No funding opportunities linked yet")).not.toBeInTheDocument();
+      expect(screen.getByText("Funding opportunities could not be read")).toBeInTheDocument();
+      // A dollar total is the most quotable number on the page; $0 from a failed
+      // read would read as a finding about the cycle.
+      expect(screen.queryByText("$0")).not.toBeInTheDocument();
+      // The plan lane is untouched, so it still states its real emptiness.
+      expect(screen.getByText("No plan basis linked")).toBeInTheDocument();
+    });
+
+    it("withholds the readiness verdict rather than reporting gaps that came from a failed read", async () => {
+      programLinksEqMock.mockResolvedValue({
+        data: null,
+        error: { message: "relation program_links does not exist" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText("Readiness cannot be assessed right now")).toBeInTheDocument();
+      expect(screen.queryByText("No plan basis linked")).not.toBeInTheDocument();
+      expect(screen.queryByText("No engagement evidence linked")).not.toBeInTheDocument();
+      expect(screen.queryByText("No project links yet")).not.toBeInTheDocument();
+    });
+
+    /**
+     * The 404-on-a-failed-read face of the same defect. `notFound()` tells the
+     * planner this program does not exist; a broken query is not evidence of that.
+     */
+    it("does not 404 when the program itself could not be READ — it raises instead", async () => {
+      programMaybeSingleMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table programs" },
+      });
+
+      await expect(renderPage()).rejects.toThrow(
+        /Could not read this program: permission denied for table programs/
+      );
+      expect(notFoundMock).not.toHaveBeenCalled();
+    });
+
+    it("still 404s when the program genuinely is not there", async () => {
+      programMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+      await expect(renderPage()).rejects.toThrow("notFound");
+      expect(notFoundMock).toHaveBeenCalled();
+    });
+
+    /**
+     * The second-order face, one level below the section gate. The supporting-
+     * models gate does not cover the models' OWN link sets, so when only that
+     * read fails the models still render — with "0 runs", "0 reports" and a
+     * "Missing basis: …" verdict computed from records the page never saw.
+     */
+    const SUPPORTING_MODEL = {
+      id: "model-1",
+      project_id: "project-1",
+      scenario_set_id: null,
+      title: "Cycle screening model",
+      model_family: "sketch_abm",
+      status: "active",
+      config_version: "v2",
+      owner_label: "Modeling desk",
+      summary: "Screening-grade model behind the cycle.",
+      last_validated_at: null,
+      last_run_recorded_at: null,
+      updated_at: "2026-03-28T19:00:00.000Z",
+    };
+
+    it("does not report a model's readiness or run counts when the model's link set could not be read", async () => {
+      modelsProjectOrderMock.mockResolvedValue({ data: [SUPPORTING_MODEL], error: null });
+      supportingModelLinksInMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table model_links" },
+      });
+
+      await renderPage();
+
+      // The model record itself read fine, so it is still shown.
+      expect(screen.getByText("Cycle screening model")).toBeInTheDocument();
+
+      expect(screen.queryByText("0 runs")).not.toBeInTheDocument();
+      expect(screen.queryByText("0 reports")).not.toBeInTheDocument();
+      expect(screen.queryByText(/^Missing basis:/)).not.toBeInTheDocument();
+      expect(screen.getByText(/linkage counts unavailable/)).toBeInTheDocument();
+      expect(screen.getByText(/No readiness verdict is shown for this model/)).toBeInTheDocument();
+    });
+
+    /** The control: readable link set, counts and verdict return. */
+    it("still reports model run counts when the model's link set reads cleanly", async () => {
+      modelsProjectOrderMock.mockResolvedValue({ data: [SUPPORTING_MODEL], error: null });
+      supportingModelLinksInMock.mockResolvedValue({ data: [], error: null });
+
+      await renderPage();
+
+      expect(screen.getByText("Cycle screening model")).toBeInTheDocument();
+      expect(screen.getByText("0 runs")).toBeInTheDocument();
+      expect(screen.queryByText(/linkage counts unavailable/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/No readiness verdict is shown for this model/)).not.toBeInTheDocument();
+    });
   });
 });

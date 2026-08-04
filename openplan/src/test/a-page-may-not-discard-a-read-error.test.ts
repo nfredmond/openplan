@@ -20,12 +20,44 @@ import { describe, expect, it } from "vitest";
  *     share something", telling residents nobody in their community had taken
  *     part, on the strength of a broken query.
  *
- * WHY A RATCHET RATHER THAN A CLEAN ASSERTION. There are 23 of these left across
- * 13 pages. Fixing them all in one change would be a large, unreviewable diff,
- * and a plain assertion would have to be disabled until that landed — which is
- * how a guard becomes decoration. So the list below is a CEILING that may only
- * fall. A new page with a discarded error fails immediately; a fixed page must
- * be removed from the list or the staleness check fails.
+ * WHY A RATCHET RATHER THAN A CLEAN ASSERTION. There were 23 of these across 13
+ * pages when this guard was written. Fixing them all in one change would have
+ * been a large, unreviewable diff, and a plain assertion would have had to be
+ * disabled until that landed — which is how a guard becomes decoration. So the
+ * list below was a CEILING that could only fall.
+ *
+ * THE DEBT IS PAID (2026-08-03). All 13 pages were fixed in one coordinated run
+ * and `KNOWN_DISCARDED` is now EMPTY, which turns the first assertion into the
+ * plain rule its name always claimed: no page under `src/app` may destructure
+ * only `data`. The list is kept — empty — rather than deleted, because it is the
+ * mechanism that made the cleanup possible and the next large refactor may need
+ * it again. It may never grow: a page that reacquires a discarded read is a
+ * regression to fix, not a number to record.
+ *
+ * WHAT THIS PATTERN STILL CANNOT SEE, measured 2026-08-03 — do not read a green
+ * run as "no page discards a read error":
+ *
+ *   - ARRAY DESTRUCTURING. `const [{ data: a }, { data: b }] = await
+ *     Promise.all([...])` never matches, because the regex anchors on `const {`.
+ *     13 such bindings remain: grants (6), reports (5), safety (2). Recounted
+ *     2026-08-04 — an earlier draft of this header said 14 and named the
+ *     dashboard as well, which was wrong: the dashboard destructures to NAMED
+ *     results (`const [runsResult, …] = await Promise.all(…)`) and checks
+ *     `homeGeographyResult.error`, which is the correct shape, not the defect.
+ *     A number written into a comment is a claim like any other; this one was
+ *     checked.
+ *   - A CLASSIFIER USED AS THE ONLY ERROR BRANCH. `looksLikePendingSchema(
+ *     x.error?.message) ? [] : (x.data ?? [])` keeps the error and then throws it
+ *     away: it classifies exactly one failure (a pending migration) and turns
+ *     every other one — revoked grant, RLS change, dropped connection — into
+ *     `[]`, i.e. an answer. 17 remain (16 on the project detail page, 1 on the
+ *     RTP registry). `read-failures.ts` is "classify FIRST, then collect what is
+ *     left"; these classify and never collect.
+ *
+ * Widening the pattern to either shape is real, wanted work. It must be its own
+ * change, because it re-opens a debt list this one just closed, and because
+ * registering a lane without fixing its panel makes the disclosure banner itself
+ * lie ("shown as unavailable rather than as zero").
  *
  * WHY PAGES AND NOT ROUTES. An API route that swallows an error returns wrong
  * data or a wrong status — bad, but a different defect with a different fix. A
@@ -43,29 +75,17 @@ const APP_DIR = path.join(process.cwd(), "src", "app");
 const DISCARDED_ERROR = /const\s*\{\s*data(?:\s*:\s*\w+)?\s*\}\s*=\s*await/g;
 
 /**
- * The ceiling. Each entry is a page that still discards at least one read error,
- * with how many it discards. This list may only SHRINK.
+ * The ceiling — now EMPTY, and it may only ever shrink.
  *
- * Public surfaces are fixed and deliberately absent:
- * `(public)/engage/[shareToken]` and the engagement portal loader now disclose
- * their failures; `(public)/plan/[shareToken]` keeps one — the share-token
- * lookup, whose failure currently 404s rather than rendering a false absence.
+ * The 13 pages that used to be listed here (county-runs, engagement campaign,
+ * invoicing, models, plans, programs, projects detail and list, reports detail,
+ * both RTP cycle pages, scenarios detail, and the public plan page) all keep
+ * their read results and disclose their failures. The public plan page's
+ * share-token lookup — the last entry, which used to 404 on a failed read — now
+ * renders a shell that says the read failed and explicitly denies the inference
+ * that the plan is missing, unpublished, or withdrawn.
  */
-const KNOWN_DISCARDED: ReadonlyArray<readonly [string, number]> = [
-  ["src/app/(app)/county-runs/[countyRunId]/page.tsx", 1],
-  ["src/app/(app)/engagement/[campaignId]/page.tsx", 2],
-  ["src/app/(app)/invoicing/page.tsx", 1],
-  ["src/app/(app)/models/page.tsx", 1],
-  ["src/app/(app)/plans/[planId]/page.tsx", 1],
-  ["src/app/(app)/programs/[programId]/page.tsx", 1],
-  ["src/app/(app)/projects/[projectId]/page.tsx", 5],
-  ["src/app/(app)/projects/page.tsx", 1],
-  ["src/app/(app)/reports/[reportId]/page.tsx", 1],
-  ["src/app/(app)/rtp/[rtpCycleId]/document/page.tsx", 1],
-  ["src/app/(app)/rtp/[rtpCycleId]/page.tsx", 1],
-  ["src/app/(app)/scenarios/[scenarioSetId]/page.tsx", 4],
-  ["src/app/(public)/plan/[shareToken]/page.tsx", 1],
-];
+const KNOWN_DISCARDED: ReadonlyArray<readonly [string, number]> = [];
 
 function pageFiles(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
@@ -138,11 +158,14 @@ describe("a page may not discard a read error", () => {
     expect(`const { data, error } = await supabase.from("x").select()`.match(DISCARDED_ERROR)).toBeNull();
   });
 
-  it("has fixed the two public surfaces that shipped the defect", () => {
+  it("has fixed the public surfaces that shipped the defect", () => {
     const actual = discardedCounts();
     // The engagement portal page and its loader disclose read failures now; the
     // portal page must not reacquire one.
     expect(actual.get("src/app/(public)/engage/[shareToken]/page.tsx") ?? 0).toBe(0);
     expect(actual.get("src/app/(embed)/embed/[shareToken]/page.tsx") ?? 0).toBe(0);
+    // The public plan page was the last entry on the ratchet. Named explicitly
+    // so that emptying KNOWN_DISCARDED can never quietly un-guard it.
+    expect(actual.get("src/app/(public)/plan/[shareToken]/page.tsx") ?? 0).toBe(0);
   });
 });

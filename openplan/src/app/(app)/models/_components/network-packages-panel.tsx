@@ -2,6 +2,8 @@ import { Network } from "lucide-react";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StateBlock } from "@/components/ui/state-block";
+import { NetworkPackageUploadForm } from "@/app/(app)/models/_components/network-package-upload-form";
+import { BODY_LIMITS } from "@/lib/http/body-limit";
 import { createClient } from "@/lib/supabase/server";
 import { formatModelDateTime } from "@/lib/models/catalog";
 import { looksLikePendingSchema } from "@/lib/models/run-launch";
@@ -50,9 +52,16 @@ function formatComponentCount(count: number | null): string {
  * `.../zones`, `.../corridors`, and `.../connectors` POST routes, so a
  * successful ingest legitimately leaves those counts at zero. Promising storage
  * made that look like a bug and made the real next step invisible.
+ *
+ * UPDATED when the upload form was built. The sentence used to open "Ingest is
+ * API-only for now — there is no in-app upload form yet", which was true and
+ * was the defect: six complete, authorized, audited routes that only a person
+ * writing curl could reach. `NetworkPackageUploadForm` below now drives all six
+ * in order. Everything the paragraph says about what ingest does NOT keep is
+ * unchanged, because none of that changed.
  */
 const INGEST_HOW_TO =
-  "Ingest is API-only for now — there is no in-app upload form yet. Create a package with POST /api/network-packages, add a version with POST /api/network-packages/{packageId}/versions, then send nodes/links GeoJSON to POST /api/network-packages/{packageId}/versions/{versionId}/ingest, which QA-checks the submitted network and records the QA report and manifest on that version. Ingest does not retain the geometry — the posted features are checked and discarded — so the zone, corridor, and connector records counted here are the ones written by the separate .../zones, .../corridors, and .../connectors endpoints.";
+  "Upload a network package below. It creates the package, adds a version, and sends the nodes/links GeoJSON for QA — which records a QA report and manifest on that version. Ingest does not retain the geometry — the posted features are checked and discarded — so the zone, corridor, and connector records counted here are the ones created from the optional zones, corridors, and connectors files, one record per feature, through the .../zones, .../corridors, and .../connectors endpoints.";
 
 export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: string }) {
   const supabase = await createClient();
@@ -204,6 +213,20 @@ export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: strin
             );
           })}
         </div>
+      )}
+
+      {/* The path to the six network-package routes. Withheld only when the
+          tables are absent, because a form whose every request would 404 on a
+          missing table is an offer the deployment cannot keep. The viewer floor
+          is enforced by the routes themselves (`requireNetworkPackageWriteAccess`)
+          and surfaced verbatim by the form; this panel deliberately runs no
+          second role query of its own. */}
+      {schemaPending ? null : (
+        <NetworkPackageUploadForm
+          workspaceId={workspaceId}
+          packages={packages.map((pkg) => ({ id: pkg.id, name: pkg.name }))}
+          maxRequestBytes={BODY_LIMITS.networkGeoJson}
+        />
       )}
     </article>
   );

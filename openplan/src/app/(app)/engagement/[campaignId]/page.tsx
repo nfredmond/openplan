@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
-import { ArrowRight, FileStack, MapPinned, MessageSquareText, ShieldCheck } from "lucide-react";
+import { ArrowRight, MapPinned, MessageSquareText, ShieldCheck } from "lucide-react";
 import { EngagementOperatorActions } from "@/components/engagement/engagement-operator-actions";
-import { EngagementReportCreateButton } from "@/components/engagement/engagement-report-create-button";
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
 import { EngagementItemRegistry } from "@/components/engagement/engagement-item-registry";
 import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
@@ -11,8 +10,9 @@ import { EngagementNotificationsInbox } from "@/components/engagement/notificati
 import { EngagementPublicLinkCompact } from "@/components/engagement/engagement-public-link-compact";
 import { EngagementCampaignCreatedNotice } from "@/components/engagement/campaign-created-notice";
 import { EngagementBulkModeration } from "@/components/engagement/engagement-bulk-moderation";
-import { EngagementAppendixReadinessNote } from "@/components/engagement/engagement-appendix-readiness-note";
 import { CampaignTranslationsPanel } from "@/components/engagement/campaign-translations-panel";
+import { CampaignLinkedReportsSection } from "@/components/engagement/campaign-linked-reports-section";
+import { CampaignHandoffReadinessSection } from "@/components/engagement/campaign-handoff-readiness-section";
 import { CampaignAccessibilityEditor } from "@/components/engagement/campaign-accessibility-editor";
 import { CommentImportPanel } from "@/components/engagement/comment-import-panel";
 import {
@@ -24,7 +24,8 @@ import { hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
 import { getEngagementHandoffReadiness, getEngagementPublicReviewCopyGuard } from "@/lib/engagement/readiness";
@@ -32,14 +33,7 @@ import { loadSurveyBuilderDefinition, aggregateCampaignSurvey } from "@/lib/enga
 import { loadCloseLoopEntries } from "@/lib/engagement/close-loop";
 import { loadOperatorNotifications } from "@/lib/notifications/engagement";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
-import {
-  formatReportStatusLabel,
-  formatReportTypeLabel,
-  getReportPacketActionLabel,
-  getReportPacketFreshness,
-  getReportPacketPriority,
-  reportStatusTone,
-} from "@/lib/reports/catalog";
+import { getReportPacketFreshness, getReportPacketPriority } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 import { collectReportIdsLinkedToEngagementCampaign } from "@/lib/reports/engagement";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -144,11 +138,39 @@ export default async function EngagementCampaignDetailPage({
     redirect("/sign-in");
   }
 
-  const { data: campaignData } = await supabase
+  const { data: campaignData, error: campaignError } = await supabase
     .from("engagement_campaigns")
     .select("id, workspace_id, project_id, title, summary, status, engagement_type, share_token, public_description, allow_public_submissions, submissions_closed_at, demographics_enabled, representativeness_json, ai_synthesis_json, ai_synthesized_at, created_at, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
     .eq("id", campaignId)
     .maybeSingle();
+
+  // A FAILED READ IS NOT A MISSING CAMPAIGN. These were one branch, so a
+  // database error rendered the 404 page — telling a moderator the campaign
+  // they are looking for does not exist when OpenPlan had simply failed to
+  // look. On this page that is expensive: the next move is to re-create a
+  // campaign whose share token is already published and whose comments are
+  // still being collected. "Could not be read" and "not there" are different
+  // facts and the page now says whichever is true.
+  if (campaignError) {
+    return (
+      <section className="module-page">
+        <div className="mx-auto w-full max-w-2xl">
+          <StateBlock
+            tone="danger"
+            title="This campaign could not be read"
+            description={`The database refused the query for this campaign: ${
+              campaignError.message ?? "no reason was returned"
+            }. That is not the same as the campaign not existing — OpenPlan cannot tell you either way right now, so do not treat this page as evidence the record is gone.`}
+          />
+          <p className="mt-4 text-sm">
+            <Link href="/engagement" className="underline underline-offset-2 hover:text-foreground">
+              Back to campaigns
+            </Link>
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   if (!campaignData) {
     notFound();
@@ -156,14 +178,21 @@ export default async function EngagementCampaignDetailPage({
 
   const campaign = campaignData as CampaignRow;
 
-  const [{ data: project }, { data: categories }, { data: items }, { data: projects }, { data: reports }] = await Promise.all([
+  // Every read below is collected rather than swallowed: a read that failed may
+  // not be rendered as an answer. This console's empty states are unusually
+  // consequential — "No intake items yet" on a live campaign reads as nobody
+  // having commented, and "No categories yet" as an unclassified backlog —
+  // so each of them names the failure instead. See src/lib/ui/read-failures.ts.
+  const reads = new ReadFailureLog();
+
+  const [projectResult, categoriesResult, itemsResult, projectsResult, reportsResult] = await Promise.all([
     campaign.project_id
       ? supabase
           .from("projects")
           .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
           .eq("id", campaign.project_id)
           .maybeSingle()
-      : Promise.resolve({ data: null }),
+      : Promise.resolve({ data: null, error: null }),
     supabase
       .from("engagement_categories")
       .select("id, campaign_id, label, slug, description, sort_order, color, icon, created_at, updated_at")
@@ -184,8 +213,22 @@ export default async function EngagementCampaignDetailPage({
           .select("id, project_id, title, report_type, status, generated_at, updated_at, latest_artifact_kind")
           .eq("project_id", campaign.project_id)
           .order("updated_at", { ascending: false })
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [] as ReportRow[], error: null }),
   ]);
+
+  // Named in the moderator's words, because these labels are read back in a
+  // sentence at the top of the page.
+  const projectUnreadable = reads.check("the project this campaign is linked to", projectResult);
+  const categoriesUnreadable = reads.check("this campaign's comment categories", categoriesResult);
+  const itemsUnreadable = reads.check("the comments on this campaign", itemsResult);
+  reads.check("the workspace's project list", projectsResult);
+  const reportsUnreadable = reads.check("reports on the linked project", reportsResult);
+
+  const project = projectResult.data;
+  const categories = categoriesResult.data;
+  const items = itemsResult.data;
+  const projects = projectsResult.data;
+  const reports = reportsResult.data;
 
   const surveyQuestions = await loadSurveyBuilderDefinition(supabase, campaign.id);
   // Survey RESULTS read the sensitive response tables → service-role (RLS proven
@@ -245,17 +288,26 @@ export default async function EngagementCampaignDetailPage({
         { data: [], error: null },
         { data: [], error: null },
       ];
+  // These two decide whether a report is labelled "Campaign source linked" or
+  // "Project-linked only", and how fresh its packet is. A failed section read
+  // silently demotes every report to project-linked — a statement that the
+  // campaign is sourced nowhere, made out of a query that never returned.
+  const reportSectionLinksUnreadable = reads.check(
+    "which reports name this campaign as a source",
+    reportSectionLinksResult
+  );
+  reads.check("the generated packets for those reports", reportArtifactsResult);
   const reportIdsExplicitlyLinkedToCampaign = collectReportIdsLinkedToEngagementCampaign(
     (reportSectionLinksResult.data ?? []) as ReportSectionLinkRow[],
     campaign.id
   );
-  const latestArtifactByReportId = new Map<string, { generated_at: string | null }>();
+  const latestArtifactGeneratedAtByReportId = new Map<string, string | null>();
   for (const row of (reportArtifactsResult.data ?? []) as Array<{ report_id: string; generated_at: string | null }>) {
-    const current = latestArtifactByReportId.get(row.report_id);
+    const current = latestArtifactGeneratedAtByReportId.get(row.report_id);
     const rowTime = row.generated_at ? new Date(row.generated_at).getTime() : Number.NEGATIVE_INFINITY;
-    const currentTime = current?.generated_at ? new Date(current.generated_at).getTime() : Number.NEGATIVE_INFINITY;
-    if (!current || rowTime > currentTime) {
-      latestArtifactByReportId.set(row.report_id, { generated_at: row.generated_at });
+    const currentTime = current ? new Date(current).getTime() : Number.NEGATIVE_INFINITY;
+    if (!latestArtifactGeneratedAtByReportId.has(row.report_id) || rowTime > currentTime) {
+      latestArtifactGeneratedAtByReportId.set(row.report_id, row.generated_at);
     }
   }
   const campaignLinkedReports = reportRecords
@@ -264,7 +316,7 @@ export default async function EngagementCampaignDetailPage({
       isExplicitCampaignSource: reportIdsExplicitlyLinkedToCampaign.has(report.id),
       packetFreshness: getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
+        generatedAt: latestArtifactGeneratedAtByReportId.get(report.id) ?? report.generated_at,
         updatedAt: report.updated_at,
       }),
     }))
@@ -311,12 +363,18 @@ export default async function EngagementCampaignDetailPage({
   const photoUrlByItemId = new Map<string, string>();
   if (itemsWithPhotos.length > 0) {
     const serviceClient = createServiceRoleClient();
-    const { data: signedUrls } = await serviceClient.storage
+    // Signing can fail on its own (bucket policy, expired service key) while
+    // every comment loaded fine. A moderator looking at a comment whose photo
+    // is the whole content must be told the photo could not be fetched, not
+    // shown a comment that appears to have none.
+    const signedUrlsResult = await serviceClient.storage
       .from(ENGAGEMENT_PHOTO_BUCKET)
       .createSignedUrls(
         itemsWithPhotos.map((item) => item.photo_path),
         ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS
       );
+    reads.check("photo thumbnails for the comments that have one", signedUrlsResult);
+    const signedUrls = signedUrlsResult.data;
     for (const item of itemsWithPhotos) {
       const signed = (signedUrls ?? []).find((entry) => entry.path === item.photo_path);
       if (signed?.signedUrl) {
@@ -449,6 +507,32 @@ export default async function EngagementCampaignDetailPage({
     hasAnthropicAccess()
   );
 
+  // WHY THE DISCLOSURE BLOCK IS FIRST. The readiness checks, the moderation
+  // counts and half the panels below are computed over the reads above, so what
+  // failed is stated once, before any of it. This is an operator surface, so the
+  // database's own message is shown — it is what makes the failure actionable,
+  // and no member of the public sees this page. The handoff verdict repeats the
+  // caveat where it is read, because a failed read makes a readiness check FAIL:
+  // an open check nothing established.
+  //
+  // WHY THE TRANSLATIONS PANEL SITS BESIDE THE MAP-LAYER PANEL. Both answer the
+  // same operator question — what does a member of the public actually get on
+  // this campaign's portal — and a translation surface filed anywhere else is a
+  // surface nobody finds. `canManageContextLayers` is reused rather than
+  // re-derived: it is the SAME `engagement.write` decision from the SAME
+  // `loadCampaignAccess` call the translations route gates on, so the panel and
+  // the API cannot disagree about who gets a button. A viewer still sees every
+  // language's coverage — "what have we published in Spanish" is a question a
+  // viewer is entitled to answer.
+  //
+  // Its three readability flags are passed STRAIGHT THROUGH rather than derived
+  // at the render site from `coverage !== null`. Deriving them there collapsed
+  // three different unknowns into one fact, and the panel says a different
+  // sentence about each: translations unreadable is "unknown, not none"; a short
+  // inventory means coverage is withheld because the list it would be measured
+  // against is known to be incomplete; and a source language that could not be
+  // READ must never be reported as a language nobody recorded — that is a
+  // finding about the agency, and a failed query does not establish it.
   return (
     <section className="module-page">
       <CartographicSurfaceWide />
@@ -459,6 +543,16 @@ export default async function EngagementCampaignDetailPage({
         <ArrowRight className="h-3.5 w-3.5" />
         <span className="text-foreground">{campaign.title}</span>
       </div>
+
+      {reads.any ? (
+        <div className="mb-4">
+          <StateBlock
+            tone="danger"
+            title="Part of this campaign could not be read"
+            description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+          />
+        </div>
+      ) : null}
 
       {query.created ? <EngagementCampaignCreatedNotice campaign={campaign} /> : null}
 
@@ -474,7 +568,13 @@ export default async function EngagementCampaignDetailPage({
             </StatusBadge>
             <span className="module-record-chip"><span>Type</span><strong>{titleizeEngagementValue(campaign.engagement_type)}</strong></span>
           </div>
-          <p className="text-[0.73rem] text-muted-foreground">{counts.statusCounts.flagged > 0 ? `${counts.statusCounts.flagged} flagged` : "No flagged items"}</p>
+          <p className="text-[0.73rem] text-muted-foreground">
+            {itemsUnreadable
+              ? "Flagged count unavailable — the comments could not be read"
+              : counts.statusCounts.flagged > 0
+                ? `${counts.statusCounts.flagged} flagged`
+                : "No flagged items"}
+          </p>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{campaign.title}</h1>
             <p className="module-intro-description">
@@ -488,14 +588,24 @@ export default async function EngagementCampaignDetailPage({
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Linked project</p>
-              <p className="module-summary-value text-lg">{project?.name ?? "Unlinked"}</p>
-              <p className="module-summary-detail">Project context stays visible so engagement does not float free.</p>
+              <p className="module-summary-value text-lg">
+                {projectUnreadable ? "Unavailable" : project?.name ?? "Unlinked"}
+              </p>
+              <p className="module-summary-detail">
+                {projectUnreadable
+                  ? "This campaign names a project, but that record could not be read — it is not unlinked."
+                  : "Project context stays visible so engagement does not float free."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Review queue</p>
-              <p className="module-summary-value">{counts.moderationQueue.actionableCount}</p>
+              <p className="module-summary-value">
+                {itemsUnreadable ? "Unavailable" : counts.moderationQueue.actionableCount}
+              </p>
               <p className="module-summary-detail">
-                {counts.statusCounts.pending} pending, {counts.statusCounts.flagged} flagged for operator review.
+                {itemsUnreadable
+                  ? "The comments could not be read, so the queue depth is unknown rather than empty."
+                  : `${counts.statusCounts.pending} pending, ${counts.statusCounts.flagged} flagged for operator review.`}
               </p>
             </div>
             <div className="module-summary-card">
@@ -522,338 +632,58 @@ export default async function EngagementCampaignDetailPage({
             Current moderation workload and workload signals. Operators should triage flagged and pending items before generating reports.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Pending: {counts.moderationQueue.pendingCount}</div>
-            <div className="module-operator-item">Flagged: {counts.moderationQueue.flaggedCount}</div>
-            <div className="module-operator-item">Triaged: {counts.moderationQueue.triagedCount} ({fmtPercent(counts.moderationQueue.triagedShare)})</div>
-            <div className="module-operator-item">Recent activity: {counts.recentActivity.count} items in the last 7 days</div>
-            <div className="module-operator-item">Moderation notes present on {counts.moderationQueue.itemsWithNotesCount} items</div>
-            <div className="module-operator-item">Linked reports: {reportRecords.length}</div>
+            {itemsUnreadable ? (
+              <div className="module-operator-item">
+                Moderation workload unavailable — the comments could not be read, so these are not counts of zero.
+              </div>
+            ) : (
+              <>
+                <div className="module-operator-item">Pending: {counts.moderationQueue.pendingCount}</div>
+                <div className="module-operator-item">Flagged: {counts.moderationQueue.flaggedCount}</div>
+                <div className="module-operator-item">Triaged: {counts.moderationQueue.triagedCount} ({fmtPercent(counts.moderationQueue.triagedShare)})</div>
+                <div className="module-operator-item">Recent activity: {counts.recentActivity.count} items in the last 7 days</div>
+                <div className="module-operator-item">Moderation notes present on {counts.moderationQueue.itemsWithNotesCount} items</div>
+              </>
+            )}
+            <div className="module-operator-item">
+              Linked reports: {reportsUnreadable || projectUnreadable ? "unavailable" : reportRecords.length}
+            </div>
             <div className="module-operator-item">Last updated {fmtDateTime(campaign.updated_at)}</div>
           </div>
         </article>
       </header>
 
       <div className="mt-6 space-y-6">
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Handoff Readiness</p>
-              <h2 className="module-section-title">Review posture and planning handoff</h2>
-              <p className="module-section-description">
-                Campaigns stay explicitly tied to planning context, moderation load, map coverage, and downstream report awareness.
-              </p>
-            </div>
-          </div>
+        <CampaignHandoffReadinessSection
+          handoffReadiness={handoffReadiness}
+          publicReviewCopyGuard={publicReviewCopyGuard}
+          counts={counts}
+          appendixReadiness={appendixReadiness}
+          commentMatrixPreview={commentMatrixPreview}
+          campaign={campaign}
+          project={project}
+          projectUnreadable={projectUnreadable}
+          readsIncomplete={projectUnreadable || categoriesUnreadable || itemsUnreadable}
+          itemsUnreadable={itemsUnreadable}
+          primarySource={primarySource}
+          reportCount={reportRecords.length}
+          linkedReportCount={campaignLinkedReports.length}
+          packetAttentionCount={packetAttentionCount}
+          recommendedReport={recommendedCampaignReport}
+        />
 
-          <div className="mt-5 space-y-3">
-            <div className="module-record-row">
-              <div className="module-record-head">
-                <div className="module-record-main">
-                  <div className="module-record-kicker">
-                    <StatusBadge tone={handoffReadiness.tone}>{handoffReadiness.label}</StatusBadge>
-                    <StatusBadge tone="neutral">{handoffReadiness.completeCount}/{handoffReadiness.totalChecks} checks complete</StatusBadge>
-                  </div>
-                  <h3 className="module-record-title text-[1rem]">Campaign handoff decision</h3>
-                  <p className="module-record-summary">{handoffReadiness.nextAction}</p>
-                </div>
-              </div>
-              <MetaList>
-                {handoffReadiness.checks.map((check) => (
-                  <MetaItem key={check.id}>
-                    {check.passed ? "Pass" : "Open"} · {check.label}
-                  </MetaItem>
-                ))}
-              </MetaList>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-              {handoffReadiness.checks.map((check) => (
-                <div key={check.id} className="module-summary-card">
-                  <p className="module-summary-label">{check.label}</p>
-                  <p className="module-summary-value text-lg">{check.passed ? "Ready" : "Open"}</p>
-                  <p className="module-summary-detail">{check.detail}</p>
-                </div>
-              ))}
-            </div>
-
-            <div className="module-record-row">
-              <div className="module-record-head">
-                <div className="module-record-main">
-                  <div className="module-record-kicker">
-                    <StatusBadge tone={project ? "success" : "neutral"}>{project ? "Linked project" : "Unlinked project"}</StatusBadge>
-                    {project?.status ? <StatusBadge tone="neutral">{titleizeEngagementValue(project.status)}</StatusBadge> : null}
-                  </div>
-                  <h3 className="module-record-title text-[1rem]">{project?.name ?? "No project linked yet"}</h3>
-                  <p className="module-record-summary">
-                    {project
-                      ? project.summary || "Project context is present even when campaign reporting stays lightweight."
-                      : "Link a project when this intake should stay traceable to a planning effort rather than stand alone."}
-                  </p>
-                </div>
-              </div>
-              <MetaList>
-                <MetaItem>Campaign status {titleizeEngagementValue(campaign.status)}</MetaItem>
-                <MetaItem>Recent activity {counts.recentActivity.count} items</MetaItem>
-                <MetaItem>{counts.geographyCoverage.geolocatedItems} geolocated</MetaItem>
-                <MetaItem>{reportRecords.length} linked reports</MetaItem>
-              </MetaList>
-            </div>
-
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              <div className="module-summary-card">
-                <p className="module-summary-label">Actionable review</p>
-                <p className="module-summary-value">{counts.moderationQueue.actionableCount}</p>
-                <p className="module-summary-detail">
-                  {counts.moderationQueue.pendingCount} pending and {counts.moderationQueue.flaggedCount} flagged.
-                </p>
-              </div>
-              <div className="module-summary-card">
-                <p className="module-summary-label">Categorized coverage</p>
-                <p className="module-summary-value">{counts.categorizedItems}</p>
-                <p className="module-summary-detail">
-                  {counts.uncategorizedItems} items still need classification before reporting is reliable.
-                </p>
-              </div>
-              <div className="module-summary-card">
-                <p className="module-summary-label">Map coverage</p>
-                <p className="module-summary-value">{fmtPercent(counts.geographyCoverage.geolocatedShare)}</p>
-                <p className="module-summary-detail">
-                  {counts.geographyCoverage.geolocatedItems} geolocated, {counts.geographyCoverage.nonGeolocatedItems} non-geolocated.
-                </p>
-              </div>
-            </div>
-
-            <div className="module-note border-sky-300/40 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Map export readiness</p>
-              <h3 className="mt-2 text-sm font-semibold text-foreground">
-                {counts.exportCoverage.mapReadyItems} approved item{counts.exportCoverage.mapReadyItems === 1 ? "" : "s"} ready for GIS/map export
-              </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {counts.exportCoverage.handoffReadyWithoutLocation > 0
-                  ? `${counts.exportCoverage.handoffReadyWithoutLocation} approved categorized item${counts.exportCoverage.handoffReadyWithoutLocation === 1 ? "" : "s"} still need a map location before they can appear in public map exports.`
-                  : counts.moderationQueue.readyForHandoffCount > 0
-                    ? "Every handoff-ready item has a location for map display and downstream GIS review."
-                    : "Approve and categorize geolocated items to build a reliable public map/export layer."}
-              </p>
-            </div>
-
-            <EngagementAppendixReadinessNote
-              appendixReadiness={appendixReadiness}
-              commentMatrixPreview={commentMatrixPreview}
-            />
-
-            <div className="module-note border-slate-300/50 bg-slate-50/80 dark:border-slate-800 dark:bg-slate-950/30">
-              <div className="module-record-kicker">
-                <StatusBadge tone={publicReviewCopyGuard.tone}>{publicReviewCopyGuard.label}</StatusBadge>
-                <StatusBadge tone={campaign.submissions_closed_at ? "neutral" : campaign.allow_public_submissions ? "warning" : "neutral"}>
-                  {campaign.submissions_closed_at ? "Intake closed" : campaign.allow_public_submissions ? "Intake may be open" : "Staff-controlled intake"}
-                </StatusBadge>
-              </div>
-              <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Public-review copy guard</p>
-              <h3 className="mt-2 text-sm font-semibold text-foreground">Keep handoff language supervised and source-bound</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{publicReviewCopyGuard.summary}</p>
-              <p className="mt-2 text-sm text-muted-foreground">{publicReviewCopyGuard.nextCopyAction}</p>
-              <div className="mt-3">
-                <MetaList>
-                  {publicReviewCopyGuard.guardrails.map((guardrail) => (
-                    <MetaItem key={guardrail}>{guardrail}</MetaItem>
-                  ))}
-                </MetaList>
-              </div>
-            </div>
-
-            <div className="grid gap-3 xl:grid-cols-2">
-              <article className="module-record-row">
-                <div className="module-record-head">
-                  <div className="module-record-main">
-                    <div className="module-record-kicker">
-                      <StatusBadge tone={counts.moderationQueue.readyForHandoffCount > 0 ? "success" : "neutral"}>
-                        {counts.moderationQueue.readyForHandoffCount} handoff-ready
-                      </StatusBadge>
-                      <StatusBadge tone={counts.moderationQueue.uncategorizedCount > 0 ? "warning" : "success"}>
-                        {counts.moderationQueue.uncategorizedCount} uncategorized
-                      </StatusBadge>
-                    </div>
-                    <h3 className="module-record-title text-[1rem]">Lightweight planning handoff cue</h3>
-                    <p className="module-record-summary">
-                      Approved items with category assignment are the cleanest candidates for report inclusion or planning review.
-                    </p>
-                  </div>
-                </div>
-                <MetaList>
-                  <MetaItem>{counts.statusCounts.approved} approved total</MetaItem>
-                  <MetaItem>{counts.moderationQueue.readyForHandoffCount} approved + categorized</MetaItem>
-                  <MetaItem>{counts.moderationQueue.itemsWithNotesCount} with audit notes</MetaItem>
-                </MetaList>
-              </article>
-
-              <article className="module-record-row">
-                <div className="module-record-head">
-                  <div className="module-record-main">
-                    <div className="module-record-kicker">
-                      <StatusBadge tone="info">
-                        {primarySource ? `${titleizeEngagementValue(primarySource.sourceType)} lead source` : "No source mix yet"}
-                      </StatusBadge>
-                      <StatusBadge tone="neutral">{counts.recentActivity.count} recent items</StatusBadge>
-                    </div>
-                    <h3 className="module-record-title text-[1rem]">Recent intake signal</h3>
-                    <p className="module-record-summary">
-                      {primarySource
-                        ? `${titleizeEngagementValue(primarySource.sourceType)} is currently the largest source of input, with ${primarySource.count} items.`
-                        : "No intake items yet."}
-                    </p>
-                  </div>
-                </div>
-                <MetaList>
-                  <MetaItem>{counts.recentActivity.byStatus.pending} pending in window</MetaItem>
-                  <MetaItem>{counts.recentActivity.byStatus.flagged} flagged in window</MetaItem>
-                  <MetaItem>Last activity {fmtDateTime(counts.lastActivityAt)}</MetaItem>
-                </MetaList>
-              </article>
-            </div>
-
-            <article className="module-record-row">
-              <div className="module-record-head">
-                <div className="module-record-main">
-                  <div className="module-record-kicker">
-                    <StatusBadge tone={campaign.project_id ? "success" : "warning"}>
-                      {campaign.project_id ? "Project-linked" : "Project link required"}
-                    </StatusBadge>
-                    <StatusBadge tone={counts.moderationQueue.readyForHandoffCount > 0 ? "success" : "neutral"}>
-                      {counts.moderationQueue.readyForHandoffCount} handoff-ready
-                    </StatusBadge>
-                  </div>
-                  <h3 className="module-record-title text-[1rem]">Create an engagement handoff packet</h3>
-                  <p className="module-record-summary">
-                    Seed a project-linked report with this campaign as an explicit source section so planning review does not rely on manual copy-paste.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <MetaList>
-                  <MetaItem>{counts.totalItems} total items</MetaItem>
-                  <MetaItem>{counts.moderationQueue.actionableCount} actionable review items</MetaItem>
-                  <MetaItem>{reportRecords.length} existing project reports</MetaItem>
-                  <MetaItem>{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</MetaItem>
-                </MetaList>
-                <EngagementReportCreateButton
-                  campaign={campaign}
-                  counts={counts}
-                  existingReportGuidance={
-                    recommendedCampaignReport
-                      ? {
-                          reportCount: campaignLinkedReports.length,
-                          packetAttentionCount,
-                          recommendedReportId: recommendedCampaignReport.id,
-                          recommendedReportTitle: recommendedCampaignReport.title,
-                          recommendedAction: getReportPacketActionLabel(
-                            recommendedCampaignReport.packetFreshness.label
-                          ),
-                          recommendedDetail: recommendedCampaignReport.packetFreshness.detail,
-                        }
-                      : null
-                  }
-                />
-              </div>
-            </article>
-          </div>
-        </article>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Report Awareness</p>
-              <h2 className="module-section-title">Project-linked reports</h2>
-              <p className="module-section-description">
-                Linked project reports remain visible so campaigns do not sit outside the broader Planning OS record.
-              </p>
-            </div>
-            <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">
-              <FileStack className="h-5 w-5" />
-            </span>
-          </div>
-
-          {!project ? (
-            <div className="mt-5">
-              <EmptyState
-                title="No linked project yet"
-                description="Attach this campaign to a project before expecting report-aware handoff cues."
-                compact
-              />
-            </div>
-          ) : reportRecords.length === 0 ? (
-            <div className="mt-5">
-              <EmptyState
-                title="No reports linked through this project yet"
-                description="Project-linked reports will appear here once reporting catches up with the campaign."
-                compact
-              />
-            </div>
-          ) : (
-            <div className="mt-5 space-y-3">
-              <MetaList>
-                <MetaItem>{explicitlyLinkedReportCount} explicit campaign-source reports</MetaItem>
-                <MetaItem>{projectOnlyReportCount} project-linked only</MetaItem>
-                <MetaItem>{packetAttentionCount} packet issue{packetAttentionCount === 1 ? "" : "s"}</MetaItem>
-              </MetaList>
-
-              <div
-                className={`module-note ${
-                  packetAttentionCount > 0
-                    ? "border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20"
-                    : "border-emerald-400/35 bg-emerald-50/70 dark:border-emerald-900 dark:bg-emerald-950/20"
-                }`}
-              >
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Campaign reporting posture
-                </p>
-                <h3 className="mt-2 text-sm font-semibold text-foreground">
-                  {packetAttentionCount > 0 && recommendedCampaignReport
-                    ? `${recommendedCampaignReport.title} needs packet attention`
-                    : "Linked campaign packets look current"}
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {recommendedCampaignReport
-                    ? getReportPacketActionLabel(recommendedCampaignReport.packetFreshness.label)
-                    : "Open reports to create the first linked packet for this campaign's project context."}
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {recommendedCampaignReport?.packetFreshness.detail ??
-                    "No project-linked reports are available for this campaign yet."}
-                </p>
-              </div>
-
-              {campaignLinkedReports.slice(0, 4).map((report) => (
-                <Link key={report.id} href={`/reports/${report.id}`} className="module-record-row is-interactive group block">
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone={reportStatusTone(report.status)}>{formatReportStatusLabel(report.status)}</StatusBadge>
-                        <StatusBadge tone={report.packetFreshness.tone}>{report.packetFreshness.label}</StatusBadge>
-                      </div>
-                      <h3 className="module-record-title text-[1rem] transition group-hover:text-primary">{report.title}</h3>
-                      <p className="module-record-summary">{formatReportTypeLabel(report.report_type)} · {report.isExplicitCampaignSource ? "Campaign source linked" : "Project-linked only"}</p>
-                      <p className="module-record-summary">
-                        {report.isExplicitCampaignSource
-                          ? "This report explicitly includes this campaign as an engagement source section."
-                          : "This report shares the project context, but does not explicitly source this campaign yet."}
-                      </p>
-                      <p className="module-record-summary">{report.packetFreshness.detail}</p>
-                      <p className="module-record-summary">{getReportPacketActionLabel(report.packetFreshness.label)}</p>
-                      <p className="module-record-summary">
-                        Updated {fmtDateTime(report.updated_at)}
-                        {latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at
-                          ? ` • Generated ${fmtDateTime(latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at)}`
-                          : " • Draft report record"}
-                      </p>
-                    </div>
-                    <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
-                  </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </article>
+        <CampaignLinkedReportsSection
+          projectUnreadable={projectUnreadable}
+          reportsUnreadable={reportsUnreadable}
+          reportSectionLinksUnreadable={reportSectionLinksUnreadable}
+          projectLinked={Boolean(project)}
+          reports={campaignLinkedReports}
+          explicitlyLinkedReportCount={explicitlyLinkedReportCount}
+          projectOnlyReportCount={projectOnlyReportCount}
+          packetAttentionCount={packetAttentionCount}
+          recommendedReport={recommendedCampaignReport}
+          latestArtifactGeneratedAtByReportId={latestArtifactGeneratedAtByReportId}
+        />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[0.78fr_1.22fr]">
@@ -874,7 +704,16 @@ export default async function EngagementCampaignDetailPage({
               <EngagementCategoryCreator campaignId={campaign.id} />
             </div>
 
-            {!(categories?.length) ? (
+            {categoriesUnreadable ? (
+              <div className="mt-5">
+                <StateBlock
+                  tone="danger"
+                  title="This campaign's categories could not be read"
+                  description="OpenPlan cannot say whether this campaign has categories. Do not add duplicates on the strength of this screen — the list is missing, not empty."
+                  compact
+                />
+              </div>
+            ) : !(categories?.length) ? (
               <div className="mt-5">
                 <EmptyState
                   title="No categories yet"
@@ -944,7 +783,16 @@ export default async function EngagementCampaignDetailPage({
               </div>
             </div>
 
-            {sourceSummaries.every((source) => source.count === 0) ? (
+            {itemsUnreadable ? (
+              <div className="mt-5">
+                <StateBlock
+                  tone="danger"
+                  title="The source and geography breakdown could not be computed"
+                  description="Every number in this panel comes from the campaign's comments, and that read failed. No mix is shown rather than a mix of zero."
+                  compact
+                />
+              </div>
+            ) : sourceSummaries.every((source) => source.count === 0) ? (
               <div className="mt-5">
                 <EmptyState title="No source mix yet" description="Add comments to see where input comes from and how coverage looks on the map." compact />
               </div>
@@ -1037,29 +885,6 @@ export default async function EngagementCampaignDetailPage({
             </div>
           </article>
 
-          {/*
-            Mounted next to the map-layer panel because both answer the same
-            operator question — what does a member of the public actually get on
-            this campaign's portal — and a translation surface filed anywhere
-            else is a surface nobody finds.
-
-            `canManageContextLayers` is reused rather than re-derived: it is the
-            SAME `engagement.write` decision from the SAME `loadCampaignAccess`
-            call the translations route gates on, so the panel and the API cannot
-            disagree about who gets a button. A viewer still sees every language's
-            coverage — "what have we published in Spanish" is a question a viewer
-            is entitled to answer.
-
-            The three readability flags are passed STRAIGHT THROUGH rather than
-            derived here from `coverage !== null`. Deriving them at the render
-            site collapsed three different unknowns into one fact, and the panel
-            says a different sentence about each: translations unreadable is
-            "unknown, not none"; a short inventory means coverage is withheld
-            because the list it would be measured against is known to be
-            incomplete; and a source language that could not be READ must never
-            be reported as a language nobody recorded — that is a finding about
-            the agency, and a failed query does not establish it.
-          */}
           <CampaignTranslationsPanel
             campaignId={campaign.id}
             fields={translationState.fields}
@@ -1323,15 +1148,29 @@ export default async function EngagementCampaignDetailPage({
                   <p className="module-section-label">Moderation</p>
                   <h2 className="module-section-title">Recent intake registry</h2>
                   <p className="module-section-description">
-                    Create the first item to open moderation state inside this campaign.
+                    {itemsUnreadable
+                      ? "The comments on this campaign could not be read, so none can be listed here."
+                      : "Create the first item to open moderation state inside this campaign."}
                   </p>
                 </div>
               </div>
               <div className="mt-5">
-                <EmptyState
-                  title="No intake items yet"
-                  description="Add internal notes, meeting observations, or moderated public input to start the campaign record."
-                />
+                {itemsUnreadable ? (
+                  // NOT "No intake items yet". On a live campaign that sentence
+                  // says nobody in the community responded — the loudest false
+                  // claim this console can make, and a broken query cannot make
+                  // it.
+                  <StateBlock
+                    tone="danger"
+                    title="This campaign's comments could not be read"
+                    description="OpenPlan cannot say how much input this campaign has received. Nothing here means the campaign is empty — reload, and if it keeps failing the error is reported at the top of this page."
+                  />
+                ) : (
+                  <EmptyState
+                    title="No intake items yet"
+                    description="Add internal notes, meeting observations, or moderated public input to start the campaign record."
+                  />
+                )}
               </div>
             </article>
           )}

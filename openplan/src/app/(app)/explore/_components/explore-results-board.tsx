@@ -14,6 +14,11 @@ import {
   resolveEstimatedDomains,
 } from "@/lib/analysis/estimated-source";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
+import { resolveDecisionUseDisclosure } from "@/lib/analysis/decision-use";
+import {
+  resolveCensusScoreInputCoverage,
+  withCensusInputCaveat,
+} from "@/lib/analysis/census-score-inputs";
 import { downloadGeojson, downloadMetricsCsv, downloadRecordsCsv, downloadText } from "@/lib/export/download";
 import { resolveStatusTone } from "@/lib/ui/status";
 import {
@@ -33,6 +38,36 @@ import { ExploreRunComparisonCard } from "./explore-run-comparison-card";
 import type { DisclosureItem, GeospatialSourceCard, PlanningSignal, ResultScoreTile, ResultStatusBadge } from "./explore-results-types";
 
 const COMPARISON_HEADLINE_KEYS = new Set(["overallScore", "accessibilityScore", "safetyScore", "equityScore"]);
+
+/**
+ * What a tile shows when the underlying figure was never measured.
+ *
+ * "N/A" was the old answer and it is ambiguous — it reads as "not applicable
+ * here", which is a claim about the corridor. "Not measured" is a claim about the
+ * READ, which is the true one. Every unmeasured figure on this board says the same
+ * two words so a planner learns them once.
+ */
+const NOT_MEASURED = "Not measured";
+
+/**
+ * Render a numeric metric, or say plainly that it was not measured.
+ *
+ * The defect this closes: score tiles interpolated their value into a template
+ * literal (`` `${metrics.safetyScore}` ``), so a null — which is what
+ * `computeSafety` returns whenever no crash source answered, the ordinary case
+ * outside a registered adapter's coverage — rendered as the four characters
+ * "null" in a headline tile. It looked like a bug to a planner and like a value to
+ * anyone screenshotting the board.
+ */
+function metricDisplay(
+  value: unknown,
+  format: (value: number) => string = (n) => `${n}`
+): { value: string; measured: boolean } {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return { value: format(value), measured: true };
+  }
+  return { value: NOT_MEASURED, measured: false };
+}
 
 type ExploreResultsBoardProps = {
   analysisResult: AnalysisResult | null;
@@ -131,37 +166,55 @@ export function ExploreResultsBoard({
       return [] satisfies PlanningSignal[];
     }
 
+    // Census figures come through `censusReportedFigures` on the API side, so a
+    // null here means the ACS universe behind the figure was EMPTY — nothing was
+    // measured. It used to arrive as 0 and render as a finding: "Population: 0",
+    // "Transit mode share: 0%". A corridor nobody could read looked like a
+    // corridor with nobody in it.
+    const population = metricDisplay(analysisResult.metrics.totalPopulation, (n) => n.toLocaleString());
+    const medianIncome = metricDisplay(analysisResult.metrics.medianIncome, (n) => formatCurrency(n));
+    const transitShare = metricDisplay(analysisResult.metrics.pctTransit, (n) => `${n}%`);
+    const zeroVehicle = metricDisplay(analysisResult.metrics.pctZeroVehicle, (n) => `${n}%`);
+
     return [
       {
         label: "Population",
-        value: typeof analysisResult.metrics.totalPopulation === "number" ? analysisResult.metrics.totalPopulation.toLocaleString() : "N/A",
-        note: "Census tract population intersecting the corridor bounding area.",
+        value: population.value,
+        note: population.measured
+          ? "Census tract population intersecting the corridor bounding area."
+          : "No census tract population universe was returned for this study area — this is an unanswered read, not a count of zero.",
       },
       {
         label: "Median income",
-        value: formatCurrency(analysisResult.metrics.medianIncome as number | null | undefined),
-        note: "Weighted ACS household income for corridor-context tracts.",
+        value: medianIncome.value,
+        note: medianIncome.measured
+          ? "Weighted ACS household income for corridor-context tracts."
+          : "No corridor-context tract reported a median household income that could be weighted.",
       },
       {
         label: "Transit mode share",
-        value: typeof analysisResult.metrics.pctTransit === "number" ? `${analysisResult.metrics.pctTransit}%` : "N/A",
-        note: "Transit share of commute trips from corridor-context tracts.",
+        value: transitShare.value,
+        note: transitShare.measured
+          ? "Transit share of commute trips from corridor-context tracts."
+          : "No commuter universe was returned for these tracts, so no mode share was measured.",
       },
       {
         label: "Zero-vehicle households",
-        value: typeof analysisResult.metrics.pctZeroVehicle === "number" ? `${analysisResult.metrics.pctZeroVehicle}%` : "N/A",
-        note: "Households with no vehicle access, used as an equity / accessibility signal.",
+        value: zeroVehicle.value,
+        note: zeroVehicle.measured
+          ? "Households with no vehicle access, used as an equity / accessibility signal."
+          : "No household universe was returned for these tracts, so vehicle access was not measured.",
       },
       {
         label: "Stops / sq mi",
-        value: typeof analysisResult.metrics.stopsPerSquareMile === "number" ? `${analysisResult.metrics.stopsPerSquareMile}` : "N/A",
+        value: metricDisplay(analysisResult.metrics.stopsPerSquareMile).value,
         note: "Transit stop density from current transit access proxy layer.",
         estimated: estimatedDomains.transit,
         estimatedNote: estimatedDomains.transit ? estimatedSourceNote("transit") : undefined,
       },
       {
         label: "Crash intensity",
-        value: typeof analysisResult.metrics.crashesPerSquareMile === "number" ? `${analysisResult.metrics.crashesPerSquareMile}/sq mi` : "N/A",
+        value: metricDisplay(analysisResult.metrics.crashesPerSquareMile, (n) => `${n}/sq mi`).value,
         note: "Crash density from the active crash source or fallback estimator.",
         estimated: estimatedDomains.crashes,
         estimatedNote: estimatedDomains.crashes ? estimatedSourceNote("crashes") : undefined,
@@ -307,40 +360,82 @@ export function ExploreResultsBoard({
 
   const resultScoreTiles: ResultScoreTile[] = [];
 
+  // Accessibility, Equity and the composite are all built partly from ACS
+  // figures, and the scoring engine consumes the summarizer's PLACEHOLDER zeros
+  // rather than the nulled reported figures. A corridor whose ACS read returned
+  // nothing therefore still scores — Accessibility 5, Equity 0, Overall 3 — and
+  // "Equity 0" is the single most over-readable number on this board. The number
+  // is not withheld (that would deny a planner their own run); the sentence that
+  // bounds it travels with it. Fixing the arithmetic is a scoring change and
+  // belongs in `scoring.ts` as its own piece of work — see census-score-inputs.
+  const censusScoreInputs = resolveCensusScoreInputCoverage(analysisResult.metrics);
+
   if (typeof analysisResult.metrics.overallScore === "number") {
     resultScoreTiles.push({
       label: "Overall",
       value: `${analysisResult.metrics.overallScore}`,
-      note: "Composite corridor score across the current analysis run.",
+      note: withCensusInputCaveat(
+        "Composite corridor score across the current analysis run.",
+        censusScoreInputs
+      ),
       emphasis: true,
     });
   }
 
   const accessibilityEstimatedNote = describeEstimatedAccessibilityInputs(estimatedDomains);
+  const accessibilityTile = metricDisplay(analysisResult.metrics.accessibilityScore);
+  // Null whenever no crash source answered. Absence of crash evidence is not
+  // evidence of safety, so there is deliberately no score — and the tile has to
+  // say that rather than print the null.
+  const safetyTile = metricDisplay(analysisResult.metrics.safetyScore);
+  const equityTile = metricDisplay(analysisResult.metrics.equityScore);
 
   resultScoreTiles.push(
     {
       label: "Accessibility",
-      value: `${analysisResult.metrics.accessibilityScore}`,
-      note: "Transit reach, service availability, and jobs-access posture.",
+      value: accessibilityTile.value,
+      note: accessibilityTile.measured
+        ? withCensusInputCaveat(
+            "Transit reach, service availability, and jobs-access posture.",
+            censusScoreInputs
+          )
+        : "No accessibility score was recorded for this run.",
       estimated: accessibilityEstimatedNote !== null,
       estimatedNote: accessibilityEstimatedNote ?? undefined,
     },
     {
       label: "Safety",
-      value: `${analysisResult.metrics.safetyScore}`,
-      note: "Crash-risk lane informed by the active safety source and filters.",
-      estimated: estimatedDomains.crashes,
-      estimatedNote: estimatedDomains.crashes ? estimatedSourceNote("crashes") : undefined,
+      value: safetyTile.value,
+      note: safetyTile.measured
+        ? "Crash-risk lane informed by the active safety source and filters."
+        : "No crash source covered this study area, so no safety score was produced. An unmeasured corridor is not a safe one.",
+      estimated: safetyTile.measured && estimatedDomains.crashes,
+      estimatedNote: safetyTile.measured && estimatedDomains.crashes ? estimatedSourceNote("crashes") : undefined,
     },
     {
       label: "Equity",
-      value: `${analysisResult.metrics.equityScore}`,
-      note: "Corridor equity screening signal from the current demographic layer.",
+      value: equityTile.value,
+      note: equityTile.measured
+        ? withCensusInputCaveat(
+            "Corridor equity screening signal from the current demographic layer.",
+            censusScoreInputs
+          )
+        : "No equity screening score was recorded for this run.",
     }
   );
 
   const resultStatusBadges: ResultStatusBadge[] = [];
+
+  // The run has always recorded how far it may be carried into a decision, and
+  // until now nothing rendered it. It leads the badge row because it bounds
+  // everything below it: a planner who reads the scores without reading this is
+  // the person who takes a screening result into a CEQA determination.
+  const decisionUse = resolveDecisionUseDisclosure(analysisResult.metrics);
+  resultStatusBadges.push({
+    label: decisionUse.label,
+    tone: decisionUse.notRecorded ? "neutral" : "warning",
+    title: decisionUse.detail,
+  });
 
   if (analysisResult.metrics.transitAccessTier) {
     resultStatusBadges.push({
@@ -416,6 +511,7 @@ export function ExploreResultsBoard({
           currentRunNarrativeLabel={currentRunNarrativeLabel}
           currentRunMapContextLabel={currentRunMapContextLabel}
           currentMapViewSummary={currentMapViewSummary}
+          decisionUse={decisionUse}
           resultScoreTiles={resultScoreTiles}
           resultStatusBadges={resultStatusBadges}
           sourceTransparency={sourceTransparency}

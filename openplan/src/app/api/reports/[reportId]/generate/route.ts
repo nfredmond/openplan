@@ -76,6 +76,7 @@ import {
 // `src/lib/aerial/public.ts`.
 import { loadAerialSourceContextRowsForProject } from "@/lib/aerial/queries";
 import type { ReportCitedCountyRun, ReportCitedModelRun } from "@/lib/reports/html";
+import { withCitedModelRunClaimTiers } from "@/lib/reports/run-citations";
 
 function looksLikePendingSchema(message: string | null | undefined) {
   return /column .* does not exist|schema cache/i.test(message ?? "");
@@ -1241,9 +1242,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
           validation_summary_json: Record<string, unknown> | null;
         }>).map((run) => [run.id, run])
       );
-      const citedModelRuns = campaignRunLinkRows
-        .map((item) => (item.model_run_id ? campaignModelRunMap.get(item.model_run_id) ?? null : null))
-        .filter((item): item is NonNullable<typeof item> => Boolean(item));
+      // Same shared claim-tier lookup as the standard packet below. A campaign
+      // packet citing a model run is still a packet an agency hands someone.
+      const citedModelRuns = await withCitedModelRunClaimTiers(
+        supabase,
+        campaignRunLinkRows
+          .map((item) => (item.model_run_id ? campaignModelRunMap.get(item.model_run_id) ?? null : null))
+          .filter((item): item is NonNullable<typeof item> => Boolean(item))
+      );
       const citedCountyRuns = campaignRunLinkRows
         .map((item) => (item.county_run_id ? campaignCountyRunMap.get(item.county_run_id) ?? null : null))
         .filter((item): item is NonNullable<typeof item> => Boolean(item));
@@ -1890,9 +1896,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         validation_summary_json: Record<string, unknown> | null;
       }>).map((run) => [run.id, run])
     );
-    const citedModelRuns = reportRunLinkRows
-      .map((item) => (item.model_run_id ? citedModelRunMap.get(item.model_run_id) ?? null : null))
-      .filter((item): item is NonNullable<typeof item> => Boolean(item));
+    // A CITED RUN TRAVELS WITH ITS CLAIM TIER — including into the packet, which
+    // is the artifact an agency hands a funder and therefore the surface where an
+    // undisclosed tier costs the most. This route cannot reuse `resolveCitedRuns`
+    // (it needs `result_summary_json`, which that resolver does not select), so it
+    // wraps its own rows in the SAME shared lookup rather than growing a second,
+    // weaker one here. Best-effort: a failed claim read marks every row
+    // `claimReadFailed`, so the packet says the tier COULD NOT BE READ rather
+    // than that no claim decision exists.
+    const citedModelRuns = await withCitedModelRunClaimTiers(
+      supabase,
+      reportRunLinkRows
+        .map((item) => (item.model_run_id ? citedModelRunMap.get(item.model_run_id) ?? null : null))
+        .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    );
     const citedCountyRuns = reportRunLinkRows
       .map((item) => (item.county_run_id ? citedCountyRunMap.get(item.county_run_id) ?? null : null))
       .filter((item): item is NonNullable<typeof item> => Boolean(item));

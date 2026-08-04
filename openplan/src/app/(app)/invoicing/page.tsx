@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { StateBlock } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createClient } from "@/lib/supabase/server";
@@ -53,12 +54,37 @@ export default async function InvoicingPage({
     redirect("/sign-in");
   }
 
-  const { data: memberships } = await supabase
+  const membershipsResult = await supabase
     .from("workspace_members")
     .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
     .eq("user_id", user.id);
 
-  const selection = resolveWorkspaceMembershipSelection(memberships as WorkspaceMembershipRow[] | null, {
+  // A membership read that FAILED must never become "no workspace membership
+  // was found for this account". That sentence is a claim about the world, and
+  // on this module the world it describes is grant reimbursement — money this
+  // agency has claimed from its funder. "Could not be read" and "not recorded"
+  // are different facts, and only the read itself knows which one happened.
+  // This is an internal page, so the database's own message is shown: the
+  // person looking at it is the person who can act on it.
+  if (membershipsResult.error) {
+    return (
+      <section className="space-y-6">
+        <header className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoicing</p>
+          <h1 className="text-3xl font-semibold tracking-tight">Invoicing could not be opened</h1>
+        </header>
+        <StateBlock
+          tone="danger"
+          title="Your workspace memberships could not be read"
+          description={`The invoice register is workspace-scoped, so nothing below it could be loaded. This is a failed read, not a finding that you have no workspace and not a finding that this workspace has no invoices. Reload, and if it persists give an operator this message: ${
+            membershipsResult.error.message ?? "no message reported"
+          }`}
+        />
+      </section>
+    );
+  }
+
+  const selection = resolveWorkspaceMembershipSelection(membershipsResult.data as WorkspaceMembershipRow[] | null, {
     requestedWorkspaceId,
     requireExplicitSelectionForMultiWorkspace: true,
   });

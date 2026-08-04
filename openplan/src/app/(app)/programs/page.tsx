@@ -7,8 +7,9 @@ import { FundingOpportunityCreator } from "@/components/programs/funding-opportu
 import { ProgramCreator } from "@/components/programs/program-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
@@ -174,11 +175,15 @@ export default async function ProgramsPage({
     );
   }
 
-  const [
-    { data: programsData },
-    { data: projectsData },
-    { data: fundingOpportunitiesData },
-  ] = await Promise.all([
+  // Every read below is registered here. Destructuring only the data half of a
+  // Supabase result cannot tell "this workspace has no programming cycles" from
+  // "the programs query failed", and both catalog empty states — "No programming
+  // cycles yet" and "No funding opportunities logged yet" — state the second as
+  // the first. (Written without the literal destructuring shape on purpose:
+  // `a-page-may-not-discard-a-read-error` scans file TEXT.)
+  const reads = new ReadFailureLog();
+
+  const [programsResult, projectsResult, fundingOpportunitiesResult] = await Promise.all([
     // Scoped to the active workspace — RLS grants ALL memberships, so without
     // the filter a multi-workspace member saw every workspace's programs,
     // opportunities, and projects mixed (2026-08-03 review).
@@ -202,6 +207,14 @@ export default async function ProgramsPage({
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
   ]);
+
+  const programsUnreadable = reads.check("the programming-cycle catalog", programsResult);
+  reads.check("selectable projects", projectsResult);
+  const fundingOpportunitiesUnreadable = reads.check("the funding-opportunity catalog", fundingOpportunitiesResult);
+
+  const programsData = programsResult.data;
+  const projectsData = projectsResult.data;
+  const fundingOpportunitiesData = fundingOpportunitiesResult.data;
 
   const programs = (programsData ?? []) as ProgramRow[];
   const fundingOpportunities = ((fundingOpportunitiesData ?? []) as FundingOpportunityRow[])
@@ -249,6 +262,13 @@ export default async function ProgramsPage({
       : Promise.resolve({ data: [], error: null }),
   ]);
 
+  // Each `check` runs unconditionally — `||` would short-circuit and leave the
+  // later failures out of the disclosure.
+  const programLinksUnreadable = reads.check("program link sets", linksResult);
+  const planCountsUnreadable = reads.check("plans on the linked projects", plansResult);
+  const projectReportsUnreadable = reads.check("reports on the linked projects", projectReportsResult);
+  const campaignCountsUnreadable = reads.check("engagement campaigns on the linked projects", campaignsResult);
+
   const linksByProgram = new Map<string, ProgramLinkRow[]>();
   for (const link of (linksResult.data ?? []) as ProgramLinkRow[]) {
     const current = linksByProgram.get(link.program_id) ?? [];
@@ -288,6 +308,20 @@ export default async function ProgramsPage({
         .in("report_id", reportIds)
         .order("generated_at", { ascending: false })
     : { data: [], error: null };
+
+  const explicitReportsUnreadable = reads.check("reports linked to these programs", explicitReportsResult);
+  const reportArtifactsUnreadable = reads.check("stored report artifacts", reportArtifactsResult);
+
+  // Readiness, packet posture and the per-row workflow verdict are all computed
+  // from these counts. A zero from a failed read becomes a confident "missing
+  // basis" line on every card in the registry.
+  const rowBasisUnreadable =
+    programLinksUnreadable ||
+    planCountsUnreadable ||
+    projectReportsUnreadable ||
+    campaignCountsUnreadable ||
+    explicitReportsUnreadable ||
+    reportArtifactsUnreadable;
 
   const latestArtifactGeneratedAtByReportId = new Map<string, string | null>();
   for (const artifact of (reportArtifactsResult.data ?? []) as ProgramReportArtifactRow[]) {
@@ -571,6 +605,16 @@ export default async function ProgramsPage({
 
   return (
     <section className="module-page">
+      {reads.any ? (
+        <div className="mb-6">
+          <StateBlock
+            tone="danger"
+            title="Part of this page could not be read"
+            description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+          />
+        </div>
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -587,23 +631,41 @@ export default async function ProgramsPage({
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Programs</p>
-              <p className="module-summary-value">{typedPrograms.length}</p>
-              <p className="module-summary-detail">Cycle and package records in the current workspace catalog.</p>
+              <p className="module-summary-value">{programsUnreadable ? "—" : typedPrograms.length}</p>
+              <p className="module-summary-detail">
+                {programsUnreadable
+                  ? "The programming-cycle catalog could not be read, so this count is unknown rather than zero."
+                  : "Cycle and package records in the current workspace catalog."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Active programs</p>
-              <p className="module-summary-value">{activeCount}</p>
-              <p className="module-summary-detail">{rtipStipCount} tied to RTIP or STIP cycles.</p>
+              <p className="module-summary-value">{programsUnreadable ? "—" : activeCount}</p>
+              <p className="module-summary-detail">
+                {programsUnreadable
+                  ? "Unavailable while the programming-cycle catalog cannot be read."
+                  : `${rtipStipCount} tied to RTIP or STIP cycles.`}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Ready to submit</p>
-              <p className="module-summary-value">{readyCount}</p>
-              <p className="module-summary-detail">Programs with the key information in place for review or submission.</p>
+              <p className="module-summary-value">{programsUnreadable || rowBasisUnreadable ? "—" : readyCount}</p>
+              <p className="module-summary-detail">
+                {programsUnreadable || rowBasisUnreadable
+                  ? "Readiness is computed from linked records this page could not read."
+                  : "Programs with the key information in place for review or submission."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Packet attention</p>
-              <p className="module-summary-value">{packetAttentionProgramCount}</p>
-              <p className="module-summary-detail">Programs whose linked report packets need first generation or refresh.</p>
+              <p className="module-summary-value">
+                {programsUnreadable || rowBasisUnreadable ? "—" : packetAttentionProgramCount}
+              </p>
+              <p className="module-summary-detail">
+                {programsUnreadable || rowBasisUnreadable
+                  ? "Packet posture is computed from report records this page could not read."
+                  : "Programs whose linked report packets need first generation or refresh."}
+              </p>
             </div>
           </div>
         </article>
@@ -654,11 +716,19 @@ export default async function ProgramsPage({
             </div>
             <span className="module-inline-item">
               <FolderKanban className="h-3.5 w-3.5" />
-              <strong>{typedPrograms.length}</strong> total
+              <strong>{programsUnreadable ? "—" : typedPrograms.length}</strong> total
             </span>
           </div>
 
-          {typedPrograms.length === 0 ? (
+          {programsUnreadable ? (
+            <div className="mt-5">
+              <StateBlock
+                tone="danger"
+                title="The programming-cycle catalog could not be read"
+                description="This page could not read the programs in your workspace, so it cannot show the catalog and cannot say whether any cycles exist. Nothing has been deleted — retry, and tell your operator if it persists."
+              />
+            </div>
+          ) : typedPrograms.length === 0 ? (
             <div className="mt-5">
               <EmptyState
                 title={emptyProgramCatalogTitle}
@@ -720,7 +790,11 @@ export default async function ProgramsPage({
                           {formatProgramStatusLabel(program.status)}
                         </StatusBadge>
                         <StatusBadge tone="info">{formatProgramTypeLabel(program.program_type)}</StatusBadge>
-                        <StatusBadge tone={program.readiness.tone}>{program.readiness.label}</StatusBadge>
+                        {rowBasisUnreadable ? (
+                          <StatusBadge tone="warning">Readiness unavailable</StatusBadge>
+                        ) : (
+                          <StatusBadge tone={program.readiness.tone}>{program.readiness.label}</StatusBadge>
+                        )}
                       </div>
 
                       <div className="space-y-1.5">
@@ -731,7 +805,10 @@ export default async function ProgramsPage({
                           <p className="module-record-stamp">Updated {formatProgramDateTime(program.updated_at)}</p>
                         </div>
                         <p className="module-record-summary line-clamp-2">
-                          {program.summary || program.workflow.reason}
+                          {program.summary ||
+                            (rowBasisUnreadable
+                              ? "No summary on file. A package verdict is withheld here — the linked records it is computed from could not be read."
+                              : program.workflow.reason)}
                         </p>
                       </div>
                     </div>
@@ -748,10 +825,16 @@ export default async function ProgramsPage({
                     <span className="module-record-chip">Project {program.project?.name ?? "No primary project"}</span>
                     <span className="module-record-chip">Owner {program.owner_label ?? "Unassigned"}</span>
                     <span className="module-record-chip">Cadence {program.cadence_label ?? "Not set"}</span>
-                    <span className="module-record-chip">Plans {program.linkageCounts.plans}</span>
-                    <span className="module-record-chip">Reports {program.linkageCounts.reports}</span>
-                    <span className="module-record-chip">Campaigns {program.linkageCounts.engagementCampaigns}</span>
-                    {program.packetSummary.attentionCount > 0 ? (
+                    {rowBasisUnreadable ? (
+                      <span className="module-record-chip">Linkage counts unavailable</span>
+                    ) : (
+                      <>
+                        <span className="module-record-chip">Plans {program.linkageCounts.plans}</span>
+                        <span className="module-record-chip">Reports {program.linkageCounts.reports}</span>
+                        <span className="module-record-chip">Campaigns {program.linkageCounts.engagementCampaigns}</span>
+                      </>
+                    )}
+                    {!rowBasisUnreadable && program.packetSummary.attentionCount > 0 ? (
                       <span className="module-record-chip">Packet attention {program.packetSummary.attentionCount}</span>
                     ) : null}
                     {program.packetSummary.refreshRecommendedCount > 0 ? (
@@ -808,24 +891,34 @@ export default async function ProgramsPage({
             </div>
             <span className="module-inline-item">
               <CalendarClock className="h-3.5 w-3.5" />
-              <strong>{fundingOpportunities.length}</strong> tracked
+              <strong>{fundingOpportunitiesUnreadable ? "\u2014" : fundingOpportunities.length}</strong> tracked
             </span>
           </div>
 
           <div className="module-summary-grid cols-4 mt-5">
             <div className="module-summary-card">
               <p className="module-summary-label">Open now</p>
-              <p className="module-summary-value">{openOpportunityCount}</p>
-              <p className="module-summary-detail">Current calls needing active packaging work.</p>
+              <p className="module-summary-value">{fundingOpportunitiesUnreadable ? "\u2014" : openOpportunityCount}</p>
+              <p className="module-summary-detail">
+                {fundingOpportunitiesUnreadable
+                  ? "Unavailable while the funding-opportunity catalog cannot be read."
+                  : "Current calls needing active packaging work."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Upcoming</p>
-              <p className="module-summary-value">{upcomingOpportunityCount}</p>
-              <p className="module-summary-detail">Expected calls or known windows not yet open.</p>
+              <p className="module-summary-value">{fundingOpportunitiesUnreadable ? "\u2014" : upcomingOpportunityCount}</p>
+              <p className="module-summary-detail">
+                {fundingOpportunitiesUnreadable
+                  ? "Unavailable while the funding-opportunity catalog cannot be read."
+                  : "Expected calls or known windows not yet open."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Program-linked</p>
-              <p className="module-summary-value">{fundingOpportunities.filter((item) => item.program_id).length}</p>
+              <p className="module-summary-value">
+                {fundingOpportunitiesUnreadable ? "\u2014" : fundingOpportunities.filter((item) => item.program_id).length}
+              </p>
               <p className="module-summary-detail">Opportunities already tied to a funding cycle record.</p>
             </div>
             <div className="module-summary-card">
@@ -835,12 +928,26 @@ export default async function ProgramsPage({
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Packet-risky opportunities</p>
-              <p className="module-summary-value">{opportunityPacketRiskCount}</p>
-              <p className="module-summary-detail">Opportunities whose linked program packet basis is missing, stale, or not linked yet.</p>
+              <p className="module-summary-value">
+                {fundingOpportunitiesUnreadable || rowBasisUnreadable ? "—" : opportunityPacketRiskCount}
+              </p>
+              <p className="module-summary-detail">
+                {fundingOpportunitiesUnreadable || rowBasisUnreadable
+                  ? "Packet risk is computed from opportunity and report records this page could not read."
+                  : "Opportunities whose linked program packet basis is missing, stale, or not linked yet."}
+              </p>
             </div>
           </div>
 
-          {fundingOpportunities.length === 0 ? (
+          {fundingOpportunitiesUnreadable ? (
+            <div className="mt-5">
+              <StateBlock
+                tone="danger"
+                title="The funding-opportunity catalog could not be read"
+                description="This page could not read the funding opportunities in your workspace, so it cannot show them and cannot say whether any are logged. Nothing has been deleted — retry, and tell your operator if it persists."
+              />
+            </div>
+          ) : fundingOpportunities.length === 0 ? (
             <div className="mt-5">
               <EmptyState
                 title="No funding opportunities logged yet"

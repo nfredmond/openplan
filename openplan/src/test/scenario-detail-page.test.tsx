@@ -59,7 +59,33 @@ const modelRunsOrderMock = vi.fn();
 const modelRunsEqStatusMock = vi.fn(() => ({ order: modelRunsOrderMock }));
 const modelRunsEqEngineMock = vi.fn(() => ({ eq: modelRunsEqStatusMock }));
 const modelRunsInMock = vi.fn(() => ({ eq: modelRunsEqEngineMock }));
-const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock }));
+
+// The page makes THREE distinct model_runs reads, and they must be answered
+// separately or a test cannot say which one failed. Before this they all fell
+// through one builder, so two of the three threw a TypeError mid-chain and were
+// swallowed by the page's try/catch — the reads never happened, and no
+// assertion could tell.
+//
+// The projections are disjoint, so the projection string is the router:
+//   attached entry evidence -> "…, result_summary_json"
+//   trip-gen affordance     -> "…, model_id, …"
+//   attach-picker options   -> neither
+const attachedModelRunsInMock = vi.fn();
+const modelRunOptionsOrderMock = vi.fn();
+const modelRunOptionsLimitMock = vi.fn();
+const modelRunOptionsBuilder = {
+  // entry-pointed: .in(...).eq("status", …).order(…)
+  in: vi.fn(() => ({ eq: vi.fn(() => ({ order: modelRunOptionsOrderMock })) })),
+  // workspace-wide: .eq("workspace_id", …).eq("status", …).order(…).limit(30)
+  eq: vi.fn(() => ({
+    eq: vi.fn(() => ({ order: vi.fn(() => ({ limit: modelRunOptionsLimitMock })) })),
+  })),
+};
+const modelRunsSelectMock = vi.fn((columns: string) => {
+  if (columns.includes("result_summary_json")) return { in: attachedModelRunsInMock };
+  if (columns.includes("model_id")) return { in: modelRunsInMock };
+  return modelRunOptionsBuilder;
+});
 
 const buildScenarioComparisonBoardMock = vi.fn();
 
@@ -299,6 +325,9 @@ describe("ScenarioSetDetailPage", () => {
     // Default: no succeeded trip-gen model runs, so the save affordance stays hidden
     // and every pre-existing test keeps its exact behavior.
     modelRunsOrderMock.mockResolvedValue({ data: [], error: null });
+    attachedModelRunsInMock.mockResolvedValue({ data: [], error: null });
+    modelRunOptionsOrderMock.mockResolvedValue({ data: [], error: null });
+    modelRunOptionsLimitMock.mockResolvedValue({ data: [], error: null });
 
     buildScenarioComparisonBoardMock.mockReturnValue([]);
 
@@ -651,5 +680,113 @@ describe("ScenarioSetDetailPage", () => {
 
     expect(screen.queryByText(/Trip-generation comparison ready/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Save trip-gen comparison/i })).not.toBeInTheDocument();
+  });
+
+  /**
+   * A READ THAT FAILED MAY NOT BE RENDERED AS AN ANSWER.
+   *
+   * `const { data } = await supabase…` hands back `null` for both "there is
+   * nothing here" and "this query failed", and every empty-state sentence on
+   * this page was written for the first case. On a scenario set that matters
+   * more than usual: a comparison IS a provenance claim — which entries, which
+   * attached runs, which saved snapshots — so a silently-empty render does not
+   * merely look thin, it quietly withdraws the evidence while still presenting
+   * the comparison surface as complete.
+   *
+   * The third test in this block is the one that makes the other two mean
+   * anything: without it, a page that ALWAYS shouted a warning would pass.
+   */
+  describe("a failed read is disclosed, never rendered as an absence", () => {
+    it("does not tell a planner the scenario set does not exist when the read failed", async () => {
+      scenarioSetMaybeSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table scenario_sets" },
+      });
+
+      // `notFound()` is a claim: this record is not there. A 400 or a policy
+      // failure is not evidence of that, so the page raises instead and the
+      // route's error boundary says something a retry can act on.
+      await expect(renderPage()).rejects.toThrow(/Could not read this scenario set/i);
+      expect(notFoundMock).not.toHaveBeenCalled();
+    });
+
+    it("discloses an unreadable entries read instead of reporting no alternatives", async () => {
+      entriesOrderCreatedMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table scenario_entries" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText(/Part of this scenario set could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/could not read this scenario set's entries/i)).toBeInTheDocument();
+      // Internal page — the operator detail is shown, because whoever reads it
+      // can act on it.
+      expect(screen.getByText(/permission denied for table scenario_entries/i)).toBeInTheDocument();
+
+      // The sentences that would now be lies.
+      expect(screen.queryByText(/No alternatives registered yet\./i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/No comparison cards yet\./i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/^Missing$/)).not.toBeInTheDocument();
+
+      // And what replaces them.
+      expect(
+        screen.getByText(/entries could not be read, so its alternatives cannot be listed/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/an absent card here does not mean the alternative is unready/i)
+      ).toBeInTheDocument();
+    });
+
+    it("discloses unreadable reports instead of reporting no linked reports", async () => {
+      reportsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table reports" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText(/Part of this scenario set could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/could not read this project's reports/i)).toBeInTheDocument();
+      expect(screen.queryByText(/No linked reports yet\./i)).not.toBeInTheDocument();
+      expect(
+        screen.getByText(/not a statement that no report uses this scenario set's runs/i)
+      ).toBeInTheDocument();
+    });
+
+    it("discloses unreadable saved comparisons instead of reporting none saved", async () => {
+      comparisonSnapshotsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table scenario_comparison_snapshots" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText(/could not read saved comparison snapshots/i)).toBeInTheDocument();
+      expect(screen.queryByText(/No saved comparison snapshots yet\./i)).not.toBeInTheDocument();
+      expect(
+        screen.getByText(/that is not a statement that none have been saved/i)
+      ).toBeInTheDocument();
+    });
+
+    /**
+     * THE CONTROL. Every read succeeds and there is genuinely nothing, so the
+     * ordinary empty states must appear and NO disclosure may. Without this
+     * assertion the three above cannot distinguish an honest disclosure from a
+     * page that warns unconditionally.
+     */
+    it("keeps the ordinary empty states when every read succeeds and there is genuinely nothing", async () => {
+      entriesOrderCreatedMock.mockResolvedValueOnce({ data: [], error: null });
+      reportsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+      comparisonSnapshotsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+      await renderPage();
+
+      expect(screen.queryByText(/Part of this scenario set could not be read/i)).not.toBeInTheDocument();
+      expect(screen.getByText(/No alternatives registered yet\./i)).toBeInTheDocument();
+      expect(screen.getByText(/No comparison cards yet\./i)).toBeInTheDocument();
+      expect(screen.getByText(/No linked reports yet\./i)).toBeInTheDocument();
+      expect(screen.getByText(/No saved comparison snapshots yet\./i)).toBeInTheDocument();
+    });
   });
 });

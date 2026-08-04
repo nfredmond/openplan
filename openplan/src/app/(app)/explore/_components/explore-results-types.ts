@@ -14,6 +14,12 @@ export type ResultScoreTile = {
 export type ResultStatusBadge = {
   label: string;
   tone: StatusTone;
+  /**
+   * Hover text. Supplementary only — a badge whose meaning exists ONLY in a
+   * tooltip is unreachable for anyone on touch or a screen reader, so anything
+   * load-bearing must also be rendered as visible text somewhere on the card.
+   */
+  title?: string;
 };
 
 export type MapViewSummaryItem = {

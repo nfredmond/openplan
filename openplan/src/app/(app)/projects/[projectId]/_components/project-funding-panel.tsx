@@ -108,6 +108,19 @@ type ProjectFundingPanelProps = {
   projectFundingProfile: ProjectFundingProfileRow | null;
   projectFundingProfilePending: boolean;
   fundingAwardsPending: boolean;
+  /**
+   * The award read FAILED for a reason that is not a pending migration.
+   *
+   * Distinct from `fundingAwardsPending` because the two are different facts
+   * and only one of them is reassuring: "your database is behind a migration"
+   * is fixable and expected, while "the award read was refused" means the
+   * dollar figures on this panel are unknown. Both suppress the award stack,
+   * because every number in it — committed, still unfunded, and the sentence
+   * that combines them — is computed from rows that did not arrive, and a $0
+   * committed total over an agency's real awards is the reassuring direction of
+   * the error.
+   */
+  fundingAwardsReadFailed?: boolean;
   fundingOpportunitiesPending: boolean;
   fundingAwards: FundingAwardWithClosureProvenance[];
   fundingOpportunities: FundingOpportunity[];
@@ -136,6 +149,7 @@ export function ProjectFundingPanel({
   projectFundingProfile,
   projectFundingProfilePending,
   fundingAwardsPending,
+  fundingAwardsReadFailed = false,
   fundingOpportunitiesPending,
   fundingAwards,
   fundingOpportunities,
@@ -188,7 +202,15 @@ export function ProjectFundingPanel({
         </div>
       </div>
 
-      {projectFundingProfilePending || fundingAwardsPending ? (
+      {fundingAwardsReadFailed ? (
+        <div className="module-alert mt-5 text-sm">
+          The funding award records for this project could not be read, so the award stack and every
+          dollar figure derived from it are unavailable rather than zero. This is not a finding that
+          the project has no awards, and no total shown elsewhere on this page should be read as
+          complete until it loads. Reload; if it persists, the banner at the top of this page carries
+          the database&apos;s own message for an operator.
+        </div>
+      ) : projectFundingProfilePending || fundingAwardsPending ? (
         <div className="module-alert mt-5 text-sm">Funding stack and award records will appear after the funding award migrations are applied to the database.</div>
       ) : (
         <>

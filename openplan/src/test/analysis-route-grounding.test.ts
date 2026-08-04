@@ -38,6 +38,15 @@ const CENSUS_FIXTURE = {
   pctWfh: 8.6,
   pctZeroVehicle: 6.2,
   clip: { status: "clipped" as const, corridorTracts: 3, countyTracts: 12, counties: 1 },
+  // Every ACS universe answered — this fixture is a fully-measured corridor, so
+  // the route narrates its figures rather than reporting them as not measured.
+  measured: {
+    tracts: true,
+    population: true,
+    commuteMode: true,
+    vehicleAccess: true,
+    income: true,
+  },
 };
 
 const LODES_FIXTURE = {
@@ -166,11 +175,14 @@ vi.mock("@/lib/ai/interpret", () => ({
   generateGrantInterpretation: (...args: unknown[]) => generateGrantInterpretationMock(...args),
 }));
 
-vi.mock("@/lib/data-sources/census", () => ({
+// Only the two NETWORK functions are stubbed. `censusReportedFigures` and
+// `censusUniverseUnavailableNote` are pure and stay REAL, because they are the
+// measured/not-measured boundary this route now narrates through — doubling them
+// would make every assertion below a statement about the double.
+vi.mock("@/lib/data-sources/census", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/data-sources/census")>()),
   fetchCensusForCorridor: (...args: unknown[]) => fetchCensusForCorridorMock(...args),
   bboxFromGeojson: (...args: unknown[]) => bboxFromGeojsonMock(...args),
-  ACS_YEAR: "2023",
-  ACS_RETRIEVAL_URL: "https://api.census.gov/data/2023/acs/acs5",
 }));
 
 vi.mock("@/lib/data-sources/census-geometry", () => ({

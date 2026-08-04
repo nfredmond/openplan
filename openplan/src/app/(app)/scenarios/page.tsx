@@ -5,9 +5,10 @@ import { cn } from "@/lib/utils";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { ScenarioSetCreator } from "@/components/scenarios/scenario-set-creator";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { createClient } from "@/lib/supabase/server";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { scenarioStatusTone, titleizeScenarioValue } from "@/lib/scenarios/catalog";
 
@@ -111,7 +112,12 @@ export default async function ScenariosPage({
   // the filter a multi-workspace member saw every workspace's scenario sets
   // merged (2026-08-03 review, unscoped-list-page class). Entries carry only
   // scenario_set_id, so they scope through this workspace's set ids.
-  const [{ data: scenarioSetsData }, { data: projectsData, error: projectsError }] = await Promise.all([
+  // A catalog that cannot read its own rows renders the same as a workspace with
+  // no scenario sets, and its empty state says so out loud. Register every read
+  // and disclose whatever failed.
+  const reads = new ReadFailureLog();
+
+  const [scenarioSetsResult, projectsResult] = await Promise.all([
     supabase
       .from("scenario_sets")
       .select(
@@ -121,11 +127,21 @@ export default async function ScenariosPage({
       .order("updated_at", { ascending: false }),
     supabase.from("projects").select("id, workspace_id, name").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
   ]);
+  const scenarioSetsUnreadable = reads.check("this workspace's scenario sets", scenarioSetsResult);
+  const projectsUnreadable = reads.check("this workspace's projects", projectsResult);
+  const scenarioSetsData = scenarioSetsResult.data;
+  const projectsData = projectsResult.data;
+  const projectsError = projectsResult.error;
 
   const scopedSetIds = ((scenarioSetsData ?? []) as { id: string }[]).map((set) => set.id);
-  const { data: entriesData } = scopedSetIds.length
+  const entriesResult = scopedSetIds.length
     ? await supabase.from("scenario_entries").select("scenario_set_id, entry_type").in("scenario_set_id", scopedSetIds)
-    : { data: [] };
+    : { data: [], error: null };
+  // The per-set baseline/alternative counts come from here. A failed read makes
+  // every row on the page say "Baseline missing" — a finding about the planner's
+  // work, invented by a broken query.
+  const entriesUnreadable = reads.check("scenario entries", entriesResult);
+  const entriesData = entriesResult.data;
 
   const counts = new Map<string, { baselineCount: number; alternativeCount: number }>();
   for (const entry of entriesData ?? []) {
@@ -181,6 +197,17 @@ export default async function ScenariosPage({
 
   return (
     <section className="module-page">
+      {/* Internal page, so the database's own message is shown — an operator
+          here can act on it. */}
+      {reads.any ? (
+        <StateBlock
+          className="mb-4"
+          tone="danger"
+          title="Part of this catalog could not be read"
+          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -220,20 +247,34 @@ export default async function ScenariosPage({
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Scenario sets</p>
-              <p className="module-summary-value">{scenarioSets.length}</p>
+              <p className="module-summary-value">{scenarioSetsUnreadable ? "—" : scenarioSets.length}</p>
               <p className="module-summary-detail">
-                {hasActiveFilters ? "Matching the current filters." : "Saved scenario groups linked to projects and plans."}
+                {scenarioSetsUnreadable
+                  ? "The scenario-set list could not be read, so this is not a count of zero."
+                  : hasActiveFilters
+                    ? "Matching the current filters."
+                    : "Saved scenario groups linked to projects and plans."}
               </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Active</p>
-              <p className="module-summary-value">{activeCount}</p>
-              <p className="module-summary-detail">Scenario sets currently being reviewed or compared.</p>
+              <p className="module-summary-value">{scenarioSetsUnreadable ? "—" : activeCount}</p>
+              <p className="module-summary-detail">
+                {scenarioSetsUnreadable
+                  ? "Unavailable for this render."
+                  : "Scenario sets currently being reviewed or compared."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Alternatives</p>
-              <p className="module-summary-value">{totalAlternatives}</p>
-              <p className="module-summary-detail">{withBaselineCount} sets already have a registered baseline.</p>
+              <p className="module-summary-value">
+                {scenarioSetsUnreadable || entriesUnreadable ? "—" : totalAlternatives}
+              </p>
+              <p className="module-summary-detail">
+                {scenarioSetsUnreadable || entriesUnreadable
+                  ? "Entry counts could not be read, so baselines and alternatives cannot be tallied."
+                  : `${withBaselineCount} sets already have a registered baseline.`}
+              </p>
             </div>
           </div>
         </article>
@@ -261,7 +302,10 @@ export default async function ScenariosPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.92fr_1.08fr]">
-        <ScenarioSetCreator projects={projectsData ?? []} />
+        {/* The creator's project picker is fed by the same read the filter name
+            uses. An empty picker after a failed read would tell the planner this
+            workspace has no projects. */}
+        <ScenarioSetCreator projects={projectsData ?? []} projectsUnreadable={projectsUnreadable} />
 
         <article className="module-section-surface">
           <div className="module-section-header">
@@ -279,17 +323,23 @@ export default async function ScenariosPage({
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               <FolderKanban className="h-3.5 w-3.5" />
-              {scenarioSets.length} total
+              {/* "0 total" beside "this catalog could not be read" is the same
+                  lie the empty state was fixed for, wearing a number. */}
+              {scenarioSetsUnreadable ? "Total unreadable" : `${scenarioSets.length} total`}
             </span>
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
             <Link href={scenariosTabHref(projectFilterId, null)} className={cn("rounded px-2 py-0.5 transition-colors", !statusFilter ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-              All ({scenarioSetsInScope.length})
+              {/* Every tab count is derived from the list read. When it failed
+                  they would all read "(0)" — four separate statements that no
+                  scenario set has that status. */}
+              All {scenarioSetsUnreadable ? "" : `(${scenarioSetsInScope.length})`}
             </Link>
             {SCENARIO_STATUS_FILTER_OPTIONS.map((opt) => (
               <Link key={opt.value} href={scenariosTabHref(projectFilterId, opt.value)} className={cn("rounded px-2 py-0.5 transition-colors", statusFilter === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-                {opt.label} ({scenarioSetsInScope.filter((s) => s.status === opt.value).length})
+                {opt.label}{" "}
+                {scenarioSetsUnreadable ? "" : `(${scenarioSetsInScope.filter((s) => s.status === opt.value).length})`}
               </Link>
             ))}
             {hasActiveFilters ? (
@@ -301,7 +351,16 @@ export default async function ScenariosPage({
             ) : null}
           </div>
 
-          {scenarioSets.length === 0 ? (
+          {scenarioSetsUnreadable ? (
+            // "No scenario sets yet" is a claim about this workspace. A read
+            // that failed cannot make it.
+            <div className="mt-5">
+              <EmptyState
+                title="This catalog could not be read"
+                description="The scenario-set list for this workspace could not be loaded, so nothing is shown below. That is a failed read, not an empty workspace — do not read it as a statement that no scenario sets exist."
+              />
+            </div>
+          ) : scenarioSets.length === 0 ? (
             <div className="mt-5">
               <EmptyState
                 title={hasActiveFilters ? "No scenario sets match these filters" : "No scenario sets yet"}
@@ -322,13 +381,17 @@ export default async function ScenariosPage({
                   selection={{
                     kind: "run",
                     title: scenarioSet.title,
-                    kicker: `${titleizeScenarioValue(scenarioSet.status)} · ${scenarioSet.counts.alternativeCount} alternatives`,
+                    kicker: entriesUnreadable
+                      ? `${titleizeScenarioValue(scenarioSet.status)} · alternatives unreadable`
+                      : `${titleizeScenarioValue(scenarioSet.status)} · ${scenarioSet.counts.alternativeCount} alternatives`,
                     avatarChar: scenarioSet.title[0],
                     meta: [
                       ...(scenarioSet.project?.name ? [{ label: "project", value: scenarioSet.project.name }] : []),
-                      scenarioSet.counts.baselineCount > 0
-                        ? { label: "baseline", value: "set", tone: "ok" as const }
-                        : { label: "baseline", value: "missing", tone: "warn" as const },
+                      entriesUnreadable
+                        ? { label: "baseline", value: "unreadable", tone: "warn" as const }
+                        : scenarioSet.counts.baselineCount > 0
+                          ? { label: "baseline", value: "set", tone: "ok" as const }
+                          : { label: "baseline", value: "missing", tone: "warn" as const },
                     ],
                   }}
                 >
@@ -338,8 +401,18 @@ export default async function ScenariosPage({
                         <StatusBadge tone={scenarioStatusTone(scenarioSet.status)}>
                           {titleizeScenarioValue(scenarioSet.status)}
                         </StatusBadge>
-                        <StatusBadge tone={scenarioSet.counts.baselineCount > 0 ? "success" : "warning"}>
-                          {scenarioSet.counts.baselineCount > 0 ? "Baseline set" : "Baseline missing"}
+                        {/* "Baseline missing" is a finding. Only a successful
+                            entries read can support it. */}
+                        <StatusBadge
+                          tone={
+                            entriesUnreadable ? "warning" : scenarioSet.counts.baselineCount > 0 ? "success" : "warning"
+                          }
+                        >
+                          {entriesUnreadable
+                            ? "Baseline unreadable"
+                            : scenarioSet.counts.baselineCount > 0
+                              ? "Baseline set"
+                              : "Baseline missing"}
                         </StatusBadge>
                       </div>
 
@@ -361,7 +434,8 @@ export default async function ScenariosPage({
                   </div>
 
                   <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
-                    {scenarioSet.project?.name ?? "No project"} · {scenarioSet.counts.alternativeCount} alternatives · {scenarioSet.planning_question ? "Planning question captured" : "Planning question pending"} · Updated {fmtDateTime(scenarioSet.updated_at)}
+                    {scenarioSet.project?.name ?? "No project"} ·{" "}
+                    {entriesUnreadable ? "alternatives unreadable" : `${scenarioSet.counts.alternativeCount} alternatives`} · {scenarioSet.planning_question ? "Planning question captured" : "Planning question pending"} · Updated {fmtDateTime(scenarioSet.updated_at)}
                   </p>
                 </CartographicSelectionLink>
               ))}

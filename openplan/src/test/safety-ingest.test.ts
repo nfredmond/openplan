@@ -1,9 +1,20 @@
 import { describe, expect, it, vi } from "vitest";
 import { dedupeRecords, ingestCrashesForStudyArea, toCrashRows } from "@/lib/safety/ingest";
 import type { CrashRecord } from "@/lib/safety/sources/types";
+import { findUncoveredStudyArea } from "./helpers/crash-coverage-probe";
 
 const CA_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
-const OUT_OF_STATE_BBOX = { minLon: -83.2, minLat: 42.2, maxLon: -83.0, maxLat: 42.4 };
+
+/**
+ * A study area NO registered adapter covers, found from the registry itself.
+ *
+ * This used to be a hardcoded out-of-STATE rectangle, which stopped meaning
+ * "no coverage" the moment the national read-only lane was wired: a registered
+ * adapter covers it, so the ingest now serves crashes there instead of
+ * reporting a gap. That behaviour is the point, and it is proved in
+ * `safety-read-only-lane.test.ts`; this file keeps only the genuine-gap case.
+ */
+const UNCOVERED_BBOX = findUncoveredStudyArea()!;
 
 function record(overrides: Partial<CrashRecord> = {}): CrashRecord {
   return {
@@ -99,11 +110,13 @@ describe("toCrashRows", () => {
 
 describe("ingestCrashesForStudyArea", () => {
   it("records no_coverage instead of returning an unexplained empty result", async () => {
+    // A GENUINE gap — nothing registered covers it, storable or not.
+    expect(UNCOVERED_BBOX).toBeDefined();
     const service = fakeService();
     const result = await ingestCrashesForStudyArea({
       service: service as never,
       workspaceId: "ws-1",
-      bbox: OUT_OF_STATE_BBOX,
+      bbox: UNCOVERED_BBOX,
       years: [2025],
     });
 

@@ -21,23 +21,45 @@ export type AnalysisResult = {
   createdAt?: string | null;
   metrics: {
     accessibilityScore: number;
-    safetyScore: number;
+    /**
+     * NULL when no crash source answered — see `computeSafety`. This was typed
+     * `number`, which was simply untrue (the API response is cast, so TypeScript
+     * never checked it), and the results board interpolated it into a template
+     * literal: every run outside a registered crash adapter's coverage rendered a
+     * Safety tile reading the literal string "null".
+     */
+    safetyScore: number | null;
     equityScore: number;
     overallScore?: number;
     confidence?: string;
     totalTransitStops?: number;
     transitAccessTier?: string;
-    totalPopulation?: number;
+    /**
+     * The census block is nullable for the same reason: null means the ACS
+     * universe behind the figure was empty, i.e. NOT MEASURED. It is not zero,
+     * and it must not render as a finding. See `censusReportedFigures`.
+     */
+    totalPopulation?: number | null;
     medianIncome?: number | null;
-    pctMinority?: number;
-    pctBelowPoverty?: number;
-    pctTransit?: number;
-    pctWalk?: number;
-    pctBike?: number;
-    pctZeroVehicle?: number;
-    totalFatalCrashes?: number;
-    totalFatalities?: number;
-    crashesPerSquareMile?: number;
+    pctMinority?: number | null;
+    pctBelowPoverty?: number | null;
+    pctTransit?: number | null;
+    pctWalk?: number | null;
+    pctBike?: number | null;
+    pctZeroVehicle?: number | null;
+    /** Which ACS universes were measured; absent on runs made before this existed. */
+    censusMeasuredUniverses?: {
+      tracts?: boolean;
+      population?: boolean;
+      commuteMode?: boolean;
+      vehicleAccess?: boolean;
+      income?: boolean;
+    };
+    /** How far this run may be carried into a decision. See `decision-use.ts`. */
+    decisionUseStatus?: string;
+    totalFatalCrashes?: number | null;
+    totalFatalities?: number | null;
+    crashesPerSquareMile?: number | null;
     crashPointCount?: number;
     jobsPerResident?: number;
     stopsPerSquareMile?: number;
@@ -97,7 +119,9 @@ export type CurrentWorkspaceResponse = {
 export type WorkspaceBootstrapResponse = {
   workspaceId: string;
   slug: string;
-  plan: string;
+  // No tier field. `/api/workspaces/bootstrap` has not returned one since the
+  // paid-tier subsystem was deleted; this type still declared it, which is the
+  // kind of stale shape a future reader would try to render.
   onboardingChecklist: string[];
 };
 

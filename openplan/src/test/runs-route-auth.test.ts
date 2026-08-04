@@ -20,7 +20,12 @@ const runsDeleteLookupMaybeSingleMock = vi.fn();
 const runsDeleteLookupEqMock = vi.fn(() => ({ maybeSingle: runsDeleteLookupMaybeSingleMock }));
 const runsDeleteLookupSelectMock = vi.fn(() => ({ eq: runsDeleteLookupEqMock }));
 
-const runsDeleteEqMock = vi.fn();
+// `.delete().eq().select().maybeSingle()` — the `.select()` is what makes zero
+// rows visible at all; without it PostgREST reports the same `{data: null,
+// error: null}` for a deletion and for a refusal.
+const runsDeleteMaybeSingleMock = vi.fn();
+const runsDeleteSelectMock = vi.fn(() => ({ maybeSingle: runsDeleteMaybeSingleMock }));
+const runsDeleteEqMock = vi.fn(() => ({ select: runsDeleteSelectMock }));
 const runsDeleteMock = vi.fn(() => ({ eq: runsDeleteEqMock }));
 
 const runsUpdateSelectMock = vi.fn();
@@ -117,7 +122,10 @@ describe("/api/runs auth + membership guards", () => {
       error: null,
     });
 
-    runsDeleteEqMock.mockResolvedValue({ error: null });
+    runsDeleteMaybeSingleMock.mockResolvedValue({
+      data: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" },
+      error: null,
+    });
 
     runsUpdateSelectMock.mockResolvedValue({
       data: [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }],
@@ -268,6 +276,54 @@ describe("/api/runs auth + membership guards", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ success: true });
+  });
+
+  /**
+   * "Deleted" must mean deleted.
+   *
+   * This route answered `200 { success: true }` for a run it did not remove,
+   * because `.delete().eq()` alone cannot distinguish one row removed from none.
+   * A planner deleting a run is usually deleting one they must not keep, so a
+   * false assurance here is worse than an error: they stop looking.
+   */
+  it("DELETE refuses to report success when the delete matched no rows", async () => {
+    runsDeleteMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await deleteRun(
+      new NextRequest(
+        "http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa&confirm=true",
+        { method: "DELETE" }
+      )
+    );
+
+    expect(response.status).toBe(500);
+    const body = (await response.json()) as { error: string; details: string; success?: boolean };
+    expect(body.success).toBeUndefined();
+    expect(body.error).toBe("The run was not saved");
+    expect(body.details).toMatch(/row-level security/i);
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "run_delete_matched_no_rows",
+      expect.objectContaining({ runId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" })
+    );
+    expect(mockAudit.info).not.toHaveBeenCalledWith("run_deleted", expect.anything());
+  });
+
+  it("DELETE treats PGRST116 as zero rows rather than a delete failure", async () => {
+    runsDeleteMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { code: "PGRST116", message: "no rows returned" },
+    });
+
+    const response = await deleteRun(
+      new NextRequest(
+        "http://localhost/api/runs?id=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa&confirm=true",
+        { method: "DELETE" }
+      )
+    );
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({ error: "The run was not saved" });
+    expect(mockAudit.error).not.toHaveBeenCalledWith("delete_failed", expect.anything());
   });
 
   /**

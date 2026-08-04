@@ -19,6 +19,7 @@ import {
   modelStatusTone,
 } from "@/lib/models/catalog";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 
 type ModelsPageSearchParams = Promise<{
   projectId?: string;
@@ -144,7 +145,7 @@ export default async function ModelsPage({
   // under summary tiles claiming "the current workspace" (2026-08-03 review,
   // unscoped-list-page class). The creator pickers scope too, so a model
   // cannot be linked to another workspace's project or scenario set.
-  const [{ data: modelsData }, { data: projectsData, error: projectsError }, { data: scenarioSetsData }] = await Promise.all([
+  const [modelsResult, projectsResult, scenarioSetsResult] = await Promise.all([
     supabase
       .from("models")
       .select(
@@ -155,6 +156,20 @@ export default async function ModelsPage({
     supabase.from("projects").select("id, name").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
     supabase.from("scenario_sets").select("id, title").eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false }),
   ]);
+
+  // A failed read and an empty workspace both arrive here as an empty array, and
+  // every sentence below was written for the second one: "No models yet",
+  // "0 reports · 0 runs", "Missing: Scenario basis". Keep the errors, and let the
+  // page say which of its answers it cannot stand behind.
+  const reads = new ReadFailureLog();
+  const modelsReadFailed = reads.check("the model catalog", modelsResult);
+  const projectsReadFailed = reads.check("project options", projectsResult);
+  const scenarioSetsReadFailed = reads.check("scenario set options", scenarioSetsResult);
+
+  const modelsData = modelsResult.data;
+  const projectsData = projectsResult.data;
+  const scenarioSetsData = scenarioSetsResult.data;
+  const projectsError = projectsReadFailed ? projectsResult.error : null;
 
   const modelIds = ((modelsData ?? []) as ModelRow[]).map((model) => model.id);
   const scenarioSetIds = Array.from(
@@ -209,10 +224,15 @@ export default async function ModelsPage({
     }
   }
 
+  // Every linkage count, and the readiness verdict derived from them, comes out
+  // of this one read. A single 400 here used to turn the whole catalog into a
+  // claim that the planner had linked nothing to anything.
   let modelLinksData: ModelLinkRow[] = [];
+  let linksReadFailed = false;
   if (modelIds.length) {
-    const { data } = await supabase.from("model_links").select("model_id, link_type, linked_id").in("model_id", modelIds);
-    modelLinksData = (data ?? []) as ModelLinkRow[];
+    const linksResult = await supabase.from("model_links").select("model_id, link_type, linked_id").in("model_id", modelIds);
+    linksReadFailed = reads.check("model links", linksResult);
+    modelLinksData = (linksResult.data ?? []) as ModelLinkRow[];
   }
 
   const linksByModel = new Map<string, ModelLinkRow[]>();
@@ -378,25 +398,51 @@ export default async function ModelsPage({
                   : "No project with that id appears in this workspace's project list, so this filter may match nothing."}
               </p>
             ) : null}
+            {reads.any ? (
+              // This is an internal page, so the database's own message is shown:
+              // the reader here is the person who can act on it.
+              <div
+                className="rounded-[0.75rem] border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-foreground"
+                data-testid="models-read-failures"
+                role="alert"
+              >
+                <p>{reads.describe()}</p>
+                <p className="mt-1.5 text-[0.75rem] text-muted-foreground">{reads.messages().join(" · ")}</p>
+              </div>
+            ) : null}
           </div>
 
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Models</p>
-              <p className="module-summary-value">{models.length}</p>
+              <p className="module-summary-value">{modelsReadFailed ? "—" : models.length}</p>
               <p className="module-summary-detail">
-                {hasActiveFilters ? "Matching the current filters." : "Managed model records in the current workspace."}
+                {modelsReadFailed
+                  ? "The model catalog could not be read, so this is unavailable rather than zero."
+                  : hasActiveFilters
+                    ? "Matching the current filters."
+                    : "Managed model records in the current workspace."}
               </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Ready for review</p>
-              <p className="module-summary-value">{reviewReadyCount}</p>
-              <p className="module-summary-detail">Records that reached review or approval posture.</p>
+              <p className="module-summary-value">{modelsReadFailed ? "—" : reviewReadyCount}</p>
+              <p className="module-summary-detail">
+                {modelsReadFailed
+                  ? "Unavailable while the catalog cannot be read."
+                  : "Records that reached review or approval posture."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Linked results</p>
-              <p className="module-summary-value">{traceableCount}</p>
-              <p className="module-summary-detail">{readinessGreenCount} currently pass every readiness check.</p>
+              <p className="module-summary-value">{modelsReadFailed || linksReadFailed ? "—" : traceableCount}</p>
+              <p className="module-summary-detail">
+                {modelsReadFailed
+                  ? "Unavailable while the catalog cannot be read."
+                  : linksReadFailed
+                    ? "Model links could not be read, so linkage and readiness cannot be counted."
+                    : `${readinessGreenCount} currently pass every readiness check.`}
+              </p>
             </div>
           </div>
         </article>
@@ -430,7 +476,12 @@ export default async function ModelsPage({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <ModelCreator projects={projectsData ?? []} scenarioSets={scenarioSetsData ?? []} />
+        <ModelCreator
+          projects={projectsData ?? []}
+          scenarioSets={scenarioSetsData ?? []}
+          projectsReadFailed={projectsReadFailed}
+          scenarioSetsReadFailed={scenarioSetsReadFailed}
+        />
 
         <article className="module-section-surface">
           <div className="module-section-header">
@@ -443,17 +494,21 @@ export default async function ModelsPage({
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
               <FolderKanban className="h-3.5 w-3.5" />
-              {models.length} total
+              {modelsReadFailed ? "Total unavailable" : `${models.length} total`}
             </span>
           </div>
 
           <div className="mt-4 flex flex-wrap items-center gap-1.5 border-b border-border/60 pb-3 text-[0.78rem]">
             <Link href={modelsTabHref(activeFilters, null)} className={cn("rounded px-2 py-0.5 transition-colors", !activeFilters.status ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-              All ({modelsInScope.length})
+              {/* A tab count is a count of records. With the catalog unread there
+                  are no records to count, and "(0)" would be a claim. */}
+              {modelsReadFailed ? "All" : `All (${modelsInScope.length})`}
             </Link>
             {MODEL_STATUS_OPTIONS.map((opt) => (
               <Link key={opt.value} href={modelsTabHref(activeFilters, opt.value)} className={cn("rounded px-2 py-0.5 transition-colors", activeFilters.status === opt.value ? "bg-emerald-500/10 font-semibold text-emerald-700 dark:text-emerald-300" : "text-muted-foreground hover:text-foreground")}>
-                {opt.label} ({modelsInScope.filter((m) => m.status === opt.value).length})
+                {modelsReadFailed
+                  ? opt.label
+                  : `${opt.label} (${modelsInScope.filter((m) => m.status === opt.value).length})`}
               </Link>
             ))}
             {hasActiveFilters ? (
@@ -465,7 +520,28 @@ export default async function ModelsPage({
             ) : null}
           </div>
 
-          {models.length === 0 ? (
+          {modelsReadFailed && models.length === 0 ? (
+            // NOT the empty state. "No models yet" is a statement about the
+            // workspace; a query that failed cannot make it.
+            //
+            // Gated on the list ALSO being empty so this can only ever replace
+            // nothing. supabase-js nulls `data` on error, so today the two
+            // conditions coincide — but a branch that swaps rows for a notice
+            // is one refactor away from hiding a planner's own models behind a
+            // partial failure, and disclosure must never cost someone the data
+            // that did load.
+            <div
+              className="mt-5 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 px-5 py-4 text-sm text-foreground"
+              data-testid="models-catalog-unreadable"
+              role="alert"
+            >
+              <p className="font-semibold">This workspace&apos;s model catalog could not be read.</p>
+              <p className="mt-1.5">
+                Nothing is listed below because the query failed, not because this workspace has no models.
+                Reload the page, and report the message above if it persists.
+              </p>
+            </div>
+          ) : models.length === 0 ? (
             <div className="mt-5">
               <EmptyState
                 title={hasActiveFilters ? "No models match these filters" : "No models yet"}
@@ -488,9 +564,11 @@ export default async function ModelsPage({
                     title: model.title,
                     kicker: `${formatModelFamilyLabel(model.model_family)} · ${formatModelStatusLabel(model.status)}`,
                     avatarChar: model.title[0],
-                    meta: model.readiness.missingCheckLabels.length > 0
-                      ? [{ label: "gaps", value: String(model.readiness.missingCheckLabels.length), tone: "warn" as const }]
-                      : [{ label: "status", value: "ready", tone: "ok" as const }],
+                    meta: linksReadFailed
+                      ? [{ label: "readiness", value: "unavailable", tone: "warn" as const }]
+                      : model.readiness.missingCheckLabels.length > 0
+                        ? [{ label: "gaps", value: String(model.readiness.missingCheckLabels.length), tone: "warn" as const }]
+                        : [{ label: "status", value: "ready", tone: "ok" as const }],
                   }}
                 >
                   <div className="module-record-head">
@@ -514,10 +592,19 @@ export default async function ModelsPage({
                     <ArrowRight className="mt-0.5 h-4.5 w-4.5 text-muted-foreground transition group-hover:text-primary" />
                   </div>
 
+                  {/* Readiness and both linkage counts are derived entirely from
+                      the model_links read. When it failed, "0 reports · 0 runs"
+                      and "Missing: Scenario basis" are not facts about this
+                      record — they are the shape of the failure. */}
                   <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
-                    {model.project?.name ?? "No project"} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {model.readiness.ready ? "Ready" : `${model.readiness.missingCheckCount} gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`} · {model.linkageCounts.reports} reports · {model.linkageCounts.runs} runs
+                    {model.project?.name ?? "No project"} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {linksReadFailed ? "Readiness and links unavailable" : `${model.readiness.ready ? "Ready" : `${model.readiness.missingCheckCount} gap${model.readiness.missingCheckCount === 1 ? "" : "s"}`} · ${model.linkageCounts.reports} reports · ${model.linkageCounts.runs} runs`}
                   </p>
-                  {model.readiness.missingCheckLabels.length > 0 ? (
+                  {linksReadFailed ? (
+                    <p className="mt-1 text-[0.72rem] text-amber-700 dark:text-amber-300">
+                      Model links could not be read, so this record&apos;s readiness gaps and linked
+                      reports and runs are unknown rather than absent.
+                    </p>
+                  ) : model.readiness.missingCheckLabels.length > 0 ? (
                     <p className="mt-1 text-[0.72rem] text-amber-700 dark:text-amber-300">Missing: {model.readiness.missingCheckLabels.join(", ")}.</p>
                   ) : null}
                 </CartographicSelectionLink>

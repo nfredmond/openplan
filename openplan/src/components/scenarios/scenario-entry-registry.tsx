@@ -89,6 +89,34 @@ const LAUNCHABLE_RUN_MODES = MANAGED_RUN_MODE_DEFINITIONS.filter(
  * The launch card must say so instead of implying promotion. */
 const RECORDED_ONLY_ENGINE_KEYS: ReadonlySet<string> = new Set(["sketch_abm", "ite_trip_generation"]);
 
+/**
+ * WHICH OF THIS PANEL'S INPUTS COULD NOT BE READ.
+ *
+ * THE DEFECT THIS EXISTS FOR, and it is a seam defect of the kind that is
+ * invisible from inside either half. The scenario detail page was taught not to
+ * render a failed read as an absence — but it only fixed the copy in its OWN
+ * markup. This component renders in the same page's right-hand column off the
+ * same `entries` array, and when that read failed it kept saying "No baseline
+ * registered yet. Add one…" and "No alternatives yet. Register one…" beside a
+ * banner saying those entries could not be read. The page contradicted itself,
+ * and the half a planner would act on was the wrong one.
+ *
+ * It was invisible because the page's test STUBS this component: every
+ * assertion that the lie was gone was true of the page and false of the screen.
+ *
+ * The page owns the reads, so the page is the only place that knows. It says so
+ * here rather than this component guessing from an empty array — an empty array
+ * is exactly the ambiguity being removed.
+ */
+export type ScenarioRegistryReadFailures = {
+  /** This set's `scenario_entries` read failed: baseline and alternatives are unknown. */
+  entries?: boolean;
+  /** The reports (or their run links) behind entry-level linkage could not be read. */
+  linkedReports?: boolean;
+  /** The models anchored to this scenario set could not be read. */
+  models?: boolean;
+};
+
 type ScenarioEntryRegistryProps = {
   scenarioSetId: string;
   scenarioSetTitle: string;
@@ -100,6 +128,7 @@ type ScenarioEntryRegistryProps = {
   modelRunOptions?: ModelRunOption[];
   baselineEntryId: string | null;
   linkedReports: ScenarioLinkedReport[];
+  unreadable?: ScenarioRegistryReadFailures;
 };
 
 function fmtDateTime(value: string | null | undefined): string {
@@ -178,9 +207,11 @@ function ScenarioReportCreateButton({
 function ScenarioEntryLaunchButton({
   entry,
   models,
+  unreadable,
 }: {
   entry: ScenarioEntry;
   models: ModelOption[];
+  unreadable: ScenarioRegistryReadFailures;
 }) {
   const router = useRouter();
   const [selectedModelId, setSelectedModelId] = useState(models[0]?.id ?? "");
@@ -220,6 +251,17 @@ function ScenarioEntryLaunchButton({
     } finally {
       setIsLaunching(false);
     }
+  }
+
+  // "No model is anchored" is a finding, and it comes with an instruction that
+  // would waste the planner's time. Only a successful models read can support it.
+  if (unreadable.models) {
+    return (
+      <p className="text-sm text-muted-foreground">
+        The models anchored to this scenario set could not be read, so none can be offered here. That is a failed read,
+        not a finding that no model is anchored.
+      </p>
+    );
   }
 
   if (models.length === 0) {
@@ -290,6 +332,7 @@ function ScenarioEntryCard({
   baselineRunId,
   baselineLabel,
   linkedReports,
+  unreadable,
 }: {
   scenarioSetId: string;
   scenarioSetTitle: string;
@@ -303,6 +346,7 @@ function ScenarioEntryCard({
   baselineRunId: string | null;
   baselineLabel: string | null;
   linkedReports: ScenarioLinkedReport[];
+  unreadable: ScenarioRegistryReadFailures;
 }) {
   const router = useRouter();
   const [entryType, setEntryType] = useState<ScenarioEntryType>(entry.entry_type as ScenarioEntryType);
@@ -544,7 +588,7 @@ function ScenarioEntryCard({
               Launch a fresh run using a model already anchored to this scenario set. The completed run is promoted back into this entry automatically.
             </p>
           </div>
-          <ScenarioEntryLaunchButton entry={entry} models={models} />
+          <ScenarioEntryLaunchButton entry={entry} models={models} unreadable={unreadable} />
         </div>
 
         <div className="space-y-2">
@@ -554,6 +598,16 @@ function ScenarioEntryCard({
               <p className="text-sm font-medium">{latestLinkedReport.title ?? "Untitled report"}</p>
               <p className="text-sm text-muted-foreground">
                 {latestLinkedReport.sharedSpineBasisLabel}. {latestLinkedReport.generated_at ? "Generated from linked evidence." : "Draft report linked to this entry evidence."}
+              </p>
+            </>
+          ) : unreadable.linkedReports ? (
+            // "No linked reports yet" is a claim about this project's reports.
+            // A read that failed cannot make it.
+            <>
+              <p className="text-sm font-medium">Report linkage could not be read</p>
+              <p className="text-sm text-muted-foreground">
+                This project&apos;s reports or their run links could not be loaded for this render, so nothing is listed
+                here. That is not a statement that no report references this entry.
               </p>
             </>
           ) : (
@@ -719,6 +773,7 @@ export function ScenarioEntryRegistry({
   modelRunOptions = [],
   baselineEntryId,
   linkedReports,
+  unreadable = {},
 }: ScenarioEntryRegistryProps) {
   const baselineEntry =
     entries.find((entry) => entry.id === baselineEntryId) ?? entries.find((entry) => entry.entry_type === "baseline") ?? null;
@@ -742,7 +797,14 @@ export function ScenarioEntryRegistry({
           </div>
         </div>
 
-        {!baselineEntry ? (
+        {unreadable.entries ? (
+          // "No baseline registered yet. Add one…" is a finding plus an
+          // instruction. An unread entries list supports neither.
+          <div className="module-empty-state mt-5 text-sm">
+            This scenario set&apos;s entries could not be read, so whether a baseline is registered is unknown. Nothing
+            shown here means one is missing.
+          </div>
+        ) : !baselineEntry ? (
           <div className="module-empty-state mt-5 text-sm">
             No baseline registered yet. Add one before expecting alternative comparisons to become decision-ready.
           </div>
@@ -761,6 +823,7 @@ export function ScenarioEntryRegistry({
               baselineRunId={baselineEntry.attached_run_id}
               baselineLabel={baselineEntry.label}
               linkedReports={linkedReports}
+              unreadable={unreadable}
             />
           </div>
         )}
@@ -777,7 +840,12 @@ export function ScenarioEntryRegistry({
           </div>
         </div>
 
-        {alternativeEntries.length === 0 ? (
+        {unreadable.entries ? (
+          <div className="module-empty-state mt-5 text-sm">
+            Alternatives could not be listed — this scenario set&apos;s entries could not be read. An empty registry here
+            is a failed read, not an absence of alternatives.
+          </div>
+        ) : alternativeEntries.length === 0 ? (
           <div className="module-empty-state mt-5 text-sm">No alternatives yet. Register one to start comparison tracking.</div>
         ) : (
           <div className="mt-5 module-record-list">
@@ -796,6 +864,7 @@ export function ScenarioEntryRegistry({
                 baselineRunId={baselineEntry?.attached_run_id ?? null}
                 baselineLabel={baselineEntry?.label ?? null}
                 linkedReports={linkedReports}
+                unreadable={unreadable}
               />
             ))}
           </div>
@@ -816,37 +885,51 @@ export function ScenarioEntryRegistry({
         <div className="mt-5 grid gap-4 lg:grid-cols-3">
           <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
             <p className="text-sm font-semibold tracking-tight">Ready alternatives</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight">{comparisonSummary.readyAlternatives}</p>
+            {/* A readiness count of 0 built from entries that were never read is
+                a finding about the planner's work, invented by a broken query. */}
+            <p className="mt-2 text-3xl font-semibold tracking-tight">
+              {unreadable.entries ? "—" : comparisonSummary.readyAlternatives}
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {comparisonSummary.totalAlternatives > 0
-                ? `${comparisonSummary.readyAlternatives} of ${comparisonSummary.totalAlternatives} alternatives have distinct runs attached on both sides.`
-                : "No alternatives are registered yet."}
+              {unreadable.entries
+                ? "This set's entries could not be read, so readiness cannot be counted. This is not a count of zero."
+                : comparisonSummary.totalAlternatives > 0
+                  ? `${comparisonSummary.readyAlternatives} of ${comparisonSummary.totalAlternatives} alternatives have distinct runs attached on both sides.`
+                  : "No alternatives are registered yet."}
             </p>
           </div>
           <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
             <p className="text-sm font-semibold tracking-tight">Baseline posture</p>
             <p className="mt-2 text-lg font-semibold tracking-tight">
-              {!comparisonSummary.baselineEntryPresent
-                ? "Missing baseline"
-                : comparisonSummary.baselineRunPresent
-                  ? "Baseline run attached"
-                  : "Baseline run missing"}
+              {unreadable.entries
+                ? "Unreadable"
+                : !comparisonSummary.baselineEntryPresent
+                  ? "Missing baseline"
+                  : comparisonSummary.baselineRunPresent
+                    ? "Baseline run attached"
+                    : "Baseline run missing"}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {!comparisonSummary.baselineEntryPresent
-                ? "Register a baseline entry before alternatives can compare."
-                : comparisonSummary.baselineRunPresent
-                  ? "The baseline has the evidence needed for alternative comparison."
-                  : "Attach a run to the baseline so alternatives can become comparison-ready."}
+              {unreadable.entries
+                ? "This set's entries could not be read, so the baseline's posture is unknown."
+                : !comparisonSummary.baselineEntryPresent
+                  ? "Register a baseline entry before alternatives can compare."
+                  : comparisonSummary.baselineRunPresent
+                    ? "The baseline has the evidence needed for alternative comparison."
+                    : "Attach a run to the baseline so alternatives can become comparison-ready."}
             </p>
           </div>
           <div className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
             <p className="text-sm font-semibold tracking-tight">Blocked alternatives</p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight">{comparisonSummary.blockedAlternatives}</p>
+            <p className="mt-2 text-3xl font-semibold tracking-tight">
+              {unreadable.entries ? "—" : comparisonSummary.blockedAlternatives}
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {comparisonSummary.primaryBlocker
-                ? `${comparisonSummary.primaryBlocker.label}: ${comparisonSummary.primaryBlocker.reason}`
-                : "No blockers detected. Alternatives with distinct attached runs are ready for evidence review."}
+              {unreadable.entries
+                ? "Blockers cannot be detected for this render — this set's entries could not be read."
+                : comparisonSummary.primaryBlocker
+                  ? `${comparisonSummary.primaryBlocker.label}: ${comparisonSummary.primaryBlocker.reason}`
+                  : "No blockers detected. Alternatives with distinct attached runs are ready for evidence review."}
             </p>
           </div>
         </div>

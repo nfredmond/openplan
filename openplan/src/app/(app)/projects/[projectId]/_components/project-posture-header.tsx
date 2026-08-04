@@ -76,8 +76,16 @@ type ProjectPostureHeaderProps = {
   existingRtpLinks: ExistingRtpLink[];
   availableModelRuns: AvailableModelRun[];
   deliverableCount: number;
-  openRiskCount: number;
-  openIssueCount: number;
+  /**
+   * Open risks / open issues, or null when the underlying read FAILED.
+   *
+   * Null rather than 0 on purpose, and for the same reason `kbDocumentCount`
+   * below is nullable: "0 open risks" is a claim about the project that a
+   * broken query cannot support, and it is the reassuring direction of the
+   * error — a planner who sees zero stops looking.
+   */
+  openRiskCount: number | null;
+  openIssueCount: number | null;
   /** Knowledge Base documents attached to this project; null when the count is unavailable (schema pending / read failed). */
   kbDocumentCount: number | null;
   reportRecordCount: number;
@@ -168,13 +176,21 @@ export function ProjectPostureHeader({
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Open risks</p>
-              <p className="module-summary-value">{openRiskCount}</p>
-              <p className="module-summary-detail">Risks still requiring active attention or mitigation.</p>
+              <p className="module-summary-value">{openRiskCount ?? "—"}</p>
+              <p className="module-summary-detail">
+                {openRiskCount === null
+                  ? "Risk count unavailable — the risk register could not be read, so this is not zero."
+                  : "Risks still requiring active attention or mitigation."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Open issues</p>
-              <p className="module-summary-value">{openIssueCount}</p>
-              <p className="module-summary-detail">Current blockers surfaced for delivery and analysis flow.</p>
+              <p className="module-summary-value">{openIssueCount ?? "—"}</p>
+              <p className="module-summary-detail">
+                {openIssueCount === null
+                  ? "Issue count unavailable — the issue log could not be read, so this is not zero."
+                  : "Current blockers surfaced for delivery and analysis flow."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Milestones</p>

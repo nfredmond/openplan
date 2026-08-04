@@ -9,10 +9,13 @@ import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-ke
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import {
   fetchCensusForCorridor,
+  censusReportedFigures,
+  censusUniverseUnavailableNote,
   bboxFromGeojson,
   ACS_YEAR,
   ACS_RETRIEVAL_URL,
 } from "@/lib/data-sources/census";
+import { CORRIDOR_DECISION_USE_STATUS } from "@/lib/analysis/decision-use";
 import { resolveJustice40ForTracts } from "@/lib/data-sources/equity-designation/registry";
 import {
   federalJustice40NarrativeLine,
@@ -115,10 +118,19 @@ function generateSummary(
   walkBikeAccess: ReturnType<typeof classifyWalkBikeAccess>
 ): string {
   const lines: string[] = [];
+  // Every ACS figure below is read through the reported-figures boundary, never
+  // off the summary directly. `null` there means NOT MEASURED, and an unmeasured
+  // universe gets a sentence saying so instead of a sentence narrating its
+  // placeholder zero — which is what "0% transit, 0% walk, 0% bike" was.
+  const reported = censusReportedFigures(census);
 
   lines.push(
     `**Corridor Analysis Summary** (${census.tracts.length} census tracts, ` +
-      `population: ${census.totalPopulation.toLocaleString()})`
+      `population: ${
+        reported.totalPopulation === null
+          ? "not measured"
+          : reported.totalPopulation.toLocaleString()
+      })`
   );
   // The corridor centroid-clip can be unavailable (a TIGERweb hiccup) or match no
   // tract (a corridor smaller than any tract centroid). When it does, the figures
@@ -135,15 +147,30 @@ function generateSummary(
   }
   lines.push("");
 
-  // Demographics
-  lines.push(`**Demographics:** Median household income: ${formatCurrency(census.medianIncomeWeighted)}. ` +
-    `${census.pctMinority}% minority, ${census.pctBelowPoverty}% below poverty.`);
+  // Demographics. A share whose ACS universe was empty is stated as not measured
+  // — never as "0% minority, 0% below poverty", which reads as a finding about
+  // the place rather than about the read.
+  lines.push(
+    census.measured.population
+      ? `**Demographics:** Median household income: ${formatCurrency(reported.medianIncome)}. ` +
+          `${reported.pctMinority}% minority, ${reported.pctBelowPoverty}% below poverty.`
+      : `**Demographics:** Not measured. ${censusUniverseUnavailableNote(census, "population") ?? ""} ` +
+          "Do not state or imply a population, income, minority share, or poverty share for this corridor."
+  );
 
   // Commute patterns
   lines.push(
-    `**Commute Mode Share:** ${census.pctTransit}% transit, ${census.pctWalk}% walk, ` +
-      `${census.pctBike}% bike, ${census.pctWfh}% remote. ` +
-      `${census.pctZeroVehicle}% of households have zero vehicles.`
+    census.measured.commuteMode
+      ? `**Commute Mode Share:** ${reported.pctTransit}% transit, ${reported.pctWalk}% walk, ` +
+          `${reported.pctBike}% bike, ${reported.pctWfh}% remote.`
+      : `**Commute Mode Share:** Not measured. ${censusUniverseUnavailableNote(census, "commuteMode") ?? ""} ` +
+          "Do not state or imply a transit, walk, bike, or remote-work share for this corridor."
+  );
+  lines.push(
+    census.measured.vehicleAccess
+      ? `**Vehicle Access:** ${reported.pctZeroVehicle}% of households have zero vehicles.`
+      : `**Vehicle Access:** Not measured. ${censusUniverseUnavailableNote(census, "vehicleAccess") ?? ""} ` +
+          "Do not state or imply a zero-vehicle household share for this corridor."
   );
 
   // Employment
@@ -183,9 +210,14 @@ function generateSummary(
 
   // Scores
   lines.push("");
+  // `scores.safetyScore` is null whenever no crash source answered — which is the
+  // ordinary case anywhere no registered adapter covers. Interpolating it wrote
+  // the literal "Safety: null/100" into the deterministic summary, and that
+  // sentence then became a CITABLE `s_<n>` fact for the grant narrative.
   lines.push(
     `**Scores:** Accessibility: ${scores.accessibilityScore}/100, ` +
-      `Safety: ${scores.safetyScore}/100, Equity: ${scores.equityScore}/100. ` +
+      `Safety: ${scores.safetyScore === null ? "not scored (no crash source answered)" : `${scores.safetyScore}/100`}, ` +
+      `Equity: ${scores.equityScore}/100. ` +
       `Overall: ${scores.overallScore}/100 (confidence: ${scores.confidence}).`
   );
 
@@ -440,6 +472,10 @@ export async function POST(request: NextRequest) {
       // Generate human-readable summary
       const summary = generateSummary(census, lodes, transit, crashes, equity, scores, walkBikeAccess);
       const analysisGeneratedAt = new Date().toISOString();
+      // The single boundary for every ACS figure that leaves this route. Built
+      // once here so the persisted metrics, the scorecard, the report, and the
+      // AI fact list cannot disagree about which demographics exist.
+      const reportedCensus = censusReportedFigures(census);
 
       // Crash provenance drives three separate disclosures below, so resolve it
       // once. `scores.dataQuality.crashDataAvailable` is derived in scoring.ts
@@ -461,19 +497,27 @@ export async function POST(request: NextRequest) {
         overallScore: scores.overallScore,
         confidence,
 
-        // Census demographics
-        totalPopulation: census.totalPopulation,
-        medianIncome: census.medianIncomeWeighted,
-        pctMinority: census.pctMinority,
-        pctBelowPoverty: census.pctBelowPoverty,
+        // Census demographics. null (not 0) whenever the ACS universe behind a
+        // figure was empty — the same contract the crash block below uses.
+        // Consumers render null as "Not measured", and `buildInterpretationFacts`
+        // drops null metrics, so the AI narrative physically cannot cite a
+        // demographic figure that was never measured. A zero here therefore means
+        // a real reading of zero, which is a finding worth writing down.
+        totalPopulation: reportedCensus.totalPopulation,
+        medianIncome: reportedCensus.medianIncome,
+        pctMinority: reportedCensus.pctMinority,
+        pctBelowPoverty: reportedCensus.pctBelowPoverty,
         tractCount: census.tracts.length,
+        // The coverage itself, persisted so a report or a later reader can tell
+        // "not measured" from "measured as zero" without re-deriving it.
+        censusMeasuredUniverses: census.measured,
 
         // Commute patterns
-        pctTransit: census.pctTransit,
-        pctWalk: census.pctWalk,
-        pctBike: census.pctBike,
-        pctWfh: census.pctWfh,
-        pctZeroVehicle: census.pctZeroVehicle,
+        pctTransit: reportedCensus.pctTransit,
+        pctWalk: reportedCensus.pctWalk,
+        pctBike: reportedCensus.pctBike,
+        pctWfh: reportedCensus.pctWfh,
+        pctZeroVehicle: reportedCensus.pctZeroVehicle,
 
         // Employment
         totalJobs: lodes.totalJobs,
@@ -540,7 +584,11 @@ export async function POST(request: NextRequest) {
         // Traceability metadata
         methodsVersion: "openplan-gis-methods-v0.2",
         analysisGeneratedAt,
-        decisionUseStatus: "concept-level",
+        // Read by `resolveDecisionUseDisclosure` and surfaced on the result card
+        // and in the corridor report. It was a bare literal that nothing read for
+        // as long as it existed; the constant now lives with the wording that
+        // explains it, so the two cannot drift apart.
+        decisionUseStatus: CORRIDOR_DECISION_USE_STATUS,
         sourceSnapshots: {
           census: {
             source: `census-acs5-${ACS_YEAR}`,

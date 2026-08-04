@@ -8,7 +8,9 @@ import { ScenarioSetControls } from "@/components/scenarios/scenario-set-control
 import { ScenarioSpinePanel } from "@/components/scenarios/scenario-spine-panel";
 import { TripGenComparisonSaveButton } from "@/components/scenarios/trip-gen-comparison-save";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
+import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
   formatReportStatusLabel,
   formatReportTypeLabel,
@@ -106,6 +108,31 @@ function looksLikePendingSchema(message: string | null | undefined): boolean {
   );
 }
 
+/**
+ * Classify one `model_runs` read before collecting it.
+ *
+ * Every model_runs read on this page shares one failure mode: a deployment that
+ * has not applied the model-runs migration. That is a CLASSIFIED condition with
+ * a truer sentence than "could not be read" — see the note at the top of
+ * `src/lib/ui/read-failures.ts` — so it is reported separately and never
+ * collected as a read failure. Whatever is left IS a read failure and is
+ * registered by name.
+ *
+ * It returns the two facts rather than mutating a flag, so the caller does the
+ * assigning in the component body where it is visible.
+ */
+function classifyModelRunsRead(
+  reads: ReadFailureLog,
+  label: string,
+  result: { error?: { message?: string | null } | null }
+): { unreadable: boolean; schemaPending: boolean } {
+  if (looksLikePendingSchema(result.error?.message)) {
+    return { unreadable: false, schemaPending: true };
+  }
+
+  return { unreadable: reads.check(label, result), schemaPending: false };
+}
+
 export default async function ScenarioSetDetailPage({
   params,
 }: {
@@ -121,11 +148,29 @@ export default async function ScenarioSetDetailPage({
     redirect("/sign-in");
   }
 
-  const { data: scenarioSetData } = await supabase
+  // Every read below is registered here, and whatever failed is named at the top
+  // of the page. A scenario comparison is a provenance claim — which runs, which
+  // assumptions, which indicators — so a read that quietly returned nothing does
+  // not merely thin the page, it weakens the claim the page is making while
+  // still looking complete.
+  const reads = new ReadFailureLog();
+
+  const scenarioSetResult = await supabase
     .from("scenario_sets")
     .select("id, workspace_id, project_id, title, summary, planning_question, status, baseline_entry_id, created_at, updated_at")
     .eq("id", scenarioSetId)
     .maybeSingle();
+
+  // The one load-bearing read on this page, and the one place "could not read
+  // it" and "it is not there" must not merge: `notFound()` tells the planner
+  // this scenario set does not exist, and a 400 or a policy failure is not
+  // evidence of that. Raise instead, so the route's error boundary says
+  // something a retry can act on.
+  if (scenarioSetResult.error) {
+    throw new Error(`Could not read this scenario set: ${scenarioSetResult.error.message}`);
+  }
+
+  const scenarioSetData = scenarioSetResult.data;
 
   if (!scenarioSetData) {
     notFound();
@@ -133,7 +178,7 @@ export default async function ScenarioSetDetailPage({
 
   const scenarioSet = scenarioSetData as ScenarioSetRow;
 
-  const [{ data: project }, entriesResult, { data: runsData }, { data: modelsData }] = await Promise.all([
+  const [projectResult, entriesResult, runsResult, modelsResult] = await Promise.all([
     supabase
       .from("projects")
       .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
@@ -161,10 +206,19 @@ export default async function ScenarioSetDetailPage({
       .order("updated_at", { ascending: false }),
   ]);
 
+  const project = projectResult.data;
+  const projectUnreadable = reads.check("the parent project", projectResult);
+  reads.check("selectable runs", runsResult);
+  const modelsUnreadable = reads.check("selectable models", modelsResult);
+  const runsData = runsResult.data;
+  const modelsData = modelsResult.data;
+
   // A database without the model-run-attachment migration answers the widened
   // select with a missing-column error; fall back to the legacy select and
-  // treat every entry as legacy-run-backed.
+  // treat every entry as legacy-run-backed. Classify that case FIRST — it has a
+  // truer thing to say than "could not be read" — and register whatever is left.
   let entryRows = (entriesResult.data ?? []) as ScenarioEntryRow[];
+  let entriesUnreadable = false;
   if (entriesResult.error && looksLikePendingSchema(entriesResult.error.message)) {
     const legacyEntriesResult = await supabase
       .from("scenario_entries")
@@ -174,9 +228,12 @@ export default async function ScenarioSetDetailPage({
       .eq("scenario_set_id", scenarioSet.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true });
+    entriesUnreadable = reads.check("this scenario set's entries", legacyEntriesResult);
     entryRows = ((legacyEntriesResult.data ?? []) as Array<Omit<ScenarioEntryRow, "attached_model_run_id">>).map(
       (entry) => ({ ...entry, attached_model_run_id: null })
     );
+  } else {
+    entriesUnreadable = reads.check("this scenario set's entries", entriesResult);
   }
 
   const runIds = entryRows
@@ -188,15 +245,38 @@ export default async function ScenarioSetDetailPage({
   const attachedRunsResult = runIds.length
     ? await supabase.from("runs").select("id, title, summary_text, metrics, created_at").in("id", runIds)
     : { data: [], error: null };
+  // The attached runs ARE the evidence a comparison card cites. Losing them
+  // silently turns "this alternative moved these metrics" into a blank card that
+  // reads as "nothing moved".
+  const attachedRunsUnreadable = reads.check("the runs attached to these entries", attachedRunsResult);
+
+  // See `classifyModelRunsRead` above: a missing model-runs migration is
+  // classified, everything else is collected.
+  let modelRunsSchemaPending = false;
+
   let attachedModelRuns: ScenarioAttachedModelRunRow[] = [];
+  let attachedModelRunsUnreadable = false;
   if (attachedModelRunIds.length) {
     try {
-      const { data: attachedModelRunsData } = await supabase
+      const attachedModelRunsResult = await supabase
         .from("model_runs")
         .select("id, run_title, engine_key, status, result_summary_json")
         .in("id", attachedModelRunIds);
-      attachedModelRuns = (attachedModelRunsData ?? []) as ScenarioAttachedModelRunRow[];
-    } catch {
+      const attachedClassification = classifyModelRunsRead(
+        reads,
+        "the model runs attached to these entries",
+        attachedModelRunsResult
+      );
+      modelRunsSchemaPending = modelRunsSchemaPending || attachedClassification.schemaPending;
+      attachedModelRunsUnreadable = attachedClassification.unreadable;
+      attachedModelRuns = (attachedModelRunsResult.data ?? []) as ScenarioAttachedModelRunRow[];
+    } catch (error) {
+      // supabase-js answers with an `error` rather than throwing, so reaching
+      // here means the transport itself failed. It is still a read that did not
+      // happen, and it may not leave the page silent.
+      attachedModelRunsUnreadable = reads.check("the model runs attached to these entries", {
+        error: { message: error instanceof Error ? error.message : String(error) },
+      });
       attachedModelRuns = [];
     }
   }
@@ -222,6 +302,7 @@ export default async function ScenarioSetDetailPage({
     status: string;
     scenario_entry_id: string | null;
   }> = [];
+  let modelRunOptionsUnreadable = false;
   try {
     const [entryPointedRunsResult, workspaceModelRunsResult] = await Promise.all([
       entries.length
@@ -243,6 +324,26 @@ export default async function ScenarioSetDetailPage({
         .order("created_at", { ascending: false })
         .limit(30),
     ]);
+    // An unreadable option list is not an empty option list: the attach picker
+    // would offer nothing and read as "this workspace has no completed model
+    // runs to attach".
+    // Both are classified, deliberately without `||` short-circuiting on the
+    // calls themselves: an unchecked second result is an unrecorded failure.
+    const entryPointedClassification = classifyModelRunsRead(
+      reads,
+      "model runs already pointing at these entries",
+      entryPointedRunsResult
+    );
+    const workspaceRunsClassification = classifyModelRunsRead(
+      reads,
+      "this workspace's completed model runs",
+      workspaceModelRunsResult
+    );
+    modelRunsSchemaPending =
+      modelRunsSchemaPending ||
+      entryPointedClassification.schemaPending ||
+      workspaceRunsClassification.schemaPending;
+    modelRunOptionsUnreadable = entryPointedClassification.unreadable || workspaceRunsClassification.unreadable;
     const mergedModelRunOptions = new Map<string, (typeof modelRunOptionRows)[number]>();
     for (const run of [
       ...(entryPointedRunsResult.data ?? []),
@@ -253,7 +354,10 @@ export default async function ScenarioSetDetailPage({
       }
     }
     modelRunOptionRows = Array.from(mergedModelRunOptions.values());
-  } catch {
+  } catch (error) {
+    modelRunOptionsUnreadable = reads.check("model runs available to attach", {
+      error: { message: error instanceof Error ? error.message : String(error) },
+    });
     modelRunOptionRows = [];
   }
 
@@ -272,9 +376,10 @@ export default async function ScenarioSetDetailPage({
   // affordance" on any lookup failure (e.g. the model_runs module migration is
   // not applied yet) instead of blocking the page.
   let tripGenModelRuns: ScenarioTripGenModelRunRow[] = [];
+  let tripGenRunsUnreadable = false;
   if (entries.length >= 2) {
     try {
-      const { data: tripGenRunsData } = await supabase
+      const tripGenRunsResult = await supabase
         .from("model_runs")
         .select("id, model_id, scenario_entry_id, status, engine_key")
         .in(
@@ -284,8 +389,18 @@ export default async function ScenarioSetDetailPage({
         .eq("engine_key", "ite_trip_generation")
         .eq("status", "succeeded")
         .order("created_at", { ascending: false });
-      tripGenModelRuns = (tripGenRunsData ?? []) as ScenarioTripGenModelRunRow[];
-    } catch {
+      const tripGenClassification = classifyModelRunsRead(
+        reads,
+        "the trip-generation runs behind the save affordance",
+        tripGenRunsResult
+      );
+      modelRunsSchemaPending = modelRunsSchemaPending || tripGenClassification.schemaPending;
+      tripGenRunsUnreadable = tripGenClassification.unreadable;
+      tripGenModelRuns = (tripGenRunsResult.data ?? []) as ScenarioTripGenModelRunRow[];
+    } catch (error) {
+      tripGenRunsUnreadable = reads.check("the trip-generation runs behind the save affordance", {
+        error: { message: error instanceof Error ? error.message : String(error) },
+      });
       tripGenModelRuns = [];
     }
   }
@@ -319,6 +434,11 @@ export default async function ScenarioSetDetailPage({
   const comparisonSnapshotsSchemaPending = looksLikePendingScenarioSpineSchema(
     comparisonSnapshotsResult.error?.message
   );
+  // Pending-schema is classified above and says something truer. Anything else
+  // is a failure that must not be rendered as "no comparisons have been saved".
+  const comparisonSnapshotsUnreadable = comparisonSnapshotsSchemaPending
+    ? false
+    : reads.check("saved comparison snapshots", comparisonSnapshotsResult);
   const comparisonSnapshots = comparisonSnapshotsSchemaPending
     ? []
     : ((comparisonSnapshotsResult.data ?? []) as ScenarioComparisonSnapshotRow[]);
@@ -329,23 +449,37 @@ export default async function ScenarioSetDetailPage({
         .select("id, comparison_snapshot_id")
         .in("comparison_snapshot_id", comparisonSnapshotIds)
     : { data: [], error: null };
-  const comparisonIndicatorDeltas = looksLikePendingScenarioSpineSchema(
+  const comparisonIndicatorDeltasSchemaPending = looksLikePendingScenarioSpineSchema(
     comparisonIndicatorDeltasResult.error?.message
-  )
+  );
+  const comparisonIndicatorDeltasUnreadable = comparisonIndicatorDeltasSchemaPending
+    ? false
+    : reads.check("indicator deltas on saved comparisons", comparisonIndicatorDeltasResult);
+  const comparisonIndicatorDeltas = comparisonIndicatorDeltasSchemaPending
     ? []
     : ((comparisonIndicatorDeltasResult.data ?? []) as ScenarioComparisonIndicatorDeltaRow[]);
-  const { data: reportsData } = await supabase
+  const reportsResult = await supabase
     .from("reports")
     .select("id, title, status, report_type, generated_at, updated_at, latest_artifact_kind")
     .eq("project_id", scenarioSet.project_id)
     .order("updated_at", { ascending: false });
+  const reportsUnreadable = reads.check("this project's reports", reportsResult);
+  const reportsData = reportsResult.data;
   const reportIds = (reportsData ?? []).map((report) => report.id);
   const [reportRunsResult, reportArtifactsResult] = reportIds.length
     ? await Promise.all([
         supabase.from("report_runs").select("report_id, run_id").in("report_id", reportIds),
         supabase.from("report_artifacts").select("report_id, generated_at").in("report_id", reportIds),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [
+        { data: [], error: null },
+        { data: [], error: null },
+      ];
+  // Report-to-run linkage is what decides whether a report counts as linked to
+  // this scenario set at all. Losing it empties the linked-report list without
+  // emptying the reports.
+  const reportRunsUnreadable = reads.check("report-to-run linkage", reportRunsResult);
+  reads.check("report packet artifacts", reportArtifactsResult);
   const reportRunsData = reportRunsResult.data;
   const comparisonBoard = buildScenarioComparisonBoard({
     scenarioSetId: scenarioSet.id,
@@ -432,6 +566,15 @@ export default async function ScenarioSetDetailPage({
   ).length;
   const linkedReportAttentionCount = refreshRecommendedReportCount + noPacketReportCount;
   const recommendedLinkedReport = linkedReportsWithFreshness[0] ?? null;
+  // A report is "linked" only when both halves loaded. Either one failing makes
+  // an empty list a statement this render has no evidence for.
+  const linkedReportsUnreadable = reportsUnreadable || reportRunsUnreadable;
+  // The comparison board is derived from entries plus their attached runs, so
+  // either failing empties it — and an empty board otherwise reads as "no
+  // alternative is ready to compare", which is a finding about the planner's
+  // work rather than about this render.
+  const comparisonEvidenceUnreadable =
+    entriesUnreadable || attachedRunsUnreadable || attachedModelRunsUnreadable;
 
   return (
     <section className="module-page">
@@ -444,6 +587,27 @@ export default async function ScenarioSetDetailPage({
         <span className="text-foreground">{scenarioSet.title}</span>
       </div>
 
+      {/* Internal page, so the database's own message is shown — an operator
+          here can act on it. A public surface would disclose only THAT a read
+          failed. */}
+      {reads.any ? (
+        <StateBlock
+          className="mb-4"
+          tone="danger"
+          title="Part of this scenario set could not be read"
+          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
+
+      {modelRunsSchemaPending ? (
+        <StateBlock
+          className="mb-4"
+          tone="warning"
+          title="Model-run evidence is waiting on a migration"
+          description="This deployment has not applied the model-runs migration, so runs attached to these entries, the attach picker, and the trip-generation comparison affordance are unavailable. That is a missing migration, not an absence of model runs."
+        />
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -452,9 +616,18 @@ export default async function ScenarioSetDetailPage({
           </div>
           <div className="module-record-kicker">
             <StatusBadge tone={scenarioStatusTone(scenarioSet.status)}>{titleizeScenarioValue(scenarioSet.status)}</StatusBadge>
-            <span className="module-record-chip"><span>Baseline</span><strong>{baselineEntry ? "Registered" : "Missing"}</strong></span>
+            <span className="module-record-chip">
+              <span>Baseline</span>
+              {/* "Missing" is a finding. It may only be shown when the entries
+                  were actually read. */}
+              <strong>{entriesUnreadable ? "Unreadable" : baselineEntry ? "Registered" : "Missing"}</strong>
+            </span>
           </div>
-          <p className="text-[0.73rem] text-muted-foreground">{comparisonSummary.readyAlternatives}/{comparisonSummary.totalAlternatives} alternatives ready</p>
+          <p className="text-[0.73rem] text-muted-foreground">
+            {entriesUnreadable
+              ? "Alternative readiness is unavailable — this set's entries could not be read."
+              : `${comparisonSummary.readyAlternatives}/${comparisonSummary.totalAlternatives} alternatives ready`}
+          </p>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{scenarioSet.title}</h1>
             <p className="module-intro-description">
@@ -466,32 +639,54 @@ export default async function ScenarioSetDetailPage({
           <div className="module-summary-grid cols-4">
             <div className="module-summary-card">
               <p className="module-summary-label">Project</p>
-              <p className="module-summary-value text-lg">{project?.name ?? "Unknown"}</p>
-              <p className="module-summary-detail">Project-linked scenario registry with durable reopening.</p>
+              <p className="module-summary-value text-lg">
+                {projectUnreadable ? "Unreadable" : project?.name ?? "Unknown"}
+              </p>
+              <p className="module-summary-detail">
+                {projectUnreadable
+                  ? "The parent project could not be read, so it cannot be named here."
+                  : "Project-linked scenario registry with durable reopening."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Baseline</p>
-              <p className="module-summary-value text-lg">{baselineEntry?.label ?? "Not set"}</p>
-              <p className="module-summary-detail">Exactly one baseline is allowed per scenario set.</p>
+              <p className="module-summary-value text-lg">
+                {entriesUnreadable ? "Unreadable" : baselineEntry?.label ?? "Not set"}
+              </p>
+              <p className="module-summary-detail">
+                {entriesUnreadable
+                  ? "This set's entries could not be read, so whether a baseline is registered is unknown."
+                  : "Exactly one baseline is allowed per scenario set."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Comparison readiness</p>
               <p className="module-summary-value text-lg">
-                {comparisonSummary.readyAlternatives} / {comparisonSummary.totalAlternatives}
+                {comparisonEvidenceUnreadable
+                  ? "Unavailable"
+                  : `${comparisonSummary.readyAlternatives} / ${comparisonSummary.totalAlternatives}`}
               </p>
               <p className="module-summary-detail">
-                Ready alternatives have distinct runs attached on both the baseline and alternative entries.
+                {comparisonEvidenceUnreadable
+                  ? "Part of the entry or run evidence could not be read, so readiness cannot be counted."
+                  : "Ready alternatives have distinct runs attached on both the baseline and alternative entries."}
               </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Saved comparisons</p>
               <p className="module-summary-value text-lg">
-                {comparisonSnapshotsSchemaPending ? "Pending" : recentComparisonSnapshots.length}
+                {comparisonSnapshotsSchemaPending
+                  ? "Pending"
+                  : comparisonSnapshotsUnreadable
+                    ? "Unreadable"
+                    : recentComparisonSnapshots.length}
               </p>
               <p className="module-summary-detail">
                 {comparisonSnapshotsSchemaPending
                   ? "Apply the latest scenario spine migration to persist comparison artifacts."
-                  : "Persistent comparison snapshots can now carry narrative, caveats, and indicator deltas."}
+                  : comparisonSnapshotsUnreadable
+                    ? "Saved comparison snapshots could not be read, so this is not a count of zero."
+                    : "Persistent comparison snapshots can now carry narrative, caveats, and indicator deltas."}
               </p>
             </div>
           </div>
@@ -548,7 +743,11 @@ export default async function ScenarioSetDetailPage({
                     </p>
                   </div>
                 </div>
-                {alternativeEntries.length === 0 ? (
+                {entriesUnreadable ? (
+                  <p className="text-sm text-muted-foreground">
+                    This set&apos;s entries could not be read, so its alternatives cannot be listed here.
+                  </p>
+                ) : alternativeEntries.length === 0 ? (
                   <p className="text-sm text-muted-foreground">No alternatives registered yet.</p>
                 ) : (
                   <MetaList>
@@ -580,20 +779,27 @@ export default async function ScenarioSetDetailPage({
                     </p>
                   </div>
                 </div>
-                <div className="module-record-kicker">
-                  <StatusBadge tone={linkedReportsWithFreshness.length > 0 ? "success" : "neutral"}>
-                    {linkedReportsWithFreshness.length} linked reports
-                  </StatusBadge>
-                  <StatusBadge tone={comparisonReadyReportCount > 0 ? "success" : "info"}>
-                    {comparisonReadyReportCount} comparison-ready
-                  </StatusBadge>
-                  <StatusBadge tone={runLinkedOnlyReportCount > 0 ? "warning" : "neutral"}>
-                    {runLinkedOnlyReportCount} run-linked only
-                  </StatusBadge>
-                  <StatusBadge tone={linkedReportAttentionCount > 0 ? "warning" : "success"}>
-                    {linkedReportAttentionCount} packet issue{linkedReportAttentionCount === 1 ? "" : "s"}
-                  </StatusBadge>
-                </div>
+                {linkedReportsUnreadable ? (
+                  <p className="text-sm text-muted-foreground">
+                    Report linkage counts are unavailable for this render — the reports or their run links could not be
+                    read.
+                  </p>
+                ) : (
+                  <div className="module-record-kicker">
+                    <StatusBadge tone={linkedReportsWithFreshness.length > 0 ? "success" : "neutral"}>
+                      {linkedReportsWithFreshness.length} linked reports
+                    </StatusBadge>
+                    <StatusBadge tone={comparisonReadyReportCount > 0 ? "success" : "info"}>
+                      {comparisonReadyReportCount} comparison-ready
+                    </StatusBadge>
+                    <StatusBadge tone={runLinkedOnlyReportCount > 0 ? "warning" : "neutral"}>
+                      {runLinkedOnlyReportCount} run-linked only
+                    </StatusBadge>
+                    <StatusBadge tone={linkedReportAttentionCount > 0 ? "warning" : "success"}>
+                      {linkedReportAttentionCount} packet issue{linkedReportAttentionCount === 1 ? "" : "s"}
+                    </StatusBadge>
+                  </div>
+                )}
               </div>
             </div>
           </article>
@@ -607,7 +813,12 @@ export default async function ScenarioSetDetailPage({
               </p>
             </div>
 
-            {comparisonBoard.length === 0 ? (
+            {comparisonEvidenceUnreadable ? (
+              <div className="module-empty-state mt-5 text-sm">
+                The comparison board cannot be built for this render. Part of the entry or attached-run evidence could
+                not be read, so an absent card here does not mean the alternative is unready.
+              </div>
+            ) : comparisonBoard.length === 0 ? (
               <div className="module-empty-state mt-5 text-sm">
                 No comparison cards yet. Attach distinct runs to the baseline and at least one alternative to light up the board.
               </div>
@@ -721,6 +932,16 @@ export default async function ScenarioSetDetailPage({
               ) : null}
             </div>
 
+            {/* The save affordance appears only when both sides carry a
+                succeeded trip-generation run. If that lookup failed, its absence
+                says nothing about whether those runs exist. */}
+            {tripGenRunsUnreadable ? (
+              <div className="module-empty-state mt-5 text-sm">
+                Trip-generation runs for these entries could not be read, so the save-comparison affordance is not
+                offered. That is a failed lookup, not a finding that the runs are missing.
+              </div>
+            ) : null}
+
             {!comparisonSnapshotsSchemaPending &&
             baselineEntry &&
             tripGenBaselineRun &&
@@ -753,6 +974,11 @@ export default async function ScenarioSetDetailPage({
               <div className="module-empty-state mt-5 text-sm">
                 Comparison snapshot storage is waiting on the latest scenario spine migration.
               </div>
+            ) : comparisonSnapshotsUnreadable ? (
+              <div className="module-empty-state mt-5 text-sm">
+                Saved comparison snapshots could not be read for this render. Nothing is listed below, and that is not a
+                statement that none have been saved.
+              </div>
             ) : recentComparisonSnapshots.length === 0 ? (
               <div className="module-empty-state mt-5 text-sm">
                 No saved comparison snapshots yet. The next useful step is to persist one ready alternative so reports and operator surfaces can reuse the same comparison artifact.
@@ -767,8 +993,18 @@ export default async function ScenarioSetDetailPage({
                           <StatusBadge tone={snapshot.status === "ready" ? "success" : snapshot.status === "archived" ? "warning" : "neutral"}>
                             {titleizeScenarioValue(snapshot.status)}
                           </StatusBadge>
-                          <StatusBadge tone={snapshot.indicatorDeltaCount > 0 ? "info" : "neutral"}>
-                            {snapshot.indicatorDeltaCount} indicator delta{snapshot.indicatorDeltaCount === 1 ? "" : "s"}
+                          <StatusBadge
+                            tone={
+                              comparisonIndicatorDeltasUnreadable
+                                ? "warning"
+                                : snapshot.indicatorDeltaCount > 0
+                                  ? "info"
+                                  : "neutral"
+                            }
+                          >
+                            {comparisonIndicatorDeltasUnreadable
+                              ? "Indicator deltas unreadable"
+                              : `${snapshot.indicatorDeltaCount} indicator delta${snapshot.indicatorDeltaCount === 1 ? "" : "s"}`}
                           </StatusBadge>
                         </div>
                         <div className="space-y-1.5">
@@ -866,9 +1102,14 @@ export default async function ScenarioSetDetailPage({
             <div className="mt-5 module-record-row">
               <div className="module-record-head">
                 <div className="module-record-main">
-                  <h3 className="module-record-title text-[1.05rem]">{project?.name ?? "Unknown project"}</h3>
+                  <h3 className="module-record-title text-[1.05rem]">
+                    {projectUnreadable ? "Project could not be read" : project?.name ?? "Unknown project"}
+                  </h3>
                   <p className="module-record-summary">
-                    {project?.summary || "No project summary yet. Use the project record to add fuller planning context."}
+                    {projectUnreadable
+                      ? "This scenario set is still tied to a project; that project's record could not be read for this render, so nothing below is a statement about it."
+                      : project?.summary ||
+                        "No project summary yet. Use the project record to add fuller planning context."}
                   </p>
                 </div>
                 {project ? (
@@ -882,6 +1123,17 @@ export default async function ScenarioSetDetailPage({
         </div>
 
         <div className="space-y-6">
+          {/* The attach picker below offers whatever loaded. An empty picker
+              after a failed read would read as "this workspace has no completed
+              model runs to attach", which is a claim this render cannot make. */}
+          {modelRunOptionsUnreadable ? (
+            <StateBlock
+              tone="warning"
+              compact
+              title="Attachable model runs could not be listed"
+              description="The model runs offered by the attach picker below could not be read. An empty picker is not a statement that this workspace has no completed model runs."
+            />
+          ) : null}
           <ScenarioEntryComposer scenarioSetId={scenarioSet.id} hasBaseline={Boolean(baselineEntry)} runs={runsData ?? []} />
           <ScenarioEntryRegistry
             scenarioSetId={scenarioSet.id}
@@ -905,6 +1157,16 @@ export default async function ScenarioSetDetailPage({
             }))}
             baselineEntryId={baselineEntry?.id ?? null}
             linkedReports={reportLinkage.linkedReports}
+            // The registry renders the SAME entries, reports and models this
+            // page reads, so it makes the same sentences — "No baseline
+            // registered yet", "No alternatives yet", "No linked reports yet",
+            // "No model is anchored". Disclosing only in the left column left
+            // the page contradicting itself, with the actionable half wrong.
+            unreadable={{
+              entries: entriesUnreadable,
+              linkedReports: linkedReportsUnreadable,
+              models: modelsUnreadable,
+            }}
           />
         </div>
       </div>
@@ -919,9 +1181,9 @@ export default async function ScenarioSetDetailPage({
             </p>
           </div>
           <div className="module-record-kicker">
-            <StatusBadge tone="neutral">
+            <StatusBadge tone={linkedReportsUnreadable ? "warning" : "neutral"}>
               <FileStack className="h-3.5 w-3.5" />
-              {linkedReportsWithFreshness.length} linked
+              {linkedReportsUnreadable ? "Linkage unreadable" : `${linkedReportsWithFreshness.length} linked`}
             </StatusBadge>
             {linkedReportAttentionCount > 0 ? (
               <StatusBadge tone="warning">
@@ -932,7 +1194,13 @@ export default async function ScenarioSetDetailPage({
           </div>
         </div>
 
-        {linkedReportsWithFreshness.length === 0 ? (
+        {linkedReportsUnreadable ? (
+          <div className="module-empty-state mt-5 text-sm">
+            Report linkage could not be resolved for this render — this project&apos;s reports or their run links could
+            not be read. Nothing is listed below, and that is not a statement that no report uses this scenario
+            set&apos;s runs.
+          </div>
+        ) : linkedReportsWithFreshness.length === 0 ? (
           <div className="module-empty-state mt-5 text-sm">
             No linked reports yet. When comparison-ready evidence exists, create an analysis summary report from an alternative card.
           </div>

@@ -4,7 +4,11 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess, validateCampaignCategoryAccess } from "@/lib/engagement/api";
 import { CLOSE_LOOP_ENTRY_COLUMNS } from "@/lib/engagement/close-loop";
-import { enqueueCampaignSubscriberEmails, recordOperatorNotification } from "@/lib/notifications/engagement";
+import {
+  enqueueCampaignSubscriberEmails,
+  recordOperatorNotification,
+  type CampaignBroadcastResult,
+} from "@/lib/notifications/engagement";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
@@ -106,7 +110,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     // service-role client. Best-effort — the publish ALREADY succeeded, so the
     // whole block is wrapped: even a synchronous createServiceRoleClient() throw
     // (e.g. a missing service-role key) must not turn a committed publish into a 500.
+    // What happened to the subscriber broadcast, reported back to the operator.
+    // The counts were computed here and discarded, so publishing an update was
+    // silent about its own audience: nobody could tell 0 subscribers from 400
+    // queued-but-undeliverable. `outcome` is null when this PATCH was not a
+    // draft->published transition and no broadcast was owed.
+    let broadcast: CampaignBroadcastResult | null = null;
+    let broadcastOutcome: "attempted" | "no_share_token" | "unknown" | null = null;
+
     if (parsed.data.status === "published" && priorStatus !== "published") {
+      // A publish that could not tell whether it notified anyone must say
+      // "unknown", never "nobody" — so the pessimistic value is set up front and
+      // only replaced by something the code actually observed.
+      broadcastOutcome = "unknown";
       try {
         const serviceClient = createServiceRoleClient();
         const campaignTitle = (access.campaign as { title?: string }).title ?? "your campaign";
@@ -127,7 +143,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         // is belt-and-braces — but the belt is the law.)
         const shareToken = (access.campaign as { share_token?: string | null }).share_token;
         if (shareToken) {
-          await enqueueCampaignSubscriberEmails(
+          broadcast = await enqueueCampaignSubscriberEmails(
             serviceClient,
             access.campaign.id,
             {
@@ -136,8 +152,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
               template: "closeloop_published",
             },
             { origin: request.nextUrl.origin, shareToken }
-          ).catch(() => {});
+          ).catch(() => null);
+          broadcastOutcome = broadcast ? "attempted" : "unknown";
         } else {
+          broadcastOutcome = "no_share_token";
           audit.warn("closeloop_broadcast_skipped_no_share_token", { campaignId: access.campaign.id, entryId: entry.id });
         }
       } catch (notifyError) {
@@ -146,7 +164,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     audit.info("entry_updated", { userId: user.id, campaignId: access.campaign.id, entryId: entry.id });
-    return NextResponse.json({ entry });
+    return NextResponse.json({ entry, broadcast, broadcastOutcome });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Unexpected error while updating close-loop entry" }, { status: 500 });

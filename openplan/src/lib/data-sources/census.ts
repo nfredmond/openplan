@@ -78,6 +78,44 @@ export interface CensusClipProvenance {
   counties: number;
 }
 
+/**
+ * Which ACS universes actually had a denominator, per corridor.
+ *
+ * THE DEFECT THIS EXISTS FOR. Every scalar on `CensusSummary` is a `number`, and
+ * every one of them is `0` when nothing was measured: `summarizeCensusTracts([])`
+ * returns a fully-zeroed summary, and `pct(n, 0)` returns `0` rather than
+ * refusing to answer. Those zeros then travelled as findings — "Population: 0",
+ * "0% transit, 0% walk, 0% bike", "0% of households have zero vehicles" — into
+ * the corridor scorecard, the deterministic summary, and (via
+ * `buildInterpretationFacts`, which drops nulls and keeps zeros) into the
+ * grant narrative as CITABLE facts. A corridor whose ACS read returned nothing
+ * was therefore describable as a measured place with no people and no transit
+ * riders, which is a stronger and more actionable claim than the truth.
+ *
+ * The crash lane already solved this shape: `CrashSummary.observed` is the fact,
+ * and unobserved counts are nulled at the metrics boundary rather than narrated.
+ * This is the same fix for the demographic lane, one universe at a time, because
+ * an ACS read can answer some universes and not others.
+ *
+ * `false` means NOT MEASURED, which is a different fact from a measured zero and
+ * must be rendered and cited differently. A tract with a genuine population of
+ * zero (an industrial or park tract) is a measurement and stays `population:
+ * true` — the discriminator is whether a DENOMINATOR existed, never whether the
+ * numerator happened to be zero.
+ */
+export interface CensusMeasuredUniverses {
+  /** Any tract rows at all. False means nothing below was measured either. */
+  tracts: boolean;
+  /** Population universe (B01003) — the denominator for the race/poverty shares. */
+  population: boolean;
+  /** Commute universe (B08301 total) — the denominator for every mode share. */
+  commuteMode: boolean;
+  /** Household universe (B25044 total) — the denominator for zero-vehicle share. */
+  vehicleAccess: boolean;
+  /** At least one tract reported a median income AND had population to weight it. */
+  income: boolean;
+}
+
 export interface CensusSummary {
   tracts: CensusTractData[];
   totalPopulation: number;
@@ -92,6 +130,81 @@ export interface CensusSummary {
   pctBelowPoverty: number;
   /** How faithfully these figures describe the drawn corridor — see the type doc. */
   clip: CensusClipProvenance;
+  /**
+   * Which of the figures above are measurements and which are placeholder zeros.
+   * Read this before narrating, rendering, or citing any of them — or call
+   * `censusReportedFigures`, which applies it for you.
+   */
+  measured: CensusMeasuredUniverses;
+}
+
+/**
+ * The corridor's ACS figures with every unmeasured one replaced by `null`.
+ *
+ * This is the boundary the rest of the app should consume. `null` is load-bearing
+ * in three places at once: render sites already print "N/A" / "Not measured" for
+ * it, `buildInterpretationFacts` DROPS null metrics so the model physically
+ * cannot cite a figure nobody measured, and the deterministic summary can test it
+ * to decide whether to write a sentence at all.
+ */
+export interface CensusReportedFigures {
+  totalPopulation: number | null;
+  medianIncome: number | null;
+  pctTransit: number | null;
+  pctWalk: number | null;
+  pctBike: number | null;
+  pctWfh: number | null;
+  pctZeroVehicle: number | null;
+  pctMinority: number | null;
+  pctBelowPoverty: number | null;
+}
+
+/**
+ * Apply the measurement coverage to the figures. One function, so the scorecard,
+ * the narrative, the report, and the AI fact list cannot disagree about which
+ * numbers exist — the divergence CLAUDE.md names as the seam-defect class.
+ */
+export function censusReportedFigures(census: CensusSummary): CensusReportedFigures {
+  const measured = census.measured;
+  return {
+    totalPopulation: measured.tracts ? census.totalPopulation : null,
+    medianIncome: measured.income ? census.medianIncomeWeighted : null,
+    pctTransit: measured.commuteMode ? census.pctTransit : null,
+    pctWalk: measured.commuteMode ? census.pctWalk : null,
+    pctBike: measured.commuteMode ? census.pctBike : null,
+    pctWfh: measured.commuteMode ? census.pctWfh : null,
+    pctZeroVehicle: measured.vehicleAccess ? census.pctZeroVehicle : null,
+    pctMinority: measured.population ? census.pctMinority : null,
+    pctBelowPoverty: measured.population ? census.pctBelowPoverty : null,
+  };
+}
+
+/**
+ * Why a universe has no figures, in a planner's words. Returned for the universes
+ * that were NOT measured; `null` for the ones that were. The wording says what
+ * did not happen, never "none found" — an unanswered read is not a finding of
+ * zero.
+ */
+export function censusUniverseUnavailableNote(
+  census: CensusSummary,
+  universe: keyof CensusMeasuredUniverses
+): string | null {
+  if (census.measured[universe]) return null;
+  if (!census.measured.tracts) {
+    return "No census tract data was returned for this study area, so nothing here was measured.";
+  }
+  switch (universe) {
+    case "population":
+      return "The census tracts here reported no population universe, so population-weighted shares were not measured.";
+    case "commuteMode":
+      return "The census tracts here reported no commuter universe, so commute mode shares were not measured.";
+    case "vehicleAccess":
+      return "The census tracts here reported no household universe, so vehicle access was not measured.";
+    case "income":
+      return "No census tract here reported a median household income that could be population-weighted.";
+    default:
+      return "This figure was not measured for the study area.";
+  }
 }
 
 const EMPTY_CLIP: CensusClipProvenance = {
@@ -99,6 +212,14 @@ const EMPTY_CLIP: CensusClipProvenance = {
   corridorTracts: 0,
   countyTracts: 0,
   counties: 0,
+};
+
+const NOTHING_MEASURED: CensusMeasuredUniverses = {
+  tracts: false,
+  population: false,
+  commuteMode: false,
+  vehicleAccess: false,
+  income: false,
 };
 
 interface BBox {
@@ -320,7 +441,7 @@ export async function fetchAcsForCounties(
 /**
  * Summarize tract-level data into corridor-level statistics.
  */
-function summarizeTracts(
+export function summarizeCensusTracts(
   tracts: CensusTractData[],
   clip: CensusClipProvenance = EMPTY_CLIP
 ): CensusSummary {
@@ -338,6 +459,10 @@ function summarizeTracts(
       pctMinority: 0,
       pctBelowPoverty: 0,
       clip,
+      // The zeros above are placeholders, not readings. They are kept as numbers
+      // so the scoring engine's arithmetic stays total, and disowned here so no
+      // render, narrative, or citation can present them as findings.
+      measured: NOTHING_MEASURED,
     };
   }
 
@@ -396,6 +521,16 @@ function summarizeTracts(
     pctMinority: weightedMinority,
     pctBelowPoverty: weightedPoverty,
     clip,
+    // A universe is measured when its DENOMINATOR exists. A zero numerator over a
+    // real denominator (nobody walks to work here) is a finding and stays one;
+    // a zero over a zero denominator is the absence of a reading.
+    measured: {
+      tracts: true,
+      population: totalPop > 0,
+      commuteMode: totalCommuters > 0,
+      vehicleAccess: totalHH > 0,
+      income: incomeTracts.length > 0,
+    },
   };
 }
 
@@ -466,12 +601,12 @@ export async function fetchCensusForCorridor(
   const bbox = bboxFromGeojson(corridorGeojson);
   // No resolvable extent: report nothing rather than substituting a geography.
   if (!bbox) {
-    return summarizeTracts([]);
+    return summarizeCensusTracts([]);
   }
   const counties = await resolveCountiesFromBbox(bbox);
 
   if (counties.length === 0) {
-    return summarizeTracts([]);
+    return summarizeCensusTracts([]);
   }
 
   const [tracts, clipGeoids] = await Promise.all([
@@ -508,5 +643,5 @@ export async function fetchCensusForCorridor(
     counties: counties.length,
   };
 
-  return summarizeTracts(resultTracts, clip);
+  return summarizeCensusTracts(resultTracts, clip);
 }

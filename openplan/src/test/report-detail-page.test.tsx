@@ -1068,4 +1068,232 @@ describe("ReportDetailPage", () => {
       screen.getAllByText(/permission denied for table "stage_gate_decisions"/i).length
     ).toBeGreaterThan(0);
   });
+
+  /**
+   * A READ THAT FAILED MAY NOT BE RENDERED AS AN ANSWER.
+   *
+   * `const { data } = await supabase…` gives `null` for both "there is nothing
+   * here" and "this query failed", so every empty-state sentence written for the
+   * first case states the second one as fact. On this page the sentence is
+   * "No packet / Generate the first packet before treating this report as
+   * release-review evidence" — told to a planner whose packet may well exist,
+   * and told because a query broke.
+   *
+   * The three assertions below are one set on purpose: disclosure is only
+   * meaningful if the ORDINARY empty state still appears when the read succeeds
+   * and there genuinely is nothing. Without that third case a page that always
+   * shows a warning would pass.
+   */
+  describe("a failed read is not rendered as an answer", () => {
+    it("still says No packet when the artifact read SUCCEEDS and there genuinely is none", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "report-1",
+          workspace_id: "workspace-1",
+          project_id: "project-1",
+          title: "Downtown Safety Packet",
+          report_type: "project_status",
+          status: "draft",
+          summary: "Report packet summarizing planning evidence and engagement handoff.",
+          generated_at: null,
+          latest_artifact_url: null,
+          latest_artifact_kind: null,
+          created_at: "2026-03-28T17:00:00.000Z",
+          updated_at: "2026-03-28T18:05:00.000Z",
+        },
+        error: null,
+      });
+      artifactsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+      expect(screen.getAllByText(/^No packet$/i).length).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(/Generate the first packet before treating this report/i).length
+      ).toBeGreaterThan(0);
+      // And nothing is disclosed, because nothing failed.
+      expect(screen.queryByText(/Part of this report could not be read/i)).not.toBeInTheDocument();
+    });
+
+    it("does not answer No packet when the artifact read FAILED", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "report-1",
+          workspace_id: "workspace-1",
+          project_id: "project-1",
+          title: "Downtown Safety Packet",
+          report_type: "project_status",
+          status: "draft",
+          summary: "Report packet summarizing planning evidence and engagement handoff.",
+          generated_at: null,
+          latest_artifact_url: null,
+          latest_artifact_kind: null,
+          created_at: "2026-03-28T17:00:00.000Z",
+          updated_at: "2026-03-28T18:05:00.000Z",
+        },
+        error: null,
+      });
+      artifactsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'permission denied for table "report_artifacts"' },
+      });
+
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+      // (a) the false absence is gone — and so is its opposite, because
+      // certifying the packet against a snapshot never read is the same defect
+      // pointing the other way.
+      // Anchored: the honest replacement DETAIL contains the words "no packet
+      // exists", so an unanchored match would pass on the very sentence that
+      // fixes this and prove nothing.
+      expect(screen.queryAllByText(/^No packet$/i)).toHaveLength(0);
+      expect(
+        screen.queryAllByText(/Generate the first packet before treating this report/i)
+      ).toHaveLength(0);
+      expect(screen.queryAllByText(/No live source drift is currently visible/i)).toHaveLength(0);
+
+      // (b) the failure is disclosed, by name and with the database's own
+      // message — this is an internal page, so the reader is the person who can
+      // act on it.
+      expect(
+        screen.getAllByText(/Part of this report could not be read/i).length
+      ).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(/this report's generated packets/i).length
+      ).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(/permission denied for table "report_artifacts"/i).length
+      ).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(/could not be read, so neither the latest packet nor its freshness/i)
+          .length
+      ).toBeGreaterThan(0);
+    });
+
+    it("does not report an unreadable live deliverables read as records lost since generation", async () => {
+      deliverablesOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'permission denied for table "project_deliverables"' },
+      });
+
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+      // The snapshot recorded 2 deliverables. An unread live table has zero, so
+      // the un-guarded page published "Deliverables: 2 -> 0" — an outage
+      // reported to a funder as work deleted since the packet was generated.
+      expect(screen.queryByText(/Deliverables: 2 -> 0/i)).not.toBeInTheDocument();
+      expect(
+        screen.getAllByText(/This comparison did not cover deliverables/i).length
+      ).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(/this project's live deliverables/i).length
+      ).toBeGreaterThan(0);
+    });
+
+    it("renders an honest error instead of a 404 when the report row could not be read", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'permission denied for table "reports"' },
+      });
+
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+      // `if (!data) notFound()` is the same defect wearing a different face: it
+      // tells a planner the report does not exist when the truth is that it
+      // could not be read.
+      expect(notFoundMock).not.toHaveBeenCalled();
+      expect(screen.getByText(/The report record could not be read/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/not a finding that the report was deleted or that it never existed/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/permission denied for table "reports"/i)
+      ).toBeInTheDocument();
+    });
+
+    /**
+     * The STANDARD branch's funding-posture drift row, which compares the packet's
+     * frozen funding snapshot against the project's live funding board.
+     *
+     * `loadProjectFundingSourceRows` keeps `?? []` on failure — deliberately, so
+     * one broken panel does not 500 the page — which means an unread awards table
+     * arrives at the comparison as a project holding no money. The row it
+     * published was denominated in dollars: "Committed awards: $8,000,000 -> $0."
+     * on a report an agency sends to its funder.
+     *
+     * A minimal artifact is substituted here because the shared fixture carries no
+     * `projectFundingSnapshot`, and without a stored side there is no comparison
+     * to make at all.
+     */
+    const FUNDING_ARTIFACT = {
+      id: "artifact-1",
+      artifact_kind: "html",
+      generated_at: "2026-03-28T18:00:00.000Z",
+      metadata_json: {
+        sourceContext: {
+          projectFundingSnapshot: {
+            awardCount: 3,
+            pursuedOpportunityCount: 1,
+            reimbursementPacketCount: 0,
+            committedFundingAmount: 8000000,
+            unfundedAfterLikelyAmount: 1000000,
+            uninvoicedAwardAmount: 0,
+            label: "Mostly funded",
+            pipelineLabel: "Pipeline healthy",
+            reimbursementLabel: "Reimbursement current",
+            latestSourceUpdatedAt: "2026-03-28T15:15:00.000Z",
+          },
+        },
+      },
+    };
+
+    it("publishes the funding-posture drift row when the live funding reads SUCCEED", async () => {
+      artifactsOrderMock.mockResolvedValueOnce({ data: [FUNDING_ARTIFACT], error: null });
+
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+      // The control case. The live board genuinely holds one award worth
+      // $700,000 against a snapshot of three worth $8,000,000, so this is an
+      // honest comparison and it must still be told.
+      expect(
+        screen.getAllByText(/Committed awards: \$8,000,000 -> \$700,000/i).length
+      ).toBeGreaterThan(0);
+      expect(screen.queryByText(/Part of this report could not be read/i)).not.toBeInTheDocument();
+    });
+
+    it("withholds the funding-posture drift row when the live funding reads FAILED", async () => {
+      artifactsOrderMock.mockResolvedValueOnce({ data: [FUNDING_ARTIFACT], error: null });
+      fundingAwardsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'permission denied for table "funding_awards"' },
+      });
+
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+      // (a) The fabricated dollar delta is gone — and so is "unchanged", which
+      // would certify the packet's funding against a board never read.
+      expect(screen.queryByText(/Committed awards: \$8,000,000 -> \$0/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Awards: 3 -> 0/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/Funding counts, posture labels, and reimbursement state still match/i)
+      ).not.toBeInTheDocument();
+
+      // (b) Disclosed by name, with the database's own message — internal page.
+      expect(
+        screen.getAllByText(/this project's live funding awards, opportunities and invoices/i).length
+      ).toBeGreaterThan(0);
+      expect(
+        screen.getAllByText(/permission denied for table "funding_awards"/i).length
+      ).toBeGreaterThan(0);
+    });
+
+    it("still 404s on a genuine absence", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+      await expect(
+        ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) })
+      ).rejects.toThrow("notFound");
+      expect(notFoundMock).toHaveBeenCalled();
+    });
+  });
 });

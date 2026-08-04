@@ -388,6 +388,36 @@ export function EngagementShareControls({
             Export GeoJSON
           </a>
         </div>
+
+        {/*
+          Survey responses are a SEPARATE record from map comments and items —
+          they live in their own tables and the three exports above have never
+          included them. Until this link existed a survey's responses could not
+          leave the product at all, so an agency could not put its own
+          participation record into the documentation it has to produce.
+
+          The helper text says what the file holds and what it leaves out,
+          because a planner deciding whether this is the file they need should
+          not have to open it to find out.
+        */}
+        <div className="space-y-2 border-t pt-4">
+          <p className="text-[0.82rem] font-semibold">Survey responses</p>
+          <p className="text-xs text-muted-foreground">
+            One row per survey response received — when it arrived, through what channel, and its
+            moderation status. It leaves out respondent names and contact details, device
+            fingerprints, self-reported demographics (which are only ever read as suppressed
+            aggregates) and internal moderation notes. Answer content is not included yet. The file
+            opens with a few <code>#</code> lines describing itself.
+          </p>
+          <a
+            href={`/api/engagement/campaigns/${campaign.id}/survey/export?format=csv`}
+            className="inline-flex w-fit items-center gap-1.5 rounded-xl border border-input bg-background px-4 py-2 text-sm font-medium shadow-xs transition hover:bg-accent hover:text-accent-foreground"
+            download
+          >
+            <Download className="h-4 w-4" />
+            Export survey response register (CSV)
+          </a>
+        </div>
       </div>
     </article>
   );

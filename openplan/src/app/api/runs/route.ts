@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const workspaceIdSchema = z.string().uuid();
 const runIdSchema = z.string().uuid();
@@ -469,24 +470,49 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
-    const { error } = await supabase.from("runs").delete().eq("id", parsed.data);
+    // `.select()` is what makes "matched no rows" visible at all — see the
+    // corridor DELETE and `write-outcome.ts`. Without it this route answered
+    // `{ success: true }` for a run it did not delete, which is worse here than
+    // almost anywhere else: a planner deleting a run is usually deleting one they
+    // must not keep, and being told it is gone when it is not is a false
+    // assurance, not a cosmetic bug.
+    const { data: deletedRun, error } = await supabase
+      .from("runs")
+      .delete()
+      .eq("id", parsed.data)
+      .select("id")
+      .maybeSingle();
 
-    if (error) {
+    if (isWriteFailure(error)) {
       audit.error("delete_failed", {
         runId: parsed.data,
         workspaceId: run.workspace_id,
         userId: user.id,
-        message: error.message,
-        code: error.code ?? null,
+        message: error?.message ?? "unknown",
+        code: error?.code ?? null,
       });
 
       return NextResponse.json(
         {
           error: "Failed to delete run",
-          details: error.message,
+          details: error?.message ?? "Unknown delete failure",
         },
         { status: 500 }
       );
+    }
+
+    if (writeMatchedNoRows({ data: deletedRun, error })) {
+      // The run row was read through this same client above and the role gate
+      // passed, so nothing matching now is the database refusing what the
+      // application allowed — a 500 that says so, not a 404 inventing a missing
+      // run and not a 200 inventing a deletion.
+      audit.error("run_delete_matched_no_rows", {
+        runId: parsed.data,
+        workspaceId: run.workspace_id,
+        userId: user.id,
+      });
+
+      return noRowsMatchedResponse({ subject: "run", targetWasVerified: true });
     }
 
     audit.info("run_deleted", {

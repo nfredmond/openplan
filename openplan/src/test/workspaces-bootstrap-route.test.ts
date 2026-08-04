@@ -148,6 +148,21 @@ describe("POST /api/workspaces/bootstrap", () => {
     expect(Array.isArray(payload.onboardingChecklist)).toBe(true);
     expect(payload.onboardingChecklist.length).toBeGreaterThan(0);
 
+    /**
+     * The first thing a new workspace reads may not assume a supervised pilot.
+     *
+     * The original list told every agency in the country to "set pilot success
+     * metrics" and "schedule pilot readout and weekly KPI review cadence" —
+     * steps that only made sense inside one county's supervised engagement. The
+     * product is self-serve (non-negotiable #4), so nobody is running a readout
+     * for the person reading this, and no place, agency, or program may be named
+     * in it (non-negotiable #0).
+     */
+    const checklistText = payload.onboardingChecklist.join(" ");
+    expect(checklistText).not.toMatch(/\bpilot\b/i);
+    expect(checklistText).not.toMatch(/\breadout\b/i);
+    expect(checklistText).not.toMatch(/\bKPI\b/);
+
     expect(workspaceInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         stage_gate_template_id: "ca_stage_gates_v0_1",

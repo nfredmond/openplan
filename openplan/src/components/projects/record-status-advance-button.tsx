@@ -4,69 +4,30 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  nextProjectRecordStatus,
+  projectRecordAdvanceLabel,
+  projectRecordLabel,
+  projectRecordStatuses,
+  type ProjectRecordStatusType,
+} from "@/lib/projects/record-status-transitions";
 
-type RecordType = "milestone" | "submittal";
-
-const MILESTONE_STATUSES = ["not_started", "scheduled", "in_progress", "blocked", "complete"] as const;
-const SUBMITTAL_STATUSES = ["draft", "internal_review", "submitted", "accepted", "revise_and_resubmit"] as const;
-
-function nextStatusForRecord(recordType: RecordType, status: string): string | null {
-  if (recordType === "milestone") {
-    switch (status) {
-      case "not_started":
-      case "scheduled":
-        return "in_progress";
-      case "blocked":
-        return "in_progress";
-      case "in_progress":
-        return "complete";
-      default:
-        return null;
-    }
-  }
-
-  switch (status) {
-    case "draft":
-      return "internal_review";
-    case "internal_review":
-      return "submitted";
-    case "revise_and_resubmit":
-      return "submitted";
-    case "submitted":
-      return "accepted";
-    default:
-      return null;
-  }
-}
-
-function actionLabelForRecord(recordType: RecordType, status: string): string | null {
-  if (recordType === "milestone") {
-    switch (status) {
-      case "not_started":
-      case "scheduled":
-        return "Start milestone";
-      case "blocked":
-        return "Resume milestone";
-      case "in_progress":
-        return "Mark complete";
-      default:
-        return null;
-    }
-  }
-
-  switch (status) {
-    case "draft":
-      return "Move to internal review";
-    case "internal_review":
-      return "Mark submitted";
-    case "revise_and_resubmit":
-      return "Mark resubmitted";
-    case "submitted":
-      return "Mark accepted";
-    default:
-      return null;
-  }
-}
+/**
+ * The one status control every project-record lane uses.
+ *
+ * The vocabularies and the forward path used to be a pair of switch statements
+ * in this file. That is why the risk and issue lanes shipped read-only for
+ * months: there was nothing to reuse short of copying a switch out of a button,
+ * so nobody did, and a planner could log a risk but never move it. The tables
+ * now live in `@/lib/projects/record-status-transitions`, which
+ * `src/test/risk-and-issue-status-branches-are-reachable.test.tsx` checks
+ * against the CHECK constraints in the migrations — the only authority, since
+ * neither a `.select()` string nor a zod enum is verified against the schema in
+ * this repo. That same file also asserts a control RENDERS for every lane the
+ * registry declares: a registry makes adding a lane cost one object literal,
+ * which makes it cheap to add a lane that reaches no screen.
+ */
+type RecordType = ProjectRecordStatusType;
 
 function titleizeStatus(status: string): string {
   return status
@@ -91,10 +52,10 @@ export function RecordStatusAdvanceButton({
   const [message, setMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const nextStatus = nextStatusForRecord(recordType, currentStatus);
-  const actionLabel = actionLabelForRecord(recordType, currentStatus);
-  const statuses = recordType === "milestone" ? MILESTONE_STATUSES : SUBMITTAL_STATUSES;
-  const recordLabel = recordType === "milestone" ? "Milestone" : "Submittal";
+  const nextStatus = nextProjectRecordStatus(recordType, currentStatus);
+  const actionLabel = projectRecordAdvanceLabel(recordType, currentStatus);
+  const statuses = projectRecordStatuses(recordType);
+  const recordLabel = projectRecordLabel(recordType);
 
   async function applyStatus(status: string) {
     if (status === currentStatus) return;

@@ -51,7 +51,7 @@ function buildSupabase(overrides: {
   corridorInsertResult?: { data: unknown; error: unknown };
   corridorLookupResult?: { data: unknown; error: unknown };
   corridorUpdateResult?: { data: unknown; error: unknown };
-  corridorDeleteResult?: { error: unknown };
+  corridorDeleteResult?: { data: unknown; error: unknown };
 }) {
   const projectUpdateSpy = vi.fn();
   const corridorInsertSpy = vi.fn();
@@ -153,10 +153,20 @@ function buildSupabase(overrides: {
             };
             return chain;
           },
+          // The DELETE now asks for the deleted row back, because that is the
+          // only way PostgREST reports "matched no rows" at all — see
+          // `write-outcome.ts`. The double mirrors the real chain
+          // (`.delete().eq().select().maybeSingle()`) so a route that drops the
+          // `.select()` stops type-checking against reality here too.
           delete: () => ({
-            eq: async (column: string, value: unknown) => {
+            eq: (column: string, value: unknown) => {
               corridorDeleteEqSpy(column, value);
-              return overrides.corridorDeleteResult ?? { error: null };
+              return {
+                select: () => ({
+                  maybeSingle: async () =>
+                    overrides.corridorDeleteResult ?? { data: { id: CORRIDOR_ID }, error: null },
+                }),
+              };
             },
           }),
         };
@@ -472,6 +482,64 @@ describe("DELETE /api/projects/[projectId]/corridors/[corridorId]", () => {
 
     expect(response.status).toBe(200);
     expect(corridorDeleteEqSpy).toHaveBeenCalledWith("id", CORRIDOR_ID);
+  });
+
+  /**
+   * A DELETE that removed nothing must not report a deletion.
+   *
+   * PostgREST answers `{ data: null, error: null }` on `.maybeSingle()` whether
+   * it deleted the row or matched none, so this route used to answer
+   * `200 { deleted: … }` in both cases. A corridor refused below the application
+   * — a restrictive RLS policy with no permissive DELETE partner, the defect that
+   * already shipped once on `project_rtp_cycle_links` — vanished from the UI and
+   * came back on the next refresh, with no error for anyone to act on.
+   *
+   * 500, not 404: `resolveCorridorContext` read this exact row through the
+   * caller's own client moments earlier and the write gate passed, so the row
+   * exists and the database refused what the app allowed.
+   */
+  it("refuses to report a deletion when the delete matched no rows", async () => {
+    const { client } = buildSupabase({ corridorDeleteResult: { data: null, error: null } });
+    createClientMock.mockResolvedValue(client);
+
+    const response = await deleteCorridor(
+      new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/corridors/${CORRIDOR_ID}`, { method: "DELETE" }),
+      corridorParams
+    );
+
+    expect(response.status).toBe(500);
+    const body = (await response.json()) as { error: string; details: string; deleted?: unknown };
+    expect(body.error).toBe("The corridor was not saved");
+    expect(body.details).toMatch(/row-level security/i);
+    expect(body.deleted).toBeUndefined();
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "project_corridor_delete_matched_no_rows",
+      expect.objectContaining({ corridorId: CORRIDOR_ID, projectId: PROJECT_ID })
+    );
+    expect(mockAudit.info).not.toHaveBeenCalledWith(
+      "project_corridor_deleted",
+      expect.anything()
+    );
+  });
+
+  /** The other zero-row shape: `.maybeSingle()` can also report it as PGRST116. */
+  it("treats PGRST116 as zero rows, not as a server failure", async () => {
+    const { client } = buildSupabase({
+      corridorDeleteResult: { data: null, error: { code: "PGRST116", message: "no rows returned" } },
+    });
+    createClientMock.mockResolvedValue(client);
+
+    const response = await deleteCorridor(
+      new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/corridors/${CORRIDOR_ID}`, { method: "DELETE" }),
+      corridorParams
+    );
+
+    expect(response.status).toBe(500);
+    await expect(response.json()).resolves.toMatchObject({ error: "The corridor was not saved" });
+    expect(mockAudit.error).not.toHaveBeenCalledWith(
+      "project_corridor_delete_failed",
+      expect.anything()
+    );
   });
 
   /**

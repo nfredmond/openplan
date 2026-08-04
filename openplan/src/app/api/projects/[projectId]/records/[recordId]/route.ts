@@ -29,6 +29,19 @@ const updateRecordSchema = z.discriminatedUnion("recordType", [
     budgetAmount: z.number().min(0).max(999_999_999_999.99).nullable().optional(),
     percentComplete: z.number().min(0).max(100).nullable().optional(),
   }),
+  // Risks and issues were creatable from day one and movable by nobody: the
+  // create route accepted both vocabularies, this route knew neither, so a
+  // register filled up with `open` rows that no planner could retire. Status is
+  // the only field either branch writes — a risk's mitigation text and an
+  // issue's owner are editing, not transition, and belong to their own change.
+  z.object({
+    recordType: z.literal("risk"),
+    status: z.enum(["open", "watch", "mitigated", "closed"]),
+  }),
+  z.object({
+    recordType: z.literal("issue"),
+    status: z.enum(["open", "in_progress", "blocked", "resolved"]),
+  }),
 ]);
 
 type RouteContext = {
@@ -179,6 +192,92 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       });
 
       return NextResponse.json({ recordType: "deliverable", record: data });
+    }
+
+    if (parsed.data.recordType === "risk") {
+      const { data, error } = await supabase
+        .from("project_risks")
+        .update({
+          status: parsed.data.status,
+          updated_at: updatedAt,
+        })
+        .eq("id", parsedParams.data.recordId)
+        .eq("project_id", project.id)
+        // The same columns the risk lane renders. Keeping the projections
+        // aligned is why the panel can re-render from this response.
+        .select("id, title, description, severity, status, mitigation, created_at, updated_at")
+        .maybeSingle();
+
+      if (error && isWriteFailure(error)) {
+        audit.error("project_record_update_failed", {
+          projectId: project.id,
+          recordId: parsedParams.data.recordId,
+          recordType: "risk",
+          message: error.message,
+        });
+        return NextResponse.json({ error: "Failed to update risk", details: error.message }, { status: 500 });
+      }
+
+      if (writeMatchedNoRows({ data, error }) || !data) {
+        audit.warn("project_record_update_matched_no_rows", {
+          projectId: project.id,
+          recordId: parsedParams.data.recordId,
+          recordType: "risk",
+        });
+        return noRowsMatchedResponse({ subject: "risk", targetWasVerified: false });
+      }
+
+      audit.info("project_record_updated", {
+        projectId: project.id,
+        recordId: data.id,
+        recordType: "risk",
+        status: parsed.data.status,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json({ recordType: "risk", record: data });
+    }
+
+    if (parsed.data.recordType === "issue") {
+      const { data, error } = await supabase
+        .from("project_issues")
+        .update({
+          status: parsed.data.status,
+          updated_at: updatedAt,
+        })
+        .eq("id", parsedParams.data.recordId)
+        .eq("project_id", project.id)
+        .select("id, title, description, severity, status, owner_label, created_at, updated_at")
+        .maybeSingle();
+
+      if (error && isWriteFailure(error)) {
+        audit.error("project_record_update_failed", {
+          projectId: project.id,
+          recordId: parsedParams.data.recordId,
+          recordType: "issue",
+          message: error.message,
+        });
+        return NextResponse.json({ error: "Failed to update issue", details: error.message }, { status: 500 });
+      }
+
+      if (writeMatchedNoRows({ data, error }) || !data) {
+        audit.warn("project_record_update_matched_no_rows", {
+          projectId: project.id,
+          recordId: parsedParams.data.recordId,
+          recordType: "issue",
+        });
+        return noRowsMatchedResponse({ subject: "issue", targetWasVerified: false });
+      }
+
+      audit.info("project_record_updated", {
+        projectId: project.id,
+        recordId: data.id,
+        recordType: "issue",
+        status: parsed.data.status,
+        durationMs: Date.now() - startedAt,
+      });
+
+      return NextResponse.json({ recordType: "issue", record: data });
     }
 
     const { data, error } = await supabase

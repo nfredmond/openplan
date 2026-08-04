@@ -3,6 +3,10 @@ import type { ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ExploreCurrentResultCard } from "@/app/(app)/explore/_components/explore-current-result-card";
+import {
+  CORRIDOR_DECISION_USE_STATUS,
+  resolveDecisionUseDisclosure,
+} from "@/lib/analysis/decision-use";
 
 type Props = ComponentProps<typeof ExploreCurrentResultCard>;
 
@@ -42,6 +46,9 @@ function buildProps(overrides: Partial<Props> = {}): Props {
       { label: "Safety", value: "72", note: "Crash safety score." },
     ],
     resultStatusBadges: [{ label: "High confidence", tone: "success" }],
+    // Built by the real resolver from the real persisted field, not described —
+    // a hand-written disclosure would prove only that the card renders strings.
+    decisionUse: resolveDecisionUseDisclosure({ decisionUseStatus: CORRIDOR_DECISION_USE_STATUS }),
     sourceTransparency: [
       {
         key: "census",

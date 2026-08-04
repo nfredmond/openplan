@@ -352,4 +352,156 @@ describe("ProjectsPage", () => {
     ).toBeGreaterThan(0);
     expect(screen.getAllByText(/No report records linked yet\./i).length).toBeGreaterThan(0);
   });
+
+  /**
+   * A READ THAT FAILED MAY NOT BE RENDERED AS AN ANSWER.
+   *
+   * `const { data: projectsData } = await supabase…` gave `null` for both "this
+   * workspace has no projects" and "the query failed", and the registry then
+   * rendered "No project records yet. Create your first project" — an agency
+   * being told it has no portfolio, and invited to duplicate work that already
+   * exists — on the strength of a broken query.
+   *
+   * The success-with-nothing case is asserted alongside each failure, because
+   * without it a page that always warns would pass every assertion here.
+   */
+  describe("a failed read is disclosed, never rendered as an answer", () => {
+    it("does not say 'No project records yet' when the portfolio read FAILED", async () => {
+      projectsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table projects" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryByText(/No project records yet\./i)).toBeNull();
+      expect(
+        screen.getByText(/The project registry could not be read, so this list is unavailable/i)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/Part of this page could not be read/i)).toBeInTheDocument();
+      expect(screen.getByText(/This page could not read project records\./i)).toBeInTheDocument();
+      // Internal page: the operator gets the database's own message.
+      expect(screen.getByText(/permission denied for table projects/i)).toBeInTheDocument();
+    });
+
+    it("still says 'No project records yet' when the read SUCCEEDS and the workspace is empty", async () => {
+      projectsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+      await renderPage();
+
+      expect(screen.getByText(/No project records yet\./i)).toBeInTheDocument();
+      // No disclosure anywhere — otherwise the banner above proves nothing.
+      expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
+      expect(screen.queryByText(/could not be read, so this list is unavailable/i)).toBeNull();
+    });
+
+    it("does not say 'No report records linked yet' when the reports read FAILED", async () => {
+      reportsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table reports" },
+      });
+
+      await renderPage();
+
+      expect(screen.queryAllByText(/No report records linked yet\./i)).toEqual([]);
+      expect(
+        screen.getAllByText(/Linked report records could not be read for this project/i).length
+      ).toBeGreaterThan(0);
+      expect(screen.getByText(/could not read linked report records\./i)).toBeInTheDocument();
+      // The Reports chip must not assert zero either.
+      expect(screen.queryByText("First action: create the first report packet")).toBeNull();
+    });
+
+    /**
+     * THE HEADER TILES ARE THE LOUDEST CLAIM ON THE PAGE.
+     *
+     * Fixing the empty-state SENTENCE is only half of it. When the portfolio
+     * read fails, `projects` is `[]`, and the summary grid at the top of the
+     * page renders "Projects 0", "Active 0", "Plan types 0" and a row of zeroed
+     * chips — eight confident numbers about an agency's portfolio, in the
+     * largest type on the screen, derived from rows that never arrived. A
+     * planner who reads "0" stops looking; that is the reassuring direction of
+     * the error. The detail page already renders its unreadable counts as "—",
+     * and these must do the same.
+     */
+    /**
+     * "Projects" also appears in the breadcrumb and the intro copy, so the tile
+     * has to be located by the label element the summary grid actually uses
+     * rather than by the first text match.
+     */
+    function summaryTile(label: string): HTMLElement {
+      const labelNode = screen
+        .getAllByText(label)
+        .find((node) => node.className.includes("module-summary-label"));
+      if (!labelNode) throw new Error(`no summary tile labelled ${label}`);
+      return labelNode.closest("div") as HTMLElement;
+    }
+
+    function recordChip(label: string): HTMLElement {
+      const labelNode = screen
+        .getAllByText(label)
+        .find((node) => node.closest("div")?.className.includes("module-record-chip"));
+      if (!labelNode) throw new Error(`no record chip labelled ${label}`);
+      return labelNode.closest("div") as HTMLElement;
+    }
+
+    it("shows the portfolio tiles as unknown, not as zero, when the projects read FAILED", async () => {
+      projectsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table projects" },
+      });
+
+      await renderPage();
+
+      for (const label of ["Projects", "Active", "Plan types"]) {
+        const tile = summaryTile(label);
+        expect(within(tile).getByText("—")).toBeInTheDocument();
+        expect(within(tile).queryByText("0")).toBeNull();
+      }
+
+      expect(within(recordChip("RTP-linked")).getByText("—")).toBeInTheDocument();
+    });
+
+    it("still shows a real zero in the tiles when the read SUCCEEDS and the workspace is empty", async () => {
+      projectsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+
+      await renderPage();
+
+      const tile = summaryTile("Projects");
+      expect(within(tile).getByText("0")).toBeInTheDocument();
+      expect(within(tile).queryByText("—")).toBeNull();
+    });
+
+    it("does not zero the report chips when the REPORTS read failed", async () => {
+      reportsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table reports" },
+      });
+
+      await renderPage();
+
+      for (const label of ["Report attention", "Evidence-backed", "Comparison-backed", "Governance hold"]) {
+        const chip = recordChip(label);
+        expect(within(chip).getByText("—")).toBeInTheDocument();
+        expect(within(chip).queryByText("0")).toBeNull();
+      }
+    });
+
+    it("does not tell a planner to generate a packet when the ARTIFACT read failed", async () => {
+      // Every packet looks ungenerated when the artifact list cannot be read,
+      // which the freshness rules turn into "First action: generate <report>" —
+      // an instruction to redo work that may already exist.
+      reportArtifactsOrderMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: "permission denied for table report_artifacts" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText(/Part of this page could not be read/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/could not read report packet artifacts\./i)
+      ).toBeInTheDocument();
+    });
+  });
 });

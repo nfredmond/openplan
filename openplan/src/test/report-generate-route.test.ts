@@ -153,7 +153,19 @@ const modelRunsSelectMock = vi.fn(() => ({ in: modelRunsInMock }));
 const modelingClaimMaybeSingleMock = vi.fn();
 const modelingClaimEqTrackMock = vi.fn(() => ({ maybeSingle: modelingClaimMaybeSingleMock }));
 const modelingClaimEqCountyRunMock = vi.fn(() => ({ eq: modelingClaimEqTrackMock }));
-const modelingClaimSelectMock = vi.fn(() => ({ eq: modelingClaimEqCountyRunMock }));
+/**
+ * `.in("model_run_id", …)` is how `loadRtpEvidenceRunDisclosures` asks for the
+ * claim tiers a generated packet discloses beside each cited model run — a
+ * different shape from the county-run `.eq().eq().maybeSingle()` path above.
+ * The double answered only the latter, so wiring the shared tier lookup into
+ * this route made it throw a TypeError and the route answered 500. Defaults to
+ * no recorded decision; a test that needs a tier overrides it.
+ */
+const modelingClaimInMock = vi.fn();
+const modelingClaimSelectMock = vi.fn(() => ({
+  eq: modelingClaimEqCountyRunMock,
+  in: modelingClaimInMock,
+}));
 
 const modelingSourcesOrderMock = vi.fn();
 const modelingSourcesEqMock = vi.fn(() => ({ order: modelingSourcesOrderMock }));
@@ -536,6 +548,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     countyRunsInMock.mockResolvedValue({ data: [], error: null });
     modelRunsInMock.mockResolvedValue({ data: [], error: null });
     modelingClaimMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    modelingClaimInMock.mockResolvedValue({ data: [], error: null });
     modelingSourcesOrderMock.mockResolvedValue({ data: [], error: null });
     modelingValidationsOrderMock.mockResolvedValue({ data: [], error: null });
     stageGateDecisionsLimitMock.mockResolvedValue({ data: [], error: null });
@@ -997,6 +1010,12 @@ describe("POST /api/reports/[reportId]/generate", () => {
       ],
       error: null,
     });
+    // A recorded claim tier for the cited model run, which the packet must
+    // disclose beside it.
+    modelingClaimInMock.mockResolvedValueOnce({
+      data: [{ model_run_id: "model-run-1", claim_status: "calibrated_to_counts" }],
+      error: null,
+    });
 
     const response = await postGenerate(
       new NextRequest("http://localhost/api/reports/1/generate", {
@@ -1020,6 +1039,13 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(htmlContent).toContain("Overall score 63/100");
     expect(htmlContent).toContain("Accessibility 52/100");
     expect(htmlContent).toContain("Screening-grade prototype output.");
+    // AND ITS CLAIM TIER, from `modeling_claim_decisions` (seeded above), which
+    // is the third thing a reader needs before trusting the figures. This route
+    // rendered engine + status + KPIs only while `citedModelRunClaimTierLine`
+    // sat in html.ts as dead code — the tier was resolved, tested, and reached
+    // no packet. A funder reads this file; only an assertion on the generated
+    // HTML proves the disclosure survived the route.
+    expect(htmlContent).toContain("Claim tier: Calibrated to counts");
     // The cited county run carries its name, stage, and validation posture.
     expect(htmlContent).toContain("County screening baseline");
     expect(htmlContent).toContain("Validated Screening");

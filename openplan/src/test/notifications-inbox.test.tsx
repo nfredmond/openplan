@@ -19,6 +19,19 @@ function notif(overrides: Partial<EngagementNotificationRow> = {}): EngagementNo
   };
 }
 
+/**
+ * The inbox now also loads the campaign's email delivery status on mount (the
+ * outbox is service-role-only, so it comes back from the same campaign-scoped
+ * GET). That means the mark-read assertions below must look at the PATCH calls
+ * rather than at `mock.calls[0]`, which is now the mount read.
+ */
+function markCalls(spy: { mock: { calls: unknown[][] } }): [unknown, RequestInit][] {
+  return spy.mock.calls.filter((call) => (call[1] as RequestInit | undefined)?.method === "PATCH") as [
+    unknown,
+    RequestInit,
+  ][];
+}
+
 describe("EngagementNotificationsInbox", () => {
   afterEach(() => vi.restoreAllMocks());
 
@@ -35,8 +48,8 @@ describe("EngagementNotificationsInbox", () => {
     expect(screen.getByText("New public submission on “Downtown”")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: /^mark read$/i }));
-    await waitFor(() => expect(fetchSpy).toHaveBeenCalledTimes(1));
-    const [url, init] = fetchSpy.mock.calls[0];
+    await waitFor(() => expect(markCalls(fetchSpy)).toHaveLength(1));
+    const [url, init] = markCalls(fetchSpy)[0];
     expect(url).toBe("/api/engagement/campaigns/c1/notifications");
     expect(JSON.parse((init as RequestInit).body as string)).toEqual({ notificationId: "n1" });
   });
@@ -46,8 +59,8 @@ describe("EngagementNotificationsInbox", () => {
     render(<EngagementNotificationsInbox campaignId="c1" initialNotifications={[notif(), notif({ id: "n2" })]} />);
 
     fireEvent.click(screen.getByRole("button", { name: /mark all read/i }));
-    await waitFor(() => expect(fetchSpy).toHaveBeenCalled());
-    expect(JSON.parse((fetchSpy.mock.calls[0][1] as RequestInit).body as string)).toEqual({ markAllRead: true });
+    await waitFor(() => expect(markCalls(fetchSpy)).toHaveLength(1));
+    expect(JSON.parse((markCalls(fetchSpy)[0][1] as RequestInit).body as string)).toEqual({ markAllRead: true });
     await screen.findByText(/All caught up/i);
   });
 });

@@ -22,8 +22,20 @@ import {
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 
+/**
+ * `current === null` means the LIVE side is UNKNOWN — the read that would have
+ * produced it failed — and there is no comparison to publish against an unknown.
+ * Without this the page rendered `current ?? 0` and told a funder "generated
+ * with 42, current source is 0": an outage reported as records deleted since the
+ * packet was generated. The page discloses which read failed; this withholds the
+ * verdict that read cannot support.
+ *
+ * `generated === null` is the opposite and stays: that is a packet generated
+ * before the metric was captured, which is genuinely "not recorded" rather than
+ * "could not be read", and comparing against it is honest.
+ */
 function compareCountMetric(label: string, generated: number | null, current: number | null) {
-  if (generated === null && current === null) {
+  if (current === null) {
     return null;
   }
 
@@ -159,7 +171,11 @@ export function RtpReportDetail({
     readyCommentCount: number | null;
   };
   currentContext: {
-    enabledSectionKeys: string[];
+    /**
+     * `null` means the live section list could not be READ — a different fact
+     * from an empty list, and the two must not render the same sentence.
+     */
+    enabledSectionKeys: string[] | null;
     readinessLabel: string | null;
     readinessReason: string | null;
     workflowLabel: string | null;
@@ -276,7 +292,11 @@ export function RtpReportDetail({
               : `Generated as ${generationContext.workflowLabel ?? "unknown"}; current source is ${currentContext.workflowLabel ?? "unknown"}.`,
         }
       : null,
-    generationContext.enabledSectionKeys.length > 0 || currentContext.enabledSectionKeys.length > 0
+    // `enabledSectionKeys === null` is the live section list being UNKNOWN, not
+    // empty: comparing a generated packet against it would report every section
+    // as removed since generation.
+    currentContext.enabledSectionKeys !== null &&
+    (generationContext.enabledSectionKeys.length > 0 || currentContext.enabledSectionKeys.length > 0)
       ? {
           label: "Section composition",
           status: areKeySetsEqual(generationContext.enabledSectionKeys, currentContext.enabledSectionKeys)
@@ -326,7 +346,14 @@ export function RtpReportDetail({
               : `Generated as ${generationContext.publicReviewLabel ?? "unknown"} with ${generationContext.readyCommentCount ?? 0} ready and ${generationContext.pendingCommentCount ?? 0} pending comments; current source is ${currentContext.publicReviewLabel ?? "unknown"} with ${currentContext.readyCommentCount ?? 0} ready and ${currentContext.pendingCommentCount ?? 0} pending comments.`,
         }
       : null,
-    generationContext.fundingSnapshot || currentContext.fundingSnapshot
+    // Withheld outright when the LIVE funding snapshot is unknown while the
+    // generated one exists. This row is the fiscal claim on an RTP packet — gap
+    // projects, reimbursement posture, uncovered dollars — and a live snapshot
+    // built from four reads that failed describes a cycle with no money in it.
+    // Publishing that as drift tells a funder the awards went away.
+    currentContext.fundingSnapshot === null && generationContext.fundingSnapshot
+      ? null
+      : generationContext.fundingSnapshot || currentContext.fundingSnapshot
       ? {
           label: "Funding posture",
           status:
@@ -712,9 +739,11 @@ export function RtpReportDetail({
             <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background px-4 py-4">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Current source composition</p>
               <p className="mt-2 text-sm text-muted-foreground">
-                {currentContext.enabledSectionKeys.length > 0
-                  ? currentContext.enabledSectionKeys.join(", ")
-                  : "No enabled section composition is currently configured on this packet record."}
+                {currentContext.enabledSectionKeys === null
+                  ? "This packet's sections could not be read, so its current composition is unknown. That is a failed read, not a finding that no sections are enabled."
+                  : currentContext.enabledSectionKeys.length > 0
+                    ? currentContext.enabledSectionKeys.join(", ")
+                    : "No enabled section composition is currently configured on this packet record."}
               </p>
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2">

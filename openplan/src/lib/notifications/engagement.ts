@@ -150,6 +150,19 @@ export async function enqueueEmail(
   return { outboxId, status, transport: result.transport };
 }
 
+export type CampaignBroadcastResult = {
+  /** Rows written to the outbox — one per confirmed, still-subscribed participant. */
+  enqueued: number;
+  /** Of those, how many the transport actually accepted. */
+  delivered: number;
+  /** Recorded but not sent, because no transport is configured. */
+  skipped: number;
+  /** Recorded and the transport refused or errored. */
+  failed: number;
+  /** Transport name in effect ("none" when unconfigured). */
+  transport: string;
+};
+
 /**
  * Enqueue a message to every confirmed, still-subscribed participant of a
  * campaign. The `unsubscribe` context is REQUIRED, not optional: these are
@@ -164,7 +177,7 @@ export async function enqueueCampaignSubscriberEmails(
   campaignId: string,
   msg: { subject: string; text: string; template?: string },
   unsubscribe: { origin: string; shareToken: string }
-): Promise<{ enqueued: number }> {
+): Promise<CampaignBroadcastResult> {
   const { data } = await client
     .from("engagement_subscriptions")
     .select("email, unsubscribe_token")
@@ -172,10 +185,17 @@ export async function enqueueCampaignSubscriberEmails(
     .eq("confirmed", true)
     .is("unsubscribed_at", null);
   const subscribers = (data ?? []) as { email: string; unsubscribe_token: string }[];
+  // The per-recipient outcome was already in hand here and was thrown away, so
+  // an operator who published an update learned nothing about whether it went
+  // anywhere. `enqueued` alone is NOT an answer to "did it send" — at $0 every
+  // row is 'skipped' — so the caller gets the delivery breakdown too.
   let enqueued = 0;
+  let delivered = 0;
+  let skipped = 0;
+  let failed = 0;
   for (const subscriber of subscribers) {
     const unsubscribeUrl = `${unsubscribe.origin}/api/engage/${unsubscribe.shareToken}/subscribe/unsubscribe?token=${subscriber.unsubscribe_token}`;
-    await enqueueEmail(client, {
+    const outcome = await enqueueEmail(client, {
       campaignId,
       to: subscriber.email,
       subject: msg.subject,
@@ -183,8 +203,103 @@ export async function enqueueCampaignSubscriberEmails(
       template: msg.template,
     });
     enqueued += 1;
+    if (outcome.status === "sent") delivered += 1;
+    else if (outcome.status === "skipped") skipped += 1;
+    else failed += 1;
   }
-  return { enqueued };
+  return { enqueued, delivered, skipped, failed, transport: emailTransportName() };
+}
+
+// ── Outbox delivery status, for the operator console ──────────────────────────
+
+export type EmailDeliveryCounts = { queued: number; sent: number; skipped: number; failed: number };
+
+/**
+ * What an operator is allowed to be told about a campaign's outbox.
+ *
+ * `ok: false` is a DISTINCT answer from `ok: true, total: 0`: "we could not read
+ * the delivery record" and "nothing was ever queued" are different facts, and a
+ * failed read may not be rendered as "no emails have been sent".
+ *
+ * NOTE the shape carries no recipient address. The outbox holds participant
+ * email addresses (sensitive PII, service-role-only); a delivery *status* panel
+ * needs counts, not people, so the projection below never selects `to_email`.
+ */
+export type EmailDeliverySummary =
+  | {
+      ok: true;
+      total: number;
+      counts: EmailDeliveryCounts;
+      /** Distinct transports observed on these rows ("none" = recorded, never sent). */
+      transports: string[];
+      lastAttemptAt: string | null;
+      lastFailure: { at: string; message: string } | null;
+      /** True when the window filled up, so the counts are a floor, not a total. */
+      truncated: boolean;
+    }
+  | { ok: false; message: string };
+
+const EMAIL_DELIVERY_WINDOW = 500;
+
+const DELIVERY_STATUS_KEYS: readonly (keyof EmailDeliveryCounts)[] = ["queued", "sent", "skipped", "failed"];
+
+/** The columns the delivery panel renders — deliberately excluding `to_email`. */
+export const EMAIL_OUTBOX_SUMMARY_COLUMNS = "status, transport, error, created_at, sent_at";
+
+/**
+ * Delivery status for one campaign's outbox rows. Never throws: a failed read
+ * comes back as `{ ok: false }` so the caller can say so instead of inventing a
+ * zero.
+ */
+export async function loadCampaignEmailDeliverySummary(
+  client: QueryClient,
+  campaignId: string
+): Promise<EmailDeliverySummary> {
+  type OutboxStatusRow = {
+    status: string | null;
+    transport: string | null;
+    error: string | null;
+    created_at: string;
+    sent_at: string | null;
+  };
+  let rows: OutboxStatusRow[];
+  try {
+    const { data, error } = await client
+      .from("engagement_email_outbox")
+      .select(EMAIL_OUTBOX_SUMMARY_COLUMNS)
+      .eq("campaign_id", campaignId)
+      .order("created_at", { ascending: false })
+      .limit(EMAIL_DELIVERY_WINDOW);
+    if (error) return { ok: false, message: error.message ?? "the database returned no reason" };
+    rows = (data ?? []) as OutboxStatusRow[];
+  } catch (readError) {
+    return { ok: false, message: readError instanceof Error ? readError.message : String(readError) };
+  }
+
+  const counts: EmailDeliveryCounts = { queued: 0, sent: 0, skipped: 0, failed: 0 };
+  const transports = new Set<string>();
+  let lastAttemptAt: string | null = null;
+  let lastFailure: { at: string; message: string } | null = null;
+
+  for (const row of rows) {
+    const status = (row.status ?? "") as keyof EmailDeliveryCounts;
+    if (DELIVERY_STATUS_KEYS.includes(status)) counts[status] += 1;
+    if (row.transport) transports.add(row.transport);
+    if (!lastAttemptAt || row.created_at > lastAttemptAt) lastAttemptAt = row.created_at;
+    if (status === "failed" && (!lastFailure || row.created_at > lastFailure.at)) {
+      lastFailure = { at: row.created_at, message: row.error ?? "no reason was recorded" };
+    }
+  }
+
+  return {
+    ok: true,
+    total: rows.length,
+    counts,
+    transports: [...transports].sort(),
+    lastAttemptAt,
+    lastFailure,
+    truncated: rows.length >= EMAIL_DELIVERY_WINDOW,
+  };
 }
 
 // ── Subscriptions (sensitive) ─────────────────────────────────────────────────

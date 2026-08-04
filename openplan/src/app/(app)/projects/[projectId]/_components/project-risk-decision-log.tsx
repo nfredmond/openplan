@@ -1,5 +1,6 @@
 import { AlertTriangle, MessagesSquare, Scale, Siren } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
 import {
   fmtDateTime,
   titleize,
@@ -14,17 +15,47 @@ import type {
 } from "./_types";
 
 type ProjectRiskAndDecisionLogProps = {
+  /**
+   * Required, not optional, on purpose: the risk and issue status controls
+   * PATCH `/api/projects/{projectId}/records/{recordId}`, so without it they
+   * cannot render — and an optional prop the page forgot to pass is exactly how
+   * a finished capability ships that no planner can reach. Making it required
+   * puts that mistake in front of the compiler instead of in front of a planner.
+   */
+  projectId: string;
   risks: RiskRow[] | null;
   issues: IssueRow[] | null;
   decisions: DecisionRow[] | null;
   meetings: MeetingRow[] | null;
+  /**
+   * Whether each lane's query FAILED, as opposed to returning nothing.
+   *
+   * Without these four the panel cannot tell the two apart — an empty array and
+   * a broken read look identical here — so "No risks recorded yet." was printed
+   * over projects whose risk register the database had simply refused to hand
+   * over. A read that failed may not be rendered as an answer.
+   */
+  risksReadFailed?: boolean;
+  issuesReadFailed?: boolean;
+  decisionsReadFailed?: boolean;
+  meetingsReadFailed?: boolean;
 };
 
+/** The one sentence every unreadable lane shows, in the lane's own words. */
+function readFailureCopy(label: string): string {
+  return `${label} could not be read, so this panel is unavailable rather than empty — this is not a finding that none are recorded. Reload; if it persists, the page banner above carries the database's message for an operator.`;
+}
+
 export function ProjectRiskAndDecisionLog({
+  projectId,
   risks,
   issues,
   decisions,
   meetings,
+  risksReadFailed = false,
+  issuesReadFailed = false,
+  decisionsReadFailed = false,
+  meetingsReadFailed = false,
 }: ProjectRiskAndDecisionLogProps) {
   return (
     <>
@@ -41,7 +72,9 @@ export function ProjectRiskAndDecisionLog({
               </div>
             </div>
           </div>
-          {!risks || risks.length === 0 ? (
+          {risksReadFailed ? (
+            <div className="module-empty-state mt-5 text-sm">{readFailureCopy("Project risks")}</div>
+          ) : !risks || risks.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">No risks recorded yet.</div>
           ) : (
             <div className="mt-5 module-record-list">
@@ -59,6 +92,14 @@ export function ProjectRiskAndDecisionLog({
                     {risk.mitigation ? (
                       <p className="mt-1.5 text-[0.73rem] text-muted-foreground">{risk.mitigation}</p>
                     ) : null}
+                    <div className="mt-3">
+                      <RecordStatusAdvanceButton
+                        projectId={projectId}
+                        recordId={risk.id}
+                        recordType="risk"
+                        currentStatus={risk.status}
+                      />
+                    </div>
                   </div>
                 </div>
               ))}
@@ -78,7 +119,9 @@ export function ProjectRiskAndDecisionLog({
               </div>
             </div>
           </div>
-          {!issues || issues.length === 0 ? (
+          {issuesReadFailed ? (
+            <div className="module-empty-state mt-5 text-sm">{readFailureCopy("Project issues")}</div>
+          ) : !issues || issues.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">No issues logged yet.</div>
           ) : (
             <div className="mt-5 module-record-list">
@@ -93,6 +136,14 @@ export function ProjectRiskAndDecisionLog({
                     <div className="space-y-1.5">
                       <h3 className="module-record-title">{issue.title}</h3>
                       <p className="module-record-summary">{issue.description || "No description yet."}</p>
+                    </div>
+                    <div className="mt-3">
+                      <RecordStatusAdvanceButton
+                        projectId={projectId}
+                        recordId={issue.id}
+                        recordType="issue"
+                        currentStatus={issue.status}
+                      />
                     </div>
                   </div>
                 </div>
@@ -115,7 +166,9 @@ export function ProjectRiskAndDecisionLog({
               </div>
             </div>
           </div>
-          {!decisions || decisions.length === 0 ? (
+          {decisionsReadFailed ? (
+            <div className="module-empty-state mt-5 text-sm">{readFailureCopy("Project decisions")}</div>
+          ) : !decisions || decisions.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">No decisions logged yet.</div>
           ) : (
             <div className="mt-5 module-record-list">
@@ -154,7 +207,9 @@ export function ProjectRiskAndDecisionLog({
               </div>
             </div>
           </div>
-          {!meetings || meetings.length === 0 ? (
+          {meetingsReadFailed ? (
+            <div className="module-empty-state mt-5 text-sm">{readFailureCopy("Project meetings")}</div>
+          ) : !meetings || meetings.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">No meetings logged yet.</div>
           ) : (
             <div className="mt-5 module-record-list">

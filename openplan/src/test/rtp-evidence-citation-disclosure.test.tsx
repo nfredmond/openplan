@@ -49,7 +49,12 @@ function fakeQuery(tableName: string) {
     const error = tableErrors[tableName];
     // A failed read carries no rows. Returning the fixture AND an error would
     // let a page look correct while ignoring the error entirely.
-    return error ? { data: null, error } : { data: tableData[tableName] ?? [], error: null };
+    if (error) return { data: null, error };
+    // An EXPLICIT null in the fixture is a successful read that found nothing —
+    // the genuine-absence case, which must stay distinguishable from a failure.
+    // A table simply missing from the fixture still answers with an empty list.
+    const seeded = tableData[tableName];
+    return { data: seeded === undefined ? [] : seeded, error: null };
   };
   const q: {
     eq: () => typeof q;
@@ -381,5 +386,77 @@ describe("public plan page — a failed read is disclosed, never rendered as abs
 
     expect(screen.queryByText(/Part of this plan could not be loaded/)).toBeNull();
     expect(screen.queryByText(/could not be loaded, so it is not shown/)).toBeNull();
+  });
+});
+
+/**
+ * A 404 ON A FAILED READ IS THE SAME DEFECT WEARING A DIFFERENT FACE.
+ *
+ * The share-token lookup is this page's gate, and it discarded its `error`, so a
+ * failed read arrived as `null` — indistinguishable from a token that is wrong,
+ * revoked, or whose sharing was switched off. The page then called `notFound()`,
+ * which tells a resident an agency's published plan DOES NOT EXIST because a
+ * column was dropped or a policy changed. "Not found" and "could not be read"
+ * are different facts and only one of them is knowable here.
+ *
+ * These tests drive the REAL page through both branches, because the whole point
+ * is that the two must stay distinguishable — a page that always 404s and a page
+ * that never 404s would each pass half of this.
+ */
+describe("public plan page — a failed gate read may not 404 as 'this plan does not exist'", () => {
+  const SHARE_TOKEN = "public-share-token-1";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    seedPublicPageData();
+  });
+
+  it("still 404s when the read SUCCEEDED and no such shared plan exists", async () => {
+    // A wrong or revoked token: the read worked and genuinely found nothing.
+    tableData.rtp_cycles = null;
+
+    await expect(
+      PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) })
+    ).rejects.toThrow("notFound");
+    expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  it("does not 404 when the plan lookup failed", async () => {
+    tableErrors.rtp_cycles = { message: "permission denied for table rtp_cycles" };
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(notFoundMock).not.toHaveBeenCalled();
+  });
+
+  it("renders the page shell and says the plan could not be READ, not that it is gone", async () => {
+    tableErrors.rtp_cycles = { message: "permission denied for table rtp_cycles" };
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.getByText(/This plan could not be loaded/)).toBeTruthy();
+    expect(
+      screen.getByText(/does not mean the plan is missing, unpublished, or withdrawn/)
+    ).toBeTruthy();
+    // And it must not fall through into the ordinary body, where the empty
+    // project list would state the absence this page cannot know.
+    expect(screen.queryByText(/No projects have been published for this plan yet/)).toBeNull();
+  });
+
+  it("never shows the database's own message to the public on the failure shell", async () => {
+    tableErrors.rtp_cycles = { message: "permission denied for table rtp_cycles" };
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.queryByText(/permission denied/)).toBeNull();
+    expect(screen.queryByText(/rtp_cycles/)).toBeNull();
+  });
+
+  it("shows no failure shell at all when the plan loads", async () => {
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.queryByText(/This plan could not be loaded/)).toBeNull();
+    expect(screen.getByText("Example Region RTP 2050")).toBeTruthy();
+    expect(notFoundMock).not.toHaveBeenCalled();
   });
 });

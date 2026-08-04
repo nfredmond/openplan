@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { FolderKanban, Loader2, Trash2, Upload } from "lucide-react";
+import { FolderKanban, Loader2, Search, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -11,6 +11,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import type { StatusTone } from "@/lib/ui/status";
 import { KB_DOC_KINDS, type KbDocKind, type KbDocumentStatus } from "@/lib/knowledge-base/types";
 import type { KbDocumentRow } from "@/lib/knowledge-base/documents";
+import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-base/retrieval";
 
 const DOC_KIND_LABELS: Record<KbDocKind, string> = {
   rtp: "Regional Transportation Plan",
@@ -24,6 +25,20 @@ const DOC_KIND_LABELS: Record<KbDocKind, string> = {
 
 const ACCEPTED_EXTENSIONS = ".pdf,.docx,.txt,.md,.markdown";
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+/** How many passages one search asks for. The RPC caps at 25. */
+const SEARCH_LIMIT = 10;
+
+/**
+ * The four outcomes of a search, kept apart on purpose. A failed read and a
+ * successful read that matched nothing are DIFFERENT FACTS, and only the
+ * second one may be shown as "nothing matched" — that is a claim about the
+ * planner's own corpus.
+ */
+type KbSearchState =
+  | { status: "idle" }
+  | { status: "running" }
+  | { status: "done"; query: string; scopeProjectId: string; hits: KnowledgeBaseExcerpt[] }
+  | { status: "failed"; query: string; message: string };
 
 function statusTone(status: KbDocumentStatus): StatusTone {
   switch (status) {
@@ -97,6 +112,8 @@ export function KnowledgeBaseWorkspace({
   const [projectId, setProjectId] = useState(initialProjectId ?? "");
   const [busy, setBusy] = useState(false);
   const [listLoading, setListLoading] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState<KbSearchState>({ status: "idle" });
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -106,6 +123,24 @@ export function KnowledgeBaseWorkspace({
     [projects]
   );
   const selectedProjectName = projectId ? projectNameById.get(projectId) ?? null : null;
+
+  // Only `ready` documents are indexed by the search RPC. A planner reading
+  // "nothing matched" is owed the fact that some of their corpus was never
+  // looked at — otherwise an extraction failure reads as an absent passage.
+  const unsearchableCount = documents.filter((entry) => entry.status !== "ready").length;
+
+  /**
+   * What the search could NOT look at. This is owed to the planner on BOTH
+   * outcomes, not just the empty one: "3 passages matched" reads as the whole
+   * answer, so a corpus with documents that never finished extracting turns a
+   * partial result into an apparently complete one. Same fact, same sentence,
+   * whether or not anything matched.
+   */
+  const coverageCaveat = readFailures.documents
+    ? "The document list could not be read, so this screen cannot say how much of your corpus was searchable."
+    : unsearchableCount > 0
+      ? `${unsearchableCount} of the ${documents.length} document${documents.length === 1 ? "" : "s"} listed below ${unsearchableCount === 1 ? "is" : "are"} not indexed yet (only documents with status "ready" are searched).`
+      : "";
 
   function upsertDocument(document: KbDocumentRow) {
     setDocuments((prev) => [document, ...prev.filter((entry) => entry.id !== document.id)]);
@@ -138,6 +173,42 @@ export function KnowledgeBaseWorkspace({
       setError(loadError instanceof Error ? loadError.message : "Failed to load documents");
     } finally {
       setListLoading(false);
+    }
+  }
+
+  async function runSearch() {
+    const query = searchInput.replace(/\s+/g, " ").trim();
+    if (!query) {
+      setSearch({ status: "idle" });
+      return;
+    }
+    const scopeProjectId = projectId;
+    setSearch({ status: "running" });
+    try {
+      const params = new URLSearchParams({ workspaceId, q: query, limit: String(SEARCH_LIMIT) });
+      if (scopeProjectId) params.set("projectId", scopeProjectId);
+      const response = await fetch(`/api/knowledge-base/search?${params.toString()}`);
+      const payload = (await response.json()) as {
+        excerpts?: KnowledgeBaseExcerpt[];
+        error?: string;
+        hint?: string;
+      };
+      if (!response.ok) {
+        throw new Error(
+          [payload.error, payload.hint].filter(Boolean).join(" — ") || "The search could not be run"
+        );
+      }
+      // Only a response the server actually answered 2xx to may become a
+      // statement about the corpus. `?? []` here is the parsed body of a
+      // successful read, never a swallowed failure.
+      setSearch({ status: "done", query, scopeProjectId, hits: payload.excerpts ?? [] });
+    } catch (searchError) {
+      setSearch({
+        status: "failed",
+        query,
+        message:
+          searchError instanceof Error ? searchError.message : "The search could not be run",
+      });
     }
   }
 
@@ -318,6 +389,17 @@ export function KnowledgeBaseWorkspace({
                   ))}
                 </select>
               </label>
+            ) : readFailures.projects ? (
+              // Disclose, never restrict. When the project read fails the selector
+              // cannot be built — but silently dropping it would leave a planner
+              // believing this workspace has no projects, and would let a search
+              // they meant to scope run workspace-wide without saying so.
+              <p className="module-note sm:col-span-2">
+                Your project list could not be read, so the project selector is not shown. This does
+                not mean the workspace has no projects. Uploads will not be attached to a project,
+                and the search below covers every document in the workspace rather than a project
+                you choose.
+              </p>
             ) : null}
           </div>
 
@@ -359,6 +441,102 @@ export function KnowledgeBaseWorkspace({
         <div className="mt-3 grid gap-2">
           <FormError error={error} />
           {notice ? <p className="module-note">{notice}</p> : null}
+        </div>
+      </div>
+
+      <div className="module-section-surface">
+        <div className="module-section-header">
+          <h2 className="module-section-title">Search these documents</h2>
+          <p className="module-section-description">
+            Keyword search across the passages of every document that finished extracting. It matches
+            on any significant word and ranks by relevance — screening-grade, not semantic — and
+            returns up to {SEARCH_LIMIT} passages.{" "}
+            {projectId
+              ? `Scoped to ${selectedProjectName ?? "the selected project"} plus documents not attached to any project.`
+              : "Scoped to every document in this workspace."}
+          </p>
+        </div>
+
+        <form
+          className="flex flex-wrap items-center gap-2"
+          onSubmit={(event) => {
+            event.preventDefault();
+            void runSearch();
+          }}
+        >
+          <Input
+            value={searchInput}
+            onChange={(event) => setSearchInput(event.target.value)}
+            placeholder="e.g. complete streets policy, Title VI outreach, bridge scour"
+            aria-label="Search the Knowledge Base"
+            maxLength={500}
+            className="max-w-md"
+            disabled={search.status === "running"}
+          />
+          <Button type="submit" disabled={search.status === "running" || !searchInput.trim()}>
+            {search.status === "running" ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Search className="size-4" />
+            )}
+            Search
+          </Button>
+        </form>
+
+        <div className="mt-3 grid gap-2">
+          {search.status === "failed" ? (
+            <p className="rounded-[0.5rem] border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/30 dark:text-red-300">
+              The search for &ldquo;{search.query}&rdquo; could not be run, so this screen cannot say
+              whether your documents contain it. Nothing was searched. {search.message}
+            </p>
+          ) : null}
+
+          {search.status === "done" && search.hits.length === 0 ? (
+            <div className="module-empty-state">
+              No passage in the searched documents matched &ldquo;{search.query}&rdquo;. The search
+              itself succeeded — this is a result, not a failure.
+              {coverageCaveat ? ` ${coverageCaveat}` : ""}
+            </div>
+          ) : null}
+
+          {search.status === "done" && search.hits.length > 0 ? (
+            <>
+              <p className="module-note">
+                {search.hits.length} passage{search.hits.length === 1 ? "" : "s"} matched &ldquo;
+                {search.query}&rdquo;
+                {search.scopeProjectId
+                  ? ` in ${projectNameById.get(search.scopeProjectId) ?? "the selected project"} plus unattached documents`
+                  : " in this workspace"}
+                , best match first
+                {search.hits.length === SEARCH_LIMIT
+                  ? ` — capped at ${SEARCH_LIMIT}, so there may be more`
+                  : ""}
+                .{coverageCaveat ? ` ${coverageCaveat}` : ""}
+              </p>
+              <ul className="module-record-list">
+                {search.hits.map((hit) => (
+                  <li key={hit.chunkId} className="module-record-row">
+                    <div className="module-record-main">
+                      <div className="module-record-head">
+                        <span className="module-record-title">{hit.documentTitle}</span>
+                      </div>
+                      <p className="module-record-summary">{hit.snippet}</p>
+                      <div className="module-record-meta">
+                        <span className="module-record-chip">
+                          {DOC_KIND_LABELS[hit.docKind as KbDocKind] ?? hit.docKind}
+                        </span>
+                        {excerptPageLabel(hit.pageFrom, hit.pageTo) ? (
+                          <span className="module-record-chip">
+                            {excerptPageLabel(hit.pageFrom, hit.pageTo)}
+                          </span>
+                        ) : null}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
         </div>
       </div>
 

@@ -199,18 +199,42 @@ export async function DELETE(
     const resolved = await resolveCorridorContext(request, context, "programs.write");
     if (resolved.failure) return resolved.failure;
 
-    const { error } = await resolved.supabase
+    // `.select()` on the delete is what makes zero-rows-affected VISIBLE. Without
+    // it PostgREST returns `{ data: null, error: null }` whether it removed the
+    // corridor or removed nothing, and this route answered 200 `{ deleted: … }`
+    // either way — so a delete refused below the application (a restrictive RLS
+    // policy with no permissive DELETE partner, the exact defect that shipped on
+    // `project_rtp_cycle_links`) reported success, and the corridor came back on
+    // the next refresh with no error anyone could act on. The sibling PATCH above
+    // has checked this since `write-outcome` was written; DELETE never did.
+    const { data, error } = await resolved.supabase
       .from("project_corridors")
       .delete()
-      .eq("id", resolved.corridor.id);
+      .eq("id", resolved.corridor.id)
+      .select("id")
+      .maybeSingle();
 
-    if (error) {
+    if (isWriteFailure(error)) {
       audit.error("project_corridor_delete_failed", {
         corridorId: resolved.corridor.id,
-        message: error.message,
-        code: error.code ?? null,
+        message: error?.message ?? "unknown",
+        code: error?.code ?? null,
       });
       return NextResponse.json({ error: "Failed to delete corridor" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data, error })) {
+      // `resolveCorridorContext` read this exact corridor row through the
+      // caller's own client moments ago and the write role gate passed, so
+      // "matched nothing" is the database refusing what the application allowed
+      // — not a missing record. Same reasoning as the PATCH above.
+      audit.error("project_corridor_delete_matched_no_rows", {
+        corridorId: resolved.corridor.id,
+        projectId: resolved.project.id,
+        workspaceId: resolved.project.workspace_id,
+        userId: resolved.user.id,
+      });
+      return noRowsMatchedResponse({ subject: "corridor", targetWasVerified: true });
     }
 
     audit.info("project_corridor_deleted", {

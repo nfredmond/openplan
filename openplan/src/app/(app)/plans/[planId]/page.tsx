@@ -16,8 +16,9 @@ import { WorkspaceCommandBoard } from "@/components/operations/workspace-command
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { PlanDetailControls } from "@/components/plans/plan-detail-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { titleizeEngagementValue, engagementStatusTone } from "@/lib/engagement/catalog";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSupabaseLike,
@@ -160,6 +161,30 @@ function pluralize(count: number, singular: string, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
 }
 
+/**
+ * What a section says INSTEAD of its empty state when the read behind it failed.
+ *
+ * "No scenario sets linked" is a claim about this plan. A 400, an RLS refusal or
+ * a dropped column is not evidence for it, and a planner who reads that sentence
+ * will go and re-link work that is already there. So the section says what is
+ * actually true — the read failed — and nothing about how many records exist.
+ */
+function SectionReadFailure({ title, noun }: { title: string; noun: string }) {
+  return (
+    <div className="mt-5">
+      <StateBlock
+        tone="danger"
+        title={title}
+        description={`The ${noun} for this plan could not be read, so this section cannot say whether any are linked. It is not a statement that none exist — retry, and tell your operator if it persists.`}
+        compact
+      />
+    </div>
+  );
+}
+
+/** A count that cannot be trusted is shown as unknown, never as zero. */
+const UNKNOWN_COUNT = "—";
+
 export default async function PlanDetailPage({
   params,
 }: {
@@ -175,13 +200,30 @@ export default async function PlanDetailPage({
     redirect("/sign-in");
   }
 
-  const { data: plan } = await supabase
+  // Every read below is registered here, and anything that failed is disclosed
+  // by name at the top of the page. Before this, a failed read and an empty
+  // table were the same `null`, and the empty-state copy — written for the
+  // empty table — stated the failure as a fact about the planner's workspace.
+  const reads = new ReadFailureLog();
+
+  const planResult = await supabase
     .from("plans")
     .select(
       "id, workspace_id, project_id, title, plan_type, status, geography_label, horizon_year, summary, created_at, updated_at"
     )
     .eq("id", planId)
     .maybeSingle();
+
+  // The one load-bearing read on this page, and the one place where "could not
+  // read it" and "it is not there" must not be merged: `notFound()` tells the
+  // planner this plan does not exist, and a 400 or a policy failure is not
+  // evidence of that. It raises instead, so the route's error boundary says
+  // something a retry can act on.
+  if (planResult.error) {
+    throw new Error(`Could not read this plan: ${planResult.error.message}`);
+  }
+
+  const plan = planResult.data;
 
   if (!plan) {
     notFound();
@@ -234,6 +276,13 @@ export default async function PlanDetailPage({
         : Promise.resolve({ data: [], error: null }),
     ]);
 
+  reads.check("selectable projects", projectsResult);
+  const primaryProjectUnreadable = reads.check("this plan's primary project", projectResult);
+  const planLinksUnreadable = reads.check("this plan's link set", planLinksResult);
+  const projectScenariosUnreadable = reads.check("scenario sets on the primary project", projectScenariosResult);
+  const projectCampaignsUnreadable = reads.check("engagement campaigns on the primary project", projectCampaignsResult);
+  const projectReportsUnreadable = reads.check("reports on the primary project", projectReportsResult);
+
   const planLinks = planLinksResult.data ?? [];
   const scenarioLinkIds = planLinks.filter((link) => link.link_type === "scenario_set").map((link) => link.linked_id);
   const campaignLinkIds = planLinks.filter((link) => link.link_type === "engagement_campaign").map((link) => link.linked_id);
@@ -267,6 +316,11 @@ export default async function PlanDetailPage({
       : Promise.resolve({ data: [], error: null }),
   ]);
 
+  const explicitScenariosUnreadable = reads.check("scenario sets linked to this plan", explicitScenariosResult);
+  const explicitCampaignsUnreadable = reads.check("engagement campaigns linked to this plan", explicitCampaignsResult);
+  const explicitReportsUnreadable = reads.check("reports linked to this plan", explicitReportsResult);
+  const explicitProjectsUnreadable = reads.check("related project records", explicitProjectsResult);
+
   const [projectModelsResult, modelPlanLinksResult] = await Promise.all([
     plan.project_id
       ? supabase
@@ -279,6 +333,9 @@ export default async function PlanDetailPage({
       : Promise.resolve({ data: [], error: null }),
     supabase.from("model_links").select("model_id, link_type, linked_id").eq("link_type", "plan").eq("linked_id", plan.id),
   ]);
+
+  const projectModelsUnreadable = reads.check("models on the primary project", projectModelsResult);
+  const modelPlanLinksUnreadable = reads.check("models linked to this plan", modelPlanLinksResult);
 
   const explicitModelIds = Array.from(
     new Set(((modelPlanLinksResult.data ?? []) as Array<{ model_id: string }>).map((link) => link.model_id))
@@ -308,6 +365,22 @@ export default async function PlanDetailPage({
           )
       : Promise.resolve({ data: [], error: null }),
   ]);
+
+  const explicitModelsUnreadable = reads.check("model records linked to this plan", explicitModelsResult);
+  /**
+   * The models themselves may have loaded while THEIR link sets did not. That is
+   * a narrower failure than `supportingModelsUnreadable` and must stay separate:
+   * suppressing the whole section would deny a planner model records that were
+   * read perfectly well. But `buildModelWorkspaceSummary` is handed
+   * `modelLinksByModel.get(id) ?? []`, so a failed read arrives as an empty link
+   * set and comes back out as "0 datasets · 0 runs · 0 reports" and a per-model
+   * "Missing basis: …" — a readiness verdict computed from records that were
+   * never seen. Disclose those, keep the rest.
+   */
+  const supportingModelLinksUnreadable = reads.check(
+    "the supporting models' own link sets",
+    supportingModelLinksResult
+  );
 
   const scenarioIds = Array.from(
     new Set([
@@ -355,6 +428,34 @@ export default async function PlanDetailPage({
       ? supabase.from("report_artifacts").select("report_id").in("report_id", reportIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
+
+  // Each `check` is called unconditionally and combined afterwards — `||` would
+  // short-circuit and leave the second failure out of the disclosure.
+  const scenarioStatsUnreadable = reads.check("scenario entries", scenarioEntriesResult);
+  const engagementCategoriesUnreadable = reads.check("engagement categories", engagementCategoriesResult);
+  const engagementItemsUnreadable = reads.check("engagement items", engagementItemsResult);
+  const campaignStatsUnreadable = engagementCategoriesUnreadable || engagementItemsUnreadable;
+  const reportRunsUnreadable = reads.check("report runs", reportRunsResult);
+  const reportSectionsUnreadable = reads.check("report sections", reportSectionsResult);
+  const reportArtifactsUnreadable = reads.check("stored report artifacts", reportArtifactsResult);
+  const reportStatsUnreadable = reportRunsUnreadable || reportSectionsUnreadable || reportArtifactsUnreadable;
+
+  // A section is untrustworthy if ANY read feeding it failed — including the
+  // link set, because a plan's records arrive through two doors (the primary
+  // project and an explicit plan link) and losing either one is enough to make
+  // "none linked" false.
+  const linkedProjectsUnreadable = primaryProjectUnreadable || explicitProjectsUnreadable || planLinksUnreadable;
+  const linkedScenariosUnreadable = projectScenariosUnreadable || explicitScenariosUnreadable || planLinksUnreadable;
+  const linkedCampaignsUnreadable = projectCampaignsUnreadable || explicitCampaignsUnreadable || planLinksUnreadable;
+  const linkedReportsUnreadable = projectReportsUnreadable || explicitReportsUnreadable || planLinksUnreadable;
+  const supportingModelsUnreadable = projectModelsUnreadable || modelPlanLinksUnreadable || explicitModelsUnreadable;
+
+  // The readiness checklist, the artifact-coverage line and the workflow verdict
+  // are all computed FROM those counts. A zero that came from a failed read
+  // produces a confident "nothing is linked yet" verdict, which is the same lie
+  // one level up. Withhold the verdict rather than restate the failure as it.
+  const readinessBasisUnreadable =
+    linkedProjectsUnreadable || linkedScenariosUnreadable || linkedCampaignsUnreadable || linkedReportsUnreadable;
 
   const scenarioStatsById = new Map<string, { entryCount: number; readyEntryCount: number; attachedRunCount: number }>();
   for (const row of scenarioEntriesResult.data ?? []) {
@@ -616,6 +717,14 @@ export default async function PlanDetailPage({
         </Link>
       </div>
 
+      {reads.any ? (
+        <StateBlock
+          tone="danger"
+          title="Part of this page could not be read"
+          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
+
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -635,27 +744,45 @@ export default async function PlanDetailPage({
             <span className="module-record-chip"><span>Type</span><strong>{formatPlanTypeLabel(plan.plan_type)}</strong></span>
           </div>
           <p className="text-[0.73rem] text-muted-foreground">
-            {readiness.label} · {artifactCoverage.label} · {workflow.label}
+            {readinessBasisUnreadable
+              ? "Readiness, coverage and workflow posture are withheld: part of this plan's basis could not be read, so any verdict here would be computed from counts that are not known to be complete."
+              : `${readiness.label} · ${artifactCoverage.label} · ${workflow.label}`}
           </p>
 
           <div className="module-summary-grid cols-3">
             <div className="module-summary-card">
               <p className="module-summary-label">Linked scenarios</p>
-              <p className="module-summary-value">{linkedScenarios.length}</p>
-              <p className="module-summary-detail">Scenarios linked directly to this plan or inherited from the project.</p>
+              <p className="module-summary-value">
+                {linkedScenariosUnreadable ? UNKNOWN_COUNT : linkedScenarios.length}
+              </p>
+              <p className="module-summary-detail">
+                {linkedScenariosUnreadable
+                  ? "Scenario linkage could not be read, so this count is unknown rather than zero."
+                  : "Scenarios linked directly to this plan or inherited from the project."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Engagement campaigns</p>
-              <p className="module-summary-value">{linkedCampaigns.length}</p>
-              <p className="module-summary-detail">Engagement campaigns connected to this plan.</p>
+              <p className="module-summary-value">
+                {linkedCampaignsUnreadable ? UNKNOWN_COUNT : linkedCampaigns.length}
+              </p>
+              <p className="module-summary-detail">
+                {linkedCampaignsUnreadable
+                  ? "Campaign linkage could not be read, so this count is unknown rather than zero."
+                  : "Engagement campaigns connected to this plan."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Linked outputs</p>
-              <p className="module-summary-value">{generatedReportCount}</p>
+              <p className="module-summary-value">
+                {linkedReportsUnreadable ? UNKNOWN_COUNT : generatedReportCount}
+              </p>
               <p className="module-summary-detail">
-                {generatedReportCount > 0
-                  ? `${reportArtifactCount} stored artifact${reportArtifactCount === 1 ? "" : "s"} visible across linked reports.`
-                  : workflow.planningOutputDetail}
+                {linkedReportsUnreadable
+                  ? "Report linkage could not be read, so this count is unknown rather than zero."
+                  : generatedReportCount > 0
+                    ? `${reportArtifactCount} stored artifact${reportArtifactCount === 1 ? "" : "s"} visible across linked reports.`
+                    : workflow.planningOutputDetail}
               </p>
             </div>
           </div>
@@ -668,27 +795,38 @@ export default async function PlanDetailPage({
             </span>
             <div>
               <p className="module-operator-eyebrow">Readiness basis</p>
-              <h2 className="module-operator-title">{readiness.reason}</h2>
+              <h2 className="module-operator-title">
+                {readinessBasisUnreadable ? "Readiness cannot be assessed right now" : readiness.reason}
+              </h2>
             </div>
           </div>
-          <p className="module-operator-copy">{workflow.reason}</p>
-          <div className="module-operator-list">
-            {readiness.checks.map((check) => (
-              <div key={check.key} className="module-operator-item">
-                <strong>{check.label}:</strong> {check.detail}
-              </div>
-            ))}
-          </div>
-          <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
-            <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              Planning output cue
+          {readinessBasisUnreadable ? (
+            <p className="module-operator-copy">
+              Part of this plan&apos;s linked basis could not be read on this page load. The checklist below is derived
+              from those links, so it is withheld rather than shown as gaps you would then go and try to fill.
             </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
-            </div>
-            <p className="mt-3 text-sm text-muted-foreground">{workflow.planningOutputDetail}</p>
-          </div>
-          {workflow.actionItems.length > 0 ? (
+          ) : (
+            <>
+              <p className="module-operator-copy">{workflow.reason}</p>
+              <div className="module-operator-list">
+                {readiness.checks.map((check) => (
+                  <div key={check.key} className="module-operator-item">
+                    <strong>{check.label}:</strong> {check.detail}
+                  </div>
+                ))}
+              </div>
+              <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Planning output cue
+                </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">{workflow.planningOutputDetail}</p>
+              </div>
+            </>
+          )}
+          {!readinessBasisUnreadable && workflow.actionItems.length > 0 ? (
             <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
               <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 Next actions
@@ -734,38 +872,53 @@ export default async function PlanDetailPage({
 
           <div className="mt-5 space-y-4">
             <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <StatusBadge tone={workflow.tone}>{workflow.label}</StatusBadge>
-                <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground">{workflow.reason}</p>
+              {readinessBasisUnreadable ? (
+                <p className="text-sm text-muted-foreground">
+                  A review verdict is not available on this page load, because part of the linked basis it is computed
+                  from could not be read. See the disclosure at the top of the page.
+                </p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusBadge tone={workflow.tone}>{workflow.label}</StatusBadge>
+                    <StatusBadge tone={workflow.planningOutputTone}>{workflow.planningOutputLabel}</StatusBadge>
+                  </div>
+                  <p className="mt-3 text-sm text-muted-foreground">{workflow.reason}</p>
+                </>
+              )}
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Readiness checklist</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">
-                  {readiness.readyCheckCount}/{readiness.totalCheckCount}
+                  {readinessBasisUnreadable ? UNKNOWN_COUNT : `${readiness.readyCheckCount}/${readiness.totalCheckCount}`}
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {readiness.missingCheckCount === 0
-                    ? "All explicit basis checks are visible."
-                    : `${readiness.missingCheckCount} checklist gap${readiness.missingCheckCount === 1 ? "" : "s"} remain.`}
+                  {readinessBasisUnreadable
+                    ? "The checks are computed from linked records this page could not read."
+                    : readiness.missingCheckCount === 0
+                      ? "All explicit basis checks are visible."
+                      : `${readiness.missingCheckCount} checklist gap${readiness.missingCheckCount === 1 ? "" : "s"} remain.`}
                 </p>
               </div>
 
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Linkage ledger</p>
-                <p className="mt-2 text-2xl font-semibold tracking-tight">{planLinks.length}</p>
+                <p className="mt-2 text-2xl font-semibold tracking-tight">
+                  {planLinksUnreadable ? UNKNOWN_COUNT : planLinks.length}
+                </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  {planLinks.length === 0
-                    ? "No explicit links stored on the plan yet."
-                    : `${explicitProjectCount} project, ${explicitScenarioCount} scenario, ${explicitCampaignCount} campaign, ${explicitReportCount} report links are recorded.`}
+                  {planLinksUnreadable
+                    ? "The plan's link set could not be read, so the number of stored links is unknown — not zero."
+                    : planLinks.length === 0
+                      ? "No explicit links stored on the plan yet."
+                      : `${explicitProjectCount} project, ${explicitScenarioCount} scenario, ${explicitCampaignCount} campaign, ${explicitReportCount} report links are recorded.`}
                 </p>
               </div>
             </div>
 
-            {workflow.reviewNotes.length > 0 ? (
+            {!readinessBasisUnreadable && workflow.reviewNotes.length > 0 ? (
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Review notes</p>
                 <div className="mt-3 space-y-2 text-sm text-muted-foreground">
@@ -824,7 +977,9 @@ export default async function PlanDetailPage({
             </div>
           </div>
 
-          {linkedProjects.length === 0 ? (
+          {linkedProjectsUnreadable ? (
+            <SectionReadFailure title="Project links could not be read" noun="linked project records" />
+          ) : linkedProjects.length === 0 ? (
             <div className="mt-5">
               <EmptyState title="No linked projects" description="Attach a primary project or related project record to anchor this plan." compact />
             </div>
@@ -867,7 +1022,9 @@ export default async function PlanDetailPage({
             <Radar className="h-5 w-5 text-muted-foreground" />
           </div>
 
-          {linkedScenarios.length === 0 ? (
+          {linkedScenariosUnreadable ? (
+            <SectionReadFailure title="Scenario links could not be read" noun="linked scenario sets" />
+          ) : linkedScenarios.length === 0 ? (
             <div className="mt-5">
               <EmptyState title="No scenario sets linked" description="Link scenarios directly or through the primary project." compact />
             </div>
@@ -886,7 +1043,11 @@ export default async function PlanDetailPage({
                     {scenario.summary || scenario.planning_question || "No scenario summary captured yet."}
                   </p>
                   <p className="mt-2 text-[0.73rem] text-muted-foreground">
-                    {pluralize(scenario.entryCount, "entry")} · {pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")} · {pluralize(scenario.attachedRunCount, "attached run")} · {scenario.baseline_entry_id ? "Baseline set" : "Baseline missing"}
+                    {scenarioStatsUnreadable
+                      ? "Entry counts unavailable — the scenario entries could not be read"
+                      : `${pluralize(scenario.entryCount, "entry")} · ${pluralize(scenario.readyEntryCount, "ready alternative", "ready alternatives")} · ${pluralize(scenario.attachedRunCount, "attached run")}`}
+                    {" · "}
+                    {scenario.baseline_entry_id ? "Baseline set" : "Baseline missing"}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     {scenario.linkBasis === "project"
@@ -911,7 +1072,9 @@ export default async function PlanDetailPage({
             <MessagesSquare className="h-5 w-5 text-muted-foreground" />
           </div>
 
-          {linkedCampaigns.length === 0 ? (
+          {linkedCampaignsUnreadable ? (
+            <SectionReadFailure title="Campaign links could not be read" noun="linked engagement campaigns" />
+          ) : linkedCampaigns.length === 0 ? (
             <div className="mt-5">
               <EmptyState title="No campaigns linked" description="Link engagement campaigns to expose intake basis for this plan." compact />
             </div>
@@ -928,7 +1091,11 @@ export default async function PlanDetailPage({
                   <h3 className="mt-3 font-semibold tracking-tight">{campaign.title}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{campaign.summary || "No campaign summary captured yet."}</p>
                   <p className="mt-2 text-[0.73rem] text-muted-foreground">
-                    {pluralize(campaign.categoryCount, "category")} · {pluralize(campaign.itemCount, "item")} · {campaign.approvedItemCount} approved · {campaign.pendingItemCount} pending{campaign.flaggedItemCount > 0 ? ` · ${campaign.flaggedItemCount} flagged` : ""} · via {linkBasisLabel(campaign.linkBasis)}
+                    {campaignStatsUnreadable
+                      ? "Category and item counts unavailable — the engagement records could not be read"
+                      : `${pluralize(campaign.categoryCount, "category", "categories")} · ${pluralize(campaign.itemCount, "item")} · ${campaign.approvedItemCount} approved · ${campaign.pendingItemCount} pending${campaign.flaggedItemCount > 0 ? ` · ${campaign.flaggedItemCount} flagged` : ""}`}
+                    {" · via "}
+                    {linkBasisLabel(campaign.linkBasis)}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     {campaign.linkBasis === "project"
@@ -953,7 +1120,9 @@ export default async function PlanDetailPage({
             <ScrollText className="h-5 w-5 text-muted-foreground" />
           </div>
 
-          {linkedReports.length === 0 ? (
+          {linkedReportsUnreadable ? (
+            <SectionReadFailure title="Report links could not be read" noun="linked reports" />
+          ) : linkedReports.length === 0 ? (
             <div className="mt-5">
               <EmptyState title="No reports linked" description="Link reports directly or via the primary project to show what outputs already exist." compact />
             </div>
@@ -968,7 +1137,14 @@ export default async function PlanDetailPage({
                   <h3 className="mt-3 font-semibold tracking-tight">{report.title}</h3>
                   <p className="mt-2 text-sm text-muted-foreground">{report.summary || "No report summary captured yet."}</p>
                   <p className="mt-2 text-[0.73rem] text-muted-foreground">
-                    {pluralize(report.linkedRunCount, "linked run")} · {pluralize(report.enabledSectionCount, "enabled section")} · {pluralize(report.artifactCount, "artifact")}{report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""} · {report.generated_at ? `Generated ${formatPlanDateTime(report.generated_at)}` : "Not generated yet"} · via {linkBasisLabel(report.linkBasis)}
+                    {reportStatsUnreadable
+                      ? "Run, section and artifact counts unavailable — those records could not be read"
+                      : `${pluralize(report.linkedRunCount, "linked run")} · ${pluralize(report.enabledSectionCount, "enabled section")} · ${pluralize(report.artifactCount, "artifact")}`}
+                    {report.latest_artifact_kind ? ` · ${report.latest_artifact_kind.toUpperCase()}` : ""}
+                    {" · "}
+                    {report.generated_at ? `Generated ${formatPlanDateTime(report.generated_at)}` : "Not generated yet"}
+                    {" · via "}
+                    {linkBasisLabel(report.linkBasis)}
                   </p>
                   <p className="mt-2 text-xs text-muted-foreground">
                     {report.linkBasis === "project"
@@ -996,11 +1172,15 @@ export default async function PlanDetailPage({
           </div>
           <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
             <Database className="h-3.5 w-3.5" />
-            {supportingModels.length} supporting model{supportingModels.length === 1 ? "" : "s"}
+            {supportingModelsUnreadable
+              ? "Supporting models unavailable"
+              : `${supportingModels.length} supporting model${supportingModels.length === 1 ? "" : "s"}`}
           </span>
         </div>
 
-        {supportingModels.length === 0 ? (
+        {supportingModelsUnreadable ? (
+          <SectionReadFailure title="Supporting models could not be read" noun="supporting model records" />
+        ) : supportingModels.length === 0 ? (
           <div className="mt-5">
             <EmptyState
               title="No model support linked yet"
@@ -1014,7 +1194,11 @@ export default async function PlanDetailPage({
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Supporting models</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight">{supportingModels.length}</p>
-                <p className="mt-2 text-sm text-muted-foreground">{supportingModelReadyCount} currently pass every explicit readiness check.</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {supportingModelLinksUnreadable
+                    ? "How many pass every readiness check is unknown — each model's link set could not be read."
+                    : `${supportingModelReadyCount} currently pass every explicit readiness check.`}
+                </p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
                 <p className="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">With project basis</p>
@@ -1051,13 +1235,21 @@ export default async function PlanDetailPage({
                   </div>
 
                   <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
-                    {model.readiness.label} · {model.config_version ? `Config ${model.config_version}` : "Config pending"} · {model.linkageCounts.datasets} datasets · {model.linkageCounts.runs} runs · {model.linkageCounts.reports} reports · via {modelLinkBasisLabel(model.linkBasis)}
+                    {supportingModelLinksUnreadable
+                      ? "Readiness and linkage counts unavailable — this model's link set could not be read"
+                      : `${model.readiness.label} · ${model.linkageCounts.datasets} datasets · ${model.linkageCounts.runs} runs · ${model.linkageCounts.reports} reports`}
+                    {" · "}
+                    {model.config_version ? `Config ${model.config_version}` : "Config pending"}
+                    {" · via "}
+                    {modelLinkBasisLabel(model.linkBasis)}
                   </p>
 
                   <p className="mt-3 text-sm text-muted-foreground">
-                    {model.readiness.missingCheckLabels.length > 0
-                      ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
-                      : model.workflow.reason}
+                    {supportingModelLinksUnreadable
+                      ? "No readiness verdict is shown for this model: it is computed from datasets, runs and reports this page could not read, so any gap listed here would describe the failed read rather than the model."
+                      : model.readiness.missingCheckLabels.length > 0
+                        ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
+                        : model.workflow.reason}
                   </p>
                 </Link>
               ))}
@@ -1076,9 +1268,11 @@ export default async function PlanDetailPage({
           <FolderKanban className="h-5 w-5 text-muted-foreground" />
         </div>
 
-        {planLinks.length === 0 ? (
+        {planLinksUnreadable ? (
+          <SectionReadFailure title="The plan's link set could not be read" noun="explicit plan links" />
+        ) : planLinks.length === 0 ? (
           <div className="mt-5">
-            <EmptyState title="No explicit links yet" description="Pass 1 already shows project-derived context; explicit plan links can be added through the API." compact />
+            <EmptyState title="No explicit links yet" description="Project-derived context is already shown above. Use Linked records in the Plan record workflow panel to attach projects, programs, reports, or scenario sets directly." compact />
           </div>
         ) : (
           <div className="mt-5 space-y-4">

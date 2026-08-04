@@ -18,8 +18,9 @@ import { ProgramDetailControls } from "@/components/programs/program-detail-cont
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { EmptyState } from "@/components/ui/state-block";
+import { EmptyState, StateBlock } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
   buildProgramReadiness,
   buildProgramWorkflowSummary,
@@ -173,6 +174,28 @@ type ReportArtifactRow = {
   generated_at: string | null;
 };
 
+/**
+ * What a section says INSTEAD of its empty state when the read behind it failed.
+ *
+ * "No plan basis linked" is a claim about this programming cycle, and a planner
+ * who believes it will go and re-link work that is already there — or, worse,
+ * report the package as lacking a basis it actually has. A failed query is not
+ * evidence for that sentence, so the section says what is true instead.
+ */
+function SectionReadFailure({ title, noun, compact = true }: { title: string; noun: string; compact?: boolean }) {
+  return (
+    <StateBlock
+      tone="danger"
+      title={title}
+      description={`The ${noun} for this program could not be read, so this section cannot say whether any are linked. It is not a statement that none exist — retry, and tell your operator if it persists.`}
+      compact={compact}
+    />
+  );
+}
+
+/** A count that cannot be trusted is shown as unknown, never as zero. */
+const UNKNOWN_COUNT = "—";
+
 export default async function ProgramDetailPage({
   params,
 }: {
@@ -188,13 +211,30 @@ export default async function ProgramDetailPage({
     redirect("/sign-in");
   }
 
-  const { data: program } = await supabase
+  // Every read below is registered here, and anything that failed is disclosed
+  // by name at the top of the page. Before this, a failed read and an empty
+  // table were the same `null`, and the empty-state copy — written for the
+  // empty table — stated the failure as a fact about the planner's package.
+  const reads = new ReadFailureLog();
+
+  const programResult = await supabase
     .from("programs")
     .select(
       "id, workspace_id, project_id, title, program_type, status, cycle_name, funding_classification, sponsor_agency, owner_label, cadence_label, fiscal_year_start, fiscal_year_end, nomination_due_at, adoption_target_at, summary, created_at, updated_at"
     )
     .eq("id", programId)
     .maybeSingle();
+
+  // The one load-bearing read on this page, and the one place where "could not
+  // read it" and "it is not there" must not be merged: `notFound()` tells the
+  // planner this program does not exist, and a 400 or a policy failure is not
+  // evidence of that. It raises instead, so the route's error boundary says
+  // something a retry can act on.
+  if (programResult.error) {
+    throw new Error(`Could not read this program: ${programResult.error.message}`);
+  }
+
+  const program = programResult.data;
 
   if (!program) {
     notFound();
@@ -244,6 +284,14 @@ export default async function ProgramDetailPage({
         .eq("program_id", program.id)
         .order("updated_at", { ascending: false }),
     ]);
+
+  reads.check("selectable projects", projectsResult);
+  const primaryProjectUnreadable = reads.check("this program's primary project", primaryProjectResult);
+  const linksUnreadable = reads.check("this program's link set", linksResult);
+  const projectPlansUnreadable = reads.check("plans on the primary project", projectPlansResult);
+  const projectReportsUnreadable = reads.check("reports on the primary project", projectReportsResult);
+  const projectCampaignsUnreadable = reads.check("engagement campaigns on the primary project", projectCampaignsResult);
+  const fundingOpportunitiesUnreadable = reads.check("funding opportunities on this cycle", fundingOpportunitiesResult);
 
   const links = linksResult.data ?? [];
   const planLinkIds = links.filter((link) => link.link_type === "plan").map((link) => link.linked_id);
@@ -301,6 +349,14 @@ export default async function ProgramDetailPage({
         : Promise.resolve({ data: [], error: null }),
     ]);
 
+  reads.check("selectable plans", allPlansResult);
+  reads.check("selectable reports", allReportsResult);
+  reads.check("selectable engagement campaigns", allCampaignsResult);
+  const explicitPlansUnreadable = reads.check("plans linked to this program", explicitPlansResult);
+  const explicitReportsUnreadable = reads.check("reports linked to this program", explicitReportsResult);
+  const explicitCampaignsUnreadable = reads.check("engagement campaigns linked to this program", explicitCampaignsResult);
+  const explicitProjectsUnreadable = reads.check("related project records", explicitProjectsResult);
+
   const campaignIds = Array.from(
     new Set([
       ...((projectCampaignsResult.data ?? []) as Array<{ id: string }>).map((item) => item.id),
@@ -326,6 +382,18 @@ export default async function ProgramDetailPage({
           .order("generated_at", { ascending: false })
       : Promise.resolve({ data: [], error: null }),
   ]);
+
+  const engagementItemsUnreadable = reads.check("engagement items", engagementItemsResult);
+  const reportArtifactsUnreadable = reads.check("stored report artifacts", reportArtifactsResult);
+
+  // A section is untrustworthy if ANY read feeding it failed — including the
+  // link set, because a program's records arrive through two doors (the primary
+  // project and an explicit program link) and losing either one is enough to
+  // make "none linked" false.
+  const linkedProjectsUnreadable = primaryProjectUnreadable || explicitProjectsUnreadable || linksUnreadable;
+  const linkedPlansUnreadable = projectPlansUnreadable || explicitPlansUnreadable || linksUnreadable;
+  const linkedReportsUnreadable = projectReportsUnreadable || explicitReportsUnreadable || linksUnreadable;
+  const linkedCampaignsUnreadable = projectCampaignsUnreadable || explicitCampaignsUnreadable || linksUnreadable;
 
   const engagementStatsByCampaign = new Map<string, { approved: number; pending: number }>();
   for (const row of engagementItemsResult.data ?? []) {
@@ -484,6 +552,9 @@ export default async function ProgramDetailPage({
       : Promise.resolve({ data: [], error: null }),
   ]);
 
+  const projectModelsUnreadable = reads.check("models on the primary project", projectModelsResult);
+  const planModelLinksUnreadable = reads.check("models linked to this program's plans", planModelLinksResult);
+
   const planBasedModelIds = Array.from(
     new Set(((planModelLinksResult.data ?? []) as Array<{ model_id: string }>).map((link) => link.model_id))
   );
@@ -512,6 +583,26 @@ export default async function ProgramDetailPage({
           )
       : Promise.resolve({ data: [], error: null }),
   ]);
+
+  const planBasedModelsUnreadable = reads.check("model records linked through this program's plans", planBasedModelsResult);
+  /**
+   * Narrower than `supportingModelsUnreadable` on purpose: the model records can
+   * load while their link sets do not. Suppressing the whole section would deny
+   * a planner models that were read fine — but the per-model readiness verdict
+   * and run/report counts are built from `supportingModelLinksByModel.get(id) ??
+   * []`, so a failed read reappears as a confident "0 runs" and a "Missing
+   * basis: …" describing the failure rather than the model.
+   */
+  const supportingModelLinksUnreadable = reads.check(
+    "the supporting models' own link sets",
+    supportingModelLinksResult
+  );
+
+  // The plan lane feeds the model lane: if the plans could not be read, the
+  // model ids derived from them are missing too, so "no supporting models" would
+  // be a second-order lie.
+  const supportingModelsUnreadable =
+    projectModelsUnreadable || planModelLinksUnreadable || planBasedModelsUnreadable || linkedPlansUnreadable;
 
   const supportingModelLinksByModel = new Map<string, Array<{ model_id: string; link_type: string; linked_id: string }>>();
   for (const link of (supportingModelLinksResult.data ?? []) as Array<{ model_id: string; link_type: string; linked_id: string }>) {
@@ -564,6 +655,13 @@ export default async function ProgramDetailPage({
     }
     return sum + Number(opportunity.expected_award_amount ?? 0);
   }, 0);
+
+  // The readiness checklist and the workflow verdict are computed FROM those
+  // counts. A zero that came from a failed read produces a confident "nothing is
+  // linked yet" verdict, which is the same lie one level up. Withhold the
+  // verdict rather than restate the failure as it.
+  const readinessBasisUnreadable =
+    linkedProjectsUnreadable || linkedPlansUnreadable || linkedReportsUnreadable || linkedCampaignsUnreadable;
 
   const readiness = buildProgramReadiness({
     cycleName: program.cycle_name,
@@ -628,6 +726,14 @@ export default async function ProgramDetailPage({
         Back to Programs
       </Link>
 
+      {reads.any ? (
+        <StateBlock
+          tone="danger"
+          title="Part of this page could not be read"
+          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
+        />
+      ) : null}
+
       <header className="grid gap-4 xl:grid-cols-[1.02fr_0.98fr]">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -643,7 +749,11 @@ export default async function ProgramDetailPage({
             <StatusBadge tone={programStatusTone(program.status)}>{formatProgramStatusLabel(program.status)}</StatusBadge>
             <span className="module-record-chip"><span>Type</span><strong>{formatProgramTypeLabel(program.program_type)}</strong></span>
           </div>
-          <p className="text-[0.73rem] text-muted-foreground">{readiness.label}</p>
+          <p className="text-[0.73rem] text-muted-foreground">
+            {readinessBasisUnreadable
+              ? "Readiness is withheld: part of this package's linked basis could not be read, so any verdict here would be computed from counts that are not known to be complete."
+              : readiness.label}
+          </p>
 
           <div className="module-summary-grid cols-3 mt-6">
             <div className="module-summary-card">
@@ -653,13 +763,25 @@ export default async function ProgramDetailPage({
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Linked basis</p>
-              <p className="module-summary-value">{linkedBasisCount}</p>
-              <p className="module-summary-detail">Plans, models, reports, and engagement records tied into this package.</p>
+              <p className="module-summary-value">
+                {readinessBasisUnreadable || supportingModelsUnreadable ? UNKNOWN_COUNT : linkedBasisCount}
+              </p>
+              <p className="module-summary-detail">
+                {readinessBasisUnreadable || supportingModelsUnreadable
+                  ? "Part of the linked basis could not be read, so this count is unknown rather than zero."
+                  : "Plans, models, reports, and engagement records tied into this package."}
+              </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Schedule</p>
-              <p className="module-summary-value">{readiness.readyCheckCount}/{readiness.totalCheckCount}</p>
-              <p className="module-summary-detail">Readiness checks satisfied across metadata and supporting evidence.</p>
+              <p className="module-summary-value">
+                {readinessBasisUnreadable ? UNKNOWN_COUNT : `${readiness.readyCheckCount}/${readiness.totalCheckCount}`}
+              </p>
+              <p className="module-summary-detail">
+                {readinessBasisUnreadable
+                  ? "The checks are computed from linked records this page could not read."
+                  : "Readiness checks satisfied across metadata and supporting evidence."}
+              </p>
             </div>
           </div>
         </article>
@@ -694,46 +816,63 @@ export default async function ProgramDetailPage({
             <div className="module-section-heading">
               <p className="module-section-label">Readiness</p>
               <h2 className="module-section-title">Package basis and timing</h2>
-              <p className="module-section-description">{workflow.packageDetail}</p>
+              <p className="module-section-description">
+                {readinessBasisUnreadable
+                  ? "Package posture is withheld on this page load — see the disclosure at the top of the page."
+                  : workflow.packageDetail}
+              </p>
             </div>
             <span className="module-inline-item">
               <ShieldCheck className="h-3.5 w-3.5" />
-              {readiness.label}
+              {readinessBasisUnreadable ? "Readiness unavailable" : readiness.label}
             </span>
           </div>
 
-          <div className="mt-5 space-y-3">
-            {readiness.checks.map((check) => (
-              <div key={check.key} className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{check.label}</p>
-                    <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{check.detail}</p>
+          {readinessBasisUnreadable ? (
+            <div className="mt-5">
+              <StateBlock
+                tone="danger"
+                title="Readiness cannot be assessed right now"
+                description="Part of this program's linked basis could not be read, and every check below is derived from those links. They are withheld rather than shown as gaps you would then go and try to fill — a missing check here would be a fact about the failed read, not about the package."
+                compact
+              />
+            </div>
+          ) : (
+            <>
+              <div className="mt-5 space-y-3">
+                {readiness.checks.map((check) => (
+                  <div key={check.key} className="rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{check.label}</p>
+                        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{check.detail}</p>
+                      </div>
+                      <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Missing"}</StatusBadge>
+                    </div>
                   </div>
-                  <StatusBadge tone={check.ready ? "success" : "warning"}>{check.ready ? "Ready" : "Missing"}</StatusBadge>
+                ))}
+              </div>
+
+              <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
+                <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workflow summary</p>
+                <p className="mt-2 text-base font-semibold text-foreground">{workflow.label}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{workflow.reason}</p>
+                <div className="mt-4 space-y-2">
+                  {workflow.actionItems.length > 0 ? (
+                    workflow.actionItems.map((item) => (
+                      <div key={item} className="rounded-xl border border-border/60 bg-card px-3 py-2 text-sm text-muted-foreground">
+                        {item}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="rounded-xl border border-border/60 bg-card px-3 py-2 text-sm text-muted-foreground">
+                      No immediate action items surfaced by the current metadata and linked records.
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
-          </div>
-
-          <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/80 p-4">
-            <p className="text-[0.72rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Workflow summary</p>
-            <p className="mt-2 text-base font-semibold text-foreground">{workflow.label}</p>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{workflow.reason}</p>
-            <div className="mt-4 space-y-2">
-              {workflow.actionItems.length > 0 ? (
-                workflow.actionItems.map((item) => (
-                  <div key={item} className="rounded-xl border border-border/60 bg-card px-3 py-2 text-sm text-muted-foreground">
-                    {item}
-                  </div>
-                ))
-              ) : (
-                <div className="rounded-xl border border-border/60 bg-card px-3 py-2 text-sm text-muted-foreground">
-                  No immediate action items surfaced by the current metadata and linked records.
-                </div>
-              )}
-            </div>
-          </div>
+            </>
+          )}
         </article>
 
         <div className="space-y-6">
@@ -802,20 +941,32 @@ export default async function ProgramDetailPage({
               </div>
               <span className="module-inline-item">
                 <CalendarClock className="h-3.5 w-3.5" />
-                <strong>{fundingOpportunities.length}</strong> linked
+                <strong>{fundingOpportunitiesUnreadable ? UNKNOWN_COUNT : fundingOpportunities.length}</strong> linked
               </span>
             </div>
 
             <div className="module-summary-grid cols-2 mt-5">
               <div className="module-summary-card">
                 <p className="module-summary-label">Tracked opportunities</p>
-                <p className="module-summary-value">{fundingOpportunities.length}</p>
-                <p className="module-summary-detail">Open, upcoming, and awarded opportunities tied to this cycle.</p>
+                <p className="module-summary-value">
+                  {fundingOpportunitiesUnreadable ? UNKNOWN_COUNT : fundingOpportunities.length}
+                </p>
+                <p className="module-summary-detail">
+                  {fundingOpportunitiesUnreadable
+                    ? "The opportunities on this cycle could not be read, so this count is unknown rather than zero."
+                    : "Open, upcoming, and awarded opportunities tied to this cycle."}
+                </p>
               </div>
               <div className="module-summary-card">
                 <p className="module-summary-label">Likely dollars</p>
-                <p className="module-summary-value text-base leading-tight">{formatCurrency(likelyOpportunityAmount)}</p>
-                <p className="module-summary-detail">Expected dollars attached to pursue decisions within this cycle.</p>
+                <p className="module-summary-value text-base leading-tight">
+                  {fundingOpportunitiesUnreadable ? UNKNOWN_COUNT : formatCurrency(likelyOpportunityAmount)}
+                </p>
+                <p className="module-summary-detail">
+                  {fundingOpportunitiesUnreadable
+                    ? "A dollar total cannot be shown when the opportunities behind it could not be read — a $0 here would read as a finding."
+                    : "Expected dollars attached to pursue decisions within this cycle."}
+                </p>
               </div>
             </div>
 
@@ -829,7 +980,9 @@ export default async function ProgramDetailPage({
                 description="Log a specific grant or formula opportunity tied to this program record."
               />
 
-              {fundingOpportunities.length === 0 ? (
+              {fundingOpportunitiesUnreadable ? (
+                <SectionReadFailure title="Funding opportunities could not be read" noun="funding opportunities" compact={false} />
+              ) : fundingOpportunities.length === 0 ? (
                 <EmptyState
                   title="No funding opportunities linked yet"
                   description="Add the first open or upcoming opportunity so the cycle record can carry real pursuit timing and ownership."
@@ -894,7 +1047,9 @@ export default async function ProgramDetailPage({
                   <FolderKanban className="h-4 w-4 text-muted-foreground" />
                   <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Projects</h3>
                 </div>
-                {linkedProjects.length === 0 ? (
+                {linkedProjectsUnreadable ? (
+                  <SectionReadFailure title="Project links could not be read" noun="linked project records" />
+                ) : linkedProjects.length === 0 ? (
                   <EmptyState title="No project links yet" description="Attach a primary or related project to anchor the package." />
                 ) : (
                   <div className="space-y-3">
@@ -927,7 +1082,9 @@ export default async function ProgramDetailPage({
                   <ClipboardList className="h-4 w-4 text-muted-foreground" />
                   <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Plans</h3>
                 </div>
-                {linkedPlans.length === 0 ? (
+                {linkedPlansUnreadable ? (
+                  <SectionReadFailure title="Plan links could not be read" noun="linked plan records" />
+                ) : linkedPlans.length === 0 ? (
                   <EmptyState title="No plan basis linked" description="Attach plan records that justify why this package belongs in the cycle." />
                 ) : (
                   <div className="space-y-3">
@@ -960,7 +1117,9 @@ export default async function ProgramDetailPage({
                   <Database className="h-4 w-4 text-muted-foreground" />
                   <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Models</h3>
                 </div>
-                {supportingModels.length === 0 ? (
+                {supportingModelsUnreadable ? (
+                  <SectionReadFailure title="Supporting models could not be read" noun="supporting model records" />
+                ) : supportingModels.length === 0 ? (
                   <EmptyState
                     title="No supporting models visible"
                     description="Anchor models to the primary project or linked plans so the package carries an explicit modeling basis."
@@ -1002,20 +1161,30 @@ export default async function ProgramDetailPage({
                                   {model.summary || "No summary on file for this supporting model record."}
                                 </p>
                                 <MetaList>
-                                  <MetaItem>{model.readiness.label}</MetaItem>
+                                  {supportingModelLinksUnreadable ? (
+                                    <MetaItem>Readiness and linkage counts unavailable — link set unreadable</MetaItem>
+                                  ) : (
+                                    <MetaItem>{model.readiness.label}</MetaItem>
+                                  )}
                                   <MetaItem>Via {modelSupportBasisLabel(model.supportBasis)}</MetaItem>
                                   <MetaItem>{model.config_version ? `Config ${model.config_version}` : "Config pending"}</MetaItem>
                                   <MetaItem>{model.owner_label ? `Owner ${model.owner_label}` : "Owner pending"}</MetaItem>
-                                  <MetaItem>{model.linkageCounts.runs} runs</MetaItem>
-                                  <MetaItem>{model.linkageCounts.reports} reports</MetaItem>
+                                  {supportingModelLinksUnreadable ? null : (
+                                    <>
+                                      <MetaItem>{model.linkageCounts.runs} runs</MetaItem>
+                                      <MetaItem>{model.linkageCounts.reports} reports</MetaItem>
+                                    </>
+                                  )}
                                   {model.linkedPlanTitles.map((title) => (
                                     <MetaItem key={`${model.id}-${title}`}>Plan {title}</MetaItem>
                                   ))}
                                 </MetaList>
                                 <p className="text-sm text-muted-foreground">
-                                  {model.readiness.missingCheckLabels.length > 0
-                                    ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
-                                    : model.workflow.reason}
+                                  {supportingModelLinksUnreadable
+                                    ? "No readiness verdict is shown for this model: it is computed from runs and reports this page could not read, so any gap listed here would describe the failed read rather than the model."
+                                    : model.readiness.missingCheckLabels.length > 0
+                                      ? `Missing basis: ${model.readiness.missingCheckLabels.join(", ")}.`
+                                      : model.workflow.reason}
                                 </p>
                               </div>
                             </div>
@@ -1032,7 +1201,9 @@ export default async function ProgramDetailPage({
                   <FileStack className="h-4 w-4 text-muted-foreground" />
                   <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Reports</h3>
                 </div>
-                {linkedReports.length === 0 ? (
+                {linkedReportsUnreadable ? (
+                  <SectionReadFailure title="Report links could not be read" noun="linked report packets" />
+                ) : linkedReports.length === 0 ? (
                   <EmptyState title="No packet outputs linked" description="Attach reports or packet records that support the programming narrative." />
                 ) : (
                   <div className="space-y-3">
@@ -1043,7 +1214,13 @@ export default async function ProgramDetailPage({
                       emptyLabel="No queued packet work is linked to this program right now."
                     />
                     <div className="flex flex-wrap gap-2">
-                      {programReportAttentionCount > 0 ? (
+                      {reportArtifactsUnreadable ? (
+                        // "Packets current" is an all-clear, and packet freshness
+                        // is computed from the artifact rows. An all-clear from a
+                        // read that failed is the worst possible direction to be
+                        // wrong in, so it is withheld.
+                        <StatusBadge tone="warning">Packet freshness unavailable</StatusBadge>
+                      ) : programReportAttentionCount > 0 ? (
                         <StatusBadge tone="warning">{programReportAttentionCount} need attention</StatusBadge>
                       ) : (
                         <StatusBadge tone="success">Packets current</StatusBadge>
@@ -1065,7 +1242,11 @@ export default async function ProgramDetailPage({
                                 {report.summary || "No summary on file for this linked packet record."}
                               </p>
                               <MetaList>
-                                <MetaItem>{report.artifactCount} artifacts</MetaItem>
+                                <MetaItem>
+                                  {reportArtifactsUnreadable
+                                    ? "Artifact count unavailable — the stored artifacts could not be read"
+                                    : `${report.artifactCount} artifacts`}
+                                </MetaItem>
                                 <MetaItem>
                                   {report.generated_at ? `Generated ${formatProgramDateTime(report.generated_at)}` : "Not generated"}
                                 </MetaItem>
@@ -1085,7 +1266,9 @@ export default async function ProgramDetailPage({
                   <MessagesSquare className="h-4 w-4 text-muted-foreground" />
                   <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Engagement</h3>
                 </div>
-                {linkedCampaigns.length === 0 ? (
+                {linkedCampaignsUnreadable ? (
+                  <SectionReadFailure title="Engagement links could not be read" noun="linked engagement campaigns" />
+                ) : linkedCampaigns.length === 0 ? (
                   <EmptyState title="No engagement evidence linked" description="Attach outreach campaigns so the package carries a visible public record basis." />
                 ) : (
                   <div className="space-y-3">
@@ -1107,8 +1290,14 @@ export default async function ProgramDetailPage({
                                 {campaign.summary || "No summary on file for this linked engagement campaign."}
                               </p>
                               <MetaList>
-                                <MetaItem>{campaign.approvedItemCount} approved items</MetaItem>
-                                <MetaItem>{campaign.pendingItemCount} pending items</MetaItem>
+                                {engagementItemsUnreadable ? (
+                                  <MetaItem>Item counts unavailable — the engagement items could not be read</MetaItem>
+                                ) : (
+                                  <>
+                                    <MetaItem>{campaign.approvedItemCount} approved items</MetaItem>
+                                    <MetaItem>{campaign.pendingItemCount} pending items</MetaItem>
+                                  </>
+                                )}
                               </MetaList>
                             </div>
                           </div>

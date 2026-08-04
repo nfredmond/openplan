@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { StateBlock } from "@/components/ui/state-block";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import {
@@ -137,6 +139,30 @@ type ModelingClaimDecisionDefaultRow = {
   county_run_id: string | null;
 };
 
+/**
+ * Classify first, collect what is left. `pending_schema` is a deployment that
+ * has not run a migration — already classified, with its own fallback — so it
+ * stays out of the failure log. Every other error is collected, because each of
+ * these reads ends up as a number on the registry board and a zero from a
+ * broken query is indistinguishable from a zero that is true.
+ */
+function classifyRead(
+  reads: ReadFailureLog,
+  label: string,
+  result: { error?: { message?: string | null } | null } | null | undefined
+): "ok" | "pending_schema" | "failed" {
+  if (looksLikePendingSchema(result?.error?.message)) return "pending_schema";
+  return reads.check(label, result) ? "failed" : "ok";
+}
+
+/** The failed reads, listed in a sentence. See the disclosure block for why this
+ *  page composes its own notice instead of using `ReadFailureLog.describe()`. */
+function listFailedReadLabels(reads: ReadFailureLog): string {
+  const labels = reads.all.map((failure) => failure.label);
+  if (labels.length <= 1) return labels[0] ?? "part of this registry";
+  return `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
+}
+
 export default async function RtpPage({ searchParams }: { searchParams: RtpPageSearchParams }) {
   const filters = await searchParams;
   const selectedPacketFilter = normalizePacketAttentionFilter(filters.packet);
@@ -186,8 +212,16 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       .limit(1),
   ]);
 
-  const rtpCyclesData = rtpCyclesResult.data ?? [];
-  const defaultModelingCountyRunId = looksLikePendingSchema(defaultModelingClaimResult.error?.message)
+  // A read that failed may not be rendered as an answer. The registry's own
+  // empty state says "No RTP cycles yet" — a claim about the workspace that a
+  // broken query cannot make, and one that would send a planner off to re-create
+  // a plan update that already exists. Classify first (a pending migration has a
+  // truer thing to say), then collect and disclose what is left.
+  const reads = new ReadFailureLog();
+  const rtpCyclesReadFailed = classifyRead(reads, "the RTP cycles in this workspace", rtpCyclesResult) === "failed";
+  const rtpCyclesData = rtpCyclesResult.error ? [] : (rtpCyclesResult.data ?? []);
+  classifyRead(reads, "the default modeling run for this workspace", defaultModelingClaimResult);
+  const defaultModelingCountyRunId = defaultModelingClaimResult.error
     ? null
     : (((defaultModelingClaimResult.data ?? []) as ModelingClaimDecisionDefaultRow[])[0]?.county_run_id ?? null);
   const rtpCycleIds = ((rtpCyclesData ?? []) as RtpCycleRow[]).map((cycle) => cycle.id);
@@ -218,7 +252,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
           .order("updated_at", { ascending: false })
       : initialPacketReportsResult;
 
-  const projectRtpLinks = looksLikePendingSchema(projectRtpLinksResult.error?.message)
+  classifyRead(reads, "the projects linked to these cycles", projectRtpLinksResult);
+  const projectRtpLinks = projectRtpLinksResult.error
     ? []
     : ((projectRtpLinksResult.data ?? []) as ProjectRtpLinkRow[]);
   const linkedProjectIds = [...new Set(projectRtpLinks.map((link) => link.project_id))];
@@ -257,20 +292,27 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  const fundingProfiles = looksLikePendingSchema(fundingProfilesResult.error?.message)
+  classifyRead(reads, "funding records for the linked projects", fundingProfilesResult);
+  classifyRead(reads, "committed awards for the linked projects", fundingAwardsResult);
+  classifyRead(reads, "pursued funding for the linked projects", fundingOpportunitiesResult);
+  classifyRead(reads, "reimbursement invoices for the linked projects", billingInvoicesResult);
+  classifyRead(reads, "reports for the linked projects", linkedProjectReportsResult);
+  const fundingProfiles = fundingProfilesResult.error
     ? []
     : ((fundingProfilesResult.data ?? []) as ProjectFundingProfileRow[]);
-  const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
+  const fundingAwards = fundingAwardsResult.error
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
-  const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
+  const fundingOpportunities = fundingOpportunitiesResult.error
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]);
-  const billingInvoices = looksLikePendingSchema(billingInvoicesResult.error?.message)
+  const billingInvoices = billingInvoicesResult.error
     ? []
     : ((billingInvoicesResult.data ?? []) as BillingInvoiceRow[]);
 
-  const linkedProjectReports = (linkedProjectReportsResult.data ?? []) as ProjectReportRow[];
+  const linkedProjectReports = linkedProjectReportsResult.error
+    ? []
+    : ((linkedProjectReportsResult.data ?? []) as ProjectReportRow[]);
   const linkedProjectReportIds = linkedProjectReports.map((r) => r.id);
   const linkedProjectReportArtifactsResult = linkedProjectReportIds.length
     ? await supabase
@@ -279,7 +321,10 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         .in("report_id", linkedProjectReportIds)
         .order("generated_at", { ascending: false })
     : { data: [], error: null };
-  const linkedProjectReportArtifacts = (linkedProjectReportArtifactsResult.data ?? []) as ProjectReportArtifactRow[];
+  classifyRead(reads, "the generated report artifacts", linkedProjectReportArtifactsResult);
+  const linkedProjectReportArtifacts = linkedProjectReportArtifactsResult.error
+    ? []
+    : ((linkedProjectReportArtifactsResult.data ?? []) as ProjectReportArtifactRow[]);
   const projectGrantModelingEvidenceByProjectId = buildProjectGrantModelingEvidenceByProjectId(
     linkedProjectReports,
     linkedProjectReportArtifacts
@@ -313,7 +358,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     linksByCycleId.set(link.rtp_cycle_id, current);
   }
 
-  const packetReports = looksLikePendingSchema(packetReportsResult.error?.message)
+  classifyRead(reads, "the board packet records for these cycles", packetReportsResult);
+  const packetReports = packetReportsResult.error
     ? []
     : ((packetReportsResult.data ?? []) as RtpPacketReportRow[]);
   const latestPacketReportByCycleId = new Map<string, RtpPacketReportRow>();
@@ -331,7 +377,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         .in("report_id", latestPacketReportIds)
     : { data: [], error: null };
 
-  const packetSections = looksLikePendingSchema(packetSectionsResult.error?.message)
+  classifyRead(reads, "the section layout of those packets", packetSectionsResult);
+  const packetSections = packetSectionsResult.error
     ? []
     : ((packetSectionsResult.data ?? []) as ReportSectionRow[]);
   const packetSectionsByReportId = new Map<string, ReportSectionRow[]>();
@@ -755,6 +802,41 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
 
   return (
     <section className="module-page">
+      {/*
+        Disclosed above the registry, because everything below it is counted
+        from these reads. The registry table's own empty state reads "No RTP
+        cycles yet" — a claim about this workspace — so when the cycle read is
+        the one that failed the notice says so in its own words rather than
+        letting that sentence stand as the answer. The database's message is
+        included: this is an internal page and an operator can act on it.
+
+        WHY THIS DOES NOT USE `reads.describe()`. That sentence promises
+        "anything below that depends on it is shown as unavailable rather than
+        as zero", which is true of the two cycle pages and NOT true here: the
+        summary cards below take `number` props, so a failed read still renders
+        "Cycles 0", "Linked projects 0" and "$0 outstanding". Until those props
+        can carry an unavailable state, the disclosure has to describe the page
+        that exists rather than the one the shared copy assumes — a notice that
+        over-claims is the same defect one level up.
+      */}
+      {reads.any ? (
+        <StateBlock
+          tone="danger"
+          title={
+            rtpCyclesReadFailed
+              ? "The RTP cycle list could not be read"
+              : "Part of this registry could not be read"
+          }
+          description={`${
+            rtpCyclesReadFailed
+              ? "No cycle is listed below because the query failed, not because this workspace has none. "
+              : ""
+          }This registry could not read ${listFailedReadLabels(reads)}. The summary counts and dollar totals below are computed only from what did load, so a zero or an empty list there is not a finding about this workspace — do not create a cycle, a link, or an invoice on the strength of this page until this notice clears. ${reads
+            .messages()
+            .join(" · ")}`}
+        />
+      ) : null}
+
       <RtpRegistryOverview
         cycleCount={typedCycles.length}
         draftCount={draftCount}

@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
+import type { DecisionUseDisclosure } from "@/lib/analysis/decision-use";
 import type { AnalysisResult } from "./_types";
 import type {
   MapViewSummaryItem,
@@ -19,6 +20,8 @@ type ExploreCurrentResultCardProps = {
   currentRunNarrativeLabel: string;
   currentRunMapContextLabel: string;
   currentMapViewSummary: MapViewSummaryItem[];
+  /** How far this run may be carried into a decision — rendered as visible text. */
+  decisionUse: DecisionUseDisclosure;
   resultScoreTiles: ResultScoreTile[];
   resultStatusBadges: ResultStatusBadge[];
   sourceTransparency: SourceTransparency[];
@@ -37,6 +40,7 @@ export function ExploreCurrentResultCard({
   currentRunNarrativeLabel,
   currentRunMapContextLabel,
   currentMapViewSummary,
+  decisionUse,
   resultScoreTiles,
   resultStatusBadges,
   sourceTransparency,
@@ -124,7 +128,7 @@ export function ExploreCurrentResultCard({
             </div>
             <div className="flex flex-wrap gap-2">
               {resultStatusBadges.map((item) => (
-                <StatusBadge key={item.label} tone={item.tone}>
+                <StatusBadge key={item.label} tone={item.tone} title={item.title}>
                   {item.label}
                 </StatusBadge>
               ))}
@@ -157,6 +161,19 @@ export function ExploreCurrentResultCard({
                 ) : null}
               </div>
             ))}
+          </div>
+
+          {/*
+            The run's decision-use boundary, in visible text rather than only a
+            badge tooltip. It sits directly under the scores because it is the
+            sentence that bounds them: the scores are a screen, and the one thing
+            a planner must not do is carry a screen into a determination.
+          */}
+          <div className="mt-4 rounded-[0.5rem] border border-amber-300/20 bg-amber-400/[0.06] px-4 py-3">
+            <p className="text-[0.64rem] font-semibold uppercase tracking-[0.18em] text-amber-200/80">
+              {decisionUse.label}
+            </p>
+            <p className="mt-2 text-xs leading-5 text-slate-200/85">{decisionUse.detail}</p>
           </div>
         </div>
 
