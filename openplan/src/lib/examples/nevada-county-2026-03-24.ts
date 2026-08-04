@@ -16,10 +16,18 @@
  */
 
 
+/**
+ * The run's worst validation figure, as a NUMBER. Every surface that states
+ * this figure derives it from here (the gate reason, the metrics table, the
+ * /examples rail, /legal's published ceiling) so the copies cannot drift —
+ * /legal carried its own hardcoded "237.62" that would have silently gone
+ * stale the moment a new example was published (2026-08-03 review).
+ */
+export const NEVADA_COUNTY_MAX_APE_PERCENT = 237.62;
+
 export const NEVADA_COUNTY_SCREENING_GATE = {
   statusLabel: "internal prototype only",
-  reason:
-    "At least one core facility has 237.62% absolute percent error, above the 50.00% critical-facility threshold.",
+  reason: `At least one core facility has ${NEVADA_COUNTY_MAX_APE_PERCENT}% absolute percent error, above the 50.00% critical-facility threshold.`,
 } as const;
 
 export const NEVADA_COUNTY_CAVEATS_VERBATIM: readonly string[] = [
@@ -44,7 +52,7 @@ export const NEVADA_COUNTY_VALIDATION_METRICS: readonly NevadaCountyValidationMe
   { label: "Min APE", value: "4.10%" },
   {
     label: "Max APE",
-    value: "237.62%",
+    value: `${NEVADA_COUNTY_MAX_APE_PERCENT}%`,
     note: "Above the 50% critical-facility threshold — disqualifies this run from outward modeling claims.",
   },
   { label: "Spearman ρ (facility ranking)", value: "0.40" },

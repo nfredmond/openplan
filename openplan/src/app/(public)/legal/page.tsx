@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { publishedValidationCeiling } from "@/lib/examples/published-ceiling";
 
 export const metadata: Metadata = {
   title: "Legal Notice — OpenPlan",
@@ -37,8 +38,13 @@ const aiDisclosure = [
   "AI-drafted content must not be misrepresented as independently verified analysis. The platform is built to surface this distinction, and users of the platform agree to honor it.",
 ];
 
+// Computed from the published example records, never restated: a hardcoded
+// figure here silently went stale the moment a new example published
+// (2026-08-03 review). The date and source run travel with the number.
+const ceiling = publishedValidationCeiling();
+
 const modelLimits = [
-  "Behavioral modeling runtime outputs carry a documented error envelope. The current published ceiling is max APE 237.62% — suitable for screening-grade comparison, not for funding-grade conclusions.",
+  `Behavioral modeling runtime outputs carry a documented error envelope. The worst published validation figure is max APE ${ceiling.maxApePercent}% (${ceiling.label}, ${ceiling.runDate}) — suitable for screening-grade comparison, not for funding-grade conclusions. This ceiling is computed from the published example records and updates when a new one is published.`,
   "Aerial imagery outputs (orthos, models, surfaces) produced through the Aerial Operations OS modules are measurable but prototype-grade until the QA bundle for that mission is signed off.",
   "Grants and RTP decision records are authoritative once a packet is adopted by the responsible agency — not before. Drafts, preset packets, and preview surfaces are not substitutes for adopted records.",
 ];

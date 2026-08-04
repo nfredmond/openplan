@@ -4,6 +4,7 @@ import { buildOpenPlanPublicMetadata } from "@/lib/public-page-metadata";
 import {
   NEVADA_COUNTY_CAVEATS_VERBATIM as caveatsVerbatim,
   NEVADA_COUNTY_FACILITY_RANKING as facilityRanking,
+  NEVADA_COUNTY_MAX_APE_PERCENT as maxApePercent,
   NEVADA_COUNTY_RUN_CONTEXT as runContext,
   NEVADA_COUNTY_SCREENING_GATE as screeningGate,
   NEVADA_COUNTY_VALIDATION_METRICS as validationMetrics,
@@ -74,8 +75,8 @@ export default function ExamplesEvidenceCatalogPage() {
             </div>
           </div>
           <p className="public-rail-copy">
-            A marketing page that softened the max APE (237.62%) or hid the caveats would be
-            a lie. This page is the opposite: it puts the hardest numbers on top
+            A marketing page that softened the max APE ({maxApePercent}%) or hid the caveats
+            would be a lie. This page is the opposite: it puts the hardest numbers on top
             and preserves the screening gate as written.
           </p>
           <div className="public-rail-list">
