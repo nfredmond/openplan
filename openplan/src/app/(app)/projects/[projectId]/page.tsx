@@ -486,6 +486,7 @@ export default async function ProjectDetailPage({
     .limit(8);
   const milestones = looksLikePendingSchema(milestoneResult.error?.message) ? [] : ((milestoneResult.data ?? []) as MilestoneRow[]);
   const projectMilestonesPending = looksLikePendingSchema(milestoneResult.error?.message);
+  const projectMilestonesReadFailed = projectMilestonesPending ? false : reads.check("this project's milestones", milestoneResult);
 
   const submittalResult = await supabase
     .from("project_submittals")
@@ -495,6 +496,7 @@ export default async function ProjectDetailPage({
     .limit(8);
   const submittals = looksLikePendingSchema(submittalResult.error?.message) ? [] : ((submittalResult.data ?? []) as SubmittalRow[]);
   const projectSubmittalsPending = looksLikePendingSchema(submittalResult.error?.message);
+  const projectSubmittalsReadFailed = projectSubmittalsPending ? false : reads.check("this project's submittals", submittalResult);
 
   // Budget & pace inputs: ALL deliverables (with their budget columns), the
   // stated project budget, the spend ledger, and billed client-invoice lines —
@@ -594,13 +596,15 @@ export default async function ProjectDetailPage({
     invoiceResult = await selectProjectInvoices(projectInvoiceSelectLegacy);
   }
 
+  const projectInvoicesPending = looksLikePendingSchema(invoiceResult.error?.message);
+  const invoiceLabel = "reimbursement invoices for this project";
+  const projectInvoicesReadFailed = projectInvoicesPending ? false : reads.check(invoiceLabel, invoiceResult);
   const projectInvoices = looksLikePendingSchema(invoiceResult.error?.message)
     ? []
     : ((invoiceResult.data ?? []) as BillingInvoiceRow[]).map((invoice) => ({
         ...invoice,
         fundingAward: Array.isArray(invoice.funding_awards) ? (invoice.funding_awards[0] ?? null) : invoice.funding_awards ?? null,
       }));
-  const projectInvoicesPending = looksLikePendingSchema(invoiceResult.error?.message);
 
   // Claim-progress math must not run on the display-capped recent-6 query
   // above — an award with a longer history would show an understated
@@ -622,6 +626,8 @@ export default async function ProjectDetailPage({
     ? null
     : ((projectFundingProfileResult.data ?? null) as ProjectFundingProfileRow | null);
   const projectFundingProfilePending = looksLikePendingSchema(projectFundingProfileResult.error?.message);
+  // No panel asserts "no funding profile", so the page banner is the whole fix.
+  if (!projectFundingProfilePending) reads.check("this project's funding profile", projectFundingProfileResult);
 
   // The closure-provenance columns (20260729000001) are selected here because
   // the funding panel cannot tell an earned close-out from one asserted on
@@ -674,6 +680,7 @@ export default async function ProjectDetailPage({
         program: Array.isArray(item.programs) ? (item.programs[0] ?? null) : item.programs ?? null,
       }));
   const fundingOpportunitiesPending = looksLikePendingSchema(fundingOpportunitiesResult.error?.message);
+  const fundingOpportunitiesReadFailed = fundingOpportunitiesPending ? false : reads.check("funding opportunities linked to this project", fundingOpportunitiesResult);
 
   const datasetLinksResult = await supabase
     .from("data_dataset_project_links")
@@ -1306,6 +1313,7 @@ export default async function ProjectDetailPage({
         fundingOpportunitiesPending={fundingOpportunitiesPending}
         fundingAwards={fundingAwards}
         fundingOpportunities={fundingOpportunities}
+        fundingOpportunitiesReadFailed={fundingOpportunitiesReadFailed}
         fundingStackSummary={fundingStackSummary}
         fundingNeedAmount={fundingNeedAmount}
         committedFundingAmount={committedFundingAmount}
@@ -1337,12 +1345,15 @@ export default async function ProjectDetailPage({
         firstOverdueInvoice={firstOverdueInvoice}
         projectMilestonesPending={projectMilestonesPending}
         milestones={milestones}
+        milestonesReadFailed={projectMilestonesReadFailed}
         prioritizedMilestones={prioritizedMilestones}
         projectSubmittalsPending={projectSubmittalsPending}
         submittals={submittals}
+        submittalsReadFailed={projectSubmittalsReadFailed}
         prioritizedSubmittals={prioritizedSubmittals}
         projectInvoicesPending={projectInvoicesPending}
         projectInvoices={projectInvoices}
+        invoicesReadFailed={projectInvoicesReadFailed}
         prioritizedProjectInvoices={prioritizedProjectInvoices}
         deliverables={deliverables}
         budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}

@@ -1501,4 +1501,71 @@ describe("ProjectDetailPage", () => {
       expect(within(openRisks).getByText("0")).toBeInTheDocument();
     });
   });
+
+  /**
+   * DELIVERY AND MONEY LANES: a failed read may not read as "nothing recorded".
+   *
+   * Each of these lanes classified one failure — a migration this deployment has
+   * not run — and let every other error fall through into `[]`. The panels then
+   * stated it: "No milestones recorded yet", "No submittals recorded yet", "No
+   * funding opportunities are linked to this project yet". A revoked grant or a
+   * changed policy is not a fact about a project's schedule or its pursuit of
+   * money, and a planner acting on those sentences re-enters work that exists.
+   */
+  it("says milestones could not be read rather than that none are recorded", async () => {
+    milestonesLimitMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table project_milestones" },
+    });
+
+    await renderPage();
+
+    expect(screen.queryByText("No milestones recorded yet.")).toBeNull();
+    expect(screen.getByText(/Milestones could not be read/i)).toBeInTheDocument();
+    expect(screen.getByText(/failed lookup, not a schedule with nothing in it/i)).toBeInTheDocument();
+    expect(screen.getByText(/could not read this project's milestones/i)).toBeInTheDocument();
+  });
+
+  it("says submittals could not be read rather than that none are recorded", async () => {
+    submittalsLimitMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table project_submittals" },
+    });
+
+    await renderPage();
+
+    expect(screen.queryByText("No submittals recorded yet.")).toBeNull();
+    expect(screen.getByText(/Submittals could not be read/i)).toBeInTheDocument();
+  });
+
+  it("says linked funding opportunities could not be read rather than that none are linked", async () => {
+    fundingOpportunitiesLimitMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table funding_opportunities" },
+    });
+
+    await renderPage();
+
+    expect(screen.queryByText("No funding opportunities are linked to this project yet.")).toBeNull();
+    expect(screen.getByText(/Linked funding opportunities could not be read/i)).toBeInTheDocument();
+  });
+
+  it("discloses a failed reimbursement-invoice read", async () => {
+    invoicesLimitMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table billing_invoice_records" },
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/could not read reimbursement invoices for this project/i)).toBeInTheDocument();
+  });
+
+  it("keeps the ordinary empty states when the reads succeeded and there is nothing", async () => {
+    await renderPage();
+
+    expect(screen.getByText("No milestones recorded yet.")).toBeInTheDocument();
+    expect(screen.getByText("No submittals recorded yet.")).toBeInTheDocument();
+    expect(screen.queryByText(/could not be read/i)).toBeNull();
+  });
 });

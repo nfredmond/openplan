@@ -50,7 +50,8 @@ import { describe, expect, it } from "vitest";
  *     A number written into a comment is a claim like any other; this one was
  *     checked.
  *   - A CLASSIFIER USED AS THE ONLY ERROR BRANCH. (16, all on the project detail
- *     page. An earlier count said 17 and included /rtp; that was WRONG — /rtp's
+ *     page; 10 remain after the money and delivery lanes were collected
+ *     2026-08-04. An earlier count said 17 and included /rtp; that was WRONG — /rtp's
  *     ternary is a retry that preserves the original result for collection, and
  *     the detector now excludes that shape.) `looksLikePendingSchema(
  *     x.error?.message) ? [] : (x.data ?? [])` keeps the error and then throws it
@@ -264,7 +265,15 @@ function classifierOnlyBranches(source: string): number {
     // untouched result, error and all, for `classifyRead` to collect. Flagging
     // that would have sent someone to "fix" correct code, which is how a guard
     // loses its authority.
-    if (/\.data\b/.test(ternaryFalseBranch(source, end + question[0].length - 1))) count += 1;
+    if (!/\.data\b/.test(ternaryFalseBranch(source, end + question[0].length - 1))) continue;
+    // ...UNLESS the same result is also collected. `classify FIRST, then collect
+    // what is left` leaves the ternary in place on purpose: once the failure is
+    // disclosed, resolving the rows to `[]` is correct, because the page is no
+    // longer presenting that emptiness as an answer. Counting a fixed lane would
+    // make this ratchet unable to fall, which is the one thing a ratchet must do.
+    const subject = /([A-Za-z_$][\w$]*)\s*\.\s*error/.exec(source.slice((match.index ?? 0) + match[0].length, end));
+    if (subject && new RegExp(`reads\\.check\\([^)]*\\b${subject[1]}\\b`).test(source)) continue;
+    count += 1;
   }
   return count;
 }
@@ -311,7 +320,7 @@ const KNOWN_ARRAY_DISCARDED: ReadonlyArray<readonly [string, number]> = [
 
 /** Measured 2026-08-04. May only shrink. */
 const KNOWN_CLASSIFIER_ONLY: ReadonlyArray<readonly [string, number]> = [
-  ["src/app/(app)/projects/[projectId]/page.tsx", 16],
+  ["src/app/(app)/projects/[projectId]/page.tsx", 10],
 ];
 
 function ratchet(
@@ -405,6 +414,6 @@ describe("the two added detectors are not vacuous", () => {
     expect(scanned).toBe(files.length);
 
     // The classifier still has debt, so its tree count remains a live check.
-    expect([...countsBy(classifierOnlyBranches).values()].reduce((a, b) => a + b, 0)).toBe(16);
+    expect([...countsBy(classifierOnlyBranches).values()].reduce((a, b) => a + b, 0)).toBe(10);
   });
 });

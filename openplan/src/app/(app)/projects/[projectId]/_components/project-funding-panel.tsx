@@ -122,6 +122,8 @@ type ProjectFundingPanelProps = {
    */
   fundingAwardsReadFailed?: boolean;
   fundingOpportunitiesPending: boolean;
+  /** True when the opportunity read FAILED for a reason the pending check does not own. */
+  fundingOpportunitiesReadFailed?: boolean;
   fundingAwards: FundingAwardWithClosureProvenance[];
   fundingOpportunities: FundingOpportunity[];
   fundingStackSummary: FundingStackSummary;
@@ -151,6 +153,7 @@ export function ProjectFundingPanel({
   fundingAwardsPending,
   fundingAwardsReadFailed = false,
   fundingOpportunitiesPending,
+  fundingOpportunitiesReadFailed = false,
   fundingAwards,
   fundingOpportunities,
   fundingStackSummary,
@@ -517,7 +520,11 @@ export function ProjectFundingPanel({
           </div>
 
           {fundingOpportunities.length === 0 ? (
-            <div className="module-empty-state mt-5 text-sm">No funding opportunities are linked to this project yet.</div>
+            <div className="module-empty-state mt-5 text-sm">
+              {fundingOpportunitiesReadFailed
+                ? "Linked funding opportunities could not be read, so none are listed. This is a failed lookup, not a project pursuing nothing."
+                : "No funding opportunities are linked to this project yet."}
+            </div>
           ) : (
             <div className="mt-5 module-record-list">
               {fundingOpportunities.map((opportunity) => (

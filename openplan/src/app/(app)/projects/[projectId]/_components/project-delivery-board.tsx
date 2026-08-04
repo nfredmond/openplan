@@ -71,9 +71,15 @@ type ProjectDeliveryBoardProps = {
   firstOverdueInvoice: BillingInvoice | null;
   projectMilestonesPending: boolean;
   milestones: MilestoneRow[];
+  /** True when the milestone read FAILED — distinct from a project with none. */
+  milestonesReadFailed?: boolean;
   prioritizedMilestones: MilestoneRow[];
   projectSubmittalsPending: boolean;
   submittals: SubmittalRow[];
+  /** True when the submittal read FAILED — distinct from a project with none. */
+  submittalsReadFailed?: boolean;
+  /** True when the reimbursement-invoice read FAILED — money, so it must not read as zero. */
+  invoicesReadFailed?: boolean;
   prioritizedSubmittals: SubmittalRow[];
   projectInvoicesPending: boolean;
   projectInvoices: BillingInvoice[];
@@ -94,9 +100,12 @@ export function ProjectDeliveryBoard({
   firstOverdueInvoice,
   projectMilestonesPending,
   milestones,
+  milestonesReadFailed = false,
   prioritizedMilestones,
   projectSubmittalsPending,
   submittals,
+  submittalsReadFailed = false,
+  invoicesReadFailed = false,
   prioritizedSubmittals,
   projectInvoicesPending,
   projectInvoices,
@@ -217,7 +226,7 @@ export function ProjectDeliveryBoard({
           </div>
           <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice posture</p>
-            <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : "No invoice records yet"}</h3>
+            <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : invoicesReadFailed ? "Invoice records unavailable" : "No invoice records yet"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               {invoiceSummary.totalCount
                 ? `${fmtCurrency(invoiceSummary.paidNetAmount)} paid · ${invoiceSummary.overdueCount} overdue. Net requested ${fmtCurrency(invoiceSummary.totalNetAmount)}.`
@@ -439,7 +448,11 @@ export function ProjectDeliveryBoard({
           {projectMilestonesPending ? (
             <div className="module-alert mt-5 text-sm">Project milestones will appear after the Lane C migration is applied to the database.</div>
           ) : milestones.length === 0 ? (
-            <div className="module-empty-state mt-5 text-sm">No milestones recorded yet.</div>
+            <div className="module-empty-state mt-5 text-sm">
+              {milestonesReadFailed
+                ? "Milestones could not be read, so none are listed. This is a failed lookup, not a schedule with nothing in it."
+                : "No milestones recorded yet."}
+            </div>
           ) : (
             <div className="mt-5 module-record-list">
               {prioritizedMilestones.map((milestone) => (
@@ -500,7 +513,11 @@ export function ProjectDeliveryBoard({
           {projectSubmittalsPending ? (
             <div className="module-alert mt-5 text-sm">Project submittals will appear after the Lane C migration is applied to the database.</div>
           ) : submittals.length === 0 ? (
-            <div className="module-empty-state mt-5 text-sm">No submittals recorded yet.</div>
+            <div className="module-empty-state mt-5 text-sm">
+              {submittalsReadFailed
+                ? "Submittals could not be read, so none are listed. This is a failed lookup, not a project with nothing submitted."
+                : "No submittals recorded yet."}
+            </div>
           ) : (
             <div className="mt-5 module-record-list">
               {prioritizedSubmittals.map((submittal) => (
@@ -555,7 +572,11 @@ export function ProjectDeliveryBoard({
           {projectInvoicesPending ? (
             <div className="module-alert mt-5 text-sm">Invoice records will appear after the Lane C migration is applied to the database.</div>
           ) : projectInvoices.length === 0 ? (
-            <div className="module-empty-state mt-5 text-sm">No invoice records linked to this project yet.</div>
+            <div className="module-empty-state mt-5 text-sm">
+              {invoicesReadFailed
+                ? "Invoice records could not be read, so none are listed. This is a failed lookup, not a project that has invoiced nothing."
+                : "No invoice records linked to this project yet."}
+            </div>
           ) : (
             <div className="mt-5 module-record-list">
               {prioritizedProjectInvoices.map((invoice) => (
