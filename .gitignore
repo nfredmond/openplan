@@ -76,6 +76,12 @@ workers/aequilibrae_worker/.venv311
 # Agent-session working files — local to this machine, never in the public repo.
 # CLAUDE.md is deliberately local-only (owner's call, 2026-08-03): it is a
 # working document between the owner and his agents, not project documentation.
+# These patterns are deliberately UNANCHORED: they match at every directory
+# depth, because owner tooling config is local-only wherever it lives (the
+# 2026-08-03 sweep missed the nested openplan/.mcp.json exactly because only
+# the root copy was considered). If a nested file by one of these names ever
+# genuinely belongs in the repo, that is a deliberate decision — use
+# `git add -f` and record why.
 CLAUDE.md
 .playwright-mcp/
 .mcp.json
