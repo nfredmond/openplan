@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const createServiceRoleClientMock = vi.fn();
@@ -703,5 +703,79 @@ describe("PublicEngagementPage", () => {
 
     const spanish = screen.getByText(/Última actualización/).textContent ?? "";
     expect(spanish).not.toContain("3/28/2026");
+  });
+
+  /**
+   * A READ THAT FAILED IS NOT AN EMPTY CAMPAIGN.
+   *
+   * `engagement_items` and `engagement_categories` discarded their errors, so a
+   * dropped column, a policy change or a permission error rendered as "No
+   * published feedback yet. Be the first to share something." — a public portal
+   * telling residents that nobody in their community took part, when in fact the
+   * query broke. It is the most consequential sentence this page can say: the
+   * comment list IS the public record of participation.
+   *
+   * These drive the REAL page with a failing read, which is the path no test
+   * exercised. The loader's own mocks return the fixture whatever is asked, so
+   * making a named read answer with an error is the only way to reach it.
+   */
+  /**
+   * The comment list lives behind the "Community feedback" tab, so reaching its
+   * empty state means opening that tab — the same two clicks a resident makes.
+   * Asserting without opening it would pass against a page that renders nothing
+   * at all.
+   */
+  function openFeedbackTab() {
+    fireEvent.click(screen.getByText(/Community feedback/i).closest("button")!);
+  }
+
+  it("does not tell residents nobody commented when the comment read failed", async () => {
+    itemsLimitMock.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+    openFeedbackTab();
+
+    expect(screen.queryByText(/No published feedback yet/i)).toBeNull();
+    expect(screen.getByText(/Published comments could not be loaded/i)).toBeInTheDocument();
+    expect(screen.getByText(/does not mean no one has commented/i)).toBeInTheDocument();
+  });
+
+  it("discloses a failed read at the top of the page, above what it affects", async () => {
+    itemsLimitMock.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+
+    expect(screen.getByText(/Part of this page could not be loaded/i)).toBeInTheDocument();
+    expect(screen.getByText(/Anything that looks empty below may not be empty/i)).toBeInTheDocument();
+  });
+
+  it("discloses a failed category read as well, not only comments", async () => {
+    categoriesOrderCreatedMock.mockResolvedValue({ data: null, error: { message: "relation does not exist" } });
+
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+
+    expect(screen.getByText(/Part of this page could not be loaded/i)).toBeInTheDocument();
+  });
+
+  it("never shows the database's own message to a resident", async () => {
+    itemsLimitMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for relation engagement_items" },
+    });
+
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+
+    // Disclosing THAT a read failed is the honesty requirement. Disclosing HOW
+    // is an information leak on a page anyone can open.
+    expect(screen.queryByText(/permission denied/i)).toBeNull();
+    expect(screen.queryByText(/engagement_items/i)).toBeNull();
+  });
+
+  it("says the ordinary empty-state when the reads succeeded and there is simply nothing yet", async () => {
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+    openFeedbackTab();
+
+    expect(screen.getByText(/No published feedback yet/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Part of this page could not be loaded/i)).toBeNull();
   });
 });

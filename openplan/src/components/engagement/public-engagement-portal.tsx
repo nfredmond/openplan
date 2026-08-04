@@ -1108,6 +1108,7 @@ export function PublicEngagementPortal({
   acceptingSubmissions,
   categories,
   approvedItems,
+  readFailures = { comments: false, categories: false },
   engagementType,
   demographicsEnabled = false,
   projectContext,
@@ -1124,6 +1125,12 @@ export function PublicEngagementPortal({
   acceptingSubmissions: boolean;
   categories: CategoryOption[];
   approvedItems: ApprovedItem[];
+  /**
+   * Which of this portal's reads failed. Rendered, not just carried: a field
+   * describing a failure that no surface shows is the same defect as the failure
+   * being swallowed in the first place.
+   */
+  readFailures?: { comments: boolean; categories: boolean };
   engagementType: string;
   demographicsEnabled?: boolean;
   /**
@@ -1555,6 +1562,22 @@ export function PublicEngagementPortal({
         surface, which on the embeddable widget is directly under its bare
         header.
       */}
+      {/*
+        A page-level disclosure for reads that failed, above everything they
+        affect. It carries no database message on purpose — the reader here is a
+        member of the public, and "which part failed" is what they need, not
+        why. It renders on BOTH surfaces (portal route and embed), because the
+        embed is the copy most likely to be read without the agency nearby.
+      */}
+      {readFailures.comments || readFailures.categories ? (
+        <div
+          role="status"
+          className="rounded-lg border border-amber-300/60 bg-amber-50/60 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
+        >
+          {t("portal.partOfPageUnavailable")}
+        </div>
+      ) : null}
+
       {renderLanguagePicker ? (
         <div className="flex flex-col gap-2 border-b border-border/60 pb-3">
           <PortalLanguageNotice locale={locale} messages={messages} />
@@ -1743,7 +1766,12 @@ export function PublicEngagementPortal({
 
                 {topLevel.length === 0 ? (
                   <div className="public-success-state text-sm text-muted-foreground">
-                    {t("portal.noFeedbackYet")}
+                    {/*
+                      "No published feedback yet" is a statement about this
+                      campaign. A failed read cannot make it — and here it would
+                      tell residents that nobody in their community took part.
+                    */}
+                    {readFailures.comments ? t("portal.feedbackUnavailable") : t("portal.noFeedbackYet")}
                   </div>
                 ) : (
                   <>

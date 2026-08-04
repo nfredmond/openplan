@@ -164,6 +164,13 @@ export const EN_PORTAL_MESSAGES = {
   "portal.replyingTo": "Replying to:",
   "portal.located": "Located",
   "portal.noFeedbackYet": "No published feedback yet. Be the first to share something.",
+  // Shown INSTEAD of noFeedbackYet when the comment read failed. "No feedback
+  // yet" is a claim about this campaign; a query that failed cannot make it, and
+  // on a public portal it tells residents nobody took part.
+  "portal.feedbackUnavailable":
+    "Published comments could not be loaded, so they are not shown. This does not mean no one has commented.",
+  "portal.partOfPageUnavailable":
+    "Part of this page could not be loaded. Anything that looks empty below may not be empty.",
   "portal.itemCount": "{count} published items",
   "portal.translateThis": "Translate this comment",
   "portal.translateInto": "Translate into",
@@ -365,6 +372,10 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.replyingTo": "Respondiendo a:",
   "portal.located": "Ubicado",
   "portal.noFeedbackYet": "Todavía no hay comentarios publicados. Sea la primera persona en compartir algo.",
+  "portal.feedbackUnavailable":
+    "No se pudieron cargar los comentarios publicados, por lo que no se muestran. Esto no significa que nadie haya comentado.",
+  "portal.partOfPageUnavailable":
+    "No se pudo cargar una parte de esta página. Lo que aparezca vacío a continuación puede no estarlo.",
   "portal.itemCount": "{count} aportes publicados",
   "portal.translateThis": "Traducir este comentario",
   "portal.translateInto": "Traducir a",

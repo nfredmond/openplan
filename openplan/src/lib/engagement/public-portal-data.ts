@@ -678,6 +678,21 @@ export type PublicPortalProps = {
     photoUrl: string | null;
     createdAt: string;
   }[];
+  /**
+   * The reads that failed while building this portal, so the page can stop
+   * presenting their gaps as answers.
+   *
+   * Same rule `contextLayers.readFailure` already follows, applied to the two
+   * reads that had been collapsing errors into `[]`: the approved comments and
+   * the categories. An empty comment list is the single most consequential
+   * sentence this portal can say — it is the public record of who took part —
+   * and a failed query said it just as confidently as an unused campaign did.
+   *
+   * Labels are resident-facing and read inside a sentence; messages are NOT
+   * carried here, because the reader is a member of the public and the database's
+   * own words are operator detail.
+   */
+  readFailures: { comments: boolean; categories: boolean };
   engagementType: string;
   demographicsEnabled: boolean;
   projectContext: { name: string; summary: string | null } | null;
@@ -796,8 +811,8 @@ export async function loadPublicPortalBundle(
     { data: projectData },
     placeCandidates,
     { data: geofenceRow },
-    { data: categoriesData },
-    { data: approvedItemsData },
+    categoriesResult,
+    approvedItemsResult,
     surveyDefinition,
     closeLoopRows,
     translationIndex,
@@ -857,8 +872,14 @@ export async function loadPublicPortalBundle(
   ]);
 
   const project = (projectData ?? null) as PublicPortalProject | null;
-  const categories = (categoriesData ?? []) as CategoryRow[];
-  const approvedItems = (approvedItemsData ?? []) as ApprovedItemRow[];
+  // A failed read is not an empty campaign. Both of these used to discard their
+  // error, so a dropped column or a policy change rendered as "no categories"
+  // and "no comments" — the second of which tells the public that nobody
+  // participated.
+  const categoriesReadFailed = Boolean(categoriesResult.error);
+  const approvedItemsReadFailed = Boolean(approvedItemsResult.error);
+  const categories = (categoriesResult.data ?? []) as CategoryRow[];
+  const approvedItems = (approvedItemsResult.data ?? []) as ApprovedItemRow[];
   const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
 
   const mapFraming = resolvePortalMapFraming({
@@ -1000,6 +1021,7 @@ export async function loadPublicPortalBundle(
       photoUrl: photoUrlByItemId.get(item.id) ?? null,
       createdAt: item.created_at,
     })),
+    readFailures: { comments: approvedItemsReadFailed, categories: categoriesReadFailed },
     engagementType: campaign.engagement_type,
     demographicsEnabled: campaign.demographics_enabled,
     projectContext: project ? { name: project.name, summary: project.summary } : null,
