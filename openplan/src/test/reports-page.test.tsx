@@ -572,4 +572,44 @@ describe("ReportsPage", () => {
     const reportLink = screen.getAllByText(/Nevada County RTP Packet/i)[0]?.closest("a");
     expect(reportLink).toHaveAttribute("href", "/reports/report-rtp-1#packet-release-review");
   });
+
+  /**
+   * "No reports yet — create a report packet" invites a planner to regenerate
+   * work the workspace may already hold. A failed registry read cannot make that
+   * invitation, and the evidence pickers below it would silently offer a shorter
+   * list, so a packet could be composed citing less evidence than exists with
+   * nothing on screen saying so.
+   */
+  it("does not invite a first report when the registry read failed", async () => {
+    reportsOrderMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table reports" },
+    });
+
+    await renderPage();
+
+    expect(screen.queryByText("No reports yet")).toBeNull();
+    expect(screen.getByText("Reports could not be loaded")).toBeInTheDocument();
+    expect(screen.getByText(/do not regenerate on the strength of this screen/i)).toBeInTheDocument();
+    expect(screen.getByText(/could not read this workspace's reports/i)).toBeInTheDocument();
+  });
+
+  it("discloses a failed evidence read even when the registry itself loaded", async () => {
+    // `.order()` must stay chainable — the read is `.order(...).limit(30)`, so
+    // the terminal to override is the limit, not the order.
+    runsLimitMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table runs" },
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/could not read model runs available as evidence/i)).toBeInTheDocument();
+  });
+
+  it("stays silent when every read succeeded", async () => {
+    await renderPage();
+
+    expect(screen.queryByText(/This page could not read/i)).toBeNull();
+  });
 });

@@ -41,8 +41,8 @@ import { describe, expect, it } from "vitest";
  *
  *   - ARRAY DESTRUCTURING. `const [{ data: a }, { data: b }] = await
  *     Promise.all([...])` never matches, because the regex anchors on `const {`.
- *     5 such bindings remain, all on the reports registry. Safety and grants
- *     were cleared 2026-08-04. Recounted
+ *     0 remain — safety, grants and the reports registry were all cleared
+ *     2026-08-04, so this ratchet is empty too. Recounted
  *     2026-08-04 — an earlier draft of this header said 14 and named the
  *     dashboard as well, which was wrong: the dashboard destructures to NAMED
  *     results (`const [runsResult, …] = await Promise.all(…)`) and checks
@@ -307,7 +307,6 @@ function countsBy(detect: (source: string) => number): Map<string, number> {
 
 /** Measured 2026-08-04. May only shrink. */
 const KNOWN_ARRAY_DISCARDED: ReadonlyArray<readonly [string, number]> = [
-  ["src/app/(app)/reports/page.tsx", 5],
 ];
 
 /** Measured 2026-08-04. May only shrink. */
@@ -380,8 +379,32 @@ describe("the two added detectors are not vacuous", () => {
     expect(classifierOnlyBranches(`const pending = looksLikePendingSchema(r.error?.message);\nif (!pending) reads.check("x", r);`)).toBe(0);
   });
 
-  it("guards the guard — both detectors are reading real pages", () => {
-    expect([...countsBy(arrayDiscardedBindings).values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
-    expect([...countsBy(classifierOnlyBranches).values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
+  /**
+   * WHY THIS ASSERTION CHANGED, 2026-08-04. It used to require each detector to
+   * find at least one instance in the tree — a reasonable floor while both had
+   * debt, and a trap the moment one was paid off. The array ratchet reached zero
+   * and this test failed, reporting a cleanup as a broken detector.
+   *
+   * A detector at zero cannot prove itself against the tree; that is what the
+   * synthetic positive cases above are for. What the TREE can still prove is
+   * that the scan reaches real files and that each detector runs over every one
+   * of them without throwing — so a rename, a moved directory, or a parser that
+   * blows up on real syntax still fails here rather than passing as "clean".
+   */
+  it("guards the guard — the scan reaches real pages and both detectors run over all of them", () => {
+    const files = pageFiles(APP_DIR);
+    expect(files.length).toBeGreaterThan(40);
+
+    let scanned = 0;
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      expect(typeof arrayDiscardedBindings(source)).toBe("number");
+      expect(typeof classifierOnlyBranches(source)).toBe("number");
+      scanned += 1;
+    }
+    expect(scanned).toBe(files.length);
+
+    // The classifier still has debt, so its tree count remains a live check.
+    expect([...countsBy(classifierOnlyBranches).values()].reduce((a, b) => a + b, 0)).toBe(16);
   });
 });

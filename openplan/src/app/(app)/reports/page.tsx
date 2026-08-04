@@ -1,3 +1,4 @@
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -247,11 +248,11 @@ export default async function ReportsPage({
   }
 
   const [
-    { data: reportsData },
-    { data: projectsData },
-    { data: runsData },
-    { data: countyRunsData },
-    { data: modelingClaimDecisionsData },
+    reportsRead,
+    projectsRead,
+    runsRead,
+    countyRunsRead,
+    modelingClaimDecisionsRead,
     operationsSummary,
   ] =
     await Promise.all([
@@ -290,6 +291,28 @@ export default async function ReportsPage({
         membership.workspace_id
       ),
     ]);
+
+  /**
+   * WHAT COULD NOT BE READ ON THIS PAGE.
+   *
+   * The registry's empty state invites a planner to generate their first report.
+   * Rendered after a failed read it invites them to regenerate work the workspace
+   * already holds — and the evidence pickers below it (runs, county runs, claim
+   * decisions) would silently offer a shorter list, so a report could be composed
+   * citing less evidence than exists without anything saying so.
+   */
+  const reads = new ReadFailureLog();
+  const reportsReadFailed = reads.check("this workspace's reports", reportsRead);
+  reads.check("this workspace's projects", projectsRead);
+  reads.check("model runs available as evidence", runsRead);
+  reads.check("county runs available as evidence", countyRunsRead);
+  reads.check("recorded modeling claim decisions", modelingClaimDecisionsRead);
+
+  const reportsData = reportsRead.data;
+  const projectsData = projectsRead.data;
+  const runsData = runsRead.data;
+  const countyRunsData = countyRunsRead.data;
+  const modelingClaimDecisionsData = modelingClaimDecisionsRead.data;
 
   const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
   const { data: artifactsData } = reportIds.length
@@ -757,6 +780,17 @@ export default async function ReportsPage({
 
   return (
     <section className="module-page">
+      {reads.any ? (
+        <div
+          role="status"
+          className="mb-4 rounded-lg border border-amber-300/60 bg-amber-50/60 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
+        >
+          <p>{reads.describe()}</p>
+          {/* Internal, membership-gated: the database's own words are what an
+              operator can act on. The public surfaces deliberately omit them. */}
+          <p className="mt-1 text-xs opacity-80">{reads.messages().join(" · ")}</p>
+        </div>
+      ) : null}
       <header className="module-header-grid">
         <article className="module-intro-card">
           <div className="module-intro-kicker">
@@ -959,9 +993,15 @@ export default async function ReportsPage({
 
           {reports.length === 0 ? (
             <div className="mt-5">
+              {/* "No reports yet" invites a planner to create work the workspace
+                  may already hold. A failed read cannot make that invitation. */}
               <EmptyState
-                title="No reports yet"
-                description="Create a report packet to establish project-linked records, section structure, and artifact history."
+                title={reportsReadFailed ? "Reports could not be loaded" : "No reports yet"}
+                description={
+                  reportsReadFailed
+                    ? "The report registry could not be read, so nothing is listed. This does not mean the workspace has no reports — do not regenerate on the strength of this screen."
+                    : "Create a report packet to establish project-linked records, section structure, and artifact history."
+                }
               />
             </div>
           ) : filteredReports.length === 0 ? (
