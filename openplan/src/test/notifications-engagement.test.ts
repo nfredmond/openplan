@@ -40,21 +40,45 @@ describe("engagement notifications lib", () => {
     expect(update).toHaveBeenCalledWith(expect.objectContaining({ status: "skipped", transport: "none" }));
   });
 
-  it("enqueueCampaignSubscriberEmails enqueues one message per confirmed subscriber", async () => {
-    const subscribers = [{ email: "a@x.com" }, { email: "b@x.com" }];
+  it("enqueueCampaignSubscriberEmails sends each subscriber their OWN unsubscribe link", async () => {
+    const subscribers = [
+      { email: "a@x.com", unsubscribe_token: "tok-a" },
+      { email: "b@x.com", unsubscribe_token: "tok-b" },
+    ];
     // subscriptions read: select -> eq -> eq -> is -> resolves
     const isFn = vi.fn().mockResolvedValue({ data: subscribers, error: null });
+    const selectFn = vi.fn(() => ({ eq: () => ({ eq: () => ({ is: isFn }) }) }));
     const single = vi.fn().mockResolvedValue({ data: { id: "o" }, error: null });
+    const insert = vi.fn(() => ({ select: () => ({ single }) }));
     const updateEq = vi.fn().mockResolvedValue({ error: null });
     const client = {
       from: vi.fn((table: string) => {
-        if (table === "engagement_subscriptions") return { select: () => ({ eq: () => ({ eq: () => ({ is: isFn }) }) }) };
-        return { insert: () => ({ select: () => ({ single }) }), update: () => ({ eq: updateEq }) };
+        if (table === "engagement_subscriptions") return { select: selectFn };
+        return { insert, update: () => ({ eq: updateEq }) };
       }),
     } as never;
 
-    const result = await enqueueCampaignSubscriberEmails(client, "c1", { subject: "Update", text: "Body" });
+    const result = await enqueueCampaignSubscriberEmails(
+      client,
+      "c1",
+      { subject: "Update", text: "Body" },
+      { origin: "https://agency.example", shareToken: "share123" }
+    );
     expect(result.enqueued).toBe(2);
+
+    // Projection assertion (house rule): the token must actually be SELECTED —
+    // the pre-2026-08-04 defect was selecting only `email`, so every broadcast
+    // went out with no opt-out link while this suite stayed green.
+    expect(selectFn).toHaveBeenCalledWith("email, unsubscribe_token");
+
+    // Each outbox body carries that recipient's own tokenized unsubscribe URL,
+    // in the same URL shape the subscribe confirmation email uses.
+    const bodies = insert.mock.calls.map((call) => (call[0] as { to_email: string; body: string }));
+    expect(bodies).toHaveLength(2);
+    const byEmail = Object.fromEntries(bodies.map((row) => [row.to_email, row.body]));
+    expect(byEmail["a@x.com"]).toContain("https://agency.example/api/engage/share123/subscribe/unsubscribe?token=tok-a");
+    expect(byEmail["b@x.com"]).toContain("https://agency.example/api/engage/share123/subscribe/unsubscribe?token=tok-b");
+    expect(byEmail["a@x.com"]).not.toContain("tok-b");
   });
 
   it("subscribeParticipant leaves an already-confirmed active subscriber untouched", async () => {

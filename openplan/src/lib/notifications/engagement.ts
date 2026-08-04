@@ -150,22 +150,38 @@ export async function enqueueEmail(
   return { outboxId, status, transport: result.transport };
 }
 
-/** Enqueue a message to every confirmed, still-subscribed participant of a campaign. */
+/**
+ * Enqueue a message to every confirmed, still-subscribed participant of a
+ * campaign. The `unsubscribe` context is REQUIRED, not optional: these are
+ * bulk emails to members of the public, and a broadcast without a working
+ * per-recipient opt-out link is a CAN-SPAM problem, not a styling choice.
+ * (Shipped without it until 2026-08-04 — the token existed on every row and
+ * was simply never selected.) The URL shape must match the one the subscribe
+ * confirmation email mints in api/engage/[shareToken]/subscribe/route.ts.
+ */
 export async function enqueueCampaignSubscriberEmails(
   client: QueryClient,
   campaignId: string,
-  msg: { subject: string; text: string; template?: string }
+  msg: { subject: string; text: string; template?: string },
+  unsubscribe: { origin: string; shareToken: string }
 ): Promise<{ enqueued: number }> {
   const { data } = await client
     .from("engagement_subscriptions")
-    .select("email")
+    .select("email, unsubscribe_token")
     .eq("campaign_id", campaignId)
     .eq("confirmed", true)
     .is("unsubscribed_at", null);
-  const subscribers = (data ?? []) as { email: string }[];
+  const subscribers = (data ?? []) as { email: string; unsubscribe_token: string }[];
   let enqueued = 0;
   for (const subscriber of subscribers) {
-    await enqueueEmail(client, { campaignId, to: subscriber.email, subject: msg.subject, text: msg.text, template: msg.template });
+    const unsubscribeUrl = `${unsubscribe.origin}/api/engage/${unsubscribe.shareToken}/subscribe/unsubscribe?token=${subscriber.unsubscribe_token}`;
+    await enqueueEmail(client, {
+      campaignId,
+      to: subscriber.email,
+      subject: msg.subject,
+      text: `${msg.text}\n\nUnsubscribe from these updates: ${unsubscribeUrl}`,
+      template: msg.template,
+    });
     enqueued += 1;
   }
   return { enqueued };

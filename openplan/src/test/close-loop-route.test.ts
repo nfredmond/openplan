@@ -94,7 +94,7 @@ beforeEach(() => {
   checkAiUsageRateLimit.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
   entryPriorStatus.mockResolvedValue({ data: { status: "draft" }, error: null }); // draft -> published transition
   loadCampaignAccess.mockResolvedValue({
-    campaign: { id: CAMPAIGN_ID, workspace_id: "ws-1", title: "Campaign" },
+    campaign: { id: CAMPAIGN_ID, workspace_id: "ws-1", title: "Campaign", share_token: "share-abc" },
     membership: { role: "editor" },
     error: null,
     allowed: true,
@@ -178,6 +178,36 @@ describe("close-loop operator routes", () => {
     // publish notifies nobody) previously survived this whole file.
     expect(recordOperatorNotificationMock).toHaveBeenCalledTimes(1);
     expect(enqueueCampaignSubscriberEmailsMock).toHaveBeenCalledTimes(1);
+    // ...and the broadcast must carry the unsubscribe context (origin + share
+    // token) so every recipient gets a working opt-out link. Broadcasts to the
+    // public shipped without one until 2026-08-04.
+    expect(enqueueCampaignSubscriberEmailsMock).toHaveBeenCalledWith(
+      expect.anything(),
+      CAMPAIGN_ID,
+      expect.objectContaining({ template: "closeloop_published" }),
+      expect.objectContaining({ shareToken: "share-abc", origin: expect.stringContaining("http") })
+    );
+  });
+
+  it("refuses to broadcast when the campaign has no share token (no reachable opt-out link)", async () => {
+    loadCampaignAccess.mockResolvedValue({
+      campaign: { id: CAMPAIGN_ID, workspace_id: "ws-1", title: "Campaign", share_token: null },
+      membership: { role: "editor" },
+      error: null,
+      allowed: true,
+    });
+    entryUpdateMaybeSingle.mockResolvedValue({ data: { id: ENTRY_ID, status: "published" }, error: null });
+    const req = new NextRequest("http://localhost/x", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ status: "published" }),
+    });
+    const res = await PATCH(req, entryCtx);
+    // The publish itself succeeds; only the bulk email is refused, because a
+    // broadcast without a per-recipient unsubscribe URL may not be sent at all.
+    expect(res.status).toBe(200);
+    expect(recordOperatorNotificationMock).toHaveBeenCalledTimes(1);
+    expect(enqueueCampaignSubscriberEmailsMock).not.toHaveBeenCalled();
   });
 
   it("still returns 200 on publish when the best-effort notify path throws (e.g. missing service-role key)", async () => {

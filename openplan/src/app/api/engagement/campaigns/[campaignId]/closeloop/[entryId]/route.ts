@@ -121,11 +121,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             payload: { entryId: entry.id },
           }).catch(() => {});
         }
-        await enqueueCampaignSubscriberEmails(serviceClient, access.campaign.id, {
-          subject: `Update on ${campaignTitle}`,
-          text: `The project team posted an update: "${entry.theme_title}".\n\nYou said: ${entry.you_said}\n\nWe did: ${entry.we_did}`,
-          template: "closeloop_published",
-        }).catch(() => {});
+        // No share token means no reachable unsubscribe URL, and a broadcast
+        // to the public without a working opt-out link may not be sent at all.
+        // (Subscribers can only exist via the shared portal, so this refusal
+        // is belt-and-braces — but the belt is the law.)
+        const shareToken = (access.campaign as { share_token?: string | null }).share_token;
+        if (shareToken) {
+          await enqueueCampaignSubscriberEmails(
+            serviceClient,
+            access.campaign.id,
+            {
+              subject: `Update on ${campaignTitle}`,
+              text: `The project team posted an update: "${entry.theme_title}".\n\nYou said: ${entry.you_said}\n\nWe did: ${entry.we_did}`,
+              template: "closeloop_published",
+            },
+            { origin: request.nextUrl.origin, shareToken }
+          ).catch(() => {});
+        } else {
+          audit.warn("closeloop_broadcast_skipped_no_share_token", { campaignId: access.campaign.id, entryId: entry.id });
+        }
       } catch (notifyError) {
         audit.warn("closeloop_publish_notify_failed", { campaignId: access.campaign.id, entryId: entry.id, message: notifyError instanceof Error ? notifyError.message : String(notifyError) });
       }
