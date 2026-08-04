@@ -60,9 +60,15 @@ anonymous write access removed while staying publicly readable.
 
 **Why it went unnoticed for four months.** The test guarding those rules read the
 *text of the migration files* rather than asking the database, so it could not see
-that what it was reading had never taken effect. It has been replaced by a live
-check, with no exception list, that fails the build if any table ever again
-carries a rule that is not switched on.
+that what it was reading had never taken effect. Two checks replaced it, and it
+matters which does what *(corrected 2026-08-04 — this entry originally claimed the
+live check "fails the build", which overstated its mechanism)*: a build-time check
+derived from the migrations fails **every build** if a declared table lacks
+`ENABLE ROW LEVEL SECURITY`, and a **live** check with no exception list asks a
+running database the same question — but the live check runs only in the nightly
+scheduled job and on demand (`npm run test:rls-live`), not on every build, so
+drift introduced directly against a live database surfaces within a day, not
+instantly.
 
 ### The assistant records who did the work
 

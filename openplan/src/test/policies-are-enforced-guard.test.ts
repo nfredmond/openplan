@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer, queryCatalog } from "./helpers/live-catalog";
@@ -47,11 +49,24 @@ import { resolveLocalDbContainer, queryCatalog } from "./helpers/live-catalog";
 const liveDescribe = LIVE_RLS ? describe : describe.skip;
 
 describe("policy enforcement invariant (offline)", () => {
-  it("states the rule the live half checks", () => {
-    // A placeholder assertion would make this file look covered while proving
-    // nothing, so this one carries the rule itself: the live check must run
-    // against a real catalog, and LIVE_RLS is what decides that.
-    expect(typeof LIVE_RLS).toBe("boolean");
+  it("the build-time half of this invariant exists and is ungated (guard-the-guard)", () => {
+    // The live half below runs only under OPENPLAN_RLS_LIVE_TEST=1 (the
+    // nightly cron and test:rls-live) — it does NOT fail push/PR builds. The
+    // half that DOES fail every build is migration-text-derived and lives in
+    // migrations/inventory.test.ts (every declared table must have RLS
+    // enabled in the migration text). This assertion pins that enforcement:
+    // if the inventory check is deleted, inverted, or gated behind a skip,
+    // this file fails everywhere. An earlier version here asserted
+    // `typeof LIVE_RLS === "boolean"` — a tautology that could not fail,
+    // sitting directly under a header claiming "never vacuous"
+    // (2026-08-03 review).
+    const inventorySource = readFileSync(
+      path.join(process.cwd(), "src", "test", "migrations", "inventory.test.ts"),
+      "utf8"
+    );
+    expect(inventorySource).toContain("filter((t) => !schema.rlsEnabled(t))).toEqual([])");
+    expect(inventorySource.includes("describe.skip")).toBe(false);
+    expect(LIVE_RLS === true || LIVE_RLS === false).toBe(true);
   });
 });
 
@@ -138,13 +153,53 @@ liveDescribe("every policy in the database is actually enforced", () => {
    * exact shape 20260420000064 was written to repair.
    */
   it("scopes every GTFS child policy to the owning feed rather than granting all rows", () => {
+    // Per-command, because qual and with_check govern different halves of a
+    // policy: INSERT policies have qual IS NULL by definition (only
+    // with_check applies), and a FOR ALL/UPDATE policy with a scoped USING
+    // but an explicit `WITH CHECK (true)` passes reads correctly while
+    // accepting writes into any feed. The first version of this check read
+    // only qual, so it would have flagged a correct INSERT policy and stayed
+    // green on exactly that write hole (2026-08-03 review).
+    const scopedQual = "(qual LIKE '%gtfs_feeds%' AND qual LIKE '%workspace_members%')";
+    const scopedCheck = "(with_check LIKE '%gtfs_feeds%' AND with_check LIKE '%workspace_members%')";
     const unscoped = catalog(
-      "SELECT tablename || '.' || policyname FROM pg_policies " +
+      "SELECT tablename || '.' || policyname || ' [' || cmd || ']' FROM pg_policies " +
         "WHERE schemaname = 'public' " +
         "AND tablename IN ('agencies','calendar','calendar_dates','routes','shapes','stop_times','stops','trips') " +
-        "AND (qual IS NULL OR qual NOT LIKE '%gtfs_feeds%' OR qual NOT LIKE '%workspace_members%')"
+        "AND NOT (" +
+        "  CASE cmd " +
+        `    WHEN 'INSERT' THEN with_check IS NOT NULL AND ${scopedCheck} ` +
+        `    WHEN 'SELECT' THEN qual IS NOT NULL AND ${scopedQual} ` +
+        `    WHEN 'DELETE' THEN qual IS NOT NULL AND ${scopedQual} ` +
+        // UPDATE and ALL: the read side must be scoped, and the write side
+        // must either inherit it (with_check IS NULL) or be scoped itself.
+        `    ELSE qual IS NOT NULL AND ${scopedQual} AND (with_check IS NULL OR ${scopedCheck}) ` +
+        "  END" +
+        ")"
     );
 
-    expect(unscoped, "GTFS child policies that do not inherit from gtfs_feeds").toEqual([]);
+    expect(unscoped, "GTFS child policies whose read or write half does not inherit from gtfs_feeds").toEqual([]);
+  });
+
+  /**
+   * The default-privileges lock (20260804000001): a table created from now on
+   * must NOT be born with grants to anon/authenticated — that regrowth was
+   * "one careless CREATE POLICY away from total exposure" per 20260730000008's
+   * own header, and per-table revokes cannot reach tables that do not exist
+   * yet. This reads pg_default_acl for the role migrations run as.
+   */
+  it("new tables and sequences are not born with anon/authenticated grants", () => {
+    const regrown = catalog(
+      "SELECT pg_get_userbyid(defaclrole) || ':' || defaclobjtype::text FROM pg_default_acl d " +
+        "JOIN pg_namespace n ON n.oid = d.defaclnamespace " +
+        "WHERE n.nspname = 'public' AND defaclobjtype IN ('r','S') " +
+        "AND pg_get_userbyid(defaclrole) = 'postgres' " +
+        "AND (defaclacl::text LIKE '%anon=%' OR defaclacl::text LIKE '%authenticated=%')"
+    );
+
+    expect(
+      regrown,
+      "default ACLs that would grant anon/authenticated on future tables — 20260804000001 has been undone"
+    ).toEqual([]);
   });
 });
