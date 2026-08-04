@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { formatRtpPortfolioRoleLabel } from "@/lib/rtp/catalog";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import {
   buildPortfolioPriorityNarrative,
   buildRtpPriorityRationale,
@@ -66,12 +67,18 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
     summary: string | null;
   };
 
-  const { data: linkData } = await supabase
+  // A read that failed may not be rendered as an answer — least of all here,
+  // where the reader is a member of the public who has no way to tell an empty
+  // plan from a broken query. Both reads below keep their `error`.
+  const reads = new ReadFailureLog();
+
+  const linksResult = await supabase
     .from("project_rtp_cycle_links")
     .select("id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, projects(id, name, status, summary)")
     .eq("rtp_cycle_id", cycle.id);
+  const linksFailed = reads.check("the projects in this plan", linksResult);
 
-  const links = (linkData ?? []) as LinkRow[];
+  const links = (linksResult.data ?? []) as LinkRow[];
   const evidenceRunIds = Array.from(
     new Set(links.map((link) => link.evidence_model_run_id).filter((id): id is string => Boolean(id))),
   );
@@ -81,12 +88,14 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
 
   // Committed award dollars per project — operator-entered award records only,
   // so a project with none simply shows no funding line.
-  const { data: awardData } = linkedProjectIds.length
+  const awardsResult = linkedProjectIds.length
     ? await supabase
         .from("funding_awards")
         .select("project_id, title, awarded_amount")
         .in("project_id", linkedProjectIds)
-    : { data: [] };
+    : { data: [], error: null };
+  reads.check("committed funding for these projects", awardsResult);
+  const awardData = awardsResult.data;
   const awardsByProject = new Map<string, Array<{ title: string; amount: number }>>();
   for (const row of (awardData ?? []) as Array<{ project_id: string; title: string; awarded_amount: number | string | null }>) {
     const amount = Number(row.awarded_amount ?? 0);
@@ -150,6 +159,27 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
         {cycle.summary ? <p className="mt-3 text-sm text-muted-foreground">{cycle.summary}</p> : null}
       </header>
 
+      {/*
+        Disclosed to the reader, not just logged. The database's own message is
+        deliberately NOT rendered here — `reads.messages()` is operator detail,
+        and this page is public. What a resident needs is the fact that part of
+        the page did not load, so an empty list below is not read as an answer.
+      */}
+      {reads.any ? (
+        <section
+          role="status"
+          className="mt-6 rounded-lg border border-amber-300/60 bg-amber-50/60 p-4 dark:border-amber-900/50 dark:bg-amber-950/30"
+        >
+          <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
+            Part of this plan could not be loaded
+          </h2>
+          <p className="mt-1 text-sm text-amber-900/90 dark:text-amber-200/90">{reads.describe()}</p>
+          <p className="mt-1 text-sm text-amber-900/90 dark:text-amber-200/90">
+            Please check back, or contact the agency that published this plan.
+          </p>
+        </section>
+      ) : null}
+
       {portfolio.scoredCount > 0 ? (
         <section className="mt-6 rounded-lg border border-emerald-300/50 bg-emerald-50/50 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
           <h2 className="text-sm font-semibold text-foreground">Why this plan prioritizes what it does</h2>
@@ -160,7 +190,17 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
       <section className="mt-8 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Projects, ranked by priority</h2>
         {rankedProjects.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No projects have been published for this plan yet.</p>
+          linksFailed ? (
+            // "No projects have been published" is a claim about the plan. A
+            // failed read cannot make it — and on a public page that sentence
+            // would tell a resident the agency has funded nothing.
+            <p className="text-sm text-muted-foreground">
+              The project list could not be loaded, so it is not shown. This does not mean the plan
+              has no projects.
+            </p>
+          ) : (
+            <p className="text-sm text-muted-foreground">No projects have been published for this plan yet.</p>
+          )
         ) : (
           rankedProjects.map((entry) => (
             <article key={entry.id} className="rounded-lg border border-border bg-background/60 p-4">

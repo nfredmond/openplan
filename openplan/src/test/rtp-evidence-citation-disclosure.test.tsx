@@ -35,16 +35,29 @@ vi.mock("next/navigation", () => ({
 
 const selectCalls: Record<string, string[]> = {};
 let tableData: Record<string, unknown>;
+/**
+ * Tables whose read should FAIL this render. A mocked client hands back the
+ * fixture no matter what, so the only way to exercise the failure path — the one
+ * a resident actually hits — is to make a named table answer with an error.
+ */
+let tableErrors: Record<string, { message: string }>;
+
+type FakeResult = { data: unknown; error: { message: string } | null };
 
 function fakeQuery(tableName: string) {
-  const resolveResult = () => ({ data: tableData[tableName] ?? [], error: null });
+  const resolveResult = (): FakeResult => {
+    const error = tableErrors[tableName];
+    // A failed read carries no rows. Returning the fixture AND an error would
+    // let a page look correct while ignoring the error entirely.
+    return error ? { data: null, error } : { data: tableData[tableName] ?? [], error: null };
+  };
   const q: {
     eq: () => typeof q;
     in: () => typeof q;
     order: () => typeof q;
     limit: () => typeof q;
-    maybeSingle: () => Promise<{ data: unknown; error: null }>;
-    then: (resolve: (value: { data: unknown; error: null }) => unknown) => Promise<unknown>;
+    maybeSingle: () => Promise<FakeResult>;
+    then: (resolve: (value: FakeResult) => unknown) => Promise<unknown>;
   } = {
     eq: () => q,
     in: () => q,
@@ -72,6 +85,7 @@ import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score
 
 function seedPublicPageData() {
   for (const key of Object.keys(selectCalls)) delete selectCalls[key];
+  tableErrors = {};
   tableData = {
     rtp_cycles: {
       id: "cycle-1",
@@ -290,5 +304,82 @@ describe("RTP evidence-run picker — every offered and cited run is disclosed, 
     const select = screen.getByLabelText(/Representative model run/) as HTMLSelectElement;
     expect(select.disabled).toBe(false);
     expect(select.value).toBe("run-sketch");
+  });
+});
+
+/**
+ * A READ THAT FAILED MAY NOT BE RENDERED AS AN ANSWER — and this page is the
+ * sharpest case in the product, because the reader is a member of the public.
+ *
+ * The page destructured only `data` from its two reads, so a failed query and an
+ * empty plan arrived identically as `[]`. The page then told a resident "No
+ * projects have been published for this plan yet." — an agency publicly stating
+ * it has funded nothing, caused by a dropped column or a policy change. Funding
+ * lines vanished the same way, silently, with a comment rationalising the
+ * silence ("a project with none simply shows no funding line").
+ *
+ * These tests drive the REAL page with a failing read, which is the path nothing
+ * exercised before.
+ */
+describe("public plan page — a failed read is disclosed, never rendered as absence", () => {
+  // The page requires a share token of at least 8 characters before it reads
+  // anything; a shorter one 404s and never reaches the failure path.
+  const SHARE_TOKEN = "public-share-token-1";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    seedPublicPageData();
+  });
+
+  it("does not tell the public the plan has no projects when the read failed", async () => {
+    tableErrors.project_rtp_cycle_links = { message: "permission denied for table" };
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.queryByText(/No projects have been published for this plan yet/)).toBeNull();
+    expect(screen.getByText(/The project list could not be loaded/)).toBeTruthy();
+    expect(screen.getByText(/does not mean the plan has no projects/)).toBeTruthy();
+  });
+
+  it("discloses the failure at the top of the page, in the reader's terms", async () => {
+    tableErrors.project_rtp_cycle_links = { message: "permission denied for table" };
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.getByText(/Part of this plan could not be loaded/)).toBeTruthy();
+    expect(screen.getByText(/could not read the projects in this plan/)).toBeTruthy();
+    // An empty list elsewhere is explicitly disowned as a finding.
+    expect(screen.getByText(/would not mean the records are absent/)).toBeTruthy();
+  });
+
+  it("never shows the database's own message to the public", async () => {
+    tableErrors.project_rtp_cycle_links = { message: "permission denied for relation projects" };
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    // Operator detail belongs in logs and operator surfaces, not on a page a
+    // resident reads. Disclosing THAT it failed is the honesty requirement;
+    // disclosing HOW is an information leak.
+    expect(screen.queryByText(/permission denied/)).toBeNull();
+  });
+
+  it("discloses a failed funding read rather than dropping the money silently", async () => {
+    tableErrors.funding_awards = { message: "column awarded_amount does not exist" };
+
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.getByText(/committed funding for these projects/)).toBeTruthy();
+    // The projects themselves still render — one failed read does not blank a
+    // page that otherwise loaded. That is the whole reason the helper collects
+    // failures instead of throwing.
+    expect(screen.getByText("Corridor improvements")).toBeTruthy();
+    expect(screen.getByText("Trail network")).toBeTruthy();
+  });
+
+  it("stays silent when every read succeeded", async () => {
+    render(await PublicRtpWhyPage({ params: Promise.resolve({ shareToken: SHARE_TOKEN }) }));
+
+    expect(screen.queryByText(/Part of this plan could not be loaded/)).toBeNull();
+    expect(screen.queryByText(/could not be loaded, so it is not shown/)).toBeNull();
   });
 });
