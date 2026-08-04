@@ -131,6 +131,12 @@ type SafetyWorkspaceProps = {
   workspaceId: string;
   latestIngest: SafetyIngestSummary | null;
   /**
+   * True when the crash-import history could not be READ. Distinct from "no
+   * import exists": one is a fact about this workspace, the other is a fact
+   * about the query, and only the first belongs in a sentence about crashes.
+   */
+  ingestsReadFailed?: boolean;
+  /**
    * Where the picker STARTS, resolved on the server. Absent (or `origin: "none"`)
    * keeps the original behavior: nothing is preselected and nothing is fetched
    * until the user picks a study area.
@@ -151,6 +157,7 @@ type SafetyWorkspaceProps = {
 export function SafetyWorkspace({
   workspaceId,
   latestIngest,
+  ingestsReadFailed = false,
   studyArea = EMPTY_STUDY_AREA_SEED,
   openedForProject = null,
   projects = [],
@@ -630,8 +637,9 @@ export function SafetyWorkspace({
           </div>
         ) : bbox ? (
           <p className="text-muted-foreground">
-            No crash data has been retrieved for this study area yet. Nothing is shown on the map —
-            that is not evidence that no crashes occurred.
+            {ingestsReadFailed
+              ? "This workspace's crash-import history could not be read, so nothing is shown on the map. That is a failed lookup, not a finding — imports may exist."
+              : "No crash data has been retrieved for this study area yet. Nothing is shown on the map — that is not evidence that no crashes occurred."}
           </p>
         ) : (
           /* NO JURISDICTION IS NAMED HERE. This sentence used to say crash

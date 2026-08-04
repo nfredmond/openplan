@@ -156,11 +156,18 @@ function mountSupabase({
   projectPlace = { data: null, error: null } as Result,
   projectOptions = [] as Array<{ id: string; name: string; status: string }>,
   ingests = [] as Array<Record<string, unknown>>,
+  /**
+   * Lets a test make the crash-import read FAIL. Without this the fixture is
+   * returned whatever happens, so the failure path — the one where the page
+   * could tell an agency it has no crash data — is unreachable by any test.
+   */
+  ingestsResult = null as Result | null,
 }: {
   workspace?: Result;
   projectPlace?: Result;
   projectOptions?: Array<{ id: string; name: string; status: string }>;
   ingests?: Array<Record<string, unknown>>;
+  ingestsResult?: Result | null;
 } = {}) {
   createClientMock.mockResolvedValue({
     auth: { getUser: async () => ({ data: { user: { id: "user-1" } } }) },
@@ -176,7 +183,8 @@ function mountSupabase({
               : respondWith({ data: projectOptions, error: null }),
         };
       }
-      if (table === "safety_crash_ingests") return respondWith({ data: ingests, error: null });
+      if (table === "safety_crash_ingests")
+        return respondWith(ingestsResult ?? { data: ingests, error: null });
       throw new Error(`Unexpected table: ${table}`);
     },
   });
@@ -360,5 +368,34 @@ describe("Safety opens on the right study area", () => {
     expect(await screen.findByText(/Choose a study area above/i)).toBeInTheDocument();
     expect(crashQueryBbox(fetchMock)).toBeNull();
     expect(screen.getByTestId("picker-external-label")).toHaveTextContent("(none)");
+  });
+
+  /**
+   * A failed crash-import read may not read as "no crash data".
+   *
+   * The page destructured `{ data: ingestRows }` out of a `Promise.all`, so a
+   * revoked grant or a dropped column arrived as an empty array and the page
+   * said "No crash data has been retrieved for this study area yet." On a safety
+   * module that sentence is close to a statement about an agency's collision
+   * record, and a planner acting on it would go and re-import data they already
+   * have.
+   */
+  it("says the crash-import history could not be read, rather than that none exists", async () => {
+    mountSupabase({
+      ingestsResult: { data: null, error: { message: "permission denied for table safety_crash_ingests" } },
+    });
+    await renderSafety();
+
+    expect(screen.queryByText(/No crash data has been retrieved for this study area yet/i)).toBeNull();
+    expect(screen.getByText(/crash-import history could not be read/i)).toBeInTheDocument();
+    expect(screen.getByText(/failed lookup, not a finding/i)).toBeInTheDocument();
+  });
+
+  it("still says the ordinary empty state when the read succeeded and there is nothing", async () => {
+    mountSupabase();
+    await renderSafety();
+
+    expect(screen.getByText(/No crash data has been retrieved for this study area yet/i)).toBeInTheDocument();
+    expect(screen.queryByText(/could not be read/i)).toBeNull();
   });
 });

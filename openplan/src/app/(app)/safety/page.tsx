@@ -180,7 +180,10 @@ export default async function SafetyPage({
   // missing table (schema not applied yet) is treated the same as "nothing
   // retrieved" rather than failing the page. Projects power the attach-on-
   // ingest selector — the same workspace projects list other modules offer.
-  const [{ data: ingestRows }, { data: projectRows }] = await Promise.all([
+  // Named results, not `{ data }`: a crash-ingest read that failed must not
+  // render as "no crash data has been imported", which on this page reads as a
+  // statement about the agency's safety record rather than about the query.
+  const [ingestsResult, projectsResult] = await Promise.all([
     supabase
       .from("safety_crash_ingests")
       .select(
@@ -196,6 +199,11 @@ export default async function SafetyPage({
       .order("updated_at", { ascending: false })
       .limit(200),
   ]);
+
+  const ingestsReadFailed = reads.check("this workspace's crash imports", ingestsResult);
+  reads.check("this workspace's projects", projectsResult);
+  const ingestRows = ingestsResult.data;
+  const projectRows = projectsResult.data;
 
   const ingestRow = (ingestRows ?? [])[0] ?? null;
   const latestIngest: SafetyIngestSummary | null = ingestRow
@@ -262,6 +270,7 @@ export default async function SafetyPage({
       <SafetyWorkspace
         workspaceId={workspaceId}
         latestIngest={latestIngest}
+        ingestsReadFailed={ingestsReadFailed}
         studyArea={{
           corridorText: studyArea.corridorText,
           place: studyArea.place,
