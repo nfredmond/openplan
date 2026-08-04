@@ -434,14 +434,14 @@ async function main() {
     if (runtimeCueHref !== `/reports/${ids.reportId}#packet-release-review`) {
       throw new Error(`Reports runtime cue did not target the expected RTP funding release review. Received ${runtimeCueHref}`);
     }
-    await page.getByText(/Shared runtime cue:/i).first().waitFor({ timeout: 30000 });
+    await page.getByText(/Next across this workspace:/i).first().waitFor({ timeout: 30000 });
     notes.push('Reports surface showed RTP funding-review queue pressure and the shared runtime cue pointed back to the RTP funding release-review packet before opening detail.');
     await screenshot('prod-rtp-release-review-02-reports-runtime-cue');
 
     await page.goto(`${productionBaseUrl}/rtp`, { waitUntil: 'networkidle' });
     await page.getByText(cycleTitle, { exact: false }).first().waitFor({ timeout: 30000 });
     const cycleRow = page.locator('article').filter({ has: page.getByRole('link', { name: new RegExp(cycleTitle, 'i') }) }).first();
-    await cycleRow.getByText(/Release review with funding follow-up/i).first().waitFor({ timeout: 30000 });
+    await cycleRow.getByText(/Funding-backed release review/i).first().waitFor({ timeout: 30000 });
     await cycleRow.getByText(/Funding gap review|Award follow-through pending|Reimbursement in flight|Pipeline-backed review/i).first().waitFor({ timeout: 30000 });
     await page.getByText(/Funding review/i).first().waitFor({ timeout: 30000 });
     await page.getByRole('link', { name: /Open release-review lane/i }).waitFor({ timeout: 30000 });

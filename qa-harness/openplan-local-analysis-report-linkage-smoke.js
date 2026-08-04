@@ -247,7 +247,7 @@ async function main() {
     notes.push('Created model with embedded corridor run-template defaults.');
 
     await page.goto(`${baseUrl}/models/${ids.modelId}`, { waitUntil: 'networkidle' });
-    await page.getByText('Managed scenario → run execution', { exact: true }).waitFor({ timeout: 20000 });
+    await page.getByText("Launch and track this model's runs", { exact: true }).waitFor({ timeout: 20000 });
     await page.locator('#managed-run-scenario').selectOption(ids.alternativeEntryId);
     await screenshot('local-analysis-report-linkage-01-model-launch-ready');
 
@@ -258,7 +258,7 @@ async function main() {
         response.ok(),
       { timeout: 90000 }
     );
-    await page.getByRole('button', { name: /Launch managed run/i }).click();
+    await page.getByRole('button', { name: /^Launch run$/i }).click();
     const launchResponse = await launchResponsePromise;
     const launchPayload = await launchResponse.json();
     ids.modelRunId = launchPayload.modelRunId ?? null;

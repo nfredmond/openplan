@@ -107,7 +107,7 @@ liveDescribe("viewer write denial (live)", () => {
         throw new Error(`Viewer-denial probe left user ${userId} behind: ${removed.error.message}`);
       }
     }
-  });
+  }, 60_000);
 
   it("lets a viewer READ workspace content", async () => {
     const { data, error } = await viewer.from("projects").select("id, name").eq("workspace_id", workspaceId);

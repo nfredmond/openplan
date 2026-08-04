@@ -746,10 +746,32 @@ liveDescribe("workspace RLS live isolation", () => {
     await userB?.auth.signOut();
 
     await service.from("workspaces").delete().in("id", [context.workspaceAId, context.workspaceBId]);
-    await service.from("workspaces").delete().like("slug", `rls-%-${context.suffix}-%`);
-    await service.auth.admin.deleteUser(context.userAId);
-    await service.auth.admin.deleteUser(context.userBId);
-  });
+    // Delete each user's trigger-provisioned personal workspaces by
+    // MEMBERSHIP, then the user, CHECKED — a discarded deleteUser result
+    // strands a live auth account carrying this suite's fixed password in
+    // whatever database the suite pointed at, which is exactly how eleven
+    // stranded users accumulated before 2026-08-03. This was the third
+    // teardown site; the other two were hardened first and this one kept the
+    // old shape (2026-08-03 review). The slug-LIKE cleanup it used matched
+    // nothing at all: fixture slugs are `rls-a-<suffix>` with no trailing
+    // segment, so `rls-%-<suffix>-%` was a dead pattern.
+    for (const userId of [context.userAId, context.userBId]) {
+      const { data: memberships } = await service
+        .from("workspace_members")
+        .select("workspace_id")
+        .eq("user_id", userId);
+      for (const row of (memberships ?? []) as { workspace_id: string }[]) {
+        await service.from("workspaces").delete().eq("id", row.workspace_id);
+      }
+      const removed = await service.auth.admin.deleteUser(userId);
+      if (removed.error) {
+        throw new Error(`RLS isolation teardown left user ${userId} behind: ${removed.error.message}`);
+      }
+    }
+    // The 60s timeout matches beforeAll: this hook makes 10+ live round
+    // trips, and vitest's 10s default kills it BEFORE deleteUser on a slow
+    // stack — noisy in the run, invisible in the database.
+  }, 60_000);
 
   it("seeds one fixture row per audited workspace table for tenant B", async () => {
     const results = await Promise.all(
@@ -1008,7 +1030,7 @@ liveDescribe("hardening of 2026-08-03 stays in force", () => {
         throw new Error(`Hardening probe left user ${userId} behind: ${removed.error.message}`);
       }
     }
-  });
+  }, 60_000);
 
   it("seeds a tenant-owned transit feed, so the denials below are not vacuous", async () => {
     for (const table of GTFS_CHILD_TABLES) {

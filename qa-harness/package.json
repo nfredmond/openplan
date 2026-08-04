@@ -23,7 +23,6 @@
     "prod-grants-registry-smoke": "node openplan-prod-grants-registry-smoke.js",
     "prod-rtp-release-review-smoke": "node openplan-prod-rtp-release-review-smoke.js",
     "prod-scenario-comparison-smoke": "node openplan-prod-scenario-comparison-smoke.js",
-    "prod-county-scaffold-smoke": "node openplan-prod-county-scaffold-smoke.js",
     "prod-layout-overlap-audit": "node openplan-prod-layout-overlap-audit.js",
     "prod-qa-cleanup": "node openplan-prod-qa-cleanup.js",
     "prod-qa-cleanup:apply": "node openplan-prod-qa-cleanup.js --apply"

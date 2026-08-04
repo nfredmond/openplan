@@ -460,6 +460,166 @@ function offenders(scan: Scan, allowlist: Record<string, string> = UNVERIFIABLE_
   return [...problems.values()].filter((offender) => !(offender.key in allowlist));
 }
 
+// ---------------------------------------------------------------------------
+// UI selector coverage
+// ---------------------------------------------------------------------------
+
+/**
+ * The route contract above answers "does the API still exist"; this half
+ * answers "does the COPY the harness clicks on still exist". The 2026-08-03
+ * copy rewrite left six selectors targeting strings that no longer render
+ * anywhere, so those smokes could only fail — as fake product regressions —
+ * and one whole smoke drove UI removed in April. This file's header already
+ * says why nothing else checks the harness; that argument covers copy
+ * exactly as much as routes.
+ *
+ * What is checked: getByText string literals and role-name regexes that
+ * reduce to plain text, matched against all of src (entity-decoded, because
+ * JSX writes `&apos;` where the DOM renders `'`). What is auto-exempt:
+ * selectors whose literal also appears elsewhere in the SAME harness file —
+ * that is the harness matching data it authored itself. What is allowlisted
+ * BY NAME below: copy composed at runtime from template literals, which no
+ * static scan can see; the live smoke is those selectors' only test.
+ */
+const RUNTIME_COMPOSED_SELECTORS: ReadonlyArray<{ needle: string; reason: string }> = [
+  {
+    needle: "Workspace award stack and reimbursement posture",
+    reason: "grants registry section heading assembled at runtime (grants-awards-reimbursement-section.tsx)",
+  },
+  {
+    needle: "Review in-flight reimbursement in billing triage",
+    reason:
+      "composed as `${getReimbursementActionLabel(…)} in billing triage` (grants-awards-reimbursement-section.tsx:298)",
+  },
+  {
+    needle: "Move into the right module lane",
+    reason: "workspace command board CTA assembled at runtime (lib/operations/workspace-summary.ts)",
+  },
+  {
+    needle: "Review current packet",
+    reason: "release-review CTA assembled at runtime from packet counts (lib/operations)",
+  },
+  {
+    needle: "Invoice moved to internal review.",
+    reason:
+      "composed as `Invoice moved to ${nextStatus.replace(…)}.` (invoice-status-advance-button.tsx:81)",
+  },
+  {
+    needle: "1 RTP funding review",
+    reason: "count-composed workspace pressure copy (lib/assistant/respond.ts, lib/operations)",
+  },
+];
+
+const JSX_ENTITIES: ReadonlyArray<[string, string]> = [
+  ["&apos;", "'"],
+  ["&#39;", "'"],
+  ["&quot;", '"'],
+  ["&ldquo;", "“"],
+  ["&rdquo;", "”"],
+  ["&lsquo;", "‘"],
+  ["&rsquo;", "’"],
+  ["&amp;", "&"],
+  ["&nbsp;", " "],
+  ["&mdash;", "—"],
+  ["&ndash;", "–"],
+];
+
+function decodeJsxEntities(text: string): string {
+  return JSX_ENTITIES.reduce((acc, [entity, char]) => acc.split(entity).join(char), text);
+}
+
+function walkSrc(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) return entry.name === "test" ? [] : walkSrc(full);
+    return /\.(tsx?|css)$/.test(entry.name) ? [full] : [];
+  });
+}
+
+type SelectorNeedle = { file: string; needle: string; caseInsensitive: boolean };
+
+/** getByText literals + role-name regexes that reduce to plain text. */
+function harnessSelectorNeedles(): { needles: SelectorNeedle[]; skippedComplex: number } {
+  const needles: SelectorNeedle[] = [];
+  let skippedComplex = 0;
+
+  for (const file of harnessFiles()) {
+    const source = readFileSync(path.join(HARNESS_DIR, file), "utf8");
+
+    for (const match of source.matchAll(/getByText\(\s*(['"])((?:\\.|(?!\1).)*)\1/g)) {
+      const literal = match[2].replace(/\\(['"])/g, "$1");
+      // A literal that appears elsewhere in the same file is harness-authored
+      // fixture data (the smoke asserting on a label it created), not app copy.
+      const elsewhere = source.split(match[2]).length > 2;
+      if (!elsewhere) needles.push({ file, needle: literal, caseInsensitive: false });
+    }
+
+    // Role-name regexes AND getByText regexes — the first version read only
+    // `name:` regexes, so `getByText(/…/i)` selectors were invisible and a
+    // planted dead one sailed through the mutation check (2026-08-04).
+    for (const match of source.matchAll(/(?:name:\s*|getByText\(\s*)\/((?:[^/\\]|\\.)+)\/(i?)/g)) {
+      const bare = match[1].replace(/^\^/, "").replace(/\$$/, "");
+      if (/[.*+?()[\]{}|]/.test(bare.replace(/\\[.*+?()[\]{}|]/g, ""))) {
+        skippedComplex += 1; // a real regex — not statically checkable
+        continue;
+      }
+      const needle = bare.replace(/\\([.*+?()[\]{}|/])/g, "$1");
+      const elsewhere = source.split(match[1]).length > 2;
+      if (!elsewhere) needles.push({ file, needle, caseInsensitive: match[2] === "i" });
+    }
+  }
+
+  return { needles, skippedComplex };
+}
+
+describe("every UI copy string the qa-harness targets still renders somewhere", () => {
+  const corpus = decodeJsxEntities(
+    walkSrc(path.join(process.cwd(), "src"))
+      .map((file) => readFileSync(file, "utf8"))
+      .join("\n")
+  );
+  const corpusLower = corpus.toLowerCase();
+  const allowlisted = new Set(RUNTIME_COMPOSED_SELECTORS.map((entry) => entry.needle));
+
+  it("every statically-checkable selector matches current product copy", () => {
+    const { needles } = harnessSelectorNeedles();
+    const dead = needles
+      .filter(({ needle }) => !allowlisted.has(needle))
+      .filter(({ needle, caseInsensitive }) =>
+        caseInsensitive ? !corpusLower.includes(needle.toLowerCase()) : !corpus.includes(needle)
+      )
+      .map(({ file, needle }) => `${file}: "${needle}"`);
+    expect([...new Set(dead)]).toEqual([]);
+  });
+
+  it("scans a real selector population (guard is not vacuous)", () => {
+    // 70 checkable needles today after the self-authored exemption; the floor
+    // exists so the scan cannot quietly degrade to matching nothing.
+    const { needles } = harnessSelectorNeedles();
+    expect(needles.length).toBeGreaterThan(60);
+    // Entity decoding is load-bearing: this exact selector matches the DOM
+    // but the source writes &apos;.
+    expect(corpus).toContain("Launch and track this model's runs");
+  });
+
+  it("every runtime-composed allowlist entry is still targeted by some smoke (ratchet)", () => {
+    // Raw text, not the needle set: a composed selector targeted more than
+    // once in one file is excluded from the needle set by the self-authored
+    // exemption, but it is still a live target the allowlist must track.
+    // Backslashes stripped before comparing: a selector written as a regex
+    // escapes its dots (`review\.`), so the raw text never contains the
+    // decoded needle verbatim.
+    const rawHarness = harnessFiles()
+      .map((file) => readFileSync(path.join(HARNESS_DIR, file), "utf8"))
+      .join("\n")
+      .replace(/\\(.)/g, "$1");
+    const stale = RUNTIME_COMPOSED_SELECTORS.filter((entry) => !rawHarness.includes(entry.needle)).map(
+      (entry) => entry.needle
+    );
+    expect(stale).toEqual([]);
+  });
+});
+
 describe("every API route the qa-harness calls still exists and still exports that verb", () => {
   it("resolves every harness call site to a live route handler", () => {
     const failures = offenders(scanHarness()).map(
@@ -568,7 +728,9 @@ describe("every API route the qa-harness calls still exists and still exports th
       .map((file) => ({ file: path.basename(file), source: readFileSync(file, "utf8") }))
       .filter(({ source }) => /function\s+appFetch\s*\(/.test(source));
 
-    expect(definitions.length).toBeGreaterThanOrEqual(17);
+    // 16 after the county-scaffold smoke's deletion (2026-08-04 — it drove
+    // UI removed in April and could never pass).
+    expect(definitions.length).toBeGreaterThanOrEqual(16);
 
     const divergent = definitions
       .filter(({ source }) => !source.includes("payload ? 'POST' : 'GET'"))

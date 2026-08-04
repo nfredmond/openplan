@@ -206,7 +206,7 @@ async function main() {
     summary.attachedRunTitle = null;
 
     await page.goto(`${productionBaseUrl}/models/${summary.modelId}`, { waitUntil: 'networkidle' });
-    await page.getByText('Managed scenario → run execution', { exact: true }).waitFor({ timeout: 20000 });
+    await page.getByText("Launch and track this model's runs", { exact: true }).waitFor({ timeout: 20000 });
     await page.locator('#managed-run-scenario').selectOption(summary.alternativeEntryId);
     await screenshot('prod-managed-run-01-model-launch-ready');
 
@@ -214,7 +214,7 @@ async function main() {
       (response) => response.request().method() === 'POST' && response.url().includes(`/api/models/${summary.modelId}/runs`) && response.status() === 201,
       { timeout: 60000 }
     );
-    await page.getByRole('button', { name: /Launch managed run/i }).click();
+    await page.getByRole('button', { name: /^Launch run$/i }).click();
     const launchResponse = await launchResponsePromise;
     const launchPayload = await launchResponse.json();
     summary.modelRunId = launchPayload.modelRunId ?? null;

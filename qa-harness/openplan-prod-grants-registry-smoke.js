@@ -308,7 +308,7 @@ async function main() {
     notes.push('The grants workspace command queue now retargets active funding-gap commands to a project-focused sourcing lane on `/grants`.');
 
     await page.goto(`${productionBaseUrl}/dashboard`, { waitUntil: 'networkidle' });
-    const dashboardGrantsSurfaceLink = page.locator('a').filter({ has: page.getByText(/^Open Grants Surface$/i) }).first();
+    const dashboardGrantsSurfaceLink = page.locator('a').filter({ has: page.getByText(/^Open Grants$/i) }).first();
     const dashboardGrantsSurfaceHref = await dashboardGrantsSurfaceLink.getAttribute('href');
     const dashboardUsesFocusedGrantsHref =
       Boolean(dashboardGrantsSurfaceHref) &&
