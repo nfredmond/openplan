@@ -41,8 +41,8 @@ import { describe, expect, it } from "vitest";
  *
  *   - ARRAY DESTRUCTURING. `const [{ data: a }, { data: b }] = await
  *     Promise.all([...])` never matches, because the regex anchors on `const {`.
- *     11 such bindings remain: grants (6), reports (5). Safety was cleared
- *     2026-08-04. Recounted
+ *     5 such bindings remain, all on the reports registry. Safety and grants
+ *     were cleared 2026-08-04. Recounted
  *     2026-08-04 — an earlier draft of this header said 14 and named the
  *     dashboard as well, which was wrong: the dashboard destructures to NAMED
  *     results (`const [runsResult, …] = await Promise.all(…)`) and checks
@@ -307,7 +307,6 @@ function countsBy(detect: (source: string) => number): Map<string, number> {
 
 /** Measured 2026-08-04. May only shrink. */
 const KNOWN_ARRAY_DISCARDED: ReadonlyArray<readonly [string, number]> = [
-  ["src/app/(app)/grants/page.tsx", 6],
   ["src/app/(app)/reports/page.tsx", 5],
 ];
 

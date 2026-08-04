@@ -771,4 +771,44 @@ describe("GrantsPage", () => {
     // default, so no interim-default disclosure appears.
     expect(screen.queryByText(new RegExp(INTERIM_DEFAULT_RATIONALE.slice(0, 40)))).toBeNull();
   });
+
+  /**
+   * GRANTS IS THE MONEY SURFACE. Every lane here counts, totals or ranks
+   * something an agency is pursuing or has won, and six of the page's reads used
+   * to arrive as a bare `{ data }` — so a revoked grant or a changed policy
+   * became an empty array and the page reported it as a finding. "0 awards" is a
+   * sentence about an agency's funding; a query that failed cannot say it.
+   *
+   * The two money reads retry when a COLUMN is pending on an older deployment —
+   * a classified failure with a truer thing to say. Everything the classifier
+   * does not own must be collected, which is what these assert.
+   */
+  it("discloses a failed project read instead of reporting an empty portfolio", async () => {
+    projectsOrderMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table projects" },
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/could not read this workspace's projects/i)).toBeInTheDocument();
+    expect(screen.getByText(/would not mean the records are absent/i)).toBeInTheDocument();
+  });
+
+  it("discloses a failed award read, which the pending-column retry does not own", async () => {
+    fundingAwardsOrderMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table funding_awards" },
+    });
+
+    await renderPage();
+
+    expect(screen.getByText(/could not read this workspace's funding awards/i)).toBeInTheDocument();
+  });
+
+  it("stays silent when every read succeeded", async () => {
+    await renderPage();
+
+    expect(screen.queryByText(/This page could not read/i)).toBeNull();
+  });
 });

@@ -1,3 +1,4 @@
+import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { redirect } from "next/navigation";
 import { GrantsFundingNeedEditorSection } from "@/components/grants/grants-funding-need-editor-section";
 import { GrantsOpportunityCreatorSection } from "@/components/grants/grants-opportunity-creator-section";
@@ -158,13 +159,13 @@ export default async function GrantsPage({
 
   const [
     opportunitiesRead,
-    { data: projectsData },
-    { data: programsData },
+    projectsRead,
+    programsRead,
     fundingAwardsRead,
-    { data: fundingInvoicesData },
-    { data: projectFundingProfilesData },
-    { data: projectBcaScreeningsData },
-    { data: engagementCampaignsData },
+    fundingInvoicesRead,
+    projectFundingProfilesRead,
+    projectBcaScreeningsRead,
+    engagementCampaignsRead,
     workspaceGeographyRead,
     operationsSummary,
   ] = await Promise.all([
@@ -262,6 +263,42 @@ export default async function GrantsPage({
       .order("updated_at", { ascending: false });
     fundingAwardsData = legacyAwardsRead.data;
   }
+
+  /**
+   * WHAT COULD NOT BE READ ON THIS PAGE.
+   *
+   * Grants is the money surface: opportunities pursued, awards won, invoices
+   * raised against a funder. Every lane below counts, totals or ranks something,
+   * and each of these reads used to arrive as a bare `{ data }` — so a revoked
+   * grant or a changed policy became an empty array and the page reported it as
+   * a finding. "0 awards" is a sentence about an agency's funding, and a query
+   * that failed cannot say it.
+   *
+   * The two money reads above already retry when a COLUMN is pending on an older
+   * deployment; that is a classified failure with a truer thing to say. Anything
+   * the classifier does not own is collected here — classify first, then collect
+   * what is left.
+   */
+  const reads = new ReadFailureLog();
+  if (opportunitiesRead.error && !looksLikePendingColumn(opportunitiesRead.error.message)) {
+    reads.check("this workspace's funding opportunities", opportunitiesRead);
+  }
+  if (fundingAwardsRead.error && !looksLikePendingColumn(fundingAwardsRead.error.message)) {
+    reads.check("this workspace's funding awards", fundingAwardsRead);
+  }
+  reads.check("this workspace's projects", projectsRead);
+  reads.check("this workspace's programs", programsRead);
+  reads.check("reimbursement invoices", fundingInvoicesRead);
+  reads.check("project funding profiles", projectFundingProfilesRead);
+  reads.check("benefit-cost screenings", projectBcaScreeningsRead);
+  reads.check("linked engagement campaigns", engagementCampaignsRead);
+
+  const projectsData = projectsRead.data;
+  const programsData = programsRead.data;
+  const fundingInvoicesData = fundingInvoicesRead.data;
+  const projectFundingProfilesData = projectFundingProfilesRead.data;
+  const projectBcaScreeningsData = projectBcaScreeningsRead.data;
+  const engagementCampaignsData = engagementCampaignsRead.data;
 
   // Where this workspace works, as one answer for every jurisdiction-aware lane
   // on the page. A failed geography read (columns pending on an older
@@ -777,6 +814,17 @@ export default async function GrantsPage({
 
   return (
     <section className="module-page">
+      {reads.any ? (
+        <div
+          role="status"
+          className="mb-4 rounded-lg border border-amber-300/60 bg-amber-50/60 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
+        >
+          <p>{reads.describe()}</p>
+          {/* This is an internal, membership-gated page, so the database's own
+              words belong here — an operator is the person who can act on them. */}
+          <p className="mt-1 text-xs opacity-80">{reads.messages().join(" · ")}</p>
+        </div>
+      ) : null}
       <GrantsPageIntroHeader
         scenarioComparisonIndicatorCount={scenarioComparisonIndicatorCount}
         scenarioComparisonReadyCount={scenarioComparisonReadyCount}
