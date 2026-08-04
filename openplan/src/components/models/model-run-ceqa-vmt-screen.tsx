@@ -1,5 +1,6 @@
 "use client";
 
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import { useCallback, useState } from "react";
 import { ChevronDown, ChevronRight, Loader2, Scale } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { CeqaVmtScreenBody } from "@/components/ceqa/ceqa-vmt-screen-body";
 import type { CeqaVmtKpiRowLike } from "@/lib/models/ceqa-vmt-screen";
 import {
-  claimStatusLabel,
   parseVmtSignificanceScreeningRow,
   summarizeRecord,
   type VmtClaimTierEvidence,
@@ -354,7 +354,7 @@ export function ModelRunCeqaVmtScreen({
                         {record.vmtPerCapita} VMT/capita against a cut line of{" "}
                         {record.thresholdVmtPerCapita} ({Math.round(record.thresholdPct * 100)}% below
                         the {record.referenceLabel} reference of {record.referenceVmtPerCapita}) ·{" "}
-                        {claimStatusLabel(record.claimStatus)} · saved {formatSavedAt(record.createdAt)}
+                        {modelingClaimStatusLabel(record.claimStatus)} · saved {formatSavedAt(record.createdAt)}
                       </span>
                     </li>
                   ))}

@@ -26,7 +26,11 @@
  * half-parsed determination must read as absent rather than as a weaker one.
  */
 
-import { isModelingClaimStatus, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import {
+  isModelingClaimStatus,
+  modelingClaimStatusLabel,
+  type ModelingClaimStatus,
+} from "@/lib/models/evidence-backbone";
 import { CEQA_MEMO_ENGINE_VERSION } from "@/lib/models/ceqa-vmt-screen";
 import type {
   CeqaProjectType,
@@ -172,23 +176,9 @@ export function determinationLabel(determination: VmtDetermination): string {
     : "Less than significant";
 }
 
-/** Human label for a claim tier, or the honest absence. Mirrors the county-run evidence panel. */
-export function claimStatusLabel(status: ModelingClaimStatus | null): string {
-  switch (status) {
-    case "claim_grade_passed":
-      return "Claim-grade";
-    case "calibrated_to_counts":
-      return "Calibrated to counts";
-    case "screening_grade":
-      return "Screening-grade";
-    case "prototype_only":
-      return "Prototype-only";
-    default:
-      // Not a fallback for an unrecognised tier — `claimStatus` is null exactly
-      // when no claim decision exists for the run, and saying so is the point.
-      return "Claim tier not recorded";
-  }
-}
+// The claim-tier labeler used to be defined here. It now lives beside the
+// vocabulary it renders (`modelingClaimStatusLabel` in models/evidence-backbone),
+// because three copies existed and two disagreed about `claim_grade_passed`.
 
 /** How the determination's input basis reads next to it. */
 export function inputBasisLabel(inputBasis: VmtScreeningInputBasis): string {
@@ -211,7 +201,7 @@ export function describeClaimTierForDetermination(
     return "not established on this surface. The run's recorded claim tier is not read here, so how strongly this determination may be claimed is unknown.";
   }
   if (claimTier.claimStatusSource === "recorded_claim_decision") {
-    return `${claimStatusLabel(claimTier.claimStatus)} — recorded for this run.`;
+    return `${modelingClaimStatusLabel(claimTier.claimStatus)} — recorded for this run.`;
   }
   return "not recorded for this run. No modeling claim decision exists, so OpenPlan will not assume a tier for it.";
 }
@@ -246,7 +236,7 @@ export type VmtDeterminationSummaryInput = {
 export function summarizeVmtDetermination(input: VmtDeterminationSummaryInput): string {
   const tier =
     input.claimStatusSource === "recorded_claim_decision"
-      ? claimStatusLabel(input.claimStatus).toLowerCase()
+      ? modelingClaimStatusLabel(input.claimStatus).toLowerCase()
       : "claim tier not recorded";
 
   return [

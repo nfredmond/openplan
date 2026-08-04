@@ -15,9 +15,9 @@ import {
 } from "@/lib/reports/evidence-chain";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import {
   buildReportModelingEvidenceExportProof,
-  formatModelingClaimStatusLabel,
   formatModelingValidationStatusLabel,
   type ReportModelingEvidence,
 } from "@/lib/reports/modeling-evidence";
@@ -806,7 +806,7 @@ function modelingEvidenceMarkup(modelingEvidence: ReportModelingEvidence[]): str
             <p class="meta">${esc(item.runName?.trim() || "County run")} • ${esc(titleize(item.stage || "unknown"))} • updated ${esc(formatDateTime(item.updatedAt))}</p>
             ${
               claim
-                ? `<p><strong>${esc(formatModelingClaimStatusLabel(claim.claimStatus))}:</strong> ${esc(
+                ? `<p><strong>${esc(modelingClaimStatusLabel(claim.claimStatus))}:</strong> ${esc(
                     evidence?.reportLanguage ??
                       "Structured modeling evidence exists, but no report-language rule was recorded."
                   )}</p>

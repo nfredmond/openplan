@@ -1,24 +1,15 @@
 import type { CountyRunModelingEvidence } from "@/lib/api/county-onramp";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { StatusTone } from "@/lib/ui/status";
 
-type ClaimStatus = NonNullable<CountyRunModelingEvidence["claimDecision"]>["claimStatus"];
 
-function claimStatusLabel(status: ClaimStatus) {
-  switch (status) {
-    case "claim_grade_passed":
-      return "Claim-grade";
-    case "calibrated_to_counts":
-      return "Calibrated to counts";
-    case "screening_grade":
-      return "Screening-grade";
-    case "prototype_only":
-      return "Prototype-only";
-    default:
-      return "Unknown";
-  }
-}
+// Claim-tier wording comes from the vocabulary's own labeler. The local copy
+// here rendered `claim_grade_passed` as "Claim-grade" while the report lane said
+// "Claim-grade passed", and its "Unknown" default was unreachable — ClaimStatus
+// is a non-null four-value enum, so it read as a safety net while catching
+// nothing.
 
 function claimStatusTone(status: string | null | undefined): StatusTone {
   if (status === "claim_grade_passed") return "success";
@@ -63,7 +54,7 @@ export function CountyRunModelingEvidence({ evidence }: { evidence?: CountyRunMo
           <CardTitle>Modeling evidence</CardTitle>
           {claimDecision ? (
             <StatusBadge tone={claimStatusTone(claimDecision.claimStatus)}>
-              {claimStatusLabel(claimDecision.claimStatus)}
+              {modelingClaimStatusLabel(claimDecision.claimStatus)}
             </StatusBadge>
           ) : (
             <StatusBadge tone="info">No claim decision</StatusBadge>

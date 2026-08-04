@@ -13,9 +13,9 @@
  */
 
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
-import { claimStatusLabel } from "@/lib/planner-pack/vmt-screening-records";
 import {
   isModelingClaimStatus,
+  modelingClaimStatusLabel,
   strongestModelingClaimStatus,
   type ModelingClaimStatus,
 } from "@/lib/models/evidence-backbone";
@@ -167,7 +167,7 @@ export function formatRtpEvidenceRunDisclosureLine(disclosure: RtpEvidenceRunDis
       : "Status not recorded";
   const tier = disclosure.claimReadFailed
     ? "Claim tier could not be read"
-    : claimStatusLabel(disclosure.claimStatus);
+    : modelingClaimStatusLabel(disclosure.claimStatus);
   return `${engine} · ${status} · ${tier}`;
 }
 

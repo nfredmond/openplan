@@ -18,7 +18,7 @@ import {
   type EvidenceTransitStatus,
   type NormalizedEvidencePacket,
 } from "@/lib/models/evidence-packet";
-import { formatModelingClaimStatusLabel } from "@/lib/reports/modeling-evidence";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import type { StatusTone } from "@/lib/ui/status";
 import { ESTIMATED_BADGE_LABEL } from "@/lib/analysis/estimated-source";
@@ -517,7 +517,7 @@ export function ModelRunEvidencePanel({
                 </p>
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <StatusBadge tone={claimStatusTone(claimStatus)}>
-                    {formatModelingClaimStatusLabel(claimStatus)}
+                    {modelingClaimStatusLabel(claimStatus)}
                   </StatusBadge>
                   {claimStatus === "screening_grade" ? (
                     <StatusBadge tone="neutral">Uncalibrated by default</StatusBadge>

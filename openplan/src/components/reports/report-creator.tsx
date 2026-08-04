@@ -13,7 +13,7 @@ import {
   defaultReportTitle,
   type ReportType,
 } from "@/lib/reports/catalog";
-import { formatModelingClaimStatusLabel } from "@/lib/reports/modeling-evidence";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 type ProjectOption = {
@@ -109,7 +109,7 @@ function pickDefaultModelingCountyRunId(
 
 function formatModelingRunOptionText(option: ModelingCountyRunOption) {
   const posture = option.claimStatus
-    ? formatModelingClaimStatusLabel(option.claimStatus)
+    ? modelingClaimStatusLabel(option.claimStatus)
     : "No claim decision";
   const geography = option.geographyLabel ? `, ${option.geographyLabel}` : "";
   return `${option.runName} — ${posture}${geography}`;
@@ -431,7 +431,7 @@ export function ReportCreator({
             {selectedModelingCountyRun?.claimStatus ? (
               <span className="inline-flex items-center gap-1 text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                {formatModelingClaimStatusLabel(selectedModelingCountyRun.claimStatus)}
+                {modelingClaimStatusLabel(selectedModelingCountyRun.claimStatus)}
               </span>
             ) : (
               <span className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">

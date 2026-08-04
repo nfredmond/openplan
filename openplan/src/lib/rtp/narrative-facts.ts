@@ -13,10 +13,8 @@
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
 import { buildNarrativeFactList, type NarrativeFact } from "@/lib/grants/narrative-grounding";
 import type { PortfolioFundingSnapshot } from "@/lib/projects/funding";
-import {
-  formatModelingClaimStatusLabel,
-  type ReportModelingEvidence,
-} from "@/lib/reports/modeling-evidence";
+import { type ReportModelingEvidence } from "@/lib/reports/modeling-evidence";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import {
   formatRtpChapterStatusLabel,
   formatRtpDate,
@@ -91,7 +89,7 @@ function modelingEvidenceClaims(modelingEvidence: ReportModelingEvidence[]): str
     // The claim registry's own report language is the honest framing — never
     // upgraded here, and its absence is stated as a prohibition.
     const claimText = claim
-      ? `${formatModelingClaimStatusLabel(claim.claimStatus)} — ${
+      ? `${modelingClaimStatusLabel(claim.claimStatus)} — ${
           item.evidence?.reportLanguage ?? claim.statusReason
         }`
       : "no structured claim decision is recorded, so model-backed language must not be used as an outward planning claim";

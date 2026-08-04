@@ -1,7 +1,7 @@
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import {
   buildReportModelingEvidenceExportProof,
-  formatModelingClaimStatusLabel,
   formatModelingValidationStatusLabel,
   type ReportModelingEvidence,
 } from "@/lib/reports/modeling-evidence";
@@ -331,7 +331,7 @@ function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): 
           )} · updated ${esc(formatRtpExportDateTime(item.updatedAt))}</p>
           ${
             claim
-              ? `<p><strong>${esc(formatModelingClaimStatusLabel(claim.claimStatus))}:</strong> ${esc(
+              ? `<p><strong>${esc(modelingClaimStatusLabel(claim.claimStatus))}:</strong> ${esc(
                   evidence?.reportLanguage ??
                     "Structured modeling evidence exists, but no report-language rule was recorded."
                 )}</p>

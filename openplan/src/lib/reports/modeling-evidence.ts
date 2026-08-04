@@ -3,7 +3,7 @@ import type {
   ModelingEvidenceSnapshot,
   ModelingValidationStatus,
 } from "@/lib/models/evidence-backbone";
-import { strongestModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import { modelingClaimStatusLabel, strongestModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 export type ReportModelingEvidence = {
   countyRunId: string;
@@ -14,12 +14,9 @@ export type ReportModelingEvidence = {
   evidence: ModelingEvidenceSnapshot | null;
 };
 
-export function formatModelingClaimStatusLabel(status: ModelingClaimStatus): string {
-  if (status === "claim_grade_passed") return "Claim-grade passed";
-  if (status === "calibrated_to_counts") return "Calibrated to counts";
-  if (status === "screening_grade") return "Screening-grade";
-  return "Prototype-only";
-}
+// The claim-tier labeler lives beside its vocabulary — see
+// `modelingClaimStatusLabel` in models/evidence-backbone. This module used to
+// carry its own copy, and it was the one that disagreed.
 
 export function formatModelingValidationStatusLabel(status: ModelingValidationStatus): string {
   if (status === "pass") return "Pass";
@@ -52,7 +49,7 @@ export function buildReportModelingEvidenceExportProof(
   const claim = evidence?.claimDecision ?? null;
   const sourceCount = evidence?.sourceManifests.length ?? 0;
   const validationCount = evidence ? describeValidationCheckCount(item) : 0;
-  const statusLabel = claim ? formatModelingClaimStatusLabel(claim.claimStatus) : "No claim decision";
+  const statusLabel = claim ? modelingClaimStatusLabel(claim.claimStatus) : "No claim decision";
   const runLabel = firstNonEmpty([item.geographyLabel, item.runName, item.countyRunId]) ?? "county model run";
   const caveatCarryThrough = uniqueNonEmpty([
     "Planning analysis and evidence triage only; not a validated behavioral forecast or certified model calibration.",
@@ -158,8 +155,8 @@ export function buildPlannerReadableModelingEvidenceSummary(
     )
   );
 
-  const fallbackStatusLabel = strongestStatus ? formatModelingClaimStatusLabel(strongestStatus) : "Evidence linked";
-  const statusLabel = leadingDecision ? formatModelingClaimStatusLabel(leadingDecision.claimStatus) : fallbackStatusLabel;
+  const fallbackStatusLabel = strongestStatus ? modelingClaimStatusLabel(strongestStatus) : "Evidence linked";
+  const statusLabel = leadingDecision ? modelingClaimStatusLabel(leadingDecision.claimStatus) : fallbackStatusLabel;
   const label = `${linkedRunCount} linked modeling ${linkedRunCount === 1 ? "run" : "runs"} · strongest: ${fallbackStatusLabel}`;
   const tone =
     strongestStatus === "claim_grade_passed" || strongestStatus === "calibrated_to_counts"

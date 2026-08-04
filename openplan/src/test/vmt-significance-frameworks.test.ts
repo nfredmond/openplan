@@ -10,12 +10,12 @@ import {
 import { US_CA_CEQA_15064_3_FRAMEWORK } from "@/lib/planner-pack/frameworks/us-ca-ceqa-15064-3";
 import {
   buildVmtSignificanceScreeningRow,
-  claimStatusLabel,
   claimTierEvidence,
   determinationToken,
   parseVmtSignificanceScreeningRow,
   summarizeVmtDetermination,
 } from "@/lib/planner-pack/vmt-screening-records";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import { computeCeqaVmt } from "@/lib/planner-pack/ceqa";
 
 function descriptor(
@@ -244,7 +244,7 @@ describe("a determination cannot be summarized without its tier and its jurisdic
       claimStatus: "calibrated_to_counts",
       claimStatusSource: "recorded_claim_decision",
     });
-    expect(claimStatusLabel(null)).toBe("Claim tier not recorded");
+    expect(modelingClaimStatusLabel(null)).toBe("Claim tier not recorded");
   });
 
   it("maps the engine's wording onto the stored token", () => {

@@ -1,8 +1,10 @@
 import { titleize } from "@/lib/reports/catalog";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { type ProjectStageGateSnapshot } from "@/lib/stage-gates/summary";
-import { formatModelingClaimStatusLabel } from "@/lib/reports/modeling-evidence";
-import { type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import {
+  modelingClaimStatusLabel,
+  type ModelingClaimStatus,
+} from "@/lib/models/evidence-backbone";
 
 export type EvidenceChainSummary = {
   linkedRunCount: number;
@@ -80,13 +82,13 @@ export function buildEvidenceChainSummary(input: {
     modelingEvidenceCount === 0
       ? "Not linked"
       : modelingEvidenceClaimStatuses.includes("prototype_only")
-        ? formatModelingClaimStatusLabel("prototype_only")
+        ? modelingClaimStatusLabel("prototype_only")
         : modelingEvidenceClaimStatuses.includes("screening_grade")
-          ? formatModelingClaimStatusLabel("screening_grade")
+          ? modelingClaimStatusLabel("screening_grade")
           : modelingEvidenceClaimStatuses.includes("calibrated_to_counts")
-            ? formatModelingClaimStatusLabel("calibrated_to_counts")
+            ? modelingClaimStatusLabel("calibrated_to_counts")
             : modelingEvidenceClaimStatuses.includes("claim_grade_passed")
-              ? formatModelingClaimStatusLabel("claim_grade_passed")
+              ? modelingClaimStatusLabel("claim_grade_passed")
               : "No claim decision";
 
   return {

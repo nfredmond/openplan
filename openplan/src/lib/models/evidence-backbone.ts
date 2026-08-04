@@ -38,6 +38,46 @@ export function isModelingClaimStatus(value: unknown): value is ModelingClaimSta
   return typeof value === "string" && (MODELING_CLAIM_STATUSES as readonly string[]).includes(value);
 }
 
+/**
+ * THE label for a claim tier. There is exactly one, and it lives here beside the
+ * vocabulary it renders.
+ *
+ * WHY THIS IS CENTRALISED, recorded so it is not undone. Three separate maps
+ * existed and two of them disagreed. `claim_grade_passed` read "Claim-grade" in
+ * the planner-pack and the county-run panel, and "Claim-grade passed" in the
+ * report lane, so the same run described itself differently depending on which
+ * surface a reviewer opened — in the one part of the product whose entire job is
+ * to state how strongly a number may be claimed. "Claim-grade passed" wins
+ * because the tier IS a validation-threshold pass: the verb is load-bearing, and
+ * dropping it turns a result that cleared a check into a grade the run simply
+ * has.
+ *
+ * WHY AN ABSENT TIER IS NOT "Unknown". A null claim status means no claim
+ * decision exists for the run — a fact OpenPlan knows precisely. "Unknown" would
+ * blur that into "we cannot tell", which is the shape of every honesty defect in
+ * this repo: a known absence presented as an uncertainty. The county-run panel
+ * carried an "Unknown" default that was also unreachable, because the tier is a
+ * non-null four-value enum there — it read as a safety net while catching
+ * nothing.
+ *
+ * Guarded by `src/test/one-claim-tier-labeler.test.ts`, which fails if a second
+ * tier-label map appears anywhere in `src/`.
+ */
+export function modelingClaimStatusLabel(status: ModelingClaimStatus | null | undefined): string {
+  switch (status) {
+    case "claim_grade_passed":
+      return "Claim-grade passed";
+    case "calibrated_to_counts":
+      return "Calibrated to counts";
+    case "screening_grade":
+      return "Screening-grade";
+    case "prototype_only":
+      return "Prototype-only";
+    default:
+      return "Claim tier not recorded";
+  }
+}
+
 /** The strongest tier in a set, or null if empty. */
 export function strongestModelingClaimStatus(statuses: ModelingClaimStatus[]): ModelingClaimStatus | null {
   return statuses.reduce<ModelingClaimStatus | null>((strongest, status) => {
