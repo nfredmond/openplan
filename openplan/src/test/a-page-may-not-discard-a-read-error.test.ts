@@ -34,8 +34,10 @@ import { describe, expect, it } from "vitest";
  * it again. It may never grow: a page that reacquires a discarded read is a
  * regression to fix, not a number to record.
  *
- * WHAT THIS PATTERN STILL CANNOT SEE, measured 2026-08-03 — do not read a green
- * run as "no page discards a read error":
+ * TWO MORE SHAPES ARE NOW CAUGHT, each with its own ratchet below. They were
+ * measured and disclosed here rather than guarded, which meant a green run did
+ * NOT mean "no page discards a read error" — the guard's name outran what it
+ * checked. Both are now enforced ceilings:
  *
  *   - ARRAY DESTRUCTURING. `const [{ data: a }, { data: b }] = await
  *     Promise.all([...])` never matches, because the regex anchors on `const {`.
@@ -54,10 +56,18 @@ import { describe, expect, it } from "vitest";
  *     RTP registry). `read-failures.ts` is "classify FIRST, then collect what is
  *     left"; these classify and never collect.
  *
- * Widening the pattern to either shape is real, wanted work. It must be its own
- * change, because it re-opens a debt list this one just closed, and because
- * registering a lane without fixing its panel makes the disclosure banner itself
- * lie ("shown as unavailable rather than as zero").
+ * WHY THESE NEEDED PARSING, NOT A BIGGER REGEX. Both shapes nest: an array
+ * destructure holds arbitrary object patterns, and a classifier call takes an
+ * expression that can itself contain parentheses. A regex that "mostly" matches
+ * would undercount silently, which is the failure mode of a guard that makes
+ * people stop looking. Both detectors balance delimiters and are unit-tested
+ * below on positive AND negative cases, because a detector that finds nothing
+ * makes every ratchet above it pass.
+ *
+ * THE RATCHETS START AT THEIR TRUE COUNTS, NOT AT ZERO. Registering a lane as
+ * "disclosed" without fixing the panel it feeds would make the banner itself lie
+ * (`ReadFailureLog.describe()` promises "shown as unavailable rather than as
+ * zero"). So the debt is recorded honestly and worked down page by page.
  *
  * WHY PAGES AND NOT ROUTES. An API route that swallows an error returns wrong
  * data or a wrong status — bad, but a different defect with a different fix. A
@@ -167,5 +177,175 @@ describe("a page may not discard a read error", () => {
     // The public plan page was the last entry on the ratchet. Named explicitly
     // so that emptying KNOWN_DISCARDED can never quietly un-guard it.
     expect(actual.get("src/app/(public)/plan/[shareToken]/page.tsx") ?? 0).toBe(0);
+  });
+});
+
+
+// ---------------------------------------------------------------------------
+// SHAPE 2 — array destructuring, and SHAPE 3 — a classifier used as the only
+// error branch. Both parse rather than pattern-match; see the header.
+// ---------------------------------------------------------------------------
+
+/** Index just past the delimiter that closes the one opened before `from`. */
+function balancedEnd(source: string, from: number, open: string, close: string): number {
+  let depth = 1;
+  let i = from;
+  while (i < source.length && depth > 0) {
+    if (source[i] === open) depth += 1;
+    else if (source[i] === close) depth -= 1;
+    i += 1;
+  }
+  return i;
+}
+
+/** Split on top-level commas only, so nested patterns stay whole. */
+function splitTopLevel(block: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let current = "";
+  for (const char of block) {
+    if ("{[(".includes(char)) depth += 1;
+    else if ("}])".includes(char)) depth -= 1;
+    if (char === "," && depth === 0) {
+      parts.push(current);
+      current = "";
+    } else current += char;
+  }
+  if (current.trim()) parts.push(current);
+  return parts;
+}
+
+/**
+ * `const [{ data: a }, { data: b }] = await Promise.all([...])`.
+ *
+ * Counts only bindings that take `data` WITHOUT `error` — `{ data, error }` in
+ * the same position is the correct shape and must not be flagged. The dashboard
+ * destructures to NAMED results and checks `.error` later, which this also
+ * correctly ignores.
+ */
+function arrayDiscardedBindings(source: string): number {
+  let count = 0;
+  for (const match of source.matchAll(/const\s*\[/g)) {
+    const start = (match.index ?? 0) + match[0].length;
+    const end = balancedEnd(source, start, "[", "]");
+    if (!/^\s*=\s*await/.test(source.slice(end, end + 30))) continue;
+    for (const part of splitTopLevel(source.slice(start, end - 1))) {
+      const trimmed = part.trim();
+      if (!trimmed.startsWith("{")) continue;
+      if (/\bdata\b/.test(trimmed) && !/\berror\b/.test(trimmed)) count += 1;
+    }
+  }
+  return count;
+}
+
+/**
+ * `looksLikePendingSchema(x.error?.message) ? [] : (x.data ?? [])`.
+ *
+ * This KEEPS the error and then throws it away. It classifies exactly one
+ * failure — a migration this deployment has not run — and turns every other one,
+ * a revoked grant or an RLS change or a dropped connection, into `[]`: an answer.
+ * `read-failures.ts` is "classify FIRST, then collect what is left"; this
+ * classifies and never collects. The models page does it correctly with
+ * `if (!schemaPending) reads.check(...)`.
+ */
+function classifierOnlyBranches(source: string): number {
+  let count = 0;
+  for (const match of source.matchAll(/looksLikePendingSchema\s*\(/g)) {
+    const end = balancedEnd(source, (match.index ?? 0) + match[0].length, "(", ")");
+    if (/^\s*\?/.test(source.slice(end, end + 10))) count += 1;
+  }
+  return count;
+}
+
+function countsBy(detect: (source: string) => number): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const file of pageFiles(APP_DIR)) {
+    const found = detect(readFileSync(file, "utf8"));
+    if (found > 0) counts.set(path.relative(process.cwd(), file).split(path.sep).join("/"), found);
+  }
+  return counts;
+}
+
+/** Measured 2026-08-04. May only shrink. */
+const KNOWN_ARRAY_DISCARDED: ReadonlyArray<readonly [string, number]> = [
+  ["src/app/(app)/grants/page.tsx", 6],
+  ["src/app/(app)/reports/page.tsx", 5],
+  ["src/app/(app)/safety/page.tsx", 2],
+];
+
+/** Measured 2026-08-04. May only shrink. */
+const KNOWN_CLASSIFIER_ONLY: ReadonlyArray<readonly [string, number]> = [
+  ["src/app/(app)/projects/[projectId]/page.tsx", 16],
+  ["src/app/(app)/rtp/page.tsx", 1],
+];
+
+function ratchet(
+  name: string,
+  known: ReadonlyArray<readonly [string, number]>,
+  detect: (source: string) => number,
+  fixHint: string
+) {
+  const listed = new Map(known.map(([file, count]) => [file, count]));
+
+  describe(name, () => {
+    it("adds no new page", () => {
+      const actual = countsBy(detect);
+      expect([...actual.keys()].filter((file) => !listed.has(file)), fixHint).toEqual([]);
+    });
+
+    it("lets no listed page get worse", () => {
+      const actual = countsBy(detect);
+      const worsened = [...actual.entries()]
+        .filter(([file, count]) => listed.has(file) && count > (listed.get(file) ?? 0))
+        .map(([file, count]) => `${file}: ${listed.get(file)} → ${count}`);
+      expect(worsened, "these pages added another discarded read error").toEqual([]);
+    });
+
+    it("keeps the ceiling honest — a fixed page must be removed from the list", () => {
+      const actual = countsBy(detect);
+      const stale = known
+        .filter(([file, count]) => (actual.get(file) ?? 0) < count)
+        .map(([file, count]) => `${file}: listed ${count}, actually ${actual.get(file) ?? 0} — lower or delete this entry`);
+      expect(stale, "the ratchet moved; update the list").toEqual([]);
+    });
+  });
+}
+
+ratchet(
+  "a page may not discard a read error — array destructuring",
+  KNOWN_ARRAY_DISCARDED,
+  arrayDiscardedBindings,
+  "these pages destructure `{ data }` out of an awaited array without keeping `error` — take the whole result and check it"
+);
+
+ratchet(
+  "a page may not classify one failure and swallow the rest",
+  KNOWN_CLASSIFIER_ONLY,
+  classifierOnlyBranches,
+  "these pages use looksLikePendingSchema as the ONLY error branch — classify first, then collect what is left with ReadFailureLog"
+);
+
+describe("the two added detectors are not vacuous", () => {
+  it("counts an array binding that drops its error, and spares one that keeps it", () => {
+    expect(arrayDiscardedBindings(`const [{ data: a }, { data: b }] = await Promise.all([x, y]);`)).toBe(2);
+    // The correct shape must NOT be flagged.
+    expect(arrayDiscardedBindings(`const [{ data, error }] = await Promise.all([x]);`)).toBe(0);
+    // Named results that keep the whole object — what the dashboard does.
+    expect(arrayDiscardedBindings(`const [runsResult, geoResult] = await Promise.all([x, y]);`)).toBe(0);
+    // Not awaited — not a read.
+    expect(arrayDiscardedBindings(`const [{ data: a }] = someSyncThing;`)).toBe(0);
+  });
+
+  it("counts a classifier used as the only error branch, and spares a real collect", () => {
+    expect(classifierOnlyBranches(`looksLikePendingSchema(r.error?.message) ? [] : (r.data ?? [])`)).toBe(1);
+    // Nested parentheses in the argument must not break the scan.
+    expect(classifierOnlyBranches(`looksLikePendingSchema(String(r.error?.message)) ? [] : r.data`)).toBe(1);
+    // Used as a plain guard before collecting — the CORRECT shape.
+    expect(classifierOnlyBranches(`const pending = looksLikePendingSchema(r.error?.message);\nif (!pending) reads.check("x", r);`)).toBe(0);
+  });
+
+  it("guards the guard — both detectors are reading real pages", () => {
+    expect([...countsBy(arrayDiscardedBindings).values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
+    expect([...countsBy(classifierOnlyBranches).values()].reduce((a, b) => a + b, 0)).toBeGreaterThan(0);
   });
 });
