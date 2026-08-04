@@ -185,10 +185,16 @@ export function rtpEvidenceRunWarnings(disclosure: RtpEvidenceRunDisclosure): st
         : `This cited run has status "${formatRunStatusLabel(disclosure.status)}" — it has not completed successfully, so its figures may be incomplete. The citation is kept so readers can see exactly what was cited.`
     );
   }
-  if (disclosure.engineKey === "sketch_abm") {
-    warnings.push(
-      "Sketch Activity Model output is screening-grade: in validation its VMT ran roughly 56% below the CARB reference. Useful for drafting and scenario comparison — not a calibrated forecast."
-    );
+  // The engine's caveat comes from the engine registry, never from a key named
+  // here. This function used to test `engineKey === "sketch_abm"` and carry that
+  // engine's 56%-below-CARB figure as a literal, which was wrong twice: it baked
+  // one engine's identity into RTP citation logic, and it meant ADDING an engine
+  // produced citations with no caveat at all — silently, with nothing failing.
+  // Deriving it inverts that: a new engine arrives already disclosed, and the
+  // caveat a reader sees beside a citation is the same sentence the reports and
+  // comparison boards show, because there is one source for it.
+  if (disclosure.engineKey) {
+    warnings.push(getManagedRunModeDefinition(disclosure.engineKey).caveatSummary);
   }
   return warnings;
 }

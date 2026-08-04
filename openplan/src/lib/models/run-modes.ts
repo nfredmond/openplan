@@ -75,8 +75,15 @@ export const MANAGED_RUN_MODE_DEFINITIONS: ManagedRunModeDefinition[] = [
       "Runs inside this app: a sketch activity-based model over a synthetic population and distance-based screening skims.",
     runtimeExpectation:
       "Runs inside this app and usually finishes in seconds for corridor-scale study areas.",
+    // The ~56% figure lives HERE, in the engine's own caveat, rather than in any
+    // one surface that happens to cite this engine. It is a fact about the
+    // engine, so it must travel with the engine everywhere the caveat renders —
+    // reports, comparison boards, the runs API, and RTP citations alike. It was
+    // previously hardcoded inside the RTP citation warning, which meant the one
+    // concrete, decision-relevant number about this model reached exactly one
+    // page.
     caveatSummary:
-      "Screening-grade sketch output over a synthetic population and distance-based skims. Do not treat it as a validated travel model, calibrated behavioral demand, or forecast-ready prediction.",
+      "Screening-grade sketch output over a synthetic population and distance-based skims. In validation its VMT ran roughly 56% below the CARB reference. Do not treat it as a validated travel model, calibrated behavioral demand, or forecast-ready prediction.",
     comparisonMessage:
       "Comparison is limited to screening-grade sketch KPIs. Treat cross-run deltas as exploratory scenario contrasts, not calibrated run-to-run parity.",
     availability: "launchable",

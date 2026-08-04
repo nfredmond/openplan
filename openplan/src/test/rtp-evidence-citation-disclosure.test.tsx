@@ -253,7 +253,17 @@ describe("RTP evidence-run picker — every offered and cited run is disclosed, 
     expect(screen.getAllByText(/Fast Screening · Failed · Screening-grade/).length).toBeGreaterThan(0);
     // The warning is present AND says it is not a block.
     expect(screen.getByText(/This cited run failed/)).toBeTruthy();
-    expect(screen.getByText(/the warning is disclosure, not a block/)).toBeTruthy();
+    // TWO warnings now ride with a failed run, and they are independent facts:
+    // the run did not finish, and the engine that produced it is screening-grade.
+    // The engine caveat comes from the run-mode registry rather than a branch
+    // naming this engine, so every warning here carries the "not a block" tail —
+    // hence getAllByText. A single-match query would silently start failing the
+    // day a second caveat became correct, which is what happened.
+    const notABlock = screen.getAllByText(/the warning is disclosure, not a block/);
+    expect(notABlock.length).toBeGreaterThanOrEqual(2);
+    expect(
+      screen.getByText(/Screening-grade prototype output\. Do not treat it as behavioral demand/)
+    ).toBeTruthy();
 
     // NEVER RESTRICT: the select stays enabled, the cited run (outside the
     // picker window) is represented as the selected option, and no offered run
