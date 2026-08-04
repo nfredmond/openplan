@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   },
   description:
     "Free, open-source Apache-2.0 planning software for agencies, tribes, RTPAs, counties, cities, non-profits, and consultants.",
-  creator: "Nat Ford Planning",
-  publisher: "Nat Ford Planning",
+  creator: OPENPLAN_SITE_NAME,
+  publisher: OPENPLAN_SITE_NAME,
   category: "civic planning software",
   alternates: {
     canonical: "/",

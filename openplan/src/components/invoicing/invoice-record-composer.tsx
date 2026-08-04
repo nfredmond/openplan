@@ -70,7 +70,7 @@ export function InvoiceRecordComposer({
   const [projectId, setProjectId] = useState(defaultProjectId ?? "");
   const [fundingAwardId, setFundingAwardId] = useState(defaultFundingAwardId ?? "");
   const [invoiceNumber, setInvoiceNumber] = useState(defaultInvoiceNumber ?? "");
-  const [consultantName, setConsultantName] = useState("Nat Ford");
+  const [consultantName, setConsultantName] = useState("");
   const [billingBasis, setBillingBasis] = useState("time_and_materials");
   const [status, setStatus] = useState("draft");
   const [periodStart, setPeriodStart] = useState("");
@@ -152,7 +152,7 @@ export function InvoiceRecordComposer({
       setProjectId(defaultProjectId ?? "");
       setFundingAwardId(defaultFundingAwardId ?? "");
       setInvoiceNumber(defaultInvoiceNumber ?? "");
-      setConsultantName("Nat Ford");
+      setConsultantName("");
       setBillingBasis("time_and_materials");
       setStatus("draft");
       setPeriodStart("");
@@ -250,7 +250,7 @@ export function InvoiceRecordComposer({
                 <label htmlFor="consultant-name" className="text-sm font-medium">
                   Consultant / billing entity
                 </label>
-                <Input id="consultant-name" value={consultantName} onChange={(event) => setConsultantName(event.target.value)} placeholder="Nat Ford" />
+                <Input id="consultant-name" value={consultantName} onChange={(event) => setConsultantName(event.target.value)} placeholder="Consultant or firm name" />
               </div>
               <div className="space-y-2">
                 <label htmlFor="billing-basis" className="text-sm font-medium">

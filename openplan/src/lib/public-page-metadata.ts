@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 /**
  * The origin this deployment serves itself from, or `undefined`.
  *
- * WHY THIS IS NOT A CONSTANT. It used to be the literal
- * `https://openplan-natford.vercel.app` — one specific Vercel instance — and it
- * feeds `metadataBase` on the ROOT layout. Every deployment of OpenPlan
+ * WHY THIS IS NOT A CONSTANT. It used to be a hardcoded literal naming one
+ * specific Vercel instance (the founder's own deployment), and it feeds
+ * `metadataBase` on the ROOT layout. Every deployment of OpenPlan
  * therefore emitted canonical and Open Graph URLs pointing at somebody else's
  * site: a county self-hosting this had its public engagement portal, its RTP
  * share links and every page it published attributed to another organisation.

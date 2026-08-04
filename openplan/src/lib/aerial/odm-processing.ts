@@ -11,7 +11,7 @@ export function buildOdmProcessingBoundary(): OdmProcessingBoundary {
     schemaVersion: "natford-odm-stub-1",
     status: "not-implemented",
     reason:
-      "The aerial processing worker is not configured for this deployment: OPENPLAN_AERIAL_PROCESSING_WORKER_URL and/or OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN are unset. Next.js serverless cannot host WebODM / NodeODM itself; processing runs on the Nat Ford Aerial Intel Platform worker.",
+      "The aerial processing worker is not configured for this deployment: OPENPLAN_AERIAL_PROCESSING_WORKER_URL and/or OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN are unset. Next.js serverless cannot host WebODM / NodeODM itself; processing runs on an operator-deployed aerial processing worker.",
     integrationNotes: [
       "The OpenPlan side of natford-aerial-processing.v1 is implemented: this dispatch route POSTs a ProcessingRequest (signed imagery ZIP URL) to the worker's /api/v1/processing-requests, and /api/aerial/processing-callback receives bearer-authenticated ProcessingCallback payloads (accepted/running/succeeded/failed/canceled), tracked in aerial_processing_jobs with a callback idempotency ledger.",
       "A succeeded callback writes an aerial_evidence_packages row from the signed artifact list (orthomosaic/dsm/dtm/point_cloud/mesh); evidence packages remain the canonical audit surface for aerial outputs.",

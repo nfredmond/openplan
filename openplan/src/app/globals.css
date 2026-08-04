@@ -76,7 +76,7 @@
   --warn: #b78018;
   --ok: #2e7d32;
 
-  /* Legacy Nat Ford aliases — remapped to cartographic equivalents so existing CSS still themes. */
+  /* Legacy pre-cartographic aliases — remapped to cartographic equivalents so existing CSS still themes. */
   --pine: var(--accent-2);
   --pine-deep: #154940;
   --copper: var(--accent);

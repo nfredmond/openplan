@@ -1,0 +1,130 @@
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
+
+/**
+ * OpenPlan is a self-hosted product: any agency's deployment generates
+ * documents and pages under ITS OWN name. The founder's private consulting
+ * brand ("Nat Ford Planning" / natfordplanning.com) was found hardcoded into
+ * every exported corridor report footer, the site metadata, the invoicing
+ * composer's default consultant name, and assorted copy (2026-08-03 review) —
+ * meaning an Ohio county's grant packet left the building bearing a third
+ * party's company name. That violates the product's own rule that no
+ * organization may be baked into code.
+ *
+ * The ONE legitimate home for the name is operator attribution on the legal
+ * pages of the canonical deployment (who runs THIS instance), so those files
+ * are allowlisted BY NAME below. The staleness check makes the allowlist a
+ * ratchet: an entry whose file no longer contains the brand must be removed,
+ * so the list can only shrink. Making operator identity configurable per
+ * deployment would let this allowlist reach zero — until then it is a
+ * deliberate, recorded exception, not an oversight.
+ */
+
+const SRC = path.join(process.cwd(), "src");
+
+const BRAND_PATTERN = /nat\s*ford|natfordplanning/i;
+
+/**
+ * Wire-protocol identifiers that happen to contain the brand. The aerial
+ * service contract self-identifies as this exact string on both sides of the
+ * OpenPlan↔worker seam (CONTRACT_SCHEMA_VERSION, lib/aerial/processing-contract.ts),
+ * so renaming it is a breaking protocol change, not a copy edit. These tokens
+ * are stripped before matching; accurate references to the contract string are
+ * therefore allowed anywhere, while brand PROSE is still caught everywhere.
+ * When the contract next revs, v2 must take a neutral name and this list
+ * shrinks to empty.
+ *
+ * natford-dji-1 is the schemaVersion stamped into exported DJI waypoint files
+ * (dji-export.ts) and natford-odm-stub-1 marks the unconfigured-worker stub
+ * payload (odm-processing.ts) — both are machine identifiers a downstream
+ * consumer may key on, so they rename at their next schema rev, not in a copy
+ * sweep.
+ */
+const WIRE_CONTRACT_TOKENS = [
+  "natford-aerial-processing.v1",
+  "natford-dji-1",
+  "natford-odm-stub-1",
+] as const;
+
+function withoutWireTokens(text: string): string {
+  return WIRE_CONTRACT_TOKENS.reduce(
+    (acc, token) => acc.split(token).join(""),
+    text
+  );
+}
+
+/**
+ * Operator attribution on the canonical deployment's public legal surface.
+ * Paths are relative to src/. Every entry must still contain the brand
+ * (staleness ratchet) and must justify itself here.
+ */
+const ALLOWLISTED_ATTRIBUTION: ReadonlyArray<{ file: string; reason: string }> = [
+  {
+    file: "app/(public)/legal/page.tsx",
+    reason: "names who operates this deployment and holds the trademarks",
+  },
+  {
+    file: "app/(public)/terms/page.tsx",
+    reason: "terms are between the workspace and the deployment operator",
+  },
+  {
+    file: "app/(public)/privacy/page.tsx",
+    reason: "privacy policy must name the data controller",
+  },
+  {
+    file: "app/(public)/layout.tsx",
+    reason: "public-site masthead names the deployment operator",
+  },
+];
+
+function walk(dir: string): string[] {
+  return readdirSync(dir).flatMap((entry) => {
+    const full = path.join(dir, entry);
+    if (statSync(full).isDirectory()) return walk(full);
+    return /\.(tsx?|css|md)$/.test(entry) ? [full] : [];
+  });
+}
+
+function sourceFiles(): string[] {
+  return walk(SRC).filter((file) => !file.startsWith(path.join(SRC, "test")));
+}
+
+describe("no personal brand in product source", () => {
+  const allowlisted = new Set(
+    ALLOWLISTED_ATTRIBUTION.map((entry) => path.join(SRC, entry.file))
+  );
+
+  it("scans a non-empty tree (the guard itself is not vacuous)", () => {
+    expect(sourceFiles().length).toBeGreaterThan(100);
+  });
+
+  it("the brand appears nowhere outside the allowlisted attribution pages", () => {
+    const offenders = sourceFiles()
+      .filter((file) => !allowlisted.has(file))
+      .filter((file) => BRAND_PATTERN.test(withoutWireTokens(readFileSync(file, "utf8"))))
+      .map((file) => path.relative(SRC, file));
+    expect(offenders).toEqual([]);
+  });
+
+  it("every allowlist entry is still real (ratchet: the list only shrinks)", () => {
+    const stale = ALLOWLISTED_ATTRIBUTION.filter(
+      (entry) => !BRAND_PATTERN.test(readFileSync(path.join(SRC, entry.file), "utf8"))
+    ).map((entry) => entry.file);
+    expect(stale).toEqual([]);
+  });
+
+  it("the pattern itself trips on the strings it must catch (positive control)", () => {
+    expect(BRAND_PATTERN.test("Nat Ford Planning & Analysis")).toBe(true);
+    expect(BRAND_PATTERN.test("natfordplanning.com")).toBe(true);
+    expect(BRAND_PATTERN.test("NatFord internal schema")).toBe(true);
+    expect(BRAND_PATTERN.test("Generated by OpenPlan")).toBe(false);
+  });
+
+  it("stripping wire tokens does not blind the guard to brand prose beside them", () => {
+    const contractMention = "speaks natford-aerial-processing.v1 to the worker";
+    expect(BRAND_PATTERN.test(withoutWireTokens(contractMention))).toBe(false);
+    const prose = "processing runs on the Nat Ford platform (natford-aerial-processing.v1)";
+    expect(BRAND_PATTERN.test(withoutWireTokens(prose))).toBe(true);
+  });
+});
