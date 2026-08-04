@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { placeSearchResponseSchema } from "@/lib/api/place-geographies";
 import { searchPlaces } from "@/lib/geographies/place-resolver";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("geographies.places.search", request);
@@ -29,7 +31,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(placeSearchResponseSchema.parse({ items: [] }), { status: 200 });
     }
 
-    const outcome = await searchPlaces(q, limit);
+    // The county arm of searchPlaces resolves its Census API key through
+    // censusApiKey(), which prefers the workspace's own Integration-keys entry
+    // over the deployment env — but only when the call runs inside
+    // withWorkspaceIntegrationContext. The deleted /api/geographies/counties
+    // route was the only carrier of that seam (2026-08-03 cleanup), so a
+    // workspace that had self-served a Census key was still told "this
+    // deployment has not configured" one. Best-effort, exactly like the
+    // census-tract ingest route: no workspace membership or a failed lookup
+    // searches with the deployment env key rather than failing outright.
+    const workspaceId = await loadCurrentWorkspaceMembership(supabase, user.id)
+      .then(({ membership }) => membership?.workspace_id ?? null)
+      .catch(() => null);
+    const outcome = workspaceId
+      ? await withWorkspaceIntegrationContext(workspaceId, () => searchPlaces(q, limit))
+      : await searchPlaces(q, limit);
     const response = placeSearchResponseSchema.parse(outcome);
 
     audit.info("place_search_loaded", {

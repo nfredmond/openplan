@@ -57,7 +57,16 @@ deleted them records each supersession):
 `/api/geographies/counties`'s only "caller" was `county-geographies-client.ts` —
 a file nothing imported. The route-caller guard credited the route via a string
 in dead code. Deleting the dead client made the truth visible and the route went
-with it (the place-resolver uses the county lib directly). And `/api/csp-report`
+with it. **Correction (2026-08-04): the deletion was NOT equivalent.** The
+counties route was the only code wrapping county search in
+`withWorkspaceIntegrationContext`, so deleting it silently broke workspace
+Census keys on the live front door — a workspace that self-served a key was
+told the deployment had none. The seam is restored in
+`api/geographies/places/route.ts` and pinned by
+`src/test/places-route-workspace-census-key.test.ts`, which asserts the search
+runs INSIDE the context. Lesson: before deleting an orphan, diff its body
+against its replacement for seams the replacement never carried, not just for
+reachability. And `/api/csp-report`
 turned out to be genuinely browser-called via the CSP header's `report-uri` —
 now allowlisted with its real caller named.
 
