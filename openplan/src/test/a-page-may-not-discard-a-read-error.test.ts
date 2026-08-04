@@ -48,7 +48,10 @@ import { describe, expect, it } from "vitest";
  *     `homeGeographyResult.error`, which is the correct shape, not the defect.
  *     A number written into a comment is a claim like any other; this one was
  *     checked.
- *   - A CLASSIFIER USED AS THE ONLY ERROR BRANCH. `looksLikePendingSchema(
+ *   - A CLASSIFIER USED AS THE ONLY ERROR BRANCH. (16, all on the project detail
+ *     page. An earlier count said 17 and included /rtp; that was WRONG — /rtp's
+ *     ternary is a retry that preserves the original result for collection, and
+ *     the detector now excludes that shape.) `looksLikePendingSchema(
  *     x.error?.message) ? [] : (x.data ?? [])` keeps the error and then throws it
  *     away: it classifies exactly one failure (a pending migration) and turns
  *     every other one — revoked grant, RLS change, dropped connection — into
@@ -252,9 +255,44 @@ function classifierOnlyBranches(source: string): number {
   let count = 0;
   for (const match of source.matchAll(/looksLikePendingSchema\s*\(/g)) {
     const end = balancedEnd(source, (match.index ?? 0) + match[0].length, "(", ")");
-    if (/^\s*\?/.test(source.slice(end, end + 10))) count += 1;
+    const question = /^\s*\?/.exec(source.slice(end, end + 10));
+    if (!question) continue;
+    // Only a ternary whose FALSE branch yields rows is the defect. A ternary
+    // whose false branch is the original RESULT is a retry — /rtp re-reads with
+    // a narrower projection when the schema is pending and otherwise keeps the
+    // untouched result, error and all, for `classifyRead` to collect. Flagging
+    // that would have sent someone to "fix" correct code, which is how a guard
+    // loses its authority.
+    if (/\.data\b/.test(ternaryFalseBranch(source, end + question[0].length - 1))) count += 1;
   }
   return count;
+}
+
+/** The false branch of the ternary whose `?` sits at `question`. */
+function ternaryFalseBranch(source: string, question: number): string {
+  let depth = 0;
+  for (let i = question + 1; i < source.length; i += 1) {
+    const char = source[i];
+    if ("([{".includes(char)) depth += 1;
+    else if (")]}".includes(char)) {
+      if (depth === 0) break;
+      depth -= 1;
+    } else if (char === ":" && depth === 0) {
+      let end = i + 1;
+      let inner = 0;
+      while (end < source.length) {
+        const c = source[end];
+        if ("([{".includes(c)) inner += 1;
+        else if (")]}".includes(c)) {
+          if (inner === 0) break;
+          inner -= 1;
+        } else if (c === ";" && inner === 0) break;
+        end += 1;
+      }
+      return source.slice(i + 1, end);
+    }
+  }
+  return "";
 }
 
 function countsBy(detect: (source: string) => number): Map<string, number> {
@@ -276,7 +314,6 @@ const KNOWN_ARRAY_DISCARDED: ReadonlyArray<readonly [string, number]> = [
 /** Measured 2026-08-04. May only shrink. */
 const KNOWN_CLASSIFIER_ONLY: ReadonlyArray<readonly [string, number]> = [
   ["src/app/(app)/projects/[projectId]/page.tsx", 16],
-  ["src/app/(app)/rtp/page.tsx", 1],
 ];
 
 function ratchet(
