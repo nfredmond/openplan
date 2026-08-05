@@ -184,8 +184,8 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     return (
       <WorkspaceMembershipRequired
         moduleLabel="RTP"
-        title="RTP cycles need a provisioned workspace"
-        description="RTP cycles only appear inside a real workspace. You are signed in, but no workspace membership was found for this account, so the registry would otherwise look empty for ambiguous reasons."
+        title="RTP cycles need a workspace"
+        description="RTP cycles only appear inside a workspace. You are signed in, but no workspace membership was found for this account — that is why the registry is empty here, not a missing cycle."
       />
     );
   }

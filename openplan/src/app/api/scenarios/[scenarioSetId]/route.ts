@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
   markScenarioLinkedReportsBasisStale,
@@ -20,13 +21,6 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),
 });
-
-/** Column-aware pending-schema check for the attached_model_run_id read. */
-function looksLikePendingSchema(message: string | null | undefined) {
-  return /column .* does not exist|relation .* does not exist|could not find the table|schema cache/i.test(
-    message ?? ""
-  );
-}
 
 const patchScenarioSetSchema = z
   .object({

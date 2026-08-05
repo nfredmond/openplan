@@ -103,7 +103,7 @@ export default async function AssistantActivityPage() {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Planner Agent activity"
-        title="Planner Agent activity needs a provisioned workspace"
+        title="Planner Agent activity needs a workspace"
         description="The Planner Agent audit trail is workspace-scoped. You are signed in, but no workspace membership was found for this account, so there is no action ledger to show yet."
       />
     );

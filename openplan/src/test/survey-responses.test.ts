@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { aggregateSurveyQuestion, insertSurveyResponse } from "@/lib/engagement/survey-responses";
+import {
+  aggregateCampaignSurvey,
+  aggregateSurveyQuestion,
+  insertSurveyResponse,
+  loadApprovedSurveyAnswers,
+  loadSurveyResponseSessions,
+} from "@/lib/engagement/survey-responses";
 
 const OPTS = [
   { id: "a1", label: "Bike lane" },
@@ -111,5 +117,154 @@ describe("insertSurveyResponse — transactional-ish write", () => {
     const result = await insertSurveyResponse(supabase, base);
     expect(result.ok).toBe(false);
     expect(deleted.called).toBe(false);
+  });
+});
+
+/**
+ * A query client whose reads can be made to FAIL BY TABLE.
+ *
+ * Without that lever these tests prove nothing: a fake client hands back its
+ * fixture whatever the code asked for, so the failure branch is unreachable and
+ * every assertion would pass over code that never runs. Each builder is
+ * thenable so it satisfies the three different chains the loaders terminate on
+ * (`.order()`, `.limit()`, and the bare `.eq()` of the answers read).
+ */
+function mockReadClient(
+  fixtures: Record<string, { rows?: Record<string, unknown>[]; error?: { message: string } }>
+) {
+  const from = (table: string) => {
+    const fixture = fixtures[table];
+    if (!fixture) throw new Error(`unexpected table ${table}`);
+    const result = { data: fixture.error ? null : fixture.rows ?? [], error: fixture.error ?? null };
+    const builder: Record<string, unknown> = {
+      then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
+        Promise.resolve(result).then(resolve, reject),
+    };
+    for (const method of ["select", "eq", "order", "limit"]) builder[method] = () => builder;
+    return builder;
+  };
+  return { from } as unknown as SupabaseClient;
+}
+
+const SESSION_ROW = {
+  id: "s1",
+  status: "approved",
+  submitted_by: null,
+  source_type: "public",
+  moderation_notes: null,
+  created_at: "2026-03-04T10:00:00.000Z",
+  updated_at: "2026-03-04T10:00:00.000Z",
+};
+
+describe("the sensitive response loaders report a failed read", () => {
+  // The whole point: `result.data ?? []` said "this campaign has no responses"
+  // for an outage, and every caller repeated it as fact.
+  it("hands back the error, and no rows it did not read, when the session read fails", async () => {
+    const supabase = mockReadClient({
+      engagement_survey_response_sessions: { error: { message: "connection reset" } },
+    });
+
+    const result = await loadSurveyResponseSessions(supabase, "camp-1");
+
+    expect(result.rows).toEqual([]);
+    expect(result.error?.message).toBe("connection reset");
+  });
+
+  it("reports a null error when the session read genuinely found nothing", async () => {
+    const supabase = mockReadClient({ engagement_survey_response_sessions: { rows: [] } });
+
+    const result = await loadSurveyResponseSessions(supabase, "camp-1");
+
+    expect(result.rows).toEqual([]);
+    expect(result.error).toBeNull();
+  });
+
+  it("hands back the error when the approved-answers read fails", async () => {
+    const supabase = mockReadClient({
+      engagement_survey_answers: { error: { message: "statement timeout" } },
+    });
+
+    const result = await loadApprovedSurveyAnswers(supabase, "camp-1");
+
+    expect(result.rows).toEqual([]);
+    expect(result.error?.message).toBe("statement timeout");
+  });
+});
+
+describe("aggregateCampaignSurvey — a zero is only a count when the reads succeeded", () => {
+  const definitionFixtures = {
+    engagement_survey_questions: {
+      rows: [
+        {
+          id: "q1",
+          question_type: "free_text",
+          prompt: "What next?",
+          help_text: null,
+          required: false,
+          sort_order: 0,
+          config_json: {},
+          category_id: null,
+        },
+      ],
+    },
+    engagement_survey_question_options: { rows: [] },
+  };
+
+  it("reports no error, and the real count, when every read answered", async () => {
+    const result = await aggregateCampaignSurvey(
+      mockReadClient({
+        ...definitionFixtures,
+        engagement_survey_answers: { rows: [{ question_id: "q1", question_type: "free_text", answer_json: { text: "hi" }, answer_text: "More trees" }] },
+        engagement_survey_response_sessions: { rows: [SESSION_ROW] },
+      }),
+      "camp-1"
+    );
+
+    expect(result.error).toBeNull();
+    expect(result.approvedResponseCount).toBe(1);
+    expect(result.questions[0].answeredCount).toBe(1);
+  });
+
+  it("surfaces a failed SESSION read behind the zero it would otherwise report", async () => {
+    const result = await aggregateCampaignSurvey(
+      mockReadClient({
+        ...definitionFixtures,
+        engagement_survey_answers: { rows: [] },
+        engagement_survey_response_sessions: { error: { message: "connection reset" } },
+      }),
+      "camp-1"
+    );
+
+    expect(result.approvedResponseCount).toBe(0);
+    expect(result.error?.message).toBe("connection reset");
+  });
+
+  it("surfaces a failed ANSWERS read, which would otherwise read as an unanswered question", async () => {
+    const result = await aggregateCampaignSurvey(
+      mockReadClient({
+        ...definitionFixtures,
+        engagement_survey_answers: { error: { message: "statement timeout" } },
+        engagement_survey_response_sessions: { rows: [SESSION_ROW] },
+      }),
+      "camp-1"
+    );
+
+    expect(result.questions[0].answeredCount).toBe(0);
+    expect(result.error?.message).toBe("statement timeout");
+  });
+
+  it("surfaces a failed DEFINITION read, which would otherwise read as 'no survey'", async () => {
+    const result = await aggregateCampaignSurvey(
+      mockReadClient({
+        engagement_survey_questions: { error: { message: "permission denied for relation" } },
+        engagement_survey_question_options: { rows: [] },
+        engagement_survey_answers: { rows: [] },
+        engagement_survey_response_sessions: { rows: [] },
+      }),
+      "camp-1"
+    );
+
+    expect(result.questions).toEqual([]);
+    expect(result.error?.message).toBe("permission denied for relation");
   });
 });

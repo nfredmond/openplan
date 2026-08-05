@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
@@ -97,10 +98,6 @@ function normalizeKey(value: string): string {
     .slice(0, 64);
 
   return normalized || "connector";
-}
-
-function looksLikePendingSchema(message: string | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
 }
 
 function schemaPendingResponse(details: string) {

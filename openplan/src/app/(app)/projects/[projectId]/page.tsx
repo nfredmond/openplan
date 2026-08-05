@@ -42,7 +42,8 @@ import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import { POSTGREST_NO_ROWS_MATCHED } from "@/lib/http/write-outcome";
 import { StateBlock } from "@/components/ui/state-block";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
-import { collectUnlessPending, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
+import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
+import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, parseSortableDate, submittalPriority } from "./_components/_ordering";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
@@ -86,6 +87,7 @@ import type {
   ProjectReportRow,
   ProjectRow,
   ProjectRtpLinkRow,
+  RecentRun,
   ReportArtifactRow,
   RtpCycleRow,
   SubmittalRow,
@@ -93,62 +95,16 @@ import type {
   WorkspaceRow,
 } from "./_components/_types";
 
-function parseSortableDate(value: string | null | undefined): number {
-  if (!value) return Number.POSITIVE_INFINITY;
-  const parsed = new Date(value).getTime();
-  return Number.isNaN(parsed) ? Number.POSITIVE_INFINITY : parsed;
-}
-
-function compareDateValues(left: string | null | undefined, right: string | null | undefined): number {
-  return parseSortableDate(left) - parseSortableDate(right);
-}
-
-function latestKnownDate(...values: Array<string | null | undefined>): string | null {
-  const valid = values
-    .map((value) => {
-      if (!value) return null;
-      const time = new Date(value).getTime();
-      return Number.isNaN(time) ? null : { value, time };
-    })
-    .filter((item): item is { value: string; time: number } => Boolean(item));
-
-  if (valid.length === 0) return null;
-
-  valid.sort((left, right) => right.time - left.time);
-  return valid[0].value;
-}
-
-// A pending COLUMN is a pending schema too, and this test used to recognise only
-// a pending TABLE. PostgREST answers a select naming a column the deployed
-// schema lacks with `column funding_awards.closure_basis does not exist`
-// (42703), which matched none of the table-shaped alternatives — so every read
-// on this page that outruns the database returned `data: null` with its
+// A pending COLUMN is a pending schema too, and looksLikePendingSchema used to
+// recognise only a pending TABLE. PostgREST answers a select naming a column the
+// deployed schema lacks with `column funding_awards.closure_basis does not
+// exist` (42703), which matched none of the table-shaped alternatives — so every
+// read on this page that outruns the database returned `data: null` with its
 // `*Pending` flag false, and the lane rendered its empty state: "No funding
 // awards are recorded for this project yet." over a project that has several.
 // An absence stated as a fact, produced by the page asking for more than the
 // database carries. The column form is what the rest of the repo already treats
 // as pending (src/lib/grants/pursuit.ts, src/lib/stage-gates/decision-queries.ts).
-
-function milestonePriority(milestone: MilestoneRow, now: Date): number {
-  if (milestone.status === "blocked") return 0;
-  if (milestone.status !== "complete" && parseSortableDate(milestone.target_date) < now.getTime()) return 1;
-  if (milestone.status !== "complete") return 2;
-  return 3;
-}
-
-function submittalPriority(submittal: SubmittalRow, now: Date): number {
-  if (submittal.status !== "accepted" && parseSortableDate(submittal.due_date) < now.getTime()) return 0;
-  if (submittal.status !== "accepted") return 1;
-  return 2;
-}
-
-function invoicePriority(invoice: BillingInvoiceRow, now: Date): number {
-  const dueAt = parseSortableDate(invoice.due_date);
-  if (!["paid", "rejected"].includes(invoice.status) && dueAt < now.getTime()) return 0;
-  if (["internal_review", "submitted", "approved_for_payment"].includes(invoice.status)) return 1;
-  if (invoice.status === "draft") return 2;
-  return 3;
-}
 
 export default async function ProjectDetailPage({
   params,
@@ -258,10 +214,9 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("created_at", { ascending: true });
 
-  const projectCorridorsPending = looksLikePendingSchema(projectCorridorResult.error?.message);
-  const projectCorridors = projectCorridorsPending
-    ? []
-    : ((projectCorridorResult.data ?? []) as ProjectCorridorRow[]).map(serializeProjectCorridor);
+  const corridorLane = laneOutcome(reads, "corridors drawn on this project", projectCorridorResult);
+  const projectCorridorsPending = corridorLane.pending;
+  const projectCorridors = (corridorLane.rows as ProjectCorridorRow[]).map(serializeProjectCorridor);
 
   // Open the picker over the workspace's own geography when it has one. A null
   // here is the point: the component falls back to the neutral continental view
@@ -277,8 +232,9 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("created_at", { ascending: false });
 
-  const projectRtpLinkRows = laneRows(reads, "RTP cycles this project is linked to", projectRtpLinkResult) as ProjectRtpLinkRow[];
-  const projectRtpLinksPending = looksLikePendingSchema(projectRtpLinkResult.error?.message);
+  const rtpLinkLane = laneOutcome(reads, "RTP cycles this project is linked to", projectRtpLinkResult);
+  const projectRtpLinkRows = rtpLinkLane.rows as ProjectRtpLinkRow[];
+  const projectRtpLinksPending = rtpLinkLane.pending;
 
   const linkedRtpCycleIds = projectRtpLinkRows.map((item) => item.rtp_cycle_id);
   const linkedRtpCyclesResult = linkedRtpCycleIds.length
@@ -287,22 +243,18 @@ export default async function ProjectDetailPage({
         .select("id, title, status, geography_label, horizon_start_year, horizon_end_year")
         .in("id", linkedRtpCycleIds)
     : { data: [], error: null };
-  const linkedRtpCyclesPending = looksLikePendingSchema(linkedRtpCyclesResult.error?.message);
-
-  const linkedRtpCycles = linkedRtpCyclesPending
-    ? []
-    : ((linkedRtpCyclesResult.data ?? []) as RtpCycleRow[]);
+  const linkedRtpCycleLane = laneOutcome(reads, "the linked RTP cycles themselves", linkedRtpCyclesResult);
+  const linkedRtpCyclesPending = linkedRtpCycleLane.pending;
+  const linkedRtpCycles = linkedRtpCycleLane.rows as RtpCycleRow[];
 
   const workspaceRtpCyclesResult = await supabase
     .from("rtp_cycles")
     .select("id, title, status, geography_label, horizon_start_year, horizon_end_year")
     .eq("workspace_id", project.workspace_id)
     .order("updated_at", { ascending: false });
-  const workspaceRtpCyclesPending = looksLikePendingSchema(workspaceRtpCyclesResult.error?.message);
-
-  const workspaceRtpCycles = workspaceRtpCyclesPending
-    ? []
-    : ((workspaceRtpCyclesResult.data ?? []) as RtpCycleRow[]);
+  const workspaceRtpCycleLane = laneOutcome(reads, "this workspace's RTP cycles", workspaceRtpCyclesResult);
+  const workspaceRtpCyclesPending = workspaceRtpCycleLane.pending;
+  const workspaceRtpCycles = workspaceRtpCycleLane.rows as RtpCycleRow[];
 
   // RTP "why" engine: attributed modeling evidence. Load the workspace's succeeded
   // runs for the evidence-run picker, plus the VMT/GHG KPIs of any run already
@@ -396,8 +348,9 @@ export default async function ProjectDetailPage({
           .eq("workspace_id", project.workspace_id)
           .order("created_at", { ascending: false })
           .limit(5);
-  const recentRunsPending = looksLikePendingSchema(recentRunsResult.error?.message);
-  const recentRuns = recentRunsPending || recentRunsResult.error ? [] : (recentRunsResult.data ?? []);
+  const recentRunLane = laneOutcome(reads, "recent analysis runs for this project", recentRunsResult);
+  const recentRunsPending = recentRunLane.pending;
+  const recentRuns = recentRunLane.rows as RecentRun[];
 
   // Worker model runs attributed to this project — counted for the spine
   // readiness board. Absent column (pre-migration) reads as zero, silently.
@@ -424,8 +377,9 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(4);
-  const projectReportsPending = looksLikePendingSchema(projectReportResult.error?.message);
-  const projectReportData = projectReportsPending ? [] : projectReportResult.data;
+  const projectReportLane = laneOutcome(reads, "report packets linked to this project", projectReportResult);
+  const projectReportsPending = projectReportLane.pending;
+  const projectReportData = projectReportLane.rows;
   const projectReportCount = projectReportsPending ? 0 : projectReportResult.count;
 
   const scenarioSetsResult = await supabase
@@ -434,14 +388,15 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(8);
-  const scenarioSets = laneRows(reads, "this project's scenario sets", scenarioSetsResult) as Array<{
+  const scenarioSetLane = laneOutcome(reads, "this project's scenario sets", scenarioSetsResult);
+  const scenarioSets = scenarioSetLane.rows as Array<{
         id: string;
         title: string;
         status: string;
         planning_question: string | null;
         updated_at: string;
       }>;
-  const scenarioSetsPending = looksLikePendingSchema(scenarioSetsResult.error?.message);
+  const scenarioSetsPending = scenarioSetLane.pending;
   const scenarioSetIds = scenarioSets.map((set) => set.id);
   const scenarioEntriesResult = scenarioSetIds.length
     ? await supabase
@@ -449,14 +404,15 @@ export default async function ProjectDetailPage({
         .select("id, scenario_set_id, entry_type, status, attached_run_id")
         .in("scenario_set_id", scenarioSetIds)
     : { data: [], error: null };
-  const scenarioEntries = laneRows(reads, "this project's scenario entries", scenarioEntriesResult) as Array<{
+  const scenarioEntryLane = laneOutcome(reads, "this project's scenario entries", scenarioEntriesResult);
+  const scenarioEntries = scenarioEntryLane.rows as Array<{
         id: string;
         scenario_set_id: string;
         entry_type: string;
         status: string;
         attached_run_id: string | null;
       }>;
-  const scenarioEntriesPending = looksLikePendingSchema(scenarioEntriesResult.error?.message);
+  const scenarioEntriesPending = scenarioEntryLane.pending;
 
   // The gate cockpit: this project's decisions and the board built from them.
   // Both the project scoping and the read-failure disclosure live in the loader —
@@ -608,12 +564,14 @@ export default async function ProjectDetailPage({
     .select("id, project_id, funding_need_amount, local_match_need_amount, notes, updated_at")
     .eq("project_id", project.id)
     .maybeSingle();
-  const projectFundingProfile = looksLikePendingSchema(projectFundingProfileResult.error?.message)
+  const projectFundingProfilePending = looksLikePendingSchema(projectFundingProfileResult.error?.message);
+  // No panel asserts "no funding profile", but the crosslink board's funding
+  // lane does — so the flag this used to throw away is what stops that lane
+  // reading "Funding target missing" over a profile nobody could load.
+  const projectFundingProfileReadFailed = collectUnlessPending(reads, "this project's funding profile", projectFundingProfileResult);
+  const projectFundingProfile = projectFundingProfilePending
     ? null
     : ((projectFundingProfileResult.data ?? null) as ProjectFundingProfileRow | null);
-  const projectFundingProfilePending = looksLikePendingSchema(projectFundingProfileResult.error?.message);
-  // No panel asserts "no funding profile", so the page banner is the whole fix.
-  if (!projectFundingProfilePending) reads.check("this project's funding profile", projectFundingProfileResult);
 
   // The closure-provenance columns (20260729000001) are selected here because
   // the funding panel cannot tell an earned close-out from one asserted on
@@ -832,7 +790,8 @@ export default async function ProjectDetailPage({
         .in("report_id", projectReportIds)
         .order("generated_at", { ascending: false })
     : { data: [], error: null };
-  const reportArtifactsPending = looksLikePendingSchema(reportArtifactsResult.error?.message);
+  const reportArtifactLane = laneOutcome(reads, "the evidence chain on this project's packets", reportArtifactsResult);
+  const reportArtifactsPending = reportArtifactLane.pending;
   // Widened for typed evidence citations (legacy fallback inside); typed
   // citations resolve so they render alongside legacy linked-run evidence with
   // a kind label and an honest status.
@@ -850,7 +809,7 @@ export default async function ProjectDetailPage({
     : { data: [], error: null };
   const linkedRuns = laneRows(reads, "model runs linked to this project", linkedRunsResult) as Array<{ id: string; created_at: string }>;
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
-  for (const artifact of (reportArtifactsPending ? [] : (reportArtifactsResult.data ?? []) as ReportArtifactRow[])) {
+  for (const artifact of reportArtifactLane.rows as ReportArtifactRow[]) {
     if (!latestArtifactByReportId.has(artifact.report_id)) {
       latestArtifactByReportId.set(artifact.report_id, artifact);
     }
@@ -986,10 +945,9 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("created_at", { ascending: false })
     .limit(8);
-  const safetyIngestsPending = looksLikePendingSchema(safetyIngestResult.error?.message);
-  const projectSafetyIngests = safetyIngestsPending
-    ? []
-    : ((safetyIngestResult.data ?? []) as Array<{
+  const safetyLane = laneOutcome(reads, "crash acquisitions linked to this project", safetyIngestResult);
+  const safetyIngestsPending = safetyLane.pending;
+  const projectSafetyIngests = safetyLane.rows as Array<{
         id: string;
         status: string;
         source_label: string | null;
@@ -997,14 +955,18 @@ export default async function ProjectDetailPage({
         crash_count: number | null;
         geocoded_count: number | null;
         created_at: string;
-      }>);
+      }>;
   const latestProjectSafetyIngest = projectSafetyIngests[0] ?? null;
 
   const {
     missions: aerialMissions,
     packages: aerialPackages,
     pending: aerialEvidencePending,
+    unreadableReason: aerialUnreadableReason,
   } = await loadAerialMissionsAndPackagesForProject(supabase, project.id);
+  // The loader has already classified the pending-migration case, so anything
+  // it hands back here is the half the banner owes the reader by name.
+  if (aerialUnreadableReason) reads.check("aerial missions and evidence packages", { error: { message: aerialUnreadableReason } });
   const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
   const aerialProjectPostureDetail = describeAerialProjectPosture(aerialProjectPosture);
   // Cached posture now lives in the aerial-owned aerial_project_posture table
@@ -1078,6 +1040,21 @@ export default async function ProjectDetailPage({
       analysis_modeling: recentRunsPending || projectReportsPending || reportArtifactsPending,
       safety_evidence: safetyIngestsPending,
       aerial_evidence: aerialEvidencePending,
+    },
+    // The other half of the same question. Every flag here is a read this page
+    // has ALREADY disclosed in its banner; without them the board answers "Not
+    // linked" for a lane the banner has just called unreadable, and the board is
+    // the surface a planner acts on.
+    unreadable: {
+      rtp_packets:
+        rtpLinkLane.failed || linkedRtpCycleLane.failed || workspaceRtpCycleLane.failed || projectReportLane.failed,
+      scenario_sets: scenarioSetLane.failed || scenarioEntryLane.failed,
+      funding_profile:
+        projectFundingProfileReadFailed || fundingAwardsReadFailed || fundingOpportunitiesReadFailed || projectInvoicesReadFailed,
+      engagement_evidence: projectReportLane.failed || reportArtifactLane.failed,
+      analysis_modeling: recentRunLane.failed || projectReportLane.failed || reportArtifactLane.failed,
+      safety_evidence: safetyLane.failed,
+      aerial_evidence: Boolean(aerialUnreadableReason),
     },
   });
 

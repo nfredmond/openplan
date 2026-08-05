@@ -1395,13 +1395,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
       }
 
-      const { data: existingRunLink } = await supabase
+      // A dedup probe, not a claim: the run is already recorded and the link is
+      // an extra pointer at it. A failed probe is allowed to fall through to
+      // the insert — worst case one duplicate row, and the insert reports its
+      // own failure below — but it may not go unobserved, because an operator
+      // reading "duplicate model links appeared" needs the read that could not
+      // answer to be in the log next to it.
+      const { data: existingRunLink, error: existingRunLinkError } = await supabase
         .from("model_links")
         .select("id")
         .eq("model_id", access.model.id)
         .eq("link_type", "run")
         .eq("linked_id", analysisPayload.runId)
         .maybeSingle();
+
+      if (existingRunLinkError) {
+        audit.warn("model_run_link_dedup_probe_failed", {
+          modelId: access.model.id,
+          modelRunId,
+          runId: analysisPayload.runId,
+          message: existingRunLinkError.message,
+          code: existingRunLinkError.code ?? null,
+        });
+      }
 
       if (!existingRunLink) {
         const { error: insertLinkError } = await supabase.from("model_links").insert({

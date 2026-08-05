@@ -288,6 +288,61 @@ describe("GET /api/map-features/census-tracts", () => {
     expect(tractSelectMock).not.toHaveBeenCalled();
   });
 
+  /**
+   * THE READ-FAILURE-AS-CONFIGURATION-STATE DEFECT.
+   *
+   * `geography_not_set` is not a neutral fallback: its coverage note tells a
+   * planner that THIS WORKSPACE HAS NOT SET A HOME GEOGRAPHY and sends them to
+   * the dashboard to set one. A read that failed saw no row and therefore saw no
+   * setting — the workspace may have had one all along, and the planner is
+   * dispatched to re-fix something that was never broken while the real failure
+   * goes unreported. That sentence belongs only to a read that succeeded.
+   */
+  it("refuses rather than reporting an unreadable workspace as one with no home geography", async () => {
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table workspaces", code: "42501" },
+    });
+
+    const response = await getCensusTracts(bareRequest());
+
+    expect(response.status).toBe(500);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body.error).toBe("Failed to load the workspace's home geography");
+    expect(body.hint).toBe("This is a read failure, not an empty result.");
+
+    // The old claim, gone — including every shape a client could read it from.
+    expect(JSON.stringify(body)).not.toContain("has not set a home geography");
+    expect(body).not.toHaveProperty("scopeState");
+    expect(body).not.toHaveProperty("coverageNotes");
+    expect(body).not.toHaveProperty("features");
+
+    // And no unscoped query stands in for the scope that could not be resolved.
+    expect(tractSelectMock).not.toHaveBeenCalled();
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "census_tract_scope_read_failed",
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        message: "permission denied for table workspaces",
+      })
+    );
+  });
+
+  it("answers 503, not 500, when the home-geography columns are not migrated yet", async () => {
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "column workspaces.home_geography_source does not exist", code: "42703" },
+    });
+
+    const response = await getCensusTracts(bareRequest());
+
+    expect(response.status).toBe(503);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body.error).toBe("Workspace geography schema is not available yet");
+    expect(JSON.stringify(body)).not.toContain("has not set a home geography");
+    expect(tractSelectMock).not.toHaveBeenCalled();
+  });
+
   it("returns 500 when the census_tracts_map lookup fails", async () => {
     tractOrderMock.mockReturnValue({
       limit: vi.fn().mockResolvedValue({ data: null, error: { message: "boom", code: "42P01" }, count: null }),

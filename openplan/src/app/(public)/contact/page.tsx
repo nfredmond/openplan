@@ -21,7 +21,7 @@ export default function ContactPage() {
             <h1 className="public-title">Questions, bug reports, and feedback.</h1>
             <p className="public-lead max-w-4xl">
               You do not need to contact anyone to use OpenPlan — it is free and open source, and
-              signing up provisions your workspace immediately. Use this if something is broken,
+              signing up creates your workspace immediately. Use this if something is broken,
               something is unclear, or you want to tell us what planners in your agency actually
               need.
             </p>

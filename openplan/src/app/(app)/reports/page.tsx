@@ -241,8 +241,8 @@ export default async function ReportsPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Reports"
-        title="Reports need a provisioned workspace"
-        description="Report packets, run attachments, and artifact history only exist inside a provisioned workspace. This account is authenticated, but it is not yet attached to one."
+        title="Reports need a workspace"
+        description="Report packets, run attachments, and artifact history only exist inside a workspace. You are signed in, but this account is not attached to one yet."
       />
     );
   }

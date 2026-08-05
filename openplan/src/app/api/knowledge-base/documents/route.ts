@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
 
     // Idempotent dedup: a byte-identical document already parsed in this
     // workspace is returned as-is instead of re-ingesting.
-    const { data: existing } = await service
+    const existingResult = await service
       .from("kb_documents")
       .select(KB_DOCUMENT_COLUMNS)
       .eq("workspace_id", query.data.workspaceId)
@@ -156,8 +156,18 @@ export async function POST(request: NextRequest) {
       .eq("status", "ready")
       .limit(1)
       .maybeSingle();
-    if (existing) {
-      return NextResponse.json({ document: existing, deduped: true }, { status: 200 });
+
+    // VERDICT: this probe is benign, and the upload deliberately continues when
+    // it fails. Nothing in the response claims the document is new — a failed
+    // probe costs a duplicate row, not a false statement — so refusing the
+    // upload would be the worse answer. What is NOT optional is observing the
+    // error: a probe that failed every time would silently turn dedup off, and
+    // this log is the only place that would say so.
+    if (existingResult.error) {
+      audit.warn("kb_document_dedup_probe_failed", { message: existingResult.error.message });
+    }
+    if (existingResult.data) {
+      return NextResponse.json({ document: existingResult.data, deduped: true }, { status: 200 });
     }
 
     const documentId = randomUUID();

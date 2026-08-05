@@ -208,8 +208,11 @@ export function resolveWorkspaceShellState({
   }
 
   if (!membership || !workspace) {
+    // workspaceName is rendered as the workspace label in the header, so it is
+    // read by planners; the membershipStatus literals are internal identifiers
+    // several call sites branch on and are deliberately left alone.
     return {
-      workspaceName: "No workspace provisioned",
+      workspaceName: "No workspace yet",
       workspaceRole: "No membership",
       membershipStatus: "not_provisioned",
     };

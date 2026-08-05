@@ -77,10 +77,7 @@ import {
 import { loadAerialSourceContextRowsForProject } from "@/lib/aerial/queries";
 import type { ReportCitedCountyRun, ReportCitedModelRun } from "@/lib/reports/html";
 import { withCitedModelRunClaimTiers } from "@/lib/reports/run-citations";
-
-function looksLikePendingSchema(message: string | null | undefined) {
-  return /column .* does not exist|schema cache/i.test(message ?? "");
-}
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 function looksLikeOptionalQueryFallback(message: string | null | undefined) {
   return looksLikePendingSchema(message) || /Unexpected table:/i.test(message ?? "");
@@ -680,6 +677,29 @@ export async function POST(request: NextRequest, context: RouteContext) {
               { data: [], error: null },
               { data: [], error: null },
             ];
+
+      // Same gate as the source records above, and for a sharper reason: these
+      // four reads are TOTALLED into the packet's funding snapshot. A failure
+      // read as `?? []` does not leave a gap a reader could notice — it prints
+      // $0 committed and a fully unfunded portfolio, under the agency's name, in
+      // a document a funder or a board keeps. Refuse the generation instead.
+      const fundingLoadErrors = [
+        fundingProfilesResult.error,
+        fundingAwardsResult.error,
+        fundingOpportunitiesResult.error,
+        billingInvoicesResult.error,
+      ].filter(Boolean);
+
+      if (fundingLoadErrors.length > 0) {
+        const firstError = fundingLoadErrors[0];
+        audit.error("rtp_report_funding_load_failed", {
+          reportId: report.id,
+          message: firstError?.message ?? "unknown",
+          code: firstError?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to load RTP packet funding records" }, { status: 500 });
+      }
+
       const fundingProfileByProjectId = new Map(
         ((fundingProfilesResult.data ?? []) as Array<{ project_id: string; funding_need_amount: number | null; local_match_need_amount: number | null; updated_at: string | null }>).map((profile) => [profile.project_id, profile])
       );
@@ -749,6 +769,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
             )
             .in("campaign_id", campaignIds)
         : { data: [], error: null };
+
+      // These rows become the packet's public-review comment counts. A failed
+      // read carried through as `?? []` tells a board the cycle drew no comments
+      // — the sentence this product has already published twice on the strength
+      // of a query that never ran.
+      const engagementItemsError = engagementItemsResult.error;
+      if (engagementItemsError) {
+        audit.error("rtp_report_engagement_load_failed", {
+          reportId: report.id,
+          message: engagementItemsError.message ?? "unknown",
+          code: engagementItemsError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to load RTP packet engagement records" }, { status: 500 });
+      }
+
       const engagementCounts = summarizeEngagementItems(
         [],
         (engagementItemsResult.data ?? []) as Array<{

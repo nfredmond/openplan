@@ -1,12 +1,29 @@
 import { NextRequest } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { confirmSubscription } from "@/lib/notifications/engagement";
 
 function htmlPage(title: string, message: string, status = 200): Response {
   const escape = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   const body = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${escape(title)}</title></head><body style="font-family:system-ui,sans-serif;max-width:32rem;margin:4rem auto;padding:0 1rem;color:#1f2937"><h1 style="font-size:1.25rem">${escape(title)}</h1><p style="color:#4b5563">${escape(message)}</p></body></html>`;
   return new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8" } });
+}
+
+/**
+ * The one page for "this deployment failed, not you".
+ *
+ * Shared by the campaign read and the confirmation write so the two cannot drift
+ * apart: from the participant's side they are the same event — the subscription
+ * is still unconfirmed and still fixable — and the only thing that differs is
+ * the status code an operator sees in the logs.
+ */
+function couldNotConfirmPage(status: number): Response {
+  return htmlPage(
+    "We couldn't confirm you just now",
+    "Something went wrong on our side, so you are not subscribed yet. Please open this link again in a few minutes.",
+    status
+  );
 }
 
 type RouteContext = { params: Promise<{ shareToken: string }> };
@@ -24,11 +41,26 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   const supabase = createServiceRoleClient();
-  const { data: campaign } = await supabase
+  const campaignResult = await supabase
     .from("engagement_campaigns")
     .select("id, title")
     .eq("share_token", shareToken)
     .maybeSingle();
+
+  // A campaign this deployment could not READ is not an expired link. Telling a
+  // participant the link expired sends them away from a subscription that is
+  // still confirmable, over a fault that is entirely ours — so that sentence is
+  // reserved for a successful read that genuinely found no campaign.
+  const campaignFailure = classifyRouteReadFailure("the campaign", campaignResult);
+  if (campaignFailure) {
+    audit.error("campaign_lookup_failed", {
+      message: campaignFailure.message,
+      pendingSchema: campaignFailure.pending,
+    });
+    return couldNotConfirmPage(campaignFailure.status);
+  }
+
+  const campaign = campaignResult.data as { id: string; title: string } | null;
   if (!campaign) {
     audit.warn("campaign_not_found");
     return htmlPage("Confirmation link expired", "We couldn't find that campaign. The link may have expired.");
@@ -40,11 +72,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   // subscription that is still unconfirmed and still fixable by trying again.
   if (!result.ok) {
     audit.error("confirm_write_failed", { campaignId: campaign.id });
-    return htmlPage(
-      "We couldn't confirm you just now",
-      "Something went wrong on our side, so you are not subscribed yet. Please open this link again in a few minutes.",
-      500
-    );
+    return couldNotConfirmPage(500);
   }
   if (!result.found) {
     audit.info("token_not_recognized", { campaignId: campaign.id });

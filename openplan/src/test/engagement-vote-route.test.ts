@@ -175,6 +175,49 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/vote", () => {
     expect(response.status).toBe(400);
     expect(voteInsertMock).not.toHaveBeenCalled();
   });
+
+  /**
+   * A COUNT THAT WAS NOT READ IS NOT A ZERO.
+   *
+   * The vote is already in the table when the tally is read, so this failure may
+   * not fail the request — but answering `votesCount: 0` would publish a tally
+   * nobody read, and would contradict the vote the same response confirms. The
+   * field is left out and the omission is disclosed; the portal keeps its own
+   * optimistic count when it is absent.
+   */
+  it("omits the support count it could not read instead of reporting zero", async () => {
+    votesCountMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table engagement_items" },
+    });
+
+    const response = await POST(voteRequest(), routeContext());
+
+    expect(response.status).toBe(201);
+    const json = await response.json();
+    expect(json.success).toBe(true);
+    expect(json.votesCount).toBeUndefined();
+    expect(json.votesCount).not.toBe(0);
+    expect(json.votesCountUnavailable).toBe(true);
+  });
+
+  it("omits the support count on the alreadyVoted replay too", async () => {
+    voteInsertMock.mockResolvedValueOnce({
+      error: { code: "23505", message: "duplicate key value violates unique constraint" },
+    });
+    votesCountMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'relation "public.engagement_items" does not exist' },
+    });
+
+    const response = await POST(voteRequest(), routeContext());
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.alreadyVoted).toBe(true);
+    expect(json.votesCount).toBeUndefined();
+    expect(json.votesCountUnavailable).toBe(true);
+  });
 });
 
 describe("DELETE /api/engage/[shareToken]/items/[itemId]/vote", () => {
@@ -216,5 +259,20 @@ describe("DELETE /api/engage/[shareToken]/items/[itemId]/vote", () => {
     expect(response.status).toBe(200);
     const json = await response.json();
     expect(json.removed).toBe(false);
+  });
+
+  it("omits the support count it could not read after a removal", async () => {
+    votesCountMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table engagement_items" },
+    });
+
+    const response = await DELETE(voteRequest("DELETE"), routeContext());
+
+    expect(response.status).toBe(200);
+    const json = await response.json();
+    expect(json.removed).toBe(true);
+    expect(json.votesCount).toBeUndefined();
+    expect(json.votesCountUnavailable).toBe(true);
   });
 });

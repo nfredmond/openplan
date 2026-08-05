@@ -10,6 +10,7 @@ import {
   type CampaignBroadcastResult,
 } from "@/lib/notifications/engagement";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid(), entryId: z.string().uuid() });
@@ -68,17 +69,38 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.status !== undefined) updates.status = parsed.data.status;
     if (parsed.data.sortOrder !== undefined) updates.sort_order = parsed.data.sortOrder;
 
-    // Detect a genuine draft->published transition (this handler doesn't read the
-    // prior status otherwise), so notify + enqueue emails exactly once.
+    /**
+     * Detect a genuine draft->published transition (this handler doesn't read
+     * the prior status otherwise), so notify + enqueue emails exactly once.
+     *
+     * A FAILED READ MUST STOP THE WHOLE PATCH, before the write, because this
+     * is the only thing standing between a re-publish and a second round of
+     * emails to every resident subscribed to the campaign. A discarded error
+     * left `priorStatus` null, which is indistinguishable from "was still a
+     * draft", so re-publishing an already-published update would broadcast it
+     * again — to members of the public, who cannot undo it. Refusing the edit
+     * is recoverable; a duplicate mailing is not.
+     */
     let priorStatus: string | null = null;
     if (parsed.data.status === "published") {
-      const { data: prior } = await supabase
+      const priorResult = await supabase
         .from("engagement_closeloop_entries")
         .select("status")
         .eq("id", routeParams.data.entryId)
         .eq("campaign_id", access.campaign.id)
         .maybeSingle();
-      priorStatus = (prior?.status as string | undefined) ?? null;
+
+      const priorFailure = classifyRouteReadFailure("close-loop entry", priorResult);
+      if (priorFailure) {
+        audit.error("entry_prior_status_read_failed", {
+          campaignId: access.campaign.id,
+          entryId: routeParams.data.entryId,
+          message: priorFailure.message,
+        });
+        return NextResponse.json(priorFailure.body, { status: priorFailure.status });
+      }
+
+      priorStatus = (priorResult.data?.status as string | undefined) ?? null;
     }
 
     // Double-scope the write: the row id AND its campaign_id must match, so a

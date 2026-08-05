@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import {
   HOTSPOT_DEFAULT_EPS_METERS,
@@ -64,14 +65,35 @@ export async function GET(request: NextRequest, context: RouteContext) {
         ? Math.round(clamp(minPointsParam, 2, 50))
         : HOTSPOT_DEFAULT_MIN_POINTS;
 
-    // Sentiment is AI-derived (E1) — read it off the campaign; absent → no
-    // significance testing, only the spatial clusters.
-    const { data: synthRow } = await supabase
+    /**
+     * Sentiment is AI-derived (E1) — read it off the campaign; absent → no
+     * significance testing, only the spatial clusters.
+     *
+     * A FAILED READ HERE IS NOT THAT ABSENCE, so it refuses rather than
+     * continuing. An empty negative-item set turns `sentimentAvailable` to
+     * false, every cluster untestable and `significantCount` to 0 — the answer
+     * a campaign whose comments were never synthesised gets, published to the
+     * participation dashboard, reports and the copilot as a fact about this
+     * consultation. `HotspotAnalysis` has no field that could carry "the
+     * sentiment could not be read", so there is nothing honest to disclose
+     * alongside a 200; the status is the only place the truth fits.
+     */
+    const synthesisResult = await supabase
       .from("engagement_campaigns")
       .select("ai_synthesis_json")
       .eq("id", campaignId)
       .maybeSingle();
-    const synthesis = (synthRow?.ai_synthesis_json ?? null) as EngagementSynthesis | null;
+
+    const synthesisFailure = classifyRouteReadFailure("campaign sentiment", synthesisResult);
+    if (synthesisFailure) {
+      audit.error("engagement_hotspots_sentiment_read_failed", {
+        campaignId,
+        message: synthesisFailure.message,
+      });
+      return NextResponse.json(synthesisFailure.body, { status: synthesisFailure.status });
+    }
+
+    const synthesis = (synthesisResult.data?.ai_synthesis_json ?? null) as EngagementSynthesis | null;
     const negativeItemIds = negativeItemIdsFromSyntheses([synthesis]);
 
     const { analysis, error } = await loadSentimentHotspots(supabase, {

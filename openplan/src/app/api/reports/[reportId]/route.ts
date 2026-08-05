@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadReportAccess as sharedLoadReportAccess } from "@/lib/reports/api";
-
-function looksLikePendingSchema(message: string | null | undefined) {
-  return /column .* does not exist|schema cache/i.test(message ?? "");
-}
 
 const paramsSchema = z.object({
   reportId: z.string().uuid(),

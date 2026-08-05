@@ -21,6 +21,7 @@ import {
   titleizeRtpValue,
 } from "@/lib/rtp/catalog";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type RouteContext = {
@@ -86,10 +87,6 @@ type CampaignRow = {
   rtp_cycle_chapter_id: string | null;
 };
 
-function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
-}
-
 /**
  * What happened to one read on this page. `pending_schema` is a deployment that
  * has not run a migration yet — already classified, so it keeps its existing
@@ -133,8 +130,8 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="RTP"
-        title="Digital RTP document needs a provisioned workspace"
-        description="This document view only appears inside a real workspace. You are signed in, but no workspace membership was found for this account."
+        title="Digital RTP document needs a workspace"
+        description="This document is assembled from a cycle that belongs to a workspace. You are signed in, but no workspace membership was found for this account."
       />
     );
   }

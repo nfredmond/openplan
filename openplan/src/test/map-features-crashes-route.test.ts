@@ -283,6 +283,65 @@ describe("GET /api/map-features/crashes", () => {
   });
 
   /**
+   * THE SAME SENTENCE, MANUFACTURED FROM A FAILED READ.
+   *
+   * `coverage_unknown` looks like an honest unknown and is not: its copy states
+   * that this workspace HAS NOT STATED A HOME GEOGRAPHY and tells the planner to
+   * state one on the dashboard. A read that failed saw no row, so it establishes
+   * neither half — the area may be set, and a storable source may well cover it.
+   * The route already holds that a coverage sentence it cannot build honestly
+   * makes the whole layer fail; this read is one of the two the sentence is
+   * built from.
+   */
+  it("refuses rather than reporting an unreadable workspace as one that stated no geography", async () => {
+    asMember();
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table workspaces", code: "42501" },
+    });
+
+    const response = await getCrashes(bareRequest());
+
+    expect(response.status).toBe(500);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body.error).toBe("Failed to load the workspace's home geography");
+    expect(body.hint).toBe("This is a read failure, not an empty result.");
+
+    // The old claim, gone — and with it the remedy that sent a planner to change
+    // a setting the route never managed to read.
+    expect(JSON.stringify(body)).not.toContain("has not stated a home geography");
+    expect(JSON.stringify(body)).not.toContain("Workspace geography panel");
+    expect(body).not.toHaveProperty("scopeState");
+    expect(body).not.toHaveProperty("coverageNotes");
+    expect(body).not.toHaveProperty("features");
+
+    expect(crashSelectMock).not.toHaveBeenCalled();
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "crash_layer_scope_read_failed",
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        message: "permission denied for table workspaces",
+      })
+    );
+  });
+
+  it("answers 503, not 500, when the home-geography columns are not migrated yet", async () => {
+    asMember();
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "column workspaces.home_min_lon does not exist", code: "42703" },
+    });
+
+    const response = await getCrashes(bareRequest());
+
+    expect(response.status).toBe(503);
+    const body = (await response.json()) as Record<string, unknown>;
+    expect(body.error).toBe("Workspace geography schema is not available yet");
+    expect(JSON.stringify(body)).not.toContain("has not stated a home geography");
+    expect(crashSelectMock).not.toHaveBeenCalled();
+  });
+
+  /**
    * A Supabase client here is deliberately untyped, so a column left out of the
    * select string is not a type error — it arrives as `undefined` and the
    * comparison it feeds silently answers the wrong question. The acquisition

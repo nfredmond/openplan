@@ -7,7 +7,9 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { classifyRouteReadFailure, type RouteReadResultLike } from "@/lib/http/read-outcome";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
 import { buildAnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
@@ -82,8 +84,41 @@ type RouteContext = {
 const DRAFT_COLUMNS =
   "id, workspace_id, target_kind, target_id, section_key, draft_markdown, model, grounding_json, grounded_sentence_count, total_sentence_count, facts_hash, status, accepted_markdown, accepted_by, accepted_at, created_by, created_at";
 
-function looksLikePendingSchema(message: string | null | undefined) {
-  return /column .* does not exist|schema cache|relation .* does not exist/i.test(message ?? "");
+/** One evidence read, in the words the refusal should use for it. */
+type EvidenceRead = readonly [subject: string, result: RouteReadResultLike];
+
+/**
+ * Stop the generation when any evidence read failed.
+ *
+ * Every result passed here feeds `buildRtpChapterFacts`, and that numbered fact
+ * list is the ONLY thing the model may cite. A read that came back empty because
+ * it FAILED is indistinguishable from a cycle that genuinely has no linked
+ * projects, no engagement, or no committed funding — so the draft asserts the
+ * absence in long-range-plan prose, under the agency's name, in a chapter that
+ * enters the public record. Nobody downstream can tell that sentence was built
+ * from a partial evidence base. A refusal the planner can retry is the only
+ * honest answer.
+ *
+ * The audit call stays here rather than in `classifyRouteReadFailure` so the
+ * route keeps its own `chapter_draft_*` vocabulary in the host logs.
+ */
+function refuseOnEvidenceReadFailure(
+  audit: ReturnType<typeof createApiAuditLogger>,
+  chapterId: string,
+  reads: readonly EvidenceRead[]
+): NextResponse | null {
+  for (const [subject, result] of reads) {
+    const failure = classifyRouteReadFailure(subject, result);
+    if (!failure) continue;
+    audit.error("chapter_draft_evidence_load_failed", {
+      chapterId,
+      subject,
+      message: failure.message,
+      pendingSchema: failure.pending,
+    });
+    return NextResponse.json(failure.body, { status: failure.status });
+  }
+  return null;
 }
 
 function nullIfUndefined(value: number | undefined): number | null {
@@ -276,6 +311,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
       const cycle = cycleResult.data;
 
+      const cycleContextFailure = refuseOnEvidenceReadFailure(audit, chapter.id, [
+        ["linked projects", linksResult],
+        ["engagement campaigns", campaignsResult],
+        ["model runs", countyRunsResult],
+      ]);
+      if (cycleContextFailure) return cycleContextFailure;
+
       type LinkRow = {
         project_id: string;
         portfolio_role: string | null;
@@ -323,6 +365,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
               { data: [], error: null },
             ];
 
+      const fundingFailure = refuseOnEvidenceReadFailure(audit, chapter.id, [
+        ["project funding profiles", fundingProfilesResult],
+        ["funding awards", fundingAwardsResult],
+        ["funding opportunities", fundingOpportunitiesResult],
+        ["grant reimbursement invoices", invoicesResult],
+      ]);
+      if (fundingFailure) return fundingFailure;
+
       type ByProject<T> = Map<string, T[]>;
       const groupByProject = <T extends { project_id: string }>(rows: T[] | null | undefined): ByProject<T> => {
         const map: ByProject<T> = new Map();
@@ -368,6 +418,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
             )
             .in("campaign_id", campaignIds)
         : { data: [], error: null };
+
+      const engagementFailure = refuseOnEvidenceReadFailure(audit, chapter.id, [
+        ["engagement comments", engagementItemsResult],
+      ]);
+      if (engagementFailure) return engagementFailure;
+
       const engagementCounts = summarizeEngagementItems(
         [],
         (engagementItemsResult.data ?? []) as Array<{
@@ -393,23 +449,35 @@ export async function POST(request: NextRequest, context: RouteContext) {
         stage: string | null;
         updated_at: string | null;
       }>;
-      const modelingEvidence: ReportModelingEvidence[] = await Promise.all(
-        countyRuns.map(async (countyRun) => {
-          const evidenceResult = await loadCountyRunModelingEvidence({
+      const evidenceReads = await Promise.all(
+        countyRuns.map(async (countyRun) => ({
+          countyRun,
+          result: await loadCountyRunModelingEvidence({
             supabase,
             countyRunId: countyRun.id,
             track: "assignment",
-          });
-          return {
-            countyRunId: countyRun.id,
-            runName: countyRun.run_name,
-            geographyLabel: countyRun.geography_label,
-            stage: countyRun.stage,
-            updatedAt: countyRun.updated_at,
-            evidence: evidenceResult.evidence,
-          };
-        })
+          }),
+        }))
       );
+
+      // The loader hands its failure back rather than deciding it, and a null
+      // snapshot renders as "no structured claim decision is recorded" — a
+      // sentence about the agency's modeling that a failed read must not write.
+      const modelingFailure = refuseOnEvidenceReadFailure(
+        audit,
+        chapter.id,
+        evidenceReads.map(({ result }) => ["modeling evidence", result] as const)
+      );
+      if (modelingFailure) return modelingFailure;
+
+      const modelingEvidence: ReportModelingEvidence[] = evidenceReads.map(({ countyRun, result }) => ({
+        countyRunId: countyRun.id,
+        runName: countyRun.run_name,
+        geographyLabel: countyRun.geography_label,
+        stage: countyRun.stage,
+        updatedAt: countyRun.updated_at,
+        evidence: result.evidence,
+      }));
 
       // Knowledge Base excerpts matched to this chapter. Best-effort — [] when
       // the KB schema is unavailable or nothing matches.

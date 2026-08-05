@@ -47,6 +47,7 @@ import {
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 import type { AssistantTarget, AssistantTargetKind } from "@/lib/assistant/catalog";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 export type WorkspaceAssistantContext = {
   kind: "workspace" | "analysis_studio";
@@ -605,10 +606,6 @@ type WorkspaceEnvelope = {
   name: string | null;
   role: string | null;
 };
-
-function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
-}
 
 async function loadDefaultAssignmentModelingCountyRunId(
   supabase: SupabaseLike,

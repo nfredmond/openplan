@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   HOME_GEOGRAPHY_SCOPE_COLUMNS,
@@ -75,12 +76,31 @@ export async function GET(request: NextRequest) {
     } else {
       // Identity columns only — the full set carries the boundary polygon, and
       // this route fires on every (app) page load.
-      const { data: workspaceRow } = await supabase
+      const workspaceResult = await supabase
         .from("workspaces")
         .select(HOME_GEOGRAPHY_SCOPE_COLUMNS)
         .eq("id", membership.workspace_id)
         .maybeSingle();
-      scope = resolveCensusTractScope(parseWorkspaceHomeGeography(workspaceRow), {
+
+      // A read that FAILED establishes nothing about what this workspace stated.
+      // Passing its null row on would resolve `geography_not_set`, whose coverage
+      // note tells a planner their workspace has not set a home geography and
+      // sends them to the dashboard to fix a setting that may already be right.
+      // That sentence is reserved for a read that succeeded and found no row.
+      const scopeFailure = classifyRouteReadFailure(
+        "the workspace's home geography",
+        workspaceResult,
+        { pendingError: "Workspace geography schema is not available yet" }
+      );
+      if (scopeFailure) {
+        audit.error("census_tract_scope_read_failed", {
+          workspaceId: membership.workspace_id,
+          message: scopeFailure.message,
+        });
+        return NextResponse.json(scopeFailure.body, { status: scopeFailure.status });
+      }
+
+      scope = resolveCensusTractScope(parseWorkspaceHomeGeography(workspaceResult.data), {
         hasWorkspace: true,
       });
     }

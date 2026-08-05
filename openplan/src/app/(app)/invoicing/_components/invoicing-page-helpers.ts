@@ -132,9 +132,12 @@ export function formatDateTime(value: string | null | undefined): string {
   return parsed.toLocaleString();
 }
 
-export function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
-}
+/**
+ * Compatibility re-export for the invoicing lanes, which import their helpers
+ * from this one module. Point them at `@/lib/supabase/pending-schema` and delete
+ * this line.
+ */
+export { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 export function panelClass() {
   return "border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74),rgba(246,248,244,0.96))] px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:bg-[linear-gradient(180deg,rgba(15,23,32,0.86),rgba(11,18,26,0.96))]";

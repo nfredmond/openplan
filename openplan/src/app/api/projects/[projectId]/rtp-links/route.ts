@@ -7,6 +7,7 @@ import { RTP_PORTFOLIO_ROLE_OPTIONS } from "@/lib/rtp/catalog";
 import { parsePriorityScores } from "@/lib/rtp/priority-scoring";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 
 const PORTFOLIO_ROLES = RTP_PORTFOLIO_ROLE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 
@@ -212,11 +213,30 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       if (payload.data.evidenceModelRunId === null) {
         updates.evidence_model_run_id = null;
       } else {
-        const { data: run } = await supabase
+        const runResult = await supabase
           .from("model_runs")
           .select("id, workspace_id")
           .eq("id", payload.data.evidenceModelRunId)
           .maybeSingle();
+
+        // "Model run not found in this workspace" is a statement about what
+        // this workspace holds, and only a read that SUCCEEDED and found no
+        // row establishes it. A failed read reaches the same `!run` branch, so
+        // it used to tell a planner their run does not exist — while the run
+        // sat right there in the picker they chose it from — and refuse to
+        // attach the evidence an RTP portfolio decision rests on.
+        const runFailure = classifyRouteReadFailure("model run", runResult);
+        if (runFailure) {
+          audit.error("evidence_model_run_lookup_failed", {
+            projectId: routeParams.data.projectId,
+            linkId: link.id,
+            modelRunId: payload.data.evidenceModelRunId,
+            message: runFailure.message,
+          });
+          return NextResponse.json(runFailure.body, { status: runFailure.status });
+        }
+
+        const run = runResult.data;
         if (!run || run.workspace_id !== link.workspace_id) {
           return NextResponse.json({ error: "Model run not found in this workspace" }, { status: 400 });
         }

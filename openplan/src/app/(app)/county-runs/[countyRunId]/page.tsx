@@ -33,8 +33,8 @@ export default async function CountyRunDetailPage({ params, searchParams }: Coun
     return (
       <WorkspaceMembershipRequired
         moduleLabel="County onboarding"
-        title="County run detail needs a provisioned workspace"
-        description="County run details are workspace-scoped. Create or join a workspace before reviewing county onboarding outputs."
+        title="County run detail needs a workspace"
+        description="A county run's outputs belong to the workspace that produced them. You are signed in, but this account is not in a workspace yet, so there is nothing here to review."
       />
     );
   }

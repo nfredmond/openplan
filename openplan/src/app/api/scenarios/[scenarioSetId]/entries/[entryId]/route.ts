@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
   markScenarioLinkedReportsBasisStale,
@@ -9,10 +10,6 @@ import {
 import { SCENARIO_ENTRY_STATUSES, SCENARIO_ENTRY_TYPES, makeScenarioEntrySlug } from "@/lib/scenarios/catalog";
 import { loadScenarioSetAccess, validateModelRunAccess, validateRunAccess } from "@/lib/scenarios/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-
-function looksLikePendingSchema(message: string | null | undefined) {
-  return /column .* does not exist|schema cache/i.test(message ?? "");
-}
 
 const paramsSchema = z.object({
   scenarioSetId: z.string().uuid(),

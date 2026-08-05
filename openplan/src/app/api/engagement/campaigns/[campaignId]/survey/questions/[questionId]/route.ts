@@ -12,6 +12,7 @@ import {
 } from "@/lib/engagement/survey";
 import { loadSurveyConditionRefs } from "@/lib/engagement/survey-responses";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 
 const paramsSchema = z.object({ campaignId: z.string().uuid(), questionId: z.string().uuid() });
@@ -61,12 +62,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if ("response" in auth) return auth.response;
     const { supabase, campaign } = auth;
 
-    const { data: existing } = await supabase
+    // "Not found" is a fact about this campaign's survey, so only a read that
+    // succeeded may say it — the same check `authorize` already makes on the
+    // campaign one call above.
+    const existingResult = await supabase
       .from("engagement_survey_questions")
       .select("id, question_type, prompt, sort_order, config_json")
       .eq("id", routeParams.data.questionId)
       .eq("campaign_id", campaign.id)
       .maybeSingle();
+
+    const existingFailure = classifyRouteReadFailure("survey question", existingResult);
+    if (existingFailure) {
+      audit.error("question_read_failed", {
+        campaignId: campaign.id,
+        questionId: routeParams.data.questionId,
+        message: existingFailure.message,
+      });
+      return NextResponse.json(existingFailure.body, { status: existingFailure.status });
+    }
+
+    const existing = existingResult.data;
     if (!existing) return NextResponse.json({ error: "Survey question not found" }, { status: 404 });
 
     const updates: Record<string, unknown> = {};

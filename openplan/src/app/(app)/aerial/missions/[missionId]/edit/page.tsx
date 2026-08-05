@@ -31,8 +31,8 @@ export default async function EditMissionAoiPage({ params }: EditMissionAoiPageP
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Aerial operations"
-        title="Mission AOI authoring needs a provisioned workspace"
-        description="Mission authoring is workspace-scoped. Join or create a workspace to draw AOIs."
+        title="Mission AOI authoring needs a workspace"
+        description="A mission's area of interest is drawn inside the workspace that owns the mission. You are signed in, but this account is not in a workspace yet."
       />
     );
   }

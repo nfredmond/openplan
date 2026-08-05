@@ -49,6 +49,7 @@ import {
   totalReadySnapshotCount,
 } from "@/lib/scenarios/comparison-summary";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type RouteContext = {
@@ -183,10 +184,6 @@ type ModelingClaimDecisionDefaultRow = {
   county_run_id: string | null;
 };
 
-function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
-}
-
 /**
  * What happened to one read on this page.
  *
@@ -229,8 +226,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     return (
       <WorkspaceMembershipRequired
         moduleLabel="RTP"
-        title="RTP cycles need a provisioned workspace"
-        description="RTP cycle detail only appears inside a real workspace. You are signed in, but no workspace membership was found for this account."
+        title="RTP cycle detail needs a workspace"
+        description="An RTP cycle belongs to the workspace preparing it. You are signed in, but no workspace membership was found for this account."
       />
     );
   }

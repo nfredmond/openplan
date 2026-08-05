@@ -64,14 +64,24 @@ export async function GET(request: NextRequest) {
     // The equity chip must count the SAME tracts the choropleth can draw. It
     // previously counted `census_tracts_map` with no filter at all — a national
     // total presented beside this workspace's map.
-    const { data: workspaceRow } = await supabase
+    const workspaceScopeResult = await supabase
       .from("workspaces")
       .select(HOME_GEOGRAPHY_SCOPE_COLUMNS)
       .eq("id", workspaceId)
       .maybeSingle();
-    const tractScope = resolveCensusTractScope(parseWorkspaceHomeGeography(workspaceRow), {
-      hasWorkspace: true,
-    });
+
+    // NO SCOPE AT ALL when the read failed, rather than the scope a null row
+    // resolves to. This payload is numbers, so both roads end at `equity: null`
+    // and the chip disappears — but "this workspace states no county" and "we
+    // could not find out" are different facts, and letting a failure resolve to
+    // the first is how the second stops being reported. The failure is carried
+    // into the partial-failure warning below; the sibling choropleth route,
+    // which turns the same read into a SENTENCE, refuses outright.
+    const tractScope = workspaceScopeResult.error
+      ? null
+      : resolveCensusTractScope(parseWorkspaceHomeGeography(workspaceScopeResult.data), {
+          hasWorkspace: true,
+        });
 
     const [
       projectsResult,
@@ -114,7 +124,7 @@ export async function GET(request: NextRequest) {
         // workspace counts NOTHING rather than counting the nation: a chip
         // reading "0" would assert a measurement, and one reading the national
         // total would assert somebody else's.
-        tractScope.scopeState === "home_geography"
+        tractScope?.scopeState === "home_geography"
           ? supabase
               .from("census_tracts_map")
               .select("geoid", { count: "exact", head: true })
@@ -165,6 +175,7 @@ export async function GET(request: NextRequest) {
     };
 
     if (
+      workspaceScopeResult.error ||
       projectsResult.error ||
       projectAreasResult.error ||
       aerialResult.error ||
@@ -177,6 +188,7 @@ export async function GET(request: NextRequest) {
     ) {
       audit.warn("map_feature_counts_partial_failure", {
         workspaceId,
+        workspaceScopeError: workspaceScopeResult.error?.message ?? null,
         projectsError: projectsResult.error?.message ?? null,
         projectAreasError: projectAreasResult.error?.message ?? null,
         aerialError: aerialResult.error?.message ?? null,

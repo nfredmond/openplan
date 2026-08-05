@@ -185,6 +185,15 @@ const datasetsSelectMock = vi.fn(() => ({ in: datasetsInMock }));
 const connectorsInMock = vi.fn();
 const connectorsSelectMock = vi.fn(() => ({ in: connectorsInMock }));
 
+// Project-linked crash acquisitions, hoisted out of the `fromMock` table switch
+// so ONE named read can be made to fail. A mocked client hands back its fixture
+// whatever is asked of it, which is precisely why this defect class shipped
+// undetected: a harness that cannot fail a specific read cannot see the bug.
+const safetyIngestsLimitMock = vi.fn();
+const safetyIngestsOrderMock = vi.fn(() => ({ limit: safetyIngestsLimitMock }));
+const safetyIngestsEqMock = vi.fn(() => ({ order: safetyIngestsOrderMock }));
+const safetyIngestsSelectMock = vi.fn(() => ({ eq: safetyIngestsEqMock }));
+
 const aerialMissionsOrderMock = vi.fn();
 const aerialMissionsEqMock = vi.fn(() => ({ order: aerialMissionsOrderMock }));
 const aerialMissionsSelectMock = vi.fn(() => ({ eq: aerialMissionsEqMock }));
@@ -325,16 +334,7 @@ const fromMock = vi.fn((table: string) => {
     };
   }
   if (table === "safety_crash_ingests") {
-    // Project-linked crash acquisitions feeding the safety evidence lane.
-    return {
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          order: vi.fn(() => ({
-            limit: vi.fn(async () => ({ data: [], error: null })),
-          })),
-        })),
-      })),
-    };
+    return { select: safetyIngestsSelectMock };
   }
   if (table === "project_corridors") {
     // Corridors drawn on the cartographic backdrop for this project.
@@ -607,6 +607,7 @@ describe("ProjectDetailPage", () => {
     connectorsInMock.mockResolvedValue({ data: [], error: null });
     aerialMissionsOrderMock.mockResolvedValue({ data: [], error: null });
     aerialPackagesOrderMock.mockResolvedValue({ data: [], error: null });
+    safetyIngestsLimitMock.mockResolvedValue({ data: [], error: null });
 
     reportsLimitMock.mockResolvedValue({
       data: [
@@ -1567,5 +1568,66 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText("No milestones recorded yet.")).toBeInTheDocument();
     expect(screen.getByText("No submittals recorded yet.")).toBeInTheDocument();
     expect(screen.queryByText(/could not be read/i)).toBeNull();
+  });
+
+  /**
+   * THE WIRING PROOF, and the only assertion here that spans the whole defect.
+   *
+   * The banner and the board are built from the same reads, and they disagreed:
+   * `ReadFailureLog.describe()` promised the reader that anything downstream of
+   * a failed read "is shown as unavailable rather than as zero", while the
+   * crosslink board three inches below it stamped that same lane "Not linked"
+   * and told the planner to go run a crash acquisition that may already exist.
+   *
+   * Proving it needs ONE named read to fail — which is why the crash-ingest
+   * mock had to be hoisted out of the table switch. A mocked Supabase client
+   * returns its fixture no matter what is asked of it, so a harness that cannot
+   * fail a specific query cannot see this class of bug at all; that is how it
+   * shipped twice.
+   */
+  describe("the crosslink board agrees with the page banner about a failed read", () => {
+    function crosslinkBoard() {
+      return document.getElementById("project-spine-crosslinks") as HTMLElement;
+    }
+
+    it("names the crash-ingest lane in the banner AND marks it unavailable on the board", async () => {
+      safetyIngestsLimitMock.mockResolvedValue({
+        data: null,
+        error: { code: "42501", message: "permission denied for table safety_crash_ingests" },
+      });
+
+      await renderPage();
+
+      expect(
+        screen.getByText(/could not read crash acquisitions linked to this project/i)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/permission denied for table safety_crash_ingests/i)).toBeInTheDocument();
+
+      // THE LIE FIRST, deliberately. These are the two sentences the board
+      // printed over a failed read, so asserting their absence before asserting
+      // the replacement makes an unwired map fail as what it is.
+      const board = crosslinkBoard();
+      expect(within(board).queryByText("No crash acquisition")).toBeNull();
+      expect(
+        within(board).queryByText(/No crash acquisition is linked to this project yet\./i)
+      ).toBeNull();
+
+      const safetyRow = within(board).getByText("Could not be read").closest("a") as HTMLElement;
+      expect(within(safetyRow).getByText("Unavailable")).toBeInTheDocument();
+      expect(within(safetyRow).queryByText("Not linked")).toBeNull();
+      expect(within(safetyRow).getByText(/an unreadable lane is not an empty one/i)).toBeInTheDocument();
+    });
+
+    it("still says the safety lane is empty when the read SUCCEEDS with nothing", async () => {
+      // Without this the test above passes on a board that always warns, and
+      // the honest empty state — which is the common case — would be gone.
+      await renderPage();
+
+      const board = crosslinkBoard();
+      expect(within(board).getByText("No crash acquisition")).toBeInTheDocument();
+      expect(within(board).queryByText("Could not be read")).toBeNull();
+      expect(within(board).queryByText("Unavailable")).toBeNull();
+      expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
+    });
   });
 });

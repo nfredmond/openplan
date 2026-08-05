@@ -7,6 +7,7 @@ import {
   type RecentPublicSubmissionRecord,
 } from "@/lib/engagement/public-submit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { recordOperatorNotification } from "@/lib/notifications/engagement";
@@ -211,16 +212,35 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (outsideArea) return outsideArea;
     }
 
-    // Validate category belongs to this campaign if provided
+    // Validate category belongs to this campaign if provided. "Invalid category"
+    // is a claim about what the resident sent, so only a successful read that
+    // found no row may make it — a read this deployment could not perform says
+    // nothing about their submission, and answering 400 would blame them for it.
     if (parsed.data.categoryId) {
-      const { data: category } = await supabase
+      const categoryResult = await supabase
         .from("engagement_categories")
         .select("id")
         .eq("id", parsed.data.categoryId)
         .eq("campaign_id", campaign.id)
         .maybeSingle();
 
-      if (!category) {
+      const categoryFailure = classifyRouteReadFailure("the selected category", categoryResult);
+      if (categoryFailure) {
+        audit.error("engagement_category_lookup_failed", {
+          campaignId: campaign.id,
+          message: categoryFailure.message,
+          pendingSchema: categoryFailure.pending,
+        });
+        // The classifier decides the status; the wording stays this route's,
+        // because every sentence here is read by a member of the public rather
+        // than by whoever operates the deployment.
+        return NextResponse.json(
+          { error: "Failed to verify the selected category" },
+          { status: categoryFailure.status }
+        );
+      }
+
+      if (!categoryResult.data) {
         return NextResponse.json({ error: "Invalid category for this campaign" }, { status: 400 });
       }
     }

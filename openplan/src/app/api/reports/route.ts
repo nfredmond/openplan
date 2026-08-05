@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { assistantActionAuditIdentity, recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
@@ -11,10 +12,6 @@ import {
 } from "@/lib/reports/catalog";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
-
-function looksLikePendingSchema(message: string | null | undefined) {
-  return /column .* does not exist|schema cache/i.test(message ?? "");
-}
 
 const reportsFilterSchema = z.object({
   projectId: z.string().uuid().optional(),

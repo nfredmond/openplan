@@ -118,6 +118,9 @@ export function buildModelRunResultSummary(payload: {
   };
 }
 
-export function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
-}
+/**
+ * Compatibility re-export. This module never owned the question — it happened to
+ * be where the models lane first needed it, and four unrelated callers now import
+ * it from here. Point them at `@/lib/supabase/pending-schema` and delete this line.
+ */
+export { looksLikePendingSchema } from "@/lib/supabase/pending-schema";

@@ -25,6 +25,7 @@ import { buildScenarioComparisonBoard } from "@/lib/scenarios/comparison-board";
 import { scenarioComparisonSourceContextFromMetadata } from "@/lib/scenarios/comparison-source-context";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import {
   buildScenarioComparisonSummary,
   buildScenarioLinkedReports,
@@ -98,14 +99,6 @@ function formatStamp(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString();
-}
-
-/** Column-aware pending-schema check for the attached_model_run_id read — the
- * spine helper only matches missing relations, not a missing column. */
-function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /column .* does not exist|relation .* does not exist|could not find the table|schema cache/i.test(
-    message ?? ""
-  );
 }
 
 /**

@@ -34,7 +34,12 @@ export function ProjectSpineCrosslinkBoard({
   summary: ProjectSpineCrosslinkSummary;
   isLoading?: boolean;
 }) {
-  const statGridClass = summary.schemaPendingCount > 0 ? "grid-cols-4" : "grid-cols-3";
+  // Written out as literal class names, never assembled from a number: Tailwind
+  // scans source text for the classes it emits, so `grid-cols-${n}` compiles to
+  // no CSS at all and the tiles silently stack.
+  const optionalTileCount = (summary.schemaPendingCount > 0 ? 1 : 0) + (summary.unreadableCount > 0 ? 1 : 0);
+  const statGridClass =
+    optionalTileCount === 2 ? "grid-cols-5" : optionalTileCount === 1 ? "grid-cols-4" : "grid-cols-3";
 
   return (
     <article id="project-spine-crosslinks" className="module-section-surface scroll-mt-24">
@@ -57,7 +62,15 @@ export function ProjectSpineCrosslinkBoard({
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(13rem,18rem)] md:items-start">
           <div>
             <p className="text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-              {isLoading ? "Loading state" : summary.boardState === "schema_pending" ? "Setup fallback" : summary.boardState === "empty" ? "Empty state" : "Operator queue"}
+              {isLoading
+                ? "Loading state"
+                : summary.boardState === "unreadable"
+                  ? "Read failure"
+                  : summary.boardState === "schema_pending"
+                    ? "Setup fallback"
+                    : summary.boardState === "empty"
+                      ? "Empty state"
+                      : "Operator queue"}
             </p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">
               {isLoading ? "Loading crosslink queue" : summary.stateHeadline}
@@ -118,13 +131,15 @@ export function ProjectSpineCrosslinkBoard({
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <h3 className="module-record-title">{row.statusLabel}</h3>
                     <span className="text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                      {row.sourceState === "schema_pending"
-                        ? "Setup needed"
-                        : row.readiness === "ready"
-                          ? "Ready"
-                          : row.readiness === "attention"
-                            ? "Needs review"
-                            : "Not linked"}
+                      {row.sourceState === "unreadable"
+                        ? "Unavailable"
+                        : row.sourceState === "schema_pending"
+                          ? "Setup needed"
+                          : row.readiness === "ready"
+                            ? "Ready"
+                            : row.readiness === "attention"
+                              ? "Needs review"
+                              : "Not linked"}
                     </span>
                   </div>
                   <p className="module-record-summary">{row.headline}</p>
@@ -179,6 +194,12 @@ export function ProjectSpineCrosslinkBoard({
               <div>
                 <p className="text-xl font-semibold text-foreground">{summary.schemaPendingCount}</p>
                 <p className="text-[0.67rem] uppercase tracking-[0.14em] text-muted-foreground">setup</p>
+              </div>
+            ) : null}
+            {summary.unreadableCount > 0 ? (
+              <div>
+                <p className="text-xl font-semibold text-foreground">{summary.unreadableCount}</p>
+                <p className="text-[0.67rem] uppercase tracking-[0.14em] text-muted-foreground">failed</p>
               </div>
             ) : null}
           </div>

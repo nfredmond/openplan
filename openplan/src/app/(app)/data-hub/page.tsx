@@ -30,6 +30,7 @@ import {
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type ConnectorRow = {
@@ -137,10 +138,6 @@ function toneForDatasetStatus(status: string): "info" | "success" | "warning" | 
   if (status === "error") return "danger";
   if (status === "archived") return "neutral";
   return "neutral";
-}
-
-function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
 }
 
 export default async function DataHubPage() {

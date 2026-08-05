@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import {
@@ -284,16 +285,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    // Program metadata for the cover — best-effort; a failed read discloses
-    // "Not linked" rather than failing the export.
+    // Program metadata for the cover. This was written as best-effort, on the
+    // reasoning that a null title "discloses" the gap — but the cover renders
+    // null as "Not linked", and this PDF goes to a funder. An opportunity whose
+    // `program_id` is set is program-linked as a matter of record; printing
+    // "Not linked" over it because a read failed is the document stating the
+    // opposite of the truth under the agency's name, in the one artifact nobody
+    // downstream can check against the database. There is no honest cover to
+    // build without this row, so the export refuses instead.
     let programTitle: string | null = null;
     if (opportunity.program_id) {
-      const { data: programRow } = await supabase
+      const programResult = await supabase
         .from("programs")
         .select("id, title")
         .eq("id", opportunity.program_id)
         .maybeSingle();
-      const title = (programRow as { title?: unknown } | null)?.title;
+
+      const programFailure = classifyRouteReadFailure("the linked program", programResult);
+      if (programFailure) {
+        audit.error("application_export_program_load_failed", {
+          opportunityId: opportunity.id,
+          userId: user.id,
+          programId: opportunity.program_id,
+          message: programFailure.message,
+        });
+        return NextResponse.json(programFailure.body, { status: programFailure.status });
+      }
+
+      const title = (programResult.data as { title?: unknown } | null)?.title;
       programTitle = typeof title === "string" ? title : null;
     }
 

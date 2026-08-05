@@ -91,7 +91,7 @@ describe("/api/workspaces/current", () => {
 
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({
-      error: "No provisioned supervised pilot workspace membership found",
+      error: "No workspace membership found for this account",
       code: "NO_WORKSPACE_MEMBERSHIP",
     });
   });

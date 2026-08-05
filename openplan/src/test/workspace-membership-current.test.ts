@@ -55,7 +55,7 @@ describe("workspace membership helpers", () => {
         workspace: null,
       })
     ).toEqual({
-      workspaceName: "No workspace provisioned",
+      workspaceName: "No workspace yet",
       workspaceRole: "No membership",
       membershipStatus: "not_provisioned",
     });

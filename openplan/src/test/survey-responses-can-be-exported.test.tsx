@@ -16,13 +16,14 @@ import { NextRequest } from "next/server";
 
 const authGetUser = vi.fn();
 const serviceRoleClient = vi.fn();
+const auditError = vi.fn();
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({ auth: { getUser: authGetUser }, ...sessionClient() }),
   createServiceRoleClient: () => serviceRoleClient(),
 }));
 vi.mock("@/lib/observability/audit", () => ({
-  createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
+  createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: auditError }),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh: vi.fn() }) }));
 
@@ -41,6 +42,8 @@ let campaignRow: Record<string, unknown> | null = null;
 let campaignError: { message: string } | null = null;
 let membershipRow: Record<string, unknown> | null = null;
 let sessionRows: Record<string, unknown>[] = [];
+/** The one lever that makes the failure path reachable — see `responseClient`. */
+let sessionError: { message: string } | null = null;
 
 /** The auth-side client: campaign lookup + workspace membership. */
 function sessionClient() {
@@ -65,7 +68,15 @@ function sessionClient() {
   };
 }
 
-/** The service-role client: the sensitive response-session read only. */
+/**
+ * The service-role client: the sensitive response-session read only.
+ *
+ * `sessionError` is what makes this harness able to prove anything about a
+ * failed read. A fake client hands back its fixture whatever was asked for, so
+ * without a way to FAIL a named read the whole failure path is unreachable and
+ * every assertion below would pass over code that never runs — which is exactly
+ * how this defect class shipped in the first place.
+ */
 function responseClient() {
   return {
     from(table: string) {
@@ -82,7 +93,7 @@ function responseClient() {
           return builder;
         },
         async order() {
-          return { data: sessionRows, error: null };
+          return { data: sessionError ? null : sessionRows, error: sessionError };
         },
       };
       return builder;
@@ -119,6 +130,7 @@ beforeEach(() => {
   campaignRow = { id: CAMPAIGN_ID, workspace_id: "ws-1", title: "Downtown listening" };
   membershipRow = { workspace_id: "ws-1", role: "member" };
   sessionRows = [session()];
+  sessionError = null;
   authGetUser.mockResolvedValue({ data: { user: { id: USER_ID } } });
   serviceRoleClient.mockImplementation(() => responseClient());
 });
@@ -177,25 +189,25 @@ describe("a planner can export a campaign's survey responses", () => {
     expect(body).toContain("Excludes:");
   });
 
-  it("does not present an empty read as 'no responses' — the two are different facts", async () => {
+  it("states a plain zero when the read succeeded and found nothing", async () => {
     sessionRows = [];
     const body = await (await GET(request(), context)).text();
 
-    // `loadSurveyResponseSessions` returns [] for a failed read and for a real
-    // absence alike, so the file must not assert either one.
-    expect(body).toContain("cannot yet tell those two apart");
-    expect(body).not.toMatch(/no survey responses have been recorded\./);
+    expect(body).toContain("# 0 survey responses recorded.");
+    // The old hedge was there because the loader could not report its own
+    // failure. It can now, so the file no longer refuses to say what it knows.
+    expect(body).not.toContain("cannot yet tell those two apart");
   });
 
   it("keeps a filtered empty result from denying the whole campaign", async () => {
-    // A planner who filtered to `flagged` and read "no survey responses have
-    // been recorded" would take it as a fact about a campaign that may have
+    // A planner who filtered to `flagged` and read "0 survey responses
+    // recorded" would take it as a fact about a campaign that may have
     // hundreds. The absence stated must be the one that was actually queried.
     sessionRows = [];
     const body = await (await GET(request("?status=flagged"), context)).text();
 
     expect(body).toContain('no survey response has status "flagged"');
-    expect(body).not.toContain("no survey responses have been recorded");
+    expect(body).not.toContain("# 0 survey responses recorded.");
   });
 
   it("passes a status filter through to the query", async () => {
@@ -246,6 +258,55 @@ describe("the export is gated exactly as the rest of the response surface is", (
     membershipRow = { workspace_id: "ws-1", role: "viewer" };
     const response = await GET(request(), context);
     expect(response.status).toBe(200);
+  });
+});
+
+describe("a failed response read leaves as a status, never as a file", () => {
+  /**
+   * The defect this closes. `loadSurveyResponseSessions` returned
+   * `result.data ?? []`, so a dropped connection produced a 200, a valid CSV,
+   * and a header line — a document an agency attaches to a Title VI or grant
+   * deliverable, stating a participation record nobody read.
+   */
+  it("500s instead of writing a file that claims zero responses", async () => {
+    sessionError = { message: "connection reset by peer" };
+    const response = await GET(request(), context);
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).not.toContain("text/csv");
+    expect(response.headers.get("Content-Disposition")).toBeNull();
+
+    const body = await response.json();
+    expect(body.error).toBe("Failed to load survey responses");
+    expect(body.hint).toBe("This is a read failure, not an empty result.");
+
+    // The false claim is gone, not merely accompanied by an error.
+    const text = JSON.stringify(body);
+    expect(text).not.toContain("0 survey responses recorded");
+    expect(text).not.toContain("response_id,status");
+  });
+
+  it("names the failure in the audit line, with the database's own words", async () => {
+    sessionError = { message: "connection reset by peer" };
+    await GET(request("?status=flagged"), context);
+
+    expect(auditError).toHaveBeenCalledWith(
+      "survey_export_read_failed",
+      expect.objectContaining({
+        campaignId: CAMPAIGN_ID,
+        statusFilter: "flagged",
+        message: "connection reset by peer",
+      })
+    );
+  });
+
+  it("503s an unapplied migration, because that one is worth retrying", async () => {
+    sessionError = { message: 'relation "public.engagement_survey_response_sessions" does not exist' };
+    const response = await GET(request(), context);
+
+    expect(response.status).toBe(503);
+    const body = await response.json();
+    expect(body.error).toContain("schema is not available yet");
   });
 });
 

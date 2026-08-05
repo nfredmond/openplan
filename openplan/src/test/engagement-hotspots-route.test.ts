@@ -118,4 +118,48 @@ describe("GET /api/engagement/campaigns/[campaignId]/hotspots", () => {
     const res = await GET(makeRequest(), ctx);
     expect(res.status).toBe(500);
   });
+
+  it("reports no sentiment when the campaign genuinely has no synthesis", async () => {
+    maybeSingle.mockResolvedValue({ data: { ai_synthesis_json: null }, error: null });
+    const res = await GET(makeRequest(), ctx);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.hotspots.sentimentAvailable).toBe(false);
+    expect(body.hotspots.significantCount).toBe(0);
+  });
+
+  /**
+   * A FAILED SENTIMENT READ IS NOT "NO SENTIMENT".
+   *
+   * The two answers are indistinguishable in the payload — an unreadable
+   * `ai_synthesis_json` empties the negative-item set, which turns
+   * `sentimentAvailable` false, every cluster untestable and `significantCount`
+   * to 0: byte for byte the answer above, which the participation dashboard,
+   * reports and the copilot all read as a fact about this consultation. So the
+   * route refuses instead, and `HotspotAnalysis` carries no field that could
+   * disclose it any other way.
+   */
+  it("refuses rather than answering 'no sentiment' when the synthesis read fails", async () => {
+    maybeSingle.mockResolvedValue({ data: null, error: { message: "permission denied for table engagement_campaigns" } });
+    const res = await GET(makeRequest(), ctx);
+    expect(res.status).toBe(500);
+    const body = await res.json();
+    expect(body.error).toBe("Failed to load campaign sentiment");
+    expect(body.hint).toContain("read failure");
+    // The false answer is gone, not merely annotated.
+    expect(body.hotspots).toBeUndefined();
+    // ...and no hotspot set was computed against a sentiment set nobody read.
+    expect(rpc).not.toHaveBeenCalled();
+  });
+
+  it("503 when ai_synthesis_json has not been migrated on this deployment", async () => {
+    maybeSingle.mockResolvedValue({
+      data: null,
+      error: { message: "column engagement_campaigns.ai_synthesis_json does not exist" },
+    });
+    const res = await GET(makeRequest(), ctx);
+    expect(res.status).toBe(503);
+    expect((await res.json()).error).toBe("Campaign sentiment schema is not available yet");
+    expect(rpc).not.toHaveBeenCalled();
+  });
 });

@@ -91,8 +91,8 @@ export default async function PlansPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Plans"
-        title="Plans need a provisioned workspace"
-        description="Plan records only appear inside a real workspace. You are signed in, but no workspace membership was found for this account, so the catalog would otherwise look empty for ambiguous reasons."
+        title="Plans need a workspace"
+        description="Plan records only appear inside a workspace. You are signed in, but no workspace membership was found for this account — that is why the catalog is empty here, not a missing plan."
       />
     );
   }

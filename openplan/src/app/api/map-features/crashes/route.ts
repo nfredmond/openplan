@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { MAP_FEATURE_LAYER_LIMIT } from "@/lib/cartographic/layer-disclosure";
 import {
@@ -185,13 +186,32 @@ export async function GET(request: NextRequest) {
     // national FARS backstop, which `safety_crashes.source_id` will not accept,
     // so answering "covered" from it would promise data this layer can never
     // hold. The refusal below names every source it checked.
-    const { data: workspaceRow } = await supabase
+    const workspaceResult = await supabase
       .from("workspaces")
       .select(HOME_GEOGRAPHY_EXTENT_COLUMNS)
       .eq("id", workspaceId)
       .maybeSingle();
 
-    const homeGeography = parseWorkspaceHomeGeography(workspaceRow);
+    // `coverage_unknown` is not a neutral fallback. Its copy states that this
+    // workspace has not stated a home geography and sends the planner to the
+    // dashboard to state one — a claim about a setting, which a failed read did
+    // not establish. The same reasoning that makes an unreadable acquisition
+    // history fatal to this layer applies here: a coverage sentence that cannot
+    // be built honestly must not be built at all.
+    const scopeFailure = classifyRouteReadFailure(
+      "the workspace's home geography",
+      workspaceResult,
+      { pendingError: "Workspace geography schema is not available yet" }
+    );
+    if (scopeFailure) {
+      audit.error("crash_layer_scope_read_failed", {
+        workspaceId,
+        message: scopeFailure.message,
+      });
+      return NextResponse.json(scopeFailure.body, { status: scopeFailure.status });
+    }
+
+    const homeGeography = parseWorkspaceHomeGeography(workspaceResult.data);
     const bbox = homeGeographyBbox(homeGeography);
 
     let scopeState: CrashLayerScopeState = "coverage_unknown";

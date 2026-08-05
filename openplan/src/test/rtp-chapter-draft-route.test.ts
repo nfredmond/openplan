@@ -113,6 +113,13 @@ function installClient(overrides?: {
   chapter?: Record<string, unknown> | null;
   membership?: Record<string, unknown> | null;
   storedDraft?: Record<string, unknown> | null;
+  /**
+   * Table name -> the error that table's read answers with. Without this the
+   * harness hands back its fixture no matter what the route asks for, so the
+   * failure path the route now has is unreachable and a test over it proves
+   * nothing.
+   */
+  readErrors?: Record<string, { message: string }>;
 }) {
   const chapter = overrides?.chapter === undefined ? baseChapter : overrides.chapter;
   const membership =
@@ -123,10 +130,15 @@ function installClient(overrides?: {
   createClientMock.mockResolvedValue({
     auth: { getUser: authGetUserMock },
     from: vi.fn((table: string) => {
+      const readError = overrides?.readErrors?.[table] ?? null;
       if (table === "document_narrative_drafts") {
-        const lookup = chainable({ data: overrides?.storedDraft ?? null, error: null });
+        const lookup = chainable({
+          data: readError ? null : (overrides?.storedDraft ?? null),
+          error: readError,
+        });
         return { ...lookup, insert: draftInsertMock, update: updateMock };
       }
+      if (readError) return chainable({ data: null, error: readError });
       if (table === "rtp_cycle_chapters") return chainable({ data: chapter, error: null });
       if (table === "workspace_members") return chainable({ data: membership, error: null });
       if (table === "rtp_cycles") return chainable({ data: baseCycle, error: null });
@@ -348,6 +360,131 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
     expect(response.status).toBe(502);
     expect(draftInsertMock).not.toHaveBeenCalled();
     expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+  });
+
+  it("reads a missing drafts TABLE as a pending migration, not a server fault", async () => {
+    // The classifier this route used to carry itself matched only `column …
+    // does not exist`, `relation … does not exist` and `schema cache`, so
+    // PostgREST's table-not-found wording fell through to a bare 500 that told
+    // the operator nothing about the migration they had not applied.
+    draftSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "Could not find the table 'public.document_narrative_drafts'" },
+    });
+
+    const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      hint: expect.stringContaining("20260727000013_document_narrative_drafts"),
+    });
+  });
+
+  describe("a failed evidence read never becomes an absence in the chapter", () => {
+    /**
+     * Each of these feeds the numbered fact list the model may cite. A read that
+     * came back empty because it FAILED is indistinguishable from a cycle that
+     * genuinely has none of the thing, so the draft states the absence as
+     * settled fact in a chapter that goes out under the agency's name.
+     */
+    const EVIDENCE_READS: Array<[table: string, subject: string]> = [
+      ["project_rtp_cycle_links", "linked projects"],
+      ["engagement_campaigns", "engagement campaigns"],
+      ["county_runs", "model runs"],
+      ["project_funding_profiles", "project funding profiles"],
+      ["funding_awards", "funding awards"],
+      ["funding_opportunities", "funding opportunities"],
+      ["billing_invoice_records", "grant reimbursement invoices"],
+      ["engagement_items", "engagement comments"],
+    ];
+
+    function promptsSent(): string {
+      return generateTextMock.mock.calls
+        .map((call) => (call[0] as { prompt: string }).prompt)
+        .join("\n");
+    }
+
+    it.each(EVIDENCE_READS)("refuses to draft when %s cannot be read", async (table, subject) => {
+      installClient({ readErrors: { [table]: { message: `permission denied for table ${table}` } } });
+
+      const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({
+        error: `Failed to load ${subject}`,
+        hint: "This is a read failure, not an empty result.",
+      });
+      expect(generateTextMock).not.toHaveBeenCalled();
+      expect(draftInsertMock).not.toHaveBeenCalled();
+      expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "chapter_draft_evidence_load_failed",
+        expect.objectContaining({
+          chapterId: CHAPTER_ID,
+          subject,
+          message: `permission denied for table ${table}`,
+          pendingSchema: false,
+        })
+      );
+    });
+
+    it("never tells the model the cycle has no linked projects on a failed link read", async () => {
+      installClient({
+        readErrors: { project_rtp_cycle_links: { message: "permission denied for table project_rtp_cycle_links" } },
+      });
+
+      const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+      expect(response.status).toBe(500);
+      expect(promptsSent()).not.toContain("No projects are linked to this RTP cycle yet.");
+    });
+
+    it("never tells the model the cycle drew zero comments on a failed comment read", async () => {
+      installClient({
+        readErrors: { engagement_items: { message: "permission denied for table engagement_items" } },
+      });
+
+      const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+      expect(response.status).toBe(500);
+      expect(promptsSent()).not.toContain("0 submitted comment(s)");
+    });
+
+    it("never tells the model no claim decision is recorded when the evidence loader failed", async () => {
+      // The loader hands its failure back rather than deciding it, and the route
+      // used to drop it — turning a modelling read it could not perform into a
+      // statement that the agency has recorded no claim decision.
+      loadCountyRunModelingEvidenceMock.mockResolvedValue({
+        evidence: null,
+        error: {
+          message: "permission denied for table modeling_claim_decisions",
+          code: "42501",
+          missingSchema: false,
+        },
+      });
+
+      const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toMatchObject({ error: "Failed to load modeling evidence" });
+      expect(generateTextMock).not.toHaveBeenCalled();
+      expect(promptsSent()).not.toContain("no structured claim decision is recorded");
+    });
+
+    it("answers 503 when an evidence table is a migration behind", async () => {
+      installClient({
+        readErrors: { funding_awards: { message: 'relation "public.funding_awards" does not exist' } },
+      });
+
+      const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({
+        error: "Funding awards schema is not available yet",
+        hint: "Apply the latest Supabase migrations, then try again.",
+      });
+      expect(generateTextMock).not.toHaveBeenCalled();
+    });
   });
 });
 

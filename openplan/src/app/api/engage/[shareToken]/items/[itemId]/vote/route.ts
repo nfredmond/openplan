@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { BODY_LIMITS, readTextWithLimit } from "@/lib/http/body-limit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { buildPublicSubmissionClientFingerprint } from "@/lib/engagement/public-submit";
@@ -93,15 +94,51 @@ async function resolveVoteTarget(
   return { ok: true, campaignId: campaign.id, itemId: item.id };
 }
 
-async function readVotesCount(supabase: SupabaseServiceClient, itemId: string): Promise<number> {
-  const { data } = await supabase
+/**
+ * The item's support total, or `null` when this deployment could not read it.
+ *
+ * Zero is a real tally a participant reads next to the vote they just cast, so a
+ * failed read may not answer it — and it would contradict the vote in the same
+ * response. The vote itself is already recorded by the time this runs, so the
+ * failure must not fail the request either; the count is simply left out.
+ *
+ * A read that succeeds and still yields no number is `null` for the same reason:
+ * `votes_count` is NOT NULL DEFAULT 0 (20260717000084), so the only way to miss
+ * it is to miss the row — which is not a count of zero.
+ */
+async function readVotesCount(
+  supabase: SupabaseServiceClient,
+  audit: ReturnType<typeof createApiAuditLogger>,
+  itemId: string
+): Promise<number | null> {
+  const countResult = await supabase
     .from("engagement_items")
     .select("votes_count")
     .eq("id", itemId)
     .maybeSingle();
 
-  const votes = (data as { votes_count?: number | null } | null)?.votes_count;
-  return typeof votes === "number" && Number.isFinite(votes) ? votes : 0;
+  const failure = classifyRouteReadFailure("the support count", countResult);
+  if (failure) {
+    audit.warn("engagement_vote_count_read_failed", {
+      itemId,
+      message: failure.message,
+      pendingSchema: failure.pending,
+    });
+    return null;
+  }
+
+  const votes = (countResult.data as { votes_count?: number | null } | null)?.votes_count;
+  return typeof votes === "number" && Number.isFinite(votes) ? votes : null;
+}
+
+/**
+ * `votesCount` is present only when it was actually read. A caller cannot tell a
+ * zero it was sent from a zero we invented, so an unread count is disclosed as
+ * missing instead — both vote surfaces already keep their own optimistic count
+ * when the field is absent.
+ */
+function withVotesCount<T extends object>(body: T, votesCount: number | null) {
+  return votesCount === null ? { ...body, votesCountUnavailable: true } : { ...body, votesCount };
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -165,8 +202,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (insertError) {
       // Unique violation → the fingerprint already supported this item.
       if (insertError.code === "23505") {
-        const votesCount = await readVotesCount(supabase, target.itemId);
-        return NextResponse.json({ success: true, alreadyVoted: true, votesCount }, { status: 200 });
+        const votesCount = await readVotesCount(supabase, audit, target.itemId);
+        return NextResponse.json(withVotesCount({ success: true, alreadyVoted: true }, votesCount), {
+          status: 200,
+        });
       }
 
       audit.error("engagement_vote_insert_failed", {
@@ -178,14 +217,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to record support" }, { status: 500 });
     }
 
-    const votesCount = await readVotesCount(supabase, target.itemId);
+    const votesCount = await readVotesCount(supabase, audit, target.itemId);
 
     audit.info("engagement_vote_recorded", {
       campaignId: target.campaignId,
       itemId: target.itemId,
     });
 
-    return NextResponse.json({ success: true, alreadyVoted: false, votesCount }, { status: 201 });
+    return NextResponse.json(withVotesCount({ success: true, alreadyVoted: false }, votesCount), {
+      status: 201,
+    });
   } catch (error) {
     audit.error("engage_public_vote_unhandled_error", { error });
     return NextResponse.json({ error: "Unexpected error while recording support" }, { status: 500 });
@@ -236,10 +277,10 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to remove support" }, { status: 500 });
     }
 
-    const votesCount = await readVotesCount(supabase, target.itemId);
+    const votesCount = await readVotesCount(supabase, audit, target.itemId);
 
     return NextResponse.json(
-      { success: true, removed: (deletedRows ?? []).length > 0, votesCount },
+      withVotesCount({ success: true, removed: (deletedRows ?? []).length > 0 }, votesCount),
       { status: 200 }
     );
   } catch (error) {

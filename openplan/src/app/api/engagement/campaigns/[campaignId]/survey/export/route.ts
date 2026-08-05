@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import {
   loadSurveyResponseSessions,
@@ -85,13 +86,13 @@ function oneLine(value: string): string {
  * The file states what it contains, because the sentence shown in the UI does
  * not travel with the download.
  *
- * THE ZERO-ROW LINE IS THE HONEST ONE, AND IT IS TEMPORARY.
- * `loadSurveyResponseSessions` returns `result.data ?? []`, which collapses "the
- * read failed" and "there are no responses" into the same empty array. Those are
- * different facts and this export refuses to assert the second one it cannot
- * distinguish. When that loader learns to report its own failure (see the report
- * accompanying this change), replace the ambiguous line with the plain
- * "0 responses recorded" — and only then.
+ * THE ZERO-ROW LINE IS A CLAIM, AND THE ROUTE EARNED THE RIGHT TO MAKE IT.
+ * `loadSurveyResponseSessions` now returns `{ rows, error }`, so a failed read
+ * leaves here as a 500 and never reaches this function. Every preamble this
+ * builds therefore describes a read that succeeded, which is what licenses the
+ * plain "0 survey responses recorded". Should the loader ever go back to
+ * swallowing its error, this line becomes a lie again — that is what
+ * `survey-responses-can-be-exported.test.tsx` holds shut.
  */
 function buildSurveyRegisterPreamble(input: {
   campaignId: string;
@@ -101,15 +102,14 @@ function buildSurveyRegisterPreamble(input: {
   statusFilter: string | null;
 }): string[] {
   const scope = input.statusFilter ? ` with status "${input.statusFilter}"` : "";
-  // The ALTERNATIVE has to carry the filter too. "No survey responses have been
-  // recorded" is a claim about the whole campaign, and a planner who filtered to
-  // `flagged` would be reading it about a campaign that may have hundreds.
-  const absence = input.statusFilter
-    ? `no survey response has status "${input.statusFilter}"`
-    : "no survey responses have been recorded";
+  // A ZERO HAS TO CARRY ITS FILTER. "0 survey responses recorded" is a claim
+  // about the whole campaign, and a planner who filtered to `flagged` would be
+  // reading it about a campaign that may have hundreds.
   const countLine =
     input.rowCount === 0
-      ? `# 0 rows${scope}. Either ${absence}, or the response read failed — this export cannot yet tell those two apart, so it does not claim either.`
+      ? input.statusFilter
+        ? `# 0 rows: no survey response has status "${input.statusFilter}". This says nothing about the rest of the campaign.`
+        : "# 0 survey responses recorded."
       : `# ${input.rowCount} survey response${input.rowCount === 1 ? "" : "s"} recorded${scope}.`;
 
   return [
@@ -200,14 +200,26 @@ export async function GET(request: NextRequest, context: RouteContext) {
       access.campaign.id,
       statusFilter ? { status: statusFilter } : {}
     );
+    // A file is the worst place for a failed read to land: it leaves the product,
+    // gets attached to a Title VI or grant deliverable, and outlives every log
+    // line that could have corrected it. So the failure stops here as a status.
+    const failure = classifyRouteReadFailure("survey responses", sessions);
+    if (failure) {
+      audit.error("survey_export_read_failed", {
+        campaignId: access.campaign.id,
+        statusFilter,
+        message: failure.message,
+      });
+      return NextResponse.json(failure.body, { status: failure.status });
+    }
 
     const csv = buildSurveyRegisterCsv(
-      sessions,
+      sessions.rows,
       buildSurveyRegisterPreamble({
         campaignId: access.campaign.id,
         campaignTitle: access.campaign.title ?? "",
         exportedAt: new Date().toISOString(),
-        rowCount: sessions.length,
+        rowCount: sessions.rows.length,
         statusFilter,
       })
     );
@@ -216,7 +228,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       userId: user.id,
       campaignId: access.campaign.id,
       statusFilter,
-      rowCount: sessions.length,
+      rowCount: sessions.rows.length,
       durationMs: Date.now() - startedAt,
     });
 

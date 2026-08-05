@@ -171,8 +171,11 @@ describe("AssistantActivityPage", () => {
     await renderPage();
 
     expect(
-      screen.getByText("Planner Agent activity needs a provisioned workspace")
+      screen.getByText("Planner Agent activity needs a workspace")
     ).toBeInTheDocument();
+    // "provisioned" is founder-provisioning vocabulary from a reversed posture;
+    // the product is self-serve and the word must not come back.
+    expect(screen.queryByText(/provisioned/i)).not.toBeInTheDocument();
     expect(fromMock).not.toHaveBeenCalled();
   });
 });

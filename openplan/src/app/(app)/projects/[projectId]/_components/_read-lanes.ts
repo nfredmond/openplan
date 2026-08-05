@@ -1,4 +1,12 @@
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import type { ReadFailureLog } from "@/lib/ui/read-failures";
+
+/**
+ * Compatibility re-export. `page.tsx` still has nine lanes that classify inline
+ * rather than through `laneOutcome`, and pulls the predicate from here. Point
+ * them at `@/lib/supabase/pending-schema` and delete this line.
+ */
+export { looksLikePendingSchema };
 
 /**
  * Classify first, then collect what is left — in one call, for the ~20 read
@@ -26,30 +34,6 @@ import type { ReadFailureLog } from "@/lib/ui/read-failures";
  * trade to make twenty times.
  */
 
-/**
- * Does this message mean the deployment is behind a migration, rather than that
- * something is wrong?
- *
- * NOTE FOR WHOEVER CONSOLIDATES THIS. Five copies of this predicate exist in the
- * repo and THEY DISAGREE. `lib/models/run-launch.ts`,
- * `lib/workspaces/membership.ts` and the invoicing helpers match three patterns;
- * `rtp/_components/_packet-state.ts` adds `column ... does not exist`; this one
- * adds that plus `could not find the ... column`. So the same missing-column
- * error is an expected pending migration on two pages and a hard read failure on
- * three others.
- *
- * That is an inconsistency, not an active lie — the narrow versions
- * UNDER-classify, which surfaces a migration gap as a plain read failure, and
- * erring that way is the safe direction. Consolidating them would change
- * behaviour on three pages, so it wants its own change with its own evidence.
- * This copy preserves the projects page's existing behaviour exactly.
- */
-export function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|column .* does not exist|could not find the table|could not find the .* column|schema cache/i.test(
-    message ?? ""
-  );
-}
-
 /** Only the `error` half is read, but a whole supabase-js result must be accepted. */
 type ReadResultLike = { error?: { message?: string | null } | null; data?: unknown } | null | undefined;
 
@@ -76,20 +60,54 @@ export function collectUnlessPending(
 }
 
 /**
- * Collect the lane's failure and return its rows — the whole pattern in one
- * call, which is what most lanes actually want.
+ * Everything one lane's read establishes: its rows, and BOTH ways it can have
+ * failed to produce them.
+ *
+ * `pending` and `failed` are mutually exclusive by construction — the classifier
+ * owns the pending case and the collector takes what is left — so a caller can
+ * branch on either without testing the error a second time and reaching a
+ * different verdict than the page banner did.
+ */
+export type LaneReadOutcome = {
+  rows: unknown[];
+  /** The deployment is behind a migration: a known state with a named operator move. */
+  pending: boolean;
+  /** The read failed for anything else, and the page must disclose it. */
+  failed: boolean;
+};
+
+/**
+ * Collect the lane's failure and return its rows together with both
+ * dispositions — the whole pattern in one call.
  *
  * This REPLACES the `looksLikePendingSchema(x.error) ? [] : (x.data ?? [])`
  * ternary rather than compensating for it: rows resolve to `[]` on any failure,
  * and the failure itself is disclosed, so the emptiness is no longer being
- * offered as an answer. Callers that need to branch a panel keep using
- * `collectUnlessPending` for the flag.
+ * offered as an answer.
  *
- * Returns `unknown[]` and is cast at the call site, exactly as the code it
+ * `rows` is `unknown[]` and is cast at the call site, exactly as the code it
  * replaces did — this repo's Supabase clients are untyped by convention, so a
  * generic here would only move the cast, not earn one.
  */
+export function laneOutcome(
+  reads: ReadFailureLog,
+  label: string,
+  result: ReadResultLike
+): LaneReadOutcome {
+  const pending = looksLikePendingSchema(result?.error?.message);
+  const failed = collectUnlessPending(reads, label, result);
+  return { rows: (result?.data ?? []) as unknown[], pending, failed };
+}
+
+/**
+ * The rows alone, for the lanes that need nothing else.
+ *
+ * Deliberately still the same signature and return type it always had: only
+ * three of its nine call sites want a disposition flag, and widening it would
+ * force the other six to destructure something they never read. It delegates to
+ * `laneOutcome` so there is exactly ONE classify-then-collect path — two copies
+ * would eventually disagree about what counts as pending.
+ */
 export function laneRows(reads: ReadFailureLog, label: string, result: ReadResultLike): unknown[] {
-  collectUnlessPending(reads, label, result);
-  return (result?.data ?? []) as unknown[];
+  return laneOutcome(reads, label, result).rows;
 }

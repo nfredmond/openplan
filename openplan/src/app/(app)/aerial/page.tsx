@@ -77,8 +77,8 @@ export default async function AerialIndexPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Aerial operations"
-        title="Aerial Ops needs a provisioned workspace"
-        description="Missions and evidence packages are workspace-scoped. Create or join a workspace before planning aerial operations."
+        title="Aerial Ops needs a workspace"
+        description="Missions and evidence packages belong to a workspace. You are signed in, but this account is not in one yet — join a workspace or create one before planning aerial operations."
       />
     );
   }

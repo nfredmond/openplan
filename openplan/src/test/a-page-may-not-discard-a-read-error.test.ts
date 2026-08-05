@@ -34,10 +34,10 @@ import { describe, expect, it } from "vitest";
  * it again. It may never grow: a page that reacquires a discarded read is a
  * regression to fix, not a number to record.
  *
- * TWO MORE SHAPES ARE NOW CAUGHT, each with its own ratchet below. They were
+ * THREE MORE SHAPES ARE NOW CAUGHT, each with its own ratchet below. They were
  * measured and disclosed here rather than guarded, which meant a green run did
  * NOT mean "no page discards a read error" — the guard's name outran what it
- * checked. Both are now enforced ceilings:
+ * checked. All three are now enforced ceilings:
  *
  *   - ARRAY DESTRUCTURING. `const [{ data: a }, { data: b }] = await
  *     Promise.all([...])` never matches, because the regex anchors on `const {`.
@@ -49,25 +49,50 @@ import { describe, expect, it } from "vitest";
  *     `homeGeographyResult.error`, which is the correct shape, not the defect.
  *     A number written into a comment is a claim like any other; this one was
  *     checked.
- *   - A CLASSIFIER USED AS THE ONLY ERROR BRANCH. (16, all on the project detail
- *     page — ALL now collected, so this ratchet is empty too. An earlier count
- *     said 17 and included /rtp; that was WRONG — /rtp's
- *     ternary is a retry that preserves the original result for collection, and
- *     the detector now excludes that shape.) `looksLikePendingSchema(
+ *   - A CLASSIFIER USED AS THE ONLY ERROR BRANCH, INLINE. `looksLikePendingSchema(
  *     x.error?.message) ? [] : (x.data ?? [])` keeps the error and then throws it
  *     away: it classifies exactly one failure (a pending migration) and turns
  *     every other one — revoked grant, RLS change, dropped connection — into
- *     `[]`, i.e. an answer. 17 remain (16 on the project detail page, 1 on the
- *     RTP registry). `read-failures.ts` is "classify FIRST, then collect what is
- *     left"; these classify and never collect.
+ *     `[]`, i.e. an answer. `read-failures.ts` is "classify FIRST, then collect
+ *     what is left"; these classify and never collect. There were 16, all on the
+ *     project detail page, and all are now collected, so this ratchet is empty
+ *     too. (An earlier count said 17 and included /rtp; that was WRONG — /rtp's
+ *     ternary is a retry that preserves the original result for collection, and
+ *     the detector excludes that shape.)
+ *   - THE SAME THING IN TWO STEPS, which detector 3 could not see at all:
+ *     `const xPending = looksLikePendingSchema(r.error?.message)` on one line and
+ *     `xPending ? [] : (r.data ?? [])` fifty lines later. Detector 3 requires the
+ *     `?` within ten characters of the call, so every lane written this way read
+ *     as clean. Six of them sat on the project detail page — the corridor,
+ *     linked-cycle, workspace-cycle, report, report-artifact and crash-ingest
+ *     lanes. Five fed the spine crosslink board, which stamped each one "Not
+ *     linked" directly under a banner promising that a failed read is shown as
+ *     unavailable rather than as zero; the sixth fed the map presence panel.
+ *     All six are collected now and this ratchet starts empty.
  *
- * WHY THESE NEEDED PARSING, NOT A BIGGER REGEX. Both shapes nest: an array
+ * WHY THESE NEEDED PARSING, NOT A BIGGER REGEX. All three shapes nest: an array
  * destructure holds arbitrary object patterns, and a classifier call takes an
  * expression that can itself contain parentheses. A regex that "mostly" matches
  * would undercount silently, which is the failure mode of a guard that makes
- * people stop looking. Both detectors balance delimiters and are unit-tested
+ * people stop looking. Every detector balances delimiters and is unit-tested
  * below on positive AND negative cases, because a detector that finds nothing
  * makes every ratchet above it pass.
+ *
+ * WHAT DETECTOR 4 DELIBERATELY DOES NOT DO, and why that is the safe choice. It
+ * does NOT try to prove the flag reaches something that discloses it — flag flow
+ * through object literals, props and RSC boundaries is not statically decidable,
+ * and a guard that flags CORRECT code teaches people to override it, which is
+ * how the real finding gets ignored the next time. It checks only that the
+ * RESULT is collected, which is sufficient for honesty: once the failure is
+ * disclosed by name, an empty rows array is no longer an unqualified answer.
+ *
+ * So it misses two things, stated here rather than implied:
+ *   - a page that discloses the flag through a prop while never collecting the
+ *     result (counted as debt, though nothing false is on screen); and
+ *   - a compound condition — `pending || result.error ? [] : result.data` — where
+ *     the flag is not the whole ternary test. The project detail page's
+ *     recent-runs lane was exactly that, and it was found by reading, not by
+ *     this guard.
  *
  * THE RATCHETS START AT THEIR TRUE COUNTS, NOT AT ZERO. Registering a lane as
  * "disclosed" without fixing the panel it feeds would make the banner itself lie
@@ -76,8 +101,10 @@ import { describe, expect, it } from "vitest";
  *
  * WHY PAGES AND NOT ROUTES. An API route that swallows an error returns wrong
  * data or a wrong status — bad, but a different defect with a different fix. A
- * PAGE turns it into a sentence a human reads and believes. There are 20 more of
- * these under `src/app/api`; they want their own guard, not this one.
+ * PAGE turns it into a sentence a human reads and believes. The route side got
+ * the separate guard it wanted — `a-route-may-not-discard-a-read-error.test.ts`,
+ * whose two ratchets are also empty as of 2026-08-04. Neither file checks the
+ * other's surface, and neither should: the scopes are what keep both readable.
  *
  * TO FIX A PAGE: keep the whole result, check the error, and disclose it —
  * `ReadFailureLog` in `src/lib/ui/read-failures.ts` exists for exactly this and
@@ -187,8 +214,9 @@ describe("a page may not discard a read error", () => {
 
 
 // ---------------------------------------------------------------------------
-// SHAPE 2 — array destructuring, and SHAPE 3 — a classifier used as the only
-// error branch. Both parse rather than pattern-match; see the header.
+// SHAPE 2 — array destructuring; SHAPE 3 — a classifier used as the only error
+// branch, inline; SHAPE 4 — the same thing split across two statements. All
+// parse rather than pattern-match; see the header.
 // ---------------------------------------------------------------------------
 
 /** Index just past the delimiter that closes the one opened before `from`. */
@@ -243,6 +271,25 @@ function arrayDiscardedBindings(source: string): number {
   return count;
 }
 
+/** Identifiers are matched by name, and `$` is legal in one but special in a regex. */
+function escapeIdentifier(name: string): string {
+  return name.replace(/\$/g, "\\$");
+}
+
+/**
+ * Is the result named `subject` handed to anything that COLLECTS it?
+ *
+ * Any collector counts, not just `reads.check` literally — the projects page
+ * routes several lanes through `collectUnlessPending`, and matching only the
+ * inner call would mark every extracted lane as unfixed and freeze the ratchet,
+ * the one thing a ratchet must never be. `laneRows`/`laneOutcome` collect too
+ * but do not match this name, and do not need to: a lane routed through them
+ * keeps no `looksLikePendingSchema` call of its own for either detector to find.
+ */
+function isCollectedSomewhere(source: string, subject: string): boolean {
+  return new RegExp(`\\b\\w*(?:check|collect)\\w*\\s*\\([^)]*\\b${escapeIdentifier(subject)}\\b`, "i").test(source);
+}
+
 /**
  * `looksLikePendingSchema(x.error?.message) ? [] : (x.data ?? [])`.
  *
@@ -272,11 +319,50 @@ function classifierOnlyBranches(source: string): number {
     // longer presenting that emptiness as an answer. Counting a fixed lane would
     // make this ratchet unable to fall, which is the one thing a ratchet must do.
     const subject = /([A-Za-z_$][\w$]*)\s*\.\s*error/.exec(source.slice((match.index ?? 0) + match[0].length, end));
-    // Any COLLECTOR counts, not just `reads.check` literally. The projects page
-    // routes its lanes through `collectUnlessPending`, which classifies and then
-    // collects; matching only the inner call would mark every extracted lane as
-    // unfixed and freeze the ratchet.
-    if (subject && new RegExp(`\\b\\w*(?:check|collect)\\w*\\s*\\([^)]*\\b${subject[1]}\\b`, "i").test(source)) continue;
+    if (subject && isCollectedSomewhere(source, subject[1])) continue;
+    count += 1;
+  }
+  return count;
+}
+
+/**
+ * The same defect written across two statements:
+ *
+ *     const xPending = looksLikePendingSchema(r.error?.message);
+ *     …fifty lines later…
+ *     const rows = xPending ? [] : (r.data ?? []);
+ *
+ * Invisible to detector 3, which requires the `?` within ten characters of the
+ * call — and this is the form the project detail page's crosslink feeders used,
+ * so six lanes read as clean while the board they fed rendered "Not linked" over
+ * reads that had failed.
+ *
+ * A declaration counts only when all three hold: the classifier's argument names
+ * a result (`SUBJ.error`); the declared flag is used somewhere as a ternary
+ * condition whose FALSE branch yields `.data`; and that result is never handed
+ * to a collector. The retry shape is excluded for free, because its false branch
+ * yields the original RESULT rather than its `.data`. See the header for the two
+ * things this deliberately does not attempt.
+ */
+function twoStepClassifierOnly(source: string): number {
+  let count = 0;
+  for (const match of source.matchAll(/const\s+([A-Za-z_$][\w$]*)\s*=\s*looksLikePendingSchema\s*\(/g)) {
+    const flag = escapeIdentifier(match[1]);
+    const argStart = (match.index ?? 0) + match[0].length;
+    const argEnd = balancedEnd(source, argStart, "(", ")");
+    const subject = /([A-Za-z_$][\w$]*)\s*\.\s*error/.exec(source.slice(argStart, argEnd));
+    if (!subject) continue;
+
+    let discardsRows = false;
+    for (const use of source.matchAll(new RegExp(`\\b${flag}\\b\\s*\\?`, "g"))) {
+      const question = (use.index ?? 0) + use[0].length - 1;
+      if (/\.data\b/.test(ternaryFalseBranch(source, question))) {
+        discardsRows = true;
+        break;
+      }
+    }
+    if (!discardsRows) continue;
+    if (isCollectedSomewhere(source, subject[1])) continue;
     count += 1;
   }
   return count;
@@ -325,6 +411,14 @@ const KNOWN_ARRAY_DISCARDED: ReadonlyArray<readonly [string, number]> = [
 /** Measured 2026-08-04. May only shrink. */
 const KNOWN_CLASSIFIER_ONLY: ReadonlyArray<readonly [string, number]> = [];
 
+/**
+ * Measured 2026-08-04, AFTER the six project-detail feeders were collected. May
+ * only shrink. It starts empty because the debt it was written for was paid in
+ * the same change — which is the honest number, not an aspiration: the detector
+ * proves itself against the synthetic cases below and against the tree scan.
+ */
+const KNOWN_TWO_STEP_CLASSIFIER: ReadonlyArray<readonly [string, number]> = [];
+
 function ratchet(
   name: string,
   known: ReadonlyArray<readonly [string, number]>,
@@ -371,7 +465,14 @@ ratchet(
   "these pages use looksLikePendingSchema as the ONLY error branch — classify first, then collect what is left with ReadFailureLog"
 );
 
-describe("the two added detectors are not vacuous", () => {
+ratchet(
+  "a page may not split a classifier and its swallow across two statements",
+  KNOWN_TWO_STEP_CLASSIFIER,
+  twoStepClassifierOnly,
+  "these pages declare a pending-schema flag and later use it as the ONLY error branch — collect the result too (laneOutcome/collectUnlessPending), so the emptiness is not offered as an answer"
+);
+
+describe("the three added detectors are not vacuous", () => {
   it("counts an array binding that drops its error, and spares one that keeps it", () => {
     expect(arrayDiscardedBindings(`const [{ data: a }, { data: b }] = await Promise.all([x, y]);`)).toBe(2);
     // The correct shape must NOT be flagged.
@@ -390,6 +491,46 @@ describe("the two added detectors are not vacuous", () => {
     expect(classifierOnlyBranches(`const pending = looksLikePendingSchema(r.error?.message);\nif (!pending) reads.check("x", r);`)).toBe(0);
   });
 
+  it("counts a two-step classifier, and spares a retry, a collect, and a flag nobody branches on", () => {
+    // The shape detector 3 cannot see: the `?` is fifty lines from the call.
+    expect(
+      twoStepClassifierOnly(
+        `const xPending = looksLikePendingSchema(r.error?.message);\nconst rows = xPending ? [] : (r.data ?? []);`
+      )
+    ).toBe(1);
+
+    // THE RETRY SHAPE. The false branch yields the original RESULT, error and
+    // all, for a collector further down — flagging it would send someone to
+    // "fix" correct code, which is how a guard loses its authority.
+    expect(
+      twoStepClassifierOnly(
+        `const packetPending = looksLikePendingSchema(result.error?.message);\nconst finalResult = packetPending ? await narrowerRead() : result;`
+      )
+    ).toBe(0);
+
+    // Collected as well as classified — the fixed shape, which must be able to
+    // leave the ratchet or the ratchet cannot fall.
+    expect(
+      twoStepClassifierOnly(
+        `const xPending = looksLikePendingSchema(r.error?.message);\nconst failed = collectUnlessPending(reads, "x", r);\nconst rows = xPending ? [] : (r.data ?? []);`
+      )
+    ).toBe(0);
+
+    // A flag that only tints a panel is not this defect; nothing is answered.
+    expect(
+      twoStepClassifierOnly(
+        `const xPending = looksLikePendingSchema(r.error?.message);\nreturn <Panel pending={xPending} />;`
+      )
+    ).toBe(0);
+
+    // Nested parentheses in the argument must not break the scan.
+    expect(
+      twoStepClassifierOnly(
+        `const xPending = looksLikePendingSchema(String(r.error?.message));\nconst rows = xPending ? [] : r.data;`
+      )
+    ).toBe(1);
+  });
+
   /**
    * WHY THIS ASSERTION CHANGED, 2026-08-04. It used to require each detector to
    * find at least one instance in the tree — a reasonable floor while both had
@@ -402,7 +543,7 @@ describe("the two added detectors are not vacuous", () => {
    * of them without throwing — so a rename, a moved directory, or a parser that
    * blows up on real syntax still fails here rather than passing as "clean".
    */
-  it("guards the guard — the scan reaches real pages and both detectors run over all of them", () => {
+  it("guards the guard — the scan reaches real pages and every detector runs over all of them", () => {
     const files = pageFiles(APP_DIR);
     expect(files.length).toBeGreaterThan(40);
 
@@ -411,6 +552,7 @@ describe("the two added detectors are not vacuous", () => {
       const source = readFileSync(file, "utf8");
       expect(typeof arrayDiscardedBindings(source)).toBe("number");
       expect(typeof classifierOnlyBranches(source)).toBe("number");
+      expect(typeof twoStepClassifierOnly(source)).toBe("number");
       scanned += 1;
     }
     expect(scanned).toBe(files.length);

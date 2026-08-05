@@ -12,10 +12,14 @@
  * imports keep working.
  */
 
-/** Module tables may not be applied yet in some environments. */
-export function looksLikePendingSchema(message: string | undefined | null): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
-}
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+
+/**
+ * Compatibility re-export. Membership is not where "is this a pending migration?"
+ * is answered; two callers outside this module import it from here. Point them at
+ * `@/lib/supabase/pending-schema` and delete this line.
+ */
+export { looksLikePendingSchema };
 
 type QueryError = { message: string; code?: string | null } | null;
 

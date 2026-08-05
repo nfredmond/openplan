@@ -93,7 +93,7 @@ export default async function InvoicingPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Invoicing"
-        title="Invoicing needs a provisioned workspace"
+        title="Invoicing needs a workspace"
         description="Reimbursement invoices are workspace records. You are signed in, but no workspace membership was found for this account, so there is no invoice register to show yet."
         primaryHref="/projects"
         primaryLabel="Create or open project workspace"

@@ -5,8 +5,8 @@ import {
 } from "@/lib/geographies/place-of-record";
 
 export type ProjectSpineCrosslinkReadiness = "ready" | "attention" | "missing";
-export type ProjectSpineCrosslinkSourceState = "linked" | "empty" | "schema_pending";
-export type ProjectSpineCrosslinkBoardState = "active" | "empty" | "schema_pending";
+export type ProjectSpineCrosslinkSourceState = "linked" | "empty" | "schema_pending" | "unreadable";
+export type ProjectSpineCrosslinkBoardState = "active" | "empty" | "schema_pending" | "unreadable";
 
 export type ProjectSpineCrosslinkRowId =
   // First, because it is upstream of the other seven: a study area is what
@@ -49,6 +49,8 @@ export type ProjectSpineCrosslinkSummary = {
   emptyCount: number;
   schemaPendingCount: number;
   schemaPendingLanes: string[];
+  unreadableCount: number;
+  unreadableLanes: string[];
   leadAction: ProjectSpineCrosslinkRow;
   rows: ProjectSpineCrosslinkRow[];
 };
@@ -125,6 +127,21 @@ export type ProjectSpineCrosslinkInput = {
     verificationReadiness: "none" | "pending" | "partial" | "ready";
   };
   pendingSchema?: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>;
+  /**
+   * Lanes whose feeding read FAILED for a reason that is not a pending
+   * migration — a revoked grant, a changed policy, a dropped connection.
+   *
+   * Parallel to `pendingSchema`, and deliberately separate from it: a pending
+   * schema is a known state with a known operator move, while this one means
+   * the board cannot say what exists. The page that builds this input already
+   * discloses the same failures in its own banner; this is what stops the row
+   * from contradicting that banner with "Not linked".
+   *
+   * The `geography` key is legal but the project detail page never produces it:
+   * the study area is read with the project row itself, and a failed project
+   * read renders `ProjectUnreadableNotice` before this board is ever built.
+   */
+  unreadable?: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>;
 };
 
 /**
@@ -199,6 +216,9 @@ function formatMoney(value: number) {
 }
 
 function byPriority(row: ProjectSpineCrosslinkRow): number {
+  // Ahead of schema_pending: a lane nobody can read is the one thing on this
+  // board that has to be resolved before any other row's number means anything.
+  if (row.sourceState === "unreadable") return -2;
   if (row.sourceState === "schema_pending") return -1;
   if (row.readiness === "attention") return 0;
   if (row.readiness === "missing") return 1;
@@ -216,10 +236,42 @@ const schemaSetupNextAction: Record<ProjectSpineCrosslinkRowId, string> = {
   aerial_evidence: "Apply the aerial mission and evidence package tables, then attach only material aerial context to the project spine.",
 };
 
+/**
+ * ONE constant rather than a per-lane map like `schemaSetupNextAction` above.
+ * The pending-schema action differs per lane because each names its own
+ * migration; the unreadable action does not, because until the read works
+ * nobody can say what is missing — the move is the same in every lane.
+ */
+const unreadableNextAction =
+  "Check the read failure disclosed at the top of this page, then reload before deciding what evidence exists.";
+
 function withSourceState(
   row: Omit<ProjectSpineCrosslinkRow, "sourceState" | "sourceLabel" | "sourceDetail">,
-  pendingSchema: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>
+  pendingSchema: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>,
+  unreadable: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>
 ): ProjectSpineCrosslinkRow {
+  // UNREADABLE IS CHECKED FIRST, AND THE ORDER IS THE POINT. schema_pending is
+  // a KNOWN state with one specific operator action — apply a migration. A
+  // failed read is UNEXPECTED and names no action at all. Letting the known
+  // state win would send an operator to run a migration that is not the
+  // problem, and would hide the failure the page's own banner just disclosed.
+  if (unreadable[row.id]) {
+    return {
+      ...row,
+      readiness: "attention",
+      sourceState: "unreadable",
+      sourceLabel: "Read failed",
+      sourceDetail: "The database returned an error for this lane, so nothing shown here is a count of what exists.",
+      statusLabel: "Could not be read",
+      headline: `${row.lane} could not be read, so this board cannot say what evidence this project has in it.`,
+      evidence:
+        "OpenPlan did not treat this as missing evidence; the read failed, and what this lane holds stays unknown until it succeeds.",
+      nextAction: unreadableNextAction,
+      caveat:
+        "Do not cite this lane in any packet until it can be read — an unreadable lane is not an empty one.",
+    };
+  }
+
   if (pendingSchema[row.id]) {
     return {
       ...row,
@@ -251,11 +303,32 @@ function withSourceState(
 
 function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
   ProjectSpineCrosslinkSummary,
-  "boardState" | "stateHeadline" | "stateDetail" | "stateNextAction" | "schemaPendingLanes"
+  "boardState" | "stateHeadline" | "stateDetail" | "stateNextAction" | "schemaPendingLanes" | "unreadableLanes"
 > {
   const schemaPendingLanes = rows
     .filter((row) => row.sourceState === "schema_pending")
     .map((row) => row.lane);
+  const unreadableLanes = rows.filter((row) => row.sourceState === "unreadable").map((row) => row.lane);
+
+  if (unreadableLanes.length > 0) {
+    // Both states can be live at once, and the operator needs to hear both —
+    // but the sentence still has to END on the promise the page banner makes,
+    // because that promise is what stops an empty lane reading as an answer.
+    const alsoPending =
+      schemaPendingLanes.length > 0
+        ? ` ${schemaPendingLanes.join(", ")} ${schemaPendingLanes.length === 1 ? "is" : "are"} separately waiting on schema setup.`
+        : "";
+
+    return {
+      boardState: "unreadable",
+      stateHeadline: "Some spine lanes could not be read",
+      stateDetail: `${unreadableLanes.join(", ")} ${unreadableLanes.length === 1 ? "is" : "are"} unavailable because the read failed.${alsoPending} Anything that depends on them is shown as unavailable rather than as empty — an empty lane here would not mean the records are absent.`,
+      stateNextAction:
+        "Work the read failure named at the top of this page, reload, and only then decide which evidence is genuinely absent.",
+      schemaPendingLanes,
+      unreadableLanes,
+    };
+  }
 
   if (schemaPendingLanes.length > 0) {
     return {
@@ -265,6 +338,7 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
       stateNextAction:
         "Apply or verify the missing migration/read path, reload the project, then decide which evidence is genuinely absent.",
       schemaPendingLanes,
+      unreadableLanes,
     };
   }
 
@@ -278,6 +352,7 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
         ? `${rows[0].nextAction}`
         : "Attach the first project-linked output, then reload the spine.",
       schemaPendingLanes,
+      unreadableLanes,
     };
   }
 
@@ -288,6 +363,7 @@ function buildBoardState(rows: ProjectSpineCrosslinkRow[]): Pick<
       "Visible rows distinguish ready evidence, review items, and setup gaps so downstream packet work stays source-cited and supervised.",
     stateNextAction: "Work the first operator move in the inspector before reusing this project downstream.",
     schemaPendingLanes,
+    unreadableLanes,
   };
 }
 
@@ -358,6 +434,7 @@ export function buildProjectSpineCrosslinkSummary(
   const geographyPlaceName = input.geography.label ?? "this project's study area";
 
   const pendingSchema = input.pendingSchema ?? {};
+  const unreadable = input.unreadable ?? {};
 
   const baseRows: Array<Omit<ProjectSpineCrosslinkRow, "sourceState" | "sourceLabel" | "sourceDetail">> = [
     {
@@ -613,13 +690,14 @@ export function buildProjectSpineCrosslinkSummary(
       actionLabel: "Open aerial ops",
     },
   ];
-  const rows = baseRows.map((row) => withSourceState(row, pendingSchema));
+  const rows = baseRows.map((row) => withSourceState(row, pendingSchema, unreadable));
 
   const readyCount = rows.filter((row) => row.readiness === "ready").length;
   const attentionCount = rows.filter((row) => row.readiness === "attention").length;
   const missingCount = rows.filter((row) => row.readiness === "missing").length;
   const emptyCount = rows.filter((row) => row.sourceState === "empty").length;
   const schemaPendingCount = rows.filter((row) => row.sourceState === "schema_pending").length;
+  const unreadableCount = rows.filter((row) => row.sourceState === "unreadable").length;
   const leadAction = [...rows].sort((left, right) => byPriority(left) - byPriority(right))[0] ?? rows[0];
   const boardState = buildBoardState(rows);
 
@@ -630,6 +708,7 @@ export function buildProjectSpineCrosslinkSummary(
     missingCount,
     emptyCount,
     schemaPendingCount,
+    unreadableCount,
     leadAction,
     rows,
   };

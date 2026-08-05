@@ -151,8 +151,8 @@ export default async function GrantsPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Grants"
-        title="Grants need a provisioned workspace"
-        description="Funding opportunities, awards, and reimbursement posture only become meaningful when they are attached to a real OpenPlan workspace."
+        title="Grants need a workspace"
+        description="Funding opportunities, awards, and reimbursement posture only mean something once they sit in a workspace next to the projects they pay for. You are signed in, but this account is not in one yet."
       />
     );
   }

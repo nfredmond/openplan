@@ -15,9 +15,12 @@ import type {
 
 const RECENT_QUEUE_ACTION_WINDOW_MS = 1000 * 60 * 60 * 24;
 
-export function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache|column .* does not exist/i.test(message ?? "");
-}
+/**
+ * Compatibility re-export for the RTP packet queue page, which pulls its state
+ * helpers from this one module. Point it at `@/lib/supabase/pending-schema` and
+ * delete this line.
+ */
+export { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 export function normalizePacketAttentionFilter(value: string | null | undefined): PacketAttentionFilter {
   switch (value) {

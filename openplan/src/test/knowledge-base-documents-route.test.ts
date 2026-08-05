@@ -3,9 +3,17 @@ import { NextRequest } from "next/server";
 
 const getUserMock = vi.fn();
 const membershipMaybeSingleMock = vi.fn();
+const auditInfo = vi.fn();
+const auditWarn = vi.fn();
+const auditError = vi.fn();
 /** Every `.eq(column, value)` applied to the kb_documents list builder. */
 const kbListEqCalls: Array<[string, unknown]> = [];
 let kbListResponse: { data: unknown[]; error: null | { message: string } } = { data: [], error: null };
+
+/** The checksum dedup probe, addressable on its own so it can be made to fail. */
+let dedupResponse: { data: unknown; error: null | { message: string } } = { data: null, error: null };
+/** Service-role writes the upload performed, in order. */
+const serviceInserts: Array<{ table: string; rows: unknown }> = [];
 
 /** Awaitable filter-recording builder standing in for the kb_documents list query. */
 function kbListBuilder() {
@@ -23,7 +31,7 @@ function kbListBuilder() {
 }
 
 vi.mock("@/lib/observability/audit", () => ({
-  createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
+  createApiAuditLogger: () => ({ info: auditInfo, warn: auditWarn, error: auditError }),
 }));
 
 vi.mock("@/lib/supabase/server", () => ({
@@ -45,7 +53,33 @@ vi.mock("@/lib/supabase/server", () => ({
       };
     },
   }),
-  createServiceRoleClient: () => ({}),
+  createServiceRoleClient: () => ({
+    storage: {
+      from: () => ({
+        upload: async () => ({ error: null }),
+        remove: async () => ({ error: null }),
+      }),
+    },
+    from: (table: string) => ({
+      // The dedup probe: kb_documents filtered by workspace, checksum, status.
+      select: () => ({
+        eq: () => ({
+          eq: () => ({ eq: () => ({ limit: () => ({ maybeSingle: async () => dedupResponse }) }) }),
+        }),
+      }),
+      insert: (rows: unknown) => {
+        serviceInserts.push({ table, rows });
+        return {
+          select: () => ({
+            single: async () => ({ data: { id: "doc-1", title: "Adopted plan" }, error: null }),
+          }),
+          // kb_document_chunks is awaited directly, with no projection.
+          then: (resolve: (value: { error: null }) => unknown) => resolve({ error: null }),
+        };
+      },
+      update: () => ({ eq: async () => ({ error: null }) }),
+    }),
+  }),
 }));
 
 import { GET, POST } from "@/app/api/knowledge-base/documents/route";
@@ -57,6 +91,13 @@ function uploadRequest(query: string, headers: Record<string, string>) {
     method: "POST",
     headers,
     body: "x",
+  });
+}
+
+/** A plain-text upload that reaches extraction, so the dedup probe is exercised. */
+function uploadTextRequest() {
+  return uploadRequest(`?workspaceId=${WORKSPACE_ID}&filename=plan.txt`, {
+    "content-type": "text/plain",
   });
 }
 
@@ -92,6 +133,53 @@ describe("POST /api/knowledge-base/documents guards", () => {
       uploadRequest(`?workspaceId=${WORKSPACE_ID}`, { "content-type": "image/png" })
     );
     expect(res.status).toBe(415);
+  });
+});
+
+/**
+ * The dedup probe asks whether a byte-identical document was already ingested.
+ * It is the one read in this lane that may fail without anything being claimed
+ * — nothing in the response says the document is new — so the upload continues.
+ * What it may NOT do is fail unobserved: a probe that failed every time would
+ * turn dedup off permanently and the only evidence would be this log line.
+ */
+describe("POST /api/knowledge-base/documents — the checksum dedup probe", () => {
+  beforeEach(() => {
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+    dedupResponse = { data: null, error: null };
+    serviceInserts.length = 0;
+    auditInfo.mockClear();
+    auditWarn.mockClear();
+    auditError.mockClear();
+  });
+
+  it("returns the existing document when the probe finds one", async () => {
+    dedupResponse = { data: { id: "doc-existing", title: "Adopted plan" }, error: null };
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as { deduped?: boolean; document: { id: string } };
+    expect(body.deduped).toBe(true);
+    expect(body.document.id).toBe("doc-existing");
+    expect(serviceInserts).toEqual([]);
+  });
+
+  it("logs the failure and still ingests when the probe fails", async () => {
+    dedupResponse = { data: null, error: { message: "canceling statement due to statement timeout" } };
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(201);
+    const body = (await res.json()) as { deduped?: boolean; document: { id: string } };
+    // A failed probe must not be answered as "no duplicate exists".
+    expect(body.deduped).toBeUndefined();
+    expect(serviceInserts.map((insert) => insert.table)).toContain("kb_documents");
+
+    expect(auditWarn).toHaveBeenCalledWith("kb_document_dedup_probe_failed", {
+      message: "canceling statement due to statement timeout",
+    });
   });
 });
 

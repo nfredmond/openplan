@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   if (!membership) {
     return NextResponse.json(
       {
-        error: "No provisioned supervised pilot workspace membership found",
+        error: "No workspace membership found for this account",
         code: "NO_WORKSPACE_MEMBERSHIP",
       },
       { status: 404 }

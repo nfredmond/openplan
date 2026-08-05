@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
@@ -12,10 +13,6 @@ const workspaceIdSchema = z.string().uuid();
 const projectIdSchema = z.string().uuid();
 
 export type AnalysisProjectSelection = "explicit" | "defaulted" | "none";
-
-function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|could not find the table|schema cache/i.test(message ?? "");
-}
 
 function looksLikeOptionalSummaryFailure(error: unknown): boolean {
   if (!(error instanceof Error)) return false;

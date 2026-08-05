@@ -9,6 +9,7 @@ import {
   noRowsMatchedResponse,
   writeMatchedNoRows,
 } from "@/lib/http/write-outcome";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
   prepareWorkerZoneAttributes,
   type ZoneAttributeStamp,
@@ -248,11 +249,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return noRowsMatchedResponse({ subject: "model run", targetWasVerified: true });
     }
 
-    // Create the first stage if it doesn't exist, or reset it
-    const { data: existingStages } = await supabase
+    // Create the first stage if it doesn't exist, or reset it.
+    //
+    // THIS READ IS THE DECISION, so a failed one cannot be waved through. It
+    // arrives as the same `null` an empty table produces, and `null` picks the
+    // INSERT branch — while `model_run_stages` carries no unique key on
+    // (run_id, stage_name), only a PK on `id` and an index on (run_id,
+    // sort_order). A relaunch whose stage read failed therefore lays a second
+    // full set of queued stages over the ones already there: the run's progress
+    // list shows every stage twice, the originals keep whatever status the
+    // prior attempt left them at because the reset branch never ran, and
+    // nothing downstream can tell the duplicates apart afterwards. Refusing
+    // the relaunch is the only answer that does not corrupt the run.
+    const stagesResult = await supabase
       .from("model_run_stages")
       .select("id")
       .eq("run_id", modelRun.id);
+
+    const stagesFailure = classifyRouteReadFailure("model run stages", stagesResult);
+    if (stagesFailure) {
+      audit.error("model_run_stage_lookup_failed", {
+        modelId: access.model.id,
+        modelRunId: modelRun.id,
+        message: stagesFailure.message,
+      });
+      return NextResponse.json(stagesFailure.body, { status: stagesFailure.status });
+    }
+
+    const existingStages = stagesResult.data;
 
     // Engine-aware stage names, from the one place that owns them. The
     // behavioral_demand lane adds an ActivitySim preflight stage (owned by the

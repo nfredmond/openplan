@@ -105,7 +105,7 @@ function SignUpForm() {
               <Link href={signInHref} className="font-semibold underline underline-offset-4">
                 sign in
               </Link>
-              . Your workspace is provisioned automatically once you confirm.
+              . Your workspace is created for you as soon as you confirm.
             </p>
           </article>
         ) : null}

@@ -298,6 +298,77 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(fundingRow?.nextAction).toMatch(/funding profile, award, opportunity, and invoice tables/i);
   });
 
+  /**
+   * AN UNREADABLE LANE IS NOT AN EMPTY ONE.
+   *
+   * The board already modelled `schema_pending`, so a lane whose read FAILED
+   * fell through to the ordinary readiness verdict and rendered "No crash
+   * acquisition" / "Not linked" — on the same screen as a banner promising the
+   * reader that failed reads are shown as unavailable rather than as zero. The
+   * board contradicted the page it sits on.
+   */
+  it("renders an unreadable lane as a disclosed non-answer, not as missing evidence", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      safety: emptySafety,
+      unreadable: { safety_evidence: true },
+    });
+    const safetyRow = summary.rows.find((row) => row.id === "safety_evidence");
+
+    expect(safetyRow?.sourceState).toBe("unreadable");
+    expect(safetyRow?.sourceLabel).toBe("Read failed");
+    expect(safetyRow?.statusLabel).toBe("Could not be read");
+    // The lie that was on screen: an unreadable lane counted as evidence the
+    // project does not have, and read as a clean setup gap.
+    expect(safetyRow?.readiness).not.toBe("missing");
+    expect(safetyRow?.statusLabel).not.toBe("No crash acquisition");
+    expect(summary.missingCount).toBe(0);
+    expect(summary.unreadableCount).toBe(1);
+    expect(summary.unreadableLanes).toEqual(["Safety evidence"]);
+    expect(summary.boardState).toBe("unreadable");
+    expect(summary.stateDetail).toMatch(/an empty lane here would not mean the records are absent/i);
+    expect(safetyRow?.caveat).toMatch(/an unreadable lane is not an empty one/i);
+    expect(safetyRow?.nextAction).toMatch(/read failure disclosed at the top of this page/i);
+  });
+
+  it("puts an unreadable lane ahead of a schema-pending one in the operator queue", () => {
+    // Schema setup names a migration to apply. A failed read names nothing, and
+    // until it is resolved no other row's number is worth acting on — so it is
+    // the first move even though the pending lane has a tidier instruction.
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      safety: emptySafety,
+      pendingSchema: { scenario_sets: true },
+      unreadable: { safety_evidence: true },
+    });
+
+    expect(summary.leadAction.id).toBe("safety_evidence");
+    expect(summary.schemaPendingCount).toBe(1);
+    expect(summary.unreadableCount).toBe(1);
+    expect(summary.boardState).toBe("unreadable");
+    // Both states are live, and the operator hears both.
+    expect(summary.stateDetail).toMatch(/Scenario sets is separately waiting on schema setup/i);
+  });
+
+  it("lets the unreadable state win when a lane is both unreadable and schema-pending", () => {
+    // The two arrive together whenever a deployment is behind a migration AND
+    // something else broke. Letting the known state mask the unknown one would
+    // send an operator to run a migration that is not the problem.
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      safety: emptySafety,
+      pendingSchema: { safety_evidence: true },
+      unreadable: { safety_evidence: true },
+    });
+    const safetyRow = summary.rows.find((row) => row.id === "safety_evidence");
+
+    expect(safetyRow?.sourceState).toBe("unreadable");
+    expect(safetyRow?.statusLabel).toBe("Could not be read");
+    expect(safetyRow?.nextAction).not.toMatch(/Apply the safety crash tables/i);
+    expect(summary.schemaPendingCount).toBe(0);
+    expect(summary.unreadableCount).toBe(1);
+  });
+
   it("renders safety evidence with the reported-vs-geocoded gap disclosed, never hidden", () => {
     const summary = buildProjectSpineCrosslinkSummary(baseInput);
     const safetyRow = summary.rows.find((row) => row.id === "safety_evidence");

@@ -57,8 +57,10 @@ describe("SignInPage", () => {
     render(<SignInPage />);
 
     expect(await screen.findByText(/Account created — next step is your first workspace/i)).toBeInTheDocument();
-    // No billing/pricing step: the workspace is already provisioned.
-    expect(screen.getByText(/workspace is already provisioned/i)).toBeInTheDocument();
+    // No billing/pricing step, and no founder-provisioning vocabulary: signing
+    // up is what creates the workspace.
+    expect(screen.getByText(/workspace was created with your account/i)).toBeInTheDocument();
+    expect(screen.queryByText(/provisioned/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/billing|pricing/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Create an account/i })).toHaveAttribute(
       "href",

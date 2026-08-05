@@ -106,7 +106,7 @@ function SignInForm() {
               {inviteToken ? (
                 <li>OpenPlan will show you the invitation — what workspace, what role, who sent it — to accept or decline.</li>
               ) : (
-                <li>Your workspace is already provisioned — the dashboard opens straight into it.</li>
+                <li>Your workspace was created with your account — the dashboard opens straight into it.</li>
               )}
             </ol>
           </article>

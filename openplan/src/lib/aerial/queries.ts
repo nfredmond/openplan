@@ -9,6 +9,14 @@
  * Each loader encapsulates the `looksLikePendingSchema` guard so a not-yet-applied
  * aerial migration degrades to empty results (never a hard failure) exactly as
  * the inlined reads did.
+ *
+ * THAT IS TRUE OF THE PENDING-MIGRATION CASE ONLY, and this header used to claim
+ * it for every failure. It is not: the loaders below that feed a durable record —
+ * report source context, artifact custody, processing jobs, and the project
+ * detail page's mission/package read — return an `unreadableReason` instead,
+ * because "there is no aerial evidence" and "the aerial evidence could not be
+ * read" are different facts and only one of them is safe to put in a packet. The
+ * posture roll-ups still degrade to empty, since all they tint is a chip.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { looksLikePendingSchema } from "@/lib/models/run-launch";
@@ -142,22 +150,53 @@ export type ProjectAerialPackageRow = {
   updated_at: string;
 };
 
+export type ProjectAerialMissionsAndPackages = {
+  missions: ProjectAerialMissionRow[];
+  packages: ProjectAerialPackageRow[];
+  /** The deployment is behind an aerial migration — a known state with a known fix. */
+  pending: boolean;
+  /**
+   * Why the aerial rows could NOT be read, or null when the read succeeded —
+   * including the ordinary "this project has no aerial work" case, which is a
+   * successful read of zero rows.
+   *
+   * Separate from `pending` on purpose. A pending migration names the operator
+   * move; any other failure names none, and its caller has to be able to say
+   * "this could not be read" rather than showing a project with missions on it
+   * as having no aerial evidence at all.
+   */
+  unreadableReason: string | null;
+};
+
 export async function loadAerialMissionsAndPackagesForProject(
   supabase: AerialQuerySupabaseLike,
   projectId: string
-): Promise<{ missions: ProjectAerialMissionRow[]; packages: ProjectAerialPackageRow[]; pending: boolean }> {
+): Promise<ProjectAerialMissionsAndPackages> {
   const missionsResult = await supabase
     .from("aerial_missions")
     .select("id, title, status, mission_type, geography_label, collected_at, updated_at")
     .eq("project_id", projectId)
     .order("updated_at", { ascending: false });
   const missionsPending = looksLikePendingSchema(missionsResult.error?.message);
+  if (missionsResult.error && !missionsPending) {
+    return {
+      missions: [],
+      packages: [],
+      pending: false,
+      unreadableReason: aerialReadFailureReason(
+        "aerial missions for this project",
+        missionsResult.error.message
+      ),
+    };
+  }
   const missions = missionsPending
     ? []
     : ((missionsResult.data ?? []) as ProjectAerialMissionRow[]);
 
   const missionIds = missions.map((m) => m.id);
-  if (missionIds.length === 0) return { missions, packages: [], pending: missionsPending };
+  if (missionIds.length === 0) {
+    return { missions, packages: [], pending: missionsPending, unreadableReason: null };
+  }
 
   const packagesResult = await supabase
     .from("aerial_evidence_packages")
@@ -165,11 +204,30 @@ export async function loadAerialMissionsAndPackagesForProject(
     .in("mission_id", missionIds)
     .order("updated_at", { ascending: false });
   const packagesPending = looksLikePendingSchema(packagesResult.error?.message);
+  // Missions drop too, matching loadAerialSourceContextRowsForProject: a mission
+  // list rendered beside an unreadable package list invites the reader to
+  // conclude the missions produced nothing, which is the failure in reverse.
+  if (packagesResult.error && !packagesPending) {
+    return {
+      missions: [],
+      packages: [],
+      pending: false,
+      unreadableReason: aerialReadFailureReason(
+        "aerial evidence packages for this project",
+        packagesResult.error.message
+      ),
+    };
+  }
   const packages = packagesPending
     ? []
     : ((packagesResult.data ?? []) as ProjectAerialPackageRow[]);
 
-  return { missions, packages, pending: missionsPending || packagesPending };
+  return {
+    missions,
+    packages,
+    pending: missionsPending || packagesPending,
+    unreadableReason: null,
+  };
 }
 
 // ── Report source-context inputs for one project ─────────────────────────

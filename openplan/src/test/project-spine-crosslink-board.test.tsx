@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { ProjectSpineCrosslinkBoard } from "@/app/(app)/projects/[projectId]/_components/project-spine-crosslink-board";
@@ -199,6 +199,51 @@ describe("ProjectSpineCrosslinkBoard", () => {
     const text = renderedText();
     expect(text).toContain("showing setup actions instead of pretending those lanes are empty");
     expectNoUnsupportedClaims(text);
+  });
+
+  /**
+   * THE BADGE IS THE WHOLE DEFECT. It is computed in exactly one place, and
+   * before this it had no arm for a failed read — so a lane whose query errored
+   * fell through to `row.readiness` and was stamped "Not linked", which is a
+   * claim about the project, printed under a banner that had just said the
+   * opposite about the same read.
+   */
+  it("stamps an unreadable lane Unavailable, never Not linked", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...emptyInput,
+      unreadable: { safety_evidence: true },
+    });
+
+    render(<ProjectSpineCrosslinkBoard summary={summary} />);
+
+    expect(screen.getByText("Read failure")).toBeInTheDocument();
+    expect(screen.getByText(/Some spine lanes could not be read/i)).toBeInTheDocument();
+
+    // Scoped to the row: every OTHER lane on this empty board is legitimately
+    // "Not linked", so an unscoped assertion would pass on the defect.
+    const unreadableRow = screen.getByText("Could not be read").closest("a") as HTMLElement;
+    expect(within(unreadableRow).getByText("Unavailable")).toBeInTheDocument();
+    expect(within(unreadableRow).queryByText("Not linked")).toBeNull();
+    expect(within(unreadableRow).getByText("Read failed")).toBeInTheDocument();
+    expect(within(unreadableRow).getByText(/an unreadable lane is not an empty one/i)).toBeInTheDocument();
+
+    // The inspector gains a "failed" tile beside ready/review/missing.
+    const inspector = screen.getByText("Crosslink inspector").closest("aside") as HTMLElement;
+    expect(within(inspector).getByText("failed")).toBeInTheDocument();
+  });
+
+  it("shows no failed tile and no Unavailable badge when every read succeeded", () => {
+    // Without this the assertions above pass on a board that always warns.
+    const summary = buildProjectSpineCrosslinkSummary(emptyInput);
+
+    render(<ProjectSpineCrosslinkBoard summary={summary} />);
+
+    expect(screen.queryByText("Unavailable")).toBeNull();
+    expect(screen.queryByText("Could not be read")).toBeNull();
+    expect(screen.queryByText("Read failure")).toBeNull();
+    const inspector = screen.getByText("Crosslink inspector").closest("aside") as HTMLElement;
+    expect(within(inspector).queryByText("failed")).toBeNull();
+    expect(screen.getAllByText("Not linked").length).toBeGreaterThan(0);
   });
 
   it("keeps a worksurface loading skeleton available for source reads", () => {

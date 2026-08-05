@@ -71,6 +71,21 @@ export type SurveyQuestionAggregation = {
 };
 
 /**
+ * Rows, and the error that produced them.
+ *
+ * A READ THAT FAILED AND A CAMPAIGN WITH NOTHING RECORDED ARE DIFFERENT FACTS.
+ * These loaders used to return `result.data ?? []` and said the second one for
+ * both, which left every caller asserting "no responses" over an outage — and
+ * the survey export carried a paragraph refusing to print its own row count
+ * because of it. The error travels back so a route can answer a status and a
+ * page can disclose, rather than each caller inventing an absence.
+ *
+ * Only the `message` is carried, because that is all any caller uses: routes
+ * hand it to `classifyRouteReadFailure` and to their own audit line.
+ */
+export type SurveyRowsResult<Row> = { rows: Row[]; error: { message: string } | null };
+
+/**
  * Pure aggregation dispatch: given a question, its active options, and the
  * approved answers for it, produce the honest screening-grade aggregate. No DB.
  */
@@ -134,11 +149,17 @@ export function aggregateSurveyQuestion(
   return { questionId: question.id, questionType: question.question_type, family: def.family, prompt: question.prompt, answeredCount, aggregation };
 }
 
-/** Active question definitions + options for a campaign (definition tables). */
+/** Active question definitions + options for a campaign (definition tables).
+ * `error` is the first read that failed: a survey with no questions and a
+ * survey nobody could read look identical in the two collections. */
 export async function loadSurveyDefinition(
   supabase: QueryClient,
   campaignId: string
-): Promise<{ questions: SurveyQuestionRow[]; optionsByQuestion: Map<string, SurveyOptionRow[]> }> {
+): Promise<{
+  questions: SurveyQuestionRow[];
+  optionsByQuestion: Map<string, SurveyOptionRow[]>;
+  error: { message: string } | null;
+}> {
   const questionsResult = await supabase
     .from("engagement_survey_questions")
     .select("id, question_type, prompt, help_text, required, sort_order, config_json, category_id")
@@ -160,7 +181,11 @@ export async function loadSurveyDefinition(
     arr.push(option);
     optionsByQuestion.set(option.question_id, arr);
   }
-  return { questions, optionsByQuestion };
+  return {
+    questions,
+    optionsByQuestion,
+    error: questionsResult.error ?? optionsResult.error ?? null,
+  };
 }
 
 /**
@@ -255,14 +280,14 @@ export async function loadSurveyResponseSessions(
   supabase: QueryClient,
   campaignId: string,
   opts: { status?: SurveyResponseSessionRow["status"] } = {}
-): Promise<SurveyResponseSessionRow[]> {
+): Promise<SurveyRowsResult<SurveyResponseSessionRow>> {
   let query = supabase
     .from("engagement_survey_response_sessions")
     .select("id, status, submitted_by, source_type, moderation_notes, created_at, updated_at")
     .eq("campaign_id", campaignId);
   if (opts.status) query = query.eq("status", opts.status);
   const result = await query.order("created_at", { ascending: false });
-  return (result.data ?? []) as SurveyResponseSessionRow[];
+  return { rows: (result.data ?? []) as SurveyResponseSessionRow[], error: result.error ?? null };
 }
 
 /** Approved answers for a campaign (SENSITIVE, campaign_id-scoped, inner-joined
@@ -270,17 +295,29 @@ export async function loadSurveyResponseSessions(
 export async function loadApprovedSurveyAnswers(
   supabase: QueryClient,
   campaignId: string
-): Promise<SurveyAnswerRow[]> {
+): Promise<SurveyRowsResult<SurveyAnswerRow>> {
   const result = await supabase
     .from("engagement_survey_answers")
     .select("question_id, question_type, answer_json, answer_text, engagement_survey_response_sessions!inner(status)")
     .eq("campaign_id", campaignId)
     .eq("engagement_survey_response_sessions.status", "approved");
-  return (result.data ?? []) as SurveyAnswerRow[];
+  return { rows: (result.data ?? []) as SurveyAnswerRow[], error: result.error ?? null };
 }
 
 /** Recent response sessions for one fingerprint (SENSITIVE, campaign_id-scoped).
- * Feeds the public-submit rate limit + the one-response-per-fingerprint FLAG. */
+ * Feeds the public-submit rate limit + the one-response-per-fingerprint FLAG.
+ *
+ * THE ONE LOADER HERE THAT STILL SWALLOWS ITS ERROR, and the contract it is
+ * waiting for. It sits on a resident's SUBMISSION path, so a failed read must
+ * NOT refuse the submission — a duplicate-detection outage is not a reason to
+ * turn a member of the public away. But an empty array currently makes the
+ * route record `auto_flag_reason: null`, which is the positive claim that this
+ * response was checked against the campaign's history and is not a repeat.
+ * The decided shape is: rows + error; the submission proceeds, the route logs
+ * the failure, and the response's metadata records the duplicate check as
+ * UNVERIFIED rather than as passed. Landing it means changing
+ * `api/engage/[shareToken]/survey/submit/route.ts` in the same commit as this
+ * signature. */
 export async function loadRecentFingerprintSessions(
   supabase: QueryClient,
   campaignId: string,
@@ -550,17 +587,28 @@ export async function insertSurveyResponse(
   return { ok: true, sessionId: session.id };
 }
 
-/** Full campaign survey aggregation: approved answers dispatched per question. */
+/** Full campaign survey aggregation: approved answers dispatched per question.
+ *
+ * `error` is the first of the three reads that failed, and it is what makes
+ * `approvedResponseCount` readable: a zero with an error is not a count, it is
+ * the absence of one. A caller that renders the count without checking it is
+ * telling a planner their campaign has no approved responses on the strength of
+ * a query that never answered. */
 export async function aggregateCampaignSurvey(
   supabase: QueryClient,
   campaignId: string
-): Promise<{ approvedResponseCount: number; questions: SurveyQuestionAggregation[] }> {
-  const { questions, optionsByQuestion } = await loadSurveyDefinition(supabase, campaignId);
+): Promise<{
+  approvedResponseCount: number;
+  questions: SurveyQuestionAggregation[];
+  error: { message: string } | null;
+}> {
+  const definition = await loadSurveyDefinition(supabase, campaignId);
+  const { questions, optionsByQuestion } = definition;
   const answers = await loadApprovedSurveyAnswers(supabase, campaignId);
   const approvedSessions = await loadSurveyResponseSessions(supabase, campaignId, { status: "approved" });
 
   const answersByQuestion = new Map<string, SurveyAnswerRow[]>();
-  for (const answer of answers) {
+  for (const answer of answers.rows) {
     if (!answer.question_id) continue;
     const arr = answersByQuestion.get(answer.question_id) ?? [];
     arr.push(answer);
@@ -571,5 +619,9 @@ export async function aggregateCampaignSurvey(
     const options = (optionsByQuestion.get(question.id) ?? []).map((o) => ({ id: o.id, label: o.label }));
     return aggregateSurveyQuestion(question, options, answersByQuestion.get(question.id) ?? []);
   });
-  return { approvedResponseCount: approvedSessions.length, questions: aggregated };
+  return {
+    approvedResponseCount: approvedSessions.rows.length,
+    questions: aggregated,
+    error: definition.error ?? answers.error ?? approvedSessions.error ?? null,
+  };
 }

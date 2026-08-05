@@ -54,14 +54,22 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
-    const { data: chunks } = await supabase
+    const chunksResult = await supabase
       .from("kb_document_chunks")
       .select("id, chunk_index, page_from, page_to, token_estimate, content")
       .eq("document_id", parsedParams.data.documentId)
       .order("chunk_index", { ascending: true })
       .limit(PREVIEW_CHUNK_LIMIT);
 
-    const preview = (chunks ?? []).map((chunk) => ({
+    // The preview is an extra, so a failure here does not withhold the document
+    // — but it is disclosed rather than dropped: an empty `chunks` next to a
+    // chunk_count of 40 reads as "none of it was indexed", which is a claim this
+    // read did not establish.
+    if (chunksResult.error) {
+      audit.warn("kb_document_chunk_preview_failed", { message: chunksResult.error.message });
+    }
+
+    const preview = (chunksResult.data ?? []).map((chunk) => ({
       id: chunk.id,
       chunkIndex: chunk.chunk_index,
       pageFrom: chunk.page_from,
@@ -73,7 +81,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
           : chunk.content,
     }));
 
-    return NextResponse.json({ document, chunks: preview }, { status: 200 });
+    return NextResponse.json(
+      { document, chunks: preview, chunksUnreadable: Boolean(chunksResult.error) },
+      { status: 200 }
+    );
   } catch (error) {
     audit.error("kb_document_detail_unhandled_error", { error });
     return NextResponse.json({ error: "Unexpected error while loading document" }, { status: 500 });
@@ -115,13 +126,32 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     // Visibility proves membership, not write authority — the viewer tier can
     // read this document but may not delete it.
-    const { data: membership } = await supabase
+    const membershipResult = await supabase
       .from("workspace_members")
       .select("role")
       .eq("workspace_id", document.workspace_id)
       .eq("user_id", user.id)
       .maybeSingle();
-    if (isReadOnlyWorkspaceRole((membership as { role?: string } | null)?.role)) {
+
+    // A read that failed established no role, so the delete stops here. The
+    // earlier `{ data: membership }` form dropped the error, left the role
+    // undefined, answered "is this a viewer?" with no, and deleted the document
+    // on a permission check that never ran. 403 would be the same mistake
+    // pointing the other way: it asserts a viewer role nobody read either.
+    if (membershipResult.error) {
+      audit.error("kb_document_delete_role_check_failed", {
+        message: membershipResult.error.message,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "We could not confirm your role in this workspace, so the document was not deleted. Try again in a moment.",
+        },
+        { status: 500 }
+      );
+    }
+
+    if (isReadOnlyWorkspaceRole((membershipResult.data as { role?: string } | null)?.role)) {
       return NextResponse.json(
         { error: "Viewers have read-only access to this workspace" },
         { status: 403 }

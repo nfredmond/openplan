@@ -6,6 +6,7 @@ import { loadCampaignAccess, loadProjectAccess } from "@/lib/engagement/api";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
@@ -496,11 +497,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
 
     if (parsed.data.projectId !== undefined && nextProjectId) {
-      const { data: project } = await supabase
+      // The 404 below is a claim about workspace membership, so it may only be
+      // reached by a read that succeeded. A discarded error made a broken query
+      // say the project is not in this workspace — about a project the operator
+      // is looking at, in the workspace they are working in.
+      const projectScopeResult = await supabase
         .from("projects")
         .select("id, workspace_id")
         .eq("id", nextProjectId)
         .maybeSingle();
+
+      const projectScopeFailure = classifyRouteReadFailure("linked project", projectScopeResult);
+      if (projectScopeFailure) {
+        audit.error("campaign_patch_project_workspace_check_failed", {
+          campaignId: access.campaign.id,
+          projectId: nextProjectId,
+          message: projectScopeFailure.message,
+        });
+        return NextResponse.json(projectScopeFailure.body, { status: projectScopeFailure.status });
+      }
+
+      const project = projectScopeResult.data as { workspace_id?: string | null } | null;
       if (!project || project.workspace_id !== access.campaign.workspace_id) {
         return NextResponse.json({ error: "Project not found in this workspace" }, { status: 404 });
       }

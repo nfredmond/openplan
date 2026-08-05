@@ -195,7 +195,13 @@ const engagementCategoriesSelectMock = vi.fn(() => ({ eq: engagementCategoriesEq
 
 const engagementItemsOrderMock = vi.fn();
 const engagementItemsEqCampaignMock = vi.fn(() => ({ order: engagementItemsOrderMock }));
-const engagementItemsSelectMock = vi.fn(() => ({ eq: engagementItemsEqCampaignMock }));
+// The RTP packet reads the cycle's items across every linked campaign at once,
+// so this table answers `.in` as well as `.eq`.
+const engagementItemsInMock = vi.fn();
+const engagementItemsSelectMock = vi.fn(() => ({
+  eq: engagementItemsEqCampaignMock,
+  in: engagementItemsInMock,
+}));
 
 const artifactsSingleMock = vi.fn();
 const artifactsInsertSelectMock = vi.fn(() => ({ single: artifactsSingleMock }));
@@ -712,6 +718,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
       ],
       error: null,
     });
+
+    engagementItemsInMock.mockResolvedValue({ data: [], error: null });
 
     engagementItemsOrderMock.mockResolvedValue({
       data: [
@@ -1763,6 +1771,183 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(htmlContent).not.toMatch(/grant-award/i);
     expect(htmlContent).not.toMatch(/legal (?:sign-off|approval|determination) (?:is|was) (?:ready|complete|granted)/i);
     expect(htmlContent).not.toMatch(/autonomous (?:approval|planning|decision) (?:is|was) (?:ready|complete|granted)/i);
+  });
+
+  it("refuses the RTP packet when a linked-project funding read fails, instead of totalling it to zero", async () => {
+    // The funding snapshot is a TOTAL, so a failed read carried through as
+    // `?? []` leaves no gap a reader could notice. It prints an unfunded
+    // portfolio, permanently, in a document a funder or a board keeps.
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+        title: "RTP Packet",
+        summary: "Packet summary",
+        report_type: "rtp_packet",
+        status: "draft",
+        created_at: "2026-04-24T00:00:00.000Z",
+        generated_at: null,
+        metadata_json: {},
+      },
+      error: null,
+    });
+    projectRtpLinksOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "link-1",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          portfolio_role: "constrained",
+          priority_rationale: "Core safety project for the constrained RTP list.",
+          projects: {
+            id: "44444444-4444-4444-8444-444444444444",
+            name: "Nevada County Safety Action Program",
+            status: "active",
+            delivery_phase: "analysis",
+            summary: "Project summary",
+            updated_at: "2026-05-09T10:00:00.000Z",
+          },
+        },
+      ],
+      error: null,
+    });
+    fundingAwardsInMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table funding_awards", code: "42501" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to load RTP packet funding records" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "rtp_report_funding_load_failed",
+      expect.objectContaining({ message: "permission denied for table funding_awards", code: "42501" })
+    );
+    // And no artifact exists to state the zero: the packet was never written,
+    // and the report was not marked generated.
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses the RTP packet when the cycle's engagement read fails, instead of reporting no comments", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+        title: "RTP Packet",
+        summary: "Packet summary",
+        report_type: "rtp_packet",
+        status: "draft",
+        created_at: "2026-04-24T00:00:00.000Z",
+        generated_at: null,
+        metadata_json: {},
+      },
+      error: null,
+    });
+    rtpEngagementCampaignsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "99999999-9999-4999-8999-999999999999",
+          title: "Draft RTP listening campaign",
+          status: "active",
+          engagement_type: "comment_collection",
+          summary: "Comments on the draft plan.",
+          rtp_cycle_chapter_id: null,
+        },
+      ],
+      error: null,
+    });
+    engagementItemsInMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table engagement_items", code: "42501" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to load RTP packet engagement records" });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "rtp_report_engagement_load_failed",
+      expect.objectContaining({ message: "permission denied for table engagement_items", code: "42501" })
+    );
+    // The claim this refusal exists to prevent — a public-review section telling
+    // a board the cycle drew no comments — was never written down.
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("still generates the RTP packet when the engagement read succeeds with no rows", async () => {
+    // The other half of the distinction: a campaign that genuinely collected
+    // nothing is a fact the packet may state. Only a FAILED read is refused.
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+        title: "RTP Packet",
+        summary: "Packet summary",
+        report_type: "rtp_packet",
+        status: "draft",
+        created_at: "2026-04-24T00:00:00.000Z",
+        generated_at: null,
+        metadata_json: {},
+      },
+      error: null,
+    });
+    rtpEngagementCampaignsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "99999999-9999-4999-8999-999999999999",
+          title: "Draft RTP listening campaign",
+          status: "active",
+          engagement_type: "comment_collection",
+          summary: "Comments on the draft plan.",
+          rtp_cycle_chapter_id: null,
+        },
+      ],
+      error: null,
+    });
+    engagementItemsInMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(engagementItemsInMock).toHaveBeenCalledWith("campaign_id", [
+      "99999999-9999-4999-8999-999999999999",
+    ]);
+    expect(artifactsInsertMock).toHaveBeenCalled();
   });
 
   it("persists a compact stage-gate snapshot in artifact metadata and html", async () => {

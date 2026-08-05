@@ -450,6 +450,54 @@ describe("GET /api/map-features/counts", () => {
     );
   });
 
+  /**
+   * THE SCOPE READ, WHICH IS NOT ONE OF THE COUNTS.
+   *
+   * A failed read of the workspace's home geography resolves, if it is passed on
+   * as a row, to the same scope as a workspace that genuinely states no county.
+   * This payload is numbers, so both roads end at `equity: null` and the chip
+   * disappears either way — the false claim this route CAN make is therefore not
+   * a sentence but a silence, and the only place the difference survives is the
+   * audit line. So that is what is asserted: the failure was observed, and the
+   * count stayed unknown rather than being taken against a scope nobody read.
+   *
+   * The sibling choropleth route turns this same read into a SENTENCE and so
+   * refuses outright; see map-features-census-tracts-route.test.ts.
+   */
+  it("keeps the equity count unknown and reports the failure when the scope read fails", async () => {
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadCurrentWorkspaceMembershipMock.mockResolvedValue({
+      membership: { workspace_id: WORKSPACE_ID, role: "editor" },
+      workspace: { id: WORKSPACE_ID, name: "NCTC demo" },
+    });
+    workspaceMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for table workspaces", code: "42501" },
+    });
+    // Primed to answer 4 if it were asked. It must not be asked: a count taken
+    // against a scope that could not be read is a national or arbitrary total
+    // dressed as this workspace's.
+    equityChain = buildQueryChain({ count: 4, error: null });
+    projectsChain = buildQueryChain({ count: 1, error: null });
+
+    const response = await getCounts(bareRequest());
+
+    expect(response.status).toBe(200);
+    const payload = (await response.json()) as { equity: number | null; projects: number | null };
+    expect(payload.equity).toBeNull();
+    expect(equitySelectMock).not.toHaveBeenCalled();
+    // The layers that did read successfully still report; one unreadable scope
+    // is not a reason to blank the whole panel.
+    expect(payload.projects).toBe(1);
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "map_feature_counts_partial_failure",
+      expect.objectContaining({
+        workspaceId: WORKSPACE_ID,
+        workspaceScopeError: "permission denied for table workspaces",
+      })
+    );
+  });
+
   it("coerces a null count from Supabase to 0 on the happy path", async () => {
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({

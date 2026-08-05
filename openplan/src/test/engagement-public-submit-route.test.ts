@@ -383,6 +383,90 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     expect(response.status).toBe(404);
   });
 
+  /**
+   * "INVALID CATEGORY" IS A CLAIM ABOUT WHAT THE RESIDENT SENT.
+   *
+   * The route used to bind only `{ data: category }`, so a category lookup that
+   * FAILED was indistinguishable from one that found nothing, and a resident
+   * choosing a perfectly real category was told their submission was malformed —
+   * over a fault entirely on this side. Only a successful read that found no row
+   * may say that.
+   */
+  const CATEGORY_ID = "66666666-6666-4666-8666-666666666666";
+
+  it("does not call a resident's category invalid when the category read FAILED", async () => {
+    categoryMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table engagement_categories" },
+    });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", {
+        body: "The lighting on this path is poor.",
+        categoryId: CATEGORY_ID,
+      }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    const json = await response.json();
+    expect(json.error).not.toMatch(/invalid category/i);
+    expect(json.error).toMatch(/could not|couldn't|failed/i);
+    expect(response.status).toBe(500);
+    expect(itemInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("answers 503 when the category read failed because the schema is not applied yet", async () => {
+    categoryMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'relation "public.engagement_categories" does not exist' },
+    });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", {
+        body: "A comment filed under a category.",
+        categoryId: CATEGORY_ID,
+      }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(503);
+    const json = await response.json();
+    expect(json.error).not.toMatch(/invalid category/i);
+    expect(itemInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still answers 400 when the category read SUCCEEDED and found no such category", async () => {
+    categoryMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", {
+        body: "Filed under a category that is not this campaign's.",
+        categoryId: CATEGORY_ID,
+      }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(400);
+    const json = await response.json();
+    expect(json.error).toBe("Invalid category for this campaign");
+    expect(itemInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("accepts a submission whose category read found the category", async () => {
+    categoryMaybeSingleMock.mockResolvedValueOnce({ data: { id: CATEGORY_ID }, error: null });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", {
+        body: "Filed under a real category.",
+        categoryId: CATEGORY_ID,
+      }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(201);
+    expect(itemInsertMock).toHaveBeenCalledWith(expect.objectContaining({ category_id: CATEGORY_ID }));
+  });
+
   it("returns 400 for invalid body (empty)", async () => {
     const response = await POST(
       jsonRequest("test-share-token-12345", { body: "" }),

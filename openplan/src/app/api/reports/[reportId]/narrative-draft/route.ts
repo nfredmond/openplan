@@ -4,6 +4,7 @@ import { generateText } from "ai";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -79,10 +80,6 @@ const narrativeDraftRequestSchema = z.object({
 type RouteContext = {
   params: Promise<{ reportId: string }>;
 };
-
-function looksLikePendingSchema(message: string | null | undefined) {
-  return /column .* does not exist|schema cache|relation .* does not exist/i.test(message ?? "");
-}
 
 async function safeOptionalQuery<T>(
   run: () => PromiseLike<{ data: T; error: { message: string; code?: string | null } | null }>,

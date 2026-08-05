@@ -100,8 +100,8 @@ export default async function AerialMissionDetailPage({ params }: AerialMissionD
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Aerial operations"
-        title="Aerial mission detail needs a provisioned workspace"
-        description="Missions are workspace-scoped. Join or create a workspace to open mission records."
+        title="Aerial mission detail needs a workspace"
+        description="A mission record belongs to the workspace that planned it. You are signed in, but this account is not in a workspace yet, so there is no mission here to open."
       />
     );
   }

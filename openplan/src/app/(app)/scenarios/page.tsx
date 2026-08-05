@@ -102,8 +102,8 @@ export default async function ScenariosPage({
     return (
       <WorkspaceMembershipRequired
         moduleLabel="Scenarios"
-        title="Scenarios need a provisioned workspace"
-        description="Scenario-set records are tied to project and workspace ownership. Without a provisioned workspace, this list would only appear empty instead of telling you what is actually missing."
+        title="Scenarios need a workspace"
+        description="Scenario sets belong to the workspace that owns the projects they compare. You are signed in, but this account is not in a workspace yet — that, and not a missing scenario, is why nothing is listed here."
       />
     );
   }
