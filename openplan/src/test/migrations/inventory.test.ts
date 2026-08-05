@@ -114,16 +114,45 @@ const EXPECTED = {
   // where they were and only the RLS count moves. That +10 with +0 policies is
   // the signature of this defect class, and it is the number to look at first if
   // it ever appears again.
-  policies: 552,
-  permissive: 312,
+  //
+  // 20260805000003 (RTP financial element) adds THREE tables —
+  // rtp_horizon_bands, rtp_financial_assumptions, rtp_performance_measures —
+  // each with four PERMISSIVE policies (one read, three writes) built through a
+  // `DO` loop, so every delta below is a multiple of three:
+  //
+  //   policies            552 -> 564  (+12 = 4 x 3)
+  //   permissive          312 -> 324  (+12; all four are permissive)
+  //   restrictive         240 -> 240  (+0, and deliberately: writes are
+  //                                   role-aware at the permissive layer via
+  //                                   workspace_member_can_write, so these
+  //                                   tables need no companion RESTRICTIVE
+  //                                   gate from 20260728000006. A copy of the
+  //                                   OLD RTP policies would have shown +0 here
+  //                                   too while leaving every viewer a writer —
+  //                                   so this zero is only correct alongside
+  //                                   the +9 permissiveWrites below.)
+  //   permissiveWrites    204 -> 213  (+9 = 3 write policies x 3)
+  //   expanded            252 -> 264  (+12; all twelve are EXECUTE format in a
+  //                                   DO loop, so they exist only after
+  //                                   plpgsql expansion)
+  //   tablesWithPolicies  108 -> 111  (+3)
+  //   relations           127 -> 130  (+3)
+  //   tables              121 -> 124  (+3)
+  //   views                 6 ->   6  (+0)
+  //   rlsEnabledTables    121 -> 124  (+3; equal to `tables`, which is the
+  //                                   invariant that matters — a new table
+  //                                   missing ENABLE ROW LEVEL SECURITY shows
+  //                                   up here as tables > rlsEnabledTables)
+  policies: 564,
+  permissive: 324,
   restrictive: 240,
-  permissiveWrites: 204,
-  expanded: 252,
-  tablesWithPolicies: 108,
-  relations: 127,
-  tables: 121,
+  permissiveWrites: 213,
+  expanded: 264,
+  tablesWithPolicies: 111,
+  relations: 130,
+  tables: 124,
   views: 6,
-  rlsEnabledTables: 121,
+  rlsEnabledTables: 124,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

@@ -21,6 +21,7 @@ type SeedContext = {
   userBId: string;
   projectBId: string;
   rtpCycleBId: string;
+  rtpHorizonBandBId: string;
   countyRunBId: string;
   aerialMissionBId: string;
   kbDocumentBId: string;
@@ -443,6 +444,50 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     }),
   },
   {
+    // The financial element. These three carry what a plan says it can afford,
+    // so they are PROBED rather than excused: a cross-workspace read here would
+    // leak one agency's unadopted revenue assumptions to another.
+    table: "rtp_horizon_bands",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, rtpCycleBId, rtpHorizonBandBId, suffix }) => ({
+      id: rtpHorizonBandBId,
+      workspace_id: workspaceBId,
+      rtp_cycle_id: rtpCycleBId,
+      label: `RLS band ${suffix}`,
+      start_year: 2026,
+      end_year: 2035,
+    }),
+  },
+  {
+    table: "rtp_financial_assumptions",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    // Seeded after rtp_horizon_bands — INSERT_ORDER follows this array, and the
+    // band is a NOT NULL ON DELETE RESTRICT parent.
+    build: ({ workspaceBId, rtpCycleBId, rtpHorizonBandBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      rtp_cycle_id: rtpCycleBId,
+      horizon_band_id: rtpHorizonBandBId,
+      entry_kind: "revenue",
+      source_name: `RLS revenue ${suffix}`,
+      amount: 1000000,
+    }),
+  },
+  {
+    table: "rtp_performance_measures",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, rtpCycleBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      rtp_cycle_id: rtpCycleBId,
+      measure_key: `rls_measure_${suffix}`,
+      label: `RLS measure ${suffix}`,
+    }),
+  },
+  {
     table: "rtp_cycles",
     select: "id,workspace_id",
     expectedMemberReadable: true,
@@ -610,7 +655,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(42);
+    expect(tables).toHaveLength(45);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -646,6 +691,9 @@ describe("workspace RLS isolation inventory", () => {
       "reports",
       "rtp_cycle_chapters",
       "rtp_cycles",
+      "rtp_financial_assumptions",
+      "rtp_horizon_bands",
+      "rtp_performance_measures",
       "runs",
       "safety_crash_ingests",
       "safety_crashes",
@@ -802,6 +850,7 @@ liveDescribe("workspace RLS live isolation", () => {
       userBId: createdB.data.user.id,
       projectBId: randomUUID(),
       rtpCycleBId: randomUUID(),
+      rtpHorizonBandBId: randomUUID(),
       countyRunBId: randomUUID(),
       aerialMissionBId: randomUUID(),
       kbDocumentBId: randomUUID(),

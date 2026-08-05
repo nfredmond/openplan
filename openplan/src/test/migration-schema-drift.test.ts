@@ -11,7 +11,7 @@ import { loadSchemaInventory } from "./migrations/schema-inventory";
  * rather than by querying Postgres, because `npm run qa:gate` has no database
  * and a check that only runs nightly cannot block a merge. That is the right
  * trade, and it has one exposure: a parser can be confidently wrong. In
- * particular `plpgsql-expansion.ts` RENDERS the 252 policies that migrations
+ * particular `plpgsql-expansion.ts` RENDERS the 264 policies that migrations
  * build at runtime with `EXECUTE format(…)`, and a subtle error there would
  * make every guard above it ask a subtly wrong question, quietly.
  *
@@ -39,7 +39,7 @@ describe("migration inventory (offline)", () => {
     // Without this the live half could pass against an empty inventory.
     expect(schema.tables().length).toBeGreaterThan(110);
     expect(policies.all().length).toBeGreaterThan(500);
-    expect(policies.all().filter((policy) => policy.origin === "expanded").length).toBe(252);
+    expect(policies.all().filter((policy) => policy.origin === "expanded").length).toBe(264);
   });
 });
 

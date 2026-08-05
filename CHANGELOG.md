@@ -19,7 +19,36 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-_Nothing yet._
+**A migration is required before the app deploys:** `20260805000003`. It adds
+three tables — `rtp_horizon_bands`, `rtp_financial_assumptions`,
+`rtp_performance_measures` — and adds columns to `rtp_cycles`
+(`financial_basis_year`, `annual_inflation_rate`) and to
+`project_rtp_cycle_links` (`horizon_band_id`, `estimated_cost`,
+`cost_basis_year`, `updated_at`). Nothing is dropped or rewritten, and every
+new column is nullable, so applying it changes nothing you can see until the
+financial-element screens land.
+
+Also in this release, and visible immediately:
+
+- **Regional Transportation Plans no longer cite California statutes to
+  agencies outside California.** Project priority scores were annotated with
+  "CEQA §15064.3 · SB 743" and three other California authorities for every
+  workspace in the country, including on the public plan page an agency shares
+  with residents. Priorities now carry the policy basis of the jurisdiction
+  the workspace records as its home, and a workspace that has not recorded one
+  cites nothing rather than borrowing another state's law. If your plan pages
+  previously showed California citations and your agency is not in California,
+  they will change.
+- **The federal policy basis no longer names Justice40**, which was terminated
+  in January 2025. It cites the federal planning regulation instead.
+- **The "publish this plan" control now appears on every RTP cycle.** It was
+  previously hidden on cycles with no projects attached yet, and on cycles
+  whose project list failed to load.
+- **Plan details can be corrected after creation** — title, geography label,
+  horizon years, adoption date, public review window, summary, and map pin.
+  Previously these could only be set when the cycle was created.
+- **Public plan pages are no longer indexable by search engines.** The share
+  link is the credential, so it should reach only the people you send it to.
 
 ---
 

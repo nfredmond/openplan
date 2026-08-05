@@ -90,7 +90,24 @@ const EXPECTED_RESTRICTIVE_POLICIES = 240;
 // caveat, so a viewer who could write a row could publish their own wording as
 // the agency's official Spanish on a page that has no sign-in. "Viewer cannot
 // write" has to hold at the database, not only at whatever route ships next.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 204;
+// 213 rather than 204 since 20260805000003 added the RTP financial element —
+// `rtp_horizon_bands`, `rtp_financial_assumptions`, `rtp_performance_measures`,
+// each with role-aware INSERT, UPDATE and DELETE (3 x 3 = +9). The gated-table
+// counts above are untouched for the same reason as the translations table:
+// these three carry `workspace_member_can_write` at the PERMISSIVE layer, so
+// they never enter `tablesNeedingGate()` and need no RESTRICTIVE companion.
+//
+// That distinction is load-bearing here rather than stylistic. The natural
+// move when adding an RTP table is to copy the policies off `rtp_cycles`,
+// which are bare membership (`workspace_id IN (SELECT ...)`) and depend on the
+// 20260728000006 VALUES loop for their role check. A table added that way is
+// role-blind until someone remembers to extend that loop — and what is at
+// stake on these three is what a plan says it can afford, so a viewer able to
+// write one could alter the revenue assumption a fiscal-constraint finding is
+// computed from. Verified by mutation: swapping the INSERT policy to the
+// membership-only shape puts all three into `tablesNeedingGate()` and fails
+// three assertions in this file.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 213;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [
