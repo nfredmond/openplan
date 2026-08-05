@@ -91,6 +91,26 @@ describe("grant program catalog", () => {
       "clean-california",
       "crp",
       "protect",
+      // Washington
+      "wa-tib-uap",
+      "wa-tib-scap",
+      "wa-tib-small-city-atp",
+      "wa-tib-complete-streets",
+      "wa-wsdot-ped-bike",
+      "wa-wsdot-srts",
+      "wa-fmsib-freight",
+      // Oregon
+      "or-odot-srts",
+      "or-community-paths",
+      "or-connect-oregon",
+      "or-small-city-allotment",
+      "or-great-streets",
+      "or-tgm-planning",
+      // Colorado (Revitalizing Main Streets and "CDOT planning grants" are
+      // deliberately absent — defunded and nonexistent respectively; see
+      // src/lib/grants/programs/us-co.ts)
+      "co-mmof",
+      "co-srts",
     ]) {
       expect(keys.has(expected), `catalog includes ${expected}`).toBe(true);
     }

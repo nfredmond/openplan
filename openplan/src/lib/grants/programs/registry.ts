@@ -13,12 +13,18 @@
 
 import type { GrantProgramBundle, GrantProgramCatalogEntry } from "./types";
 import { usCaPrograms } from "./us-ca";
+import { usCoPrograms } from "./us-co";
 import { usFederalPrograms } from "./us-federal";
+import { usOrPrograms } from "./us-or";
+import { usWaPrograms } from "./us-wa";
 
 /** Every registered jurisdiction bundle, in registration order. */
 export const GRANT_PROGRAM_BUNDLES: readonly GrantProgramBundle[] = [
   usFederalPrograms,
   usCaPrograms,
+  usWaPrograms,
+  usOrPrograms,
+  usCoPrograms,
 ];
 
 /** The full catalog: every registered bundle's programs, flattened. */

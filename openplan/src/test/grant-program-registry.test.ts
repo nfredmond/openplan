@@ -9,12 +9,16 @@ import {
 } from "@/lib/grants/program-catalog";
 
 // The registry keys each jurisdiction bundle by where its programs live:
-// "us" carries federal-level entries and "us-ca" carries California
-// state-level entries. Any bundle key missing from this map, or any entry
-// filed under a bundle that does not match its level, fails below.
+// "us" carries federal-level entries and the state bundles ("us-ca", "us-wa",
+// "us-or", "us-co") carry state-level entries. Any bundle key missing from
+// this map, or any entry filed under a bundle that does not match its level,
+// fails below.
 const EXPECTED_LEVEL_BY_BUNDLE_KEY: Record<string, string> = {
   us: "federal",
   "us-ca": "state",
+  "us-wa": "state",
+  "us-or": "state",
+  "us-co": "state",
 };
 
 describe("grant program jurisdiction registry", () => {
@@ -87,11 +91,11 @@ describe("grant program jurisdiction registry", () => {
     }
   });
 
-  it("keeps the federal and California bundles registered and populated", () => {
-    const federal = GRANT_PROGRAM_BUNDLES.find((bundle) => bundle.key === "us");
-    const california = GRANT_PROGRAM_BUNDLES.find((bundle) => bundle.key === "us-ca");
-    expect(federal?.programs.length).toBeGreaterThan(0);
-    expect(california?.programs.length).toBeGreaterThan(0);
+  it("keeps every expected bundle registered and populated", () => {
+    for (const key of ["us", "us-ca", "us-wa", "us-or", "us-co"]) {
+      const bundle = GRANT_PROGRAM_BUNDLES.find((candidate) => candidate.key === key);
+      expect(bundle?.programs.length, `programs in bundle "${key}"`).toBeGreaterThan(0);
+    }
   });
 
   it("re-exports the same registry through @/lib/grants/program-catalog", () => {

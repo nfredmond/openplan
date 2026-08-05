@@ -14,6 +14,14 @@ import {
 // surface. Nothing may be hidden — a consultant legitimately works across
 // states — so the fix is labeling, and labeling has to be registry-driven.
 
+// Covered-program counts are computed from the registry, never written as
+// literals — registering another state's bundle must not break these tests.
+function bundleProgramCount(key: string): number {
+  const bundle = GRANT_PROGRAM_BUNDLES.find((candidate) => candidate.key === key);
+  if (!bundle) throw new Error(`bundle "${key}" is not registered`);
+  return bundle.programs.length;
+}
+
 const OHIO_BUNDLE: GrantProgramBundle = {
   key: "us-oh-test",
   label: "Ohio state programs",
@@ -48,7 +56,30 @@ describe("describeGrantProgramCoverage", () => {
     expect(california?.scopeLabel).toBe("California");
     expect(federal?.scope).toBe("nationwide_match");
     expect(coverage.disclosure).toBeNull();
-    expect(coverage.coveredProgramCount).toBe(GRANT_PROGRAM_CATALOG.length);
+    // Federal + California only: the other registered state bundles are not
+    // this workspace's, and must not inflate its covered count.
+    expect(coverage.coveredProgramCount).toBe(
+      bundleProgramCount("us") + bundleProgramCount("us-ca")
+    );
+    expect(coverage.coveredProgramCount).toBeLessThan(GRANT_PROGRAM_CATALOG.length);
+  });
+
+  it("marks a Washington workspace as covered by the Washington bundle, not California's", () => {
+    const coverage = describeGrantProgramCoverage({ country: "US", subdivision: "WA" });
+
+    const washington = coverage.bundles.find((bundle) => bundle.key === "us-wa");
+    const california = coverage.bundles.find((bundle) => bundle.key === "us-ca");
+    const federal = coverage.bundles.find((bundle) => bundle.key === "us");
+
+    expect(washington?.scope).toBe("jurisdiction_match");
+    expect(washington?.coversWorkspace).toBe(true);
+    expect(washington?.scopeLabel).toBe("Washington");
+    expect(california?.scope).toBe("other_jurisdiction");
+    expect(federal?.scope).toBe("nationwide_match");
+    expect(coverage.disclosure).toBeNull();
+    expect(coverage.coveredProgramCount).toBe(
+      bundleProgramCount("us") + bundleProgramCount("us-wa")
+    );
   });
 
   it("marks a state bundle as another jurisdiction's, and says no bundle is registered for this one", () => {
@@ -67,7 +98,12 @@ describe("describeGrantProgramCoverage", () => {
     expect(coverage.disclosure?.headline).toBe(
       "No grant program bundle is registered for US-OH"
     );
+    // Every scoped-elsewhere bundle is named — an Ohio workspace is owed the
+    // full list of state menus that are not its own, not just California's.
     expect(coverage.disclosure?.detail).toContain("California state programs");
+    expect(coverage.disclosure?.detail).toContain("Washington state programs");
+    expect(coverage.disclosure?.detail).toContain("Oregon state programs");
+    expect(coverage.disclosure?.detail).toContain("Colorado state programs");
     expect(coverage.disclosure?.detail).toContain("not this workspace's funding menu");
     expect(coverage.disclosure?.detail).toContain("US federal programs do apply here");
     expect(coverage.disclosure?.action).toContain("US-OH");
