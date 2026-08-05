@@ -1,6 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
+/**
+ * WHAT THIS FILE ACTUALLY GUARDS — measured by mutation on 2026-08-04, and
+ * narrower than its filename claims. Of the three lifecycle legs in its name:
+ *
+ *   - SIGNUP/BOOTSTRAP is REAL: it drives the actual
+ *     `/api/workspaces/bootstrap` handler, and changing the creator's inserted
+ *     role from "owner" to "member" fails this file (verified).
+ *   - INVITE and ROLE-UPDATE are SIMULATED: `inviteMember()` and
+ *     `updateMemberRole()` below write directly into this file's mock state.
+ *     Removing the owner-only gate from the real role-update route
+ *     (`/api/workspaces/members`) left this file green; that mutation was
+ *     caught by `workspace-members-route.test.ts` instead — verified, not
+ *     assumed. Invitation acceptance assigns its role inside the
+ *     `accept_workspace_invitation` SQL function, reachable only by live-DB
+ *     tests and by `workspace-invitation-accept-decline-route.test.ts`.
+ *
+ * Keep this file for the bootstrap leg and the cross-check that the role
+ * matrix answers follow whatever role the (simulated) lifecycle wrote. Do not
+ * read it as proof of invite or role-update authorization.
+ */
+
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();

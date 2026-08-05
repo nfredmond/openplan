@@ -69,6 +69,21 @@ describe("deriveCeqaVmtScreeningInputs — resident VMT preference", () => {
     }
   });
 
+  it("reports missing-population — not no-vmt-kpi — when a total VMT KPI has no population beside it", () => {
+    // The two refusal states carry different remediation instructions on
+    // screen: "missing-population" tells the planner which VMT KPI exists and
+    // that a population KPI would complete it; "no-vmt-kpi" says there is no
+    // VMT figure at all. Collapsing the first into the second passed every
+    // CEQA test in the tree on 2026-08-04 (mutation audit), which meant a run
+    // carrying resident_vmt could be described as having no VMT KPI — a false
+    // statement about its own inputs, with the wrong fix instruction attached.
+    const residentOnly = deriveCeqaVmtScreeningInputs([kpi("resident_vmt", 2633000)]);
+    expect(residentOnly).toEqual({ status: "missing-population", vmtKpiName: "resident_vmt" });
+
+    const genericOnly = deriveCeqaVmtScreeningInputs([kpi("daily_vmt", 260000)]);
+    expect(genericOnly).toEqual({ status: "missing-population", vmtKpiName: "daily_vmt" });
+  });
+
   it("ignores geometry-scoped resident VMT slices (not run-level)", () => {
     const result = deriveCeqaVmtScreeningInputs([
       kpi("resident_vmt_per_capita", 12.3, { geometry_ref: "corridor-1" }),
