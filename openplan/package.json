@@ -8,7 +8,7 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint",
+    "lint": "eslint --max-warnings 0",
     "test": "vitest run",
     "test:workspace-selection-hardening": "vitest run src/test/workspace-membership-current.test.ts src/test/workspace-membership-query-guard.test.ts src/test/plans-route.test.ts src/test/programs-route.test.ts src/test/funding-opportunities-route.test.ts src/test/models-route.test.ts src/test/rtp-cycles-route.test.ts src/test/engagement-campaigns-route.test.ts src/test/current-workspace-route.test.ts src/test/assistant-context-route.test.ts src/test/assistant-route.test.ts",
     "test:rls-live": "OPENPLAN_RLS_LIVE_TEST=1 vitest run src/test/rls-isolation.test.ts src/test/rls-viewer-denial.test.ts src/test/migration-schema-drift.test.ts src/test/policies-are-enforced-guard.test.ts",

@@ -10,6 +10,7 @@ import {
   classifierOnlyBranches,
   dataOnlyCount,
   droppingTheErrorBinding,
+  errorTernarySwallows,
   KEPT_ERROR,
   ratchet,
   relative,
@@ -239,6 +240,26 @@ ratchet(
   routeFiles,
   twoStepClassifierOnly,
   `these routes declare a pending-schema flag and later use it as the ONLY error branch — ${CLASSIFY_IT}`,
+  "route"
+);
+
+/**
+ * R6 — `r.error ? [] : (r.data ?? [])` (added 2026-08-04, Fable review): the
+ * error is read and the empty answer given anyway, which every other detector
+ * here reads as disclosure. One route carries it: the invoicing list resolves
+ * the workspace home geography to null on a failed read, so its response
+ * describes a workspace with no home geography instead of a failed lookup.
+ */
+const KNOWN_ERROR_TERNARY: ReadonlyArray<readonly [string, number]> = [
+  ["src/app/api/invoicing/invoices/route.ts", 1],
+];
+
+ratchet(
+  "a route may not read an error and answer empty anyway",
+  KNOWN_ERROR_TERNARY,
+  routeFiles,
+  errorTernarySwallows,
+  `these routes branch on \`.error\` and yield an empty answer on the failure side — ${CLASSIFY_IT}`,
   "route"
 );
 

@@ -8,6 +8,7 @@ import {
   countsBy,
   dataOnlyCount,
   droppingTheErrorBinding,
+  errorTernarySwallows,
   KEPT_ERROR,
   ratchet,
   relative,
@@ -331,6 +332,35 @@ ratchet(
   pageFiles,
   twoStepClassifierOnly,
   "these pages declare a pending-schema flag and later use it as the ONLY error branch — collect the result too (laneOutcome/collectUnlessPending), so the emptiness is not offered as an answer",
+  "page"
+);
+
+/**
+ * R6 — `r.error ? [] : (r.data ?? [])` (added 2026-08-04, Fable review): the
+ * error is read and the empty answer given anyway. Every other detector treats
+ * a `.error` read as disclosure; this spelling defeats that assumption and was
+ * invisible to every guard. Both listed sites resolve a value to a default when
+ * the read failed without collecting the result into the page's
+ * ReadFailureLog:
+ *
+ *   grants/page.tsx      the workspace home geography (×2) — a failed read
+ *                        renders the grants registry as though no home
+ *                        geography were configured.
+ *   projects/[projectId] the workspace row falls back to a second, narrower
+ *                        read; when BOTH fail, the page renders with a null
+ *                        workspace and neither failure is disclosed.
+ */
+const KNOWN_ERROR_TERNARY: ReadonlyArray<readonly [string, number]> = [
+  ["src/app/(app)/grants/page.tsx", 2],
+  ["src/app/(app)/projects/[projectId]/page.tsx", 1],
+];
+
+ratchet(
+  "a page may not read an error and answer empty anyway",
+  KNOWN_ERROR_TERNARY,
+  pageFiles,
+  errorTernarySwallows,
+  "these pages branch on `.error` and yield an empty answer on the failure side — collect the result with ReadFailureLog so the gap is disclosed",
   "page"
 );
 

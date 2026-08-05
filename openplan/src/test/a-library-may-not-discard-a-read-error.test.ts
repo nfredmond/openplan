@@ -8,6 +8,7 @@ import {
   classifierOnlyBranches,
   dataOnlyCount,
   droppingTheErrorBinding,
+  errorTernarySwallows,
   KEPT_ERROR,
   ratchet,
   relative,
@@ -241,6 +242,39 @@ const KNOWN_CLASSIFIER_ONLY: ReadonlyArray<readonly [string, number]> = [
  */
 const KNOWN_TWO_STEP_CLASSIFIER: ReadonlyArray<readonly [string, number]> = [];
 
+/**
+ * R6 — `r.error ? [] : (r.data ?? [])`: the error is READ and the empty answer
+ * given anyway. Added 2026-08-04 (Fable review): a fresh instance of this
+ * spelling planted on every surface was invisible to every guard, because each
+ * detector treated any `.error` read as disclosure. Measured at 10 sites /
+ * 8 files across all three surfaces; the five below are this guard's share,
+ * each looked at rather than counted:
+ *
+ *   operator-text.ts       a failed CAMPAIGN read (its `translations` read is
+ *                          properly disclosed) silently degrades the stated
+ *                          source locale to null, which can mislabel operator
+ *                          text as untranslated.
+ *   public-portal-data.ts  the submission geofence resolves to DISABLED on a
+ *                          failed read — a fail-open its own comment records as
+ *                          deliberate and undisclosed. It sits here so the
+ *                          decision stays visible; do not "fix" it without
+ *                          reopening that decision.
+ *   run-citations.ts       both halves of the funder-facing citation picker
+ *                          ("Empty on any lookup failure" — its own words, and
+ *                          a KNOWN OPEN in the A.2 handoff). A failed read
+ *                          offers a grant writer an empty citation list.
+ *   receivables-lane.tsx / reimbursement-lane.tsx
+ *                          the deliverable pickers render empty when the
+ *                          deliverables read fails.
+ */
+const KNOWN_ERROR_TERNARY: ReadonlyArray<readonly [string, number]> = [
+  ["src/app/(app)/invoicing/_components/receivables-lane.tsx", 1],
+  ["src/app/(app)/invoicing/_components/reimbursement-lane.tsx", 1],
+  ["src/lib/engagement/portal-i18n/operator-text.ts", 1],
+  ["src/lib/engagement/public-portal-data.ts", 1],
+  ["src/lib/reports/run-citations.ts", 2],
+];
+
 const RETURN_THE_ERROR =
   "do not swallow and do not throw — return the error for the caller to surface, the way loadOpportunityPursuitContext in src/lib/grants/pursuit.ts does";
 
@@ -286,6 +320,15 @@ ratchet(
   libFiles,
   twoStepClassifierOnly,
   `these files declare a pending-schema flag and later use it as the ONLY error branch — ${RETURN_THE_ERROR}`,
+  "file"
+);
+
+ratchet(
+  "a library may not read an error and answer empty anyway",
+  KNOWN_ERROR_TERNARY,
+  libFiles,
+  errorTernarySwallows,
+  `these files branch on \`.error\` and yield an empty answer on the failure side — ${RETURN_THE_ERROR}`,
   "file"
 );
 
@@ -472,6 +515,54 @@ describe("the detectors count what they say they count", () => {
   });
 
   /**
+   * R6 — the error read that swallows anyway. The exemptions are the risk
+   * here (each one is a place the detector can silently stop finding things),
+   * so every one is asserted from both sides.
+   */
+  it("R6 counts an error-ternary swallow and spares every disclosing shape", () => {
+    // The defect, in both polarities.
+    expect(
+      errorTernarySwallows(`const r = await s.from("x").select();\nconst rows = r.error ? [] : (r.data ?? []);`)
+    ).toBe(1);
+    expect(
+      errorTernarySwallows(`const r = await s.from("x").select();\nconst rows = !r.error ? (r.data ?? []) : [];`)
+    ).toBe(1);
+    // Boolean-wrapped condition.
+    expect(
+      errorTernarySwallows(`const r = await s.from("x").select();\nconst rows = Boolean(r.error) ? [] : (r.data ?? []);`)
+    ).toBe(1);
+    // Inline disclosure: the swallow branch carries the error to the caller.
+    expect(
+      errorTernarySwallows(`const r = await s.from("x").select();\nreturn r.error ? { rows: [], error: r.error } : { rows: r.data ?? [], error: null };`)
+    ).toBe(0);
+    // A named unreadable sentinel is a disclosure, not an empty answer.
+    expect(
+      errorTernarySwallows(`const r = await s.from("x").select();\nconst place = r.error ? UNREADABLE_PORTAL_PLACE : candidate(r.data);`)
+    ).toBe(0);
+    // Classify-then-collect: the bare handoff exempts, whatever the collector is named.
+    expect(
+      errorTernarySwallows(`const r = await s.from("x").select();\nclassifyRead(reads, "the rows", r);\nconst rows = r.error ? [] : (r.data ?? []);`)
+    ).toBe(0);
+    // Disclosure elsewhere in scope: a reason string, a log, a return.
+    expect(
+      errorTernarySwallows(`const r = await s.from("x").select();\nconst why = unreadableReason(r.error);\nconst rows = r.error ? [] : (r.data ?? []);`)
+    ).toBe(0);
+    // The retry shape: no branch reads .data, the whole result survives.
+    expect(
+      errorTernarySwallows(`const r = await s.from("x").select();\nconst final = r.error ? await narrowerRead() : r;`)
+    ).toBe(0);
+    // Optional chaining and nullish coalescing are not ternaries.
+    expect(errorTernarySwallows(`const m = r.error?.message ?? null;`)).toBe(0);
+    expect(errorTernarySwallows(`const e = r.error ?? fallbackError;`)).toBe(0);
+    // Two swallows of the same result cannot vouch for each other.
+    expect(
+      errorTernarySwallows(
+        `const r = await s.from("x").select();\nconst rows = r.error ? [] : (r.data ?? []);\nconst names = r.error ? [] : (r.data ?? []).map((x) => x.name);`
+      )
+    ).toBe(2);
+  });
+
+  /**
    * THE MISS THAT WAS CLOSED. This assertion used to read `.toBe(0)` and was
    * honest about it — the shape was documented as undetected. Closing it found
    * four live sites on pages whose R1 ratchet was empty. A miss recorded is not
@@ -562,6 +653,7 @@ describe("guards the guard", () => {
       ...KNOWN_ARRAY_DISCARDED,
       ...KNOWN_CLASSIFIER_ONLY,
       ...KNOWN_TWO_STEP_CLASSIFIER,
+      ...KNOWN_ERROR_TERNARY,
     ]) {
       expect(files, `${file} is on a ratchet but is not scanned`).toContain(file);
     }
@@ -577,6 +669,7 @@ describe("guards the guard", () => {
       expect(typeof arrayDiscardedBindings(source)).toBe("number");
       expect(typeof classifierOnlyBranches(source)).toBe("number");
       expect(typeof twoStepClassifierOnly(source)).toBe("number");
+      expect(typeof errorTernarySwallows(source)).toBe("number");
       scanned += 1;
     }
     expect(scanned).toBe(files.length);

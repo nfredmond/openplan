@@ -494,6 +494,151 @@ export function twoStepClassifierOnly(source: string): number {
 }
 
 // ---------------------------------------------------------------------------
+// R6 — the error read that swallows anyway
+// ---------------------------------------------------------------------------
+
+/** Both branches of the ternary whose `?` sits at `question`. */
+function ternaryBranches(source: string, question: number): { whenTrue: string; whenFalse: string } {
+  let depth = 0;
+  for (let i = question + 1; i < source.length; i += 1) {
+    const char = source[i];
+    if ("([{".includes(char)) depth += 1;
+    else if (")]}".includes(char)) {
+      if (depth === 0) break;
+      depth -= 1;
+    } else if (char === ":" && depth === 0) {
+      return { whenTrue: source.slice(question + 1, i), whenFalse: ternaryFalseBranch(source, question) };
+    }
+  }
+  return { whenTrue: "", whenFalse: "" };
+}
+
+/**
+ * `r.error ? [] : (r.data ?? [])` — and every ternary like it.
+ *
+ * WHY THIS EXISTS, AND WHY IT WAS THE SHARPEST HOLE FOUND ON 2026-08-04. Every
+ * other detector in this file treats ANY read of `SUBJ.error` as disclosure, on
+ * the stated assumption that code which has looked at the failure a second time
+ * is no longer offering an empty result as an unqualified answer. This spelling
+ * falsifies that assumption: it looks at the error and offers the empty answer
+ * anyway. It is the shape a model that has half-learned the lesson writes —
+ * "handle the error" understood as "branch on it" rather than "surface it" —
+ * and a fresh instance planted in a route, a page, a library file and a client
+ * component was invisible to every guard in this repo (Fable review, Part 1).
+ *
+ * WHAT COUNTS. A ternary whose CONDITION reads `SUBJ.error` (bare or wrapped in
+ * closing parens, e.g. `Boolean(r.error)`) and where exactly ONE branch reads
+ * `SUBJ.data`. The branch without `.data` is the answer given when the read
+ * failed; if that branch does not itself mention `SUBJ.error`, the failure is
+ * gone and whatever that branch yields — `[]`, `null`, `0`, a default object —
+ * is presented as a fact about the world.
+ *
+ * WHAT IS SPARED, so this cannot flag correct code:
+ *   - the inline disclosure: `r.error ? { rows: [], error: r.error } : …` — the
+ *     swallow branch mentions the error, so the caller still receives it;
+ *   - the retry: `r.error ? await narrowerRead() : r` — no branch reads `.data`,
+ *     the original result survives whole;
+ *   - a result that is COLLECTED (`reads.check(…, r)` or any check/collect call);
+ *   - a result used BARE anywhere in the declaration's scope — the same rule R2
+ *     applies, and it was added on the evidence of the first tree measurement:
+ *     the RTP pages hand the whole result to `classifyRead(reads, …, result)`
+ *     and THEN resolve rows with this ternary, which is the correct
+ *     classify-then-collect shape, and `classifyRead` contains neither "check"
+ *     nor "collect" for the collector heuristic to find. A detector that
+ *     flagged those 20+ correct sites would be overridden once and then
+ *     ignored. The price is the same one R2 pays and documents: a result
+ *     handed to a function that IGNORES its error is not flagged either;
+ *   - a result whose `.error` is read again somewhere else in the declaration's
+ *     scope, outside classifier arguments and outside other ternary conditions
+ *     of this same shape — a log, a returned reason, a thrown error all count;
+ *   - `r.error?.message` (optional chain) and `r.error ?? x` (nullish
+ *     coalescing), which contain no ternary at all.
+ *
+ * Scope-aware like R2/R4/R5: a later declaration of the same name cannot vouch
+ * for an earlier one.
+ */
+export function errorTernarySwallows(source: string): number {
+  const code = blankComments(source);
+  const classifierRanges = (() => {
+    const ranges: Array<readonly [number, number]> = [];
+    for (const match of code.matchAll(/looksLikePendingSchema\s*\(/g)) {
+      const start = (match.index ?? 0) + match[0].length;
+      ranges.push([start, balancedEnd(code, start, "(", ")")] as const);
+    }
+    return ranges;
+  })();
+
+  // First pass: find every error-ternary condition, per subject, so the
+  // disclosure check below can exclude ALL of them — two swallows of the same
+  // result must not vouch for each other.
+  type Candidate = { subject: string; errorReadAt: number; question: number };
+  const candidates: Candidate[] = [];
+  const conditionReadsBySubject = new Map<string, number[]>();
+
+  for (const match of code.matchAll(/([A-Za-z_$][\w$]*)\s*\.\s*error\b/g)) {
+    const subject = match[1];
+    const index = match.index ?? 0;
+    let i = index + match[0].length;
+    while (i < code.length && /[\s)]/.test(code[i])) i += 1;
+    if (code[i] !== "?" || code[i + 1] === "." || code[i + 1] === "?") continue;
+    candidates.push({ subject, errorReadAt: index, question: i });
+    const list = conditionReadsBySubject.get(subject) ?? [];
+    list.push(index);
+    conditionReadsBySubject.set(subject, list);
+  }
+
+  let count = 0;
+  for (const { subject, errorReadAt, question } of candidates) {
+    const { whenTrue, whenFalse } = ternaryBranches(code, question);
+    const dataRead = new RegExp(`\\b${escapeIdentifier(subject)}\\s*\\??\\s*\\.\\s*data\\b`);
+    const errorRead = new RegExp(`\\b${escapeIdentifier(subject)}\\s*\\??\\s*\\.\\s*error\\b`);
+    const trueHasData = dataRead.test(whenTrue);
+    const falseHasData = dataRead.test(whenFalse);
+    if (trueHasData === falseHasData) continue;
+    const swallowBranch = trueHasData ? whenFalse : whenTrue;
+    if (errorRead.test(swallowBranch)) continue;
+    // A branch that yields something NAMED for the failure is a disclosure, not
+    // a swallow — `campaignPlace.error ? UNREADABLE_PORTAL_PLACE : …` hands the
+    // caller a value whose whole meaning is "this could not be read". Found on
+    // the first tree measurement in `public-portal-data.ts`, which is the module
+    // that FIXED the public read-failure class; flagging its fix as the defect
+    // would teach everyone to ignore this detector.
+    if (/\b\w*(?:unreadable|unavailable)\w*\b/i.test(swallowBranch)) continue;
+    if (isCollectedSomewhere(code, subject)) continue;
+
+    // Disclosure elsewhere in this declaration's scope — excluding classifier
+    // arguments and every error-ternary condition of this subject.
+    const declared = declarations(code).filter((declaration) => declaration.names.includes(subject));
+    const owningIndex = declared.map((declaration) => declaration.start <= errorReadAt).lastIndexOf(true);
+    const from = owningIndex >= 0 ? declared[owningIndex].end : 0;
+    const next = declared[owningIndex + 1];
+    const to = next ? next.start : code.length;
+    const conditionReads = conditionReadsBySubject.get(subject) ?? [];
+
+    // A bare use anywhere in scope exempts — R2's rule, for R2's reason.
+    if (usesOf(code, subject, from, to).some((use) => use === null)) continue;
+
+    let disclosed = false;
+    for (const read of code.matchAll(new RegExp(`\\b${escapeIdentifier(subject)}\\s*\\??\\s*\\.\\s*error\\b`, "g"))) {
+      const readIndex = read.index ?? 0;
+      if (readIndex < from || readIndex >= to) continue;
+      if (conditionReads.includes(readIndex)) continue;
+      if (classifierRanges.some(([start, end]) => readIndex >= start && readIndex < end)) continue;
+      // A read inside one of this subject's swallow BRANCHES was already judged
+      // above (the inline-disclosure exemption); reads inside the data branch
+      // do not disclose — but distinguishing them here costs precision for no
+      // real case, so any non-condition, non-classifier read counts.
+      disclosed = true;
+      break;
+    }
+    if (disclosed) continue;
+
+    count += 1;
+  }
+  return count;
+}
+
+// ---------------------------------------------------------------------------
 // Responsiveness machinery — what an EMPTY ratchet needs to stay meaningful
 // ---------------------------------------------------------------------------
 
