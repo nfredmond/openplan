@@ -216,6 +216,36 @@ function buildTableMock(table: string) {
     };
   }
 
+  // The packet's modeling-evidence and funding lanes. Empty is the truthful
+  // answer for this fixture — its cycle cites no county run and links no project
+  // with funding records — but these must be mocked EXPLICITLY, because the
+  // route now refuses to generate when one of them errors rather than totalling
+  // an agency's evidence to zero.
+  //
+  // Until 2026-08-04 they were not mocked at all. The throw below produced
+  // `Unexpected table:`, and the route's own fallback classifier matched that
+  // phrasing and treated it as a benign absence — so all five reads failed on
+  // every run of this test while it reported a clean pass. The classifier no
+  // longer launders a harness error, which is what surfaced this.
+  if (
+    table === "county_runs" ||
+    table === "project_funding_profiles" ||
+    table === "funding_awards" ||
+    table === "funding_opportunities" ||
+    table === "billing_invoice_records"
+  ) {
+    const emptyList = { data: [] as Array<Record<string, unknown>>, error: null };
+    const chain = {
+      eq: () => chain,
+      in: () => chain,
+      order: () => chain,
+      limit: () => chain,
+      maybeSingle: async () => ({ data: null, error: null }),
+      then: (resolve: (value: typeof emptyList) => unknown) => resolve(emptyList),
+    };
+    return { select: () => chain };
+  }
+
   throw new Error(`Unexpected table: ${table}`);
 }
 
