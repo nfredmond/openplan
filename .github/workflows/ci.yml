@@ -51,8 +51,10 @@ jobs:
       # Lightweight deps only — the modeling unit tests do NOT import aequilibrae
       # (that heavy engine stays a local/deploy concern). This guards the pure
       # demand logic: LODES OD, resident VMT, OD-matrix blend, mode choice, GTFS.
+      # python-dotenv is here because four suites import main.py, whose module
+      # level imports it — verified in a clean venv with exactly this list.
       - name: Install test deps
-        run: pip install "numpy<2.1" pandas shapely requests
+        run: pip install "numpy<2.1" pandas shapely requests python-dotenv
 
       - name: Syntax check
         run: python -m py_compile *.py
