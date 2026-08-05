@@ -51,10 +51,17 @@ const OK: QueryResult = { data: [], error: null };
  * to be rewritten every time a page adds a `.limit()`, and the thing under test
  * here is what the page does with `error`, not the shape of the query.
  */
-function makeQuery(result: QueryResult) {
+let selectCalls: Record<string, string[]> = {};
+
+function makeQuery(result: QueryResult, table?: string) {
   const query: Record<string, unknown> = {};
   for (const method of ["select", "eq", "in", "not", "is", "order", "limit", "gte", "lte", "neq", "filter", "or"]) {
-    query[method] = vi.fn(() => query);
+    query[method] = vi.fn((...args: unknown[]) => {
+      if (method === "select" && table && typeof args[0] === "string") {
+        selectCalls[table] = [...(selectCalls[table] ?? []), args[0]];
+      }
+      return query;
+    });
   }
   query.maybeSingle = vi.fn(async () => result);
   query.single = vi.fn(async () => result);
@@ -63,7 +70,7 @@ function makeQuery(result: QueryResult) {
   return query;
 }
 
-const fromMock = vi.fn((table: string) => makeQuery(tableResults[table] ?? OK));
+const fromMock = vi.fn((table: string) => makeQuery(tableResults[table] ?? OK, table));
 
 const CYCLE_ROW = {
   id: "rtp-1",
@@ -110,6 +117,9 @@ vi.mock("@/components/cartographic/cartographic-surface-wide", () => ({
 
 vi.mock("@/components/rtp/rtp-chapter-controls", () => ({
   RtpChapterControls: () => <div data-testid="rtp-chapter-controls" />,
+}));
+vi.mock("@/components/rtp/rtp-cycle-details-editor", () => ({
+  RtpCycleDetailsEditor: () => <div data-testid="rtp-cycle-details-editor" />,
 }));
 vi.mock("@/components/rtp/rtp-cycle-phase-controls", () => ({
   RtpCyclePhaseControls: () => <div data-testid="rtp-cycle-phase-controls" />,
@@ -163,6 +173,7 @@ async function renderRegistry() {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  selectCalls = {};
   tableResults = {
     rtp_cycles: { data: CYCLE_ROW, error: null },
   };
@@ -242,6 +253,33 @@ describe("the publish control is reachable for every state of the project list",
     await renderDetail();
 
     expect(screen.getByTestId("rtp-public-share-controls")).toBeInTheDocument();
+  });
+});
+
+describe("a planner can correct a cycle's own details after creating it", () => {
+  /**
+   * PATCH /api/rtp-cycles/[rtpCycleId] has validated and authorized ten fields
+   * since it shipped, but its only caller sent `{ status }`. The other nine
+   * were settable once, in the creation form, and uncorrectable forever after
+   * — including BOTH public-review-window columns, which is what a public
+   * draft review runs on. The route was already built; the control was not.
+   */
+  it("mounts the details editor on the cycle page", async () => {
+    await renderDetail();
+    expect(screen.getByTestId("rtp-cycle-details-editor")).toBeInTheDocument();
+  });
+
+  it("asks the database for the map-pin columns the editor round-trips", async () => {
+    await renderDetail();
+
+    const projection = (selectCalls.rtp_cycles ?? []).join(" ");
+    // Without these two the editor would render an empty pin and write null
+    // back over a real one on the next save — silently un-pinning the plan.
+    expect(projection).toContain("anchor_latitude");
+    expect(projection).toContain("anchor_longitude");
+    // The window the draft review depends on.
+    expect(projection).toContain("public_review_open_at");
+    expect(projection).toContain("public_review_close_at");
   });
 });
 

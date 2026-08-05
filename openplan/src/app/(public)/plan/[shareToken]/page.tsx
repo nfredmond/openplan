@@ -8,7 +8,10 @@ import {
   priorityTierLabel,
 } from "@/lib/rtp/priority-scoring";
 import { describeRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-binding";
-import { loadRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-queries";
+import {
+  loadRtpPriorityFrameworkBinding,
+  type RtpPriorityFrameworkQuerySupabaseLike,
+} from "@/lib/rtp/priority-framework-queries";
 import {
   RTP_EVIDENCE_KPI_NAMES,
   formatRtpEvidenceRunDisclosureLine,
@@ -178,7 +181,10 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   // read yields an uncited binding, so the published narrative drops its
   // policy-basis clause instead of asserting another state's statutes to a
   // resident.
-  const priorityFramework = await loadRtpPriorityFrameworkBinding(supabase, cycle.workspace_id);
+  const priorityFramework = await loadRtpPriorityFrameworkBinding(
+    supabase as unknown as RtpPriorityFrameworkQuerySupabaseLike,
+    cycle.workspace_id
+  );
   reads.check("the policy basis for this plan", priorityFramework.result);
   const priorityFrameworkDisclosure = describeRtpPriorityFrameworkBinding(priorityFramework.binding);
 

@@ -16,7 +16,10 @@ import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
-import { loadRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-queries";
+import {
+  loadRtpPriorityFrameworkBinding,
+  type RtpPriorityFrameworkQuerySupabaseLike,
+} from "@/lib/rtp/priority-framework-queries";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
 import {
   buildPortfolioFundingSnapshot,
@@ -955,7 +958,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
       // Same rule as the direct export route: the packet cites only the
       // jurisdiction's own law, and cites nothing when we cannot tell.
-      const rtpPriorityFramework = await loadRtpPriorityFrameworkBinding(supabase, cycle.workspace_id);
+      const rtpPriorityFramework = await loadRtpPriorityFrameworkBinding(
+        supabase as unknown as RtpPriorityFrameworkQuerySupabaseLike,
+        cycle.workspace_id
+      );
       const html = buildRtpExportHtml({
         cycle,
         chapters,

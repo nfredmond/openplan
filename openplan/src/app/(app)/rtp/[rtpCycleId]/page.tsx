@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { ArrowLeft, FileStack, FolderKanban, MessageSquare, Route as RouteIcon, ShieldCheck } from "lucide-react";
 import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
+import { RtpCycleDetailsEditor } from "@/components/rtp/rtp-cycle-details-editor";
 import { RtpCyclePhaseControls } from "@/components/rtp/rtp-cycle-phase-controls";
 import { RtpEngagementCampaignCreator } from "@/components/rtp/rtp-engagement-campaign-creator";
 import { RtpReportCreator } from "@/components/rtp/rtp-report-creator";
@@ -73,6 +74,8 @@ type RtpCycleRow = {
   public_review_open_at: string | null;
   public_review_close_at: string | null;
   summary: string | null;
+  anchor_latitude: number | string | null;
+  anchor_longitude: number | string | null;
   public_share_token: string | null;
   public_share_enabled: boolean | null;
   created_at: string;
@@ -210,6 +213,13 @@ function classifyRead(
   return reads.check(label, result) ? "failed" : "ok";
 }
 
+/** NUMERIC columns arrive as strings from PostgREST; an unparseable one is absent, not zero. */
+function toOptionalNumber(value: number | string | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  const parsed = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function formatProjectStatusLabel(value: string | null | undefined): string {
   return titleizeRtpValue(value);
 }
@@ -240,7 +250,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   const cycleResult = await supabase
     .from("rtp_cycles")
     .select(
-      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, public_share_token, public_share_enabled, created_at, updated_at"
+      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, anchor_latitude, anchor_longitude, public_share_token, public_share_enabled, created_at, updated_at"
     )
     .eq("id", rtpCycleId)
     .eq("workspace_id", membership.workspace_id)
@@ -872,6 +882,19 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         </section>
 
         <aside className="space-y-4">
+          <RtpCycleDetailsEditor
+            rtpCycleId={cycle.id}
+            initialTitle={cycle.title}
+            initialGeographyLabel={cycle.geography_label}
+            initialHorizonStartYear={cycle.horizon_start_year}
+            initialHorizonEndYear={cycle.horizon_end_year}
+            initialAdoptionTargetDate={cycle.adoption_target_date}
+            initialPublicReviewOpenAt={cycle.public_review_open_at}
+            initialPublicReviewCloseAt={cycle.public_review_close_at}
+            initialSummary={cycle.summary}
+            initialAnchorLatitude={toOptionalNumber(cycle.anchor_latitude)}
+            initialAnchorLongitude={toOptionalNumber(cycle.anchor_longitude)}
+          />
           <RtpCyclePhaseControls
             cycle={{ id: cycle.id, status: cycle.status }}
             linkedPacketReports={packetReports.map((report) => ({ id: report.id, title: report.title }))}

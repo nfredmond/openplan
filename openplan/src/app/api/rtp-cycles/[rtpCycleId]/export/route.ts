@@ -11,7 +11,10 @@ import {
   type RtpExportCycle,
   type RtpExportLinkedProject,
 } from "@/lib/rtp/export";
-import { loadRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-queries";
+import {
+  loadRtpPriorityFrameworkBinding,
+  type RtpPriorityFrameworkQuerySupabaseLike,
+} from "@/lib/rtp/priority-framework-queries";
 
 const paramsSchema = z.object({
   rtpCycleId: z.string().uuid(),
@@ -120,7 +123,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // which drops the policy-basis clause rather than substituting a
     // jurisdiction — an export is the document a board adopts, so a wrong
     // citation is worse than no citation.
-    const priorityFramework = await loadRtpPriorityFrameworkBinding(supabase, cycle.workspace_id);
+    const priorityFramework = await loadRtpPriorityFrameworkBinding(
+      supabase as unknown as RtpPriorityFrameworkQuerySupabaseLike,
+      cycle.workspace_id
+    );
     if (priorityFramework.readFailed) {
       audit.warn("priority_framework_lookup_failed", { rtpCycleId: cycle.id });
     }
