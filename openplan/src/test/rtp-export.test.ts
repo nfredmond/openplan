@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 
+import { resolveRtpPriorityCriteria } from "@/lib/rtp/priority-frameworks";
+import { US_CA_RTP_PRIORITY_FRAMEWORK } from "@/lib/rtp/frameworks/us-ca";
+
+// A real resolved framework, not a hand-written fixture: these builders are
+// being asked to prove they render the basis they were GIVEN.
+const CA_CRITERIA = resolveRtpPriorityCriteria(US_CA_RTP_PRIORITY_FRAMEWORK);
+
+
 describe("buildRtpExportHtml", () => {
   it("adds a release-review scan summary before packet sections", () => {
     const html = buildRtpExportHtml({
+      priorityCriteria: CA_CRITERIA,
       cycle: {
         id: "cycle-scan",
         workspace_id: "workspace-scan",
@@ -67,6 +76,7 @@ describe("buildRtpExportHtml", () => {
 
   it("renders public review loop posture when provided", () => {
     const html = buildRtpExportHtml({
+      priorityCriteria: CA_CRITERIA,
       cycle: {
         id: "cycle-1",
         workspace_id: "workspace-1",
@@ -140,6 +150,7 @@ describe("buildRtpExportHtml", () => {
 
   it("exports captured RTP funding source context with explicit operator-review caveats", () => {
     const html = buildRtpExportHtml({
+      priorityCriteria: CA_CRITERIA,
       cycle: {
         id: "cycle-funding",
         workspace_id: "workspace-funding",
@@ -255,6 +266,7 @@ describe("buildRtpExportHtml", () => {
     ].join("\n");
 
     const html = buildRtpExportHtml({
+      priorityCriteria: CA_CRITERIA,
       cycle: {
         id: "cycle-standalone",
         workspace_id: "workspace-standalone",
@@ -295,6 +307,7 @@ describe("buildRtpExportHtml", () => {
 
   it("renders assignment modeling evidence beside model-backed RTP language", () => {
     const html = buildRtpExportHtml({
+      priorityCriteria: CA_CRITERIA,
       cycle: {
         id: "cycle-modeling",
         workspace_id: "workspace-modeling",
@@ -398,6 +411,7 @@ describe("buildRtpExportHtml", () => {
 
   it("renders a scan-friendly adoption record checklist in adoption readiness", () => {
     const html = buildRtpExportHtml({
+      priorityCriteria: CA_CRITERIA,
       cycle: {
         id: "cycle-adoption",
         workspace_id: "workspace-adoption",
@@ -438,6 +452,7 @@ describe("buildRtpExportHtml", () => {
 
   it("renders structured priority scores + generated rationale in the portfolio posture packet", () => {
     const html = buildRtpExportHtml({
+      priorityCriteria: CA_CRITERIA,
       cycle: {
         id: "cycle-why",
         workspace_id: "ws-why",

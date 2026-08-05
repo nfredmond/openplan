@@ -6,11 +6,11 @@ import { ChevronDown, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
-  RTP_PRIORITY_CRITERIA,
   RTP_PRIORITY_LEVELS,
   RTP_PRIORITY_LEVEL_LABEL,
   RTP_PRIORITY_RATING_SCALE,
 } from "@/lib/rtp/priority-criteria";
+import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks";
 import {
   buildRtpPriorityRationale,
   parsePriorityScores,
@@ -48,6 +48,7 @@ export function RtpPriorityScoreEditor({
   initialEvidenceRunId,
   modelingEvidence,
   evidenceRunDisclosure,
+  criteria,
 }: {
   projectId: string;
   linkId: string;
@@ -64,6 +65,12 @@ export function RtpPriorityScoreEditor({
   modelingEvidence: RtpModelingEvidence | null;
   /** Engine + status + claim tier of the currently linked run. Disclosure only — a warning never blocks or unlinks a citation. */
   evidenceRunDisclosure: RtpEvidenceRunDisclosure | null;
+  /**
+   * The criteria with the policy bases this workspace's jurisdiction may cite.
+   * Passed in rather than imported: importing the taxonomy directly is what let
+   * this editor show California statutes to every agency in the country.
+   */
+  criteria: readonly ResolvedRtpPriorityCriterion[];
 }) {
   const router = useRouter();
   const [scores, setScores] = useState<RtpPriorityScores>(initialScores ?? {});
@@ -98,7 +105,7 @@ export function RtpPriorityScoreEditor({
     }
   }
 
-  const rationale = useMemo(() => buildRtpPriorityRationale(scores), [scores]);
+  const rationale = useMemo(() => buildRtpPriorityRationale(scores, criteria), [scores, criteria]);
   const dirty = useMemo(() => serialize(scores) !== serialize(initialScores ?? {}), [scores, initialScores]);
 
   function setRating(key: string, value: number) {
@@ -231,7 +238,7 @@ export function RtpPriorityScoreEditor({
           </div>
 
           <ul className="space-y-2">
-            {RTP_PRIORITY_CRITERIA.map((criterion) => (
+            {criteria.map((criterion) => (
               <li
                 key={criterion.key}
                 className="grid gap-1.5 border-t border-border/50 pt-2 sm:grid-cols-[minmax(0,1fr)_11rem] sm:items-center"
@@ -242,7 +249,8 @@ export function RtpPriorityScoreEditor({
                     <span className="ml-1.5 font-normal text-muted-foreground">· {RTP_PRIORITY_LEVEL_LABEL[criterion.level]}</span>
                   </p>
                   <p className="text-[0.7rem] text-muted-foreground">
-                    {criterion.description} <span className="italic">({criterion.policyBasis})</span>
+                    {criterion.description}
+                    {criterion.policyBasis ? <span className="italic"> ({criterion.policyBasis})</span> : null}
                   </p>
                 </div>
                 <select

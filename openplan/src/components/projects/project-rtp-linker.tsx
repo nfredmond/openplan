@@ -14,6 +14,7 @@ import {
   rtpPortfolioRoleTone,
 } from "@/lib/rtp/catalog";
 import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score-editor";
+import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks";
 import type { RtpPriorityScores } from "@/lib/rtp/priority-scoring";
 import type { RtpEvidenceRunDisclosure, RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
@@ -58,11 +59,18 @@ export function ProjectRtpLinker({
   availableCycles,
   existingLinks,
   availableRuns,
+  criteria,
 }: {
   projectId: string;
   availableCycles: AvailableCycle[];
   existingLinks: ExistingLink[];
   availableRuns: AvailableRun[];
+  /**
+   * Criteria with the policy bases this workspace's jurisdiction may cite,
+   * resolved on the server. Threaded rather than imported so the editor cannot
+   * quietly fall back to one jurisdiction's statutes.
+   */
+  criteria: readonly ResolvedRtpPriorityCriterion[];
 }) {
   const router = useRouter();
   const [selectedCycleId, setSelectedCycleId] = useState("");
@@ -202,6 +210,7 @@ export function ProjectRtpLinker({
                     initialEvidenceRunId={link.evidenceModelRunId}
                     modelingEvidence={link.modelingEvidence}
                     evidenceRunDisclosure={link.evidenceRunDisclosure}
+                    criteria={criteria}
                   />
                 </div>
               </div>

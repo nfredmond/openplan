@@ -24,8 +24,6 @@ export interface RtpPriorityCriterion {
   /** Relative weight in the composite (higher = more influence). */
   weight: number;
   evidence: RtpPriorityEvidence;
-  /** The policy / statute this priority ties to (shown as the "basis"). */
-  policyBasis: string;
 }
 
 export const RTP_PRIORITY_MAX_RATING = 3;
@@ -38,43 +36,53 @@ export const RTP_PRIORITY_RATING_SCALE = [
   { value: 3, label: "High" },
 ] as const;
 
+/**
+ * The criteria themselves are jurisdiction-NEUTRAL. "Reduce VMT" and "maintain
+ * existing assets" are things a plan can do anywhere; only the law an agency
+ * cites for them changes with the place. So the taxonomy — keys, labels,
+ * weights, levels — lives here and is shared by every jurisdiction, while the
+ * policy basis is supplied by a framework in `priority-frameworks.ts`.
+ *
+ * Keeping the KEYS and WEIGHTS shared is what makes stored scores portable: a
+ * workspace that corrects its home geography keeps every rating it recorded,
+ * and its composite does not move. An earlier design that varied the criteria
+ * set per jurisdiction would have silently dropped ratings whose key the new
+ * set did not contain (`parsePriorityScores` skips unknown keys), and divided
+ * composites by a different denominator.
+ */
 export const RTP_PRIORITY_CRITERIA: RtpPriorityCriterion[] = [
   {
     key: "vmt_reduction",
     label: "Reduces VMT",
-    description: "Lowers vehicle-miles-traveled per capita, consistent with CEQA §15064.3 (SB 743).",
+    description: "Lowers vehicle-miles-traveled per capita.",
     level: "state",
     weight: 3,
     evidence: "modeling_vmt",
-    policyBasis: "CEQA §15064.3 · SB 743",
   },
   {
     key: "ghg_reduction",
     label: "Reduces GHG emissions",
-    description: "Cuts transportation greenhouse-gas emissions, consistent with SB 375 and the CARB Scoping Plan.",
+    description: "Cuts transportation greenhouse-gas emissions.",
     level: "state",
     weight: 3,
     evidence: "modeling_ghg",
-    policyBasis: "SB 375 · CARB Scoping Plan",
   },
   {
     key: "safety",
     label: "Improves safety",
-    description: "Reduces fatalities and severe injuries under a Safe System / Vision Zero approach.",
+    description: "Reduces fatalities and severe injuries under a Safe System approach.",
     level: "federal",
     weight: 3,
     evidence: "manual",
-    policyBasis: "SS4A · HSIP · Vision Zero",
   },
   {
     key: "equity",
     label: "Serves disadvantaged communities",
     description:
-      "Delivers benefits to underserved / disadvantaged communities. Planner attestation; not a system-verified CEJST/Justice40 or SB 535 designation.",
+      "Delivers benefits to underserved / disadvantaged communities. Planner attestation; not a system-verified designation.",
     level: "federal",
     weight: 2,
     evidence: "equity_overlay",
-    policyBasis: "Justice40 · SB 535",
   },
   {
     key: "multimodal",
@@ -83,7 +91,6 @@ export const RTP_PRIORITY_CRITERIA: RtpPriorityCriterion[] = [
     level: "state",
     weight: 2,
     evidence: "manual",
-    policyBasis: "ATP · Complete Streets (AB 1358)",
   },
   {
     key: "state_of_good_repair",
@@ -92,7 +99,6 @@ export const RTP_PRIORITY_CRITERIA: RtpPriorityCriterion[] = [
     level: "federal",
     weight: 2,
     evidence: "manual",
-    policyBasis: "IIJA state-of-good-repair",
   },
   {
     key: "community_support",
@@ -101,7 +107,6 @@ export const RTP_PRIORITY_CRITERIA: RtpPriorityCriterion[] = [
     level: "local",
     weight: 2,
     evidence: "engagement",
-    policyBasis: "Local engagement · public review",
   },
   {
     key: "regional_priority",
@@ -110,7 +115,6 @@ export const RTP_PRIORITY_CRITERIA: RtpPriorityCriterion[] = [
     level: "county",
     weight: 1,
     evidence: "manual",
-    policyBasis: "County / regional plan",
   },
 ];
 

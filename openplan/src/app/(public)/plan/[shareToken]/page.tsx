@@ -7,6 +7,8 @@ import {
   buildRtpPriorityRationale,
   priorityTierLabel,
 } from "@/lib/rtp/priority-scoring";
+import { describeRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-binding";
+import { loadRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-queries";
 import {
   RTP_EVIDENCE_KPI_NAMES,
   formatRtpEvidenceRunDisclosureLine,
@@ -53,7 +55,10 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
 
   const cycleResult = await supabase
     .from("rtp_cycles")
-    .select("id, title, status, geography_label, horizon_start_year, horizon_end_year, summary")
+    // `workspace_id` is here so the page can resolve which jurisdiction's law
+    // this plan may cite. Without it every reader was shown California
+    // statutes, whatever state the agency is in.
+    .select("id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, summary")
     .eq("public_share_token", shareToken)
     .eq("public_share_enabled", true)
     .maybeSingle();
@@ -105,6 +110,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
 
   const cycle = cycleData as {
     id: string;
+    workspace_id: string;
     title: string;
     status: string;
     geography_label: string | null;
@@ -163,12 +169,23 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   const evidenceKpiReadFailed = Boolean(kpiResult.error);
   const runTitleById = evidenceDisclosures.titleByRunId;
 
-  const portfolio = buildPortfolioPriorityNarrative(links.map((link) => link.priority_scores ?? {}));
+  // The law this agency may cite comes from its own home geography. A failed
+  // read yields an uncited binding, so the published narrative drops its
+  // policy-basis clause instead of asserting another state's statutes to a
+  // resident.
+  const priorityFramework = await loadRtpPriorityFrameworkBinding(supabase, cycle.workspace_id);
+  reads.check("the policy basis for this plan", priorityFramework.result);
+  const priorityFrameworkDisclosure = describeRtpPriorityFrameworkBinding(priorityFramework.binding);
+
+  const portfolio = buildPortfolioPriorityNarrative(
+    links.map((link) => link.priority_scores ?? {}),
+    priorityFramework.binding.criteria
+  );
 
   const rankedProjects = links
     .map((link) => {
       const project = normalizeProject(link.projects);
-      const priority = buildRtpPriorityRationale(link.priority_scores ?? {});
+      const priority = buildRtpPriorityRationale(link.priority_scores ?? {}, priorityFramework.binding.criteria);
       const evidence = link.evidence_model_run_id
         ? summarizeRtpModelingEvidence(link.evidence_model_run_id, runTitleById.get(link.evidence_model_run_id) ?? null, kpiRows, {
             kpiReadFailed: evidenceKpiReadFailed,
@@ -225,6 +242,11 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
         <section className="mt-6 rounded-lg border border-emerald-300/50 bg-emerald-50/50 p-4 dark:border-emerald-900/40 dark:bg-emerald-950/20">
           <h2 className="text-sm font-semibold text-foreground">Why this plan prioritizes what it does</h2>
           <p className="mt-1 text-sm text-muted-foreground">{portfolio.narrative}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {priorityFrameworkDisclosure.isUncited
+              ? priorityFrameworkDisclosure.detail
+              : `${priorityFrameworkDisclosure.headline}. ${priorityFrameworkDisclosure.detail}`}
+          </p>
         </section>
       ) : null}
 

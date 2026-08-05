@@ -14,6 +14,7 @@ import {
   titleizeRtpValue,
   type RtpPublicReviewSummary,
 } from "@/lib/rtp/catalog";
+import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks";
 import {
   buildPortfolioPriorityNarrative,
   buildRtpPriorityRationale,
@@ -439,6 +440,14 @@ export function buildRtpExportHtml(input: {
   chapters: RtpExportChapter[];
   linkedProjects: RtpExportNormalizedLinkedProject[];
   campaigns: RtpExportCampaign[];
+  /**
+   * The priority criteria with the policy bases this workspace's jurisdiction
+   * entitles it to cite. Required, not optional: an exported RTP is the
+   * document a board adopts, and defaulting this would let the export quietly
+   * fall back to whichever jurisdiction happened to be compiled in — which is
+   * precisely how California statutes ended up in every agency's plan.
+   */
+  priorityCriteria: readonly ResolvedRtpPriorityCriterion[];
   options?: {
     sectionKeys?: string[];
     titleSuffix?: string;
@@ -454,7 +463,7 @@ export function buildRtpExportHtml(input: {
     fundingSourceContextReadiness?: RtpExportFundingSourceContextReadiness | null;
   };
 }): string {
-  const { cycle, chapters, linkedProjects, campaigns, options } = input;
+  const { cycle, chapters, linkedProjects, campaigns, priorityCriteria, options } = input;
   const campaignsByChapter = new Map<string, RtpExportCampaign[]>();
   const cycleCampaigns: RtpExportCampaign[] = [];
   for (const campaign of campaigns) {
@@ -540,7 +549,7 @@ export function buildRtpExportHtml(input: {
       priorityTierCounts[computeRtpPriorityScore(link.priority_scores ?? {}).tier] += 1;
     }
     const priorityRollup = `${priorityTierCounts.high} high · ${priorityTierCounts.medium} moderate · ${priorityTierCounts.low} lower · ${priorityTierCounts.unscored} unscored`;
-    const portfolioPriority = buildPortfolioPriorityNarrative(linkedProjects.map((link) => link.priority_scores ?? {}));
+    const portfolioPriority = buildPortfolioPriorityNarrative(linkedProjects.map((link) => link.priority_scores ?? {}), priorityCriteria);
 
     sections.push(`
   <section class="section">
@@ -551,7 +560,7 @@ export function buildRtpExportHtml(input: {
     ${linkedProjects.length === 0 ? '<p class="muted">No linked projects yet.</p>' : ""}
     ${linkedProjects
       .map((link) => {
-        const priority = buildRtpPriorityRationale(link.priority_scores ?? {});
+        const priority = buildRtpPriorityRationale(link.priority_scores ?? {}, priorityCriteria);
         const scored = priority.summary.scoredCriteria > 0;
         const priorityMeta = scored
           ? ` · Priority ${priority.summary.composite}/100 (${esc(priorityTierLabel(priority.summary.tier))})`

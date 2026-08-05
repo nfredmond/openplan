@@ -45,6 +45,7 @@ import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
 import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, parseSortableDate, submittalPriority } from "./_components/_ordering";
 import { createClient } from "@/lib/supabase/server";
+import { resolveRtpPriorityFrameworkForWorkspace } from "@/lib/rtp/priority-framework-binding";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   loadProjectStageGateBoard,
@@ -203,6 +204,13 @@ export default async function ProjectDetailPage({
   // board and the disclosure above it can never describe different templates.
   const stageGateResolution = resolveWorkspaceStageGateBinding(workspaceData);
   const stageGateBinding = stageGateResolution.kind === "resolved" ? stageGateResolution.binding : null;
+
+  // The same jurisdiction answers a second question: which policy bases this
+  // workspace's RTP priority criteria may cite. Resolved from the row already
+  // read above rather than a second query — and note it selects
+  // `home_subdivision_code`, without which every workspace resolves as
+  // subdivision-unknown and no state framework can ever match.
+  const rtpPriorityCriteria = resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria;
 
   // The project's own corridors, for the backdrop-presence panel. Read through
   // the pending-schema fallback like every other optional table on this page, so
@@ -1233,6 +1241,7 @@ export default async function ProjectDetailPage({
         workspaceRtpCycles={workspaceRtpCycles}
         existingRtpLinks={existingRtpLinks}
         availableModelRuns={availableModelRuns}
+        rtpPriorityCriteria={rtpPriorityCriteria}
         deliverableCount={budgetInputs.deliverables.length}
         openRiskCount={openRiskCount}
         openIssueCount={openIssueCount}

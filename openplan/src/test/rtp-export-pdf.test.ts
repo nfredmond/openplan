@@ -3,6 +3,14 @@ import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { pdfDrawnText, pdfSource } from "./pdf-text-extraction-helpers";
 
+import { resolveRtpPriorityCriteria } from "@/lib/rtp/priority-frameworks";
+import { US_CA_RTP_PRIORITY_FRAMEWORK } from "@/lib/rtp/frameworks/us-ca";
+
+// A real resolved framework, not a hand-written fixture: these builders are
+// being asked to prove they render the basis they were GIVEN.
+const CA_CRITERIA = resolveRtpPriorityCriteria(US_CA_RTP_PRIORITY_FRAMEWORK);
+
+
 /**
  * The board packet must leave the building whole.
  *
@@ -23,6 +31,7 @@ const CHAPTER_COUNT = 24;
 
 function packetHtml() {
   return buildRtpExportHtml({
+    priorityCriteria: CA_CRITERIA,
     cycle: {
       id: "cycle-1",
       workspace_id: "workspace-1",

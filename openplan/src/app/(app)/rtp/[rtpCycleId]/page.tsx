@@ -39,6 +39,11 @@ import {
   priorityTierLabel,
   priorityTierTone,
 } from "@/lib/rtp/priority-scoring";
+import { describeRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-binding";
+import {
+  loadRtpPriorityFrameworkBinding,
+  type RtpPriorityFrameworkQuerySupabaseLike,
+} from "@/lib/rtp/priority-framework-queries";
 import { RtpPublicShareControls } from "@/components/rtp/rtp-public-share-controls";
 import {
   describeComparisonSnapshotAggregate,
@@ -512,6 +517,15 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     readyCommentCount: engagementSummary.moderationQueue.readyForHandoffCount,
   });
 
+  // Which body of law this workspace may cite for its priorities. Loaded from
+  // the workspace's home geography — never assumed — so a plan outside
+  // California stops publishing California statutes as its policy basis.
+  const priorityFramework = await loadRtpPriorityFrameworkBinding(
+    supabase as unknown as RtpPriorityFrameworkQuerySupabaseLike,
+    membership.workspace_id
+  );
+  reads.check("the policy framework for this workspace", priorityFramework.result);
+
   const projectLinksWithFunding = projectLinks
     .map((link) => ({
       ...link,
@@ -521,12 +535,16 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         fundingOpportunitiesByProjectId.get(link.project_id) ?? [],
         fundingInvoicesByProjectId.get(link.project_id) ?? []
       ),
-      priority: buildRtpPriorityRationale(link.priority_scores ?? {}),
+      priority: buildRtpPriorityRationale(link.priority_scores ?? {}, priorityFramework.binding.criteria),
     }))
     // Prioritized portfolio: highest composite priority first (unscored fall last).
     .sort((a, b) => b.priority.summary.composite - a.priority.summary.composite);
 
-  const portfolioPriority = buildPortfolioPriorityNarrative(projectLinks.map((link) => link.priority_scores ?? {}));
+  const portfolioPriority = buildPortfolioPriorityNarrative(
+    projectLinks.map((link) => link.priority_scores ?? {}),
+    priorityFramework.binding.criteria
+  );
+  const priorityFrameworkDisclosure = describeRtpPriorityFrameworkBinding(priorityFramework.binding);
 
   const fundedProjectCount = projectLinksWithFunding.filter((link) => link.fundingStack.status === "funded").length;
   const likelyCoveredProjectCount = projectLinksWithFunding.filter(
@@ -979,6 +997,15 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                     <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
                   </div>
                 ) : null}
+                <div className="rounded-[0.5rem] border border-border/60 bg-muted/30 px-4 py-3 text-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {priorityFrameworkDisclosure.headline}
+                  </p>
+                  <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.detail}</p>
+                  {priorityFrameworkDisclosure.action ? (
+                    <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.action}</p>
+                  ) : null}
+                </div>
                 <RtpPublicShareControls
                   rtpCycleId={cycle.id}
                   initialEnabled={cycle.public_share_enabled ?? false}

@@ -12,10 +12,20 @@ import {
   ratingLabel,
   type RtpPriorityLevel,
 } from "./priority-criteria";
+import type { ResolvedRtpPriorityCriterion } from "./priority-frameworks";
 
 export type RtpPriorityScores = Record<string, number>;
 export type RtpPriorityTier = "high" | "medium" | "low" | "unscored";
 
+/**
+ * Safe as a module constant BECAUSE the criteria taxonomy is jurisdiction-
+ * neutral: every framework scores the same keys at the same weights and varies
+ * only the law it cites. If a future framework ever varies weights, this
+ * denominator and `computeRtpPriorityScore` must move onto the resolved
+ * framework in the same change — otherwise every non-default jurisdiction is
+ * divided by another one's total and no test fails, because the tests derive
+ * their expectations from this same array.
+ */
 const TOTAL_WEIGHT = RTP_PRIORITY_CRITERIA.reduce((sum, criterion) => sum + criterion.weight, 0);
 
 /**
@@ -81,7 +91,8 @@ export interface RtpPriorityDriver {
   level: RtpPriorityLevel;
   rating: number;
   ratingLabel: string;
-  policyBasis: string;
+  /** Null when no framework covers the workspace's jurisdiction. */
+  policyBasis: string | null;
   contribution: number; // weighted contribution to the composite
 }
 
@@ -95,9 +106,13 @@ export interface RtpPriorityRationale {
  * Build a structured, human-readable "why this project" rationale from the scores.
  * `drivers` are the scored criteria ranked by weighted contribution.
  */
-export function buildRtpPriorityRationale(raw: unknown): RtpPriorityRationale {
+export function buildRtpPriorityRationale(
+  raw: unknown,
+  criteria: readonly ResolvedRtpPriorityCriterion[]
+): RtpPriorityRationale {
   const scores = parsePriorityScores(raw);
   const summary = computeRtpPriorityScore(scores);
+  const basisByKey = new Map(criteria.map((criterion) => [criterion.key, criterion.policyBasis]));
 
   const drivers: RtpPriorityDriver[] = Object.entries(scores)
     .map(([key, rating]) => {
@@ -108,7 +123,7 @@ export function buildRtpPriorityRationale(raw: unknown): RtpPriorityRationale {
         level: criterion.level,
         rating,
         ratingLabel: ratingLabel(rating),
-        policyBasis: criterion.policyBasis,
+        policyBasis: basisByKey.get(key) ?? null,
         contribution: (rating / RTP_PRIORITY_MAX_RATING) * criterion.weight,
       };
     })
@@ -136,7 +151,12 @@ function buildNarrative(summary: RtpPriorityScoreSummary, drivers: RtpPriorityDr
 
   const levels = Array.from(new Set(top.map((driver) => RTP_PRIORITY_LEVEL_LABEL[driver.level].toLowerCase())));
   const levelPhrase = levels.length > 0 ? ` It advances ${levels.join(", ")} priorities` : "";
-  const bases = Array.from(new Set(top.map((driver) => driver.policyBasis)));
+  // Uncited drivers contribute no parenthetical. When nothing is cited the
+  // clause disappears entirely rather than degrading to an empty "()" — or,
+  // as it did before this registry existed, to another jurisdiction's law.
+  const bases = Array.from(
+    new Set(top.map((driver) => driver.policyBasis).filter((basis): basis is string => Boolean(basis)))
+  );
   const basisPhrase = bases.length > 0 ? ` (${bases.join("; ")})` : "";
 
   return `Scores ${summary.composite}/100 — ${TIER_PHRASE[summary.tier]}. Its strongest contributions are ${topPhrase}.${levelPhrase}${basisPhrase}.`;
@@ -147,7 +167,7 @@ export interface RtpPortfolioPrioritySummary {
   scoredCount: number;
   tierCounts: Record<RtpPriorityTier, number>;
   averageComposite: number; // average composite of the scored projects
-  topCriteria: Array<{ key: string; label: string; policyBasis: string; totalContribution: number }>;
+  topCriteria: Array<{ key: string; label: string; policyBasis: string | null; totalContribution: number }>;
   narrative: string;
 }
 
@@ -156,7 +176,11 @@ export interface RtpPortfolioPrioritySummary {
  * mix, average score, and the portfolio's strongest collective priorities. This
  * is the board/community-ready statement of what the plan prioritizes and why.
  */
-export function buildPortfolioPriorityNarrative(scoresList: unknown[]): RtpPortfolioPrioritySummary {
+export function buildPortfolioPriorityNarrative(
+  scoresList: unknown[],
+  criteria: readonly ResolvedRtpPriorityCriterion[]
+): RtpPortfolioPrioritySummary {
+  const basisByKey = new Map(criteria.map((criterion) => [criterion.key, criterion.policyBasis]));
   const summaries = scoresList.map((scores) => computeRtpPriorityScore(scores));
   const tierCounts: Record<RtpPriorityTier, number> = { high: 0, medium: 0, low: 0, unscored: 0 };
   for (const summary of summaries) tierCounts[summary.tier] += 1;
@@ -180,7 +204,7 @@ export function buildPortfolioPriorityNarrative(scoresList: unknown[]): RtpPortf
   const topCriteria = Array.from(contributionByKey.entries())
     .map(([key, totalContribution]) => {
       const criterion = getRtpPriorityCriterion(key)!;
-      return { key, label: criterion.label, policyBasis: criterion.policyBasis, totalContribution };
+      return { key, label: criterion.label, policyBasis: basisByKey.get(key) ?? null, totalContribution };
     })
     .sort((a, b) => b.totalContribution - a.totalContribution || a.label.localeCompare(b.label))
     .slice(0, 3);
@@ -209,7 +233,11 @@ function buildPortfolioNarrative(
 
   const mix = `${tierCounts.high} high · ${tierCounts.medium} moderate · ${tierCounts.low} lower priority`;
   const focus = topCriteria.map((criterion) => criterion.label.toLowerCase()).join(", ");
-  const bases = Array.from(new Set(topCriteria.map((criterion) => criterion.policyBasis)));
+  const bases = Array.from(
+    new Set(
+      topCriteria.map((criterion) => criterion.policyBasis).filter((basis): basis is string => Boolean(basis))
+    )
+  );
   const basisPhrase = bases.length > 0 ? ` (${bases.join("; ")})` : "";
 
   return `Across ${projectCount} linked project${projectCount === 1 ? "" : "s"} (${mix}), this portfolio's strongest collective focus is ${focus} — advancing those priorities${basisPhrase}. Average priority score of scored projects: ${averageComposite}/100.`;

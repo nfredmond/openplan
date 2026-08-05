@@ -11,6 +11,7 @@ import {
   type RtpExportCycle,
   type RtpExportLinkedProject,
 } from "@/lib/rtp/export";
+import { loadRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-queries";
 
 const paramsSchema = z.object({
   rtpCycleId: z.string().uuid(),
@@ -114,7 +115,23 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const linkedProjects = normalizeRtpLinkedProjects((linksResult.data ?? []) as RtpExportLinkedProject[]);
     const campaigns = (campaignsResult.data ?? []) as RtpExportCampaign[];
 
-    const exportInput = { cycle, chapters, linkedProjects, campaigns };
+    // The exported plan may only cite the law of the jurisdiction the
+    // workspace actually works in. A failed read yields an uncited binding,
+    // which drops the policy-basis clause rather than substituting a
+    // jurisdiction — an export is the document a board adopts, so a wrong
+    // citation is worse than no citation.
+    const priorityFramework = await loadRtpPriorityFrameworkBinding(supabase, cycle.workspace_id);
+    if (priorityFramework.readFailed) {
+      audit.warn("priority_framework_lookup_failed", { rtpCycleId: cycle.id });
+    }
+
+    const exportInput = {
+      cycle,
+      chapters,
+      linkedProjects,
+      campaigns,
+      priorityCriteria: priorityFramework.binding.criteria,
+    };
 
     audit.info("export_generated", {
       rtpCycleId: cycle.id,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, FileStack, FolderKanban, Target } from "lucide-react";
 import { ProjectRtpLinker } from "@/components/projects/project-rtp-linker";
+import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks";
 import {
   ReportPacketCommandQueue,
   type ReportPacketCommandQueueItem,
@@ -75,6 +76,8 @@ type ProjectPostureHeaderProps = {
   workspaceRtpCycles: RtpCycleRow[];
   existingRtpLinks: ExistingRtpLink[];
   availableModelRuns: AvailableModelRun[];
+  /** Priority criteria carrying this workspace's jurisdiction's policy bases. */
+  rtpPriorityCriteria: readonly ResolvedRtpPriorityCriterion[];
   deliverableCount: number;
   /**
    * Open risks / open issues, or null when the underlying read FAILED.
@@ -115,6 +118,7 @@ export function ProjectPostureHeader({
   workspaceRtpCycles,
   existingRtpLinks,
   availableModelRuns,
+  rtpPriorityCriteria,
   deliverableCount,
   openRiskCount,
   openIssueCount,
@@ -332,6 +336,7 @@ export function ProjectPostureHeader({
               }))}
               existingLinks={existingRtpLinks}
               availableRuns={availableModelRuns}
+              criteria={rtpPriorityCriteria}
             />
           )}
         </div>

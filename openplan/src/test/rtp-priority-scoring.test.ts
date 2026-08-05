@@ -8,6 +8,14 @@ import {
 } from "@/lib/rtp/priority-scoring";
 import { RTP_PRIORITY_CRITERIA } from "@/lib/rtp/priority-criteria";
 
+import { resolveRtpPriorityCriteria } from "@/lib/rtp/priority-frameworks";
+import { US_CA_RTP_PRIORITY_FRAMEWORK } from "@/lib/rtp/frameworks/us-ca";
+
+// A real resolved framework, not a hand-written fixture: these builders are
+// being asked to prove they render the basis they were GIVEN.
+const CA_CRITERIA = resolveRtpPriorityCriteria(US_CA_RTP_PRIORITY_FRAMEWORK);
+
+
 describe("parsePriorityScores", () => {
   it("keeps known criteria with integer ratings 1..3, drops the rest", () => {
     expect(
@@ -68,7 +76,7 @@ describe("tierForComposite", () => {
 
 describe("buildRtpPriorityRationale", () => {
   it("ranks drivers by weighted contribution and writes a narrative citing the top criteria", () => {
-    const rationale = buildRtpPriorityRationale({ community_support: 3, vmt_reduction: 3, ghg_reduction: 2 });
+    const rationale = buildRtpPriorityRationale({ community_support: 3, vmt_reduction: 3, ghg_reduction: 2 }, CA_CRITERIA);
     // vmt (3/3*3=3) > ghg (2/3*3=2) > community_support (3/3*2=2, tiebreak alpha)
     expect(rationale.drivers[0].key).toBe("vmt_reduction");
     expect(rationale.narrative).toMatch(/Scores \d+\/100/);
@@ -77,7 +85,7 @@ describe("buildRtpPriorityRationale", () => {
   });
 
   it("says unscored when empty", () => {
-    expect(buildRtpPriorityRationale({}).narrative).toMatch(/not yet been scored/i);
+    expect(buildRtpPriorityRationale({}, CA_CRITERIA).narrative).toMatch(/not yet been scored/i);
   });
 });
 
@@ -87,7 +95,7 @@ describe("buildPortfolioPriorityNarrative", () => {
       { vmt_reduction: 3, ghg_reduction: 3, safety: 3 },
       { vmt_reduction: 3, safety: 3, equity: 3, community_support: 3 },
       {},
-    ]);
+    ], CA_CRITERIA);
     expect(portfolio.projectCount).toBe(3);
     expect(portfolio.scoredCount).toBe(2);
     expect(portfolio.tierCounts.unscored).toBe(1);
@@ -98,7 +106,7 @@ describe("buildPortfolioPriorityNarrative", () => {
   });
 
   it("handles empty and all-unscored portfolios", () => {
-    expect(buildPortfolioPriorityNarrative([]).narrative).toMatch(/No projects are linked/i);
-    expect(buildPortfolioPriorityNarrative([{}, {}]).narrative).toMatch(/none scored/i);
+    expect(buildPortfolioPriorityNarrative([], CA_CRITERIA).narrative).toMatch(/No projects are linked/i);
+    expect(buildPortfolioPriorityNarrative([{}, {}], CA_CRITERIA).narrative).toMatch(/none scored/i);
   });
 });

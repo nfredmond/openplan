@@ -88,6 +88,12 @@ vi.mock("@/lib/supabase/server", () => ({
 import PublicRtpWhyPage from "@/app/(public)/plan/[shareToken]/page";
 import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score-editor";
 
+import { resolveRtpPriorityCriteria } from "@/lib/rtp/priority-frameworks";
+import { US_CA_RTP_PRIORITY_FRAMEWORK } from "@/lib/rtp/frameworks/us-ca";
+
+const CA_CRITERIA = resolveRtpPriorityCriteria(US_CA_RTP_PRIORITY_FRAMEWORK);
+
+
 function seedPublicPageData() {
   for (const key of Object.keys(selectCalls)) delete selectCalls[key];
   tableErrors = {};
@@ -229,6 +235,7 @@ describe("RTP evidence-run picker — every offered and cited run is disclosed, 
         initialEvidenceRunId={null}
         modelingEvidence={null}
         evidenceRunDisclosure={null}
+        criteria={CA_CRITERIA}
         {...overrides}
       />
     );
