@@ -271,9 +271,34 @@ function expectLinkByHref(name: RegExp, href: string) {
   expect(link).toHaveAttribute("href", href);
 }
 
-describe("ReportDetailPage", () => {
+/**
+ * The 5000ms default is not enough budget for this file, and the reason is not
+ * the page. Measured on an idle box: awaiting the server component costs ~1ms
+ * and rendering it ~40ms, but the packet page produces an ~80KB DOM, and the
+ * FIRST accessible-name query against a freshly rendered tree of that size
+ * costs ~400ms on its own — `getByRole("link", { name })` and friends, whose
+ * name computation walks the tree and hits jsdom's per-element style
+ * resolution. Every later one against the same DOM costs ~15ms, because that
+ * pass is cached; `getByText` never triggers it at all.
+ *
+ * So ~400ms is a floor per rendered page, not a cost that splitting removes —
+ * each new test pays it again on its own fresh render. Under contention that
+ * floor was measured over 4s. The budget is raised here rather than in
+ * vitest.config.ts so it applies to this one heavy page and nothing else: a
+ * genuine hang anywhere else in the suite must still fail in five seconds.
+ *
+ * Do not "fix" the cost by trading `getByRole("link", { name })` for text
+ * lookups. That would drop the accessible-name assertion, which is the part a
+ * screen-reader user depends on, to make a test faster.
+ */
+describe("ReportDetailPage", { timeout: 15_000 }, () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    // resetAllMocks, NOT clearAllMocks: clearing drains recorded calls but
+    // leaves an unconsumed `mockResolvedValueOnce` sitting at the head of the
+    // queue, where it outranks everything this hook re-arms below and answers
+    // the NEXT test's first read instead. Proven by the pair of tests at the
+    // end of this file.
+    vi.resetAllMocks();
 
     authGetUserMock.mockResolvedValue({
       data: {
@@ -816,15 +841,22 @@ describe("ReportDetailPage", () => {
     });
   });
 
-  it("shows richer engagement traceability with public page access when available", async () => {
+  /**
+   * These seven tests were one test carrying ~120 assertions, which took 1197ms
+   * on an idle box and failed at 5216ms under a contended one — passing in
+   * isolation every time anyone looked at it.
+   *
+   * Splitting is not only about the clock. A single failing assertion in that
+   * test reported "this page is wrong" and left you to find out which of seven
+   * panels broke; each of these names the panel it covers, so the failure says
+   * where to look. Keep new assertions in the group they belong to rather than
+   * appending them to whichever test is nearest.
+   */
+  it("renders the packet page without emitting a NaN warning", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 
     try {
-      const page = await ReportDetailPage({
-        params: Promise.resolve({ reportId: "report-1" }),
-      });
-
-      render(page);
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
 
       expect(
         consoleErrorSpy.mock.calls.some((call) =>
@@ -834,6 +866,10 @@ describe("ReportDetailPage", () => {
     } finally {
       consoleErrorSpy.mockRestore();
     }
+  });
+
+  it("shows the engagement source, its public page access, and why the report exists", async () => {
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
 
     expect(screen.getByText("Engagement source")).toBeInTheDocument();
     expect(screen.getByText("Downtown listening campaign")).toBeInTheDocument();
@@ -844,7 +880,27 @@ describe("ReportDetailPage", () => {
     expect(screen.getByText(/Submissions open/i)).toBeInTheDocument();
     expect(screen.getByText("Report origin")).toBeInTheDocument();
     expect(screen.getByText("Engagement Campaign Handoff")).toBeInTheDocument();
-    expect(screen.getByText("Project records provenance")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        /Created from an engagement campaign to preserve handoff-ready public input context for project reporting\./i
+      )
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Snapshot captured/i)).toBeInTheDocument();
+    expect(screen.getByText(/7 ready for handoff/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/12 items/i).length).toBeGreaterThan(0);
+    expect(screen.getByRole("link", { name: /Open engagement campaign/i })).toHaveAttribute(
+      "href",
+      "/engagement/campaign-1"
+    );
+    expect(screen.getByRole("link", { name: /Open public engagement page/i })).toHaveAttribute(
+      "href",
+      "/engage/share-token-12345"
+    );
+  });
+
+  it("shows the governance and stage-gate provenance frozen into the packet", async () => {
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
     expect(
       screen.getByText("Governance and stage-gate provenance")
     ).toBeInTheDocument();
@@ -860,6 +916,12 @@ describe("ReportDetailPage", () => {
       "href",
       "/projects/project-1#project-governance"
     );
+  });
+
+  it("shows the project records and scenario basis the packet was built from", async () => {
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+    expect(screen.getByText("Project records provenance")).toBeInTheDocument();
     expect(screen.getByText(/ADA curb ramp package/i)).toBeInTheDocument();
     expect(screen.getByText(/Grant match exposure/i)).toBeInTheDocument();
     expect(screen.getByText(/Signal timing conflict/i)).toBeInTheDocument();
@@ -888,22 +950,11 @@ describe("ReportDetailPage", () => {
       "href",
       "/scenarios/scenario-set-1"
     );
-    expect(
-      screen.getByText(
-        /Created from an engagement campaign to preserve handoff-ready public input context for project reporting\./i
-      )
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Snapshot captured/i)).toBeInTheDocument();
-    expect(screen.getByText(/7 ready for handoff/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/12 items/i).length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: /Open engagement campaign/i })).toHaveAttribute(
-      "href",
-      "/engagement/campaign-1"
-    );
-    expect(screen.getByRole("link", { name: /Open public engagement page/i })).toHaveAttribute(
-      "href",
-      "/engage/share-token-12345"
-    );
+  });
+
+  it("shows the evidence chain summary with the aerial source context and its caveat", async () => {
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
     expect(screen.getByText("Evidence chain summary")).toBeInTheDocument();
     expect(screen.getByText(/Quick scan of the source surfaces captured in the latest packet\./i)).toBeInTheDocument();
     expect(screen.getByText("Aerial evidence")).toBeInTheDocument();
@@ -914,6 +965,11 @@ describe("ReportDetailPage", () => {
       "href",
       "/aerial/missions/mission-1"
     );
+  });
+
+  it("shows the release review with its readiness, funding, lineage and grant posture", async () => {
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
     expect(screen.getByText("Packet release review")).toBeInTheDocument();
     expect(screen.getByText("Carry this packet through readiness")).toBeInTheDocument();
     expect(screen.getByText("Pre-generation readiness")).toBeInTheDocument();
@@ -951,6 +1007,11 @@ describe("ReportDetailPage", () => {
       "href",
       "#report-controls"
     );
+  });
+
+  it("shows what drifted between the frozen packet and the live sources", async () => {
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
     expect(screen.queryByText(/0 linked set/i)).not.toBeInTheDocument();
     expect(screen.getByText(/1 linked set/i)).toBeInTheDocument();
     expect(screen.getByText(/7 ready for handoff/i)).toBeInTheDocument();
@@ -1294,6 +1355,48 @@ describe("ReportDetailPage", () => {
         ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) })
       ).rejects.toThrow("notFound");
       expect(notFoundMock).toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * ONE TEST'S FAILURE FIXTURE MAY NOT ANSWER THE NEXT TEST'S READ.
+   *
+   * Nearly every test above stages a broken read with `mockResolvedValueOnce`,
+   * which pushes onto a queue that outranks the `mockResolvedValue` defaults the
+   * `beforeEach` re-arms. `vi.clearAllMocks()` empties the recorded CALLS but
+   * not that queue — only `mockReset` does — so a once-value the page happened
+   * not to consume survives into the following test and answers its first read
+   * instead. Nothing declares that; the next test simply sees a report that
+   * cannot be read, or a 404, for no reason visible in its own body.
+   *
+   * The two tests below are one set and must stay adjacent and in this order:
+   * the first deliberately leaves a queued value behind, the second proves the
+   * shared fixture — not that leftover — is what it gets.
+   */
+  describe("a staged failure does not leak into the next test", () => {
+    it("leaves an unconsumed once-value queued behind it", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: null,
+        error: { message: 'permission denied for table "reports"' },
+      });
+
+      await expect(
+        ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) })
+      ).rejects.toThrow("notFound");
+
+      // Exactly one of the two queued values was consumed, so the second is
+      // still sitting at the head of the queue as this test ends. Without this
+      // the pair proves nothing, because there would be nothing to leak.
+      expect(reportMaybeSingleMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("reads the shared fixture, not the previous test's leftover", async () => {
+      render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+      expect(screen.getByText("Downtown Safety Packet")).toBeInTheDocument();
+      expect(notFoundMock).not.toHaveBeenCalled();
+      expect(screen.queryByText(/The report record could not be read/i)).not.toBeInTheDocument();
     });
   });
 });
