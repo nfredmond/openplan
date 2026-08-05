@@ -41,6 +41,8 @@ function formatPlanMoney(value: number): string {
 
 export function RtpFinancialElementSection({
   rtpCycleId,
+  cycleHorizonStartYear,
+  cycleHorizonEndYear,
   cycleFinancialBasisYear,
   annualInflationRate,
   projects,
@@ -52,6 +54,8 @@ export function RtpFinancialElementSection({
   canWrite,
 }: {
   rtpCycleId: string;
+  cycleHorizonStartYear: number | null;
+  cycleHorizonEndYear: number | null;
   cycleFinancialBasisYear: number | null;
   annualInflationRate: number | string | null;
   projects: RtpFiscalConstraintInput["projects"];
@@ -66,6 +70,8 @@ export function RtpFinancialElementSection({
   // page already passes down, and keeping it beside the markup that renders it
   // means the verdict and the table can never describe different inputs.
   const constraint = buildRtpFiscalConstraint({
+    cycleHorizonStartYear,
+    cycleHorizonEndYear,
     cycleFinancialBasisYear,
     annualInflationRate,
     bands,

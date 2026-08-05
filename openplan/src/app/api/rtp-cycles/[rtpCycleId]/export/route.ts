@@ -161,6 +161,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
       cycle.id
     );
     const fiscalConstraint = buildRtpFiscalConstraint({
+      cycleHorizonStartYear: cycle.horizon_start_year,
+      cycleHorizonEndYear: cycle.horizon_end_year,
       cycleFinancialBasisYear: financialCycle.financial_basis_year,
       annualInflationRate: financialCycle.annual_inflation_rate,
       bands: financialElement.bands,

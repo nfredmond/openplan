@@ -233,6 +233,89 @@ describe("the check refuses to compute through missing data", () => {
   });
 });
 
+describe("a financial element that covers only part of the plan's horizon", () => {
+  /**
+   * Found by adversarial review AFTER this engine shipped: the input carried no
+   * horizon at all, so a plan declaring 2026–2050 whose only period was
+   * 2026–2035 reported "fiscally constrained" over ten of twenty-four years —
+   * the engine computing through a hole, which is the one thing it exists not
+   * to do. Nothing about an agent was involved; it was a live defect.
+   */
+  it("refuses to determine a plan whose later years belong to no period", () => {
+    const summary = buildRtpFiscalConstraint({
+      ...BASE,
+      cycleHorizonStartYear: 2026,
+      cycleHorizonEndYear: 2050,
+      lines: [revenue(100_000_000)],
+      projects: [project(40_000_000, { projectId: "a" })],
+    });
+
+    expect(summary.verdict).toBe("not_determined");
+    const blocker = summary.blockers.find((item) => item.code === "horizon_not_covered");
+    expect(blocker).toBeTruthy();
+    // It names the uncovered span so a planner knows what to add.
+    expect(blocker?.detail).toContain("2036–2050");
+  });
+
+  it("is satisfied when the periods cover the declared horizon end to end", () => {
+    const later = { ...BAND, id: "band-2", label: "Later", startYear: 2036, endYear: 2050, sortOrder: 1 };
+    const summary = buildRtpFiscalConstraint({
+      ...BASE,
+      bands: [BAND, later],
+      cycleHorizonStartYear: 2026,
+      cycleHorizonEndYear: 2050,
+      lines: [revenue(100_000_000), revenue(50_000_000, { id: "later", horizonBandId: later.id })],
+      projects: [project(40_000_000, { projectId: "a" })],
+    });
+
+    expect(summary.blockers.map((item) => item.code)).not.toContain("horizon_not_covered");
+    expect(summary.verdict).toBe("constrained");
+  });
+
+  it("finds a gap in the MIDDLE, not only at the end", () => {
+    const later = { ...BAND, id: "band-2", label: "Later", startYear: 2041, endYear: 2050, sortOrder: 1 };
+    const summary = buildRtpFiscalConstraint({
+      ...BASE,
+      bands: [BAND, later],
+      cycleHorizonStartYear: 2026,
+      cycleHorizonEndYear: 2050,
+      lines: [revenue(100_000_000)],
+      projects: [project(40_000_000, { projectId: "a" })],
+    });
+
+    expect(summary.blockers.find((item) => item.code === "horizon_not_covered")?.detail).toContain("2036–2040");
+  });
+
+  it("does not invent a horizon to measure against when none is declared", () => {
+    // An undeclared horizon is a different gap, surfaced elsewhere. Measuring
+    // against a guessed one would be worse than not measuring.
+    const summary = buildRtpFiscalConstraint({
+      ...BASE,
+      lines: [revenue(100_000_000)],
+      projects: [project(40_000_000, { projectId: "a" })],
+    });
+
+    expect(summary.blockers.map((item) => item.code)).not.toContain("horizon_not_covered");
+  });
+
+  it("unions overlapping periods rather than double-counting them", () => {
+    // Overlap is refused at the database now, but rows written before that
+    // constraint may still overlap, and a naive walk could report a covered
+    // horizon as uncovered.
+    const overlapping = { ...BAND, id: "band-2", label: "Overlaps", startYear: 2030, endYear: 2050, sortOrder: 1 };
+    const summary = buildRtpFiscalConstraint({
+      ...BASE,
+      bands: [BAND, overlapping],
+      cycleHorizonStartYear: 2026,
+      cycleHorizonEndYear: 2050,
+      lines: [revenue(100_000_000)],
+      projects: [project(40_000_000, { projectId: "a" })],
+    });
+
+    expect(summary.blockers.map((item) => item.code)).not.toContain("horizon_not_covered");
+  });
+});
+
 describe("only the constrained programme counts as cost", () => {
   it("excludes illustrative and candidate projects from the total", () => {
     const summary = buildRtpFiscalConstraint({

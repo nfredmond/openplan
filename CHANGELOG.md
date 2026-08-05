@@ -19,7 +19,25 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-_Nothing yet._
+**A migration is required before the app deploys:** `20260805000004`. It stops
+two periods of one plan claiming the same year. If your plan already has
+overlapping periods the migration will REFUSE to apply and tell you how many —
+it will not edit or delete your periods to make itself apply. Resolve the
+overlaps, then run it again.
+
+- **A plan whose periods cover only part of its horizon no longer reports
+  itself fiscally constrained.** If your plan runs to 2050 and your periods stop
+  at 2035, the years in between were accounted for by nothing and the totals
+  described only part of the plan. The finding is now withheld and names the
+  uncovered years. **If a plan of yours previously read "fiscally constrained"
+  it may now read "not determined" — that is the correction, not a regression.**
+- **Periods may not overlap.** Two periods claiming the same year made the
+  plan's own escalation ambiguous, because each period escalates its money to
+  its own expenditure year. Adjacent periods are fine: one ending 2035 and one
+  starting 2036.
+- A period falling outside the plan's stated horizon is still allowed — there
+  are real situations for it — but the screen now says so rather than staying
+  silent.
 
 ---
 

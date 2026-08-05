@@ -58,6 +58,17 @@ type RouteContext = { params: Promise<{ rtpCycleId: string }> };
  */
 const POSTGRES_FOREIGN_KEY_VIOLATION = "23503";
 const POSTGRES_UNIQUE_VIOLATION = "23505";
+/**
+ * The no-overlap exclusion constraint added in
+ * `20260805000004_rtp_horizon_bands_may_not_overlap.sql`.
+ *
+ * Like the foreign-key refusal above, this is the SYSTEM WORKING: two periods
+ * of one plan claiming the same year make the plan's own escalation arithmetic
+ * ambiguous, because each band escalates its money to its own expenditure year.
+ * It is the planner's to resolve, so it answers 409 with the clash named rather
+ * than 500.
+ */
+const POSTGRES_EXCLUSION_VIOLATION = "23P01";
 
 /**
  * The year window, mirroring the CHECK constraints in
@@ -407,6 +418,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .single();
 
     if (error && isWriteFailure(error)) {
+      if (error.code === POSTGRES_EXCLUSION_VIOLATION) {
+        return NextResponse.json(
+          {
+            error: "This period overlaps one that already exists in this plan",
+            details:
+              "Two periods of one plan may not claim the same year. Each period escalates its money to its " +
+              "own expenditure year, so an overlapping year would carry two different escalations depending " +
+              "only on which period a figure was filed under. Adjust the years so the periods meet without " +
+              "sharing a year — a period ending 2035 and one starting 2036.",
+          },
+          { status: 409 }
+        );
+      }
       if (error.code === POSTGRES_UNIQUE_VIOLATION) {
         return NextResponse.json(
           {
@@ -523,6 +547,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       .maybeSingle();
 
     if (error && isWriteFailure(error)) {
+      if (error.code === POSTGRES_EXCLUSION_VIOLATION) {
+        return NextResponse.json(
+          {
+            error: "This period overlaps one that already exists in this plan",
+            details:
+              "Two periods of one plan may not claim the same year. Each period escalates its money to its " +
+              "own expenditure year, so an overlapping year would carry two different escalations depending " +
+              "only on which period a figure was filed under. Adjust the years so the periods meet without " +
+              "sharing a year — a period ending 2035 and one starting 2036.",
+          },
+          { status: 409 }
+        );
+      }
       if (error.code === POSTGRES_UNIQUE_VIOLATION) {
         return NextResponse.json(
           {

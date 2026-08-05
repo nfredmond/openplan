@@ -985,6 +985,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         cycle.id
       );
       const rtpFiscalConstraint = buildRtpFiscalConstraint({
+        cycleHorizonStartYear: cycle.horizon_start_year,
+        cycleHorizonEndYear: cycle.horizon_end_year,
         cycleFinancialBasisYear: (cycle as { financial_basis_year?: number | null }).financial_basis_year ?? null,
         annualInflationRate: (cycle as { annual_inflation_rate?: number | string | null }).annual_inflation_rate ?? null,
         bands: rtpFinancialElement.bands,

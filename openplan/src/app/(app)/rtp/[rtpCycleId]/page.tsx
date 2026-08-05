@@ -815,6 +815,8 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
           </article>
           <RtpFinancialElementSection
             rtpCycleId={cycle.id}
+            cycleHorizonStartYear={cycle.horizon_start_year}
+            cycleHorizonEndYear={cycle.horizon_end_year}
             cycleFinancialBasisYear={cycle.financial_basis_year}
             annualInflationRate={cycle.annual_inflation_rate}
             projects={projectLinks.map((link) => ({

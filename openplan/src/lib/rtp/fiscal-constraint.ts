@@ -71,6 +71,13 @@ export interface RtpProgrammedProjectInput {
 }
 
 export interface RtpFiscalConstraintInput {
+  /**
+   * The plan's own declared horizon. Without these the check cannot tell that a
+   * financial element covers ten years of a twenty-four-year plan — it would
+   * report the ten covered years as the whole answer.
+   */
+  cycleHorizonStartYear?: number | null;
+  cycleHorizonEndYear?: number | null;
   cycleFinancialBasisYear: number | null;
   annualInflationRate: number | string | null;
   bands: readonly RtpHorizonBandInput[];
@@ -86,7 +93,8 @@ export type RtpFiscalBlockerCode =
   | "unbanded_constrained_project"
   | "no_revenue_recorded"
   | "irreconcilable_base_years"
-  | "no_horizon_bands";
+  | "no_horizon_bands"
+  | "horizon_not_covered";
 
 export interface RtpFiscalBlocker {
   code: RtpFiscalBlockerCode;
@@ -155,6 +163,56 @@ function parseRate(value: number | string | null | undefined): number | null {
   const parsed = typeof value === "number" ? value : Number.parseFloat(value);
   if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) return null;
   return parsed;
+}
+
+/**
+ * Years of the declared horizon that no band accounts for.
+ *
+ * Returns [] when the plan has not declared a horizon — an undeclared horizon is
+ * a different gap, already surfaced by the cycle readiness summary, and
+ * inventing one here to measure against would be worse than not measuring.
+ *
+ * Bands are unioned rather than assumed disjoint: overlapping bands are refused
+ * at the database now, but rows written before that constraint existed may
+ * still overlap, and a coverage check that double-counted them could report a
+ * covered horizon as uncovered.
+ */
+export function uncoveredHorizonSpans(
+  bands: readonly RtpHorizonBandInput[],
+  horizonStartYear: number | null | undefined,
+  horizonEndYear: number | null | undefined
+): Array<{ startYear: number; endYear: number }> {
+  if (
+    horizonStartYear === null ||
+    horizonStartYear === undefined ||
+    horizonEndYear === null ||
+    horizonEndYear === undefined ||
+    horizonEndYear < horizonStartYear
+  ) {
+    return [];
+  }
+
+  const sorted = [...bands]
+    .map((band) => ({ start: band.startYear, end: band.endYear }))
+    .sort((a, b) => a.start - b.start);
+
+  const gaps: Array<{ startYear: number; endYear: number }> = [];
+  let cursor = horizonStartYear;
+
+  for (const band of sorted) {
+    if (band.end < cursor) continue; // wholly before the uncovered remainder
+    if (band.start > cursor) {
+      gaps.push({ startYear: cursor, endYear: Math.min(band.start - 1, horizonEndYear) });
+    }
+    cursor = Math.max(cursor, band.end + 1);
+    if (cursor > horizonEndYear) break;
+  }
+
+  if (cursor <= horizonEndYear) {
+    gaps.push({ startYear: cursor, endYear: horizonEndYear });
+  }
+
+  return gaps.filter((gap) => gap.startYear <= gap.endYear);
 }
 
 function midpoint(startYear: number, endYear: number): number {
@@ -312,6 +370,15 @@ export function buildRtpFiscalConstraint(
       code: "no_horizon_bands",
       detail:
         "This plan has no horizon bands, so costs and revenues belong to no period and cannot be compared. Add the periods this plan programmes money across.",
+    });
+  }
+
+  const uncovered = uncoveredHorizonSpans(bands, input.cycleHorizonStartYear, input.cycleHorizonEndYear);
+  if (uncovered.length > 0) {
+    const spans = uncovered.map((gap) => (gap.startYear === gap.endYear ? `${gap.startYear}` : `${gap.startYear}–${gap.endYear}`));
+    summaryBlockers.push({
+      code: "horizon_not_covered",
+      detail: `This plan's horizon is not fully covered by its periods (${spans.join(", ")} ${uncovered.length === 1 ? "has" : "have"} no period). Costs and revenue in the uncovered years are counted by nothing, so the totals below describe only part of the plan.`,
     });
   }
 

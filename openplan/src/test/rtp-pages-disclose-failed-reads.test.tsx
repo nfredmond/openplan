@@ -306,9 +306,13 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
    */
   const BAND = {
     id: "band-1",
-    label: "First ten years",
-    start_year: 2026,
-    end_year: 2035,
+    // Covers the fixture cycle's declared horizon (2025–2050) end to end. A
+    // narrower period here would make every one of these tests report
+    // "not determined — the horizon is not fully covered", which is correct
+    // behaviour but not what they are testing.
+    label: "Whole plan",
+    start_year: 2025,
+    end_year: 2050,
     escalation_target_year: 2030,
     cost_estimate_basis: "itemized",
     sort_order: 0,
@@ -402,6 +406,24 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
     expect(screen.getAllByText(/constant dollars/i).length).toBeGreaterThan(0);
   });
 
+  it("will not call a plan constrained when its periods cover only part of its horizon", async () => {
+    // The fixture cycle declares 2025–2050. One period covering 2025–2035
+    // leaves fifteen years accounted for by nothing, so the money below
+    // describes part of a plan and must not be presented as the whole.
+    tableResults.rtp_horizon_bands = {
+      data: [{ ...BAND, end_year: 2035 }],
+      error: null,
+    };
+    tableResults.rtp_financial_assumptions = { data: [revenueLine(100_000_000)], error: null };
+    tableResults.project_rtp_cycle_links = { data: [link("a", 40_000_000)], error: null };
+
+    await renderDetail();
+
+    expect(screen.getByText("Not determined")).toBeInTheDocument();
+    expect(screen.queryByText("Fiscally constrained")).toBeNull();
+    expect(screen.getByText(/2036–2050 ha[sv]e? no period/)).toBeInTheDocument();
+  });
+
   it("renders the project lists, grouped, where the plan's commitments are read", async () => {
     tableResults.rtp_horizon_bands = { data: [BAND], error: null };
     tableResults.project_rtp_cycle_links = {
@@ -412,7 +434,7 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
     await renderDetail();
 
     expect(screen.getByText("What this plan commits to, and when")).toBeInTheDocument();
-    expect(screen.getAllByText(/First ten years/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Whole plan/).length).toBeGreaterThan(0);
     // The partial subtotal reaches the page, not just the component's own test.
     expect(screen.getByText(/1 of 2 projects has no cost recorded/)).toBeInTheDocument();
   });
