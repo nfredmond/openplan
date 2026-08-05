@@ -178,6 +178,73 @@ beforeEach(() => {
   });
 });
 
+describe("the publish control is reachable for every state of the project list", () => {
+  /**
+   * A capability nobody can reach is the defect class this repo has shipped
+   * twelve times. `RtpPublicShareControls` sat inside the third branch of the
+   * portfolio ternary, so it rendered only when the links read SUCCEEDED and
+   * returned at least one row. The two states it was missing from are the two
+   * that matter most:
+   *
+   *   - zero linked projects is exactly the cycle a public DRAFT REVIEW needs
+   *     (chapters written, portfolio not yet assembled), and it could not be
+   *     published at all;
+   *   - a failed links read hid the control while the page was already
+   *     apologising for the failure, so the planner's response — refresh, or
+   *     publish anyway — was unavailable.
+   *
+   * These assert on the REAL page, driven through the real loaders, because a
+   * test that stubs the thing it is named for cannot prove that thing.
+   */
+  it("renders the publish control when the cycle has no linked projects yet", async () => {
+    tableResults.project_rtp_cycle_links = { data: [], error: null };
+
+    await renderDetail();
+
+    expect(screen.getByTestId("rtp-public-share-controls")).toBeInTheDocument();
+    // The ordinary empty state still appears — this must not have been fixed
+    // by making the page pretend it has a portfolio.
+    expect(screen.getByText("No linked projects yet")).toBeInTheDocument();
+  });
+
+  it("renders the publish control when the linked-projects read FAILS", async () => {
+    tableResults.project_rtp_cycle_links = { data: null, error: { message: "permission denied" } };
+
+    await renderDetail();
+
+    expect(screen.getByTestId("rtp-public-share-controls")).toBeInTheDocument();
+    expect(screen.getByText("Linked projects could not be read")).toBeInTheDocument();
+  });
+
+  it("still renders it when there ARE linked projects", async () => {
+    tableResults.project_rtp_cycle_links = {
+      data: [
+        {
+          id: "link-1",
+          project_id: "project-1",
+          portfolio_role: "constrained",
+          priority_rationale: null,
+          priority_scores: {},
+          created_at: "2026-04-01T00:00:00.000Z",
+          projects: {
+            id: "project-1",
+            name: "Corridor upgrade",
+            status: "active",
+            delivery_phase: "planning",
+            summary: null,
+            rtp_posture_updated_at: null,
+          },
+        },
+      ],
+      error: null,
+    };
+
+    await renderDetail();
+
+    expect(screen.getByTestId("rtp-public-share-controls")).toBeInTheDocument();
+  });
+});
+
 describe("the RTP cycle detail page separates a failed read from an absence", () => {
   it("does not 404 when the cycle read FAILS — that would say the cycle does not exist", async () => {
     tableResults.rtp_cycles = { data: null, error: { message: "permission denied for table rtp_cycles" } };

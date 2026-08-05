@@ -23,6 +23,11 @@ import {
 export const metadata = {
   title: "What we're funding and why · Regional Transportation Plan",
   description: "A public, read-only view of an RTP project portfolio: priorities, the reasons behind them, and the policy basis.",
+  // The URL carries a credential — the share token IS the authorization. An
+  // indexed token-bearing URL hands anyone who searches a link the agency
+  // chose to give to specific people. The engagement portal has set this on
+  // both its branches since it shipped; this page was missing it.
+  robots: { index: false, follow: false },
 };
 
 type ProjectRef = { id: string; name: string; status: string | null; summary: string | null };

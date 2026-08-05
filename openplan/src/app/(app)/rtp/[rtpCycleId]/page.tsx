@@ -976,6 +976,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               </span>
             </div>
 
+            <div className="space-y-3">
             {projectLinksState === "failed" ? (
               <StateBlock
                 tone="danger"
@@ -997,20 +998,6 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                     <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
                   </div>
                 ) : null}
-                <div className="rounded-[0.5rem] border border-border/60 bg-muted/30 px-4 py-3 text-sm">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                    {priorityFrameworkDisclosure.headline}
-                  </p>
-                  <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.detail}</p>
-                  {priorityFrameworkDisclosure.action ? (
-                    <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.action}</p>
-                  ) : null}
-                </div>
-                <RtpPublicShareControls
-                  rtpCycleId={cycle.id}
-                  initialEnabled={cycle.public_share_enabled ?? false}
-                  initialToken={cycle.public_share_token ?? null}
-                />
                 <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
                   <div className="module-metric-card">
                     <p className="module-metric-label">Funded</p>
@@ -1088,6 +1075,29 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                 })}
               </div>
             )}
+            {/*
+              The publish control and the policy-basis disclosure describe the
+              CYCLE, not its project list, so they sit OUTSIDE the ternary
+              above. They used to live inside its third branch, which meant a
+              cycle with drafted chapters and no projects linked yet — exactly
+              the cycle a public draft review needs — had no way to be
+              published at all, and a failed links read hid the control too.
+            */}
+            <div className="rounded-[0.5rem] border border-border/60 bg-muted/30 px-4 py-3 text-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                {priorityFrameworkDisclosure.headline}
+              </p>
+              <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.detail}</p>
+              {priorityFrameworkDisclosure.action ? (
+                <p className="mt-1 text-muted-foreground">{priorityFrameworkDisclosure.action}</p>
+              ) : null}
+            </div>
+            <RtpPublicShareControls
+              rtpCycleId={cycle.id}
+              initialEnabled={cycle.public_share_enabled ?? false}
+              initialToken={cycle.public_share_token ?? null}
+            />
+            </div>
           </article>
 
           <article className="module-section-surface">
