@@ -19,6 +19,103 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+_Nothing yet._
+
+---
+
+## 0.4.0 — 2026-08-05
+
+**OpenPlan stops assuming California.** Six registries shipped with a single
+entry each, so California got real capability and the other forty-nine states
+got an honest disclaimer. This release gives every US agency a delivery
+template, a reimbursement vocabulary, and — in three more states — a funding
+catalog of their own.
+
+**Requires three migrations** if you are coming from 0.3.0 (`20260804000001`,
+`20260804000002`, `20260805000001`). Run
+`npm exec -- supabase migration up --linked` (locally: without `--linked`)
+before deploying, as always. None of them modifies an existing row: the two
+dated `20260804…` migrations set table permissions (a no-op on any database you
+already have — see "Fresh installs" below), and `20260805000001` changes only
+what NEW workspaces are born holding.
+
+### A federal-aid delivery template for the whole country
+
+The new **US Federal-Aid Delivery Floor** carries eight gates built from the
+rules that hold anywhere in the United States — the Uniform Guidance (2 CFR
+200), the federal-aid highway rules (23 CFR), NEPA, and the Uniform Relocation
+Act (49 CFR 24) — with the evidence each gate actually requires. Where a
+regulatory figure matters, the template cites the section (for example
+2 CFR 200.501 for the single-audit threshold) instead of restating a number
+that would quietly go stale.
+
+It states its own limits where you choose it: your state DOT's local-agency
+manual implements these same steps and may add its own; FTA-funded transit
+follows different mechanics and is not covered; state environmental law (CEQA,
+SEPA) is an overlay it does not carry.
+
+What you will notice:
+
+- A workspace anywhere in the US now gets this template as a real jurisdiction
+  match rather than a labelled assumption. California workspaces keep the
+  California pack.
+- An existing workspace that has stated a non-California US geography will see
+  its stage-gate panel report that a template for its jurisdiction now exists,
+  with a rebind offer. **Rebinding never edits or deletes a recorded gate
+  decision** — decisions recorded against gates the new template does not
+  define stay exactly as signed and stop appearing on project boards while that
+  template is bound. The panel names those gates before you confirm.
+- New workspaces are born bound to the federal template (that is the migration).
+
+### Reimbursement vocabulary that is not one state's
+
+A grant-reimbursement draw in a non-California workspace was logged under
+Caltrans LAPM posture names, disclosed as assumed. There is now a **generic US
+federal-aid reimbursement profile** — progress invoicing, final-only, retention
+in effect, or agreement-terms-deferred — carrying a documentation checklist for
+what a complete reimbursement package contains anywhere, with the indirect-cost
+basis citing 2 CFR 200.414(f) rather than restating a rate. Its framing line is
+the honest one and shows wherever the profile does: your executed funding
+agreement controls; where it differs from the profile, the agreement wins.
+California keeps LAPM.
+
+### Washington, Oregon and Colorado funding catalogs
+
+Fifteen state programs, each verified against its own official page on
+2026-08-05: Washington (TIB Urban Arterial, Small City Arterial, Small City
+Active Transportation, Complete Streets; WSDOT Pedestrian & Bicycle and Safe
+Routes to School; FMSIB freight), Oregon (ODOT Safe Routes to School, Oregon
+Community Paths, Connect Oregon, Small City Allotment, Great Streets, and the
+joint ODOT/DLCD TGM planning grants), and Colorado (the Multimodal
+Transportation and Mitigation Options Fund, and Safe Routes to School).
+
+Two candidates were **dropped rather than shipped on memory**: Colorado's
+Revitalizing Main Streets, whose own page states it no longer has funding to
+award, and "CDOT planning grant cycles", which is not a program CDOT offers —
+planning studies are an eligible cost under MMOF, which that entry now says.
+Two others were corrected to their current names: TIB's Small City Sidewalk
+Program now runs as the Small City Active Transportation Program, and MMOF's
+name now includes "and Mitigation".
+
+### A wrong-template bug fixed before it could reach anyone
+
+Registering a second template exposed a latent fault: the report detail page,
+the packet generator, and the assistant's project context all built their gate
+boards on whichever template was the registry default rather than the one the
+workspace is bound to. With one template registered the two were always the
+same id, so nothing was ever wrong on screen — but with two, a California
+workspace's recorded gate decisions would have matched none of the federal
+template's gates and rendered as "no decision recorded" on every one, inside a
+packet an agency sends to a funder. The board builders now require the caller
+to state the bound template, and a workspace whose binding cannot be
+established gets an explicit "could not be checked" instead of a board. Packet
+generation refuses (409) rather than freezing gate names nobody bound.
+
+Related: a workspace created before this release still holds the old default
+template id, and that id cannot tell us whether an agency chose California's
+gates or merely inherited them. OpenPlan now treats every id the column default
+has ever stamped as an assumption to be disclosed, not a choice to be reported.
+
 ### Fresh installs work again under newer Supabase CLI versions
 
 **Requires one migration** (`20260804000002`). Run

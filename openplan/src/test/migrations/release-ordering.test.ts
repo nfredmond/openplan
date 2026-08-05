@@ -30,6 +30,11 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260730000011_enable_rls_on_public_reference_tables.sql",
     migrationsAtRelease: 163,
   },
+  {
+    tag: "0.4.0",
+    lastMigration: "20260805000001_us_federal_default_stage_gate_template.sql",
+    migrationsAtRelease: 166,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
