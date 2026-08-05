@@ -9,13 +9,38 @@
   ],
   "project": [
     "src/**/*.{ts,tsx}",
+    "src/**/*.css",
     "scripts/**/*.mjs"
   ],
-  "ignore": [
-    "src/components/ui/**"
-  ],
-  "ignoreDependencies": [
-    "tailwindcss",
-    "tw-animate-css"
-  ]
+  "ignoreIssues": {
+    "src/components/ui/**": [
+      "files",
+      "exports",
+      "types",
+      "nsExports",
+      "nsTypes",
+      "enumMembers",
+      "duplicates"
+    ],
+    "src/lib/api/county-geographies.ts": ["files"]
+  },
+  "ignoreDependencies": ["next-themes", "sonner", "supabase"],
+  "rules": {
+    "files": "error",
+    "dependencies": "error",
+    "devDependencies": "error",
+    "optionalPeerDependencies": "error",
+    "unlisted": "error",
+    "unresolved": "error",
+    "binaries": "error",
+    "catalog": "error",
+    "exports": "warn",
+    "nsExports": "warn",
+    "types": "warn",
+    "nsTypes": "warn",
+    "enumMembers": "warn",
+    "namespaceMembers": "warn",
+    "duplicates": "warn"
+  },
+  "treatConfigHintsAsErrors": true
 }

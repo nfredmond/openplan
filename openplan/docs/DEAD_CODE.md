@@ -19,10 +19,9 @@ Live code will be reported unused. Check before deleting.
 suite), **or the database**. Schema is deliberately out of scope: see
 `CLAUDE.md`, and note that two of five billing-named tables are load-bearing.
 
-**It is a REPORT, not a build gate.** It is deliberately not in `qa:gate` yet —
-the first run has a long tail of exported types that are used internally, and
-failing the build on those would train everyone to ignore it. Ratchet it in once
-the list is triaged.
+**Half of it is a build gate; half of it is still a report.** Since 2026-08-04
+`npm run deadcode` runs inside `qa:gate` — see "The ratchet" below for exactly
+which findings fail the build and which only print.
 
 ## First run — 2026-07-30, v0.2.0
 
@@ -70,10 +69,70 @@ reachability. And `/api/csp-report`
 turned out to be genuinely browser-called via the CSP header's `report-uri` —
 now allowlisted with its real caller named.
 
-### Unlisted dependencies — fix these first
+### Unlisted dependencies — FIXED, and the record of why they mattered
 
 `server-only` (`src/lib/models/run-reconcile.ts`) and `jszip`
-(`src/test/knowledge-base-extract.test.ts`) are imported but not declared in
-`package.json`. They resolve today because something else hoists them. That is a
-build that works by accident, and it breaks silently when a transitive dependency
-changes. Declare them explicitly.
+(`src/test/knowledge-base-extract.test.ts`) were imported but not declared in
+`package.json`. They resolved because something else hoisted them — a build that
+works by accident and breaks silently when a transitive dependency changes.
+
+**Both are declared as of 2026-08-04** (`server-only` in `dependencies`, `jszip`
+in `devDependencies`), each still with exactly one importer, and knip reports no
+unlisted dependency. The `unlisted` rule is now at error severity, so this class
+fails the build rather than waiting for someone to read a report.
+
+## The ratchet — 2026-08-04
+
+`qa:gate` runs `npm run deadcode` (about two seconds). The severities in
+`knip.json` decide what a finding costs:
+
+| Finding | Severity | Why |
+|---|---|---|
+| unused **files** | **fails the build** | the shipped-invisible defect class, in its cheapest form to catch |
+| unused **dependencies** / **devDependencies** | **fails the build** | small, stable list; a new one is nearly always real |
+| **unlisted** / **unresolved** / **binaries** / **catalog** | **fails the build** | a build that works by accident |
+| unused **exports** and **exported types** | printed only | 635 of them today — see below |
+
+**The export backlog is deliberately not gated, on evidence, not on nerve.**
+Two things make a gate there cry wolf, and a gate that cries wolf gets
+overridden — and then so does the real one. First, the count moves under you:
+two runs four minutes apart on 2026-08-04 differed, because another lane was
+editing the tree at the time. Second, knip is right about the symbol and wrong
+about the defect: every re-export in `src/lib/aerial/public.ts` is reported
+unused, and that file is the aerial module's deliberate separability boundary,
+documented as such at the top of the file. Failing the build on a designed
+architectural surface teaches people the gate is noise. Revisit if the list is
+ever triaged down to something small enough to enumerate.
+
+**A stale baseline entry fails the build too**, so the baseline can only shrink:
+`treatConfigHintsAsErrors` is on, and knip answers `Remove from
+ignoreDependencies` when an entry stops being needed. That is the property that
+keeps this honest — an allowlist nobody can forget to prune.
+
+### The baseline — three dependencies and one file
+
+Each entry is a claim you can check by reading the code. **Shrinking this list is
+the work; adding to it needs a reason written here.**
+
+- **`supabase`** (devDependency) — a CLI, not an import. It is run as
+  `npm exec -- supabase start`, which knip cannot see. Keep.
+- **`sonner`** — **a real orphan, and the earlier note calling it a knip false
+  positive was simply wrong.** Its only importer is
+  `src/components/ui/sonner.tsx`; nothing imports that component and `toast(`
+  appears nowhere under `src/app` or `src/components`. Neither ever did:
+  `git log -S"ui/sonner"` and `git log -S"toast("` over those paths return no
+  commits. It was excused because `src/components/ui/**` was ignored wholesale,
+  which is the failure mode this config change is meant to end. Removing the
+  dependency means deleting the unmounted component with it.
+- **`next-themes`** — zero references in `src/` or `scripts/`. A genuine
+  removal, held only because dropping a dependency also rewrites
+  `package-lock.json`, which is not a change to make in passing.
+- **`src/lib/api/county-geographies.ts`** (unused file) — the zod schemas left
+  behind when the county-search client was deleted in the 2026-08-03 triage
+  above. Its sibling `place-geographies.ts` is the live front door. Delete it
+  after confirming nothing reaches for these schemas by name.
+
+`src/components/ui/**` is exempted from file/export findings rather than removed
+from the project entirely, so a dependency imported only by a shadcn component
+still counts as used. Under the old blanket `ignore` it would have been reported
+unused — which is precisely how a real finding gets dismissed as noise.
