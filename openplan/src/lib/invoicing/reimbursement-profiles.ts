@@ -28,6 +28,7 @@
  */
 
 import { US_CA_LAPM_REIMBURSEMENT_PROFILE } from "@/lib/invoicing/profiles/us-ca-lapm";
+import { US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE } from "@/lib/invoicing/profiles/us-federal-generic";
 
 /**
  * Where a profile's rules come from, expressed so the core stays
@@ -67,6 +68,17 @@ export type ReimbursementPostureOption = {
   description?: string;
 };
 
+/**
+ * One item a profile asks an agency to have in hand before submitting a
+ * reimbursement packet. Guidance, never applied data: OpenPlan does not check
+ * these off, it shows them where a draw is being logged.
+ */
+export type ReimbursementDocumentationChecklistItem = {
+  key: string;
+  label: string;
+  guidance: string;
+};
+
 export type ReimbursementProfileDescriptor = {
   profileId: string;
   profileName: string;
@@ -82,6 +94,19 @@ export type ReimbursementProfileDescriptor = {
    * jurisdiction with no such form pack does not declare one.
    */
   formPackStatus?: string;
+  /**
+   * A profile's own honesty disclosure, rendered wherever the profile's
+   * postures are offered — e.g. that generic practice never outranks the
+   * executed funding agreement. Optional so profiles that need no framing
+   * (a specific funder's own process) declare none.
+   */
+  framingNote?: string;
+  /**
+   * What an agency should have in hand before submitting a packet under this
+   * process. Guidance shown at the point of entry, never validated or applied
+   * data. Optional for the same reason as `framingNote`.
+   */
+  documentationChecklist?: readonly ReimbursementDocumentationChecklistItem[];
   /**
    * True for the one profile applied when nothing has told us which
    * jurisdiction a workspace operates in. See `INTERIM_DEFAULT_RATIONALE`.
@@ -168,6 +193,21 @@ function validateDescriptor(descriptor: ReimbursementProfileDescriptor): void {
 
   if (!normalizeJurisdictionPart(descriptor.jurisdiction?.country)) {
     throw new Error(`Reimbursement profile ${descriptor.profileId} missing jurisdiction country`);
+  }
+
+  const seenChecklistKeys = new Set<string>();
+  for (const item of descriptor.documentationChecklist ?? []) {
+    if (!item.key?.trim() || !item.label?.trim() || !item.guidance?.trim()) {
+      throw new Error(
+        `Reimbursement profile ${descriptor.profileId} has a documentation checklist item missing key, label, or guidance`
+      );
+    }
+    if (seenChecklistKeys.has(item.key)) {
+      throw new Error(
+        `Reimbursement profile ${descriptor.profileId} declares duplicate checklist item ${item.key}`
+      );
+    }
+    seenChecklistKeys.add(item.key);
   }
 }
 
@@ -263,6 +303,7 @@ export function createReimbursementProfileRegistry(
  */
 export const BUILT_IN_REIMBURSEMENT_PROFILE_REGISTRATIONS: readonly ReimbursementProfileDescriptor[] = [
   US_CA_LAPM_REIMBURSEMENT_PROFILE,
+  US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE,
 ];
 
 export const reimbursementProfileRegistry = createReimbursementProfileRegistry(

@@ -13,6 +13,7 @@ import {
   resolveReimbursementProfile,
 } from "@/lib/invoicing/reimbursement-profile-binding";
 import { US_CA_LAPM_REIMBURSEMENT_PROFILE } from "@/lib/invoicing/profiles/us-ca-lapm";
+import { US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE } from "@/lib/invoicing/profiles/us-federal-generic";
 
 function profile(overrides: Partial<ReimbursementProfileDescriptor>): ReimbursementProfileDescriptor {
   return {
@@ -134,20 +135,56 @@ describe("the built-in California profile", () => {
     expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.defaultPostureId).toBe("deferred_exact_forms");
     expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.submittedToHint).toBe("Caltrans D3 Local Assistance");
     expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.formPackStatus).toBe("deferred_exact_forms");
-    expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.isInterimDefault).toBe(true);
+    // California workspaces reach this profile by subdivision match; the
+    // nationwide generic profile now carries the interim default.
+    expect(US_CA_LAPM_REIMBURSEMENT_PROFILE.isInterimDefault).toBe(false);
+  });
+
+  it("is registered in the built-in registry, no longer as the interim default", () => {
+    expect(reimbursementProfileRegistry.get("us_ca_lapm_reimbursement_v1")).not.toBeNull();
+    expect(reimbursementProfileRegistry.defaultProfileId).toBe("us_federal_generic_reimbursement_v1");
+  });
+});
+
+describe("the built-in US federal generic profile", () => {
+  it("declares the nationwide posture vocabulary and carries the interim default", () => {
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.profileId).toBe("us_federal_generic_reimbursement_v1");
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.jurisdiction).toEqual({
+      country: "US",
+      label: "United States",
+    });
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.postureOptions.map((option) => option.postureId)).toEqual([
+      "progress_invoicing",
+      "final_only",
+      "retention_in_effect",
+      "deferred_agreement_terms",
+    ]);
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.defaultPostureId).toBe("progress_invoicing");
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.isInterimDefault).toBe(true);
+    // No funder office and no form pack: omission IS the statement.
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.submittedToHint).toBeUndefined();
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.formPackStatus).toBeUndefined();
+    // The honesty framing and the pre-submission checklist ship on the profile.
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.framingNote).toMatch(
+      /executed funding agreement controls/
+    );
+    expect(US_FEDERAL_GENERIC_REIMBURSEMENT_PROFILE.documentationChecklist).toHaveLength(5);
   });
 
   it("is registered in the built-in registry as the interim default", () => {
-    expect(reimbursementProfileRegistry.get("us_ca_lapm_reimbursement_v1")).not.toBeNull();
-    expect(reimbursementProfileRegistry.defaultProfileId).toBe("us_ca_lapm_reimbursement_v1");
+    expect(reimbursementProfileRegistry.get("us_federal_generic_reimbursement_v1")).not.toBeNull();
+    expect(reimbursementProfileRegistry.defaultProfileId).toBe("us_federal_generic_reimbursement_v1");
   });
 });
 
 describe("resolveReimbursementProfile — selection provenance", () => {
-  it("records an explicit request as explicitly_requested", () => {
+  it("records an explicit request as explicitly_requested — the consultant case", () => {
+    // A Texas consultant deliberately billing under California's process: the
+    // explicit id outranks the geography that would otherwise match the
+    // nationwide generic profile.
     const resolution = resolveReimbursementProfile({
       requestedProfileId: "us_ca_lapm_reimbursement_v1",
-      workspaceJurisdiction: { country: "US", subdivision: "OH" },
+      workspaceJurisdiction: { country: "US", subdivision: "TX" },
     });
     expect(resolution).toMatchObject({
       kind: "resolved",
@@ -173,7 +210,7 @@ describe("resolveReimbursementProfile — selection provenance", () => {
     }
   });
 
-  it("records a home-geography match as jurisdiction_matched", () => {
+  it("records a home-geography match as jurisdiction_matched — subdivision tier wins for California", () => {
     const resolution = resolveReimbursementProfile({
       workspaceJurisdiction: { country: "US", subdivision: "CA" },
     });
@@ -183,12 +220,45 @@ describe("resolveReimbursementProfile — selection provenance", () => {
     });
   });
 
+  it("matches a US workspace with no subdivision pack to the nationwide generic profile", () => {
+    // A Texas workspace is COVERED, not defaulted: the nationwide profile is a
+    // real jurisdiction match at the country tier, so no interim-default
+    // disclosure applies.
+    const resolution = resolveReimbursementProfile({
+      workspaceJurisdiction: { country: "US", subdivision: "TX" },
+    });
+    expect(resolution).toMatchObject({
+      kind: "resolved",
+      binding: {
+        profileId: "us_federal_generic_reimbursement_v1",
+        selection: "jurisdiction_matched",
+        interimDefaultReason: null,
+      },
+    });
+    if (resolution.kind === "resolved") {
+      // The binding carries the profile's framing note and checklist so
+      // surfaces can render them without reaching back into the registry.
+      expect(resolution.binding.framingNote).toMatch(/executed funding agreement controls/);
+      expect(resolution.binding.documentationChecklist).toHaveLength(5);
+    }
+  });
+
+  it("carries null framing fields for a profile that declares none", () => {
+    const resolution = resolveReimbursementProfile({
+      workspaceJurisdiction: { country: "US", subdivision: "CA" },
+    });
+    expect(resolution).toMatchObject({
+      kind: "resolved",
+      binding: { profileId: "us_ca_lapm_reimbursement_v1", framingNote: null, documentationChecklist: null },
+    });
+  });
+
   it("labels the no-geography fallback interim_unconfigured_default with its reason", () => {
     const resolution = resolveReimbursementProfile({ workspaceJurisdiction: null });
     expect(resolution).toMatchObject({
       kind: "resolved",
       binding: {
-        profileId: "us_ca_lapm_reimbursement_v1",
+        profileId: "us_federal_generic_reimbursement_v1",
         selection: "interim_unconfigured_default",
         interimDefaultReason: "no_workspace_jurisdiction",
       },
@@ -196,12 +266,16 @@ describe("resolveReimbursementProfile — selection provenance", () => {
   });
 
   it("labels the no-profile-for-jurisdiction fallback with its reason", () => {
+    // A non-US workspace: the nationwide US profile does not cover it, so the
+    // interim default applies and says why. US jurisdictions no longer land
+    // here — the nationwide generic profile covers every US subdivision.
     const resolution = resolveReimbursementProfile({
-      workspaceJurisdiction: { country: "US", subdivision: "OH" },
+      workspaceJurisdiction: { country: "CA", subdivision: "ON" },
     });
     expect(resolution).toMatchObject({
       kind: "resolved",
       binding: {
+        profileId: "us_federal_generic_reimbursement_v1",
         selection: "interim_unconfigured_default",
         interimDefaultReason: "no_profile_for_jurisdiction",
       },

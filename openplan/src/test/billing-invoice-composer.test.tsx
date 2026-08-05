@@ -22,6 +22,17 @@ function resolvedBinding() {
   return resolution.binding;
 }
 
+/** The nationwide generic profile, as a Texas workspace's geography resolves it. */
+function genericBinding() {
+  const resolution = resolveReimbursementProfile({
+    workspaceJurisdiction: { country: "US", subdivision: "TX" },
+  });
+  if (resolution.kind !== "resolved") {
+    throw new Error("expected the built-in registry to resolve the nationwide generic binding");
+  }
+  return resolution.binding;
+}
+
 describe("InvoiceRecordComposer", () => {
   beforeEach(() => {
     refreshMock.mockReset();
@@ -132,6 +143,56 @@ describe("InvoiceRecordComposer", () => {
     const payload = JSON.parse(requestInit.body) as Record<string, unknown>;
     expect(payload.reimbursementPosture).toBe(binding.defaultPostureId);
     expect(payload).not.toHaveProperty("reimbursementProfileId");
+  });
+
+  it("renders the generic profile's framing note and documentation checklist", () => {
+    // The nationwide profile's honesty line — the executed agreement wins —
+    // and its pre-submission checklist must be visible where the draw is
+    // being logged, because that is where a wrong assumption becomes a claim.
+    const binding = genericBinding();
+    if (!binding.framingNote || !binding.documentationChecklist) {
+      throw new Error("expected the generic profile to carry a framing note and checklist");
+    }
+
+    render(
+      <InvoiceRecordComposer
+        workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        canWrite
+        projects={[]}
+        reimbursementProfile={binding}
+      />
+    );
+
+    expect(screen.getByText(binding.framingNote)).toBeInTheDocument();
+    expect(screen.getByText("Before submitting a reimbursement packet")).toBeInTheDocument();
+    for (const item of binding.documentationChecklist) {
+      expect(screen.getByText(`${item.label}.`)).toBeInTheDocument();
+    }
+    // The generic profile has no funder office to hint, so the neutral
+    // placeholder stands.
+    expect(screen.getByLabelText("Submitted to")).toHaveAttribute(
+      "placeholder",
+      "Funder or program office"
+    );
+  });
+
+  it("renders no framing note or checklist for a profile that declares none", () => {
+    // The LAPM profile carries neither field; its rendering is unchanged.
+    const binding = resolvedBinding();
+    expect(binding.framingNote).toBeNull();
+    expect(binding.documentationChecklist).toBeNull();
+
+    render(
+      <InvoiceRecordComposer
+        workspaceId="aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+        canWrite
+        projects={[]}
+        reimbursementProfile={binding}
+      />
+    );
+
+    expect(screen.queryByText("Before submitting a reimbursement packet")).toBeNull();
+    expect(screen.queryByText(/executed funding agreement controls/)).toBeNull();
   });
 
   it("omits the posture select and shows a neutral hint when no profile is resolved", () => {

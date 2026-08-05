@@ -26,6 +26,7 @@ import {
   INTERIM_DEFAULT_RATIONALE,
   reimbursementProfileRegistry,
   type InvoicingJurisdictionQuery,
+  type ReimbursementDocumentationChecklistItem,
   type ReimbursementPostureOption,
   type ReimbursementProfileDescriptor,
   type ReimbursementProfileRegistry,
@@ -68,6 +69,10 @@ export type ReimbursementProfileBinding = {
   interimDefaultReason: ReimbursementInterimDefaultReason | null;
   submittedToHint: string | null;
   formPackStatus: string | null;
+  /** The profile's own honesty disclosure (see the descriptor field); null when the profile declares none. */
+  framingNote: string | null;
+  /** The profile's pre-submission documentation guidance; null when the profile declares none. */
+  documentationChecklist: readonly ReimbursementDocumentationChecklistItem[] | null;
 };
 
 /**
@@ -210,5 +215,7 @@ function toBinding(
     interimDefaultReason,
     submittedToHint: descriptor.submittedToHint ?? null,
     formPackStatus: descriptor.formPackStatus ?? null,
+    framingNote: descriptor.framingNote ?? null,
+    documentationChecklist: descriptor.documentationChecklist ?? null,
   };
 }

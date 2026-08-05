@@ -48,8 +48,10 @@ export const US_CA_LAPM_REIMBURSEMENT_PROFILE: ReimbursementProfileDescriptor = 
   // OpenPlan does not yet generate the exact LAPM exhibit/form packet; the
   // profile says so about itself instead of every binding claiming it.
   formPackStatus: "deferred_exact_forms",
-  // First and (so far) only reimbursement profile authored, so it carries the
-  // interim default for workspaces whose jurisdiction has no profile of its
-  // own. Not a statement that California is OpenPlan's home jurisdiction.
-  isInterimDefault: true,
+  // California workspaces reach this profile by subdivision match on their own
+  // home geography; the nationwide generic profile (us-federal-generic) now
+  // carries the interim default for workspaces whose jurisdiction has no
+  // profile of its own. This profile carried that default only while it was
+  // the sole one authored.
+  isInterimDefault: false,
 };

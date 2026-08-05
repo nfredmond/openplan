@@ -294,8 +294,12 @@ describe("POST /api/invoicing/invoices", () => {
     );
 
     expect(response.status).toBe(201);
+    // The interim default is now the nationwide generic profile, and its
+    // default posture fills in when the caller sends none.
     expect(billingInvoicesInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
+        reimbursement_profile_id: "us_federal_generic_reimbursement_v1",
+        reimbursement_posture: "progress_invoicing",
         reimbursement_profile_selection: "interim_unconfigured_default",
       })
     );
@@ -311,15 +315,15 @@ describe("POST /api/invoicing/invoices", () => {
         workspaceId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
         invoiceNumber: "OP-2026-010",
         amount: 1000,
-        reimbursementPosture: "local_agency_consulting",
+        reimbursementPosture: "final_only",
       })
     );
 
     expect(response.status).toBe(201);
     expect(billingInvoicesInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        reimbursement_profile_id: "us_ca_lapm_reimbursement_v1",
-        reimbursement_posture: "local_agency_consulting",
+        reimbursement_profile_id: "us_federal_generic_reimbursement_v1",
+        reimbursement_posture: "final_only",
         reimbursement_profile_selection: "interim_unconfigured_default",
       })
     );
@@ -341,7 +345,9 @@ describe("POST /api/invoicing/invoices", () => {
     expect(response.status).toBe(400);
     const payload = await response.json();
     expect(payload.error).toMatch(/not part of the/);
-    expect(payload.validPostures).toContain("deferred_exact_forms");
+    // The no-geography workspace resolves the nationwide generic profile, so
+    // the valid postures offered back are that profile's own vocabulary.
+    expect(payload.validPostures).toContain("progress_invoicing");
     expect(billingInvoicesInsertMock).not.toHaveBeenCalled();
   });
 
@@ -359,10 +365,26 @@ describe("POST /api/invoicing/invoices", () => {
     const payload = await response.json();
     expect(payload.error).toMatch(/Unknown reimbursement profile/);
     expect(payload.availableProfiles).toContain("us_ca_lapm_reimbursement_v1");
+    expect(payload.availableProfiles).toContain("us_federal_generic_reimbursement_v1");
     expect(billingInvoicesInsertMock).not.toHaveBeenCalled();
   });
 
   it("falls back to the legacy insert shape when the profile columns are pending, carrying the validated posture", async () => {
+    // A California workspace, so the LAPM profile resolves and the chosen
+    // posture is one the legacy column's CHECK can store. (The nationwide
+    // generic profile's postures are all beyond the legacy CHECK, so a
+    // generic-profile workspace on a pre-migration database gets the honest
+    // 503 refusal covered below instead of this fallback.)
+    workspacesMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        home_geography_source: "tigerweb",
+        home_geography_kind: "county",
+        home_geography_ref: "06057",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
+      },
+      error: null,
+    });
     billingInvoicesSingleMock.mockResolvedValueOnce({
       data: null,
       error: {

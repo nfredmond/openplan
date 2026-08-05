@@ -365,6 +365,25 @@ export function InvoiceRecordComposer({
               ) : null}
             </div>
 
+            {reimbursementProfile?.framingNote ? (
+              <p className="text-sm text-muted-foreground">{reimbursementProfile.framingNote}</p>
+            ) : null}
+
+            {reimbursementProfile?.documentationChecklist?.length ? (
+              <div className="border border-border/60 bg-background/70 px-4 py-4">
+                <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                  Before submitting a reimbursement packet
+                </p>
+                <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                  {reimbursementProfile.documentationChecklist.map((item) => (
+                    <li key={item.key}>
+                      <span className="font-medium text-foreground">{item.label}.</span> {item.guidance}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+
             <div className="space-y-2">
               <label htmlFor="invoice-notes" className="text-sm font-medium">
                 Notes
