@@ -203,6 +203,22 @@ const engagementItemsSelectMock = vi.fn(() => ({
   in: engagementItemsInMock,
 }));
 
+/**
+ * ADDED BECAUSE IT WAS MISSING, and its absence was invisible. The route reads
+ * `document_narrative_drafts` through `safeOptionalQuery`, whose classifier used
+ * to treat this harness's own `Unexpected table: …` throw as a benign absence.
+ * So every test in this file exercised the accepted-narrative path as "no
+ * accepted narratives" while believing it had exercised the feature — a harness
+ * that cannot fail a named read cannot prove anything about the failure path.
+ * The classifier no longer launders that phrasing, so the table has to answer
+ * here.
+ */
+const narrativeDraftsOrderMock = vi.fn();
+const narrativeDraftsEqStatusMock = vi.fn(() => ({ order: narrativeDraftsOrderMock }));
+const narrativeDraftsEqTargetIdMock = vi.fn(() => ({ eq: narrativeDraftsEqStatusMock }));
+const narrativeDraftsEqTargetKindMock = vi.fn(() => ({ eq: narrativeDraftsEqTargetIdMock }));
+const narrativeDraftsSelectMock = vi.fn(() => ({ eq: narrativeDraftsEqTargetKindMock }));
+
 const artifactsSingleMock = vi.fn();
 const artifactsInsertSelectMock = vi.fn(() => ({ single: artifactsSingleMock }));
 type ArtifactInsertPayload = {
@@ -414,6 +430,12 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "document_narrative_drafts") {
+    return {
+      select: narrativeDraftsSelectMock,
+    };
+  }
+
   if (table === "report_artifacts") {
     return {
       insert: artifactsInsertMock,
@@ -572,6 +594,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     fundingOpportunitiesInMock.mockResolvedValue({ data: [], error: null });
     billingInvoicesOrderMock.mockResolvedValue({ data: [], error: null });
     billingInvoicesInMock.mockResolvedValue({ data: [], error: null });
+    narrativeDraftsOrderMock.mockResolvedValue({ data: [], error: null });
 
     const runRowsById = new Map([
       [
@@ -2607,6 +2630,277 @@ describe("POST /api/reports/[reportId]/generate", () => {
       "report_aerial_source_context_unreadable",
       expect.objectContaining({ reason: expect.stringContaining("could not be read") })
     );
+  });
+
+  /**
+   * A COUNT ON A FUNDER-FACING PACKET MAY NOT COME FROM A FAILED READ.
+   *
+   * `loadReportModelingEvidence` used to `audit.warn()` each of these three
+   * failures and carry on with an empty list. Observing an error in an operator
+   * log is not the same act as declining to state a falsehood in a document: the
+   * operator sees the warning, the funder sees "0 modeling evidence item(s)" and
+   * `modelingEvidenceCount: 0` frozen into the artifact record.
+   *
+   * Each test below fails ONE NAMED READ and asserts both halves — the honest
+   * refusal is present, and the false claim was never written down.
+   */
+  it("refuses the RTP packet when the county-run read fails, instead of counting zero modeling evidence", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: null,
+        rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+        title: "RTP Packet",
+        summary: "Packet summary",
+        report_type: "rtp_packet",
+        status: "draft",
+        created_at: "2026-04-24T00:00:00.000Z",
+        generated_at: null,
+        metadata_json: {},
+      },
+      error: null,
+    });
+    countyRunsLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table county_runs", code: "42501" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Failed to load the modeling evidence this packet reports on",
+      hint: "This is a read failure, not an empty result.",
+    });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "rtp_report_modeling_evidence_load_failed",
+      expect.objectContaining({ message: "permission denied for table county_runs" })
+    );
+    // The claim this refusal exists to prevent — a packet stating the cycle has
+    // no modeling basis — was never written down.
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses the project packet when a county run's modeling evidence cannot be read", async () => {
+    // The worst of the three shapes: the county run loads, its evidence read
+    // fails, and the packet used to render `evidence: null` as "no claim
+    // decision, 0 source manifests, 0 validation checks" — the honesty
+    // firewall's own vocabulary, asserted about a run nobody could read.
+    countyRunsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          run_name: "Nevada County assignment screening",
+          geography_label: "Nevada County, CA",
+          stage: "validated-screening",
+          updated_at: "2026-04-24T01:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    modelingClaimMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table modeling_claim_decisions", code: "42501" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Failed to load the modeling evidence this packet reports on",
+    });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "report_modeling_evidence_load_failed",
+      expect.objectContaining({ message: "permission denied for table modeling_claim_decisions" })
+    );
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("names the pending migration when the modeling evidence read hits a column this deployment lacks", async () => {
+    // The realistic pending-schema case, and the reason the county-run read no
+    // longer goes through `safeOptionalQuery`: the runs are right there, one
+    // column of the projection is not, and the old wrapper answered that with an
+    // empty list — a zero the deployment never established.
+    countyRunsLimitMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "column county_runs.geography_label does not exist", code: "42703" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(503);
+    const body = await response.json();
+    expect(body.error).toBe("This packet's modeling evidence cannot be read yet");
+    expect(body.hint).toContain("Apply the latest Supabase migrations");
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("still generates when the modeling evidence read succeeds and the workspace has no county runs", async () => {
+    // The other half of the distinction. A workspace with no county runs is a
+    // fact the packet may state, and the count may be zero — only a FAILED read
+    // is refused.
+    countyRunsLimitMock.mockResolvedValueOnce({ data: [], error: null });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json
+      ?.sourceContext as Record<string, unknown>;
+    expect(sourceContext).toMatchObject({
+      modelingEvidenceCount: 0,
+      modelingEvidence: [],
+    });
+  });
+
+  it("refuses the project packet when a funding read fails, instead of totalling it to zero", async () => {
+    // The RTP branch already refuses on these four tables. This branch wrapped
+    // the SAME four in `safeOptionalQuery`, so a classified failure printed $0
+    // committed and a fully unfunded project — the identical falsehood, one code
+    // path over.
+    fundingAwardsOrderMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table funding_awards", code: "42501" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Failed to load this project's funding records",
+      hint: "This is a read failure, not an empty result.",
+    });
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "report_funding_load_failed",
+      expect.objectContaining({ message: "permission denied for table funding_awards" })
+    );
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("names the pending migration when the project's funding schema is not there yet", async () => {
+    billingInvoicesOrderMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'relation "public.billing_invoice_records" does not exist', code: "42P01" },
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({
+      error: "This project's funding records schema is not available yet",
+    });
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("does not launder an unclassifiable thrown read into an empty accepted-narrative list", async () => {
+    // `safeOptionalQuery` used to classify the string `Unexpected table:` — this
+    // harness's OWN throw for a table its double does not know — as a benign
+    // absence, in production code. That is what hid the missing
+    // `document_narrative_drafts` double for as long as it did. A thrown error
+    // the route cannot classify must reach the route's unhandled-error path, not
+    // become a packet asserting no operator-accepted narratives exist.
+    narrativeDraftsOrderMock.mockImplementationOnce(() => {
+      throw new Error("Unexpected table: document_narrative_drafts");
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(500);
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "reports_generate_unhandled_error",
+      expect.anything()
+    );
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("actually asks the database for the report's accepted narrative drafts", async () => {
+    // The read the laundered throw was hiding: it has to be reachable for any
+    // assertion about accepted narratives to mean anything.
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(narrativeDraftsEqTargetKindMock).toHaveBeenCalledWith("target_kind", "report_section");
+    expect(narrativeDraftsEqTargetIdMock).toHaveBeenCalledWith(
+      "target_id",
+      "11111111-1111-4111-8111-111111111111"
+    );
+    expect(narrativeDraftsEqStatusMock).toHaveBeenCalledWith("status", "accepted");
   });
 
   it("leaves aerial provenance absent when the project genuinely has no aerial work", async () => {

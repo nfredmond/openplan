@@ -22,6 +22,7 @@ import {
   buildOpportunityFactList,
 } from "@/lib/grants/narrative-evidence";
 import { KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 const DEFAULT_NARRATIVE_MODEL_ID = "claude-opus-4-8";
 
@@ -150,6 +151,49 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // (extracted to narrative-evidence.ts so the per-section drafting route
       // rebuilds the same facts fresh on every call).
       const evidence = await assembleOpportunityEvidence(supabase, opportunity);
+
+      // A FAILED EVIDENCE READ MAY NOT BECOME AN INSTRUCTION TO OMIT EVIDENCE.
+      //
+      // The prompt below turns an empty evidence family into a literal order to
+      // the model — "Do not reference community input, public comments, or
+      // outreach results", "Do not reference modeling or analysis results". That
+      // order is honest ONLY when the read succeeded and genuinely found
+      // nothing. A dropped column, an RLS change, or one transient failure
+      // produces the identical empty value, and the draft that comes back has
+      // the agency's Title VI outreach record and its modeling evidence deleted
+      // out of a competitive federal grant application, with nobody told why.
+      //
+      // So this refuses instead. A missing draft is recoverable; a confidently
+      // weakened application submitted to a funder is not.
+      //
+      // 500 RATHER THAN 503, INCLUDING FOR A PENDING SCHEMA: this endpoint's 503
+      // already means `ai_offline`, and the panel that calls it maps 503 to
+      // "AI drafting is offline". Answering a read failure with 503 here would
+      // replace one wrong sentence with another, so the pending case is carried
+      // in the message instead of the status.
+      if (evidence.readFailures.length > 0) {
+        const subjects = evidence.readFailures.map((failure) => failure.subject);
+        const pending = evidence.readFailures.some((failure) => looksLikePendingSchema(failure.message));
+        audit.error("narrative_evidence_read_failed", {
+          opportunityId: opportunity.id,
+          workspaceId: opportunity.workspace_id,
+          userId: user.id,
+          failedReads: evidence.readFailures,
+          durationMs: Date.now() - startedAt,
+        });
+        return NextResponse.json(
+          {
+            error: `Could not draft a narrative: OpenPlan could not read ${subjects.join(", ")}. This is a read failure, not an empty result — drafting now would tell the model to leave out evidence this workspace may hold. ${
+              pending
+                ? "This deployment looks mid-upgrade; apply the latest Supabase migrations, then try again."
+                : "Try again in a moment."
+            }`,
+            failedReads: subjects,
+          },
+          { status: 500 }
+        );
+      }
+
       const { fundingSummary, bcaScreening, engagementEvidence, kbExcerpts } = evidence;
 
       const modelId = process.env.OPENPLAN_GRANTS_AI_MODEL?.trim() || DEFAULT_NARRATIVE_MODEL_ID;

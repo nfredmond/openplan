@@ -104,6 +104,18 @@ export type NarrativeCompletedProject = {
   updatedAt: string | null;
 };
 
+/**
+ * One read that FAILED while assembling the bundle.
+ *
+ * `subject` names what could not be read, in the words a planner would use for
+ * it, because the caller renders it. `message` is the database's own words, for
+ * the caller's audit line.
+ */
+export type NarrativeEvidenceReadFailure = {
+  subject: string;
+  message: string;
+};
+
 /** Everything the drafting prompts need, assembled from live workspace data. */
 export type OpportunityEvidenceBundle = {
   opportunity: NarrativeEvidenceOpportunity;
@@ -122,8 +134,32 @@ export type OpportunityEvidenceBundle = {
    * Proposal pursuits only: the workspace's completed-projects history, as
    * past-performance evidence. Null for grant pursuits AND when the read
    * failed — absence of facts is honest degradation, never an invented claim.
+   * Null ALONE cannot tell those two apart, which is what `readFailures` below
+   * is for: a failed read is reported there as well.
    */
   completedProjects: NarrativeCompletedProject[] | null;
+  /**
+   * Reads that FAILED while assembling this bundle, in the order attempted.
+   * Empty means every read succeeded, so an empty evidence family really is
+   * "nothing on record".
+   *
+   * THE SEAM, AND WHY IT IS RETURNED RATHER THAN SWALLOWED OR THROWN. Every
+   * evidence family here is legitimately optional — a project with no
+   * benefit-cost screening and no engagement campaign is an ordinary project —
+   * and the drafting prompts turn that genuine absence into a literal
+   * instruction to the model: "Do not reference community input, public
+   * comments, or outreach results." A failed read produces the identical empty
+   * value. A caller that cannot tell the two apart deletes an agency's Title VI
+   * outreach record and its modeling evidence from a competitive federal grant
+   * application, and nobody is told the read failed. So a non-empty list here
+   * means UNKNOWN, not absent, and a caller that would otherwise instruct the
+   * model to omit evidence must refuse to draft instead.
+   *
+   * Returning it (rather than throwing) is the seam this repo has settled on —
+   * see `loadOpportunityPursuitContext` in `src/lib/grants/pursuit.ts` — so the
+   * caller decides whether it is a page disclosure or a route status.
+   */
+  readFailures: NarrativeEvidenceReadFailure[];
 };
 
 export type OpportunityEvidenceOptions = {
@@ -182,6 +218,11 @@ function fundingSummaryClaims(
  * the grants page computes. Read-only; every query is scoped to the
  * opportunity's own project and workspace through the caller's RLS-scoped
  * client.
+ *
+ * NEVER THROWS AND NEVER SWALLOWS. Every failed read is returned in
+ * `readFailures` for the caller to surface. A caller whose prompt turns an
+ * empty evidence family into "do not reference this evidence" MUST check that
+ * list first — see the field's own note for what happens when it does not.
  */
 export async function assembleOpportunityEvidence(
   supabase: unknown,
@@ -200,6 +241,16 @@ export async function assembleOpportunityEvidence(
   let engagementEvidence: ProjectEngagementEvidence | null = null;
   let linkedProjectStage: NarrativeLinkedProjectStage | null = null;
   let completedProjects: NarrativeCompletedProject[] | null = null;
+
+  // Every read below is checked through this, so an evidence family that comes
+  // back empty is distinguishable from one that could not be read at all.
+  const readFailures: NarrativeEvidenceReadFailure[] = [];
+  const collectReadFailure = (subject: string, result: { error?: QueryError } | null | undefined) => {
+    const error = result?.error;
+    if (!error) return;
+    const message = typeof error.message === "string" && error.message.trim() ? error.message.trim() : null;
+    readFailures.push({ subject, message: message ?? "no message reported" });
+  };
 
   if (opportunity.project_id) {
     const [
@@ -256,6 +307,15 @@ export async function assembleOpportunityEvidence(
         .limit(20),
     ]);
 
+    collectReadFailure("the linked project", projectResult);
+    collectReadFailure("the project's funding profile", profileResult);
+    collectReadFailure("the project's funding awards", awardsResult);
+    collectReadFailure("the project's other funding opportunities", projectOpportunitiesResult);
+    collectReadFailure("the project's grant invoices", invoicesResult);
+    collectReadFailure("the project's reports", reportsResult);
+    collectReadFailure("the project's benefit-cost screenings", bcaScreeningsResult);
+    collectReadFailure("the project's engagement campaigns", engagementCampaignsResult);
+
     const projectRow = projectResult.data as {
       id: string;
       name: string;
@@ -296,18 +356,19 @@ export async function assembleOpportunityEvidence(
 
     const reports = (reportsResult.data ?? []) as ProjectGrantModelingReportRow[];
     const reportIds = reports.map((report) => report.id);
-    const { data: artifactsData } = reportIds.length
+    const artifactsResult = reportIds.length
       ? await client
           .from("report_artifacts")
           .select("report_id, generated_at, metadata_json")
           .in("report_id", reportIds)
           .order("generated_at", { ascending: false })
-      : { data: [] };
+      : { data: [], error: null };
+    collectReadFailure("the project's report artifacts", artifactsResult);
 
     modelingEvidence =
       buildProjectGrantModelingEvidenceByProjectId(
         reports,
-        (artifactsData ?? []) as ProjectGrantModelingArtifactRow[]
+        (artifactsResult.data ?? []) as ProjectGrantModelingArtifactRow[]
       ).get(opportunity.project_id) ?? null;
 
     const readiness = describeProjectGrantModelingReadiness(modelingEvidence);
@@ -328,8 +389,9 @@ export async function assembleOpportunityEvidence(
   }
 
   // Proposal pursuits ground past-performance claims on the workspace's
-  // completed-projects history. A failed read leaves completedProjects null —
-  // the model then simply has no past-performance facts to cite.
+  // completed-projects history. A failed read leaves completedProjects null AND
+  // is reported in readFailures — null alone reads as "this workspace has
+  // completed nothing", which is the claim a caller must not make on a failure.
   if (isProposal) {
     const { data: completedRows, error: completedError } = await client
       .from("projects")
@@ -339,6 +401,7 @@ export async function assembleOpportunityEvidence(
       .order("updated_at", { ascending: false })
       .limit(10);
 
+    collectReadFailure("the workspace's completed projects", { error: completedError });
     if (!completedError) {
       completedProjects = ((completedRows ?? []) as Array<Record<string, unknown>>).flatMap(
         (row) =>
@@ -408,6 +471,7 @@ export async function assembleOpportunityEvidence(
     kbExcerpts,
     linkedProjectStage,
     completedProjects,
+    readFailures,
   };
 }
 

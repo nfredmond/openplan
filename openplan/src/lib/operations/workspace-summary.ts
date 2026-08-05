@@ -824,6 +824,25 @@ function recordWorkspaceModuleReadFailure(
   });
 }
 
+/**
+ * The failure log as one sentence, for the summary's own `detail`.
+ *
+ * `WorkspaceCommandBoard` builds the same sentence from the same labels, which
+ * is why they are written as a planner's name for the missing thing. The board
+ * can only say this on a page that renders the board; `summary.detail` travels
+ * to the Dashboard, `/api/analysis/context` and the assistant's runtime cue,
+ * none of which read `unreadable` themselves.
+ */
+function describeUnreadableWorkspaceReads(failures: WorkspaceModuleReadFailure[]): string {
+  const labels = [...new Set(failures.map((failure) => failure.label))];
+  const named =
+    labels.length === 1
+      ? labels[0]
+      : `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
+
+  return `This snapshot could not read ${named}, so those records were not counted at all.`;
+}
+
 function readWorkspaceModuleRows<Row>(
   label: string,
   result: WorkspaceOperationsQueryResult | undefined,
@@ -1076,23 +1095,97 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .limit(WORKSPACE_MODULE_ROW_CAP),
   ]);
 
-  const reportSourceRows = (reportsResult.data ?? []) as WorkspaceOperationsReportSourceRow[];
+  // Every read this loader makes is folded into ONE failure log, declared here
+  // rather than beside the lane reads below because the spine needs it first.
+  // Past this point the builder sees rows and numbers, and any gap it is handed
+  // is already known to mean "not measured" rather than "none".
+  const unreadable: WorkspaceModuleReadFailure[] = [];
+
+  // ── The spine reads ─────────────────────────────────────────────────────────
+  // These nine were spelled `(result.data ?? []) as Row[]`, which answers a read
+  // that FAILED exactly the way it answers a workspace that is empty: no
+  // projects, no plans, no funding opportunities, no packets — and a command
+  // queue that then reports itself clear on ten pages, in `/api/analysis/context`
+  // and in five assistant contexts. They now go through the same
+  // `readWorkspaceModuleRows` seam the workspace lanes already use, so a failure
+  // is named for the planner instead of being rendered as an answer.
+  //
+  // `total` and `clipped` come back for free and are honest for these reads too
+  // (no `count: "exact"`, so a short read reports its own length and a full one
+  // reports `null`), but nothing consumes them yet: `WorkspaceOperationsSummary.
+  // counts` is a non-nullable `number`, read by a dozen surfaces this module does
+  // not own. Making those counts nullable is the remaining half of this fix and
+  // is a change to every consumer, not to this file.
+  const projects = readWorkspaceModuleRows<WorkspaceOperationsProjectSourceRow>(
+    "projects",
+    projectsResult,
+    unreadable
+  );
+  const plans = readWorkspaceModuleRows<WorkspaceOperationsPlanSourceRow>("plans", plansResult, unreadable);
+  const programs = readWorkspaceModuleRows<WorkspaceOperationsProgramSourceRow>(
+    "programs",
+    programsResult,
+    unreadable
+  );
+  const reports = readWorkspaceModuleRows<WorkspaceOperationsReportSourceRow>(
+    "report records",
+    reportsResult,
+    unreadable
+  );
+  const fundingOpportunities = readWorkspaceModuleRows<WorkspaceOperationsFundingOpportunitySourceRow>(
+    "funding opportunities",
+    fundingOpportunitiesResult,
+    unreadable
+  );
+  const fundingAwards = readWorkspaceModuleRows<WorkspaceOperationsFundingAwardSourceRow>(
+    "funding awards",
+    fundingAwardsResult,
+    unreadable
+  );
+  const fundingInvoices = readWorkspaceModuleRows<WorkspaceOperationsBillingInvoiceSourceRow>(
+    "grant reimbursement invoices",
+    fundingInvoicesResult,
+    unreadable
+  );
+  const projectSubmittals = readWorkspaceModuleRows<WorkspaceOperationsProjectSubmittalSourceRow>(
+    "project submittals",
+    projectSubmittalsResult,
+    unreadable
+  );
+  const projectFundingProfiles = readWorkspaceModuleRows<WorkspaceOperationsProjectFundingProfileSourceRow>(
+    "project funding profiles",
+    projectFundingProfilesResult,
+    unreadable
+  );
+
+  const reportSourceRows = reports.rows;
   const reportIds = reportSourceRows.map((report) => report.id).filter((id): id is string => Boolean(id));
   const latestArtifactByReportId = new Map<string, { generated_at: string | null; metadata_json: Record<string, unknown> | null }>();
 
   if (reportIds.length > 0) {
-    const { data: reportArtifactsData } = await supabase
+    // This read supplies the packet timing and stored packet metadata that every
+    // report-governance count is taken from. A failure is NOT a fabricated "no
+    // packet" verdict — the merge below falls back to the report row's own
+    // `generated_at` and `metadata_json`, and `/api/reports/[reportId]/generate`
+    // does write both, so the fallback is real. What it is instead is a snapshot
+    // one generation behind whenever a newer artifact exists, silently: freshness,
+    // the RTP funding review, the release-review loop and the comparison-backed
+    // count are all read off metadata this loader failed to refresh. The numbers
+    // stay computable; what a planner is owed is that they may be stale.
+    const reportArtifactsResult = await supabase
       .from("report_artifacts")
       .select("report_id, generated_at, metadata_json")
       .in("report_id", reportIds)
       .order("generated_at", { ascending: false })
       .limit(Math.max(reportIds.length * 4, reportIds.length));
 
-    for (const artifact of ((reportArtifactsData ?? []) as Array<{
+    const reportArtifacts = readWorkspaceModuleRows<{
       report_id: string;
       generated_at: string | null;
       metadata_json: Record<string, unknown> | null;
-    }>)) {
+    }>("report packet artifacts", reportArtifactsResult, unreadable);
+
+    for (const artifact of reportArtifacts.rows) {
       if (!latestArtifactByReportId.has(artifact.report_id)) {
         latestArtifactByReportId.set(artifact.report_id, {
           generated_at: artifact.generated_at,
@@ -1117,12 +1210,10 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
 
   const aerialProjectPosture = buildAerialProjectPosture(aerialMissions, aerialPackages);
 
-  // Every lane read is folded into observations HERE, in the loader, because
-  // this is the only place the `error` half of each result exists. Past this
-  // point the builder sees numbers or nulls, and a null it is handed is already
-  // known to mean "not measured" rather than "none".
-  const unreadable: WorkspaceModuleReadFailure[] = [];
-
+  // Every lane read joins the same failure log, HERE in the loader, because this
+  // is the only place the `error` half of each result exists. Past this point
+  // the builder sees numbers or nulls, and a null it is handed is already known
+  // to mean "not measured" rather than "none".
   const engagementCampaigns = readWorkspaceModuleRows<WorkspaceEngagementCampaignSourceRow>(
     "engagement campaigns",
     engagementCampaignsResult,
@@ -1256,15 +1347,15 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
   };
 
   return buildWorkspaceOperationsSummaryFromSourceRows({
-    projects: (projectsResult.data ?? []) as WorkspaceOperationsProjectSourceRow[],
-    plans: (plansResult.data ?? []) as WorkspaceOperationsPlanSourceRow[],
-    programs: (programsResult.data ?? []) as WorkspaceOperationsProgramSourceRow[],
+    projects: projects.rows,
+    plans: plans.rows,
+    programs: programs.rows,
     reports: mergedReportSourceRows,
-    fundingOpportunities: (fundingOpportunitiesResult.data ?? []) as WorkspaceOperationsFundingOpportunitySourceRow[],
-    fundingAwards: (fundingAwardsResult.data ?? []) as WorkspaceOperationsFundingAwardSourceRow[],
-    fundingInvoices: (fundingInvoicesResult.data ?? []) as WorkspaceOperationsBillingInvoiceSourceRow[],
-    projectSubmittals: (projectSubmittalsResult.data ?? []) as WorkspaceOperationsProjectSubmittalSourceRow[],
-    projectFundingProfiles: (projectFundingProfilesResult.data ?? []) as WorkspaceOperationsProjectFundingProfileSourceRow[],
+    fundingOpportunities: fundingOpportunities.rows,
+    fundingAwards: fundingAwards.rows,
+    fundingInvoices: fundingInvoices.rows,
+    projectSubmittals: projectSubmittals.rows,
+    projectFundingProfiles: projectFundingProfiles.rows,
     aerialPosture: aerialProjectPosture,
     moduleObservations,
   });
@@ -2395,12 +2486,31 @@ export function buildWorkspaceOperationsSummary({
       : "active"
     : "stable";
 
-  const headline = nextCommand ? nextCommand.title : "Workspace command queue is clear";
+  // An empty queue is the loudest claim this summary makes — it is the sentence
+  // the Dashboard, the Command Center and the assistant's runtime cue all lead
+  // with when nothing needs attention. It may only be spoken when every read
+  // behind it actually completed. A failed read produces no queue item (see the
+  // `> 0` discipline above), so "clear" and "we could not look" arrive here
+  // indistinguishable unless the failure log is consulted.
+  //
+  // Deliberately NOT split by which read failed. The counts sentence names
+  // project and report totals, and one failed spine read makes both wrong; a
+  // failed LANE read means a queue item may be missing, which unmakes "clear"
+  // just as completely. Both are the same sentence to a planner: this snapshot
+  // is incomplete, and its silence is not evidence.
+  const unreadableReads = moduleObservations?.unreadable ?? [];
+  const headline = nextCommand
+    ? nextCommand.title
+    : unreadableReads.length > 0
+      ? "Workspace command queue could not be read in full"
+      : "Workspace command queue is clear";
   const detail = nextCommand
     ? nextCommand.detail
-    : reports.length > 0
-      ? `The current workspace has ${reports.length} report record${reports.length === 1 ? "" : "s"}, ${projects.length} project${projects.length === 1 ? "" : "s"}, and no immediate packet or funding-window pressure visible from this snapshot.`
-      : "Create the next project, plan, program, or report record so the operations runtime has a real command surface to prioritize.";
+    : unreadableReads.length > 0
+      ? `${describeUnreadableWorkspaceReads(unreadableReads)} Nothing needing attention turned up in the records this snapshot could read, which is not the same as nothing needing attention — the unreadable records were not counted at all.`
+      : reports.length > 0
+        ? `The current workspace has ${reports.length} report record${reports.length === 1 ? "" : "s"}, ${projects.length} project${projects.length === 1 ? "" : "s"}, and no immediate packet or funding-window pressure visible from this snapshot.`
+        : "Create the next project, plan, program, or report record so the operations runtime has a real command surface to prioritize.";
 
   return {
     posture,

@@ -10,7 +10,7 @@ import {
   type SurveyConditionQuestionRef,
   type SurveyQuestionType,
 } from "@/lib/engagement/survey";
-import { loadSurveyConditionRefs } from "@/lib/engagement/survey-responses";
+import { readSurveyConditionRefs } from "@/lib/engagement/survey-responses";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
@@ -94,7 +94,20 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.categoryId !== undefined) {
       if (parsed.data.categoryId) {
         const categoryAccess = await validateCampaignCategoryAccess(supabase, campaign.id, parsed.data.categoryId);
-        if (categoryAccess.error || !categoryAccess.category) {
+        // "Category does not belong to this campaign" is a statement about the
+        // agency's own data, so only a read that ANSWERED may make it. Folding
+        // the error in told an operator their category was foreign whenever the
+        // lookup failed — the same split the entry read above already makes.
+        const categoryFailure = classifyRouteReadFailure("the selected category", categoryAccess);
+        if (categoryFailure) {
+          audit.error("question_category_read_failed", {
+            campaignId: campaign.id,
+            categoryId: parsed.data.categoryId,
+            message: categoryFailure.message,
+          });
+          return NextResponse.json(categoryFailure.body, { status: categoryFailure.status });
+        }
+        if (!categoryAccess.category) {
           return NextResponse.json({ error: "Category does not belong to this campaign" }, { status: 400 });
         }
       }
@@ -128,7 +141,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       parsed.data.isActive !== undefined;
 
     if (touchesConditionGraph) {
-      const existingRefs = await loadSurveyConditionRefs(supabase, campaign.id);
+      /**
+       * A SURVEY NOBODY COULD READ IS NOT A SURVEY WITH NOTHING IN IT, and here
+       * the difference is a permissive WRITE rather than a wrong sentence.
+       *
+       * `refs` is what the dependency check below is decided from, so a failed
+       * definition read arrives as an empty survey, `findSurveyQuestionsDependingOn`
+       * finds nothing, and the archive proceeds — leaving every question that was
+       * gated on this one showing to every respondent. Fail CLOSED: the operator
+       * can retry an edit, and cannot un-show a question to the public.
+       */
+      const conditionGraph = await readSurveyConditionRefs(supabase, campaign.id);
+      const conditionGraphFailure = classifyRouteReadFailure("this campaign's survey", conditionGraph);
+      if (conditionGraphFailure) {
+        audit.error("question_condition_graph_read_failed", {
+          campaignId: campaign.id,
+          questionId: routeParams.data.questionId,
+          message: conditionGraphFailure.message,
+        });
+        return NextResponse.json(conditionGraphFailure.body, { status: conditionGraphFailure.status });
+      }
+      const existingRefs = conditionGraph.refs;
       const existingProblems = new Set(
         validateSurveyConditionGraph(existingRefs).map((problem) => `${problem.code}:${problem.questionId}`)
       );
@@ -159,7 +192,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       /**
        * RE-ACTIVATING AN ARCHIVED QUESTION IS A GRAPH CHANGE TOO.
        *
-       * `loadSurveyConditionRefs` only returns ACTIVE questions, so a question
+       * `readSurveyConditionRefs` only returns ACTIVE questions, so a question
        * being brought back is not in `existingRefs` at all — mapping over that
        * list would validate the survey WITHOUT it and let a stale condition
        * through. That is not hypothetical: archive a question, reorder the ones
@@ -179,7 +212,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           ? existingRefs.filter((ref) => ref.id !== routeParams.data.questionId)
           : alreadyActive
             ? // In place, so a tie on `sort_order` keeps the `created_at` order
-              // `loadSurveyConditionRefs` already resolved it in. Re-appending
+              // `readSurveyConditionRefs` already resolved it in. Re-appending
               // would move the edited question behind its ties and invent a
               // forward reference nobody wrote.
               existingRefs.map((ref) => (ref.id === routeParams.data.questionId ? splicedRef : ref))
@@ -239,8 +272,22 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     // same reason archiving is refused above, and worse here because the row is
     // gone: every dependent question would start appearing to everyone, and the
     // operator would have no record of what it used to depend on.
-    const conditionRefs = await loadSurveyConditionRefs(supabase, campaign.id);
-    const dependents = findSurveyQuestionsDependingOn(conditionRefs, routeParams.data.questionId);
+    //
+    // And the read that decides it must have ANSWERED. An unreadable survey
+    // yields no refs, no refs yields no dependents, and no dependents reads as
+    // permission to delete — the row goes and the dependency it was carrying
+    // goes with it, unrecoverably. So a failed read refuses the delete.
+    const conditionGraph = await readSurveyConditionRefs(supabase, campaign.id);
+    const conditionGraphFailure = classifyRouteReadFailure("this campaign's survey", conditionGraph);
+    if (conditionGraphFailure) {
+      audit.error("question_condition_graph_read_failed", {
+        campaignId: campaign.id,
+        questionId: routeParams.data.questionId,
+        message: conditionGraphFailure.message,
+      });
+      return NextResponse.json(conditionGraphFailure.body, { status: conditionGraphFailure.status });
+    }
+    const dependents = findSurveyQuestionsDependingOn(conditionGraph.refs, routeParams.data.questionId);
     if (dependents.length > 0) {
       return NextResponse.json(
         {

@@ -6,9 +6,21 @@ import { describe, expect, it } from "vitest";
  * A package.json script that names a deleted file breaks silently, because the
  * only thing that runs it is a person typing it. `test:guardrail-suite` named
  * `src/test/workspace-provision-route.test.ts` from the moment commit 094fd40b
- * deleted that file along with the founder-era admin console — vitest exits
- * non-zero on a pattern that matches nothing, so the whole guardrail suite was
- * unrunnable and nothing said so.
+ * deleted that file along with the founder-era admin console.
+ *
+ * The failure was quieter than "the suite stopped running", and worse for it:
+ * vitest ignores a filter that matches nothing as long as another filter
+ * matches. So the script ran SEVEN of the eight guards it names, printed
+ * `Test Files 7 passed (7)`, exited 0, and never named the file that was
+ * missing. A gate that silently covers less than it claims keeps answering
+ * "the guardrails held" — which is this repo's own defect class, a read that
+ * failed reported as a read that found nothing wrong.
+ *
+ * Measured 2026-08-04 on vitest 4.1.10, the version this repo pins:
+ * `vitest run <existing> <missing>` exits 0 and runs the existing file alone,
+ * with no mention of the other; only a run where NO filter matches exits 1,
+ * with "No test files found, exiting with code 1". Re-measure before trusting
+ * this paragraph across a vitest major — the guard below does not depend on it.
  *
  * This is the mechanical cross-reference class (see
  * `docs-mechanical-cross-references.test.ts`): the script IS the artifact, and

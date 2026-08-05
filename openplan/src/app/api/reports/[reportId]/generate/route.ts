@@ -78,25 +78,48 @@ import { loadAerialSourceContextRowsForProject } from "@/lib/aerial/queries";
 import type { ReportCitedCountyRun, ReportCitedModelRun } from "@/lib/reports/html";
 import { withCitedModelRunClaimTiers } from "@/lib/reports/run-citations";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 
-function looksLikeOptionalQueryFallback(message: string | null | undefined) {
-  return looksLikePendingSchema(message) || /Unexpected table:/i.test(message ?? "");
-}
-
+/**
+ * A read whose ABSENCE is honest when the schema is genuinely not there: no
+ * table means no rows, so substituting the empty fallback states nothing the
+ * deployment has not established.
+ *
+ * THE `Unexpected table:` BRANCH IS GONE, and its removal is the point. That
+ * phrasing is not a database message — it is the string this route's own test
+ * harness throws for a table its `from()` double does not know about
+ * (`throw new Error(\`Unexpected table: ${table}\`)`). Production code was
+ * classifying a TEST FIXTURE'S wording as a benign absence, which had two costs:
+ * any real thrown error containing that phrase would have been laundered into an
+ * empty result, and — the one that actually bit — the accepted-narrative read
+ * (`document_narrative_drafts`) was never mocked at all, so every test in this
+ * file exercised it as "no accepted narratives" while believing it had exercised
+ * the feature. A harness that cannot fail a named read proves nothing about the
+ * failure path, and this branch is what made that harness impossible.
+ *
+ * The remaining classification is `looksLikePendingSchema` alone. Its widening
+ * (see `src/lib/supabase/pending-schema.ts`) does reach this wrapper: a missing
+ * TABLE now classifies here where the older reports-route pattern only matched a
+ * missing column. That direction is accepted for the reads still routed through
+ * here — a missing table means the rows genuinely do not exist — but it is NOT
+ * accepted for anything the packet TOTALS or COUNTS. Those reads were moved off
+ * this wrapper below and refuse instead, because a total is a number a reader
+ * cannot see a gap in.
+ */
 async function safeOptionalQuery<T>(
   run: () => PromiseLike<{ data: T; error: { message: string; code?: string | null } | null }>,
   fallbackData: T
 ) {
   try {
     const result = await run();
-    if (result.error && looksLikeOptionalQueryFallback(result.error.message)) {
+    if (result.error && looksLikePendingSchema(result.error.message)) {
       return { data: fallbackData, error: null };
     }
 
     return result;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    if (looksLikeOptionalQueryFallback(message)) {
+    if (looksLikePendingSchema(message)) {
       return { data: fallbackData, error: null };
     }
 
@@ -353,6 +376,29 @@ function summarizeRtpFundingProfileScanReadiness(
   };
 }
 
+/**
+ * The result of trying to read the modeling evidence a packet reports on —
+ * RETURNED, not decided here.
+ *
+ * WHY THIS SHAPE. Every read below used to be answered with `audit.warn()` and
+ * an empty list, and the two are not the same act. The warning is something an
+ * OPERATOR may find in host logs; the empty list becomes
+ * `modelingEvidenceCount: 0` in the artifact record and "0 modeling evidence
+ * item(s)" in the RTP packet's funding readiness line — a sentence a board or a
+ * funder reads as established fact about the agency's own modeling work. A count
+ * derived from a read that failed is a falsehood no downstream reader can see
+ * the gap in, because zero looks exactly like zero.
+ *
+ * So this loader follows the seam the rest of the repo already uses for library
+ * reads (`loadOpportunityPursuitContext`, `loadSurveyDefinition`): it neither
+ * swallows nor throws. It hands the failure up, and the ROUTE decides whether a
+ * document may be produced.
+ */
+type ReportModelingEvidenceRead = {
+  items: ReportModelingEvidence[];
+  error: { message: string; code: string | null } | null;
+};
+
 async function loadReportModelingEvidence(input: {
   supabase: ReportsGenerateSupabase;
   audit: ReportsGenerateAudit;
@@ -360,20 +406,24 @@ async function loadReportModelingEvidence(input: {
   workspaceId: string;
   modelingCountyRunId?: string | null;
   auditEventPrefix: "rtp_modeling" | "report_modeling";
-}): Promise<ReportModelingEvidence[]> {
+}): Promise<ReportModelingEvidenceRead> {
   const { supabase, audit, reportId, workspaceId, modelingCountyRunId, auditEventPrefix } = input;
   let countyRuns: ReportCountyRunEvidenceRow[] = [];
 
   if (modelingCountyRunId) {
-    const countyRunResult = await safeOptionalQuery(
-      () =>
-        supabase
-          .from("county_runs")
-          .select("id, workspace_id, run_name, geography_label, stage, updated_at")
-          .eq("id", modelingCountyRunId)
-          .maybeSingle(),
-      null as ReportCountyRunEvidenceRow | null
-    );
+    // BOTH county-run reads here are deliberately NOT wrapped in
+    // `safeOptionalQuery`. These rows are what the evidence count is counted
+    // FROM, so substituting the empty fallback for a classified failure answers
+    // "there is no modeling evidence" on the strength of a query that never ran.
+    // A missing COLUMN on an existing `county_runs` table is the realistic case,
+    // and there the runs are sitting right there while the packet prints zero.
+    // The report even names this run explicitly — `modeling_county_run_id` — so
+    // the packet would be contradicting its own report record.
+    const countyRunResult = await supabase
+      .from("county_runs")
+      .select("id, workspace_id, run_name, geography_label, stage, updated_at")
+      .eq("id", modelingCountyRunId)
+      .maybeSingle();
 
     if (countyRunResult.error) {
       audit.warn(`${auditEventPrefix}_county_run_lookup_failed`, {
@@ -383,7 +433,15 @@ async function loadReportModelingEvidence(input: {
         message: countyRunResult.error.message,
         code: countyRunResult.error.code ?? null,
       });
-    } else if (!countyRunResult.data) {
+      return {
+        items: [],
+        error: { message: countyRunResult.error.message, code: countyRunResult.error.code ?? null },
+      };
+    }
+
+    if (!countyRunResult.data) {
+      // A SUCCESSFUL read that found nothing. The linked run is genuinely gone,
+      // and "no modeling evidence" is a fact this path established.
       audit.warn(`${auditEventPrefix}_county_run_missing`, {
         reportId,
         workspaceId,
@@ -400,16 +458,12 @@ async function loadReportModelingEvidence(input: {
       countyRuns = [countyRunResult.data];
     }
   } else {
-    const countyRunsResult = await safeOptionalQuery(
-      () =>
-        supabase
-          .from("county_runs")
-          .select("id, workspace_id, run_name, geography_label, stage, updated_at")
-          .eq("workspace_id", workspaceId)
-          .order("updated_at", { ascending: false })
-          .limit(5),
-      [] as ReportCountyRunEvidenceRow[]
-    );
+    const countyRunsResult = await supabase
+      .from("county_runs")
+      .select("id, workspace_id, run_name, geography_label, stage, updated_at")
+      .eq("workspace_id", workspaceId)
+      .order("updated_at", { ascending: false })
+      .limit(5);
 
     if (countyRunsResult.error) {
       audit.warn(`${auditEventPrefix}_county_runs_lookup_failed`, {
@@ -418,12 +472,16 @@ async function loadReportModelingEvidence(input: {
         message: countyRunsResult.error.message,
         code: countyRunsResult.error.code ?? null,
       });
-    } else {
-      countyRuns = countyRunsResult.data ?? [];
+      return {
+        items: [],
+        error: { message: countyRunsResult.error.message, code: countyRunsResult.error.code ?? null },
+      };
     }
+
+    countyRuns = (countyRunsResult.data ?? []) as ReportCountyRunEvidenceRow[];
   }
 
-  return Promise.all(
+  const evidenceReads = await Promise.all(
     countyRuns.map(async (countyRun) => {
       const evidenceResult = await loadCountyRunModelingEvidence({
         supabase,
@@ -442,16 +500,49 @@ async function loadReportModelingEvidence(input: {
         });
       }
 
-      return {
-        countyRunId: countyRun.id,
-        runName: countyRun.run_name,
-        geographyLabel: countyRun.geography_label,
-        stage: countyRun.stage,
-        updatedAt: countyRun.updated_at,
-        evidence: evidenceResult.evidence,
-      };
+      return { countyRun, evidenceResult };
     })
   );
+
+  // `evidence: null` reads in the packet as "this run carries no claim decision,
+  // no source manifests, and no validation checks" — which is the honesty
+  // firewall's own vocabulary, stated about a run whose evidence nobody could
+  // read. It is the worst of the three shapes here, so it refuses too.
+  const failedEvidenceRead = evidenceReads.find((read) => read.evidenceResult.error)?.evidenceResult.error;
+
+  if (failedEvidenceRead) {
+    return {
+      items: [],
+      error: { message: failedEvidenceRead.message, code: failedEvidenceRead.code ?? null },
+    };
+  }
+
+  return {
+    items: evidenceReads.map(({ countyRun, evidenceResult }) => ({
+      countyRunId: countyRun.id,
+      runName: countyRun.run_name,
+      geographyLabel: countyRun.geography_label,
+      stage: countyRun.stage,
+      updatedAt: countyRun.updated_at,
+      evidence: evidenceResult.evidence,
+    })),
+    error: null,
+  };
+}
+
+/**
+ * One refusal for both packet branches, so the RTP path and the project path
+ * cannot drift into disagreeing about whether an unreadable evidence table is
+ * fatal. A pending migration answers 503 (come back after migrating); anything
+ * else answers 500 (this deployment cannot describe what happened) — never a 200
+ * carrying a count nobody established.
+ */
+function classifyModelingEvidenceReadFailure(read: ReportModelingEvidenceRead) {
+  return classifyRouteReadFailure("the modeling evidence this packet reports on", read, {
+    pendingError: "This packet's modeling evidence cannot be read yet",
+    pendingHint:
+      "Apply the latest Supabase migrations, then generate again. Generating without them would print a modeling-evidence count this deployment never established.",
+  });
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -645,7 +736,24 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const chapters = chaptersResult.data ?? [];
       const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
       const campaigns = campaignsResult.data ?? [];
-      const modelingEvidence = await modelingEvidencePromise;
+      // The packet prints "N modeling evidence item(s)" in its funding readiness
+      // line and freezes `modelingEvidenceCount` into the artifact record. A
+      // failed read reaching either as 0 tells a board the cycle has no modeling
+      // basis — so the generation refuses instead, in the same shape as the
+      // funding and engagement gates above it.
+      const modelingEvidenceRead = await modelingEvidencePromise;
+      const modelingEvidenceFailure = classifyModelingEvidenceReadFailure(modelingEvidenceRead);
+
+      if (modelingEvidenceFailure) {
+        audit.error("rtp_report_modeling_evidence_load_failed", {
+          reportId: report.id,
+          message: modelingEvidenceFailure.message,
+          pendingSchema: modelingEvidenceFailure.pending,
+        });
+        return NextResponse.json(modelingEvidenceFailure.body, { status: modelingEvidenceFailure.status });
+      }
+
+      const modelingEvidence = modelingEvidenceRead.items;
       const modelingEvidenceMetadata = summarizeReportModelingEvidenceForMetadata(modelingEvidence);
       const modelingEvidenceClaimStatuses = extractReportModelingEvidenceClaimStatuses(modelingEvidence);
       const linkedProjectIds = linkedProjects
@@ -1651,42 +1759,35 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .eq("project_id", report.project_id)
         .order("updated_at", { ascending: false })
         .limit(8),
-      safeOptionalQuery(
-        () =>
-          supabase
-            .from("project_funding_profiles")
-            .select("id, funding_need_amount, local_match_need_amount, updated_at")
-            .eq("project_id", report.project_id)
-            .maybeSingle(),
-        null
-      ),
-      safeOptionalQuery(
-        () =>
-          supabase
-            .from("funding_awards")
-            .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
-            .eq("project_id", report.project_id)
-            .order("updated_at", { ascending: false }),
-        [] as Array<Record<string, unknown>>
-      ),
-      safeOptionalQuery(
-        () =>
-          supabase
-            .from("funding_opportunities")
-            .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
-            .eq("project_id", report.project_id)
-            .order("updated_at", { ascending: false }),
-        [] as Array<Record<string, unknown>>
-      ),
-      safeOptionalQuery(
-        () =>
-          supabase
-            .from("billing_invoice_records")
-            .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
-            .eq("project_id", report.project_id)
-            .order("created_at", { ascending: false }),
-        [] as Array<Record<string, unknown>>
-      ),
+      // THESE FOUR ARE NO LONGER OPTIONAL, and the reason is the sibling branch:
+      // the RTP packet reads the same four tables and refuses on any failure,
+      // because the rows are TOTALLED. This branch wrapped them in
+      // `safeOptionalQuery`, so a classified failure produced `$0 committed` and
+      // a fully unfunded project in a packet a funder keeps — the identical
+      // falsehood, one code path over. The classification also widened when
+      // `looksLikePendingSchema` was consolidated, so the set of failures that
+      // silently zeroed this project's funding had quietly GROWN. Refuse
+      // instead; a pending migration still gets its own 503 below.
+      supabase
+        .from("project_funding_profiles")
+        .select("id, funding_need_amount, local_match_need_amount, updated_at")
+        .eq("project_id", report.project_id)
+        .maybeSingle(),
+      supabase
+        .from("funding_awards")
+        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+        .eq("project_id", report.project_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("funding_opportunities")
+        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+        .eq("project_id", report.project_id)
+        .order("updated_at", { ascending: false }),
+      supabase
+        .from("billing_invoice_records")
+        .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+        .eq("project_id", report.project_id)
+        .order("created_at", { ascending: false }),
     ]);
 
     // Typed-evidence fallback: a database without the report_runs typed-
@@ -1712,10 +1813,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
       issuesResult.error,
       decisionsResult.error,
       meetingsResult.error,
-      fundingProfileResult.error,
-      fundingAwardsResult.error,
-      fundingOpportunitiesResult.error,
-      billingInvoicesResult.error,
     ].filter(Boolean);
 
     // The gate read is scoped by `project_id`, a column 20260728000011 added, and
@@ -1738,6 +1835,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
         { status: 503 }
       );
+    }
+
+    // The funding reads get their OWN gate rather than joining `loadErrors`, so
+    // an unapplied migration answers 503 with a migration hint instead of a
+    // generic 500 an operator cannot act on — the shape this route already uses
+    // for the campaign target and the stage-gate project scope.
+    const fundingReadFailure =
+      classifyRouteReadFailure("this project's funding records", fundingProfileResult) ??
+      classifyRouteReadFailure("this project's funding records", fundingAwardsResult) ??
+      classifyRouteReadFailure("this project's funding records", fundingOpportunitiesResult) ??
+      classifyRouteReadFailure("this project's funding records", billingInvoicesResult);
+
+    if (fundingReadFailure) {
+      audit.error("report_funding_load_failed", {
+        reportId: report.id,
+        projectId: report.project_id,
+        message: fundingReadFailure.message,
+        pendingSchema: fundingReadFailure.pending,
+      });
+      return NextResponse.json(fundingReadFailure.body, { status: fundingReadFailure.status });
     }
 
     if (loadErrors.length > 0 || !projectResult.data) {
@@ -1981,7 +2098,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const scenarioSetLinks = scenarioSetLinksResult.data;
-    const modelingEvidence = await projectModelingEvidencePromise;
+    // Same refusal as the RTP branch, for the same reason: `modelingEvidence`
+    // becomes a COUNT and a claim-tier list in a packet an agency hands a
+    // funder, and a zero derived from a failed read is indistinguishable from a
+    // zero that is true.
+    const modelingEvidenceRead = await projectModelingEvidencePromise;
+    const modelingEvidenceFailure = classifyModelingEvidenceReadFailure(modelingEvidenceRead);
+
+    if (modelingEvidenceFailure) {
+      audit.error("report_modeling_evidence_load_failed", {
+        reportId: report.id,
+        message: modelingEvidenceFailure.message,
+        pendingSchema: modelingEvidenceFailure.pending,
+      });
+      return NextResponse.json(modelingEvidenceFailure.body, { status: modelingEvidenceFailure.status });
+    }
+
+    const modelingEvidence = modelingEvidenceRead.items;
     const modelingEvidenceMetadata = summarizeReportModelingEvidenceForMetadata(modelingEvidence);
     const modelingEvidenceClaimStatuses = extractReportModelingEvidenceClaimStatuses(modelingEvidence);
 

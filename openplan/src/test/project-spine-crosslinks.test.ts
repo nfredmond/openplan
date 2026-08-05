@@ -331,6 +331,57 @@ describe("buildProjectSpineCrosslinkSummary", () => {
     expect(safetyRow?.nextAction).toMatch(/read failure disclosed at the top of this page/i);
   });
 
+  /**
+   * THE CARD PRINTED THE ZEROS IT HAD JUST SAID WERE NOT COUNTS.
+   *
+   * Both refusal branches rewrote the headline, the status, the evidence line
+   * and the caveat — and left `detail` alone. `detail` is the lane's TALLY, so
+   * the safety card read "0 acquisitions · latest: 0 ingested / 0 geocoded"
+   * directly above "nothing shown here is a count of what exists". Those zeros
+   * are the input's default, not a measurement.
+   */
+  it("stops printing a zero tally on a lane it has just called unreadable", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      safety: emptySafety,
+      unreadable: { safety_evidence: true },
+    });
+    const safetyRow = summary.rows.find((row) => row.id === "safety_evidence");
+
+    // The exact string that was on screen.
+    expect(safetyRow?.detail).not.toContain("0 acquisitions");
+    expect(safetyRow?.detail).not.toMatch(/ingested|geocoded/i);
+    expect(safetyRow?.detail).toBe("Counts unavailable — this lane's read failed");
+  });
+
+  it("stops printing a zero tally on a schema-pending lane too", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...baseInput,
+      scenarios: {
+        scenarioSetCount: 0,
+        activeScenarioSetCount: 0,
+        baselineCount: 0,
+        readyAlternativeCount: 0,
+        attachedRunCount: 0,
+      },
+      pendingSchema: { scenario_sets: true },
+    });
+    const scenarioRow = summary.rows.find((row) => row.id === "scenario_sets");
+
+    expect(scenarioRow?.detail).not.toContain("0 scenario sets");
+    expect(scenarioRow?.detail).toBe("Counts unavailable — schema setup pending");
+  });
+
+  it("still prints the real tally on a lane that answered", () => {
+    // Without this the two assertions above would pass on a board that had
+    // stopped counting anything at all.
+    const summary = buildProjectSpineCrosslinkSummary(baseInput);
+
+    expect(summary.rows.find((row) => row.id === "safety_evidence")?.detail).toContain("1 acquisition");
+    expect(summary.rows.find((row) => row.id === "safety_evidence")?.detail).toContain("1,180 ingested");
+    expect(summary.rows.find((row) => row.id === "scenario_sets")?.detail).toContain("1 scenario set");
+  });
+
   it("puts an unreadable lane ahead of a schema-pending one in the operator queue", () => {
     // Schema setup names a migration to apply. A failed read names nothing, and
     // until it is resolved no other row's number is worth acting on — so it is

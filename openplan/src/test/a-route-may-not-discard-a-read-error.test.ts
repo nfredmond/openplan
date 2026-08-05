@@ -1,7 +1,26 @@
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
+import {
+  arrayDiscardedBindings,
+  blankComments,
+  checkedResultNames,
+  classifiedAndDisclosedNames,
+  classifierOnlyBranches,
+  dataOnlyCount,
+  droppingTheErrorBinding,
+  KEPT_ERROR,
+  ratchet,
+  relative,
+  removingTheErrorCheck,
+  removingTheErrorDisclosure,
+  ROOT,
+  sourceFiles,
+  statementEnd,
+  twoStepClassifierOnly,
+  uncheckedResultCount,
+} from "./helpers/read-error-detectors";
 
 /**
  * A ROUTE MAY NOT DISCARD A READ ERROR.
@@ -16,24 +35,40 @@ import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
  *
  * SCOPE: `route.ts` files under `src/app/api`, and nothing else.
  *
- * WHY NO WALK INTO LIBRARY FUNCTIONS, deliberately, in v1. Library loaders here
- * legitimately return a value-plus-error seam for the ROUTE to surface —
+ * WHY NO WALK INTO LIBRARY FUNCTIONS FROM HERE. Library loaders legitimately
+ * return a value-plus-error seam for the ROUTE to surface —
  * `loadOpportunityPursuitContext` returns `{ context, error }` and hands the
  * failure up rather than deciding it, which is the correct shape, not a defect.
- * It also destructures `{ data, error }` from its own read. A walk inward would
- * reach both and could not tell either from a swallow, and a guard
+ * A walk inward from a route could not tell that from a swallow, and a guard
  * that flags correct code is worse than one that misses: the first override
  * teaches everyone downstream that this file is noise, and after that it stops
  * being read at all. The route is where the status is chosen, so the route is
- * where this is checked. Extending inward needs a way to tell a returned seam
- * from a swallowed error, which is a separate change with its own evidence.
+ * where this is checked. `src/lib` is now scanned DIRECTLY, by
+ * `a-library-may-not-discard-a-read-error.test.ts`, which answered the question
+ * this paragraph deferred: the exemption rule below (any `.error` read, any bare
+ * use) already tells a returned seam from a swallow, and was verified against
+ * `pursuit.ts` rather than assumed.
  *
- * TWO DETECTORS, both ratcheted:
+ * FIVE DETECTORS, each ratcheted, ALL FIVE SHARED with the page and library
+ * guards via `helpers/read-error-detectors.ts`:
  *
- *   R1 — DATA-ONLY DESTRUCTURE. `const { data } = await …`. The error is not
- *        bound, so it cannot be checked even in principle.
+ *   R1 — DATA-ONLY DESTRUCTURE. `const { data } = await …`, or the same binding
+ *        behind a ternary. The error is not bound, so it cannot be checked even
+ *        in principle.
  *   R2 — UNCHECKED RESULT. The whole result is bound to a name, and every use of
  *        that name reads `.data`. The error was available and nobody looked.
+ *   R3 — ARRAY DESTRUCTURING. `const [{ data: a }, { data: b }] = await
+ *        Promise.all([…])`, which R1 cannot see because its regex anchors on
+ *        `const {`.
+ *   R4 — A CLASSIFIER AS THE ONLY ERROR BRANCH, inline.
+ *   R5 — the same, split across two statements.
+ *
+ * R3/R4/R5 WERE ADDED 2026-08-04 AND THAT IS THE FINDING, not a tidy-up. This
+ * file had carried its OWN copy of R1 and R2 since it was written and had never
+ * been asked the other three questions, so it certified 179 routes green while
+ * knowing about two of the five shapes — and five R3 sites were sitting in it,
+ * two of them feeding an AI close-loop draft with an unread comment set. The
+ * local copies are gone with them: one parser, three surfaces, no drift.
  *
  * R2 MUST SURVIVE VARIABLE SHADOWING, which is the trap that hid 13 real
  * defects from a plain grep. Two route files declare a result, never check its
@@ -61,20 +96,21 @@ import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
  * exempts it, and distinguishing "passed to something that checks" from "passed
  * to something that swallows" is the same inward walk refused above.
  *
- * BOTH RATCHETS ARE NOW EMPTY (2026-08-04). Every route listed when this guard
- * was written — 19 data-only destructures across 17 files, and 13 shadowed
+ * THE R1 AND R2 RATCHETS ARE EMPTY (2026-08-04). Every route listed when this
+ * guard was written — 19 data-only destructures across 17 files, and 13 shadowed
  * unchecked results across 2 — was repaired in the same run, so the first
- * assertion of each ratchet has become the plain rule its name always claimed.
- * The lists are kept rather than deleted: they are the mechanism that made the
- * cleanup reviewable, and they may only ever shrink. A route that reacquires a
- * discarded read is a regression to fix, not a number to record.
+ * assertion of each has become the plain rule its name always claimed. The lists
+ * are kept rather than deleted: they are the mechanism that made the cleanup
+ * reviewable, and they may only ever shrink. A route that reacquires a discarded
+ * read is a regression to fix, not a number to record. R3 carries the five sites
+ * nothing had ever looked for; R4 and R5 start empty.
  *
  * That is what the third ratchet direction is for, and it did its job here: this
  * file went red the moment the routes were fixed, because a ceiling that
  * outlives its debt is a number that has quietly stopped being true. Lower or
  * delete the entry. Never raise one.
  *
- * AN EMPTY RATCHET PROVES NOTHING ON ITS OWN, which is why the two real-source
+ * AN EMPTY RATCHET PROVES NOTHING ON ITS OWN, which is why the real-source
  * responsiveness tests at the bottom now matter more than the ratchets do. A
  * detector that silently stopped matching real route syntax would make every
  * assertion above pass, and would convert an unchecked area into one everybody
@@ -86,161 +122,10 @@ import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
  * log — keep the route's own audit call, which is what an operator searches for.
  */
 
-const ROOT = process.cwd();
 const API_DIR = path.join(ROOT, "src", "app", "api");
 
-function routeFiles(dir: string): string[] {
-  return readdirSync(dir).flatMap((entry) => {
-    const full = path.join(dir, entry);
-    if (statSync(full).isDirectory()) return routeFiles(full);
-    return entry === "route.ts" ? [full] : [];
-  });
-}
-
-const relative = (file: string) => path.relative(ROOT, file).split(path.sep).join("/");
-
-// ---------------------------------------------------------------------------
-// R1 — data-only destructure
-// ---------------------------------------------------------------------------
-
-/**
- * `const { data } = await …` and `const { data: rows } = await …`.
- *
- * The renamed form requires a plain IDENTIFIER after the colon on purpose. It is
- * what excludes `const { data: { user } } = await supabase.auth.getUser()`,
- * which binds nothing called `data` and is the standard session read in every
- * route in this tree.
- */
-const DATA_ONLY = /const\s*\{\s*data(?:\s*:\s*[A-Za-z_$][\w$]*)?\s*\}\s*=\s*await/g;
-
-function dataOnlyCount(source: string): number {
-  return source.match(DATA_ONLY)?.length ?? 0;
-}
-
-// ---------------------------------------------------------------------------
-// R2 — unchecked result reads
-// ---------------------------------------------------------------------------
-
-/**
- * Blank out comments while PRESERVING every offset, so the scan below can slice
- * by index. A comment naming `result.error` must not vouch for a read, and a
- * comment naming `result.data` must not incriminate one.
- *
- * Whole-line comments only, matching the convention in the page-side guard: a
- * trailing `//` cannot be stripped without a real lexer, because `"https://…"`
- * would go with it.
- */
-function blankComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, " "))
-    .split("\n")
-    .map((line) => (line.trim().startsWith("//") ? " ".repeat(line.length) : line))
-    .join("\n");
-}
-
-/**
- * Index of the `;` that ends the statement starting at `from`.
- *
- * A balanced scan, not a regex. An initializer holds `Promise.all([...])` with
- * arbitrary nesting, and object literals full of semicolon-free commas; a regex
- * that "mostly" found the end would undercount silently, which is the failure
- * mode that makes a guard stop being read.
- */
-function statementEnd(source: string, from: number): number {
-  let depth = 0;
-  for (let i = from; i < source.length; i += 1) {
-    const char = source[i];
-    if ("([{".includes(char)) depth += 1;
-    else if (")]}".includes(char)) depth -= 1;
-    else if (char === ";" && depth === 0) return i;
-  }
-  return source.length;
-}
-
-/** `const x =`, `let x =`, and `const [a, b, c] =`. Object patterns are R1's job. */
-const DECLARATION = /\b(?:const|let|var)\s+(?:([A-Za-z_$][\w$]*)|\[([^\]]*)\])\s*(?::[^=]*)?=/g;
-
-type Declaration = { names: string[]; start: number; end: number; initializer: string };
-
-function declarations(source: string): Declaration[] {
-  const found: Declaration[] = [];
-  for (const match of source.matchAll(DECLARATION)) {
-    const start = match.index ?? 0;
-    const afterEquals = start + match[0].length;
-    const end = statementEnd(source, afterEquals);
-    const names = match[1]
-      ? [match[1]]
-      : match[2]
-          .split(",")
-          .map((part) => part.trim())
-          .filter((part) => /^[A-Za-z_$][\w$]*$/.test(part));
-    found.push({ names, start, end, initializer: source.slice(afterEquals, end) });
-  }
-  return found;
-}
-
-/**
- * A database read, in any of the three spellings that matter:
- * `await supabase.from(…)`, the `cond ? await supabase.from(…) : { data: [],
- * error: null }` ternary, and `await Promise.all([… .from(…) …])`. All three
- * reduce to the same question — does the initializer await something that came
- * out of `.from(`.
- */
-function isReadDeclaration(initializer: string): boolean {
-  return /\bawait\b/.test(initializer) && initializer.includes(".from(");
-}
-
-/**
- * What each use of `name` reads: the property name, or `null` for a bare use.
- *
- * The lookbehind excludes `.name`, so `row.result` is not counted as a use of a
- * variable called `result`.
- */
-function usesOf(source: string, name: string, from: number, to: number): Array<string | null> {
-  const region = source.slice(from, to);
-  const identifier = new RegExp(`(?<![\\w$.])${name.replace(/\$/g, "\\$")}(?![\\w$])`, "g");
-  const uses: Array<string | null> = [];
-  for (const match of region.matchAll(identifier)) {
-    const trailing = region.slice((match.index ?? 0) + name.length);
-    const property = /^\s*\??\.\s*([A-Za-z_$][\w$]*)/.exec(trailing);
-    uses.push(property ? property[1] : null);
-  }
-  return uses;
-}
-
-/**
- * Read results whose error nobody looked at, with the offset just past each
- * declaration — so a proof below can insert a check into REAL source and watch
- * the count fall.
- *
- * The scope rule is the shadowing answer: a declaration's uses are counted only
- * up to the NEXT declaration of the same identifier, because a later,
- * properly-checked declaration cannot vouch for an earlier one.
- */
-function uncheckedResults(source: string): Array<{ name: string; endsAt: number }> {
-  const code = blankComments(source);
-  const declared = declarations(code);
-  const found: Array<{ name: string; endsAt: number }> = [];
-
-  for (let i = 0; i < declared.length; i += 1) {
-    const declaration = declared[i];
-    if (!isReadDeclaration(declaration.initializer)) continue;
-
-    for (const name of declaration.names) {
-      const shadow = declared.slice(i + 1).find((later) => later.names.includes(name));
-      const uses = usesOf(code, name, declaration.end, shadow ? shadow.start : code.length);
-      if (uses.length === 0) continue;
-      if (!uses.includes("data")) continue;
-      if (!uses.every((use) => use === "data")) continue;
-      found.push({ name, endsAt: declaration.end + 1 });
-    }
-  }
-
-  return found;
-}
-
-function uncheckedResultCount(source: string): number {
-  return uncheckedResults(source).length;
+function routeFiles(): string[] {
+  return sourceFiles(API_DIR, (entry) => entry === "route.ts");
 }
 
 // ---------------------------------------------------------------------------
@@ -267,60 +152,94 @@ const KNOWN_DATA_ONLY: ReadonlyArray<readonly [string, number]> = [];
  */
 const KNOWN_UNCHECKED_RESULT: ReadonlyArray<readonly [string, number]> = [];
 
-function countsBy(detect: (source: string) => number): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const file of routeFiles(API_DIR)) {
-    const found = detect(readFileSync(file, "utf8"));
-    if (found > 0) counts.set(relative(file), found);
-  }
-  return counts;
-}
+/**
+ * R3 — `const [{ data: a }, { data: b }] = await Promise.all([…])`.
+ *
+ * MEASURED 2026-08-04, THE FIRST TIME THIS SURFACE WAS ASKED. R3/R4/R5 were
+ * built for the page guard and inherited by the library guard; nothing had ever
+ * run them over `src/app/api`, so this file certified 179 routes green while
+ * knowing about two of the five shapes. Five sites were waiting:
+ *
+ *   closeloop/draft   BOTH bindings — the approved engagement items and their
+ *                     categories — feed the AI close-loop draft. A failed items
+ *                     read does not fail the request; it hands the model an empty
+ *                     comment set and asks it to summarise what the public said.
+ *                     That is this defect class at its worst: the output is a
+ *                     paragraph, in an agency's voice, about a community that was
+ *                     never read.
+ *   export            `categories` only (the items binding already keeps its
+ *                     error) — a CSV export whose category labels silently blank.
+ *   models/…/engagement  both bindings, feeding a run's engagement rollup.
+ *
+ * The fix is the same one the rest of this file describes: destructure to NAMED
+ * results and hand each to `classifyRouteReadFailure`.
+ */
+const KNOWN_ARRAY_DISCARDED: ReadonlyArray<readonly [string, number]> = [
+  ["src/app/api/engagement/campaigns/[campaignId]/closeloop/draft/route.ts", 2],
+  ["src/app/api/engagement/campaigns/[campaignId]/export/route.ts", 1],
+  ["src/app/api/models/[modelId]/runs/[modelRunId]/engagement/route.ts", 2],
+];
 
-function ratchet(
-  name: string,
-  known: ReadonlyArray<readonly [string, number]>,
-  detect: (source: string) => number,
-  fixHint: string
-) {
-  const listed = new Map(known.map(([file, count]) => [file, count]));
+/**
+ * R4/R5 — a pending-schema classifier used as the only error branch, inline or
+ * split across two statements. Measured 2026-08-04: EMPTY across all 179 routes.
+ *
+ * `api/analysis/context` reads as this shape and is not it: it answers 500 on
+ * `result.error && !pending` before the flag is ever used as a ternary test, so
+ * the flag is only reachable when the failure really is a pending migration.
+ * The detector was corrected to see that (any read of the subject's `.error`
+ * outside the classifier argument, within that declaration's scope, is a
+ * disclosure) rather than carved out — see `helpers/read-error-detectors.ts`.
+ */
+const KNOWN_CLASSIFIER_ONLY: ReadonlyArray<readonly [string, number]> = [];
+const KNOWN_TWO_STEP_CLASSIFIER: ReadonlyArray<readonly [string, number]> = [];
 
-  describe(name, () => {
-    it("adds no new route", () => {
-      expect([...countsBy(detect).keys()].filter((file) => !listed.has(file)), fixHint).toEqual([]);
-    });
-
-    it("lets no listed route get worse", () => {
-      const worsened = [...countsBy(detect).entries()]
-        .filter(([file, count]) => listed.has(file) && count > (listed.get(file) ?? 0))
-        .map(([file, count]) => `${file}: ${listed.get(file)} → ${count}`);
-      expect(worsened, "these routes added another discarded read error").toEqual([]);
-    });
-
-    it("keeps the ceiling honest — a fixed route must be removed from the list", () => {
-      const actual = countsBy(detect);
-      const stale = known
-        .filter(([file, count]) => (actual.get(file) ?? 0) < count)
-        .map(
-          ([file, count]) =>
-            `${file}: listed ${count}, actually ${actual.get(file) ?? 0} — lower or delete this entry`
-        );
-      expect(stale, "the ratchet moved; update the list").toEqual([]);
-    });
-  });
-}
+const CLASSIFY_IT =
+  "keep the whole result and pass it to classifyRouteReadFailure from @/lib/http/read-outcome";
 
 ratchet(
   "a route may not discard a read error — data-only destructure",
   KNOWN_DATA_ONLY,
+  routeFiles,
   dataOnlyCount,
-  "these routes destructure `{ data }` and never bind `error` — keep the whole result and pass it to classifyRouteReadFailure from @/lib/http/read-outcome"
+  `these routes destructure \`{ data }\` and never bind \`error\` — ${CLASSIFY_IT}`,
+  "route"
 );
 
 ratchet(
   "a route may not discard a read error — unchecked result",
   KNOWN_UNCHECKED_RESULT,
+  routeFiles,
   uncheckedResultCount,
-  "these routes bind a read result and only ever read `.data` — check it with classifyRouteReadFailure from @/lib/http/read-outcome before using the rows"
+  `these routes bind a read result and only ever read \`.data\` — ${CLASSIFY_IT} before using the rows`,
+  "route"
+);
+
+ratchet(
+  "a route may not discard a read error — array destructuring",
+  KNOWN_ARRAY_DISCARDED,
+  routeFiles,
+  arrayDiscardedBindings,
+  `these routes destructure \`{ data }\` out of an awaited array without keeping \`error\` — ${CLASSIFY_IT}`,
+  "route"
+);
+
+ratchet(
+  "a route may not classify one failure and swallow the rest",
+  KNOWN_CLASSIFIER_ONLY,
+  routeFiles,
+  classifierOnlyBranches,
+  `these routes use looksLikePendingSchema as the ONLY error branch — classify first, then ${CLASSIFY_IT}`,
+  "route"
+);
+
+ratchet(
+  "a route may not split a classifier and its swallow across two statements",
+  KNOWN_TWO_STEP_CLASSIFIER,
+  routeFiles,
+  twoStepClassifierOnly,
+  `these routes declare a pending-schema flag and later use it as the ONLY error branch — ${CLASSIFY_IT}`,
+  "route"
 );
 
 // ---------------------------------------------------------------------------
@@ -485,65 +404,23 @@ describe("R2 counts an unchecked result and survives shadowing", () => {
 // Real-source responsiveness — the proof machinery an EMPTY ratchet needs
 // ---------------------------------------------------------------------------
 
-/** `const { data, error } = await …` — the correct shape, which R1 must not flag. */
-const KEPT_ERROR = /const(\s*\{\s*data(?:\s*:\s*[A-Za-z_$][\w$]*)?)\s*,\s*error(?:\s*:\s*[A-Za-z_$][\w$]*)?\s*\}\s*=\s*await/g;
-
-/** Drop the `error` binding, leaving the `data` one exactly as it was written. */
-function droppingTheErrorBinding(source: string): string {
-  return source.replace(KEPT_ERROR, "const$1 } = await");
-}
-
-/**
- * Read results this file both binds AND checks: every use is `.data` or
- * `.error`, with at least one of each.
- *
- * A result also used BARE is skipped, because R2 exempts those however they are
- * rewritten — including one in the candidate set would make the proof below
- * report a miss that is documented behaviour, not a broken detector.
- */
-function checkedResultNames(source: string): string[] {
-  const code = blankComments(source);
-  const declared = declarations(code);
-  const names: string[] = [];
-
-  for (let i = 0; i < declared.length; i += 1) {
-    const declaration = declared[i];
-    if (!isReadDeclaration(declaration.initializer)) continue;
-
-    for (const name of declaration.names) {
-      const shadow = declared.slice(i + 1).find((later) => later.names.includes(name));
-      const uses = usesOf(code, name, declaration.end, shadow ? shadow.start : code.length);
-      if (!uses.includes("error") || !uses.includes("data")) continue;
-      if (!uses.every((use) => use === "error" || use === "data")) continue;
-      names.push(name);
-    }
-  }
-
-  return names;
-}
-
-/** Rewrite every `NAME.error` read into a `.data` read — the smallest edit that un-checks one result. */
-function removingTheErrorCheck(source: string, name: string): string {
-  return source.replace(
-    new RegExp(`\\b${name.replace(/\$/g, "\\$")}(\\s*\\??\\s*)\\.(\\s*)error\\b`, "g"),
-    `${name}$1.$2data`
-  );
-}
-
 describe("guards the guard", () => {
   it("scans a real route tree", () => {
-    const routes = routeFiles(API_DIR);
+    const routes = routeFiles();
     expect(routes.length).toBeGreaterThan(100);
     expect(routes.every((file) => file.endsWith(`${path.sep}route.ts`))).toBe(true);
   });
 
-  it("runs both detectors over every route without throwing", () => {
-    const routes = routeFiles(API_DIR);
+  it("runs every detector over every route without throwing", () => {
+    const routes = routeFiles();
     let scanned = 0;
     for (const file of routes) {
       const source = readFileSync(file, "utf8");
       expect(typeof dataOnlyCount(source)).toBe("number");
       expect(typeof uncheckedResultCount(source)).toBe("number");
+      expect(typeof arrayDiscardedBindings(source)).toBe("number");
+      expect(typeof classifierOnlyBranches(source)).toBe("number");
+      expect(typeof twoStepClassifierOnly(source)).toBe("number");
       scanned += 1;
     }
     expect(scanned).toBe(routes.length);
@@ -594,7 +471,7 @@ describe("guards the guard", () => {
     const candidates: string[] = [];
     const responded: string[] = [];
 
-    for (const file of routeFiles(API_DIR)) {
+    for (const file of routeFiles()) {
       const source = readFileSync(file, "utf8");
       if (!source.match(KEPT_ERROR)) continue;
       candidates.push(relative(file));
@@ -617,7 +494,7 @@ describe("guards the guard", () => {
     const candidates: string[] = [];
     const responded: string[] = [];
 
-    for (const file of routeFiles(API_DIR)) {
+    for (const file of routeFiles()) {
       const source = readFileSync(file, "utf8");
       const baseline = uncheckedResultCount(source);
       for (const name of checkedResultNames(source)) {
@@ -636,6 +513,73 @@ describe("guards the guard", () => {
       responded.length,
       "R2 stopped matching real route source: turning a checked result's `.error` reads into `.data` reads did not make it unchecked"
     ).toBeGreaterThan(0);
+  });
+
+  /**
+   * R4/R5 arrive on this surface with EMPTY ratchets, which is exactly the state
+   * in which a detector can stop working unnoticed. Their exemption — a result
+   * whose error is read again outside the classifier is disclosed, not
+   * swallowed — is wide by design, so it is the piece most able to silently
+   * swallow everything. Take routes that classify AND disclose, strip only the
+   * disclosure, and require the count to rise.
+   */
+  it("R4/R5 still fire on real route source, not only on synthetic input", () => {
+    const candidates: string[] = [];
+    const responded: string[] = [];
+
+    for (const file of routeFiles()) {
+      const source = readFileSync(file, "utf8");
+      const baseline = classifierOnlyBranches(source) + twoStepClassifierOnly(source);
+      for (const name of classifiedAndDisclosedNames(source)) {
+        candidates.push(`${relative(file)}:${name}`);
+        const stripped = removingTheErrorDisclosure(source, name);
+        if (classifierOnlyBranches(stripped) + twoStepClassifierOnly(stripped) > baseline) {
+          responded.push(`${relative(file)}:${name}`);
+        }
+      }
+    }
+
+    expect(
+      candidates.length,
+      "no route classifies a read failure and also discloses it, so R4/R5 have no real source to prove their exemption against — write a new proof rather than deleting this one"
+    ).toBeGreaterThan(0);
+    expect(
+      responded.length,
+      "R4/R5 stopped matching real route source: removing the disclosure from a classified result did not make it a swallow"
+    ).toBeGreaterThan(0);
+  });
+});
+
+describe("R3/R4/R5 count what they say they count on this surface too", () => {
+  it("R3 counts each awaited array binding that drops its error", () => {
+    expect(
+      arrayDiscardedBindings(
+        `const [{ data: itemsData }, { data: categoriesData }] = await Promise.all([a, b]);`
+      )
+    ).toBe(2);
+    // One binding keeps its error — the export route's shape, which must count 1.
+    expect(
+      arrayDiscardedBindings(
+        `const [{ data: categories }, { data: itemsData, error: itemsError }] = await Promise.all([a, b]);`
+      )
+    ).toBe(1);
+    // Named results are R2's business, not R3's.
+    expect(arrayDiscardedBindings(`const [itemsResult, categoriesResult] = await Promise.all([a, b]);`)).toBe(0);
+    // Not awaited — not a read.
+    expect(arrayDiscardedBindings(`const [{ data: a }] = someSyncThing;`)).toBe(0);
+  });
+
+  it("R4/R5 count a swallow and spare a route that returns before using the flag", () => {
+    expect(classifierOnlyBranches(`const rows = looksLikePendingSchema(r.error?.message) ? [] : (r.data ?? []);`)).toBe(
+      1
+    );
+    // `api/analysis/context`'s shape: everything that is not a pending migration
+    // has already answered 500, so the flag cannot stand for another failure.
+    expect(
+      twoStepClassifierOnly(
+        `const r = await supabase.from("x").select("id");\nconst pending = looksLikePendingSchema(r.error?.message);\nif (r.error && !pending) return NextResponse.json({ error: "failed" }, { status: 500 });\nconst rows = pending ? [] : (r.data ?? []);`
+      )
+    ).toBe(0);
   });
 });
 

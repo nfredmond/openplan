@@ -201,20 +201,56 @@ export async function loadSurveyDefinition(
  * `sortOrder` travels with each entry so a caller can splice a
  * not-yet-written question into the right position and validate the survey that
  * would exist, rather than the one that does.
+ *
+ * `error` TRAVELS BACK BECAUSE THE CALLER IS ABOUT TO WRITE. An empty `refs` is
+ * the same value for "this survey has no active questions" and for "the
+ * definition read failed", and the difference decides whether an archive or a
+ * delete is safe: no dependents found is a permission to proceed, and a caller
+ * that cannot tell the two apart hands that permission out over an outage. Every
+ * caller must fail CLOSED on a non-null error — refuse the edit — rather than
+ * treat an unreadable survey as one with nothing in it.
+ */
+export async function readSurveyConditionRefs(
+  supabase: QueryClient,
+  campaignId: string
+): Promise<{ refs: (SurveyConditionQuestionRef & { sortOrder: number })[]; error: { message: string } | null }> {
+  const { questions, optionsByQuestion, error } = await loadSurveyDefinition(supabase, campaignId);
+  return {
+    refs: questions.map((question) => ({
+      id: question.id,
+      prompt: question.prompt,
+      question_type: question.question_type,
+      config: question.config_json,
+      optionIds: (optionsByQuestion.get(question.id) ?? []).map((option) => option.id),
+      sortOrder: question.sort_order,
+    })),
+    error,
+  };
+}
+
+/**
+ * THE OLD ARRAY SHAPE, KEPT ONLY FOR THE ONE CALLER NOT YET MIGRATED, and it is
+ * unsafe in a way the shape itself cannot express.
+ *
+ * Discarding the error here does not produce a display lie, it produces a
+ * PERMISSIVE WRITE. Every caller feeds these refs to
+ * `findSurveyQuestionsDependingOn` to decide whether other questions are gated
+ * on the one being archived, deleted, or reordered — so a read that FAILED
+ * arrives as an empty survey, reads as "nothing depends on this", and the
+ * destructive edit proceeds. The dependent questions then start appearing to
+ * every respondent unconditionally and nobody is told why.
+ *
+ * The remaining caller is `POST /api/engagement/campaigns/[campaignId]/survey/
+ * questions` (`survey/questions/route.ts`), where the same failure validates a
+ * NEW question's condition against a survey that appears to be empty. Migrate it
+ * to `readSurveyConditionRefs` and delete this adapter; there is nothing else to
+ * preserve here.
  */
 export async function loadSurveyConditionRefs(
   supabase: QueryClient,
   campaignId: string
 ): Promise<(SurveyConditionQuestionRef & { sortOrder: number })[]> {
-  const { questions, optionsByQuestion } = await loadSurveyDefinition(supabase, campaignId);
-  return questions.map((question) => ({
-    id: question.id,
-    prompt: question.prompt,
-    question_type: question.question_type,
-    config: question.config_json,
-    optionIds: (optionsByQuestion.get(question.id) ?? []).map((option) => option.id),
-    sortOrder: question.sort_order,
-  }));
+  return (await readSurveyConditionRefs(supabase, campaignId)).refs;
 }
 
 // ── Operator builder view (ALL questions incl. archived; definition tables) ──
@@ -243,7 +279,24 @@ export type SurveyBuilderQuestion = {
 };
 
 /** Full survey definition for the operator builder: every question (active and
- * archived) with all builder columns + all options. Definition tables only. */
+ * archived) with all builder columns + all options. Definition tables only.
+ *
+ * STILL SWALLOWS BOTH ITS READS, and this comment is the only record of it.
+ * `loadSurveyDefinition` above was given a `{ questions, optionsByQuestion,
+ * error }` seam; this one was not, so a permission failure or an unapplied
+ * migration hands the operator AN EMPTY SURVEY BUILDER for a survey that exists
+ * — the same screen as a campaign nobody has written a question for, which is
+ * the screen an operator fixes by starting over.
+ *
+ * IT IS NOT FIXED HERE ONLY BECAUSE THE FIX SPANS A FILE THIS LANE DOES NOT OWN.
+ * The shape is settled and the change is two edits: return
+ * `{ questions, error }` from here, and in the sole caller —
+ * `src/app/(app)/engagement/[campaignId]/page.tsx` (~line 233) — destructure it
+ * and hand `error` to the `ReadFailureLog` that page already builds (`reads`),
+ * beside the checks it already makes for categories and comments. Doing so also
+ * lowers `src/lib/engagement/survey-responses.ts` from 4 to 2 on the R2 ratchet
+ * in `src/test/a-library-may-not-discard-a-read-error.test.ts`, which must be
+ * edited in the same commit or its staleness assertion fails. */
 export async function loadSurveyBuilderDefinition(
   supabase: QueryClient,
   campaignId: string

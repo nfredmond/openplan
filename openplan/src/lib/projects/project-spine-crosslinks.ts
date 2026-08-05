@@ -245,6 +245,26 @@ const schemaSetupNextAction: Record<ProjectSpineCrosslinkRowId, string> = {
 const unreadableNextAction =
   "Check the read failure disclosed at the top of this page, then reload before deciding what evidence exists.";
 
+/**
+ * `detail` IS A COUNT LINE, AND IT WAS THE ONE FIELD LEFT UNTOUCHED.
+ *
+ * Every lane's `detail` is built from the input numbers — "1 acquisition ·
+ * latest: 1,180 ingested / 1,089 geocoded", "0 RTP cycles · 0 project reports".
+ * The two refusal branches below rewrote the headline, the status, the evidence
+ * line and the caveat, and then let that tally through: the board rendered
+ * "0 acquisitions · latest: 0 ingested / 0 geocoded" directly ABOVE the sentence
+ * "nothing shown here is a count of what exists". Those zeros are the input's
+ * default, not a measurement, and printing them is the same false claim the rest
+ * of the branch exists to refuse. Overriding `detail` is not cosmetic — the
+ * component renders it as the row's own summary line (`row.detail`, immediately
+ * above `sourceLabel`/`sourceDetail`), so it is what a scanning reader takes in
+ * first.
+ */
+const NO_COUNTS_DETAIL = {
+  unreadable: "Counts unavailable — this lane's read failed",
+  schemaPending: "Counts unavailable — schema setup pending",
+} as const;
+
 function withSourceState(
   row: Omit<ProjectSpineCrosslinkRow, "sourceState" | "sourceLabel" | "sourceDetail">,
   pendingSchema: Partial<Record<ProjectSpineCrosslinkRowId, boolean>>,
@@ -264,6 +284,7 @@ function withSourceState(
       sourceDetail: "The database returned an error for this lane, so nothing shown here is a count of what exists.",
       statusLabel: "Could not be read",
       headline: `${row.lane} could not be read, so this board cannot say what evidence this project has in it.`,
+      detail: NO_COUNTS_DETAIL.unreadable,
       evidence:
         "OpenPlan did not treat this as missing evidence; the read failed, and what this lane holds stays unknown until it succeeds.",
       nextAction: unreadableNextAction,
@@ -281,6 +302,7 @@ function withSourceState(
       sourceDetail: "This source table or evidence read is unavailable in the current environment.",
       statusLabel: "Schema setup pending",
       headline: `${row.lane} is waiting on schema setup before records can be trusted.`,
+      detail: NO_COUNTS_DETAIL.schemaPending,
       evidence:
         "OpenPlan did not treat this as missing evidence; the lane is unavailable until the schema or source read is restored.",
       nextAction: schemaSetupNextAction[row.id],

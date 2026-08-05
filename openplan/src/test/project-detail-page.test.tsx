@@ -33,7 +33,13 @@ const modelRunsOrderMock = vi.fn(() => ({ limit: modelRunsLimitMock }));
 const modelRunsStatusEqMock = vi.fn(() => ({ order: modelRunsOrderMock }));
 // The evidence-picker chain is select→eq(ws)→eq(status)→order→limit; the
 // project-provenance count is select→eq(project_id)→limit.
-const modelRunsProjectLimitMock = vi.fn(() => Promise.resolve({ data: [], error: null }));
+// Typed loosely on purpose: the project-attributed count is one of the reads a
+// test needs to be able to FAIL, and an inferred `{ data: never[]; error: null }`
+// makes the failure fixture unassignable.
+type ProjectReadResult = { data: unknown[] | null; error: { code?: string; message: string } | null };
+const modelRunsProjectLimitMock = vi.fn<() => Promise<ProjectReadResult>>(() =>
+  Promise.resolve({ data: [], error: null })
+);
 const modelRunsWsEqMock = vi.fn(() => ({ eq: modelRunsStatusEqMock, limit: modelRunsProjectLimitMock }));
 // The evidence-disclosure loader resolves cited runs not in the picker window
 // via select→in("id", …).
@@ -1590,6 +1596,18 @@ describe("ProjectDetailPage", () => {
       return document.getElementById("project-spine-crosslinks") as HTMLElement;
     }
 
+    /**
+     * The lane NAME appears twice on this board once the lane leads the queue —
+     * once on its own row and once in the "First operator move" aside — so the
+     * row has to be picked by the thing only a row has: it is a link.
+     */
+    function crosslinkRow(laneName: string) {
+      return within(crosslinkBoard())
+        .getAllByText(laneName)
+        .map((node) => node.closest("a"))
+        .find((node): node is HTMLAnchorElement => Boolean(node)) as HTMLElement;
+    }
+
     it("names the crash-ingest lane in the banner AND marks it unavailable on the board", async () => {
       safetyIngestsLimitMock.mockResolvedValue({
         data: null,
@@ -1629,5 +1647,193 @@ describe("ProjectDetailPage", () => {
       expect(within(board).queryByText("Unavailable")).toBeNull();
       expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
     });
+
+    /**
+     * ONE SCREEN, FOUR SURFACES, AND THEY DISAGREED.
+     *
+     * On a failed aerial read this page said all of these at once: the banner
+     * named the failure, the crosslink board said "Could not be read", the
+     * readiness rollup said "No aerial mission or evidence package is linked",
+     * and the evidence panel said "No aerial missions linked yet. Log the first
+     * mission…" and offered the creator. The last two are claims about the
+     * project, and they are the ones a planner acts on — by re-entering a
+     * mission that may already exist.
+     */
+    it("agrees across the banner, the crosslink board, the readiness rollup and the evidence panel on a failed aerial read", async () => {
+      aerialMissionsOrderMock.mockResolvedValue({
+        data: null,
+        error: { code: "42501", message: "permission denied for table aerial_missions" },
+      });
+
+      await renderPage();
+
+      // THE THREE SENTENCES THAT WERE ON SCREEN, asserted absent first so an
+      // unwired surface fails as what it is.
+      expect(screen.queryByText(/No aerial missions linked yet\./i)).toBeNull();
+      expect(screen.queryByText("No aerial mission or evidence package is linked.")).toBeNull();
+      expect(screen.queryByText("No aerial evidence")).toBeNull();
+
+      expect(
+        screen.getByText(/could not read aerial missions and evidence packages/i)
+      ).toBeInTheDocument();
+
+      const aerialRow = crosslinkRow("Aerial evidence");
+      expect(within(aerialRow).getByText("Could not be read")).toBeInTheDocument();
+
+      const rollup = document.getElementById("project-spine-readiness") as HTMLElement;
+      expect(
+        within(rollup).getByText(
+          "Aerial evidence could not be read, so this rollup cannot say whether it is linked."
+        )
+      ).toBeInTheDocument();
+      // The lane's count line goes too: "0 missions · 0 packages" printed beside
+      // "could not be read" is the same claim being refused an inch to its left.
+      expect(within(rollup).queryByText("0 missions · 0 packages")).toBeNull();
+
+      expect(
+        screen.getByText(/Aerial missions and evidence packages could not be read/i)
+      ).toBeInTheDocument();
+    });
+
+    /**
+     * `projectModelRunCount = projectModelRunsResult.error ? 0 : rows.length` —
+     * the whole defect class in one expression, in the file the previous pass
+     * rewrote. With no attributed analysis runs either, that zero makes the
+     * crosslink board say "No analysis link · Add a model run or scenario
+     * comparison before citing analysis outputs" over a project whose runs
+     * simply could not be counted.
+     */
+    it("does not report a project with no analysis when the model_runs read failed", async () => {
+      // Strip the evidence chain so the lane's honest verdict WOULD be "missing"
+      // — otherwise the comparison-backed packet in the default fixture carries
+      // the lane and the zero never shows.
+      reportArtifactsOrderMock.mockResolvedValue({ data: [], error: null });
+      modelRunsProjectLimitMock.mockResolvedValueOnce({
+        data: null,
+        error: { code: "42501", message: "permission denied for table model_runs" },
+      });
+
+      await renderPage();
+
+      const board = crosslinkBoard();
+      expect(within(board).queryByText("No analysis link")).toBeNull();
+      expect(
+        within(board).queryByText(/Add a model run or scenario comparison before citing analysis outputs\./i)
+      ).toBeNull();
+
+      const analysisRow = crosslinkRow("Analysis / modeling");
+      expect(within(analysisRow).getByText("Could not be read")).toBeInTheDocument();
+      expect(within(analysisRow).getByText("Unavailable")).toBeInTheDocument();
+      expect(
+        screen.getByText(/could not read model runs attributed to this project/i)
+      ).toBeInTheDocument();
+    });
+
+    it("still calls the analysis lane missing when both run reads SUCCEED with nothing", async () => {
+      reportArtifactsOrderMock.mockResolvedValue({ data: [], error: null });
+
+      await renderPage();
+
+      const board = crosslinkBoard();
+      expect(within(board).getByText("No analysis link")).toBeInTheDocument();
+      expect(screen.queryByText(/could not read model runs attributed to this project/i)).toBeNull();
+    });
+  });
+
+  /**
+   * AN AGENCY'S MONEY, REPORTED AS ZERO BECAUSE A QUERY FAILED.
+   *
+   * `loadProjectBudgetInputs` classified a pending migration and swallowed every
+   * other error into empty rows, which the budget panel renders as "Billed to
+   * date $0", "Direct spend $0" and "Actual to date $0". The loader now returns
+   * its failures and the page discloses them by name.
+   */
+  describe("budget reads are disclosed rather than totalled to zero", () => {
+    it("names a failed client-invoice read instead of leaving the billed total unexplained", async () => {
+      clientInvoicesLimitMock.mockResolvedValue({
+        data: null,
+        error: { code: "42501", message: "permission denied for table client_invoices" },
+      });
+
+      await renderPage();
+
+      expect(
+        screen.getByText(/could not read client invoices billed to this project/i)
+      ).toBeInTheDocument();
+      expect(screen.getByText(/permission denied for table client_invoices/i)).toBeInTheDocument();
+      // And it is NOT dressed up as a migration somebody could apply.
+      expect(
+        screen.queryByText(/Billed client-invoice lines will appear after the client invoicing migration/i)
+      ).toBeNull();
+    });
+
+    it("names a failed spend-ledger read instead of a project with no direct spend", async () => {
+      spendEntriesLimitMock.mockResolvedValue({
+        data: null,
+        error: { code: "42501", message: "permission denied for table project_spend_entries" },
+      });
+
+      await renderPage();
+
+      expect(
+        screen.getByText(/could not read this project's direct spend ledger/i)
+      ).toBeInTheDocument();
+      expect(
+        screen.queryByText(/The project spend ledger will appear after the spend-ledger migration/i)
+      ).toBeNull();
+    });
+
+    /**
+     * THE SUB-DEFECT: `statedBudgetPending` was widened to `|| Boolean(error)`,
+     * so a permission failure on `projects` was filed as a pending migration —
+     * the one classification whose operator move is "apply a migration". Nobody
+     * would ever apply one, because the column was there and the policy was the
+     * problem.
+     */
+    it("stops filing a permission failure on the stated budget as a pending migration", async () => {
+      projectBudgetMaybeSingleMock.mockResolvedValue({
+        data: null,
+        error: { code: "42501", message: "permission denied for table projects" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText(/could not read this project's stated budget/i)).toBeInTheDocument();
+      expect(screen.getByText(/permission denied for table projects/i)).toBeInTheDocument();
+    });
+
+    it("discloses nothing about the budget when all four reads answer", async () => {
+      await renderPage();
+
+      expect(screen.queryByText(/could not read client invoices billed to this project/i)).toBeNull();
+      expect(screen.queryByText(/could not read this project's direct spend ledger/i)).toBeNull();
+      expect(screen.queryByText(/could not read this project's stated budget/i)).toBeNull();
+      expect(screen.queryByText(/Part of this page could not be read/i)).toBeNull();
+    });
+  });
+
+  it("keeps the aerial, dataset and run empty states when those reads succeed", async () => {
+    // The negative control for the three panels rewritten above: without it,
+    // every assertion there passes on a page that always cries failure and the
+    // honest empty state — the common case — would be gone.
+    await renderPage();
+
+    expect(screen.getByText(/No aerial missions linked yet\./i)).toBeInTheDocument();
+    expect(screen.getByText(/No datasets linked yet\./i)).toBeInTheDocument();
+    expect(screen.getByText(/No runs yet\./i)).toBeInTheDocument();
+    expect(screen.queryByText(/could not be read, so this panel is unavailable/i)).toBeNull();
+  });
+
+  it("says linked datasets could not be read rather than that none are linked", async () => {
+    datasetLinksOrderMock.mockResolvedValue({
+      data: null,
+      error: { code: "42501", message: "permission denied for table data_dataset_project_links" },
+    });
+
+    await renderPage();
+
+    expect(screen.queryByText(/No datasets linked yet\./i)).toBeNull();
+    expect(screen.getByText(/Linked datasets could not be read, so this panel is unavailable/i)).toBeInTheDocument();
+    expect(screen.getByText(/could not read datasets linked to this project/i)).toBeInTheDocument();
   });
 });

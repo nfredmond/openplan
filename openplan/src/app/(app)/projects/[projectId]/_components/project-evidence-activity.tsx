@@ -20,14 +20,36 @@ import type {
   TimelineItem,
 } from "./_types";
 
+/**
+ * EVERY EMPTY STATE IN THIS FILE IS A CLAIM, AND THREE OF THEM WERE FED BY
+ * LOADERS THAT FORCE AN EMPTY ARRAY ON A FAILED READ.
+ *
+ * `lib/aerial/queries.ts` hands back `missions: []` with an `unreadableReason`
+ * when the read fails; the page discloses that reason in its banner and the
+ * crosslink board marks the lane "Could not be read" — and then this panel, on
+ * the same screen, said "No aerial missions linked yet. Log the first mission…"
+ * and offered the creator. The dataset and run panels do the same thing from
+ * lanes the page has already registered as failed.
+ *
+ * So each of the three takes an explicit read-failed flag and branches on THAT,
+ * never on emptiness: an empty array is the same value whether the source is
+ * genuinely empty or unreachable, which is exactly why this class shipped.
+ */
 type ProjectEvidenceAndActivityProps = {
   dataHubMigrationPending: boolean;
   linkedDatasets: LinkedDatasetItem[];
+  /** The dataset-link read failed for a reason that is not a pending migration. */
+  linkedDatasetsReadFailed?: boolean;
   recentRuns: RecentRun[] | null;
+  recentRunsReadFailed?: boolean;
   aerialProjectPosture: AerialProjectPosture;
   aerialProjectPostureDetail: string | null;
   aerialMissions: AerialMission[];
   aerialPackages: AerialPackage[];
+  /** The aerial mission/package read failed; missions[] is not an answer. */
+  aerialReadFailed?: boolean;
+  /** The aerial tables are not in this deployment yet — a different, known state. */
+  aerialSchemaPending?: boolean;
   projectId: string;
   /** The project's study area label, seeded into a new mission's geography note. */
   projectPlaceLabel: string | null;
@@ -37,11 +59,15 @@ type ProjectEvidenceAndActivityProps = {
 export function ProjectEvidenceAndActivity({
   dataHubMigrationPending,
   linkedDatasets,
+  linkedDatasetsReadFailed = false,
   recentRuns,
+  recentRunsReadFailed = false,
   aerialProjectPosture,
   aerialProjectPostureDetail,
   aerialMissions,
   aerialPackages,
+  aerialReadFailed = false,
+  aerialSchemaPending = false,
   projectId,
   projectPlaceLabel,
   timelineItems,
@@ -64,6 +90,11 @@ export function ProjectEvidenceAndActivity({
           {dataHubMigrationPending ? (
             <div className="module-alert mt-5 text-sm">
               Project-linked datasets will appear here once the Data Hub schema is available in this environment.
+            </div>
+          ) : linkedDatasetsReadFailed ? (
+            <div className="module-alert mt-5 text-sm">
+              Linked datasets could not be read, so this panel is unavailable. The failure is named at the top of this
+              page — a failed lookup is not a project with no data sources attached.
             </div>
           ) : linkedDatasets.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
@@ -105,7 +136,12 @@ export function ProjectEvidenceAndActivity({
               </div>
             </div>
           </div>
-          {!recentRuns || recentRuns.length === 0 ? (
+          {recentRunsReadFailed ? (
+            <div className="module-alert mt-5 text-sm">
+              Recent runs could not be read, so this panel is unavailable. Work the failure named at the top of this
+              page before treating this project as having no analysis behind it.
+            </div>
+          ) : !recentRuns || recentRuns.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
               No runs yet. Use <Link href="/explore" className="font-semibold text-foreground underline">Analysis Studio</Link> to create the first project-linked run.
             </div>
@@ -148,7 +184,17 @@ export function ProjectEvidenceAndActivity({
           </div>
         </div>
 
-        {aerialProjectPosture.missionCount === 0 ? (
+        {aerialReadFailed || aerialSchemaPending ? (
+          // NO CREATOR HERE, deliberately. The empty state below pairs its
+          // sentence with "Log the first mission", and offering that over an
+          // unreadable source invites a planner to re-enter a mission that may
+          // already exist — the expensive half of this defect, not the copy.
+          <div className="module-alert mt-5 text-sm">
+            {aerialReadFailed
+              ? "Aerial missions and evidence packages could not be read, so this panel is unavailable. The failure is named at the top of this page; nothing here means this project has no field collection linked to it."
+              : "Aerial missions and evidence packages will appear here once the aerial schema is available in this environment. Until then this project's field collection cannot be counted, which is not the same as it being absent."}
+          </div>
+        ) : aerialProjectPosture.missionCount === 0 ? (
           <div className="mt-5 space-y-4">
             <div className="module-empty-state text-sm">
               No aerial missions linked yet. Log the first mission to start connecting field collection to this project evidence chain.

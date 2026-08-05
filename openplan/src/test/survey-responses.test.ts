@@ -6,6 +6,7 @@ import {
   insertSurveyResponse,
   loadApprovedSurveyAnswers,
   loadSurveyResponseSessions,
+  readSurveyConditionRefs,
 } from "@/lib/engagement/survey-responses";
 
 const OPTS = [
@@ -187,6 +188,100 @@ describe("the sensitive response loaders report a failed read", () => {
     const result = await loadApprovedSurveyAnswers(supabase, "camp-1");
 
     expect(result.rows).toEqual([]);
+    expect(result.error?.message).toBe("statement timeout");
+  });
+});
+
+/**
+ * THE ONE WHERE A DISCARDED ERROR IS A WRITE, NOT A SENTENCE.
+ *
+ * `readSurveyConditionRefs` is what the archive and delete handlers decide
+ * dependency from. Its predecessor threw `loadSurveyDefinition`'s error away and
+ * returned a bare array, so an unreadable survey and a survey with no active
+ * questions produced the identical value: `[]`. `findSurveyQuestionsDependingOn`
+ * then found nothing to depend on the question being removed, and the delete
+ * went through — which is the read failure being answered as PERMISSION.
+ */
+describe("readSurveyConditionRefs — an unreadable survey is not an empty one", () => {
+  const CONDITION_QUESTION = {
+    id: "q1",
+    question_type: "single_choice",
+    prompt: "How do you travel?",
+    help_text: null,
+    required: false,
+    sort_order: 3,
+    config_json: { some: "config" },
+    category_id: null,
+  };
+
+  it("returns the refs, in display order with their option ids, when both reads answered", async () => {
+    const result = await readSurveyConditionRefs(
+      mockReadClient({
+        engagement_survey_questions: { rows: [CONDITION_QUESTION] },
+        engagement_survey_question_options: {
+          rows: [{ id: "o1", question_id: "q1", label: "Bus", value: null, sort_order: 0, metadata_json: {} }],
+        },
+      }),
+      "camp-1"
+    );
+
+    expect(result.error).toBeNull();
+    expect(result.refs).toEqual([
+      {
+        id: "q1",
+        prompt: "How do you travel?",
+        question_type: "single_choice",
+        config: { some: "config" },
+        optionIds: ["o1"],
+        sortOrder: 3,
+      },
+    ]);
+  });
+
+  it("reports a null error when the campaign genuinely has no active questions", async () => {
+    const result = await readSurveyConditionRefs(
+      mockReadClient({
+        engagement_survey_questions: { rows: [] },
+        engagement_survey_question_options: { rows: [] },
+      }),
+      "camp-1"
+    );
+
+    expect(result.refs).toEqual([]);
+    expect(result.error).toBeNull();
+  });
+
+  it("hands back the error when the QUESTION read fails, so no caller reads [] as 'nothing depends on this'", async () => {
+    const result = await readSurveyConditionRefs(
+      mockReadClient({
+        engagement_survey_questions: { error: { message: "permission denied for table engagement_survey_questions" } },
+        engagement_survey_question_options: { rows: [] },
+      }),
+      "camp-1"
+    );
+
+    expect(result.refs).toEqual([]);
+    expect(result.error?.message).toBe("permission denied for table engagement_survey_questions");
+  });
+
+  /**
+   * The quieter half, and the reason the seam carries the FIRST failure of the
+   * two rather than only the question one: the options read failing leaves every
+   * question present with an empty `optionIds`, which is not an absence of
+   * refs at all — it is a survey whose conditions all appear to point at options
+   * that no longer exist.
+   */
+  it("hands back the error when only the OPTION read fails, even though refs came back", async () => {
+    const result = await readSurveyConditionRefs(
+      mockReadClient({
+        engagement_survey_questions: { rows: [CONDITION_QUESTION] },
+        engagement_survey_question_options: { error: { message: "statement timeout" } },
+      }),
+      "camp-1"
+    );
+
+    expect(result.refs).toHaveLength(1);
+    expect(result.refs[0].optionIds).toEqual([]);
     expect(result.error?.message).toBe("statement timeout");
   });
 });

@@ -40,6 +40,23 @@ type KbSearchState =
   | { status: "done"; query: string; scopeProjectId: string; hits: KnowledgeBaseExcerpt[] }
   | { status: "failed"; query: string; message: string };
 
+/**
+ * WHERE the list currently in `documents` came from, and whether the read that
+ * produced it succeeded — kept apart from the rows themselves for the same
+ * reason as above.
+ *
+ * "12 documents" is a count of the planner's corpus and "linked to Corridor
+ * Rehab" is a claim about what a project holds. Neither may be assembled from a
+ * read that failed. Two ways they were before: the page's own `kb_documents`
+ * read failing rendered "0 documents in this workspace" directly above the
+ * paragraph saying the list could not be read; and a failed project refetch
+ * kept the PREVIOUS workspace-wide rows on screen and relabelled them
+ * "N documents linked to <Project>" — a count and a scope, both invented.
+ */
+type KbDocumentListState =
+  | { status: "loaded"; scopeProjectId: string }
+  | { status: "failed"; scopeProjectId: string };
+
 function statusTone(status: KbDocumentStatus): StatusTone {
   switch (status) {
     case "ready":
@@ -103,6 +120,10 @@ export function KnowledgeBaseWorkspace({
   readFailures = { documents: false, projects: false },
 }: KnowledgeBaseWorkspaceProps) {
   const [documents, setDocuments] = useState<KbDocumentRow[]>(initialDocuments);
+  const [documentList, setDocumentList] = useState<KbDocumentListState>(() => ({
+    status: readFailures.documents ? "failed" : "loaded",
+    scopeProjectId: initialProjectId ?? "",
+  }));
   const [mode, setMode] = useState<"upload" | "paste">("upload");
   const [docKind, setDocKind] = useState<KbDocKind>("other");
   const [title, setTitle] = useState("");
@@ -123,6 +144,12 @@ export function KnowledgeBaseWorkspace({
     [projects]
   );
   const selectedProjectName = projectId ? projectNameById.get(projectId) ?? null : null;
+  // The scope the ROWS belong to, which is not always the scope the selector
+  // shows: a failed refetch leaves the selector on the project the planner
+  // picked while the list itself was never read for it.
+  const listScopeName = documentList.scopeProjectId
+    ? projectNameById.get(documentList.scopeProjectId) ?? "the selected project"
+    : null;
 
   // Only `ready` documents are indexed by the search RPC. A planner reading
   // "nothing matched" is owed the fact that some of their corpus was never
@@ -136,7 +163,7 @@ export function KnowledgeBaseWorkspace({
    * partial result into an apparently complete one. Same fact, same sentence,
    * whether or not anything matched.
    */
-  const coverageCaveat = readFailures.documents
+  const coverageCaveat = documentList.status === "failed"
     ? "The document list could not be read, so this screen cannot say how much of your corpus was searchable."
     : unsearchableCount > 0
       ? `${unsearchableCount} of the ${documents.length} document${documents.length === 1 ? "" : "s"} listed below ${unsearchableCount === 1 ? "is" : "are"} not indexed yet (only documents with status "ready" are searched).`
@@ -169,8 +196,14 @@ export function KnowledgeBaseWorkspace({
         );
       }
       setDocuments(payload.documents ?? []);
+      setDocumentList({ status: "loaded", scopeProjectId: nextProjectId });
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Failed to load documents");
+      // The rows on screen belong to the scope the planner just LEFT. Keeping
+      // them would restate them as this project's documents — a count and a
+      // link for a project whose list was never read. Drop them and say so.
+      setDocuments([]);
+      setDocumentList({ status: "failed", scopeProjectId: nextProjectId });
     } finally {
       setListLoading(false);
     }
@@ -546,20 +579,22 @@ export function KnowledgeBaseWorkspace({
           <p className="module-section-description">
             {listLoading
               ? "Loading documents…"
-              : `${documents.length} document${documents.length === 1 ? "" : "s"} ${
-                  selectedProjectName
-                    ? `linked to ${selectedProjectName}`
-                    : projectId
-                      ? "linked to the selected project"
-                      : "in this workspace"
-                }.`}
+              : documentList.status === "failed"
+                ? listScopeName
+                  ? `The list of documents linked to ${listScopeName} could not be read, so this screen cannot say how many there are.`
+                  : "The document list could not be read, so this screen cannot say how many documents this workspace has."
+                : `${documents.length} document${documents.length === 1 ? "" : "s"} ${
+                    listScopeName ? `linked to ${listScopeName}` : "in this workspace"
+                  }.`}
           </p>
         </div>
 
         {documents.length === 0 ? (
           <div className="module-empty-state">
-            {readFailures.documents
-              ? "The document list could not be read, so it is not shown. This does not mean the workspace has no documents — do not re-upload on the strength of this screen."
+            {documentList.status === "failed"
+              ? listScopeName
+                ? `The list of documents linked to ${listScopeName} could not be read, so it is not shown. This does not mean none are linked — do not re-upload on the strength of this screen.`
+                : "The document list could not be read, so it is not shown. This does not mean the workspace has no documents — do not re-upload on the strength of this screen."
               : projectId
                 ? "No documents are attached to this project yet. Pick it in the selector above and upload — or switch back to all documents. Other workspace documents may still exist."
                 : "No documents yet. Upload a plan or paste text above to start building this workspace's corpus."}

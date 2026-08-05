@@ -344,3 +344,150 @@ describe("workspace summary RTP funding review", () => {
     });
   });
 });
+
+/**
+ * THE SPINE READS MAY NOT ANSWER A FAILURE AS AN EMPTY WORKSPACE.
+ *
+ * The nine reads behind `counts` were spelled `(result.data ?? []) as Row[]`,
+ * which gives a permission error, a missing table and a genuinely empty
+ * workspace the same answer: zero of everything, no queue item, and a summary
+ * whose headline says the command queue is clear. That summary is read by the
+ * Dashboard, the Command Center, `/api/analysis/context`, the Data Hub and five
+ * assistant contexts, so one swallowed error becomes "this workspace has no
+ * projects" everywhere at once — including inside a grant narrative.
+ *
+ * A MOCKED SUPABASE CLIENT CANNOT FIND THIS BY ITSELF: it returns its fixture
+ * whatever the code asks for, so the failure path is unreachable unless the
+ * harness is taught to fail a NAMED table. The stub above takes
+ * `{ error: { message } }` per table, which is what makes these tests real.
+ *
+ * Each one asserts both halves — the honest new disclosure is present AND the
+ * old false claim is gone — because a test that only checks the new sentence
+ * would pass with the old one still printed beside it.
+ */
+describe("workspace summary reads that failed", () => {
+  const failedRead = (table: string) => ({ error: { message: `permission denied for table ${table}` } });
+
+  it("names a failed projects read instead of reporting a workspace with no projects", async () => {
+    const supabase = createWorkspaceOperationsSupabaseStub({
+      projects: failedRead("projects"),
+    });
+
+    const summary = await loadWorkspaceOperationsSummaryForWorkspace(supabase, "workspace-1");
+
+    expect(summary.moduleObservations?.unreadable).toContainEqual({
+      label: "projects",
+      message: "permission denied for table projects",
+    });
+    // The old answers, both gone.
+    expect(summary.headline).not.toBe("Workspace command queue is clear");
+    expect(summary.detail).not.toMatch(/create the next project/i);
+    expect(summary.headline).toBe("Workspace command queue could not be read in full");
+    expect(summary.detail).toContain("could not read projects");
+    expect(summary.detail).toMatch(/not the same as nothing needing attention/i);
+  });
+
+  it("names every spine read it could not make, not only the first", async () => {
+    const supabase = createWorkspaceOperationsSupabaseStub({
+      projects: failedRead("projects"),
+      plans: failedRead("plans"),
+      programs: failedRead("programs"),
+      reports: failedRead("reports"),
+      funding_opportunities: failedRead("funding_opportunities"),
+      funding_awards: failedRead("funding_awards"),
+      billing_invoice_records: failedRead("billing_invoice_records"),
+      project_submittals: failedRead("project_submittals"),
+      project_funding_profiles: failedRead("project_funding_profiles"),
+    });
+
+    const summary = await loadWorkspaceOperationsSummaryForWorkspace(supabase, "workspace-1");
+
+    expect(summary.moduleObservations?.unreadable.map((failure) => failure.label)).toEqual(
+      expect.arrayContaining([
+        "projects",
+        "plans",
+        "programs",
+        "report records",
+        "funding opportunities",
+        "funding awards",
+        "grant reimbursement invoices",
+        "project submittals",
+        "project funding profiles",
+      ])
+    );
+    expect(summary.moduleObservations?.unreadable.map((failure) => failure.message)).toContain(
+      "permission denied for table billing_invoice_records"
+    );
+    expect(summary.headline).toBe("Workspace command queue could not be read in full");
+
+    // THE HALF OF THIS DEFECT THAT IS NOT CLOSED, PINNED SO IT CANNOT BE
+    // MISTAKEN FOR CLOSED. `counts` is a non-nullable `number` read by a dozen
+    // surfaces outside this module, so a failed read still lands there as a
+    // zero. Everything a planner READS about that zero now carries the
+    // disclosure; the field itself still lies, and making it `number | null` is
+    // a change to every consumer.
+    expect(summary.counts.projects).toBe(0);
+    expect(summary.counts.fundingOpportunities).toBe(0);
+  });
+
+  it("says the report packet artifacts could not be read rather than dating packets silently", async () => {
+    // Freshness, the RTP funding review and the comparison-backed count are all
+    // taken off the artifact metadata this read supplies. When it fails they
+    // fall back to the report row, which IS written at generation — so the
+    // numbers are computable but potentially a generation stale, and that is
+    // what has to be said out loud.
+    const supabase = createWorkspaceOperationsSupabaseStub({
+      reports: [
+        {
+          id: "report-artifact-read-failed",
+          title: "Regional packet",
+          status: "generated",
+          latest_artifact_kind: "html",
+          generated_at: "2026-04-12T20:00:00.000Z",
+          updated_at: "2026-04-12T20:00:00.000Z",
+          metadata_json: null,
+        },
+      ],
+      report_artifacts: failedRead("report_artifacts"),
+    });
+
+    const summary = await loadWorkspaceOperationsSummaryForWorkspace(supabase, "workspace-1");
+
+    expect(summary.moduleObservations?.unreadable).toContainEqual({
+      label: "report packet artifacts",
+      message: "permission denied for table report_artifacts",
+    });
+  });
+
+  it("still calls a genuinely empty workspace empty when every read succeeded", async () => {
+    // The control that keeps the fix from being "hedge everything". Without it,
+    // replacing the whole branch with the disclosure would pass every test
+    // above while making the summary useless on a working deployment.
+    const supabase = createWorkspaceOperationsSupabaseStub({});
+
+    const summary = await loadWorkspaceOperationsSummaryForWorkspace(supabase, "workspace-1");
+
+    expect(summary.moduleObservations?.unreadable).toEqual([]);
+    expect(summary.headline).toBe("Workspace command queue is clear");
+    expect(summary.detail).toMatch(/create the next project/i);
+  });
+
+  it("keeps saying a lane it could not read is unreadable, alongside the spine", async () => {
+    // The spine reads joined a log the workspace lanes already used. Both must
+    // still arrive, or extending the mechanism traded one blind spot for
+    // another.
+    const supabase = createWorkspaceOperationsSupabaseStub({
+      plans: failedRead("plans"),
+      model_runs: failedRead("model_runs"),
+    });
+
+    const summary = await loadWorkspaceOperationsSummaryForWorkspace(supabase, "workspace-1");
+
+    expect(summary.moduleObservations?.unreadable.map((failure) => failure.label)).toEqual(
+      expect.arrayContaining(["plans", "model runs"])
+    );
+    expect(summary.moduleObservations?.modeling.modelRuns).toBeNull();
+    expect(summary.detail).toContain("plans");
+    expect(summary.detail).toContain("model runs");
+  });
+});

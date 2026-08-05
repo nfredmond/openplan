@@ -56,7 +56,23 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (parsed.data.categoryId) {
       const categoryAccess = await validateCampaignCategoryAccess(supabase, access.campaign.id, parsed.data.categoryId);
-      if (categoryAccess.error || !categoryAccess.category) {
+      // THE SAME SPLIT THE PRIOR-STATUS READ MAKES BELOW, and it was missing
+      // here. "Category does not belong to this campaign" is a claim about the
+      // agency's own data; a read that never answered cannot support it, and an
+      // operator told their own theme is foreign has no way to find out that the
+      // lookup simply failed. The classifier decides the status, the 400 stays
+      // reserved for a category the read actually could not find.
+      const categoryFailure = classifyRouteReadFailure("the selected category", categoryAccess);
+      if (categoryFailure) {
+        audit.error("entry_category_read_failed", {
+          campaignId: access.campaign.id,
+          entryId: routeParams.data.entryId,
+          categoryId: parsed.data.categoryId,
+          message: categoryFailure.message,
+        });
+        return NextResponse.json(categoryFailure.body, { status: categoryFailure.status });
+      }
+      if (!categoryAccess.category) {
         return NextResponse.json({ error: "Category does not belong to this campaign" }, { status: 400 });
       }
     }

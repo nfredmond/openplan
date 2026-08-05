@@ -1,6 +1,29 @@
+/**
+ * THE ROLLUP HAD NO FAILURE CHANNEL AT ALL, AND IT SITS ON THE SAME SCREEN AS A
+ * BOARD THAT DOES.
+ *
+ * Every lane below is decided from a count, and the page hands it a count of
+ * zero whether the read returned nothing or failed outright. So on a failed
+ * aerial read the project detail page said four different things at once: the
+ * banner named the failure, the crosslink board marked the lane "Could not be
+ * read", this rollup said "No aerial mission or evidence package is linked", and
+ * the evidence panel invited the planner to log their first mission. The
+ * unlinked sentence is a claim about the project, and it is the one a planner
+ * acts on.
+ *
+ * The two new statuses are the same distinction the crosslink board draws, on
+ * purpose: `schema_pending` is a known state with a named operator move, and
+ * `unreadable` is a read that failed and names none. They are OPT-IN — a caller
+ * that passes no maps gets exactly the three statuses this rollup always had.
+ */
 import type { StatusTone } from "@/lib/ui/status";
 
-export type ProjectSpineReadinessStatus = "ready_current" | "stale_needs_review" | "missing_not_linked";
+export type ProjectSpineReadinessStatus =
+  | "ready_current"
+  | "stale_needs_review"
+  | "missing_not_linked"
+  | "schema_pending"
+  | "unreadable";
 
 export type ProjectSpineReadinessLaneKey =
   | "rtp"
@@ -31,6 +54,12 @@ export type ProjectSpineReadinessRollup = {
   readyCount: number;
   staleCount: number;
   missingCount: number;
+  /** Lanes waiting on a migration. Not counted as missing — nobody looked yet. */
+  schemaPendingCount: number;
+  /** Lanes whose read failed. Not counted as missing — the lookup failed. */
+  unreadableCount: number;
+  /** The failed lanes by label, so a caller can name them without re-deriving. */
+  unreadableLaneLabels: string[];
   latestSourceUpdatedAt: string | null;
   reviewedAgainstAt: string | null;
   lanes: ProjectSpineReadinessLane[];
@@ -65,18 +94,26 @@ export type BuildProjectSpineReadinessInput = {
     readyPackageCount: number;
     verificationReadiness?: "none" | "pending" | "partial" | "ready" | string | null;
   };
+  /** Lanes whose feeding read could not run because the deployment is behind a migration. */
+  pendingSchema?: Partial<Record<ProjectSpineReadinessLaneKey, boolean>>;
+  /** Lanes whose feeding read FAILED for any other reason. Wins over `pendingSchema`. */
+  unreadable?: Partial<Record<ProjectSpineReadinessLaneKey, boolean>>;
 };
 
 const READINESS_LABELS: Record<ProjectSpineReadinessStatus, string> = {
   ready_current: "Ready/current",
   stale_needs_review: "Stale/needs review",
   missing_not_linked: "Missing/not linked",
+  schema_pending: "Schema setup pending",
+  unreadable: "Could not be read",
 };
 
 const READINESS_TONES: Record<ProjectSpineReadinessStatus, StatusTone> = {
   ready_current: "success",
   stale_needs_review: "warning",
   missing_not_linked: "neutral",
+  schema_pending: "warning",
+  unreadable: "danger",
 };
 
 function latestDate(...values: Array<string | null | undefined>): string | null {
@@ -125,6 +162,46 @@ function lane(
   };
 }
 
+/**
+ * Rewrite a lane whose feeding read did not answer.
+ *
+ * `countLabel` is overridden along with the prose, for the same reason the
+ * crosslink board overrides `detail`: on a failed read it says "0 linked cycles"
+ * or "0 missions · 0 packages", and a zero printed beside "could not be read" is
+ * the claim being refused an inch to its right.
+ */
+function withReadState(
+  item: ProjectSpineReadinessLane,
+  pendingSchema: Partial<Record<ProjectSpineReadinessLaneKey, boolean>>,
+  unreadable: Partial<Record<ProjectSpineReadinessLaneKey, boolean>>
+): ProjectSpineReadinessLane {
+  // UNREADABLE IS CHECKED FIRST. A pending migration names an operator move; a
+  // failed read names none. Letting the known state win would send someone to
+  // apply a migration that is not the problem and would mask the failure the
+  // page's own banner has already disclosed.
+  const status: ProjectSpineReadinessStatus | null = unreadable[item.key]
+    ? "unreadable"
+    : pendingSchema[item.key]
+      ? "schema_pending"
+      : null;
+  if (!status) return item;
+
+  return {
+    ...item,
+    status,
+    tone: READINESS_TONES[status],
+    headline:
+      status === "unreadable"
+        ? `${item.label} could not be read, so this rollup cannot say whether it is linked.`
+        : `${item.label} is waiting on schema setup, so its records cannot be counted yet.`,
+    detail:
+      status === "unreadable"
+        ? "Work the read failure named at the top of this page and reload; a lane that could not be read is not a lane with nothing in it."
+        : "Apply or verify the missing migration and reload before deciding this lane is not linked.",
+    countLabel: "Count unavailable",
+  };
+}
+
 export function formatProjectSpineReadinessStatus(status: ProjectSpineReadinessStatus): string {
   return READINESS_LABELS[status];
 }
@@ -143,13 +220,13 @@ export function buildProjectSpineReadinessRollup(
     input.aerial.latestUpdatedAt
   );
 
-  const lanes: ProjectSpineReadinessLane[] = [];
+  const rawLanes: ProjectSpineReadinessLane[] = [];
 
   const rtpStale =
     input.rtp.count > 0 &&
     Boolean(input.rtp.postureUpdatedAt) &&
     isAfter(input.rtp.latestUpdatedAt, input.rtp.postureUpdatedAt);
-  lanes.push(
+  rawLanes.push(
     lane(
       "rtp",
       "RTP portfolio",
@@ -199,7 +276,7 @@ export function buildProjectSpineReadinessRollup(
           ? "At least one report packet has a governance hold to review."
           : "At least one report packet needs freshness, packet-generation, or governance review."
         : "Linked report packets look current from recorded freshness checks.";
-  lanes.push(
+  rawLanes.push(
     lane(
       "reports",
       "Report packets",
@@ -217,7 +294,7 @@ export function buildProjectSpineReadinessRollup(
   );
 
   const grantsStale = input.grants.count > 0 && isAfter(input.grants.latestUpdatedAt, latestPacketGeneratedAt);
-  lanes.push(
+  rawLanes.push(
     lane(
       "grants",
       "Grant/funding records",
@@ -239,7 +316,7 @@ export function buildProjectSpineReadinessRollup(
   );
 
   const engagementStale = input.engagement.count > 0 && isAfter(input.engagement.latestUpdatedAt, latestPacketGeneratedAt);
-  lanes.push(
+  rawLanes.push(
     lane(
       "engagement",
       "Engagement signal",
@@ -262,7 +339,7 @@ export function buildProjectSpineReadinessRollup(
 
   const analysisLinkedCount = Math.max(input.analysis.count, input.analysis.evidenceBackedReportCount);
   const analysisStale = analysisLinkedCount > 0 && isAfter(input.analysis.latestUpdatedAt, latestPacketGeneratedAt);
-  lanes.push(
+  rawLanes.push(
     lane(
       "analysis",
       "Analysis evidence",
@@ -291,7 +368,7 @@ export function buildProjectSpineReadinessRollup(
       input.aerial.verificationReadiness === "pending" ||
       input.aerial.verificationReadiness === "partial" ||
       isAfter(input.aerial.latestUpdatedAt, latestPacketGeneratedAt));
-  lanes.push(
+  rawLanes.push(
     lane(
       "aerial",
       "Aerial evidence",
@@ -312,31 +389,57 @@ export function buildProjectSpineReadinessRollup(
     )
   );
 
+  const lanes = rawLanes.map((item) => withReadState(item, input.pendingSchema ?? {}, input.unreadable ?? {}));
+
   const readyCount = lanes.filter((item) => item.status === "ready_current").length;
   const staleCount = lanes.filter((item) => item.status === "stale_needs_review").length;
   const missingCount = lanes.filter((item) => item.status === "missing_not_linked").length;
+  const schemaPendingCount = lanes.filter((item) => item.status === "schema_pending").length;
+  const unreadableLaneLabels = lanes.filter((item) => item.status === "unreadable").map((item) => item.label);
+  // Ahead of stale AND of missing: until a lane can be read, no other lane's
+  // verdict on this project is worth acting on, and "missing" is precisely the
+  // claim a failed read must not produce.
   const status: ProjectSpineReadinessStatus =
-    staleCount > 0 ? "stale_needs_review" : missingCount > 0 ? "missing_not_linked" : "ready_current";
+    unreadableLaneLabels.length > 0
+      ? "unreadable"
+      : schemaPendingCount > 0
+        ? "schema_pending"
+        : staleCount > 0
+          ? "stale_needs_review"
+          : missingCount > 0
+            ? "missing_not_linked"
+            : "ready_current";
 
   return {
     status,
     tone: READINESS_TONES[status],
     label: READINESS_LABELS[status],
     headline:
-      status === "ready_current"
-        ? "The shared planning spine looks current across the visible lanes."
-        : status === "stale_needs_review"
-          ? "Some connected project outputs need operator review before reuse."
-          : "The project spine is still missing one or more linked planning lanes.",
+      status === "unreadable"
+        ? "Part of the shared planning spine could not be read."
+        : status === "schema_pending"
+          ? "Part of the shared planning spine is waiting on schema setup."
+          : status === "ready_current"
+            ? "The shared planning spine looks current across the visible lanes."
+            : status === "stale_needs_review"
+              ? "Some connected project outputs need operator review before reuse."
+              : "The project spine is still missing one or more linked planning lanes.",
     detail:
-      status === "ready_current"
-        ? "RTP, reporting, grants, engagement, analysis, and aerial context are linked or explicitly current where present."
-        : status === "stale_needs_review"
-          ? "OpenPlan is surfacing changed records; it is not automatically certifying packet language, forecasts, legal posture, or grant readiness."
-          : "Missing lanes are shown as not linked so operators know what has not yet been connected to this project record.",
+      status === "unreadable"
+        ? `${unreadableLaneLabels.join(", ")} could not be read, so ${unreadableLaneLabels.length === 1 ? "it is" : "they are"} shown as unavailable rather than as not linked — an unlinked lane here would not mean the records are absent.`
+        : status === "schema_pending"
+          ? "Lanes waiting on a migration are shown as setup work rather than as not linked, so nobody reads a missing table as a project with nothing attached."
+          : status === "ready_current"
+            ? "RTP, reporting, grants, engagement, analysis, and aerial context are linked or explicitly current where present."
+            : status === "stale_needs_review"
+              ? "OpenPlan is surfacing changed records; it is not automatically certifying packet language, forecasts, legal posture, or grant readiness."
+              : "Missing lanes are shown as not linked so operators know what has not yet been connected to this project record.",
     readyCount,
     staleCount,
     missingCount,
+    schemaPendingCount,
+    unreadableCount: unreadableLaneLabels.length,
+    unreadableLaneLabels,
     latestSourceUpdatedAt: latestProjectSourceUpdatedAt,
     reviewedAgainstAt: latestPacketGeneratedAt,
     lanes,

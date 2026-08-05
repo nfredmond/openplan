@@ -7,9 +7,20 @@ const notFoundMock = vi.fn(() => {
 });
 
 vi.mock("next/navigation", () => ({ notFound: () => notFoundMock() }));
-vi.mock("@/lib/engagement/public-portal-data", () => ({
-  loadPublicPortalBundle: (...args: unknown[]) => loadPublicPortalBundle(...args),
-}));
+/**
+ * The LOADER is doubled; everything else in that module is the real thing.
+ *
+ * `PortalReadUnavailableError` in particular has to be the real class, or the
+ * failed-lookup test below would be asserting against an error this file made up
+ * — and a test that invents both halves of a contract proves neither.
+ */
+vi.mock("@/lib/engagement/public-portal-data", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/engagement/public-portal-data")>();
+  return {
+    ...actual,
+    loadPublicPortalBundle: (...args: unknown[]) => loadPublicPortalBundle(...args),
+  };
+});
 /**
  * The portal is doubled, but its LANGUAGE CHROME SWITCH is recorded rather than
  * discarded. The picker and the coverage notice this route depends on are built
@@ -28,6 +39,7 @@ vi.mock("@/components/engagement/public-engagement-portal", () => ({
 }));
 
 import EmbedEngagementPage from "@/app/(embed)/embed/[shareToken]/page";
+import { PortalReadUnavailableError } from "@/lib/engagement/public-portal-data";
 import { resolvePortalLocale } from "@/lib/engagement/portal-i18n/locales";
 import { buildPortalMessageBundle } from "@/lib/engagement/portal-i18n/messages";
 import type { PortalLocale } from "@/lib/engagement/portal-i18n/locales";
@@ -138,6 +150,28 @@ describe("EmbedEngagementPage", () => {
       EmbedEngagementPage({ params: Promise.resolve({ shareToken: "missing-token-000" }) })
     ).rejects.toThrow("notFound");
     expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  /**
+   * AN EMBED IS THE HALF OF THE PORTAL AN AGENCY PUTS ON ITS OWN SITE, so a 404
+   * here renders inside the agency's own page frame — "this consultation does
+   * not exist" published under the agency's masthead.
+   *
+   * The loader used to return `null` for a FAILED campaign lookup as well as an
+   * absent one, and `if (!bundle) notFound()` cannot tell those apart. It now
+   * raises instead, so the request ends as an error the reader is told about
+   * rather than as a confident statement about the agency's consultation.
+   */
+  it("does not 404 the widget when the campaign lookup failed", async () => {
+    loadPublicPortalBundle.mockRejectedValue(
+      new PortalReadUnavailableError("permission denied for relation engagement_campaigns")
+    );
+
+    await expect(
+      EmbedEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) })
+    ).rejects.toBeInstanceOf(PortalReadUnavailableError);
+
+    expect(notFoundMock).not.toHaveBeenCalled();
   });
 
   /**

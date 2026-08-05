@@ -8,6 +8,19 @@
  * spend ledger), but a deployment may migrate late, so every read carries the
  * `looksLikePendingSchema` guard and degrades to empty rows plus an explicit
  * pending flag — never a hard failure, never a silent zero presented as fact.
+ *
+ * THAT WAS TRUE OF THE PENDING-MIGRATION CASE ONLY, and this header used to
+ * claim it for every failure. `looksLikePendingSchema` answers exactly one
+ * question — is this deployment behind a migration — and every OTHER error fell
+ * through it into `data ?? []`, which is `[]`, which the budget panel renders as
+ * "Billed to date $0", "Direct spend $0", "Actual to date $0" and "No
+ * deliverables recorded yet, so there is nothing to judge burn against." A
+ * revoked grant, a changed policy or a dropped connection is not a finding about
+ * an agency's money. So the loader now classifies first and RETURNS what is left
+ * — `unreadable` plus the database's own words in `readFailures` — for the
+ * caller to surface, the same seam `loadOpportunityPursuitContext` and
+ * `loadAerialMissionsAndPackagesForProject` use. It still does not throw: one
+ * unreadable source must not take down a page that can honestly render the rest.
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { looksLikePendingSchema } from "@/lib/models/run-launch";
@@ -58,6 +71,35 @@ export type ProjectBudgetInputs = {
     spendEntries: boolean;
     clientInvoices: boolean;
   };
+  /**
+   * Sources whose read FAILED for a reason that is NOT a pending migration.
+   *
+   * Parallel to `pending`, and deliberately separate from it: a pending schema
+   * is a known state with a known operator move ("apply the migration"), while
+   * this one means the loader cannot say what the project's money is. Both
+   * resolve to empty rows, so a caller must branch on THESE FLAGS and never on
+   * emptiness — `deliverables.length === 0` is the same value in both cases and
+   * in the honest one.
+   */
+  unreadable: {
+    deliverables: boolean;
+    statedBudget: boolean;
+    spendEntries: boolean;
+    clientInvoices: boolean;
+  };
+  /**
+   * The same failures, carrying the database's own message and a page-voiced
+   * label, so a caller can hand them straight to its ReadFailureLog without
+   * knowing which tables this loader reads.
+   */
+  readFailures: ProjectBudgetReadFailure[];
+};
+
+/** One unreadable budget source, in the shape `ReadFailureLog.check` accepts. */
+export type ProjectBudgetReadFailure = {
+  /** Plural, lower-case, no trailing period: it is rendered inside a sentence. */
+  label: string;
+  message: string;
 };
 
 /** Row caps: honest breadth for burn math without unbounded page loads. */
@@ -69,6 +111,22 @@ const DELIVERABLE_SELECT_LEGACY = "id, title, summary, owner_label, due_date, st
 const DELIVERABLE_SELECT = `${DELIVERABLE_SELECT_LEGACY}, budget_amount, percent_complete`;
 
 type QueryResult = { data: unknown[] | null; error: { message?: string } | null };
+
+/**
+ * Classify first, then keep what is left — the rule the project page's own read
+ * lanes follow (`_components/_read-lanes.ts`), restated here because a library
+ * cannot reach the page's `ReadFailureLog`.
+ *
+ * Returns the database's own message when the read failed for anything other
+ * than a pending migration, and `null` otherwise. A `null` therefore means "this
+ * source answered", never "this source is empty".
+ */
+function unreadableReason(error: { message?: string } | null | undefined): string | null {
+  if (!error) return null;
+  if (looksLikePendingSchema(error.message)) return null;
+  const message = error.message;
+  return typeof message === "string" && message.trim() ? message.trim() : "no message reported";
+}
 
 export async function loadProjectBudgetInputs(
   supabase: ProjectBudgetQuerySupabaseLike,
@@ -92,6 +150,7 @@ export async function loadProjectBudgetInputs(
     deliverablesResult = await selectDeliverables(DELIVERABLE_SELECT_LEGACY);
   }
   const deliverablesPending = looksLikePendingSchema(deliverablesResult.error?.message);
+  const deliverablesUnreadable = unreadableReason(deliverablesResult.error);
   const deliverables = deliverablesPending
     ? []
     : ((deliverablesResult.data ?? []) as ProjectDeliverableBudgetRow[]);
@@ -103,9 +162,17 @@ export async function loadProjectBudgetInputs(
     .select("budget_amount")
     .eq("id", projectId)
     .maybeSingle()) as { data: { budget_amount?: number | string | null } | null; error: { message?: string } | null };
-  const statedBudgetPending =
-    looksLikePendingSchema(statedBudgetResult.error?.message) || Boolean(statedBudgetResult.error);
-  const statedBudgetAmount = statedBudgetPending ? null : statedBudgetResult.data?.budget_amount ?? null;
+  // A PERMISSION FAILURE IS NOT A PENDING MIGRATION. This read used to widen
+  // `pending` to `|| Boolean(error)`, which filed every failure as "the column
+  // is not there yet" — so a revoked policy on `projects` produced the panel's
+  // setup copy and an operator was sent to run a migration that was not the
+  // problem. The classifier owns exactly its own case; everything else is
+  // unreadable and says so.
+  const statedBudgetPending = looksLikePendingSchema(statedBudgetResult.error?.message);
+  const statedBudgetUnreadable = unreadableReason(statedBudgetResult.error);
+  // Still null on ANY error: "Not entered" is what the panel prints for null,
+  // and a budget nobody could read must not become a number either way.
+  const statedBudgetAmount = statedBudgetResult.error ? null : statedBudgetResult.data?.budget_amount ?? null;
 
   const spendEntriesResult = (await supabase
     .from("project_spend_entries")
@@ -114,6 +181,7 @@ export async function loadProjectBudgetInputs(
     .order("entry_date", { ascending: false })
     .limit(MAX_SPEND_ENTRY_ROWS)) as QueryResult;
   const spendEntriesPending = looksLikePendingSchema(spendEntriesResult.error?.message);
+  const spendEntriesUnreadable = unreadableReason(spendEntriesResult.error);
   const spendEntries = spendEntriesPending ? [] : ((spendEntriesResult.data ?? []) as ProjectSpendEntryRow[]);
 
   // Billed lines: this project's client invoices in sent/paid status, each
@@ -126,6 +194,7 @@ export async function loadProjectBudgetInputs(
     .in("status", ["sent", "paid"])
     .limit(MAX_CLIENT_INVOICE_ROWS)) as QueryResult;
   const clientInvoicesPending = looksLikePendingSchema(clientInvoicesResult.error?.message);
+  const clientInvoicesUnreadable = unreadableReason(clientInvoicesResult.error);
   const billedLines: BilledLineLike[] = clientInvoicesPending
     ? []
     : ((clientInvoicesResult.data ?? []) as Array<{
@@ -141,6 +210,19 @@ export async function loadProjectBudgetInputs(
         }))
       );
 
+  // Labels are the loader's job, not the caller's: it is the only thing that
+  // knows which tables it read, and a caller naming them would drift the moment
+  // a source moved. Plural and lower-case because the page renders them inside
+  // "This page could not read …".
+  const readFailures = (
+    [
+      ["this project's deliverables", deliverablesUnreadable],
+      ["this project's stated budget", statedBudgetUnreadable],
+      ["this project's direct spend ledger", spendEntriesUnreadable],
+      ["client invoices billed to this project", clientInvoicesUnreadable],
+    ] as const
+  ).flatMap(([label, message]) => (message ? [{ label, message }] : []));
+
   return {
     deliverables,
     statedBudgetAmount,
@@ -153,5 +235,12 @@ export async function loadProjectBudgetInputs(
       spendEntries: spendEntriesPending,
       clientInvoices: clientInvoicesPending,
     },
+    unreadable: {
+      deliverables: Boolean(deliverablesUnreadable),
+      statedBudget: Boolean(statedBudgetUnreadable),
+      spendEntries: Boolean(spendEntriesUnreadable),
+      clientInvoices: Boolean(clientInvoicesUnreadable),
+    },
+    readFailures,
   };
 }

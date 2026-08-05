@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
+import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
   buildPublicSubmissionClientFingerprint,
   getPublicSubmissionUserAgent,
@@ -141,7 +142,42 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Load the active survey definition (service-role read of definition tables).
-    const { questions, optionsByQuestion } = await loadSurveyDefinition(supabase, campaign.id);
+    const definition = await loadSurveyDefinition(supabase, campaign.id);
+    const { questions, optionsByQuestion } = definition;
+
+    /**
+     * THE SENTENCE A RESIDENT WAS TOLD WHEN THE READ FAILED, and why it was the
+     * worst one in this lane.
+     *
+     * Both reads used to be discarded, so an unreadable survey arrived as zero
+     * questions and this route answered 400 "This campaign has no active survey
+     * questions." — telling a member of the public, who had just filled the
+     * whole thing in, that the agency is not asking anything. It is a claim
+     * about what the agency wants to hear, made out of a query that never
+     * answered, to the one audience with no way to check it and no reason to
+     * come back.
+     *
+     * The status comes from the shared classifier so an unapplied migration is a
+     * 503 and everything else a 500; the WORDING stays this route's, because
+     * every sentence here is read by a resident rather than by whoever operates
+     * the deployment, and it must say that their answers were not recorded.
+     */
+    const definitionFailure = classifyRouteReadFailure("this campaign's survey", definition);
+    if (definitionFailure) {
+      audit.error("survey_definition_read_failed", {
+        campaignId: campaign.id,
+        message: definitionFailure.message,
+        pendingSchema: definitionFailure.pending,
+      });
+      return NextResponse.json(
+        {
+          error:
+            "We could not load this survey just now, so your answers were not recorded. Please try again in a few minutes.",
+        },
+        { status: definitionFailure.status }
+      );
+    }
+
     if (questions.length === 0) {
       return NextResponse.json({ error: "This campaign has no active survey questions." }, { status: 400 });
     }

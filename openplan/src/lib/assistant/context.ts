@@ -40,7 +40,12 @@ import { extractEngagementCampaignId } from "@/lib/reports/engagement";
 import { loadSentimentHotspots, negativeItemIdsFromSyntheses } from "@/lib/engagement/hotspots";
 import type { CampaignRepresentativeness } from "@/lib/engagement/representativeness";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
-import { CURRENT_WORKSPACE_MEMBERSHIP_SELECT, loadCurrentWorkspaceMembership, unwrapWorkspaceRecord } from "@/lib/workspaces/current";
+import {
+  CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  loadCurrentWorkspaceMembership,
+  unwrapWorkspaceRecord,
+  type WorkspaceMembershipRow,
+} from "@/lib/workspaces/current";
 import {
   loadWorkspaceOperationsSummaryForWorkspace,
   type WorkspaceOperationsSummary,
@@ -48,6 +53,167 @@ import {
 } from "@/lib/operations/workspace-summary";
 import type { AssistantTarget, AssistantTargetKind } from "@/lib/assistant/catalog";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { ReadFailureLog, type ReadFailure, type ReadResultLike } from "@/lib/ui/read-failures";
+
+/**
+ * A READ THAT FAILED WHILE THIS CONTEXT WAS ASSEMBLED.
+ *
+ * WHY THIS FIELD EXISTS AND WHY IT IS ON EVERY CONTEXT. Every loader below
+ * builds a fan of counts a copilot then SPEAKS: "3 chapters are ready for
+ * review", "No funding opportunities are linked to this project yet", "Linked
+ * projects: 0". A Supabase read hands back `null` data for both "there is
+ * nothing here" and "this query failed", so a dropped connection, a revoked
+ * grant or an RLS change used to arrive at the planner as a confident sentence
+ * about their own agency's work — and from there into a grant narrative or an
+ * RTP chapter, because this is the grounding the Planning Agent reasons from.
+ *
+ * THE COUNTS ARE STILL NUMBERS, and that is deliberate: `counts.chapters`
+ * cannot become `number | null` without changing the shape every consumer of
+ * this module already destructures. So the contract is the one
+ * `ProjectStageGateSummary.unknownCount` already sets in this repo — a zero
+ * whose read failed is NOT a finding, and ANY SURFACE RENDERING THESE COUNTS
+ * MUST CHECK `unreadable` FIRST. `src/lib/assistant/respond.ts` does; the
+ * sentences it builds from an unreadable lane say so instead of counting, and
+ * `src/test/assistant-respond.test.ts` fails if one of them counts again.
+ *
+ * WHY `ReadFailureLog` RATHER THAN A LOCAL SHAPE. It is this repo's collector
+ * for exactly this contract — "render everything that loaded and disclose the
+ * rest" — and its own doc block says routes should not reach for it because a
+ * route owes its caller a STATUS. This is neither a page nor a route: it is the
+ * data layer behind a panel that speaks in prose, which is the case the
+ * collector was written for.
+ */
+export type AssistantContextReadFailure = ReadFailure;
+
+/**
+ * The stable names a failed read is disclosed under.
+ *
+ * They are constants rather than inline strings because `respond.ts` matches on
+ * them to decide whether a sentence may state a count. Two copies of the same
+ * label drifting apart would restore the defect silently — the context would
+ * disclose "RTP chapters" while the sentence looked for "rtp chapters", find
+ * nothing, and go back to speaking the zero.
+ *
+ * Each reads in the middle of a sentence ("this could not read X"), so: the
+ * planner's words, no leading capital, no trailing period.
+ */
+export const ASSISTANT_READ_SUBJECTS = {
+  workspaceMembership: "workspace membership",
+  workspaceProjects: "workspace projects",
+  recentRuns: "recent analysis runs",
+  projectDeliverables: "project deliverables",
+  projectRisks: "project risks",
+  projectIssues: "project issues",
+  projectDecisions: "project decisions",
+  projectMeetings: "project meetings",
+  linkedDatasets: "linked datasets",
+  linkedReports: "linked reports",
+  fundingOpportunities: "funding opportunities",
+  fundingAwards: "funding awards",
+  reimbursementInvoices: "reimbursement invoices",
+  reimbursementPackets: "reimbursement packets",
+  fundingProfile: "the recorded funding need",
+  reportArtifacts: "report artifacts",
+  rtpCycles: "RTP cycles",
+  rtpChapters: "RTP chapters",
+  rtpLinkedProjects: "projects linked to this RTP cycle",
+  engagementCampaigns: "engagement campaigns",
+  packetReports: "RTP board packets",
+  planLinks: "plan links",
+  scenarioSets: "scenario sets",
+  programLinks: "program links",
+  linkedPlans: "linked plans",
+  scenarioEntries: "scenario entries",
+  attachedRuns: "the runs attached to these scenarios",
+  reportRunLinks: "the runs attached to this report",
+  reportSections: "report sections",
+  modelLinks: "model links",
+  modelRuns: "model runs",
+  linkedProject: "the linked project record",
+  linkedRtpCycle: "the linked RTP cycle",
+  linkedEngagementCampaign: "the linked engagement campaign",
+  baselineRun: "the baseline run",
+} as const;
+
+/**
+ * The context could not be built because a row this context IS ABOUT did not
+ * load.
+ *
+ * WHY THIS THROWS WHERE EVERYTHING ELSE IS COLLECTED. A failed read on a
+ * side-panel lane costs a count; a failed read on the ANCHOR row — the project,
+ * the cycle, the report, or the caller's membership in the workspace — costs
+ * the whole answer, and `loadAssistantContext` has exactly one way to say
+ * "no": `null`. All four of its callers spell that `null` out loud as a claim.
+ * Three routes answer 404 "Assistant context not found" and the chat tool
+ * answers the model "No such surface is visible to this planner. It may not
+ * exist or may belong to a workspace they are not a member of." A dropped
+ * connection is not evidence that a planner's own project does not exist, and
+ * it is certainly not evidence that they are not a member of their workspace.
+ *
+ * SO WHY NOT RETURN `{ context, error }`, the shape this repo prefers? Because
+ * the four callers are in three route files and `chat-tools.ts`, none of which
+ * this change owns, and a returned error nobody reads is worse than an
+ * exception: it would be dropped at the first `if (!context)`. Every caller
+ * already wraps the load in try/catch (the routes answer 500 with an
+ * `assistant_context_unhandled_error` audit entry; `guarded()` in chat-tools
+ * records a failed tool call), so a throw is the one signal that cannot be
+ * mistaken for "not found" by code that was written before this distinction
+ * existed. Widening the return type is the better long-term seam and is left as
+ * follow-up for whoever owns those routes.
+ *
+ * It also makes the two membership paths agree. `loadCurrentWorkspaceMembership`
+ * has always thrown on a failed read; the explicit-workspaceId branch beside it
+ * swallowed the same failure and returned "not a member".
+ */
+export class AssistantContextUnreadableError extends Error {
+  constructor(
+    readonly subject: string,
+    readonly reason: string
+  ) {
+    super(`The assistant could not read ${subject} (${reason}), so this context could not be built.`);
+    this.name = "AssistantContextUnreadableError";
+  }
+}
+
+function readFailureMessage(result: ReadResultLike): string {
+  const message = result?.error?.message;
+  return typeof message === "string" && message.trim() ? message.trim() : "no message reported";
+}
+
+/**
+ * The row this context is about, or a refusal — never a silent `null`.
+ *
+ * `data: null` with no error still means "no such row", which is a real answer
+ * and stays a `null` return. Only an ERROR becomes the refusal.
+ */
+function requireAnchorRow<T>(subject: string, result: ReadResultLike): T | null {
+  if (result?.error) {
+    throw new AssistantContextUnreadableError(subject, readFailureMessage(result));
+  }
+
+  return ((result?.data ?? null) as T | null) ?? null;
+}
+
+/**
+ * Classify a pending migration first, then collect what is left.
+ *
+ * A deployment that has not run the migration truthfully has none of the rows —
+ * the table cannot hold any — so that case resolves to empty with nothing
+ * disclosed. Every OTHER failure is recorded by name, which is the half that
+ * used to be dropped: `looksLikePendingSchema(r.error?.message) ? [] : r.data`
+ * turns a revoked grant into an empty list and hands it to the model as a fact.
+ *
+ * Returns whether the rows are empty because the schema is pending, so a caller
+ * can keep whatever truthful default that case has (the RTP chapter templates,
+ * for one).
+ */
+function collectUnlessPending(reads: ReadFailureLog, subject: string, result: ReadResultLike): boolean {
+  const pending = looksLikePendingSchema(result?.error?.message);
+  if (!pending) {
+    reads.check(subject, result);
+  }
+  return pending;
+}
 
 export type WorkspaceAssistantContext = {
   kind: "workspace" | "analysis_studio";
@@ -72,6 +238,17 @@ export type WorkspaceAssistantContext = {
   currentRun: RunAssistantContext["run"] | null;
   baselineRun: RunAssistantContext["baselineRun"];
   operationsSummary: WorkspaceOperationsSummary;
+  /**
+   * The reads that FAILED while this context loaded — see
+   * `AssistantContextReadFailure`. Empty means every lane answered.
+   *
+   * OPTIONAL FOR ONE REASON ONLY: several test files outside this module build
+   * these contexts as literals and are owned by other lanes, so a required
+   * field would break their compile rather than their claim. Every loader in
+   * this file always sets it. Read it as "absent means nothing failed" and add
+   * it to any new literal.
+   */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type ProjectAssistantContext = {
@@ -183,6 +360,8 @@ export type ProjectAssistantContext = {
       comparisonDigest: ReturnType<typeof describeComparisonSnapshotAggregate>;
     } | null;
   };
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type RtpRegistryAssistantContext = {
@@ -212,6 +391,8 @@ export type RtpRegistryAssistantContext = {
     updatedAt: string;
   } | null;
   operationsSummary: WorkspaceOperationsSummary;
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type PlanAssistantContext = {
@@ -245,6 +426,8 @@ export type PlanAssistantContext = {
     relatedProjects: number;
   };
   operationsSummary: WorkspaceOperationsSummary;
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type RtpAssistantContext = {
@@ -289,6 +472,8 @@ export type RtpAssistantContext = {
     } | null;
   };
   operationsSummary: WorkspaceOperationsSummary;
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type ProgramAssistantContext = {
@@ -383,6 +568,8 @@ export type ProgramAssistantContext = {
     } | null;
   };
   operationsSummary: WorkspaceOperationsSummary;
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type ScenarioAssistantContext = {
@@ -413,6 +600,8 @@ export type ScenarioAssistantContext = {
   comparisonSummary: ReturnType<typeof buildScenarioComparisonSummary>;
   comparisonBoard: ReturnType<typeof buildScenarioComparisonBoard>;
   linkedReports: ReturnType<typeof buildScenarioLinkedReports>["linkedReports"];
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type ModelAssistantContext = {
@@ -450,6 +639,8 @@ export type ModelAssistantContext = {
     completedAt: string | null;
   }>;
   schemaPending: boolean;
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type ReportAssistantContext = {
@@ -518,6 +709,8 @@ export type ReportAssistantContext = {
     status: string;
     updatedAt: string;
   } | null;
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type RunAssistantContext = {
@@ -541,6 +734,8 @@ export type RunAssistantContext = {
     createdAt: string;
     metrics: Record<string, unknown>;
   } | null;
+  /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
+  unreadable?: AssistantContextReadFailure[];
 };
 
 export type AssistantContext =
@@ -609,7 +804,8 @@ type WorkspaceEnvelope = {
 
 async function loadDefaultAssignmentModelingCountyRunId(
   supabase: SupabaseLike,
-  workspaceId: string
+  workspaceId: string,
+  reads: ReadFailureLog
 ): Promise<string | null> {
   const result = await supabase
     .from("modeling_claim_decisions")
@@ -620,7 +816,10 @@ async function loadDefaultAssignmentModelingCountyRunId(
     .order("decided_at", { ascending: false })
     .limit(1);
 
-  if (looksLikePendingSchema(result.error?.message)) {
+  // A null here reads downstream as "no assignment run has been accepted for
+  // this workspace", which is a claim about the agency's modeling posture and
+  // steers which packet quick links are offered. A failed read is not that.
+  if (collectUnlessPending(reads, "the accepted assignment modeling run", result)) {
     return null;
   }
 
@@ -646,12 +845,21 @@ async function requireWorkspaceEnvelope(
     };
   }
 
-  const { data: membership } = await supabase
+  const membershipResult = await supabase
     .from("workspace_members")
     .select(CURRENT_WORKSPACE_MEMBERSHIP_SELECT)
     .eq("workspace_id", workspaceId)
     .eq("user_id", userId)
     .maybeSingle();
+
+  // A swallowed failure here answered "you are not a member of this workspace",
+  // which is both false and alarming. The branch above — the same question,
+  // asked without a workspace id — has always thrown on a failed read
+  // (`loadCurrentWorkspaceMembership`); these two now agree.
+  const membership = requireAnchorRow<WorkspaceMembershipRow>(
+    ASSISTANT_READ_SUBJECTS.workspaceMembership,
+    membershipResult
+  );
 
   if (!membership) {
     return null;
@@ -725,6 +933,7 @@ async function loadWorkspaceContext(
   userId: string,
   target: AssistantTarget
 ): Promise<WorkspaceAssistantContext | null> {
+  const reads = new ReadFailureLog();
   const workspace = await requireWorkspaceEnvelope(supabase, userId, target.workspaceId);
   if (!workspace?.id) {
     return null;
@@ -745,6 +954,9 @@ async function loadWorkspaceContext(
       .limit(5),
   ]);
 
+  reads.check(ASSISTANT_READ_SUBJECTS.workspaceProjects, projectsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.recentRuns, runDataResult);
+
   const projectData = (projectsResult.data ?? []) as Array<{
     id: string;
     name: string;
@@ -756,13 +968,18 @@ async function loadWorkspaceContext(
   const runData = runDataResult.data ?? [];
 
   const runIds = [target.runId, target.baselineRunId].filter((value): value is string => Boolean(value));
-  const { data: runDetails } = runIds.length
+  const runDetailsResult = runIds.length
     ? await supabase
         .from("runs")
         .select("id, title, summary_text, created_at, query_text, metrics")
         .eq("workspace_id", workspace.id)
         .in("id", runIds)
-    : { data: [] };
+    : { data: [], error: null };
+  // The planner asked to be grounded to THESE runs by id. If that read failed,
+  // "no baseline run is currently attached" is a statement about their console,
+  // not about the database.
+  reads.check("the runs this console is grounded to", runDetailsResult);
+  const runDetails = runDetailsResult.data;
 
   const typedRunDetails = (runDetails ?? []) as Array<{
     id: string;
@@ -824,6 +1041,7 @@ async function loadWorkspaceContext(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       workspace.id
     ),
+    unreadable: [...reads.all],
   };
 }
 
@@ -832,11 +1050,23 @@ async function loadProjectContext(
   userId: string,
   projectId: string
 ): Promise<ProjectAssistantContext | null> {
-  const { data: project } = await supabase
+  const reads = new ReadFailureLog();
+  const projectResult = await supabase
     .from("projects")
     .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at")
     .eq("id", projectId)
     .maybeSingle();
+
+  const project = requireAnchorRow<{
+    id: string;
+    workspace_id: string;
+    name: string;
+    summary: string | null;
+    status: string;
+    plan_type: string;
+    delivery_phase: string;
+    updated_at: string;
+  }>("this project record", projectResult);
 
   if (!project) {
     return null;
@@ -914,20 +1144,39 @@ async function loadProjectContext(
       .limit(50),
   ]);
 
-  const datasetLinkRows = looksLikePendingSchema(datasetLinksResult.error?.message)
+  // Every count and dollar figure below is spoken by the copilot as a fact
+  // about this project. Classify the one failure that truthfully means "none
+  // exist" — an unapplied migration — and disclose every other one by name.
+  reads.check(ASSISTANT_READ_SUBJECTS.projectDeliverables, deliverablesResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.projectRisks, risksResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.projectIssues, issuesResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.projectDecisions, decisionsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.projectMeetings, meetingsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.recentRuns, runsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.reimbursementPackets, reimbursementSubmittalsResult);
+
+  const datasetLinkRows = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.linkedDatasets, datasetLinksResult)
     ? []
     : ((datasetLinksResult.data ?? []) as Array<{
         dataset_id: string;
         relationship_type: string;
         linked_at: string;
       }>);
-  const projectFundingProfile = looksLikePendingSchema(projectFundingProfileResult.error?.message)
+  const projectFundingProfile = collectUnlessPending(
+    reads,
+    ASSISTANT_READ_SUBJECTS.fundingProfile,
+    projectFundingProfileResult
+  )
     ? null
     : ((projectFundingProfileResult.data ?? null) as {
         funding_need_amount: number | null;
         local_match_need_amount?: number | null;
       } | null);
-  const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
+  const fundingOpportunities = collectUnlessPending(
+    reads,
+    ASSISTANT_READ_SUBJECTS.fundingOpportunities,
+    fundingOpportunitiesResult
+  )
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as Array<{
         id: string;
@@ -939,7 +1188,7 @@ async function loadProjectContext(
         decision_due_at: string | null;
         updated_at: string | null;
       }>);
-  const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
+  const fundingAwards = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.fundingAwards, fundingAwardsResult)
     ? []
     : ((fundingAwardsResult.data ?? []) as Array<{
         id: string;
@@ -949,7 +1198,11 @@ async function loadProjectContext(
         risk_flag: string | null;
         obligation_due_at: string | null;
       }>);
-  const fundingInvoices = looksLikePendingSchema(fundingInvoicesResult.error?.message)
+  const fundingInvoices = collectUnlessPending(
+    reads,
+    ASSISTANT_READ_SUBJECTS.reimbursementInvoices,
+    fundingInvoicesResult
+  )
     ? []
     : ((fundingInvoicesResult.data ?? []) as Array<{
         id: string;
@@ -1025,7 +1278,7 @@ async function loadProjectContext(
         .in("id", linkedDatasetIds)
     : { data: [] };
 
-  const datasetRows = looksLikePendingSchema(datasetsResult.error?.message)
+  const datasetRows = collectUnlessPending(reads, "the linked dataset records", datasetsResult)
     ? []
     : ((datasetsResult.data ?? []) as Array<{
         id: string;
@@ -1044,7 +1297,7 @@ async function loadProjectContext(
     : { data: [] };
 
   const connectorMap = new Map(
-    (looksLikePendingSchema(connectorsResult.error?.message)
+    (collectUnlessPending(reads, "the connectors behind these datasets", connectorsResult)
       ? []
       : ((connectorsResult.data ?? []) as Array<{ id: string; display_name: string }>)).map((connector) => [
       connector.id,
@@ -1071,7 +1324,7 @@ async function loadProjectContext(
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
-  const projectReports = looksLikePendingSchema(projectReportsResult.error?.message)
+  const projectReports = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.linkedReports, projectReportsResult)
     ? []
     : ((projectReportsResult.data ?? []) as Array<{
         id: string;
@@ -1093,6 +1346,7 @@ async function loadProjectContext(
         .order("generated_at", { ascending: false })
         .limit(Math.max(projectReports.length * 4, projectReports.length))
     : { data: [], error: null };
+  reads.check(ASSISTANT_READ_SUBJECTS.reportArtifacts, reportArtifactsResult);
   const latestArtifactByReportId = new Map<
     string,
     { generated_at: string | null; metadata_json: Record<string, unknown> | null }
@@ -1253,6 +1507,11 @@ async function loadProjectContext(
           }
         : null,
     },
+    // The stage-gate board is NOT listed here: it carries its own
+    // `decisionsRead` state and `respond.ts` already refuses to count gates
+    // when that says the log did not load. Disclosing it twice would have the
+    // copilot say the same thing in two voices.
+    unreadable: [...reads.all],
   };
 }
 
@@ -1261,22 +1520,24 @@ async function loadRtpRegistryContext(
   userId: string,
   target: AssistantTarget
 ): Promise<RtpRegistryAssistantContext | null> {
+  const reads = new ReadFailureLog();
   const workspace = await requireWorkspaceEnvelope(supabase, userId, target.workspaceId);
   if (!workspace?.id) {
     return null;
   }
 
-  const [{ data: cyclesData }, defaultModelingCountyRunId] = await Promise.all([
+  const [cyclesResult, defaultModelingCountyRunId] = await Promise.all([
     supabase
       .from("rtp_cycles")
       .select("id, title, status, updated_at")
       .eq("workspace_id", workspace.id)
       .order("updated_at", { ascending: false })
       .limit(200),
-    loadDefaultAssignmentModelingCountyRunId(supabase, workspace.id),
+    loadDefaultAssignmentModelingCountyRunId(supabase, workspace.id, reads),
   ]);
 
-  const cycles = (cyclesData ?? []) as Array<{
+  reads.check(ASSISTANT_READ_SUBJECTS.rtpCycles, cyclesResult);
+  const cycles = (cyclesResult.data ?? []) as Array<{
     id: string;
     title: string;
     status: string;
@@ -1284,16 +1545,17 @@ async function loadRtpRegistryContext(
   }>;
   const cycleIds = cycles.map((cycle) => cycle.id);
 
-  const { data: packetReportData } = cycleIds.length
+  const packetReportResult = cycleIds.length
     ? await supabase
         .from("reports")
         .select("id, rtp_cycle_id, title, generated_at, latest_artifact_kind, updated_at")
         .in("rtp_cycle_id", cycleIds)
         .eq("report_type", "board_packet")
         .order("updated_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
 
-  const packetReports = (packetReportData ?? []) as Array<{
+  reads.check(ASSISTANT_READ_SUBJECTS.packetReports, packetReportResult);
+  const packetReports = (packetReportResult.data ?? []) as Array<{
     id: string;
     rtp_cycle_id: string | null;
     title: string | null;
@@ -1310,6 +1572,7 @@ async function loadRtpRegistryContext(
           packetReports.map((report) => report.id)
         )
     : { data: [], error: null };
+  reads.check(ASSISTANT_READ_SUBJECTS.reportArtifacts, packetArtifactResult);
   const latestArtifactGeneratedAtByReportId = buildLatestArtifactGeneratedAtByReportId(
     (packetArtifactResult.data ?? []) as Array<{ report_id: string; generated_at: string | null }>
   );
@@ -1374,6 +1637,7 @@ async function loadRtpRegistryContext(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       workspace.id
     ),
+    unreadable: [...reads.all],
   };
 }
 
@@ -1382,11 +1646,14 @@ async function loadPlanContext(
   userId: string,
   planId: string
 ): Promise<PlanAssistantContext | null> {
-  const { data: plan } = await supabase
+  const reads = new ReadFailureLog();
+  const planResult = await supabase
     .from("plans")
     .select("id, workspace_id, project_id, title, plan_type, status, geography_label, horizon_year, summary, updated_at, projects(id, name)")
     .eq("id", planId)
     .maybeSingle();
+
+  const plan = requireAnchorRow<any>("this plan record", planResult);
 
   if (!plan) {
     return null;
@@ -1414,6 +1681,11 @@ async function loadPlanContext(
       workspace.id
     ),
   ]);
+
+  reads.check(ASSISTANT_READ_SUBJECTS.planLinks, planLinksResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.scenarioSets, scenarioResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.engagementCampaigns, campaignResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.linkedReports, reportResult);
 
   const planLinks = (planLinksResult.data ?? []) as Array<{ plan_id: string; link_type: string }>;
   const explicitProjectCount = planLinks.filter((link) => link.link_type === "project_record").length;
@@ -1479,6 +1751,7 @@ async function loadPlanContext(
       relatedProjects: explicitProjectCount + (project ? 1 : 0),
     },
     operationsSummary,
+    unreadable: [...reads.all],
   };
 }
 
@@ -1487,13 +1760,16 @@ async function loadRtpContext(
   userId: string,
   rtpCycleId: string
 ): Promise<RtpAssistantContext | null> {
-  const { data: cycle } = await supabase
+  const reads = new ReadFailureLog();
+  const cycleResult = await supabase
     .from("rtp_cycles")
     .select(
       "id, workspace_id, title, summary, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, updated_at"
     )
     .eq("id", rtpCycleId)
     .maybeSingle();
+
+  const cycle = requireAnchorRow<any>("this RTP cycle record", cycleResult);
 
   if (!cycle) {
     return null;
@@ -1523,19 +1799,25 @@ async function loadRtpContext(
       .eq("rtp_cycle_id", cycle.id)
       .eq("report_type", "board_packet")
       .order("updated_at", { ascending: false }),
-    loadDefaultAssignmentModelingCountyRunId(supabase, workspace.id),
+    loadDefaultAssignmentModelingCountyRunId(supabase, workspace.id, reads),
   ]);
 
-  const chapters = looksLikePendingSchema(chaptersResult.error?.message)
+  // THE TEMPLATE FALLBACK IS FOR ONE FAILURE ONLY. A deployment without the
+  // chapter table cannot hold a chapter, so "the template's chapters, none
+  // started" is true there. Every other failure used to fall through to the
+  // line below and become `[]`, which the copilot speaks as "0 chapters are
+  // ready for review and 0 are complete" — a sentence about an agency's RTP
+  // that nothing read. Now it is disclosed and `respond.ts` refuses to count.
+  const chapters = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.rtpChapters, chaptersResult)
     ? RTP_CHAPTER_TEMPLATES.map((template) => ({ id: `template-${template.chapterKey}`, status: "not_started" }))
     : ((chaptersResult.data ?? []) as Array<{ id: string; status: string }>);
-  const linkedProjects = looksLikePendingSchema(projectLinksResult.error?.message)
+  const linkedProjects = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.rtpLinkedProjects, projectLinksResult)
     ? []
     : ((projectLinksResult.data ?? []) as Array<{ id: string }>);
-  const campaigns = looksLikePendingSchema(campaignsResult.error?.message)
+  const campaigns = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.engagementCampaigns, campaignsResult)
     ? []
     : ((campaignsResult.data ?? []) as Array<{ id: string }>);
-  const packetReports = looksLikePendingSchema(packetReportsResult.error?.message)
+  const packetReports = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.packetReports, packetReportsResult)
     ? []
     : ((packetReportsResult.data ?? []) as Array<{
         id: string;
@@ -1553,6 +1835,7 @@ async function loadRtpContext(
           packetReports.map((report) => report.id)
         )
     : { data: [], error: null };
+  reads.check(ASSISTANT_READ_SUBJECTS.reportArtifacts, packetArtifactsResult);
   const latestArtifactGeneratedAtByReportId = buildLatestArtifactGeneratedAtByReportId(
     (packetArtifactsResult.data ?? []) as Array<{ report_id: string; generated_at: string | null }>
   );
@@ -1623,6 +1906,7 @@ async function loadRtpContext(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       workspace.id
     ),
+    unreadable: [...reads.all],
   };
 }
 
@@ -1631,11 +1915,14 @@ async function loadProgramContext(
   userId: string,
   programId: string
 ): Promise<ProgramAssistantContext | null> {
-  const { data: program } = await supabase
+  const reads = new ReadFailureLog();
+  const programResult = await supabase
     .from("programs")
     .select("id, workspace_id, project_id, title, program_type, status, cycle_name, sponsor_agency, summary, nomination_due_at, adoption_target_at, projects(id, name), updated_at")
     .eq("id", programId)
     .maybeSingle();
+
+  const program = requireAnchorRow<any>("this program record", programResult);
 
   if (!program) {
     return null;
@@ -1690,6 +1977,16 @@ async function loadProgramContext(
       workspace.id
     ),
   ]);
+
+  reads.check(ASSISTANT_READ_SUBJECTS.programLinks, linksResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.linkedPlans, plansResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.linkedReports, projectReportsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.engagementCampaigns, campaignsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.fundingOpportunities, fundingOpportunitiesResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.fundingAwards, fundingAwardsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.reimbursementInvoices, fundingInvoicesResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.reimbursementPackets, reimbursementSubmittalsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.fundingProfile, projectFundingProfileResult);
 
   const links = (linksResult.data ?? []) as Array<{ program_id: string; link_type: string; linked_id: string }>;
   const explicitPlanCount = links.filter((link) => link.link_type === "plan").length;
@@ -1798,6 +2095,7 @@ async function loadProgramContext(
         .select("id, title, status, generated_at, latest_artifact_kind, updated_at")
         .in("id", explicitReportIds)
     : { data: [], error: null };
+  reads.check("the reports linked to this program", explicitReportsResult);
   const linkedReportRows = [
     ...((projectReportsResult.data ?? []) as Array<{
       id: string;
@@ -1825,6 +2123,7 @@ async function loadProgramContext(
           linkedReportRows.map((row) => row.id)
         )
     : { data: [], error: null };
+  reads.check(ASSISTANT_READ_SUBJECTS.reportArtifacts, reportArtifactsResult);
   const latestArtifactGeneratedAtByReportId = buildLatestArtifactGeneratedAtByReportId(
     (reportArtifactsResult.data ?? []) as Array<{ report_id: string; generated_at: string | null }>
   );
@@ -1991,6 +2290,7 @@ async function loadProgramContext(
         : null,
     },
     operationsSummary,
+    unreadable: [...reads.all],
   };
 }
 
@@ -1999,11 +2299,14 @@ async function loadScenarioContext(
   userId: string,
   scenarioSetId: string
 ): Promise<ScenarioAssistantContext | null> {
-  const { data: scenarioSet } = await supabase
+  const reads = new ReadFailureLog();
+  const scenarioSetResult = await supabase
     .from("scenario_sets")
     .select("id, workspace_id, project_id, title, summary, planning_question, status, baseline_entry_id")
     .eq("id", scenarioSetId)
     .maybeSingle();
+
+  const scenarioSet = requireAnchorRow<any>("this scenario set record", scenarioSetResult);
 
   if (!scenarioSet) {
     return null;
@@ -2014,7 +2317,7 @@ async function loadScenarioContext(
     return null;
   }
 
-  const [{ data: project }, { data: entriesData }, { data: reportsData }] = await Promise.all([
+  const [projectResult, entriesResult, reportsResult] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, summary")
@@ -2035,17 +2338,26 @@ async function loadScenarioContext(
       .order("updated_at", { ascending: false }),
   ]);
 
+  reads.check(ASSISTANT_READ_SUBJECTS.linkedProject, projectResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.scenarioEntries, entriesResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.linkedReports, reportsResult);
+  const project = projectResult.data;
+  const entriesData = entriesResult.data;
+  const reportsData = reportsResult.data;
+
   const runIds = (entriesData ?? [])
     .map((entry: any) => entry.attached_run_id)
     .filter((value: unknown): value is string => Boolean(value));
   const attachedRunsResult = runIds.length
     ? await supabase.from("runs").select("id, title, summary_text, metrics, created_at").in("id", runIds)
-    : { data: [] };
+    : { data: [], error: null };
+  reads.check(ASSISTANT_READ_SUBJECTS.attachedRuns, attachedRunsResult);
 
   const reportIds = (reportsData ?? []).map((report: any) => report.id);
   const reportRunsResult = reportIds.length
     ? await supabase.from("report_runs").select("report_id, run_id").in("report_id", reportIds)
-    : { data: [] };
+    : { data: [], error: null };
+  reads.check(ASSISTANT_READ_SUBJECTS.reportRunLinks, reportRunsResult);
 
   const runMap = new Map((attachedRunsResult.data ?? []).map((run: any) => [run.id, run]));
   const entries = ((entriesData ?? []) as Array<any>).map((entry) => ({
@@ -2117,6 +2429,7 @@ async function loadScenarioContext(
     comparisonSummary,
     comparisonBoard,
     linkedReports,
+    unreadable: [...reads.all],
   };
 }
 
@@ -2125,13 +2438,16 @@ async function loadModelContext(
   userId: string,
   modelId: string
 ): Promise<ModelAssistantContext | null> {
-  const { data: model } = await supabase
+  const reads = new ReadFailureLog();
+  const modelResult = await supabase
     .from("models")
     .select(
       "id, workspace_id, project_id, scenario_set_id, title, model_family, status, config_version, owner_label, assumptions_summary, input_summary, output_summary, summary, config_json, last_validated_at, last_run_recorded_at"
     )
     .eq("id", modelId)
     .maybeSingle();
+
+  const model = requireAnchorRow<any>("this model record", modelResult);
 
   if (!model) {
     return null;
@@ -2151,7 +2467,7 @@ async function loadModelContext(
           .eq("scenario_set_id", model.scenario_set_id)
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: true })
-      : Promise.resolve({ data: [] }),
+      : Promise.resolve({ data: [], error: null }),
     supabase
       .from("model_runs")
       .select("id, status, run_title, created_at, completed_at")
@@ -2159,6 +2475,9 @@ async function loadModelContext(
       .order("created_at", { ascending: false })
       .limit(5),
   ]);
+
+  reads.check(ASSISTANT_READ_SUBJECTS.modelLinks, linksResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.scenarioEntries, scenarioEntriesResult);
 
   const { readiness, workflow, linkageCounts } = buildModelWorkspaceSummary({
     modelStatus: model.status,
@@ -2174,7 +2493,9 @@ async function loadModelContext(
     links: (linksResult.data ?? []) as Array<any>,
   });
 
-  const schemaPending = Boolean(modelRunsResult.error && looksLikePendingSchema(modelRunsResult.error.message));
+  // `schemaPending` is already surfaced on this context and the model run list
+  // is emptied for it. Every OTHER failure emptied the same list silently.
+  const schemaPending = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.modelRuns, modelRunsResult);
 
   return {
     kind: "model",
@@ -2209,6 +2530,7 @@ async function loadModelContext(
           completedAt: run.completed_at ?? null,
         })),
     schemaPending,
+    unreadable: [...reads.all],
   };
 }
 
@@ -2217,13 +2539,16 @@ async function loadReportContext(
   userId: string,
   reportId: string
 ): Promise<ReportAssistantContext | null> {
-  const { data: report } = await supabase
+  const reads = new ReadFailureLog();
+  const reportResult = await supabase
     .from("reports")
     .select(
       "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_kind, updated_at"
     )
     .eq("id", reportId)
     .maybeSingle();
+
+  const report = requireAnchorRow<any>("this report record", reportResult);
 
   if (!report) {
     return null;
@@ -2234,7 +2559,7 @@ async function loadReportContext(
     return null;
   }
 
-  const [{ data: project }, { data: rtpCycle }, { data: sections }, { data: reportRunLinks }, { data: artifacts }] = await Promise.all([
+  const [projectResult, rtpCycleResult, sectionsResult, reportRunLinksResult, artifactsResult] = await Promise.all([
     supabase
       .from("projects")
       .select("id, name, summary, updated_at")
@@ -2246,7 +2571,7 @@ async function loadReportContext(
           .select("id, title, status, updated_at")
           .eq("id", report.rtp_cycle_id)
           .maybeSingle()
-      : Promise.resolve({ data: null }),
+      : Promise.resolve({ data: null, error: null }),
     supabase
       .from("report_sections")
       .select("id, section_key, enabled, config_json")
@@ -2264,13 +2589,25 @@ async function loadReportContext(
       .order("generated_at", { ascending: false }),
   ]);
 
+  reads.check(ASSISTANT_READ_SUBJECTS.linkedProject, projectResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.linkedRtpCycle, rtpCycleResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.reportSections, sectionsResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.reportRunLinks, reportRunLinksResult);
+  reads.check(ASSISTANT_READ_SUBJECTS.reportArtifacts, artifactsResult);
+  const project = projectResult.data;
+  const rtpCycle = rtpCycleResult.data;
+  const sections = sectionsResult.data;
+  const reportRunLinks = reportRunLinksResult.data;
+  const artifacts = artifactsResult.data;
+
   const runIds = (reportRunLinks ?? []).map((item: any) => item.run_id);
   const runsResult = runIds.length
     ? await supabase
         .from("runs")
         .select("id, title, summary_text, created_at")
         .in("id", runIds)
-    : { data: [] };
+    : { data: [], error: null };
+  reads.check("the analysis runs behind this report", runsResult);
 
   const typedReportRuns = (runsResult.data ?? []) as Array<{
     id: string;
@@ -2299,7 +2636,11 @@ async function loadReportContext(
         .eq("workspace_id", report.workspace_id)
         .eq("id", engagementCampaignId)
         .maybeSingle()
-    : { data: null };
+    : { data: null, error: null };
+  // The section config NAMES this campaign, so a null here is not "no campaign
+  // is attached" — it is "the campaign this report cites did not load", and the
+  // engagement block that follows would otherwise read as absent public input.
+  reads.check(ASSISTANT_READ_SUBJECTS.linkedEngagementCampaign, engagementCampaignResult);
 
   // E3 — a compact spatial-hotspots summary so the copilot can reference where
   // resident concerns concentrate. Defensive: never let it break context load.
@@ -2325,8 +2666,14 @@ async function loadReportContext(
         testedCount: analysis.testedCount,
         globalNegativeSharePct: analysis.globalNegativeSharePct,
       };
-    } catch {
+    } catch (error) {
+      // "Defensive" was doing two jobs: keeping the context load alive, and
+      // quietly turning a failed hotspot analysis into "no concentration of
+      // resident concern was found". Only the first one is defensible.
       engagementHotspotsSummary = null;
+      reads.check("engagement sentiment hotspots", {
+        error: { message: error instanceof Error ? error.message : String(error) },
+      });
     }
   }
 
@@ -2401,6 +2748,7 @@ async function loadReportContext(
           updatedAt: rtpCycle.updated_at,
         }
       : null,
+    unreadable: [...reads.all],
   };
 }
 
@@ -2410,11 +2758,14 @@ async function loadRunContext(
   runId: string,
   baselineRunId?: string | null
 ): Promise<RunAssistantContext | null> {
-  const { data: run } = await supabase
+  const reads = new ReadFailureLog();
+  const runResult = await supabase
     .from("runs")
     .select("id, workspace_id, title, summary_text, created_at, query_text, metrics")
     .eq("id", runId)
     .maybeSingle();
+
+  const run = requireAnchorRow<any>("this analysis run record", runResult);
 
   if (!run) {
     return null;
@@ -2425,14 +2776,19 @@ async function loadRunContext(
     return null;
   }
 
-  const { data: baselineRun } = baselineRunId
+  const baselineRunResult = baselineRunId
     ? await supabase
         .from("runs")
         .select("id, title, created_at, metrics")
         .eq("workspace_id", run.workspace_id)
         .eq("id", baselineRunId)
         .maybeSingle()
-    : { data: null };
+    : { data: null, error: null };
+  // The planner named this baseline by id. A failed read here is not "no
+  // baseline is attached", and every delta the copilot would otherwise decline
+  // to compute hangs off it.
+  reads.check(ASSISTANT_READ_SUBJECTS.baselineRun, baselineRunResult);
+  const baselineRun = baselineRunResult.data;
 
   return {
     kind: "run",
@@ -2456,6 +2812,7 @@ async function loadRunContext(
               : {},
         }
       : null,
+    unreadable: [...reads.all],
   };
 }
 

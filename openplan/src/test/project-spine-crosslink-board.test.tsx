@@ -232,6 +232,32 @@ describe("ProjectSpineCrosslinkBoard", () => {
     expect(within(inspector).getByText("failed")).toBeInTheDocument();
   });
 
+  /**
+   * The board renders `row.detail` as the row's own summary line, directly
+   * ABOVE `sourceLabel`/`sourceDetail` — so a reader scanning the unreadable
+   * card met "0 acquisitions · latest: 0 ingested / 0 geocoded" first and
+   * "nothing shown here is a count of what exists" second. Asserted on the
+   * rendered row rather than on the object, because the ordering is the harm.
+   */
+  it("renders no zero tally inside the row it stamped unreadable", () => {
+    const summary = buildProjectSpineCrosslinkSummary({
+      ...emptyInput,
+      unreadable: { safety_evidence: true },
+    });
+
+    render(<ProjectSpineCrosslinkBoard summary={summary} />);
+
+    const unreadableRow = screen.getByText("Could not be read").closest("a") as HTMLElement;
+    expect(within(unreadableRow).queryByText(/0 acquisitions/)).toBeNull();
+    expect(within(unreadableRow).queryByText(/0 ingested/)).toBeNull();
+    expect(within(unreadableRow).getByText(/Counts unavailable/i)).toBeInTheDocument();
+
+    // Scoped control: every OTHER lane on this empty board still shows its real
+    // tally, so an over-broad fix that silenced all of them fails here.
+    const scenarioRow = screen.getByText("No scenario set").closest("a") as HTMLElement;
+    expect(within(scenarioRow).getByText(/0 scenario sets/)).toBeInTheDocument();
+  });
+
   it("shows no failed tile and no Unavailable badge when every read succeeded", () => {
     // Without this the assertions above pass on a board that always warns.
     const summary = buildProjectSpineCrosslinkSummary(emptyInput);

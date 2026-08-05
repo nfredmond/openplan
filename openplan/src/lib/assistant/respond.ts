@@ -4,6 +4,7 @@ import {
   type AssistantPreview,
   type AssistantResponse,
 } from "@/lib/assistant/catalog";
+import { ASSISTANT_READ_SUBJECTS, type AssistantContextReadFailure } from "@/lib/assistant/context";
 import type {
   AssistantContext,
   ModelAssistantContext,
@@ -124,6 +125,110 @@ function describeAbsentStageGateHold(summary: StageGateSummary, absentSentence: 
   return absentSentence;
 }
 
+// ---------------------------------------------------------------------------
+// A COUNT DERIVED FROM A FAILED READ MAY NOT BE SPOKEN
+// ---------------------------------------------------------------------------
+
+/**
+ * Any context, seen only through the reads that failed while it loaded.
+ *
+ * `context.ts` collects those by name (`ASSISTANT_READ_SUBJECTS`) because a
+ * Supabase read answers `null` for both "there is nothing here" and "this query
+ * failed", and everything below turns those values into sentences a planner
+ * repeats in a meeting: "0 chapters are ready for review", "No funding
+ * opportunities are linked to this project yet", "Linked projects: 0". Said
+ * over a dropped connection or a revoked grant, each of those is a false
+ * statement about an agency's own work — and this surface is the one that then
+ * feeds a grant narrative or an RTP chapter.
+ */
+type ContextWithReadFailures = { unreadable?: AssistantContextReadFailure[] };
+
+/** The failure for any of these lanes, or null when they all answered. */
+function readFailure(
+  context: ContextWithReadFailures,
+  ...subjects: string[]
+): AssistantContextReadFailure | null {
+  for (const failure of context.unreadable ?? []) {
+    if (subjects.includes(failure.label)) return failure;
+  }
+  return null;
+}
+
+/**
+ * A stat tile's value, or "Unknown".
+ *
+ * A tile has room for a word, not a caveat — the same call
+ * `buildProjectPreview` already makes for an unreadable stage-gate board.
+ */
+function statCount(context: ContextWithReadFailures, value: number, ...subjects: string[]): string {
+  return readFailure(context, ...subjects) ? "Unknown" : `${value}`;
+}
+
+/**
+ * What to say INSTEAD of a count, when the count's read failed.
+ *
+ * `what` names the thing in the sentence's own words and in lower case, because
+ * it lands mid-sentence: "chapter progress for this cycle", "the funding picture
+ * for this project". The lead word is "Unknown" so a reader skimming a fact list
+ * cannot mistake the line for a finding.
+ */
+function unknownBecauseUnread(failure: AssistantContextReadFailure, what: string): string {
+  return `Unknown: ${what}. The read of ${failure.label} failed (${failure.message}), so an empty count here would not mean the records are absent.`;
+}
+
+/**
+ * The disclosure every preview and response carries when any read failed.
+ *
+ * WHY A BLANKET LINE AS WELL AS THE PER-SENTENCE FIXES BELOW. The per-sentence
+ * work is finite and this file is not: there are roughly a hundred count
+ * sentences across ten surfaces, and the lanes fixed by name below are the ones
+ * whose reads this pass audited. For every other lane the honest minimum is to
+ * tell the reader — and the model reading this as grounding — which reads did
+ * not land, so an empty value elsewhere is not taken as a finding. It leads the
+ * facts and the findings because a caveat nobody reaches is not a caveat.
+ *
+ * It is deliberately NOT `ReadFailureLog.describe()`, which is written in a
+ * page's voice ("This page could not read…"). The audience here is a planner
+ * reading a copilot panel and a model being grounded, and the model needs the
+ * instruction, not just the disclosure.
+ */
+function describeReadFailures(context: ContextWithReadFailures): string | null {
+  const failures = context.unreadable ?? [];
+  if (failures.length === 0) return null;
+
+  const labels = failures.map((failure) => failure.label);
+  const listed =
+    labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(", ")} and ${labels[labels.length - 1]}`;
+
+  return (
+    `Read failure — this copilot could not read ${listed}, so anything depending on ${labels.length === 1 ? "it" : "them"} is unknown rather than zero. ` +
+    "Do not state a count, a total, or an absence for those, and say so if asked. " +
+    `Reported by the database: ${failures.map((failure) => `${failure.label}: ${failure.message}`).join("; ")}.`
+  );
+}
+
+function withPreviewReadFailureDisclosure(
+  context: ContextWithReadFailures,
+  preview: AssistantPreview
+): AssistantPreview {
+  const disclosure = describeReadFailures(context);
+  return disclosure ? { ...preview, facts: [disclosure, ...preview.facts] } : preview;
+}
+
+function withResponseReadFailureDisclosure(
+  context: ContextWithReadFailures,
+  response: AssistantResponse
+): AssistantResponse {
+  const disclosure = describeReadFailures(context);
+  if (!disclosure) return response;
+
+  return {
+    ...response,
+    findings: [disclosure, ...response.findings],
+    caution: response.caution ? `${disclosure} ${response.caution}` : disclosure,
+  };
+}
+
 function metricLabel(metrics: Record<string, unknown>, key: string): string {
   const value = asNumber(metrics[key]);
   return value === null ? "N/A" : `${value}`;
@@ -230,6 +335,25 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
   const leadOverdueOpportunity = context.fundingSummary.leadOverdueOpportunity;
   const leadClosingOpportunity = context.fundingSummary.leadClosingOpportunity;
   const leadAwardOpportunity = context.fundingSummary.leadAwardOpportunity;
+  // Three lanes whose ZERO is a sentence rather than a number: "0 deliverables,
+  // 0 decisions and 0 meetings are attached", "No funding opportunities are
+  // linked to this project yet", "0 linked datasets are visible". Each is a
+  // claim about the agency's own record, and none of them may be made from a
+  // read that failed.
+  const projectControlCountsFailure = readFailure(
+    context,
+    ASSISTANT_READ_SUBJECTS.projectDeliverables,
+    ASSISTANT_READ_SUBJECTS.projectDecisions,
+    ASSISTANT_READ_SUBJECTS.projectMeetings
+  );
+  const fundingOpportunitiesFailure = readFailure(context, ASSISTANT_READ_SUBJECTS.fundingOpportunities);
+  const linkedDatasetsFailure = readFailure(context, ASSISTANT_READ_SUBJECTS.linkedDatasets);
+  const recentRunsFailure = readFailure(context, ASSISTANT_READ_SUBJECTS.recentRuns);
+  const riskCountsFailure = readFailure(
+    context,
+    ASSISTANT_READ_SUBJECTS.projectRisks,
+    ASSISTANT_READ_SUBJECTS.projectIssues
+  );
 
   return {
     kind: context.kind,
@@ -237,13 +361,20 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
     summary: `Grounded to the full project record: delivery posture, stage-gate signals, funding strategy, linked datasets, and recent run activity are all in scope for this copilot pass.`,
     stats: [
       { label: "Status", value: context.project.status },
-      { label: "Open risks", value: `${openRisks}` },
-      { label: "Funding", value: `${context.fundingSummary.opportunityCount}` },
+      { label: "Open risks", value: statCount(context, openRisks, ASSISTANT_READ_SUBJECTS.projectRisks) },
+      {
+        label: "Funding",
+        value: statCount(context, context.fundingSummary.opportunityCount, ASSISTANT_READ_SUBJECTS.fundingOpportunities),
+      },
       { label: "Blocked gate", value: blockedGate },
     ],
     facts: [
-      `${context.counts.deliverables} deliverables, ${context.counts.decisions} decisions, and ${context.counts.meetings} meetings are attached to this project surface.`,
-      context.fundingSummary.opportunityCount > 0
+      projectControlCountsFailure
+        ? unknownBecauseUnread(projectControlCountsFailure, "the project control counts")
+        : `${context.counts.deliverables} deliverables, ${context.counts.decisions} decisions, and ${context.counts.meetings} meetings are attached to this project surface.`,
+      fundingOpportunitiesFailure
+        ? unknownBecauseUnread(fundingOpportunitiesFailure, "the funding picture for this project")
+        : context.fundingSummary.opportunityCount > 0
         ? `${context.fundingSummary.opportunityCount} funding opportunit${context.fundingSummary.opportunityCount === 1 ? "y is" : "ies are"} linked, with ${context.fundingSummary.closingSoonCount} closing soon and ${context.fundingSummary.pursueCount} marked pursue.${awardRecordCount > 0 ? ` ${awardRecordCount} awarded opportunit${awardRecordCount === 1 ? "y still needs" : "ies still need"} an award record.` : ""}${context.fundingSummary.fundingNeedAmount !== null ? ` Target need: ${formatCurrency(context.fundingSummary.fundingNeedAmount)}.` : ""}${gapAmount !== null && gapAmount > 0 ? ` Remaining uncovered after likely dollars: ${formatCurrency(gapAmount)}.` : ""}`
         : needsFundingSourcing
           ? `No funding opportunities are linked yet, but this project already carries a recorded funding need of ${formatCurrency(context.fundingSummary.fundingNeedAmount)}. Funding sourcing should come before gap-closing claims.`
@@ -266,8 +397,12 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
       awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
         ? `${awardCount} committed award${awardCount === 1 ? " is" : "s are"} logged, with ${formatCurrency(uninvoicedAwardAmount ?? 0)} not yet invoiced.${reimbursementPacketCount > 0 ? ` ${reimbursementPacketCount} reimbursement packet${reimbursementPacketCount === 1 ? " is" : "s are"} already started.` : ""}`
         : null,
-      `${context.counts.linkedDatasets} linked datasets are visible, with ${context.counts.overlayReadyDatasets} already usable as analysis overlays.`,
-      `${context.counts.recentRuns} recent analysis runs are visible from the same workspace.`,
+      linkedDatasetsFailure
+        ? unknownBecauseUnread(linkedDatasetsFailure, "dataset linkage for this project")
+        : `${context.counts.linkedDatasets} linked datasets are visible, with ${context.counts.overlayReadyDatasets} already usable as analysis overlays.`,
+      recentRunsFailure
+        ? unknownBecauseUnread(recentRunsFailure, "recent analysis activity")
+        : `${context.counts.recentRuns} recent analysis runs are visible from the same workspace.`,
     ].filter(Boolean) as string[],
     operatorCue: context.stageGateSummary.blockedGate
       ? {
@@ -319,6 +454,15 @@ function buildProjectPreview(context: ProjectAssistantContext): AssistantPreview
                     title: `Close ${formatCurrency(gapAmount)} remaining funding gap`,
                     detail: "The project still shows uncovered need after current pursued dollars, so funding strategy should be tightened before scope or delivery assumptions drift.",
                   }
+                : riskCountsFailure || projectControlCountsFailure
+                  ? {
+                      label: "Current runtime cue",
+                      title: "Project control counts could not be read",
+                      detail: unknownBecauseUnread(
+                        riskCountsFailure ?? (projectControlCountsFailure as AssistantContextReadFailure),
+                        "the live risk, issue, and deliverable picture"
+                      ),
+                    }
                 : {
                     label: "Current runtime cue",
                     title: `${openRisks + openIssues} live project control signal${openRisks + openIssues === 1 ? "" : "s"}`,
@@ -403,6 +547,41 @@ function buildRtpRegistryPreview(context: RtpRegistryAssistantContext): Assistan
   };
 }
 
+/**
+ * Chapter progress, or the reason it is unknown.
+ *
+ * The chapter list is the load-bearing one on this surface: `context.ts` may
+ * legitimately substitute the TEMPLATE chapters when the deployment has not run
+ * the chapter migration (a table that does not exist cannot hold a chapter), but
+ * every other failure used to arrive here as an empty list and be spoken as "0
+ * chapters are ready for review and 0 are complete" about a cycle that may be
+ * nearly adopted.
+ */
+function describeRtpChapterProgress(context: RtpAssistantContext): string {
+  const failure = readFailure(context, ASSISTANT_READ_SUBJECTS.rtpChapters);
+  if (failure) {
+    return unknownBecauseUnread(failure, "chapter progress for this cycle");
+  }
+
+  return `${context.counts.readyForReviewChapters} chapters are ready for review and ${context.counts.completeChapters} are complete.`;
+}
+
+/** The same rule for the "N chapters are in scope" phrasing the response uses. */
+function describeRtpChapterScope(context: RtpAssistantContext): string {
+  const failure = readFailure(context, ASSISTANT_READ_SUBJECTS.rtpChapters);
+  if (failure) {
+    return unknownBecauseUnread(failure, "chapter scope for this cycle");
+  }
+
+  return `${context.counts.chapters} chapters are in scope, with ${context.counts.readyForReviewChapters} ready for review and ${context.counts.completeChapters} complete.`;
+}
+
+/** An evidence line naming a count, or the same line saying the read failed. */
+function rtpEvidenceLine(context: RtpAssistantContext, label: string, value: number, subject: string): string {
+  const failure = readFailure(context, subject);
+  return failure ? `${label}: unknown — ${failure.label} could not be read (${failure.message})` : `${label}: ${value}`;
+}
+
 function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
   const rtpFundingReviewCount = context.operationsSummary.counts.rtpFundingReviewPackets;
   const grantsRoutedRtpFundingReview = isRtpFundingReviewRoutedThroughGrants(context);
@@ -442,13 +621,16 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
     summary: cyclePacketPosture.summary,
     stats: [
       { label: "Status", value: context.rtpCycle.status },
-      { label: "Chapters", value: `${context.counts.chapters}` },
-      { label: "Projects", value: `${context.counts.linkedProjects}` },
-      { label: "Packets", value: `${context.counts.packetReports}` },
+      { label: "Chapters", value: statCount(context, context.counts.chapters, ASSISTANT_READ_SUBJECTS.rtpChapters) },
+      {
+        label: "Projects",
+        value: statCount(context, context.counts.linkedProjects, ASSISTANT_READ_SUBJECTS.rtpLinkedProjects),
+      },
+      { label: "Packets", value: statCount(context, context.counts.packetReports, ASSISTANT_READ_SUBJECTS.packetReports) },
     ],
     facts: [
       context.rtpCycle.summary || "The RTP cycle does not yet carry a strong summary narrative on the record itself.",
-      `${context.counts.readyForReviewChapters} chapters are ready for review and ${context.counts.completeChapters} are complete.`,
+      describeRtpChapterProgress(context),
       context.packetSummary.recommendedReport
         ? hasRtpFundingBackedReleaseReviewPressure(context)
           ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}), with ${grantsRoutedRtpFundingReview ? "Grants OS follow-through" : "funding-backed release-review pressure"} still open.`
@@ -730,31 +912,35 @@ function buildRunPreview(context: RunAssistantContext): AssistantPreview {
 }
 
 export function buildAssistantPreview(context: AssistantContext): AssistantPreview {
-  switch (context.kind) {
-    case "project":
-      return buildProjectPreview(context);
-    case "rtp_registry":
-      return buildRtpRegistryPreview(context);
-    case "rtp_cycle":
-      return buildRtpPreview(context);
-    case "plan":
-      return buildPlanPreview(context);
-    case "program":
-      return buildProgramPreview(context);
-    case "scenario_set":
-      return buildScenarioPreview(context);
-    case "model":
-      return buildModelPreview(context);
-    case "report":
-    case "rtp_packet_report":
-      return buildReportPreview(context);
-    case "run":
-      return buildRunPreview(context);
-    case "analysis_studio":
-    case "workspace":
-    default:
-      return buildWorkspacePreview(context);
-  }
+  const preview = (() => {
+    switch (context.kind) {
+      case "project":
+        return buildProjectPreview(context);
+      case "rtp_registry":
+        return buildRtpRegistryPreview(context);
+      case "rtp_cycle":
+        return buildRtpPreview(context);
+      case "plan":
+        return buildPlanPreview(context);
+      case "program":
+        return buildProgramPreview(context);
+      case "scenario_set":
+        return buildScenarioPreview(context);
+      case "model":
+        return buildModelPreview(context);
+      case "report":
+      case "rtp_packet_report":
+        return buildReportPreview(context);
+      case "run":
+        return buildRunPreview(context);
+      case "analysis_studio":
+      case "workspace":
+      default:
+        return buildWorkspacePreview(context);
+    }
+  })();
+
+  return withPreviewReadFailureDisclosure(context, preview);
 }
 
 function buildWorkspaceResponse(
@@ -1415,8 +1601,8 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
           : context.readiness.nextSteps[0] ?? "Tighten the missing cycle setup before generating the first board packet.",
       ],
       evidence: [
-        `Chapters: ${context.counts.chapters}`,
-        `Linked projects: ${context.counts.linkedProjects}`,
+        rtpEvidenceLine(context, "Chapters", context.counts.chapters, ASSISTANT_READ_SUBJECTS.rtpChapters),
+        rtpEvidenceLine(context, "Linked projects", context.counts.linkedProjects, ASSISTANT_READ_SUBJECTS.rtpLinkedProjects),
         `No-packet count: ${context.packetSummary.noPacketCount}`,
       ],
       quickLinks: buildAssistantOperations(context),
@@ -1445,8 +1631,8 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
         "Recheck cycle changes, enabled sections, and packet trace before regenerating the artifact.",
       ],
       evidence: [
-        `Chapters: ${context.counts.chapters}`,
-        `Linked projects: ${context.counts.linkedProjects}`,
+        rtpEvidenceLine(context, "Chapters", context.counts.chapters, ASSISTANT_READ_SUBJECTS.rtpChapters),
+        rtpEvidenceLine(context, "Linked projects", context.counts.linkedProjects, ASSISTANT_READ_SUBJECTS.rtpLinkedProjects),
         `Refresh count: ${context.packetSummary.refreshRecommendedCount}`,
       ],
       quickLinks: buildAssistantOperations(context),
@@ -1483,8 +1669,8 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
         "Verify packet freshness, cycle drift, and packet audit posture before board/public use.",
       ],
       evidence: [
-        `Chapters: ${context.counts.chapters}`,
-        `Linked projects: ${context.counts.linkedProjects}`,
+        rtpEvidenceLine(context, "Chapters", context.counts.chapters, ASSISTANT_READ_SUBJECTS.rtpChapters),
+        rtpEvidenceLine(context, "Linked projects", context.counts.linkedProjects, ASSISTANT_READ_SUBJECTS.rtpLinkedProjects),
         `Packet reports: ${context.packetSummary.linkedReportCount}`,
       ],
       quickLinks: buildAssistantOperations(context),
@@ -1529,9 +1715,9 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
           : context.readiness.nextSteps[0] ?? "Tighten the missing cycle setup before building more packet surface area.",
       ],
       evidence: [
-        `Chapters: ${context.counts.chapters}`,
-        `Linked projects: ${context.counts.linkedProjects}`,
-        `Engagement campaigns: ${context.counts.engagementCampaigns}`,
+        rtpEvidenceLine(context, "Chapters", context.counts.chapters, ASSISTANT_READ_SUBJECTS.rtpChapters),
+        rtpEvidenceLine(context, "Linked projects", context.counts.linkedProjects, ASSISTANT_READ_SUBJECTS.rtpLinkedProjects),
+        rtpEvidenceLine(context, "Engagement campaigns", context.counts.engagementCampaigns, ASSISTANT_READ_SUBJECTS.engagementCampaigns),
       ],
       quickLinks: buildAssistantOperations(context),
     };
@@ -1544,7 +1730,7 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
     summary: `${context.rtpCycle.title} is currently ${context.rtpCycle.status}, ${context.readiness.label.toLowerCase()}, and ${context.workflow.label.toLowerCase()}.`,
     findings: [
       context.rtpCycle.summary || "The RTP cycle record does not yet carry a strong summary narrative.",
-      `${context.counts.chapters} chapters are in scope, with ${context.counts.readyForReviewChapters} ready for review and ${context.counts.completeChapters} complete.`,
+      describeRtpChapterScope(context),
       context.operationsSummary.nextCommand
         ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
         : context.packetSummary.recommendedReport
@@ -2168,5 +2354,10 @@ export function buildAssistantResponse(
     }
   })();
 
-  return applyLocalConsoleStateToResponse(response, localConsoleState);
+  // The disclosure is applied OUTSIDE the local-console pass so it stays the
+  // first finding a planner and a model both see, whatever the console added.
+  return withResponseReadFailureDisclosure(
+    context,
+    applyLocalConsoleStateToResponse(response, localConsoleState)
+  );
 }

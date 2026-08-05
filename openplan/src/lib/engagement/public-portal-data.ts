@@ -40,8 +40,16 @@ import type { PublicCloseLoopEntry } from "@/components/engagement/public-close-
 // Single source of truth for the PUBLIC engagement portal's gate + data. Used by
 // both the full public page ((public)/engage/[shareToken]) and the minimal-chrome
 // embed page ((embed)/embed/[shareToken]). Service-role, share_token + active
-// gated — anon has zero RLS access to these tables. Returns null when there is no
-// active campaign for the token, so callers render notFound().
+// gated — anon has zero RLS access to these tables.
+//
+// THE CAMPAIGN LOOKUP HAS THREE ANSWERS, NOT TWO, and for years it had one name
+// for two of them. `null` used to mean both "no active campaign carries this
+// token" and "the lookup itself failed", and both pages turn `null` into
+// `notFound()` — so an RLS change, a dropped column or a transient outage told a
+// member of the public that their agency's consultation DOES NOT EXIST. That is
+// the third instance of a defect this product has already shipped to the public
+// twice. `loadPublicPortalResult` names the three cases apart; see it for what
+// each caller owes the reader.
 
 export type PublicPortalCampaign = {
   id: string;
@@ -692,7 +700,28 @@ export type PublicPortalProps = {
    * carried here, because the reader is a member of the public and the database's
    * own words are operator detail.
    */
-  readFailures: { comments: boolean; categories: boolean };
+  readFailures: {
+    comments: boolean;
+    categories: boolean;
+    /**
+     * The published "You said / We did" entries.
+     *
+     * WORTH ITS OWN FLAG BECAUSE OF WHO IT DAMAGES. Every other failure in this
+     * set makes the page look emptier than it is; this one makes the AGENCY look
+     * like it never answered its community. The portal hides the close-the-loop
+     * tab entirely when the list is empty, so a failed read removes the evidence
+     * that the agency did the work and leaves nothing on screen to doubt.
+     */
+    closeLoop: boolean;
+    /**
+     * The linked project row.
+     *
+     * The full public page says "This is a standalone consultation" when it gets
+     * no project back, which is a statement about the campaign that a failed read
+     * cannot make.
+     */
+    project: boolean;
+  };
   engagementType: string;
   demographicsEnabled: boolean;
   projectContext: { name: string; summary: string | null } | null;
@@ -777,11 +806,67 @@ export type PublicPortalLocaleRequest = {
   acceptLanguage?: string | null;
 };
 
-export async function loadPublicPortalBundle(
+/**
+ * The three answers the campaign lookup can honestly give.
+ *
+ * `absent` is a fact about the world: no active campaign carries this token, so
+ * a 404 is the truth. `unreadable` is a fact about THIS REQUEST: the database
+ * did not answer, and nothing has been established about whether the
+ * consultation exists. Collapsing the second into the first is what let a broken
+ * query tell a resident their agency's consultation was never published.
+ *
+ * The error travels back rather than being swallowed or thrown, which is the
+ * seam this repo has settled on for library reads — see
+ * `loadOpportunityPursuitContext` in `src/lib/grants/pursuit.ts`. The caller is
+ * a public participant surface and owes the reader a page that says the read
+ * failed and that this does NOT mean the consultation is missing, unpublished or
+ * withdrawn — the same disclosure the public plan page renders.
+ */
+export type PublicPortalLoadResult =
+  | { status: "ok"; bundle: PublicPortalBundle }
+  | { status: "absent" }
+  | { status: "unreadable"; error: { message: string } };
+
+/**
+ * Raised by the compatibility wrapper below when the campaign lookup FAILED.
+ *
+ * WHY A THROW EXISTS AT ALL IN A MODULE WHOSE WHOLE POINT IS RETURNING THE
+ * ERROR. `loadPublicPortalBundle` can only answer `PublicPortalBundle | null`,
+ * and both of its callers turn `null` into `notFound()`. Until those two pages
+ * move to `loadPublicPortalResult` and render the disclosure shell themselves,
+ * the honest options are "404 — this consultation does not exist" or "error —
+ * this page could not be loaded". The second is true and the first is not, so
+ * the wrapper raises this and lets the route's error boundary
+ * (`src/app/(public)/error.tsx`, "This public page couldn't load.") say so.
+ *
+ * IT IS A STAGING POST, NOT THE DESIGN. The finished shape is both pages calling
+ * `loadPublicPortalResult` and rendering a page that names what could not be read
+ * and denies the inference, the way `src/app/(public)/plan/[shareToken]/page.tsx`
+ * does for a plan. Delete this class in that change.
+ */
+export class PortalReadUnavailableError extends Error {
+  constructor(message: string) {
+    // The database's own words go to the host log, never to the participant —
+    // the boundary renders its own sentence and never this message.
+    super(`The engagement campaign lookup failed: ${message}`);
+    this.name = "PortalReadUnavailableError";
+  }
+}
+
+/**
+ * The portal for a share token, or the reason there isn't one.
+ *
+ * PREFER THIS OVER `loadPublicPortalBundle`. It is the only entry point that can
+ * tell a caller the difference between a consultation that does not exist and a
+ * lookup that did not answer.
+ */
+export async function loadPublicPortalResult(
   shareToken: string,
   localeRequest?: PublicPortalLocaleRequest
-): Promise<PublicPortalBundle | null> {
-  if (!shareToken || shareToken.length < 8) return null;
+): Promise<PublicPortalLoadResult> {
+  // Nothing has been read yet, so this really is absence: a token this short
+  // cannot be one this product ever minted.
+  if (!shareToken || shareToken.length < 8) return { status: "absent" };
 
   const supabase = createServiceRoleClient();
 
@@ -796,30 +881,43 @@ export async function loadPublicPortalBundle(
   });
   const messages = buildPortalMessageBundle(locale);
 
-  const { data: campaignData } = await supabase
+  const campaignResult = await supabase
     .from("engagement_campaigns")
     .select("id, workspace_id, project_id, title, summary, public_description, status, engagement_type, allow_public_submissions, submissions_closed_at, demographics_enabled, updated_at, accessibility_contact_label, accessibility_contact_email, accessibility_contact_phone, accessibility_alternate_formats")
     .eq("share_token", shareToken)
     .eq("status", "active")
     .maybeSingle();
 
-  if (!campaignData) return null;
+  // THE READ THAT DECIDES WHETHER THIS PAGE EXISTS AT ALL, and the one whose
+  // error was the only one in this function nobody bound. Its neighbours below
+  // already keep theirs.
+  if (campaignResult.error) {
+    return {
+      status: "unreadable",
+      error: { message: campaignResult.error.message ?? "no message reported" },
+    };
+  }
 
-  const campaign = campaignData as PublicPortalCampaign;
+  if (!campaignResult.data) return { status: "absent" };
+
+  const campaign = campaignResult.data as PublicPortalCampaign;
 
   const [
-    { data: projectData },
+    projectResult,
     placeCandidates,
-    { data: geofenceRow },
+    geofenceResult,
     categoriesResult,
     approvedItemsResult,
     surveyDefinition,
-    closeLoopRows,
+    closeLoopResult,
     translationIndex,
   ] = await Promise.all([
     campaign.project_id
       ? supabase.from("projects").select("id, name, summary").eq("id", campaign.project_id).maybeSingle()
-      : Promise.resolve({ data: null }),
+      : // A campaign with no `project_id` was never read for, so there is no
+        // error to carry and no failure to disclose — this is the only branch in
+        // this function where "no project" is a fact rather than a silence.
+        Promise.resolve({ data: null, error: null }),
     // Where this map opens, and why. See `loadPortalPlaceCandidates`.
     loadPortalPlaceCandidates(supabase, campaign),
     /**
@@ -871,15 +969,18 @@ export async function loadPublicPortalBundle(
     loadPortalTranslationIndex(supabase, { campaignId: campaign.id, locale: locale.locale }),
   ]);
 
-  const project = (projectData ?? null) as PublicPortalProject | null;
-  // A failed read is not an empty campaign. Both of these used to discard their
-  // error, so a dropped column or a policy change rendered as "no categories"
-  // and "no comments" — the second of which tells the public that nobody
-  // participated.
+  const project = (projectResult.data ?? null) as PublicPortalProject | null;
+  // A failed read is not an empty campaign. All four of these used to discard
+  // their error, so a dropped column or a policy change rendered as "no
+  // categories", "no comments", "no published updates" and "standalone
+  // consultation" — claims about the agency that only a successful read can make.
   const categoriesReadFailed = Boolean(categoriesResult.error);
   const approvedItemsReadFailed = Boolean(approvedItemsResult.error);
+  const closeLoopReadFailed = Boolean(closeLoopResult.error);
+  const projectReadFailed = Boolean(projectResult.error);
   const categories = (categoriesResult.data ?? []) as CategoryRow[];
   const approvedItems = (approvedItemsResult.data ?? []) as ApprovedItemRow[];
+  const closeLoopRows = closeLoopResult.rows;
   const acceptingSubmissions = campaign.allow_public_submissions && !campaign.submissions_closed_at;
 
   const mapFraming = resolvePortalMapFraming({
@@ -887,8 +988,19 @@ export async function loadPublicPortalBundle(
     projectPlace: placeCandidates.project,
     workspaceHome: placeCandidates.workspaceHome,
     approvedItems,
-    submissionGeofenceEnabled:
-      (geofenceRow as Record<string, unknown> | null)?.[SUBMISSION_GEOFENCE_COLUMN] === true,
+    /*
+      A FAILED GEOFENCE READ IS TREATED AS "SAY NOTHING", tested explicitly here
+      rather than left to fall out of `?? undefined`. The flag only decides
+      whether the portal prints the sentence inviting a resident to keep their
+      pin inside the campaign area; enforcement lives in the submit route, which
+      reads the column itself. Omitting a sentence is silence, and silence is not
+      a claim — whereas printing "you may pin anywhere" over an unread flag would
+      be one. This is the only read in this function whose failure is deliberately
+      not disclosed, and it is written out so the next reader does not "fix" it.
+    */
+    submissionGeofenceEnabled: geofenceResult.error
+      ? false
+      : (geofenceResult.data as Record<string, unknown> | null)?.[SUBMISSION_GEOFENCE_COLUMN] === true,
   });
 
   const surveyQuestions: PortalSurveyQuestionView[] = surveyDefinition.questions.map((question) => {
@@ -1021,7 +1133,12 @@ export async function loadPublicPortalBundle(
       photoUrl: photoUrlByItemId.get(item.id) ?? null,
       createdAt: item.created_at,
     })),
-    readFailures: { comments: approvedItemsReadFailed, categories: categoriesReadFailed },
+    readFailures: {
+      comments: approvedItemsReadFailed,
+      categories: categoriesReadFailed,
+      closeLoop: closeLoopReadFailed,
+      project: projectReadFailed,
+    },
     engagementType: campaign.engagement_type,
     demographicsEnabled: campaign.demographics_enabled,
     projectContext: project ? { name: project.name, summary: project.summary } : null,
@@ -1083,7 +1200,31 @@ export async function loadPublicPortalBundle(
     ),
   };
 
-  return { campaign, project, acceptingSubmissions, campaignText, locale, messages, portalProps };
+  return {
+    status: "ok",
+    bundle: { campaign, project, acceptingSubmissions, campaignText, locale, messages, portalProps },
+  };
+}
+
+/**
+ * The portal bundle, or `null` when there is no active campaign for the token.
+ *
+ * KEPT ONLY BECAUSE ITS TWO CALLERS COULD NOT BE CHANGED IN THE SAME LANE. It
+ * cannot express "the lookup failed", so it raises `PortalReadUnavailableError`
+ * instead of handing back a `null` that both pages turn into "this consultation
+ * does not exist". A 500 that says the page could not load is true; a 404 that
+ * says an agency never published its consultation is not.
+ *
+ * Move `(public)/engage/[shareToken]/page.tsx` and `(embed)/embed/[shareToken]`
+ * onto `loadPublicPortalResult`, render the disclosure shell, and delete this.
+ */
+export async function loadPublicPortalBundle(
+  shareToken: string,
+  localeRequest?: PublicPortalLocaleRequest
+): Promise<PublicPortalBundle | null> {
+  const result = await loadPublicPortalResult(shareToken, localeRequest);
+  if (result.status === "unreadable") throw new PortalReadUnavailableError(result.error.message);
+  return result.status === "ok" ? result.bundle : null;
 }
 
 /**

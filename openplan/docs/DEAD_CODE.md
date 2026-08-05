@@ -104,10 +104,26 @@ documented as such at the top of the file. Failing the build on a designed
 architectural surface teaches people the gate is noise. Revisit if the list is
 ever triaged down to something small enough to enumerate.
 
-**A stale baseline entry fails the build too**, so the baseline can only shrink:
-`treatConfigHintsAsErrors` is on, and knip answers `Remove from
-ignoreDependencies` when an entry stops being needed. That is the property that
-keeps this honest — an allowlist nobody can forget to prune.
+**Only the dependency half of the baseline prunes itself. Do not read the file
+half as ratcheted — it is not.**
+
+`treatConfigHintsAsErrors` is on, which covers `ignoreDependencies` and only
+that: a stale entry there is a build failure, whether the package went back into
+use or left `package.json` entirely. Measured 2026-08-04 against knip 6.29.0 by
+running it on copies of `knip.json`: adding `zod` (imported all over `src/`) and
+adding a package name absent from `package.json` each produced
+`Configuration hints (1) … Remove from ignoreDependencies` and exit 1. So the
+three dependency entries below can only shrink, and nobody has to remember them.
+
+**`ignoreIssues` gets no such check.** In the same measurement, an
+`ignoreIssues` key naming a live imported file (`src/lib/geographies/place-resolver.ts`,
+which knip would never report unused) and an `ignoreIssues` key naming a path
+with no file behind it were both accepted in silence — exit 0, nothing printed,
+no hint. Deleting the ignored file does not retire its exemption; neither does
+wiring it back up. The file entry below is therefore **known debt with no timer
+on it**, and so is the `src/components/ui/**` block: pruning them is a manual
+act, and if a future session wants that half ratcheted it has to build the check
+itself rather than assume knip is doing it.
 
 ### The baseline — three dependencies and one file
 
@@ -130,7 +146,9 @@ the work; adding to it needs a reason written here.**
 - **`src/lib/api/county-geographies.ts`** (unused file) — the zod schemas left
   behind when the county-search client was deleted in the 2026-08-03 triage
   above. Its sibling `place-geographies.ts` is the live front door. Delete it
-  after confirming nothing reaches for these schemas by name.
+  after confirming nothing reaches for these schemas by name — **and delete its
+  `ignoreIssues` entry in the same change, because nothing will notice if you
+  do not.**
 
 `src/components/ui/**` is exempted from file/export findings rather than removed
 from the project entirely, so a dependency imported only by a shadcn component

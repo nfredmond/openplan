@@ -865,3 +865,86 @@ describe("assistant response builders", () => {
     );
   });
 });
+
+/**
+ * THE SENTENCE SIDE OF "A FAILED READ IS NOT AN ANSWER".
+ *
+ * `assistant-context.test.ts` proves the loader records a failed read by name.
+ * These prove what this file does with that record — because a disclosure the
+ * narration ignores is worse than no disclosure at all: the context would be
+ * honest and the copilot would still say "0 deliverables are attached".
+ *
+ * The last test is the one that keeps this change safe. Every count sentence
+ * must be BYTE-IDENTICAL when nothing failed; if the honest path leaked into
+ * the ordinary one, the whole product's narration would change and the failure
+ * disclosure would stop meaning anything.
+ */
+describe("a count whose read failed may not be spoken", () => {
+  const readFailure = (label: string, message: string) => ({ label, message });
+
+  it("marks the risk tile unknown rather than reporting zero open risks", () => {
+    const base = buildProjectContextWithOverdue(0);
+    const context: ProjectAssistantContext = {
+      ...base,
+      unreadable: [readFailure("project risks", "permission denied for table project_risks")],
+    };
+
+    const preview = buildAssistantPreview(context);
+
+    expect(preview.stats).toEqual(
+      expect.arrayContaining([expect.objectContaining({ label: "Open risks", value: "Unknown" })])
+    );
+    expect(preview.stats).not.toEqual(
+      expect.arrayContaining([expect.objectContaining({ label: "Open risks", value: "0" })])
+    );
+  });
+
+  it("refuses the 'no funding opportunities are linked' sentence when that read failed", () => {
+    const base = buildProjectContextWithOverdue(0);
+    const context: ProjectAssistantContext = {
+      ...base,
+      fundingSummary: { ...base.fundingSummary, opportunityCount: 0, closingSoonCount: 0, leadClosingOpportunity: null },
+      unreadable: [readFailure("funding opportunities", "connection terminated unexpectedly")],
+    };
+
+    const facts = buildAssistantPreview(context).facts.join("\n");
+
+    expect(facts).toContain("Unknown: the funding picture for this project.");
+    expect(facts).not.toContain("No funding opportunities are linked to this project yet");
+  });
+
+  it("leads both the preview facts and the response findings with the disclosure, quoting the database", () => {
+    const base = buildProjectContextWithOverdue(0);
+    const context: ProjectAssistantContext = {
+      ...base,
+      unreadable: [readFailure("project deliverables", "statement timeout")],
+    };
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "project-blockers");
+
+    expect(preview.facts[0]).toContain("could not read project deliverables");
+    expect(preview.facts[0]).toContain("statement timeout");
+    expect(response.findings[0]).toContain("could not read project deliverables");
+    expect(response.caution).toContain("Do not state a count, a total, or an absence");
+    expect(preview.facts.join("\n")).not.toContain("0 deliverables, 0 decisions, and 0 meetings");
+  });
+
+  it("changes nothing at all when every read answered", () => {
+    const context = buildProjectContextWithOverdue(0);
+
+    const preview = buildAssistantPreview(context);
+    const response = buildAssistantResponse(context, "project-blockers");
+
+    expect(preview.facts.join("\n")).toContain(
+      "0 deliverables, 0 decisions, and 0 meetings are attached to this project surface."
+    );
+    expect(preview.facts.join("\n")).toContain("0 linked datasets are visible");
+    expect(preview.stats).toEqual(
+      expect.arrayContaining([expect.objectContaining({ label: "Open risks", value: "0" })])
+    );
+    expect(preview.facts.some((fact) => fact.startsWith("Read failure —"))).toBe(false);
+    expect(response.findings.some((finding) => finding.startsWith("Read failure —"))).toBe(false);
+    expect(response.caution ?? "").not.toContain("Read failure");
+  });
+});

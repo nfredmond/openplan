@@ -336,6 +336,13 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("created_at", { ascending: false })
     .limit(5);
+  // Falling back is fine; falling back SILENTLY is not. When the attributed read
+  // fails for anything but a pending column, this page stops knowing how much
+  // analysis belongs to THIS project — the workspace-recency list that replaces
+  // it answers a different question — so the failure is disclosed and the
+  // analysis lane refuses rather than counting the substitute as project work.
+  const projectRunsPending = looksLikePendingSchema(projectRunsResult.error?.message);
+  const projectRunsReadFailed = collectUnlessPending(reads, "analysis runs attributed to this project", projectRunsResult);
   const projectRunsAvailable = !projectRunsResult.error;
   const attributedRuns = projectRunsAvailable ? (projectRunsResult.data ?? []) : [];
 
@@ -353,12 +360,18 @@ export default async function ProjectDetailPage({
   const recentRuns = recentRunLane.rows as RecentRun[];
 
   // Worker model runs attributed to this project — counted for the spine
-  // readiness board. Absent column (pre-migration) reads as zero, silently.
+  // crosslink board. THE ZERO WAS THE DEFECT: `error ? 0 : rows.length` is the
+  // whole read-failure-as-absence class in one line, and this count is the only
+  // input distinguishing "no worker run is bound to this project" from "the
+  // model_runs read failed". A zero here, with no attributed analysis runs
+  // either, makes the analysis lane say "No analysis link · Add a model run".
   const projectModelRunsResult = await supabase
     .from("model_runs")
     .select("id")
     .eq("project_id", project.id)
     .limit(50);
+  const projectModelRunsPending = looksLikePendingSchema(projectModelRunsResult.error?.message);
+  const projectModelRunsReadFailed = collectUnlessPending(reads, "model runs attributed to this project", projectModelRunsResult);
   const projectModelRunCount = projectModelRunsResult.error
     ? 0
     : (projectModelRunsResult.data ?? []).length;
@@ -451,6 +464,13 @@ export default async function ProjectDetailPage({
     supabase as unknown as ProjectBudgetQuerySupabaseLike,
     project.id
   );
+  // The loader classifies and RETURNS its failures rather than swallowing them;
+  // this is where they become something a planner can see. Without it a failed
+  // client-invoice or spend read renders as "Billed to date $0" — an agency's
+  // money stated as zero because a query broke. The panel below still shows the
+  // decomposed totals, so the banner is the only thing standing between a
+  // failed read and a number a planner would act on.
+  budgetInputs.readFailures.forEach((failure) => reads.check(failure.label, { error: failure }));
   const projectBudgetSnapshot = buildProjectBudgetSnapshot({
     project: { budget_amount: budgetInputs.statedBudgetAmount },
     deliverables: budgetInputs.deliverables,
@@ -490,7 +510,8 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(6);
-  const engagementCampaigns = laneRows(reads, "engagement campaigns for this project", engagementCampaignsResult) as Array<{
+  const engagementCampaignLane = laneOutcome(reads, "engagement campaigns for this project", engagementCampaignsResult);
+  const engagementCampaigns = engagementCampaignLane.rows as Array<{
         id: string;
         title: string;
         status: string;
@@ -632,7 +653,8 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("linked_at", { ascending: false });
 
-  const datasetLinkRows = laneRows(reads, "datasets linked to this project", datasetLinksResult) as Array<{
+  const datasetLinkLane = laneOutcome(reads, "datasets linked to this project", datasetLinksResult);
+  const datasetLinkRows = datasetLinkLane.rows as Array<{
         dataset_id: string;
         relationship_type: string;
         linked_at: string;
@@ -974,6 +996,31 @@ export default async function ProjectDetailPage({
   const { posture: aerialCachedPosture, updatedAt: aerialCachedPostureUpdatedAt } =
     await loadAerialProjectPosture(supabase, project.id);
   const projectPlaceOfRecord = placeOfRecordFromProject(project);
+
+  // ONE ANSWER PER LANE, SHARED BY BOTH BOARDS ON THIS SCREEN. The crosslink
+  // board and the readiness rollup are built from the same reads and render
+  // three inches apart, so a lane that is unreadable on one and "Not linked" on
+  // the other is the product contradicting itself in front of a planner. The
+  // keys are `ProjectSpineReadinessLaneKey`, which the rollup takes verbatim;
+  // the crosslink board maps them onto its own eight lanes below.
+  const lanePendingSchema = {
+    rtp: projectRtpLinksPending || linkedRtpCyclesPending || workspaceRtpCyclesPending,
+    reports: projectReportsPending || reportArtifactsPending,
+    grants: projectFundingProfilePending || fundingAwardsPending || fundingOpportunitiesPending || projectInvoicesPending,
+    engagement: engagementCampaignLane.pending,
+    analysis: recentRunsPending || projectRunsPending || projectModelRunsPending,
+    aerial: aerialEvidencePending,
+  };
+  const laneUnreadable = {
+    rtp: rtpLinkLane.failed || linkedRtpCycleLane.failed || workspaceRtpCycleLane.failed,
+    reports: projectReportLane.failed || reportArtifactLane.failed,
+    grants:
+      projectFundingProfileReadFailed || fundingAwardsReadFailed || fundingOpportunitiesReadFailed || projectInvoicesReadFailed,
+    engagement: engagementCampaignLane.failed,
+    analysis: recentRunLane.failed || projectRunsReadFailed || projectModelRunsReadFailed || projectReportLane.failed,
+    aerial: Boolean(aerialUnreadableReason),
+  };
+
   const projectSpineCrosslinkSummary = buildProjectSpineCrosslinkSummary({
     projectId: project.id,
     geography: geographyLaneInput(projectPlaceOfRecord, workspaceHomeGeographyLabel),
@@ -1032,29 +1079,26 @@ export default async function ProjectDetailPage({
     },
     aerial: aerialProjectPosture,
     pendingSchema: {
-      rtp_packets: projectRtpLinksPending || linkedRtpCyclesPending || workspaceRtpCyclesPending || projectReportsPending,
+      rtp_packets: lanePendingSchema.rtp || lanePendingSchema.reports,
       scenario_sets: scenarioSetsPending || scenarioEntriesPending,
-      funding_profile:
-        projectFundingProfilePending || fundingAwardsPending || fundingOpportunitiesPending || projectInvoicesPending,
-      engagement_evidence: projectReportsPending || reportArtifactsPending,
-      analysis_modeling: recentRunsPending || projectReportsPending || reportArtifactsPending,
+      funding_profile: lanePendingSchema.grants,
+      engagement_evidence: lanePendingSchema.reports,
+      analysis_modeling: lanePendingSchema.analysis || lanePendingSchema.reports,
       safety_evidence: safetyIngestsPending,
-      aerial_evidence: aerialEvidencePending,
+      aerial_evidence: lanePendingSchema.aerial,
     },
     // The other half of the same question. Every flag here is a read this page
     // has ALREADY disclosed in its banner; without them the board answers "Not
     // linked" for a lane the banner has just called unreadable, and the board is
     // the surface a planner acts on.
     unreadable: {
-      rtp_packets:
-        rtpLinkLane.failed || linkedRtpCycleLane.failed || workspaceRtpCycleLane.failed || projectReportLane.failed,
+      rtp_packets: laneUnreadable.rtp || laneUnreadable.reports,
       scenario_sets: scenarioSetLane.failed || scenarioEntryLane.failed,
-      funding_profile:
-        projectFundingProfileReadFailed || fundingAwardsReadFailed || fundingOpportunitiesReadFailed || projectInvoicesReadFailed,
-      engagement_evidence: projectReportLane.failed || reportArtifactLane.failed,
-      analysis_modeling: recentRunLane.failed || projectReportLane.failed || reportArtifactLane.failed,
+      funding_profile: laneUnreadable.grants,
+      engagement_evidence: laneUnreadable.reports,
+      analysis_modeling: laneUnreadable.analysis,
       safety_evidence: safetyLane.failed,
-      aerial_evidence: Boolean(aerialUnreadableReason),
+      aerial_evidence: laneUnreadable.aerial,
     },
   });
 
@@ -1121,6 +1165,12 @@ export default async function ProjectDetailPage({
       readyPackageCount: aerialProjectPosture.readyPackageCount,
       verificationReadiness: aerialProjectPosture.verificationReadiness,
     },
+    // Same two maps the crosslink board above is built from. This rollup had no
+    // failure channel at all, so a failed aerial read rendered "No aerial
+    // mission or evidence package is linked." directly under a board that had
+    // just called the same lane unreadable.
+    pendingSchema: lanePendingSchema,
+    unreadable: laneUnreadable,
   });
 
   const operationsSummary = await operationsSummaryPromise;
@@ -1346,11 +1396,15 @@ export default async function ProjectDetailPage({
       <ProjectEvidenceAndActivity
         dataHubMigrationPending={dataHubMigrationPending}
         linkedDatasets={linkedDatasets}
+        linkedDatasetsReadFailed={datasetLinkLane.failed}
         recentRuns={recentRuns}
+        recentRunsReadFailed={recentRunLane.failed}
         aerialProjectPosture={aerialProjectPosture}
         aerialProjectPostureDetail={aerialProjectPostureDetail}
         aerialMissions={aerialMissions}
         aerialPackages={aerialPackages}
+        aerialReadFailed={Boolean(aerialUnreadableReason)}
+        aerialSchemaPending={aerialEvidencePending}
         projectId={project.id}
         projectPlaceLabel={project.place_label ?? null}
         timelineItems={timelineItems}

@@ -20,6 +20,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.hoisted(() => vi.fn());
 const loadCampaignAccessMock = vi.fn();
+const validateCampaignCategoryAccessMock = vi.fn();
 
 const priorStatusMaybeSingle = vi.fn();
 const entryUpdateMaybeSingle = vi.fn();
@@ -54,7 +55,7 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 vi.mock("@/lib/engagement/api", () => ({
   loadCampaignAccess: (...args: unknown[]) => loadCampaignAccessMock(...args),
-  validateCampaignCategoryAccess: async () => ({ category: { id: "cat-1" }, error: null }),
+  validateCampaignCategoryAccess: (...args: unknown[]) => validateCampaignCategoryAccessMock(...args),
 }));
 vi.mock("@/lib/notifications/engagement", () => ({
   recordOperatorNotification: recordOperatorNotificationMock,
@@ -65,15 +66,20 @@ import { PATCH } from "@/app/api/engagement/campaigns/[campaignId]/closeloop/[en
 
 const CAMPAIGN_ID = "11111111-1111-4111-8111-111111111111";
 const ENTRY_ID = "22222222-2222-4222-8222-222222222222";
+const CATEGORY_ID = "33333333-3333-4333-8333-333333333333";
 
 const ctx = { params: Promise.resolve({ campaignId: CAMPAIGN_ID, entryId: ENTRY_ID }) };
 
-function publishRequest() {
+function patchRequest(body: Record<string, unknown>) {
   return new NextRequest(`http://localhost/api/engagement/campaigns/${CAMPAIGN_ID}/closeloop/${ENTRY_ID}`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ status: "published" }),
+    body: JSON.stringify(body),
   });
+}
+
+function publishRequest() {
+  return patchRequest({ status: "published" });
 }
 
 beforeEach(() => {
@@ -89,6 +95,7 @@ beforeEach(() => {
     allowed: true,
   });
 
+  validateCampaignCategoryAccessMock.mockResolvedValue({ category: { id: CATEGORY_ID }, error: null });
   priorStatusMaybeSingle.mockResolvedValue({ data: { status: "draft" }, error: null });
   entryUpdateMaybeSingle.mockResolvedValue({
     data: { id: ENTRY_ID, status: "published", theme_title: "Crossings", you_said: "…", we_did: "…" },
@@ -150,6 +157,62 @@ describe("PATCH .../closeloop/[entryId] — publishing once", () => {
     expect(response.status).toBe(503);
     expect((await response.json()).error).toBe("Close-loop entry schema is not available yet");
     expect(enqueueCampaignSubscriberEmailsMock).not.toHaveBeenCalled();
+    expect(entryUpdateMock).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * THE SAME DEFECT, TWENTY LINES ABOVE THE FIX, and it survived the first pass.
+ *
+ * `if (categoryAccess.error || !categoryAccess.category)` answered 400 "Category
+ * does not belong to this campaign" for a lookup that FAILED — a claim about the
+ * agency's own categories built out of a query with no answer. The operator is
+ * looking at the theme they just picked from this campaign's own list, so the
+ * sentence is not merely unhelpful, it is false and unfalsifiable from the UI.
+ * The 400 is now reserved for a read that ran and found nothing.
+ */
+describe("PATCH .../closeloop/[entryId] — tagging an entry with a theme", () => {
+  it("still refuses a category the read looked for and did not find", async () => {
+    validateCampaignCategoryAccessMock.mockResolvedValue({ category: null, error: null });
+
+    const response = await PATCH(patchRequest({ categoryId: CATEGORY_ID }), ctx);
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toBe("Category does not belong to this campaign");
+    expect(entryUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("reports a failed category read instead of calling the agency's own theme foreign", async () => {
+    validateCampaignCategoryAccessMock.mockResolvedValue({
+      category: null,
+      error: { message: "permission denied for table engagement_categories", code: "42501" },
+    });
+
+    const response = await PATCH(patchRequest({ categoryId: CATEGORY_ID }), ctx);
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Failed to load the selected category");
+    expect(body.hint).toContain("read failure");
+    // The false claim is GONE, not merely accompanied by a truer one.
+    expect(JSON.stringify(body)).not.toContain("does not belong");
+    expect(entryUpdateMock).not.toHaveBeenCalled();
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "entry_category_read_failed",
+      expect.objectContaining({ categoryId: CATEGORY_ID })
+    );
+  });
+
+  it("answers 503 when the categories table is not migrated on this deployment", async () => {
+    validateCampaignCategoryAccessMock.mockResolvedValue({
+      category: null,
+      error: { message: 'relation "engagement_categories" does not exist' },
+    });
+
+    const response = await PATCH(patchRequest({ categoryId: CATEGORY_ID }), ctx);
+
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toBe("The selected category schema is not available yet");
     expect(entryUpdateMock).not.toHaveBeenCalled();
   });
 });
