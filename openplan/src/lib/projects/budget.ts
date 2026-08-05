@@ -1,3 +1,4 @@
+import { parseOptionalAmount } from "@/lib/money/optional-amount";
 import { parseCurrencyAmount } from "@/lib/invoicing/invoice-records";
 
 /**
@@ -133,13 +134,6 @@ function roundPercent(value: number): number {
 }
 
 /** Parse an optional numeric column: null/undefined/unparseable/negative → null, never 0. */
-function parseOptionalAmount(value: number | string | null | undefined): number | null {
-  if (value === null || value === undefined) return null;
-  const parsed = typeof value === "number" ? value : Number.parseFloat(value);
-  if (!Number.isFinite(parsed) || parsed < 0) return null;
-  return parsed;
-}
-
 /** percent_complete is a progress basis only when it is a real 0–100 value. */
 function parsePercentComplete(value: number | string | null | undefined): number | null {
   const parsed = parseOptionalAmount(value);
