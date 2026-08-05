@@ -1108,7 +1108,7 @@ export function PublicEngagementPortal({
   acceptingSubmissions,
   categories,
   approvedItems,
-  readFailures = { comments: false, categories: false },
+  readFailures = { comments: false, categories: false, closeLoop: false, project: false },
   engagementType,
   demographicsEnabled = false,
   projectContext,
@@ -1130,7 +1130,16 @@ export function PublicEngagementPortal({
    * describing a failure that no surface shows is the same defect as the failure
    * being swallowed in the first place.
    */
-  readFailures?: { comments: boolean; categories: boolean };
+  /*
+    EVERY flag the loader produces is named here, and that is load-bearing rather
+    than tidy. This prop arrives by JSX spread from two surfaces, and TypeScript
+    does not excess-property-check a spread — so a flag the loader sets and this
+    type omits is dropped silently, with a green build. That is exactly what
+    happened to `closeLoop` and `project`: the loader raised them, nothing
+    received them, and a failed close-the-loop read went on hiding the tab that
+    proves an agency answered its community.
+  */
+  readFailures?: { comments: boolean; categories: boolean; closeLoop: boolean; project: boolean };
   engagementType: string;
   demographicsEnabled?: boolean;
   /**
@@ -1239,7 +1248,13 @@ export function PublicEngagementPortal({
   renderLanguagePicker?: boolean;
 }) {
   const hasSurvey = surveyQuestions.length > 0;
-  const hasCloseLoop = closeLoopEntries.length > 0;
+  /*
+    The tab survives a failed read, and that is the whole point of the flag. An
+    empty list and an unreadable one look identical here, but they say opposite
+    things about the agency: one means it has not answered its community yet, the
+    other means we could not tell. Hiding the tab on a failure asserts the first.
+  */
+  const hasCloseLoop = closeLoopEntries.length > 0 || readFailures.closeLoop;
   const [activeTab, setActiveTab] = useState<"submit" | "feedback" | "survey" | "closeloop">(
     acceptingSubmissions ? "submit" : "feedback"
   );
@@ -1569,7 +1584,7 @@ export function PublicEngagementPortal({
         why. It renders on BOTH surfaces (portal route and embed), because the
         embed is the copy most likely to be read without the agency nearby.
       */}
-      {readFailures.comments || readFailures.categories ? (
+      {readFailures.comments || readFailures.categories || readFailures.closeLoop || readFailures.project ? (
         <div
           role="status"
           className="rounded-lg border border-amber-300/60 bg-amber-50/60 px-3 py-2 text-sm text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
@@ -1670,7 +1685,9 @@ export function PublicEngagementPortal({
                 active={activeTab === "closeloop"}
                 icon={<ClipboardCheck className="h-3.5 w-3.5" aria-hidden="true" />}
                 label={t("portal.tab.closeLoop")}
-                count={closeLoopEntries.length}
+                /* No badge when the read failed: "(0)" here is a count of the
+                   agency's responses, and we did not get to take it. */
+                count={readFailures.closeLoop ? undefined : closeLoopEntries.length}
                 bcp47={bcp47}
                 onClick={() => setActiveTab("closeloop")}
               />
@@ -1741,7 +1758,11 @@ export function PublicEngagementPortal({
             ) : null}
 
             {activeTab === "closeloop" && hasCloseLoop ? (
-              <PublicCloseLoop entries={closeLoopEntries} translator={translator} />
+              readFailures.closeLoop && closeLoopEntries.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t("portal.partOfPageUnavailable")}</p>
+              ) : (
+                <PublicCloseLoop entries={closeLoopEntries} translator={translator} />
+              )
             ) : null}
 
             {activeTab === "feedback" ? (

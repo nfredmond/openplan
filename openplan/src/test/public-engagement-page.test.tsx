@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const createServiceRoleClientMock = vi.fn();
@@ -182,6 +182,11 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import PublicEngagementPage from "@/app/(public)/engage/[shareToken]/page";
+import {
+  loadPublicPortalResult,
+  PortalReadUnavailableError,
+  type PublicPortalBundle,
+} from "@/lib/engagement/public-portal-data";
 
 describe("PublicEngagementPage", () => {
   beforeEach(() => {
@@ -266,6 +271,15 @@ describe("PublicEngagementPage", () => {
       data: { submission_geofence_enabled: false },
       error: null,
     });
+    /*
+      RE-SEEDED EVERY TEST, and it has to be. `vi.clearAllMocks()` clears
+      recorded calls but NOT resolved values, so the declaration-site default is
+      only ever in force until the first test that overrides it — after which a
+      forced read failure leaks silently into every test below. That is the exact
+      shape of a green suite proving nothing, and it cost one wrong assertion in
+      this file before it was noticed.
+    */
+    closeLoopOrderCreatedMock.mockResolvedValue({ data: [], error: null });
   });
 
   /**
@@ -771,11 +785,208 @@ describe("PublicEngagementPage", () => {
     expect(screen.queryByText(/engagement_items/i)).toBeNull();
   });
 
+  /*
+    THESE TWO ASSERT THE RENDER, AND THAT IS THE ENTIRE POINT OF THEM.
+
+    The loader-level tests below already proved `readFailures.closeLoop` and
+    `readFailures.comments` are raised. Both passed while the portal component
+    accepted only two of the four flags the loader produces — this prop arrives
+    by JSX spread, and TypeScript does not excess-property-check a spread, so the
+    other two were dropped silently with a green build. A flag that describes a
+    failure no surface shows is the same defect as swallowing the failure.
+
+    So: fail a NAMED read, then look at what a resident would actually see.
+  */
+  it("keeps the close-the-loop tab, and says so, when that read failed", async () => {
+    closeLoopOrderCreatedMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for relation engagement_closeloop_entries" },
+    });
+
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+
+    // The tab survives. Hiding it would assert the agency never answered its
+    // community, which is the one thing this failure must not be allowed to say.
+    const tab = screen.getByText(/You said \/ We did/i).closest("button") as HTMLElement;
+    expect(tab).toBeInTheDocument();
+    // No "(0)" badge either — that is a count of the agency's responses, and
+    // this read did not get to take it.
+    expect(within(tab).queryByText("(0)")).toBeNull();
+    expect(screen.getByText(/Part of this page could not be loaded/i)).toBeInTheDocument();
+  });
+
+  it("prints no feedback count at all when the comment read failed", async () => {
+    itemsLimitMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for relation engagement_items" },
+    });
+
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+
+    // "0" beside "Published feedback" tells a resident nobody spoke. An em dash
+    // is the honest reading of a count we could not take.
+    const label = screen.getByText("Published feedback");
+    const tile = label.closest("div") as HTMLElement;
+    expect(within(tile).getByText("—")).toBeInTheDocument();
+    expect(within(tile).queryByText("0")).toBeNull();
+  });
+
   it("says the ordinary empty-state when the reads succeeded and there is simply nothing yet", async () => {
     render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
     openFeedbackTab();
 
     expect(screen.getByText(/No published feedback yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/Part of this page could not be loaded/i)).toBeNull();
+  });
+
+  /**
+   * A FAILED LOOKUP IS NOT A CONSULTATION THAT DOES NOT EXIST — and this is the
+   * worst instance of the class in the product, because of what a 404 says and
+   * to whom.
+   *
+   * The campaign lookup bound no error, so `if (!campaignData) return null` was
+   * reached by BOTH "no active campaign carries this token" and "the query
+   * failed". Both public surfaces turn that `null` into `notFound()`. An RLS
+   * change, a dropped column or a transient outage therefore told a member of
+   * the public — on a link their agency printed on a flyer — that the
+   * consultation does not exist. The neighbouring reads in the very same
+   * function already kept their errors; the one that decides whether the page
+   * exists at all was the one that was skipped.
+   */
+  it("does not tell a resident the consultation does not exist when the lookup failed", async () => {
+    campaignMaybeSingleMock.mockResolvedValue({
+      data: null,
+      error: { message: "permission denied for relation engagement_campaigns" },
+    });
+
+    await expect(
+      PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) })
+    ).rejects.toBeInstanceOf(PortalReadUnavailableError);
+
+    // THE CLAIM THAT HAD TO GO. `notFound()` renders "this page does not exist",
+    // which is a statement about the agency's consultation that a read failure
+    // cannot support.
+    expect(notFoundMock).not.toHaveBeenCalled();
+  });
+
+  it("still 404s when the lookup succeeded and no active campaign carries the token", async () => {
+    campaignMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+    await expect(
+      PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) })
+    ).rejects.toThrow("notFound");
+
+    // A read that SUCCEEDED and found nothing. This 404 is the truth, and the
+    // fix above must not have blurred it into an error page.
+    expect(notFoundMock).toHaveBeenCalled();
+  });
+
+  /**
+   * THE LOADER'S OWN ANSWER, asserted directly.
+   *
+   * `loadPublicPortalResult` is the entry point that can name the three cases
+   * apart, and the two page assertions above can only observe the first of them
+   * through a thrown error. These drive the same real loader over the same real
+   * fake client and check what it actually reports — including the two failures
+   * whose disclosure still has nowhere to render (see `readFailures`).
+   */
+  describe("loadPublicPortalResult", () => {
+    it("reports the campaign lookup as unreadable rather than as absent", async () => {
+      campaignMaybeSingleMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for relation engagement_campaigns" },
+      });
+
+      const result = await loadPublicPortalResult("share-token-12345");
+
+      expect(result.status).toBe("unreadable");
+      expect(result).not.toMatchObject({ status: "absent" });
+    });
+
+    it("reports absent only when the lookup answered with no row", async () => {
+      campaignMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+
+      expect((await loadPublicPortalResult("share-token-12345")).status).toBe("absent");
+    });
+
+    /**
+     * THE ONE FAILURE THAT DAMAGES THE AGENCY RATHER THAN THE READER. The portal
+     * hides the "You said / We did" tab entirely when the entry list is empty,
+     * so a swallowed error removed the evidence that an agency answered its
+     * community and left nothing on screen to doubt.
+     */
+    it("reports a failed close-the-loop read instead of an agency that never answered", async () => {
+      closeLoopOrderCreatedMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for relation engagement_closeloop_entries" },
+      });
+
+      const result = await loadPublicPortalResult("share-token-12345");
+
+      expect(result.status).toBe("ok");
+      const bundle = (result as { status: "ok"; bundle: PublicPortalBundle }).bundle;
+      expect(bundle.portalProps.readFailures.closeLoop).toBe(true);
+      // The empty list is still empty — the point is that it now arrives beside
+      // the reason, instead of alone and indistinguishable from "none published".
+      expect(bundle.portalProps.closeLoopEntries).toEqual([]);
+    });
+
+    it("reports a failed project read instead of a standalone consultation", async () => {
+      projectMaybeSingleMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for relation projects" },
+      });
+
+      const result = await loadPublicPortalResult("share-token-12345");
+      const bundle = (result as { status: "ok"; bundle: PublicPortalBundle }).bundle;
+
+      expect(bundle.portalProps.readFailures.project).toBe(true);
+      expect(bundle.project).toBeNull();
+    });
+
+    it("claims no read failure when every read answered", async () => {
+      const result = await loadPublicPortalResult("share-token-12345");
+      const bundle = (result as { status: "ok"; bundle: PublicPortalBundle }).bundle;
+
+      expect(bundle.portalProps.readFailures).toEqual({
+        comments: false,
+        categories: false,
+        closeLoop: false,
+        project: false,
+      });
+    });
+
+    /**
+     * A CAMPAIGN WITH NO LINKED PROJECT IS NOT A FAILED PROJECT READ. Nothing was
+     * read for, so there is no error to carry — the one branch in this loader
+     * where "no project" is a fact rather than a silence.
+     */
+    it("does not invent a project read failure for a standalone campaign", async () => {
+      campaignMaybeSingleMock.mockResolvedValue({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: null,
+          title: "Downtown listening campaign",
+          summary: null,
+          public_description: null,
+          status: "active",
+          engagement_type: "map_feedback",
+          allow_public_submissions: true,
+          submissions_closed_at: null,
+          updated_at: "2026-03-28T18:00:00.000Z",
+          accessibility_contact_label: null,
+          accessibility_contact_email: null,
+          accessibility_contact_phone: null,
+          accessibility_alternate_formats: null,
+        },
+        error: null,
+      });
+
+      const result = await loadPublicPortalResult("share-token-12345");
+      const bundle = (result as { status: "ok"; bundle: PublicPortalBundle }).bundle;
+
+      expect(bundle.portalProps.readFailures.project).toBe(false);
+    });
   });
 });

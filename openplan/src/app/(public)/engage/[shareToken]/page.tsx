@@ -227,8 +227,25 @@ export default async function PublicEngagementPage({
               {/* Formatted, not concatenated: the languages in this list do not
                   agree on thousands separators, and a count is a number a
                   resident reads. */}
+              {/*
+                A COUNT IS A CLAIM, and this is the one this portal can least
+                afford to get wrong: "0 published feedback" tells a resident
+                nobody spoke. When the comment read failed, `approvedItems` is
+                empty for a reason that has nothing to do with what residents
+                submitted, so no number is printed at all.
+
+                An em dash rather than a translated phrase, deliberately: it
+                reads as "not available" in every locale this portal serves, and
+                a new English-only key would flip the bundle's fallback flag and
+                put a "not fully translated" notice on every non-English portal
+                — degrading all of them for a string that only appears on
+                failure. The amber disclosure inside the portal carries the
+                explanation.
+              */}
               <p className="public-fact-value">
-                {formatPortalNumber(portalProps.approvedItems.length, locale.bcp47)}
+                {portalProps.readFailures?.comments
+                  ? "—"
+                  : formatPortalNumber(portalProps.approvedItems.length, locale.bcp47)}
               </p>
               <p className="public-fact-detail">{translator.t("page.publishedFeedbackDetail")}</p>
             </div>
