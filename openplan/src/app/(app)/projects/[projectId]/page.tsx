@@ -42,6 +42,7 @@ import { COVERAGE_STATE_COPY } from "@/lib/safety/client-types";
 import { POSTGREST_NO_ROWS_MATCHED } from "@/lib/http/write-outcome";
 import { StateBlock } from "@/components/ui/state-block";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
+import { collectUnlessPending, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
@@ -127,9 +128,6 @@ function latestKnownDate(...values: Array<string | null | undefined>): string | 
 // An absence stated as a fact, produced by the page asking for more than the
 // database carries. The column form is what the rest of the repo already treats
 // as pending (src/lib/grants/pursuit.ts, src/lib/stage-gates/decision-queries.ts).
-function looksLikePendingSchema(message: string | null | undefined): boolean {
-  return /relation .* does not exist|column .* does not exist|could not find the table|could not find the .* column|schema cache/i.test(message ?? "");
-}
 
 function milestonePriority(milestone: MilestoneRow, now: Date): number {
   if (milestone.status === "blocked") return 0;
@@ -279,9 +277,7 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("created_at", { ascending: false });
 
-  const projectRtpLinkRows = looksLikePendingSchema(projectRtpLinkResult.error?.message)
-    ? []
-    : ((projectRtpLinkResult.data ?? []) as ProjectRtpLinkRow[]);
+  const projectRtpLinkRows = laneRows(reads, "RTP cycles this project is linked to", projectRtpLinkResult) as ProjectRtpLinkRow[];
   const projectRtpLinksPending = looksLikePendingSchema(projectRtpLinkResult.error?.message);
 
   const linkedRtpCycleIds = projectRtpLinkRows.map((item) => item.rtp_cycle_id);
@@ -330,9 +326,7 @@ export default async function ProjectDetailPage({
           .in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
       : Promise.resolve({ data: [], error: null }),
   ]);
-  const availableRunRows = looksLikePendingSchema(availableRunsResult.error?.message)
-    ? []
-    : ((availableRunsResult.data ?? []) as RtpEvidenceRunRow[]);
+  const availableRunRows = laneRows(reads, "model runs available as evidence", availableRunsResult) as RtpEvidenceRunRow[];
   // Engine + status + claim tier for every offered and cited run — even one outside
   // the 50-succeeded-run picker window. Disclosure only; nothing here writes a tier.
   const evidenceDisclosures = await loadRtpEvidenceRunDisclosures(supabase as unknown as RtpEvidenceSupabaseLike, evidenceRunIds, { knownRuns: availableRunRows });
@@ -440,15 +434,13 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(8);
-  const scenarioSets = looksLikePendingSchema(scenarioSetsResult.error?.message)
-    ? []
-    : ((scenarioSetsResult.data ?? []) as Array<{
+  const scenarioSets = laneRows(reads, "this project's scenario sets", scenarioSetsResult) as Array<{
         id: string;
         title: string;
         status: string;
         planning_question: string | null;
         updated_at: string;
-      }>);
+      }>;
   const scenarioSetsPending = looksLikePendingSchema(scenarioSetsResult.error?.message);
   const scenarioSetIds = scenarioSets.map((set) => set.id);
   const scenarioEntriesResult = scenarioSetIds.length
@@ -457,15 +449,13 @@ export default async function ProjectDetailPage({
         .select("id, scenario_set_id, entry_type, status, attached_run_id")
         .in("scenario_set_id", scenarioSetIds)
     : { data: [], error: null };
-  const scenarioEntries = looksLikePendingSchema(scenarioEntriesResult.error?.message)
-    ? []
-    : ((scenarioEntriesResult.data ?? []) as Array<{
+  const scenarioEntries = laneRows(reads, "this project's scenario entries", scenarioEntriesResult) as Array<{
         id: string;
         scenario_set_id: string;
         entry_type: string;
         status: string;
         attached_run_id: string | null;
-      }>);
+      }>;
   const scenarioEntriesPending = looksLikePendingSchema(scenarioEntriesResult.error?.message);
 
   // The gate cockpit: this project's decisions and the board built from them.
@@ -544,15 +534,13 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false })
     .limit(6);
-  const engagementCampaigns = looksLikePendingSchema(engagementCampaignsResult.error?.message)
-    ? []
-    : ((engagementCampaignsResult.data ?? []) as Array<{
+  const engagementCampaigns = laneRows(reads, "engagement campaigns for this project", engagementCampaignsResult) as Array<{
         id: string;
         title: string;
         status: string;
         updated_at: string;
         created_at: string;
-      }>);
+      }>;
   const engagementCampaignIds = engagementCampaigns.map((campaign) => campaign.id);
   const engagementItemsResult = engagementCampaignIds.length
     ? await supabase
@@ -562,13 +550,11 @@ export default async function ProjectDetailPage({
         .order("updated_at", { ascending: false })
         .limit(20)
     : { data: [], error: null };
-  const engagementItems = looksLikePendingSchema(engagementItemsResult.error?.message)
-    ? []
-    : ((engagementItemsResult.data ?? []) as Array<{
+  const engagementItems = laneRows(reads, "public comments on this project", engagementItemsResult) as Array<{
         campaign_id: string;
         updated_at: string;
         created_at: string;
-      }>);
+      }>;
 
   // caltrans_posture stays selected as the legacy read fallback for rows that
   // predate the reimbursement-profile backfill (20260727000009).
@@ -688,13 +674,11 @@ export default async function ProjectDetailPage({
     .eq("project_id", project.id)
     .order("linked_at", { ascending: false });
 
-  const datasetLinkRows = looksLikePendingSchema(datasetLinksResult.error?.message)
-    ? []
-    : ((datasetLinksResult.data ?? []) as Array<{
+  const datasetLinkRows = laneRows(reads, "datasets linked to this project", datasetLinksResult) as Array<{
         dataset_id: string;
         relationship_type: string;
         linked_at: string;
-      }>);
+      }>;
 
   const linkedDatasetIds = datasetLinkRows.map((item) => item.dataset_id);
 
@@ -705,16 +689,14 @@ export default async function ProjectDetailPage({
         .in("id", linkedDatasetIds)
     : { data: [], error: null };
 
-  const linkedDatasetRows = looksLikePendingSchema(datasetsResult.error?.message)
-    ? []
-    : ((datasetsResult.data ?? []) as Array<{
+  const linkedDatasetRows = laneRows(reads, "the linked datasets themselves", datasetsResult) as Array<{
         id: string;
         connector_id: string | null;
         name: string;
         status: string;
         vintage_label: string | null;
         last_refreshed_at: string | null;
-      }>);
+      }>;
 
   const linkedConnectorIds = linkedDatasetRows
     .map((item) => item.connector_id)
@@ -724,6 +706,7 @@ export default async function ProjectDetailPage({
     ? await supabase.from("data_connectors").select("id, display_name").in("id", linkedConnectorIds)
     : { data: [], error: null };
 
+  collectUnlessPending(reads, "this workspace's data connectors", connectorsResult);
   const connectorMap = new Map(
     (looksLikePendingSchema(connectorsResult.error?.message)
       ? []
@@ -865,9 +848,7 @@ export default async function ProjectDetailPage({
         .select("id, created_at")
         .in("id", linkedReportRunIds)
     : { data: [], error: null };
-  const linkedRuns = looksLikePendingSchema(linkedRunsResult.error?.message)
-    ? []
-    : ((linkedRunsResult.data ?? []) as Array<{ id: string; created_at: string }>);
+  const linkedRuns = laneRows(reads, "model runs linked to this project", linkedRunsResult) as Array<{ id: string; created_at: string }>;
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
   for (const artifact of (reportArtifactsPending ? [] : (reportArtifactsResult.data ?? []) as ReportArtifactRow[])) {
     if (!latestArtifactByReportId.has(artifact.report_id)) {
