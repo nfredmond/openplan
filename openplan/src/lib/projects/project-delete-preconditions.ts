@@ -46,6 +46,12 @@ export type ProjectDeleteRelation = {
   behavior: ProjectDeleteCascadeBehavior;
   /** Where to go to deal with them. `{projectId}` is substituted by the caller. */
   href: string;
+  /**
+   * Overrides the severity-derived sentence when the generic one understates
+   * what is lost. Kept optional so the default stays the rule and an override
+   * has to be argued for.
+   */
+  describeLoss?: (count: number) => string;
 };
 
 export type ProjectDeleteBlocker = ProjectDeleteRelation & {
@@ -105,7 +111,27 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
   { table: "project_bca_screenings", column: "project_id", label: "BCA screenings", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_spend_entries", column: "project_id", label: "spend entries", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_funding_profiles", column: "project_id", label: "funding profile", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
-  { table: "project_rtp_cycle_links", column: "project_id", label: "RTP portfolio placements", severity: "evidence", behavior: "cascade", href: "/rtp" },
+  {
+    table: "project_rtp_cycle_links",
+    column: "project_id",
+    label: "RTP portfolio placements",
+    severity: "evidence",
+    behavior: "cascade",
+    href: "/rtp",
+    // Since 20260805000003 this row carries the project's COST in a plan's
+    // fiscally constrained programme, so the cascade can remove a line item
+    // from a financial element a board has already adopted. The generic
+    // "would be deleted along with the project" does not say that.
+    //
+    // Deliberately NOT raised to `blocking`: that severity is reserved for
+    // funding commitments, and applying it here would make every project
+    // linked to any cycle undeletable — including uncosted candidates, which
+    // is most of them. The precise rule is "blocking only when the placement
+    // is constrained AND costed", which needs a filtered count this module's
+    // caller does not supply today. Recorded rather than half-done.
+    describeLoss: (count) =>
+      `${pluralize(count, "RTP portfolio placements")} would be deleted along with the project. Where a placement carries a cost in a fiscally constrained plan, that line item disappears from the plan's financial element.`,
+  },
   { table: "project_milestones", column: "project_id", label: "milestones", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_submittals", column: "project_id", label: "submittals", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
   { table: "project_deliverables", column: "project_id", label: "deliverables", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}" },
@@ -156,6 +182,8 @@ function pluralize(count: number, label: string): string {
 }
 
 function reasonFor(relation: ProjectDeleteRelation, count: number): string {
+  if (relation.describeLoss) return relation.describeLoss(count);
+
   if (relation.severity === "blocking") {
     return relation.behavior === "cascade"
       ? `${pluralize(count, relation.label)} would be destroyed. A funding commitment is a record of what was awarded; it is meant to outlive the project.`

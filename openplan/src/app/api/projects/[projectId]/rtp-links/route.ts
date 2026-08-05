@@ -8,6 +8,7 @@ import { parsePriorityScores } from "@/lib/rtp/priority-scoring";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 const PORTFOLIO_ROLES = RTP_PORTFOLIO_ROLE_OPTIONS.map((option) => option.value) as [string, ...string[]];
 
@@ -17,11 +18,85 @@ const paramsSchema = z.object({
 
 const priorityScoresSchema = z.record(z.string(), z.number());
 
+/**
+ * A text box a planner emptied means UNSET, and it must arrive as null.
+ *
+ * This is the ONLY coercion these payloads make, and it goes to null — never to
+ * zero. `z.coerce.number()`, which the invoicing routes use for money, turns ""
+ * into 0; here that would turn "nobody has costed this project yet" into "this
+ * project costs nothing", and the fiscal-constraint check would sum it as a
+ * priced line. A non-blank string is still REJECTED rather than coerced, so a
+ * caller sending "12" is told so instead of being quietly accommodated into a
+ * number nobody typed.
+ */
+function blankToNull(value: unknown): unknown {
+  return typeof value === "string" && value.trim() === "" ? null : value;
+}
+
+/**
+ * The year bounds the migration's CHECK constraints accept
+ * (20260805000003_rtp_financial_element.sql). Mirrored here so a mistyped year
+ * is a readable 400 rather than a raw constraint violation wearing a 500.
+ */
+const EARLIEST_BASIS_YEAR = 1900;
+const LATEST_BASIS_YEAR = 2200;
+
+/**
+ * `estimated_cost` is NUMERIC(16, 2) — fourteen digits ahead of the point, so
+ * the column tops out at 99,999,999,999,999.99. A larger figure is a Postgres
+ * numeric overflow, which arrives as an opaque 500. This is the COLUMN'S
+ * CAPACITY, not a policy about how much a plan may program.
+ *
+ * Kept identical to `MAX_LEDGER_AMOUNT` in the financial-assumptions route,
+ * which bounds `rtp_financial_assumptions.amount` — the same NUMERIC(16, 2).
+ * The two are the revenue side and the cost side of one fiscal-constraint
+ * subtraction, and a ceiling that differed between them would let a plan
+ * program a cost it could not book the revenue for.
+ */
+const MAX_PROGRAMMED_COST = 99_999_999_999_999;
+
+/**
+ * The cost programmed for this project IN THIS CYCLE, in constant dollars.
+ *
+ * NULL MEANS UNPRICED, and that is a different answer from 0. The migration
+ * says so and the fiscal-constraint arithmetic depends on it: a cycle with
+ * twelve of forty projects uncosted has to report twelve uncosted projects, not
+ * a total that looks complete and a verdict of "fiscally constrained". So
+ * nothing here coerces an absent value into a number, and the assignment below
+ * passes the parsed value through untouched — never `|| null`, which turns a
+ * genuine zero into "unpriced", and never `?? 0`, which does the reverse.
+ */
+const programmedCostSchema = z.preprocess(
+  blankToNull,
+  z
+    .number()
+    .min(0, "Programmed cost cannot be negative. Leave it blank for a project that is not costed yet.")
+    .max(MAX_PROGRAMMED_COST, "Programmed cost is larger than this field can store.")
+    .nullable()
+);
+
+/** The year `estimatedCost` is expressed in. Null falls back to the cycle's basis year, disclosed by the reading surface. */
+const costBasisYearSchema = z.preprocess(
+  blankToNull,
+  z
+    .number()
+    .int("Cost basis year must be a whole year, such as 2026.")
+    .min(EARLIEST_BASIS_YEAR, `Cost basis year must be between ${EARLIEST_BASIS_YEAR} and ${LATEST_BASIS_YEAR}.`)
+    .max(LATEST_BASIS_YEAR, `Cost basis year must be between ${EARLIEST_BASIS_YEAR} and ${LATEST_BASIS_YEAR}.`)
+    .nullable()
+);
+
+/** Which period of the plan this project's cost sits in. Verified against the link's own cycle before it is stored. */
+const horizonBandIdSchema = z.preprocess(blankToNull, z.string().uuid().nullable());
+
 const createLinkSchema = z.object({
   rtpCycleId: z.string().uuid(),
   portfolioRole: z.enum(PORTFOLIO_ROLES).optional(),
   priorityRationale: z.string().trim().max(2000).optional(),
   priorityScores: priorityScoresSchema.optional(),
+  horizonBandId: horizonBandIdSchema.optional(),
+  estimatedCost: programmedCostSchema.optional(),
+  costBasisYear: costBasisYearSchema.optional(),
 });
 
 const updateLinkSchema = z.object({
@@ -30,11 +105,120 @@ const updateLinkSchema = z.object({
   priorityRationale: z.string().trim().max(2000).nullable().optional(),
   priorityScores: priorityScoresSchema.optional(),
   evidenceModelRunId: z.string().uuid().nullable().optional(),
+  horizonBandId: horizonBandIdSchema.optional(),
+  estimatedCost: programmedCostSchema.optional(),
+  costBasisYear: costBasisYearSchema.optional(),
 });
 
 const deleteLinkSchema = z.object({
   linkId: z.string().uuid(),
 });
+
+/**
+ * The columns every handler reads back, in one place.
+ *
+ * The three financial columns are here because a mocked Supabase client returns
+ * its fixture for whatever was asked, so a projection that forgets a column
+ * leaves every test green and hands the client `undefined` — the defect class
+ * `public-engagement-page.test.tsx` asserts against. The route test asserts on
+ * this string.
+ */
+const LINK_RESULT_COLUMNS =
+  "id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, horizon_band_id, estimated_cost, cost_basis_year, created_at";
+
+/**
+ * The zod messages a planner can act on, joined into one line.
+ *
+ * WHY THE 400 GAINED A `details`. "Invalid RTP link update payload" was the
+ * whole answer to typing a negative cost, and it names neither the field nor
+ * the reason. The messages authored above are written for that reader; zod's
+ * own defaults only ever describe ids the interface supplies, never a value a
+ * planner typed.
+ */
+function describeValidationIssues(
+  issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }>
+): string {
+  return issues
+    .map((issue) => (issue.path.length ? `${issue.path.map(String).join(".")}: ${issue.message}` : issue.message))
+    .join(" ");
+}
+
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>;
+type RouteAuditLogger = ReturnType<typeof createApiAuditLogger>;
+
+/**
+ * Refuse a horizon band that does not belong to THIS link's cycle.
+ *
+ * WHY THIS IS NOT OPTIONAL. A band is a period of one plan's financial element.
+ * Writing another cycle's band onto this link would attribute the project's
+ * cost to a period of a DIFFERENT plan — the money would leave one cycle's
+ * fiscal-constraint arithmetic and land in another's, and both totals would
+ * look perfectly ordinary afterwards. Nothing downstream can detect it, because
+ * a band id is a band id.
+ *
+ * Shared by POST and PATCH deliberately. A verification that lives inside one
+ * of its two callers gets reimplemented differently by the other, and the two
+ * doors onto the same column then disagree about what is allowed.
+ *
+ * Returns the response to send, or null when the band is usable.
+ */
+async function refuseHorizonBandOutsideCycle(options: {
+  supabase: SupabaseServerClient;
+  audit: RouteAuditLogger;
+  bandId: string;
+  rtpCycleId: string;
+  workspaceId: string;
+  context: Record<string, unknown>;
+}): Promise<NextResponse | null> {
+  const bandResult = await options.supabase
+    .from("rtp_horizon_bands")
+    .select("id, rtp_cycle_id, workspace_id")
+    .eq("id", options.bandId)
+    .maybeSingle();
+
+  // Same reasoning as the evidence-run read below: only a read that SUCCEEDED
+  // and found nothing establishes "that band is not in this cycle". A failed
+  // read reaching the same branch would tell a planner their band does not
+  // exist while it sits in the picker they chose it from.
+  const bandFailure = classifyRouteReadFailure("horizon band", bandResult, {
+    pendingError: "RTP financial schema is not available yet",
+    pendingHint: "Apply migration 20260805000003_rtp_financial_element.sql, then try again.",
+  });
+  if (bandFailure) {
+    options.audit.error("horizon_band_lookup_failed", {
+      ...options.context,
+      horizonBandId: options.bandId,
+      message: bandFailure.message,
+    });
+    return NextResponse.json(bandFailure.body, { status: bandFailure.status });
+  }
+
+  const band = bandResult.data as { id: string; rtp_cycle_id: string; workspace_id: string } | null;
+
+  // One message for "no such band", "another cycle's band" and "another
+  // workspace's band". Separating them would confirm the existence of rows the
+  // caller cannot see, which is the enumeration leak PR #25 closed.
+  if (!band || band.workspace_id !== options.workspaceId || band.rtp_cycle_id !== options.rtpCycleId) {
+    options.audit.warn("horizon_band_rejected", {
+      ...options.context,
+      horizonBandId: options.bandId,
+      expectedRtpCycleId: options.rtpCycleId,
+      bandRtpCycleId: band?.rtp_cycle_id ?? null,
+      bandWorkspaceMatched: band ? band.workspace_id === options.workspaceId : null,
+    });
+    return NextResponse.json(
+      {
+        error: "Horizon band not found in this RTP cycle",
+        details:
+          "A horizon band belongs to one plan cycle. Storing this project's cost against a band from " +
+          "another cycle would attribute the money to a period of a different plan, so nothing was saved.",
+      },
+      { status: 400 }
+    );
+  }
+
+  return null;
+}
 
 export async function POST(request: NextRequest, context: { params: Promise<{ projectId: string }> }) {
   const audit = createApiAuditLogger("projects.rtp_links.create", request);
@@ -54,7 +238,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     const payload = createLinkSchema.safeParse(payloadBody.data);
     if (!payload.success) {
       audit.warn("validation_failed", { issues: payload.error.issues });
-      return NextResponse.json({ error: "Invalid RTP link payload" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid RTP link payload", details: describeValidationIssues(payload.error.issues) },
+        { status: 400 }
+      );
     }
 
     const supabase = await createClient();
@@ -106,6 +293,18 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       return NextResponse.json({ error: "RTP cycle must belong to the same workspace" }, { status: 400 });
     }
 
+    if (payload.data.horizonBandId) {
+      const bandRefusal = await refuseHorizonBandOutsideCycle({
+        supabase,
+        audit,
+        bandId: payload.data.horizonBandId,
+        rtpCycleId: cycle.id,
+        workspaceId: project.workspace_id,
+        context: { projectId: project.id, rtpCycleId: cycle.id },
+      });
+      if (bandRefusal) return bandRefusal;
+    }
+
     const { data, error } = await supabase
       .from("project_rtp_cycle_links")
       .insert({
@@ -115,14 +314,34 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
         portfolio_role: payload.data.portfolioRole ?? "candidate",
         priority_rationale: payload.data.priorityRationale || null,
         priority_scores: parsePriorityScores(payload.data.priorityScores),
+        horizon_band_id: payload.data.horizonBandId ?? null,
+        // `?? null`, never `|| null`: a project deliberately programmed at zero
+        // dollars in this cycle is a priced project, and `||` would file it as
+        // unpriced.
+        estimated_cost: payload.data.estimatedCost ?? null,
+        cost_basis_year: payload.data.costBasisYear ?? null,
         created_by: user.id,
       })
-      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, created_at")
+      .select(LINK_RESULT_COLUMNS)
       .single();
 
     if (error) {
-      const status = error.code === "23505" ? 409 : 500;
+      // A deployment that has the code and not 20260805000003 asks for columns
+      // that do not exist yet. That is a setup step, not a server fault, and
+      // saying so is the difference between an operator running one migration
+      // and an operator reading "Failed to create RTP link" with nowhere to go.
+      const pendingSchema = looksLikePendingSchema(error.message);
+      const status = pendingSchema ? 503 : error.code === "23505" ? 409 : 500;
       audit.error("insert_failed", { error: error.message, code: error.code ?? null, status });
+      if (pendingSchema) {
+        return NextResponse.json(
+          {
+            error: "RTP financial schema is not available yet",
+            hint: "Apply migration 20260805000003_rtp_financial_element.sql, then try again.",
+          },
+          { status: 503 }
+        );
+      }
       return NextResponse.json(
         { error: status === 409 ? "This project is already linked to that RTP cycle" : "Failed to create RTP link" },
         { status }
@@ -159,7 +378,10 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
     const payload = updateLinkSchema.safeParse(payloadBody.data);
     if (!payload.success) {
       audit.warn("validation_failed", { issues: payload.error.issues });
-      return NextResponse.json({ error: "Invalid RTP link update payload" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid RTP link update payload", details: describeValidationIssues(payload.error.issues) },
+        { status: 400 }
+      );
     }
 
     const supabase = await createClient();
@@ -171,9 +393,13 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // `rtp_cycle_id` is projected because the horizon-band check below compares
+    // against it. It is read from the STORED row rather than taken from the
+    // request: a cycle id in the body would let a caller name the cycle their
+    // band belongs to and defeat the check entirely.
     const { data: link, error: linkError } = await supabase
       .from("project_rtp_cycle_links")
-      .select("id, project_id, workspace_id")
+      .select("id, project_id, workspace_id, rtp_cycle_id")
       .eq("id", payload.data.linkId)
       .eq("project_id", routeParams.data.projectId)
       .maybeSingle();
@@ -244,6 +470,38 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       }
     }
 
+    // The three financial fields all distinguish ABSENT from an explicit null,
+    // and the distinction is the feature: an absent key leaves the stored value
+    // alone, while `null` clears it. `payload.data.X !== undefined` is what
+    // separates them — a truthiness test here would make "clear this cost" and
+    // "set this cost to zero" indistinguishable from "do not touch this cost".
+    if (payload.data.horizonBandId !== undefined) {
+      if (payload.data.horizonBandId === null) {
+        updates.horizon_band_id = null;
+      } else {
+        const bandRefusal = await refuseHorizonBandOutsideCycle({
+          supabase,
+          audit,
+          bandId: payload.data.horizonBandId,
+          rtpCycleId: link.rtp_cycle_id,
+          workspaceId: link.workspace_id,
+          context: { projectId: routeParams.data.projectId, linkId: link.id },
+        });
+        if (bandRefusal) return bandRefusal;
+        updates.horizon_band_id = payload.data.horizonBandId;
+      }
+    }
+    if (payload.data.estimatedCost !== undefined) {
+      // Assigned through, deliberately. `|| null` would file a project
+      // programmed at zero dollars as unpriced; `?? 0` would price every
+      // project a planner cleared. Null reaches the column as null and means
+      // UNPRICED there too.
+      updates.estimated_cost = payload.data.estimatedCost;
+    }
+    if (payload.data.costBasisYear !== undefined) {
+      updates.cost_basis_year = payload.data.costBasisYear;
+    }
+
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No updatable fields provided" }, { status: 400 });
     }
@@ -252,7 +510,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .from("project_rtp_cycle_links")
       .update(updates)
       .eq("id", link.id)
-      .select("id, project_id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, created_at")
+      .select(LINK_RESULT_COLUMNS)
       // `maybeSingle`, not `single`. Until 20260728000010 this table had a
       // RESTRICTIVE writer gate and no PERMISSIVE UPDATE policy, so every update
       // matched zero rows — the defect `@/lib/http/write-outcome` was extracted
@@ -261,6 +519,16 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
 
     if (error && isWriteFailure(error)) {
       audit.error("update_failed", { error: error.message, code: error.code ?? null });
+      // Same setup-versus-fault distinction the insert makes above.
+      if (looksLikePendingSchema(error.message)) {
+        return NextResponse.json(
+          {
+            error: "RTP financial schema is not available yet",
+            hint: "Apply migration 20260805000003_rtp_financial_element.sql, then try again.",
+          },
+          { status: 503 }
+        );
+      }
       return NextResponse.json({ error: "Failed to update RTP link" }, { status: 500 });
     }
 

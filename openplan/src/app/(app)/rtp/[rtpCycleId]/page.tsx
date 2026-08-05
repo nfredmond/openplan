@@ -4,6 +4,21 @@ import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-
 import { ArrowLeft, FileStack, FolderKanban, MessageSquare, Route as RouteIcon, ShieldCheck } from "lucide-react";
 import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
 import { RtpCycleDetailsEditor } from "@/components/rtp/rtp-cycle-details-editor";
+import { RtpFinancialElementSection } from "./_components/rtp-financial-element-section";
+import type {
+  BillingInvoiceRow,
+  EngagementCampaignRow,
+  EngagementItemSummaryRow,
+  FundingAwardRow,
+  FundingOpportunityRow,
+  ModelingClaimDecisionDefaultRow,
+  ProjectFundingProfileRow,
+  ProjectRtpLinkRow,
+  ReportArtifactRow,
+  RtpCycleChapterRow,
+  RtpCycleRow,
+  RtpPacketReportRow,
+} from "./_components/_types";
 import { RtpCyclePhaseControls } from "@/components/rtp/rtp-cycle-phase-controls";
 import { RtpEngagementCampaignCreator } from "@/components/rtp/rtp-engagement-campaign-creator";
 import { RtpReportCreator } from "@/components/rtp/rtp-report-creator";
@@ -54,142 +69,17 @@ import {
   loadScenarioComparisonSummaryForProjects,
   totalReadySnapshotCount,
 } from "@/lib/scenarios/comparison-summary";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import {
+  loadRtpFinancialElement,
+  type RtpFinancialElementSupabaseLike,
+} from "@/lib/rtp/financial-element-queries";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type RouteContext = {
   params: Promise<{ rtpCycleId: string }>;
-};
-
-type RtpCycleRow = {
-  id: string;
-  workspace_id: string;
-  title: string;
-  status: string;
-  geography_label: string | null;
-  horizon_start_year: number | null;
-  horizon_end_year: number | null;
-  adoption_target_date: string | null;
-  public_review_open_at: string | null;
-  public_review_close_at: string | null;
-  summary: string | null;
-  anchor_latitude: number | string | null;
-  anchor_longitude: number | string | null;
-  public_share_token: string | null;
-  public_share_enabled: boolean | null;
-  created_at: string;
-  updated_at: string;
-};
-
-type RtpCycleChapterRow = {
-  id: string;
-  chapter_key: string;
-  title: string;
-  section_type: string;
-  status: string;
-  sort_order: number;
-  required: boolean;
-  guidance: string | null;
-  summary: string | null;
-  content_markdown: string | null;
-  updated_at: string;
-};
-
-type ProjectLinkProjectRow = {
-  id: string;
-  name: string;
-  status: string;
-  delivery_phase: string;
-  summary: string | null;
-  rtp_posture_updated_at: string | null;
-};
-
-type ProjectFundingProfileRow = {
-  project_id: string;
-  funding_need_amount: number | null;
-  local_match_need_amount: number | null;
-};
-
-type FundingAwardRow = {
-  project_id: string;
-  awarded_amount: number | string;
-  match_amount: number | string;
-  risk_flag: string;
-  obligation_due_at: string | null;
-};
-
-type FundingOpportunityRow = {
-  project_id: string;
-  decision_state: string;
-  opportunity_status: string;
-  expected_award_amount: number | string | null;
-};
-
-type BillingInvoiceRow = {
-  project_id: string;
-  funding_award_id: string | null;
-  status: string;
-  amount: number | string | null;
-  retention_percent: number | string | null;
-  retention_amount: number | string | null;
-  net_amount: number | string | null;
-  due_date: string | null;
-};
-
-type ProjectRtpLinkRow = {
-  id: string;
-  project_id: string;
-  portfolio_role: string;
-  priority_rationale: string | null;
-  priority_scores: Record<string, number> | null;
-  created_at: string;
-  projects: ProjectLinkProjectRow | ProjectLinkProjectRow[] | null;
-};
-
-type CampaignProjectRow = {
-  id: string;
-  name: string;
-};
-
-type EngagementCampaignRow = {
-  id: string;
-  title: string;
-  summary: string | null;
-  status: string;
-  engagement_type: string;
-  rtp_cycle_chapter_id: string | null;
-  updated_at: string;
-  projects: CampaignProjectRow | CampaignProjectRow[] | null;
-};
-
-type RtpPacketReportRow = {
-  id: string;
-  title: string;
-  updated_at: string;
-};
-
-type EngagementItemSummaryRow = {
-  id: string;
-  campaign_id: string;
-  category_id: string | null;
-  status: string | null;
-  source_type: string | null;
-  latitude: number | null;
-  longitude: number | null;
-  moderation_notes: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-};
-
-type ReportArtifactRow = {
-  report_id: string;
-  generated_at: string;
-  metadata_json: Record<string, unknown> | null;
-};
-
-type ModelingClaimDecisionDefaultRow = {
-  county_run_id: string | null;
 };
 
 /**
@@ -250,7 +140,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
   const cycleResult = await supabase
     .from("rtp_cycles")
     .select(
-      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, anchor_latitude, anchor_longitude, public_share_token, public_share_enabled, created_at, updated_at"
+      "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, financial_basis_year, annual_inflation_rate, anchor_latitude, anchor_longitude, public_share_token, public_share_enabled, created_at, updated_at"
     )
     .eq("id", rtpCycleId)
     .eq("workspace_id", membership.workspace_id)
@@ -302,7 +192,7 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
       .order("created_at", { ascending: true }),
     supabase
       .from("project_rtp_cycle_links")
-      .select("id, project_id, portfolio_role, priority_rationale, priority_scores, created_at, projects(id, name, status, delivery_phase, summary, rtp_posture_updated_at)")
+      .select("id, project_id, portfolio_role, priority_rationale, priority_scores, horizon_band_id, estimated_cost, cost_basis_year, created_at, updated_at, projects(id, name, status, delivery_phase, summary, rtp_posture_updated_at)")
       .eq("rtp_cycle_id", cycle.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -354,6 +244,31 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
         ...link,
         project: Array.isArray(link.projects) ? (link.projects[0] ?? null) : link.projects,
       }));
+
+  // THE FINANCIAL ELEMENT. The loader is shared with the export and the public
+  // draft-review surfaces; it returns the raw results too, so THIS page decides
+  // how each failure is disclosed. A failed read here may not render as "this
+  // plan has recorded no revenue".
+  const financialElement = await loadRtpFinancialElement(
+    supabase as unknown as RtpFinancialElementSupabaseLike,
+    cycle.id
+  );
+  const horizonBandsState = classifyRead(reads, "the horizon periods of this plan", financialElement.results.bands);
+  const financialAssumptionsState = classifyRead(
+    reads,
+    "the revenue and cost assumptions of this plan",
+    financialElement.results.lines
+  );
+  const performanceMeasuresState = classifyRead(
+    reads,
+    "the performance measures of this plan",
+    financialElement.results.measures
+  );
+
+  // Whether this planner may change any of it. The editors take it as a prop so
+  // a viewer sees the plan's finances and no controls, rather than controls that
+  // 403 when used.
+  const canWritePlans = canAccessWorkspaceAction("plans.write", membership.role);
 
   const linkedProjectIds = projectLinks.map((link) => link.project_id);
   const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] = await Promise.all([
@@ -555,6 +470,9 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     priorityFramework.binding.criteria
   );
   const priorityFrameworkDisclosure = describeRtpPriorityFrameworkBinding(priorityFramework.binding);
+
+  const fiscalReadFailed =
+    horizonBandsState === "failed" || financialAssumptionsState === "failed" || projectLinksState === "failed";
 
   const fundedProjectCount = projectLinksWithFunding.filter((link) => link.fundingStack.status === "funded").length;
   const likelyCoveredProjectCount = projectLinksWithFunding.filter(
@@ -879,6 +797,26 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
               </div>
             )}
           </article>
+          <RtpFinancialElementSection
+            rtpCycleId={cycle.id}
+            cycleFinancialBasisYear={cycle.financial_basis_year}
+            annualInflationRate={cycle.annual_inflation_rate}
+            projects={projectLinks.map((link) => ({
+              linkId: link.id,
+              projectId: link.project_id,
+              projectName: link.project?.name ?? null,
+              portfolioRole: link.portfolio_role,
+              horizonBandId: link.horizon_band_id,
+              estimatedCost: link.estimated_cost,
+              costBasisYear: link.cost_basis_year,
+            }))}
+            readFailed={fiscalReadFailed}
+            bands={financialElement.bands}
+            lines={financialElement.lines}
+            measures={financialElement.measures}
+            measuresReadFailed={performanceMeasuresState === "failed"}
+            canWrite={canWritePlans}
+          />
         </section>
 
         <aside className="space-y-4">

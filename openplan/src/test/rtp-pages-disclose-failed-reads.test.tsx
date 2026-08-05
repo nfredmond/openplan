@@ -121,6 +121,15 @@ vi.mock("@/components/rtp/rtp-chapter-controls", () => ({
 vi.mock("@/components/rtp/rtp-cycle-details-editor", () => ({
   RtpCycleDetailsEditor: () => <div data-testid="rtp-cycle-details-editor" />,
 }));
+vi.mock("@/components/rtp/rtp-horizon-band-editor", () => ({
+  RtpHorizonBandEditor: () => <div data-testid="rtp-horizon-band-editor" />,
+}));
+vi.mock("@/components/rtp/rtp-financial-ledger-editor", () => ({
+  RtpFinancialLedgerEditor: () => <div data-testid="rtp-financial-ledger-editor" />,
+}));
+vi.mock("@/components/rtp/rtp-performance-measure-editor", () => ({
+  RtpPerformanceMeasureEditor: () => <div data-testid="rtp-performance-measure-editor" />,
+}));
 vi.mock("@/components/rtp/rtp-cycle-phase-controls", () => ({
   RtpCyclePhaseControls: () => <div data-testid="rtp-cycle-phase-controls" />,
 }));
@@ -280,6 +289,147 @@ describe("a planner can correct a cycle's own details after creating it", () => 
     // The window the draft review depends on.
     expect(projection).toContain("public_review_open_at");
     expect(projection).toContain("public_review_close_at");
+  });
+});
+
+describe("the fiscal-constraint finding is rendered where a planner will see it", () => {
+  /**
+   * The highest-risk failure for this feature is not a wrong sum — it is a
+   * verdict that exists only in a library. This module has shipped a complete,
+   * tested, access-gated capability nobody could reach a dozen times, so these
+   * drive the REAL page and assert the REAL verdict text, and they assert it
+   * CHANGES with the data. A single fixture could not tell a rendered
+   * computation from a hardcoded string.
+   */
+  const BAND = {
+    id: "band-1",
+    label: "First ten years",
+    start_year: 2026,
+    end_year: 2035,
+    escalation_target_year: 2030,
+    cost_estimate_basis: "itemized",
+    sort_order: 0,
+  };
+
+  function link(id: string, cost: number | null) {
+    return {
+      id,
+      project_id: `project-${id}`,
+      portfolio_role: "constrained",
+      priority_rationale: null,
+      priority_scores: {},
+      horizon_band_id: BAND.id,
+      estimated_cost: cost,
+      cost_basis_year: 2026,
+      created_at: "2026-04-01T00:00:00.000Z",
+      projects: {
+        id: `project-${id}`,
+        name: `Project ${id}`,
+        status: "active",
+        delivery_phase: "planning",
+        summary: null,
+        rtp_posture_updated_at: null,
+      },
+    };
+  }
+
+  function revenueLine(amount: number) {
+    return {
+      id: "line-1",
+      horizon_band_id: BAND.id,
+      entry_kind: "revenue",
+      source_name: "Programme revenue",
+      amount,
+      amount_basis_year: 2026,
+      notes: null,
+    };
+  }
+
+  it("says the plan IS fiscally constrained when revenue covers the priced programme", async () => {
+    tableResults.rtp_horizon_bands = { data: [BAND], error: null };
+    tableResults.rtp_financial_assumptions = { data: [revenueLine(100_000_000)], error: null };
+    tableResults.project_rtp_cycle_links = { data: [link("a", 40_000_000)], error: null };
+
+    await renderDetail();
+
+    expect(screen.getByText("Fiscally constrained")).toBeInTheDocument();
+    expect(screen.getByText(/reasonably available revenue/i)).toBeInTheDocument();
+  });
+
+  it("says NOT DETERMINED for the same revenue once one project is unpriced", async () => {
+    tableResults.rtp_horizon_bands = { data: [BAND], error: null };
+    tableResults.rtp_financial_assumptions = { data: [revenueLine(100_000_000)], error: null };
+    tableResults.project_rtp_cycle_links = {
+      data: [link("a", 40_000_000), link("b", null)],
+      error: null,
+    };
+
+    await renderDetail();
+
+    // Same revenue, same priced cost, and the arithmetic alone would still say
+    // "constrained". The page must not.
+    expect(screen.getByText("Not determined")).toBeInTheDocument();
+    expect(screen.queryByText("Fiscally constrained")).not.toBeInTheDocument();
+    // Appears twice on purpose: in the summary sentence and again on the
+    // named project row, so a planner reading either one is told the same thing.
+    expect(screen.getAllByText(/no cost recorded/i).length).toBeGreaterThan(0);
+    // And it names the project so the planner knows what to go and enter.
+    expect(screen.getAllByText(/Project b/).length).toBeGreaterThan(0);
+  });
+
+  it("says the costs exceed the revenue when they do", async () => {
+    tableResults.rtp_horizon_bands = { data: [BAND], error: null };
+    tableResults.rtp_financial_assumptions = { data: [revenueLine(10_000_000)], error: null };
+    tableResults.project_rtp_cycle_links = { data: [link("a", 90_000_000)], error: null };
+
+    await renderDetail();
+
+    expect(screen.getByText("Costs exceed revenue")).toBeInTheDocument();
+  });
+
+  it("discloses constant dollars rather than presenting them as year-of-expenditure", async () => {
+    tableResults.rtp_horizon_bands = { data: [BAND], error: null };
+    tableResults.rtp_financial_assumptions = { data: [revenueLine(100_000_000)], error: null };
+    tableResults.project_rtp_cycle_links = { data: [link("a", 40_000_000)], error: null };
+
+    await renderDetail();
+
+    // CYCLE_ROW records no inflation rate, so these are constant dollars and
+    // the page has to say so — presenting them as YOE is the misstatement.
+    expect(screen.getAllByText(/constant dollars/i).length).toBeGreaterThan(0);
+  });
+
+  it("mounts all three financial editors, so the ledger can actually be filled in", async () => {
+    await renderDetail();
+
+    expect(screen.getByTestId("rtp-horizon-band-editor")).toBeInTheDocument();
+    expect(screen.getByTestId("rtp-financial-ledger-editor")).toBeInTheDocument();
+    expect(screen.getByTestId("rtp-performance-measure-editor")).toBeInTheDocument();
+  });
+
+  it("asks the database for the cost columns the finding is computed from", async () => {
+    await renderDetail();
+
+    const links = (selectCalls.project_rtp_cycle_links ?? []).join(" ");
+    expect(links).toContain("estimated_cost");
+    expect(links).toContain("horizon_band_id");
+    expect(links).toContain("cost_basis_year");
+
+    const cycle = (selectCalls.rtp_cycles ?? []).join(" ");
+    expect(cycle).toContain("financial_basis_year");
+    expect(cycle).toContain("annual_inflation_rate");
+
+    expect((selectCalls.rtp_financial_assumptions ?? []).join(" ")).toContain("entry_kind");
+  });
+
+  it("does not present a finding when the financial reads FAILED", async () => {
+    tableResults.rtp_horizon_bands = { data: null, error: { message: "permission denied" } };
+
+    await renderDetail();
+
+    expect(screen.getByText("The financial element could not be fully read")).toBeInTheDocument();
+    expect(screen.queryByText("Fiscally constrained")).not.toBeInTheDocument();
+    expect(screen.queryByText("Not determined")).not.toBeInTheDocument();
   });
 });
 
