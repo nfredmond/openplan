@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { type SupabaseClient } from "@supabase/supabase-js";
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient, type LocalSupabaseEnv } from "./local-supabase-env";
+import { resolveLocalDbContainer, queryCatalog } from "./helpers/live-catalog";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 type ProbeRow = Record<string, unknown>;
@@ -656,6 +657,104 @@ describe("workspace RLS isolation inventory", () => {
       "workspace_members",
     ]);
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
+  });
+});
+
+/**
+ * THE PROBE LIST MUST COVER THE SCHEMA — added 2026-08-04 (Fable review).
+ *
+ * The inventory test above asserts the 42-name list agrees with ITSELF, which
+ * is how a new workspace-scoped table ships un-probed: nothing connected the
+ * list to the schema. Measured the day this was written, the live schema
+ * carried 65 tables with a `workspace_id` column and the probe list 42.
+ *
+ * The rule, checked against the LIVE catalog: every table carrying
+ * `workspace_id` must be one of —
+ *
+ *   1. PROBED — on `WORKSPACE_RLS_PROBES`, so the cross-tenant read tests
+ *      exercise it;
+ *   2. PROVABLY DENY-ALL — row security enabled with ZERO policies, which no
+ *      client role can read through regardless of grants (the
+ *      `workspace_integration_keys` posture, and the strongest of the three);
+ *   3. EXCUSED BY NAME below, with the reason it is not yet probed.
+ *
+ * The excused list is a RATCHET: it may only shrink, and an entry that stops
+ * being true (table dropped, or added to the probes) must be removed. Every
+ * table on it has RLS enabled and tenant-scoped policies written by the same
+ * migrations that scoped the probed tables — what is missing is the live
+ * cross-tenant PROOF, not the boundary. Moving one off this list means writing
+ * its fixture `build()` in WORKSPACE_RLS_PROBES.
+ */
+const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
+  "aerial_artifact_custody",
+  "aerial_processing_jobs",
+  "aerial_project_posture",
+  "client_invoices",
+  "document_narrative_drafts",
+  "engagement_content_translations",
+  "engagement_context_layers",
+  "engagement_notifications",
+  "funding_opportunity_application_exports",
+  "funding_opportunity_application_sections",
+  "funding_opportunity_attachments",
+  "funding_opportunity_narrative_drafts",
+  "funding_opportunity_section_drafts",
+  "invoicing_clients",
+  "invoicing_engagements",
+  "invoicing_rate_tables",
+  "invoicing_staff",
+  "invoicing_time_entries",
+  "project_bca_screenings",
+  "vmt_significance_screenings",
+];
+
+liveDescribe("the probe list covers the schema", () => {
+  it("every workspace_id table is probed, provably deny-all, or excused by name", () => {
+    const container = resolveLocalDbContainer();
+    const rows = queryCatalog(
+      container,
+      "SELECT c.relname || '|' || c.relrowsecurity || '|' || count(p.polname) " +
+        "FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace AND n.nspname = 'public' " +
+        "LEFT JOIN pg_policy p ON p.polrelid = c.oid " +
+        "WHERE c.relkind = 'r' AND EXISTS (" +
+        "  SELECT 1 FROM information_schema.columns col " +
+        "  WHERE col.table_schema = 'public' AND col.table_name = c.relname AND col.column_name = 'workspace_id') " +
+        "GROUP BY c.relname, c.relrowsecurity ORDER BY 1"
+    ).map((line) => {
+      const [table, rls, policies] = line.split("|");
+      // `boolean || text` casts through text, so relrowsecurity arrives as
+      // "true"/"false" here — not the "t"/"f" psql shows for a bare column.
+      return { table, rlsEnabled: rls === "true", policyCount: Number(policies) };
+    });
+
+    expect(rows.length, "the catalog query found no workspace-scoped tables at all").toBeGreaterThan(40);
+
+    const probed = new Set(WORKSPACE_RLS_PROBES.map((probe) => probe.table));
+    const excused = new Set(PROBE_EXCUSED_TABLES);
+
+    const uncovered = rows.filter(
+      ({ table, rlsEnabled, policyCount }) =>
+        !probed.has(table) && !excused.has(table) && !(rlsEnabled && policyCount === 0)
+    );
+    expect(
+      uncovered.map(({ table }) => table),
+      "these workspace-scoped tables are neither probed by this suite, nor provably deny-all, nor excused — add a fixture to WORKSPACE_RLS_PROBES, or excuse them by name with the reason"
+    ).toEqual([]);
+
+    // The ratchet's staleness half: an excuse that is no longer needed is a
+    // number that has quietly stopped being true.
+    const byName = new Map(rows.map((row) => [row.table, row]));
+    const stale = PROBE_EXCUSED_TABLES.filter((table) => {
+      const row = byName.get(table);
+      if (!row) return true; // table no longer exists
+      if (probed.has(table)) return true; // now probed — excuse is dead weight
+      return row.rlsEnabled && row.policyCount === 0; // now deny-all — covered by rule 2
+    });
+    expect(stale, "these excused tables no longer need an excuse — remove them from PROBE_EXCUSED_TABLES").toEqual([]);
+
+    // And no excused table may lose row security while sitting on the list.
+    const excusedWithoutRls = PROBE_EXCUSED_TABLES.filter((table) => byName.get(table) && !byName.get(table)?.rlsEnabled);
+    expect(excusedWithoutRls, "an excused table has RLS DISABLED — that is the unarmed-policy defect, fix it now").toEqual([]);
   });
 });
 

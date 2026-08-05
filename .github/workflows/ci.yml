@@ -57,10 +57,20 @@ jobs:
       - name: Syntax check
         run: python -m py_compile *.py
 
-      - name: Unit tests
+      # EVERY test_*.py, discovered by glob — never a hardcoded list. This job
+      # named five files for months while the directory grew to twenty, so
+      # calibration, count validation, convergence and twelve more suites never
+      # ran here (found 2026-08-04, Stage B audit). `|| exit 1`, not the
+      # documented interactive `|| break`: `break` leaves the loop with status
+      # 0, which would turn a failing suite into a green job.
+      - name: Unit tests (all suites)
         run: |
-          python test_lodes.py
-          python test_resident_vmt.py
-          python test_od_matrix.py
-          python test_mode_choice.py
-          python test_gtfs_skim.py
+          set -u
+          count=0
+          for f in test_*.py; do
+            echo "=== $f"
+            python "$f" || exit 1
+            count=$((count + 1))
+          done
+          echo "ran $count suites"
+          test "$count" -ge 20 || { echo "expected at least 20 suites, found $count — the glob broke"; exit 1; }

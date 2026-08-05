@@ -1,0 +1,125 @@
+name: QA Harness Nightly
+
+# Nightly browser smokes (added 2026-08-04, Stage B). The qa-harness local-*
+# scripts drive a real Chromium against a real local stack — the only tests in
+# this repo that walk a planner's actual path through rendered pages. They ran
+# only on Nathaniel's machine before this file; a regression a unit test cannot
+# see (a dead button, a page that renders but cannot navigate) waited for a
+# human to stumble over it.
+#
+# DELIBERATELY NOT PR-BLOCKING. Browser smokes are minutes-long and this
+# workflow's first live runs are its own verification; wire it into `on:
+# pull_request` only after it has a green nightly history.
+#
+# Excluded on purpose, with reasons:
+#   local-workspace-url-isolation-smoke  needs an operator-authored fixture file
+#                                        (OPENPLAN_WORKSPACE_ISOLATION_FIXTURE)
+#                                        plus per-user password env vars that do
+#                                        not exist in CI;
+#   local-ui-ux-settle-capture           a screenshot-capture tool for human
+#                                        review, not a pass/fail smoke.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 9 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  local-smokes:
+    name: local browser smokes
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: openplan/package-lock.json
+
+      - name: Install app
+        working-directory: ./openplan
+        run: npm ci
+
+      - name: Start Supabase
+        working-directory: ./openplan
+        run: npm exec -- supabase start
+
+      - name: Apply migrations to a fresh database
+        working-directory: ./openplan
+        run: npm exec -- supabase db reset
+
+      # The same env-derivation the RLS live suite uses: ask the running stack,
+      # never hardcode keys.
+      - name: Derive local stack env
+        id: stack
+        working-directory: ./openplan
+        run: |
+          STATUS_JSON=$(npm exec -- supabase status -o json)
+          echo "supabase_url=$(echo "$STATUS_JSON" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{const j=JSON.parse(d.slice(d.indexOf("{")));console.log(j.API_URL)})')" >> "$GITHUB_OUTPUT"
+          echo "anon_key=$(echo "$STATUS_JSON" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{const j=JSON.parse(d.slice(d.indexOf("{")));console.log(j.ANON_KEY)})')" >> "$GITHUB_OUTPUT"
+          echo "service_role_key=$(echo "$STATUS_JSON" | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>{const j=JSON.parse(d.slice(d.indexOf("{")));console.log(j.SERVICE_ROLE_KEY)})')" >> "$GITHUB_OUTPUT"
+
+      - name: Build app
+        working-directory: ./openplan
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.stack.outputs.supabase_url }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.stack.outputs.anon_key }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.stack.outputs.service_role_key }}
+          ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
+        run: npm run build
+
+      - name: Start app
+        working-directory: ./openplan
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.stack.outputs.supabase_url }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.stack.outputs.anon_key }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.stack.outputs.service_role_key }}
+          ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
+        run: |
+          nohup npm run start -- --port 3000 > /tmp/next-start.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:3000/ > /dev/null && break
+            sleep 2
+          done
+          curl -sf http://localhost:3000/ > /dev/null || { echo "app never came up"; tail -50 /tmp/next-start.log; exit 1; }
+
+      - name: Install harness
+        working-directory: ./qa-harness
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run local smokes
+        working-directory: ./qa-harness
+        env:
+          OPENPLAN_BASE_URL: http://localhost:3000
+          NEXT_PUBLIC_SUPABASE_URL: ${{ steps.stack.outputs.supabase_url }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ steps.stack.outputs.anon_key }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ steps.stack.outputs.service_role_key }}
+        run: |
+          set -u
+          for smoke in \
+            local-spine-smoke \
+            local-grants-flow-smoke \
+            local-rtp-release-review-smoke \
+            local-engagement-report-handoff-smoke \
+            local-analysis-report-linkage-smoke \
+            local-aerial-evidence-smoke; do
+            echo "=== npm run $smoke"
+            npm run "$smoke" || exit 1
+          done
+
+      - name: App log on failure
+        if: failure()
+        run: tail -100 /tmp/next-start.log || true
+
+      - name: Stop Supabase
+        if: always()
+        working-directory: ./openplan
+        run: npm exec -- supabase stop

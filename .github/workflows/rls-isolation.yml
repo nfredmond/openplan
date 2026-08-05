@@ -1,7 +1,15 @@
 name: RLS Isolation
 
+# PR-blocking since 2026-08-04 (Stage B): the live RLS proof ran only nightly,
+# so a policy regression merged in the morning sat exposed until the next
+# 10:23 UTC run told someone. The headless-Supabase recipe below is the same
+# one the nightly upgrade-path job has been proving works in CI.
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   schedule:
     - cron: "23 10 * * *"
 
