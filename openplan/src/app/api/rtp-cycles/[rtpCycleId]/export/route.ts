@@ -15,6 +15,17 @@ import {
   loadRtpPriorityFrameworkBinding,
   type RtpPriorityFrameworkQuerySupabaseLike,
 } from "@/lib/rtp/priority-framework-queries";
+import {
+  loadRtpFinancialElement,
+  type RtpFinancialElementSupabaseLike,
+} from "@/lib/rtp/financial-element-queries";
+import { buildRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
+import {
+  buildRtpCommentResponseRecord,
+  loadRtpCommentResponseRecord,
+  rtpCommentResponseUnreadableFrom,
+  type RtpCommentResponseSupabaseLike,
+} from "@/lib/rtp/comment-response";
 
 const paramsSchema = z.object({
   rtpCycleId: z.string().uuid(),
@@ -56,7 +67,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const { data: cycleData, error: cycleError } = await supabase
       .from("rtp_cycles")
       .select(
-        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, updated_at"
+        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, financial_basis_year, annual_inflation_rate, updated_at"
       )
       .eq("id", parsedParams.data.rtpCycleId)
       .maybeSingle();
@@ -67,6 +78,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     }
 
     const cycle = cycleData as RtpExportCycle | null;
+    // The two financial columns are not on RtpExportCycle (the exporter does not
+    // render them directly); the fiscal check reads them from the same row.
+    const financialCycle = (cycleData ?? {}) as {
+      financial_basis_year: number | null;
+      annual_inflation_rate: number | string | null;
+    };
     if (!cycle) {
       return NextResponse.json({ error: "RTP cycle not found" }, { status: 404 });
     }
@@ -95,7 +112,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         .order("sort_order", { ascending: true }),
       supabase
         .from("project_rtp_cycle_links")
-        .select("id, portfolio_role, priority_rationale, priority_scores, projects(id, name, status, delivery_phase, summary)")
+        .select("id, portfolio_role, priority_rationale, priority_scores, horizon_band_id, estimated_cost, cost_basis_year, projects(id, name, status, delivery_phase, summary)")
         .eq("rtp_cycle_id", cycle.id)
         .order("created_at", { ascending: false }),
       supabase
@@ -131,12 +148,50 @@ export async function GET(request: NextRequest, context: RouteContext) {
       audit.warn("priority_framework_lookup_failed", { rtpCycleId: cycle.id });
     }
 
+    // The financial element and the comment-response record travel with the
+    // document. Wired HERE as well as in the report-generate route on purpose:
+    // this is the export a planner actually clicks, and data supplied only to
+    // the other route would appear in board packets and nowhere else.
+    const financialElement = await loadRtpFinancialElement(
+      supabase as unknown as RtpFinancialElementSupabaseLike,
+      cycle.id
+    );
+    const commentResponseLoad = await loadRtpCommentResponseRecord(
+      supabase as unknown as RtpCommentResponseSupabaseLike,
+      cycle.id
+    );
+    const fiscalConstraint = buildRtpFiscalConstraint({
+      cycleFinancialBasisYear: financialCycle.financial_basis_year,
+      annualInflationRate: financialCycle.annual_inflation_rate,
+      bands: financialElement.bands,
+      lines: financialElement.lines,
+      projects: linkedProjects.map((link) => ({
+        linkId: link.id,
+        projectId: link.project_id,
+        projectName: link.project?.name ?? null,
+        portfolioRole: link.portfolio_role,
+        horizonBandId: link.horizon_band_id ?? null,
+        estimatedCost: link.estimated_cost ?? null,
+        costBasisYear: link.cost_basis_year ?? null,
+      })),
+    });
+
     const exportInput = {
       cycle,
       chapters,
       linkedProjects,
       campaigns,
       priorityCriteria: priorityFramework.binding.criteria,
+      options: {
+        fiscalConstraint,
+        horizonBands: financialElement.bands,
+        commentResponse: buildRtpCommentResponseRecord({
+          campaigns: commentResponseLoad.campaigns,
+          comments: commentResponseLoad.comments,
+          responses: commentResponseLoad.responses,
+          unreadable: rtpCommentResponseUnreadableFrom(commentResponseLoad.results),
+        }),
+      },
     };
 
     audit.info("export_generated", {

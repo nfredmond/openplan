@@ -20,6 +20,17 @@ import {
   loadRtpPriorityFrameworkBinding,
   type RtpPriorityFrameworkQuerySupabaseLike,
 } from "@/lib/rtp/priority-framework-queries";
+import {
+  loadRtpFinancialElement,
+  type RtpFinancialElementSupabaseLike,
+} from "@/lib/rtp/financial-element-queries";
+import { buildRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
+import {
+  buildRtpCommentResponseRecord,
+  loadRtpCommentResponseRecord,
+  rtpCommentResponseUnreadableFrom,
+  type RtpCommentResponseSupabaseLike,
+} from "@/lib/rtp/comment-response";
 import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
 import {
   buildPortfolioFundingSnapshot,
@@ -692,7 +703,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         supabase
           .from("rtp_cycles")
           .select(
-            "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, updated_at"
+            "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, financial_basis_year, annual_inflation_rate, updated_at"
           )
           .eq("id", report.rtp_cycle_id)
           .maybeSingle(),
@@ -708,7 +719,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .order("sort_order", { ascending: true }),
         supabase
           .from("project_rtp_cycle_links")
-          .select("id, project_id, portfolio_role, priority_rationale, projects(id, name, status, delivery_phase, summary, updated_at)")
+          .select("id, project_id, portfolio_role, priority_rationale, priority_scores, horizon_band_id, estimated_cost, cost_basis_year, projects(id, name, status, delivery_phase, summary, updated_at)")
           .eq("rtp_cycle_id", report.rtp_cycle_id)
           .order("created_at", { ascending: false }),
         supabase
@@ -962,6 +973,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
         supabase as unknown as RtpPriorityFrameworkQuerySupabaseLike,
         cycle.workspace_id
       );
+      // The same three the direct export route supplies. Loaded through the
+      // shared helpers so the packet and the button a planner clicks cannot
+      // present different documents.
+      const rtpFinancialElement = await loadRtpFinancialElement(
+        supabase as unknown as RtpFinancialElementSupabaseLike,
+        cycle.id
+      );
+      const rtpCommentResponseLoad = await loadRtpCommentResponseRecord(
+        supabase as unknown as RtpCommentResponseSupabaseLike,
+        cycle.id
+      );
+      const rtpFiscalConstraint = buildRtpFiscalConstraint({
+        cycleFinancialBasisYear: (cycle as { financial_basis_year?: number | null }).financial_basis_year ?? null,
+        annualInflationRate: (cycle as { annual_inflation_rate?: number | string | null }).annual_inflation_rate ?? null,
+        bands: rtpFinancialElement.bands,
+        lines: rtpFinancialElement.lines,
+        projects: linkedProjects.map((link) => ({
+          linkId: link.id,
+          projectId: link.project_id,
+          projectName: link.project?.name ?? null,
+          portfolioRole: link.portfolio_role,
+          horizonBandId: link.horizon_band_id ?? null,
+          estimatedCost: link.estimated_cost ?? null,
+          costBasisYear: link.cost_basis_year ?? null,
+        })),
+      });
+
       const html = buildRtpExportHtml({
         cycle,
         chapters,
@@ -969,6 +1007,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
         campaigns,
         priorityCriteria: rtpPriorityFramework.binding.criteria,
         options: {
+          fiscalConstraint: rtpFiscalConstraint,
+          horizonBands: rtpFinancialElement.bands,
+          commentResponse: buildRtpCommentResponseRecord({
+            campaigns: rtpCommentResponseLoad.campaigns,
+            comments: rtpCommentResponseLoad.comments,
+            responses: rtpCommentResponseLoad.responses,
+            unreadable: rtpCommentResponseUnreadableFrom(rtpCommentResponseLoad.results),
+          }),
           sectionKeys: enabledSectionKeys,
           titleSuffix: "OpenPlan RTP Packet",
           publicReviewSummary: {

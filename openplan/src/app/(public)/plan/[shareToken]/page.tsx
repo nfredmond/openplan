@@ -261,6 +261,24 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
         </section>
       ) : null}
 
+      {/*
+        The same token opens the full draft document. Linked from here because
+        a resident given the "what we're funding" link would otherwise have no
+        route to the plan text itself, and the two pages answer different
+        questions about the same plan.
+      */}
+      <section className="mt-6 rounded-lg border border-border bg-muted/20 p-4">
+        <a
+          href={`/plan/${shareToken}/document`}
+          className="text-sm font-medium text-foreground underline-offset-2 hover:underline"
+        >
+          Read the full draft plan
+        </a>
+        <p className="mt-1 text-xs text-muted-foreground">
+          The plan&apos;s chapters, its financial element, and the full project lists.
+        </p>
+      </section>
+
       <section className="mt-8 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">Projects, ranked by priority</h2>
         {rankedProjects.length === 0 ? (

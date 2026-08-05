@@ -448,6 +448,25 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  // The RTP financial element and the comment-response record. Both travel with
+  // the exported packet now, so the generate route reads them. A generic
+  // chainable is used rather than a hand-shaped mock because these loaders
+  // chain `.eq().order().order()` and `.in().order().order()`, and a mock that
+  // matches one arity today breaks the moment a loader adds an order.
+  if (
+    table === "rtp_horizon_bands" ||
+    table === "rtp_financial_assumptions" ||
+    table === "rtp_performance_measures" ||
+    table === "engagement_closeloop_entries"
+  ) {
+    const empty: Record<string, unknown> = {};
+    for (const method of ["select", "eq", "in", "order", "limit", "not", "is"]) {
+      empty[method] = () => empty;
+    }
+    empty.then = (resolve: (value: unknown) => unknown) => Promise.resolve({ data: [], error: null }).then(resolve);
+    return empty;
+  }
+
   throw new Error(`Unexpected table: ${table}`);
 });
 

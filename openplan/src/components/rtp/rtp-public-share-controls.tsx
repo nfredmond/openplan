@@ -23,6 +23,10 @@ export function RtpPublicShareControls({
 
   const publicPath = token ? `/plan/${token}` : null;
   const publicUrl = publicPath && typeof window !== "undefined" ? `${window.location.origin}${publicPath}` : publicPath;
+  // The two public surfaces the same token opens. Both are emitted here because
+  // this component is the ONLY producer of a public plan URL in the product —
+  // a page nothing links to is a page nobody can reach, however complete it is.
+  const documentPath = token ? `/plan/${token}/document` : null;
 
   async function toggle(next: boolean) {
     setSaving(true);
@@ -98,6 +102,16 @@ export function RtpPublicShareControls({
             {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
             {copied ? "Copied" : "Copy link"}
           </button>
+          {documentPath ? (
+            <a
+              href={documentPath}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            >
+              Open the draft document
+            </a>
+          ) : null}
         </div>
       ) : null}
 

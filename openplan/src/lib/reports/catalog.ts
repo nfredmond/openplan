@@ -299,7 +299,15 @@ export type ReportSectionPresetComparable = {
  * carry target-specific templates.
  */
 export type ReportTargetKind = "project" | "rtp_cycle" | "engagement_campaign";
-export type RtpPacketPresetStage = "draft" | "public_review" | "adopted" | "archived" | "default";
+export const RTP_PACKET_PRESET_STAGES = [
+  "draft",
+  "public_review",
+  "adopted",
+  "archived",
+  "default",
+] as const;
+
+export type RtpPacketPresetStage = (typeof RTP_PACKET_PRESET_STAGES)[number];
 
 const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
   project_status: [
@@ -402,14 +410,18 @@ const SECTION_TEMPLATES: Record<ReportType, ReportSectionTemplate[]> = {
   ],
 };
 
-const RTP_SECTION_TEMPLATES: Partial<Record<ReportType, ReportSectionTemplate[]>> = {
+/** Exported so the section-drift guard can compare it with the exporter's own set. */
+export const RTP_SECTION_TEMPLATES: Partial<Record<ReportType, ReportSectionTemplate[]>> = {
   board_packet: [
     { sectionKey: "cycle_overview", title: "Cycle overview", enabled: true, sortOrder: 0 },
     { sectionKey: "chapter_digest", title: "Chapter digest", enabled: true, sortOrder: 1 },
-    { sectionKey: "portfolio_posture", title: "Portfolio posture", enabled: true, sortOrder: 2 },
-    { sectionKey: "engagement_posture", title: "Engagement posture", enabled: true, sortOrder: 3 },
-    { sectionKey: "adoption_readiness", title: "Adoption readiness", enabled: true, sortOrder: 4 },
-    { sectionKey: "appendix_references", title: "Appendix and references", enabled: true, sortOrder: 5 },
+    { sectionKey: "financial_element", title: "Financial element", enabled: true, sortOrder: 2 },
+    { sectionKey: "project_lists", title: "Project lists", enabled: true, sortOrder: 3 },
+    { sectionKey: "portfolio_posture", title: "Portfolio posture", enabled: true, sortOrder: 4 },
+    { sectionKey: "engagement_posture", title: "Engagement posture", enabled: true, sortOrder: 5 },
+    { sectionKey: "comment_response", title: "Comment-response record", enabled: true, sortOrder: 6 },
+    { sectionKey: "adoption_readiness", title: "Adoption readiness", enabled: true, sortOrder: 7 },
+    { sectionKey: "appendix_references", title: "Appendix and references", enabled: true, sortOrder: 8 },
   ],
 };
 
@@ -448,25 +460,45 @@ export function resolveRtpPacketPresetStage(status: string | null | undefined): 
   }
 }
 
-function buildRtpPacketPresetTemplates(stage: RtpPacketPresetStage): ReportSectionTemplate[] {
+export function buildRtpPacketPresetTemplates(stage: RtpPacketPresetStage): ReportSectionTemplate[] {
   const baseTemplates = RTP_SECTION_TEMPLATES.board_packet ?? [];
   const enabledKeysByStage: Record<RtpPacketPresetStage, string[]> = {
-    draft: ["cycle_overview", "chapter_digest", "portfolio_posture", "adoption_readiness"],
+    // The financial element is in EVERY stage: "can this be paid for?" is not a
+    // question that only becomes relevant late, and a draft packet that omits
+    // it reads as complete while answering nothing about the money.
+    draft: ["cycle_overview", "chapter_digest", "financial_element", "project_lists", "portfolio_posture", "adoption_readiness"],
     public_review: [
       "cycle_overview",
       "chapter_digest",
+      "financial_element",
+      "project_lists",
       "portfolio_posture",
       "engagement_posture",
+      "comment_response",
       "adoption_readiness",
       "appendix_references",
     ],
-    adopted: ["cycle_overview", "chapter_digest", "portfolio_posture", "engagement_posture", "appendix_references"],
-    archived: ["cycle_overview", "portfolio_posture", "appendix_references"],
+    adopted: [
+      "cycle_overview",
+      "chapter_digest",
+      "financial_element",
+      "project_lists",
+      "portfolio_posture",
+      "engagement_posture",
+      // What the public said and what the agency answered belongs in the
+      // adopted record, not only in the review-stage packet.
+      "comment_response",
+      "appendix_references",
+    ],
+    archived: ["cycle_overview", "chapter_digest", "financial_element", "project_lists", "portfolio_posture", "appendix_references"],
     default: [
       "cycle_overview",
       "chapter_digest",
+      "financial_element",
+      "project_lists",
       "portfolio_posture",
       "engagement_posture",
+      "comment_response",
       "adoption_readiness",
       "appendix_references",
     ],
@@ -604,8 +636,14 @@ export function describeReportSectionKey(sectionKey: string | null | undefined):
       return "Core RTP cycle scope, geography, horizon, and board posture.";
     case "chapter_digest":
       return "Draft narrative coverage and workflow status across RTP chapters.";
+    case "financial_element":
+      return "Revenue, operations and maintenance, and whether the constrained programme can be paid for.";
+    case "project_lists":
+      return "What the plan commits to in each period, with each project's programmed cost.";
     case "portfolio_posture":
       return "Linked constrained, illustrative, and candidate projects for this RTP cycle.";
+    case "comment_response":
+      return "Approved public comments on the plan and the agency's published responses.";
     case "engagement_posture":
       return "Cycle-level and chapter-level public review and consultation targets.";
     case "adoption_readiness":

@@ -246,6 +246,25 @@ function buildTableMock(table: string) {
     return { select: () => chain };
   }
 
+  // The financial element and the comment-response record now travel with the
+  // exported packet, so the generate route reads them. Generic chainable: these
+  // loaders chain two `.order()`s, and a fixed-arity mock breaks when a loader
+  // adds another.
+  if (
+    table === "rtp_horizon_bands" ||
+    table === "rtp_financial_assumptions" ||
+    table === "rtp_performance_measures" ||
+    table === "engagement_closeloop_entries"
+  ) {
+    const empty: Record<string, unknown> = {};
+    for (const method of ["select", "eq", "in", "order", "limit", "not", "is"]) {
+      empty[method] = () => empty;
+    }
+    empty.then = (resolve: (value: unknown) => unknown) =>
+      Promise.resolve({ data: [], error: null }).then(resolve);
+    return empty;
+  }
+
   throw new Error(`Unexpected table: ${table}`);
 }
 

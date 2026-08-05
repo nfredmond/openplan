@@ -16,6 +16,16 @@ import {
 } from "@/lib/rtp/catalog";
 import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks";
 import {
+  describeRtpFiscalConstraint,
+  rtpFiscalVerdictLabel,
+  type RtpFiscalConstraintSummary,
+} from "@/lib/rtp/fiscal-constraint";
+import {
+  describeRtpCommentResponse,
+  type RtpCommentResponseSummary,
+} from "@/lib/rtp/comment-response";
+import { parseOptionalAmount } from "@/lib/money/optional-amount";
+import {
   buildPortfolioPriorityNarrative,
   buildRtpPriorityRationale,
   computeRtpPriorityScore,
@@ -55,6 +65,10 @@ export type RtpExportLinkedProject = {
   portfolio_role: string;
   priority_rationale: string | null;
   priority_scores?: Record<string, number> | null;
+  /** Optional so a caller that has not loaded them yet renders a stated gap, not a wrong number. */
+  horizon_band_id?: string | null;
+  estimated_cost?: number | string | null;
+  cost_basis_year?: number | null;
   projects:
     | {
         id: string;
@@ -124,19 +138,42 @@ export type RtpExportNormalizedLinkedProject = RtpExportLinkedProject & {
 export type RtpExportSectionKey =
   | "cycle_overview"
   | "chapter_digest"
+  | "financial_element"
+  | "project_lists"
   | "portfolio_posture"
   | "engagement_posture"
+  | "comment_response"
   | "adoption_readiness"
   | "appendix_references";
 
-const DEFAULT_RTP_EXPORT_SECTION_KEYS: RtpExportSectionKey[] = [
-  "cycle_overview",
-  "chapter_digest",
-  "portfolio_posture",
-  "engagement_posture",
-  "adoption_readiness",
-  "appendix_references",
-];
+/**
+ * Every section key, in the order an exported plan presents them.
+ *
+ * `satisfies Record<RtpExportSectionKey, true>` is the load-bearing part: a key
+ * added to the union above and forgotten here fails the BUILD rather than
+ * silently vanishing from every export. That matters because a section key has
+ * to be declared in five hand-maintained places (this union, this map,
+ * `RTP_SECTION_TEMPLATES.board_packet`, the five `enabledKeysByStage` arrays,
+ * and `describeReportSectionKey`), and being registered in four of the five
+ * type-checks perfectly while the section quietly disappears from one packet
+ * stage. The compiler covers two of them; `rtp-export-sections-stay-in-step`
+ * covers the rest.
+ */
+const RTP_EXPORT_SECTION_ORDER = {
+  cycle_overview: true,
+  chapter_digest: true,
+  financial_element: true,
+  project_lists: true,
+  portfolio_posture: true,
+  engagement_posture: true,
+  comment_response: true,
+  adoption_readiness: true,
+  appendix_references: true,
+} as const satisfies Record<RtpExportSectionKey, true>;
+
+export const DEFAULT_RTP_EXPORT_SECTION_KEYS = Object.keys(
+  RTP_EXPORT_SECTION_ORDER
+) as RtpExportSectionKey[];
 
 export function normalizeRtpLinkedProjects(
   linkedProjects: RtpExportLinkedProject[]
@@ -461,6 +498,17 @@ export function buildRtpExportHtml(input: {
     fundingSnapshot?: PortfolioFundingSnapshot | null;
     fundingProfileScans?: RtpExportFundingProfileScan[] | null;
     fundingSourceContextReadiness?: RtpExportFundingSourceContextReadiness | null;
+    /**
+     * The fiscal-constraint finding. Optional, and its ABSENCE is rendered
+     * rather than skipped: a packet with the financial element switched on and
+     * no finding must say the finding was not supplied, or a reader takes the
+     * silence for "nothing to report".
+     */
+    fiscalConstraint?: RtpFiscalConstraintSummary | null;
+    /** Periods, for grouping the project lists. */
+    horizonBands?: ReadonlyArray<{ id: string; label: string; startYear: number; endYear: number }> | null;
+    /** What the public said and what the agency answered. */
+    commentResponse?: RtpCommentResponseSummary | null;
   };
 }): string {
   const { cycle, chapters, linkedProjects, campaigns, priorityCriteria, options } = input;
@@ -540,6 +588,125 @@ export function buildRtpExportHtml(input: {
         </div>`
       )
       .join("")}
+  </section>`);
+  }
+
+  if (enabledSectionKeys.includes("financial_element")) {
+    const fiscal = options?.fiscalConstraint ?? null;
+    sections.push(`
+  <section class="section">
+    <h2>Financial element</h2>
+    ${
+      fiscal
+        ? `<p><strong>${esc(rtpFiscalVerdictLabel(fiscal.verdict))}</strong> · ${esc(
+            fiscal.dollarBasis === "year_of_expenditure"
+              ? "Year-of-expenditure dollars"
+              : "Constant dollars — no inflation rate recorded"
+          )}</p>
+    <p>${esc(describeRtpFiscalConstraint(fiscal))}</p>
+    ${
+      fiscal.bands.length > 0
+        ? `<table><thead><tr><th>Period</th><th>Revenue</th><th>Projects</th><th>O&amp;M</th><th>Balance</th></tr></thead><tbody>${fiscal.bands
+            .map(
+              (band) => `<tr><td>${esc(band.label)} (${band.startYear}–${band.endYear})</td><td>${esc(
+                formatRtpExportCurrency(band.revenue)
+              )}</td><td>${esc(formatRtpExportCurrency(band.capitalCost))}</td><td>${esc(
+                formatRtpExportCurrency(band.operationsMaintenanceCost)
+              )}</td><td>${esc(
+                band.verdict === "not_determined" ? "—" : formatRtpExportCurrency(band.balance)
+              )}</td></tr>`
+            )
+            .join("")}</tbody></table>`
+        : '<p class="muted">No horizon periods have been declared for this plan, so revenue and costs belong to no period.</p>'
+    }`
+        : // Enabled but not supplied. Stated, never silent — a blank financial
+          // element in an adopted packet reads as "nothing to report".
+          '<p class="muted">The fiscal-constraint finding was not included when this packet was generated, so this section states nothing about whether the plan can be paid for.</p>'
+    }
+  </section>`);
+  }
+
+  if (enabledSectionKeys.includes("project_lists")) {
+    const bands = options?.horizonBands ?? [];
+    const bandById = new Map(bands.map((band) => [band.id, band]));
+    // Grouped exactly as the on-screen lists are, so the document a board reads
+    // and the page a planner edits cannot present the plan differently.
+    const groups = new Map<string, { label: string; role: string; rows: RtpExportNormalizedLinkedProject[] }>();
+    for (const link of linkedProjects) {
+      const band = link.horizon_band_id ? bandById.get(link.horizon_band_id) : undefined;
+      const key = `${band?.id ?? "__unassigned__"}::${link.portfolio_role}`;
+      const group = groups.get(key) ?? {
+        label: band ? `${band.label} (${band.startYear}–${band.endYear})` : "No period assigned",
+        role: link.portfolio_role,
+        rows: [],
+      };
+      group.rows.push(link);
+      groups.set(key, group);
+    }
+
+    sections.push(`
+  <section class="section">
+    <h2>Project lists</h2>
+    ${
+      groups.size === 0
+        ? '<p class="muted">No projects are linked to this plan yet.</p>'
+        : [...groups.values()]
+            .map((group) => {
+              const priced = group.rows
+                .map((row) => parseOptionalAmount(row.estimated_cost))
+                .filter((amount): amount is number => amount !== null);
+              const unpricedCount = group.rows.length - priced.length;
+              const total = priced.reduce((sum, amount) => sum + amount, 0);
+              // Never "$0" for a group nothing is priced in.
+              const subtotal =
+                unpricedCount === group.rows.length
+                  ? `No costs recorded for ${group.rows.length} project${group.rows.length === 1 ? "" : "s"}`
+                  : unpricedCount > 0
+                    ? `${formatRtpExportCurrency(total)} so far — ${unpricedCount} of ${group.rows.length} projects ${unpricedCount === 1 ? "has" : "have"} no cost recorded`
+                    : `${formatRtpExportCurrency(total)} across ${group.rows.length} project${group.rows.length === 1 ? "" : "s"}`;
+
+              return `<div class="card" style="margin-bottom:12px;">
+          <h3>${esc(group.label)} · ${esc(formatRtpPortfolioRoleLabel(group.role))}</h3>
+          <p class="muted">${esc(subtotal)}</p>
+          <ul>${group.rows
+            .map((row) => {
+              const cost = parseOptionalAmount(row.estimated_cost);
+              return `<li>${esc(row.project?.name ?? "Linked project")} — ${esc(
+                cost === null ? "no cost recorded" : formatRtpExportCurrency(cost)
+              )}${row.cost_basis_year && cost !== null ? esc(` (${row.cost_basis_year} dollars)`) : ""}</li>`;
+            })
+            .join("")}</ul>
+        </div>`;
+            })
+            .join("")
+    }
+  </section>`);
+  }
+
+  if (enabledSectionKeys.includes("comment_response")) {
+    const record = options?.commentResponse ?? null;
+    sections.push(`
+  <section class="section">
+    <h2>Comment-response record</h2>
+    ${
+      record
+        ? `<p>${esc(describeRtpCommentResponse(record))}</p>
+    ${
+      record.entries.length === 0
+        ? '<p class="muted">No approved public comments are in the record.</p>'
+        : `<ul>${record.entries
+            .map(
+              (entry) =>
+                `<li><p>${esc(entry.comment.body)}</p><p class="muted">${esc(
+                  entry.response
+                    ? `Our response: ${entry.response.weDid || entry.response.youSaid}`
+                    : "No published response yet."
+                )}</p></li>`
+            )
+            .join("")}</ul>`
+    }`
+        : '<p class="muted">The comment-response record was not included when this packet was generated, so this section states nothing about what the public said or how the agency answered.</p>'
+    }
   </section>`);
   }
 

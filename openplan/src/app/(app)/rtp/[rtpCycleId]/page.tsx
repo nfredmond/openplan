@@ -5,6 +5,8 @@ import { ArrowLeft, FileStack, FolderKanban, MessageSquare, Route as RouteIcon, 
 import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
 import { RtpCycleDetailsEditor } from "@/components/rtp/rtp-cycle-details-editor";
 import { RtpFinancialElementSection } from "./_components/rtp-financial-element-section";
+import { RtpCycleProjectMap } from "@/components/rtp/rtp-cycle-project-map";
+import { RtpCommentResponseSection } from "./_components/rtp-comment-response-section";
 import { RtpProgrammeLists } from "./_components/rtp-programme-lists";
 import type {
   BillingInvoiceRow,
@@ -68,6 +70,12 @@ import {
   loadRtpFinancialElement,
   type RtpFinancialElementSupabaseLike,
 } from "@/lib/rtp/financial-element-queries";
+import {
+  buildRtpCommentResponseRecord,
+  loadRtpCommentResponseRecord,
+  rtpCommentResponseUnreadableFrom,
+  type RtpCommentResponseSupabaseLike,
+} from "@/lib/rtp/comment-response";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -430,6 +438,24 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     pendingCommentCount: engagementSummary.moderationQueue.pendingCount,
     approvedCommentCount: engagementSummary.moderationQueue.approvedCount,
     readyCommentCount: engagementSummary.moderationQueue.readyForHandoffCount,
+  });
+
+  // What the public said about this plan and what the agency said back. The
+  // loader deliberately does NOT swallow its errors, so the read state is
+  // threaded through rather than collapsed — a caller that ignored it would
+  // publish a failed read as "no comment was received".
+  const commentResponseLoad = await loadRtpCommentResponseRecord(
+    supabase as unknown as RtpCommentResponseSupabaseLike,
+    cycle.id
+  );
+  classifyRead(reads, "the consultations attached to this plan", commentResponseLoad.results.campaigns);
+  classifyRead(reads, "the public comments on this plan", commentResponseLoad.results.comments);
+  classifyRead(reads, "the agency's responses to public comments", commentResponseLoad.results.responses);
+  const commentResponseSummary = buildRtpCommentResponseRecord({
+    campaigns: commentResponseLoad.campaigns,
+    comments: commentResponseLoad.comments,
+    responses: commentResponseLoad.responses,
+    unreadable: rtpCommentResponseUnreadableFrom(commentResponseLoad.results),
   });
 
   // Which body of law this workspace may cite for its priorities. Loaded from
@@ -807,6 +833,12 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             measuresReadFailed={performanceMeasuresState === "failed"}
             canWrite={canWritePlans}
           />
+
+          <RtpCommentResponseSection summary={commentResponseSummary} />
+
+          <RtpCycleProjectMap rtpCycleId={cycle.id} />
+
+
 
           <RtpProgrammeLists
             entries={projectLinksWithFunding.map((link) => ({

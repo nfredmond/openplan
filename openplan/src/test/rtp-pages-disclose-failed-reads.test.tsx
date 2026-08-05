@@ -130,6 +130,9 @@ vi.mock("@/components/rtp/rtp-financial-ledger-editor", () => ({
 vi.mock("@/components/rtp/rtp-performance-measure-editor", () => ({
   RtpPerformanceMeasureEditor: () => <div data-testid="rtp-performance-measure-editor" />,
 }));
+vi.mock("@/components/rtp/rtp-cycle-project-map", () => ({
+  RtpCycleProjectMap: () => <div data-testid="rtp-cycle-project-map" />,
+}));
 vi.mock("@/components/rtp/rtp-cycle-phase-controls", () => ({
   RtpCyclePhaseControls: () => <div data-testid="rtp-cycle-phase-controls" />,
 }));
@@ -445,6 +448,36 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
     expect(screen.getByText("The financial element could not be fully read")).toBeInTheDocument();
     expect(screen.queryByText("Fiscally constrained")).not.toBeInTheDocument();
     expect(screen.queryByText("Not determined")).not.toBeInTheDocument();
+  });
+});
+
+describe("the map and the comment-response record are reachable on the cycle page", () => {
+  /**
+   * Both shipped complete, tested and unreachable — nothing imported either.
+   * These assert the mount, and the comment-response one also asserts the
+   * failed-read disclosure, because "nobody commented" and "the comments could
+   * not be read" are different facts and the second rendered as the first is an
+   * agency claiming a silence it never heard.
+   */
+  it("mounts the per-cycle project map", async () => {
+    await renderDetail();
+    expect(screen.getByTestId("rtp-cycle-project-map")).toBeInTheDocument();
+  });
+
+  it("renders the comment-response record", async () => {
+    await renderDetail();
+    expect(screen.getByText("What the public said, and what we said back")).toBeInTheDocument();
+  });
+
+  it("does NOT report an empty comment record when the consultations could not be read", async () => {
+    tableResults.engagement_campaigns = { data: null, error: { message: "permission denied" } };
+
+    await renderDetail();
+
+    expect(
+      screen.getByText("The public engagement on this plan could not be read")
+    ).toBeInTheDocument();
+    expect(screen.queryByText("No approved public comments yet")).toBeNull();
   });
 });
 
