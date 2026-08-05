@@ -51,7 +51,13 @@ jobs:
       - name: Seed representative workspace data
         run: |
           CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
-          docker exec "$CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+          # `docker exec` WITHOUT -i does not attach stdin, so this heredoc never
+          # reached psql: it read nothing, printed nothing, and exited 0. The seed
+          # silently inserted zero rows on every run of this job, which the row
+          # counts below then compared as 0:0:0 -> 0:0:0 and called a pass. The
+          # flag is the whole fix; the non-empty assertion below is what stops it
+          # from ever being vacuous again.
+          docker exec -i "$CONTAINER" psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
           -- A workspace with a member-shaped row and rows in high-stakes tables,
           -- so a migration that rewrites or drops data has something to destroy.
           INSERT INTO auth.users (id, email) VALUES ('00000000-0000-4000-8000-000000000001', 'upgrade-probe@example.com');
@@ -69,6 +75,18 @@ jobs:
             "SELECT (SELECT count(*) FROM workspaces) || ':' || (SELECT count(*) FROM workspace_members) || ':' || (SELECT count(*) FROM projects)" \
             > /tmp/seed-counts.txt
           cat /tmp/seed-counts.txt
+          # GUARD THE GUARD. Every assertion in this job compares the database
+          # before and after the upgrade, and an EMPTY database satisfies all of
+          # them — nothing was destroyed because nothing was there. So the probe
+          # must prove it seeded something before it is allowed to conclude
+          # anything about upgrade safety.
+          SEEDED=$(cat /tmp/seed-counts.txt)
+          case "$SEEDED" in
+            0:*|*:0:*|*:0)
+              echo "::error::The upgrade probe seeded no rows ($SEEDED), so it cannot prove an upgrade preserves data. Fix the seed step rather than trusting this job."
+              exit 1
+              ;;
+          esac
 
       - name: Check out HEAD
         run: git -C .. checkout "$GITHUB_SHA"
