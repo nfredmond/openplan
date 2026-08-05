@@ -1194,10 +1194,32 @@ liveDescribe("hardening of 2026-08-03 stays in force", () => {
       .not("median_household_income", "is", null)
       .limit(1);
 
-    // Skipping silently would make this pass on an empty database, so require it.
-    expect(real?.length ?? 0, "a real tract must exist for this probe to mean anything").toBeGreaterThan(0);
-
-    const target = (real as { geoid: string; median_household_income: number }[])[0];
+    // A fresh database (CI runs `db reset`; there is no seed file) holds no
+    // tracts at all, and this probe used to REQUIRE one — so it had never
+    // passed in CI: its first nightly, 2026-08-04, failed exactly here while
+    // every local run leaned on the dev database's 530 real rows. Seed the
+    // subject through the service role instead of skipping: the probe stays
+    // meaningful (the anon update below must still bounce off a real, present
+    // row) and stays self-contained. The seeded row is removed at the end,
+    // and only when it was ours.
+    let seededGeoid: string | null = null;
+    let target: { geoid: string; median_household_income: number };
+    if ((real?.length ?? 0) > 0) {
+      target = (real as { geoid: string; median_household_income: number }[])[0];
+    } else {
+      seededGeoid = `98${suffix}`.slice(0, 11);
+      const seeded = await service.from("census_tracts").insert({
+        geoid: seededGeoid,
+        state_fips: "98",
+        county_fips: "998",
+        name: `RLS hardening probe tract ${suffix}`,
+        pop_total: 1000,
+        median_household_income: 54321,
+        geometry: "SRID=4326;MULTIPOLYGON(((-120 38,-120 38.1,-119.9 38.1,-119.9 38,-120 38)))",
+      });
+      expect(seeded.error, "service must be able to seed the probe tract on an empty database").toBeNull();
+      target = { geoid: seededGeoid, median_household_income: 54321 };
+    }
     await anon.from("census_tracts").update({ median_household_income: 1 }).eq("geoid", target.geoid);
 
     const { data: after } = await service
@@ -1215,6 +1237,12 @@ liveDescribe("hardening of 2026-08-03 stays in force", () => {
       .from("census_tracts")
       .update({ median_household_income: target.median_household_income })
       .eq("geoid", target.geoid);
+    // Remove the seeded subject unconditionally and BEFORE asserting, for the
+    // same reason the restore above runs before the assertion: cleanup that
+    // only happens on success strands rows precisely when the guard works.
+    if (seededGeoid) {
+      await service.from("census_tracts").delete().eq("geoid", seededGeoid);
+    }
 
     expect(
       (after as { median_household_income: number } | null)?.median_household_income,

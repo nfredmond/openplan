@@ -17,6 +17,36 @@ stable enough to promise smooth upgrades indefinitely.
 
 ---
 
+## Unreleased
+
+### Fresh installs work again under newer Supabase CLI versions
+
+**Requires one migration** (`20260804000002`). Run
+`npm exec -- supabase migration up --linked` (locally: without `--linked`)
+before deploying, as always. On every EXISTING database this migration is a
+no-op — it changes nothing you already have.
+
+Newer versions of the Supabase CLI (the jump from 2.76 to 2.111 in this repo's
+lockfile) changed what a brand-new local database grants by default: tables
+created by migrations no longer give the application's own server role — or any
+signed-in user — permission to read or write rows. Existing databases are
+unaffected because their tables keep the permissions they were created with,
+which is why nothing looked wrong on machines that had been running OpenPlan
+all along. But a FRESH install — a new agency following the README, a CI
+`db reset` — produced a database the app could not use at all: every screen
+failed, and the setup instructions led to a dead end.
+
+The migration restores exactly the intended posture on fresh databases: the
+server role gets its full access back, signed-in users get the table access
+that row-level security then narrows per workspace (the same posture every
+existing deployment has always had, and the one the live isolation tests
+verify), and the deliberately locked-down tables from 0.3.0's security fix
+stay locked down. It was verified against a from-scratch database, and the
+live isolation suite now runs on every pull request rather than once nightly —
+which is how this was caught.
+
+---
+
 ## 0.3.0 — 2026-08-03
 
 **This release contains a security fix. Upgrade promptly.** If you run a
