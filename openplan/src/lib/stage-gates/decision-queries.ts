@@ -86,11 +86,34 @@ export async function loadProjectStageGateBoard(
   input: {
     workspaceId: string;
     projectId: string;
-    /** The template the workspace is BOUND to; omitted falls back to the registry default. */
-    templateId?: string | null;
+    /**
+     * The template the workspace is BOUND to. REQUIRED: the caller states which
+     * template this board renders under, resolved from the workspace row via
+     * `resolveWorkspaceStageGateBinding` — the loader does not guess, and there
+     * is no registry-default fallback (that fallback is how a second registered
+     * template made three surfaces render the default's gate vocabulary over a
+     * differently-bound workspace's decisions).
+     *
+     * `null` is the caller saying "I resolved the binding and it did not
+     * resolve" — the workspace names a template this deployment does not
+     * register. The loader refuses rather than substituting any other
+     * template, because the board it would build is wrong in a way no reader
+     * can see. Callers that can degrade should not call the loader in that
+     * case; they should report the board unavailable.
+     */
+    templateId: string | null;
     limit?: number;
   }
 ): Promise<ProjectStageGateBoardData> {
+  const templateId = input.templateId?.trim();
+  if (!templateId) {
+    throw new Error(
+      "Refusing to load a stage-gate board without a bound template: resolve the workspace's " +
+        "binding (resolveWorkspaceStageGateBinding) and pass its templateId, or report the board " +
+        "unavailable instead of rendering another template's gates."
+    );
+  }
+
   const result = await supabase
     .from("stage_gate_decisions")
     .select(PROJECT_STAGE_GATE_DECISION_COLUMNS)
@@ -104,7 +127,7 @@ export async function loadProjectStageGateBoard(
   return {
     decisions,
     summary: buildProjectStageGateSummary(decisions, {
-      ...(input.templateId ? { templateId: input.templateId } : {}),
+      templateId,
       projectId: input.projectId,
       decisionsUnavailable: result.error
         ? { reason: result.error.message || "no message reported" }

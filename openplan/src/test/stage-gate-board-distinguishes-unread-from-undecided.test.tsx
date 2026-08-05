@@ -11,12 +11,14 @@ const WORKSPACE_ID = "11111111-1111-4111-8111-111111111111";
 const PROJECT_ID = "44444444-4444-4444-8444-444444444444";
 
 function renderBoard(
-  options: Parameters<typeof buildProjectStageGateSummary>[1] & { canRecordDecision?: boolean } = {}
+  options: Partial<Parameters<typeof buildProjectStageGateSummary>[1]> & { canRecordDecision?: boolean } = {}
 ) {
   const { canRecordDecision = true, ...summaryOptions } = options;
+  // Pinned to the CA template: these assertions count its nine gates, and the
+  // builder no longer has a registry-default fallback to lean on.
   return render(
     <ProjectStageGateBoard
-      stageGateSummary={buildProjectStageGateSummary([], summaryOptions)}
+      stageGateSummary={buildProjectStageGateSummary([], { templateId: "ca_stage_gates_v0_1", ...summaryOptions })}
       workspaceId={WORKSPACE_ID}
       projectId={PROJECT_ID}
       canRecordDecision={canRecordDecision}

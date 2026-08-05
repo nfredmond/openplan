@@ -21,7 +21,7 @@ const membershipSelectMock = vi.fn(() => ({ eq: membershipEqWorkspaceMock }));
 
 const workspaceMaybeSingleMock = vi.fn();
 const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
-const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
+const workspaceSelectMock = vi.fn((_columns: string) => ({ eq: workspaceEqMock }));
 
 const rtpCycleMaybeSingleMock = vi.fn();
 const rtpCycleEqMock = vi.fn(() => ({ maybeSingle: rtpCycleMaybeSingleMock }));
@@ -508,6 +508,14 @@ describe("POST /api/reports/[reportId]/generate", () => {
         plan: "pilot",
         subscription_plan: "pilot",
         subscription_status: "active",
+        // Bound EXPLICITLY to the CA template, with CA geography: the frozen
+        // gate snapshot below must be built on THIS binding, never on the
+        // registry's interim default — the snapshot assertions pin CA's
+        // template id and gate names to prove it.
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        home_geography_source: "tigerweb",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
       },
       error: null,
     });
@@ -2063,6 +2071,129 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Missing artifacts: G02_E03.");
     expect(generatedHtml).toContain("G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS");
     expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-governance');
+  });
+
+  it("freezes the snapshot on the workspace's BOUND template and asks the workspaces read for the binding columns", async () => {
+    // The snapshot test above pins ca_stage_gates_v0_1 — the BOUND template of
+    // the fixture workspace. This one pins the mechanism: the workspaces read
+    // must carry the binding columns (projection imported, never retyped), or
+    // the route would have nothing to resolve the binding from and the
+    // reconciliation would silently fall back to geography alone.
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const workspacesProjection = String(workspaceSelectMock.mock.calls[0]?.[0] ?? "");
+    expect(workspacesProjection).toContain("stage_gate_template_id");
+    expect(workspacesProjection).toContain("home_subdivision_code");
+  });
+
+  it("freezes a DIFFERENTLY-bound workspace's snapshot under ITS template, so no caller can hardcode one", async () => {
+    // The snapshot test above pins the CA fixture's template id, which proves
+    // the route does not use the registry DEFAULT — but not that it threads
+    // the binding at all. Verified by mutation: replacing the resolved
+    // binding with the literal "ca_stage_gates_v0_1" left all 38 tests in this
+    // file green. This is the other half of the pincer. A workspace bound to
+    // the federal-aid floor must freeze THAT template's id, version, and gate
+    // count, and its CA-gate-id decisions must fall outside the vocabulary
+    // (nothing passed, nothing held, every gate awaiting a decision) rather
+    // than being frozen into a funder's packet under gate names nobody bound.
+    workspaceMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "33333333-3333-4333-8333-333333333333",
+        name: "Nevada County Safety Action Program",
+        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+        home_geography_source: "tigerweb",
+        home_country_code: "US",
+        home_subdivision_code: "TX",
+      },
+      error: null,
+    });
+    stageGateDecisionsLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "stage-gate-1",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          gate_id: "G01_INITIATION_AUTHORIZATION",
+          decision: "PASS",
+          rationale: "Charter is approved.",
+          decided_at: "2026-03-13T16:00:00.000Z",
+          missing_artifacts: [],
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    expect(artifactsInsertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        metadata_json: expect.objectContaining({
+          sourceContext: expect.objectContaining({
+            stageGateSnapshot: expect.objectContaining({
+              templateId: "us_federal_aid_stage_gates_v0_1",
+              passCount: 0,
+              holdCount: 0,
+              notStartedCount: 8,
+              blockedGate: null,
+            }),
+          }),
+        }),
+      })
+    );
+  });
+
+  it("refuses generation when the workspace names a stage-gate template this deployment does not register", async () => {
+    // Substituting any registered template would freeze another jurisdiction's
+    // gate names into a packet an agency sends to a funder — the one falsehood
+    // a packet cannot be corrected out of once sent.
+    workspaceMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "33333333-3333-4333-8333-333333333333",
+        name: "Nevada County Safety Action Program",
+        stage_gate_template_id: "not_a_registered_template_v9",
+        home_geography_source: "tigerweb",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
+      },
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(409);
+    const body = await response.json();
+    expect(body.error).toContain("not_a_registered_template_v9");
+    expect(body.hint).toContain("Rebind");
+    // And nothing was written: no packet is produced on a refused binding.
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
   });
 
   it("names the missing migration when the decision log cannot be scoped yet, instead of a generic 500", async () => {

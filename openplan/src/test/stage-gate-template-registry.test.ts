@@ -45,6 +45,7 @@ describe("stage-gate template registry", () => {
 
     expect(registry.list().map((descriptor) => descriptor.templateId)).toEqual([
       "ca_stage_gates_v0_1",
+      "us_federal_aid_stage_gates_v0_1",
       "oh_stage_gates_test",
     ]);
 
@@ -69,15 +70,77 @@ describe("stage-gate template registry", () => {
     expect(california?.descriptor.jurisdictionCode).toBe("CA");
     expect(california?.descriptor.jurisdiction.country).toBe("US");
     expect(california?.document.gate_order).toHaveLength(9);
+    // No longer the interim default — CA workspaces reach it by subdivision
+    // match; the nationwide federal-aid floor carries the default now.
+    expect(california?.descriptor.isInterimDefault).toBe(false);
+    // Caltrans-specific declaration survives the default flip.
+    expect(california?.descriptor.lapmFormIdsStatus).toBe("deferred_to_v0_2");
   });
 
-  it("declares exactly one interim default among the built-ins", () => {
+  it("registers the US federal-aid floor exactly as authored, with its scope disclosures", () => {
+    const federal = stageGateTemplateRegistry.get("us_federal_aid_stage_gates_v0_1");
+
+    expect(federal?.descriptor.templateVersion).toBe("0.1.0");
+    expect(federal?.descriptor.jurisdictionCode).toBe("US");
+    expect(federal?.descriptor.jurisdiction).toEqual({
+      country: "US",
+      label: "United States — federal-aid floor",
+    });
+    expect(federal?.document.gate_order).toHaveLength(8);
+    // A nationwide template must not declare the status of a California form
+    // set — that mistake is the reason lapmFormIdsStatus lives per-template.
+    expect(federal?.descriptor.lapmFormIdsStatus).toBeUndefined();
+    // The artifact's self-description and scope disclosures ride the descriptor
+    // so every picker surface can render them.
+    expect(federal?.descriptor.templateDescription).toContain("2 CFR 200");
+    expect(federal?.descriptor.scopeNotes).toHaveLength(3);
+  });
+
+  it("declares exactly one interim default among the built-ins — the nationwide floor", () => {
     const defaults = stageGateTemplateRegistry
       .list()
       .filter((descriptor) => descriptor.isInterimDefault);
 
     expect(defaults).toHaveLength(1);
     expect(stageGateTemplateRegistry.defaultTemplateId).toBe(defaults[0]?.templateId);
+    // Pinned: a workspace that has stated nothing gets the gates true anywhere
+    // in the US, never one state's manual.
+    expect(stageGateTemplateRegistry.defaultTemplateId).toBe("us_federal_aid_stage_gates_v0_1");
+  });
+
+  it("resolves jurisdiction queries at the most specific registered tier", () => {
+    // A subdivision with its own pack wins over the nationwide floor.
+    const california = stageGateTemplateRegistry.findByJurisdiction({
+      country: "US",
+      subdivision: "CA",
+    });
+    expect(california.kind).toBe("matched");
+    if (california.kind === "matched") {
+      expect(california.entry.descriptor.templateId).toBe("ca_stage_gates_v0_1");
+    }
+
+    // A subdivision with no pack of its own is covered by the nationwide floor
+    // — a real match, not a fallback, because the floor is true there.
+    const texas = stageGateTemplateRegistry.findByJurisdiction({
+      country: "US",
+      subdivision: "TX",
+    });
+    expect(texas.kind).toBe("matched");
+    if (texas.kind === "matched") {
+      expect(texas.entry.descriptor.templateId).toBe("us_federal_aid_stage_gates_v0_1");
+    }
+
+    // Country-only: still the nationwide floor.
+    const countryOnly = stageGateTemplateRegistry.findByJurisdiction({ country: "US" });
+    expect(countryOnly.kind).toBe("matched");
+    if (countryOnly.kind === "matched") {
+      expect(countryOnly.entry.descriptor.templateId).toBe("us_federal_aid_stage_gates_v0_1");
+    }
+
+    // Another country: no template, stated as such — never a substitution.
+    expect(stageGateTemplateRegistry.findByJurisdiction({ country: "NZ" }).kind).toBe(
+      "no_template"
+    );
   });
 
   it("supports a registry with no default at all", () => {
@@ -120,5 +183,27 @@ describe("stage-gate template registry", () => {
     expect(() =>
       createStageGateTemplateRegistry([{ ...ohioRegistration, artifact: fixtureArtifact({ gates: [] }) }])
     ).toThrow("Stage-gate template oh_stage_gates_test missing gates");
+  });
+
+  it("rejects malformed self-description or scope disclosures rather than dropping them", () => {
+    // Both fields are optional — but a template that TRIED to carry an honesty
+    // disclosure and failed must not register looking as if it never had one.
+    expect(() =>
+      createStageGateTemplateRegistry([
+        { ...ohioRegistration, artifact: fixtureArtifact({ description: 42 }) },
+      ])
+    ).toThrow("Stage-gate template oh_stage_gates_test description must be a string");
+
+    expect(() =>
+      createStageGateTemplateRegistry([
+        { ...ohioRegistration, artifact: fixtureArtifact({ scope_notes: "one note, not a list" }) },
+      ])
+    ).toThrow("Stage-gate template oh_stage_gates_test scope_notes must be an array of strings");
+
+    expect(() =>
+      createStageGateTemplateRegistry([
+        { ...ohioRegistration, artifact: fixtureArtifact({ scope_notes: ["fine", 7] }) },
+      ])
+    ).toThrow("Stage-gate template oh_stage_gates_test scope_notes must be an array of strings");
   });
 });

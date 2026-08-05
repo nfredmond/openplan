@@ -46,6 +46,8 @@ import {
   loadProjectStageGateBoard,
   type StageGateDecisionQuerySupabaseLike,
 } from "@/lib/stage-gates/decision-queries";
+import { STAGE_GATE_BINDING_WORKSPACE_COLUMNS } from "@/lib/stage-gates/rebind";
+import { resolveBoundStageGateTemplate } from "@/lib/stage-gates/bound-template";
 import type { ProjectStageGateSummary } from "@/lib/stage-gates/summary";
 import {
   asEngagementCampaignSnapshot,
@@ -164,7 +166,11 @@ export default async function ReportDetailPage({ params }: RouteParams) {
       : Promise.resolve({ data: null, error: null }),
     supabase
       .from("workspaces")
-      .select("id, name, slug")
+      // The binding columns come along so the live gate board below can render
+      // under the template this workspace is BOUND to, not the registry
+      // default. `STAGE_GATE_BINDING_WORKSPACE_COLUMNS` is imported rather than
+      // retyped — retyping the projection is the known failure mode.
+      .select(`id, name, slug, ${STAGE_GATE_BINDING_WORKSPACE_COLUMNS}`)
       .eq("id", report.workspace_id)
       .maybeSingle(),
     supabase
@@ -222,12 +228,31 @@ export default async function ReportDetailPage({ params }: RouteParams) {
 
   const project = projectResult.data;
   const rtpCycle = rtpCycleResult.data;
-  const workspace = workspaceResult.data;
+  // Cast because the projection is now a template literal (the binding columns
+  // are interpolated from STAGE_GATE_BINDING_WORKSPACE_COLUMNS), which the
+  // client's string-parser cannot type — the repo convention is to cast query
+  // results deliberately (see CLAUDE.md on untyped Supabase clients).
+  const workspace = workspaceResult.data as { id: string; name: string | null; slug: string | null } | null;
   const sections = sectionsResult.data;
   const artifacts = artifactsResult.data;
   const rtpChapters = rtpChaptersResult.data;
   const rtpProjectLinks = rtpProjectLinksResult.data;
   const rtpCampaigns = rtpCampaignsResult.data;
+
+  // Which template the LIVE gate board renders under is a fact about the
+  // workspace row — the binding of record reconciled against the workspace's
+  // own geography — resolved here once from the widened read above. Threading
+  // it into the board loader is what keeps the drift comparison honest when
+  // more than one template is registered: built on the registry default
+  // instead, a differently-bound workspace's recorded decisions would match no
+  // gate and the drift row would report gates lost since generation.
+  //
+  // When the workspace read failed (already registered in `reads` above), or
+  // the stored template is not registered in this deployment, there is no
+  // honest template to render — the stage-gate check below reports itself
+  // uncovered rather than rendering default gates.
+  const { templateId: boundStageGateTemplateId, unavailableReason: stageGateBindingUnavailableReason } =
+    resolveBoundStageGateTemplate(workspace, workspaceResult.error);
 
   const projectFundingRows = await loadProjectFundingSourceRows(supabase, report.project_id);
   // The live funding board behind this project's posture. The loader keeps its
@@ -806,11 +831,14 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     // another project's verdict on this packet's drift row, and this packet is
     // a document an agency sends to a funder. `report.project_id` is null on an
     // RTP- or campaign-targeted report, which has no project board to compare
-    // against at all.
-    stageGateSnapshot && report.project_id
+    // against at all. The board renders under the workspace's BOUND template,
+    // resolved above; with no resolvable binding the loader is not called and
+    // the packet-freshness line names the uncovered check instead.
+    stageGateSnapshot && report.project_id && boundStageGateTemplateId
       ? loadProjectStageGateBoard(supabase as unknown as StageGateDecisionQuerySupabaseLike, {
           workspaceId: report.workspace_id,
           projectId: report.project_id,
+          templateId: boundStageGateTemplateId,
         })
       : Promise.resolve(null),
     projectRecordsSnapshot.some((item) => item.key === "deliverables")
@@ -945,14 +973,20 @@ export default async function ReportDetailPage({ params }: RouteParams) {
     });
   }
   const currentStageGateSummary: ProjectStageGateSummary | null = stageGateBoard?.summary ?? null;
-  // Set only when the live decision log FAILED to load, which is not the same
-  // as this report having no gate board to compare (`null` above). The drift
-  // check below withholds its verdict in that case and the packet-freshness
-  // line names the gap, so an outage cannot be read here as "nothing changed".
+  // Set only when the live board could not be CHECKED, which is not the same
+  // as this report having no gate board to compare (`null` above). Two ways to
+  // fail, one honest outcome: the workspace's template binding could not be
+  // resolved (so the loader was never called — rendering the registry default
+  // would compare the snapshot against another template's gate vocabulary), or
+  // the decision log itself failed to load. The drift check below withholds
+  // its verdict in either case and the packet-freshness line names the gap, so
+  // an outage cannot be read here as "nothing changed".
   const stageGateLiveReadFailure =
-    currentStageGateSummary && !currentStageGateSummary.decisionsRead.readable
-      ? currentStageGateSummary.decisionsRead.reason
-      : null;
+    stageGateSnapshot && report.project_id && stageGateBindingUnavailableReason
+      ? stageGateBindingUnavailableReason
+      : currentStageGateSummary && !currentStageGateSummary.decisionsRead.readable
+        ? currentStageGateSummary.decisionsRead.reason
+        : null;
   const currentProjectRecordsByKey = new Map<ProjectRecordSnapshotKey, CurrentProjectRecordEntry>([
     [
       "deliverables",
@@ -1230,7 +1264,7 @@ export default async function ReportDetailPage({ params }: RouteParams) {
               ? "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review."
               : "Do not treat this packet as verified against live sources yet.",
             stageGateLiveReadFailure
-              ? `The live stage-gate decision log could not be read (${stageGateLiveReadFailure}), so this check did not cover stage gates — that is an unchecked source, not a finding that gates changed.`
+              ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}), so this check did not cover stage gates — that is an unchecked source, not a finding that gates changed.`
               : null,
           ]
             .filter((value): value is string => Boolean(value))

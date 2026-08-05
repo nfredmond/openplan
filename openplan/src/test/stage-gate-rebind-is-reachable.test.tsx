@@ -189,21 +189,21 @@ function inSubdivision(subdivision: string) {
 }
 
 /**
- * A SECOND registered pack, built the way a second pack really arrives: a
+ * An ADDITIONAL registered pack, built the way a new pack really arrives: a
  * registration handed to the real registry factory, which validates the artifact
  * and rejects a jurisdiction mismatch. Its gates are derived from the shipped
- * California artifact — the first two dropped, one added — so the departing and
+ * default artifact — the first two dropped, one added — so the departing and
  * arriving gate lists this suite asserts on are real gate ids from a real
  * document, not names invented to match an assertion.
  */
 function twoTemplateRegistry() {
-  const california = stageGateTemplateRegistry.get(
+  const defaultPack = stageGateTemplateRegistry.get(
     stageGateTemplateRegistry.defaultTemplateId ?? ""
   );
-  if (!california) throw new Error("The built-in registry has no default template to derive from");
+  if (!defaultPack) throw new Error("The built-in registry has no default template to derive from");
 
-  const keptGates = california.document.gates.filter(
-    (gate) => !california.document.gate_order.slice(0, 2).includes(gate.gate_id)
+  const keptGates = defaultPack.document.gates.filter(
+    (gate) => !defaultPack.document.gate_order.slice(0, 2).includes(gate.gate_id)
   );
   const addedGate = {
     gate_id: "GX1_SECOND_PACK_ONLY",
@@ -261,10 +261,17 @@ beforeEach(() => {
 
 describe("a planner can reach the stage-gate template binding from the dashboard", () => {
   it("mounts the real panel, and its disclosure is the one describeStageGateBinding produces", async () => {
-    // A California workspace: the binding IS matched to its jurisdiction, so
-    // this is the non-alarming path and the panel must not cry wolf on it.
+    // A California workspace BOUND to the California pack: stored id and
+    // geography agree, so this is the non-alarming path and the panel must not
+    // cry wolf on it. The stored id is explicit here because the registry
+    // default is now the US federal-aid floor — a CA workspace still holding
+    // the default would (correctly) be told to rebind, which is the OTHER path.
+    const boundCaliforniaRow = signupWorkspaceRow({
+      ...inSubdivision("CA"),
+      stage_gate_template_id: "ca_stage_gates_v0_1",
+    });
     workspaceRowMock.mockReturnValue({
-      data: signupWorkspaceRow(inSubdivision("CA")),
+      data: boundCaliforniaRow,
       error: null,
     });
 
@@ -274,13 +281,22 @@ describe("a planner can reach the stage-gate template binding from the dashboard
 
     // Built by the real resolver over the same row the page read — so this
     // asserts the panel renders THE binding, not a plausible sentence.
-    const resolution = resolveWorkspaceStageGateBinding(signupWorkspaceRow(inSubdivision("CA")));
+    const resolution = resolveWorkspaceStageGateBinding(boundCaliforniaRow);
     if (resolution.kind !== "resolved") throw new Error("expected a resolved binding");
     const disclosure = describeStageGateBinding(resolution.binding);
 
     expect(within(panel).getByText(disclosure.headline)).toBeInTheDocument();
     expect(within(panel).getByText(disclosure.detail)).toBeInTheDocument();
     expect(resolution.binding.templateSelection).toBe("jurisdiction_matched");
+
+    // The other built-in pack — the US federal-aid floor — is offered as a
+    // rebind option WITH its own self-description, so a planner picking reads
+    // what the template says it is, not just its name.
+    const floor = stageGateTemplateRegistry.get("us_federal_aid_stage_gates_v0_1");
+    expect(floor?.descriptor.templateDescription).toBeTruthy();
+    expect(
+      within(panel).getByText(floor!.descriptor.templateDescription!)
+    ).toBeInTheDocument();
   });
 
   it("asks the database for the columns the binding is resolved from", async () => {
@@ -313,6 +329,16 @@ describe("a planner can reach the stage-gate template binding from the dashboard
     expect(disclosure.isJurisdictionAssumed).toBe(true);
     expect(within(panel).getByText(disclosure.headline)).toBeInTheDocument();
     expect(within(panel).getByText(disclosure.detail)).toBeInTheDocument();
+
+    // The bound template's own scope disclosures render with the binding. For
+    // the federal-aid floor these are the three honesty limits (state-manual
+    // overlay, FTA exclusion, NEPA-only), and they are asserted from the
+    // template's descriptor rather than retyped so the artifact stays the
+    // single source.
+    expect(resolution.binding.scopeNotes?.length ?? 0).toBeGreaterThanOrEqual(3);
+    for (const note of resolution.binding.scopeNotes ?? []) {
+      expect(within(panel).getByText(note)).toBeInTheDocument();
+    }
   });
 
   it("says the binding could not be READ, rather than answering from a failed query", async () => {
@@ -350,10 +376,11 @@ describe("a planner can reach the stage-gate template binding from the dashboard
     ).toBeInTheDocument();
   });
 
-  it("states plainly that there is nothing else to bind to when one pack is registered", async () => {
-    // TODAY'S TRUTH, asserted against the registry rather than a literal: one
-    // built-in pack means the picker has no alternative to offer, and an empty
-    // picker would be worse than a sentence saying why.
+  it("offers the other registered packs, or states plainly when there is nothing else to bind to", async () => {
+    // Asserted against the registry rather than a literal: with the CA pack and
+    // the US federal-aid floor both built in, an owner sees a real alternative;
+    // if the registry ever shrinks to one pack again, the panel must say there
+    // is nothing else rather than render an empty picker.
     await renderDashboard();
 
     const panel = screen.getByRole("region", { name: "Stage-gate template" });
@@ -394,12 +421,12 @@ describe("the rebind itself", () => {
     fireEvent.click(screen.getByRole("button", { name: /Review rebind/ }));
 
     // The two gates the second pack dropped are named, by the name the real
-    // California document gives them — the operator confirms against the list,
+    // default document gives them — the operator confirms against the list,
     // not against a promise.
-    const california = stageGateTemplateRegistry.get(
+    const defaultPack = stageGateTemplateRegistry.get(
       stageGateTemplateRegistry.defaultTemplateId ?? ""
     );
-    const departing = california!.document.gate_order.slice(0, 2);
+    const departing = defaultPack!.document.gate_order.slice(0, 2);
     expect(departing.length).toBe(2);
     for (const gateId of departing) {
       expect(screen.getByText(new RegExp(gateId))).toBeInTheDocument();
@@ -450,6 +477,31 @@ describe("the rebind itself", () => {
     expect(screen.getByText(/Reload the page/i)).toBeInTheDocument();
 
     vi.unstubAllGlobals();
+  });
+
+  it("shows the target template's scope disclosures in the review step, before the operator confirms", async () => {
+    // A California workspace reviewing a rebind to the US federal-aid floor,
+    // over the REAL built-in registry: the floor's three scope notes (state
+    // manual overlay, FTA exclusion, NEPA-only) are what the operator must read
+    // before binding to it, so they render inside the review card.
+    const choices = buildStageGateRebindChoices(
+      signupWorkspaceRow({ ...inSubdivision("CA"), stage_gate_template_id: "ca_stage_gates_v0_1" })
+    );
+    if (choices.kind !== "bound") throw new Error(`expected a bound workspace, got ${choices.kind}`);
+
+    const floorOption = choices.options.find(
+      (option) => option.templateId === "us_federal_aid_stage_gates_v0_1"
+    );
+    expect(floorOption?.scopeNotes?.length ?? 0).toBeGreaterThanOrEqual(3);
+
+    render(<WorkspaceStageGatePanel workspaceId={WORKSPACE_ID} canManage choices={choices} />);
+
+    fireEvent.click(screen.getByRole("radio", { name: /US Federal-Aid Delivery Floor/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Review rebind/ }));
+
+    for (const note of floorOption?.scopeNotes ?? []) {
+      expect(screen.getByText(note)).toBeInTheDocument();
+    }
   });
 
   it("refuses to guess what would change when the bound template is not registered here", async () => {

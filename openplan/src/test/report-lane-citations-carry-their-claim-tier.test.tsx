@@ -424,7 +424,7 @@ describe("report-lane run citations carry their claim tier", () => {
         },
         // Built by the REAL stage-gate builders, not described: a hand-written
         // snapshot proves the assertion, only a built one proves the packet.
-        stageGateSnapshot: buildProjectStageGateSnapshot(buildProjectStageGateSummary([])),
+        stageGateSnapshot: buildProjectStageGateSnapshot(buildProjectStageGateSummary([], { templateId: "ca_stage_gates_v0_1" })),
         modelingEvidence: [],
         citedModelRuns,
       };

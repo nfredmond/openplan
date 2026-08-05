@@ -26,6 +26,7 @@
  */
 
 import caStageGatesTemplate from "@/lib/stage-gates/templates/ca_stage_gates_v0.1.json";
+import usFederalAidStageGatesTemplate from "@/lib/stage-gates/templates/us_federal_aid_stage_gates_v0.1.json";
 
 /**
  * Where a template's rules come from, expressed so the core stays
@@ -97,6 +98,15 @@ export type StageGateTemplateDocument = {
   template_name: string;
   version: string;
   jurisdiction: string;
+  /** What this template is and where its rules come from, in the template's own words. */
+  description?: string;
+  /**
+   * Honesty disclosures the template makes about its own limits — what it does
+   * NOT cover (a state manual's additions, another funder's mechanics, a state
+   * environmental overlay). Authored inside the artifact, not at registration,
+   * because the limits are facts about the template's content.
+   */
+  scope_notes?: string[];
   gate_order: string[];
   gates: StageGateTemplateGate[];
 };
@@ -114,6 +124,10 @@ export type StageGateTemplateDescriptor = {
    */
   jurisdictionCode: string;
   jurisdiction: StageGateJurisdiction;
+  /** The artifact's own `description`, when it carries one. */
+  templateDescription?: string;
+  /** The artifact's own `scope_notes`, when it carries them. */
+  scopeNotes?: readonly string[];
   /**
    * True for the one template applied when nothing has told us which
    * jurisdiction a workspace operates in. See `INTERIM_DEFAULT_RATIONALE`.
@@ -212,11 +226,29 @@ function normalizeArtifact(artifact: unknown): StageGateTemplateDocument {
     throw new Error(`Stage-gate template ${templateId} missing gates`);
   }
 
+  // Both optional, but when present they must be well-formed: a template whose
+  // self-description or scope disclosures silently failed to load would render
+  // without exactly the honesty text it was authored to carry.
+  const description = raw.description;
+  if (description !== undefined && typeof description !== "string") {
+    throw new Error(`Stage-gate template ${templateId} description must be a string`);
+  }
+
+  const scopeNotes = raw.scope_notes;
+  if (
+    scopeNotes !== undefined &&
+    (!Array.isArray(scopeNotes) || scopeNotes.some((note) => typeof note !== "string"))
+  ) {
+    throw new Error(`Stage-gate template ${templateId} scope_notes must be an array of strings`);
+  }
+
   return {
     template_id: templateId,
     template_name: templateName,
     version,
     jurisdiction,
+    ...(typeof description === "string" ? { description } : {}),
+    ...(Array.isArray(scopeNotes) ? { scope_notes: scopeNotes as string[] } : {}),
     gate_order: gateOrder as string[],
     gates: gates as StageGateTemplateGate[],
   };
@@ -268,6 +300,10 @@ export function createStageGateTemplateRegistry(
       templateVersion: document.version,
       jurisdictionCode: document.jurisdiction,
       jurisdiction: registration.jurisdiction,
+      ...(document.description ? { templateDescription: document.description } : {}),
+      ...(document.scope_notes && document.scope_notes.length > 0
+        ? { scopeNotes: document.scope_notes }
+        : {}),
       isInterimDefault: Boolean(registration.isInterimDefault),
       ...(registration.lapmFormIdsStatus
         ? { lapmFormIdsStatus: registration.lapmFormIdsStatus }
@@ -344,12 +380,23 @@ export const BUILT_IN_STAGE_GATE_TEMPLATE_REGISTRATIONS: readonly StageGateTempl
   {
     artifact: caStageGatesTemplate,
     jurisdiction: { country: "US", subdivision: "CA", label: "California, United States" },
-    // First and (so far) only pack authored, so it carries the interim default
-    // for workspaces whose jurisdiction has no pack of its own. Not a statement
-    // that California is OpenPlan's home jurisdiction.
-    isInterimDefault: true,
+    // No longer the interim default: California workspaces reach this pack by
+    // subdivision match on their own home geography, and the nationwide
+    // federal-aid floor below carries the default for everyone else. This pack
+    // held the default only while it was the sole one authored.
     // Caltrans-specific, and declared here rather than on every binding.
     lapmFormIdsStatus: "deferred_to_v0_2",
+  },
+  {
+    artifact: usFederalAidStageGatesTemplate,
+    jurisdiction: { country: "US", label: "United States — federal-aid floor" },
+    // The nationwide floor carries the interim default: a workspace that has
+    // stated no jurisdiction is shown the gates that are true anywhere in the
+    // United States, not one state's manual. Workspaces born under the PREVIOUS
+    // database default are kept honest by KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS
+    // in template-loader.ts — the stored id alone cannot tell a choice from an
+    // assumption, so the loader reconciles rather than trusting it.
+    isInterimDefault: true,
   },
 ];
 

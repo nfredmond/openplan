@@ -6,6 +6,15 @@ import {
 
 const PROJECT_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 
+/**
+ * Every call names the template it builds on. The registry-default fallback is
+ * gone: with two templates registered it silently rendered the DEFAULT's gate
+ * vocabulary over a differently-bound workspace's decisions, which is why the
+ * gate ids below are pinned to the CA template rather than to "whatever the
+ * default is".
+ */
+const CA_TEMPLATE_ID = "ca_stage_gates_v0_1";
+
 describe("buildProjectStageGateSummary", () => {
   it("uses the latest decision per gate and exposes next/blocked workflow cues", () => {
     const summary = buildProjectStageGateSummary(
@@ -35,7 +44,7 @@ describe("buildProjectStageGateSummary", () => {
           project_id: PROJECT_ID,
         },
       ],
-      { projectId: PROJECT_ID }
+      { templateId: CA_TEMPLATE_ID, projectId: PROJECT_ID }
     );
 
     expect(summary.templateId).toBe("ca_stage_gates_v0_1");
@@ -58,11 +67,34 @@ describe("buildProjectStageGateSummary", () => {
     expect(gateEight?.evidencePreview[0]?.operatorControlTitle).toBe("Daily reports + progress payment records");
   });
 
-  it("builds the same board when the bound template is named explicitly", () => {
-    const implicit = buildProjectStageGateSummary([]);
-    const explicit = buildProjectStageGateSummary([], { templateId: "ca_stage_gates_v0_1" });
+  it("cannot be called without naming the bound template", () => {
+    // The registry-default fallback is DELETED, at the type level: omitting
+    // `templateId` (or the whole options object) no longer compiles. This is
+    // what makes "the caller resolved the workspace binding" structural rather
+    // than a convention — a caller that skipped the resolution has nothing to
+    // pass here. The closure is never invoked; the assertions are the two
+    // expect-error directives inside it, which fail the BUILD if the fallback returns.
+    const doesNotCompile = () => {
+      // @ts-expect-error templateId is required — there is no default-template fallback
+      buildProjectStageGateSummary([], { projectId: PROJECT_ID });
+      // @ts-expect-error the options object itself is required
+      buildProjectStageGateSummary([]);
+    };
+    expect(typeof doesNotCompile).toBe("function");
 
-    expect(explicit).toEqual(implicit);
+    // And an untyped caller that reaches the same omission at runtime gets the
+    // refusal, not a bare TypeError.
+    expect(() =>
+      buildProjectStageGateSummary([], { projectId: PROJECT_ID } as unknown as Parameters<
+        typeof buildProjectStageGateSummary
+      >[1])
+    ).toThrow(/Refusing to build a stage-gate board without a bound template id/);
+  });
+
+  it("refuses a blank template id rather than substituting any template", () => {
+    expect(() => buildProjectStageGateSummary([], { templateId: "   " })).toThrow(
+      /Refusing to build a stage-gate board without a bound template id/
+    );
   });
 
   it("refuses to render gates for a template it cannot resolve", () => {
@@ -74,7 +106,7 @@ describe("buildProjectStageGateSummary", () => {
   });
 
   it("marks untouched gates as not started", () => {
-    const summary = buildProjectStageGateSummary([]);
+    const summary = buildProjectStageGateSummary([], { templateId: CA_TEMPLATE_ID });
 
     expect(summary.passCount).toBe(0);
     expect(summary.holdCount).toBe(0);
@@ -84,7 +116,7 @@ describe("buildProjectStageGateSummary", () => {
   });
 
   it("says a gate with no decision has none, never that it failed", () => {
-    const gate = buildProjectStageGateSummary([]).gates[0];
+    const gate = buildProjectStageGateSummary([], { templateId: CA_TEMPLATE_ID }).gates[0];
 
     expect(gate.decisionLabel).toBe("No decision recorded");
     expect(gate.rationale).toContain("absence of a decision, not a failure to pass");
@@ -106,7 +138,7 @@ describe("an unreadable decision log does not read as an empty one", () => {
   const readFailure = { reason: 'column "project_id" does not exist' };
 
   it("marks every gate unknown rather than undecided", () => {
-    const summary = buildProjectStageGateSummary([], { decisionsUnavailable: readFailure });
+    const summary = buildProjectStageGateSummary([], { templateId: CA_TEMPLATE_ID, decisionsUnavailable: readFailure });
 
     expect(summary.decisionsRead).toEqual({ readable: false, reason: readFailure.reason });
     expect(summary.unknownCount).toBe(summary.totalGateCount);
@@ -118,7 +150,7 @@ describe("an unreadable decision log does not read as an empty one", () => {
   });
 
   it("refuses to claim nothing is on hold", () => {
-    const summary = buildProjectStageGateSummary([], { decisionsUnavailable: readFailure });
+    const summary = buildProjectStageGateSummary([], { templateId: CA_TEMPLATE_ID, decisionsUnavailable: readFailure });
 
     // `blockedGate: null` is what the board renders as "no gate on formal hold".
     // It is only honest next to `decisionsRead.readable === false`.
@@ -139,7 +171,7 @@ describe("an unreadable decision log does not read as an empty one", () => {
           project_id: PROJECT_ID,
         },
       ],
-      { decisionsUnavailable: readFailure }
+      { templateId: CA_TEMPLATE_ID, decisionsUnavailable: readFailure }
     );
 
     expect(summary.passCount).toBe(0);
@@ -150,7 +182,7 @@ describe("an unreadable decision log does not read as an empty one", () => {
     // A snapshot is durable evidence written into a report packet. Minting one
     // here would record a database error as a compliance posture, permanently,
     // with nothing downstream able to tell the difference.
-    const summary = buildProjectStageGateSummary([], { decisionsUnavailable: readFailure });
+    const summary = buildProjectStageGateSummary([], { templateId: CA_TEMPLATE_ID, decisionsUnavailable: readFailure });
 
     expect(() => buildProjectStageGateSnapshot(summary)).toThrow(
       /Refusing to snapshot stage gates/
@@ -158,7 +190,7 @@ describe("an unreadable decision log does not read as an empty one", () => {
   });
 
   it("still snapshots a log that was read and is simply empty", () => {
-    const snapshot = buildProjectStageGateSnapshot(buildProjectStageGateSummary([]));
+    const snapshot = buildProjectStageGateSnapshot(buildProjectStageGateSummary([], { templateId: CA_TEMPLATE_ID }));
 
     expect(snapshot.passCount).toBe(0);
     expect(snapshot.notStartedCount).toBeGreaterThan(0);
@@ -198,7 +230,7 @@ describe("a decision recorded on one project does not appear on another", () => 
   ];
 
   it("counts only the scoped project's decisions", () => {
-    const summary = buildProjectStageGateSummary(decisions, { projectId: projectA });
+    const summary = buildProjectStageGateSummary(decisions, { templateId: CA_TEMPLATE_ID, projectId: projectA });
 
     expect(summary.passCount).toBe(1);
     expect(summary.holdCount).toBe(0);
@@ -210,7 +242,7 @@ describe("a decision recorded on one project does not appear on another", () => 
     // "applies to all" is the defect the column was added to fix.
     const summary = buildProjectStageGateSummary(
       [{ ...decisions[0], project_id: null }],
-      { projectId: projectA }
+      { templateId: CA_TEMPLATE_ID, projectId: projectA }
     );
 
     expect(summary.passCount).toBe(0);
@@ -223,7 +255,7 @@ describe("a decision recorded on one project does not appear on another", () => 
     // behaviour, and it is what let a report packet assert a gate that passed
     // on a DIFFERENT project. An unscoped board is wrong in a way no reader can
     // see, so it is refused rather than produced.
-    expect(() => buildProjectStageGateSummary(decisions)).toThrow(
+    expect(() => buildProjectStageGateSummary(decisions, { templateId: CA_TEMPLATE_ID })).toThrow(
       /Refusing to build a stage-gate board from decisions that are not scoped to a project/
     );
   });
@@ -236,14 +268,14 @@ describe("a decision recorded on one project does not appear on another", () => 
     const rowsWithoutTheColumn = decisions.map(({ project_id: _ignored, ...rest }) => rest);
 
     expect(() =>
-      buildProjectStageGateSummary(rowsWithoutTheColumn, { projectId: projectA })
+      buildProjectStageGateSummary(rowsWithoutTheColumn, { templateId: CA_TEMPLATE_ID, projectId: projectA })
     ).toThrow(/the rows carry no `project_id` field/);
   });
 
   it("still builds a template-shaped board from an empty log with no project named", () => {
     // A log with nothing in it has nothing to misattribute, so the refusal does
     // not reach the surfaces that only want the gate shape.
-    const summary = buildProjectStageGateSummary([]);
+    const summary = buildProjectStageGateSummary([], { templateId: CA_TEMPLATE_ID });
 
     expect(summary.notStartedCount).toBe(summary.totalGateCount);
     expect(summary.decisionsRead).toEqual({ readable: true });

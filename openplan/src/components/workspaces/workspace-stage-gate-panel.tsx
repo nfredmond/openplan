@@ -208,6 +208,21 @@ export function WorkspaceStageGatePanel({
           {choices.disclosure.action ? (
             <p className="mt-1 text-sm text-muted-foreground">{choices.disclosure.action}</p>
           ) : null}
+          {choices.binding.templateDescription ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              {choices.binding.templateDescription}
+            </p>
+          ) : null}
+          {choices.binding.scopeNotes && choices.binding.scopeNotes.length > 0 ? (
+            // The template's own account of its limits. It is part of the
+            // binding, not fine print: a planner reading these gates needs to
+            // know what they deliberately do NOT cover.
+            <ul className="mt-2 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
+              {choices.binding.scopeNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          ) : null}
           <p className="mt-1 text-xs text-muted-foreground">
             {choices.currentGateCount} gate{choices.currentGateCount === 1 ? "" : "s"} in this
             template.
@@ -245,6 +260,19 @@ export function WorkspaceStageGatePanel({
             Rebind to {selected.templateName} ({selected.jurisdictionLabel}), version{" "}
             {selected.templateVersion}?
           </p>
+
+          {selected.templateDescription ? (
+            <p className="text-sm text-muted-foreground">{selected.templateDescription}</p>
+          ) : null}
+          {selected.scopeNotes && selected.scopeNotes.length > 0 ? (
+            // What the template being bound says it does NOT cover — shown at
+            // the moment of choosing, not discovered after.
+            <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+              {selected.scopeNotes.map((note) => (
+                <li key={note}>{note}</li>
+              ))}
+            </ul>
+          ) : null}
 
           {selected.gatesLeaving === null || selected.gatesArriving === null ? (
             <p className="text-sm text-muted-foreground">
@@ -321,6 +349,11 @@ export function WorkspaceStageGatePanel({
                   {option.isInterimDefault ? (
                     <span className="ml-1 text-xs text-muted-foreground">
                       (the interim default — applied when nothing has chosen)
+                    </span>
+                  ) : null}
+                  {option.templateDescription ? (
+                    <span className="mt-0.5 block text-xs text-muted-foreground">
+                      {option.templateDescription}
                     </span>
                   ) : null}
                 </span>

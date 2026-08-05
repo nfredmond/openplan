@@ -51,7 +51,10 @@ describe("POST /api/workspaces/bootstrap", () => {
       data: {
         id: "11111111-1111-4111-8111-111111111111",
         slug: "regional-planning-commission",
-        stage_gate_template_id: "ca_stage_gates_v0_1",
+        // What the column default (migration 20260805000001) stamps on a
+        // workspace born with no template named: the nationwide federal-aid
+        // floor, never one state's pack.
+        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
         stage_gate_template_version: "0.1.0",
       },
       error: null,
@@ -131,19 +134,22 @@ describe("POST /api/workspaces/bootstrap", () => {
         version: string;
         jurisdiction: string;
         bindingMode: string;
-        lapmFormIdsStatus: string;
+        lapmFormIdsStatus: string | null;
       };
       onboardingChecklist: string[];
     };
 
     expect(payload.workspaceId).toBeDefined();
     expect(payload.slug).toBe("regional-planning-commission");
+    // A bootstrap that names no template and has no geography binds the
+    // nationwide US federal-aid floor — not any one state's pack — and declares
+    // no Caltrans form-set status, because a nationwide template has none.
     expect(payload.stageGateTemplate).toMatchObject({
-      id: "ca_stage_gates_v0_1",
+      id: "us_federal_aid_stage_gates_v0_1",
       version: "0.1.0",
-      jurisdiction: "CA",
+      jurisdiction: "US",
       bindingMode: "workspace_bootstrap_interim",
-      lapmFormIdsStatus: "deferred_to_v0_2",
+      lapmFormIdsStatus: null,
     });
     expect(Array.isArray(payload.onboardingChecklist)).toBe(true);
     expect(payload.onboardingChecklist.length).toBeGreaterThan(0);
@@ -165,7 +171,7 @@ describe("POST /api/workspaces/bootstrap", () => {
 
     expect(workspaceInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
         stage_gate_template_version: "0.1.0",
         stage_gate_binding_source: "workspace_bootstrap_interim",
       })
@@ -191,6 +197,18 @@ describe("POST /api/workspaces/bootstrap", () => {
   });
 
   it("accepts explicit california stage-gate template selection", async () => {
+    // The insert result mock mirrors what the database would return for this
+    // request, so the response assertions read the same story the insert wrote.
+    workspaceSingleMock.mockResolvedValue({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        slug: "regional-planning-commission",
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        stage_gate_template_version: "0.1.0",
+      },
+      error: null,
+    });
+
     const response = await postBootstrap(
       jsonRequest({
         workspaceName: "Regional Planning Commission",
@@ -204,6 +222,15 @@ describe("POST /api/workspaces/bootstrap", () => {
         stage_gate_template_id: "ca_stage_gates_v0_1",
       })
     );
+
+    // Choosing California still carries California's declarations — the LAPM
+    // form-set status belongs to the CA pack, not to every binding.
+    const payload = (await response.json()) as {
+      stageGateTemplate: { id: string; lapmFormIdsStatus: string | null; templateSelection: string };
+    };
+    expect(payload.stageGateTemplate.id).toBe("ca_stage_gates_v0_1");
+    expect(payload.stageGateTemplate.lapmFormIdsStatus).toBe("deferred_to_v0_2");
+    expect(payload.stageGateTemplate.templateSelection).toBe("explicitly_requested");
   });
 
   it("returns 500 when db insert fails", async () => {

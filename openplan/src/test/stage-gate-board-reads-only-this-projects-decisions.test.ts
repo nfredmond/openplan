@@ -35,7 +35,11 @@ describe("the gate board reads only this project's decisions", () => {
   it("filters on both workspace and project", async () => {
     const { client, spies } = fakeClient({ data: [] });
 
-    await loadProjectStageGateBoard(client, { workspaceId: WORKSPACE_ID, projectId: PROJECT_ID });
+    await loadProjectStageGateBoard(client, {
+      workspaceId: WORKSPACE_ID,
+      projectId: PROJECT_ID,
+      templateId: "ca_stage_gates_v0_1",
+    });
 
     expect(spies.from).toHaveBeenCalledWith("stage_gate_decisions");
     expect(spies.select).toHaveBeenCalledWith(PROJECT_STAGE_GATE_DECISION_COLUMNS);
@@ -48,6 +52,24 @@ describe("the gate board reads only this project's decisions", () => {
     // Omitting the column would make every row fail the scope check and blank
     // the board — a silent loss rather than a visible error.
     expect(PROJECT_STAGE_GATE_DECISION_COLUMNS).toContain("project_id");
+  });
+
+  it("refuses to load a board when the caller could not resolve a binding", async () => {
+    // `null` is the caller saying "I resolved the binding and it did not
+    // resolve". There is no registry-default fallback to fall into any more:
+    // rendering another template's gates here is the defect this signature
+    // change deleted, so the loader refuses loudly instead.
+    const { client, spies } = fakeClient({ data: [] });
+
+    await expect(
+      loadProjectStageGateBoard(client, {
+        workspaceId: WORKSPACE_ID,
+        projectId: PROJECT_ID,
+        templateId: null,
+      })
+    ).rejects.toThrow(/Refusing to load a stage-gate board without a bound template/);
+    // And it never touched the database: there is no board to build.
+    expect(spies.from).not.toHaveBeenCalled();
   });
 
   it("builds the board on the template the workspace is BOUND to", async () => {
@@ -68,6 +90,7 @@ describe("the gate board reads only this project's decisions", () => {
     const board = await loadProjectStageGateBoard(client, {
       workspaceId: WORKSPACE_ID,
       projectId: PROJECT_ID,
+      templateId: "ca_stage_gates_v0_1",
     });
 
     expect(board.summary.decisionsRead).toEqual({
@@ -86,6 +109,7 @@ describe("the gate board reads only this project's decisions", () => {
     const board = await loadProjectStageGateBoard(client, {
       workspaceId: WORKSPACE_ID,
       projectId: PROJECT_ID,
+      templateId: "ca_stage_gates_v0_1",
     });
 
     expect(board.summary.decisionsRead).toEqual({ readable: true });
@@ -111,6 +135,7 @@ describe("the gate board reads only this project's decisions", () => {
     const board = await loadProjectStageGateBoard(client, {
       workspaceId: WORKSPACE_ID,
       projectId: PROJECT_ID,
+      templateId: "ca_stage_gates_v0_1",
     });
 
     expect(board.summary.passCount).toBe(1);

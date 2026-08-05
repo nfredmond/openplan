@@ -29,6 +29,8 @@ import {
   PROJECT_STAGE_GATE_DECISION_COLUMNS,
   type ProjectStageGateDecisionRow,
 } from "@/lib/stage-gates/decision-queries";
+import { STAGE_GATE_BINDING_WORKSPACE_COLUMNS } from "@/lib/stage-gates/rebind";
+import { resolveBoundStageGateTemplate } from "@/lib/stage-gates/bound-template";
 import {
   buildProjectStageGateSnapshot,
   buildProjectStageGateSummary,
@@ -1694,7 +1696,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
       fundingOpportunitiesResult,
       billingInvoicesResult,
     ] = await Promise.all([
-      supabase.from("workspaces").select("id, name").eq("id", report.workspace_id).maybeSingle(),
+      // The binding columns come along so the frozen gate snapshot below is
+      // built on the template this workspace is BOUND to, never the registry
+      // default — a packet must not print another jurisdiction's gate names as
+      // this agency's. The projection constant is imported, not retyped.
+      supabase
+        .from("workspaces")
+        .select(`id, name, ${STAGE_GATE_BINDING_WORKSPACE_COLUMNS}`)
+        .eq("id", report.workspace_id)
+        .maybeSingle(),
       supabase
         .from("projects")
         .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")
@@ -1866,6 +1876,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
     }
+
+    // Which stage-gate template the frozen snapshot is built on is a fact about
+    // the WORKSPACE row (the binding of record reconciled against the
+    // workspace's own geography). The workspace read is guaranteed good here —
+    // a failed one refused generation above — so an unresolved binding can only
+    // mean the workspace names a template this deployment does not register.
+    // Refuse rather than substitute: a packet that freezes another
+    // jurisdiction's gate names as this agency's cannot be corrected once sent.
+    const boundStageGateTemplate = resolveBoundStageGateTemplate(workspaceResult.data);
+    if (!boundStageGateTemplate.templateId) {
+      const unresolvedTemplateId = boundStageGateTemplate.unregisteredTemplateId;
+      audit.warn("report_stage_gate_template_unresolved", {
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        requestedTemplateId: unresolvedTemplateId,
+      });
+      return NextResponse.json(
+        {
+          error: unresolvedTemplateId
+            ? `This packet's stage-gate snapshot cannot be built: the workspace is bound to stage-gate template "${unresolvedTemplateId}", which this deployment does not register.`
+            : "This packet's stage-gate snapshot cannot be built: no stage-gate template is registered in this deployment.",
+          hint: "Rebind the workspace to a registered stage-gate template from the workspace dashboard, then generate again. Generating anyway would print another template's gate names as this agency's.",
+        },
+        { status: 409 }
+      );
+    }
+    const boundStageGateTemplateId = boundStageGateTemplate.templateId;
 
     const engagementCampaignId = extractEngagementCampaignId(sectionsResult.data ?? []);
     const engagementProvenance = extractEngagementHandoffProvenance(sectionsResult.data ?? []);
@@ -2160,7 +2197,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const stageGateSnapshot = buildProjectStageGateSnapshot(
       buildProjectStageGateSummary(
         (stageGateDecisionsResult.data ?? []) as ProjectStageGateDecisionRow[],
-        { projectId: report.project_id }
+        // The workspace's BOUND template, resolved above — never the registry
+        // default, which after a second template registered would freeze this
+        // workspace's decisions against the wrong gate vocabulary.
+        { templateId: boundStageGateTemplateId, projectId: report.project_id }
       )
     );
 
@@ -2291,7 +2331,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const html = buildReportHtml({
       report,
-      workspace: workspaceResult.data,
+      // Cast: the projection is a template literal (binding columns
+      // interpolated from STAGE_GATE_BINDING_WORKSPACE_COLUMNS), which the
+      // client's string-parser cannot type.
+      workspace: workspaceResult.data as { id: string; name: string } | null,
       project: projectResult.data,
       runs: linkedRuns,
       sections: sectionsResult.data ?? [],

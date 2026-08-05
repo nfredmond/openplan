@@ -382,3 +382,128 @@ describe("the run copilot over a failed baseline read", () => {
     expect(preview.facts[0]).toContain("could not read the baseline run");
   });
 });
+
+/**
+ * THE GATE BOARD RENDERS UNDER THE WORKSPACE'S BOUND TEMPLATE.
+ *
+ * `loadProjectContext` used to call the board loader with no template id and
+ * ride the registry-default fallback. With one registered template that was
+ * coincidentally right; with two, the copilot would speak another template's
+ * gate vocabulary over this workspace's recorded decisions. The context now
+ * reads the workspace binding row first and threads the resolved template —
+ * and when the binding cannot be established, the board is EXPLICITLY
+ * unreadable rather than rendered on the default.
+ */
+describe("the project copilot's gate board renders under the workspace's BOUND template", () => {
+  const CA_BOUND_WORKSPACE_ROW: TableResult = {
+    data: {
+      id: "workspace-1",
+      stage_gate_template_id: "ca_stage_gates_v0_1",
+      home_geography_source: "tigerweb",
+      home_country_code: "US",
+      home_subdivision_code: "CA",
+    },
+    error: null,
+  };
+
+  it("threads the stored binding, not the registry default", async () => {
+    const supabase = createSupabase({
+      workspace_members: MEMBERSHIP,
+      projects: PROJECT_ROW,
+      workspaces: CA_BOUND_WORKSPACE_ROW,
+    }).client;
+
+    const context = await loadAssistantContext(supabase, "user-1", PROJECT_TARGET);
+    if (!context || context.kind !== "project") throw new Error("Expected a project context");
+
+    expect(context.stageGateSummary.templateId).toBe("ca_stage_gates_v0_1");
+    expect(context.stageGateSummary.decisionsRead).toEqual({ readable: true });
+    // CA's nine gates, under the CA template's own ids — the fixture stores the
+    // CA binding precisely so this differs from a registry default that is not CA.
+    expect(context.stageGateSummary.totalGateCount).toBe(9);
+    expect(context.stageGateSummary.gates.map((gate) => gate.gateId)).toContain(
+      "G01_INITIATION_AUTHORIZATION"
+    );
+  });
+
+  it("gives a DIFFERENTLY-bound workspace ITS board, so no caller can hardcode one", async () => {
+    // The test above proves the copilot does not use the registry DEFAULT, but
+    // a caller that ignored the binding and passed the literal
+    // "ca_stage_gates_v0_1" would pass it too — verified by mutation, which
+    // left all 14 tests in this file green. Same fixture shape, federal-aid
+    // binding: the board must carry THAT template's id and its eight gates.
+    const supabase = createSupabase({
+      workspace_members: MEMBERSHIP,
+      projects: PROJECT_ROW,
+      workspaces: {
+        data: {
+          id: "workspace-1",
+          stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+          home_geography_source: "tigerweb",
+          home_country_code: "US",
+          home_subdivision_code: "TX",
+        },
+        error: null,
+      },
+    }).client;
+
+    const context = await loadAssistantContext(supabase, "user-1", PROJECT_TARGET);
+    if (!context || context.kind !== "project") throw new Error("Expected a project context");
+
+    expect(context.stageGateSummary.templateId).toBe("us_federal_aid_stage_gates_v0_1");
+    expect(context.stageGateSummary.totalGateCount).toBe(8);
+    expect(context.stageGateSummary.gates.map((gate) => gate.gateId)).toContain(
+      "programming-eligibility"
+    );
+  });
+
+  it("reports the board unreadable when the workspace binding row cannot be read", async () => {
+    const supabase = createSupabase({
+      workspace_members: MEMBERSHIP,
+      projects: PROJECT_ROW,
+      workspaces: { data: null, error: { message: "permission denied for table workspaces" } },
+    }).client;
+
+    const context = await loadAssistantContext(supabase, "user-1", PROJECT_TARGET);
+    if (!context || context.kind !== "project") throw new Error("Expected a project context");
+
+    // Every gate state is unknown: the copilot may not say "no stage gate is
+    // currently on hold" from a binding nothing established.
+    expect(context.stageGateSummary.decisionsRead.readable).toBe(false);
+    if (context.stageGateSummary.decisionsRead.readable) throw new Error("unreachable");
+    expect(context.stageGateSummary.decisionsRead.reason).toContain(
+      "the workspace row that names the bound stage-gate template could not be read"
+    );
+    expect(context.stageGateSummary.unknownCount).toBe(context.stageGateSummary.totalGateCount);
+    expect(context.stageGateSummary.blockedGate).toBeNull();
+    expect(context.unreadable?.map((failure) => failure.label)).toContain(
+      "the workspace row that names the bound stage-gate template"
+    );
+  });
+
+  it("reports the board unreadable when the stored template is not registered, rather than substituting one", async () => {
+    const supabase = createSupabase({
+      workspace_members: MEMBERSHIP,
+      projects: PROJECT_ROW,
+      workspaces: {
+        data: {
+          id: "workspace-1",
+          stage_gate_template_id: "not_a_registered_template_v9",
+          home_geography_source: "tigerweb",
+          home_country_code: "US",
+          home_subdivision_code: "CA",
+        },
+        error: null,
+      },
+    }).client;
+
+    const context = await loadAssistantContext(supabase, "user-1", PROJECT_TARGET);
+    if (!context || context.kind !== "project") throw new Error("Expected a project context");
+
+    expect(context.stageGateSummary.decisionsRead.readable).toBe(false);
+    if (context.stageGateSummary.decisionsRead.readable) throw new Error("unreachable");
+    expect(context.stageGateSummary.decisionsRead.reason).toContain("not_a_registered_template_v9");
+    expect(context.stageGateSummary.passCount).toBe(0);
+    expect(context.stageGateSummary.blockedGate).toBeNull();
+  });
+});

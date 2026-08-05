@@ -340,7 +340,7 @@ describe("an agent may not sign a PASS", () => {
  */
 describe("the quick link a planner clicks reaches the route it approved", () => {
   it("executes end to end with the hash the approvals endpoint would mint", async () => {
-    const summary = buildProjectStageGateSummary([], { projectId: PROJECT_ID });
+    const summary = buildProjectStageGateSummary([], { templateId: "ca_stage_gates_v0_1", projectId: PROJECT_ID });
     const link = buildAssistantOperations({
       kind: "project",
       workspace: { id: WORKSPACE_ID, name: "Test Workspace", role: "owner" },

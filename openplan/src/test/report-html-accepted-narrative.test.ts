@@ -74,7 +74,7 @@ function baseData(overrides?: Partial<ReportGenerationData>): ReportGenerationDa
       decisions: { count: 0, latestTitle: null, latestAt: null },
       meetings: { count: 0, latestTitle: null, latestAt: null },
     },
-    stageGateSnapshot: buildProjectStageGateSnapshot(buildProjectStageGateSummary([])),
+    stageGateSnapshot: buildProjectStageGateSnapshot(buildProjectStageGateSummary([], { templateId: "ca_stage_gates_v0_1" })),
     modelingEvidence: [],
     ...overrides,
   };

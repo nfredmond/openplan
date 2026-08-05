@@ -47,6 +47,33 @@ import {
 export const DEFAULT_STAGE_GATE_TEMPLATE_ID: string =
   stageGateTemplateRegistry.defaultTemplateId ?? "";
 
+/**
+ * Every template id the DATABASE COLUMN DEFAULT on
+ * `workspaces.stage_gate_template_id` has EVER stamped onto a row.
+ *
+ * WHY THIS IS A SET AND NOT "the registry's current default": the sign-up
+ * trigger inserts only (name, slug), so a workspace born under any of these
+ * defaults holds the id with nobody having chosen it — and at read time that
+ * stored id is byte-for-byte indistinguishable from one an agency deliberately
+ * picked. When the registry's default later changes (as it did on 2026-08-05,
+ * CA pack → US federal-aid floor), comparing the stored id against the CURRENT
+ * default would reclassify every workspace born under the OLD default as having
+ * EXPLICITLY REQUESTED another jurisdiction's gates. That is the exact
+ * assumed-presented-as-chosen substitution this module exists to prevent, so a
+ * stored id in this set that diverges from the geography answer is always
+ * labeled assumed (`interim_unconfigured_default`), never chosen.
+ *
+ * Grows append-only: every migration that sets a new column default adds its id
+ * here, and no id is ever removed while a database anywhere might still carry
+ * rows born under it.
+ */
+export const KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS: ReadonlySet<string> = new Set([
+  // Migration 20260305000009 — the column's original default.
+  "ca_stage_gates_v0_1",
+  // Migration 20260805000001 — the nationwide federal-aid floor.
+  "us_federal_aid_stage_gates_v0_1",
+]);
+
 export type StageGateBindingMode = "workspace_bootstrap_interim" | "project_create_v0_2";
 
 /**
@@ -70,10 +97,11 @@ export type StageGateTemplateSelection =
  *     authored your pack yet. Nothing the user can do; OpenPlan owes them one.
  *   - `ambiguous_jurisdiction_templates` → more than one pack covers you; pick.
  *   - `jurisdiction_template_not_bound` → a pack for your jurisdiction IS
- *     registered, but this workspace is still holding the interim default it was
- *     created with. Rebind it. (Reachable only once a second subdivision pack
- *     exists; see `resolveWorkspaceStageGateBinding`, which is where the stored
- *     binding and the workspace's geography are compared.)
+ *     registered, but this workspace is still holding a database default it was
+ *     created with (today's, or a superseded one — see
+ *     `KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS`). Rebind it. (See
+ *     `resolveWorkspaceStageGateBinding`, which is where the stored binding and
+ *     the workspace's geography are compared.)
  */
 export type StageGateInterimDefaultReason =
   | "no_workspace_jurisdiction"
@@ -105,6 +133,14 @@ export type StageGateTemplateBinding = {
    * agencies nowhere near California.
    */
   lapmFormIdsStatus: string | null;
+  /** The template's own description of itself, when the artifact carries one. */
+  templateDescription?: string;
+  /**
+   * The template's own scope disclosures — what it does NOT cover — when the
+   * artifact carries them. Surfaces that let a planner pick a template should
+   * render these; they are the template being honest about its limits.
+   */
+  scopeNotes?: readonly string[];
 };
 
 /**
@@ -223,12 +259,15 @@ export function resolveStageGateTemplateForWorkspace(
  * before it shows anyone a gate name.
  *
  * WHY THE RECONCILIATION EXISTS. `workspaces.stage_gate_template_id` carries a
- * DATABASE DEFAULT (migration 20260305000009) and the sign-up trigger inserts
- * only (name, slug), so a workspace in any jurisdiction is born holding the
- * interim default's id — and at read time that stored id is indistinguishable
- * from one an agency deliberately chose. Reading it as a choice would let the
- * product present assumed gates as selected ones, which is the exact
- * substitution `template-registry.ts` exists to prevent.
+ * DATABASE DEFAULT (migration 20260305000009, re-pointed by 20260805000001) and
+ * the sign-up trigger inserts only (name, slug), so a workspace in any
+ * jurisdiction is born holding whichever default was current at its creation —
+ * and at read time that stored id is indistinguishable from one an agency
+ * deliberately chose. Reading it as a choice would let the product present
+ * assumed gates as selected ones, which is the exact substitution
+ * `template-registry.ts` exists to prevent. The set of ids this applies to is
+ * `KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS`, because rows born under a SUPERSEDED
+ * default are exactly as unchosen as rows born under the current one.
  *
  * So responsibility is split: the stored id decides WHICH template (it is the
  * binding of record), and the workspace's home geography decides whether that
@@ -279,17 +318,24 @@ export function resolveWorkspaceStageGateBinding(
     resolveJurisdiction(parseWorkspaceHomeGeography(workspaceRow))
   );
 
-  // Divergence, and only two shapes reach here. Either the row still holds the
-  // column's database default while a pack for its jurisdiction exists — assumed,
-  // and fixable by the planner — or it holds some other registered template,
-  // which nothing but a deliberate write could have put there.
-  if (persistedTemplateId === registry.defaultTemplateId) {
+  // Divergence, and only two shapes reach here. Either the row still holds an
+  // id a database default stamped on it — assumed, and fixable by the planner —
+  // or it holds some other registered template, which nothing but a deliberate
+  // write could have put there.
+  //
+  // MEMBERSHIP, NOT EQUALITY WITH THE CURRENT DEFAULT. The stored id is
+  // compared against every id the column default has EVER been
+  // (`KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS`): a workspace born before the
+  // default changed diverges from today's default through no act of its own,
+  // and calling that divergence "explicitly requested" would present gates
+  // nobody chose as a deliberate selection.
+  if (KNOWN_DATABASE_DEFAULT_TEMPLATE_IDS.has(persistedTemplateId)) {
     return {
       kind: "resolved",
       binding: toBinding(entry.descriptor, {
         bindingMode,
         templateSelection: "interim_unconfigured_default",
-        interimDefaultReason: "jurisdiction_template_not_bound",
+        interimDefaultReason: divergenceInterimReason(registry, geographyResolution, jurisdiction),
         workspaceJurisdiction: jurisdiction,
       }),
     };
@@ -304,6 +350,45 @@ export function resolveWorkspaceStageGateBinding(
       workspaceJurisdiction: jurisdiction,
     }),
   };
+}
+
+/**
+ * Which reason honestly describes an ASSUMED binding whose stored id diverges
+ * from the geography answer, derived from what the workspace's own geography
+ * could establish:
+ *
+ *   - geography matched a registered pack → `jurisdiction_template_not_bound`
+ *     (a pack for this workspace exists; the row just still holds a database
+ *     default — rebinding is the fix);
+ *   - geography itself resolved to an interim default → that resolution's OWN
+ *     reason is reused (`no_workspace_jurisdiction`,
+ *     `no_template_for_jurisdiction`, `ambiguous_jurisdiction_templates`),
+ *     because the divergence adds nothing the planner can act on beyond what
+ *     the geography already could not answer.
+ *
+ * The fallback re-derives from the registry directly, for the one shape the
+ * resolution cannot carry a reason through: an injected registry that declares
+ * no interim default, where the geography answer is `no_default_template`.
+ */
+function divergenceInterimReason(
+  registry: StageGateTemplateRegistry,
+  geographyResolution: StageGateTemplateResolution,
+  jurisdiction: StageGateJurisdictionQuery | null
+): StageGateInterimDefaultReason {
+  if (geographyResolution.kind === "resolved") {
+    if (geographyResolution.binding.templateSelection === "jurisdiction_matched") {
+      return "jurisdiction_template_not_bound";
+    }
+    if (geographyResolution.binding.interimDefaultReason) {
+      return geographyResolution.binding.interimDefaultReason;
+    }
+  }
+
+  if (!jurisdiction) return "no_workspace_jurisdiction";
+  const match = registry.findByJurisdiction(jurisdiction);
+  if (match.kind === "matched") return "jurisdiction_template_not_bound";
+  if (match.kind === "ambiguous") return "ambiguous_jurisdiction_templates";
+  return "no_template_for_jurisdiction";
 }
 
 function readPersistedTemplateId(workspaceRow: unknown): string | null {
@@ -500,5 +585,11 @@ function toBinding(
     interimDefaultReason: provenance.interimDefaultReason,
     workspaceJurisdiction: provenance.workspaceJurisdiction,
     lapmFormIdsStatus: descriptor.lapmFormIdsStatus ?? null,
+    ...(descriptor.templateDescription
+      ? { templateDescription: descriptor.templateDescription }
+      : {}),
+    ...(descriptor.scopeNotes && descriptor.scopeNotes.length > 0
+      ? { scopeNotes: descriptor.scopeNotes }
+      : {}),
   };
 }

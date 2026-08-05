@@ -1,6 +1,5 @@
 import { getOperatorControlProfileByEvidenceId } from "@/lib/stage-gates/operator-controls";
 import { stageGateTemplateRegistry } from "@/lib/stage-gates/template-registry";
-import { DEFAULT_STAGE_GATE_TEMPLATE_ID } from "@/lib/stage-gates/template-loader";
 import type {
   StageGateTemplateEvidence,
   StageGateTemplateGate,
@@ -172,11 +171,19 @@ const DECISION_LABELS: Record<StageGateWorkflowState, string> = {
 
 export type ProjectStageGateSummaryOptions = {
   /**
-   * The template the project is bound to. Omitted means "whatever the registry's
-   * interim default is" — the same template every existing workspace is bound
-   * to, which is why omitting it stays the current behaviour.
+   * The template the project is bound to. REQUIRED — there is no fallback.
+   *
+   * There used to be one: an omitted id silently built the board on the
+   * registry's default template, and three of the four real callers relied on
+   * it. With one registered template that was coincidentally right; with two,
+   * every one of them would render the DEFAULT's gate vocabulary instead of the
+   * workspace's BOUND template — a CA workspace's recorded decisions would
+   * match no gate and a funder-facing packet would claim its gates undecided.
+   * The caller must resolve the workspace's binding
+   * (`resolveWorkspaceStageGateBinding`) and state the answer here; this
+   * builder does not guess.
    */
-  templateId?: string;
+  templateId: string;
   /**
    * Which project this board is about. REQUIRED whenever any decision is
    * supplied — see the refusal in `buildProjectStageGateSummary`.
@@ -218,11 +225,24 @@ export type ProjectStageGateSummaryOptions = {
  */
 export function buildProjectStageGateSummary(
   decisions: StageGateDecisionRow[] | null | undefined,
-  options?: ProjectStageGateSummaryOptions
+  options: ProjectStageGateSummaryOptions
 ): ProjectStageGateSummary {
-  const templateId = options?.templateId?.trim() || DEFAULT_STAGE_GATE_TEMPLATE_ID;
+  // Runtime-defensive on top of the required type: an untyped caller passing
+  // `undefined` gets the refusal below, not a bare TypeError. It must NOT fall
+  // back to the registry default here — an earlier draft of this line did, and
+  // that is the very substitution the required parameter exists to end: it
+  // would leave every JavaScript caller, and every place the untyped Supabase
+  // seam erases the type, silently building the board on whichever template
+  // happens to be the default.
+  const templateId = typeof options?.templateId === "string" ? options.templateId.trim() : "";
   if (!templateId) {
-    throw new Error("No stage-gate template is registered");
+    // A blank id is a caller that did not resolve the binding, not a request
+    // for "whichever template". Substituting the registry default here is how
+    // one jurisdiction's gates get rendered under another's name.
+    throw new Error(
+      "Refusing to build a stage-gate board without a bound template id: resolve the workspace's " +
+        "binding (resolveWorkspaceStageGateBinding) and pass its templateId."
+    );
   }
 
   const entry = stageGateTemplateRegistry.get(templateId);
@@ -231,8 +251,8 @@ export function buildProjectStageGateSummary(
   }
   const template = entry.document;
 
-  const decisionsUnavailable = options?.decisionsUnavailable ?? null;
-  const scopedProjectId = options?.projectId?.trim() || null;
+  const decisionsUnavailable = options.decisionsUnavailable ?? null;
+  const scopedProjectId = options.projectId?.trim() || null;
   const readDecisions = decisionsUnavailable ? [] : (decisions ?? []);
 
   // A gate verdict is a judgement about ONE project, and every surface that

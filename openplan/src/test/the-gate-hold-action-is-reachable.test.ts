@@ -36,6 +36,7 @@ function summaryFor(
   options?: { decisionsUnavailable?: { reason: string } }
 ): ProjectStageGateSummary {
   return buildProjectStageGateSummary(decisions, {
+    templateId: "ca_stage_gates_v0_1",
     projectId: PROJECT_ID,
     decisionsUnavailable: options?.decisionsUnavailable ?? null,
   });

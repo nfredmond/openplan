@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { ASSISTANT_ACTIVITY_SELECT } from "@/app/api/assistant-activity/summary";
+import { STAGE_GATE_BINDING_WORKSPACE_COLUMNS } from "@/lib/stage-gates/rebind";
 
 /**
  * PROJECTION STRINGS, ASSERTED AS STRINGS — the Stage B closeout of a defect
@@ -159,4 +160,74 @@ describe("the assistant-activity ledger asks for the authorship it displays", ()
       expect(ASSISTANT_ACTIVITY_SELECT, `assistant-activity select lost core column "${column}"`).toContain(column);
     }
   });
+});
+
+describe("the stage-gate binding readers ask for the columns the binding resolves from", () => {
+  /**
+   * Three surfaces resolve a workspace's stage-gate binding before rendering a
+   * gate board: the report detail page (live drift side), the packet generator
+   * (the frozen snapshot), and the assistant's project context. Each widened
+   * its `workspaces` select by interpolating STAGE_GATE_BINDING_WORKSPACE_COLUMNS
+   * — never by retyping it. These assertions re-run that interpolation (the
+   * same derivation-proof shape as the funding-awards block above) and then
+   * check the two columns that silently change the answer when lost:
+   * `stage_gate_template_id` (the binding of record — without it a deliberate
+   * binding reads as never chosen) and `home_subdivision_code` (without it a CA
+   * workspace looks like a country-level US one and matches the wrong pack).
+   */
+  const BINDING_READERS = [
+    "src/app/(app)/reports/[reportId]/page.tsx",
+    "src/app/api/reports/[reportId]/generate/route.ts",
+    "src/lib/assistant/context.ts",
+  ];
+
+  function resolvedWorkspacesSelects(relativePath: string): string[] {
+    const source = sourceOf(relativePath);
+    const selects: string[] = [];
+    for (const match of source.matchAll(/\.from\("workspaces"\)/g)) {
+      const selectAt = source.indexOf(".select(", match.index ?? 0);
+      if (selectAt < 0) continue;
+      let depth = 1;
+      let end = selectAt + ".select(".length;
+      while (end < source.length && depth > 0) {
+        if (source[end] === "(") depth += 1;
+        else if (source[end] === ")") depth -= 1;
+        end += 1;
+      }
+      selects.push(
+        source
+          .slice(selectAt + ".select(".length, end - 1)
+          .replace(/[`"']/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+          // Both spellings the sources use: interpolated into a template
+          // literal, or passed as the bare identifier.
+          .replace(
+            /\$\{STAGE_GATE_BINDING_WORKSPACE_COLUMNS\}|STAGE_GATE_BINDING_WORKSPACE_COLUMNS/,
+            STAGE_GATE_BINDING_WORKSPACE_COLUMNS
+          )
+      );
+    }
+    return selects;
+  }
+
+  it("the shared projection constant itself still carries the two treacherous columns", () => {
+    expect(STAGE_GATE_BINDING_WORKSPACE_COLUMNS).toContain("stage_gate_template_id");
+    expect(STAGE_GATE_BINDING_WORKSPACE_COLUMNS).toContain("home_subdivision_code");
+  });
+
+  for (const reader of BINDING_READERS) {
+    it(`${reader} selects the binding columns on its workspaces read`, () => {
+      const selects = resolvedWorkspacesSelects(reader);
+      expect(selects.length, `no .from("workspaces").select(…) found in ${reader}`).toBeGreaterThan(0);
+      const carriesBinding = selects.filter(
+        (projection) =>
+          projection.includes("stage_gate_template_id") && projection.includes("home_subdivision_code")
+      );
+      expect(
+        carriesBinding.length,
+        `${reader}: no workspaces select carries stage_gate_template_id + home_subdivision_code — the binding cannot be resolved from what this file reads`
+      ).toBeGreaterThan(0);
+    });
+  }
 });

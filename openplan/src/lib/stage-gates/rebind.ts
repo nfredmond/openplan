@@ -79,6 +79,14 @@ export type StageGateRebindOption = {
   templateName: string;
   templateVersion: string;
   jurisdictionLabel: string;
+  /** The template's own description of itself, when the artifact carries one. */
+  templateDescription?: string;
+  /**
+   * The template's own scope disclosures — what it does NOT cover — when the
+   * artifact carries them. Rendered wherever a planner picks, because the
+   * limits are part of what is being picked.
+   */
+  scopeNotes?: readonly string[];
   /** The template applied when nothing has chosen one. Shown, never hidden. */
   isInterimDefault: boolean;
   /**
@@ -258,6 +266,12 @@ export function buildStageGateRebindChoices(
         templateName: descriptor.templateName,
         templateVersion: descriptor.templateVersion,
         jurisdictionLabel: descriptor.jurisdiction.label,
+        ...(descriptor.templateDescription
+          ? { templateDescription: descriptor.templateDescription }
+          : {}),
+        ...(descriptor.scopeNotes && descriptor.scopeNotes.length > 0
+          ? { scopeNotes: descriptor.scopeNotes }
+          : {}),
         isInterimDefault: descriptor.isInterimDefault,
         coversWorkspaceJurisdiction: coveringIds.has(descriptor.templateId),
         gatesLeaving: difference(currentGates, targetGates),

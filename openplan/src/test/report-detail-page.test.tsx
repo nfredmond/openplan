@@ -20,7 +20,7 @@ const projectSelectMock = vi.fn(() => ({ eq: projectEqMock }));
 
 const workspaceMaybeSingleMock = vi.fn();
 const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
-const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
+const workspaceSelectMock = vi.fn((_columns: string) => ({ eq: workspaceEqMock }));
 
 const sectionsOrderMock = vi.fn();
 const sectionsEqMock = vi.fn(() => ({ order: sectionsOrderMock }));
@@ -385,6 +385,14 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
         name: "OpenPlan QA",
         plan: "starter",
         slug: "openplan-qa",
+        // Bound EXPLICITLY to the CA template, with CA geography, so the live
+        // drift board must render CA's gate vocabulary even when the
+        // registry's interim default is a DIFFERENT template. The
+        // bound-not-default wiring test below leans on this fixture.
+        stage_gate_template_id: "ca_stage_gates_v0_1",
+        home_geography_source: "tigerweb",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
       },
       error: null,
     });
@@ -1123,11 +1131,150 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     // And the gap is named, with the database's own reason, so the reader knows
     // which check did not run.
     expect(
-      screen.getAllByText(/live stage-gate decision log could not be read/i).length
+      screen.getAllByText(/live stage-gate board could not be checked/i).length
     ).toBeGreaterThan(0);
     expect(
       screen.getAllByText(/permission denied for table "stage_gate_decisions"/i).length
     ).toBeGreaterThan(0);
+  });
+
+  it("builds the live drift board on the template the workspace is BOUND to, not the registry default", async () => {
+    // The fixture workspace stores ca_stage_gates_v0_1 with CA geography. The
+    // live decisions staged here mirror the frozen snapshot ON CA GATE IDS, so
+    // under the bound template the drift row reports "still match" — while a
+    // board built on any OTHER registered template would drop both decisions
+    // (its gate ids match neither) and report gates lost since generation.
+    stageGateLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "gate-decision-1",
+          project_id: "project-1",
+          gate_id: "G01_INITIATION_AUTHORIZATION",
+          decision: "PASS",
+          rationale: "Charter approved.",
+          decided_at: "2026-03-28T16:00:00.000Z",
+          missing_artifacts: [],
+        },
+        {
+          id: "gate-decision-2",
+          project_id: "project-1",
+          gate_id: "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+          decision: "HOLD",
+          rationale: "Civil rights plan is still missing.",
+          decided_at: "2026-03-28T18:12:00.000Z",
+          missing_artifacts: ["G02_E03"],
+        },
+      ],
+      error: null,
+    });
+
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+    // The workspaces read carried the binding columns (import-derived, never
+    // retyped) — without them the page could not resolve the binding at all.
+    expect(workspaceSelectMock.mock.calls[0]?.[0]).toContain("stage_gate_template_id");
+    expect(workspaceSelectMock.mock.calls[0]?.[0]).toContain("home_subdivision_code");
+    expect(
+      screen.getByText(/Review counts and next steps still match the saved report snapshot/i)
+    ).toBeInTheDocument();
+  });
+
+  it("renders a DIFFERENTLY-bound workspace's board under ITS template, so no caller can hardcode one", async () => {
+    // The sibling test above proves the page does not use the registry
+    // DEFAULT. On its own that is not enough: a caller that ignored the
+    // resolved binding entirely and passed the literal "ca_stage_gates_v0_1"
+    // would satisfy it too — verified by mutation, which left all 22 tests in
+    // this file green. This case is the other half of the pincer. Same live
+    // decisions on CA gate ids, but a workspace bound to the federal-aid
+    // template: its gate_order contains none of those ids, so the board drops
+    // both decisions and the drift row must STOP reporting a match. Only a
+    // caller that actually threads each workspace's own binding can satisfy
+    // both tests at once.
+    workspaceMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "workspace-1",
+        name: "OpenPlan QA",
+        plan: "starter",
+        slug: "openplan-qa",
+        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+        home_geography_source: "tigerweb",
+        home_country_code: "US",
+        home_subdivision_code: "TX",
+      },
+      error: null,
+    });
+    stageGateLimitMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "gate-decision-1",
+          project_id: "project-1",
+          gate_id: "G01_INITIATION_AUTHORIZATION",
+          decision: "PASS",
+          rationale: "Charter approved.",
+          decided_at: "2026-03-28T16:00:00.000Z",
+          missing_artifacts: [],
+        },
+        {
+          id: "gate-decision-2",
+          project_id: "project-1",
+          gate_id: "G02_AGREEMENTS_PROCUREMENT_CIVIL_RIGHTS",
+          decision: "HOLD",
+          rationale: "Civil rights plan is still missing.",
+          decided_at: "2026-03-28T18:12:00.000Z",
+          missing_artifacts: ["G02_E03"],
+        },
+      ],
+      error: null,
+    });
+
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+    expect(
+      screen.queryByText(/Review counts and next steps still match the saved report snapshot/i)
+    ).not.toBeInTheDocument();
+  });
+
+  it("reports the stage-gate check uncovered when the workspace binding cannot be read, instead of rendering default gates", async () => {
+    workspaceMaybeSingleMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "permission denied for table workspaces" },
+    });
+
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+    // No confident verdict in either direction...
+    expect(screen.queryByText(/Review counts and next steps still match/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/No live source drift is currently visible/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Snapshot 1 pass/i)).not.toBeInTheDocument();
+    // ...and the gap is named: the BINDING row is what failed, not the log.
+    expect(screen.getAllByText(/live stage-gate board could not be checked/i).length).toBeGreaterThan(0);
+    expect(
+      screen.getAllByText(/workspace row that names the bound stage-gate template could not be read/i)
+        .length
+    ).toBeGreaterThan(0);
+  });
+
+  it("refuses to render default gates when the workspace names a template this deployment does not register", async () => {
+    workspaceMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "workspace-1",
+        name: "OpenPlan QA",
+        slug: "openplan-qa",
+        stage_gate_template_id: "not_a_registered_template_v9",
+        home_geography_source: "tigerweb",
+        home_country_code: "US",
+        home_subdivision_code: "CA",
+      },
+      error: null,
+    });
+
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+
+    // Substituting any registered template would compare the packet's frozen
+    // snapshot against a gate vocabulary nobody bound this workspace to.
+    expect(screen.queryByText(/Review counts and next steps still match/i)).not.toBeInTheDocument();
+    expect(screen.getAllByText(/live stage-gate board could not be checked/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/not_a_registered_template_v9/).length).toBeGreaterThan(0);
   });
 
   /**

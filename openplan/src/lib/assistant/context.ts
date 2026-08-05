@@ -4,7 +4,13 @@ import {
   loadProjectStageGateBoard,
   type StageGateDecisionQuerySupabaseLike,
 } from "@/lib/stage-gates/decision-queries";
-import type { ProjectStageGateSummary } from "@/lib/stage-gates/summary";
+import { STAGE_GATE_BINDING_WORKSPACE_COLUMNS } from "@/lib/stage-gates/rebind";
+import { resolveBoundStageGateTemplate } from "@/lib/stage-gates/bound-template";
+import { stageGateTemplateRegistry } from "@/lib/stage-gates/template-registry";
+import {
+  buildProjectStageGateSummary,
+  type ProjectStageGateSummary,
+} from "@/lib/stage-gates/summary";
 import { buildModelWorkspaceSummary } from "@/lib/models/catalog";
 import { extractModelLaunchTemplate } from "@/lib/models/run-launch";
 import {
@@ -133,6 +139,7 @@ export const ASSISTANT_READ_SUBJECTS = {
   linkedRtpCycle: "the linked RTP cycle",
   linkedEngagementCampaign: "the linked engagement campaign",
   baselineRun: "the baseline run",
+  stageGateBinding: "the workspace row that names the bound stage-gate template",
 } as const;
 
 /**
@@ -1077,6 +1084,25 @@ async function loadProjectContext(
     return null;
   }
 
+  // The gate board renders under the template this workspace is BOUND to. The
+  // binding lives on the workspace row (the stored template id reconciled
+  // against the workspace's own geography), so the row is read first, with the
+  // shared projection constant, and resolved through the same seam every other
+  // surface uses — the board loader does not guess and has no registry-default
+  // fallback. When the binding cannot be established (the row is unreadable,
+  // or it names a template this deployment does not register) the board is
+  // built as EXPLICITLY UNREADABLE below — every gate state unknown, with the
+  // reason — because the copilot restates this board as claims about the
+  // planner's own project ("no stage gate is currently on hold").
+  const workspaceBindingResult = await supabase
+    .from("workspaces")
+    .select(STAGE_GATE_BINDING_WORKSPACE_COLUMNS)
+    .eq("id", project.workspace_id)
+    .maybeSingle();
+  reads.check(ASSISTANT_READ_SUBJECTS.stageGateBinding, workspaceBindingResult);
+  const { templateId: boundStageGateTemplateId, unavailableReason: stageGateBindingUnavailableReason } =
+    resolveBoundStageGateTemplate(workspaceBindingResult.data, workspaceBindingResult.error);
+
   const [
     deliverablesResult,
     risksResult,
@@ -1102,11 +1128,16 @@ async function loadProjectContext(
     // restates this board as a claim about THIS project — "no stage gate is
     // currently on hold" — and the loader is where the two rules that makes
     // honest live: the read is scoped to the project, and a read that FAILED is
-    // reported as unreadable instead of as an empty log.
-    loadProjectStageGateBoard(supabase as unknown as StageGateDecisionQuerySupabaseLike, {
-      workspaceId: project.workspace_id,
-      projectId: project.id,
-    }),
+    // reported as unreadable instead of as an empty log. With no resolvable
+    // binding the loader is not called at all; the unreadable board is built
+    // after this fan-out instead.
+    boundStageGateTemplateId
+      ? loadProjectStageGateBoard(supabase as unknown as StageGateDecisionQuerySupabaseLike, {
+          workspaceId: project.workspace_id,
+          projectId: project.id,
+          templateId: boundStageGateTemplateId,
+        })
+      : Promise.resolve(null),
     supabase
       .from("runs")
       .select("id, title, created_at, summary_text")
@@ -1479,7 +1510,22 @@ async function loadProjectContext(
           }
         : null,
     },
-    stageGateSummary: stageGateBoard.summary,
+    // The board the loader built under the BOUND template — or, when the
+    // binding could not be established, a board that is explicitly unreadable:
+    // every gate state unknown, with the reason, on the registry default's
+    // gate SHAPE only. That shape asserts nothing (no state, no decision); the
+    // alternative — rendering the default's gates as this workspace's with
+    // confident states — is the substitution this whole seam exists to refuse.
+    stageGateSummary:
+      stageGateBoard?.summary ??
+      buildProjectStageGateSummary([], {
+        templateId: stageGateTemplateRegistry.defaultTemplateId ?? "",
+        decisionsUnavailable: {
+          reason:
+            stageGateBindingUnavailableReason ??
+            "the workspace's stage-gate template binding could not be established",
+        },
+      }),
     linkedDatasets,
     recentRuns: ((runsResult.data ?? []) as Array<{
       id: string;

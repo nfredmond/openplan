@@ -1,0 +1,219 @@
+{
+  "template_id": "us_federal_aid_stage_gates_v0_1",
+  "template_name": "US Federal-Aid Delivery Floor",
+  "version": "0.1.0",
+  "jurisdiction": "US",
+  "effective_date": "2026-08-05",
+  "description": "The FHWA local-agency federal-aid lifecycle — the floor that is true anywhere in the United States because it comes from 2 CFR 200 (Uniform Guidance), 23 CFR (federal-aid highways), NEPA (23 CFR 771), and the Uniform Relocation Act (49 CFR 24).",
+  "scope_notes": [
+    "Your state DOT's local-agency manual (LAG, LPA, LGP, or your state's name for it) implements these same steps and may add its own — this template is the federal floor, not your state's full checklist.",
+    "FTA-funded transit projects follow different mechanics (grant agreements, TrAMS) and are not covered by this template.",
+    "State and local environmental law (CEQA, SEPA, and their siblings) is a jurisdiction overlay — this template carries NEPA only."
+  ],
+  "decision_model": {
+    "gate_states": ["not_started", "in_progress", "hold", "pass"],
+    "evidence_states": ["missing", "uploaded", "approved", "rejected"],
+    "decision_states": ["PASS", "HOLD"],
+    "advance_rule": "ALL_REQUIRED_EVIDENCE_APPROVED"
+  },
+  "gate_order": [
+    "programming-eligibility",
+    "agreement-pe-authorization",
+    "environmental-clearance",
+    "design-pse",
+    "row-certification",
+    "construction-authorization-award",
+    "construction-compliance",
+    "completion-closeout"
+  ],
+  "gates": [
+    {
+      "gate_id": "programming-eligibility",
+      "sequence": 1,
+      "name": "Programmed and eligible",
+      "required_evidence": [
+        {
+          "evidence_id": "stip-tip-listing",
+          "title": "STIP/TIP listing or documented exemption — federal-aid projects must be programmed before funds can obligate",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "federal-fund-identification",
+          "title": "Federal program and amount identified (award letter, allocation, or programming record)",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "sponsor-qualification",
+          "title": "Agency standing to administer federal aid (state LPA qualification/certification, or direct-recipient status)",
+          "artifact_type": "record",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "agreement-pe-authorization",
+      "sequence": 2,
+      "name": "Agreement executed, PE authorized",
+      "required_evidence": [
+        {
+          "evidence_id": "executed-agreement",
+          "title": "Executed state-local (or federal-local) project agreement",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "pe-authorization-record",
+          "title": "Federal authorization/obligation record for preliminary engineering (FMIS; states name it differently — California calls it the E-76)",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "cost-incurrence-start",
+          "title": "Documented PE start date on or after the authorization date — costs incurred before federal authorization are not reimbursable (23 CFR 630)",
+          "artifact_type": "record",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "environmental-clearance",
+      "sequence": 3,
+      "name": "NEPA complete",
+      "required_evidence": [
+        {
+          "evidence_id": "nepa-class-of-action",
+          "title": "NEPA class-of-action determination (CE / EA / EIS) with who made it",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "nepa-decision-document",
+          "title": "Signed NEPA decision document (CE determination, FONSI, or ROD)",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "permits-inventory",
+          "title": "Resource permits identified with status (401/404, ESA consultation, and similar) — listed, not necessarily issued, at this gate",
+          "artifact_type": "checklist",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "design-pse",
+      "sequence": 4,
+      "name": "Design complete, PS&E approved",
+      "required_evidence": [
+        {
+          "evidence_id": "approved-pse",
+          "title": "Plans, specifications and estimate approved by the authority the agreement names",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "design-standards-record",
+          "title": "Design standard applied and every design exception, documented and approved",
+          "artifact_type": "record",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "row-certification",
+      "sequence": 5,
+      "name": "Right-of-way certified",
+      "required_evidence": [
+        {
+          "evidence_id": "row-certification-record",
+          "title": "Right-of-way certification, or certification that no acquisition is needed — construction cannot advertise without it",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "uniform-act-compliance",
+          "title": "Uniform Act compliance record: appraisal, offer, negotiation, and any relocation records (49 CFR 24)",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "utility-railroad-status",
+          "title": "Utility relocation and railroad agreements status",
+          "artifact_type": "record",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "construction-authorization-award",
+      "sequence": 6,
+      "name": "Construction authorized and awarded",
+      "required_evidence": [
+        {
+          "evidence_id": "construction-authorization-record",
+          "title": "Federal obligation for the construction phase, dated before advertisement per the agreement's terms",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "procurement-record",
+          "title": "Competitive award per 2 CFR 200.317-327 and 23 CFR 635 — responsive-low-bidder determination and required federal contract provisions (FHWA-1273 on highway work; Buy America; Davis-Bacon; DBE commitment)",
+          "artifact_type": "document",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "construction-compliance",
+      "sequence": 7,
+      "name": "Built in compliance",
+      "required_evidence": [
+        {
+          "evidence_id": "materials-certification",
+          "title": "Materials certifications and testing records",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "labor-compliance",
+          "title": "Certified payroll monitoring record",
+          "artifact_type": "record",
+          "required": true
+        },
+        {
+          "evidence_id": "change-order-record",
+          "title": "Change orders with participating / non-participating cost designation — where eligibility quietly leaks on real projects",
+          "artifact_type": "record",
+          "required": true
+        }
+      ]
+    },
+    {
+      "gate_id": "completion-closeout",
+      "sequence": 8,
+      "name": "Accepted and closed out",
+      "required_evidence": [
+        {
+          "evidence_id": "final-acceptance-record",
+          "title": "Final inspection and acceptance record",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "final-expenditure-report",
+          "title": "Final invoice/report of expenditures against the agreement",
+          "artifact_type": "document",
+          "required": true
+        },
+        {
+          "evidence_id": "audit-and-retention",
+          "title": "Single-audit determination for the fiscal year (threshold per 2 CFR 200.501) and a records retention plan (2 CFR 200.334 — retention runs from submission of the final expenditure report)",
+          "artifact_type": "checklist",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

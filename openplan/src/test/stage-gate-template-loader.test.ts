@@ -29,39 +29,58 @@ const multiJurisdictionRegistry = createStageGateTemplateRegistry([
 ]);
 
 describe("resolveStageGateTemplateBinding", () => {
-  it("defaults to the california template when no template id is provided", () => {
+  it("defaults to the US federal-aid floor when no template id is provided", () => {
     const result = resolveStageGateTemplateBinding();
 
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       templateId: DEFAULT_STAGE_GATE_TEMPLATE_ID,
-      templateName: "California Stage-Gate Scaffold",
+      templateName: "US Federal-Aid Delivery Floor",
       templateVersion: "0.1.0",
-      jurisdiction: "CA",
-      jurisdictionLabel: "California, United States",
+      jurisdiction: "US",
+      jurisdictionLabel: "United States — federal-aid floor",
       bindingMode: "workspace_bootstrap_interim",
       templateSelection: "interim_unconfigured_default",
-      lapmFormIdsStatus: "deferred_to_v0_2",
-      // The binding now carries WHY it fell back and what the workspace's own
-      // jurisdiction was. Without these an Ohio agency would receive California
-      // gates indistinguishable from ones it had chosen — the fallback has to
+      // A nationwide template declares no Caltrans form-set status — null is
+      // the honest value, not a gap.
+      lapmFormIdsStatus: null,
+      // The binding carries WHY it fell back and what the workspace's own
+      // jurisdiction was. Without these an agency would receive default gates
+      // indistinguishable from ones it had chosen — the fallback has to
       // announce itself, not just exist.
       interimDefaultReason: "no_workspace_jurisdiction",
       workspaceJurisdiction: null,
     });
-    expect(DEFAULT_STAGE_GATE_TEMPLATE_ID).toBe("ca_stage_gates_v0_1");
+    // The template's own self-description and scope disclosures ride the
+    // binding so the surface showing assumed gates can show their limits too.
+    expect(result.templateDescription).toContain("2 CFR 200");
+    expect(result.scopeNotes).toHaveLength(3);
+    expect(DEFAULT_STAGE_GATE_TEMPLATE_ID).toBe("us_federal_aid_stage_gates_v0_1");
   });
 
-  it("names the workspace's own jurisdiction when it has one but no template matches", () => {
-    // The honesty case: an Ohio workspace still gets usable gates, but the
-    // binding records that they are an interim stand-in for OH rather than
-    // Ohio's actual delivery gates.
+  it("matches a US workspace with no state pack to the federal-aid floor by its own jurisdiction", () => {
+    // Not a fallback: the federal floor genuinely covers a US subdivision with
+    // no pack of its own, so this is a jurisdiction match and says so.
     const result = resolveStageGateTemplateBinding(undefined, {
       jurisdiction: { country: "US", subdivision: "OH" },
     });
 
+    expect(result.templateId).toBe("us_federal_aid_stage_gates_v0_1");
+    expect(result.templateSelection).toBe("jurisdiction_matched");
+    expect(result.interimDefaultReason).toBeNull();
+    expect(result.workspaceJurisdiction).toEqual({ country: "US", subdivision: "OH" });
+  });
+
+  it("names the workspace's own jurisdiction when it has one but no template matches", () => {
+    // The honesty case: a workspace outside the US still gets usable gates, but
+    // the binding records that they are an interim stand-in rather than that
+    // jurisdiction's actual delivery gates.
+    const result = resolveStageGateTemplateBinding(undefined, {
+      jurisdiction: { country: "NZ" },
+    });
+
     expect(result.templateSelection).toBe("interim_unconfigured_default");
     expect(result.interimDefaultReason).toBe("no_template_for_jurisdiction");
-    expect(result.workspaceJurisdiction).toEqual({ country: "US", subdivision: "OH" });
+    expect(result.workspaceJurisdiction).toEqual({ country: "NZ", subdivision: null });
   });
 
   it("supports canonical project-create binding mode", () => {
@@ -118,6 +137,7 @@ describe("resolveStageGateTemplate", () => {
     expect(result.requestedTemplateId).toBe("wa_stage_gates_v9");
     expect(result.available.map((descriptor) => descriptor.templateId)).toEqual([
       "ca_stage_gates_v0_1",
+      "us_federal_aid_stage_gates_v0_1",
       "oh_stage_gates_test",
     ]);
   });
@@ -146,7 +166,11 @@ describe("resolveStageGateTemplate", () => {
 describe("listStageGateTemplates", () => {
   it("exposes every registered template for a jurisdiction picker", () => {
     expect(listStageGateTemplates(multiJurisdictionRegistry)).toEqual([
-      expect.objectContaining({ templateId: "ca_stage_gates_v0_1", isInterimDefault: true }),
+      expect.objectContaining({ templateId: "ca_stage_gates_v0_1", isInterimDefault: false }),
+      expect.objectContaining({
+        templateId: "us_federal_aid_stage_gates_v0_1",
+        isInterimDefault: true,
+      }),
       expect.objectContaining({ templateId: "oh_stage_gates_test", isInterimDefault: false }),
     ]);
   });
