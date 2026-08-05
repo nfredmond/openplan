@@ -5,6 +5,7 @@ import { ArrowLeft, FileStack, FolderKanban, MessageSquare, Route as RouteIcon, 
 import { RtpChapterControls } from "@/components/rtp/rtp-chapter-controls";
 import { RtpCycleDetailsEditor } from "@/components/rtp/rtp-cycle-details-editor";
 import { RtpFinancialElementSection } from "./_components/rtp-financial-element-section";
+import { RtpProgrammeLists } from "./_components/rtp-programme-lists";
 import type {
   BillingInvoiceRow,
   EngagementCampaignRow,
@@ -29,10 +30,7 @@ import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-m
 import { engagementStatusTone, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
-import {
-  buildProjectFundingStackSummary,
-  projectFundingStackTone,
-} from "@/lib/projects/funding";
+import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import {
   buildRtpAdoptionRecordProofSummary,
   buildRtpCycleReadiness,
@@ -42,18 +40,14 @@ import {
   formatRtpCycleStatusLabel,
   formatRtpDate,
   formatRtpDateTime,
-  formatRtpPortfolioRoleLabel,
   RTP_CHAPTER_TEMPLATES,
   rtpChapterStatusTone,
   rtpCycleStatusTone,
-  rtpPortfolioRoleTone,
   titleizeRtpValue,
 } from "@/lib/rtp/catalog";
 import {
   buildPortfolioPriorityNarrative,
   buildRtpPriorityRationale,
-  priorityTierLabel,
-  priorityTierTone,
 } from "@/lib/rtp/priority-scoring";
 import { describeRtpPriorityFrameworkBinding } from "@/lib/rtp/priority-framework-binding";
 import {
@@ -108,10 +102,6 @@ function toOptionalNumber(value: number | string | null | undefined): number | n
   if (value === null || value === undefined) return null;
   const parsed = typeof value === "number" ? value : Number(value);
   return Number.isFinite(parsed) ? parsed : null;
-}
-
-function formatProjectStatusLabel(value: string | null | undefined): string {
-  return titleizeRtpValue(value);
 }
 
 export default async function RtpCycleDetailPage({ params }: RouteContext) {
@@ -817,6 +807,34 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
             measuresReadFailed={performanceMeasuresState === "failed"}
             canWrite={canWritePlans}
           />
+
+          <RtpProgrammeLists
+            entries={projectLinksWithFunding.map((link) => ({
+              id: link.id,
+              portfolioRole: link.portfolio_role,
+              horizonBandId: link.horizon_band_id,
+              estimatedCost: link.estimated_cost,
+              costBasisYear: link.cost_basis_year,
+              priorityRationale: link.priority_rationale,
+              project: link.project
+                ? {
+                    id: link.project.id,
+                    name: link.project.name,
+                    status: link.project.status,
+                    summary: link.project.summary,
+                  }
+                : null,
+              priority: link.priority,
+              funding: {
+                pipelineLabel: link.fundingStack.pipelineLabel,
+                pipelineStatus: link.fundingStack.pipelineStatus,
+                committedFundingAmount: link.fundingStack.committedFundingAmount,
+                unfundedAfterLikelyAmount: link.fundingStack.unfundedAfterLikelyAmount,
+              },
+            }))}
+            bands={financialElement.bands}
+            readFailed={projectLinksState === "failed"}
+          />
         </section>
 
         <aside className="space-y-4">
@@ -992,48 +1010,18 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
                   </div>
                 </div>
 
-                {projectLinksWithFunding.map((link) => {
-                  const project = link.project;
-                  return (
-                    <article key={link.id} className="module-row-card gap-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <StatusBadge tone={rtpPortfolioRoleTone(link.portfolio_role)}>
-                          {formatRtpPortfolioRoleLabel(link.portfolio_role)}
-                        </StatusBadge>
-                        <StatusBadge tone={projectFundingStackTone(link.fundingStack.pipelineStatus)}>{link.fundingStack.pipelineLabel}</StatusBadge>
-                        {link.priority.summary.scoredCriteria > 0 ? (
-                          <StatusBadge tone={priorityTierTone(link.priority.summary.tier)}>
-                            Priority {link.priority.summary.composite}/100 · {priorityTierLabel(link.priority.summary.tier)}
-                          </StatusBadge>
-                        ) : null}
-                        {project?.status ? (
-                          <span className="module-record-chip"><span>Status</span><strong>{formatProjectStatusLabel(project.status)}</strong></span>
-                        ) : null}
-                      </div>
-                      <div>
-                        <h3 className="text-sm font-semibold tracking-tight">{project?.name ?? "Linked project"}</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {link.priority.summary.scoredCriteria > 0
-                            ? link.priority.narrative
-                            : link.priority_rationale?.trim() || project?.summary?.trim() || "No prioritization rationale recorded yet."}
-                        </p>
-                      </div>
-                      <p className="mt-1.5 text-[0.73rem] text-muted-foreground">
-                        {link.fundingStack.reimbursementLabel} · Committed {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.committedFundingAmount)} · Gap {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.unfundedAfterLikelyAmount)} · Paid {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.paidReimbursementAmount)} · Outstanding {new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(link.fundingStack.outstandingReimbursementAmount)}{link.fundingStack.awardRiskCount > 0 ? ` · ${link.fundingStack.awardRiskCount} award risk` : ""}
-                      </p>
-                      {project?.rtp_posture_updated_at ? (
-                        <p className="text-[0.7rem] text-muted-foreground/80">
-                          Posture cached {formatRtpDateTime(project.rtp_posture_updated_at)}
-                        </p>
-                      ) : null}
-                      {project?.id ? (
-                        <Link href={`/projects/${project.id}`} className="module-inline-action w-fit">
-                          Open project workspace
-                        </Link>
-                      ) : null}
-                    </article>
-                  );
-                })}
+                <p className="text-xs text-muted-foreground">
+                  {/*
+                    The per-project cards that used to live here moved to the
+                    "Project lists" section in the wide column, where they are
+                    grouped by period and carry their programmed cost. Two lists
+                    of the same projects, one of them without costs, is how a
+                    planner ends up reading the wrong one.
+                  */}
+                  {projectLinksWithFunding.length} project{projectLinksWithFunding.length === 1 ? "" : "s"} in
+                  this plan. The full lists, grouped by period with their costs, are in “What this plan
+                  commits to, and when”.
+                </p>
               </div>
             )}
             {/*

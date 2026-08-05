@@ -399,6 +399,21 @@ describe("the fiscal-constraint finding is rendered where a planner will see it"
     expect(screen.getAllByText(/constant dollars/i).length).toBeGreaterThan(0);
   });
 
+  it("renders the project lists, grouped, where the plan's commitments are read", async () => {
+    tableResults.rtp_horizon_bands = { data: [BAND], error: null };
+    tableResults.project_rtp_cycle_links = {
+      data: [link("a", 40_000_000), link("b", null)],
+      error: null,
+    };
+
+    await renderDetail();
+
+    expect(screen.getByText("What this plan commits to, and when")).toBeInTheDocument();
+    expect(screen.getAllByText(/First ten years/).length).toBeGreaterThan(0);
+    // The partial subtotal reaches the page, not just the component's own test.
+    expect(screen.getByText(/1 of 2 projects has no cost recorded/)).toBeInTheDocument();
+  });
+
   it("mounts all three financial editors, so the ledger can actually be filled in", async () => {
     await renderDetail();
 
