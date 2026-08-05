@@ -78,6 +78,8 @@ type ProjectPostureHeaderProps = {
   availableModelRuns: AvailableModelRun[];
   /** Priority criteria carrying this workspace's jurisdiction's policy bases. */
   rtpPriorityCriteria: readonly ResolvedRtpPriorityCriterion[];
+  /** Whether this member may change the project. */
+  canWriteProjects: boolean;
   deliverableCount: number;
   /**
    * Open risks / open issues, or null when the underlying read FAILED.
@@ -119,6 +121,7 @@ export function ProjectPostureHeader({
   existingRtpLinks,
   availableModelRuns,
   rtpPriorityCriteria,
+  canWriteProjects,
   deliverableCount,
   openRiskCount,
   openIssueCount,
@@ -337,6 +340,7 @@ export function ProjectPostureHeader({
               existingLinks={existingRtpLinks}
               availableRuns={availableModelRuns}
               criteria={rtpPriorityCriteria}
+              canWrite={canWriteProjects}
             />
           )}
         </div>

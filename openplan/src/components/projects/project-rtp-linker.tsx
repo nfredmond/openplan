@@ -15,6 +15,7 @@ import {
 } from "@/lib/rtp/catalog";
 import { RtpPriorityScoreEditor } from "@/components/projects/rtp-priority-score-editor";
 import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks";
+import { RtpLinkCostEditor, type RtpLinkCostBandOption } from "@/components/projects/rtp-link-cost-editor";
 import type { RtpPriorityScores } from "@/lib/rtp/priority-scoring";
 import type { RtpEvidenceRunDisclosure, RtpModelingEvidence } from "@/lib/rtp/modeling-evidence";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
@@ -43,6 +44,12 @@ type ExistingLink = {
   modelingEvidence: RtpModelingEvidence | null;
   /** Engine + status + claim tier of the cited run — rendered beside the citation, never used to refuse it. */
   evidenceRunDisclosure: RtpEvidenceRunDisclosure | null;
+  /** What this project costs in THIS plan. Null means unpriced, never zero. */
+  estimatedCost: number | string | null;
+  costBasisYear: number | null;
+  horizonBandId: string | null;
+  /** The periods this link's own cycle declares. */
+  horizonBands: ReadonlyArray<RtpLinkCostBandOption>;
 };
 
 type AvailableRun = {
@@ -60,6 +67,7 @@ export function ProjectRtpLinker({
   existingLinks,
   availableRuns,
   criteria,
+  canWrite,
 }: {
   projectId: string;
   availableCycles: AvailableCycle[];
@@ -71,6 +79,8 @@ export function ProjectRtpLinker({
    * quietly fall back to one jurisdiction's statutes.
    */
   criteria: readonly ResolvedRtpPriorityCriterion[];
+  /** Whether this member may change the plan. A viewer sees costs and no controls. */
+  canWrite: boolean;
 }) {
   const router = useRouter();
   const [selectedCycleId, setSelectedCycleId] = useState("");
@@ -212,6 +222,17 @@ export function ProjectRtpLinker({
                     evidenceRunDisclosure={link.evidenceRunDisclosure}
                     criteria={criteria}
                   />
+                  <div className="mt-3">
+                    <RtpLinkCostEditor
+                      projectId={projectId}
+                      linkId={link.id}
+                      bands={link.horizonBands}
+                      initialEstimatedCost={link.estimatedCost}
+                      initialCostBasisYear={link.costBasisYear}
+                      initialHorizonBandId={link.horizonBandId}
+                      canWrite={canWrite}
+                    />
+                  </div>
                 </div>
               </div>
             ))}

@@ -353,6 +353,18 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  // The horizon periods of the plans this project is linked to, offered when
+  // recording what the project costs in each plan. Shape: .select().in().order()
+  if (table === "rtp_horizon_bands") {
+    return {
+      select: () => ({
+        in: () => ({
+          order: async () => ({ data: [], error: null }),
+        }),
+      }),
+    };
+  }
+
   throw new Error(`Unexpected table: ${table}`);
 });
 

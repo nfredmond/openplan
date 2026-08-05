@@ -182,3 +182,61 @@ export async function loadRtpFinancialElement(
     results: { bands: bandsResult, lines: linesResult, measures: measuresResult },
   };
 }
+
+export interface RtpHorizonBandOption {
+  id: string;
+  label: string;
+  startYear: number;
+  endYear: number;
+}
+
+type BandsByCycleSupabaseLike = {
+  from(table: string): {
+    select(columns: string): {
+      in(
+        column: string,
+        values: readonly string[]
+      ): {
+        order(column: string, options: { ascending: boolean }): PromiseLike<QueryResult>;
+      };
+    };
+  };
+};
+
+/**
+ * The periods declared by each of several cycles, keyed by cycle.
+ *
+ * The project page needs this: a project can sit in more than one plan, and the
+ * period that pays for it is a property of the plan it is in, so the options
+ * offered against one link must come from THAT link's cycle. Getting this wrong
+ * would let a planner file a cost under a period belonging to a different plan.
+ */
+export async function loadRtpHorizonBandsByCycle(
+  supabase: BandsByCycleSupabaseLike,
+  rtpCycleIds: readonly string[]
+): Promise<{ byCycleId: Map<string, RtpHorizonBandOption[]>; result: QueryResult }> {
+  if (rtpCycleIds.length === 0) {
+    return { byCycleId: new Map(), result: { data: [], error: null } };
+  }
+
+  const result = await supabase
+    .from("rtp_horizon_bands")
+    .select("id, rtp_cycle_id, label, start_year, end_year, sort_order")
+    .in("rtp_cycle_id", rtpCycleIds)
+    .order("sort_order", { ascending: true });
+
+  const byCycleId = new Map<string, RtpHorizonBandOption[]>();
+  for (const row of (result.data ?? []) as Array<{
+    id: string;
+    rtp_cycle_id: string;
+    label: string;
+    start_year: number;
+    end_year: number;
+  }>) {
+    const list = byCycleId.get(row.rtp_cycle_id) ?? [];
+    list.push({ id: row.id, label: row.label, startYear: row.start_year, endYear: row.end_year });
+    byCycleId.set(row.rtp_cycle_id, list);
+  }
+
+  return { byCycleId, result };
+}

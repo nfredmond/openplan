@@ -90,6 +90,10 @@ export type ProjectRtpLinkRow = {
   priority_scores: Record<string, number> | null;
   evidence_model_run_id: string | null;
   created_at: string;
+  horizon_band_id: string | null;
+  /** NUMERIC arrives as a string from PostgREST. Null means unpriced, never 0. */
+  estimated_cost: number | string | null;
+  cost_basis_year: number | null;
 };
 
 export type RtpCycleRow = {
@@ -293,6 +297,12 @@ export type ExistingRtpLink = {
   modelingEvidence: RtpModelingEvidence | null;
   /** Engine + status + claim tier of the cited run. Disclosure only — never a reason to refuse the citation. */
   evidenceRunDisclosure: RtpEvidenceRunDisclosure | null;
+  /** What this project costs in THIS plan. Null means unpriced, never zero. */
+  estimatedCost: number | string | null;
+  costBasisYear: number | null;
+  horizonBandId: string | null;
+  /** The periods this link's own cycle declares, for assigning the cost to one. */
+  horizonBands: ReadonlyArray<{ id: string; label: string; startYear: number; endYear: number }>;
 };
 
 export type AerialMission = {

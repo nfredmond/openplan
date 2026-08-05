@@ -46,6 +46,7 @@ import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } f
 import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, parseSortableDate, submittalPriority } from "./_components/_ordering";
 import { createClient } from "@/lib/supabase/server";
 import { resolveRtpPriorityFrameworkForWorkspace } from "@/lib/rtp/priority-framework-binding";
+import { loadRtpHorizonBandsByCycle } from "@/lib/rtp/financial-element-queries";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import {
   loadProjectStageGateBoard,
@@ -210,7 +211,6 @@ export default async function ProjectDetailPage({
   // read above rather than a second query — and note it selects
   // `home_subdivision_code`, without which every workspace resolves as
   // subdivision-unknown and no state framework can ever match.
-  const rtpPriorityCriteria = resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria;
 
   // The project's own corridors, for the backdrop-presence panel. Read through
   // the pending-schema fallback like every other optional table on this page, so
@@ -236,7 +236,7 @@ export default async function ProjectDetailPage({
 
   const projectRtpLinkResult = await supabase
     .from("project_rtp_cycle_links")
-    .select("id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, created_at")
+    .select("id, rtp_cycle_id, portfolio_role, priority_rationale, priority_scores, evidence_model_run_id, horizon_band_id, estimated_cost, cost_basis_year, created_at")
     .eq("project_id", project.id)
     .order("created_at", { ascending: false });
 
@@ -299,6 +299,15 @@ export default async function ProjectDetailPage({
     evidenceRunIds.map((runId) => [runId, summarizeRtpModelingEvidence(runId, runTitleById.get(runId) ?? null, evidenceKpiRows, evidenceKpiOptions)])
   );
 
+  // The periods each linked plan declares, so a programmed cost can be assigned
+  // to one. Loaded through the shared helper because the options offered
+  // against a link must come from THAT link's own cycle.
+  const rtpHorizonBands = await loadRtpHorizonBandsByCycle(
+    supabase as unknown as Parameters<typeof loadRtpHorizonBandsByCycle>[0],
+    linkedRtpCycleIds
+  );
+  laneOutcome(reads, "the horizon periods of the linked plans", rtpHorizonBands.result);
+
   const rtpCycleById = new Map(linkedRtpCycles.map((cycle) => [cycle.id, cycle]));
   const existingRtpLinks = projectRtpLinkRows
     .map((link) => {
@@ -320,6 +329,10 @@ export default async function ProjectDetailPage({
           ? modelingEvidenceByRunId.get(link.evidence_model_run_id) ?? null
           : null,
         evidenceRunDisclosure: link.evidence_model_run_id ? evidenceDisclosures.disclosureFor(link.evidence_model_run_id) : null,
+        horizonBandId: link.horizon_band_id ?? null,
+        estimatedCost: link.estimated_cost ?? null,
+        costBasisYear: link.cost_basis_year ?? null,
+        horizonBands: rtpHorizonBands.byCycleId.get(cycle.id) ?? [],
       };
     })
     .filter((item): item is NonNullable<typeof item> => Boolean(item));
@@ -1241,7 +1254,8 @@ export default async function ProjectDetailPage({
         workspaceRtpCycles={workspaceRtpCycles}
         existingRtpLinks={existingRtpLinks}
         availableModelRuns={availableModelRuns}
-        rtpPriorityCriteria={rtpPriorityCriteria}
+        rtpPriorityCriteria={resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria}
+        canWriteProjects={canAccessWorkspaceAction("plans.write", membership.role)}
         deliverableCount={budgetInputs.deliverables.length}
         openRiskCount={openRiskCount}
         openIssueCount={openIssueCount}
