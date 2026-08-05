@@ -19,6 +19,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+_Nothing yet._
+
+---
+
+## 0.5.0 — 2026-08-05
+
+**Regional Transportation Plans can now answer whether they can be paid for.**
+This release adds the financial element an RTP is adopted against — revenue,
+the cost of operating and maintaining the system, per-project programmed costs,
+and a fiscal-constraint finding — plus the project lists, a per-cycle map, a
+public draft-review page, and a comment-response record.
+
 **A migration is required before the app deploys:** `20260805000003`. It adds
 three tables — `rtp_horizon_bands`, `rtp_financial_assumptions`,
 `rtp_performance_measures` — and adds columns to `rtp_cycles`
@@ -49,6 +61,46 @@ Also in this release, and visible immediately:
   Previously these could only be set when the cycle was created.
 - **Public plan pages are no longer indexable by search engines.** The share
   link is the credential, so it should reach only the people you send it to.
+
+New in the RTP module:
+
+- **A financial element.** Declare the periods your plan programmes money
+  across, record revenue and the cost of operating and maintaining the system
+  against each, and give each project its cost in this plan. OpenPlan then
+  reports whether the constrained programme can be paid for, period by period.
+- **It says "not determined" rather than guessing.** If a constrained project
+  has no cost recorded, or no revenue has been entered, or amounts sit in
+  different base years with no inflation rate to reconcile them, the finding is
+  withheld and names what is missing. A plan with gaps in it will never report
+  itself fiscally constrained.
+- **Year-of-expenditure dollars.** Record costs in constant dollars with a base
+  year and set an annual inflation rate, and OpenPlan escalates them to the
+  year each period expects to spend. With no rate recorded it reports constant
+  dollars and says so, rather than presenting them as year-of-expenditure
+  figures.
+- **Project lists grouped by period**, with each project's cost and a subtotal
+  that never counts an unpriced project as zero.
+- **Performance measures** — baselines and targets with the source each
+  baseline came from.
+- **A map of the plan's projects**, coloured by whether they are in the
+  constrained programme or on the illustrative list. It states how many
+  projects have no location recorded rather than quietly drawing fewer.
+- **A public draft-review page** at the same share link, showing the plan's
+  chapters, its financial element and its project lists, and saying plainly
+  whether public review is open, has not opened, or has closed.
+- **A comment-response record** pairing approved public comments with the
+  agency's published responses. Comments still awaiting moderation never
+  appear. An unanswered comment is flagged as outstanding; it does not block
+  adoption.
+
+Two notes for whoever generates board packets:
+
+- Board packets have been rendering every project as **unscored** because the
+  packet's query omitted the priority scores. Fixed — existing packets will
+  show priority tiers when regenerated.
+- The financial element and the comment-response record are now in every
+  packet stage, and in the Export HTML/PDF buttons as well as in generated
+  packets. Those two paths previously produced different documents.
 
 ---
 
