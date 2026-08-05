@@ -16,6 +16,7 @@ import {
   translateEngagementText,
   type TranslationLanguage,
 } from "@/lib/engagement/translation";
+import { machineTranslationUnavailableReason } from "@/lib/engagement/translation-languages";
 
 const paramsSchema = z.object({
   shareToken: z.string().min(8).max(64),
@@ -42,7 +43,8 @@ type ApprovedItem = {
  *   returns the same 404 as a missing item, so pending/rejected/foreign items
  *   can't be enumerated (mirrors the vote route).
  * - Translations are CACHED into metadata_json.ai_translations[lang]. The
- *   supported-language set is bounded (~11), so an item accrues at most a
+ *   supported-language set is bounded (a couple of dozen, derived from the one
+ *   language taxonomy rather than restated here), so an item accrues at most a
  *   handful of cached entries regardless of request volume — repeat requests
  *   never re-hit the model. The per-workspace AI rate limit guards the FIRST
  *   (uncached) translation of each (item, language).
@@ -122,6 +124,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Unsupported translation language" }, { status: 400 });
     }
     const language = parsedBody.data.language;
+
+    // Some languages this portal RENDERS are deliberately not languages a model
+    // may write. The portal can be published in Diné Bizaad — by people — and a
+    // resident reading it can still be offered every other comment in English;
+    // what they are not offered is a machine's guess at Navajo presented beside
+    // an agency's consultation. `source: "unavailable"` is the shape this route
+    // already uses when translation cannot happen, so the client keeps showing
+    // the original text; only the caveat differs, and it says why.
+    const languageRefusal = machineTranslationUnavailableReason(language);
+    if (languageRefusal) {
+      return NextResponse.json(
+        { source: "unavailable", language, translated: null, caveat: languageRefusal },
+        { status: 200 }
+      );
+    }
 
     const supabase = createServiceRoleClient();
     const resolved = await resolveApprovedItem(supabase, audit, parsedParams.data.shareToken, parsedParams.data.itemId);

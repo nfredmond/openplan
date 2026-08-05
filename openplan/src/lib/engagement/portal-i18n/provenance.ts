@@ -11,9 +11,9 @@
  *
  * Language NAMES inside these sentences are rendered in their OWN script
  * («Español», «العربية») rather than in the reader's language. That is not
- * laziness — it avoids an eleven-by-eleven matrix of names, and a resident who
- * cannot read the sentence can still recognise the name of their own language
- * inside it.
+ * laziness — it avoids a matrix of every language's name written out in every
+ * other language, and a resident who cannot read the sentence can still
+ * recognise the name of their own language inside it.
  */
 
 import { TRANSLATION_LANGUAGE_NATIVE_LABELS } from "../translation-languages";
@@ -50,7 +50,8 @@ export function portalTextBadge(text: PortalText, translator: PortalTranslator):
 /**
  * A disclosure sentence together with WHAT LANGUAGE THE SENTENCE ITSELF IS IN.
  *
- * Nine of the eleven locales have no message catalog yet, so on those pages this
+ * Only Spanish has a message catalog yet (English is the source these fall
+ * back to), so on almost every non-English page this
  * sentence is the English source even though the page around it is not English.
  * Rendering it with the PAGE's `lang` tells a screen reader to pronounce English
  * words with Farsi or Korean phonology, which is close to unintelligible — and
@@ -75,7 +76,7 @@ export type PortalDisclosureView = {
  * EXPORTED, because the disclosure sentences are not the only OpenPlan copy that
  * can fall back inside a page that is not English. The language notice beside the
  * picker — the sentence that tells a resident the page is only partly translated
- * — falls back for the same nine locales and for the same reason, and rendering
+ * — falls back on the same locales and for the same reason, and rendering
  * it under the page's own `lang` and `dir` is the same mistake. Anything that
  * puts one of this catalog's strings on screen inside a page of another language
  * should get its lang and direction from here rather than assume the page's.

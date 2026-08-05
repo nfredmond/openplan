@@ -27,7 +27,8 @@ import type { PortalTranslator } from "@/lib/engagement/portal-i18n/translator";
  * claim about what the agency published.
  *
  * THE DISCLOSURE CARRIES ITS OWN LANGUAGE, which is not always the page's.
- * Nine of the eleven locales have no message catalog, so on those pages this
+ * Only Spanish has a message catalog (English is the source these fall back
+ * to), so on almost every non-English page this
  * sentence IS English sitting inside a page declared Farsi or Korean — and
  * inside a `dir="rtl"` page an English sentence with no direction of its own
  * lays out from the wrong edge. Labelling it with the page's `lang` would tell

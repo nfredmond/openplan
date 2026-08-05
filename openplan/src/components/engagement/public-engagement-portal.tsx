@@ -46,9 +46,9 @@ import {
   portalTextLang,
   type PortalDisclosureView,
 } from "@/lib/engagement/portal-i18n/provenance";
-// Type-only: these modules reach a server-only Supabase client or the whole
-// eleven-locale catalog, and an `import type` is erased before the client bundle
-// is built. A participant downloads their own language and nothing else.
+// Type-only: these modules reach a server-only Supabase client or the message
+// catalog for every locale, and an `import type` is erased before the client
+// bundle is built. A participant downloads their own language and nothing else.
 import type { PortalText } from "@/lib/engagement/portal-i18n/operator-text";
 import type { PortalMessageKey } from "@/lib/engagement/portal-i18n/messages";
 import type { PortalMapFraming } from "@/lib/engagement/public-portal-data";
@@ -299,7 +299,7 @@ function OperatorText({
   const badge = portalTextBadge(value, translator);
   /*
     The VIEW, not the bare sentence, because it carries the language the sentence
-    itself came out in. Nine of the eleven locales have no catalog yet, so on
+    itself came out in. Every locale except Spanish has no catalog yet, so on
     those pages this caveat is the English source sitting inside a page that
     declares itself Korean or Farsi — the exact mismatch the caveat is warning
     about, made by the warning.
@@ -1212,7 +1212,7 @@ export function PublicEngagementPortal({
    * A plain object rather than a lookup function because functions do not cross
    * the server/client boundary; the translator is rebuilt here with
    * `createPortalTranslator`. It also means a participant downloads their own
-   * language and not the other ten.
+   * language and not every other locale's.
    */
   messages: PortalMessageBundle;
   /**
@@ -1441,8 +1441,9 @@ export function PublicEngagementPortal({
                   {t("portal.located")}
                 </span>
               ) : null}
-              {/* The participant's locale, not the server's: most of the eleven
-                  languages read 3/7/2026 as a different day than en-US does. */}
+              {/* The participant's locale, not the server's: most of the
+                  languages this portal carries read 3/7/2026 as a different day
+                  than en-US does. */}
               <span>{formatPortalDate(item.createdAt, bcp47)}</span>
               {/*
                 A resident's own name, alone. "by X" would need a sentence the

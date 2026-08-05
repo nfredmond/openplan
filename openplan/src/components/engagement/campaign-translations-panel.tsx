@@ -19,6 +19,7 @@ import { buildPortalMessageBundle, portalMessageCoverage } from "@/lib/engagemen
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
 import { portalTextDisclosureView } from "@/lib/engagement/portal-i18n/provenance";
 import {
+  machineTranslationUnavailableReason,
   TRANSLATION_LANGUAGE_LABELS,
   TRANSLATION_LANGUAGE_NATIVE_LABELS,
 } from "@/lib/engagement/translation-languages";
@@ -35,8 +36,8 @@ import type {
 /**
  * WHERE AN AGENCY WRITES ITS OWN WORDS IN SOMEBODY ELSE'S LANGUAGE.
  *
- * The engagement module could translate a resident's comment into eleven
- * languages and could not ask its own question in any of them. The storage, the
+ * The engagement module could translate a resident's comment into every language
+ * it carries and could not ask its own question in any of them. The storage, the
  * resolver and the participant surfaces existed; nothing wrote them. This panel
  * is the missing half, and it has four jobs it is not allowed to get wrong.
  *
@@ -64,11 +65,12 @@ import type {
  *
  * 4. AN UNKNOWN STATE IS NOT AN EMPTY ONE. When the translations could not be
  *    read, coverage arrives as `null` and this panel says so instead of drawing
- *    eleven "Not translated" cards — that would be a statement about the agency
- *    made out of a database failure.
+ *    a "Not translated" card for every language it carries — that would be a
+ *    statement about the agency made out of a database failure.
  *
- * RIGHT-TO-LEFT IS NOT OPTIONAL HERE EITHER. Two of the eleven languages (Arabic
- * and Farsi) are right-to-left, so every editor carries the target language's own
+ * RIGHT-TO-LEFT IS NOT OPTIONAL HERE EITHER. Some of the languages an agency
+ * writes in here run right to left — Arabic, Farsi and Urdu today, and the set
+ * has already grown once — so every editor carries the target language's own
  * `dir` and `lang`, the source text carries the campaign language's, and the
  * layout uses logical properties only — a declared `dir` over `ml-`/`text-left`
  * is broken with extra steps.
@@ -178,19 +180,29 @@ export function CampaignTranslationsPanel({
   const sourceDirection = PORTAL_LOCALE_DIRECTION[sourceLocale];
   const nativeName = TRANSLATION_LANGUAGE_NATIVE_LABELS[locale];
   const englishName = TRANSLATION_LANGUAGE_LABELS[locale];
+  /**
+   * Some languages the portal RENDERS are deliberately not languages a model may
+   * write — see `MACHINE_TRANSLATION_UNAVAILABLE`. This is a fact about the
+   * chosen language, so it is re-derived whenever the language changes, and it
+   * is kept SEPARATE from `machineTranslationAvailable` (which is about whether
+   * a key exists): the two need different sentences, and offering a suggest
+   * button that always refuses would be a control no operator can succeed with.
+   */
+  const languageMachineRefusal = machineTranslationUnavailableReason(locale);
+  const machineTranslationOffered = machineTranslationAvailable && !languageMachineRefusal;
 
   /**
    * The disclosure a participant reading this language will actually see over a
    * machine translation — built by the portal's own resolver rather than
    * restated here, so the preview cannot drift from the published sentence.
    *
-   * The VIEW, not the bare sentence. Nine of the eleven locales have no message
+   * The VIEW, not the bare sentence. Every locale except Spanish has no message
    * catalog yet, so for those this sentence comes back as the English source
    * even though the language being edited is not English — and rendering it
    * under the TARGET language's `lang` and `dir` is the same mistake the source
-   * text beside it already avoids. For Arabic and Farsi it is the worse half of
-   * that mistake twice over: an English sentence told a screen reader it is
-   * Arabic, laid out from the wrong edge. `portalTextDisclosureView` already
+   * text beside it already avoids. For a right-to-left language it is the worse
+   * half of that mistake twice over: an English sentence told a screen reader it
+   * is Arabic, laid out from the wrong edge. `portalTextDisclosureView` already
    * knows which language it actually produced, and `portalTextDisclosure` exists
    * only "for a surface that has nowhere to put `lang`". This surface has one.
    */
@@ -488,7 +500,7 @@ export function CampaignTranslationsPanel({
               // an error on screen — it reads as a campaign with less text in it,
               // and every percentage computed from it rounds UP.
               "Coverage is withheld rather than measured against a list of strings that is known to be short: that would report a language as complete while the strings that failed to load are missing from it."
-            : "That is not the same as none, and no coverage is shown rather than showing eleven languages as untranslated."}
+            : "That is not the same as none, and no coverage is shown rather than showing every language as untranslated."}
         </p>
       ) : (
         <>
@@ -612,6 +624,10 @@ export function CampaignTranslationsPanel({
           this campaign&rsquo;s own text before it stores a translation, and it cannot do that from a partial
           list.
         </p>
+      ) : languageMachineRefusal ? (
+        <p className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+          {languageMachineRefusal}
+        </p>
       ) : !machineTranslationAvailable ? (
         <p className="mt-4 rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
           Machine translation is unavailable: no Anthropic API key is configured for this workspace or this
@@ -622,7 +638,7 @@ export function CampaignTranslationsPanel({
 
       {editable && fields.length > 0 ? (
         <div className="mt-4 flex flex-wrap gap-2">
-          {machineTranslationAvailable && untranslatedKeys.length > 0 ? (
+          {machineTranslationOffered && untranslatedKeys.length > 0 ? (
             <>
               <Button
                 type="button"
@@ -777,7 +793,7 @@ export function CampaignTranslationsPanel({
                               Accept as our wording
                             </Button>
                           ) : null}
-                          {machineTranslationAvailable ? (
+                          {machineTranslationOffered ? (
                             <>
                               <Button
                                 type="button"

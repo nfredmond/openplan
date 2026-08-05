@@ -475,6 +475,28 @@ describe("machine translation", () => {
     expect(translateEngagementText).not.toHaveBeenCalled();
   });
 
+  it("refuses to machine-translate into a language it carries but never generates — even with a key", async () => {
+    // Navajo is a full portal locale: an agency can publish its consultation in
+    // it, written by people. What no model may do is write it (Nathaniel's
+    // Title VI call, 2026-08-04) — so this refusal is a fact about the LANGUAGE,
+    // and it has to hold for a workspace whose Anthropic key works perfectly.
+    hasAnthropicAccess.mockReturnValue(true);
+
+    const response = await POST(postRequest({ action: "suggest", locale: "nv", fieldKeys: [TITLE_KEY] }), ctx);
+
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.available).toBe(false);
+    expect(body.refusedForLanguage).toBe(true);
+    expect(String(body.reason)).toMatch(/Diné Bizaad|Navajo/);
+    // It must NOT borrow the missing-key sentence: that would send a planner to
+    // configure an API key that would not have helped.
+    expect(String(body.reason)).not.toMatch(/API key|Anthropic/i);
+    // And nothing was spent.
+    expect(translateEngagementText).not.toHaveBeenCalled();
+    expect(upserts).toHaveLength(0);
+  });
+
   it("reports a translation that failed as failed, not as one that came back empty", async () => {
     translateEngagementText.mockResolvedValue({
       source: "unavailable",

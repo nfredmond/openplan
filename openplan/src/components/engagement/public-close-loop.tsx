@@ -22,12 +22,12 @@
  * phonology, which is close to unintelligible.
  *
  * AND `dir` TRAVELS WITH `lang` EVERY TIME, because no browser derives one from
- * the other. Two of the eleven languages are right-to-left, so a page can hold
- * an English commitment inside an Arabic portal or an agency's Arabic inside an
- * English one, and either laid out from the wrong edge is a defect a sighted
- * reader sees immediately. Both attributes come from one fact — the
- * `PortalText.textLocale` for the agency's words, the key's own fallback state
- * (via `portalMessageView`) for OpenPlan's.
+ * the other. Some of the languages this portal carries are right-to-left, so a
+ * page can hold an English commitment inside an Arabic portal or an agency's
+ * Arabic inside an English one, and either laid out from the wrong edge is a
+ * defect a sighted reader sees immediately. Both attributes come from one fact
+ * — the `PortalText.textLocale` for the agency's words, the key's own fallback
+ * state (via `portalMessageView`) for OpenPlan's.
  */
 
 import { PORTAL_LOCALE_DIRECTION } from "@/lib/engagement/portal-i18n/locales";
@@ -85,8 +85,8 @@ export type PublicCloseLoopEntry = {
  * Arabic shown on an English portal runs the wrong way for the same reason.
  * `PortalText.textLocale` already knows which language the words are in.
  *
- * The disclosure carries its own pair rather than the page's: nine of the eleven
- * locales have no message catalog yet, so on those pages the caveat is the
+ * The disclosure carries its own pair rather than the page's: every locale
+ * except Spanish has no message catalog yet, so on those pages the caveat is the
  * English source sitting inside a page that declares itself Korean — the exact
  * mismatch the caveat exists to warn about, made by the warning.
  */
@@ -150,7 +150,7 @@ export function PublicCloseLoop({
     OpenPlan's OWN three strings here — "You said", "We did", and the empty state
     — each with the language it actually came out in.
 
-    Nine of the eleven locales carry no catalog yet, so on those pages
+    Every locale except Spanish carries no catalog yet, so on those pages
     `t("closeLoop.weDid")` returns the English source while the portal around it
     declares the participant's language. `portalMessageView` is the one place
     that decides which, and it is the same rule `portalTextDisclosureView`

@@ -451,7 +451,7 @@ const ALL_KEYS = Object.keys(EN_PORTAL_MESSAGES) as PortalMessageKey[];
  *
  * Runs SERVER-SIDE, once per page load, in `loadPublicPortalBundle`. What
  * crosses to the browser is this locale's strings and the list of keys that
- * fell back — never the other ten catalogs.
+ * fell back — never every other locale's catalog.
  */
 export function buildPortalMessageBundle(locale: ResolvedPortalLocale): PortalMessageBundle {
   const catalog = PORTAL_MESSAGE_CATALOGS[locale.locale] ?? {};

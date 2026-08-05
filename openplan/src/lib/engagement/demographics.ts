@@ -10,6 +10,8 @@
  * Band values MUST match the CHECK constraints in migration 20260719000094.
  */
 
+import { TRANSLATION_LANGUAGE_LABELS } from "./translation-languages";
+
 export const DEMOGRAPHICS_SCREENING_CAVEAT =
   "Self-reported by a self-selected subset of respondents and shown only in aggregate (small groups suppressed). Screening context to check who outreach reached — NOT a statistical sample, a representativeness finding, or a civil-rights determination.";
 
@@ -37,6 +39,17 @@ export const LANGUAGES = [
   "fa",
   "ru",
   "pa",
+  "hmn",
+  "km",
+  "ht",
+  "pt",
+  "so",
+  "am",
+  "fr",
+  "ur",
+  "bn",
+  "pl",
+  "nv",
   "other",
   "prefer_not_to_say",
 ] as const;
@@ -66,17 +79,15 @@ export const DEMOGRAPHIC_LABELS: Record<string, string> = {
   "45_54": "45–54",
   "55_64": "55–64",
   "65_plus": "65+",
-  en: "English",
-  es: "Spanish",
-  zh: "Chinese",
-  vi: "Vietnamese",
-  tl: "Tagalog",
-  ko: "Korean",
-  ar: "Arabic",
-  hy: "Armenian",
-  fa: "Farsi",
-  ru: "Russian",
-  pa: "Punjabi",
+  // DERIVED, not restated. These labels used to be a line-for-line copy of the
+  // translation taxonomy's English names, which is precisely how two lists come
+  // to disagree about what the newest language is: `DEMOGRAPHIC_LABELS` is a
+  // loose Record<string, string>, so a language added to LANGUAGES above and
+  // forgotten here does not fail the build — `demographicLabel` just falls back
+  // to the raw code and a resident's language renders as "hmn" in the summary.
+  // Spreading the one taxonomy makes that unforgettable rather than merely
+  // unlikely.
+  ...TRANSLATION_LANGUAGE_LABELS,
   ai_an: "American Indian / Alaska Native",
   asian: "Asian",
   black: "Black / African American",

@@ -456,8 +456,8 @@ export type CampaignTranslationRow = {
  * Every translation this campaign has, in every language.
  *
  * ONE READ, NOT ONE PER LOCALE: the operator question is "which languages are we
- * complete in", which cannot be answered a language at a time, and eleven
- * queries to answer one question is eleven chances to half-fail.
+ * complete in", which cannot be answered a language at a time, and one query per
+ * language to answer one question is one chance to half-fail per language.
  *
  * A failed read is REPORTED, never returned as an empty set. Empty means "this
  * campaign has been translated into nothing", which is a claim about the agency;
@@ -644,7 +644,7 @@ export function buildCampaignTranslationView(input: {
     // The default locale counts as the source language even when nobody stated
     // one, because that is exactly what the resolver does with it — see
     // `resolveOperatorText`. The PRESUMPTION is disclosed once by the panel
-    // rather than repeated on eleven rows.
+    // rather than repeated on every locale's row.
     const isSourceLocale = input.sourceLocale.stated
       ? locale === input.sourceLocale.locale
       : locale === PORTAL_DEFAULT_LOCALE;

@@ -130,6 +130,25 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/translate", () => {
     );
   });
 
+  it("refuses a language the portal carries but never machine-translates, before spending anything", async () => {
+    // Navajo is a full portal locale — an agency can publish its consultation in
+    // it — but no model may write it (Nathaniel's Title VI call, 2026-08-04).
+    // A resident asking for a comment in Navajo gets the SAME shape this route
+    // already uses when translation cannot happen, so the client keeps showing
+    // the original text; only the caveat differs, and it says why.
+    const res = await POST(req("nv"), ctx);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toMatchObject({ source: "unavailable", language: "nv", translated: null });
+    expect(String(body.caveat)).toMatch(/Diné Bizaad|Navajo/);
+
+    // Nothing was spent and nothing was cached: the refusal is a fact about the
+    // language, decided before the model, the rate limiter, or the cache write.
+    expect(checkAiUsageRateLimit).not.toHaveBeenCalled();
+    expect(recordAiUsageEvent).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
   it("429 when the workspace AI rate limit is exhausted (no model call)", async () => {
     checkAiUsageRateLimit.mockResolvedValue({ allowed: false, retryAfterSeconds: 30 });
     const res = await POST(req("es"), ctx);

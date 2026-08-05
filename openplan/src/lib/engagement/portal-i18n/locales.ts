@@ -2,8 +2,8 @@
  * WHICH LANGUAGE A PARTICIPANT SEES — decided once, server-side, for every
  * participant surface at the same time.
  *
- * The engagement module could already translate a resident's comment into
- * eleven languages and could not ask its own question in any of them. Closing
+ * The engagement module could already translate a resident's comment into every
+ * language it carries and could not ask its own question in any of them. Closing
  * that starts here, with the one decision every other piece depends on: which
  * language IS this page in.
  *
@@ -36,9 +36,24 @@ import {
 
 /**
  * A portal locale IS a translation language. Deliberately an alias rather than
- * a new union: the eleven languages OpenPlan will translate a comment INTO and
- * the eleven it will show its own page IN must be the same eleven, or a
- * resident can read the comments and not the question above them.
+ * a new union: the languages OpenPlan will translate a comment INTO and the
+ * languages it will show its own page IN must be the SAME set, or a resident
+ * can read the comments and not the question above them.
+ *
+ * THE SET IS THE SAME; THE CAPABILITIES ARE NOT, AND THAT IS A REAL DIVERGENCE
+ * RATHER THAN A COINCIDENCE. Navajo is a portal locale whose comment
+ * translation is refused outright — see `MACHINE_TRANSLATION_UNAVAILABLE` in
+ * `translation-languages.ts`. So a Diné portal does show an agency's own words,
+ * written and reviewed by people, and cannot machine-translate the residents'
+ * comments underneath them. That asymmetry is defensible in exactly one
+ * direction: a human-written page in somebody's language is language access
+ * working, while a model's unreliable guess published under an agency's name in
+ * a Title VI context is not. The failure this alias exists to prevent is the
+ * page being unreadable while the comments are readable — a resident meeting a
+ * question they cannot read. The exception runs the other way, and it is the
+ * refusal being visible on the surface that keeps it honest: a locale that
+ * declines a capability says so where a planner reads it, instead of being
+ * quietly dropped from a second union nobody would keep in step with this one.
  */
 export type PortalLocale = TranslationLanguage;
 
@@ -69,11 +84,12 @@ export type PortalTextDirection = "ltr" | "rtl";
 /**
  * Which way each language's script runs.
  *
- * NOT optional polish. Arabic and Farsi are two of the eleven, and a page that
- * does not set `dir="rtl"` for them renders punctuation on the wrong side,
- * left-aligns every paragraph, and puts the form's submit button where a
- * right-to-left reader does not look for it. Two of eleven languages shipping
- * visibly broken is not a rounding error.
+ * NOT optional polish. The map below is the list, and Arabic, Farsi and Urdu
+ * currently sit on the `rtl` side of it — a page that does not set `dir="rtl"`
+ * for them renders punctuation on the wrong side, left-aligns every paragraph,
+ * and puts the form's submit button where a right-to-left reader does not look
+ * for it. A language shipping visibly broken to everyone who reads it is not a
+ * rounding error, and the right-to-left side of this map has already grown once.
  *
  * It lives beside the locale rather than in `translation-languages.ts` because
  * direction is a fact about LAYING OUT A PAGE, and nothing in the comment
@@ -93,10 +109,25 @@ export const PORTAL_LOCALE_DIRECTION: Record<PortalLocale, PortalTextDirection> 
   fa: "rtl",
   ru: "ltr",
   pa: "ltr",
+  hmn: "ltr",
+  km: "ltr",
+  ht: "ltr",
+  pt: "ltr",
+  so: "ltr",
+  am: "ltr",
+  fr: "ltr",
+  // Urdu is the third right-to-left language here, and it arrived with the 2026
+  // expansion rather than with Arabic and Farsi — which is exactly how a
+  // direction map goes stale. TypeScript requires an entry per locale, so the
+  // compiler catches a MISSING language; only a reader catches a wrong one.
+  ur: "rtl",
+  bn: "ltr",
+  pl: "ltr",
+  nv: "ltr",
 };
 
 /**
- * Tags a browser genuinely sends that mean one of our eleven.
+ * Tags a browser genuinely sends that mean one of the languages we carry.
  *
  * Chrome on a Philippine handset sends `fil`, not `tl`. A Chinese browser sends
  * `zh-Hans-CN`. An Afghan Dari browser sends `prs`. Without this map every one
@@ -131,15 +162,33 @@ const PORTAL_LOCALE_ALIASES: Record<string, PortalLocale> = {
   rus: "ru",
   pan: "pa",
   pnb: "pa",
+  // The 2026 expansion. Three-letter forms are what browsers and OS locales
+  // actually send for these; the Hmong dialect codes (mww/hnj) and Farsi's prs
+  // above are the same shape of alias — a real tag a real handset emits.
+  mww: "hmn",
+  hnj: "hmn",
+  khm: "km",
+  hat: "ht",
+  por: "pt",
+  som: "so",
+  amh: "am",
+  fra: "fr",
+  fre: "fr",
+  urd: "ur",
+  ben: "bn",
+  pol: "pl",
+  nav: "nv",
 };
 
 /**
- * Narrow any language tag to one of the eleven, or to null.
+ * Narrow any language tag to one of the languages this portal carries, or to
+ * null.
  *
  * Region, script and variant subtags are dropped: OpenPlan carries one Spanish,
- * and pretending otherwise would mean eleven catalogs becoming forty. Returning
- * null rather than a guess is what lets the caller fall THROUGH to the next
- * source of truth instead of showing the wrong language confidently.
+ * and pretending otherwise would multiply the whole list several times over —
+ * one catalog per region a browser can name. Returning null rather than a guess
+ * is what lets the caller fall THROUGH to the next source of truth instead of
+ * showing the wrong language confidently.
  */
 export function normalizePortalLocaleTag(raw: string | null | undefined): PortalLocale | null {
   if (typeof raw !== "string") return null;

@@ -34,10 +34,13 @@ describe("portal locale resolution", () => {
     expect(Object.keys(PORTAL_LOCALE_DIRECTION).sort()).toEqual([...TRANSLATION_LANGUAGES].sort());
   });
 
-  it("knows which two of the eleven read right to left", () => {
-    // Not cosmetic: without this, Arabic and Farsi portals ship visibly broken.
+  it("knows which of the languages it carries read right to left", () => {
+    // Not cosmetic: without this, these portals ship visibly broken. The list is
+    // pinned rather than counted because a language silently losing its `rtl`
+    // is invisible in every other test — and it GREW when Urdu arrived in the
+    // 2026 expansion, which is exactly the change a count would have hidden.
     const rtl = PORTAL_LOCALES.filter((locale) => PORTAL_LOCALE_DIRECTION[locale] === "rtl");
-    expect(rtl).toEqual(["ar", "fa"]);
+    expect(rtl).toEqual(["ar", "fa", "ur"]);
   });
 
   it("lets an explicit choice in the URL win", () => {
@@ -65,13 +68,17 @@ describe("portal locale resolution", () => {
 
   it("falls back rather than failing when a link names a language this portal does not carry", () => {
     // A forwarded link with a bad language must still open the consultation.
-    const resolved = resolvePortalLocale({ requested: "so", acceptLanguage: "so,en;q=0.2" });
+    // `sw` (Swahili) is a real language a real handset can ask for and one this
+    // portal does not carry. It was `so` until Somali was added in 2026 — if a
+    // later expansion adds Swahili, this fixture moves to another uncarried
+    // language rather than the assertion being weakened.
+    const resolved = resolvePortalLocale({ requested: "sw", acceptLanguage: "sw,en;q=0.2" });
 
     expect(resolved.locale).toBe("en");
     expect(resolved.source).toBe("accept_language");
     // …and the resident is owed the sentence saying why, which only this field
     // makes possible.
-    expect(resolved.unsupportedRequest).toBe("so");
+    expect(resolved.unsupportedRequest).toBe("sw");
   });
 
   it("never lets a hostile link change what the page appears to say", () => {
@@ -163,7 +170,7 @@ describe("portal locale resolution", () => {
     expect(parseAcceptLanguage("*")).toBeNull();
     expect(parseAcceptLanguage("")).toBeNull();
     // Languages this portal does not carry are skipped, not guessed at.
-    expect(parseAcceptLanguage("so, sw, es")).toBe("es");
+    expect(parseAcceptLanguage("sw, ig, es")).toBe("es");
   });
 
   it("reads the headers browsers and proxies actually send, not only tidy ones", () => {

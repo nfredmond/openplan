@@ -755,9 +755,10 @@ export type PublicPortalProps = {
    * form is English does not look partly translated — it looks like the agency
    * answered in English on purpose.
    *
-   * Carries `direction`, so `dir="rtl"` for Arabic and Farsi is a value that
-   * travels rather than a derivation each component has to remember. Two of the
-   * eleven languages render visibly broken without it.
+   * Carries `direction`, so `dir="rtl"` for the right-to-left languages is a
+   * value that travels rather than a derivation each component has to remember.
+   * Every language on that side of the direction map renders visibly broken
+   * without it.
    */
   locale: ResolvedPortalLocale;
   /**
@@ -767,7 +768,7 @@ export type PublicPortalProps = {
    * A plain object rather than a lookup function, because functions do not
    * cross the server/client boundary — the client component rebuilds the
    * translator from this with `createPortalTranslator`. It also means a
-   * participant downloads their own language and not the other ten.
+   * participant downloads their own language and not every other locale's.
    */
   messages: PortalMessageBundle;
 };

@@ -123,8 +123,8 @@ export function PortalLanguagePicker({
  * `language.partialNotice` FIRST, and why the notice is rendered next to the
  * picker, whose options are always in their own script.
  *
- * And because that limit is REAL rather than hypothetical for nine of the eleven
- * languages, each sentence carries its own `lang` and `dir` from
+ * And because that limit is REAL rather than hypothetical for every language
+ * except Spanish, each sentence carries its own `lang` and `dir` from
  * `portalMessageView` instead of inheriting the page's. The alternative is the
  * sentence that exists to admit the page is not in the participant's language
  * being itself labelled as if it were — announced to a screen reader with the

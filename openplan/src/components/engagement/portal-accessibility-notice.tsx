@@ -112,7 +112,7 @@ export function PortalAccessibilityNotice({
 /**
  * A `<dt>` whose label carries its own language.
  *
- * Nine of the eleven locales have no catalog, so on those pages this word is
+ * Every locale except Spanish has no catalog, so on those pages this word is
  * English sitting inside a page declared Korean or Farsi — the same reason every
  * other run of text on this portal carries its own `lang` and `dir`.
  */

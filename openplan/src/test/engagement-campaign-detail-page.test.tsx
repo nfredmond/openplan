@@ -2,6 +2,8 @@ import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { PORTAL_LOCALES } from "@/lib/engagement/portal-i18n/locales";
+
 const createClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {
   throw new Error("notFound");
@@ -874,8 +876,13 @@ describe("EngagementCampaignDetailPage", () => {
 
       // A viewer still sees coverage — "what have we published in Spanish" is a
       // question they are entitled to answer — and gets no way to change it.
-      // Ten cards, one per language that is not the campaign's own.
-      expect(screen.getAllByText(/Your text: 0 of 4 strings translated/)).toHaveLength(10);
+      // One card per language that is not the campaign's own, DERIVED from the
+      // taxonomy: this was a hardcoded 10 until the 2026 expansion, which is a
+      // number that says nothing about the behaviour under test and breaks every
+      // time the portal learns a language.
+      expect(screen.getAllByText(/Your text: 0 of 4 strings translated/)).toHaveLength(
+        PORTAL_LOCALES.length - 1
+      );
       expect(screen.queryByRole("button", { name: /save as our wording/i })).not.toBeInTheDocument();
       expect(screen.getByText(/translations but not change them/i)).toBeInTheDocument();
     });

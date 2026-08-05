@@ -484,8 +484,8 @@ export default async function EngagementCampaignDetailPage({
     (items ?? []) as Array<{ id: string; body: string; status: string | null; metadata_json?: unknown }>
   );
 
-  // LANGUAGE ACCESS — what this campaign says in each of the eleven languages
-  // the portal can be read in, and what may honestly be claimed about that.
+  // LANGUAGE ACCESS — what this campaign says in each of the languages the
+  // portal can be read in, and what may honestly be claimed about that.
   //
   // Read through the CALLER's client on purpose: `engagement_content_translations`
   // has a member SELECT policy, so this is defense-in-depth with the membership
@@ -496,8 +496,9 @@ export default async function EngagementCampaignDetailPage({
   // failures is a REAL state right now rather than a hypothesis: the migration
   // that creates the table is not applied in every environment, and a select
   // against a missing relation errors. `coverage` then arrives NULL and the panel
-  // says the answer is unknown — it must never draw eleven "not translated"
-  // cards out of a database failure, because that is a claim about the agency.
+  // says the answer is unknown — it must never draw a "not translated" card for
+  // every language out of a database failure, because that is a claim about the
+  // agency.
   const translationState = await loadCampaignTranslationState(supabase, campaign);
   // Whether the MODEL is reachable, asked inside the workspace's own integration
   // context so a workspace holding its own key is not told the deployment has

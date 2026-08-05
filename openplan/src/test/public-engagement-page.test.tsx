@@ -575,10 +575,10 @@ describe("PublicEngagementPage", () => {
     // A forwarded link with a bad language must still open the consultation —
     // and the resident who followed it is owed the sentence explaining why they
     // are not reading what they were promised.
-    await renderPage({ lang: "so" });
+    await renderPage({ lang: "sw" });
 
     expect(screen.getByText(/not available here/i)).toBeInTheDocument();
-    expect(screen.getByText(/\(so\)/)).toBeInTheDocument();
+    expect(screen.getByText(/\(sw\)/)).toBeInTheDocument();
   });
 
   it("says which parts of a partly translated page are not translated", async () => {

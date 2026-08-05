@@ -14,6 +14,7 @@ import {
 } from "@/lib/runtime/ai-rate-limit";
 import { hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { isPortalLocale, type PortalLocale } from "@/lib/engagement/portal-i18n/locales";
+import { machineTranslationUnavailableReason } from "@/lib/engagement/translation-languages";
 import { TRANSLATION_LANGUAGE_LABELS } from "@/lib/engagement/translation-languages";
 import { translateEngagementText } from "@/lib/engagement/translation";
 import {
@@ -519,6 +520,31 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
     const wantsPublish = parsed.data.action === "publish_machine";
 
+    // REFUSED BEFORE THE MODEL, and before the key check, because this refusal
+    // is a fact about the LANGUAGE rather than about the deployment. A
+    // workspace with a perfectly good Anthropic key must still be told no here,
+    // and told why — see `MACHINE_TRANSLATION_UNAVAILABLE`. Answering with the
+    // no-key sentence instead would send a planner to fix an API key that would
+    // not have helped.
+    const machineRefusal = machineTranslationUnavailableReason(locale);
+    if (machineRefusal) {
+      audit.info("machine_translation_refused_for_language", { campaignId: campaign.id, locale });
+      return NextResponse.json(
+        {
+          available: false,
+          locale,
+          suggestions: [],
+          reason: machineRefusal,
+          // Distinguishable from the missing-key case by machine, not only by
+          // reading the prose: the panel offers "write it yourself" for both,
+          // but only one of them is worth an operator changing configuration
+          // over.
+          refusedForLanguage: true,
+        },
+        { status: 200 }
+      );
+    }
+
     return await withWorkspaceIntegrationContext(campaign.workspace_id, async () => {
       // Checked INSIDE the workspace-key context: a workspace holding its own
       // key must not be told the deployment has none.
@@ -529,7 +555,7 @@ export async function POST(request: NextRequest, context: RouteContext): Promise
 
       const rateLimit = await checkAiUsageRateLimit(campaign.workspace_id, {
         // This route's own bucket is counted alongside the staff buckets, so a
-        // scripted loop over eleven languages is bounded by the same window
+        // scripted loop over every language is bounded by the same window
         // everything else is.
         bucketKeys: [...AI_RATE_LIMIT_BUCKET_KEYS, ENGAGEMENT_CONTENT_TRANSLATION_BUCKET],
       });

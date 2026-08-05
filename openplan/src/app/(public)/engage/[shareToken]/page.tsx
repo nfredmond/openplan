@@ -151,12 +151,12 @@ export default async function PublicEngagementPage({
   const modeLabel = modeKey ? translator.t(modeKey) : campaign.engagement_type.replaceAll("_", " ");
 
   return (
-    // `dir` is the whole reason Arabic and Farsi are usable here rather than
-    // merely present in a list. It sits on the participant surface's own
-    // wrapper, not on the app shell: this is a public route and the shell is
-    // shared with the operator console, which is not translated and must not
-    // flip. `lang` travels with it so assistive technology reads the page as
-    // what it is.
+    // `dir` is the whole reason the right-to-left languages are usable here
+    // rather than merely present in a list. It sits on the participant
+    // surface's own wrapper, not on the app shell: this is a public route and
+    // the shell is shared with the operator console, which is not translated and
+    // must not flip. `lang` travels with it so assistive technology reads the
+    // page as what it is.
     <section className="public-page" dir={locale.direction} lang={locale.bcp47}>
       <div className="public-page-backdrop" />
 

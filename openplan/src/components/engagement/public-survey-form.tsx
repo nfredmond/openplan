@@ -38,7 +38,7 @@ import type { PortalText } from "@/lib/engagement/portal-i18n/operator-text";
  * NOTE FOR ANYONE ADDING AN IMPORT HERE: `messages.ts` must never be one, not
  * even a type-only one that a later edit could turn into a value import. It
  * holds every locale's catalog, so importing it into this client component would
- * ship all eleven languages to one resident's phone to render one — the exact
+ * ship every language to one resident's phone to render one — the exact
  * thing `translator.ts` was split out to prevent. The message KEYS this file
  * names are typed through `portalMessageView`, which is generic over them, so
  * placeholder interpolation stays a build error with no catalog in reach.
@@ -168,7 +168,7 @@ const PENDING_COPY_LOCALE: PortalLocale = "en";
  *   2. the form states, once, near the top, that part of it is not available in
  *      the participant's language — `language.partialNotice`, which is a catalog
  *      key and so is itself translated wherever a catalog exists, and marked as
- *      English by `portalMessageView` on the nine locales where one does not yet.
+ *      English by `portalMessageView` on the locales where one does not yet.
  *
  * ENGLISH PLURALS ARE APPLIED HERE ON PURPOSE. These strings are English by
  * definition, so `file${n === 1 ? "" : "s"}` is correct for them. The catalog
@@ -307,8 +307,8 @@ function englishSentence(text: string): PortalDisclosureView {
  * ONE STRING OF PARTICIPANT-FACING COPY, CARRYING THE LANGUAGE IT CAME OUT IN.
  *
  * WHY IT IS NEEDED. `translator.t()` returns a plain string whether the catalog
- * had the participant's language or fell back to English, and nine of the eleven
- * locales have no catalog at all — so on a Farsi portal EVERY sentence this form
+ * had the participant's language or fell back to English, and every locale except
+ * Spanish has no catalog at all — so on a Farsi portal EVERY sentence this form
  * renders is English while the form element around it says `lang="fa"`. Rendering
  * them bare was sanctioned by `translator.ts` ("mark each fallback, or rely on
  * the page-level disclosure"), and this form takes the first half of that choice,
@@ -661,8 +661,9 @@ function MultipleChoiceWidget({ question, translator, initialAnswer, onChange }:
   }
 
   // The counts are formatted for the participant's locale, not stringified:
-  // Arabic and Farsi use different digits, and a limit a resident cannot read is
-  // a limit the server will enforce anyway.
+  // several of the languages here write digits differently (Arabic and Farsi
+  // among them), and a limit a resident cannot read is a limit the server will
+  // enforce anyway.
   const min = cfg.min_select !== undefined ? formatPortalNumber(cfg.min_select, translator.bcp47) : null;
   const max = cfg.max_select !== undefined ? formatPortalNumber(cfg.max_select, translator.bcp47) : null;
   const countHint =
@@ -1043,7 +1044,8 @@ function MapPointWidget({ question, translator, initialAnswer, onChange }: Widge
  *
  * `usd` and `percent` are formatted by `Intl`, which places the symbol where the
  * reader's language places it — a `$` glued to the front of a number is wrong in
- * most of the eleven languages and reads backwards in two of them. The currency
+ * most of the languages this portal carries and reads backwards in the
+ * right-to-left ones. The currency
  * code is not a jurisdiction assumption invented here: it is the config's own
  * declared `unit`, and `budgetConfigSchema` offering only `usd` is an upstream
  * limit worth widening in survey.ts, not one this component may guess around.
@@ -1071,7 +1073,8 @@ function formatBudgetAmount(amount: number, unit: "usd" | "points" | "percent", 
 /**
  * The unit mark beside a budget input, WRITTEN THE WAY THIS LANGUAGE WRITES IT.
  *
- * A literal `"$"` / `"%"` stood here, and both are wrong in some of the eleven:
+ * A literal `"$"` / `"%"` stood here, and both are wrong in some of the
+ * languages this portal carries:
  * Arabic writes the percent sign as ٪, and several locales set a currency mark
  * after the number rather than before it. `Intl` already carries that data, so
  * the mark is READ OUT of a formatted zero rather than typed in — which also
@@ -1456,7 +1459,7 @@ function QuestionField({
         >
           {/*
             Each sentence carries its OWN language rather than being joined into
-            one string under the page's. Nine of the eleven locales have no
+            one string under the page's. Every locale except Spanish has no
             catalog, so on those pages this disclosure is itself English — and a
             disclosure a screen reader mispronounces, or lays out from the wrong
             edge of a right-to-left page, is a disclosure that was not made.
@@ -1527,7 +1530,7 @@ export function PublicSurveyForm({
    *
    * A bundle rather than a lookup function because functions cannot cross the
    * server/client boundary, and rather than a locale code because that would
-   * make this component import the catalog and ship all eleven languages to one
+   * make this component import the catalog and ship every language to one
    * resident's phone. `loadPublicPortalBundle` puts it on `PublicPortalProps`,
    * so the render site already has it.
    *
@@ -1891,7 +1894,7 @@ export function PublicSurveyForm({
    * agency can be held to what it appears to have published.
    *
    * It uses `language.partialNotice`, a catalog key, so the disclosure is in the
-   * participant's language wherever a catalog exists — and on the nine locales
+   * participant's language wherever a catalog exists — and on the locales
    * where none does yet, the disclosure is itself one of the English runs it is
    * disclosing, and is marked as English like the rest. The page may carry the
    * same sentence from `PortalLanguageNotice`; that duplication is accepted
