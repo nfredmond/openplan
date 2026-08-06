@@ -19,7 +19,7 @@ import { lineAt, matchingParen, splitTopLevel, unquoteLiteral } from "./read-mig
  * naming the file and line. A guard is allowed to fail. It is not allowed to
  * shrink.
  *
- * Two loop shapes exist in the migration set, and both are handled:
+ * Three loop shapes exist in the migration set, and all three are handled:
  *
  *   Form A  FOREACH v IN ARRAY ARRAY['a','b'] LOOP … EXECUTE format(…, v || '_read', v)
  *           — 20260410000045_scenario_shared_spine.sql
@@ -27,17 +27,24 @@ import { lineAt, matchingParen, splitTopLevel, unquoteLiteral } from "./read-mig
  *   Form B  FOR r IN SELECT * FROM (VALUES ('a','x'),('b','y')) AS t(tbl, ws_expr) LOOP
  *           — 20260728000006 / 20260728000007, the writer-gate migrations
  *
+ *   Form C  FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP
+ *           — 20260804000002, which GRANTs over every table that exists. Its
+ *           iteration set is not written in the file at all: it is the schema.
+ *           So this form binds against `loadSchemaInventory().tables()`, which
+ *           is why the caller must supply the universe rather than the parser
+ *           inventing one.
+ *
  * `IF NOT EXISTS (SELECT 1 FROM pg_policies …) THEN` wrappers are ignored on
  * purpose: they are idempotency, not a branch. The policy is what the migration
  * intends the schema to have.
  */
 
 export class UnexpandableDynamicSqlError extends Error {
-  constructor(file: string, line: number, detail: string) {
+  constructor(file: string, line: number, detail: string, noun: string = "policy") {
     super(
-      `${file}:${line} builds a policy with SQL this parser cannot render: ${detail}\n` +
+      `${file}:${line} builds a ${noun} with SQL this parser cannot render: ${detail}\n` +
         "Teach src/test/migrations/plpgsql-expansion.ts the new shape. Do not silently skip it — " +
-        "a policy the inventory cannot see is a policy no guard can require."
+        `a ${noun} the inventory cannot see is a ${noun} no guard can require.`
     );
     this.name = "UnexpandableDynamicSqlError";
   }
@@ -213,6 +220,30 @@ function forRecordBindings(body: string): Bindings[] | null {
   return rows.length ? rows : null;
 }
 
+/**
+ * Form C — `FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = 'public'`.
+ *
+ * The iteration set is the LIVE SCHEMA, not anything written in the file, so the
+ * caller passes it in. That is the whole point: a statement whose reach is "every
+ * table" must be rendered against every table, or a guard reading it would report
+ * a smaller world than the one the migration acts on — which is the exact failure
+ * this module exists to prevent.
+ *
+ * Only `pg_tables` is recognised. A loop over `information_schema.tables`, or one
+ * with a WHERE clause narrowing beyond `schemaname = 'public'`, deliberately does
+ * NOT match and therefore throws downstream rather than expanding to something
+ * this parser guessed at.
+ */
+function forPgTablesBindings(body: string, tables: readonly string[]): Bindings[] | null {
+  const header = body.match(
+    /\bFOR\s+([A-Za-z_]\w*)\s+IN\s+SELECT\s+(tablename)\s+FROM\s+(?:pg_catalog\.)?pg_tables\s+WHERE\s+schemaname\s*=\s*'public'\s*LOOP/i
+  );
+  if (!header) return null;
+
+  const [, record, column] = header;
+  return tables.map((table) => ({ [`${record}.${column}`]: table }));
+}
+
 /** Split on `||` at paren depth 0 and outside strings, so a `'a||b'` literal stays whole. */
 function splitConcat(expression: string): string[] {
   const parts: string[] = [];
@@ -294,19 +325,30 @@ function applyFormat(template: string, args: string[]): string | null {
   return next === args.length ? out : null;
 }
 
-export function expandDynamicPolicyStatements(file: string, sql: string): ExpandedStatement[] {
+type ExpandOptions = {
+  /** What the rendered statements are, for the error message. */
+  noun: string;
+  /** Which EXECUTE sites this pass cares about, tested against the raw argument text. */
+  interesting: (argument: string) => boolean;
+  /** Every table the schema declares — required only by Form C. */
+  tables?: readonly string[];
+};
+
+function expandDynamicStatements(file: string, sql: string, options: ExpandOptions): ExpandedStatement[] {
   const statements: ExpandedStatement[] = [];
 
   for (const block of doBlocks(sql)) {
-    const sites = executeSites(block.body).filter((site) =>
-      /\b(?:CREATE|DROP)\s+POLICY\b/i.test(site.argument)
-    );
+    const sites = executeSites(block.body).filter((site) => options.interesting(site.argument));
     if (!sites.length) continue;
 
     const unexpandable = (offset: number, detail: string) =>
-      new UnexpandableDynamicSqlError(file, lineAt(sql, block.offset + offset), detail);
+      new UnexpandableDynamicSqlError(file, lineAt(sql, block.offset + offset), detail, options.noun);
 
-    const rows = foreachBindings(block.body) ?? forRecordBindings(block.body) ?? [{}];
+    const rows =
+      foreachBindings(block.body) ??
+      forPgTablesBindings(block.body, options.tables ?? []) ??
+      forRecordBindings(block.body) ??
+      [{}];
 
     // Parse each EXECUTE once, into something that can be rendered per row.
     const prepared = sites.map((site) => {
@@ -372,4 +414,34 @@ export function expandDynamicPolicyStatements(file: string, sql: string): Expand
   }
 
   return statements;
+}
+
+export function expandDynamicPolicyStatements(file: string, sql: string): ExpandedStatement[] {
+  return expandDynamicStatements(file, sql, {
+    noun: "policy",
+    interesting: (argument) => /\b(?:CREATE|DROP)\s+POLICY\b/i.test(argument),
+  });
+}
+
+/**
+ * The GRANT/REVOKE statements a migration builds at runtime, rendered concretely.
+ *
+ * Sequence grants are deliberately out of scope: `20260804000002` carries a
+ * second loop over `pg_sequences`, and a sequence privilege is a different object
+ * class from a table privilege — nothing a table-grant inventory can answer
+ * questions about. Excluding them by the object they name (rather than by failing
+ * to bind their loop variable) is what keeps that exclusion a decision instead of
+ * an accident.
+ */
+export function expandDynamicGrantStatements(
+  file: string,
+  sql: string,
+  tables: readonly string[]
+): ExpandedStatement[] {
+  return expandDynamicStatements(file, sql, {
+    noun: "grant",
+    tables,
+    interesting: (argument) =>
+      /\b(?:GRANT|REVOKE)\b/i.test(argument) && !/\bON\s+(?:ALL\s+)?SEQUENCES?\b/i.test(argument),
+  });
 }

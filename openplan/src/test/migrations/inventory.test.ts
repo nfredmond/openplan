@@ -1,3 +1,6 @@
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { blankComments, migrationFiles, readMigration, splitTopLevel, unquoteLiteral } from "./read-migrations";
 import { UnexpandableDynamicSqlError, expandDynamicPolicyStatements, stringLiteralRanges } from "./plpgsql-expansion";
@@ -9,6 +12,7 @@ import {
   type PolicyStatement,
 } from "./policy-inventory";
 import { loadSchemaInventory } from "./schema-inventory";
+import { describeViolations, loadGrantInventory, parseGrantStatement } from "./grant-inventory";
 
 /**
  * GUARD THE GUARDS — this module tree is now load-bearing for five test files,
@@ -532,5 +536,203 @@ describe("migration lexing", () => {
     for (const file of files) {
       expect(() => expandDynamicPolicyStatements(file, blankComments(readMigration(file)))).not.toThrow();
     }
+  });
+});
+
+/**
+ * THE GRANT POSTURE — a deliberate REVOKE may only be undone on purpose.
+ *
+ * On 2026-08-04 `20260804000002` looped every table in `public` and re-granted
+ * the four client DML privileges, then re-asserted the deliberate revocations
+ * from two of the roughly twenty-six migrations that had written them. The rest
+ * were widened with nothing failing: the suite was green, and RLS still denied
+ * the writes, so no behavioural probe could see that a second, independent lock
+ * had been removed from twenty-odd tables — including the column-scoped UPDATE
+ * gate that keeps a workspace member from writing a narrative draft's own
+ * grounding record.
+ *
+ * The invariant below is deliberately not a shape rule and not a list of names:
+ *
+ *     any (table, role, privilege) that a migration REVOKED may be held at HEAD
+ *     only if a later statement granted it BY NAME.
+ *
+ * A blanket grant — `ALL TABLES IN SCHEMA`, or a loop over `pg_tables` — says
+ * nothing about any particular table, so it can never re-establish a deliberate
+ * denial. That leaves blanket grants legal, which matters: the next platform
+ * change to default privileges will need one. It just makes them compose. When
+ * this fails it prints the exact REVOKE block that would fix it, so the author
+ * of the next blanket grant never has to type a table name twice.
+ */
+describe("client grants compose back to the audited posture", () => {
+  const inventory = loadGrantInventory();
+
+  it("holds no privilege a migration revoked, except where a by-name grant restored it", () => {
+    const violations = inventory.violations();
+
+    expect(
+      violations.length === 0
+        ? ""
+        : `${violations.length} privilege(s) revoked by a migration are held at HEAD, and only a ` +
+          `blanket grant put them back. Add these to the newest migration:\n\n` +
+          `${describeViolations(violations)}\n`
+    ).toBe("");
+  });
+
+  it("sees a world big enough to be worth asserting on", () => {
+    // Floors, not equalities: this set grows whenever a table is locked down, and
+    // a guard that had to be edited for every such migration would be edited
+    // carelessly. What must never happen is the inventory silently SHRINKING —
+    // the failure mode that hid the unarmed GTFS policies for four months.
+    expect(inventory.revokedTables().length).toBeGreaterThanOrEqual(25);
+    expect(inventory.denials().length).toBeGreaterThanOrEqual(150);
+
+    // The four service-role-only ledgers from 20260730000008 are the ones
+    // 20260804000002 DID re-assert, so they prove the parser reads a correct
+    // revoke as satisfied rather than reading every revoke as a violation.
+    const ledgers = ["assistant_action_approvals", "engagement_item_votes", "aerial_processing_callbacks"];
+    for (const table of ledgers) {
+      const denied = inventory.denials().filter((denial) => denial.table === table);
+      expect(denied.length).toBeGreaterThan(0);
+      expect(denied.every((denial) => !denial.violation)).toBe(true);
+    }
+  });
+
+  /**
+   * GUARD THE GUARD. Every assertion above is only as good as the parser, and a
+   * parser that reads a statement wrong reports a SMALLER denial set — which
+   * looks exactly like compliance. That is not hypothetical here: the first
+   * version of this module dropped `authenticated` from every dynamically
+   * rendered statement, because the expander terminates its output with `;` and
+   * `TO anon, authenticated;` parsed its last role as `authenticated;`. Half the
+   * denial set vanished and every test on this page was green.
+   */
+  it("reads the statement shapes the migration corpus actually contains", () => {
+    const parse = parseGrantStatement;
+
+    // ALL expands, PUBLIC is a role, and TABLE is optional.
+    const revokeAll = parse("REVOKE ALL ON TABLE public.widgets FROM PUBLIC, anon, authenticated");
+    expect(revokeAll?.kind).toBe("revoke");
+    expect(revokeAll?.roles).toEqual(["public", "anon", "authenticated"]);
+    expect(revokeAll?.privileges.map((p) => p.privilege)).toContain("TRUNCATE");
+
+    // The terminator the expander adds must not eat the last role.
+    expect(parse("GRANT SELECT ON public.widgets TO anon, authenticated;")?.roles).toEqual([
+      "anon",
+      "authenticated",
+    ]);
+
+    // Column-scoped grants keep their columns — this is the narrative-draft control.
+    const columns = parse("GRANT UPDATE (status, accepted_by) ON public.widgets TO authenticated");
+    expect(columns?.privileges).toEqual([{ privilege: "UPDATE", columns: ["status", "accepted_by"] }]);
+
+    // A blanket grant reaches every table and names none.
+    expect(parse("GRANT SELECT ON ALL TABLES IN SCHEMA public TO anon")?.reach).toBe("blanket");
+    expect(parse("GRANT SELECT ON public.a, public.b TO anon")?.tables).toEqual(["a", "b"]);
+    expect(parse("GRANT SELECT ON TABLE widgets TO anon")?.tables).toEqual(["widgets"]);
+
+    // Not table privileges, and not client roles: silently skipped is correct here.
+    expect(parse("REVOKE ALL ON FUNCTION public.f(uuid) FROM anon")).toBeNull();
+    expect(parse("GRANT USAGE, SELECT ON SEQUENCE public.s TO anon")).toBeNull();
+    expect(parse("GRANT ALL ON TABLE public.widgets TO service_role")).toBeNull();
+    expect(parse("CREATE TABLE public.widgets (id uuid)")).toBeNull();
+
+    // But a table grant it cannot READ must throw rather than shrink the world.
+    expect(() => parse("GRANT SELEKT ON public.widgets TO anon")).toThrow(/unknown table privilege/i);
+  });
+
+  it("distinguishes a blanket re-grant from a deliberate one (synthetic controls)", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "openplan-grant-inventory-"));
+    const write = (name: string, sql: string) => writeFileSync(path.join(dir, name), sql, "utf8");
+
+    // A schema for the parser's Form C expansion to bind against.
+    write("0001_create.sql", "CREATE TABLE public.widgets (id uuid primary key);\nCREATE TABLE public.gadgets (id uuid primary key);\n");
+    write("0002_revoke.sql", "REVOKE ALL ON TABLE public.widgets FROM anon, authenticated;\nREVOKE ALL ON TABLE public.gadgets FROM anon;\n");
+
+    // NEGATIVE CONTROL: nothing grants it back, so nothing is held and nothing violates.
+    const quiet = loadGrantInventory({ dir });
+    expect(quiet.denials().length).toBeGreaterThan(0);
+    expect(quiet.violations()).toEqual([]);
+
+    // POSITIVE CONTROL: the blanket loop from 20260804000002, rendered over this
+    // synthetic schema. Both tables come back, and neither by name.
+    write(
+      "0003_blanket.sql",
+      "DO $$\nDECLARE t record;\nBEGIN\n  FOR t IN SELECT tablename FROM pg_tables WHERE schemaname = 'public' LOOP\n" +
+        "    EXECUTE format('GRANT SELECT, INSERT ON public.%I TO anon, authenticated', t.tablename);\n" +
+        "  END LOOP;\nEND $$;\n"
+    );
+    const widened = loadGrantInventory({ dir });
+    expect(widened.violations().map((v) => `${v.table}/${v.role}/${v.privilege}`).sort()).toEqual([
+      "gadgets/anon/INSERT",
+      "gadgets/anon/SELECT",
+      "widgets/anon/INSERT",
+      "widgets/anon/SELECT",
+      "widgets/authenticated/INSERT",
+      "widgets/authenticated/SELECT",
+    ]);
+
+    // A BY-NAME grant after the revoke is legitimate and must NOT be reported,
+    // even though the blanket grant above also touched it. This is the
+    // distinction the whole invariant rests on.
+    write("0004_named.sql", "GRANT SELECT ON TABLE public.widgets TO authenticated;\n");
+    const named = loadGrantInventory({ dir });
+    expect(named.violations().map((v) => `${v.table}/${v.role}/${v.privilege}`)).not.toContain(
+      "widgets/authenticated/SELECT"
+    );
+    expect(named.violations().map((v) => `${v.table}/${v.role}/${v.privilege}`)).toContain(
+      "widgets/authenticated/INSERT"
+    );
+
+    rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("requires every public view to run as its invoker", () => {
+    // A view without `security_invoker` executes as its OWNER, so a client
+    // reading it bypasses RLS on the base tables. `census_tracts_map` selects
+    // from a table whose writes are revoked; without this the view would be a
+    // way around that. Zero exceptions today, so it can be an absolute rule.
+    //
+    // This REPLAYS rather than reading one statement, and the difference is not
+    // academic: `census_tracts_computed` and `lodes_by_tract` are created bare in
+    // 20260219000003 and only made invoker-run by an ALTER in 20260420000063. A
+    // version of this test that read CREATE alone reported both as defects — the
+    // same "assert on a copy of the artifact" mistake in miniature, caught here
+    // only because the live catalog disagreed with it.
+    const invoker = new Map<string, { value: boolean; file: string }>();
+
+    for (const file of migrationFiles()) {
+      const sql = blankComments(readMigration(file));
+
+      for (const match of sql.matchAll(
+        /CREATE\s+(?:OR\s+REPLACE\s+)?VIEW\s+(?:public\.)?"?([A-Za-z0-9_]+)"?([\s\S]*?)\bAS\b/gi
+      )) {
+        invoker.set(match[1].toLowerCase(), {
+          value: /security_invoker\s*=\s*(?:true|on)/i.test(match[2]),
+          file,
+        });
+      }
+
+      for (const match of sql.matchAll(
+        /ALTER\s+VIEW\s+(?:public\.)?"?([A-Za-z0-9_]+)"?\s+(SET|RESET)\s*\(([^)]*)\)/gi
+      )) {
+        const name = match[1].toLowerCase();
+        if (!/security_invoker/i.test(match[3])) continue;
+        invoker.set(name, {
+          value: match[2].toUpperCase() === "SET" && /security_invoker\s*=\s*(?:true|on)/i.test(match[3]),
+          file,
+        });
+      }
+
+      for (const match of sql.matchAll(/DROP\s+VIEW\s+(?:IF\s+EXISTS\s+)?(?:public\.)?"?([A-Za-z0-9_]+)"?/gi)) {
+        invoker.delete(match[1].toLowerCase());
+      }
+    }
+
+    expect(invoker.size).toBeGreaterThanOrEqual(6);
+    expect(
+      [...invoker.entries()]
+        .filter(([, state]) => !state.value)
+        .map(([name, state]) => `${name} (last set in ${state.file})`)
+    ).toEqual([]);
   });
 });
