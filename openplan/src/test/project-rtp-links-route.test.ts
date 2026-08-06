@@ -42,7 +42,11 @@ vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: (...args: unknown[]) => createApiAuditLoggerMock(...args),
 }));
 
-import { PATCH as patchRtpLink, POST as postRtpLink } from "@/app/api/projects/[projectId]/rtp-links/route";
+import {
+  DELETE as deleteRtpLink,
+  PATCH as patchRtpLink,
+  POST as postRtpLink,
+} from "@/app/api/projects/[projectId]/rtp-links/route";
 
 type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
 
@@ -76,13 +80,29 @@ let horizonBandRead: QueryResult;
 /** The `rtp_cycles` read POST makes. Varied to prove the same-workspace check. */
 let rtpCycleRead: QueryResult;
 
+/**
+ * What the DELETE against `project_rtp_cycle_links` resolves to.
+ *
+ * Separate from the read fixture because the whole point of the delete tests is
+ * that a delete which matched NOTHING is a different outcome from one that
+ * matched a row — and a harness that answered the same fixture whichever way
+ * the chain was spelled could not tell those apart, which is the vacuous-test
+ * trap. Resolved from the ops list below, so it is reached by
+ * `.delete().eq().select().maybeSingle()` AND by a bare `.delete().eq()`; a
+ * mutation that removes the `.select()` therefore still gets this fixture and
+ * is judged on what the ROUTE does with it.
+ */
+let linkDeleteResult: QueryResult;
+
 function installClient() {
   createClientMock.mockResolvedValue({
     auth: { getUser: authGetUserMock },
     from: vi.fn((table: string) => {
       if (table === "project_rtp_cycle_links") {
         return makeChain(table, (ops) =>
-          ops.includes("update") || ops.includes("insert")
+          ops.includes("delete")
+            ? linkDeleteResult
+            : ops.includes("update") || ops.includes("insert")
             ? {
                 data: {
                   id: LINK_ID,
@@ -642,6 +662,126 @@ describe("POST /api/projects/[projectId]/rtp-links — the programmed cost at cr
     const projection = projectionsFor("project_rtp_cycle_links")[0] ?? "";
     for (const column of ["horizon_band_id", "estimated_cost", "cost_basis_year"]) {
       expect(projection).toContain(column);
+    }
+  });
+});
+
+/**
+ * REMOVING A PROJECT FROM AN RTP CYCLE — and not saying so when nothing moved.
+ *
+ * DELETE used to be `.delete().eq("id", …)` with `if (error) return 500`. That
+ * spelling cannot see the outcome it most needs to see: PostgREST answers a
+ * delete that matched ZERO rows with `error: null`, so the handler returned
+ * `{ ok: true }` and wrote `audit.info("deleted")` for a row still sitting in
+ * the table. The planner is told the project left the plan, the audit ledger
+ * records a deletion that did not occur, and the interface removes the row from
+ * the list until the next reload puts it back.
+ *
+ * WHETHER THIS IS LIVE DATA LOSS TODAY: it is not. `20260409000036` creates a
+ * PERMISSIVE `FOR DELETE` policy for every member of the row's workspace, and
+ * `20260728000006` narrows it with a RESTRICTIVE gate at `role >= member` —
+ * which is exactly the set `canAccessWorkspaceAction("plans.write", …)` admits
+ * (owner/admin/member), so a caller the route lets through is a caller the
+ * database lets through. The reachable zero-row cases are a concurrent delete
+ * and a future policy regression. This test is what makes the second one
+ * visible instead of silent.
+ */
+describe("DELETE /api/projects/[projectId]/rtp-links — a delete that changed nothing", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    dbCalls.length = 0;
+    createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    linkDeleteResult = { data: { id: LINK_ID }, error: null };
+    installClient();
+  });
+
+  function deleteRequest(body: Record<string, unknown>) {
+    return new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/rtp-links`, {
+      method: "DELETE",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+
+  function linkDeleteHappened(): boolean {
+    return dbCalls.some((call) => call.table === "project_rtp_cycle_links" && call.method === "delete");
+  }
+
+  it("removes the link and reports it once, when a row actually matched", async () => {
+    const response = await deleteRtpLink(deleteRequest({ linkId: LINK_ID }), routeContext);
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ ok: true });
+    expect(linkDeleteHappened()).toBe(true);
+    expect(mockAudit.info).toHaveBeenCalledWith("deleted", expect.objectContaining({ linkId: LINK_ID }));
+  });
+
+  it("does not report success when the delete matched no rows and reported no error", async () => {
+    // `.maybeSingle()`'s spelling of "nothing matched": no row, no error. The
+    // old handler read this as a clean success.
+    linkDeleteResult = { data: null, error: null };
+
+    const response = await deleteRtpLink(deleteRequest({ linkId: LINK_ID }), routeContext);
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("The RTP link was not saved");
+    expect(body.details).toContain("matched no rows");
+    // The claim the planner was previously given for a row that never moved.
+    expect(body.ok).toBeUndefined();
+
+    // And the ledger must not record a deletion that did not happen.
+    expect(mockAudit.info).not.toHaveBeenCalledWith("deleted", expect.anything());
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "delete_matched_no_rows",
+      expect.objectContaining({ linkId: LINK_ID, projectId: PROJECT_ID })
+    );
+  });
+
+  it("treats PGRST116 as nothing matched rather than as a server fault", async () => {
+    // The OTHER spelling of the same outcome, which arrives when the query is
+    // written with `.single()`. A route that tests `if (error)` alone collapses
+    // it into "Failed to remove RTP link" — an authorization or concurrency
+    // outcome wearing a server error's clothes.
+    linkDeleteResult = { data: null, error: { message: "JSON object requested, multiple (or no) rows returned", code: "PGRST116" } };
+
+    const response = await deleteRtpLink(deleteRequest({ linkId: LINK_ID }), routeContext);
+    const body = await response.json();
+
+    expect(body.error).toBe("The RTP link was not saved");
+    expect(body.error).not.toBe("Failed to remove RTP link");
+    expect(body.details).toContain("matched no rows");
+    expect(mockAudit.info).not.toHaveBeenCalledWith("deleted", expect.anything());
+  });
+
+  it("still reports a genuine database failure as a failure", async () => {
+    linkDeleteResult = { data: null, error: { message: "permission denied for table project_rtp_cycle_links", code: "42501" } };
+
+    const response = await deleteRtpLink(deleteRequest({ linkId: LINK_ID }), routeContext);
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.error).toBe("Failed to remove RTP link");
+    expect(mockAudit.error).toHaveBeenCalledWith(
+      "delete_failed",
+      expect.objectContaining({ code: "42501" })
+    );
+  });
+
+  it("reads back only the id, so a delete does not depend on the financial migration", async () => {
+    await deleteRtpLink(deleteRequest({ linkId: LINK_ID }), routeContext);
+
+    // The projection after the lookup is the delete's own read-back. Asking for
+    // `estimated_cost` here would make every delete answer 503 "RTP financial
+    // schema is not available yet" on a deployment that has not run
+    // 20260805000003 — a migration this handler does not write through.
+    const projections = projectionsFor("project_rtp_cycle_links");
+    expect(projections).toHaveLength(2);
+    expect(projections[1]).toBe("id");
+    for (const column of ["estimated_cost", "cost_basis_year", "horizon_band_id"]) {
+      expect(projections[1]).not.toContain(column);
     }
   });
 });

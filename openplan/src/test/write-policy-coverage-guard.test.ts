@@ -210,7 +210,16 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/models/[modelId]/runs/route.ts": 15,
   "src/app/api/plans/[planId]/route.ts": 1,
   "src/app/api/programs/[programId]/route.ts": 1,
-  "src/app/api/projects/[projectId]/rtp-links/route.ts": 1,
+  // 1 -> 0 (2026-08-05): the DELETE handler was the last blind write here. It
+  // ran `.delete().eq("id", …)` and tested only `.error`, so a delete that
+  // matched ZERO rows — the shape PostgREST reports with `error: null` — was
+  // answered `{ ok: true }` and written to the audit ledger as
+  // `audit.info("deleted")` for a row still in the table. It now chains
+  // `.select("id").maybeSingle()` and reports the outcome through
+  // write-outcome.ts, like the PATCH beside it. `"id"` and not the full
+  // projection on purpose: a DELETE returns the caller no record, and asking
+  // for the financial columns would 503 every delete on a deployment that has
+  // not run 20260805000003.
   "src/app/api/reports/[reportId]/generate/route.ts": 6,
   "src/app/api/reports/[reportId]/route.ts": 4,
   "src/app/api/rtp-cycles/[rtpCycleId]/public-share/route.ts": 1,

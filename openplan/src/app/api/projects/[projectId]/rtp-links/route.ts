@@ -615,10 +615,47 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { error } = await supabase.from("project_rtp_cycle_links").delete().eq("id", link.id);
-    if (error) {
+    // `.select("id").maybeSingle()`, not a bare `.delete().eq()`.
+    //
+    // A bare delete answers `error: null` when it matched ZERO rows, so the
+    // handler below would report `{ ok: true }` and write `audit.info("deleted")`
+    // for a deletion that never happened — a success message and a ledger entry
+    // for a row still sitting in the table. The same defect the PATCH handler
+    // above was fixed for, in the one shape where the caller has no returned
+    // record to notice the absence of.
+    //
+    // `"id"` rather than LINK_RESULT_COLUMNS on purpose: a DELETE hands the
+    // caller no record, so nothing needs the financial columns — and asking for
+    // them would make every delete 503 "schema is not available yet" on a
+    // deployment that has not run 20260805000003. A delete must not depend on a
+    // migration it does not write through.
+    const { data: deleted, error } = await supabase
+      .from("project_rtp_cycle_links")
+      .delete()
+      .eq("id", link.id)
+      .select("id")
+      .maybeSingle();
+
+    if (error && isWriteFailure(error)) {
       audit.error("delete_failed", { error: error.message, code: error.code ?? null });
       return NextResponse.json({ error: "Failed to remove RTP link" }, { status: 500 });
+    }
+
+    if (writeMatchedNoRows({ data: deleted, error })) {
+      // `targetWasVerified: true` — the link was read back through the CALLER's
+      // own client a few lines above and the caller passed both the membership
+      // and the `plans.write` role check. Zero rows here therefore means the
+      // database refused a delete the application believed was allowed (a
+      // missing permissive DELETE policy is the usual cause) or the link was
+      // removed by someone else while this request was in flight. Either way
+      // nothing this request did changed anything, and saying "ok" would be
+      // false.
+      audit.error("delete_matched_no_rows", {
+        projectId: routeParams.data.projectId,
+        linkId: link.id,
+        role: membership.role ?? null,
+      });
+      return noRowsMatchedResponse({ subject: "RTP link", targetWasVerified: true });
     }
 
     audit.info("deleted", { projectId: routeParams.data.projectId, linkId: link.id, durationMs: Date.now() - startedAt });
