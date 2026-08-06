@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -135,6 +135,47 @@ describe("package.json scripts: every path they name resolves", () => {
       Object.values(scriptsOf(dir)).flatMap(scriptFilePaths)
     );
     expect(total.length).toBeGreaterThan(40);
+  });
+
+  /**
+   * The INVERSE cross-reference, and the one that fails silently in the more
+   * dangerous direction.
+   *
+   * The check above proves a script names nothing missing. This proves nothing
+   * missing is unnamed. A test whose live half is gated on `LIVE_RLS` runs in
+   * exactly one place — `npm run test:rls-live`, which CI also invokes — and that
+   * script names its files by hand. Write a new live test, forget the script, and
+   * the file passes `npm test` by SKIPPING its only real assertions, reports
+   * green, and is never executed by anything. It is a guard that exists and
+   * guards nothing: the shipped-invisible class, wearing a test's clothes.
+   *
+   * That is not hypothetical. `gtfs-feed-status-mirrors-its-current-version.test.ts`
+   * arrived in this state on 2026-08-05 and was caught only because its author
+   * went looking; nothing in the build would have said a word.
+   */
+  it("runs every live-gated test somewhere", () => {
+    const testDir = path.join(REPO_ROOT, "openplan", "src", "test");
+    const liveGated = readdirSync(testDir)
+      .filter((name) => name.endsWith(".test.ts") || name.endsWith(".test.tsx"))
+      .filter((name) => /LIVE_RLS\s*\?\s*describe\s*:\s*describe\.skip/.test(readFileSync(path.join(testDir, name), "utf8")))
+      .map((name) => `src/test/${name}`)
+      .sort();
+
+    // Non-vacuity: if the detector stops finding the live tests that certainly
+    // exist, it would pass by finding nothing — the failure mode this whole file
+    // is about.
+    expect(liveGated.length).toBeGreaterThanOrEqual(4);
+    expect(liveGated).toContain("src/test/rls-isolation.test.ts");
+
+    const script = scriptsOf(path.join(REPO_ROOT, "openplan"))["test:rls-live"] ?? "";
+    expect(script).not.toBe("");
+
+    const unrun = liveGated.filter((file) => !script.includes(file));
+    expect(
+      unrun,
+      "live-gated test files that `npm run test:rls-live` does not name — they skip under `npm test` " +
+        "and run nowhere else, so their assertions have never executed. Add them to the script."
+    ).toEqual([]);
   });
 
   it("reads paths but not the ones a script writes", () => {
