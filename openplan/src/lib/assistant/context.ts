@@ -28,6 +28,14 @@ import {
   buildRtpCycleWorkflowSummary,
   RTP_CHAPTER_TEMPLATES,
 } from "@/lib/rtp/catalog";
+import {
+  buildRtpFiscalConstraint,
+  type RtpFiscalConstraintSummary,
+} from "@/lib/rtp/fiscal-constraint";
+import {
+  loadRtpFinancialElement,
+  type RtpFinancialElementSupabaseLike,
+} from "@/lib/rtp/financial-element-queries";
 import { compareRtpPacketPostureForCycle } from "@/lib/assistant/rtp-packet-posture";
 import {
   describeComparisonSnapshotAggregate,
@@ -123,6 +131,17 @@ export const ASSISTANT_READ_SUBJECTS = {
   rtpCycles: "RTP cycles",
   rtpChapters: "RTP chapters",
   rtpLinkedProjects: "projects linked to this RTP cycle",
+  /**
+   * THE THREE FINANCIAL-ELEMENT LANES, WORDED EXACTLY AS THE CYCLE PAGE WORDS
+   * THEM. `src/app/(app)/rtp/[rtpCycleId]/page.tsx` classifies the same three
+   * reads under these same strings, so a planner who reads "the horizon periods
+   * of this plan could not be read" on the page and then asks the copilot hears
+   * the same phrase for the same failure. Two spellings of one failure read as
+   * two different problems.
+   */
+  rtpHorizonBands: "the horizon periods of this plan",
+  rtpFinancialAssumptions: "the revenue and cost assumptions of this plan",
+  rtpPerformanceMeasures: "the performance measures of this plan",
   engagementCampaigns: "engagement campaigns",
   packetReports: "RTP board packets",
   planLinks: "plan links",
@@ -477,6 +496,33 @@ export type RtpAssistantContext = {
       title: string | null;
       packetFreshness: ReturnType<typeof getReportPacketFreshness>;
     } | null;
+  };
+  /**
+   * THE FINANCIAL ELEMENT — the half of an RTP a board actually votes on.
+   *
+   * Until this existed the copilot answered questions about a plan whose own
+   * page shows a revenue table, horizon periods and a fiscal-constraint verdict
+   * from a projection that selected none of it, and said nothing about any of
+   * them. That is not a neutral omission: a planner asking "can we afford this
+   * plan?" got an answer built from chapter and packet counts.
+   *
+   * `summary` IS NULL WHEN A READ THE VERDICT DEPENDS ON FAILED, and that is
+   * the entire design. `buildRtpFiscalConstraint` cannot distinguish "this plan
+   * has no constrained projects" from "the project read failed" — both arrive
+   * as an empty list — so over a failed read it finds no cost, no unpriced
+   * project, no blocker, and answers `constrained` against whatever revenue did
+   * load. A copilot computing a verdict from a partly-failed read is strictly
+   * more dangerous than one blind to the financial element, because it states
+   * that an unpriced plan is affordable. A null here means the copilot must say
+   * the read failed, NOT that no fiscal issue was found.
+   *
+   * OPTIONAL FOR THE SAME REASON `unreadable` IS: test files outside this module
+   * build `RtpAssistantContext` literals and a required field would break their
+   * compile rather than their claim. `loadRtpContext` always sets it.
+   */
+  fiscal?: {
+    summary: RtpFiscalConstraintSummary | null;
+    performanceMeasureCount: number;
   };
   operationsSummary: WorkspaceOperationsSummary;
   /** Reads that failed while this context loaded — see `AssistantContextReadFailure`. */
@@ -1801,6 +1847,44 @@ async function loadPlanContext(
   };
 }
 
+/**
+ * THE CYCLE PROJECTION, AS A NAMED CONSTANT SO A TEST CAN READ IT.
+ *
+ * `financial_basis_year` and `annual_inflation_rate` are not decoration: they
+ * are the two inputs that decide whether the fiscal-constraint figures are
+ * year-of-expenditure dollars (which 23 CFR 450.324(f)(11)(iv) requires) or
+ * constant dollars carrying a caveat. Dropping either does not produce an
+ * error — it produces a plan silently reported in the wrong dollars.
+ */
+export const RTP_CYCLE_ASSISTANT_COLUMNS =
+  "id, workspace_id, title, summary, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, financial_basis_year, annual_inflation_rate, updated_at";
+
+/**
+ * THE LINK PROJECTION, AND `portfolio_role` IS THE LOAD-BEARING COLUMN.
+ *
+ * `buildRtpFiscalConstraint` counts cost ONLY for links whose
+ * `portfolio_role` is `RTP_CONSTRAINED_PORTFOLIO_ROLE` — illustrative and
+ * candidate projects sit outside the constrained programme by regulation. Ask
+ * for the cost columns WITHOUT this one and every link reads as
+ * non-constrained: no cost is counted, no unpriced project is found, no blocker
+ * is raised, and a plan with no priced projects at all reports
+ * `balance >= 0` — `constrained` — against whatever revenue did load. The
+ * copilot then tells a planner their unpriced plan is affordable. There is no
+ * error and no empty state to notice; the failure is a confident wrong answer.
+ */
+export const RTP_CYCLE_LINK_ASSISTANT_COLUMNS =
+  "id, project_id, portfolio_role, horizon_band_id, estimated_cost, cost_basis_year, projects(id, name)";
+
+type RtpAssistantProjectLinkRow = {
+  id: string;
+  project_id: string;
+  portfolio_role: string | null;
+  horizon_band_id: string | null;
+  estimated_cost: number | string | null;
+  cost_basis_year: number | null;
+  projects?: { id: string; name: string } | Array<{ id: string; name: string }> | null;
+};
+
 async function loadRtpContext(
   supabase: SupabaseLike,
   userId: string,
@@ -1809,9 +1893,7 @@ async function loadRtpContext(
   const reads = new ReadFailureLog();
   const cycleResult = await supabase
     .from("rtp_cycles")
-    .select(
-      "id, workspace_id, title, summary, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, updated_at"
-    )
+    .select(RTP_CYCLE_ASSISTANT_COLUMNS)
     .eq("id", rtpCycleId)
     .maybeSingle();
 
@@ -1826,14 +1908,21 @@ async function loadRtpContext(
     return null;
   }
 
-  const [chaptersResult, projectLinksResult, campaignsResult, packetReportsResult, defaultModelingCountyRunId] = await Promise.all([
+  const [
+    chaptersResult,
+    projectLinksResult,
+    campaignsResult,
+    packetReportsResult,
+    financialElement,
+    defaultModelingCountyRunId,
+  ] = await Promise.all([
     supabase
       .from("rtp_cycle_chapters")
       .select("id, status")
       .eq("rtp_cycle_id", cycle.id),
     supabase
       .from("project_rtp_cycle_links")
-      .select("id")
+      .select(RTP_CYCLE_LINK_ASSISTANT_COLUMNS)
       .eq("rtp_cycle_id", cycle.id),
     supabase
       .from("engagement_campaigns")
@@ -1845,6 +1934,14 @@ async function loadRtpContext(
       .eq("rtp_cycle_id", cycle.id)
       .eq("report_type", "board_packet")
       .order("updated_at", { ascending: false }),
+    // THE SHARED LOADER, NOT THREE HAND-WRITTEN READS. The cycle page, the
+    // export route and the report-generate route all go through this one
+    // function, and its own header says why: the mapping is where the traps are
+    // (PostgREST returns NUMERIC as a string; an absent cost must stay absent
+    // rather than become zero). A fourth private copy here would be the seam
+    // defect this repo keeps hitting — the copilot's arithmetic drifting from
+    // the page's without either side being wrong on its own terms.
+    loadRtpFinancialElement(supabase as unknown as RtpFinancialElementSupabaseLike, cycle.id),
     loadDefaultAssignmentModelingCountyRunId(supabase, workspace.id, reads),
   ]);
 
@@ -1857,9 +1954,14 @@ async function loadRtpContext(
   const chapters = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.rtpChapters, chaptersResult)
     ? RTP_CHAPTER_TEMPLATES.map((template) => ({ id: `template-${template.chapterKey}`, status: "not_started" }))
     : ((chaptersResult.data ?? []) as Array<{ id: string; status: string }>);
-  const linkedProjects = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.rtpLinkedProjects, projectLinksResult)
+  const linkedProjectsPending = collectUnlessPending(
+    reads,
+    ASSISTANT_READ_SUBJECTS.rtpLinkedProjects,
+    projectLinksResult
+  );
+  const linkedProjects = linkedProjectsPending
     ? []
-    : ((projectLinksResult.data ?? []) as Array<{ id: string }>);
+    : ((projectLinksResult.data ?? []) as RtpAssistantProjectLinkRow[]);
   const campaigns = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.engagementCampaigns, campaignsResult)
     ? []
     : ((campaignsResult.data ?? []) as Array<{ id: string }>);
@@ -1872,6 +1974,65 @@ async function loadRtpContext(
         latest_artifact_kind: string | null;
         updated_at: string;
       }>);
+  // THE FINANCIAL ELEMENT, CLASSIFIED THE SAME WAY EVERYTHING ELSE HERE IS. A
+  // deployment that has not run migration 20260805000003 truthfully holds no
+  // horizon bands — the table cannot hold one — so that case is silent and
+  // resolves to an empty element. Every OTHER failure is disclosed by name, and
+  // it is the failure, not the emptiness, that the copilot then speaks.
+  const horizonBandsPending = collectUnlessPending(
+    reads,
+    ASSISTANT_READ_SUBJECTS.rtpHorizonBands,
+    financialElement.results.bands
+  );
+  const financialAssumptionsPending = collectUnlessPending(
+    reads,
+    ASSISTANT_READ_SUBJECTS.rtpFinancialAssumptions,
+    financialElement.results.lines
+  );
+  collectUnlessPending(
+    reads,
+    ASSISTANT_READ_SUBJECTS.rtpPerformanceMeasures,
+    financialElement.results.measures
+  );
+
+  // A READ FAILURE OUTRANKS THE VERDICT — the same rule, and the same three
+  // lanes, as `fiscalReadFailed` on the cycle page. `buildRtpFiscalConstraint`
+  // reads an empty band list, an empty ledger and an empty project list as
+  // facts about the plan, so running it over a failed read manufactures a
+  // verdict: no cost, no blocker, `balance >= 0`, `constrained`. Pending schema
+  // is deliberately NOT a failure here — a plan whose bands table does not
+  // exist genuinely has no bands, and the engine's own `no_horizon_bands`
+  // blocker is the right answer for it.
+  const fiscalReadFailed =
+    (!horizonBandsPending && Boolean(financialElement.results.bands.error)) ||
+    (!financialAssumptionsPending && Boolean(financialElement.results.lines.error)) ||
+    (!linkedProjectsPending && Boolean(projectLinksResult.error));
+
+  const fiscalSummary = fiscalReadFailed
+    ? null
+    : buildRtpFiscalConstraint({
+        cycleHorizonStartYear: cycle.horizon_start_year,
+        cycleHorizonEndYear: cycle.horizon_end_year,
+        cycleFinancialBasisYear: cycle.financial_basis_year ?? null,
+        annualInflationRate: cycle.annual_inflation_rate ?? null,
+        bands: financialElement.bands,
+        lines: financialElement.lines,
+        projects: linkedProjects.map((link) => {
+          const linkedProject = Array.isArray(link.projects)
+            ? link.projects[0] ?? null
+            : link.projects ?? null;
+          return {
+            linkId: link.id,
+            projectId: link.project_id,
+            projectName: linkedProject?.name ?? null,
+            portfolioRole: link.portfolio_role ?? null,
+            horizonBandId: link.horizon_band_id ?? null,
+            estimatedCost: link.estimated_cost ?? null,
+            costBasisYear: link.cost_basis_year ?? null,
+          };
+        }),
+      });
+
   const packetArtifactsResult = packetReports.length
     ? await supabase
         .from("report_artifacts")
@@ -1947,6 +2108,10 @@ async function loadRtpContext(
       noPacketCount: packetSummaries.filter((report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.NO_PACKET).length,
       refreshRecommendedCount: packetSummaries.filter((report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED).length,
       recommendedReport,
+    },
+    fiscal: {
+      summary: fiscalSummary,
+      performanceMeasureCount: financialElement.measures.length,
     },
     operationsSummary: await loadWorkspaceOperationsSummaryForWorkspace(
       supabase as unknown as WorkspaceOperationsSupabaseLike,

@@ -444,6 +444,30 @@ function createRtpCycleSupabaseStub() {
         return createModelingClaimDecisionsStub();
       }
 
+      // The financial element (20260805000003), which `loadRtpContext` now reads
+      // so the copilot can speak about the plan the cycle page renders. Stubbed
+      // as an empty, successful read rather than left unstubbed on purpose: an
+      // unstubbed table reaches the throw below, and a thrown "Unexpected table"
+      // is exactly the shape production once misclassified as a benign absence —
+      // five reads failed on every run while the test stayed green
+      // (rtp-packet-lifecycle, 2026-08-04).
+      if (
+        table === "rtp_horizon_bands" ||
+        table === "rtp_financial_assumptions" ||
+        table === "rtp_performance_measures"
+      ) {
+        const ordered: Record<string, unknown> = {
+          order: () => ordered,
+          then: (resolve: (value: { data: unknown[]; error: null }) => unknown) =>
+            Promise.resolve({ data: [], error: null }).then(resolve),
+        };
+        return {
+          select() {
+            return { eq: () => ordered };
+          },
+        };
+      }
+
       throw new Error(`Unexpected table: ${table}`);
     },
   };

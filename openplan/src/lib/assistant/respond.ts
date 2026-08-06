@@ -26,6 +26,7 @@ import {
 } from "@/lib/assistant/rtp-packet-posture";
 import { buildMetricDeltas } from "@/lib/analysis/compare";
 import { resolveWorkspaceCommandHref } from "@/lib/operations/grants-links";
+import { describeRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
 import type { WorkspaceOperationsSummary } from "@/lib/operations/workspace-summary";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
@@ -576,6 +577,97 @@ function describeRtpChapterScope(context: RtpAssistantContext): string {
   return `${context.counts.chapters} chapters are in scope, with ${context.counts.readyForReviewChapters} ready for review and ${context.counts.completeChapters} complete.`;
 }
 
+/**
+ * The three lanes the fiscal verdict is computed from. A failure in ANY of them
+ * suppresses the verdict — see `RtpAssistantContext.fiscal`.
+ */
+const RTP_FISCAL_READ_SUBJECTS = [
+  ASSISTANT_READ_SUBJECTS.rtpHorizonBands,
+  ASSISTANT_READ_SUBJECTS.rtpFinancialAssumptions,
+  ASSISTANT_READ_SUBJECTS.rtpLinkedProjects,
+] as const;
+
+/**
+ * WHETHER THIS PLAN CAN BE PAID FOR — the one sentence a board votes on.
+ *
+ * THREE RULES, EACH OF WHICH IS THE WHOLE POINT OF THE SENTENCE:
+ *
+ * 1. A DETERMINED VERDICT IS QUOTED VERBATIM from
+ *    `describeRtpFiscalConstraint`. That sentence carries the dollar basis with
+ *    the figures because a constant-dollar total presented as
+ *    year-of-expenditure is exactly the misstatement 23 CFR 450.324(f)(11)(iv)
+ *    exists to prevent. Paraphrasing it here would be a second implementation
+ *    of a regulated sentence, free to drift from the one on the page, the
+ *    export and the public draft document.
+ *
+ * 2. `not_determined` SAYS SO AND NAMES THE FIRST BLOCKER. It may not degrade
+ *    to "no fiscal issues found", and it may not report the balance: the whole
+ *    reason the engine refuses to answer is that the balance it could compute
+ *    is missing a cost it knows about. "Not determined, because 4 constrained
+ *    projects have no cost recorded" is work a planner can do; a number is a
+ *    plan that looks affordable and is not.
+ *
+ * 3. A READ FAILURE OUTRANKS BOTH. When the bands, the ledger or the linked
+ *    projects could not be read there is no verdict at all, and the sentence
+ *    says the read failed rather than reporting an absence of findings. An
+ *    unreadable financial element is the case where a confident answer does the
+ *    most damage.
+ *
+ * Returns null only for a context built without a financial element at all
+ * (`fiscal` is optional on the type — see its doc block); `loadRtpContext`
+ * always sets it.
+ */
+function describeRtpFiscalPosture(context: RtpAssistantContext): string | null {
+  const fiscal = context.fiscal;
+  if (!fiscal) return null;
+
+  const failure = readFailure(context, ...RTP_FISCAL_READ_SUBJECTS);
+  if (failure || !fiscal.summary) {
+    const lead = failure
+      ? unknownBecauseUnread(failure, "whether this plan is fiscally constrained")
+      : "Unknown: whether this plan is fiscally constrained. Its financial element could not be assembled.";
+    return `${lead} That is a read failure, not a finding that this plan is unconstrained.`;
+  }
+
+  if (fiscal.summary.verdict === "not_determined") {
+    const blocker = fiscal.summary.blockers[0];
+    return blocker
+      ? `Fiscal constraint: not determined. ${blocker.detail}`
+      : "Fiscal constraint: not determined.";
+  }
+
+  return describeRtpFiscalConstraint(fiscal.summary);
+}
+
+/**
+ * The performance measures, counted — or disclosed as unread.
+ *
+ * A count rather than the measures themselves, because the point is that the
+ * copilot READS the table it was previously blind to. Reading a table and
+ * rendering nothing from it is the shipped-invisible defect class this repo
+ * counts; one honest fact is the floor, not the ceiling.
+ */
+function describeRtpPerformanceMeasures(context: RtpAssistantContext): string | null {
+  const fiscal = context.fiscal;
+  if (!fiscal) return null;
+
+  const failure = readFailure(context, ASSISTANT_READ_SUBJECTS.rtpPerformanceMeasures);
+  if (failure) {
+    return unknownBecauseUnread(failure, "the performance measures of this plan");
+  }
+
+  return `${fiscal.performanceMeasureCount} performance ${
+    fiscal.performanceMeasureCount === 1 ? "measure is" : "measures are"
+  } recorded for this plan.`;
+}
+
+/** The fiscal lines that are available, in the order they should be read. */
+function rtpFinancialElementLines(context: RtpAssistantContext): string[] {
+  return [describeRtpFiscalPosture(context), describeRtpPerformanceMeasures(context)].filter(
+    (line): line is string => line !== null
+  );
+}
+
 /** An evidence line naming a count, or the same line saying the read failed. */
 function rtpEvidenceLine(context: RtpAssistantContext, label: string, value: number, subject: string): string {
   const failure = readFailure(context, subject);
@@ -631,6 +723,10 @@ function buildRtpPreview(context: RtpAssistantContext): AssistantPreview {
     facts: [
       context.rtpCycle.summary || "The RTP cycle does not yet carry a strong summary narrative on the record itself.",
       describeRtpChapterProgress(context),
+      // The financial element sits in the FACTS, never in a stat tile: a tile
+      // reading "Not determined" beside three counts is read as a fourth count,
+      // and the verdict's whole meaning is the caveat that comes with it.
+      ...rtpFinancialElementLines(context),
       context.packetSummary.recommendedReport
         ? hasRtpFundingBackedReleaseReviewPressure(context)
           ? `Recommended packet anchor: ${context.packetSummary.recommendedReport.title ?? "board packet"} (${context.packetSummary.recommendedReport.packetFreshness.label}), with ${grantsRoutedRtpFundingReview ? "Grants OS follow-through" : "funding-backed release-review pressure"} still open.`
@@ -1731,6 +1827,7 @@ function buildRtpResponse(context: RtpAssistantContext, workflowId: string): Ass
     findings: [
       context.rtpCycle.summary || "The RTP cycle record does not yet carry a strong summary narrative.",
       describeRtpChapterScope(context),
+      ...rtpFinancialElementLines(context),
       context.operationsSummary.nextCommand
         ? `Workspace next command: ${context.operationsSummary.nextCommand.title}.`
         : context.packetSummary.recommendedReport

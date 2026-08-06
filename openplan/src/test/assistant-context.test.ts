@@ -47,10 +47,67 @@ vi.mock("@/lib/operations/workspace-summary", () => ({
   }),
 }));
 
-import { AssistantContextUnreadableError, loadAssistantContext } from "@/lib/assistant/context";
+import {
+  AssistantContextUnreadableError,
+  loadAssistantContext,
+  RTP_CYCLE_ASSISTANT_COLUMNS,
+  RTP_CYCLE_LINK_ASSISTANT_COLUMNS,
+} from "@/lib/assistant/context";
 import { buildAssistantPreview, buildAssistantResponse } from "@/lib/assistant/respond";
+import { describeRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
 
 type TableResult = { data: unknown; error: { message: string } | null };
+
+/**
+ * The top-level column names of a PostgREST projection.
+ *
+ * `id, projects(id, name)` is two columns — `id` and `projects` — not four, so
+ * the split has to respect parentheses. Used to make the double below answer
+ * with what was ASKED FOR rather than with everything the fixture happens to
+ * hold.
+ */
+function projectionColumns(columns: string): string[] {
+  const tokens: string[] = [];
+  let depth = 0;
+  let current = "";
+
+  for (const char of columns) {
+    if (char === "(") depth += 1;
+    else if (char === ")") depth -= 1;
+    if (char === "," && depth === 0) {
+      tokens.push(current);
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  tokens.push(current);
+
+  return tokens
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .map((token) => {
+      const paren = token.indexOf("(");
+      return (paren < 0 ? token : token.slice(0, paren)).trim();
+    });
+}
+
+function projectRow(row: Record<string, unknown>, columns: string): Record<string, unknown> {
+  if (columns.trim() === "*") return row;
+  const wanted = new Set(projectionColumns(columns));
+  return Object.fromEntries(Object.entries(row).filter(([key]) => wanted.has(key)));
+}
+
+function projectResult(result: TableResult, columns: string): TableResult {
+  if (result.data === null || result.data === undefined) return result;
+  if (Array.isArray(result.data)) {
+    return {
+      ...result,
+      data: result.data.map((row) => projectRow(row as Record<string, unknown>, columns)),
+    };
+  }
+  return { ...result, data: projectRow(result.data as Record<string, unknown>, columns) };
+}
 
 /**
  * A Supabase stand-in whose per-table result is chosen by the test.
@@ -61,26 +118,58 @@ type TableResult = { data: unknown; error: { message: string } | null };
  * the test does not name answer with an empty, error-free result — a read that
  * SUCCEEDED and found nothing, so any failure an assertion sees is the one the
  * test injected.
+ *
+ * TWO THINGS THIS DOUBLE NOW DOES THAT IT DID NOT, AND WHY THEY MATTER MORE
+ * THAN THE TESTS THAT USE THEM.
+ *
+ * `select` USED TO BE `select: () => node` — it threw its argument away. A
+ * projection that never reaches the double is a projection no test in this file
+ * could ever have had an opinion about, which is precisely how the RTP cycle
+ * copilot shipped selecting neither `financial_basis_year` nor
+ * `annual_inflation_rate` nor a single column of the financial element, while
+ * every assertion here stayed green. `selects` now records `{ table, columns }`
+ * for every read, so a test can assert on the string that actually decides what
+ * the database returns.
+ *
+ * `projectFixtureColumns` goes further for the tables named in it: the fixture
+ * row is PROJECTED DOWN to the columns the code asked for, so a column missing
+ * from a `.select()` is missing from the row the loader sees — the behaviour of
+ * a real client, and the only way a test can fail for the reason the real page
+ * would break. It is opt-in per table rather than global because the loaders
+ * this file exercises read about thirty tables and a fixture that quietly loses
+ * a key elsewhere would fail for an unrelated reason.
  */
-function createSupabase(results: Record<string, TableResult>) {
+function createSupabase(
+  results: Record<string, TableResult>,
+  options: { projectFixtureColumns?: readonly string[] } = {}
+) {
   const asked: string[] = [];
+  const selects: Array<{ table: string; columns: string }> = [];
+  const projected = new Set(options.projectFixtureColumns ?? []);
 
   return {
     asked,
+    selects,
     client: {
       from(table: string) {
         asked.push(table);
         const result = results[table] ?? { data: [], error: null };
+        let answer = result;
         const node: Record<string, unknown> = {
-          select: () => node,
+          select: (columns?: string) => {
+            const projection = columns ?? "*";
+            selects.push({ table, columns: projection });
+            if (projected.has(table)) answer = projectResult(result, projection);
+            return node;
+          },
           eq: () => node,
           in: () => node,
           not: () => node,
           order: () => node,
           limit: () => node,
-          maybeSingle: async () => result,
+          maybeSingle: async () => answer,
           then: (resolve: (value: TableResult) => unknown, reject: (reason: unknown) => unknown) =>
-            Promise.resolve(result).then(resolve, reject),
+            Promise.resolve(answer).then(resolve, reject),
         };
         return node;
       },
@@ -228,6 +317,341 @@ describe("the RTP cycle copilot over a failed chapter read", () => {
     expect(context.unreadable?.map((failure) => failure.label) ?? []).not.toContain("RTP chapters");
     expect(context.counts.chapters).toBeGreaterThan(0);
     expect(buildAssistantPreview(context).facts.join("\n")).toContain("chapters are ready for review");
+  });
+});
+
+/**
+ * THE FINANCIAL ELEMENT — the half of an RTP a board votes on, which the
+ * copilot could not see.
+ *
+ * The RTP cycle page shows a revenue table, horizon periods and a
+ * fiscal-constraint verdict. The copilot's projection selected none of it: no
+ * `financial_basis_year`, no `annual_inflation_rate`, `project_rtp_cycle_links`
+ * read as `id` alone, and `rtp_horizon_bands` / `rtp_financial_assumptions` /
+ * `rtp_performance_measures` never read at all. A planner could ask the copilot
+ * about a plan whose own page answers the question and be answered from chapter
+ * and packet counts.
+ *
+ * EVERY TEST BELOW RUNS THE REAL LOADER AGAINST A DOUBLE THAT HONOURS THE
+ * PROJECTION, which is the only reason any of them can fail for the reason the
+ * real page would break. See `createSupabase`.
+ */
+describe("the RTP cycle copilot reads the financial element", () => {
+  const FINANCIAL_TABLES = [
+    "rtp_cycles",
+    "project_rtp_cycle_links",
+    "rtp_horizon_bands",
+    "rtp_financial_assumptions",
+    "rtp_performance_measures",
+  ] as const;
+
+  /** 2027–2050 horizon, 2026 base year, no inflation rate recorded. */
+  const FINANCIAL_CYCLE_ROW: TableResult = {
+    data: {
+      ...(RTP_CYCLE_ROW.data as Record<string, unknown>),
+      financial_basis_year: 2026,
+      annual_inflation_rate: null,
+    },
+    error: null,
+  };
+
+  /** One period covering the whole declared horizon, so coverage is not a blocker. */
+  const HORIZON_BANDS: TableResult = {
+    data: [
+      {
+        id: "band-1",
+        label: "2027–2050",
+        start_year: 2027,
+        end_year: 2050,
+        escalation_target_year: null,
+        cost_estimate_basis: "itemized",
+        sort_order: 0,
+      },
+    ],
+    error: null,
+  };
+
+  const REVENUE_LINES: TableResult = {
+    data: [
+      {
+        id: "line-1",
+        horizon_band_id: "band-1",
+        entry_kind: "revenue",
+        source_name: "Regional sales tax",
+        amount: "500000000",
+        amount_basis_year: 2026,
+        notes: null,
+      },
+    ],
+    error: null,
+  };
+
+  const PERFORMANCE_MEASURES: TableResult = {
+    data: [
+      {
+        id: "measure-1",
+        measure_key: "vmt_per_capita",
+        label: "VMT per capita",
+        unit: "miles",
+        baseline_value: "21.4",
+        baseline_year: 2024,
+        target_value: "19.0",
+        target_year: 2050,
+        data_source: "Regional travel model, 2024 base year",
+        notes: null,
+        sort_order: 0,
+      },
+      {
+        id: "measure-2",
+        measure_key: "transit_mode_share",
+        label: "Transit mode share",
+        unit: "percent",
+        baseline_value: "2.1",
+        baseline_year: 2024,
+        target_value: "4.0",
+        target_year: 2050,
+        data_source: "NTD 2024",
+        notes: null,
+        sort_order: 1,
+      },
+    ],
+    error: null,
+  };
+
+  function constrainedLink(estimatedCost: string | null): TableResult {
+    return {
+      data: [
+        {
+          id: "link-1",
+          project_id: "project-1",
+          portfolio_role: "constrained",
+          horizon_band_id: "band-1",
+          estimated_cost: estimatedCost,
+          cost_basis_year: estimatedCost === null ? null : 2026,
+          projects: { id: "project-1", name: "Downtown Mobility Plan" },
+        },
+      ],
+      error: null,
+    };
+  }
+
+  function financialWorkspace(overrides: Record<string, TableResult> = {}) {
+    return createSupabase(
+      {
+        workspace_members: MEMBERSHIP,
+        rtp_cycles: FINANCIAL_CYCLE_ROW,
+        rtp_horizon_bands: HORIZON_BANDS,
+        rtp_financial_assumptions: REVENUE_LINES,
+        rtp_performance_measures: PERFORMANCE_MEASURES,
+        project_rtp_cycle_links: constrainedLink(null),
+        ...overrides,
+      },
+      { projectFixtureColumns: FINANCIAL_TABLES }
+    );
+  }
+
+  /**
+   * THE PROJECTION IS THE ARTIFACT. The consts are asserted AND the recorded
+   * `.select()` is asserted to equal them — a const nothing selects protects
+   * nothing, which is exactly the state this file was in before: the columns
+   * were right in the page and absent from the copilot, and no test could tell.
+   */
+  it("asks the database for the columns the fiscal verdict is computed from", async () => {
+    const supabase = financialWorkspace();
+    await loadAssistantContext(supabase.client, "user-1", RTP_TARGET);
+
+    for (const column of ["financial_basis_year", "annual_inflation_rate"]) {
+      expect(RTP_CYCLE_ASSISTANT_COLUMNS, `the cycle projection lost "${column}"`).toContain(column);
+    }
+    // `portfolio_role` decides which projects count as cost at all — see the
+    // const's own doc block, and the test below that proves the consequence.
+    for (const column of [
+      "portfolio_role",
+      "horizon_band_id",
+      "estimated_cost",
+      "cost_basis_year",
+    ]) {
+      expect(RTP_CYCLE_LINK_ASSISTANT_COLUMNS, `the link projection lost "${column}"`).toContain(column);
+    }
+
+    expect(supabase.selects.filter((entry) => entry.table === "rtp_cycles").map((entry) => entry.columns)).toEqual([
+      RTP_CYCLE_ASSISTANT_COLUMNS,
+    ]);
+    expect(
+      supabase.selects.filter((entry) => entry.table === "project_rtp_cycle_links").map((entry) => entry.columns)
+    ).toEqual([RTP_CYCLE_LINK_ASSISTANT_COLUMNS]);
+
+    expect(supabase.asked).toContain("rtp_horizon_bands");
+    expect(supabase.asked).toContain("rtp_financial_assumptions");
+    expect(supabase.asked).toContain("rtp_performance_measures");
+  });
+
+  /**
+   * THE `portfolio_role` TEST. Ask for the cost columns without it and the
+   * engine sees no constrained project, counts no cost, raises no blocker, and
+   * answers `constrained` against real revenue — the copilot telling a planner
+   * an unpriced plan is affordable. Nothing errors and nothing is empty.
+   */
+  it("does not report an unpriced plan as fiscally constrained", async () => {
+    const context = await loadAssistantContext(financialWorkspace().client, "user-1", RTP_TARGET);
+    if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
+
+    expect(context.fiscal?.summary?.verdict).toBe("not_determined");
+    expect(context.fiscal?.summary?.blockers[0]?.code).toBe("unpriced_constrained_project");
+    expect(context.fiscal?.summary?.constrainedProjectCount).toBe(1);
+
+    const facts = buildAssistantPreview(context).facts.join("\n");
+    expect(facts).toContain("Fiscal constraint: not determined.");
+    expect(facts).toContain("no cost recorded");
+    // The three sentences an incomplete plan may never produce.
+    expect(facts).not.toContain("reasonably available revenue");
+    expect(facts).not.toContain("$500,000,000");
+    expect(facts).not.toContain("unprogrammed");
+
+    const findings = buildAssistantResponse(context, "rtp-brief").findings.join("\n");
+    expect(findings).toContain("Fiscal constraint: not determined.");
+    expect(findings).not.toContain("reasonably available revenue");
+  });
+
+  /**
+   * A DETERMINED VERDICT IS QUOTED, NOT PARAPHRASED. The equality is against
+   * `describeRtpFiscalConstraint` itself, so the constant-dollar caveat that
+   * 23 CFR 450.324(f)(11)(iv) is about cannot be dropped or reworded here
+   * without the shared sentence changing for the page and the export too.
+   */
+  it("quotes the regulated sentence verbatim once the plan can be determined", async () => {
+    const context = await loadAssistantContext(
+      financialWorkspace({ project_rtp_cycle_links: constrainedLink("100000000") }).client,
+      "user-1",
+      RTP_TARGET
+    );
+    if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
+    if (!context.fiscal?.summary) throw new Error("Expected a fiscal summary");
+
+    expect(context.fiscal.summary.verdict).toBe("constrained");
+    expect(context.fiscal.summary.dollarBasis).toBe("constant");
+
+    const sentence = describeRtpFiscalConstraint(context.fiscal.summary);
+    expect(sentence).toContain("constant 2026 dollars");
+    expect(buildAssistantPreview(context).facts).toContain(sentence);
+    expect(buildAssistantResponse(context, "rtp-brief").findings).toContain(sentence);
+  });
+
+  /**
+   * A READ FAILURE OUTRANKS THE VERDICT. With the bands unreadable the engine
+   * would find no period, no cost and no revenue assigned anywhere and would
+   * answer `not_determined` for the WRONG reason — a finding about the plan
+   * instead of a failure of the query. There is no verdict at all here.
+   */
+  it("refuses a verdict when the horizon periods could not be read", async () => {
+    const context = await loadAssistantContext(
+      financialWorkspace({
+        rtp_horizon_bands: { data: null, error: { message: "permission denied for table rtp_horizon_bands" } },
+      }).client,
+      "user-1",
+      RTP_TARGET
+    );
+    if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
+
+    expect(context.fiscal?.summary).toBeNull();
+    expect(context.unreadable?.map((failure) => failure.label)).toContain("the horizon periods of this plan");
+
+    const facts = buildAssistantPreview(context).facts.join("\n");
+    expect(facts).toContain("Unknown: whether this plan is fiscally constrained.");
+    expect(facts).toContain("That is a read failure, not a finding that this plan is unconstrained.");
+    expect(facts).not.toContain("Fiscal constraint: not determined.");
+  });
+
+  it("refuses a verdict when the ledger could not be read", async () => {
+    const context = await loadAssistantContext(
+      financialWorkspace({
+        rtp_financial_assumptions: { data: null, error: { message: "statement timeout" } },
+      }).client,
+      "user-1",
+      RTP_TARGET
+    );
+    if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
+
+    expect(context.fiscal?.summary).toBeNull();
+    expect(context.unreadable?.map((failure) => failure.label)).toContain(
+      "the revenue and cost assumptions of this plan"
+    );
+    expect(buildAssistantPreview(context).facts.join("\n")).toContain(
+      "That is a read failure, not a finding that this plan is unconstrained."
+    );
+  });
+
+  it("refuses a verdict when the linked projects could not be read", async () => {
+    const context = await loadAssistantContext(
+      financialWorkspace({
+        project_rtp_cycle_links: { data: null, error: { message: "connection terminated unexpectedly" } },
+      }).client,
+      "user-1",
+      RTP_TARGET
+    );
+    if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
+
+    expect(context.fiscal?.summary).toBeNull();
+    expect(buildAssistantPreview(context).facts.join("\n")).toContain(
+      "That is a read failure, not a finding that this plan is unconstrained."
+    );
+  });
+
+  /**
+   * A DEPLOYMENT WITHOUT MIGRATION 20260805000003 TRULY HOLDS NO BANDS, so the
+   * table's absence is not disclosed as a failure — and the engine's own
+   * `no_horizon_bands` blocker is the honest answer for it. Without this the fix
+   * would trade one wrong answer for another.
+   */
+  it("stays silent about a pending financial-element migration and still declines to determine", async () => {
+    const context = await loadAssistantContext(
+      financialWorkspace({
+        rtp_horizon_bands: {
+          data: null,
+          error: { message: 'relation "public.rtp_horizon_bands" does not exist' },
+        },
+      }).client,
+      "user-1",
+      RTP_TARGET
+    );
+    if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
+
+    expect(context.unreadable?.map((failure) => failure.label) ?? []).not.toContain(
+      "the horizon periods of this plan"
+    );
+    expect(context.fiscal?.summary?.verdict).toBe("not_determined");
+    expect(context.fiscal?.summary?.blockers.map((blocker) => blocker.code)).toContain("no_horizon_bands");
+  });
+
+  /**
+   * READING A TABLE AND RENDERING NOTHING IS THE SHIPPED-INVISIBLE DEFECT CLASS
+   * this repo counts. The measures are read, so at least one fact says so.
+   */
+  it("surfaces a fact from the performance measures it read", async () => {
+    const context = await loadAssistantContext(financialWorkspace().client, "user-1", RTP_TARGET);
+    if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
+
+    expect(context.fiscal?.performanceMeasureCount).toBe(2);
+    expect(buildAssistantPreview(context).facts.join("\n")).toContain(
+      "2 performance measures are recorded for this plan."
+    );
+  });
+
+  it("declines to count performance measures it could not read", async () => {
+    const context = await loadAssistantContext(
+      financialWorkspace({
+        rtp_performance_measures: { data: null, error: { message: "permission denied for table rtp_performance_measures" } },
+      }).client,
+      "user-1",
+      RTP_TARGET
+    );
+    if (!context || context.kind !== "rtp_cycle") throw new Error("Expected an RTP cycle context");
+
+    const facts = buildAssistantPreview(context).facts.join("\n");
+    expect(facts).toContain("Unknown: the performance measures of this plan.");
+    expect(facts).not.toContain("0 performance measures are recorded");
+    // The measures do not feed the verdict, so it survives their failure.
+    expect(context.fiscal?.summary?.verdict).toBe("not_determined");
   });
 });
 
