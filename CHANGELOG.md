@@ -19,6 +19,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.6.0 — 2026-08-06
+
 **Migrations are required before the app deploys, in this order:**
 `20260805000004`, `20260805000005`, `20260805000006`, `20260805000007`,
 `20260805000008`.
@@ -67,6 +69,42 @@ operator's feed address, or upload a `.zip`. It is on the Data Hub.
   registered in `vercel.json`) closing feed ingests that stopped responding, so
   a killed process cannot leave a feed reading "parsing" forever. It needs
   `CRON_SECRET` set; without it the route is closed rather than open.
+
+### Transit feeds reach the map and the corridor score
+
+- **A transit layer on the map**, off by default, drawing the stops your own
+  ingested feeds serve on a typical weekday, coloured by how often service comes.
+  It draws stops and not route lines: a route's real shape comes from a file
+  OpenPlan does not read, and a straight line drawn between consecutive stops
+  would be a picture of a road nobody built. When the map cannot draw every stop
+  it says which ones it left out — the least-served — rather than only that it
+  left some out.
+- **Corridor accessibility now uses your ingested feeds instead of an
+  OpenStreetMap stop count**, and this can MOVE A NUMBER YOU HAVE ALREADY PUT IN
+  A GRANT APPLICATION. Read this part.
+  - Half the transit contribution is now how often service actually comes, not
+    just how many stops there are. A corridor with many stops and infrequent
+    service will score LOWER than it did. A corridor with few stops that are
+    frequently served will score HIGHER. Both directions are correct — a bus
+    every 15 minutes is worth more than three stops nobody can catch — but if a
+    number of yours moved, this is why.
+  - **A workspace that has ingested no feed sees no change at all.** The old
+    measurement is untouched for everyone still using it.
+  - **Runs already saved are never rewritten.** An old run keeps the number it
+    was given and records how it was measured; it does not silently acquire a
+    new one.
+  - **Two runs measured different ways will not be subtracted.** Comparing a run
+    from before this release against one from after shows "not comparable" for
+    the affected figures, with the reason, rather than a difference that reads
+    as service having changed when only the measuring did.
+  - Every screen and report that prints a transit figure now names how it was
+    measured.
+- **A feed whose schedule has expired still counts.** Refusing to measure it
+  would quietly RAISE the surrounding score by spreading the remaining points
+  wider, which would leave an agency with an out-of-date feed looking better than
+  one with a current feed. It counts, and it says the schedule has expired.
+
+### Fiscal constraint
 
 - **A plan whose periods cover only part of its horizon no longer reports
   itself fiscally constrained.** If your plan runs to 2050 and your periods stop

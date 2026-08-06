@@ -48,6 +48,14 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260805000003_rtp_financial_element.sql",
     migrationsAtRelease: 168,
   },
+  // The transit lane: the GTFS service-level schema, its honesty columns, and
+  // the atomic version promotion. Counts read off the tree at the tag, not
+  // remembered.
+  {
+    tag: "0.6.0",
+    lastMigration: "20260805000008_promote_gtfs_feed_version.sql",
+    migrationsAtRelease: 173,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
