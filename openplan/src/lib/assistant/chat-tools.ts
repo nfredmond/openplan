@@ -256,6 +256,26 @@ const PROPOSAL_REFERENCE_CHECKS: Partial<
     { field: "invoiceId", table: "billing_invoice_records" },
     { field: "fundingAwardId", table: "funding_awards" },
   ],
+  /**
+   * THE STOCK CHECK IS EXACTLY RIGHT HERE, AND FOR A REASON THAT WOULD BE A BUG
+   * ANYWHERE ELSE — so it is written down rather than left to be rediscovered.
+   *
+   * The check below is `.eq("id", value).eq("workspace_id", workspaceId)`, and
+   * SQL equality never matches NULL. `gtfs_feeds.workspace_id IS NULL` is how
+   * this schema marks a PUBLIC PRELOADED FEED — one row every tenant on the
+   * deployment reads — so a public feed resolves `not_found` here even though
+   * the planner can see it on their own Data Hub.
+   *
+   * That is precisely the refresh route's own rule: a refresh writes a new
+   * version and can move `current_version_id`, so refreshing a shared feed would
+   * change what every OTHER workspace on the deployment analyses with, and the
+   * route answers 403. The proposal is refused before approval evidence is
+   * minted for something the route would reject anyway.
+   *
+   * For any table without that NULL-means-shared convention the same expression
+   * would silently hide legitimate rows, which is why this note exists.
+   */
+  refresh_gtfs_feed: [{ field: "gtfsFeedId", table: "gtfs_feeds" }],
 };
 
 type ProposalSchemaBranch = z.ZodObject<Record<string, z.ZodTypeAny>>;

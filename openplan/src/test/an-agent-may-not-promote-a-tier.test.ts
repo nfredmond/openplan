@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ACTION_METADATA } from "@/lib/runtime/action-metadata";
 import { assistantApprovalActionSchema } from "@/lib/assistant/action-approval-server";
 import { MODELING_CLAIM_STATUSES } from "@/lib/models/evidence-backbone";
+import { GTFS_MEDIAN_HEADWAY_BASES } from "@/lib/gtfs/types";
 import type { AssistantQuickLinkExecuteAction } from "@/lib/assistant/catalog";
 import { resolveActionApiPaths, resolveRouteFile } from "./helpers/action-route-resolution";
 import {
@@ -51,10 +52,33 @@ const MIGRATIONS_DIR = path.join(REPO_ROOT, "supabase/migrations");
  * is `'operator' | 'machine'`, the difference between the agency's own words and
  * a model's, and promoting machine → operator deletes the disclosure a resident
  * was reading. That is the same rule wearing a different module's name.
+ *
+ * THE TRANSIT LANE'S TIER, ADDED 2026-08-06 AND IMPORTED RATHER THAN RETYPED.
+ * `median_headway_basis` (20260805000007) is a closed CHECK vocabulary of three
+ * values, TWO OF WHICH ARE REFUSALS — `not_determined_span_mostly_unserved` and
+ * `not_determined_too_few_departures`. A column whose job is to say "there is no
+ * honest median here" is a claim tier by every test this file applies: promoting
+ * a refusal to `hourly_average_over_span` turns "we cannot say" into a number,
+ * on a figure that gets lifted into a regional transportation plan or a Title VI
+ * service-equity finding.
+ *
+ * It was INVISIBLE to this guard until it was listed. `deriveTierColumns` finds a
+ * column by matching its CHECK vocabulary against the vocabularies below, so a
+ * tier that is not in this list is not a tier as far as this file is concerned —
+ * which is a property worth stating plainly, because it means the coverage of
+ * this guard is exactly the length of this array and nothing warns when a new
+ * closed vocabulary is born somewhere else.
+ *
+ * It is imported from `@/lib/gtfs/types` rather than written out, so a value the
+ * derivation renames cannot leave a stale copy here that silently matches
+ * nothing. `gtfs-median-headway-basis-vocabulary-matches-the-database.test.ts`
+ * separately holds that constant to the migration's CHECK, so the chain from
+ * this array to the database is closed at both ends.
  */
 const TIER_VOCABULARIES: readonly (readonly string[])[] = [
   MODELING_CLAIM_STATUSES,
   ["operator", "machine"],
+  GTFS_MEDIAN_HEADWAY_BASES,
 ];
 
 const TIER_VALUES = new Set(TIER_VOCABULARIES.flat());
@@ -115,6 +139,13 @@ describe("the tier vocabulary this guard is built from", () => {
     expect(TIER_COLUMNS.has("source")).toBe(true);
     expect(TIER_VALUES.has("calibrated_to_counts")).toBe(true);
     expect(TIER_VALUES.has("screening_grade")).toBe(true);
+
+    // The transit lane's tier, which this guard could not see until
+    // GTFS_MEDIAN_HEADWAY_BASES was added to TIER_VOCABULARIES. Asserted here
+    // because "we listed it" and "the derivation now finds the column" are two
+    // different facts, and only the second one protects anything.
+    expect(TIER_COLUMNS.has("median_headway_basis")).toBe(true);
+    expect(TIER_VALUES.has("not_determined_span_mostly_unserved")).toBe(true);
   });
 
   it("does not classify an unrelated status column as a tier column", () => {

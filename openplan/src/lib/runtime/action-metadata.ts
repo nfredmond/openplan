@@ -77,6 +77,28 @@ export const ACTION_METADATA: ActionMetadataRegistry = {
     auditEvent: "planner_agent.create_project_record",
     regrounding: "none",
   },
+  refresh_gtfs_feed: {
+    kind: "refresh_gtfs_feed",
+    description:
+      "Fetches the selected transit feed again from the address already recorded for it, and stores the result as a new version. It cannot supply an address, and it cannot adopt a refetch the collapse check withholds.",
+    // `approval_required`, NOT `review`, and this reverses the tier this action
+    // was first planned with. `review` shows no approval dialog at all:
+    // `app-copilot.tsx` routes only `approval_required` through
+    // `requestActionApproval`, a `review` action goes to
+    // `requestActionExecutionFingerprint` with `requireApproval: false`, the
+    // approvals route mints no row, and `verifyAssistantActionApproval`
+    // short-circuits without ever comparing the client's hash. An action that
+    // triggers an OUTBOUND FETCH to a third party — and that can change which
+    // service data an entire workspace analyses with — has to be consented to by
+    // a person who saw which feed it names.
+    approval: "approval_required",
+    auditEvent: "planner_agent.refresh_gtfs_feed",
+    // A completed refetch moves the very fact the offer was keyed on: the
+    // service window of the version this workspace analyses with. A preview left
+    // describing the pre-refresh state would keep offering the refresh that just
+    // happened.
+    regrounding: "refresh_preview",
+  },
 };
 
 export function getActionMetadata<K extends AssistantQuickLinkExecuteAction["kind"]>(

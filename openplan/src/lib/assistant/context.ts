@@ -66,6 +66,15 @@ import {
   type WorkspaceOperationsSupabaseLike,
 } from "@/lib/operations/workspace-summary";
 import type { AssistantTarget, AssistantTargetKind } from "@/lib/assistant/catalog";
+import {
+  buildWorkspaceTransitSummary,
+  GTFS_ASSISTANT_FEED_COLUMNS,
+  GTFS_ASSISTANT_VERSION_COLUMNS,
+  type GtfsAssistantFeedRow,
+  type GtfsAssistantVersionRow,
+  type WorkspaceTransitSummary,
+} from "@/lib/gtfs/assistant-summary";
+import { filterToCurrentReadyVersion } from "@/lib/gtfs/persist";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { ReadFailureLog, type ReadFailure, type ReadResultLike } from "@/lib/ui/read-failures";
 
@@ -159,6 +168,8 @@ export const ASSISTANT_READ_SUBJECTS = {
   linkedEngagementCampaign: "the linked engagement campaign",
   baselineRun: "the baseline run",
   stageGateBinding: "the workspace row that names the bound stage-gate template",
+  transitFeeds: "this workspace's transit feeds",
+  transitFeedVersions: "the transit feed versions this workspace analyses with",
 } as const;
 
 /**
@@ -264,6 +275,19 @@ export type WorkspaceAssistantContext = {
   currentRun: RunAssistantContext["run"] | null;
   baselineRun: RunAssistantContext["baselineRun"];
   operationsSummary: WorkspaceOperationsSummary;
+  /**
+   * The workspace's own transit feeds, as much as a refetch offer needs to
+   * decide whether to appear. Built by `buildWorkspaceTransitSummary`, never
+   * assembled here.
+   *
+   * REQUIRED, unlike `unreadable` below, and the difference is not stylistic.
+   * `unreadable` is read defensively wherever it is read; this field is read by
+   * `buildWorkspaceOperations` to decide whether to render a quick link, so an
+   * absent one is a runtime error rather than a missing disclosure. Making it
+   * required means a loader that forgets it fails to compile, which is the only
+   * kind of rule this repository has been able to keep.
+   */
+  transit: WorkspaceTransitSummary;
   /**
    * The reads that FAILED while this context loaded — see
    * `AssistantContextReadFailure`. Empty means every lane answered.
@@ -981,6 +1005,69 @@ function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
   return sourceContext && typeof sourceContext === "object" ? (sourceContext as Record<string, unknown>) : null;
 }
 
+/**
+ * The workspace's transit posture, read and then handed straight to the builder.
+ *
+ * THREE THINGS HERE ARE LOAD-BEARING AND EACH MIRRORS A RULE THE TRANSIT LANE
+ * ALREADY HOLDS ELSEWHERE:
+ *
+ *   1. `.eq("workspace_id", …)` — `gtfs_feeds.workspace_id IS NULL` means a
+ *      PUBLIC PRELOADED FEED that every tenant on the deployment reads, and
+ *      `.eq()` never matches NULL. So this read returns the workspace's OWN
+ *      feeds and only those, which is exactly the set a refetch may act on: the
+ *      refresh route refuses a public feed with a 403, because a refresh can
+ *      move `current_version_id` and change what every other tenant analyses
+ *      with.
+ *   2. `filterToCurrentReadyVersion` — never a hand-written `is_current` or
+ *      `status` filter. Filtering on `is_current` alone reads a
+ *      promoted-then-failed version as service data; filtering on `status` alone
+ *      gives a workspace with three successful ingests three service windows.
+ *   3. A PENDING SCHEMA IS NOT A FAILURE. A deployment that has not applied the
+ *      transit migrations truthfully has no feeds — the tables cannot hold
+ *      any — so that case resolves to an empty, READABLE summary rather than a
+ *      disclosed read failure a planner can do nothing about.
+ */
+async function loadWorkspaceTransitSummary(
+  supabase: SupabaseLike,
+  reads: ReadFailureLog,
+  workspaceId: string
+): Promise<WorkspaceTransitSummary> {
+  const [feedsResult, versionsResult] = await Promise.all([
+    supabase
+      .from("gtfs_feeds")
+      .select(GTFS_ASSISTANT_FEED_COLUMNS)
+      .eq("workspace_id", workspaceId)
+      .order("created_at", { ascending: false })
+      .limit(200),
+    filterToCurrentReadyVersion(
+      supabase
+        .from("gtfs_feed_versions")
+        .select(GTFS_ASSISTANT_VERSION_COLUMNS)
+        .eq("workspace_id", workspaceId)
+    ).limit(200),
+  ]);
+
+  const feedsPending = collectUnlessPending(reads, ASSISTANT_READ_SUBJECTS.transitFeeds, feedsResult);
+  const versionsPending = collectUnlessPending(
+    reads,
+    ASSISTANT_READ_SUBJECTS.transitFeedVersions,
+    versionsResult
+  );
+
+  const feedsReadable = feedsPending || !feedsResult?.error;
+  const versionsReadable = versionsPending || !versionsResult?.error;
+
+  return buildWorkspaceTransitSummary({
+    feeds: (feedsResult?.data ?? []) as unknown as GtfsAssistantFeedRow[],
+    currentVersions: (versionsResult?.data ?? []) as unknown as GtfsAssistantVersionRow[],
+    // UTC today. A day of slop cannot change a thirty-day window's verdict, and
+    // taking the deployment's own zone here would make the same workspace get
+    // different answers from different regions of the same host.
+    today: new Date().toISOString().slice(0, 10),
+    readable: feedsReadable && versionsReadable,
+  });
+}
+
 async function loadWorkspaceContext(
   supabase: SupabaseLike,
   userId: string,
@@ -1094,6 +1181,7 @@ async function loadWorkspaceContext(
       supabase as unknown as WorkspaceOperationsSupabaseLike,
       workspace.id
     ),
+    transit: await loadWorkspaceTransitSummary(supabase, reads, workspace.id),
     unreadable: [...reads.all],
   };
 }

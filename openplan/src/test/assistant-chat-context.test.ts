@@ -83,6 +83,10 @@ function buildWorkspaceContext(): WorkspaceAssistantContext {
     currentRun: null,
     baselineRun: null,
     operationsSummary: buildOperationsSummary(),
+    // A workspace that has ingested no transit feeds — a real state, and the
+    // one this file's assertions are about. `readable: true` says the read
+    // answered; an unreadable summary would be a different claim entirely.
+    transit: { readable: true, feeds: [], staleRefetchableFeed: null },
   };
 }
 

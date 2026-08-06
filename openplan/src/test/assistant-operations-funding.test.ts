@@ -108,6 +108,10 @@ function buildWorkspaceContext(overrides?: OperationsSummaryOverrides): Workspac
       commandQueue: overrides?.commandQueue ?? operationsSummary.commandQueue,
       fullCommandQueue: overrides?.fullCommandQueue ?? overrides?.commandQueue ?? operationsSummary.fullCommandQueue,
     },
+    // No transit feeds, and the read answered. This file is about funding
+    // quick links; a workspace with a stale feed would add one more link to
+    // every list below, which is not what these assertions are measuring.
+    transit: { readable: true, feeds: [], staleRefetchableFeed: null },
   };
 }
 

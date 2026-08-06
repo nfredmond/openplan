@@ -35,6 +35,19 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20260805000001_us_federal_default_stage_gate_template.sql",
     migrationsAtRelease: 166,
   },
+  // Tagged 2026-08-05 and MISSING FROM THIS TABLE UNTIL 2026-08-06, which is
+  // the failure this guard is least able to report on itself: with the newest
+  // release absent, `latest` pointed at 0.4.0, so the high-water mark was
+  // checked against a line every deployment had already moved past and the
+  // CHANGELOG assertion read the wrong section. A release-ordering guard that
+  // does not know about the most recent release is guarding history.
+  // Counts read off the tag itself (`git ls-tree -r --name-only v0.5.0`), not
+  // from memory.
+  {
+    tag: "0.5.0",
+    lastMigration: "20260805000003_rtp_financial_element.sql",
+    migrationsAtRelease: 168,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

@@ -19,11 +19,54 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-**A migration is required before the app deploys:** `20260805000004`. It stops
-two periods of one plan claiming the same year. If your plan already has
-overlapping periods the migration will REFUSE to apply and tell you how many —
-it will not edit or delete your periods to make itself apply. Resolve the
-overlaps, then run it again.
+**Migrations are required before the app deploys, in this order:**
+`20260805000004`, `20260805000005`, `20260805000006`, `20260805000007`,
+`20260805000008`.
+
+`20260805000004` stops two periods of one plan claiming the same year. If your
+plan already has overlapping periods the migration will REFUSE to apply and tell
+you how many — it will not edit or delete your periods to make itself apply.
+Resolve the overlaps, then run it again.
+
+`20260805000006` also **raises the `gtfs-uploads` storage bucket ceiling from
+50 MiB to 200 MiB.** If your Supabase project has a global upload cap lower than
+that, raising the bucket does not lift it — the largest US transit feeds are
+around 94 MiB, so a project cap below that will refuse them with a storage error
+at the end of an upload rather than anything a planner can act on.
+
+### Transit feeds can be brought in
+
+A planner can now bring their transit operator's published feed into OpenPlan
+three ways: search the national feed catalog by their own geography, paste the
+operator's feed address, or upload a `.zip`. It is on the Data Hub.
+
+- **What OpenPlan stores is SERVICE LEVELS, never the timetable.** It answers
+  "how often does the bus come here, and for how many hours a day". It does not
+  and will not answer "what time is the 4:15" — it reads no real-time feed, so
+  any such answer would be a promise to a rider made from a schedule that may be
+  months out of date. Departure times are counted during the read and discarded.
+- **Most published feeds in the catalog are out of date, and OpenPlan now says
+  so.** Of four real Sacramento-area feeds checked on 2026-08-05, three had
+  expired — one sixteen months earlier. The catalog does not publish an expiry,
+  so it is only knowable after the feed is downloaded and read. Every surface
+  that shows a feed shows the dates its schedule actually covers.
+- **A refetch that comes back materially smaller is stored but NOT adopted.** If
+  refreshing a feed derives more than 20% fewer routes or stops than the version
+  in use, OpenPlan keeps the new version, leaves the old one in service, and
+  says why — a truncated download and a real service cut look identical, and
+  only a person should decide which one happened. Adopting it anyway is one
+  click, on purpose.
+- **Feed addresses are checked before they are fetched.** A feed URL pointing
+  inside the deployment's own network — including through a redirect — is
+  refused. Operators who need to fetch from a specific internal host can set
+  `OPENPLAN_OUTBOUND_ALLOWED_HOSTS`.
+- New optional operator settings, all with working defaults:
+  `OPENPLAN_GTFS_MAX_ARCHIVE_BYTES`, `OPENPLAN_GTFS_MAX_CATALOG_BYTES`,
+  `OPENPLAN_GTFS_PARSE_BUDGET_MS`.
+- **A scheduled sweep runs every 15 minutes** (`/api/cron/reap-gtfs-ingests`,
+  registered in `vercel.json`) closing feed ingests that stopped responding, so
+  a killed process cannot leave a feed reading "parsing" forever. It needs
+  `CRON_SECRET` set; without it the route is closed rather than open.
 
 - **A plan whose periods cover only part of its horizon no longer reports
   itself fiscally constrained.** If your plan runs to 2050 and your periods stop

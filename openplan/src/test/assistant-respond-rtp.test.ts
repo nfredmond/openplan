@@ -113,6 +113,8 @@ function buildWorkspaceContext(overrides?: Partial<WorkspaceAssistantContext["op
       commandQueue: overrides?.commandQueue ?? operationsSummary.commandQueue,
       fullCommandQueue: overrides?.fullCommandQueue ?? overrides?.commandQueue ?? operationsSummary.fullCommandQueue,
     },
+    // No transit feeds, and the read answered.
+    transit: { readable: true, feeds: [], staleRefetchableFeed: null },
   };
 }
 

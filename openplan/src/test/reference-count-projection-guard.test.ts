@@ -65,6 +65,7 @@ const DYNAMIC_TABLE_PROJECTIONS: Record<string, { tables: string[]; reason: stri
       "county_runs",
       "funding_awards",
       "funding_opportunities",
+      "gtfs_feeds",
       "programs",
       "projects",
       "reports",

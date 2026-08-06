@@ -27,6 +27,7 @@ describe("action registry", () => {
       "generate_report_artifact",
       "link_billing_invoice_funding_award",
       "record_stage_gate_hold",
+      "refresh_gtfs_feed",
       "update_funding_opportunity_decision",
     ]);
 

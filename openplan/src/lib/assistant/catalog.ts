@@ -132,6 +132,34 @@ export type AssistantQuickLinkExecuteAction =
       postActionWorkflowId?: string;
       postActionPrompt?: string;
       postActionPromptLabel?: string;
+    }
+  | {
+      /**
+       * Fetch a transit feed again from the address the DATABASE already holds.
+       *
+       * TWO IDS AND NOTHING ELSE, and that is the entire argument for why this
+       * one is registrable when `ingest a feed from a URL` is refused. Every
+       * value that decides what happens — the download address, the catalog
+       * provider, the agency's name, whether a catalog row has been superseded —
+       * is read by the route off the feed row the planner already chose. The
+       * model authors no URL, no host, no operator and no content.
+       *
+       * WHAT IS DELIBERATELY ABSENT: `adoptDespiteCollapse`. The endpoint takes
+       * it; this action may never send it. `promoteGtfsFeedVersion` withholds a
+       * refetch that is materially smaller than the feed in use, because a drop
+       * that size is as likely to be a truncated download as a real service cut,
+       * and an agent optimising for "the refresh completed" would set that flag
+       * every time — which is precisely the incentive the collapse rule exists to
+       * defeat. Leaving it out of this variant is necessary and NOT sufficient:
+       * the approval hash covers the action the route rebuilds, not the request
+       * body, so the route also runs `refuseOutOfScopeAgentRequest`.
+       */
+      kind: "refresh_gtfs_feed";
+      workspaceId: string;
+      gtfsFeedId: string;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
     };
 
 export type AssistantQuickLink = {

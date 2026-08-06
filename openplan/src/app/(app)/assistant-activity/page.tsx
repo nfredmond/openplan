@@ -23,6 +23,7 @@ const ACTION_KIND_LABELS: Record<string, string> = {
   link_billing_invoice_funding_award: "Link billing invoice to funding award",
   create_project_record: "Create project record",
   record_stage_gate_hold: "Record stage-gate hold",
+  refresh_gtfs_feed: "Refetch transit feed",
 };
 
 const APPROVAL_PRESENTATION: Record<

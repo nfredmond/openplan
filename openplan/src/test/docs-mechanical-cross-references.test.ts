@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { ENV_DOCUMENTED_ELSEWHERE } from "./helpers/operator-env-vars";
 
 /**
  * The operator docs' mechanical cross-references are checkable, so they are
@@ -30,13 +31,6 @@ const ENV_NAMESPACE = /^(OPENPLAN_|NEXT_PUBLIC_|SUPABASE_|RESEND_|CRON_|LODES_|A
  * Env vars the docs may name that deliberately do NOT belong in .env.example,
  * each with its reason. Staleness-checked.
  */
-const ENV_DOCUMENTED_ELSEWHERE: ReadonlyArray<{ name: string; reason: string }> = [
-  {
-    name: "OPENPLAN_COMMIT_SHA",
-    reason:
-      "deployment-platform metadata (the non-Vercel commit stamp), set by the host's build pipeline, not per-developer config",
-  },
-];
 
 function backtickTokens(markdown: string): string[] {
   return [...markdown.matchAll(/`([^`\n]+)`/g)].map((match) => match[1]);

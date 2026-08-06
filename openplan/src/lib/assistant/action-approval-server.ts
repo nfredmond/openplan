@@ -95,6 +95,23 @@ export const assistantApprovalActionSchema = z.discriminatedUnion("kind", [
     postActionPrompt: z.string().optional(),
     postActionPromptLabel: z.string().optional(),
   }),
+  z.object({
+    kind: z.literal("refresh_gtfs_feed"),
+    // `.min(1)` and NOT `.uuid()`, matching every other branch in this union.
+    // `action-registry-is-complete.test.ts` synthesises a minimal payload for
+    // each kind out of `FALLBACK_VALUES`, none of which is a uuid, so a
+    // `.uuid()` field here reads as a branch nothing can satisfy and fails the
+    // build. The uuid shape is enforced where it can also be acted on: the route
+    // parses both ids with `z.string().uuid()` and answers 400 on either.
+    workspaceId: z.string().min(1),
+    gtfsFeedId: z.string().min(1),
+    // NOTE: there is no `adoptDespiteCollapse` key here, and adding one would be
+    // a change to what an agent is allowed to decide — not a schema tidy-up. See
+    // the union variant in catalog.ts.
+    postActionWorkflowId: z.string().optional(),
+    postActionPrompt: z.string().optional(),
+    postActionPromptLabel: z.string().optional(),
+  }),
 ]);
 
 export type AssistantApprovalAction = z.infer<typeof assistantApprovalActionSchema>;

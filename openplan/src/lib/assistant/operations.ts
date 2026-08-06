@@ -227,6 +227,13 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
   const reimbursementStartCount = context.operationsSummary.counts.projectFundingReimbursementStartProjects;
   const reimbursementAdvanceCount = context.operationsSummary.counts.projectFundingReimbursementActiveProjects;
   const nextCommandLink = describeWorkspaceNextCommandLink(context);
+  const workspaceId = context.workspace.id;
+  /**
+   * The transit refetch candidate, or null — and `readable` is what turns a
+   * failed read into "no offer" rather than into a confident silence. See the
+   * quick link below for the rest of the argument.
+   */
+  const staleTransitFeed = context.transit.readable ? context.transit.staleRefetchableFeed : null;
 
   return compactQuickLinks([
     quickLink("workspace-brief-agent", "Generate workspace brief", "/dashboard", {
@@ -566,6 +573,60 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             approval: "review",
             auditEvent: "assistant.operation.workspace.analysis",
             auditNote: "Inspect map posture, filters, and source quality before treating deltas as decision-ready.",
+          }
+        )
+      : null,
+    /**
+     * A TRANSIT FEED WHOSE CALENDAR IS RUNNING OUT, AND AN ADDRESS ALREADY ON
+     * RECORD TO FETCH IT FROM AGAIN.
+     *
+     * WHAT THE CONDITION KEYS ON, AND WHY IT IS THE SERVICE WINDOW. Not the
+     * ingest date — `status = 'loaded'` and `fetched_at` describe the download
+     * and say nothing about whether the schedule inside is still running. The
+     * fact worth acting on is `service_end_date`, and
+     * `buildWorkspaceTransitSummary` is the one place it is turned into a
+     * verdict, so this clause reads a field rather than re-deriving one.
+     *
+     * `readable` IS CHECKED FIRST AND IS NOT DECORATION. An empty feed list is
+     * what a failed read and a workspace with no transit data both produce, and
+     * offering nothing is right in the second case and merely silent in the
+     * first — but keying the offer on a summary that could not be read would be
+     * the copilot acting on a state it never saw.
+     *
+     * THE OFFER IS DELIBERATELY SINGULAR. `staleRefetchableFeed` picks one feed
+     * deterministically instead of this clause fanning out over every stale
+     * feed: nine quick links that each fetch a different agency's archive is not
+     * a queue a planner works, it is a wall, and each one is an outbound fetch
+     * and a separate approval.
+     */
+    workspaceId && staleTransitFeed
+      ? quickLink(
+          "workspace-refresh-gtfs-feed",
+          `Refetch ${staleTransitFeed.name}`,
+          "/data-hub",
+          {
+            targetKind: "workspace",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: "primary",
+            statusLabel: "Execute action",
+            reason:
+              (staleTransitFeed.serviceDaysRemaining ?? 0) < 0
+                ? `The schedule OpenPlan analyses this feed with stopped covering days on ${staleTransitFeed.serviceEndDate}. Planner Agent can fetch it again from the address already recorded for this feed.`
+                : `The schedule OpenPlan analyses this feed with runs out on ${staleTransitFeed.serviceEndDate}, in ${staleTransitFeed.serviceDaysRemaining} days. Planner Agent can fetch it again from the address already recorded for this feed.`,
+            approval: "approval_required",
+            auditEvent: "assistant.operation.workspace.refresh_gtfs_feed",
+            auditNote:
+              "Fetches this feed again from the stored address through the existing audited route. It supplies no address of its own, and it cannot adopt a refetch the collapse check withholds — a materially smaller result is stored and left for a person to accept.",
+            executeAction: {
+              kind: "refresh_gtfs_feed",
+              workspaceId,
+              gtfsFeedId: staleTransitFeed.id,
+              postActionWorkflowId: "workspace-overview",
+              postActionPrompt:
+                "A transit feed was fetched again. Was the new version adopted, and what does the workspace's transit data cover now?",
+              postActionPromptLabel: "Review transit feed posture",
+            },
           }
         )
       : null,

@@ -187,6 +187,33 @@ const RECORD_STAGE_GATE_HOLD: ActionRecord<"record_stage_gate_hold"> = {
   },
 };
 
+const REFRESH_GTFS_FEED: ActionRecord<"refresh_gtfs_feed"> = {
+  kind: "refresh_gtfs_feed",
+  effect: async (action, context) => {
+    /**
+     * The body carries the workspace and NOTHING ELSE.
+     *
+     * `adoptDespiteCollapse` is absent by construction: it is not on the union
+     * variant, so there is no field to read, and it is not written here, so
+     * there is no constant to flip. Both halves matter — an effect that read
+     * `action.adoptDespiteCollapse` off a widened payload would be one type
+     * change away from adopting every withheld refetch.
+     *
+     * The path is a TEMPLATE LITERAL on purpose. `action-route-resolution.ts`
+     * regexes `effect.toString()` for `/api/…` literals to decide which route
+     * this action targets; a path assembled from a variable resolves to zero
+     * paths, and both the approval-verification guard and the claim-tier guard
+     * would then check nothing while reporting success.
+     */
+    await postJson(
+      `/api/gtfs/feeds/${action.gtfsFeedId}/refresh`,
+      { workspaceId: action.workspaceId },
+      "Failed to refresh the transit feed",
+      context
+    );
+  },
+};
+
 type ActionRegistry = {
   [K in AssistantQuickLinkExecuteAction["kind"]]: ActionRecord<K>;
 };
@@ -200,6 +227,7 @@ export const ACTION_REGISTRY: ActionRegistry = {
   link_billing_invoice_funding_award: LINK_BILLING_INVOICE_FUNDING_AWARD,
   create_project_record: CREATE_PROJECT_RECORD,
   record_stage_gate_hold: RECORD_STAGE_GATE_HOLD,
+  refresh_gtfs_feed: REFRESH_GTFS_FEED,
 };
 
 export function getActionRecord<K extends AssistantQuickLinkExecuteAction["kind"]>(

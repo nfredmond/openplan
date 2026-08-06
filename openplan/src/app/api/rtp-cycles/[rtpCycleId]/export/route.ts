@@ -178,6 +178,38 @@ export async function GET(request: NextRequest, context: RouteContext) {
       })),
     });
 
+    // ─────────────────────────────────────────────────────────────────────
+    // THE SEAM, RECORDED BECAUSE IT IS A LIVE DIVERGENCE AND NOT A TIDINESS
+    // PROBLEM. Two routes build the same document from the same builder and
+    // hand it DIFFERENT AMOUNTS OF DATA.
+    //
+    // Measured 2026-08-06 against `reports/[reportId]/generate/route.ts:1011`,
+    // which passes ELEVEN options: commentResponse, fiscalConstraint,
+    // footerLabel, fundingProfileScans, fundingSnapshot,
+    // fundingSourceContextReadiness, horizonBands, modelingEvidence,
+    // publicReviewSummary, sectionKeys, title, titleSuffix. This route — THE
+    // ONE A PLANNER ACTUALLY CLICKS — passes three.
+    //
+    // AND THE MISSING EIGHT DO NOT FAIL LOUDLY. `resolveEnabledSectionKeys`
+    // (export.ts:217) treats an absent `sectionKeys` as "all sections", so every
+    // section is enabled here; the section builders then return an EMPTY STRING
+    // when their data is absent (`modelingEvidenceMarkup` at :347,
+    // the funding section at :429). So the planner's export silently OMITS the
+    // funding and modeling-evidence sections that the board packet contains,
+    // with nothing on either document saying they differ. Two people comparing
+    // the export and the packet are looking at different plans.
+    //
+    // THE FIX IS EXTRACTION, NOT COPYING: `buildRtpCycleExportInput` in a new
+    // `src/lib/rtp/export-input.ts`, called by both routes. CLAUDE.md's rule is
+    // that a shared capability living inside one of its two callers gets
+    // reimplemented wrongly by the other — this is that, demonstrated. Copying
+    // the eight options across would make them agree today and diverge again on
+    // the next addition, which is how they got here.
+    //
+    // It is left as a recorded decision rather than done inline because it is
+    // the RTP transit element's blocker and belongs to that change, and because
+    // an extraction touching the board-packet path deserves its own gate.
+    // ─────────────────────────────────────────────────────────────────────
     const exportInput = {
       cycle,
       chapters,

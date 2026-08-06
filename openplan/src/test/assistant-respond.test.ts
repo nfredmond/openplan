@@ -410,6 +410,8 @@ describe("assistant response builders", () => {
       recentRuns: [],
       currentRun: null,
       baselineRun: null,
+      // No transit feeds, and the read answered.
+      transit: { readable: true, feeds: [], staleRefetchableFeed: null },
       operationsSummary: {
         posture: "attention",
         headline: "Run release review on current packets",
@@ -523,6 +525,8 @@ describe("assistant response builders", () => {
       recentRuns: [],
       currentRun: null,
       baselineRun: null,
+      // No transit feeds, and the read answered.
+      transit: { readable: true, feeds: [], staleRefetchableFeed: null },
       operationsSummary: {
         posture: "attention",
         headline: "Advance project funding decisions",
