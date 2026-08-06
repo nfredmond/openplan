@@ -381,10 +381,23 @@ def load_feed(path: str | None = None, url: str | None = None) -> TransitLos:
 
 # --- Dynamic per-place GTFS discovery (keyless Mobility Database catalog) -----
 
-# MobilityData's published aggregate catalog CSV (keyless, ~3k feeds). Columns
-# include data_type, urls.latest / urls.direct_download, and
+# MobilityData's published aggregate catalog CSV (keyless, ~3.4k rows). Columns
+# include data_type, status, redirect.id, urls.latest / urls.direct_download, and
 # location.bounding_box.{minimum,maximum}_{latitude,longitude}.
-_MDB_CATALOG_URL = os.getenv("GTFS_CATALOG_URL", "https://bit.ly/catalogs-csv")
+#
+# THE CANONICAL ADDRESS, PINNED — NOT the `https://bit.ly/catalogs-csv` shortlink
+# this used to carry. A shortlink is a third party who can silently repoint every
+# deployment's feed catalog at once, and the first thing any deployment does with
+# the result is FETCH THE URLS IN IT. That is not an acceptable dependency for a
+# file whose contents become outbound requests. The redirect target is the same
+# Google Cloud Storage object named here; pinning it removes the middleman
+# without changing what is downloaded. (Verified live 2026-08-05: HTTP 200,
+# 1,154,557 bytes, 3,434 rows.) `src/lib/gtfs/catalog.ts` pins the same address
+# for the same reason.
+_MDB_CATALOG_URL = os.getenv(
+    "GTFS_CATALOG_URL",
+    "https://storage.googleapis.com/storage/v1/b/mdb-csv/o/sources.csv?alt=media",
+)
 _CATALOG_CACHE_TTL_S = int(os.getenv("GTFS_CATALOG_TTL_S", str(7 * 24 * 3600)))
 
 # Values an operator may plausibly write to mean "off". Matched case-insensitively
@@ -460,20 +473,105 @@ def _load_catalog() -> list[dict[str, Any]]:
     return list(csv.DictReader(io.StringIO(raw)))
 
 
+# Catalog `status` values meaning "this entry has been withdrawn". A DENY-LIST,
+# and that direction is load-bearing: measured against the live catalog on
+# 2026-08-05, only **54 of 1,177** US rows carry `status = 'active'` while 770
+# are BLANK. An allow-list on "active" would therefore discard 93.5% of the
+# usable US feeds — including Roseville and Yolobus, which are perfectly good
+# published feeds that simply do not set the column. Blank means USABLE.
+#
+# A status nobody has seen yet also falls through to USABLE, which is the
+# direction this has to fail in: showing a planner a feed that turns out to be
+# odd is recoverable, silently hiding their own operator is not.
+_WITHDRAWN_CATALOG_STATUSES = frozenset({"deprecated", "inactive"})
+
+# How many `redirect.id` hops to follow before giving up. Chains genuinely exist
+# upstream: 20 of the 244 US rows carrying a redirect point at a row that itself
+# redirects.
+#
+# TWO INDEPENDENT STOPS, and the honest note is that only ONE of them is proven
+# by a test. This cap is what `test_a_redirect_cycle_terminates_instead_of_
+# hanging` actually exercises — with the visited-set removed, a two-row cycle
+# still terminates here after eight hops and returns the same answer, so that
+# test does NOT distinguish the two mechanisms. It was written believing it did;
+# a mutation showed otherwise.
+#
+# The visited-set is kept anyway, as defence in depth rather than as decoration:
+# it bounds the walk by the CYCLE's length instead of by this constant, so a
+# future maintainer who raises the cap — or drops it, thinking the set covers
+# termination — does not turn a cycle into real work. Neither is load-bearing
+# alone; the set is the one that stays correct when the cap changes.
+_MAX_CATALOG_REDIRECT_HOPS = 8
+
+
+def _is_withdrawn(row: dict[str, Any]) -> bool:
+    return (row.get("status") or "").strip().lower() in _WITHDRAWN_CATALOG_STATUSES
+
+
 def select_feed_from_catalog(
     rows: list[dict[str, Any]], bbox: tuple[float, float, float, float]
 ) -> str | None:
     """Pure feed selection: among scheduled GTFS feeds whose bbox intersects the
     study-area bbox, prefer the smallest (most local) then closest, and return
     its URL (MobilityData-hosted `urls.latest` preferred over the producer's
-    `urls.direct_download`). Returns None when nothing covers the area."""
+    `urls.direct_download`). Returns None when nothing covers the area.
+
+    WITHDRAWN ENTRIES ARE EXCLUDED, and this is not a refinement — it was a
+    defect with a mechanism. This function prefers the SMALLEST bounding box,
+    which is exactly the shape of a superseded single-agency row: when an
+    agency's feed is replaced, the old narrow entry stays in the catalog marked
+    `deprecated` beside its broader replacement, so "smallest wins" actively
+    SELECTS FOR the dead one. Measured on the live catalog: 344 of 1,177 US
+    rows (29.3%) are deprecated or inactive.
+
+    A withdrawn entry usually names its successor in `redirect.id`, so rather
+    than dropping it this follows the pointer — that is how a study area whose
+    only local feed was replaced still gets an answer instead of a false
+    `no_covering_feed`. The walk is bounded and cycle-checked: of 244 US rows
+    carrying a redirect, 41 point at an id that is not in the catalog at all and
+    20 point at a row that itself redirects.
+    """
     min_lon, min_lat, max_lon, max_lat = bbox
     s_cx, s_cy = (min_lon + max_lon) / 2.0, (min_lat + max_lat) / 2.0
+
+    by_id: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        row_id = (row.get("mdb_source_id") or "").strip()
+        if row_id:
+            by_id[row_id] = row
 
     candidates: list[tuple[float, float, str]] = []
     for row in rows:
         if (row.get("data_type") or "").strip().lower() != "gtfs":
             continue
+
+        # Follow a withdrawn entry to its replacement rather than dropping it.
+        # The GEOGRAPHY is still tested against the ORIGINAL row's bbox below:
+        # the withdrawn entry is what the catalog says covers this area, and a
+        # successor may legitimately be drawn wider (a regional authority taking
+        # over a city's feed). Testing the successor's box instead would lose
+        # exactly the local match this walk exists to preserve.
+        if _is_withdrawn(row):
+            seen = {(row.get("mdb_source_id") or "").strip()}
+            successor = row
+            for _ in range(_MAX_CATALOG_REDIRECT_HOPS):
+                next_id = (successor.get("redirect.id") or "").strip()
+                if not next_id or next_id in seen:
+                    successor = None
+                    break
+                seen.add(next_id)
+                successor = by_id.get(next_id)
+                if successor is None:
+                    break
+                if not _is_withdrawn(successor):
+                    break
+            else:
+                successor = None
+            if successor is None or _is_withdrawn(successor):
+                continue
+            # Take the successor's URL, the original's footprint.
+            row = {**row, "urls.latest": successor.get("urls.latest", ""),
+                   "urls.direct_download": successor.get("urls.direct_download", "")}
         # OpenPlan is US-focused; skip feeds with a known non-US country.
         country = (row.get("location.country_code") or "").strip().upper()
         if country and country != "US":

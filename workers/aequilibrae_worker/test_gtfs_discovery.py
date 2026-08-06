@@ -13,9 +13,13 @@ import gtfs_skim
 DAVIS_BBOX = (-121.80, 38.53, -121.68, 38.58)
 
 
-def _row(data_type, min_lon, min_lat, max_lon, max_lat, latest="", dd=""):
+def _row(data_type, min_lon, min_lat, max_lon, max_lat, latest="", dd="",
+         status="", source_id="", redirect_id=""):
     return {
         "data_type": data_type,
+        "status": status,
+        "mdb_source_id": source_id,
+        "redirect.id": redirect_id,
         "urls.latest": latest,
         "urls.direct_download": dd,
         "location.bounding_box.minimum_latitude": str(min_lat),
@@ -71,6 +75,87 @@ def test_rejects_corrupt_worldwide_bbox_and_non_us():
     }
     url = gtfs_skim.select_feed_from_catalog([corrupt, foreign], DAVIS_BBOX)
     assert url is None, f"expected None (corrupt bbox + non-US both excluded), got {url!r}"
+
+
+def test_a_blank_status_is_usable_because_most_real_rows_have_one():
+    """The deny-list direction, measured: only 54 of 1,177 US rows in the live
+    catalog say `active` while 770 are BLANK. An allow-list on "active" would
+    discard 93.5% of the usable US feeds — including real published ones like
+    Roseville and Yolobus, which simply do not set the column."""
+    rows = [_row("gtfs", -121.85, 38.50, -121.60, 38.62,
+                 latest="http://mdb/latest/blank-status.zip", status="", source_id="1")]
+    url = gtfs_skim.select_feed_from_catalog(rows, DAVIS_BBOX)
+    assert url == "http://mdb/latest/blank-status.zip", f"a blank status must be usable, got {url!r}"
+
+
+def test_a_withdrawn_feed_is_not_selected_over_a_live_one():
+    """THE DEFECT THIS FIXES, and it had a mechanism rather than being bad luck.
+    Selection prefers the SMALLEST bbox, which is exactly the shape of a
+    superseded single-agency row: when a feed is replaced the old narrow entry
+    stays in the catalog marked `deprecated` beside its broader replacement, so
+    "smallest wins" actively SELECTS FOR the dead one. 344 of 1,177 US rows
+    (29.3%) are deprecated or inactive."""
+    dead = _row("gtfs", -121.82, 38.52, -121.70, 38.59,   # SMALLER — would win on area
+                latest="http://mdb/latest/dead.zip", status="deprecated", source_id="10")
+    live = _row("gtfs", -121.85, 38.50, -121.60, 38.62,
+                latest="http://mdb/latest/live.zip", status="", source_id="11")
+    url = gtfs_skim.select_feed_from_catalog([dead, live], DAVIS_BBOX)
+    assert url == "http://mdb/latest/live.zip", f"a deprecated feed must not outrank a live one, got {url!r}"
+
+
+def test_an_inactive_feed_is_excluded_too():
+    rows = [_row("gtfs", -121.85, 38.50, -121.60, 38.62,
+                 latest="http://mdb/latest/inactive.zip", status="inactive", source_id="12")]
+    url = gtfs_skim.select_feed_from_catalog(rows, DAVIS_BBOX)
+    assert url is None, f"an inactive feed must not be selected, got {url!r}"
+
+
+def test_a_withdrawn_feed_resolves_to_its_replacement():
+    """Following `redirect.id` is how a study area whose only local feed was
+    replaced still gets an answer instead of a false `no_covering_feed`."""
+    dead = _row("gtfs", -121.82, 38.52, -121.70, 38.59, latest="http://mdb/latest/old.zip",
+                status="deprecated", source_id="20", redirect_id="21")
+    successor = _row("gtfs", -124.5, 32.5, -114.0, 42.0, latest="http://mdb/latest/new.zip",
+                     status="active", source_id="21")
+    url = gtfs_skim.select_feed_from_catalog([dead, successor], DAVIS_BBOX)
+    assert url == "http://mdb/latest/new.zip", f"expected the successor's url, got {url!r}"
+
+
+def test_a_redirect_to_a_missing_row_is_dropped_rather_than_followed_into_nothing():
+    """41 of 244 US redirect targets are not in the catalog at all."""
+    dead = _row("gtfs", -121.85, 38.50, -121.60, 38.62, latest="http://mdb/latest/old.zip",
+                status="deprecated", source_id="30", redirect_id="99999")
+    url = gtfs_skim.select_feed_from_catalog([dead], DAVIS_BBOX)
+    assert url is None, f"a dead pointer must not select anything, got {url!r}"
+
+
+def test_a_redirect_cycle_terminates_instead_of_hanging():
+    a = _row("gtfs", -121.85, 38.50, -121.60, 38.62, latest="http://mdb/latest/a.zip",
+             status="deprecated", source_id="40", redirect_id="41")
+    b = _row("gtfs", -121.85, 38.50, -121.60, 38.62, latest="http://mdb/latest/b.zip",
+             status="deprecated", source_id="41", redirect_id="40")
+    url = gtfs_skim.select_feed_from_catalog([a, b], DAVIS_BBOX)
+    assert url is None, f"a redirect cycle must terminate with no selection, got {url!r}"
+
+
+def test_a_us_country_code_with_a_trailing_space_is_still_the_united_states():
+    """Four live US rows carry `country_code` as 'US ' with a trailing space
+    (City of Miami Beach, City of Miami Gardens, Bustang Outrider, Pahto Public
+    Passage). The comparison strips, so they are not silently dropped."""
+    row = {**_row("gtfs", -121.85, 38.50, -121.60, 38.62,
+                  latest="http://mdb/latest/spaced.zip", source_id="50"),
+           "location.country_code": "US "}
+    url = gtfs_skim.select_feed_from_catalog([row], DAVIS_BBOX)
+    assert url == "http://mdb/latest/spaced.zip", f"'US ' must read as US, got {url!r}"
+
+
+def test_the_catalog_address_is_pinned_and_is_not_a_shortlink():
+    """A shortlink is a third party who can silently repoint every deployment's
+    feed catalog, and the first thing a deployment does with the result is fetch
+    the URLs in it."""
+    url = gtfs_skim._MDB_CATALOG_URL
+    assert "bit.ly" not in url, f"the catalog address must not be a shortlink: {url!r}"
+    assert url.startswith("https://storage.googleapis.com/"), f"unexpected catalog address: {url!r}"
 
 
 def _with_catalog(loader):
@@ -263,6 +348,14 @@ if __name__ == "__main__":
         test_returns_none_when_nothing_covers,
         test_excludes_non_gtfs_and_non_overlapping,
         test_rejects_corrupt_worldwide_bbox_and_non_us,
+        test_a_blank_status_is_usable_because_most_real_rows_have_one,
+        test_a_withdrawn_feed_is_not_selected_over_a_live_one,
+        test_an_inactive_feed_is_excluded_too,
+        test_a_withdrawn_feed_resolves_to_its_replacement,
+        test_a_redirect_to_a_missing_row_is_dropped_rather_than_followed_into_nothing,
+        test_a_redirect_cycle_terminates_instead_of_hanging,
+        test_a_us_country_code_with_a_trailing_space_is_still_the_united_states,
+        test_the_catalog_address_is_pinned_and_is_not_a_shortlink,
         test_an_answered_catalog_with_nothing_nearby_is_reported_as_a_coverage_fact,
         test_an_unreachable_catalog_is_reported_as_unknown_not_as_no_service,
         test_a_covering_catalog_returns_the_selected_feed,
