@@ -97,8 +97,27 @@ export function prioritizeMapComparisonRows(
 
 export function getComparisonNarrativeLead(
   metricChangeCount: number,
-  viewDifferenceCount: number
+  viewDifferenceCount: number,
+  /**
+   * Why some metrics may not be subtracted at all, when that is the case.
+   *
+   * IT LEADS, ahead of every other reading, because it is the only one of these
+   * states where the numbers on the card cannot be read against each other at
+   * all. "Scores are flat" is a finding about the corridor; "these two runs
+   * measured transit differently" is a finding about the comparison, and a
+   * planner who reads the first while the second is true draws the wrong
+   * conclusion from a card that looked reassuring.
+   */
+  incomparableReason: string | null = null
 ): { title: string; detail: string; tone: StatusTone } {
+  if (incomparableReason) {
+    return {
+      title: "Some metrics cannot be compared between these two runs.",
+      detail: incomparableReason,
+      tone: "warning",
+    };
+  }
+
   if (metricChangeCount > 0 && viewDifferenceCount === 0) {
     return {
       title: "Metric movement is supported by aligned map posture.",

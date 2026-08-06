@@ -368,6 +368,11 @@ describe("assistant response builders", () => {
           safetyScore: 72,
           equityScore: 59,
           confidence: "medium",
+          // The transit provenance `/api/analysis` stamps on every run. Two runs
+          // that cannot say how transit was measured are not subtractable on the
+          // transit-sensitive metrics, so an ordinary comparison fixture has to
+          // describe an ordinary run. See `analysis-compare.test.ts`.
+          sourceSnapshots: { transit: { source: "osm-overpass", observed: true } },
         },
       },
       baselineRun: {
@@ -379,6 +384,7 @@ describe("assistant response builders", () => {
           accessibilityScore: 56,
           safetyScore: 61,
           equityScore: 55,
+          sourceSnapshots: { transit: { source: "osm-overpass", observed: true } },
         },
       },
     };

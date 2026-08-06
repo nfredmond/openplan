@@ -7,6 +7,21 @@ import {
   useCartographicLayers,
   type LayerKey,
 } from "@/components/cartographic/cartographic-context";
+import {
+  TRANSIT_SERVICE_TIER_COLOR,
+  TRANSIT_SERVICE_TIER_LEGEND_LABEL,
+  TRANSIT_SERVICE_TIER_LEGEND_ORDER,
+  TRANSIT_SERVICE_TIER_LEGEND_TITLE,
+} from "@/lib/cartographic/transit-service-tier-palette";
+
+/** jsdom normalises an inline `background` hex to `rgb(r, g, b)`. */
+function hexToRgb(hex: string): string {
+  const value = hex.replace("#", "");
+  const r = Number.parseInt(value.slice(0, 2), 16);
+  const g = Number.parseInt(value.slice(2, 4), 16);
+  const b = Number.parseInt(value.slice(4, 6), 16);
+  return `rgb(${r},${g},${b})`;
+}
 
 function LayerToggles({
   toggleOffKeys,
@@ -91,6 +106,61 @@ describe("CartographicMapLegend", () => {
     const severityRamp = severityLabels?.previousElementSibling;
     expect(severityRamp?.classList.contains("op-cart-legend__ramp")).toBe(true);
     expect(severityRamp?.children).toHaveLength(4);
+  });
+
+  /**
+   * THE LAYER PAINTED THREE MEANING-BEARING COLOURS AND THE LEGEND HAD NO
+   * TRANSIT ENTRY AT ALL.
+   *
+   * Frequent, basic and untiered stops were three different dots with nothing on
+   * screen saying which was which. An unkeyed colour that carries a claim is
+   * worse than no colour: the reader supplies a meaning, and the one they supply
+   * ("darker is better") is not wrong here by luck rather than by design.
+   *
+   * The labels are asserted against the shared constants, never against "15" and
+   * "30" — those thresholds are the transit lane's reporting vocabulary and a
+   * jurisdiction with a different statutory test must be able to change one
+   * constant. A test that typed the numbers would pass while the legend and the
+   * paint expression said different things.
+   */
+  it("keys the three colours the transit layer paints, from the shared palette", () => {
+    renderLegend([], ["transit"]);
+
+    fireEvent.click(screen.getByTestId("toggle-on-transit"));
+
+    expect(screen.getByText(TRANSIT_SERVICE_TIER_LEGEND_TITLE)).toBeInTheDocument();
+
+    const expectedLabels = TRANSIT_SERVICE_TIER_LEGEND_ORDER.map(
+      (tier) => TRANSIT_SERVICE_TIER_LEGEND_LABEL[tier],
+    );
+    const transitLabels = Array.from(
+      document.querySelectorAll(".op-cart-legend__ramp-labels"),
+    ).find((node) => node.textContent === expectedLabels.join(""));
+    expect(transitLabels).toBeDefined();
+
+    const transitRamp = transitLabels?.previousElementSibling;
+    expect(transitRamp?.classList.contains("op-cart-legend__ramp")).toBe(true);
+    expect(transitRamp?.children).toHaveLength(3);
+
+    // The swatch colours are the ones the map actually paints. A legend built
+    // from its own copy of the palette is a legend that can be quietly wrong.
+    const swatchColors = Array.from(transitRamp?.children ?? []).map(
+      (node) => (node as HTMLElement).style.background,
+    );
+    expect(swatchColors).toHaveLength(3);
+    for (const [index, tier] of TRANSIT_SERVICE_TIER_LEGEND_ORDER.entries()) {
+      expect(swatchColors[index].replace(/\s/g, "")).toBe(
+        hexToRgb(TRANSIT_SERVICE_TIER_COLOR[tier]),
+      );
+    }
+  });
+
+  it("keeps the transit key hidden until the transit layer is on", () => {
+    // The transit layer is off by default — it is another organisation's record
+    // rather than the workspace's own work — so the key must not advertise a
+    // layer nothing is drawing.
+    renderLegend();
+    expect(screen.queryByText(TRANSIT_SERVICE_TIER_LEGEND_TITLE)).not.toBeInTheDocument();
   });
 
   it("renders the corridor LOS ramp with four stops labeled A/B, C/D, E, F", () => {

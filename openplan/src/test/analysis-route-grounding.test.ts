@@ -1,5 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import {
+  OSM_STOP_INVENTORY_METHOD,
+  gtfsServiceLevelMethod,
+} from "@/lib/data-sources/transit/method";
+import {
+  CORRIDOR_DECISION_USE_STATUS,
+  resolveDecisionUseDisclosure,
+} from "@/lib/analysis/decision-use";
 
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
 const USER_ID = "33333333-3333-4333-8333-333333333333";
@@ -56,6 +64,7 @@ const LODES_FIXTURE = {
 };
 
 const TRANSIT_FIXTURE = {
+  observed: true,
   totalStops: 12,
   stopsPerSqMile: 4.5,
   busStops: 11,
@@ -63,6 +72,44 @@ const TRANSIT_FIXTURE = {
   ferryStops: 0,
   accessTier: "moderate",
   source: "osm-overpass",
+  frequentServiceShare: null,
+  frequentServiceStops: null,
+  frequentServiceHeadwayMinutes: null,
+  truncated: false,
+  method: OSM_STOP_INVENTORY_METHOD,
+  contributingSources: [],
+  caveats: [],
+  narrativeLine: "**Transit Access:** 12 stops (4.5/sq mi). Access tier: moderate.",
+  sourceSnapshot: { source: "osm-overpass", observed: true, method: OSM_STOP_INVENTORY_METHOD },
+};
+
+/**
+ * The same corridor, screened against the workspace's own ingested feed.
+ *
+ * The figures differ from `TRANSIT_FIXTURE` because the MEASUREMENT differs, and
+ * the assertions below are about what the run records so a reader can see that.
+ */
+const GTFS_TRANSIT_FIXTURE = {
+  ...TRANSIT_FIXTURE,
+  totalStops: 7,
+  stopsPerSqMile: 2.6,
+  busStops: null,
+  railStations: null,
+  ferryStops: null,
+  source: "gtfs-feed",
+  frequentServiceShare: 0.25,
+  frequentServiceStops: 2,
+  frequentServiceHeadwayMinutes: 15,
+  method: gtfsServiceLevelMethod(true),
+  contributingSources: [{ id: "feed-1", label: "Regional Transit", serviceEndDate: "2025-04-05" }],
+  caveats: ["These are trip counts derived from a published schedule for one service day."],
+  narrativeLine: "**Transit Access:** 7 stops (2.6/sq mi). Access tier: medium.",
+  sourceSnapshot: {
+    source: "gtfs-feed",
+    observed: true,
+    method: gtfsServiceLevelMethod(true),
+    caveats: ["These are trip counts derived from a published schedule for one service day."],
+  },
 };
 
 // source deliberately NOT "switrs-local" so the crash-point overlay fetch is skipped.
@@ -365,5 +412,127 @@ describe("/api/analysis grounding provenance contract", () => {
       "analysis_ai_fallback",
       expect.anything()
     );
+  });
+});
+
+/**
+ * THE RUN RECORDS HOW ITS TRANSIT FIGURES WERE MEASURED — disclosure site (a).
+ *
+ * A workspace that ingests its agency's feed can watch this corridor's
+ * accessibility score fall by up to nine points with nothing about the corridor
+ * having changed. The only thing that makes that legible after the fact is that
+ * the run wrote down which measurement produced its number, so this asserts on
+ * the PERSISTED payload rather than on the response.
+ */
+describe("/api/analysis records the transit measurement on the run", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: userFromMock });
+    createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock });
+    membershipMaybeSingleMock.mockResolvedValue({
+      data: { workspace_id: WORKSPACE_ID, role: "owner", workspaces: {} },
+      error: null,
+    });
+    runsInsertMock.mockResolvedValue({ error: null });
+    validateCorridorGeometryMock.mockReturnValue({ ok: true });
+    bboxFromGeojsonMock.mockReturnValue({ minLon: -121.5, minLat: 39.1, maxLon: -121.4, maxLat: 39.2 });
+    fetchCensusForCorridorMock.mockResolvedValue(CENSUS_FIXTURE);
+    fetchTractOverlayFeaturesMock.mockResolvedValue([]);
+    fetchLODESForCorridorMock.mockResolvedValue(LODES_FIXTURE);
+    fetchCrashesForBboxMock.mockResolvedValue(CRASHES_FIXTURE);
+    fetchCrashPointFeaturesForBboxMock.mockResolvedValue([]);
+    screenEquityMock.mockReturnValue(EQUITY_FIXTURE);
+    computeCorridorScoresMock.mockReturnValue(SCORES_FIXTURE);
+    classifyWalkBikeAccessMock.mockReturnValue(WALK_BIKE_FIXTURE);
+    buildAnalysisCostThresholdWarningMock.mockReturnValue(null);
+    generateGrantInterpretationMock.mockResolvedValue(INTERPRETATION_RESULT);
+  });
+
+  async function persistedMetrics(transitFixture: unknown): Promise<Record<string, unknown>> {
+    fetchTransitAccessForBboxMock.mockResolvedValue(transitFixture);
+    const response = await postAnalysis(analysisRequest(VALID_BODY));
+    expect(response.status).toBe(200);
+    return (runsInsertMock.mock.calls[0][0] as { metrics: Record<string, unknown> }).metrics;
+  }
+
+  it("hands the transit registry the workspace, which is the tenant boundary", async () => {
+    await persistedMetrics(GTFS_TRANSIT_FIXTURE);
+
+    // `gtfs_feeds.workspace_id IS NULL` is a PUBLIC PRELOADED feed shared by
+    // every tenant. Without this argument the corridor could be scored off a
+    // stranger's transit agency, on a scorecard, with nothing saying so.
+    expect(fetchTransitAccessForBboxMock).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ workspaceId: WORKSPACE_ID, client: expect.anything() })
+    );
+  });
+
+  it("stores the transit lane's own snapshot, method and all", async () => {
+    const metrics = await persistedMetrics(GTFS_TRANSIT_FIXTURE);
+    const snapshot = (metrics.sourceSnapshots as Record<string, unknown>).transit as Record<string, unknown>;
+
+    // Written verbatim from the summary, so a run stored today can still say how
+    // it was measured after the labels have been rewritten twice.
+    expect(snapshot).toEqual(GTFS_TRANSIT_FIXTURE.sourceSnapshot);
+    expect((snapshot.method as { id: string }).id).toBe("gtfs-service-levels");
+    expect(metrics.frequentServiceShare).toBe(0.25);
+    expect(metrics.frequentServiceHeadwayMinutes).toBe(15);
+  });
+
+  it("narrates transit through the lane's own line, not a shape only OSM can fill", async () => {
+    const metrics = await persistedMetrics(GTFS_TRANSIT_FIXTURE);
+    const summary = (runsInsertMock.mock.calls[0][0] as { summary_text: string }).summary_text;
+
+    // The route used to build this line itself as "including ${busStops} bus
+    // stops", which a GTFS summary reports as null — the narrative would have
+    // read "including null bus stops".
+    expect(summary).toContain(GTFS_TRANSIT_FIXTURE.narrativeLine);
+    expect(summary).not.toContain("null bus stops");
+    expect(metrics.busStops).toBeNull();
+  });
+
+  /**
+   * THE CLAIM TIER DOES NOT MOVE — asserted, not assumed.
+   *
+   * Every corridor screen is `concept-level` by the method, not by the data, and
+   * no input may promote one. Better transit evidence makes the screen better
+   * evidence; it does not make it a modeled forecast, and it may still not stand
+   * behind a CEQA determination.
+   */
+  it("keeps the decision-use boundary identical whichever source answered", async () => {
+    const osm = await persistedMetrics(TRANSIT_FIXTURE);
+    expect(osm.decisionUseStatus).toBe(CORRIDOR_DECISION_USE_STATUS);
+
+    vi.clearAllMocks();
+    runsInsertMock.mockResolvedValue({ error: null });
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: userFromMock });
+    createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock });
+    membershipMaybeSingleMock.mockResolvedValue({
+      data: { workspace_id: WORKSPACE_ID, role: "owner", workspaces: {} },
+      error: null,
+    });
+    validateCorridorGeometryMock.mockReturnValue({ ok: true });
+    bboxFromGeojsonMock.mockReturnValue({ minLon: -121.5, minLat: 39.1, maxLon: -121.4, maxLat: 39.2 });
+    fetchCensusForCorridorMock.mockResolvedValue(CENSUS_FIXTURE);
+    fetchTractOverlayFeaturesMock.mockResolvedValue([]);
+    fetchLODESForCorridorMock.mockResolvedValue(LODES_FIXTURE);
+    fetchCrashesForBboxMock.mockResolvedValue(CRASHES_FIXTURE);
+    fetchCrashPointFeaturesForBboxMock.mockResolvedValue([]);
+    screenEquityMock.mockReturnValue(EQUITY_FIXTURE);
+    computeCorridorScoresMock.mockReturnValue(SCORES_FIXTURE);
+    classifyWalkBikeAccessMock.mockReturnValue(WALK_BIKE_FIXTURE);
+    buildAnalysisCostThresholdWarningMock.mockReturnValue(null);
+    generateGrantInterpretationMock.mockResolvedValue(INTERPRETATION_RESULT);
+
+    const gtfs = await persistedMetrics(GTFS_TRANSIT_FIXTURE);
+    expect(gtfs.decisionUseStatus).toBe(CORRIDOR_DECISION_USE_STATUS);
+    expect(gtfs.decisionUseStatus).toBe(osm.decisionUseStatus);
+    // And the route reaches it from the constant rather than computing it: the
+    // status is fixed by the method, so a derived value would imply a
+    // distinction the method does not support.
+    expect(resolveDecisionUseDisclosure(gtfs).notRecorded).toBe(false);
   });
 });

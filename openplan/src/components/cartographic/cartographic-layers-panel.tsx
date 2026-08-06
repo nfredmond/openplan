@@ -33,6 +33,12 @@ const LAYER_LABELS: Record<LayerKey, string> = {
   // pulled into its own record — not everything a source knows about the area —
   // and the label is the first place a planner can learn that.
   crashes: "Crashes (acquired)",
+  // Every word here is doing work. "Stops" says what is drawn and, by omission,
+  // what is not — there are no route lines, because an alignment needs
+  // shapes.txt and this product does not parse it. "Ingested feeds" says whose
+  // transit: the feeds this workspace brought in, never the region's operators
+  // as a whole. A planner who reads only the checkbox still learns both.
+  transit: "Transit stops (ingested feeds)",
 };
 
 const COMPACT_FORMATTER = new Intl.NumberFormat("en-US", {
@@ -150,5 +156,11 @@ function chipForLayer(key: LayerKey, counts: MapFeatureCounts | null): string | 
   // Null until an acquisition exists, so no chip is rendered rather than a "0"
   // that would read as a crash finding — see the counts route.
   if (key === "crashes") return formatChip(counts.crashes);
+  // No chip for transit, deliberately. `/api/map-features/counts` carries no
+  // transit figure, and the number that would belong here is not the one a
+  // planner would read off it: the drawn count is stops on ONE representative
+  // weekday from the versions currently in use, so a bare "2,821" beside a
+  // checkbox would be a service-level figure with none of its qualifications
+  // attached. The layer's coverage notes carry the number with its sentence.
   return undefined;
 }

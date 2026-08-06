@@ -54,6 +54,13 @@ vi.mock("@/lib/observability/audit", () => ({
 }));
 
 import { POST as postReport } from "@/app/api/report/route";
+import {
+  NOT_RECORDED_METHOD,
+  gtfsServiceLevelMethod,
+} from "@/lib/data-sources/transit/method";
+import { GTFS_NOT_A_TIMETABLE_CAVEAT } from "@/lib/gtfs/caveats";
+
+const GTFS_METHOD = gtfsServiceLevelMethod(true);
 import { pdfDrawnText, pdfSource } from "./pdf-text-extraction-helpers";
 
 function jsonRequest(payload: unknown) {
@@ -342,6 +349,80 @@ describe("POST /api/report", () => {
 
     expect(html).toContain("Decision use: concept-level");
     expect(html).toContain("CEQA determination");
+  });
+
+  /**
+   * THE CORRIDOR REPORT PRINTS HOW ITS TRANSIT FIGURES WERE MEASURED.
+   *
+   * This PDF is generated long after the run and often for a different reader.
+   * Two reports of the same corridor months apart can now carry stop counts on
+   * two different scales — a tally of mapped OpenStreetMap objects, or the stops
+   * an agency's own published schedule calls at — and this line is the only thing
+   * in the artifact that explains why they disagree. A grant reviewer reads the
+   * number, not the software.
+   */
+  it("prints the transit measurement method beside the transit figures", async () => {
+    runsSingleMock.mockResolvedValueOnce({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "Feed-backed corridor",
+        query_text: "Evaluate this corridor",
+        summary_text: "Summary text",
+        ai_interpretation: "Interpretation text.",
+        metrics: {
+          overallScore: 70,
+          accessibilityScore: 68,
+          safetyScore: 72,
+          equityScore: 74,
+          confidence: "high",
+          totalTransitStops: 412,
+          stopsPerSquareMile: 11.3,
+          frequentServiceShare: 0.184,
+          frequentServiceHeadwayMinutes: 15,
+          sourceSnapshots: {
+            census: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            crashes: { fetchedAt: "2025-01-01T00:00:00.000Z" },
+            transit: {
+              source: "gtfs-feed",
+              observed: true,
+              method: GTFS_METHOD,
+              caveats: [GTFS_NOT_A_TIMETABLE_CAVEAT],
+              fetchedAt: "2025-01-01T00:00:00.000Z",
+            },
+          },
+        },
+        created_at: "2025-01-01T00:00:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+    const html = await response.text();
+
+    expect(html).toContain("<td>Measurement method</td>");
+    expect(html).toContain(GTFS_METHOD.label);
+    expect(html).toContain("How transit was measured:");
+    // The share that fills half the accessibility score's transit term is
+    // printed too — a figure that drives a score and appears on no page is the
+    // shipped-invisible defect class.
+    expect(html).toContain("18.4%");
+    // And the qualifications ride with it: every number here is an hourly
+    // average taken off one representative date from a schedule that may have
+    // stopped running.
+    expect(html).toContain("not a timetable");
+  });
+
+  /**
+   * A legacy run keeps describing itself the way it did when it was stored.
+   */
+  it("says the transit method was not recorded on a run that carried none", async () => {
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+    const html = await response.text();
+
+    expect(html).toContain("<td>Measurement method</td>");
+    expect(html).toContain(NOT_RECORDED_METHOD.label);
+    expect(html).not.toContain(GTFS_METHOD.label);
   });
 
   /** A run that recorded no boundary says so, rather than inheriting one. */

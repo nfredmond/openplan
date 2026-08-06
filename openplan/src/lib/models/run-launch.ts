@@ -100,12 +100,38 @@ export function mergeScenarioLaunchPayload({
   };
 }
 
+/**
+ * The transit provenance a model run must carry forward from the analysis run
+ * that produced its scores, copied VERBATIM and never re-derived.
+ *
+ * A model run's result summary is four numbers, and four numbers cannot say how
+ * transit was measured. Without this the scenario comparison board reported every
+ * model run as "measurement not recorded", which refused every comparison against
+ * an analysis run measured identically AND permitted the comparison between two
+ * model runs measured differently — the refusal inverted in both directions at
+ * once. `source` and `method` are the two fields `resolveTransitMethod` reads;
+ * nothing else about the snapshot belongs in a run summary.
+ */
+function transitProvenanceFrom(metrics: Record<string, unknown>): Record<string, unknown> | null {
+  const snapshots = metrics.sourceSnapshots;
+  if (!snapshots || typeof snapshots !== "object" || Array.isArray(snapshots)) return null;
+
+  const transit = (snapshots as Record<string, unknown>).transit;
+  if (!transit || typeof transit !== "object" || Array.isArray(transit)) return null;
+
+  const { source, method } = transit as { source?: unknown; method?: unknown };
+  if (source === undefined && method === undefined) return null;
+
+  return { transit: { source: source ?? null, method: method ?? null } };
+}
+
 export function buildModelRunResultSummary(payload: {
   runId: string;
   metrics?: Record<string, unknown> | null | undefined;
   summary?: string | null | undefined;
 }) {
   const metrics = payload.metrics && typeof payload.metrics === "object" ? payload.metrics : {};
+  const sourceSnapshots = transitProvenanceFrom(metrics);
 
   return {
     runId: payload.runId,
@@ -115,6 +141,7 @@ export function buildModelRunResultSummary(payload: {
     equityScore: typeof metrics.equityScore === "number" ? metrics.equityScore : null,
     confidence: typeof metrics.confidence === "string" ? metrics.confidence : null,
     summary: payload.summary ?? null,
+    ...(sourceSnapshots ? { sourceSnapshots } : {}),
   };
 }
 

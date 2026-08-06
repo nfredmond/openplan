@@ -1,4 +1,5 @@
 import { ESTIMATED_SOURCE_NOTES, resolveEstimatedDomains } from "@/lib/analysis/estimated-source";
+import { resolveTransitMethod } from "@/lib/data-sources/transit/method";
 import type { StatusTone } from "@/lib/ui/status";
 
 type DataQuality = {
@@ -48,6 +49,56 @@ type SourceSnapshots = {
   lodes?: { source?: string };
 };
 
+/**
+ * The transit row's status and detail.
+ *
+ * PREFERS THE RUN'S OWN RECORDED METHOD over the raw source token, because the
+ * token is an adapter id and reads as one: a GTFS-backed run would otherwise be
+ * titled "Gtfs Feed" in an artifact a grant reviewer sees. `resolveTransitMethod`
+ * reports NOT RECORDED for a run that carried no method, and only then does this
+ * fall back to formatting the token — so a legacy run keeps describing itself
+ * exactly as it always did.
+ */
+function transitRow(metrics: Record<string, unknown>, transitSource: string, estimated: boolean) {
+  const method = resolveTransitMethod(metrics);
+
+  if (transitSource === "unknown") {
+    return {
+      status: "Unknown",
+      detail: "Transit stop source could not be verified in this run metadata.",
+      tone: "neutral" as StatusTone,
+    };
+  }
+
+  if (transitSource === "unavailable") {
+    return {
+      status: "Unavailable",
+      detail:
+        "No transit source answered for this area, so stop counts and density were not measured and the " +
+        "accessibility score carries no transit term. This is not a finding that the area has no transit.",
+      tone: "warning" as StatusTone,
+    };
+  }
+
+  if (estimated) {
+    return {
+      status: "Estimated",
+      detail: `${ESTIMATED_SOURCE_NOTES.transit} Stop counts and density are approximations.`,
+      tone: "warning" as StatusTone,
+    };
+  }
+
+  if (method.id === "not-recorded") {
+    return {
+      status: formatSourceToken(transitSource),
+      detail: `Transit stop counts were retrieved from ${formatSourceToken(transitSource)}.`,
+      tone: "info" as StatusTone,
+    };
+  }
+
+  return { status: method.label, detail: method.detail, tone: "info" as StatusTone };
+}
+
 export function buildSourceTransparency(
   metrics: Record<string, unknown>,
   explicitAiSource?: string
@@ -94,33 +145,11 @@ export function buildSourceTransparency(
     {
       key: "transit",
       label: "Transit Stop Inventory",
-      // Three states, and they are not interchangeable. "Estimated" survives
-      // only for runs stored while the area-based fallback existed; new runs
-      // report "Unavailable" and carry no stop counts at all.
-      status:
-        transitSource === "unknown"
-          ? "Unknown"
-          : transitSource === "unavailable"
-            ? "Unavailable"
-            : estimatedDomains.transit
-              ? "Estimated"
-              : formatSourceToken(transitSource),
-      detail:
-        transitSource === "unknown"
-          ? "Transit stop source could not be verified in this run metadata."
-          : transitSource === "unavailable"
-            ? "No transit source answered for this area, so stop counts and density were not measured and the accessibility score carries no transit term. This is not a finding that the area has no transit."
-            : estimatedDomains.transit
-              ? `${ESTIMATED_SOURCE_NOTES.transit} Stop counts and density are approximations.`
-              : `Transit stop counts were retrieved from ${formatSourceToken(transitSource)}.`,
-      tone:
-        transitSource === "unknown"
-          ? "neutral"
-          : transitSource === "unavailable"
-            ? "warning"
-            : estimatedDomains.transit
-              ? "warning"
-              : "info",
+      // Four states, and they are not interchangeable. "Estimated" survives only
+      // for runs stored while the area-based fallback existed; new runs report
+      // "Unavailable" and carry no stop counts at all, or name the method that
+      // produced the ones they do carry.
+      ...transitRow(metrics, transitSource, estimatedDomains.transit),
     },
     {
       key: "lodes",

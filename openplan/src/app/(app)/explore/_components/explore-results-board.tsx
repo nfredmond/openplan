@@ -3,6 +3,8 @@
 import { useMemo } from "react";
 import type { Run } from "@/components/runs/RunHistory";
 import { buildMetricDeltas } from "@/lib/analysis/compare";
+import { resolveTransitMethod, transitFrequencyHalfNote } from "@/lib/data-sources/transit/method";
+import { FREQUENT_SERVICE_HEADWAY_MINUTES } from "@/lib/gtfs/service-levels";
 import {
   normalizeMapViewState,
   summarizeMapViewState,
@@ -135,6 +137,10 @@ export function ExploreResultsBoard({
       baseline: delta.baseline,
       delta: delta.delta,
       deltaPct: delta.deltaPct,
+      // Exported alongside the empty delta, because a spreadsheet with a blank
+      // cell and no reason is where a reader supplies their own.
+      incomparable: delta.incomparable,
+      incomparableReason: delta.incomparableReason,
     }));
 
     const mapRows = mapViewComparisonRows.map((row) => ({
@@ -160,6 +166,61 @@ export function ExploreResultsBoard({
     () => resolveEstimatedDomains(analysisResult?.metrics ?? null),
     [analysisResult]
   );
+
+  /**
+   * How this run measured transit, read off the run itself.
+   *
+   * Never re-derived from today's registry: a run stored before an adapter
+   * existed must keep describing itself the way it did when it was stored, and
+   * `resolveTransitMethod` reports NOT RECORDED rather than assuming one.
+   */
+  const transitMethod = useMemo(
+    () => resolveTransitMethod(analysisResult?.metrics),
+    [analysisResult]
+  );
+
+  /**
+   * The frequent-service share, as a tile.
+   *
+   * IT EXISTS BECAUSE THE NUMBER NOW MOVES THE SCORE. Half the accessibility
+   * score's transit term is this share whenever the run's source could measure
+   * it, and a figure that drives a score while appearing on no screen is the
+   * shipped-invisible defect class — the planner sees the score fall and has
+   * nothing to look at that explains it.
+   *
+   * The three states are distinct on purpose. A source that cannot speak to
+   * frequency at all ("Not measured") did not find zero frequent stops, and a
+   * corridor where a real feed found none genuinely has none.
+   */
+  const transitFrequency = useMemo(() => {
+    const snapshot = analysisResult?.metrics.sourceSnapshots?.transit;
+    const share = typeof snapshot?.frequentServiceShare === "number" ? snapshot.frequentServiceShare : null;
+    const headwayMinutes =
+      typeof snapshot?.frequentServiceHeadwayMinutes === "number"
+        ? snapshot.frequentServiceHeadwayMinutes
+        : null;
+
+    if (share === null) {
+      return {
+        headwayMinutes,
+        display: NOT_MEASURED,
+        // The note comes from the method registry rather than from here, so the
+        // tile, the corridor narrative and the exported report cannot describe a
+        // withheld share three different ways — and so the SCORING consequence
+        // travels with it. A planner whose accessibility score fell because their
+        // feed covers part of the corridor reads it on this tile.
+        note: transitMethod.frequencyTermApplied
+          ? "This run recorded no frequent-service share."
+          : transitFrequencyHalfNote(transitMethod),
+      };
+    }
+
+    return {
+      headwayMinutes,
+      display: `${Math.round(share * 1000) / 10}%`,
+      note: transitFrequencyHalfNote(transitMethod),
+    };
+  }, [analysisResult, transitMethod]);
 
   const planningSignals = useMemo(() => {
     if (!analysisResult) {
@@ -208,9 +269,18 @@ export function ExploreResultsBoard({
       {
         label: "Stops / sq mi",
         value: metricDisplay(analysisResult.metrics.stopsPerSquareMile).value,
-        note: "Transit stop density from current transit access proxy layer.",
+        // The METHOD, not a fixed sentence about a "proxy layer". Two runs of the
+        // same corridor can now carry stop counts on two different scales, and a
+        // tile that describes only one of them is the reason a planner would
+        // conclude the product is broken when their number moves.
+        note: `Transit stop density. ${transitMethod.label}.`,
         estimated: estimatedDomains.transit,
         estimatedNote: estimatedDomains.transit ? estimatedSourceNote("transit") : undefined,
+      },
+      {
+        label: `Stops at a ${transitFrequency.headwayMinutes ?? FREQUENT_SERVICE_HEADWAY_MINUTES}-min headway`,
+        value: transitFrequency.display,
+        note: transitFrequency.note,
       },
       {
         label: "Crash intensity",
@@ -220,7 +290,7 @@ export function ExploreResultsBoard({
         estimatedNote: estimatedDomains.crashes ? estimatedSourceNote("crashes") : undefined,
       },
     ] satisfies PlanningSignal[];
-  }, [analysisResult, estimatedDomains]);
+  }, [analysisResult, estimatedDomains, transitFrequency, transitMethod]);
 
   const sourceSnapshots = analysisResult?.metrics.sourceSnapshots;
 
@@ -241,9 +311,24 @@ export function ExploreResultsBoard({
       },
       {
         label: "Transit access",
-        status: formatSourceToken(sourceSnapshots?.transit?.source),
-        detail: sourceSnapshots?.transit?.note ?? "Transit access proxy metadata not available.",
-        tone: sourceSnapshots?.transit?.source === "osm-overpass" ? "info" : "warning",
+        // The METHOD'S OWN LABEL when the run recorded one, so a GTFS-backed run
+        // reads "Ingested GTFS service levels" rather than the token
+        // "Gtfs Feed". Legacy runs fall back to the source token they carry.
+        status: transitMethod.id === "not-recorded"
+          ? formatSourceToken(sourceSnapshots?.transit?.source)
+          : transitMethod.label,
+        detail: sourceSnapshots?.transit?.note ?? transitMethod.detail,
+        // DERIVED FROM `observed`, NOT FROM TOKEN EQUALITY. This used to test
+        // `source === "osm-overpass"`, so the moment a second transit source
+        // existed the BETTER one — an agency's own published schedule — rendered
+        // with the warning tone reserved for a source that did not answer. A
+        // tone comparing against a hardcoded adapter id is a tone that is wrong
+        // for every adapter registered after it was written.
+        tone:
+          sourceSnapshots?.transit?.observed === false ||
+          sourceSnapshots?.transit?.source === "unavailable"
+            ? "warning"
+            : "info",
       },
       {
         label: "Crash safety",
@@ -272,7 +357,7 @@ export function ExploreResultsBoard({
         tone: "info",
       },
     ] satisfies GeospatialSourceCard[];
-  }, [analysisResult, sourceSnapshots]);
+  }, [analysisResult, sourceSnapshots, transitMethod]);
 
   if (!analysisResult) {
     return <ExploreEmptyResultBoard />;
@@ -457,7 +542,16 @@ export function ExploreResultsBoard({
   const comparisonHeadlineDeltas = comparisonDeltas.filter((delta) => COMPARISON_HEADLINE_KEYS.has(delta.key));
   const comparisonSupportingDeltas = comparisonDeltas.filter((delta) => !COMPARISON_HEADLINE_KEYS.has(delta.key));
   const comparisonChangedDeltas = comparisonDeltas.filter((delta) => delta.delta !== null && delta.delta !== 0);
-  const comparisonNarrativeLead = getComparisonNarrativeLead(comparisonMetricChangeCount, comparisonViewDifferenceCount);
+  // Every incomparable metric carries the same sentence (the refusal is a
+  // property of the PAIR of runs, not of the metric), so the first one is the
+  // reason for all of them.
+  const comparisonIncomparableDeltas = comparisonDeltas.filter((delta) => delta.incomparable);
+  const comparisonIncomparableReason = comparisonIncomparableDeltas[0]?.incomparableReason ?? null;
+  const comparisonNarrativeLead = getComparisonNarrativeLead(
+    comparisonMetricChangeCount,
+    comparisonViewDifferenceCount,
+    comparisonIncomparableReason
+  );
   const prioritizedMapViewComparisonRows = prioritizeMapComparisonRows(mapViewComparisonRows);
   const changedMapViewRows = prioritizedMapViewComparisonRows.filter((row) => row.changed);
   const alignedMapViewRows = prioritizedMapViewComparisonRows.filter((row) => !row.changed);

@@ -95,26 +95,47 @@ describe("the python worker suites are discoverable", () => {
 
 describeWithVenv("every python worker suite can start under the documented interpreter", () => {
   it("imports every suite without a missing dependency", () => {
-    const failures: string[] = [];
+    const suites = workerSuites();
 
-    for (const suite of workerSuites()) {
-      const moduleName = suite.replace(/\.py$/, "");
-      try {
-        // `import_module` rather than executing the file: importing runs the
-        // module's top-level statements — its imports — which is exactly what
-        // was failing, without running minutes of numerical work. The suites
-        // guard their own execution behind `if __name__ == "__main__"`.
-        execFileSync(VENV_PYTHON, ["-c", `import importlib; importlib.import_module("${moduleName}")`], {
-          cwd: WORKER_DIR,
-          encoding: "utf8",
-          stdio: ["ignore", "pipe", "pipe"],
-          timeout: 120_000,
-        });
-      } catch (error) {
-        const detail = error instanceof Error && "stderr" in error ? String(error.stderr).trim() : String(error);
-        failures.push(`${suite}: ${detail.split("\n").pop() ?? detail}`);
-      }
+    // ONE interpreter for all twenty, not twenty. Python's startup dominates
+    // this check — spawning per suite took 8.6 s and blew vitest's 5 s default
+    // under full-suite parallelism, which would have made a correctness guard
+    // into an intermittent red that people learn to re-run. Importing inside a
+    // single process is the same question asked once.
+    //
+    // Each import is caught individually so the answer is EVERY suite that
+    // cannot start, not the first one — a guard that stops at the first failure
+    // makes fixing a batch an N-round-trip exercise, and this defect arrived as
+    // four suites at once.
+    const program = [
+      "import importlib, json, sys",
+      `names = ${JSON.stringify(suites.map((suite) => suite.replace(/\.py$/, "")))}`,
+      "out = {}",
+      "for name in names:",
+      "    try:",
+      "        importlib.import_module(name)",
+      "    except BaseException as exc:",
+      "        out[name] = f'{type(exc).__name__}: {exc}'",
+      "print(json.dumps(out))",
+    ].join("\n");
+
+    let reported: Record<string, string>;
+    try {
+      const stdout = execFileSync(VENV_PYTHON, ["-c", program], {
+        cwd: WORKER_DIR,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+        timeout: 120_000,
+      });
+      reported = JSON.parse(stdout.trim().split("\n").pop() ?? "{}") as Record<string, string>;
+    } catch (error) {
+      // The interpreter itself could not run the program — a different failure
+      // from a suite that cannot import, and it must not be reported as one.
+      const detail = error instanceof Error && "stderr" in error ? String(error.stderr).trim() : String(error);
+      throw new Error(`the worker interpreter could not run the import probe: ${detail.split("\n").pop() ?? detail}`);
     }
+
+    const failures = Object.entries(reported).map(([name, detail]) => `${name}.py: ${detail}`).sort();
 
     expect(
       failures,

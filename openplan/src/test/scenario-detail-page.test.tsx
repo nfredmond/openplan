@@ -627,6 +627,84 @@ describe("ScenarioSetDetailPage", () => {
     expect(screen.queryByText(/overallScore/)).not.toBeInTheDocument();
   });
 
+  /**
+   * WHY A REFUSAL NEEDS A SENTENCE, AND WHY THE ASSERTION IS HERE.
+   *
+   * `buildMetricDeltas` has always produced `incomparableReason`, the board type
+   * had no field for it, and the card rendered a bare "Not comparable" badge — so
+   * the explanation existed in the code and reached no screen. A planner sees two
+   * numbers, a badge refusing to subtract them, and nothing anywhere saying why;
+   * the first thing anyone does with an unexplained refusal is work around it.
+   *
+   * The builder is doubled here on purpose: this asserts the RENDER, and the
+   * builder's own half is pinned in `scenario-comparison-board.test.ts` against
+   * the real function.
+   */
+  it("prints why a metric could not be subtracted, beside the two values", async () => {
+    const reason =
+      "Measured differently: this run used ingested gtfs service levels, the baseline used openstreetmap " +
+      "stop inventory. A difference between them is a change in how transit was measured, not a change in " +
+      "the corridor, so no delta is shown.";
+
+    buildScenarioComparisonBoardMock.mockReturnValueOnce([
+      {
+        entryId: "entry-alt-1",
+        candidateLabel: "Protected bike package",
+        candidateRunId: "run-alt-1",
+        candidateRunTitle: "Protected bike run",
+        baselineLabel: "Existing conditions",
+        baselineRunId: "run-baseline",
+        baselineRunTitle: "Existing conditions run",
+        changedMetricCount: 1,
+        analysisHref: "/explore?runId=run-alt-1&baselineRunId=run-baseline",
+        headlineMetrics: [
+          {
+            key: "accessibilityScore",
+            label: "Accessibility Score",
+            current: 58,
+            baseline: 45,
+            delta: null,
+            deltaLabel: "Not comparable",
+            tone: "neutral",
+            incomparable: true,
+            incomparableReason: reason,
+          },
+          {
+            key: "safetyScore",
+            label: "Safety Score",
+            current: 64,
+            baseline: 60,
+            delta: 4,
+            deltaLabel: "+4",
+            tone: "success",
+            incomparable: false,
+            incomparableReason: null,
+          },
+        ],
+        sourceContext: {
+          pairingLabel: "Protected bike package compared against Existing conditions",
+          sourceSummary: "Source context: attached run scorecards.",
+          baselineAssumptions: "Baseline: Horizon year: 2045",
+          alternativeAssumptions: "Alternative: Project package: Protected bike network",
+          caveatSummary: "Caveat posture: planning analysis and evidence triage only.",
+          exportReadiness: "Export readiness: ready for a draft comparison packet.",
+          evidenceLabels: ["Accessibility Score", "Safety Score"],
+        },
+      },
+    ]);
+
+    await renderPage();
+
+    expect(screen.getByText("Not comparable")).toBeInTheDocument();
+    expect(screen.getByText(/change in how transit was measured/i)).toBeInTheDocument();
+    // Both values still shown: it is the SUBTRACTION that is refused.
+    expect(screen.getByText("58")).toBeInTheDocument();
+    expect(screen.getByText(/Baseline 45/)).toBeInTheDocument();
+    // And a comparable metric carries no sentence, so it cannot become decoration
+    // that appears on every tile and stops being read.
+    expect(screen.getAllByText(/change in how transit was measured/i)).toHaveLength(1);
+  });
+
   it("renders the trip-gen comparison save affordance only when baseline and an alternative both have succeeded runs", async () => {
     modelRunsOrderMock.mockResolvedValueOnce({
       data: [

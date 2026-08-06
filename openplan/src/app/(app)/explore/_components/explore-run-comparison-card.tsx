@@ -291,9 +291,10 @@ export function ExploreRunComparisonCard({
                       key={delta.key}
                       className={[
                         "analysis-comparison-headline-card",
-                        directionTone === "up" ? "is-up" : "",
-                        directionTone === "down" ? "is-down" : "",
-                        directionTone === "flat" ? "is-flat" : "",
+                        delta.incomparable ? "is-incomparable" : "",
+                        !delta.incomparable && directionTone === "up" ? "is-up" : "",
+                        !delta.incomparable && directionTone === "down" ? "is-down" : "",
+                        !delta.incomparable && directionTone === "flat" ? "is-flat" : "",
                       ]
                         .filter(Boolean)
                         .join(" ")}
@@ -302,16 +303,35 @@ export function ExploreRunComparisonCard({
                         <div>
                           <p className="analysis-comparison-headline-label">{delta.label}</p>
                           <p className="analysis-comparison-headline-value">
-                            {formatDelta(delta.delta)}
-                            {delta.deltaPct !== null ? <span> ({formatDelta(delta.deltaPct)}%)</span> : null}
+                            {delta.incomparable ? "Not comparable" : formatDelta(delta.delta)}
+                            {!delta.incomparable && delta.deltaPct !== null ? (
+                              <span> ({formatDelta(delta.deltaPct)}%)</span>
+                            ) : null}
                           </p>
                         </div>
-                        <StatusBadge tone={statusTone}>
-                          {directionTone === "flat" ? "No change" : directionTone === "up" ? "Up" : "Down"}
+                        {/*
+                          "No change" IS THE ONE THING THIS MUST NOT SAY when the
+                          two runs were measured differently. Both sides carry a
+                          number, so every other state on this card reads as a
+                          finding about the corridor — and a reader who takes
+                          "No change" from a pair that cannot be subtracted has
+                          been told the opposite of the truth.
+                        */}
+                        <StatusBadge tone={delta.incomparable ? "warning" : statusTone}>
+                          {delta.incomparable
+                            ? "Not comparable"
+                            : directionTone === "flat"
+                              ? "No change"
+                              : directionTone === "up"
+                                ? "Up"
+                                : "Down"}
                         </StatusBadge>
                       </div>
                       <p className="analysis-comparison-headline-detail">Current: {delta.current ?? "N/A"}</p>
                       <p className="analysis-comparison-headline-detail">Baseline: {delta.baseline ?? "N/A"}</p>
+                      {delta.incomparableReason ? (
+                        <p className="analysis-comparison-headline-detail">{delta.incomparableReason}</p>
+                      ) : null}
                     </article>
                   );
                 })}
@@ -342,14 +362,25 @@ export function ExploreRunComparisonCard({
                         <p className="analysis-comparison-support-copy">
                           Current {delta.current ?? "N/A"} · Baseline {delta.baseline ?? "N/A"}
                         </p>
+                        {delta.incomparableReason ? (
+                          <p className="analysis-comparison-support-copy">{delta.incomparableReason}</p>
+                        ) : null}
                       </div>
                       <div className="analysis-comparison-support-value">
                         <p>
-                          {formatDelta(delta.delta)}
-                          {delta.deltaPct !== null ? ` (${formatDelta(delta.deltaPct)}%)` : ""}
+                          {delta.incomparable ? "Not comparable" : formatDelta(delta.delta)}
+                          {!delta.incomparable && delta.deltaPct !== null
+                            ? ` (${formatDelta(delta.deltaPct)}%)`
+                            : ""}
                         </p>
-                        <StatusBadge tone={statusTone}>
-                          {directionTone === "flat" ? "No change" : directionTone === "up" ? "Up" : "Down"}
+                        <StatusBadge tone={delta.incomparable ? "warning" : statusTone}>
+                          {delta.incomparable
+                            ? "Not comparable"
+                            : directionTone === "flat"
+                              ? "No change"
+                              : directionTone === "up"
+                                ? "Up"
+                                : "Down"}
                         </StatusBadge>
                       </div>
                     </div>

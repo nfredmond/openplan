@@ -13,6 +13,9 @@ import {
   CRASH_SEVERITY_COLOR,
   CRASH_SEVERITY_UNKNOWN_COLOR,
 } from "@/lib/cartographic/crash-severity-palette";
+// Shared with the legend, so the dot on the map and the swatch in the key cannot
+// describe the same stop differently. See the palette module's own header.
+import { TRANSIT_SERVICE_TIER_COLOR } from "@/lib/cartographic/transit-service-tier-palette";
 import { corridorFeatureToSelection } from "@/lib/cartographic/corridor-feature-to-selection";
 import { rtpCycleFeatureToSelection } from "@/lib/cartographic/rtp-cycle-feature-to-selection";
 import { tractFeatureToSelection } from "@/lib/cartographic/tract-feature-to-selection";
@@ -35,6 +38,10 @@ import {
   describeMapLayerFailure,
   type MapLayerDisclosure,
 } from "@/lib/cartographic/layer-disclosure";
+import {
+  BASIC_SERVICE_HEADWAY_MINUTES,
+  FREQUENT_SERVICE_HEADWAY_MINUTES,
+} from "@/lib/gtfs/service-levels";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -93,6 +100,19 @@ const CENSUS_TRACTS_OUTLINE_LAYER_ID = "cartographic-census-tracts-outline";
 const ENGAGEMENT_SOURCE_ID = "cartographic-engagement-items";
 const ENGAGEMENT_CIRCLE_LAYER_ID = "cartographic-engagement-items-layer";
 
+// Transit stops from the workspace's own ingested feeds. THE ONLY CLUSTERED
+// SOURCE on this backdrop, and the reason is the row count rather than taste: a
+// mid-size agency contributes a few thousand stops on one weekday, which drawn
+// as individual dots is a solid band along every corridor that hides both the
+// pattern and everything underneath it. Clustering renders the same payload as
+// a few dozen circles at regional zoom and resolves to individual stops as the
+// planner comes in, which is the zoom at which one stop is a thing you can
+// reason about.
+const TRANSIT_SOURCE_ID = "cartographic-transit-stops";
+const TRANSIT_CLUSTER_LAYER_ID = "cartographic-transit-stops-cluster";
+const TRANSIT_CLUSTER_COUNT_LAYER_ID = "cartographic-transit-stops-cluster-count";
+const TRANSIT_STOPS_CIRCLE_LAYER_ID = "cartographic-transit-stops-circle";
+
 const KNOWN_SOURCES = [
   AOI_SOURCE_ID,
   PROJECTS_SOURCE_ID,
@@ -113,7 +133,42 @@ const FEATURE_LAYERS = [
   CENSUS_TRACTS_FILL_LAYER_ID,
   ENGAGEMENT_CIRCLE_LAYER_ID,
   CRASHES_CORE_LAYER_ID,
+  // Both transit layers are here so a click on either counts as a feature hit.
+  // Without the cluster id, clicking a cluster would fall through to
+  // `onBackgroundClick` and clear whatever the planner had selected — the
+  // selection would vanish on the way to zooming in.
+  TRANSIT_CLUSTER_LAYER_ID,
+  TRANSIT_STOPS_CIRCLE_LAYER_ID,
 ] as const;
+
+/**
+ * Frequent-service tiers as a Mapbox `match`, built from the shared thresholds.
+ *
+ * NEITHER THRESHOLD IS A LITERAL HERE, and that is a product rule rather than a
+ * style preference: 15 and 30 minutes are the reporting VOCABULARY the whole
+ * transit lane is built on (see `service-levels.ts`), and a jurisdiction with a
+ * 20-minute test must be able to change one constant rather than hunt for a
+ * number typed into a paint expression. The route derives `serviceTierMinutes`
+ * from the same two constants, so the dot and the popup can never disagree
+ * about which tier a stop met.
+ *
+ * The fallback colour is for a stop with NO derivable peak headway — a place
+ * with a single daily trip has no interval — and it is deliberately muted
+ * rather than the wider tier's colour, so "not frequent enough to tier" never
+ * borrows the meaning of "meets the 30-minute tier".
+ */
+const TRANSIT_FREQUENT_COLOR = TRANSIT_SERVICE_TIER_COLOR.frequent;
+const TRANSIT_BASIC_COLOR = TRANSIT_SERVICE_TIER_COLOR.basic;
+const TRANSIT_UNTIERED_COLOR = TRANSIT_SERVICE_TIER_COLOR.untiered;
+const TRANSIT_TIER_PAINT: mapboxgl.ExpressionSpecification = [
+  "match",
+  ["get", "serviceTierMinutes"],
+  FREQUENT_SERVICE_HEADWAY_MINUTES,
+  TRANSIT_FREQUENT_COLOR,
+  BASIC_SERVICE_HEADWAY_MINUTES,
+  TRANSIT_BASIC_COLOR,
+  TRANSIT_UNTIERED_COLOR,
+];
 
 // Crash severity as a Mapbox `match`. Built from the shared palette rather than
 // written out, so the legend swatches and these dots cannot describe the same
@@ -194,6 +249,7 @@ type CorridorFeatureCollection = MissionAoiFeatureCollection;
 type RtpCycleFeatureCollection = MissionAoiFeatureCollection;
 type CensusTractFeatureCollection = MissionAoiFeatureCollection;
 type EngagementFeatureCollection = MissionAoiFeatureCollection;
+type TransitStopFeatureCollection = MissionAoiFeatureCollection;
 
 function routeOwnsMap(pathname: string): boolean {
   return MAP_OWNING_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
@@ -303,6 +359,7 @@ export function CartographicMapBackdrop({
     useState<CensusTractFeatureCollection | null>(null);
   const [engagementItems, setEngagementItems] =
     useState<EngagementFeatureCollection | null>(null);
+  const [transitStops, setTransitStops] = useState<TransitStopFeatureCollection | null>(null);
   const { layers } = useCartographicLayers();
   const { registerMapControls } = useCartographicMapControls();
   const { selection, setSelection, clearSelection } = useCartographicSelection();
@@ -314,6 +371,17 @@ export function CartographicMapBackdrop({
   // the workspace instead of being stranded at the neutral continental view.
   const didInitialFitRef = useRef(false);
   const userMovedMapRef = useRef(false);
+  /**
+   * The workspace whose transit stops have already been requested.
+   *
+   * Transit is the one layer whose fetch is gated on its toggle, so this ref is
+   * what keeps ticking the box off and on again from re-pulling a payload that
+   * is an order of magnitude wider than any other layer's. It holds a WORKSPACE
+   * ID rather than a boolean so a workspace switch — a soft RSC refresh that
+   * does not remount this tree — refetches instead of leaving the previous
+   * workspace's agency drawn under the new workspace's map.
+   */
+  const transitFetchedForRef = useRef<string | null | undefined>(undefined);
   // The map is constructed once (and rebuilt only on a theme swap), so the
   // opening camera has to be read through a ref rather than a dependency —
   // putting `homeMapView` in the effect's dep list would tear the map down and
@@ -585,6 +653,88 @@ export function CartographicMapBackdrop({
     })();
     return () => controller.abort();
   }, [suppressed, workspaceId, noteLayer, disclosureOf, registerLayerStatus]);
+
+  /**
+   * Transit stops from the workspace's own ingested feeds.
+   *
+   * THE ONE LAYER WHOSE FETCH IS GATED ON ITS TOGGLE, and the divergence from
+   * the crash layer directly above is deliberate rather than an oversight.
+   *
+   * Crashes are fetched while switched off because their coverage sentences
+   * answer a question a planner has BEFORE they would ever tick the box — does
+   * any crash source cover my area at all — and hiding that behind a checkbox
+   * would hide it from everyone who never ticks it. Transit's sentences answer
+   * a different question, and it is one nobody asks until they have asked for
+   * the layer: which of MY OWN ingested feeds is in use, and why is this corner
+   * empty. The planner reaches those notes by the same action that reveals
+   * them.
+   *
+   * What makes the gate worth it is payload. This layer's cap is ten times the
+   * shared one, because the row count of a real agency demanded it, so pulling
+   * it on every navigation for a layer that is off by default would be the
+   * heaviest thing the shell does and the least often looked at. Once pulled it
+   * is KEPT — the ref above means toggling off and on again costs nothing.
+   *
+   * The route's coverage notes are used verbatim rather than re-derived from
+   * counts here, exactly as for crashes: an empty transit layer has four
+   * different meanings (no feed of this workspace's own, no completed ingest in
+   * use, nothing derived for the day being drawn, or genuinely no stops), and
+   * only the route knows which one it is looking at.
+   */
+  useEffect(() => {
+    if (suppressed) return;
+    if (!layers.transit) return;
+    if (transitFetchedForRef.current === workspaceId) return;
+    transitFetchedForRef.current = workspaceId;
+
+    const controller = new AbortController();
+    // ONLY A COMPLETED READ MAY BE REMEMBERED. A 500, a network failure, or an
+    // abort that fires because the planner toggled the layer off mid-flight
+    // must all clear the ref — otherwise the very next attempt would see a
+    // matching workspace id, skip the fetch, and leave the layer permanently
+    // empty behind a checkbox that looks switched on. That is precisely the
+    // shipped-invisible shape: a capability that works, gated behind a state
+    // machine that can only be observed by trying it twice.
+    let settled = false;
+    (async () => {
+      try {
+        const response = await fetch("/api/map-features/transit", {
+          method: "GET",
+          credentials: "same-origin",
+          signal: controller.signal,
+        });
+        if (!response.ok) {
+          if (response.status !== 401) {
+            console.warn(`[cartographic-backdrop] transit fetch returned ${response.status}`);
+            noteLayer("transit", null, true);
+          }
+          return;
+        }
+        const payload = (await response.json()) as TransitStopFeatureCollection;
+        if (controller.signal.aborted) return;
+        if (payload && payload.type === "FeatureCollection") {
+          settled = true;
+          setTransitStops(payload);
+          const coverageNotes = (payload as unknown as { coverageNotes?: unknown }).coverageNotes;
+          registerLayerStatus("transit", {
+            workspaceId,
+            failed: false,
+            notes: Array.isArray(coverageNotes)
+              ? coverageNotes.filter((note): note is string => typeof note === "string")
+              : [],
+          });
+        }
+      } catch (error) {
+        if ((error as { name?: string }).name === "AbortError") return;
+        console.warn("[cartographic-backdrop] transit fetch failed", error);
+        noteLayer("transit", null, true);
+      }
+    })();
+    return () => {
+      controller.abort();
+      if (!settled) transitFetchedForRef.current = undefined;
+    };
+  }, [suppressed, layers.transit, workspaceId, noteLayer, registerLayerStatus]);
 
   // Same pattern for project corridors — separate source + line layer.
   useEffect(() => {
@@ -1293,6 +1443,113 @@ export function CartographicMapBackdrop({
     }
   }, [ready, crashes, resolvedTheme]);
 
+  /**
+   * Paint transit stops: clusters at regional zoom, individual stops coloured
+   * by frequent-service tier as the planner comes in.
+   *
+   * CLUSTERING IS NOT DECORATION HERE. A few thousand individual dots along a
+   * corridor render as one continuous band that hides both the pattern and the
+   * projects underneath it, and Mapbox is drawing every one of them the whole
+   * time. `clusterMaxZoom` is set below the zoom at which one stop is a thing a
+   * planner can reason about, so the transition happens where the question
+   * changes from "where is there service" to "what calls at this corner".
+   *
+   * THE CLUSTER CIRCLE IS DELIBERATELY NOT TIER-COLOURED. A cluster's colour
+   * would have to be an average of the headways inside it, and an averaged
+   * service level is a figure nobody derived and nothing in this product would
+   * stand behind. Clusters carry a COUNT — how many stops are in there, which
+   * is a fact — and the tier appears only once the individual stops do.
+   */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready || !transitStops) return;
+
+    const paint = () => {
+      if (!map.getSource(TRANSIT_SOURCE_ID)) {
+        map.addSource(TRANSIT_SOURCE_ID, {
+          type: "geojson",
+          data: transitStops as unknown as GeoJSON.FeatureCollection,
+          cluster: true,
+          clusterMaxZoom: 13,
+          clusterRadius: 45,
+        });
+      } else {
+        const source = map.getSource(TRANSIT_SOURCE_ID) as mapboxgl.GeoJSONSource;
+        source.setData(transitStops as unknown as GeoJSON.FeatureCollection);
+      }
+
+      // Beneath the workspace's own project and RTP pins, for the crash layer's
+      // reason: transit is context about a place, and the work being managed
+      // there should still win a click.
+      const beforeId = [PROJECTS_CIRCLE_LAYER_ID, RTP_CYCLES_CIRCLE_LAYER_ID].find((id) =>
+        map.getLayer(id),
+      );
+
+      if (!map.getLayer(TRANSIT_CLUSTER_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: TRANSIT_CLUSTER_LAYER_ID,
+            type: "circle",
+            source: TRANSIT_SOURCE_ID,
+            filter: ["has", "point_count"],
+            paint: {
+              "circle-color": TRANSIT_FREQUENT_COLOR,
+              "circle-opacity": 0.55,
+              "circle-radius": ["step", ["get", "point_count"], 14, 25, 20, 100, 27],
+              "circle-stroke-color": "#ffffff",
+              "circle-stroke-width": 1.25,
+            },
+          },
+          beforeId,
+        );
+      }
+
+      if (!map.getLayer(TRANSIT_CLUSTER_COUNT_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: TRANSIT_CLUSTER_COUNT_LAYER_ID,
+            type: "symbol",
+            source: TRANSIT_SOURCE_ID,
+            filter: ["has", "point_count"],
+            layout: {
+              "text-field": ["get", "point_count_abbreviated"],
+              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+              "text-size": 11,
+              "text-allow-overlap": true,
+            },
+            paint: { "text-color": "#ffffff" },
+          },
+          beforeId,
+        );
+      }
+
+      if (!map.getLayer(TRANSIT_STOPS_CIRCLE_LAYER_ID)) {
+        map.addLayer(
+          {
+            id: TRANSIT_STOPS_CIRCLE_LAYER_ID,
+            type: "circle",
+            source: TRANSIT_SOURCE_ID,
+            filter: ["!", ["has", "point_count"]],
+            paint: {
+              "circle-color": TRANSIT_TIER_PAINT,
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 3, 15, 6.5],
+              "circle-stroke-color": "#ffffff",
+              "circle-stroke-width": 1,
+              "circle-opacity": 0.92,
+            },
+          },
+          beforeId,
+        );
+      }
+    };
+
+    if (map.isStyleLoaded()) {
+      paint();
+    } else {
+      map.once("style.load", paint);
+    }
+  }, [ready, transitStops, resolvedTheme]);
+
   // Frame the workspace's own features once, on the first payload that carries
   // any. This outranks the home-geography camera on purpose: real data already
   // in scope is a better answer than a stated boundary, and a stated boundary
@@ -1307,6 +1564,13 @@ export function CartographicMapBackdrop({
   // county pulled in one request — so framing to them would show the shape of a
   // data pull rather than the shape of the work. Project areas are included:
   // that is a boundary the workspace deliberately chose.
+  //
+  // Transit stops are excluded for the crash layer's reason and one more. Their
+  // extent is an AGENCY's service area, which is somebody else's footprint
+  // rather than this workspace's work; and the layer is fetched only once a
+  // planner asks for it, so a late-arriving payload would yank a camera they
+  // had already settled. The absence from this dep array is the mechanism —
+  // said out loud here so it reads as a decision rather than an omission.
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !ready) return;
@@ -1396,6 +1660,28 @@ export function CartographicMapBackdrop({
       }
     }
   }, [layers.crashes, ready, crashes]);
+
+  // Honor the layers.transit toggle. All three layers move together so a stop
+  // never renders as a cluster count with no circle under it, or as a cluster
+  // whose members are drawn beside it.
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !ready) return;
+    const visibility = layers.transit ? "visible" : "none";
+    for (const layerId of [
+      TRANSIT_CLUSTER_LAYER_ID,
+      TRANSIT_CLUSTER_COUNT_LAYER_ID,
+      TRANSIT_STOPS_CIRCLE_LAYER_ID,
+    ]) {
+      if (map.getLayer(layerId)) {
+        try {
+          map.setLayoutProperty(layerId, "visibility", visibility);
+        } catch {
+          // no-op: layers.transit toggle is best-effort
+        }
+      }
+    }
+  }, [layers.transit, ready, transitStops]);
 
   // Honor the layers.corridors toggle.
   useEffect(() => {
@@ -1604,6 +1890,140 @@ export function CartographicMapBackdrop({
       }
     };
 
+    /**
+     * A transit stop's popup — built as DOM NODES, never as an HTML string.
+     *
+     * `stop_name` and the route ids come out of a third party's published feed
+     * and are written to the page verbatim. `setHTML` with an interpolated feed
+     * value would make any agency's GTFS export a script-injection vector into
+     * every workspace that ingested it; `textContent` cannot be one, and costs
+     * nothing but a few lines.
+     *
+     * WHAT IT SAYS, AND WHAT IT STRUCTURALLY CANNOT. Every line is a rate or a
+     * count over a whole service day. There is no departure time in it because
+     * there is no departure time in the payload — the route does not ask
+     * `gtfs_stops_map` for `first_departure_seconds` or
+     * `last_departure_seconds`, so this popup could not print one if someone
+     * later decided it should. That is the boundary being kept by construction
+     * rather than by remembering: a service level is a planning fact about a
+     * schedule that was published, a departure time is a promise to a rider
+     * standing on the corner, and OpenPlan reads no feed that could keep the
+     * second one.
+     */
+    const transitPopup = new mapboxgl.Popup({
+      closeButton: true,
+      closeOnClick: true,
+      maxWidth: "280px",
+      offset: 10,
+    });
+
+    const transitPopupContent = (properties: Record<string, unknown>) => {
+      const root = document.createElement("div");
+      root.className = "op-map-popup op-map-popup--transit";
+
+      const text = (className: string, value: string) => {
+        const node = document.createElement("div");
+        node.className = className;
+        node.textContent = value;
+        root.appendChild(node);
+      };
+
+      const stopName = typeof properties.stopName === "string" ? properties.stopName.trim() : "";
+      const agencyName = typeof properties.agencyName === "string" ? properties.agencyName.trim() : "";
+      const dayName = typeof properties.serviceDay === "string" ? properties.serviceDay : "";
+      const dayLabel = dayName ? dayName.charAt(0).toUpperCase() + dayName.slice(1) : "weekday";
+      const trips = typeof properties.tripsPerDay === "number" ? properties.tripsPerDay : 0;
+      const headway =
+        typeof properties.peakHeadwayMinutes === "number" ? properties.peakHeadwayMinutes : null;
+      const routesServing =
+        typeof properties.routesServing === "number" ? properties.routesServing : 0;
+
+      // Mapbox flattens feature properties through JSON when a source is
+      // clustered, so an array arrives as a string. Both shapes are read rather
+      // than one assumed — the alternative is a popup that silently lists no
+      // routes on exactly the layer that is always clustered.
+      const rawRouteIds = properties.routeIds;
+      let routeIds: string[] = [];
+      if (Array.isArray(rawRouteIds)) {
+        routeIds = rawRouteIds.filter((id): id is string => typeof id === "string");
+      } else if (typeof rawRouteIds === "string") {
+        try {
+          const parsed: unknown = JSON.parse(rawRouteIds);
+          if (Array.isArray(parsed)) {
+            routeIds = parsed.filter((id): id is string => typeof id === "string");
+          }
+        } catch {
+          routeIds = [];
+        }
+      }
+
+      text("op-map-popup__title", stopName.length > 0 ? stopName : "Unnamed stop");
+      if (agencyName.length > 0) {
+        text("op-map-popup__kicker", agencyName);
+      }
+      text(
+        "op-map-popup__line",
+        `About ${trips.toLocaleString()} trips call here on a ${dayLabel}.`,
+      );
+      text(
+        "op-map-popup__line",
+        headway === null
+          ? "Too few trips that day to derive an interval between them."
+          : `About one vehicle every ${headway.toLocaleString()} minutes in the busiest hour.`,
+      );
+      if (routesServing > 0) {
+        const listed = routeIds.slice(0, 4).join(", ");
+        const suffix =
+          routeIds.length > 0
+            ? ` (${listed}${routesServing > routeIds.length || routeIds.length > 4 ? ", and others" : ""})`
+            : "";
+        text(
+          "op-map-popup__line",
+          `Served by ${routesServing.toLocaleString()} ${routesServing === 1 ? "route" : "routes"}${suffix}.`,
+        );
+      }
+      text(
+        "op-map-popup__note",
+        "Derived from a published feed, averaged over one service day — a service level, not a timetable.",
+      );
+
+      return root;
+    };
+
+    const onTransitStopClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      if (!feature) return;
+      const geometry = feature.geometry;
+      if (!geometry || geometry.type !== "Point") return;
+      const [lng, lat] = geometry.coordinates as [number, number];
+      transitPopup
+        .setLngLat([lng, lat])
+        .setDOMContent(transitPopupContent((feature.properties ?? {}) as Record<string, unknown>))
+        .addTo(map);
+    };
+
+    // A cluster is not a feature a planner can be told anything about, so
+    // clicking one asks the source how far in it has to go to break apart, and
+    // goes there. Answering with "1,204 stops" and no way through would be a
+    // dead end on the layer's most clickable target.
+    const onTransitClusterClick = (e: mapboxgl.MapLayerMouseEvent) => {
+      const feature = e.features?.[0];
+      const clusterId = feature?.properties?.cluster_id;
+      if (typeof clusterId !== "number") return;
+      const source = map.getSource(TRANSIT_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+      if (!source || typeof source.getClusterExpansionZoom !== "function") return;
+      const geometry = feature?.geometry;
+      if (!geometry || geometry.type !== "Point") return;
+      const center = geometry.coordinates as [number, number];
+      // Callback form, which is what this Mapbox GL version's types require.
+      // A failure is a no-op rather than a thrown error: the planner can still
+      // zoom by hand, and a dead click is a smaller harm than a crashed map.
+      source.getClusterExpansionZoom(clusterId, (error, zoom) => {
+        if (error || typeof zoom !== "number") return;
+        map.easeTo({ center, zoom, duration: FIT_DURATION_MS });
+      });
+    };
+
     const onBackgroundClick = (e: mapboxgl.MapMouseEvent) => {
       const renderedLayers = FEATURE_LAYERS.filter((layerId) => map.getLayer(layerId));
       if (renderedLayers.length === 0) {
@@ -1641,6 +2061,12 @@ export function CartographicMapBackdrop({
     map.on("click", ENGAGEMENT_CIRCLE_LAYER_ID, onEngagementClick);
     map.on("mouseenter", ENGAGEMENT_CIRCLE_LAYER_ID, onMouseEnter);
     map.on("mouseleave", ENGAGEMENT_CIRCLE_LAYER_ID, onMouseLeave);
+    map.on("click", TRANSIT_STOPS_CIRCLE_LAYER_ID, onTransitStopClick);
+    map.on("mouseenter", TRANSIT_STOPS_CIRCLE_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", TRANSIT_STOPS_CIRCLE_LAYER_ID, onMouseLeave);
+    map.on("click", TRANSIT_CLUSTER_LAYER_ID, onTransitClusterClick);
+    map.on("mouseenter", TRANSIT_CLUSTER_LAYER_ID, onMouseEnter);
+    map.on("mouseleave", TRANSIT_CLUSTER_LAYER_ID, onMouseLeave);
     map.on("click", onBackgroundClick);
 
     return () => {
@@ -1668,7 +2094,17 @@ export function CartographicMapBackdrop({
       map.off("click", ENGAGEMENT_CIRCLE_LAYER_ID, onEngagementClick);
       map.off("mouseenter", ENGAGEMENT_CIRCLE_LAYER_ID, onMouseEnter);
       map.off("mouseleave", ENGAGEMENT_CIRCLE_LAYER_ID, onMouseLeave);
+      map.off("click", TRANSIT_STOPS_CIRCLE_LAYER_ID, onTransitStopClick);
+      map.off("mouseenter", TRANSIT_STOPS_CIRCLE_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", TRANSIT_STOPS_CIRCLE_LAYER_ID, onMouseLeave);
+      map.off("click", TRANSIT_CLUSTER_LAYER_ID, onTransitClusterClick);
+      map.off("mouseenter", TRANSIT_CLUSTER_LAYER_ID, onMouseEnter);
+      map.off("mouseleave", TRANSIT_CLUSTER_LAYER_ID, onMouseLeave);
       map.off("click", onBackgroundClick);
+      // The popup is created inside this effect, so it has to be torn down with
+      // it — a theme swap rebuilds the map and would otherwise leave a detached
+      // popup holding a reference to the old instance.
+      transitPopup.remove();
     };
   }, [ready, setSelection, clearSelection]);
 

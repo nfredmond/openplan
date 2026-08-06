@@ -93,6 +93,13 @@ const TRANSIT_ROOTS = [
   "src/app/api/gtfs",
   "src/app/api/cron/reap-gtfs-ingests",
   "src/lib/transit",
+  // The corridor screen's transit sources. It reads the derived service levels
+  // and writes the sentences a planner sees beside a stop count and a
+  // frequent-service share, so it is squarely inside this commitment — and it is
+  // the one part of the lane that reaches a GRANT APPLICATION rather than a Data
+  // Hub card. Without this root it would have been the transit lane's copy with
+  // no claim boundary over it.
+  "src/lib/data-sources/transit",
 ];
 
 /**
@@ -537,6 +544,17 @@ describe("the transit lane scans something", () => {
         `${root} contributed no files to the transit claim scan`
       ).toBeGreaterThan(0);
     }
+  });
+
+  it("covers the corridor screen's transit sources, which is where a grant reads them", () => {
+    // NAMED, because a root can be deleted from `TRANSIT_ROOTS` without any
+    // other assertion here noticing — the loop above only checks that whatever
+    // roots are listed contribute files. The corridor lane is the one part of
+    // this commitment whose sentences reach a grant application rather than a
+    // Data Hub card, so its membership is a fact rather than a listing.
+    expect(TRANSIT_FILES).toContain("src/lib/data-sources/transit/gtfs-feed.ts");
+    expect(TRANSIT_FILES).toContain("src/lib/data-sources/transit/method.ts");
+    expect(TRANSIT_FILES).toContain("src/lib/data-sources/transit/index.ts");
   });
 
   it("reaches the mixed roots through their imports, not through a typed filename", () => {

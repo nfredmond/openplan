@@ -8,6 +8,12 @@ import {
   CRASH_SEVERITY_LEGEND_LABEL,
   CRASH_SEVERITY_LEGEND_ORDER,
 } from "@/lib/cartographic/crash-severity-palette";
+import {
+  TRANSIT_SERVICE_TIER_COLOR,
+  TRANSIT_SERVICE_TIER_LEGEND_LABEL,
+  TRANSIT_SERVICE_TIER_LEGEND_ORDER,
+  TRANSIT_SERVICE_TIER_LEGEND_TITLE,
+} from "@/lib/cartographic/transit-service-tier-palette";
 
 type SwatchEntry = { kind: "swatch"; color: string; label: string };
 type RampStop = { color: string; label: string };
@@ -16,7 +22,15 @@ type LegendEntry = SwatchEntry | RampEntry;
 
 type LegendLayerKey = Extract<
   LayerKey,
-  "projects" | "projectAreas" | "aerial" | "corridors" | "rtp" | "equity" | "engagement" | "crashes"
+  | "projects"
+  | "projectAreas"
+  | "aerial"
+  | "corridors"
+  | "rtp"
+  | "equity"
+  | "engagement"
+  | "crashes"
+  | "transit"
 >;
 
 const LEGEND_ORDER: LegendLayerKey[] = [
@@ -28,6 +42,7 @@ const LEGEND_ORDER: LegendLayerKey[] = [
   "rtp",
   "equity",
   "crashes",
+  "transit",
 ];
 
 const LEGEND_ENTRIES: Record<LegendLayerKey, LegendEntry> = {
@@ -77,6 +92,29 @@ const LEGEND_ENTRIES: Record<LegendLayerKey, LegendEntry> = {
     stops: CRASH_SEVERITY_LEGEND_ORDER.map((severity) => ({
       color: CRASH_SEVERITY_COLOR[severity],
       label: CRASH_SEVERITY_LEGEND_LABEL[severity],
+    })),
+  },
+  /**
+   * Transit stops by peak headway, keyed off the shared palette so the swatch
+   * and the Mapbox paint expression cannot drift.
+   *
+   * THIS ENTRY WAS MISSING WHILE THE LAYER PAINTED THREE MEANING-BEARING
+   * COLOURS. A planner could see frequent, basic and untiered stops as three
+   * different dots with nothing on screen saying which was which, so the only
+   * available readings were "guess" and "assume the darker one is better". An
+   * unkeyed colour that carries a claim is worse than no colour at all: it is a
+   * finding the reader invents.
+   *
+   * "No interval" is listed rather than omitted for the same reason the
+   * unpopulated KABCO bucket is: the ramp documents what a colour MEANS, and a
+   * stop with a single daily trip genuinely has no derivable headway.
+   */
+  transit: {
+    kind: "ramp",
+    label: TRANSIT_SERVICE_TIER_LEGEND_TITLE,
+    stops: TRANSIT_SERVICE_TIER_LEGEND_ORDER.map((tier) => ({
+      color: TRANSIT_SERVICE_TIER_COLOR[tier],
+      label: TRANSIT_SERVICE_TIER_LEGEND_LABEL[tier],
     })),
   },
 };

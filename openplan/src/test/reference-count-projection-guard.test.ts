@@ -232,9 +232,21 @@ describe("reference count projections", () => {
     // What is deliberately not checked, pinned so the skipped set cannot grow
     // into the whole codebase without someone noticing.
     expect(selectSites.filter((site) => site.projection === null).length).toBeLessThan(250);
+    // Reads of a VIEW are not column-checked, because the schema inventory is
+    // built from CREATE TABLE. The list is pinned so that exemption cannot grow
+    // quietly: a new entry means a new unchecked projection, and it should only
+    // ever be added by someone who looked at it. `gtfs_stops_map` was added
+    // 2026-08-06 with the transit map layer — the view exists because
+    // supabase-js cannot read a PostGIS geometry, and its projection is asserted
+    // by name in `transit-map-layer.test.ts` instead of here.
     expect(
       [...new Set(selectSites.filter((site) => site.table && schema.isView(site.table)).map((site) => site.table))].sort()
-    ).toEqual(["census_tracts_map", "project_bca_screenings_latest", "scenario_comparison_summary"]);
+    ).toEqual([
+      "census_tracts_map",
+      "gtfs_stops_map",
+      "project_bca_screenings_latest",
+      "scenario_comparison_summary",
+    ]);
 
     // The parser itself.
     expect(projectionColumns("id, workspace_id, name")).toEqual(["id", "workspace_id", "name"]);

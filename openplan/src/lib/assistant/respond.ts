@@ -2365,13 +2365,27 @@ function buildRunResponse(context: RunAssistantContext, workflowId: string): Ass
       label,
       title: `Run comparison: ${context.run.title}`,
       summary: context.baselineRun
-        ? `${context.run.title} is paired against ${context.baselineRun.title}. The most useful read is the headline score movement: ${headline.map((item) => `${item.label} ${item.delta === null ? "flat" : item.delta > 0 ? `+${item.delta}` : `${item.delta}`}`).join(" · ")}.`
+        // "flat" IS A CLAIM, and it must not be made for a pair that cannot be
+        // subtracted. A delta is null either because one run has no value or
+        // because the two runs measured the same thing differently (a corridor
+        // screened against an ingested GTFS feed versus an OpenStreetMap stop
+        // tally), and reporting the second as "flat" tells a planner the
+        // opposite of the truth.
+        ? `${context.run.title} is paired against ${context.baselineRun.title}. The most useful read is the headline score movement: ${headline.map((item) => `${item.label} ${item.incomparable ? "not comparable" : item.delta === null ? "not measured" : item.delta > 0 ? `+${item.delta}` : `${item.delta}`}`).join(" · ")}.`
         : `${context.run.title} does not currently have a baseline attached, so a score-delta comparison is not available yet.`,
       findings: [
         context.baselineRun ? `Baseline: ${context.baselineRun.title} captured ${formatDateTime(context.baselineRun.createdAt)}.` : "No baseline run is attached.",
         context.baselineRun
           ? headline.map((item) => `${item.label}: current ${item.current ?? "N/A"} vs baseline ${item.baseline ?? "N/A"}`).join(" · ")
           : "Pin a baseline run from Analysis Studio or a scenario deep link to light up comparison mode.",
+        // The refusal is a property of the PAIR, so the first reason covers all
+        // of them. Spread rather than defaulted to "", because a caveat shown on
+        // every comparison is a caveat nobody reads — and an empty finding is a
+        // blank bullet.
+        ...(deltas
+          .map((delta) => delta.incomparableReason)
+          .filter((reason): reason is string => Boolean(reason))
+          .slice(0, 1)),
         asString(context.run.metrics.confidence)
           ? `Current run confidence: ${String(context.run.metrics.confidence)}.`
           : "No explicit confidence label is stored on the current run.",

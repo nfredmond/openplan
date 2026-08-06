@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { computeCorridorScores } from "@/lib/data-sources/scoring";
 import type { TransitAccessSummary } from "@/lib/data-sources/transit";
+import { NOT_MEASURED_METHOD, OSM_STOP_INVENTORY_METHOD, gtfsServiceLevelMethod } from "@/lib/data-sources/transit/method";
+import { accessibilityTransitTerm } from "@/lib/data-sources/scoring";
 
 /**
  * "Not measured" is not "measured and found none".
@@ -37,6 +39,22 @@ function transitSummary(over: Partial<TransitAccessSummary> = {}): TransitAccess
     accessTier: "medium",
     source: "osm-overpass",
     unavailableReason: null,
+    // FALSE: OpenStreetMap records where a stop is and nothing about what calls
+    // there, so it has no opinion on frequency at all — which is a different
+    // statement from "it could not state one here", and only this one keeps the
+    // whole transit term as density.
+    measuresFrequency: false,
+    // NULL, not zero: scoring that silence as "no stop is frequent" would
+    // penalise the corridor for the measurement.
+    frequentServiceShare: null,
+    frequentServiceStops: null,
+    frequentServiceHeadwayMinutes: null,
+    truncated: false,
+    method: OSM_STOP_INVENTORY_METHOD,
+    contributingSources: [],
+    caveats: [],
+    narrativeLine: "**Transit Access:** 30 stops (5/sq mi). Access tier: medium.",
+    sourceSnapshot: {},
     ...over,
   };
 }
@@ -51,6 +69,7 @@ const UNOBSERVED = transitSummary({
   accessTier: null,
   source: "unavailable",
   unavailableReason: "The OpenStreetMap Overpass service did not respond.",
+  method: NOT_MEASURED_METHOD,
 });
 
 function score(transit: TransitAccessSummary) {
@@ -108,5 +127,141 @@ describe("accessibility scoring with no transit source", () => {
     const unmeasured = score(UNOBSERVED);
     expect(Number.isFinite(unmeasured.overallScore)).toBe(true);
     expect(unmeasured.overallScore).toBeGreaterThan(0);
+  });
+});
+
+/**
+ * THE TRANSIT TERM ITSELF — the arithmetic that moves when a workspace ingests
+ * a real feed, tested on its own rather than inferred from a composite.
+ *
+ * A composite assertion would pass for the wrong reason the first time any other
+ * component moved, and the whole point of these is that the number is going to
+ * be quoted back by a planner asking why their score fell.
+ */
+describe("the accessibility score's transit term", () => {
+  it("is stop density alone when the source cannot speak to frequency", () => {
+    // 5 stops/sq mi × 2.2 = 11 points, exactly what it was before the split. A
+    // workspace that has ingested no feed must score today what it scored
+    // yesterday, and this is the assertion that says so.
+    expect(
+      accessibilityTransitTerm({ stopsPerSqMile: 5, frequentServiceShare: null, measuresFrequency: false })
+    ).toBe(11);
+    expect(
+      accessibilityTransitTerm({ stopsPerSqMile: 20, frequentServiceShare: null, measuresFrequency: false })
+    ).toBe(20);
+  });
+
+  it("splits into half density and half frequent-service share when it can", () => {
+    // Saturated density (≥ 9.1 stops/sq mi) is 10 of the 20 points, and the
+    // frequent-service share fills the rest in proportion.
+    const at = (share: number) =>
+      accessibilityTransitTerm({ stopsPerSqMile: 20, frequentServiceShare: share, measuresFrequency: true });
+    expect(at(0)).toBe(10);
+    expect(at(0.5)).toBe(15);
+    expect(at(1)).toBe(20);
+  });
+
+  it("keeps the same density saturation point, rather than halving the ceiling", () => {
+    // Halving the CEILING (`min(10, density × 2.2)`) would saturate at 4.5 stops
+    // per square mile and quietly redefine what a dense corridor is. Halving the
+    // CURVE keeps the 9.1 the whole term always had, so these two differ.
+    expect(
+      accessibilityTransitTerm({ stopsPerSqMile: 4.55, frequentServiceShare: 0, measuresFrequency: true })
+    ).toBeCloseTo(5.005, 3);
+    expect(
+      accessibilityTransitTerm({ stopsPerSqMile: 9.1, frequentServiceShare: 0, measuresFrequency: true })
+    ).toBe(10);
+  });
+
+  it("never exceeds the term's ceiling, whatever it is handed", () => {
+    // The ceiling is what makes the composite's weighting stable. A share above
+    // 1 (a corrupt or hand-edited run) must not be able to inflate it.
+    expect(
+      accessibilityTransitTerm({ stopsPerSqMile: 1000, frequentServiceShare: 4, measuresFrequency: true })
+    ).toBe(20);
+    expect(
+      accessibilityTransitTerm({ stopsPerSqMile: 1000, frequentServiceShare: -3, measuresFrequency: true })
+    ).toBe(10);
+  });
+
+  it("treats a share that is not a number as no opinion when the source has none", () => {
+    // `undefined` is what a run persisted before this field existed carries.
+    // Reaching the arithmetic with it produced a NaN accessibility score, which
+    // renders as the literal text "NaN" in a headline tile.
+    const legacy = accessibilityTransitTerm({
+      stopsPerSqMile: 5,
+      frequentServiceShare: undefined as unknown as number | null,
+    });
+    expect(legacy).toBe(11);
+    expect(Number.isNaN(accessibilityTransitTerm({ stopsPerSqMile: 5, frequentServiceShare: NaN }))).toBe(false);
+  });
+
+  it("fills ZERO of the frequency half when a frequency-capable source could not state a share", () => {
+    // THE INVERSION THIS REPLACED. Handing the unmeasured half back as density
+    // made a partial-coverage GTFS run score 6.45 points ABOVE a full-coverage
+    // one over identical stops. Withholding is now identical to measuring zero,
+    // which is the floor of measuring rather than the ceiling.
+    const withheld = accessibilityTransitTerm({
+      stopsPerSqMile: 5,
+      frequentServiceShare: null,
+      measuresFrequency: true,
+    });
+    expect(withheld).toBe(5.5);
+    expect(withheld).toBe(
+      accessibilityTransitTerm({ stopsPerSqMile: 5, frequentServiceShare: 0, measuresFrequency: true })
+    );
+    // And a NaN share from a frequency-capable source is still not NaN out.
+    expect(
+      Number.isNaN(
+        accessibilityTransitTerm({ stopsPerSqMile: 5, frequentServiceShare: NaN, measuresFrequency: true })
+      )
+    ).toBe(false);
+  });
+});
+
+/**
+ * THE MEASURED SCORE DELTA A WORKSPACE SEES WHEN IT INGESTS A REAL FEED.
+ *
+ * This is the support question written as a test. The corridor below is
+ * transit-rich enough for density to saturate under both sources — which is the
+ * case where the drop is largest and therefore the one somebody will report.
+ */
+describe("what ingesting a feed does to the same corridor's score", () => {
+  const OSM_RUN = transitSummary({ stopsPerSqMile: 12, totalStops: 96 });
+  const GTFS_RUN = transitSummary({
+    stopsPerSqMile: 12,
+    totalStops: 96,
+    source: "gtfs-feed",
+    measuresFrequency: true,
+    frequentServiceShare: 0.1,
+    frequentServiceStops: 10,
+    frequentServiceHeadwayMinutes: 15,
+    method: gtfsServiceLevelMethod(true),
+  });
+
+  it("falls, and by an amount a planner can be told in advance", () => {
+    const osm = score(OSM_RUN);
+    const gtfs = score(GTFS_RUN);
+
+    // 20 points of transit term become 10 (saturated density, halved) + 1
+    // (a tenth of the frequent-service half): a nine-point fall in accessibility.
+    expect(osm.accessibilityScore - gtfs.accessibilityScore).toBe(9);
+    // Accessibility is 35% of the composite, so the overall score moves by ~3.
+    expect(osm.overallScore - gtfs.overallScore).toBe(3);
+  });
+
+  it("does not fall when the ingested feed is actually frequent", () => {
+    const frequent = score(
+      transitSummary({
+        stopsPerSqMile: 12,
+        source: "gtfs-feed",
+        measuresFrequency: true,
+        frequentServiceShare: 1,
+        method: gtfsServiceLevelMethod(true),
+      })
+    );
+    // A corridor where every stop meets the headway scores exactly what the OSM
+    // tally gave it. The change is not a penalty for using better data.
+    expect(frequent.accessibilityScore).toBe(score(OSM_RUN).accessibilityScore);
   });
 });

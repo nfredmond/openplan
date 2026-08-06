@@ -41,6 +41,18 @@ export type ScenarioComparisonBoardMetric = {
   delta: number | null;
   deltaLabel: string;
   tone: "success" | "warning" | "neutral";
+  /** True when both runs carry a number and subtracting them would mislead. */
+  incomparable: boolean;
+  /**
+   * WHY, IN A SENTENCE A PLANNER CAN ACT ON. Null when comparable.
+   *
+   * The board dropped this field for as long as it existed: `buildMetricDeltas`
+   * produced the reason, the card rendered a bare "Not comparable" badge, and the
+   * explanation reached no surface at all. A refusal a reader cannot act on is
+   * indistinguishable from a bug in the product, and the first thing a planner
+   * does with one is work around it.
+   */
+  incomparableReason: string | null;
 };
 
 export type ScenarioComparisonBoardCard = {
@@ -90,23 +102,43 @@ const MODEL_RUN_SCORECARD_KEYS = [
  * carried across; worker engines whose summaries use engine-specific KPI
  * namespaces (snake_case sketch/trip-gen keys) yield null, so a model run
  * without comparable metrics never fakes comparison readiness.
+ *
+ * THE PROVENANCE RIDES ALONG, AND LEAVING IT BEHIND INVERTED THE REFUSAL. This
+ * used to return the four numbers and nothing else, so `resolveTransitMethod`
+ * saw no `sourceSnapshots` on either side and reported EVERY model run as
+ * "not recorded". The consequence was backwards in both directions at once: a
+ * model run could never be compared with an analysis run measured identically,
+ * while two model runs measured two DIFFERENT ways compared cleanly, because
+ * both were equally silent. Carrying the snapshot through is what lets the two
+ * sides disagree when they should.
  */
 export function modelRunComparisonMetrics(
   resultSummary: Record<string, unknown> | null | undefined
-): Record<string, number> | null {
+): Record<string, unknown> | null {
   if (!resultSummary || typeof resultSummary !== "object" || Array.isArray(resultSummary)) {
     return null;
   }
 
-  const metrics: Record<string, number> = {};
+  const metrics: Record<string, unknown> = {};
+  let scorecardKeys = 0;
   for (const key of MODEL_RUN_SCORECARD_KEYS) {
     const value = resultSummary[key];
     if (typeof value === "number" && Number.isFinite(value)) {
       metrics[key] = value;
+      scorecardKeys += 1;
     }
   }
 
-  return Object.keys(metrics).length > 0 ? metrics : null;
+  // Comparison readiness is still decided by the NUMBERS alone: a summary
+  // carrying provenance and no scorecard value has nothing to compare.
+  if (scorecardKeys === 0) return null;
+
+  const snapshots = resultSummary.sourceSnapshots;
+  if (snapshots && typeof snapshots === "object" && !Array.isArray(snapshots)) {
+    metrics.sourceSnapshots = snapshots;
+  }
+
+  return metrics;
 }
 
 type ResolvedEntryEvidence = {
@@ -153,6 +185,10 @@ function resolveEntryEvidence(entry: ScenarioComparisonBoardEntry): ResolvedEntr
 }
 
 function toneForMetricDelta(metric: MetricDelta): "success" | "warning" | "neutral" {
+  // An incomparable metric is neutral for the same reason a null one is: there
+  // is no direction to report. It differs in that BOTH runs carry a number, so
+  // the label below must say why nothing is shown rather than "N/A".
+  if (metric.incomparable) return "neutral";
   if (metric.delta === null || metric.delta === 0) return "neutral";
   const config = METRIC_TONES[metric.key] ?? { positive: "neutral", negative: "neutral" };
   return metric.delta > 0 ? config.positive : config.negative;
@@ -189,8 +225,10 @@ export function buildScenarioComparisonBoard({
         current: metric.current,
         baseline: metric.baseline,
         delta: metric.delta,
-        deltaLabel: formatDelta(metric.delta),
+        deltaLabel: metric.incomparable ? "Not comparable" : formatDelta(metric.delta),
         tone: toneForMetricDelta(metric),
+        incomparable: metric.incomparable,
+        incomparableReason: metric.incomparableReason,
       }));
 
       return {

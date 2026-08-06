@@ -12,7 +12,8 @@ export type LayerKey =
   | "engagement"
   | "aerial"
   | "equity"
-  | "crashes";
+  | "crashes"
+  | "transit";
 
 export const LAYER_KEYS: LayerKey[] = [
   "projects",
@@ -23,6 +24,7 @@ export const LAYER_KEYS: LayerKey[] = [
   "aerial",
   "equity",
   "crashes",
+  "transit",
 ];
 
 const DEFAULT_LAYERS: Readonly<Record<LayerKey, boolean>> = Object.freeze({
@@ -43,6 +45,15 @@ const DEFAULT_LAYERS: Readonly<Record<LayerKey, boolean>> = Object.freeze({
   // learns that crashes are unavailable to them without having to turn on a
   // layer that would draw nothing.
   crashes: false,
+  // Off by default, for the crash layer's reason plus one of its own. A
+  // mid-size agency contributes a few thousand stops, which is a dense analytic
+  // overlay that would cover the workspace's own projects and pins; and unlike
+  // the layers above, transit is another organisation's record that this
+  // workspace happens to have ingested, so it is context a planner asks for
+  // rather than the default subject of the map. The layers panel lists it while
+  // it is off and shows its coverage notes once it has been read, so nothing
+  // about it is discoverable only by leaving it on.
+  transit: false,
 });
 
 export type CartographicMapControls = {

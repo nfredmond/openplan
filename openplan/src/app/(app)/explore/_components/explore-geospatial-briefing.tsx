@@ -57,7 +57,18 @@ export function ExploreGeospatialBriefing({
             <p className="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-cyan-200/80">Data fabric status</p>
             <div className="mt-4 space-y-3">
               {geospatialSourceCards.map((item) => (
-                <div key={item.label} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] p-3.5">
+                // `data-tone` is not decoration: the tone on this card is the
+                // only visible difference between "this run's transit figures
+                // came from the strongest source available" and "no source
+                // answered", and it was wrong for every adapter registered after
+                // the one its condition named. A tone that can only be asserted
+                // by matching a Tailwind colour token is a tone nobody asserts.
+                <div
+                  key={item.label}
+                  data-source-card={item.label}
+                  data-tone={item.tone}
+                  className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] p-3.5"
+                >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="text-sm font-medium text-white">{item.label}</p>
                     <StatusBadge tone={item.tone}>{item.status}</StatusBadge>

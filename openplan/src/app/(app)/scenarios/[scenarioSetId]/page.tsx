@@ -873,6 +873,21 @@ export default async function ScenarioSetDetailPage({
                           <div className="mt-3 space-y-1">
                             <p className="text-2xl font-semibold tracking-tight text-foreground">{metric.current ?? "N/A"}</p>
                             <p className="text-sm text-muted-foreground">Baseline {metric.baseline ?? "N/A"}</p>
+                            {/*
+                              WHY THE SUBTRACTION WAS REFUSED, ON THE CARD ITSELF.
+                              A bare "Not comparable" badge with no explanation
+                              anywhere reads as a defect in OpenPlan, and the
+                              first thing a planner does with an unexplained
+                              refusal is find a way around it. Both values are
+                              still shown above; it is the SUBTRACTION that is
+                              refused, and this sentence is what makes that
+                              legible.
+                            */}
+                            {metric.incomparableReason ? (
+                              <p className="pt-1 text-xs leading-relaxed text-muted-foreground">
+                                {metric.incomparableReason}
+                              </p>
+                            ) : null}
                           </div>
                         </div>
                       ))}

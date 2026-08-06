@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
+import { OSM_STOP_INVENTORY_METHOD } from "@/lib/data-sources/transit/method";
 
 function findItem(items: ReturnType<typeof buildSourceTransparency>, key: string) {
   return items.find((item) => item.key === key);
@@ -25,7 +26,14 @@ describe("buildSourceTransparency", () => {
     );
 
     expect(findItem(items, "crashes")).toMatchObject({ status: "Live", tone: "success" });
-    expect(findItem(items, "transit")).toMatchObject({ status: "Osm Overpass", tone: "info" });
+    // THE METHOD'S OWN LABEL, not the adapter token title-cased. The token is an
+    // implementation id and reads as one — a GTFS-backed run rendered as "Gtfs
+    // Feed" in a grant-ready artifact — so a run that recorded a method is
+    // described by the method it recorded.
+    expect(findItem(items, "transit")).toMatchObject({
+      status: OSM_STOP_INVENTORY_METHOD.label,
+      tone: "info",
+    });
     expect(findItem(items, "lodes")).toMatchObject({ status: "Lodes Api", tone: "info" });
   });
 

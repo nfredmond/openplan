@@ -82,7 +82,28 @@ export type AnalysisResult = {
         fetchedAt?: string;
       };
       lodes?: { source?: string; note?: string; fetchedAt?: string };
-      transit?: { source?: string; note?: string; fetchedAt?: string };
+      transit?: {
+        source?: string;
+        note?: string;
+        fetchedAt?: string;
+        /**
+         * True when a transit source actually answered. THE HONEST TEST for
+         * whether this run has transit figures at all — do not test the tone or
+         * the availability of transit against a particular adapter id, which is
+         * a test that is wrong for every adapter registered afterwards.
+         */
+        observed?: boolean;
+        /** How the figures were measured. See `data-sources/transit/method.ts`. */
+        method?: {
+          id?: string;
+          label?: string;
+          detail?: string;
+          frequencyTermApplied?: boolean;
+        };
+        frequentServiceShare?: number | null;
+        frequentServiceHeadwayMinutes?: number | null;
+        caveats?: string[];
+      };
       crashes?: {
         /**
          * OMITTED when nothing was observed — see `buildCrashSourceSnapshot`.

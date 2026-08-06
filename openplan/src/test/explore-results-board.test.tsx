@@ -106,6 +106,13 @@ function buildComparisonRun(overrides: Partial<Run> = {}): Run {
       totalTransitStops: 12,
       totalFatalCrashes: 2,
       pctZeroVehicle: 15,
+      // The baseline records the SAME transit measurement as the current run, so
+      // the two are subtractable. Without this the pair is incomparable and every
+      // headline delta below would be null — which is the correct behaviour and
+      // is asserted on its own further down, not accidentally here.
+      sourceSnapshots: {
+        transit: { source: "osm-overpass", observed: true, note: "OpenStreetMap stop proxy." },
+      },
       mapViewState: {
         ...currentMapViewState,
         showCrashes: false,
@@ -309,5 +316,77 @@ describe("ExploreResultsBoard", () => {
         }),
       ])
     );
+  });
+});
+
+/**
+ * A BETTER TRANSIT SOURCE MAY NOT RENDER AS A WORSE ONE.
+ *
+ * The card's tone used to be `source === "osm-overpass" ? "info" : "warning"`,
+ * so the moment a second transit adapter existed, a run backed by an agency's
+ * own published schedule — the strongest evidence the product can get — was
+ * rendered in the tone reserved for a source that did not answer. A tone
+ * compared against a hardcoded adapter id is a tone that is wrong for every
+ * adapter registered after it was written.
+ */
+describe("ExploreResultsBoard transit source card", () => {
+  function renderWithTransitSnapshot(transit: Record<string, unknown>) {
+    const result = buildAnalysisResult();
+    render(
+      <ExploreResultsBoard
+        analysisResult={{
+          ...result,
+          metrics: {
+            ...result.metrics,
+            sourceSnapshots: { ...result.metrics.sourceSnapshots, transit },
+          },
+        }}
+        comparisonRun={null}
+        queryText="Downtown access"
+        currentMapViewState={currentMapViewState}
+        onClearComparison={vi.fn()}
+        onError={vi.fn()}
+      />
+    );
+    return document.querySelector('[data-source-card="Transit access"]');
+  }
+
+  it("renders a feed-backed run in the same tone as any other answering source", () => {
+    const card = renderWithTransitSnapshot({
+      source: "gtfs-feed",
+      observed: true,
+      note: "Derived from the feeds this workspace ingested.",
+      method: {
+        id: "gtfs-service-levels",
+        label: "Ingested GTFS service levels",
+        detail: "Half density, half frequent-service share.",
+        frequencyTermApplied: true,
+      },
+    });
+
+    expect(card?.getAttribute("data-tone")).toBe("info");
+    // And it names the method rather than the adapter token, which would read
+    // as "Gtfs Feed" on a card a grant reviewer sees.
+    expect(card?.textContent).toContain("Ingested GTFS service levels");
+  });
+
+  it("keeps the warning tone for a run where no transit source answered", () => {
+    const card = renderWithTransitSnapshot({
+      source: "unavailable",
+      observed: false,
+      note: "No transit source answered for this area.",
+    });
+
+    expect(card?.getAttribute("data-tone")).toBe("warning");
+  });
+
+  it("still renders an OpenStreetMap-backed run as an answering source", () => {
+    const card = renderWithTransitSnapshot({
+      source: "osm-overpass",
+      observed: true,
+      note: "OpenStreetMap stop proxy.",
+    });
+
+    expect(card?.getAttribute("data-tone")).toBe("info");
   });
 });

@@ -179,15 +179,14 @@ function generateSummary(
       `(${lodes.jobsPerResident} jobs per resident). Source: ${lodes.source}.`
   );
 
-  // Transit access. An unobserved run says so rather than narrating nulls —
-  // and must never be summarized as an area with no transit.
-  lines.push(
-    transit.observed
-      ? `**Transit Access:** ${transit.totalStops} stops/stations (${transit.stopsPerSqMile}/sq mi), ` +
-          `including ${transit.busStops} bus stops, ${transit.railStations} rail stations, ` +
-          `${transit.ferryStops} ferry terminals. Access tier: ${transit.accessTier}.`
-      : `**Transit Access:** Not measured. ${transit.unavailableReason ?? ""} Do not state or imply a transit stop count, density, or access tier for this corridor.`
-  );
+  // Transit access. The line is built by the transit lane itself, beside the
+  // numbers, exactly as the crash lane does — the version that used to live here
+  // could not describe a feed-derived answer at all, because it printed
+  // "including ${busStops} bus stops" and a GTFS summary reports null there
+  // (GTFS records a mode on the route, not on the stop). An unobserved run says
+  // so rather than narrating nulls, and must never be summarized as an area with
+  // no transit.
+  lines.push(transit.narrativeLine);
   lines.push(`**Walk/Bike Access (baseline):** Tier ${walkBikeAccess.tier}. ${walkBikeAccess.rationale}`);
 
   // Safety — the crash lane writes its own line so an unobserved run cannot be
@@ -403,10 +402,25 @@ export async function POST(request: NextRequest) {
         );
       }
 
+      // The service-role client is created BEFORE the fetches because the
+      // transit registry needs one: a workspace's own ingested GTFS feeds are
+      // the strongest transit evidence available and they live in this database,
+      // not on a public API. It is the same client the run is persisted with
+      // further down.
+      const supabase = createServiceRoleClient();
+
       // Run Census, transit access, and crash fetches in parallel
       const [census, transit, crashes] = await Promise.all([
         fetchCensusForCorridor(corridorForApi),
-        fetchTransitAccessForBbox(bbox),
+        // `workspaceId` is not a convenience here — it is the tenant boundary.
+        // `gtfs_feeds.workspace_id IS NULL` means a PUBLIC PRELOADED feed shared
+        // by every tenant, so a read that merely followed RLS would score this
+        // corridor off a stranger's transit agency. See `transit/gtfs-feed.ts`.
+        // `parsedWorkspaceId` and not the outer `workspaceId`: the outer one is
+        // a `let` declared for the catch block and is therefore `string |
+        // undefined` inside this closure, and a workspace filter that could be
+        // undefined is the one thing this argument must never be.
+        fetchTransitAccessForBbox(bbox, { workspaceId: parsedWorkspaceId, client: supabase }),
         fetchCrashesForBbox(bbox),
       ]);
 
@@ -530,6 +544,11 @@ export async function POST(request: NextRequest) {
         ferryStops: transit.ferryStops,
         stopsPerSquareMile: transit.stopsPerSqMile,
         transitAccessTier: transit.accessTier,
+        // Null when the source has no opinion on frequency (OpenStreetMap holds
+        // no schedule) — NOT zero, which would read as "no stop is frequent".
+        frequentServiceShare: transit.frequentServiceShare,
+        frequentServiceStops: transit.frequentServiceStops,
+        frequentServiceHeadwayMinutes: transit.frequentServiceHeadwayMinutes,
         walkBikeAccessTier: walkBikeAccess.tier,
         walkBikeAccessScoreBoost: walkBikeAccess.scoreBoost,
         walkBikeAccessRationale: walkBikeAccess.rationale,
@@ -620,15 +639,15 @@ export async function POST(request: NextRequest) {
                 : "Employment values derived from direct LODES workflow.",
             fetchedAt: analysisGeneratedAt,
           },
-          transit: {
-            source: transit.source,
-            observed: transit.observed,
-            note: transit.observed
-              ? "Transit stop density is currently approximated from OSM/Overpass transit stop inventory."
-              : (transit.unavailableReason ??
-                "No transit source answered; stop counts and density were not measured."),
-            fetchedAt: analysisGeneratedAt,
-          },
+          // Built by the transit lane, beside the figures it describes, so a
+          // caller rendering transit numbers cannot forget to say how they were
+          // measured. It carries `method` — the record of which source produced
+          // this run's transit term, which is what lets a later reader see why
+          // the same corridor scored differently before and after a feed was
+          // ingested, and what makes two differently-measured runs refuse to
+          // subtract. STORED RUNS ARE NEVER REWRITTEN: an old run keeps its old
+          // method and its old score.
+          transit: transit.sourceSnapshot,
           crashes: crashes.sourceSnapshot,
           equity: {
             source: equity.source,
@@ -670,7 +689,6 @@ export async function POST(request: NextRequest) {
       };
 
       // --- Persist run ---
-      const supabase = createServiceRoleClient();
       const { error: insertError } = await supabase.from("runs").insert({
         id: runId,
         workspace_id: workspaceId,

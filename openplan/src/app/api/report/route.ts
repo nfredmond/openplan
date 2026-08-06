@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { resolveDecisionUseDisclosure } from "@/lib/analysis/decision-use";
+import { resolveTransitMethod, transitMethodLine } from "@/lib/data-sources/transit/method";
 import { resolveCensusScoreInputCoverage } from "@/lib/analysis/census-score-inputs";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -286,6 +287,54 @@ function buildHtml(
   // ever printed it. A grant-ready PDF that does not state how far its own
   // numbers may be carried is the artifact most likely to be over-read.
   const decisionUse = resolveDecisionUseDisclosure(m);
+  /**
+   * HOW THIS RUN MEASURED TRANSIT, PRINTED BESIDE THE FIGURES IT PRODUCED.
+   *
+   * Read off the run, never re-derived from today's registry: this PDF is
+   * generated long after the run and often for a different reader, and a run
+   * stored before a source existed must keep describing itself the way it did
+   * when it was stored.
+   *
+   * The reason a report needs it at all is that the same corridor can now
+   * produce two stop counts on two different scales — a count of mapped
+   * OpenStreetMap objects, or the stops an agency's own published schedule calls
+   * at. Two PDFs of the same corridor, months apart, can therefore disagree, and
+   * this line is the only thing in the artifact that explains why. A grant
+   * reviewer reads the number, not the software.
+   */
+  const transitMethod = resolveTransitMethod(m);
+  /**
+   * The frequent-service share WITH ITS DENOMINATOR NAMED.
+   *
+   * The percentage alone is what a grant reviewer quotes, and a percentage whose
+   * denominator is not on the page is a number nobody can check. It is taken over
+   * every stop counted in the row above — a stop with no derivable peak headway
+   * on a representative service day counts as not meeting the threshold — and
+   * saying so is the difference between a share of the corridor and a share of a
+   * subset the reader never sees.
+   */
+  const transitFrequentShare =
+    typeof m.frequentServiceShare === "number"
+      ? `${Math.round(m.frequentServiceShare * 1000) / 10}%` +
+        (typeof m.totalTransitStops === "number"
+          ? ` of all ${m.totalTransitStops.toLocaleString()} stops counted`
+          : "")
+      : "Not measured";
+  /**
+   * The qualifications a GTFS-derived figure may not be printed without.
+   *
+   * They travel from the run's own snapshot rather than being rebuilt here: a
+   * caveat that exists in two places drifts into two different promises, and the
+   * weaker one is what somebody eventually cites.
+   */
+  const transitCaveats = (() => {
+    const snapshot = (m.sourceSnapshots as Record<string, unknown> | undefined)?.transit as
+      | { caveats?: unknown }
+      | undefined;
+    return Array.isArray(snapshot?.caveats)
+      ? snapshot.caveats.filter((entry): entry is string => typeof entry === "string")
+      : [];
+  })();
   // Whether the ACS read behind the Accessibility and Equity scores answered at
   // all. When it did not, both scores were computed over placeholder zeros and
   // are deflated; the PDF is the artifact most likely to be read by someone who
@@ -417,15 +466,21 @@ ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}
 <h2>Transit Access</h2>
 <table>
   <tr><th>Metric</th><th>Value</th></tr>
+  <tr><td>Measurement method</td><td>${esc(transitMethod.label)}</td></tr>
   <tr><td>Total Transit Stops / Stations</td><td>${fmt(m.totalTransitStops as number)}</td></tr>
   <tr><td>Bus Stops</td><td>${fmt(m.busStops as number)}</td></tr>
   <tr><td>Rail Stations</td><td>${fmt(m.railStations as number)}</td></tr>
   <tr><td>Ferry Terminals</td><td>${fmt(m.ferryStops as number)}</td></tr>
   <tr><td>Stops per Square Mile</td><td>${m.stopsPerSquareMile ?? "N/A"}</td></tr>
+  <tr><td>Stops at a ${fmt(m.frequentServiceHeadwayMinutes as number)}-Minute Peak Headway</td><td>${transitFrequentShare}</td></tr>
   <tr><td>Transit Access Tier</td><td>${esc(String(m.transitAccessTier ?? "N/A"))}</td></tr>
   <tr><td>Walk/Bike Access Tier</td><td>${esc(String(m.walkBikeAccessTier ?? "N/A"))}</td></tr>
   <tr><td>Walk/Bike Access Rationale</td><td>${esc(String(m.walkBikeAccessRationale ?? "N/A"))}</td></tr>
 </table>
+<p class="note"><strong>How transit was measured:</strong> ${esc(transitMethodLine(transitMethod))}</p>
+${transitCaveats
+  .map((caveat) => `<p class="note">${esc(caveat)}</p>`)
+  .join("\n")}
 
 <!-- SAFETY -->
 <h2>Safety Analysis</h2>
