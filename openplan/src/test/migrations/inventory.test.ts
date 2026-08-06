@@ -147,16 +147,33 @@ const EXPECTED = {
   //                                   invariant that matters — a new table
   //                                   missing ENABLE ROW LEVEL SECURITY shows
   //                                   up here as tables > rlsEnabledTables)
-  policies: 564,
-  permissive: 324,
+  //
+  // 20260805000006 (GTFS service levels) adds THREE tables —
+  // gtfs_feed_versions, gtfs_route_service_levels, gtfs_stop_service_levels —
+  // each with ONE permissive SELECT policy and no client write policy at all
+  // (every write is service-role behind an explicit membership check, the
+  // Knowledge Base posture), so `restrictive` does not move: there is no
+  // permissive write for a writer gate to narrow. It also adds TWO permissive
+  // write policies to the EXISTING gtfs_feeds — the UPDATE and DELETE partners
+  // its restrictive `_writer_only_*` gates from 20260728000006 had been sitting
+  // without, which is the `runs` defect from 20260728000010 pre-armed: every
+  // client UPDATE matched zero rows and supabase-js reported `error: null`.
+  // So: +5 policies, +5 permissive, +2 permissiveWrites, +3 tablesWithPolicies
+  // (gtfs_feeds was already in the set), +4 relations, +3 tables, +1 view
+  // (gtfs_stops_map, which exists because supabase-js cannot read a PostGIS
+  // geometry — PostgREST returns hex EWKB and nothing here parses it),
+  // +3 rlsEnabledTables. `expanded` holds at 264: these policies are written
+  // literally, not through a DO/EXECUTE loop.
+  policies: 569,
+  permissive: 329,
   restrictive: 240,
-  permissiveWrites: 213,
+  permissiveWrites: 215,
   expanded: 264,
-  tablesWithPolicies: 111,
-  relations: 130,
-  tables: 124,
-  views: 6,
-  rlsEnabledTables: 124,
+  tablesWithPolicies: 114,
+  relations: 134,
+  tables: 127,
+  views: 7,
+  rlsEnabledTables: 127,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -468,6 +485,7 @@ describe("migration schema inventory", () => {
     expect(schema.views()).toEqual([
       "census_tracts_computed",
       "census_tracts_map",
+      "gtfs_stops_map",
       "lodes_by_tract",
       "project_bca_screenings_latest",
       "scenario_comparison_summary",

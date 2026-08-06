@@ -107,7 +107,12 @@ const EXPECTED_RESTRICTIVE_POLICIES = 240;
 // computed from. Verified by mutation: swapping the INSERT policy to the
 // membership-only shape puts all three into `tablesNeedingGate()` and fails
 // three assertions in this file.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 213;
+// 213 -> 215 (20260805000006): the UPDATE and DELETE permissive partners
+// gtfs_feeds' restrictive writer gates had been missing since 20260728000006.
+// EXPECTED_GATED_TABLES and EXPECTED_RESTRICTIVE_POLICIES do NOT move —
+// gtfs_feeds was already gated, and both new policies are role-blind at the
+// permissive layer on purpose, so the existing gate is what narrows them.
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 215;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [

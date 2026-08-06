@@ -24,6 +24,8 @@ type SeedContext = {
   rtpHorizonBandBId: string;
   countyRunBId: string;
   aerialMissionBId: string;
+  gtfsFeedBId: string;
+  gtfsFeedVersionBId: string;
   kbDocumentBId: string;
   safetyCrashIngestBId: string;
   dataConnectorBId: string;
@@ -218,10 +220,92 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "gtfs_feeds",
     select: "id,workspace_id",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, suffix }) => ({
-      id: randomUUID(),
+    // Seeded with a FIXED id (not randomUUID) because the three GTFS tables
+    // below are its descendants and their composite (child, workspace) foreign
+    // keys need this exact row.
+    build: ({ workspaceBId, gtfsFeedBId, suffix }) => ({
+      id: gtfsFeedBId,
       workspace_id: workspaceBId,
       agency_name: `RLS agency ${suffix}`,
+    }),
+  },
+  {
+    // The GTFS service-level spine (20260805000006). These three carry
+    // `workspace_id` DIRECTLY rather than reaching a workspace through
+    // `feed_id`, and this block is why: the probe-coverage guard below
+    // enumerates tables by the presence of that column, so a transitively
+    // scoped table is neither probed nor excused — it is invisible. The eight
+    // older GTFS children that leaked for four months (20260730000010) are
+    // exactly the tables shaped that way.
+    table: "gtfs_feed_versions",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    // `status: 'ready'` with all four counts at 1 is not decoration: the
+    // `gtfs_feed_versions_ready_is_not_empty` CHECK refuses a ready version
+    // with no derived rows, so a fixture claiming ready must be internally
+    // consistent with the two service-level rows seeded after it. It is left
+    // NOT current (`is_current` defaults false) so it cannot collide with the
+    // fixtures in gtfs-feed-status-mirrors-its-current-version.test.ts, which
+    // runs against the same database.
+    build: ({ workspaceBId, gtfsFeedBId, gtfsFeedVersionBId }) => ({
+      id: gtfsFeedVersionBId,
+      workspace_id: workspaceBId,
+      feed_id: gtfsFeedBId,
+      source_kind: "url",
+      status: "ready",
+      route_count: 1,
+      stop_count: 1,
+      route_service_level_rows: 1,
+      stop_service_level_rows: 1,
+    }),
+  },
+  {
+    table: "gtfs_route_service_levels",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, gtfsFeedVersionBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      feed_version_id: gtfsFeedVersionBId,
+      route_id: `rls-route-${suffix}`,
+      direction_id: 0,
+      route_short_name: "RLS",
+      route_type: 3,
+      service_day: "friday",
+      trips_per_day: 24,
+      first_departure_seconds: 21600,
+      last_departure_seconds: 79200,
+      peak_headway_seconds: 900,
+      peak_window_start_seconds: 61200,
+      median_headway_seconds: 1800,
+      stops_served: 12,
+      derivation_method: "scheduled",
+      scheduled_trips: 24,
+    }),
+  },
+  {
+    table: "gtfs_stop_service_levels",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    build: ({ workspaceBId, gtfsFeedVersionBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      feed_version_id: gtfsFeedVersionBId,
+      stop_id: `rls-stop-${suffix}`,
+      stop_name: `RLS stop ${suffix}`,
+      latitude: 39.2,
+      longitude: -121.0,
+      service_day: "friday",
+      trips_per_day: 24,
+      first_departure_seconds: 21600,
+      last_departure_seconds: 79200,
+      peak_headway_seconds: 900,
+      peak_window_start_seconds: 61200,
+      median_headway_seconds: 1800,
+      routes_serving: 1,
+      route_ids: [`rls-route-${suffix}`],
+      derivation_method: "scheduled",
+      scheduled_trips: 24,
     }),
   },
   {
@@ -655,7 +739,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(45);
+    expect(tables).toHaveLength(48);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -673,7 +757,10 @@ describe("workspace RLS isolation inventory", () => {
       "engagement_campaigns",
       "funding_awards",
       "funding_opportunities",
+      "gtfs_feed_versions",
       "gtfs_feeds",
+      "gtfs_route_service_levels",
+      "gtfs_stop_service_levels",
       "kb_document_chunks",
       "kb_documents",
       "model_runs",
@@ -853,6 +940,8 @@ liveDescribe("workspace RLS live isolation", () => {
       rtpHorizonBandBId: randomUUID(),
       countyRunBId: randomUUID(),
       aerialMissionBId: randomUUID(),
+      gtfsFeedBId: randomUUID(),
+      gtfsFeedVersionBId: randomUUID(),
       kbDocumentBId: randomUUID(),
       safetyCrashIngestBId: randomUUID(),
       dataConnectorBId: randomUUID(),
@@ -978,6 +1067,68 @@ liveDescribe("workspace RLS live isolation", () => {
 
     expect(error?.message ?? "", "cross-workspace project insert error").toMatch(
       /row-level security|permission denied|violates/i
+    );
+  });
+
+  /**
+   * A CROSS-TENANT DENIAL OF SERVICE, removed in 20260805000006.
+   *
+   * `gtfs_feeds` carried `UNIQUE (city, agency_name)` from 20260219000001 with
+   * no `workspace_id` in it, so it was GLOBAL across every tenant sharing a
+   * database. The first workspace to register ('Sacramento', 'SacRT') would
+   * have permanently prevented every other workspace from registering the same
+   * agency — which is the NORMAL case for an MPO and its member cities reading
+   * one regional feed. It never fired because nothing in `src/` writes the
+   * table yet; it fires on the first day ingest ships.
+   *
+   * This belongs with the tenant-isolation probes rather than with the GTFS
+   * schema tests because it is the same question asked from the other side:
+   * not "can tenant A READ tenant B's row" but "can tenant A STOP tenant B
+   * from having one". Driven through the two signed-in clients, not the
+   * service role, because the service role bypasses RLS and would not have
+   * exercised the write path a planner uses.
+   */
+  it("lets two workspaces register the same city and agency name (no cross-tenant lockout)", async () => {
+    const city = `RlsSharedCity${context.suffix}`;
+    const agencyName = `RLS shared agency ${context.suffix}`;
+    const feedAId = randomUUID();
+    const feedBId = randomUUID();
+
+    const firstToRegister = await userA.from("gtfs_feeds").insert({
+      id: feedAId,
+      workspace_id: context.workspaceAId,
+      city,
+      state: "ZZ",
+      agency_name: agencyName,
+    });
+    const secondToRegister = await userB.from("gtfs_feeds").insert({
+      id: feedBId,
+      workspace_id: context.workspaceBId,
+      city,
+      state: "ZZ",
+      agency_name: agencyName,
+    });
+
+    // Read back through the service role BEFORE asserting, then clean up
+    // unconditionally — the run where this guard correctly FAILS is the run
+    // that has just left rows behind under a name a later run will reuse.
+    const { data: landed } = await service
+      .from("gtfs_feeds")
+      .select("id, workspace_id")
+      .eq("agency_name", agencyName);
+    const workspaces = ((landed ?? []) as { workspace_id: string }[])
+      .map((row) => row.workspace_id)
+      .sort();
+
+    await service.from("gtfs_feeds").delete().in("id", [feedAId, feedBId]);
+
+    expect(firstToRegister.error, "first workspace registering the agency").toBeNull();
+    expect(
+      secondToRegister.error?.message ?? null,
+      "a second workspace registering the SAME agency — a unique constraint here is a cross-tenant lockout"
+    ).toBeNull();
+    expect(workspaces, "both workspaces must own a feed for the same agency").toEqual(
+      [context.workspaceAId, context.workspaceBId].sort()
     );
   });
 
