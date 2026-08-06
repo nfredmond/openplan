@@ -19,6 +19,10 @@
     {
       "path": "/api/cron/reap-model-runs",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/reap-gtfs-ingests",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

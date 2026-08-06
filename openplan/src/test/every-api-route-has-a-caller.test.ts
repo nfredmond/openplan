@@ -51,6 +51,10 @@ const EXTERNAL_CALLERS: Record<string, string> = {
     "Browsers post Content-Security-Policy violation reports here — next.config.ts names it in the CSP header's report-uri. Its only in-src mention was a dead file; the real caller was never in src/.",
   "api/aerial/processing-callback":
     "Photogrammetry worker callback — the processing platform posts job status and artifact descriptors here. Authenticated by the callback contract, not by a session.",
+  "api/cron/reap-gtfs-ingests":
+    "Vercel Cron, scheduled in vercel.json. Closes transit-feed ingests that stopped responding, so a version row written `pending` before any network work cannot sit on a Data Hub card forever. Authenticated by CRON_SECRET, never from a session.",
+  "api/cron/reap-model-runs":
+    "Vercel Cron, scheduled in vercel.json. Recorded here EXPLICITLY: it was passing only because `src/lib/models/worker-backed-launch.ts` happens to mention the path inside backticks in a docblock, which this guard's own call-site pattern accepts. Rewording that comment would have broken the build for a reason nobody could have guessed.",
 };
 
 /**

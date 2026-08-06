@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-composer";
+import { GtfsIngestPanel } from "@/components/data-hub/gtfs-ingest-panel";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -31,7 +32,14 @@ import {
 } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
-import { describeTransitFeedRegistry, type TransitFeedRow } from "@/lib/transit/feed-registry-card";
+import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { BODY_LIMITS } from "@/lib/http/body-limit";
+import { filterToCurrentReadyVersion } from "@/lib/gtfs/persist";
+import {
+  describeTransitFeedRegistry,
+  type TransitFeedRow,
+  type TransitFeedVersionRow,
+} from "@/lib/transit/feed-registry-card";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type ConnectorRow = {
@@ -91,6 +99,19 @@ type RefreshJobRow = {
   triggered_by_label: string | null;
   error_summary: string | null;
   created_at: string;
+};
+
+/**
+ * Just enough of a PostgREST builder for the current-version read to compile.
+ *
+ * See the comment at the call site: the full builder type sent `tsc` into
+ * TS2589 when `filterToCurrentReadyVersion`'s generic was instantiated against
+ * it inside a `Promise.all`. The Supabase clients in this repo are untyped by
+ * convention anyway, so nothing is lost by naming the two methods used.
+ */
+type CurrentVersionQuery = {
+  eq: (column: string, value: never) => CurrentVersionQuery;
+  limit: (count: number) => Promise<{ data: unknown; error: { message: string } | null }>;
 };
 
 type DatasetProjectLinkRow = {
@@ -183,12 +204,34 @@ export default async function DataHubPage() {
 
   const workspaceId = membership.workspace_id;
 
+  /**
+   * BUILT OUTSIDE THE `Promise.all`, AND CAST DOWN TO WHAT IT IS USED AS.
+   *
+   * `filterToCurrentReadyVersion` is generic over the PostgREST builder, and
+   * instantiating that generic against a `Promise.all` tuple made `tsc` give up
+   * with TS2589 ("type instantiation is excessively deep") — the recurring
+   * Supabase-client-into-a-generic trigger this repo has hit before. The chain
+   * is unchanged at runtime, and it is deliberately still routed through
+   * `filterToCurrentReadyVersion` rather than hand-written `.eq()` calls,
+   * because that function is the codebase's single expression of "the version
+   * this workspace analyses with".
+   */
+  const transitFeedVersionsQuery = filterToCurrentReadyVersion(
+    supabase
+      .from("gtfs_feed_versions")
+      .select(
+        "feed_id, workspace_id, service_start_date, service_end_date, route_service_level_rows, stop_service_level_rows"
+      )
+      .eq("workspace_id", workspaceId) as unknown as CurrentVersionQuery
+  ).limit(200);
+
   const [
     connectorsResult,
     datasetsResult,
     refreshJobsResult,
     projectsResult,
     transitFeedsResult,
+    transitFeedVersionsResult,
   ] = await Promise.all([
     supabase
       .from("data_connectors")
@@ -228,6 +271,20 @@ export default async function DataHubPage() {
       .select("id, workspace_id, agency_name, status, loaded_at")
       .eq("workspace_id", workspaceId)
       .order("loaded_at", { ascending: false }),
+    // THE SERVICE WINDOW, WHICH IS THE FACT THE FEED ROW CANNOT TELL YOU.
+    //
+    // `gtfs_feeds.status = 'loaded'` describes the INGEST. Whether the schedule
+    // inside the feed is still running lives on the version row, and on real
+    // catalog feeds it usually is NOT — three of four Sacramento-area feeds
+    // measured on 2026-08-05 had ended, SacRT's sixteen months earlier. So the
+    // card reads `service_end_date` and says so, and this projection is where
+    // dropping that column would be caught (the clients are untyped; a missing
+    // column renders `undefined` with every test green).
+    //
+    // `filterToCurrentReadyVersion` is the codebase's one expression of "the
+    // version this workspace analyses with" — `is_current` AND `status =
+    // 'ready'` together, because either alone is wrong in a different direction.
+    transitFeedVersionsQuery,
   ]);
 
   const connectors = ((connectorsResult.data ?? []) as ConnectorRow[]).slice(0, 8);
@@ -250,6 +307,7 @@ export default async function DataHubPage() {
     refreshJobsResult.error?.message,
     datasetLinksResult.error?.message,
     transitFeedsResult.error?.message,
+    transitFeedVersionsResult.error?.message,
   ].filter((message): message is string => Boolean(message) && looksLikePendingSchema(message));
 
   const migrationPending = pendingSchemaMessages.length > 0;
@@ -358,15 +416,28 @@ export default async function DataHubPage() {
    * It used to be a constant reading "Transit feed storage already exists in
    * the current architecture and can fold into this registry" — a description
    * of nine empty tables, presented beside real registries under the heading
-   * "Visible system component". Nothing in the product uploads, parses or
-   * ingests a GTFS feed, so a planner who believed that card went looking for a
-   * button that has never existed. It now states what a read of `gtfs_feeds`
-   * actually supports, and links to no ingest route because there is none yet.
+   * "Visible system component". A planner who believed that card went looking
+   * for a button that had never existed. It then said the opposite, that there
+   * was no upload path at all — true when written, and false the moment the
+   * `/api/gtfs/*` lane and the panel below shipped. It now states what a read of
+   * `gtfs_feeds` and its current version rows actually supports, INCLUDING
+   * whether the schedule in the adopted feed has expired.
    */
+  const todayIso = new Date().toISOString().slice(0, 10);
   const transitFeedCard = describeTransitFeedRegistry({
     workspaceId,
     readFailed: Boolean(transitFeedsResult.error),
     feeds: (transitFeedsResult.data ?? []) as TransitFeedRow[],
+    // BOTH READS REPORT THEIR OWN FAILURE, because they are two statements
+    // against two tables and either can fail alone. This page passed only the
+    // first, and collapsed the second with `data ?? []` — so a failed version
+    // read printed "No ingest of this feed has been adopted yet" beside a green
+    // "loaded" badge and silently dropped the expired-schedule warning. A
+    // question the database did not answer is not an answer of none, and that
+    // is as true of the version table as of the feed table.
+    versionReadFailed: Boolean(transitFeedVersionsResult.error),
+    currentVersions: (transitFeedVersionsResult.data ?? []) as TransitFeedVersionRow[],
+    today: todayIso,
     formatTimestamp: fmtDateTime,
   });
 
@@ -399,12 +470,16 @@ export default async function DataHubPage() {
       label: transitFeedCard.label,
       detail: transitFeedCard.detail,
       tone: transitFeedCard.tone,
+      // "Schema only — no ingest path yet" was the honest kicker while nothing
+      // could bring a feed in. The ingest lane exists now, so a workspace with
+      // no feed is looking at an empty registry with a working front door, not
+      // at absent software.
       kicker:
         transitFeedCard.state === "feed-present"
           ? "Visible system component"
           : transitFeedCard.state === "read-failed"
             ? "Registry could not be read"
-            : "Schema only — no ingest path yet",
+            : "No feed ingested yet — add one below",
     },
     {
       label: "Crash / safety inputs",
@@ -549,6 +624,24 @@ export default async function DataHubPage() {
           </div>
         </article>
       </div>
+
+      {/*
+        THE FEED CARD ABOVE NOW POINTS SOMEWHERE. It says a feed can be added
+        "in the transit feed panel on this page" — this is that panel, and the
+        two must move together: if it is ever removed from here, the card's
+        sentence goes back to sending a planner looking for a control that is
+        not there.
+
+        `BODY_LIMITS.gtfsFeedRaw` is read on the SERVER and passed down.
+        `@/lib/http/body-limit` pulls `next/server` into whatever imports it, so
+        a client component may not read it directly.
+      */}
+      <GtfsIngestPanel
+        workspaceId={workspaceId}
+        maxUploadBytes={BODY_LIMITS.gtfsFeedRaw}
+        today={todayIso}
+        readOnly={isReadOnlyWorkspaceRole(membership.role)}
+      />
 
       <div className="grid gap-6 xl:grid-cols-3">
         <article className="module-section-surface">

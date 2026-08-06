@@ -26,6 +26,35 @@
  * NO I/O HERE ON PURPOSE. The page owns the query (and its `workspace_id`
  * scope); this owns the wording. That split is what lets the wording be tested
  * without a database and lets the projection be asserted without a renderer.
+ *
+ * ============================== WHAT CHANGED WHEN THE INGEST LANE WAS BUILT
+ *
+ * The no-feed branch used to end "OpenPlan does not have a feed upload path
+ * yet, so this is the expected state rather than a setup step you have missed."
+ * That sentence was true when it was written and became a LIE the moment
+ * `/api/gtfs/feeds`, `/api/gtfs/feeds/upload` and `/api/gtfs/catalog/search`
+ * shipped — and it is the more expensive direction of wrong, because it talks a
+ * planner out of looking for a control that is now on the same page. It now
+ * names the three doors.
+ *
+ * AND THE SAME RULE APPLIES TO THE SECOND TABLE, WHICH IS WHERE IT WAS BROKEN.
+ * The caller threaded `readFailed` from the `gtfs_feeds` read only, and
+ * collapsed the `gtfs_feed_versions` rows with `data ?? []`. So a failed
+ * VERSION read produced "No ingest of this feed has been adopted yet" beside a
+ * green "loaded" badge, and the expired-schedule warning simply vanished — the
+ * exact defect this module was written to prevent, one table over, and in the
+ * reassuring direction. `versionReadFailed` is its own flag with its own
+ * sentence and its own tone, because an unread version is neither an absent one
+ * nor a current one.
+ *
+ * AND THE CARD LEARNED TO SAY WHETHER THE SCHEDULE IS STILL IN EFFECT. A GTFS
+ * feed states the window its schedule covers, and that window EXPIRES — three of
+ * the four real Sacramento-area catalog feeds measured on 2026-08-05 had ended,
+ * SacRT's on 2025-04-05, sixteen months earlier. Expiry is the NORMAL case, not
+ * an edge case. A card that reports "loaded" over a schedule that stopped a year
+ * ago is reporting on the ingest and letting the reader infer the service, so
+ * `describeGtfsServiceWindow` states the window and its state in one place that
+ * both this card and the ingest panel read.
  */
 
 /** The tones the Data Hub's `StatusBadge` accepts. Kept narrow deliberately. */
@@ -48,6 +77,137 @@ export type TransitFeedRow = {
   loaded_at: string | null;
 };
 
+/**
+ * The `gtfs_feed_versions` columns this card reads off the version a workspace
+ * actually analyses with (`is_current AND status = 'ready'` — see
+ * `filterToCurrentReadyVersion`, which is the one expression of that predicate).
+ *
+ * `service_end_date` is the reason this type exists. Everything else here is
+ * context for it.
+ */
+export type TransitFeedVersionRow = {
+  feed_id: string;
+  workspace_id: string | null;
+  service_start_date: string | null;
+  service_end_date: string | null;
+  route_service_level_rows: number | null;
+  stop_service_level_rows: number | null;
+};
+
+/**
+ * What a feed's stated service window is doing relative to a given day.
+ *
+ * `unstated` is a fourth case and not a variant of `current`: a feed that
+ * publishes no `calendar.txt` end date has told us nothing, and answering
+ * "still in effect" from silence is the same class of error as reporting a
+ * failed read as an empty one.
+ */
+export type GtfsServiceWindowState = "unstated" | "expired" | "current" | "not_started";
+
+export type GtfsServiceWindowDescription = {
+  state: GtfsServiceWindowState;
+  /** One sentence, safe to print beside a headway. */
+  text: string;
+};
+
+/** Is this a `YYYY-MM-DD` calendar date, the shape a Postgres DATE comes back as? */
+function isIsoDate(value: string | null | undefined): boolean {
+  return /^\d{4}-\d{2}-\d{2}$/.test((value ?? "").trim());
+}
+
+/** Whole days between two `YYYY-MM-DD` dates, or null if either is unreadable. */
+function daysBetweenIsoDates(from: string, to: string): number | null {
+  const parse = (value: string): number | null => {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim());
+    if (!match) return null;
+    const stamp = Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return Number.isFinite(stamp) ? stamp : null;
+  };
+  const start = parse(from);
+  const end = parse(to);
+  if (start === null || end === null) return null;
+  return Math.round((end - start) / 86_400_000);
+}
+
+/**
+ * "16 months ago" / "9 days ago", from a whole-day count.
+ *
+ * Deliberately coarse above a month. The precision a planner needs from an
+ * expired feed is the order of magnitude — last week versus last year — and a
+ * day count in the hundreds is arithmetic the reader has to do themselves.
+ */
+function describeElapsed(days: number): string {
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 45) return `${days} days ago`;
+  const months = Math.round(days / 30.44);
+  if (months < 24) return `${months} months ago`;
+  return `${Math.round(days / 365.25)} years ago`;
+}
+
+/**
+ * WHETHER THE SCHEDULE THIS FEED DESCRIBES IS STILL RUNNING.
+ *
+ * Pure, and shared by the Data Hub card and the ingest panel, because expiry is
+ * exactly the fact two surfaces would otherwise word differently — and the
+ * weaker wording is the one a planner would quote. Dates are compared as
+ * `YYYY-MM-DD` STRINGS: they are DATE columns with no time zone, and parsing
+ * them into `Date` objects introduces a local-midnight offset that can move an
+ * end date across a day boundary for readers on either side of UTC.
+ */
+export function describeGtfsServiceWindow(input: {
+  startDate: string | null;
+  endDate: string | null;
+  /** The day to judge against, as `YYYY-MM-DD`. Passed in, never read from a clock. */
+  today: string;
+}): GtfsServiceWindowDescription {
+  const start = isIsoDate(input.startDate) ? (input.startDate as string).trim() : null;
+  const end = isIsoDate(input.endDate) ? (input.endDate as string).trim() : null;
+
+  if (!end) {
+    /**
+     * A MALFORMED END DATE LANDS HERE TOO, AND THAT IS THE POINT.
+     *
+     * These are compared as strings, so `"not-a-date" < "2026-08-05"` is FALSE
+     * and an unreadable value would otherwise fall through to "in effect
+     * today" — a claim about current service manufactured out of garbage, in
+     * the reassuring direction. Anything that is not a `YYYY-MM-DD` is an
+     * unknown, and an unknown is what gets said.
+     */
+    return {
+      state: "unstated",
+      text:
+        "This feed states no readable service end date, so OpenPlan cannot say whether its schedule is still in " +
+        "effect. Check the date the agency published it before citing anything derived from it.",
+    };
+  }
+
+  const span = start ? `${start} to ${end}` : `an unstated start date to ${end}`;
+
+  if (end < input.today) {
+    const days = daysBetweenIsoDates(end, input.today);
+    const ago = days === null ? "before today" : describeElapsed(days);
+    return {
+      state: "expired",
+      text:
+        `Service window ${span} — that schedule ENDED ${ago}. These are historic service levels, ` +
+        "not the service running today. Ingest the agency's current feed before using them.",
+    };
+  }
+
+  if (start && start > input.today) {
+    return {
+      state: "not_started",
+      text: `Service window ${span} — this schedule has not started yet, so it describes planned service rather than today's.`,
+    };
+  }
+
+  return {
+    state: "current",
+    text: `Service window ${span} — in effect today.`,
+  };
+}
+
 export type TransitFeedRegistryState =
   /** The registry could not be read. Nothing is claimed about feeds. */
   | "read-failed"
@@ -64,13 +224,26 @@ export type TransitFeedRegistryCard = {
 };
 
 /**
- * What a loaded feed would make possible, stated as a conditional rather than
- * as a capability. The distinction is the entire fix: "would" describes work
- * not yet built, "can" described work that does not exist.
+ * What a loaded feed makes possible.
+ *
+ * WAS A CONDITIONAL, IS NOW A CAPABILITY, and the change is load-bearing rather
+ * than cosmetic. "would" was correct while nothing could ingest a feed; leaving
+ * it in place once the ingest lane shipped would describe working software as
+ * hypothetical, which sends a planner looking elsewhere for something that is on
+ * this page. The claim is still bounded to what the lane actually derives —
+ * SERVICE LEVELS, never a timetable (see `caveats.ts`).
  */
-const WHAT_A_FEED_WOULD_UNLOCK =
-  "A loaded feed would give this workspace its own routes and stops to map, and would let transit access be " +
-  "measured from the agency's own service rather than proxied from OpenStreetMap.";
+const WHAT_A_FEED_UNLOCKS =
+  "A loaded feed gives this workspace its own routes and stops to map, and lets transit access be measured " +
+  "from the agency's own published service rather than proxied from OpenStreetMap.";
+
+/**
+ * The three doors, named. A planner who is told a capability exists and not
+ * where it is has been told nothing they can act on.
+ */
+const HOW_TO_INGEST_A_FEED =
+  "Add one in the transit feed panel on this page: search the public feed catalog for the area you are " +
+  "studying, paste an operator's GTFS address, or upload a GTFS .zip.";
 
 /**
  * Feed statuses whose wording is known. Anything else is passed through as the
@@ -107,6 +280,27 @@ export function describeTransitFeedRegistry(input: {
   readFailed: boolean;
   /** Rows from `gtfs_feeds`. Ignored entirely when `readFailed`. */
   feeds: readonly TransitFeedRow[];
+  /**
+   * The `is_current AND ready` version rows, keyed to their feeds.
+   *
+   * Separate from `feeds` because they are a separate table and a separate
+   * read: a feed row can exist with no adopted version (every ingest failed, or
+   * one is still running), and that is a different sentence from a feed whose
+   * schedule expired.
+   */
+  currentVersions?: readonly TransitFeedVersionRow[];
+  /**
+   * True when the `gtfs_feed_versions` read errored.
+   *
+   * SEPARATE FROM `readFailed` ON PURPOSE. The feed read can succeed while the
+   * version read fails — different table, different policy, different
+   * statement — and the two failures produce different sentences. Passing the
+   * feed's flag for both would report a workspace WITH a feed as having none;
+   * passing neither reports an unknown schedule as an unadopted one.
+   */
+  versionReadFailed?: boolean;
+  /** The day expiry is judged against, as `YYYY-MM-DD`. See `describeGtfsServiceWindow`. */
+  today?: string;
   /** The caller's own timestamp formatter, so this module stays locale-free. */
   formatTimestamp: (value: string | null) => string;
 }): TransitFeedRegistryCard {
@@ -131,8 +325,8 @@ export function describeTransitFeedRegistry(input: {
       tone: "neutral",
       state: "no-feed",
       detail:
-        "No transit feed has been ingested for this workspace. OpenPlan does not have a feed upload path yet, " +
-        `so this is the expected state rather than a setup step you have missed. ${WHAT_A_FEED_WOULD_UNLOCK}`,
+        `No transit feed has been ingested for this workspace yet. ${HOW_TO_INGEST_A_FEED} ` +
+        WHAT_A_FEED_UNLOCKS,
     };
   }
 
@@ -146,12 +340,68 @@ export function describeTransitFeedRegistry(input: {
       ? ` ${ownFeeds.length - 1} other feed${ownFeeds.length - 1 === 1 ? " is" : "s are"} registered for this workspace.`
       : "";
 
+  /**
+   * THE SERVICE WINDOW IS PART OF THE SENTENCE, NOT A DETAIL BELOW IT.
+   *
+   * `status = 'loaded'` describes the INGEST. It says nothing about whether the
+   * schedule inside the feed is still running, and on real catalog feeds it
+   * usually is not. Printing the ingest status alone leaves the reader to infer
+   * the service, which is the inference this module exists to stop.
+   *
+   * The version is matched on BOTH ids. `gtfs_feed_versions.workspace_id` is
+   * nullable for the same reason the feed's is — a public preloaded feed — so
+   * matching on `feed_id` alone would let a public version's window be printed
+   * under this workspace's feed.
+   */
+  const leadVersion = (input.currentVersions ?? []).find(
+    (version) => version.feed_id === lead.id && version.workspace_id === input.workspaceId
+  );
+  const window =
+    leadVersion && input.today
+      ? describeGtfsServiceWindow({
+          startDate: leadVersion.service_start_date,
+          endDate: leadVersion.service_end_date,
+          today: input.today,
+        })
+      : null;
+
+  /**
+   * A VERSION READ THAT FAILED IS NOT A FEED WITH NO ADOPTED VERSION.
+   *
+   * This is checked before the rows are consulted at all, because when the read
+   * failed there are no rows — `data ?? []` hands this function an empty array
+   * that is indistinguishable from a workspace whose ingests have all failed.
+   * The answer must not be either of the two sentences below: not the adopted-
+   * nothing one, which is a claim about this feed's ingests, and certainly not
+   * a service window, which there is nothing to compute one from.
+   */
+  const versionReadFailed = Boolean(input.versionReadFailed);
+
+  // An expired schedule outranks a green ingest. "loaded" over service that
+  // stopped a year ago is the reassuring half of a two-part fact — and so is
+  // "loaded" over a schedule nobody could read the dates of.
+  const tone: TransitFeedRegistryTone = versionReadFailed
+    ? "warning"
+    : window?.state === "expired"
+      ? "warning"
+      : toneForFeedStatus(lead.status);
+
+  const serviceSentence = versionReadFailed
+    ? " The adopted version of this feed could not be read, so nothing here says whether this schedule is still in " +
+      "effect. That is a question the database did not answer, not an answer that no ingest has been adopted."
+    : leadVersion
+      ? window
+        ? ` ${window.text}`
+        : ""
+      : " No ingest of this feed has been adopted yet, so it derives no service levels.";
+
   return {
     label,
-    tone: toneForFeedStatus(lead.status),
+    tone,
     state: "feed-present",
     detail:
       `${agencyName} — ${describeFeedStatus(lead.status)}, ` +
-      `${lead.loaded_at ? `loaded ${input.formatTimestamp(lead.loaded_at)}` : "not loaded yet"}.${others}`,
+      `${lead.loaded_at ? `loaded ${input.formatTimestamp(lead.loaded_at)}` : "not loaded yet"}.` +
+      `${serviceSentence}${others}`,
   };
 }

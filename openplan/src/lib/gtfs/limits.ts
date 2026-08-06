@@ -70,6 +70,32 @@ export const GTFS_MAX_ARCHIVE_BYTES = limit(
 );
 
 /**
+ * THE FEED CATALOG CSV, as bytes on the wire. SEPARATE FROM THE ARCHIVE BOUND
+ * ON PURPOSE, and the reason is a crash rather than a preference.
+ *
+ * The catalog fetch used to borrow `GTFS_MAX_ARCHIVE_BYTES` — 192 MiB — on the
+ * argument that a fetched artifact is a fetched artifact. But a feed archive is
+ * STREAMED into a parser that bounds itself, while the catalog is decoded to a
+ * JavaScript string and handed to a SYNCHRONOUS CSV parse that materialises
+ * every row as a wide object before any of them is projected. Measured expansion
+ * from CSV bytes to parsed rows for this file is roughly 14x, so a 192 MiB
+ * catalog is a multi-gigabyte allocation inside one synchronous call: a fatal V8
+ * out-of-memory that terminates the process. `loadGtfsCatalog` wraps the parse
+ * in a `try`, and an OOM is not something a `catch` block ever sees — the
+ * honest-refusal machinery this lane is built on would simply not run.
+ *
+ * 16 MiB: the real artifact is 1,154,557 bytes (measured 2026-08-05, 3,434
+ * rows). 16 MiB is ~14x that, which leaves a decade of catalog growth and still
+ * bounds the synchronous parse to a few hundred megabytes of transient objects.
+ * An operator mirroring a much larger catalog raises it knowingly.
+ */
+export const GTFS_MAX_CATALOG_BYTES = limit(
+  "OPENPLAN_GTFS_MAX_CATALOG_BYTES",
+  16 * 1024 * 1024,
+  "~14x the measured catalog (1.15 MB); the parse is synchronous, so this bounds an OOM.",
+);
+
+/**
  * ONE MEMBER, DECOMPRESSED. `stop_times.txt` is always the member that matters;
  * every other table is noise beside it.
  *
@@ -247,6 +273,7 @@ export const GTFS_MAX_WARNING_EXAMPLE_CHARS = limit(
 /** Every bound, so a test can assert the set and an operator doc can list it. */
 export const GTFS_LIMITS = [
   GTFS_MAX_ARCHIVE_BYTES,
+  GTFS_MAX_CATALOG_BYTES,
   GTFS_MAX_MEMBER_UNCOMPRESSED_BYTES,
   GTFS_MAX_TOTAL_UNCOMPRESSED_BYTES,
   GTFS_MAX_DECLARED_COMPRESSION_RATIO,
@@ -289,6 +316,7 @@ export function resolveGtfsLimit(bound: GtfsLimit, env: GtfsLimitEnv = process.e
 /** Every bound resolved once, so a parse reads the environment exactly one time. */
 export type ResolvedGtfsLimits = {
   maxArchiveBytes: number;
+  maxCatalogBytes: number;
   maxMemberUncompressedBytes: number;
   maxTotalUncompressedBytes: number;
   maxDeclaredCompressionRatio: number;
@@ -306,6 +334,7 @@ export type ResolvedGtfsLimits = {
 export function resolveGtfsLimits(env: GtfsLimitEnv = process.env): ResolvedGtfsLimits {
   return {
     maxArchiveBytes: resolveGtfsLimit(GTFS_MAX_ARCHIVE_BYTES, env),
+    maxCatalogBytes: resolveGtfsLimit(GTFS_MAX_CATALOG_BYTES, env),
     maxMemberUncompressedBytes: resolveGtfsLimit(GTFS_MAX_MEMBER_UNCOMPRESSED_BYTES, env),
     maxTotalUncompressedBytes: resolveGtfsLimit(GTFS_MAX_TOTAL_UNCOMPRESSED_BYTES, env),
     maxDeclaredCompressionRatio: resolveGtfsLimit(GTFS_MAX_DECLARED_COMPRESSION_RATIO, env),

@@ -111,6 +111,39 @@ const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: st
       "policy and no write policy on purpose: chunks are derived data, written only by the " +
       "ingest routes under /api/knowledge-base, never by a user action.",
   },
+  "src/lib/gtfs/ingest.ts": {
+    functions: ["runGtfsIngest"],
+    reason:
+      "The shared ingest sequence behind all three transit-feed doors (catalog, url, upload). Its " +
+      "one direct write points a gtfs_feed_versions row at the object it just stored, BEFORE the " +
+      "parse, so reapAbandonedGtfsIngests can remove that object if the ingest dies — a path that " +
+      "has not reached the row yet is a path nothing can ever clean up. gtfs_feed_versions has a " +
+      "SELECT policy and nothing else (20260805000006 section 6): a feed ingest writes tens of " +
+      "thousands of derived rows from a long-running job and there is no shape in which a browser " +
+      "session writes it, so granting a client role INSERT would buy nothing and leave one " +
+      "careless USING (true) between a tenant and someone else's data.",
+  },
+  "src/lib/gtfs/persist.ts": {
+    functions: [
+      "beginGtfsFeedVersion",
+      "markGtfsFeedVersionStage",
+      "writeParsedFeedVersion",
+      "promoteGtfsFeedVersion",
+      "syncFeedDisplayName",
+      "failGtfsFeedVersion",
+      "deleteVersionRows",
+      "reapAbandonedGtfsIngests",
+    ],
+    reason:
+      "gtfs_feed_versions, gtfs_route_service_levels and gtfs_stop_service_levels each carry ONE " +
+      "permissive SELECT policy and no write policy at all (20260805000006 section 6). That is " +
+      "the Knowledge Base posture applied to a bigger job: every write here belongs to an ingest " +
+      "that already checked workspace membership in its route, and the derived tables are written " +
+      "in batches of a thousand rows by a process a browser never drives. The workspace_id IS NULL " +
+      "branch on the read policies is the deliberate public-preloaded-feed case; no client role " +
+      "may write those rows through PostgREST at all. Reached from the three /api/gtfs ingest " +
+      "doors and from /api/cron/reap-gtfs-ingests, each of which passes createServiceRoleClient().",
+  },
   "src/lib/notifications/engagement.ts": {
     functions: [
       "recordOperatorNotification",
