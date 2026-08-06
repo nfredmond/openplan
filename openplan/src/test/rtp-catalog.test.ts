@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildRtpPublicReviewSummary, buildRtpReleaseReviewSummary } from "@/lib/rtp/catalog";
+import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
 
 describe("buildRtpReleaseReviewSummary", () => {
   it("keeps release review open when moderation is still in progress", () => {
@@ -16,6 +17,44 @@ describe("buildRtpReleaseReviewSummary", () => {
     expect(summary.label).toBe("Review loop still open");
     expect(summary.tone).toBe("warning");
     expect(summary.nextActionLabel).toBe("Close pending comment review");
+    expect(summary.state).toBe("review-loop-open");
+  });
+
+  /**
+   * THE LABEL IS COPY; THE STATE IS THE CONTRACT.
+   *
+   * Eight call sites used to branch on this summary's `label` — the dashboard's
+   * review-loop count and next command, the reports queue's membership and its
+   * per-row action label, and the assistant's offered RTP workflow. Rewording a
+   * label a planner reads would have changed all of them at once, silently.
+   *
+   * Every branch is asserted here so the state and the wording are visibly
+   * separate things, and so a new branch that forgets to say which state it is
+   * cannot compile.
+   */
+  it("gives every release-review branch a state that does not depend on its wording", () => {
+    const branchOf = (publicReviewLabel: string | null, freshness: string = PACKET_FRESHNESS_LABELS.CURRENT) =>
+      buildRtpReleaseReviewSummary({
+        packetFreshnessLabel: freshness,
+        publicReviewSummary: publicReviewLabel
+          ? { label: publicReviewLabel, detail: "Detail.", tone: "neutral", actionItems: [] }
+          : null,
+      });
+
+    expect(branchOf("Comment-response foundation ready").state).toBe("ready");
+    expect(branchOf("Public review active").state).toBe("review-loop-open");
+    expect(branchOf("Public review foundation ready").state).toBe("comment-basis-forming");
+    // A label this module does not classify is passed through as wording, and
+    // is NOT reported as a cleared release review.
+    expect(branchOf("Needs review foundation").state).toBe("public-review-unclassified");
+    // Even a stored public-review record carrying the exact words the packet's
+    // own ready state uses must not promote the packet to ready.
+    expect(branchOf("Release review ready").state).toBe("public-review-unclassified");
+
+    // Packet-side branches, keyed off the work status rather than its label.
+    expect(branchOf(null).state).toBe("ready");
+    expect(branchOf("Public review active", PACKET_FRESHNESS_LABELS.NO_PACKET).state).toBe("packet-not-generated");
+    expect(branchOf("Public review active", PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED).state).toBe("packet-stale");
   });
 
   it("treats current packets plus approved comments as release-review ready", () => {

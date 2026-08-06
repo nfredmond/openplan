@@ -1634,7 +1634,7 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
               prompt: "What changed since the last RTP packet generation, and what should I verify before refreshing it?",
               promptLabel: "Plan RTP packet refresh in panel",
             }
-          : rtpReleaseReviewSummary?.label === "Review loop still open"
+          : rtpReleaseReviewSummary?.state === "review-loop-open"
             ? {
                 label: "Close RTP review loop in panel",
                 reason: rtpReleaseReviewSummary.detail,
@@ -1642,7 +1642,7 @@ function buildReportOperations(context: ReportAssistantContext): AssistantQuickL
                 prompt: "What is still open in this RTP packet's review loop, and what should close before release review is treated as settled?",
                 promptLabel: "Close RTP review loop in panel",
               }
-            : rtpReleaseReviewSummary?.label === "Comment basis still forming"
+            : rtpReleaseReviewSummary?.state === "comment-basis-forming"
               ? {
                   label: "Check RTP comment basis in panel",
                   reason: rtpReleaseReviewSummary.detail,

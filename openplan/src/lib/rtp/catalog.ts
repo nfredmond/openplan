@@ -155,11 +155,64 @@ export type RtpAdoptionRecordProofSummary = {
   actionItems: string[];
 };
 
+/**
+ * WHERE AN RTP PACKET STANDS IN RELEASE REVIEW, as a value code rather than as
+ * a sentence.
+ *
+ * WHY THIS EXISTS. Eight places across the dashboard, the reports catalog page
+ * and the assistant's quick links decided what to do next by comparing this
+ * summary's `label` to an English string — `label !== "Release review ready"`,
+ * `label === "Review loop still open"`, `label === "Comment basis still
+ * forming"`. Those labels are USER-FACING COPY. Rewording "Review loop still
+ * open" to something a planner reads more easily would have silently changed
+ * the dashboard's next-command, the reports queue's membership and the
+ * assistant's offered workflow for every workspace at once, with nothing
+ * failing and nothing to notice — copy edits are exactly the change nobody
+ * expects to have behaviour attached.
+ *
+ * The field is REQUIRED and the union is closed, so a new branch of
+ * `buildRtpReleaseReviewSummary` fails the build until it says which state it
+ * is, and a comparison against a state that does not exist fails the build too.
+ * Neither is true of a string.
+ */
+export type RtpReleaseReviewState =
+  /** No packet artifact has been generated yet, so release review has not begun. */
+  | "packet-not-generated"
+  /** A packet exists but is behind the current source state and must be refreshed. */
+  | "packet-stale"
+  /**
+   * The packet is current and release review can proceed.
+   *
+   * Deliberately covers BOTH the branch where an approved comment basis was
+   * carried into the packet AND the branch where the packet is current and no
+   * public-review summary is stored at all. That is what the string comparison
+   * did — the second branch borrows its label verbatim from the packet work
+   * status — so preserving it keeps this change a refactor rather than a silent
+   * re-verdict on existing packets.
+   */
+  | "ready"
+  /** Public review is live and moderation has not closed; release review is in progress. */
+  | "review-loop-open"
+  /** The packet is current but approved comments have not been carried into it yet. */
+  | "comment-basis-forming"
+  /**
+   * The stored public-review summary carried a label this module does not
+   * classify, so its wording is passed through untouched. Not "ready": an
+   * unrecognised state is not a cleared one.
+   */
+  | "public-review-unclassified";
+
 export type RtpReleaseReviewSummary = {
+  /**
+   * What a planner reads. Free to be reworded — nothing branches on it. Branch
+   * on `state`.
+   */
   label: string;
   detail: string;
   tone: ReportStatusTone;
   nextActionLabel: string;
+  /** The machine-readable discriminant every caller compares. See above. */
+  state: RtpReleaseReviewState;
 };
 
 export function parseStoredRtpPublicReviewSummary(
@@ -494,6 +547,9 @@ export function buildRtpReleaseReviewSummary(input: {
       tone: packetWorkStatus.tone,
       nextActionLabel:
         packetWorkStatus.key === "generate-first" ? "Generate first packet" : "Refresh packet",
+      // Taken from the work status's own `key`, not from its label, so the two
+      // discriminants cannot drift apart the way the label comparisons did.
+      state: packetWorkStatus.key === "generate-first" ? "packet-not-generated" : "packet-stale",
     };
   }
 
@@ -503,6 +559,10 @@ export function buildRtpReleaseReviewSummary(input: {
       detail: packetWorkStatus.detail,
       tone: packetWorkStatus.tone,
       nextActionLabel: "Open release review",
+      // The packet is current and nothing is recorded about public review. The
+      // label here is the work status's own "Release review ready", so the
+      // string comparison this replaced already counted it as ready.
+      state: "ready",
     };
   }
 
@@ -514,6 +574,7 @@ export function buildRtpReleaseReviewSummary(input: {
       detail: `The packet is current and ${lowercaseFirst(summary.detail)}`,
       tone: "success",
       nextActionLabel: "Open release review",
+      state: "ready",
     };
   }
 
@@ -523,6 +584,7 @@ export function buildRtpReleaseReviewSummary(input: {
       detail: `The packet is current, but ${lowercaseFirst(summary.detail)} Treat release review as in progress until moderation closes.`,
       tone: "warning",
       nextActionLabel: "Close pending comment review",
+      state: "review-loop-open",
     };
   }
 
@@ -532,6 +594,7 @@ export function buildRtpReleaseReviewSummary(input: {
       detail: `The packet is current and ${lowercaseFirst(summary.detail)} Release review can start, but it should not be treated as settled until approved comments are carried into the packet response summary.`,
       tone: "info",
       nextActionLabel: "Build response summary",
+      state: "comment-basis-forming",
     };
   }
 
@@ -540,6 +603,13 @@ export function buildRtpReleaseReviewSummary(input: {
     detail: summary.detail,
     tone: summary.tone,
     nextActionLabel: summary.actionItems[0] ?? "Review public input",
+    // The stored public-review label was none of the three classified above, so
+    // its wording is passed straight through and the state says only that: not
+    // classified. It must NOT read as "ready" — under the string comparison it
+    // could, if a stored summary ever carried the literal words "Release review
+    // ready", which is a value the packet's own release state has no business
+    // inheriting from a public-review record.
+    state: "public-review-unclassified",
   };
 }
 

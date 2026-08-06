@@ -550,8 +550,8 @@ export default async function ReportsPage({
         report.packetFreshness.label !== PACKET_FRESHNESS_LABELS.CURRENT ||
         Boolean(report.grantsFollowThrough) ||
         Boolean(report.storedRtpFundingReview?.needsAttention) ||
-        (report.rtpReleaseReviewSummary?.label ?? "") === "Review loop still open" ||
-        (report.rtpReleaseReviewSummary?.label ?? "") === "Comment basis still forming" ||
+        report.rtpReleaseReviewSummary?.state === "review-loop-open" ||
+        report.rtpReleaseReviewSummary?.state === "comment-basis-forming" ||
         Boolean(report.evidenceChainDigest?.blockedGateDetail) ||
         (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
     )
@@ -593,7 +593,7 @@ export default async function ReportsPage({
             ? `First action: ${grantsFollowThroughFirst.actionLabel.toLowerCase()} in Grants OS for ${report.title}`
             : report.storedRtpFundingReview?.needsAttention
               ? `First action: run funding-backed release review on ${report.title}`
-              : releaseReviewSummary && releaseReviewSummary.label !== "Release review ready"
+              : releaseReviewSummary && releaseReviewSummary.state !== "ready"
                 ? `First action: ${releaseReviewSummary.nextActionLabel.toLowerCase()} for ${report.title}`
               : report.evidenceChainDigest?.blockedGateDetail
                 ? `First action: review governance hold in ${report.title}`
@@ -1017,7 +1017,7 @@ export default async function ReportsPage({
                 const packetWorkStatus = getReportPacketWorkStatus(report.packetFreshness.label);
                 const releaseReviewSummary = report.rtpReleaseReviewSummary;
                 const actionLabel = releaseReviewSummary
-                  ? releaseReviewSummary.label === "Release review ready"
+                  ? releaseReviewSummary.state === "ready"
                     ? "Open release review"
                     : releaseReviewSummary.nextActionLabel
                   : getReportPacketActionLabel(report.packetFreshness.label);

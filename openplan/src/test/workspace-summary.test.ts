@@ -184,6 +184,64 @@ describe("workspace summary RTP funding review", () => {
     expect(summary.nextCommand?.tone).toBe("warning");
     expect(summary.nextCommand?.detail).toMatch(/review loop still open/i);
     expect(summary.nextCommand?.detail).toMatch(/1 comment is still waiting for operator review/i);
+    expect(summary.counts.rtpReviewLoopOpenPackets).toBe(1);
+  });
+
+  /**
+   * A CURRENT PACKET WITH AN APPROVED COMMENT BASIS IS NOT AN OPEN REVIEW LOOP.
+   *
+   * This is the counter-case to the test above, and it is the one that carries
+   * the proof. `rtpReviewLoopOpenPackets` used to be computed by comparing the
+   * release-review summary's `label` to the literal words "Release review
+   * ready". Rewording that user-facing label — the kind of change made for
+   * clarity, by someone with no reason to suspect behaviour hangs on it — made
+   * every settled packet in every workspace fall out of the "ready" set: this
+   * count would read 1 instead of 0, the dashboard would raise a warning-tone
+   * next command telling the agency to close a review loop that is already
+   * closed, and no test would have failed.
+   *
+   * MUTATION THAT PROVES IT: change `label: "Release review ready"` in
+   * `src/lib/rtp/catalog.ts` to any other wording. Against the label
+   * comparison this test fails (received 1, expected 0). Against the `state`
+   * discriminant it passes unchanged — which is the whole point of the field.
+   */
+  it("does not count a settled RTP packet as an open review loop, whatever its label is worded as", () => {
+    const summary = buildWorkspaceOperationsSummary({
+      projects: [],
+      plans: [],
+      programs: [],
+      reports: [
+        {
+          id: "report-rtp-settled-review",
+          title: "Nevada County RTP packet",
+          status: "generated",
+          latestArtifactKind: "html",
+          generatedAt: "2026-04-12T20:00:00.000Z",
+          updatedAt: "2026-04-12T20:00:00.000Z",
+          metadataJson: {
+            sourceContext: {
+              publicReviewSummary: {
+                label: "Comment-response foundation ready",
+                detail:
+                  "5 approved comments are ready for packet handoff and the current RTP packet is in place for review closure.",
+                tone: "success",
+                actionItems: ["Carry approved comments into the board-ready response summary."],
+              },
+            },
+          },
+        },
+      ],
+      fundingOpportunities: [],
+      fundingAwards: [],
+      fundingInvoices: [],
+      projectSubmittals: [],
+      projectFundingProfiles: [],
+    });
+
+    expect(summary.counts.reportPacketCurrent).toBe(1);
+    expect(summary.counts.rtpReviewLoopOpenPackets).toBe(0);
+    // And the agency is not told to close a loop that is already closed.
+    expect(summary.nextCommand?.detail ?? "").not.toMatch(/review loop/i);
   });
 
   it("prefers latest report artifact timing when loading workspace operations summary", async () => {

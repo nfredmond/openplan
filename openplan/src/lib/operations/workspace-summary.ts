@@ -1448,7 +1448,9 @@ export function buildWorkspaceOperationsSummary({
       report.freshness.label === PACKET_FRESHNESS_LABELS.CURRENT
       && !report.storedRtpFundingReview?.needsAttention
       && Boolean(report.storedRtpReleaseReviewSummary)
-      && report.storedRtpReleaseReviewSummary?.label !== "Release review ready"
+      // The discriminant, not the label. Rewording "Release review ready" used
+      // to move every workspace's next command without failing anything.
+      && report.storedRtpReleaseReviewSummary?.state !== "ready"
   ).length;
   const comparisonBackedReports = reportRows.filter(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
@@ -1914,7 +1916,9 @@ export function buildWorkspaceOperationsSummary({
       report.freshness.label === PACKET_FRESHNESS_LABELS.CURRENT
       && !report.storedRtpFundingReview?.needsAttention
       && Boolean(report.storedRtpReleaseReviewSummary)
-      && report.storedRtpReleaseReviewSummary?.label !== "Release review ready"
+      // The discriminant, not the label. Rewording "Release review ready" used
+      // to move every workspace's next command without failing anything.
+      && report.storedRtpReleaseReviewSummary?.state !== "ready"
   );
   const firstComparisonBackedReport = reportRows.find(
     (report) => (report.comparisonAggregate?.comparisonSnapshotCount ?? 0) > 0
