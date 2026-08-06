@@ -29,6 +29,11 @@ import {
   workerRunStageNames,
 } from "@/lib/models/run-dispatch";
 import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
+import {
+  prepareTransitFeedHandoff,
+  transitFeedIdFromSnapshot,
+  type TransitFeedStamp,
+} from "@/lib/models/transit-feed-handoff";
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -169,6 +174,40 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let refreshedSnapshot = priorSnapshot;
     let zoneAttributes: ZoneAttributeStamp | null = null;
 
+    // ── Re-resolve the transit feed this run models from ──────────────────
+    //
+    // Same argument as the demographics above, and the same shape of broken
+    // recovery if it is skipped. The stamp remembers the FEED the planner
+    // chose, never the version — so a run stamped "the archive behind this
+    // feed's current ingest was not kept" becomes `selected` after they bring
+    // the feed in again, with nothing to pick a second time. Re-stamping the
+    // stored version id instead would pin the run to an ingest that is no
+    // longer the one this workspace analyses with.
+    //
+    // Runs before the stamp existed carry no `transitFeed` key; those resolve
+    // to `not_selected`, which is what they always behaved as.
+    //
+    // NOT gated on `corridor_geojson`: a run with no study area still records
+    // which feed was named, and the coverage pre-check inside the handoff is
+    // the part that needs geometry (it answers `not_determined` without it).
+    const transitFeed: TransitFeedStamp = await prepareTransitFeedHandoff({
+      client: supabase,
+      workspaceId,
+      feedId: transitFeedIdFromSnapshot(priorSnapshot),
+      corridorGeojson: modelRun.corridor_geojson,
+      launchDateIso: nowIso,
+    });
+
+    if (transitFeed.status !== "selected" && transitFeed.status !== "not_selected") {
+      audit.warn("transit_feed_handoff_unavailable", {
+        modelId: access.model.id,
+        modelRunId: modelRun.id,
+        status: transitFeed.status,
+        feedId: transitFeed.feedId,
+        reason: transitFeed.reason,
+      });
+    }
+
     // A run with no study-area geometry has nothing to resolve demographics
     // for, and the worker refuses it by name ("This run has no study area…").
     // Rebuilding a stamp for it would only replace one true reason with another.
@@ -204,6 +243,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
       }
     }
+
+    // Merged for EVERY relaunch, including one whose study area is missing and
+    // whose demographics were therefore not rebuilt. A run that cannot resolve
+    // zones still has a transit selection worth recording, and leaving the
+    // prior stamp in place is how a stale refusal outlives the thing that
+    // caused it — the exact defect the demographics rebuild above exists to fix.
+    refreshedSnapshot = { ...refreshedSnapshot, transitFeed };
 
     // Update run to queued and clear stale prior-run residue.
     // result_summary_json is NOT NULL DEFAULT '{}' — reset to {}, never null.
@@ -391,6 +437,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelId: access.model.id,
       modelRunId: modelRun.id,
       zoneAttributeStatus: zoneAttributes?.status ?? "not_rebuilt",
+      transitFeedStatus: transitFeed.status,
       dispatchState: dispatch.state,
       durationMs: Date.now() - startedAt,
     });
@@ -418,6 +465,19 @@ export async function POST(request: NextRequest, context: RouteContext) {
               reason: zoneAttributes.reason ?? zoneAttributes.demographics.reason,
             }
           : null,
+        // The transit selection this relaunch just re-resolved. UNLIKE
+        // `zoneAttributes` above, this one IS rendered: the relaunch button in
+        // `components/models/model-run-evidence-panel.tsx` reads it and prints
+        // the reason, because a planner who re-ingested their feed in order to
+        // fix a run needs to learn here whether it worked — not from the
+        // worker's transit stage some minutes later.
+        transitFeed: {
+          status: transitFeed.status,
+          agencyName: transitFeed.agencyName,
+          scheduleExpiredAtLaunch: transitFeed.scheduleExpiredAtLaunch,
+          coversStudyArea: transitFeed.coversStudyArea,
+          reason: transitFeed.reason,
+        },
         // The raw dispatch outcome, for a caller that wants to decide for itself.
         dispatch,
         // ...and the sentence a planner reads, resolved HERE rather than by the

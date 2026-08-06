@@ -777,6 +777,491 @@ def load_cached_zone_attributes(work_dir: str) -> dict | None:
         return None
 
 
+# --- The travel-model transit feed handoff (transit-feed-v1) ------------------
+#
+# A planner who ingested a GTFS feed in the Data Hub can name it on a model run.
+# The worker then skims THE EXACT BYTES OPENPLAN PARSED, read out of the private
+# `gtfs-uploads` bucket and verified against the checksum the ingest recorded.
+#
+# WHY THE BYTES AND NOT THE URL, which is the obvious and cheaper design. Two
+# reasons, both measured rather than assumed:
+#
+#   1. `gtfs_skim.load_feed` caches a downloaded feed under a URL hash with NO TTL
+#      and no revalidation, while the catalog CSV beside it does have one. On a
+#      long-lived worker the first run to touch a URL freezes those bytes
+#      indefinitely. Handing over a URL is therefore not "the worker may see newer
+#      bytes"; it is "the worker sees whatever it first saw, in either direction,
+#      forever" — while the service-levels page a planner is reading moves.
+#   2. The divergence would be CAMOUFLAGED. The KPI provenance sentence is built
+#      from `transit_los.source_url`, which is the same URL the Data Hub card
+#      names, so two surfaces would cite one address for numbers that came from
+#      different bytes — exactly the evidence a reviewer uses to conclude they
+#      agree. Every other refusal in this lane renders an unknown AS an unknown.
+#
+# THE SNAPSHOT SUPPLIES A UUID AND NOTHING ELSE. `input_snapshot_json` is
+# writable by any workspace member and this worker reads with the service-role
+# key, so a storage path taken from the snapshot would be a cross-tenant read
+# oracle. Every path, every checksum and every displayed value below is read from
+# the DATABASE, under a tenancy filter the worker applies itself.
+GTFS_UPLOADS_BUCKET = "gtfs-uploads"
+
+_GTFS_VERSION_SELECT = (
+    "id,feed_id,workspace_id,source_kind,source_url,storage_path,checksum_sha256,"
+    "byte_size,service_start_date,service_end_date,status,is_current"
+)
+
+
+def _transit_feed_summary(los) -> dict:
+    """What a successfully skimmed feed reports about ITSELF, for the evidence panel.
+
+    Extracted so the two skim paths — a run's chosen workspace feed and the
+    discovered/operator/bundled feed — cannot report a different set of facts.
+    A shared capability living inside one of its two callers gets reimplemented
+    wrongly by the other; that has already happened twice in this repo.
+
+    Every value here is derived by the worker's OWN parser from the bytes it
+    read. The `feed_service_*_date` values that sit beside these in the packet
+    come from the database instead, and the two are deliberately kept apart:
+    migration 20260805000006 records that a feed's calendar-derived window and
+    the window its ingest recorded legitimately disagree, and collapsing them
+    would destroy the evidence that they did.
+    """
+    return {
+        "service_day": los.service_day,
+        "service_start": los.service_start,
+        "service_end": los.service_end,
+        # None — not the string "None..None" — when the feed's calendar states no
+        # window. An unknown service window must not render downstream as a
+        # confident one.
+        "service_period": (
+            f"{los.service_start}..{los.service_end}"
+            if los.service_start and los.service_end
+            else None
+        ),
+        "n_routes": los.n_routes,
+        "n_served_stops": los.n_stops,
+        "n_lines": len(los.lines),
+        "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
+        "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
+        # Trips published as a headway band rather than departure times. Excluded
+        # from the skim and counted, so a transit share built from part of a feed
+        # never presents itself as one built from all of it.
+        "frequency_trips_excluded": los.frequency_trips_excluded,
+        "scheduled_trips_used": los.scheduled_trips_used,
+        # ── THE EXPIRY DISCLOSURE, ON EVERY ORIGIN ────────────────────────────
+        # `schedule_expired` had exactly ONE caller — the chosen-workspace-feed
+        # path — so a run that used the operator's GTFS_URL, a discovered catalog
+        # feed, or the feed bundled with the worker modeled from a schedule of
+        # any age with nothing on any surface admitting it. That is not a corner
+        # case: the bundled feed is expired TODAY, and it is what every
+        # deployment without a workspace feed models transit from.
+        #
+        # Derived from the PARSER'S OWN calendar window here, so the disclosure
+        # is produced by the same function that produces the skim summary and
+        # cannot be present on one path and missing on the other. The chosen-feed
+        # path overwrites these three with the values its INGEST recorded — see
+        # `skim_selected_feed_version` — because migration 20260805000006 records
+        # that the two windows legitimately disagree.
+        "feed_service_end_date": gtfs_skim.iso_service_date(los.service_end),
+        "feed_schedule_expired": gtfs_skim.schedule_expired(
+            gtfs_skim.iso_service_date(los.service_end)
+        ),
+        # "Expired" is a claim about a MOMENT, and this run is the moment. A
+        # packet re-read next year must not present today's answer as timeless.
+        "feed_expiry_evaluated_at": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+# The three keys `_transit_feed_summary` derives from the parser that the chosen
+# feed's INGEST is authoritative for. Named once so the two sides cannot drift.
+_INGEST_AUTHORITATIVE_FEED_KEYS = (
+    "feed_service_start_date",
+    "feed_service_end_date",
+    "feed_schedule_expired",
+    "feed_expiry_evaluated_at",
+)
+
+
+def _feed_expiry_log_note(meta: dict) -> str:
+    """The run-log sentence for a schedule that has already ended, or "".
+
+    ONE sentence, shared by both skim paths. An expired schedule is the ORDINARY
+    case — three of four real Sacramento-area feeds are expired, SacRT's by
+    sixteen months — and is usually still the right thing to model with, being
+    the last schedule the agency published. It must simply never be silent, and
+    it must not be silent on some origins and loud on others.
+    """
+    if not meta.get("feed_schedule_expired"):
+        return ""
+    return (
+        "NOTE: this feed's published service ended on "
+        f"{meta.get('feed_service_end_date')}. It is still the schedule the agency last "
+        "published, and it is what this run's transit level of service was built from — "
+        "but it is not the schedule in force today.\n"
+    )
+
+
+def _feed_version_agency_name(feed_id: str | None) -> str | None:
+    """The agency label for a feed, or None. Best-effort: a miss costs a display
+    string, never the run, so it is fetched separately rather than as an embedded
+    resource that could fail the whole version read."""
+    if not gtfs_skim.is_uuid(feed_id):
+        return None
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/gtfs_feeds?id=eq.{feed_id}&select=agency_name",
+            headers=HEADERS,
+            timeout=20,
+        )
+        if res.status_code != 200:
+            return None
+        rows = res.json()
+        name = (rows[0] or {}).get("agency_name") if rows else None
+        return str(name)[:200] if name else None
+    except Exception:
+        return None
+
+
+def resolve_selected_feed_version(feed_version_id: str, run_workspace_id: str | None) -> dict:
+    """Read the chosen `gtfs_feed_versions` row, under this run's tenancy.
+
+    Raises `SelectedFeedError` — never falls back — with the machine reason the
+    evidence panel prints. A row belonging to some OTHER workspace is reported as
+    NOT FOUND rather than as forbidden: a member who can write the snapshot must
+    not be able to use the worker's answers to learn which feed ids exist
+    elsewhere.
+
+    A row whose `workspace_id` is NULL is a PUBLIC preloaded feed and is
+    deliberately allowed — that is what NULL means in this schema, and sharing it
+    is the point. What is not allowed is one tenant's feed reaching another's run.
+    """
+    res = requests.get(
+        f"{SUPABASE_URL}/rest/v1/gtfs_feed_versions?id=eq.{feed_version_id}"
+        f"&select={_GTFS_VERSION_SELECT}",
+        headers=HEADERS,
+        timeout=30,
+    )
+    if res.status_code != 200:
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_not_found",
+            f"The transit feed chosen for this run could not be looked up (HTTP {res.status_code}).",
+        )
+    rows = res.json() or []
+    if not rows:
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_not_found",
+            "The transit feed chosen for this run no longer exists. Re-ingest the feed in the "
+            "Data Hub and relaunch, or launch without a feed to let the worker discover one.",
+        )
+    row = rows[0]
+    row_workspace = row.get("workspace_id")
+    if row_workspace is not None and row_workspace != run_workspace_id:
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_not_found",
+            "The transit feed chosen for this run no longer exists. Re-ingest the feed in the "
+            "Data Hub and relaunch, or launch without a feed to let the worker discover one.",
+        )
+    if (row.get("status") or "") != "ready":
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_not_ready",
+            "The transit feed chosen for this run has not finished ingesting successfully "
+            f"(its ingest is '{str(row.get('status'))[:40]}'), so there was nothing to skim. "
+            "A feed has to reach 'ready' in the Data Hub before a model can use it.",
+        )
+    return row
+
+
+def download_selected_feed_bytes(row: dict) -> bytes:
+    """Fetch the stored archive for a feed version and verify its checksum.
+
+    THE CHECKSUM CHECK IS THE WHOLE POINT OF STORING BYTES. Without it this is
+    just a slower refetch: the guarantee being bought is that the archive the
+    model skimmed is byte-for-byte the archive whose route and stop counts the
+    planner read on the service-levels page. A mismatch is refused rather than
+    skimmed, because the one thing worse than no transit is a transit number
+    attributed to a feed that did not produce it.
+    """
+    storage_path = row.get("storage_path")
+    if not isinstance(storage_path, str) or not storage_path.strip():
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_bytes_unavailable",
+            "This feed was ingested without keeping a copy of the archive, so the model cannot "
+            "read the exact bytes OpenPlan parsed. Re-ingest the feed and relaunch. (The worker "
+            "will not refetch the source URL instead: the publisher may have changed the feed "
+            "since, and the run would then cite a feed that produced none of its numbers.)",
+        )
+    # The object must sit inside the OWNING workspace's own prefix — the same
+    # containment rule the app's uploader applies when it writes the path
+    # (`gtfsUploadObjectPath`). storage_path is service-role written and not
+    # member-writable today, so this is defence in depth rather than a live hole;
+    # it is here because a bucket read with the service-role key has no RLS above
+    # it, and the day something else writes this column the confinement should
+    # already exist.
+    owner = row.get("workspace_id")
+    expected_prefix = f"{owner}/" if owner else None
+    if expected_prefix is None or not storage_path.startswith(expected_prefix) or ".." in storage_path:
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_bytes_unavailable",
+            "The stored archive for this feed is not where its own workspace's feeds are kept, "
+            "so it was not read.",
+        )
+
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/storage/v1/object/{GTFS_UPLOADS_BUCKET}/{storage_path}",
+            headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+            timeout=120,
+        )
+    except Exception as exc:
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_bytes_unavailable",
+            f"The stored archive for this feed could not be downloaded ({exc}).",
+        ) from exc
+    if res.status_code != 200:
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_bytes_unavailable",
+            f"The stored archive for this feed could not be downloaded (HTTP {res.status_code}).",
+        )
+    raw = res.content
+
+    expected = (row.get("checksum_sha256") or "").strip().lower()
+    actual = hashlib.sha256(raw).hexdigest()
+    if not expected:
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_checksum_mismatch",
+            "This feed version records no checksum, so the archive that was read cannot be shown "
+            "to be the one OpenPlan parsed. Re-ingest the feed and relaunch.",
+        )
+    if actual != expected:
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_checksum_mismatch",
+            "The stored archive for this feed does not match the checksum recorded when OpenPlan "
+            f"parsed it (expected {expected[:16]}…, read {actual[:16]}…), so it was not skimmed.",
+        )
+    return raw
+
+
+def load_selected_feed_version(feed_version_id: str, run_workspace_id: str | None) -> tuple:
+    """Resolve, download, verify and parse a run's chosen feed version.
+
+    Returns ``(los, meta)`` where every value in `meta` was read from the database
+    or computed here — NOTHING comes from the run snapshot, which a workspace
+    member can write. Raises `SelectedFeedError` on every failure, and the caller
+    must not fall back to another feed on any of them.
+    """
+    row = resolve_selected_feed_version(feed_version_id, run_workspace_id)
+    raw = download_selected_feed_bytes(row)
+
+    source_url = row.get("source_url") or None
+    agency_name = _feed_version_agency_name(row.get("feed_id"))
+    try:
+        los = gtfs_skim.load_feed(
+            raw=raw,
+            source_url=source_url,
+            # An uploaded archive has no URL, so the agency's own name is the best
+            # identity a planner can be shown. `_feed_ref` in the KPI provenance
+            # sentence falls through source_url -> source_name, so leaving both
+            # empty would render this run's feed as "feed not identified".
+            source_name=None if source_url else (agency_name or f"feed version {feed_version_id[:8]}"),
+        )
+    except gtfs_skim.GtfsFrequencyOnly as exc:
+        raise gtfs_skim.SelectedFeedError("selected_feed_uses_frequencies", str(exc)) from exc
+
+    service_end = row.get("service_end_date")
+    meta = {
+        "feed_version_id": row.get("id"),
+        "feed_id": row.get("feed_id"),
+        "feed_agency_name": agency_name,
+        "feed_source_kind": row.get("source_kind"),
+        # The checksum the worker VERIFIED against the bytes it read, not merely
+        # the one the row claims — download_selected_feed_bytes refused anything
+        # that did not match, so recording it here is a statement about these
+        # bytes.
+        "feed_checksum_sha256": (row.get("checksum_sha256") or "").strip().lower() or None,
+        # Kept DISTINCT from `service_start`/`service_end`, which the worker's own
+        # parser derives from calendar.txt. Migration 20260805000006 records that
+        # the two legitimately disagree in real feeds; collapsing them would
+        # destroy the evidence that they did.
+        "feed_service_start_date": row.get("service_start_date"),
+        "feed_service_end_date": service_end,
+        "feed_schedule_expired": gtfs_skim.schedule_expired(service_end),
+        # "Expired" is a claim about a MOMENT, and this run is the moment. A
+        # packet re-read next year must not be able to present today's answer as
+        # timeless.
+        "feed_expiry_evaluated_at": datetime.now(timezone.utc).isoformat(),
+        # A newer ingest of the same feed exists and is the one the Data Hub now
+        # shows. The run still skims the version it was launched with — that is
+        # what byte-pinning means — but a planner comparing the two surfaces is
+        # owed the reason they differ.
+        "feed_version_is_current": row.get("is_current"),
+        "frequency_trips_excluded": los.frequency_trips_excluded,
+        "scheduled_trips_used": los.scheduled_trips_used,
+    }
+    return los, meta
+
+
+def build_mode_provenance(mode_split: dict | None) -> str:
+    """The sentence a planner quotes when defending this run's transit share.
+
+    Pure, and a function rather than eighty inline lines, because it is the
+    highest-stakes STRING the worker produces: it is what a reviewer reads to
+    decide whether a transit number is defensible, and it was previously buried
+    inside a stage no test can call. Every claim it may make is exercised in
+    `test_transit_feed_handoff.py`.
+    """
+    transit_status = (mode_split or {}).get("transit_status", "not_run")
+    # Name the feed and its service window in the KPI provenance itself, so the
+    # transit share travels with the evidence for it rather than pointing at a
+    # bundled snapshot the run may not have used. `or` (not a dict default) —
+    # these keys are present-but-null when the feed did not state a window.
+    los = (mode_split or {}).get("transit_los") or {}
+    feed_ref = los.get("source_url") or los.get("source_name") or "feed not identified"
+    service_window = los.get("service_period") or "service window not stated in the feed calendar"
+
+    # An expired schedule is the ORDINARY case, not a pathology — three of four
+    # real Sacramento-area feeds are expired — and modelling with it is usually
+    # right, since it is the last schedule the agency published. What it may never
+    # be is SILENT, and this is the sentence where that matters most.
+    expiry_note = ""
+    if los.get("feed_schedule_expired"):
+        expiry_note = (
+            " This feed's published service ended on "
+            f"{los.get('feed_service_end_date')}, so the schedule modeled is the last "
+            "one the agency published and NOT the schedule in force today."
+        )
+    # A skim built from part of a feed must not present itself as one built from
+    # all of it.
+    frequency_note = ""
+    if los.get("frequency_trips_excluded"):
+        frequency_note = (
+            f" {los['frequency_trips_excluded']} trip(s) in this feed are published as a "
+            "frequencies.txt headway band rather than departure times and were EXCLUDED from the "
+            f"skim; {los.get('scheduled_trips_used')} scheduled trip(s) were used."
+        )
+
+    if transit_status == "modeled":
+        return (
+            "Screening-grade 3-way auto/transit/active(walk+bike) logit applied per internal "
+            "OD cell before assignment. Auto disutility from the real AequilibraE travel-time "
+            "skim; walk/bike from centroid great-circle distance at fixed planning speeds; "
+            "transit LOS from published GTFS schedules (headway approximation — access-walk + "
+            "wait≈headway/2 + scheduled in-vehicle time + one optional transfer + egress-walk + "
+            "flat fare). Transit is available ONLY where a walk-access served stop exists at "
+            "both ends and a direct-or-one-transfer scheduled itinerary runs on the modeled "
+            "day — transit share is 0 elsewhere by construction, small where rural service "
+            "exists. Coefficients are a trip-weighted blend of the sketch-ABM per-purpose "
+            f"tables. Derived from a point-in-time snapshot of {feed_ref} ({service_window}); "
+            "a screening approximation, not current or real-time service. NOT a calibrated "
+            "transit assignment or a validated model."
+            + expiry_note
+            + frequency_note
+        )
+
+    no_feed_reason = los.get("no_feed_reason")
+    # WHAT THIS SENTENCE MAY CLAIM DEPENDS ON WHY THERE IS NO SKIM, and the two
+    # are not interchangeable. "No usable GTFS feed covered this study area" is a
+    # fact about the AREA and is only earned when a feed was actually looked for.
+    # When the planner NAMED a feed and that feed could not be used, nothing
+    # whatever was established about the area — asserting coverage there would put
+    # an unchecked claim under a VMT number, which is the failure this whole lane
+    # exists to prevent.
+    if (los.get("feed_origin") == "workspace_feed_version"
+            or str(no_feed_reason or "").startswith("selected_feed_")):
+        detail = los.get("selection_reason") or los.get("error")
+        return (
+            "Screening-grade auto-vs-active(walk+bike) logit; transit share is 0 because the "
+            "transit feed chosen for this run could not be used "
+            f"(transit_status={transit_status}"
+            + (f"; {no_feed_reason}" if no_feed_reason else "")
+            + ")"
+            + (f" — {detail}" if detail else "")
+            + ". No other feed was substituted, and whether any published feed covers this "
+            "study area was NOT determined. This is NOT 'no transit demand' and NOT 'no "
+            "transit service here'. Not a validated mode choice model or calibrated forecast."
+        )
+
+    return (
+        "Screening-grade auto-vs-active(walk+bike) logit; transit share is 0 because no usable "
+        f"GTFS feed covered this study area (transit_status={transit_status}"
+        + (f"; {no_feed_reason}" if no_feed_reason else "")
+        + ") — this is NOT 'no transit demand'. Not a validated mode choice model or "
+        "calibrated forecast."
+    )
+
+
+def skim_selected_feed_version(
+    feed_version_id: str,
+    run_workspace_id: str | None,
+    lons,
+    lats,
+    *,
+    deadline: float | None = None,
+    feed_origin: str = "workspace_feed_version",
+) -> tuple:
+    """The WHOLE selected-feed path: read, verify, disclose, cover-check, skim.
+
+    Returns ``(meta, skim, log)``. Raises `SelectedFeedError` on every refusal;
+    the caller must never substitute another feed on any of them.
+
+    IT IS A FUNCTION BECAUSE THE STAGE AROUND IT CANNOT BE CALLED. `stage_assignment`
+    needs a built AequilibraE project, a demand matrix and a graph, so a branch
+    inside it can only ever be checked by reading the file — and a guard that reads
+    a file is satisfied by the string appearing anywhere in it, which is how a
+    branch that had been turned off entirely stayed green here under mutation. The
+    boundary is drawn so that what remains inside the stage is a three-line
+    dispatch and everything that could be WRONG is on this side of it.
+    """
+    los, meta = load_selected_feed_version(feed_version_id, run_workspace_id)
+    meta = dict(meta)
+    meta["source_url"] = los.source_url
+    meta["source_name"] = los.source_name
+
+    log = _feed_expiry_log_note(meta)
+    if meta.get("feed_version_is_current") is False:
+        log += (
+            "NOTE: a newer ingest of this feed exists and is the one the Data Hub now shows. "
+            "This run deliberately skimmed the version it was launched with, so its numbers "
+            "stay reproducible.\n"
+        )
+    if los.frequency_trips_excluded:
+        log += (
+            f"{los.frequency_trips_excluded} trip(s) in this feed are defined by "
+            "frequencies.txt (a published headway band rather than departure times) and were "
+            f"excluded; {los.scheduled_trips_used} scheduled trip(s) were skimmed.\n"
+        )
+
+    gtfs_skim.check_deadline(deadline, "reading and parsing the chosen feed")
+    if not gtfs_skim.feed_covers(los, lons, lats):
+        # A chosen feed with no stops in the study area is a fact about THAT FEED.
+        # It must not be reported as `no_local_feed`, which asserts that a feed was
+        # looked for and none covers the area — nobody checked that here, and the
+        # claim would then sit under a VMT number a planner has to defend.
+        raise gtfs_skim.SelectedFeedError(
+            "selected_feed_has_no_stops_in_study_area",
+            "The transit feed chosen for this run has no stops inside this study area, so it "
+            "was not skimmed. Pick the feed that serves this area, or launch without one and "
+            "let the worker look for a covering feed.",
+        )
+
+    skim = gtfs_skim.transit_skim(los, lons, lats, deadline=deadline)
+    # THE INGEST'S OWN SERVICE WINDOW WINS ON THIS PATH. `_transit_feed_summary`
+    # derives an expiry from the parser's calendar for the origins that have no
+    # database row behind them; here there IS one, and migration 20260805000006
+    # records that the two windows legitimately disagree in real feeds. Letting
+    # the summary overwrite them would destroy the evidence that they did — and
+    # would silently change what the expiry statement above was computed from.
+    _from_ingest = {k: meta[k] for k in _INGEST_AUTHORITATIVE_FEED_KEYS if k in meta}
+    meta.update(_transit_feed_summary(los))
+    meta.update(_from_ingest)
+    log += (
+        f"Transit LOS from {los.source_url or los.source_name} "
+        f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
+        f"service day {los.service_day}, service window "
+        f"{meta['service_period'] or 'not stated in the feed calendar'}.\n"
+    )
+    return meta, skim, log
+
+
 def acs_row_from_equity_measures(measures: dict[str, float]) -> dict[str, float]:
     """Translate the app's jurisdiction-neutral equity measures into the ACS
     variable names ``equity.build_equity_zone`` already speaks.
@@ -1782,7 +2267,13 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                 env_url = os.getenv("GTFS_URL")
                 env_path = os.getenv("GTFS_PATH")
                 explicit_feed = bool(env_path or env_url)
-                discovering = GTFS_DISCOVER and not explicit_feed
+                # The run's OWN choice of feed, if the planner made one. It
+                # outranks the operator's env feed and the catalog both — see
+                # gtfs_skim.plan_feed for why a per-run act beats a
+                # deployment-wide default — so discovery is not even attempted
+                # when one is present, rather than attempted and then discarded.
+                feed_selection = gtfs_skim.parse_feed_selection(run_row)
+                discovering = GTFS_DISCOVER and not explicit_feed and feed_selection is None
                 if discovering:
                     study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
                     discovery = gtfs_skim.discover_feed(study_bbox)
@@ -1793,10 +2284,23 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                 # The decision itself lives in gtfs_skim.plan_feed so it is unit
                 # testable — main.py cannot be imported by the stdlib worker suites.
                 feed_plan = gtfs_skim.plan_feed(
-                    discovery, discovering=discovering, env_url=env_url, env_path=env_path
+                    discovery, discovering=discovering, env_url=env_url, env_path=env_path,
+                    selection=feed_selection,
                 )
                 feed_origin = feed_plan.origin
                 transit_los_meta = {"feed_origin": feed_origin}
+                if feed_plan.operator_env_overridden:
+                    # An operator who pinned GTFS_URL/GTFS_PATH and finds a run
+                    # skimmed something else is owed the reason, on the run, not
+                    # in a changelog. This is the disclosure that makes the
+                    # precedence reversal honest rather than surprising.
+                    transit_los_meta["operator_env_overridden"] = True
+                    log += (
+                        "This run names its own transit feed, which takes precedence over the "
+                        "deployment-wide GTFS_URL/GTFS_PATH feed for this run only.\n"
+                    )
+                if feed_plan.selection_reason:
+                    transit_los_meta["selection_reason"] = feed_plan.selection_reason[:300]
                 if feed_plan.discovery_error:
                     # Kept even when the fallback below goes on to model transit
                     # successfully: a run that says "modeled" must still disclose
@@ -1813,17 +2317,42 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                     )
 
                 if not feed_plan.load:
-                    # Discovery ran, the catalog ANSWERED, and nothing it lists
-                    # covers this area. That is a checked coverage fact, so we may
-                    # state it — and there is nothing to fall back to, because the
-                    # bundled single-county feed is not a stand-in for an arbitrary
-                    # place.
+                    # Two very different refusals share this branch, and each says
+                    # its own sentence. Neither may fall back to another feed:
+                    # discovery's is a checked coverage fact about the AREA, and a
+                    # selection's is a fact about the feed the planner CHOSE.
                     transit_status = feed_plan.status
                     transit_los_meta["no_feed_reason"] = feed_plan.no_feed_reason
-                    log += (
-                        "GTFS discovery found no scheduled feed covering this study area; "
-                        "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
+                    if feed_plan.origin == "workspace_feed_version":
+                        log += (
+                            "The transit feed chosen for this run could not be used "
+                            f"({feed_plan.no_feed_reason}"
+                            + (f": {feed_plan.selection_reason}" if feed_plan.selection_reason else "")
+                            + "); transit not modeled (transit share 0 — NOT 'no transit demand'). "
+                            "No other feed was substituted: a run that names one feed must not "
+                            "report numbers produced by another.\n"
+                        )
+                    else:
+                        log += (
+                            "GTFS discovery found no scheduled feed covering this study area; "
+                            "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
+                        )
+                elif feed_plan.feed_version_id:
+                    # The run named one of the workspace's own ingested feeds.
+                    # Everything this path does lives in one function so a test can
+                    # DRIVE it — the rest of this stage cannot be called without a
+                    # built AequilibraE project, which is how a branch that does
+                    # nothing would otherwise reach production green.
+                    _sel_meta, transit_skim, _sel_log = skim_selected_feed_version(
+                        feed_plan.feed_version_id,
+                        run_row.get("workspace_id"),
+                        lons,
+                        lats,
+                        deadline=transit_deadline,
+                        feed_origin=feed_origin,
                     )
+                    transit_los_meta.update(_sel_meta)
+                    log += _sel_log
                 else:
                     los = gtfs_skim.load_feed(url=feed_plan.url)
                     transit_los_meta["source_url"] = los.source_url
@@ -1859,30 +2388,20 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                             )
                     else:
                         transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
-                        transit_los_meta.update({
-                            "service_day": los.service_day,
-                            "service_start": los.service_start,
-                            "service_end": los.service_end,
-                            # None — not the string "None..None" — when the feed's
-                            # calendar states no window. An unknown service window
-                            # must not render downstream as a confident one.
-                            "service_period": (
-                                f"{los.service_start}..{los.service_end}"
-                                if los.service_start and los.service_end
-                                else None
-                            ),
-                            "n_routes": los.n_routes,
-                            "n_served_stops": los.n_stops,
-                            "n_lines": len(los.lines),
-                            "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
-                            "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
-                        })
+                        transit_los_meta.update(_transit_feed_summary(los))
                         log += (
                             f"Transit LOS from {los.source_url or los.source_name} "
                             f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
                             f"service day {los.service_day}, service window "
                             f"{transit_los_meta['service_period'] or 'not stated in the feed calendar'}.\n"
                         )
+                        # The SAME sentence the chosen-feed path prints. The
+                        # operator-env, discovered-catalog and bundled feeds are
+                        # exactly the origins that used to say nothing about an
+                        # expired schedule — and the bundled feed is expired
+                        # today, so this is the ordinary deployment rather than
+                        # an edge case.
+                        log += _feed_expiry_log_note(transit_los_meta)
             except Exception as te:
                 transit_status = "feed_unavailable"
                 # Carry forward whatever provenance was already established, then
@@ -1897,7 +2416,20 @@ def stage_assignment(run_id: str, stage_id: str, work_dir: str, setup_result: di
                 # refusal the wrong reason, and would send a planner off to fix a
                 # feed that is fine.
                 _feed_was_read = bool(transit_los_meta.get("source_url") or transit_los_meta.get("source_name"))
-                if isinstance(te, gtfs_skim.GtfsTimeout):
+                if isinstance(te, gtfs_skim.SelectedFeedError):
+                    # A run that NAMED a feed already knows exactly what went
+                    # wrong with it, and that specificity is the whole value of
+                    # letting a planner choose. Flattening it into
+                    # "feed_load_failed" would send someone to re-upload an
+                    # archive when the real answer was "that feed does not serve
+                    # this study area".
+                    _no_feed_reason = te.no_feed_reason
+                elif isinstance(te, gtfs_skim.GtfsFrequencyOnly):
+                    # Not a broken feed: an agency that publishes headway bands
+                    # instead of a timetable. Named separately so nobody is sent
+                    # to fix a feed that is fine.
+                    _no_feed_reason = "feed_publishes_frequencies_only"
+                elif isinstance(te, gtfs_skim.GtfsTimeout):
                     # Ran out of time, not out of data. Reported separately because
                     # nothing about the feed is wrong — a rerun, a smaller zone
                     # system or a larger GTFS_STAGE_BUDGET_S is the answer, and
@@ -3029,38 +3561,7 @@ def stage_artifacts(
         if validation.get("spearman_rho") is not None:
             kpis.append(("assignment", "validation_spearman_rho", "Validation Spearman rho", validation["spearman_rho"], "ratio"))
 
-    _transit_status = (mode_split or {}).get("transit_status", "not_run")
-    # Name the feed and its service window in the KPI provenance itself, so the
-    # transit share travels with the evidence for it rather than pointing at a
-    # bundled snapshot the run may not have used. `or` (not a dict default) —
-    # these keys are present-but-null when the feed did not state a window.
-    _transit_los = (mode_split or {}).get("transit_los") or {}
-    _feed_ref = _transit_los.get("source_url") or _transit_los.get("source_name") or "feed not identified"
-    _service_window = _transit_los.get("service_period") or "service window not stated in the feed calendar"
-    if _transit_status == "modeled":
-        mode_provenance = (
-            "Screening-grade 3-way auto/transit/active(walk+bike) logit applied per internal "
-            "OD cell before assignment. Auto disutility from the real AequilibraE travel-time "
-            "skim; walk/bike from centroid great-circle distance at fixed planning speeds; "
-            "transit LOS from published GTFS schedules (headway approximation — access-walk + "
-            "wait≈headway/2 + scheduled in-vehicle time + one optional transfer + egress-walk + "
-            "flat fare). Transit is available ONLY where a walk-access served stop exists at "
-            "both ends and a direct-or-one-transfer scheduled itinerary runs on the modeled "
-            "day — transit share is 0 elsewhere by construction, small where rural service "
-            "exists. Coefficients are a trip-weighted blend of the sketch-ABM per-purpose "
-            f"tables. Derived from a point-in-time snapshot of {_feed_ref} ({_service_window}); "
-            "a screening approximation, not current or real-time service. NOT a calibrated "
-            "transit assignment or a validated model."
-        )
-    else:
-        _no_feed_reason = _transit_los.get("no_feed_reason")
-        mode_provenance = (
-            "Screening-grade auto-vs-active(walk+bike) logit; transit share is 0 because no usable "
-            f"GTFS feed covered this study area (transit_status={_transit_status}"
-            + (f"; {_no_feed_reason}" if _no_feed_reason else "")
-            + ") — this is NOT 'no transit demand'. Not a validated mode choice model or "
-            "calibrated forecast."
-        )
+    mode_provenance = build_mode_provenance(mode_split)
 
     for cat, name, label, value, unit in kpis:
         kpi_payload = {

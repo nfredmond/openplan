@@ -437,6 +437,11 @@ export async function POST(request: NextRequest) {
       adopted: result.adoption.adopted,
       routeRows: result.routeServiceLevelRows,
       stopRows: result.stopServiceLevelRows,
+      // Operator-visible, because a bucket that has started refusing writes
+      // shows up here first — as feeds that ingest fine and then cannot be
+      // handed to a model run.
+      bytesStored: result.bytesStored,
+      bytesNotStoredReason: result.bytesNotStoredReason,
       durationMs: Date.now() - startedAt,
     });
 
@@ -454,6 +459,14 @@ export async function POST(request: NextRequest) {
         caveats: result.caveats,
         checksumSha256: result.checksumSha256,
         byteSize: result.byteSize,
+        // WHETHER THIS FEED CAN REACH THE TRAVEL MODEL. Every door stores its
+        // archive since 2026-08-06, because a model run is handed the exact
+        // bytes OpenPlan parsed rather than an address the worker refetches.
+        // A catalog/URL ingest whose object write missed still produces correct
+        // service levels — so it is `ok`, and this is the only place that says
+        // the run handoff will refuse it until the feed is brought in again.
+        bytesStored: result.bytesStored,
+        bytesNotStoredReason: result.bytesNotStoredReason,
         // Null when no area was supplied or the catalog publishes no service
         // area for the entry. A boolean would claim a comparison that was
         // never made.

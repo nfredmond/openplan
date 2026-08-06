@@ -528,6 +528,13 @@ export async function POST(
         caveats: result.caveats,
         checksumSha256: result.checksumSha256,
         byteSize: result.byteSize,
+        // WHETHER THE REFRESHED VERSION CAN REACH A MODEL RUN. A refresh is a
+        // catalog/URL refetch, which is exactly the door whose storage write may
+        // miss without failing the ingest — so this route can answer `false` and
+        // was the one door not saying so. `POST /api/gtfs/feeds` has returned it
+        // since the byte handoff shipped; the panel renders both.
+        bytesStored: result.bytesStored,
+        bytesNotStoredReason: result.bytesNotStoredReason,
         supersededCatalogIds: supersededIds,
       },
       { status: 200 }

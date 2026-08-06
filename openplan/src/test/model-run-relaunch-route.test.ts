@@ -37,6 +37,13 @@ const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
 
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
+const gtfsFeedMaybeSingleMock = vi.fn();
+const gtfsVersionMaybeSingleMock = vi.fn();
+let gtfsTablesRead: string[] = [];
+
+const TRANSIT_FEED_ID = "55555555-5555-4555-8555-555555555555";
+const TRANSIT_VERSION_ID = "66666666-6666-4666-8666-666666666666";
+
 const fromMock = vi.fn((table: string) => {
   if (table === "workspaces") {
     return {
@@ -80,6 +87,17 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "modeling_validation_results") {
     return { delete: vi.fn(() => ({ eq: validationResultDeleteEqMock })) };
+  }
+  // The transit-feed rebuild, which reads only when the STORED snapshot names a
+  // feed. A run that named none never reaches these — which is itself asserted
+  // below, because "resolved to nothing" and "never asked" are different facts.
+  if (table === "gtfs_feeds" || table === "gtfs_feed_versions") {
+    gtfsTablesRead.push(table);
+    const chain: Record<string, unknown> = {
+      eq: () => chain,
+      maybeSingle: () => (table === "gtfs_feeds" ? gtfsFeedMaybeSingleMock() : gtfsVersionMaybeSingleMock()),
+    };
+    return { select: vi.fn(() => chain) };
   }
   throw new Error(`Unexpected table: ${table}`);
 });
@@ -203,6 +221,33 @@ function givenARelaunchableRun() {
     kpiDeleteEqMock.mockResolvedValue({ error: null });
     claimDecisionDeleteEqMock.mockResolvedValue({ error: null });
     validationResultDeleteEqMock.mockResolvedValue({ error: null });
+    gtfsTablesRead = [];
+    // A workspace feed with a healthy ingest in use. The default, so a test that
+    // wants the refusal path has to ask for it.
+    gtfsFeedMaybeSingleMock.mockResolvedValue({
+      data: { id: TRANSIT_FEED_ID, workspace_id: WORKSPACE_ID, agency_name: "Example Transit" },
+      error: null,
+    });
+    gtfsVersionMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: TRANSIT_VERSION_ID,
+        feed_id: TRANSIT_FEED_ID,
+        workspace_id: WORKSPACE_ID,
+        source_kind: "catalog",
+        source_url: "https://example.org/gtfs.zip",
+        // The archive was KEPT. `storage_path` — not the checksum — is what says
+        // so: `ingest.ts` computes a checksum for all three doors before any
+        // storage attempt, so a checksum proves nothing about whether an object
+        // exists for the worker to read.
+        storage_path: `${WORKSPACE_ID}/${TRANSIT_FEED_ID}/${TRANSIT_VERSION_ID}.zip`,
+        checksum_sha256: "a".repeat(64),
+        service_start_date: "2025-01-01",
+        service_end_date: "2025-04-05",
+        frequency_trip_count: 0,
+        scheduled_trip_count: 480,
+      },
+      error: null,
+    });
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
 }
 
@@ -453,8 +498,136 @@ describe("relaunching rebuilds the demographics the run will be built from", () 
     expect(res.status).toBe(200);
     expect(prepareWorkerZoneAttributesMock).not.toHaveBeenCalled();
     const snapshot = requeuePayload().input_snapshot_json as Record<string, unknown>;
-    expect(snapshot).toEqual({ modelId: MODEL_ID });
+    // The TRANSIT stamp is present even here, and deliberately so: a run with
+    // no study area still records which feed was named for it (none), and the
+    // handoff resolves that without needing geometry. Everything the ZONE
+    // rebuild would have added — zoneGeography, zoneAttributes, relaunchedAt —
+    // is still absent, which is what this test is about.
+    expect(snapshot).toEqual({
+      modelId: MODEL_ID,
+      transitFeed: expect.objectContaining({ status: "not_selected", feedVersionId: null }),
+    });
     expect(await res.json()).toMatchObject({ zoneAttributes: null });
+  });
+});
+
+/**
+ * THE SAME DEFECT, ONE MODULE OVER. The transit stamp is a snapshot of one read
+ * too, and OpenPlan tells a planner "bring the feed in again from the Data Hub,
+ * then relaunch". A relaunch that re-queued the STORED stamp would make that
+ * instruction unable to succeed — the run would re-read its old refusal forever
+ * — which is exactly what happened to the demographics above.
+ *
+ * The stamp therefore remembers the FEED, never the version, and the relaunch
+ * re-resolves whichever ingest is in use NOW.
+ */
+describe("relaunching re-resolves the transit feed the run models from", () => {
+  beforeEach(() => {
+    givenARelaunchableRun();
+    runMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: MODEL_RUN_ID,
+        status: "failed",
+        engine_key: "aequilibrae",
+        corridor_geojson: CORRIDOR,
+        input_snapshot_json: {
+          modelId: MODEL_ID,
+          // What the previous attempt recorded: the feed was named, and its
+          // archive had not been kept.
+          transitFeed: {
+            version: "transit-feed-v1",
+            status: "unavailable",
+            feedId: TRANSIT_FEED_ID,
+            feedVersionId: null,
+            checksumSha256: null,
+            reason: "The archive behind this feed's current ingest was not kept…",
+          },
+        },
+      },
+      error: null,
+    });
+  });
+
+  function requeuedStamp(): Record<string, unknown> {
+    const payload = runUpdateMock.mock.calls[0][0] as Record<string, unknown>;
+    const snapshot = payload.input_snapshot_json as Record<string, unknown>;
+    return snapshot.transitFeed as Record<string, unknown>;
+  }
+
+  it("re-reads the named feed and adopts the ingest now in use", async () => {
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(200);
+    // The whole recovery: a stamp that said "unavailable" becomes "selected"
+    // with no planner picking anything a second time.
+    expect(requeuedStamp()).toMatchObject({
+      status: "selected",
+      feedId: TRANSIT_FEED_ID,
+      feedVersionId: TRANSIT_VERSION_ID,
+      checksumSha256: "a".repeat(64),
+      reason: null,
+    });
+    expect(gtfsTablesRead).toContain("gtfs_feeds");
+    expect(gtfsTablesRead).toContain("gtfs_feed_versions");
+  });
+
+  it("re-states the refusal, and reports it to the caller, when it is still true", async () => {
+    // A re-ingest that stored nothing again must not read as success. And the
+    // ANSWER has to reach the button that was pressed — learning it from the
+    // worker's transit stage minutes later is what this reply exists to fix.
+    gtfsVersionMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: TRANSIT_VERSION_ID,
+        feed_id: TRANSIT_FEED_ID,
+        workspace_id: WORKSPACE_ID,
+        source_kind: "catalog",
+        source_url: "https://example.org/gtfs.zip",
+        // NO OBJECT WAS STORED — the fact the refusal actually turns on. The
+        // checksum is present, as it is on every ready version whichever door
+        // the feed came through, which is exactly why testing it instead stamped
+        // every catalog and URL ingest as handed over with no bytes behind it.
+        storage_path: null,
+        checksum_sha256: "a".repeat(64),
+        service_start_date: null,
+        service_end_date: null,
+        frequency_trip_count: 0,
+        scheduled_trip_count: 0,
+      },
+      error: null,
+    });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(200);
+    expect(requeuedStamp()).toMatchObject({ status: "unavailable", feedVersionId: null });
+    expect(await res.json()).toMatchObject({
+      transitFeed: { status: "unavailable", agencyName: "Example Transit" },
+    });
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "transit_feed_handoff_unavailable",
+      expect.objectContaining({ status: "unavailable" }),
+    );
+  });
+
+  it("does not go looking for a feed a run never named", async () => {
+    // "Resolved to nothing" and "never asked" are different facts, and the
+    // second is what a run launched before this capability existed looks like.
+    runMaybeSingleMock.mockResolvedValue({
+      data: {
+        id: MODEL_RUN_ID,
+        status: "failed",
+        engine_key: "aequilibrae",
+        corridor_geojson: CORRIDOR,
+        input_snapshot_json: { modelId: MODEL_ID },
+      },
+      error: null,
+    });
+
+    const res = await relaunchRun(request(), routeContext());
+
+    expect(res.status).toBe(200);
+    expect(requeuedStamp()).toMatchObject({ status: "not_selected", feedVersionId: null });
+    expect(gtfsTablesRead).toEqual([]);
   });
 });
 

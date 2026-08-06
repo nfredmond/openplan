@@ -26,10 +26,17 @@
  * `an-agent-may-not-promote-a-tier.test.ts` now knows about
  * `median_headway_basis` — `GTFS_MEDIAN_HEADWAY_BASES` was added to its
  * `TIER_VOCABULARIES` on 2026-08-06 — but that guard answers one question: can a
- * REGISTERED ASSISTANT ACTION reach a tier write. Today the transit lane has no
- * registered action at all, so the answer is trivially yes-it-is-safe, and it
- * would stay trivially yes right up until the moment someone registers
- * `refresh_gtfs_feed`.
+ * REGISTERED ASSISTANT ACTION reach a tier write. The transit lane has exactly
+ * one registered action, `refresh_gtfs_feed` (`runtime/action-metadata.ts`),
+ * whose payload is an id and which reaches no basis column — so today the
+ * answer is safe, and it would stay safe-looking right up until the moment a
+ * second, wider transit action is registered.
+ *
+ * CORRECTED 2026-08-06: this paragraph previously asserted "the transit lane
+ * has no registered action at all", which was already untrue when it was
+ * written. The argument below did not depend on it, but a false premise
+ * standing beside a correct argument is how the argument gets discarded with
+ * it.
  *
  * The property that actually holds today is stronger and worth pinning while it
  * is still true: THERE IS NO PARAMETER ANYWHERE THROUGH WHICH A BASIS COULD BE

@@ -884,6 +884,42 @@ describe("/api/models/[modelId]/runs", () => {
     expect(inserted.input_snapshot_json.zoneGeography).toBe("tract");
   });
 
+  it("stamps the transit-feed answer onto every worker-backed run, chosen or not", async () => {
+    // The stamp is the WORKER'S CONTRACT: `not_selected` leaves its existing
+    // feed precedence (GTFS_URL → catalog discovery → bundled) exactly as it
+    // is, while an absent key means "a build that predates this". Those must
+    // stay distinguishable, because only one of them is a recorded answer.
+    const response = await postModelRun(launchRequest({ engineKey: "aequilibrae" }), {
+      params: Promise.resolve({ modelId: MODEL_ID }),
+    });
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      input_snapshot_json: Record<string, unknown>;
+    };
+    const stamp = inserted.input_snapshot_json.transitFeed as Record<string, unknown>;
+    expect(stamp).toBeTruthy();
+    expect(stamp.status).toBe("not_selected");
+    // Nothing the worker could act on, and a sentence a person can read.
+    expect(stamp.feedVersionId).toBeNull();
+    expect(stamp.reason).toBeTruthy();
+    expect(stamp.version).toBe("transit-feed-v1");
+  });
+
+  it("puts no transit stamp on an engine whose run never reaches a transit skim", async () => {
+    // A dead field in a provenance document is a field the next reader tries to
+    // interpret.
+    const response = await postModelRun(launchRequest({ engineKey: "sketch_abm" }), {
+      params: Promise.resolve({ modelId: MODEL_ID }),
+    });
+
+    expect(response.status).toBe(201);
+    const inserted = modelRunInsertMock.mock.calls[0][0] as {
+      input_snapshot_json: Record<string, unknown>;
+    };
+    expect("transitFeed" in inserted.input_snapshot_json).toBe(false);
+  });
+
   it("ignores zoneGeography for engines that don't consume it", async () => {
     const response = await postModelRun(
       launchRequest({ engineKey: "sketch_abm", zoneGeography: "block_group" }),

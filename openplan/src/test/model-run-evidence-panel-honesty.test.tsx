@@ -206,7 +206,16 @@ describe("ModelRunEvidencePanel transit-feed provenance", () => {
 
     const block = screen.getByTestId("evidence-transit-provenance");
     expect(block).toHaveTextContent("No published GTFS feed in the Mobility Database catalog covers this study area");
-    expect(block).toHaveTextContent("a coverage limit, not a finding that transit demand here is zero");
+    // THE TRAILING SENTENCE NO LONGER SAYS "a coverage limit", and that is a
+    // correction rather than a rewording. It is printed on EVERY non-modeled
+    // outcome, including the ones where a planner named a feed and it could not
+    // be used — and calling those a coverage limit asserts something about the
+    // AREA that nobody checked. The coverage claim, where it IS earned, is made
+    // by the reason label above it: `discovery_found_no_covering_feed` says the
+    // catalog answered and lists nothing here, which is a checked fact.
+    expect(block).toHaveTextContent(
+      "a limit of what this run was given, not a finding that transit demand here is zero"
+    );
     // No feed means no service window to report — the panel must not print one.
     expect(block).not.toHaveTextContent("2026-");
   });

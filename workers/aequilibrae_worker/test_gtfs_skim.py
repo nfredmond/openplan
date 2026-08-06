@@ -107,24 +107,153 @@ def test_empty_feed_raises():
     assert raised, "a feed with no stops must raise GtfsError (fail loud)"
 
 
-def test_frequencies_feed_rejected():
-    # a frequencies.txt-based feed must fail loud (headway skim reads stop_times)
+def _fixture_zip_plus(extra: dict) -> str:
+    """The standard fixture with extra files added or replaced."""
     path = _fixture_zip()
-    import zipfile as _zf
     buf = io.BytesIO()
-    with _zf.ZipFile(path) as src, _zf.ZipFile(buf, "w") as dst:
+    with zipfile.ZipFile(path) as src, zipfile.ZipFile(buf, "w") as dst:
         for name in src.namelist():
-            dst.writestr(name, src.read(name))
-        dst.writestr("frequencies.txt", "trip_id,start_time,end_time,headway_secs\nt1,08:00:00,10:00:00,600\n")
+            if name not in extra:
+                dst.writestr(name, src.read(name))
+        for name, content in extra.items():
+            dst.writestr(name, content)
     path2 = tempfile.mktemp(suffix=".zip")
     with open(path2, "wb") as fh:
         fh.write(buf.getvalue())
-    raised = False
+    return path2
+
+
+def test_an_empty_frequencies_file_does_not_cost_an_agency_its_feed():
+    # THE OVER-REFUSAL THIS REPLACES, and its size was measured rather than
+    # guessed: of 16 sampled US feeds, 7 ship frequencies.txt and SIX of those
+    # seven ship it with a header row and no data at all. The old blanket
+    # rejection threw away six perfectly ordinary feeds over an empty file — and
+    # OpenPlan's own ingest parser accepted every one of them, so the worker was
+    # refusing feeds planners had already successfully ingested.
+    path = _fixture_zip_plus({"frequencies.txt": "trip_id,start_time,end_time,headway_secs\n"})
+    los = gs.load_feed(path=path)
+    assert los.n_routes == 1 and los.n_stops == 3
+    assert los.frequency_trips_excluded == 0
+    assert los.scheduled_trips_used == 4
+
+
+def test_a_few_frequency_trips_are_excluded_rather_than_costing_the_whole_feed():
+    # The seventh sampled feed: 4 frequencies rows covering 2 of its 18,150
+    # trips. Refusing it cost an 18,150-trip agency everything over two trips.
+    # What is genuinely unskimmable is a TRIP whose stop_times are a template for
+    # a headway band, so that is what gets dropped.
+    path = _fixture_zip_plus({
+        "frequencies.txt": "trip_id,start_time,end_time,headway_secs\nt1,08:00:00,10:00:00,600\n",
+    })
+    los = gs.load_feed(path=path)
+    assert los.frequency_trips_excluded == 1, los.frequency_trips_excluded
+    assert los.scheduled_trips_used == 3, los.scheduled_trips_used
+    # The remaining scheduled service is still skimmed. t2 runs A->C, so the pair
+    # stays available and its in-vehicle time is the real one.
+    lons = np.array([-121.050, -121.070])
+    lats = np.array([39.200, 39.220])
+    sk = gs.transit_skim(los, lons, lats)
+    assert bool(sk["available"][0, 1]), "the scheduled trips must still produce a skim"
+    assert abs(sk["ivtt"][0, 1] - 20.0) < 1e-6, sk["ivtt"][0, 1]
+    # And the excluded trip contributes no fabricated departure gap: with only t2
+    # left on R1/dir0 there are no two first-stop departures to measure between,
+    # so the single-trip headway assumption applies rather than a made-up number.
+    assert los.lines[("R1", "0")]["n_trips"] == 1, los.lines[("R1", "0")]["n_trips"]
+
+
+def test_a_feed_that_is_nothing_but_headway_bands_is_refused_by_its_own_name():
+    # The ONE honest frequencies refusal. Kept, and given a distinct type: "this
+    # agency publishes headway bands instead of a timetable" and "your feed could
+    # not be read" send a planner to entirely different places, and only one of
+    # them is something their transit agency can act on.
+    path = _fixture_zip_plus({
+        "frequencies.txt": (
+            "trip_id,start_time,end_time,headway_secs\n"
+            "t1,08:00:00,10:00:00,600\nt2,08:00:00,10:00:00,600\n"
+            "t3,08:00:00,10:00:00,600\nt4,08:00:00,10:00:00,600\n"
+        ),
+    })
+    raised = None
     try:
-        gs.load_feed(path=path2)
-    except gs.GtfsError:
-        raised = True
-    assert raised, "frequencies.txt feed must raise GtfsError"
+        gs.load_feed(path=path)
+    except gs.GtfsError as exc:
+        raised = exc
+    assert raised is not None, "a feed with no scheduled trips at all must refuse"
+    assert isinstance(raised, gs.GtfsFrequencyOnly), type(raised)
+    assert isinstance(raised, gs.GtfsError), "existing handlers must still degrade, not die"
+    assert "frequencies.txt" in str(raised) and "headway bands" in str(raised), str(raised)
+
+
+def test_frequency_trips_do_not_win_the_service_day_they_cannot_serve():
+    # A subtle way the exclusion could have gone wrong. The modeled service day is
+    # picked by trip VOLUME, so counting frequency-based trips in that ranking
+    # would let a day published as headway bands out-rank a day with real
+    # timetabled departures — and the winner would then contribute nothing. A feed
+    # with usable Tuesday service would report no lines at all because Monday had
+    # more frequency entries.
+    files = {
+        "calendar.txt": (
+            "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
+            "MON,1,0,0,0,0,0,0,20250101,20261231\n"
+            "TUE,0,1,0,0,0,0,0,20250101,20261231\n"
+        ),
+        "trips.txt": (
+            "route_id,service_id,trip_id,direction_id\n"
+            # Monday: four trips, ALL frequency-based.
+            "R1,MON,m1,0\nR1,MON,m2,0\nR1,MON,m3,0\nR1,MON,m4,0\n"
+            # Tuesday: two real scheduled trips.
+            "R1,TUE,u1,0\nR1,TUE,u2,0\n"
+        ),
+        "stop_times.txt": (
+            "trip_id,arrival_time,departure_time,stop_id,stop_sequence\n"
+            "m1,08:00:00,08:00:00,A,1\nm1,08:20:00,08:20:00,C,2\n"
+            "m2,08:00:00,08:00:00,A,1\nm2,08:20:00,08:20:00,C,2\n"
+            "m3,08:00:00,08:00:00,A,1\nm3,08:20:00,08:20:00,C,2\n"
+            "m4,08:00:00,08:00:00,A,1\nm4,08:20:00,08:20:00,C,2\n"
+            "u1,09:00:00,09:00:00,A,1\nu1,09:20:00,09:20:00,C,2\n"
+            "u2,09:30:00,09:30:00,A,1\nu2,09:50:00,09:50:00,C,2\n"
+        ),
+        "frequencies.txt": (
+            "trip_id,start_time,end_time,headway_secs\n"
+            "m1,08:00:00,10:00:00,600\nm2,08:00:00,10:00:00,600\n"
+            "m3,08:00:00,10:00:00,600\nm4,08:00:00,10:00:00,600\n"
+        ),
+    }
+    los = gs.load_feed(path=_fixture_zip_plus(files))
+    assert los.service_day == "tuesday", los.service_day
+    assert los.scheduled_trips_used == 2, los.scheduled_trips_used
+    assert los.frequency_trips_excluded == 0, (
+        "Monday's frequency trips are not on the modeled day, so they are not counted as "
+        f"excluded from it: {los.frequency_trips_excluded}"
+    )
+    assert abs(los.lines[("R1", "0")]["headway_min"] - 30.0) < 1e-6
+
+
+def test_bytes_in_hand_are_parsed_without_touching_the_network_or_the_cache():
+    # How a run's chosen workspace feed is read: the caller has already fetched
+    # and checksum-verified the archive, so load_feed must not resolve GTFS_URL /
+    # GTFS_PATH, must not consult the URL cache, and must take its provenance from
+    # the arguments — bytes in hand know nothing about where they came from.
+    with open(_fixture_zip(), "rb") as fh:
+        raw = fh.read()
+    prior_url = os.environ.get("GTFS_URL")
+    prior_path = os.environ.get("GTFS_PATH")
+    try:
+        # Both point at nothing that exists. If either were consulted this raises.
+        os.environ["GTFS_URL"] = "http://nowhere.invalid/should-not-be-fetched.zip"
+        os.environ["GTFS_PATH"] = "/nonexistent/should-not-be-read.zip"
+        los = gs.load_feed(raw=raw, source_url=None, source_name="Test Transit")
+    finally:
+        for key, prior in (("GTFS_URL", prior_url), ("GTFS_PATH", prior_path)):
+            if prior is None:
+                os.environ.pop(key, None)
+            else:
+                os.environ[key] = prior
+    assert los.n_routes == 1 and los.n_stops == 3
+    assert los.source_name == "Test Transit" and los.source_url is None
+    # Provenance comes from the arguments, never invented from a path that was
+    # never opened.
+    assert "should-not-be" not in (los.source_name or "")
 
 
 def test_missing_feed_raises():

@@ -30,10 +30,24 @@
  *   2. `fetching` — so a stuck ingest says which step it is stuck on.
  *   3. the bytes — downloaded through the SSRF-checked, size-capped,
  *      time-bounded fetch lane, or handed in by the upload door.
- *   4. the object — upload door only, and the OBJECT GOES FIRST, then the row
+ *   4. the object — ALL THREE DOORS, and the OBJECT GOES FIRST, then the row
  *      that points at it. An object with no row is garbage a sweep can find; a
  *      row pointing at an object that was never written is a version that
  *      cannot explain itself.
+ *
+ *      IT WAS THE UPLOAD DOOR ONLY UNTIL 2026-08-06, and widening it is what
+ *      makes a catalog or URL feed usable by the travel model. The alternative
+ *      — handing the worker `source_url` and letting it refetch — hands over an
+ *      ADDRESS rather than the bytes OpenPlan parsed, and an agency republishes
+ *      whenever it likes. Worse, `gtfs_skim.load_feed` caches a downloaded feed
+ *      at `gtfs_feed_{md5(url)[:16]}.zip` with NO TTL, so on a long-lived
+ *      worker the first run to touch a URL freezes those bytes indefinitely
+ *      while OpenPlan's service-levels page moves on. The divergence would then
+ *      be camouflaged rather than merely silent: the run's KPI provenance
+ *      sentence cites the same URL the Data Hub card names, and two surfaces
+ *      citing one address is exactly the evidence a reviewer uses to conclude
+ *      they agree. `checksum_sha256` is recorded for every door, so once the
+ *      bytes travel the worker can PROVE it read what OpenPlan parsed.
  *   5. `parsing`.
  *   6. `parseGtfsFeed` — in memory, and it keeps no timetable.
  *   7. `writeParsedFeedVersion` — derived rows, then `ready` and the counts in
@@ -301,6 +315,16 @@ export type GtfsIngestResult =
       caveats: string[];
       checksumSha256: string | null;
       byteSize: number;
+      /**
+       * Whether this ingest's own bytes were kept, which is what decides
+       * whether the feed can be handed to the travel model at all. False only
+       * on a catalog/URL door whose object write missed — see the divergence
+       * argued at the upload block. An upload that could not be stored is not
+       * an `ok: true` result in the first place.
+       */
+      bytesStored: boolean;
+      /** Storage's own message when `bytesStored` is false. Null otherwise. */
+      bytesNotStoredReason: string | null;
     }
   | {
       ok: false;
@@ -479,30 +503,54 @@ export async function runGtfsIngest(params: RunGtfsIngestParams): Promise<GtfsIn
   }
 
   /* ---------------------------------------------------------------------- */
-  /* The object (upload door only)                                           */
+  /* The object — every door                                                 */
   /* ---------------------------------------------------------------------- */
 
   let storagePath: string | null = null;
+  let storageRefusal: string | null = null;
 
-  if (source.kind === "upload") {
+  {
     const path = gtfsUploadObjectPath(workspaceId, feedId, versionId);
-    const uploaded = await service.storage
-      .from(GTFS_UPLOADS_BUCKET)
-      .upload(path, bytes, { contentType: source.contentType, upsert: false });
+    const uploaded = await service.storage.from(GTFS_UPLOADS_BUCKET).upload(path, bytes, {
+      // A fetched archive is a zip whatever the far end's Content-Type said —
+      // `openGtfsZip` is about to prove it. The bucket's allowed mime list
+      // (20260805000006 section 8) carries `application/zip`, so naming it is
+      // what keeps a catalog ingest from being refused by Storage for a header
+      // the agency's server chose.
+      contentType: source.kind === "upload" ? source.contentType : "application/zip",
+      upsert: false,
+    });
 
     if (uploaded.error) {
-      return refuse(
-        "partial_write",
-        `The feed was received but could not be stored: ${uploaded.error.message}`,
-        null
-      );
+      // THE TWO DOORS DIVERGE HERE, ON PURPOSE, AND THE ASYMMETRY IS EARNED.
+      //
+      // An UPLOADED archive exists nowhere else. Losing it loses the planner's
+      // file, and continuing would leave a version that can never be handed to
+      // the travel model with no way to fix it short of asking them to upload
+      // again — so the ingest fails, exactly as it did before this block was
+      // widened.
+      //
+      // A CATALOG or URL archive has an address. Failing the whole ingest would
+      // throw away service levels that are correct and complete because a
+      // bookkeeping write missed, and this path worked without Storage at all
+      // until today. So the object is skipped, `storage_path` stays null, and
+      // the model handoff refuses by name (`selected_feed_bytes_unavailable`)
+      // with a re-ingest as the recovery. Degraded and legible beats absent.
+      if (source.kind === "upload") {
+        return refuse(
+          "partial_write",
+          `The feed was received but could not be stored: ${uploaded.error.message}`,
+          null
+        );
+      }
+      storageRefusal = uploaded.error.message;
+    } else {
+      // From here on every failure path must carry the path so the object is
+      // removed with the failure. `refuse` takes it as an argument for exactly
+      // that reason rather than closing over a mutable variable.
+      storagePath = path;
+      await recordUploadedObject(service, versionId, path, byteSize, checksumSha256);
     }
-
-    // From here on every failure path must carry the path so the object is
-    // removed with the failure. `refuse` takes it as an argument for exactly
-    // that reason rather than closing over a mutable variable.
-    storagePath = path;
-    await recordUploadedObject(service, versionId, path, byteSize, checksumSha256);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -582,5 +630,7 @@ export async function runGtfsIngest(params: RunGtfsIngestParams): Promise<GtfsIn
     ),
     checksumSha256,
     byteSize,
+    bytesStored: storagePath !== null,
+    bytesNotStoredReason: storageRefusal,
   };
 }

@@ -49,6 +49,42 @@ type ScenarioEntryOption = {
   assumptionCount: number;
 };
 
+/**
+ * One of this workspace's ingested transit feeds, as the launch control needs
+ * it. Only feeds with an ingest CURRENTLY IN USE belong in this list — a feed
+ * whose only ingest failed has nothing to hand the modeling worker, and
+ * offering it would produce a run that refuses for a reason the planner could
+ * have been told before they clicked.
+ */
+export type TransitFeedOption = {
+  id: string;
+  agencyName: string;
+  /** ISO `YYYY-MM-DD` from the version in use, or null when it stated none. */
+  serviceEndDate: string | null;
+  /**
+   * How this feed's ingest read the modeled service: trips published as a
+   * `frequencies.txt` headway band, and trips published as real departures.
+   *
+   * DISCLOSURE, NOT A REFUSAL — and that is a correction, not a nuance. Until
+   * 2026-08-06 both lanes threw the whole feed away over ANY frequency-based
+   * trip. Measured: of 16 sampled US feeds 7 ship `frequencies.txt`, six of them
+   * header-only, and the seventh carries 4 rows over 2 of its 18,150 trips — so
+   * that agency lost its entire feed over four rows, and a planner who NAMED
+   * their own feed got zero transit where naming none would have modeled some.
+   * The worker now drops those trips, counts them, and refuses only when nothing
+   * scheduled is left on the modeled day. These numbers say what will be left
+   * out; nothing here decides that a feed is unusable.
+   */
+  frequencyTripCount: number | null;
+  scheduledTripCount: number | null;
+};
+
+/** The coverage answer this control asks the app for, per selected feed. */
+type TransitFeedCoverage = {
+  coverage: "yes" | "no" | "not_determined";
+  reason: string | null;
+};
+
 export type ModelRunStage = {
   id: string;
   stage_name: string;
@@ -123,6 +159,23 @@ type ModelRunManagerProps = {
    * worker.
    */
   modelingWorkerDeclaration?: ModelingWorkerDeclaration;
+  /**
+   * The workspace this model belongs to, so the launch control can list the
+   * workspace's own ingested transit feeds and ask whether one of them serves
+   * this study area.
+   *
+   * Optional, and its absence simply withholds the transit-feed picker rather
+   * than rendering an empty one — a control that cannot name a workspace cannot
+   * honestly offer to read that workspace's feeds.
+   */
+  workspaceId?: string | null;
+  /**
+   * This workspace's ingested transit feeds, newest first, as the page already
+   * reads them. Passed in rather than fetched here so the picker cannot render
+   * before it knows whether the list is empty — an empty picker and a picker
+   * that has not loaded look identical, and the first is a fact.
+   */
+  transitFeeds?: TransitFeedOption[];
 };
 
 function fmtDateTime(value: string | null | undefined) {
@@ -279,6 +332,8 @@ export function ModelRunManager({
   modelRuns,
   schemaPending,
   modelingWorkerDeclaration = "undeclared",
+  workspaceId = null,
+  transitFeeds = [],
 }: ModelRunManagerProps) {
   const router = useRouter();
   const [title, setTitle] = useState(`${modelTitle} run`);
@@ -295,6 +350,12 @@ export function ModelRunManager({
   // Per-run count-calibration opt-in (aequilibrae / behavioral_demand). Default
   // off — OpenPlan ships an uncalibrated screening model.
   const [calibrate, setCalibrate] = useState(false);
+  // Which of this workspace's ingested feeds this run models transit from.
+  // Empty = leave the worker's own feed selection alone, which is what every
+  // run did before this control existed.
+  const [transitFeedId, setTransitFeedId] = useState("");
+  const [transitCoverage, setTransitCoverage] = useState<TransitFeedCoverage | null>(null);
+  const [isCheckingCoverage, setIsCheckingCoverage] = useState(false);
   const [isLaunching, setIsLaunching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Non-silent handoff notice — e.g. a large sketch study area rerouted to the
@@ -332,6 +393,86 @@ export function ModelRunManager({
   // stages are AequilibraE-run).
   const supportsCalibration = engineKey === "aequilibrae" || engineKey === "behavioral_demand";
   const engineNeedsWorker = isWorkerBackedEngineKey(engineKey);
+  // The transit skim runs in the AequilibraE worker, so only the two engines
+  // that reach it may name a feed. Offering the control on an engine whose run
+  // never skims transit would be a setting with no effect.
+  const supportsTransitFeed = engineKey === "aequilibrae" || engineKey === "behavioral_demand";
+  const selectedTransitFeed = useMemo(
+    () => transitFeeds.find((feed) => feed.id === transitFeedId) ?? null,
+    [transitFeeds, transitFeedId]
+  );
+
+  /**
+   * Ask whether the chosen feed has any stops inside the study area, BEFORE the
+   * run is queued.
+   *
+   * A DISCLOSURE, NEVER A GATE — the launch is not blocked on the answer and
+   * the answer is allowed to be `not_determined`. The worker's own
+   * `feed_covers` is the authority; this exists so a planner who picked the
+   * wrong agency out of a list of four finds out now rather than from a
+   * finished run with no transit in it.
+   */
+  useEffect(() => {
+    if (!supportsTransitFeed || !workspaceId || !transitFeedId) {
+      setTransitCoverage(null);
+      setIsCheckingCoverage(false);
+      return;
+    }
+
+    let corridor: unknown;
+    try {
+      corridor = corridorText.trim() ? JSON.parse(corridorText) : null;
+    } catch {
+      corridor = null;
+    }
+    if (!corridor) {
+      setTransitCoverage(null);
+      setIsCheckingCoverage(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsCheckingCoverage(true);
+    void (async () => {
+      try {
+        const response = await fetch("/api/gtfs/feeds/study-area-coverage", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ workspaceId, feedId: transitFeedId, corridorGeojson: corridor }),
+        });
+        const payload = (await response.json()) as TransitFeedCoverage & { error?: string };
+        if (cancelled) return;
+        // A failed check is `not_determined` with the reason, never a silent
+        // nothing and never a "no": "we could not ask" and "this agency does
+        // not serve here" are different facts.
+        setTransitCoverage(
+          response.ok
+            ? { coverage: payload.coverage, reason: payload.reason ?? null }
+            : {
+                coverage: "not_determined",
+                reason:
+                  payload.error ??
+                  "Whether this feed serves the study area could not be checked.",
+              }
+        );
+      } catch (coverageError) {
+        if (cancelled) return;
+        setTransitCoverage({
+          coverage: "not_determined",
+          reason:
+            coverageError instanceof Error
+              ? `Whether this feed serves the study area could not be checked: ${coverageError.message}`
+              : "Whether this feed serves the study area could not be checked.",
+        });
+      } finally {
+        if (!cancelled) setIsCheckingCoverage(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [supportsTransitFeed, workspaceId, transitFeedId, corridorText]);
 
   async function handleLaunch() {
     setError(null);
@@ -361,6 +502,10 @@ export function ModelRunManager({
           // Sent for the worker-backed engines that can calibrate; other engines
           // ignore it (and the route only stamps it for those two).
           calibrate: supportsCalibration ? calibrate : undefined,
+          // Only the engines that reach a transit skim may name a feed. Sent
+          // only when one was picked; an omitted field leaves the worker's own
+          // feed precedence exactly as it has always been.
+          transitFeedId: supportsTransitFeed && transitFeedId ? transitFeedId : undefined,
         }),
       });
 
@@ -616,6 +761,100 @@ export function ModelRunManager({
                 resolve finer. Population and households are tract ACS totals disaggregated by
                 LODES residence weights. Both resolutions are screening-grade.
               </p>
+            </div>
+          ) : null}
+
+          {supportsTransitFeed && workspaceId ? (
+            <div className="space-y-1.5" data-testid="managed-run-transit-feed">
+              <label htmlFor="managed-run-transit-feed" className="text-[0.82rem] font-semibold">
+                Transit feed (optional)
+              </label>
+              {transitFeeds.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  This workspace has no transit feed in use yet. Bring your agency&apos;s GTFS feed in
+                  from the{" "}
+                  <Link href="/data-hub" className="underline underline-offset-2">
+                    Data Hub
+                  </Link>{" "}
+                  to model transit from it. Without one, the modeling worker picks a feed the way it
+                  always has — one the deployment&apos;s operator configured, one discovered in the
+                  published-feed catalog for this study area, or the feed bundled with the worker.
+                </p>
+              ) : (
+                <>
+                  <select
+                    id="managed-run-transit-feed"
+                    className="module-select"
+                    value={transitFeedId}
+                    onChange={(event) => setTransitFeedId(event.target.value)}
+                  >
+                    <option value="">
+                      Let the modeling worker choose (catalog discovery, or the operator&apos;s feed)
+                    </option>
+                    {transitFeeds.map((feed) => (
+                      <option key={feed.id} value={feed.id}>
+                        {feed.agencyName}
+                        {feed.serviceEndDate ? ` · schedule through ${feed.serviceEndDate}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Naming a feed hands the modeling worker the exact archive OpenPlan parsed —
+                    verified against its checksum — instead of letting it fetch an address that may
+                    have been republished since. It overrides the worker&apos;s own feed selection for
+                    this run.
+                  </p>
+                  {/* Both disclosures are about the SELECTED feed, and both are
+                      stated before the click rather than discovered from a
+                      finished run that quietly modeled no transit. */}
+                  {selectedTransitFeed?.frequencyTripCount ? (
+                    <p
+                      className="text-xs text-amber-700 dark:text-amber-300"
+                      data-testid="managed-run-transit-feed-frequencies"
+                    >
+                      {selectedTransitFeed.frequencyTripCount.toLocaleString()} of this feed&apos;s
+                      trips are published as a headway range (<code>frequencies.txt</code>) rather
+                      than individual departures. The modeling worker leaves those out of the transit
+                      skim and says how many it left out
+                      {selectedTransitFeed.scheduledTripCount
+                        ? `, so this run's transit comes from the other ${selectedTransitFeed.scheduledTripCount.toLocaleString()} scheduled trip(s)`
+                        : ""}
+                      . The feed is still handed over. Re-ingesting will not change the split; it is
+                      how the agency publishes.
+                    </p>
+                  ) : null}
+                  {selectedTransitFeed?.serviceEndDate ? (
+                    <p className="text-xs text-muted-foreground">
+                      Its published schedule runs through {selectedTransitFeed.serviceEndDate}. An
+                      expired schedule is usually the last one the agency published and is normally
+                      the right thing to model from — the run records that it was expired so nobody
+                      has to guess later.
+                    </p>
+                  ) : null}
+                  {isCheckingCoverage ? (
+                    <p className="text-xs text-muted-foreground">
+                      Checking whether this feed has stops in the study area…
+                    </p>
+                  ) : null}
+                  {!isCheckingCoverage && transitCoverage?.coverage === "no" ? (
+                    <p
+                      className="text-xs text-amber-700 dark:text-amber-300"
+                      data-testid="managed-run-transit-feed-coverage-no"
+                    >
+                      None of this feed&apos;s stops fall inside this study area&apos;s bounding box. The
+                      run can still be launched — the modeling worker makes the final judgement
+                      against the resolved zone system — but this usually means a different agency
+                      serves the area.
+                    </p>
+                  ) : null}
+                  {!isCheckingCoverage && transitCoverage?.coverage === "not_determined" ? (
+                    <p className="text-xs text-muted-foreground">
+                      {transitCoverage.reason ??
+                        "Whether this feed serves the study area could not be checked."}
+                    </p>
+                  ) : null}
+                </>
+              )}
             </div>
           ) : null}
 

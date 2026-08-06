@@ -4,7 +4,12 @@ import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-
 import { ArrowLeft, Database, FileStack, ShieldCheck } from "lucide-react";
 import { ModelDetailControls } from "@/components/models/model-detail-controls";
 import { ModelLinkedRecordsBoard } from "@/components/models/model-linked-records";
-import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/components/models/model-run-manager";
+import {
+  ModelRunManager,
+  type ModelRunStage,
+  type ModelRunArtifact,
+  type TransitFeedOption,
+} from "@/components/models/model-run-manager";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -21,6 +26,7 @@ import {
 import { reconcileStaleModelRuns } from "@/lib/models/run-reconcile";
 import type { ReaperRun } from "@/lib/models/run-reaper";
 import { loadModelRunClaimStatuses, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import { filterToCurrentReadyVersion } from "@/lib/gtfs/persist";
 import { createClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { looksLikePendingScenarioSpineSchema } from "@/lib/scenarios/api";
@@ -33,6 +39,22 @@ import {
 } from "@/lib/models/catalog";
 
 type RouteParams = Promise<{ modelId: string }>;
+
+/**
+ * Just enough of a PostgREST builder for the current-version read to compile.
+ *
+ * Same reason `data-hub/page.tsx` names one: `filterToCurrentReadyVersion` is
+ * generic over the builder, and instantiating that generic against the full
+ * Supabase client type is the recurring TS2589 ("type instantiation is
+ * excessively deep") trigger this repo has hit before. The clients here are
+ * untyped by convention anyway, so naming the two methods used loses nothing —
+ * and the read is deliberately still routed through the shared predicate rather
+ * than hand-written `.eq()` calls.
+ */
+type CurrentTransitVersionQuery = {
+  eq: (column: string, value: never) => CurrentTransitVersionQuery;
+  limit: (count: number) => Promise<{ data: unknown; error: { message: string } | null }>;
+};
 
 type ModelLinkRow = {
   id: string;
@@ -201,6 +223,72 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
       // read as county-runs/page.tsx and safety/page.tsx.
       supabase.from("workspaces").select(HOME_GEOGRAPHY_COLUMNS).eq("id", model.workspace_id).maybeSingle(),
     ]);
+
+  /**
+   * THE WORKSPACE'S TRANSIT FEEDS THAT A MODEL RUN COULD ACTUALLY USE.
+   *
+   * Two filters, both load-bearing. `workspace_id` is named explicitly because
+   * `gtfs_feeds.workspace_id IS NULL` is a PUBLIC preloaded feed readable by
+   * every tenant — and the model handoff resolves the version under this
+   * workspace's id, so a public feed offered here would refuse on the far side
+   * for a reason pointing at the wrong thing. And the version read goes through
+   * `filterToCurrentReadyVersion`, the codebase's one expression of "the ingest
+   * this workspace analyses with": a feed whose only ingest failed has nothing
+   * to hand the worker, and listing it would produce a refusal the planner
+   * could have been shown before they clicked.
+   *
+   * A failed read yields an EMPTY list — the picker is optional, and a launch
+   * control that broke because a transit read failed would be worse than one
+   * offering no feeds. But an empty list is ALSO what a workspace with no feeds
+   * looks like, and those two must not render identically: "you have not
+   * ingested a feed yet" is a fact, and "we could not ask" is not. Both reads
+   * therefore go through `reads.check`, which discloses the failure through
+   * `ReadFailureLog` at the top of the page.
+   */
+  const transitFeedsResult = await supabase
+    .from("gtfs_feeds")
+    .select("id, agency_name")
+    .eq("workspace_id", model.workspace_id)
+    .order("agency_name", { ascending: true })
+    .limit(100);
+
+  const transitFeedVersionsResult = await filterToCurrentReadyVersion(
+    supabase
+      .from("gtfs_feed_versions")
+      .select("feed_id, service_end_date, frequency_trip_count, scheduled_trip_count")
+      .eq("workspace_id", model.workspace_id) as unknown as CurrentTransitVersionQuery
+  ).limit(100);
+
+  reads.check("this workspace's transit feeds", transitFeedsResult);
+  reads.check("the transit feed ingests in use", transitFeedVersionsResult);
+
+  const transitVersionsByFeedId = new Map(
+    (((transitFeedVersionsResult.data ?? []) as unknown) as Array<{
+      feed_id: string;
+      service_end_date: string | null;
+      frequency_trip_count: number | null;
+      scheduled_trip_count: number | null;
+    }>).map((version) => [version.feed_id, version])
+  );
+
+  const transitFeedOptions: TransitFeedOption[] = (
+    ((transitFeedsResult.data ?? []) as unknown) as Array<{ id: string; agency_name: string | null }>
+  )
+    .map((feed) => {
+      const version = transitVersionsByFeedId.get(feed.id);
+      if (!version) return null;
+      return {
+        id: feed.id,
+        agencyName: feed.agency_name ?? "Unnamed transit feed",
+        serviceEndDate: version.service_end_date ? version.service_end_date.slice(0, 10) : null,
+        // Counts, not a boolean. A boolean could only ever be phrased as a
+        // refusal ("this feed uses frequencies"); the numbers let the launch
+        // control say what will actually be excluded and what will be modeled.
+        frequencyTripCount: version.frequency_trip_count ?? null,
+        scheduledTripCount: version.scheduled_trip_count ?? null,
+      };
+    })
+    .filter((option): option is TransitFeedOption => option !== null);
 
   const countyRunsResult = await supabase
     .from("county_runs")
@@ -818,6 +906,8 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
               modelRuns={modelRuns}
               schemaPending={modelRunsSchemaPending}
               modelingWorkerDeclaration={modelingWorkerDeclaration}
+              workspaceId={model.workspace_id}
+              transitFeeds={transitFeedOptions}
             />
 
             <article className="module-section-surface">

@@ -184,6 +184,20 @@ type IngestBody = {
   code?: string;
   detail?: string;
   maxBytes?: number;
+  /**
+   * WHETHER THIS FEED CAN REACH A MODEL RUN. Every door stores its archive to
+   * the private `gtfs-uploads` bucket since 2026-08-06, because the travel model
+   * is handed the exact bytes OpenPlan parsed rather than an address the worker
+   * refetches. A catalog or URL ingest whose object write missed still produces
+   * correct and complete service levels — so the ingest is `ok`, and the API has
+   * been returning this flag since it shipped with NOTHING rendering it.
+   *
+   * That silence is the defect: the run handoff refuses such a version by name,
+   * and the planner would meet the refusal at launch time, days later, on a
+   * feed the Data Hub had reported as a success.
+   */
+  bytesStored?: boolean;
+  bytesNotStoredReason?: string | null;
 };
 
 type RegistryState =
@@ -459,6 +473,29 @@ export function GtfsIngestPanel({
         lines: [
           adoption.detail,
           "The new ingest is stored and complete; only the statement that switches it into use did not land. Try again.",
+        ],
+      });
+      return;
+    }
+
+    // THE ARCHIVE WAS NOT KEPT. Reported as a WARNING on an otherwise successful
+    // ingest, because that is exactly what it is: the service levels on this page
+    // are correct and complete, and the only thing that is missing is the copy a
+    // model run needs. Saying nothing would let a planner discover it at launch,
+    // days later, as a refusal on a feed this panel had called a success.
+    if (body.bytesStored === false) {
+      setOutcome({
+        tone: "warn",
+        headline: `${what} succeeded${body.displayName ? ` — ${body.displayName}` : ""}, and a copy of the feed was NOT kept.`,
+        lines: [
+          "This feed's service levels, routes and stops are complete and correct — everything on this page " +
+            "is usable.",
+          "What is missing is the archive itself. A model run is handed the exact bytes OpenPlan parsed, " +
+            "verified against their checksum, rather than an address the modeling worker refetches — so a " +
+            "run that names this feed will refuse to model transit from it until the feed is brought in again.",
+          body.bytesNotStoredReason
+            ? `The archive could not be stored: ${body.bytesNotStoredReason}`
+            : "The archive could not be stored, and no reason was returned.",
         ],
       });
       return;

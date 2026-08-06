@@ -119,6 +119,29 @@ type TransitFeedProvenance = {
    * successful discovery is worse than no fallback, because it lets a planner
    * believe the catalog was consulted for their area when it never answered. */
   discoveryError: string | null;
+  /**
+   * The workspace feed version the worker actually read, when the run was
+   * handed one. Read from the WORKER's echo rather than from the launch stamp:
+   * `input_snapshot_json` is member-writable, so a value taken from it would be
+   * a claim about what the worker did, authored by whoever could edit the run.
+   */
+  feedVersionId: string | null;
+  /** The checksum the worker VERIFIED against the bytes it read. */
+  feedChecksumSha256: string | null;
+  /**
+   * The version row's calendar window, kept DISTINCT from `servicePeriod`,
+   * which the worker's own parser derives from `calendar.txt`. Migration
+   * 20260805000006 states these legitimately disagree in real feeds;
+   * collapsing them destroys the evidence that they did.
+   */
+  feedServiceStartDate: string | null;
+  feedServiceEndDate: string | null;
+  /** Whether that window had already ended when the skim ran. */
+  feedScheduleExpired: boolean | null;
+  /** "Expired" is a claim about a moment, so the moment is recorded. */
+  feedExpiryEvaluatedAt: string | null;
+  /** A per-run selection displaced this deployment's GTFS_URL / GTFS_PATH. */
+  operatorEnvOverridden: boolean | null;
 };
 
 const TRANSIT_FEED_ORIGIN_LABELS: Record<string, string> = {
@@ -132,10 +155,27 @@ const TRANSIT_FEED_ORIGIN_LABELS: Record<string, string> = {
   // inside the study area.
   bundled_after_catalog_unavailable:
     "Feed bundled with the worker (fallback — the feed catalog could not be reached)",
+  // The one origin that names a feed a PLANNER put into OpenPlan. It outranks
+  // the operator's env feed and every discovery path, so the label says the
+  // choice was theirs rather than the deployment's.
+  workspace_feed_version: "Chosen for this run from this workspace's own ingested feeds",
   none: "No feed applied",
 };
 
-const TRANSIT_NO_FEED_REASON_LABELS: Record<string, string> = {
+/**
+ * Every machine reason the worker can put in `transit_los.no_feed_reason`.
+ *
+ * EXPORTED SO A GUARD CAN DERIVE THE WORKER'S VOCABULARY AND COMPARE. A reason
+ * with no entry here falls through to the generic sentence below, and the
+ * generic sentence used to make a COVERAGE CLAIM about the study area — the
+ * exact claim both lanes' code takes care never to make for a SELECTION
+ * failure. Three reasons the worker emits had no label
+ * (`selected_feed_stamp_version_unsupported`, `selected_feed_unavailable`,
+ * `feed_publishes_frequencies_only`), so three real outcomes rendered as
+ * "no GTFS feed was applied to this study area" — an unchecked assertion about
+ * the area sitting underneath a VMT number a planner has to defend.
+ */
+export const TRANSIT_NO_FEED_REASON_LABELS: Record<string, string> = {
   discovery_found_no_covering_feed:
     "No published GTFS feed in the Mobility Database catalog covers this study area.",
   // Distinct from the line above on purpose: a catalog that answered and listed
@@ -161,6 +201,61 @@ const TRANSIT_NO_FEED_REASON_LABELS: Record<string, string> = {
   transit_skim_timed_out:
     "The transit stage exceeded this deployment's wall-clock budget and was stopped, so transit was not modeled. " +
     "Nothing is known to be wrong with the feed itself.",
+
+  // ── The selection refusals ────────────────────────────────────────────────
+  // Every one of these follows a PLANNER naming a feed, so each says what they
+  // can do about it. None of them falls back to another feed: a run that
+  // silently skimmed something other than the feed named on screen is the exact
+  // camouflage this whole handoff was built to prevent.
+  selected_feed_not_found:
+    "The transit feed chosen for this run is no longer one of this workspace's feeds, so nothing was skimmed.",
+  selected_feed_not_ready:
+    "The transit feed chosen for this run has no completed ingest in use, so there was nothing to read. " +
+    "Bring the feed in again from the Data Hub, then relaunch.",
+  selected_feed_bytes_unavailable:
+    "The archive behind the chosen feed's ingest could not be read, so the modeling worker was not given " +
+    "the bytes OpenPlan parsed. Bring the feed in again from the Data Hub, then relaunch.",
+  // The one refusal that is about INTEGRITY rather than availability, and it is
+  // deliberately not a fallback: bytes that do not match the recorded checksum
+  // are not this feed, whatever else they may be.
+  selected_feed_checksum_mismatch:
+    "The archive stored for the chosen feed did not match the checksum OpenPlan recorded when it parsed " +
+    "the feed, so it was not skimmed. Bring the feed in again from the Data Hub, then relaunch.",
+  selected_feed_has_no_stops_in_study_area:
+    "The transit feed chosen for this run has no stops inside this study area, so it was not skimmed. " +
+    "That is a fact about this feed, not about the area — another agency may serve it.",
+  // NARROWED 2026-08-06. This no longer means "the feed contains a
+  // frequencies.txt row" — both lanes stopped throwing a whole feed away over
+  // that. It now means EVERY trip on the modeled service day was published as a
+  // headway band, so dropping them left the skim nothing to measure.
+  selected_feed_uses_frequencies:
+    "Every trip on the modeled service day of the transit feed chosen for this run is published as a " +
+    "headway range (frequencies.txt) rather than individual departures, so the transit skim had nothing " +
+    "to measure. Re-ingesting will not change it — it is how the agency publishes.",
+  selected_feed_handoff_failed:
+    "OpenPlan could not resolve the transit feed chosen for this run, so none was handed to the modeling " +
+    "worker.",
+  // The app declined to hand the chosen feed over and said why in the stamp; the
+  // worker repeats that sentence verbatim beside this label rather than
+  // second-guessing a decision it cannot see the inputs to.
+  selected_feed_unavailable:
+    "The transit feed chosen for this run could not be handed to the modeling worker. The reason " +
+    "recorded when the run was launched is shown with this run's transit feed selection.",
+  // A VERSION SKEW, not a feed problem, and the two send a planner to completely
+  // different people. The worker refuses a handoff format it does not recognise
+  // instead of guessing — guessing is how a run skims a feed nobody chose while
+  // every surface names the one the planner picked.
+  selected_feed_stamp_version_unsupported:
+    "The modeling worker is older than the app that launched this run and does not understand how the " +
+    "chosen transit feed was handed over, so it skimmed none rather than guess which feed was meant. " +
+    "Whoever operates this deployment needs to upgrade the worker; then relaunch.",
+  // Reached when the worker's OWN feed — operator-configured, discovered, or
+  // bundled — turned out to publish nothing but headway bands. Named apart from
+  // "the feed could not be read" so nobody is sent to fix a feed that is fine.
+  feed_publishes_frequencies_only:
+    "The feed this run loaded publishes its service as headway ranges (frequencies.txt) rather than " +
+    "individual departures, so the transit skim had nothing to measure. Nothing is wrong with the feed; " +
+    "it is how that agency publishes.",
 };
 
 function readTransitProvenance(packet: NormalizedEvidencePacket): TransitFeedProvenance | null {
@@ -179,6 +274,14 @@ function readTransitProvenance(packet: NormalizedEvidencePacket): TransitFeedPro
     const value = (los as Record<string, unknown>)[key];
     return typeof value === "number" && Number.isFinite(value) ? value : null;
   };
+  // Strictly boolean. A missing key means the worker that ran this predates the
+  // handoff and said nothing — which must render as "not recorded", never as
+  // `false`, because `false` here is a positive claim (the schedule had not
+  // expired; no operator feed was displaced).
+  const flag = (key: string): boolean | null => {
+    const value = (los as Record<string, unknown>)[key];
+    return typeof value === "boolean" ? value : null;
+  };
 
   return {
     origin: text("feed_origin"),
@@ -190,6 +293,70 @@ function readTransitProvenance(packet: NormalizedEvidencePacket): TransitFeedPro
     noFeedReason: text("no_feed_reason"),
     error: text("error"),
     discoveryError: text("discovery_error"),
+    feedVersionId: text("feed_version_id"),
+    feedChecksumSha256: text("feed_checksum_sha256"),
+    feedServiceStartDate: text("feed_service_start_date"),
+    feedServiceEndDate: text("feed_service_end_date"),
+    feedScheduleExpired: flag("feed_schedule_expired"),
+    feedExpiryEvaluatedAt: text("feed_expiry_evaluated_at"),
+    operatorEnvOverridden: flag("operator_env_overridden"),
+  };
+}
+
+/**
+ * The transit-feed selection stamped into the run at launch, as a surface needs
+ * it.
+ *
+ * READ SEPARATELY FROM THE WORKER'S ECHO, AND NEVER MERGED WITH IT. This is
+ * what OpenPlan ASKED FOR; `TransitFeedProvenance` is what the worker DID. On a
+ * healthy run they agree, and on the runs that matter — a queued run nothing
+ * picked up, a selection the worker refused — only one of the two exists. A
+ * panel that merged them would present a request as an outcome.
+ */
+type TransitFeedSelection = {
+  status: string | null;
+  agencyName: string | null;
+  sourceKind: string | null;
+  serviceEndDate: string | null;
+  scheduleExpiredAtLaunch: boolean | null;
+  coversStudyArea: string | null;
+  reason: string | null;
+};
+
+const TRANSIT_SELECTION_STATUS_LABELS: Record<string, string> = {
+  selected: "A feed from this workspace was handed to the modeling worker",
+  not_selected: "No workspace feed was named; the worker chose one itself",
+  unavailable: "A workspace feed was named but could not be handed over",
+  // NO LONGER PRODUCED (2026-08-06). Kept because runs launched before that date
+  // carry it, and dropping the label would render those stamps as a bare status
+  // code. It meant "this feed's ingest saw a frequencies.txt trip" — a rule that
+  // cost a 18,150-trip agency its whole feed over 4 rows and is gone from both
+  // lanes. The wording says when it applied so nobody reads an old run as a
+  // statement about how OpenPlan behaves now.
+  unsupported_by_skim:
+    "A workspace feed was named and withheld by a build that refused frequency-based feeds (before 2026-08-06)",
+  handoff_failed: "A workspace feed was named but OpenPlan could not resolve it",
+};
+
+function readTransitSelection(packet: NormalizedEvidencePacket): TransitFeedSelection | null {
+  const stamp = packet.inputs.input_snapshot?.transitFeed;
+  if (!stamp || typeof stamp !== "object" || Array.isArray(stamp)) return null;
+  const record = stamp as Record<string, unknown>;
+
+  const text = (key: string): string | null => {
+    const value = record[key];
+    return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+  };
+
+  return {
+    status: text("status"),
+    agencyName: text("agencyName"),
+    sourceKind: text("sourceKind"),
+    serviceEndDate: text("serviceEndDate"),
+    scheduleExpiredAtLaunch:
+      typeof record.scheduleExpiredAtLaunch === "boolean" ? record.scheduleExpiredAtLaunch : null,
+    coversStudyArea: text("coversStudyArea"),
+    reason: text("reason"),
   };
 }
 
@@ -268,6 +435,10 @@ export function ModelRunEvidencePanel({
   // relaunch answers — the panel makes no claim about a run it did not just
   // dispatch.
   const [executionOutlook, setExecutionOutlook] = useState<ModelRunExecutionOutlook | null>(null);
+  // Why the transit feed named on this run still did not travel, after the
+  // relaunch that was supposed to fix it. Null when it did, or when none was
+  // named — an unconditional notice would train people to ignore it.
+  const [transitRelaunchNotice, setTransitRelaunchNotice] = useState<string | null>(null);
   const [comparisonRows, setComparisonRows] = useState<Array<Record<string, unknown>> | null>(null);
   const [behavioralComparison, setBehavioralComparison] = useState<BehavioralDemandComparison | null>(null);
   const [crossEngineBlock, setCrossEngineBlock] = useState<CrossEngineComparisonBlock | null>(null);
@@ -281,6 +452,7 @@ export function ModelRunEvidencePanel({
   const categories = useMemo(() => (evidence ? summarizeEvidenceCategories(evidence) : []), [evidence]);
   const transitStatus = useMemo(() => (evidence ? evidenceTransitStatus(evidence) : null), [evidence]);
   const transitProvenance = useMemo(() => (evidence ? readTransitProvenance(evidence) : null), [evidence]);
+  const transitSelection = useMemo(() => (evidence ? readTransitSelection(evidence) : null), [evidence]);
   const transitDisplay = useMemo(
     () => transitStatusDisplay(transitStatus, transitProvenance?.noFeedReason),
     [transitStatus, transitProvenance]
@@ -405,6 +577,7 @@ export function ModelRunEvidencePanel({
   async function handleRelaunch() {
     setError(null);
     setExecutionOutlook(null);
+    setTransitRelaunchNotice(null);
     setIsRelaunching(true);
     try {
       const response = await fetch(`/api/models/${modelId}/runs/${modelRunId}/launch`, {
@@ -413,10 +586,26 @@ export function ModelRunEvidencePanel({
       const payload = (await response.json()) as {
         error?: string;
         executionOutlook?: ModelRunExecutionOutlook;
+        transitFeed?: { status?: string; reason?: string | null };
       };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to relaunch worker run");
       }
+
+      // THE OTHER ANSWER THIS BUTTON OWES. "Bring the feed in again from the
+      // Data Hub, then relaunch" is an instruction OpenPlan gives, and until
+      // this line the planner who followed it learned whether it worked from
+      // the worker's transit stage minutes later — or never, on a deployment
+      // whose worker is not running. The relaunch re-resolves the selection
+      // server-side, so the answer exists at the moment of the click.
+      setTransitRelaunchNotice(
+        payload.transitFeed &&
+          payload.transitFeed.status !== "selected" &&
+          payload.transitFeed.status !== "not_selected" &&
+          payload.transitFeed.reason
+          ? payload.transitFeed.reason
+          : null
+      );
 
       // THE ANSWER THIS BUTTON OWES. This panel is where a planner arrives after
       // a run died for want of a worker — and until now pressing "Relaunch"
@@ -496,6 +685,21 @@ export function ModelRunEvidencePanel({
         </div>
       ) : null}
 
+      {/* Outside the collapsible section for the same reason as the outlook: a
+          run that produced no evidence has nothing to expand, and this is
+          precisely the run whose feed handoff failed. */}
+      {transitRelaunchNotice ? (
+        <div
+          data-testid="model-run-transit-relaunch-notice"
+          className="mt-3 rounded-[0.5rem] border border-amber-300/70 bg-amber-50/80 px-4 py-3 text-xs text-amber-950 dark:border-amber-900/60 dark:bg-amber-950/20 dark:text-amber-200"
+        >
+          <p className="font-semibold">
+            The transit feed chosen for this run still did not reach the modeling worker
+          </p>
+          <p className="mt-2">{transitRelaunchNotice}</p>
+        </div>
+      ) : null}
+
       {isOpen ? (
         <div className="mt-4 space-y-4 border-t border-border/60 pt-4">
           {evidence ? (
@@ -560,7 +764,7 @@ export function ModelRunEvidencePanel({
                     modeled; this names the evidence behind that answer — and when
                     there was no feed, states the coverage limit as a fact instead
                     of leaving a 0% transit share to read as a measurement. */}
-                {transitDisplay ? (
+                {transitDisplay || transitSelection ? (
                   <div
                     className="mt-3 rounded-[14px] border border-amber-300/50 bg-amber-100/40 px-3 py-2.5 dark:border-amber-900/50 dark:bg-amber-950/30"
                     data-testid="evidence-transit-provenance"
@@ -568,6 +772,51 @@ export function ModelRunEvidencePanel({
                     <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-900/80 dark:text-amber-200/80">
                       Transit feed
                     </p>
+
+                    {/* WHAT OPENPLAN ASKED FOR, above what the worker did.
+                        Kept as its own block rather than folded into the
+                        provenance list below, because a request and an outcome
+                        are different things and the runs where they differ are
+                        exactly the runs worth reading carefully. */}
+                    {transitSelection ? (
+                      <div
+                        className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90"
+                        data-testid="evidence-transit-selection"
+                      >
+                        <p>
+                          <span className="font-semibold">Chosen at launch:</span>{" "}
+                          {(transitSelection.status
+                            ? TRANSIT_SELECTION_STATUS_LABELS[transitSelection.status]
+                            : null) ??
+                            transitSelection.status ??
+                            "Not recorded"}
+                          {transitSelection.agencyName ? ` — ${transitSelection.agencyName}` : ""}
+                        </p>
+                        {transitSelection.reason ? <p className="mt-1">{transitSelection.reason}</p> : null}
+                        {/* An expired schedule does NOT refuse the run — three
+                            of four real Sacramento-area feeds measured on
+                            2026-08-05 had already expired, and the last one an
+                            agency published is usually the right thing to model
+                            from. What it must not be is silent. */}
+                        {transitSelection.scheduleExpiredAtLaunch ? (
+                          <p className="mt-1" data-testid="evidence-transit-schedule-expired">
+                            Its published schedule had already ended
+                            {transitSelection.serviceEndDate
+                              ? ` on ${transitSelection.serviceEndDate}`
+                              : ""}{" "}
+                            when this run was launched. That is normal — it is usually the last schedule
+                            the agency published — but the service modeled here is that schedule, not
+                            today&apos;s.
+                          </p>
+                        ) : null}
+                        {transitSelection.coversStudyArea === "no" ? (
+                          <p className="mt-1">
+                            OpenPlan&apos;s own pre-check found none of this feed&apos;s stops inside the
+                            study area&apos;s bounding box.
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
 
                     {transitProvenance ? (
                       <dl className="mt-2 space-y-1.5 text-xs text-amber-950/90 dark:text-amber-100/90">
@@ -611,6 +860,44 @@ export function ModelRunEvidencePanel({
                                 </dd>
                               </div>
                             ) : null}
+                            {/* THE PROOF, not a restatement of the request.
+                                This checksum is the one the worker computed
+                                over the bytes it actually read and compared
+                                against the value OpenPlan recorded when it
+                                parsed the feed. It is what makes "the model ran
+                                on the feed on that card" a checkable claim
+                                rather than an assurance. */}
+                            {transitProvenance.feedChecksumSha256 ? (
+                              <div
+                                className="flex items-start justify-between gap-3"
+                                data-testid="evidence-transit-checksum"
+                              >
+                                <dt className="shrink-0 text-amber-900/70 dark:text-amber-200/70">
+                                  Archive checksum (verified)
+                                </dt>
+                                <dd className="min-w-0 break-all text-right font-mono font-medium">
+                                  {shortHash(transitProvenance.feedChecksumSha256)}
+                                </dd>
+                              </div>
+                            ) : null}
+                            {/* DELIBERATELY BESIDE "Service window" AND NOT
+                                MERGED WITH IT. That one is derived by the
+                                worker's parser from calendar.txt; this one is
+                                the window OpenPlan recorded on the ingest.
+                                Migration 20260805000006 states they disagree in
+                                real feeds more often than not, and showing one
+                                number would destroy the evidence that they did. */}
+                            {transitProvenance.feedServiceEndDate ? (
+                              <div className="flex items-start justify-between gap-3">
+                                <dt className="shrink-0 text-amber-900/70 dark:text-amber-200/70">
+                                  Ingest&apos;s recorded window
+                                </dt>
+                                <dd className="min-w-0 text-right font-medium">
+                                  {transitProvenance.feedServiceStartDate ?? "—"} →{" "}
+                                  {transitProvenance.feedServiceEndDate}
+                                </dd>
+                              </div>
+                            ) : null}
                           </>
                         ) : null}
                       </dl>
@@ -639,13 +926,78 @@ export function ModelRunEvidencePanel({
                       </p>
                     ) : null}
 
+                    {/* THE FALLBACK SENTENCE BELOW MAY NOT CLAIM COVERAGE. It
+                        used to read "No GTFS feed was applied to this study
+                        area", which asserts something about the AREA — and it is
+                        the sentence shown for exactly the reasons nobody wrote a
+                        label for, which in practice were three SELECTION
+                        failures. When a planner named a feed and it could not be
+                        used, nothing whatever was established about the area,
+                        and the claim would then sit underneath a VMT number they
+                        have to defend. It is a fact about THIS RUN, so that is
+                        all it says. */}
                     {transitStatus !== "modeled" ? (
                       <p className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90">
                         {(transitProvenance?.noFeedReason
                           ? TRANSIT_NO_FEED_REASON_LABELS[transitProvenance.noFeedReason]
-                          : null) ?? "No GTFS feed was applied to this study area."}{" "}
-                        Transit share is 0 because no feed was applied — a coverage limit, not a finding that
-                        transit demand here is zero.
+                          : null) ?? "No GTFS feed was applied to this run."}{" "}
+                        Transit share is 0 because no feed was applied — a limit of what this run was given,
+                        not a finding that transit demand here is zero.
+                      </p>
+                    ) : null}
+
+                    {/* The worker's own verdict on the schedule's age, from the
+                        moment it ran — kept separate from the launch stamp
+                        above because the two are minutes apart and a schedule
+                        can expire between them. */}
+                    {transitProvenance?.feedScheduleExpired === true ? (
+                      <p
+                        className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90"
+                        data-testid="evidence-transit-worker-schedule-expired"
+                      >
+                        When the transit skim ran
+                        {transitProvenance.feedExpiryEvaluatedAt
+                          ? ` (${new Date(transitProvenance.feedExpiryEvaluatedAt).toLocaleString()})`
+                          : ""}
+                        , this feed&apos;s published schedule had already ended. The service modeled here
+                        is that schedule.
+                      </p>
+                    ) : null}
+
+                    {/* THE POSITIVE HALF, and the reason `flag()` returns null
+                        rather than false. A worker that checked and found the
+                        schedule current is saying something a planner can rely
+                        on; a worker that predates this handoff said nothing at
+                        all. Rendering only the expiry notice would collapse the
+                        two into one silence, and the stronger of them — an
+                        affirmative "this was checked" — would be unavailable to
+                        anyone defending the run. */}
+                    {transitProvenance?.feedScheduleExpired === false ? (
+                      <p
+                        className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90"
+                        data-testid="evidence-transit-worker-schedule-current"
+                      >
+                        This feed&apos;s published schedule was still current when the transit skim ran
+                        {transitProvenance.feedExpiryEvaluatedAt
+                          ? ` (${new Date(transitProvenance.feedExpiryEvaluatedAt).toLocaleString()})`
+                          : ""}
+                        .
+                      </p>
+                    ) : null}
+
+                    {/* A per-run choice beat a deployment-wide setting, which is
+                        a reversal of the worker's documented precedence and is
+                        therefore stated rather than assumed. Whoever operates
+                        this installation set GTFS_URL/GTFS_PATH and has a right
+                        to know when a run did not use it. */}
+                    {transitProvenance?.operatorEnvOverridden ? (
+                      <p
+                        className="mt-2 text-xs text-amber-950/90 dark:text-amber-100/90"
+                        data-testid="evidence-transit-operator-override"
+                      >
+                        This installation configures a transit feed of its own, and the feed chosen for
+                        this run was used instead of it — a choice made on this run outranks a default
+                        set for every run.
                       </p>
                     ) : null}
 

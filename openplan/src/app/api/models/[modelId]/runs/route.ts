@@ -43,6 +43,10 @@ import {
 } from "@/lib/reports/scenario-writeback";
 import { prepareWorkerZoneAttributes } from "@/lib/models/zone-attribute-payload";
 import {
+  prepareTransitFeedHandoff,
+  transitFeedNotSelectedStamp,
+} from "@/lib/models/transit-feed-handoff";
+import {
   AEQUILIBRAE_SCREENING_STAGE_NAMES,
   buildModelRunDispatchPayload,
   checkModelingQueueDepth,
@@ -107,6 +111,13 @@ const launchModelRunSchema = z.object({
    * the CEQA §15064.3 VMT input is left unchanged. Default off — an explicit
    * value wins over the AEQ_CALIBRATE env. Ignored by every other engine. */
   calibrate: z.boolean().optional(),
+  /** aequilibrae / behavioral_demand only: model transit from THIS workspace's
+   * own ingested GTFS feed instead of letting the worker choose one. The id of
+   * a `gtfs_feeds` row; the version handed over is whatever ingest is currently
+   * in use for it, resolved server-side. Omitted — the default — leaves the
+   * worker's existing feed selection untouched. Ignored by every other engine,
+   * whose runs never reach a transit skim. */
+  transitFeedId: z.string().uuid().optional(),
 });
 
 type RouteContext = {
@@ -601,6 +612,43 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
       }
 
+      // WHICH TRANSIT FEED THIS RUN MODELS FROM.
+      //
+      // Resolved for the two worker-backed engines and nothing else: an
+      // in-process engine never reaches a transit skim, so a stamp on one of
+      // those runs would be a dead field in a provenance document. Resolved
+      // even when the planner named NO feed, because `not_selected` records
+      // that the question was asked and answered — which an absent key cannot
+      // express, and which is the difference between a run launched before this
+      // capability existed and one launched with automatic discovery left on.
+      //
+      // Never blocks a launch. `prepareTransitFeedHandoff` documents that it
+      // does not throw and returns a stamp carrying its own reason instead.
+      const transitFeed =
+        isAequilibraeRun || isBehavioralDemandRun
+          ? await prepareTransitFeedHandoff({
+              client: supabase,
+              workspaceId: access.model.workspace_id,
+              feedId: parsed.data.transitFeedId ?? null,
+              corridorGeojson: launchPayload.corridorGeojson,
+              launchDateIso: launchedAt,
+            })
+          : null;
+
+      if (transitFeed && transitFeed.status !== "selected" && transitFeed.status !== "not_selected") {
+        // The planner named a feed and it did not travel. Not a launch failure —
+        // the worker still models transit from its own selection — but it is the
+        // answer to "why did my agency's feed not show up in this run", and
+        // learning it from a log beats not learning it at all.
+        audit.warn("transit_feed_handoff_unavailable", {
+          modelId: access.model.id,
+          modelRunId,
+          status: transitFeed.status,
+          feedId: transitFeed.feedId,
+          reason: transitFeed.reason,
+        });
+      }
+
       // Immutable input snapshot for the run row. Extracted so the sketch lane
       // can reuse it verbatim when a large study area is rerouted to the worker.
       const baseInputSnapshot: Record<string, unknown> = {
@@ -630,6 +678,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // for why it is not inlined here). Stamped even when unavailable, so
         // the worker can name the real reason instead of guessing at one.
         ...(workerZoneAttributes ? { zoneAttributes: workerZoneAttributes } : {}),
+        // The feed-version selection, or the recorded absence of one. Stamped
+        // only for the engines that reach a transit skim; see above.
+        ...(transitFeed ? { transitFeed } : {}),
       };
 
       // Operator run-cap check for the synchronous in-process branches only —
@@ -890,6 +941,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
                   // now — so the resolution the table above was read at has to
                   // travel with it, or the worker resolves its own env instead.
                   zoneGeography: workerZoneGeography,
+                  // This row is a WORKER run now, so it reaches a transit skim
+                  // and the stamp has to say what was chosen for it. Nothing
+                  // was: the sketch launch control offers no feed picker,
+                  // because a sketch run was never going to reach a skim when
+                  // the planner pressed the button. `not_selected` is that fact
+                  // written down, and it leaves the worker's own feed
+                  // precedence exactly as it is.
+                  transitFeed: transitFeedNotSelectedStamp(),
                   reroutedFromEngine: "sketch_abm",
                   rerouteReason: "large_study_area",
                   requestedTractCount: census.tracts.length,

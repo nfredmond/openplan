@@ -16,14 +16,32 @@ on the modeled service day. Everything else is transit share 0 by construction.
 
 This is NOT a calibrated transit assignment, real-time, or a routing engine —
 headways are approximated from the schedule (mean gap between consecutive
-first-stop departures) and in-vehicle time is read from stop_times. A
-frequencies.txt-based feed is rejected (GtfsError) rather than silently
-mis-skimmed. It is a reproducible screening approximation for a small rural
-feed. Keep it stdlib so
+first-stop departures) and in-vehicle time is read from stop_times. It is a
+reproducible screening approximation for a small rural feed. Keep it stdlib so
 it is unit-testable with an in-memory fixture, no network, no heavy deps.
 
+FREQUENCY-BASED TRIPS ARE EXCLUDED, NOT THE FEEDS THAT CARRY THEM. This module
+used to raise GtfsError the moment `frequencies.txt` existed at all. That
+over-refused by a wide margin, and the margin was measured: of 16 sampled US
+feeds, 7 ship the file, SIX of those seven ship it with a header row and no data
+at all, and the seventh carries 4 rows covering 2 of its 18,150 trips. A blanket
+refusal cost that 18,150-trip agency its entire feed over two trips, and cost six
+more agencies their feeds over an empty file. OpenPlan's own ingest parser
+(`src/lib/gtfs/parse.ts`) never refused them, so the worker was also refusing
+feeds a planner had already successfully ingested.
+
+What is actually unskimmable is a TRIP whose stop_times are a template to be
+repeated on a published headway band rather than real departures — the headway
+estimator reads first-stop departure times, so such a trip would contribute a
+fabricated gap. So each trip named in `frequencies.txt` is dropped from the
+skim and counted (`TransitLos.frequency_trips_excluded`), and the refusal fires
+only when dropping them leaves NO scheduled service on the modeled day — which
+is the honest case, and is reported as `GtfsFrequencyOnly` so the caller can say
+so specifically.
+
 Bundled feed + provenance live in ``data/gtfs/``; `refresh_gtfs.py` refreshes it
-off the run path. `GTFS_PATH` / `GTFS_URL` env vars override the bundled feed,
+off the run path. A per-run WORKSPACE FEED SELECTION outranks everything (see
+`plan_feed`), `GTFS_PATH` / `GTFS_URL` env vars override the bundled feed,
 `GTFS_DISCOVER` switches per-place discovery off (see `discovery_enabled`), and
 `GTFS_STAGE_BUDGET_S` bounds the transit stage — cooperatively, at the checkpoints
 `check_deadline` is called from (per zone inside `transit_skim`, and once the feed
@@ -34,10 +52,12 @@ budget then aborts at the next checkpoint rather than at the moment it expires.
 from __future__ import annotations
 
 import csv
+import datetime
 import hashlib
 import io
 import math
 import os
+import re
 import time
 import zipfile
 from typing import Any
@@ -94,6 +114,38 @@ GTFS_STAGE_BUDGET_S = _stage_budget_seconds()
 
 class GtfsError(RuntimeError):
     pass
+
+
+class GtfsFrequencyOnly(GtfsError):
+    """Every trip on the modeled service day is frequency-based, so nothing is skimmable.
+
+    A distinct type because it is the ONE frequencies outcome that is a real
+    refusal. A feed that merely CONTAINS `frequencies.txt` is skimmed from its
+    scheduled trips with the frequency-based ones excluded and counted; this
+    fires only when that leaves nothing at all. The caller needs to tell the two
+    apart, because "your agency publishes headway bands instead of timetables"
+    and "your feed could not be read" send a planner to different places.
+    """
+
+
+class SelectedFeedError(GtfsError):
+    """The workspace transit feed this run NAMED could not be used.
+
+    Carries the machine-readable `no_feed_reason` the evidence panel prints, so
+    the specific cause — no such version, not ready, bytes never stored, checksum
+    mismatch, no stops in the study area — survives the generic
+    `except GtfsError` in the worker instead of being flattened into
+    "feed_load_failed".
+
+    IT MUST NEVER TRIGGER A FALLBACK. A run whose planner picked a feed and got
+    some OTHER feed skimmed would carry a KPI provenance sentence naming the feed
+    they picked while the numbers came from a different one — the one failure mode
+    worse than having no transit at all, because it manufactures corroboration.
+    """
+
+    def __init__(self, no_feed_reason: str, message: str) -> None:
+        super().__init__(message)
+        self.no_feed_reason = no_feed_reason
 
 
 class GtfsTimeout(GtfsError):
@@ -212,6 +264,15 @@ class TransitLos:
         self.service_end: str | None = None
         self.n_routes: int = 0
         self.n_stops: int = 0
+        # How the modeled day's trips were EXPRESSED in the source. Mirrors the
+        # `frequency_trip_count` / `scheduled_trip_count` columns the app's own
+        # ingest records, and exists for the same reason: a headway derived from a
+        # published frequency BAND and one measured between real departures are
+        # different kinds of number, and a surface that cannot tell them apart
+        # will present them identically. Frequency-based trips are excluded from
+        # the skim, so this is a count of what was LEFT OUT, not of what was used.
+        self.frequency_trips_excluded: int = 0
+        self.scheduled_trips_used: int = 0
         # WHICH feed this is. The loader is the only place that knows whether the
         # bytes came off the network or off disk, so it records that here rather
         # than leaving every caller to re-derive it from the env vars it passed
@@ -221,17 +282,41 @@ class TransitLos:
         self.source_name: str | None = None  # feed file name, when read from disk
 
 
-def load_feed(path: str | None = None, url: str | None = None) -> TransitLos:
+def load_feed(
+    path: str | None = None,
+    url: str | None = None,
+    *,
+    raw: bytes | None = None,
+    source_url: str | None = None,
+    source_name: str | None = None,
+) -> TransitLos:
     """Load + reduce a GTFS feed to per-line transit patterns.
 
     Raises GtfsError on any structural problem so callers fail loudly rather than
     silently degrade to transit=0 while claiming transit is modeled.
-    """
-    url = url or os.getenv("GTFS_URL")
-    path = path or os.getenv("GTFS_PATH") or _DEFAULT_GTFS_PATH
 
-    raw: bytes
-    if url:
+    `raw` hands over BYTES THAT HAVE ALREADY BEEN OBTAINED, which is how a run
+    that named a workspace feed version is skimmed: the caller reads the exact
+    archive OpenPlan parsed out of private storage and verifies its checksum
+    before calling here, so this function does no network work and cannot reach
+    for a different copy. `source_url` / `source_name` then carry the provenance,
+    because bytes in hand know nothing about where they came from. Neither the
+    `url` cache nor `GTFS_URL` / `GTFS_PATH` is consulted on that path — a
+    refetch of `source_url` could return bytes the operator republished since,
+    and the run would cite a URL for numbers those bytes never produced.
+    """
+    supplied_bytes = raw is not None
+    if not supplied_bytes:
+        url = url or os.getenv("GTFS_URL")
+        path = path or os.getenv("GTFS_PATH") or _DEFAULT_GTFS_PATH
+
+    if supplied_bytes:
+        # Nothing to fetch and nothing to resolve. Deliberately not a `url`
+        # branch: routing supplied bytes through the URL cache would key them by
+        # a URL nobody downloaded, and the next run for that URL would be served
+        # one workspace's stored archive.
+        pass
+    elif url:
         import requests  # lazy
         cache_dir = os.getenv("GTFS_CACHE_DIR", os.path.join(os.path.dirname(_DEFAULT_GTFS_PATH), ".gtfs_cache"))
         # Key the cache by URL — a single fixed filename would serve one place's
@@ -267,18 +352,24 @@ def load_feed(path: str | None = None, url: str | None = None) -> TransitLos:
     # Record the feed's identity before parsing so the caller can name it in the
     # evidence packet. Only the file NAME of a local feed is kept — the absolute
     # path is the operator's server layout, not planning provenance.
-    if url:
+    if supplied_bytes:
+        los.source_url = source_url
+        los.source_name = source_name
+    elif url:
         los.source_url = url
     else:
         los.source_name = os.path.basename(path)
     with zf:
-        # Reject frequency-based feeds rather than silently mis-skim them — the
-        # headway estimator reads scheduled stop_times, not frequencies windows.
-        if _read_csv(zf, "frequencies.txt"):
-            raise GtfsError(
-                "frequencies.txt-based GTFS is not supported by the headway skim; "
-                "supply a stop_times-scheduled feed."
-            )
+        # Trips whose stop_times are a TEMPLATE for a published headway band
+        # rather than real departures. They are dropped from the skim below (the
+        # headway estimator reads first-stop departure times, which such a trip
+        # does not have), but their presence is NOT a reason to refuse the feed —
+        # see the module docstring for the measurement that settled that.
+        frequency_trip_ids = {
+            (row.get("trip_id") or "").strip()
+            for row in _read_csv(zf, "frequencies.txt")
+            if (row.get("trip_id") or "").strip()
+        }
 
         for row in _read_csv(zf, "stops.txt"):
             try:
@@ -295,6 +386,14 @@ def load_feed(path: str | None = None, url: str | None = None) -> TransitLos:
         all_trips = _read_csv(zf, "trips.txt")
         service_trip_counts: dict[str, int] = {}
         for row in all_trips:
+            # Frequency-based trips are excluded from the VOLUME ranking too, not
+            # only from the skim. Counting them would let a day whose service is
+            # published as headway bands out-rank a day with real timetabled
+            # departures, and the winner would then contribute nothing — a feed
+            # with usable service on Tuesday reporting no lines at all because
+            # Monday had more frequency entries.
+            if (row.get("trip_id") or "").strip() in frequency_trip_ids:
+                continue
             sid = row.get("service_id", "")
             service_trip_counts[sid] = service_trip_counts.get(sid, 0) + 1
         active_services, los.service_day = _pick_service_ids(zf, service_trip_counts)
@@ -303,9 +402,26 @@ def load_feed(path: str | None = None, url: str | None = None) -> TransitLos:
         for row in all_trips:
             if active_services and row.get("service_id") not in active_services:
                 continue
+            if (row.get("trip_id") or "").strip() in frequency_trip_ids:
+                los.frequency_trips_excluded += 1
+                continue
             route = row.get("route_id", "")
             direction = str(row.get("direction_id", "0") or "0")
             trip_line[row["trip_id"]] = (route, direction)
+        los.scheduled_trips_used = len(trip_line)
+
+        # The ONE honest frequencies refusal: dropping the frequency-based trips
+        # left nothing to skim on the modeled day. Raised as its own type so the
+        # worker can say "this agency publishes headway bands, not a timetable"
+        # instead of the generic "your feed could not be read" — different
+        # sentences, and only one of them is something the agency can act on.
+        if not trip_line and los.frequency_trips_excluded:
+            raise GtfsFrequencyOnly(
+                "every trip on this feed's modeled service day is defined by frequencies.txt "
+                f"({los.frequency_trips_excluded} trip(s)), so it publishes headway bands rather "
+                "than scheduled departure times. The headway skim reads scheduled stop_times and "
+                "has nothing to measure here."
+            )
 
         # group stop_times by trip (ordered by stop_sequence)
         trip_stops: dict[str, list[tuple[int, str, int]]] = {}  # trip -> [(seq, stop_id, dep_sec)]
@@ -646,6 +762,199 @@ def discover_feed(bbox: tuple[float, float, float, float]) -> FeedDiscovery:
     return FeedDiscovery(url, "selected" if url else "no_covering_feed")
 
 
+# --- The app's per-run transit feed selection ---------------------------------
+
+#: The handoff format this worker understands. The app stamps it into
+#: `model_runs.input_snapshot_json.transitFeed.version`. A stamp carrying ANY
+#: other value is refused rather than ignored — see `parse_feed_selection`.
+TRANSIT_FEED_STAMP_VERSION = "transit-feed-v1"
+
+#: The stamp statuses the APP may report, and the machine reason each becomes.
+#: `selected` and `not_selected` are handled separately because they are the two
+#: that are not refusals.
+_STAMP_REFUSAL_REASONS = {
+    "unavailable": "selected_feed_unavailable",
+    "unsupported_by_skim": "selected_feed_uses_frequencies",
+    "handoff_failed": "selected_feed_handoff_failed",
+}
+
+# A uuid, and nothing else, may reach the PostgREST query the worker builds from
+# this value. `input_snapshot_json` is WRITABLE BY ANY WORKSPACE MEMBER and the
+# worker reads the database with the service-role key, so an unvalidated string
+# here is a filter-injection surface into a client that has no RLS above it.
+# The tenancy filter the worker adds is only load-bearing if it cannot be
+# escaped from inside the id.
+_UUID_RE = re.compile(r"\A[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\Z")
+
+
+def is_uuid(value: Any) -> bool:
+    """Whether a value is safe to interpolate into a PostgREST filter as an id.
+
+    Public because `main.py` needs the same rule for every id it takes from a
+    row and puts back into a query, and two copies of a validation rule is one
+    copy that will be forgotten."""
+    return isinstance(value, str) and bool(_UUID_RE.match(value.strip()))
+
+
+class FeedSelection:
+    """A run's binding instruction about WHICH ingested feed to skim.
+
+    Produced only from a stamp that means something; `parse_feed_selection`
+    returns None for "no stamp" and for "the planner left discovery on", so a
+    None selection is exactly today's behaviour and nothing downstream has to
+    know the difference.
+
+    Every field here is either a status the worker interprets or a sentence it
+    repeats. NOTHING DISPLAYED COMES FROM THE STAMP: the agency name, the source
+    URL, the checksum and the service window are all read off the database by the
+    worker itself, because a member can write the snapshot and a forged
+    provenance line in an evidence packet is worse than a missing one.
+    """
+
+    __slots__ = ("status", "feed_version_id", "reason", "no_feed_reason")
+
+    def __init__(
+        self,
+        *,
+        status: str,
+        feed_version_id: str | None = None,
+        reason: str | None = None,
+        no_feed_reason: str | None = None,
+    ) -> None:
+        #: "selected" — skim this feed version and nothing else. Anything else is
+        #: a binding refusal that must NOT fall back to another feed.
+        self.status = status
+        self.feed_version_id = feed_version_id
+        #: A sentence for a planner, from the app when it had one.
+        self.reason = reason
+        #: The machine value the evidence panel keys off.
+        self.no_feed_reason = no_feed_reason
+
+
+def parse_feed_selection(run_row: dict | None) -> FeedSelection | None:
+    """Read the app's transit-feed stamp off a model-run row. Pure — no network.
+
+    Returns None when the run says nothing about transit (an older launch path, a
+    non-worker engine) or when the planner explicitly left automatic discovery
+    on. Both mean "behave exactly as before this feature existed", and collapsing
+    them into one None is what makes that guarantee structural rather than a
+    promise: there is no code path where an absent stamp reaches a new branch.
+
+    EVERY OTHER OUTCOME IS BINDING, INCLUDING THE ONES WE DO NOT RECOGNISE. A
+    stamp written in a format this worker does not understand, or carrying a
+    status nobody has seen, is refused — not ignored. Ignoring it would fall
+    through to discovery and skim whatever the catalog offers, while the app's
+    own surfaces still name the feed the planner chose. That is not a missing
+    answer; it is two surfaces agreeing on a feed that produced none of the
+    numbers, which is the one outcome worse than reporting no transit at all.
+    """
+    snapshot = (run_row or {}).get("input_snapshot_json") or {}
+    if not isinstance(snapshot, dict):
+        return None
+    stamp = snapshot.get("transitFeed")
+    if not isinstance(stamp, dict):
+        return None
+
+    version = stamp.get("version")
+    if version != TRANSIT_FEED_STAMP_VERSION:
+        return FeedSelection(
+            status="stamp_version_unsupported",
+            no_feed_reason="selected_feed_stamp_version_unsupported",
+            reason=(
+                "This run names a transit feed using handoff format "
+                f"{str(version)[:60]!r}, which this worker does not understand. The worker is "
+                f"older than the app that launched the run (it speaks {TRANSIT_FEED_STAMP_VERSION}); "
+                "upgrade the worker and relaunch. No feed was skimmed, because guessing which one "
+                "was meant would put a feed nobody chose underneath this run's numbers."
+            ),
+        )
+
+    status = stamp.get("status")
+    if status == "not_selected":
+        return None
+
+    if status == "selected":
+        feed_version_id = stamp.get("feedVersionId")
+        if is_uuid(feed_version_id):
+            return FeedSelection(status="selected", feed_version_id=feed_version_id.strip())
+        return FeedSelection(
+            status="handoff_failed",
+            no_feed_reason="selected_feed_handoff_failed",
+            reason=(
+                "This run was stamped with a transit feed selection that names no usable feed "
+                "version id, so no feed was read. Relaunch the run and pick the feed again."
+            ),
+        )
+
+    if isinstance(status, str) and status in _STAMP_REFUSAL_REASONS:
+        stated = stamp.get("reason")
+        return FeedSelection(
+            status=status,
+            no_feed_reason=_STAMP_REFUSAL_REASONS[status],
+            # The app knows the real cause; repeating it verbatim is the only way
+            # the worker's refusal names something the planner can act on.
+            # Truncated so an unexpectedly long message cannot bloat the packet.
+            reason=(str(stated)[:300] if isinstance(stated, str) and stated.strip() else
+                    "The app declined to hand this run's chosen transit feed to the model and "
+                    "gave no reason."),
+        )
+
+    return FeedSelection(
+        status="handoff_failed",
+        no_feed_reason="selected_feed_handoff_failed",
+        reason=(
+            f"This run's transit feed selection carries a status ({str(status)[:60]!r}) this "
+            "worker does not recognise, so no feed was skimmed rather than a different one."
+        ),
+    )
+
+
+def iso_service_date(value: str | None) -> str | None:
+    """A GTFS calendar date as ISO ``YYYY-MM-DD``, or None when it is not a date.
+
+    calendar.txt writes dates COMPACTLY (`20261231`) while `gtfs_feed_versions`
+    records them as ISO. `schedule_expired` compares ISO strings lexically and
+    returns None for anything else — so feeding it a parser-derived date without
+    this conversion answers "unknown" for every feed the worker read itself,
+    which reads on screen as reassurance rather than as the silence it is. That
+    is exactly how the bundled/operator/discovered feeds ended up with no expiry
+    statement anywhere while `schedule_expired` looked wired up.
+    """
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    if re.match(r"\A\d{4}-\d{2}-\d{2}", text):
+        return text[:10]
+    if re.match(r"\A\d{8}\Z", text):
+        return f"{text[0:4]}-{text[4:6]}-{text[6:8]}"
+    return None
+
+
+def schedule_expired(service_end_date: str | None, today: str | None = None) -> bool | None:
+    """Whether a feed's SERVICE window has already ended. None when unknown.
+
+    Three of four real Sacramento-area feeds are expired — SacRT's schedule ended
+    2025-04-05 — so this is the ordinary case and not a pathology. An expired feed
+    is usually the last schedule the agency published and is often the right thing
+    to model with; what must not happen is modelling it SILENTLY, because a skim
+    built from a 16-month-old timetable is a different claim than one built from
+    the timetable in force.
+
+    A missing end date returns None rather than False. "This feed does not say
+    when its service ends" and "this feed's service has not ended" are different
+    facts, and a boolean that collapses them would let an unknown render as a
+    reassurance. Dates are ISO ``YYYY-MM-DD``, where lexical order IS chronological
+    order; anything else is unknown rather than guessed at.
+    """
+    if not isinstance(service_end_date, str) or not service_end_date.strip():
+        return None
+    end = service_end_date.strip()[:10]
+    if not re.match(r"\A\d{4}-\d{2}-\d{2}\Z", end):
+        return None
+    now = (today or datetime.date.today().isoformat()).strip()[:10]
+    return end < now
+
+
 class FeedPlan:
     """WHICH feed a run should try, and what it may honestly say when it has none.
 
@@ -665,6 +974,9 @@ class FeedPlan:
         "no_feed_reason",
         "discovery_error",
         "fallback_after_catalog_failure",
+        "feed_version_id",
+        "selection_reason",
+        "operator_env_overridden",
     )
 
     def __init__(
@@ -677,6 +989,9 @@ class FeedPlan:
         no_feed_reason: str | None = None,
         discovery_error: str | None = None,
         fallback_after_catalog_failure: bool = False,
+        feed_version_id: str | None = None,
+        selection_reason: str | None = None,
+        operator_env_overridden: bool = False,
     ) -> None:
         #: Feed URL to hand `load_feed`; None means "resolve from GTFS_URL /
         #: GTFS_PATH / the bundled feed", which `load_feed` already does.
@@ -701,6 +1016,19 @@ class FeedPlan:
         #: is only evidence that the bundled feed is the wrong one — nothing was
         #: ever established about this area.
         self.fallback_after_catalog_failure = fallback_after_catalog_failure
+        #: The `gtfs_feed_versions.id` this run must skim, when a planner chose
+        #: one. The worker resolves the storage path, checksum and display
+        #: identity from the DATABASE using this id; the run's snapshot supplies
+        #: the id and nothing else.
+        self.feed_version_id = feed_version_id
+        #: The app's own sentence about why a chosen feed cannot be used, carried
+        #: through so the refusal names something the planner can act on.
+        self.selection_reason = selection_reason
+        #: True when a per-run selection displaced a deployment-wide GTFS_URL /
+        #: GTFS_PATH. Disclosed rather than assumed: an operator who pinned a feed
+        #: and finds a run skimmed a different one is owed the reason, and this is
+        #: the only place that knows both facts at once.
+        self.operator_env_overridden = operator_env_overridden
 
 
 def plan_feed(
@@ -709,11 +1037,38 @@ def plan_feed(
     discovering: bool,
     env_url: str | None = None,
     env_path: str | None = None,
+    selection: FeedSelection | None = None,
 ) -> FeedPlan:
     """Decide which feed a run tries, given the discovery outcome.
 
-    An operator-named feed outranks discovery. Beyond that the interesting case is
-    a catalog we could not READ: it establishes nothing about the study area, so
+    PRECEDENCE, HIGHEST FIRST — and the top entry REVERSES what this docstring
+    said before, deliberately:
+
+      1. the run's own workspace feed selection (`selection`),
+      2. an operator-named feed (`GTFS_URL` / `GTFS_PATH`),
+      3. a feed discovery found in the catalog,
+      4. the bundled feed, when the catalog could not be read,
+      5. the bundled feed, when discovery is switched off.
+
+    WHY A SELECTION OUTRANKS AN OPERATOR ENV FEED. `GTFS_URL` / `GTFS_PATH` are
+    deployment-wide DEFAULTS — one operator's answer for every run that names
+    nothing. A selection is an explicit human act on one specific run: a planner
+    picked, from their own ingested feeds, the feed this analysis is about. A
+    default that silently beat a per-run choice would make the picker in the
+    launch form a control that does nothing, on the deployments most likely to
+    have one set. The displacement is never silent: `operator_env_overridden`
+    carries it onto the run, and the evidence panel prints it.
+
+    A SELECTION NEVER FALLS BACK, WHICHEVER WAY IT FAILS. `load=False` here is
+    terminal: no discovery, no env feed, no bundled feed. A run that skimmed some
+    other feed after the chosen one failed would carry a KPI provenance sentence
+    naming the feed the planner picked over numbers that came from a different
+    one — corroboration manufactured out of a failure, which is worse than the
+    failure.
+
+    Beyond the selection, an operator-named feed outranks discovery. Beyond THAT
+    the interesting case is a catalog we could not READ: it establishes nothing
+    about the study area, so
     the run still loads the BUNDLED feed and lets `feed_covers()` decide. That is
     safe in any study area by construction — a feed whose stops fall outside the
     area is rejected, never skimmed — and it is the only thing that keeps an
@@ -726,6 +1081,31 @@ def plan_feed(
     reaching for a single-county bundled feed in an arbitrary place would only
     invite a coverage miss dressed up as an answer.
     """
+    if selection is not None:
+        # Checked before everything, including the operator env feed. See the
+        # precedence table above; `operator_env_overridden` is what keeps the
+        # reversal disclosed rather than silent.
+        overridden = bool(env_url or env_path)
+        if selection.status == "selected":
+            return FeedPlan(
+                origin="workspace_feed_version",
+                feed_version_id=selection.feed_version_id,
+                operator_env_overridden=overridden,
+            )
+        # Every other selection status is a terminal refusal. `feed_unavailable`,
+        # never `no_local_feed`: "the feed you chose could not be used" is a fact
+        # about that feed, and establishes nothing about whether the study area
+        # has transit service. Claiming otherwise would put an unchecked coverage
+        # assertion under a VMT number.
+        return FeedPlan(
+            origin="workspace_feed_version",
+            load=False,
+            status="feed_unavailable",
+            no_feed_reason=selection.no_feed_reason or "selected_feed_handoff_failed",
+            selection_reason=selection.reason,
+            operator_env_overridden=overridden,
+        )
+
     if discovering and discovery is None:
         # Told to discover but handed no result: we have no catalog answer, which
         # is an unknown and not a coverage fact. Treated as an unreachable catalog

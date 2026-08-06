@@ -100,6 +100,16 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "aerial/processing-callback/route.ts":
     "worker callback authenticated by a shared bearer token, not by a session",
 
+  // A READ that has to be a POST. It answers "does this transit feed have any
+  // stops inside this study area" before a model run is queued, and the study
+  // area is a corridor polygon — hundreds of kilobytes of coordinates that do
+  // not fit in a query string. It performs no write of any kind: two selects
+  // and a head count. Gating it on write permission would be worse than leaving
+  // it ungated, because a viewer is exactly the person who should be able to
+  // see what a run would model transit from.
+  "gtfs/feeds/study-area-coverage/route.ts":
+    "read-only disclosure; POST only because the study-area geometry is the input. Membership is checked; nothing is written",
+
   // Public reference data, not workspace content. This route loads a US county's
   // census tracts into the shared, cross-tenant `census_tracts` table — the data
   // is public and loading a county once benefits every workspace that ever looks

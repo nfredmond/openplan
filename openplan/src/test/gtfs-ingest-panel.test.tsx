@@ -790,6 +790,77 @@ describe("GtfsIngestPanel — what a planner is shown after a write", () => {
     expect(reads).toBeGreaterThanOrEqual(2);
   });
 
+  /**
+   * `bytesStored: false` WAS RETURNED BY THE API AND RENDERED BY NOTHING.
+   *
+   * It is the one signal that an ingest cannot reach a model run. Every door
+   * stores its archive since 2026-08-06 because the travel model is handed the
+   * exact bytes OpenPlan parsed, verified against their checksum; a catalog or
+   * URL ingest whose object write misses still produces correct and complete
+   * service levels, so the ingest is `ok` and this flag is the ONLY thing that
+   * says the run handoff will refuse it.
+   *
+   * Unrendered, the planner meets that refusal days later at launch, on a feed
+   * this panel called a success — which is this repository's shipped-invisible
+   * defect class exactly.
+   */
+  it("says the archive was NOT kept, on an ingest that otherwise succeeded", async () => {
+    respond("POST", /\/api\/gtfs\/feeds$/, () => ({
+      status: 201,
+      body: {
+        feedId: "feed-1",
+        versionId: "version-1",
+        createdFeed: true,
+        adoption: { adopted: true },
+        displayName: "Mountain Transit",
+        routeServiceLevelRows: 42,
+        stopServiceLevelRows: 7,
+        bytesStored: false,
+        bytesNotStoredReason: "bucket unavailable",
+      },
+    }));
+
+    await renderPanel();
+    await click(screen.getByRole("tab", { name: /Paste a feed address/i }));
+    await typeInto(screen.getByRole("textbox", { name: /GTFS feed address/i }), "https://transit.example.org/gtfs.zip");
+    await click(screen.getByRole("button", { name: /Fetch and read this feed/i }));
+
+    const outcome = await screen.findByTestId("gtfs-ingest-outcome");
+    expect(within(outcome).getByText(/copy of the feed was NOT kept/i)).toBeInTheDocument();
+    // What still works, so nobody re-does an ingest that was fine.
+    expect(within(outcome).getByText(/service levels, routes and stops are complete/i)).toBeInTheDocument();
+    // What does not, in the words a planner will meet at launch.
+    expect(within(outcome).getByText(/refuse to model transit from it/i)).toBeInTheDocument();
+    // And Storage's own reason, so an operator has something to act on.
+    expect(within(outcome).getByText(/bucket unavailable/i)).toBeInTheDocument();
+  });
+
+  it("says nothing about the archive when it WAS kept", async () => {
+    // A warning nobody needs is a warning everybody learns to skip.
+    respond("POST", /\/api\/gtfs\/feeds$/, () => ({
+      status: 201,
+      body: {
+        feedId: "feed-1",
+        versionId: "version-1",
+        createdFeed: true,
+        adoption: { adopted: true },
+        displayName: "Mountain Transit",
+        routeServiceLevelRows: 42,
+        stopServiceLevelRows: 7,
+        bytesStored: true,
+        bytesNotStoredReason: null,
+      },
+    }));
+
+    await renderPanel();
+    await click(screen.getByRole("tab", { name: /Paste a feed address/i }));
+    await typeInto(screen.getByRole("textbox", { name: /GTFS feed address/i }), "https://transit.example.org/gtfs.zip");
+    await click(screen.getByRole("button", { name: /Fetch and read this feed/i }));
+
+    const outcome = await screen.findByTestId("gtfs-ingest-outcome");
+    expect(within(outcome).queryByText(/NOT kept/i)).toBeNull();
+  });
+
   it("re-reads the registry after a FAILED ingest too, and says so", async () => {
     let reads = 0;
     handlers = [];
