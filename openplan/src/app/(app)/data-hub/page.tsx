@@ -31,6 +31,7 @@ import {
 } from "@/lib/operations/workspace-summary";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { describeTransitFeedRegistry, type TransitFeedRow } from "@/lib/transit/feed-registry-card";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 type ConnectorRow = {
@@ -187,6 +188,7 @@ export default async function DataHubPage() {
     datasetsResult,
     refreshJobsResult,
     projectsResult,
+    transitFeedsResult,
   ] = await Promise.all([
     supabase
       .from("data_connectors")
@@ -215,6 +217,17 @@ export default async function DataHubPage() {
       .select("id, name, status, delivery_phase, updated_at")
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false }),
+    // `.eq("workspace_id", workspaceId)` is not optional here, and it is the
+    // one filter on this page whose absence would not look like a bug.
+    // `gtfs_feeds.workspace_id` is NULLABLE and a null means a PUBLIC preloaded
+    // feed (see 20260219000001_gtfs_schema.sql), so an unscoped read would
+    // hand this workspace a stranger's agency and present it as their own.
+    // `describeTransitFeedRegistry` re-checks the id for the same reason.
+    supabase
+      .from("gtfs_feeds")
+      .select("id, workspace_id, agency_name, status, loaded_at")
+      .eq("workspace_id", workspaceId)
+      .order("loaded_at", { ascending: false }),
   ]);
 
   const connectors = ((connectorsResult.data ?? []) as ConnectorRow[]).slice(0, 8);
@@ -236,6 +249,7 @@ export default async function DataHubPage() {
     datasetsResult.error?.message,
     refreshJobsResult.error?.message,
     datasetLinksResult.error?.message,
+    transitFeedsResult.error?.message,
   ].filter((message): message is string => Boolean(message) && looksLikePendingSchema(message));
 
   const migrationPending = pendingSchemaMessages.length > 0;
@@ -338,26 +352,65 @@ export default async function DataHubPage() {
     workspaceId
   );
 
-  const liveFoundations = [
+  /**
+   * The transit-feed card is READ, not written.
+   *
+   * It used to be a constant reading "Transit feed storage already exists in
+   * the current architecture and can fold into this registry" — a description
+   * of nine empty tables, presented beside real registries under the heading
+   * "Visible system component". Nothing in the product uploads, parses or
+   * ingests a GTFS feed, so a planner who believed that card went looking for a
+   * button that has never existed. It now states what a read of `gtfs_feeds`
+   * actually supports, and links to no ingest route because there is none yet.
+   */
+  const transitFeedCard = describeTransitFeedRegistry({
+    workspaceId,
+    readFailed: Boolean(transitFeedsResult.error),
+    feeds: (transitFeedsResult.data ?? []) as TransitFeedRow[],
+    formatTimestamp: fmtDateTime,
+  });
+
+  /**
+   * `kicker` is explicit per card because the panel used to print "Visible
+   * system component" over every one of them unconditionally — which is the
+   * same overclaim as the transit copy itself, one layer up. A workspace with
+   * no feed, or one whose registry read failed, is not looking at a visible
+   * system component and must not be told it is.
+   */
+  const liveFoundations: Array<{
+    label: string;
+    detail: string;
+    tone: "info" | "success" | "warning" | "neutral";
+    kicker: string;
+  }> = [
     {
       label: "Census / ACS",
       detail: "Analysis Studio already captures corridor demographic retrieval metadata.",
-      tone: "success" as const,
+      tone: "success",
+      kicker: "Visible system component",
     },
     {
       label: "LODES employment",
       detail: "Source posture is surfaced today, even before bulk ingestion becomes fully automated.",
-      tone: "info" as const,
+      tone: "info",
+      kicker: "Visible system component",
     },
     {
-      label: "GTFS uploads",
-      detail: "Transit feed storage already exists in the current architecture and can fold into this registry.",
-      tone: "info" as const,
+      label: transitFeedCard.label,
+      detail: transitFeedCard.detail,
+      tone: transitFeedCard.tone,
+      kicker:
+        transitFeedCard.state === "feed-present"
+          ? "Visible system component"
+          : transitFeedCard.state === "read-failed"
+            ? "Registry could not be read"
+            : "Schema only — no ingest path yet",
     },
     {
       label: "Crash / safety inputs",
       detail: "Data Hub now gives these sources a home instead of leaving them implicit in analysis flows.",
-      tone: "neutral" as const,
+      tone: "neutral",
+      kicker: "Visible system component",
     },
   ];
 
@@ -483,7 +536,7 @@ export default async function DataHubPage() {
               <div key={item.label} className="module-subpanel">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone={item.tone}>{item.label}</StatusBadge>
-                  <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Visible system component</p>
+                  <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{item.kicker}</p>
                 </div>
                 <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p>
               </div>
