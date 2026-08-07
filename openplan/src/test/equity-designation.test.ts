@@ -11,6 +11,7 @@ import { cejstNationalAdapter } from "@/lib/data-sources/equity-designation/cejs
 import { federalJustice40NarrativeLine } from "@/lib/data-sources/equity-designation/disclosure";
 import { notDeterminedJustice40 } from "@/lib/data-sources/equity-designation/types";
 import cejstAsset from "@/lib/data-sources/equity-designation/data/cejst-v1.0-communities.json";
+import crosswalkAsset from "@/lib/data-sources/equity-designation/data/tract-2020-to-2010-crosswalk.json";
 
 // GEOIDs sampled from the bundled v1.0 asset:
 const DISADVANTAGED_GEOID = "01003010100"; // present, flagged disadvantaged
@@ -87,6 +88,48 @@ describe("cejstNationalAdapter.lookup", () => {
     expect(result.byGeoid.get(SPLIT_FROM_NOT_DISADVANTAGED)).toBe(false);
     expect(result.disadvantagedTotal).toBe(1);
     expect(result.inferredTotal).toBe(2);
+  });
+
+  it("gives a split tract the benefit of the doubt when only SOME parents are disadvantaged", async () => {
+    // 2020 tract 01073000800 straddles two 2010 tracts, exactly one of which
+    // CEJST flagged. The rule is `some`, not `every`: a tract that overlaps a
+    // disadvantaged community is treated as disadvantaged, because the
+    // conservative direction for a civil-rights screen is to include rather than
+    // to drop. Mutating `some` to `every` on 2026-08-06 left all 7,471 tests
+    // green — the crosswalk was tested only on single-parent tracts, where the
+    // two are indistinguishable.
+    const STRADDLES_ONE_DISADVANTAGED_PARENT = "01073000800";
+    const result = await cejstNationalAdapter.lookup([STRADDLES_ONE_DISADVANTAGED_PARENT]);
+
+    expect(result.determinedTotal).toBe(1);
+    expect(result.byGeoid.get(STRADDLES_ONE_DISADVANTAGED_PARENT)).toBe(true);
+    expect(result.disadvantagedTotal).toBe(1);
+    // And it is disclosed as an inference, never as a direct CEJST record.
+    expect(result.inferredTotal).toBe(1);
+  });
+
+  it("every crosswalk entry still resolves to at least one CEJST-covered parent", () => {
+    // `resolveGeoid` returns undefined — not_determined — for a crosswalked
+    // tract whose 2010 parents are all absent from CEJST. That branch is
+    // UNREACHABLE with the bundled data: all 26,570 entries have a covered
+    // parent, which is why a mutation removing it could not be killed by any
+    // test driving the real asset.
+    //
+    // This asserts the property that makes it unreachable, so a future crosswalk
+    // or CEJST asset that breaks it fails here and the branch's behaviour gets
+    // decided deliberately, rather than silently becoming live and untested.
+    const covered = new Set((cejstAsset as unknown as { coveredGeoids: string[] }).coveredGeoids);
+    const crosswalk = (
+      crosswalkAsset as unknown as { crosswalk: Record<string, string[]> }
+    ).crosswalk;
+
+    const entries = Object.entries(crosswalk);
+    expect(entries.length).toBeGreaterThan(20_000);
+
+    const orphaned = entries
+      .filter(([, parents]) => !parents.some((parent) => covered.has(parent)))
+      .map(([geoid]) => geoid);
+    expect(orphaned).toEqual([]);
   });
 
   it("keeps disadvantaged ≤ determined even with duplicate / whitespace geoids", async () => {

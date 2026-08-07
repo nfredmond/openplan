@@ -15,12 +15,23 @@ import { describe, expect, it } from "vitest";
  * is worse than no test: it converts an unchecked area into one everybody
  * believes is checked, so nobody looks again.
  *
- * On 2026-08-06, 64 mutations were run against 20 production files sampled by 15
- * test files. 30 were killed. 34 SURVIVED. Every verdict was read off the
- * `Tests` summary line's `(\d+) failed` segment alone, every mutation was
- * restored by editing the string back and verified with sha256 against a
- * baseline captured first, and the harness was proven to report a KILL, a
- * SURVIVAL and a HARNESS-ERROR before any verdict was trusted.
+ * TWO PASSES ARE RECORDED HERE, and they were run for different reasons.
+ *
+ *   PASS 1 — the tier below Stage B, sampled broadly. 64 mutations across 20
+ *   production files sampled by 15 test files: 30 killed, 34 SURVIVED.
+ *
+ *   PASS 2 — the Title VI surface, targeted by SUBJECT rather than by tier,
+ *   because the lane about to be built on it produces civil-rights findings.
+ *   44 mutations across 7 production files: 21 killed, 23 SURVIVED, every one of
+ *   the 23 re-confirmed against the whole suite. It also found a LIVE DEFECT —
+ *   a corridor poverty rate overstated by up to 10x, which trips a published
+ *   Title VI flag. See TITLE_VI_AUDIT below.
+ *
+ * In both passes every verdict was read off the `Tests` summary line's
+ * `(\d+) failed` segment alone, every mutation was restored by editing the
+ * string back and verified with sha256 against a baseline captured first, and
+ * the harness was proven to report a KILL, a SURVIVAL and a HARNESS-ERROR
+ * before any verdict was trusted.
  *
  * ================================================== WHAT THIS FILE IS FOR, NOW
  *
@@ -29,10 +40,10 @@ import { describe, expect, it } from "vitest";
  *   1. It fails if an audited file is DELETED OR RENAMED without this record
  *      being updated. A hollow guard that vanishes must not be indistinguishable
  *      from a fixed one.
- *   2. It fails if any of the sixteen tests written to CLOSE a survivor is
- *      removed or renamed. Those assertions are the entire product of the audit;
- *      an ordinary refactor that drops one would silently reopen the hole, and
- *      the suite would stay green because that is exactly what it did before.
+ *   2. It fails if any test written to CLOSE a survivor is removed or renamed.
+ *      Those assertions are the entire product of the audit; an ordinary
+ *      refactor that drops one would silently reopen the hole, and the suite
+ *      would stay green because that is exactly what it did before.
  *   3. It carries the surviving mutations as a ledger whose size may only go
  *      DOWN. Each entry names the file, the mutation, and what a planner loses
  *      if it is real. Fixing one means deleting its entry and lowering the
@@ -40,10 +51,10 @@ import { describe, expect, it } from "vitest";
  *
  * =========================================== WHAT THIS FILE DOES *NOT* CLAIM
  *
- * 15 of 726 test files were measured. It does not speak for the other 711, and
- * `records what was NOT audited` below exists so a green run can never be read
- * as "the suite was measured". That would be this audit committing the very
- * defect it was run to find.
+ * About 21 of ~728 test files have been measured across both passes. It does not
+ * speak for the rest, and `records what was NOT audited` below exists so a green
+ * run can never be read as "the suite was measured". That would be this audit
+ * committing the very defect it was run to find.
  */
 
 const APP_ROOT = join(__dirname, "..", "..");
@@ -178,6 +189,307 @@ const AUDIT_2026_08_06 = {
   controls: 12,
   survivorsClosedSameDay: 16,
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// THE SECOND PASS — the Title VI surface, audited before it is built on
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * A SEPARATE AUDIT, RECORDED SEPARATELY. The first pass sampled the tier below
+ * Stage B. This one targeted a SUBJECT rather than a tier: everything a Title VI
+ * service-equity finding would stand on — the ACS demographics join, the equity
+ * screens, and the federal Justice40 designation lookup — because that lane
+ * produces civil-rights determinations and the first pass had just shown the
+ * unaudited strata to be about half hollow.
+ *
+ * 44 mutations across 7 production files. 21 killed, 23 SURVIVED. Every one of
+ * the 23 was then re-run against the WHOLE suite and survived that too, so
+ * "nothing guards this" is measured rather than inferred.
+ *
+ * THE RESULT THAT JUSTIFIED RUNNING IT: of the ten mutations aimed at
+ * `screenEquity` — whose output renders under a literal "Title VI /
+ * Environmental Justice Considerations" heading — NINE survived. Every
+ * threshold could be moved to a value that switches its flag off forever, and
+ * the corridor minority share in `census.ts` could be replaced by its own
+ * complement, with 7,471 tests green.
+ *
+ * AND IT FOUND A LIVE DEFECT, not merely unguarded rules: the corridor poverty
+ * rate divided by a denominator that excluded every tract reporting 0% poverty
+ * while the numerator summed over all of them. One poor tract among nine
+ * affluent ones reported 30% below poverty where the truth is 3%. That number
+ * trips the >= 20% Title VI poverty flag, so the overstatement did not stay a
+ * statistic — it published a finding.
+ */
+const TITLE_VI_AUDIT = {
+  date: "2026-08-06",
+  mutationsRun: 44,
+  killed: 21,
+  survived: 23,
+  /** Negative (comment-only), positive (known-kill), and a VOID runner probe. */
+  controls: 3,
+  /** Closed with an assertion that was re-run against the original mutation. */
+  survivorsClosed: 22,
+  /** Survivors whose branch is unreachable with the shipped data (see below). */
+  structurallyUnreachable: 1,
+};
+
+const TITLE_VI_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
+  "src/lib/data-sources/equity.ts": {
+    sampledBy: ["src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts"],
+    mutations: 10,
+    survivors: 9,
+  },
+  "src/lib/data-sources/census.ts": {
+    sampledBy: ["src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts"],
+    mutations: 14,
+    survivors: 8,
+  },
+  "src/lib/data-sources/equity-designation/cejst-national.ts": {
+    sampledBy: [
+      "src/test/equity-designation.test.ts",
+      "src/test/a-missing-equity-dataset-is-not-a-finding-of-none.test.ts",
+    ],
+    mutations: 7,
+    survivors: 3,
+  },
+  "src/lib/models/equity-screen.ts": {
+    sampledBy: ["src/test/equity-screen.test.ts"],
+    mutations: 3,
+    survivors: 1,
+  },
+  "src/lib/data-sources/census-tract-ingest.ts": {
+    sampledBy: ["src/test/census-tract-ingest.test.ts"],
+    mutations: 4,
+    survivors: 1,
+  },
+  "src/lib/geographies/census-tract-scope.ts": {
+    sampledBy: ["src/test/census-tract-scope.test.ts"],
+    mutations: 4,
+    survivors: 1,
+  },
+  "src/lib/geographies/census-tract-coverage.ts": {
+    sampledBy: ["src/test/census-tract-coverage.test.ts"],
+    mutations: 2,
+    survivors: 0,
+  },
+};
+
+/**
+ * Every entry was re-run AFTER its assertion was written and reported KILLED.
+ *
+ * Two are worth reading on their own, because both are mistakes this record
+ * exists to stop the next session from repeating:
+ *
+ *   - CE6 (the inverted minority share) was still SURVIVING after the first
+ *     assertion written for it, because extracting the corridor share to raw
+ *     counts made that path immune while the PER-TRACT percentage — which shades
+ *     the choropleth and feeds the 50% high-minority threshold — stayed
+ *     invertible. A test named for a rule can exercise a different code path;
+ *     only re-running the mutation showed it.
+ *   - CE1's original anchor no longer exists, because the defect was FIXED. It
+ *     was re-verified by reintroducing the broken aggregation verbatim and
+ *     watching the new assertion fail.
+ */
+const TITLE_VI_CLOSED_SURVIVORS: Record<string, ClosedSurvivor> = {
+  EQ1: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "flags high minority at or above 50%",
+    mutation: "highMinorityPct: 50 → 95, so almost no tract counts as high-minority",
+  },
+  EQ2: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "minority share at or above 40%",
+    mutation: "the corridor Title VI minority flag threshold 40 → 99, so the flag can never fire",
+  },
+  EQ3: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "poverty rate at or above 20%",
+    mutation: "the corridor Title VI poverty flag threshold 20 → 99, so the flag can never fire",
+  },
+  EQ4: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "requires low income AND a burden — never either one alone",
+    mutation: "disadvantaged = lowIncome && burdenCount >= 1 → lowIncome || burdenCount >= 1",
+  },
+  EQ5: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "pins the threshold table itself",
+    mutation: "lowIncomeMedian: 50000 → 500000, so every tract in the US reads as low income",
+  },
+  EQ6: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "minority share at or above 40%",
+    mutation: "the minority Title VI flag's push guarded by `if (false)` — never emitted at all",
+  },
+  EQ7: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "reads an absent denominator as zero, never as a maximal burden",
+    mutation: "pct() returns 100 instead of 0 when the denominator is absent",
+  },
+  EQ8: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "does not claim a proxy-disadvantaged finding for a study area with no tracts",
+    mutation: "proxyDisadvantagedFlag = disadvantagedTracts > 0 → >= 0, so it is always true",
+  },
+  EQ10: {
+    productionFile: "src/lib/data-sources/equity.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "zero-vehicle share at or above 10%",
+    mutation: "the zero-vehicle Title VI flag threshold 10 → 99, so the flag can never fire",
+  },
+  CE1: {
+    productionFile: "src/lib/data-sources/census.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "divides poverty by the poverty universe, and counts zero-poverty tracts in it",
+    mutation:
+      "THE LIVE DEFECT. The poverty denominator excluded tracts reporting 0% poverty while the " +
+      "numerator summed over all of them — up to a 10x overstatement. Re-verified by reintroducing " +
+      "the broken aggregation verbatim after the fix.",
+  },
+  CE2: {
+    productionFile: "src/lib/data-sources/census.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "stops weighting by population when the tracts that answered hold no people",
+    mutation: "measured.population: totalPop > 0 → true, so placeholder zeros become findings",
+  },
+  CE6: {
+    productionFile: "src/lib/data-sources/census.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "derives each tract's minority share as non-white over the race universe",
+    mutation:
+      "pctMinority = (universe - whiteNonHisp) / universe → whiteNonHisp / universe, so the single " +
+      "number a Title VI analysis turns on reports its own complement",
+  },
+  CE7: {
+    productionFile: "src/lib/data-sources/census.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "clamps ACS suppression sentinels to zero instead of carrying them as counts",
+    mutation: "the `val < 0` clamp dropped, so ACS's -666666666 flows through as a real count",
+  },
+  CE9: {
+    productionFile: "src/lib/data-sources/census.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "withholds zero-vehicle share only when no household universe existed",
+    mutation: "measured.vehicleAccess: totalHH > 0 → true",
+  },
+  CE10: {
+    productionFile: "src/lib/data-sources/census.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "explains an unmeasured universe and stays silent about a measured one",
+    mutation:
+      "the unavailability note's condition inverted, so absent universes get no explanation and " +
+      "measured ones get one",
+  },
+  CE12: {
+    productionFile: "src/lib/data-sources/census.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "withholds median income when no tract reported one",
+    mutation: "measured.income: incomeTracts.length > 0 → true",
+  },
+  CE14: {
+    productionFile: "src/lib/data-sources/census.ts",
+    testFile: "src/test/a-title-vi-finding-stands-on-a-measured-number.test.ts",
+    testName: "stamps provenance from the vintage it actually queried",
+    mutation: 'ACS_YEAR "2023" → "2019", moving the vintage stamped on published equity figures',
+  },
+  J2: {
+    productionFile: "src/lib/data-sources/equity-designation/cejst-national.ts",
+    testFile: "src/test/equity-designation.test.ts",
+    testName: "gives a split tract the benefit of the doubt when only SOME parents are disadvantaged",
+    mutation:
+      "matched.some(isDisadvantaged) → matched.every(...), so a 2020 tract straddling a " +
+      "disadvantaged and a non-disadvantaged 2010 tract loses its designation",
+  },
+  J6: {
+    productionFile: "src/lib/data-sources/equity-designation/cejst-national.ts",
+    testFile: "src/test/a-missing-equity-dataset-is-not-a-finding-of-none.test.ts",
+    testName: "resolves to not_determined/source_unavailable, never to not_disadvantaged",
+    mutation:
+      "the DesignationSourceUnavailableError throw replaced by empty sets, so a bundled asset that " +
+      "failed to load reads as 'no disadvantaged tracts in this corridor'",
+  },
+  ES3: {
+    productionFile: "src/lib/models/equity-screen.ts",
+    testFile: "src/test/equity-screen.test.ts",
+    testName: "reads a non-finite KPI as absent rather than rendering NaN or Infinity",
+    mutation: "the Number.isFinite check dropped, so a divide-by-zero disparity ratio renders",
+  },
+  TI4: {
+    productionFile: "src/lib/data-sources/census-tract-ingest.ts",
+    testFile: "src/test/census-tract-ingest.test.ts",
+    testName: "rejects an OVER-LONG county reference, not just a short one",
+    mutation:
+      "the county-FIPS end anchors dropped (/^\\d{2}$/ → /^\\d{2}/), which the existing " +
+      "too-short-code test could not see",
+  },
+  TS3: {
+    productionFile: "src/lib/geographies/census-tract-scope.ts",
+    testFile: "src/test/census-tract-scope.test.ts",
+    testName: "discloses a truncation of ANY size, not only a large one",
+    mutation:
+      "the truncation disclosure condition slackened by 1,000 tracts, which the existing " +
+      "2,498-tract case still tripped",
+  },
+};
+
+/**
+ * A SURVIVOR THAT IS NOT A HOLE — and the distinction is worth keeping.
+ *
+ * J1 mutated the `matched.length === 0` branch in `resolveGeoid`, which returns
+ * not_determined for a crosswalked 2020 tract whose 2010 parents are all absent
+ * from CEJST. It survived, and it survives still, because the branch is
+ * UNREACHABLE with the bundled data: all 26,570 crosswalk entries resolve to at
+ * least one covered parent. No test driving the real asset can kill it.
+ *
+ * Writing a test that mocked the crosswalk to reach it would assert a behaviour
+ * of the mock, not of the product. Instead the PROPERTY that makes it
+ * unreachable is asserted, so a future crosswalk or CEJST refresh that breaks it
+ * fails loudly and the branch's behaviour gets decided deliberately rather than
+ * quietly becoming live and untested.
+ */
+const TITLE_VI_STRUCTURAL_SURVIVORS: Record<
+  string,
+  { productionFile: string; mutation: string; guardedInsteadBy: { testFile: string; testName: string } }
+> = {
+  J1: {
+    productionFile: "src/lib/data-sources/equity-designation/cejst-national.ts",
+    mutation:
+      "`if (matched.length === 0) return undefined` → returns a DETERMINED not-disadvantaged " +
+      "result, turning an unknown tract into a negative finding",
+    guardedInsteadBy: {
+      testFile: "src/test/equity-designation.test.ts",
+      testName: "every crosswalk entry still resolves to at least one CEJST-covered parent",
+    },
+  },
+};
+
+/**
+ * FOUND BY THE AUDIT, FIXED, AND NOT A MUTATION RESULT — recorded because the
+ * next session will otherwise rediscover them.
+ *
+ *  - `census-geometry.ts` reimplemented the proxy-disadvantage rule with its own
+ *    inline threshold literals, kept in step with `equity.ts` by nothing but a
+ *    comment reading "same thresholds as screenEquity". Both now call
+ *    `evaluateProxyDisadvantage`. The map shading and the scorecard count cannot
+ *    disagree, and a test asserts they do not.
+ *  - `ejIndicators.linguisticallyIsolated` was hardcoded `false` with ZERO
+ *    consumers. Limited English Proficiency is a real Title VI factor, so a
+ *    permanent negative is a false finding waiting for its first reader. Deleted
+ *    rather than left dormant; measuring it needs ACS B16004 / C16002.
+ *  - The corridor poverty rate and the `census_tracts` view's `pct_below_poverty`
+ *    use DIFFERENT denominators (poverty universe vs total population). The
+ *    corridor side is now correct; the view is an approximation. The Title VI
+ *    tract-service join must not mix the two.
+ */
+const TITLE_VI_COLLATERAL_FIXES = 3;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WHAT WAS FIXED — and the assertion that proves each fix is still there
@@ -570,12 +882,22 @@ const auditedTestFiles = [
     ...Object.values(AUDITED_PRODUCTION_FILES).flatMap((entry) => entry.sampledBy),
     ...Object.values(CLOSED_SURVIVORS).map((entry) => entry.testFile),
     ...Object.values(OPEN_SURVIVORS).map((entry) => entry.sampledBy),
+    ...Object.values(TITLE_VI_AUDITED_PRODUCTION_FILES).flatMap((entry) => entry.sampledBy),
+    ...Object.values(TITLE_VI_CLOSED_SURVIVORS).map((entry) => entry.testFile),
+    ...Object.values(TITLE_VI_STRUCTURAL_SURVIVORS).map((entry) => entry.guardedInsteadBy.testFile),
+  ]),
+].sort();
+
+const allAuditedProductionFiles = [
+  ...new Set([
+    ...Object.keys(AUDITED_PRODUCTION_FILES),
+    ...Object.keys(TITLE_VI_AUDITED_PRODUCTION_FILES),
   ]),
 ].sort();
 
 describe("foundation audit ratchet", () => {
   it("every audited file still exists at the path this record names", () => {
-    const missingProduction = Object.keys(AUDITED_PRODUCTION_FILES).filter(
+    const missingProduction = allAuditedProductionFiles.filter(
       (file) => !existsSync(repoPath(file))
     );
     // A hollow guard whose subject was deleted or renamed must not read as a
@@ -589,7 +911,7 @@ describe("foundation audit ratchet", () => {
   it("every fix is still carried by the test that proved it", () => {
     const lost: string[] = [];
 
-    for (const [id, fix] of Object.entries(CLOSED_SURVIVORS)) {
+    for (const [id, fix] of Object.entries({ ...CLOSED_SURVIVORS, ...TITLE_VI_CLOSED_SURVIVORS })) {
       if (!existsSync(repoPath(fix.testFile))) {
         lost.push(`${id}: ${fix.testFile} is gone`);
         continue;
@@ -709,5 +1031,47 @@ describe("foundation audit ratchet", () => {
     ).toBe(AUDIT_2026_08_06.survived);
 
     expect(AUDIT_DATE).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("the Title VI pass accounts for every mutation it ran", () => {
+    expect(TITLE_VI_AUDIT.killed + TITLE_VI_AUDIT.survived).toBe(TITLE_VI_AUDIT.mutationsRun);
+
+    const perFile = Object.values(TITLE_VI_AUDITED_PRODUCTION_FILES);
+    expect(perFile.reduce((total, entry) => total + entry.mutations, 0)).toBe(
+      TITLE_VI_AUDIT.mutationsRun
+    );
+    expect(perFile.reduce((total, entry) => total + entry.survivors, 0)).toBe(
+      TITLE_VI_AUDIT.survived
+    );
+
+    // Every survivor left the pass in exactly one of two ways: closed by an
+    // assertion that was re-run against the original mutation, or shown to be
+    // unreachable with the shipped data and replaced by a guard on the property
+    // that makes it unreachable. Nothing was recorded and abandoned — unlike the
+    // first pass, which left twelve open. If a later edit drops a closed
+    // survivor, this fails rather than quietly lowering the standard.
+    expect(
+      Object.keys(TITLE_VI_CLOSED_SURVIVORS).length +
+        Object.keys(TITLE_VI_STRUCTURAL_SURVIVORS).length
+    ).toBe(TITLE_VI_AUDIT.survived);
+    expect(Object.keys(TITLE_VI_CLOSED_SURVIVORS)).toHaveLength(TITLE_VI_AUDIT.survivorsClosed);
+    expect(Object.keys(TITLE_VI_STRUCTURAL_SURVIVORS)).toHaveLength(
+      TITLE_VI_AUDIT.structurallyUnreachable
+    );
+
+    expect(TITLE_VI_COLLATERAL_FIXES).toBeGreaterThan(0);
+    expect(TITLE_VI_AUDIT.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  });
+
+  it("keeps the guard that stands in for the unreachable Title VI branch", () => {
+    for (const [id, entry] of Object.entries(TITLE_VI_STRUCTURAL_SURVIVORS)) {
+      expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      const guardFile = repoPath(entry.guardedInsteadBy.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.guardedInsteadBy.testFile}`).toBe(true);
+      // Losing this assertion turns a reasoned decision back into an open hole.
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(
+        entry.guardedInsteadBy.testName
+      );
+    }
   });
 });

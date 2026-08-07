@@ -165,6 +165,27 @@ describe("ingestCensusTractsForCounty", () => {
     expect(service.rpc).not.toHaveBeenCalled();
   });
 
+  it("rejects an OVER-LONG county reference, not just a short one", async () => {
+    // The existing case above passes codes that are too SHORT, which an
+    // unanchored regex still rejects. Mutating `/^\d{2}$/` to `/^\d{2}/` on
+    // 2026-08-06 therefore survived the whole suite. Without the end anchor a
+    // ref like 06113 / 0570 is accepted and interpolated straight into the
+    // TIGERweb `where` clause and the ACS `in=` parameter, which then query a
+    // county that does not exist — a load that returns nothing and reads as
+    // "this county has no tracts".
+    for (const ref of [
+      { stateFips: "060", countyFips: "057" },
+      { stateFips: "06", countyFips: "0570" },
+      { stateFips: "06x", countyFips: "057" },
+    ]) {
+      const service = fakeService();
+      const result = await ingestCensusTractsForCounty(service, ref);
+      expect(result.status, JSON.stringify(ref)).toBe("failed");
+      expect(result.error, JSON.stringify(ref)).toMatch(/Invalid county/i);
+      expect(service.rpc, JSON.stringify(ref)).not.toHaveBeenCalled();
+    }
+  });
+
   it("joins geometry to ACS and upserts each tract with raw counts", async () => {
     stubFetch(
       { features: [tigerFeature("39049001100")], exceededTransferLimit: false },

@@ -50,6 +50,26 @@ export interface CensusTractData {
   // both rather than two parallel readers of the same endpoint.
   popWhiteNonHispanic: number;
   popBelowPoverty: number;
+  /**
+   * ACS B17001_001E — the population FOR WHOM POVERTY STATUS IS DETERMINED, and
+   * the only correct denominator for a poverty rate. It is NOT the tract's total
+   * population: ACS excludes institutionalized group quarters, military
+   * barracks and college dormitories from this universe. Nationally the gap is a
+   * few percent; in a tract containing a prison or a university it is enormous —
+   * and those are exactly the tracts an equity finding turns on.
+   *
+   * Carried per tract rather than recomputed, because a rate can only be summed
+   * across tracts as (sum of numerators / sum of denominators). Averaging
+   * per-tract PERCENTAGES is what produced the defect this field fixes.
+   */
+  povertyUniverse: number;
+  /**
+   * ACS B03002_001E — the population universe for the race/ethnicity table, and
+   * the denominator `pctMinority` was computed against. Kept for the same reason
+   * as `povertyUniverse`: the corridor-level minority share is a sum of counts
+   * over a sum of universes, never a mean of tract percentages.
+   */
+  raceUniverse: number;
 }
 
 /**
@@ -106,8 +126,21 @@ export interface CensusClipProvenance {
 export interface CensusMeasuredUniverses {
   /** Any tract rows at all. False means nothing below was measured either. */
   tracts: boolean;
-  /** Population universe (B01003) — the denominator for the race/poverty shares. */
+  /** Population universe (B01003) — the denominator for the total-population figure. */
   population: boolean;
+  /**
+   * Race/ethnicity universe (B03002_001E) — the denominator for the minority
+   * share. Separate from `population` because a tract can report a total
+   * population while the race table is suppressed, and a minority share over a
+   * suppressed universe is an absence, not 0%.
+   */
+  race: boolean;
+  /**
+   * Poverty universe (B17001_001E) — the denominator for the poverty share.
+   * Separate from `population` for the same reason, and because the two are
+   * genuinely different universes (see `CensusTractData.povertyUniverse`).
+   */
+  poverty: boolean;
   /** Commute universe (B08301 total) — the denominator for every mode share. */
   commuteMode: boolean;
   /** Household universe (B25044 total) — the denominator for zero-vehicle share. */
@@ -174,8 +207,11 @@ export function censusReportedFigures(census: CensusSummary): CensusReportedFigu
     pctBike: measured.commuteMode ? census.pctBike : null,
     pctWfh: measured.commuteMode ? census.pctWfh : null,
     pctZeroVehicle: measured.vehicleAccess ? census.pctZeroVehicle : null,
-    pctMinority: measured.population ? census.pctMinority : null,
-    pctBelowPoverty: measured.population ? census.pctBelowPoverty : null,
+    // Each share is withheld on ITS OWN universe. These used to ride on
+    // `population`, which is a third universe again — so a tract set with people
+    // but a suppressed race or poverty table published 0% as a measurement.
+    pctMinority: measured.race ? census.pctMinority : null,
+    pctBelowPoverty: measured.poverty ? census.pctBelowPoverty : null,
   };
 }
 
@@ -196,6 +232,10 @@ export function censusUniverseUnavailableNote(
   switch (universe) {
     case "population":
       return "The census tracts here reported no population universe, so population-weighted shares were not measured.";
+    case "race":
+      return "The census tracts here reported no race and ethnicity universe, so the minority share was not measured.";
+    case "poverty":
+      return "The census tracts here reported no population for whom poverty status was determined, so the poverty share was not measured.";
     case "commuteMode":
       return "The census tracts here reported no commuter universe, so commute mode shares were not measured.";
     case "vehicleAccess":
@@ -217,6 +257,8 @@ const EMPTY_CLIP: CensusClipProvenance = {
 const NOTHING_MEASURED: CensusMeasuredUniverses = {
   tracts: false,
   population: false,
+  race: false,
+  poverty: false,
   commuteMode: false,
   vehicleAccess: false,
   income: false,
@@ -430,6 +472,8 @@ export async function fetchAcsForCounties(
           pctBelowPoverty: povertyTotal > 0 ? Math.round((belowPoverty / povertyTotal) * 1000) / 10 : 0,
           popWhiteNonHispanic: whiteNonHisp,
           popBelowPoverty: belowPoverty,
+          povertyUniverse: povertyTotal,
+          raceUniverse: totalPopRace,
         } satisfies CensusTractData;
       });
     })
@@ -485,28 +529,35 @@ export function summarizeCensusTracts(
         )
       : null;
 
-  // Aggregate minority and poverty
-  const totalPopRace = tracts.reduce((s, t) => s + t.population, 0);
-  const weightedMinority =
-    totalPopRace > 0
-      ? Math.round(
-          (tracts.reduce((s, t) => s + (t.pctMinority / 100) * t.population, 0) / totalPopRace) * 1000
-        ) / 10
-      : 0;
-
-  const povertyDenominator = tracts.reduce(
-    (s, t) => s + (t.pctBelowPoverty > 0 ? t.population : 0),
-    0
-  );
-  const weightedPoverty =
-    povertyDenominator > 0
-      ? Math.round(
-          (tracts.reduce((s, t) => s + (t.pctBelowPoverty / 100) * t.population, 0) / povertyDenominator) *
-            1000
-        ) / 10
-      : 0;
-
   const pct = (n: number, d: number) => (d > 0 ? Math.round((n / d) * 1000) / 10 : 0);
+
+  // MINORITY AND POVERTY ARE SUMS OF COUNTS OVER SUMS OF UNIVERSES — never means
+  // of per-tract percentages.
+  //
+  // THE DEFECT THIS REPLACES, because it published a Title VI finding that was
+  // not true. The poverty rate was a population-weighted mean of per-tract
+  // percentages whose DENOMINATOR excluded every tract reporting 0% poverty:
+  //
+  //     sum(pctBelowPoverty * pop) / sum(pop WHERE pctBelowPoverty > 0)
+  //
+  // Numerator over all tracts, denominator over some of them. One poor tract
+  // among nine affluent ones reported 30% below poverty where the truth is 3% —
+  // a 10x overstatement — and `screenEquity` turns that number into the flag
+  // "Corridor poverty rate indicates concentrated economic burden" at >= 20%,
+  // rendered under a "Title VI / Environmental Justice Considerations" heading.
+  // The exclusion was reaching for the right idea (a tract whose poverty
+  // universe was suppressed should not dilute the rate) with the wrong
+  // discriminator: `pctBelowPoverty === 0` cannot tell "nobody here is poor"
+  // from "ACS published no poverty universe here". `povertyUniverse` can, so the
+  // suppressed tract now contributes 0 to BOTH sides and a genuinely
+  // zero-poverty tract contributes its people to the denominator, as it must.
+  const totalRaceUniverse = tracts.reduce((s, t) => s + t.raceUniverse, 0);
+  const totalWhiteNonHispanic = tracts.reduce((s, t) => s + t.popWhiteNonHispanic, 0);
+  const weightedMinority = pct(totalRaceUniverse - totalWhiteNonHispanic, totalRaceUniverse);
+
+  const totalPovertyUniverse = tracts.reduce((s, t) => s + t.povertyUniverse, 0);
+  const totalBelowPoverty = tracts.reduce((s, t) => s + t.popBelowPoverty, 0);
+  const weightedPoverty = pct(totalBelowPoverty, totalPovertyUniverse);
 
   return {
     tracts,
@@ -527,6 +578,8 @@ export function summarizeCensusTracts(
     measured: {
       tracts: true,
       population: totalPop > 0,
+      race: totalRaceUniverse > 0,
+      poverty: totalPovertyUniverse > 0,
       commuteMode: totalCommuters > 0,
       vehicleAccess: totalHH > 0,
       income: incomeTracts.length > 0,

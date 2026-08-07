@@ -125,6 +125,33 @@ describe("describeCensusTractCoverage", () => {
     expect(notes[0]).toContain("not a finding that it has no tracts");
   });
 
+  it("discloses a truncation of ANY size, not only a large one", () => {
+    // The case above hides 1,998 tracts. Mutating the condition to
+    // `< matchedCount - 1000` on 2026-08-06 therefore survived: the gap was wide
+    // enough to trip the weakened test too. A county 20 tracts over the limit is
+    // the more dangerous case, because the map looks complete — so the boundary
+    // is asserted where it actually sits, at one tract over.
+    const justOver = describeCensusTractCoverage({
+      ...scoped,
+      matchedCount: 501,
+      returnedCount: 500,
+      droppedCount: 0,
+    });
+    expect(justOver[0]).toContain("Showing 500 of 501");
+    expect(justOver[0]).toContain("not a finding that it has no tracts");
+
+    // And a layer that draws everything says so instead, so this is a boundary
+    // rather than a one-sided check that a wider condition would also pass.
+    const complete = describeCensusTractCoverage({
+      ...scoped,
+      matchedCount: 500,
+      returnedCount: 500,
+      droppedCount: 0,
+    });
+    expect(complete[0]).not.toContain("Showing");
+    expect(complete[0]).toContain("scoped to");
+  });
+
   it("reports dropped geometry on a layer that is NOT truncated", () => {
     const notes = describeCensusTractCoverage({ ...scoped, matchedCount: 20, returnedCount: 17, droppedCount: 3 });
     expect(notes).toHaveLength(2);

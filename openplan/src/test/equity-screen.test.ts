@@ -37,4 +37,18 @@ describe("deriveEquityScreen", () => {
     expect(formatShare(0.157)).toBe("16%");
     expect(formatShare(null)).toBe("—");
   });
+
+  it("reads a non-finite KPI as absent rather than rendering NaN or Infinity", () => {
+    // Found by mutation 2026-08-06: dropping the `Number.isFinite` check left the
+    // whole suite green. A disparity ratio is a division, so a rest-of-area VMT
+    // of zero produces Infinity — and the equity panel would print "Infinity" as
+    // the gap between advantaged and disadvantaged zones. Absent is the truth.
+    const screen = deriveEquityScreen([
+      { kpi_name: "equity_focus_zone_count", value: 4, breakdown_json: {} },
+      { kpi_name: "equity_vmt_disparity_ratio", value: Number.POSITIVE_INFINITY },
+      { kpi_name: "equity_focus_vmt_per_capita", value: Number.NaN },
+    ]);
+    expect(screen?.disparityRatio).toBeNull();
+    expect(screen?.focusVmtPerCapita).toBeNull();
+  });
 });

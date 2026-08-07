@@ -1,4 +1,5 @@
 import { fetchJsonWithRetry } from "./http";
+import { evaluateProxyDisadvantage } from "./equity";
 
 export type CensusTractOverlayMetrics = {
   geoid: string;
@@ -29,11 +30,6 @@ type TigerGeoJsonResponse = {
   type?: string;
   features?: TigerGeoJsonFeature[];
 };
-
-function pct(numerator: number, denominator: number): number {
-  if (denominator <= 0) return 0;
-  return Math.round((numerator / denominator) * 1000) / 10;
-}
 
 export async function fetchTractOverlayFeatures(
   bbox: BBox,
@@ -82,16 +78,21 @@ export async function fetchTractOverlayFeatures(
       continue;
     }
 
-    const zeroVehiclePct = pct(tract.zeroVehicleHouseholds, tract.totalHouseholds);
-    const transitCommutePct = pct(tract.transitCommuters ?? 0, tract.totalCommuters ?? 0);
-    // The ACS income + burden PROXY (same thresholds as screenEquity) — a
-    // screening heuristic, NOT the federal CEJST/Justice40 designation. The
-    // property key stays `isDisadvantaged` (wide paint/test blast radius); the
-    // map legend and hover label carry the "proxy" qualifier.
-    const isDisadvantaged =
-      tract.medianIncome !== null &&
-      tract.medianIncome < 50000 &&
-      (tract.pctBelowPoverty >= 30 || tract.pctMinority >= 50 || zeroVehiclePct >= 10 || transitCommutePct >= 15);
+    // The ACS income + burden PROXY — a screening heuristic, NOT the federal
+    // CEJST/Justice40 designation. The property key stays `isDisadvantaged`
+    // (wide paint/test blast radius); the map legend and hover label carry the
+    // "proxy" qualifier.
+    //
+    // This used to be a hand-copied reimplementation of the rule in equity.ts,
+    // with the five thresholds inlined as literals and a comment claiming they
+    // were the "same thresholds as screenEquity". They agreed by luck, not by
+    // construction: nothing failed if one moved. It now calls the one evaluator,
+    // so the shading on the map and the count on the scorecard cannot disagree.
+    const {
+      disadvantaged: isDisadvantaged,
+      zeroVehiclePct,
+      transitCommutePct,
+    } = evaluateProxyDisadvantage(tract);
 
     overlays.push({
       type: "Feature",

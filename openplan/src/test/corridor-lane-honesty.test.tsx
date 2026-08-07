@@ -182,6 +182,11 @@ function tract(over: Partial<CensusTractData> = {}): CensusTractData {
     pctBelowPoverty: 14.3,
     popWhiteNonHispanic: 2940,
     popBelowPoverty: 715,
+    // Both universes equal the population here, so the derived shares match the
+    // pctMinority / pctBelowPoverty above: (5000-2940)/5000 = 41.2%,
+    // 715/5000 = 14.3%. A test that wants an unmeasured universe zeroes one.
+    povertyUniverse: 5000,
+    raceUniverse: 5000,
     ...over,
   };
 }
@@ -309,9 +314,13 @@ beforeEach(() => {
 describe("census measurement coverage (real summarizer, real boundary)", () => {
   it("disowns every figure when no tract answered", () => {
     const summary = summarizeCensusTracts([]);
+    // Exhaustive on purpose: a new universe added without a `false` here means
+    // something is claiming to be measured when nothing was read.
     expect(summary.measured).toEqual({
       tracts: false,
       population: false,
+      race: false,
+      poverty: false,
       commuteMode: false,
       vehicleAccess: false,
       income: false,
