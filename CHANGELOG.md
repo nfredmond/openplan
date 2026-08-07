@@ -19,6 +19,80 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.8.0 — 2026-08-07
+
+**Two migrations are required before the app deploys: `20260805000010` and
+`20260805000011`.**
+
+The first adds two columns to `census_tracts` and rebuilds the two views over
+it. The second adds one column to `engagement_survey_questions`. Both add
+nullable or defaulted columns; nothing existing changes shape, and both are safe
+to run against a live database.
+
+### A Title VI finding may have under-identified your low-income tracts
+
+**The service-equity comparison divided people below poverty by the wrong
+population, and the error only ever pointed one way.**
+
+The count of people below poverty comes from ACS table B17001, whose universe is
+*the population for whom poverty status was determined* — which leaves out
+anyone living in a prison, a nursing home, military barracks or a college
+dormitory. OpenPlan divided that count by the tract's TOTAL population instead.
+The total is always the larger number, so the poverty rate was always too low,
+and every tract pushed below your adopted threshold moved out of the low-income
+group and into the comparison group. That is the direction that makes a
+disparity look smaller.
+
+**How big it is, measured against live Census data** (ACS 2023 5-year, 20,033
+tracts across California, Texas, Ohio and Oregon):
+
+- about **1 tract in 100** changes side of a typical low-income threshold — 206
+  at 20%, 205 at 15%, 153 at 25% — and every one of them in the same direction;
+- 255 tracts (1.3%) were understated by more than 5 percentage points;
+- the worst cases are university and prison tracts. Tract 41003010602 in
+  Corvallis, Oregon is **70.7% below poverty and was reported as 29.5%**.
+
+The equity choropleth had the same fault, which is also why its tract figures
+disagreed with the corridor rollup for the same ground.
+
+**What to do:** if you have published a Title VI service-equity finding or a map
+showing tract poverty, **reload census tracts for your counties** — the
+Workspace geography panel on the dashboard now counts how many of your tracts
+predate this fix and offers the reload — then re-run the comparison and compare.
+Until you reload, those tracts report **no** poverty rate rather than a wrong
+one: they are left out of the low-income comparison, counted, and disclosed
+alongside every figure. That is deliberate. A rate divided by the wrong
+population is not a smaller error than no rate at all.
+
+The minority share is computed against its own ACS universe now too. That change
+corrects the arithmetic and moves no number we could measure: across all 20,033
+tracts, the race universe and the total population were identical.
+
+### The Planning Agent can draft a survey question, and cannot ask it
+
+Survey questions now have a **draft** state. The Planning Agent may propose the
+wording of a question; it lands in your survey builder marked "Draft — not
+public", where nobody outside your workspace can see it, no answer can be
+recorded against it, and it is not sent for translation. A person publishes it,
+or deletes it.
+
+Nothing about your own questions changes. What you write through the survey
+builder is published exactly as it always has been.
+
+### Also in this release
+
+- The Title VI service-equity route had **no tests at all**, while its own code
+  claimed its tenant checks were tested. It has them now.
+- The `[fact:id]` grounding machinery — which decides whether an AI-drafted
+  grant narrative or report is defensible — was measured for the first time. Two
+  real gaps were found and closed: small dollar figures and small percentages
+  were not being cross-checked against the facts a sentence cited, and a
+  malformed stored record could decide which sentences you were told to review.
+- Interface copy that showed you the database's name for something now uses
+  yours — including the run-calibration checkbox, which named a claim tier one
+  way while the run's own badge named it another.
+- A dependency advisory (nanoid, GHSA-2v37-7h3g-55p8) is closed.
+
 ## 0.7.0 — 2026-08-07
 
 **One migration is required before the app deploys: `20260805000009`.**
