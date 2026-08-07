@@ -193,10 +193,13 @@ const KNOWN_DATA_ONLY: ReadonlyArray<readonly [string, number]> = [
  * `operations/workspace-summary.ts` (9) and `grants/narrative-evidence.ts` (8)
  * are all at zero.
  *
- * The four in `survey-responses.ts` each carry their reasoning at the function:
+ * The three in `survey-responses.ts` each carry their reasoning at the function:
  * `loadSurveyBuilderDefinition` and `loadRecentFingerprintSessions` both name
  * the caller that must change in the same commit as their signature, and
- * `purgeExpiredSurveyDrafts` reports `swept: 0` for a delete that failed. The
+ * `purgeExpiredSurveyDrafts` reports `swept: 0` for a delete that failed. It was
+ * FOUR until 2026-08-07, when the builder read gained a pending-column fallback
+ * and therefore had to look at its own error to decide whether to retry — the
+ * ratchet moving down as a side effect of a feature rather than a cleanup. The
  * two `_components` entries are a server component's own data layer —
  * `projectsRead` on the receivables lane and `versionsResult` on the network
  * packages panel.
@@ -204,7 +207,7 @@ const KNOWN_DATA_ONLY: ReadonlyArray<readonly [string, number]> = [
 const KNOWN_UNCHECKED_RESULT: ReadonlyArray<readonly [string, number]> = [
   ["src/app/(app)/invoicing/_components/receivables-lane.tsx", 1],
   ["src/app/(app)/models/_components/network-packages-panel.tsx", 1],
-  ["src/lib/engagement/survey-responses.ts", 4],
+  ["src/lib/engagement/survey-responses.ts", 3],
 ];
 
 /**

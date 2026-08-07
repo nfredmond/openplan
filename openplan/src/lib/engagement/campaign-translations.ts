@@ -57,6 +57,9 @@ import {
   TRANSLATION_LANGUAGE_NATIVE_LABELS,
 } from "./translation-languages";
 import { looksLikePendingSchema } from "@/lib/workspaces/membership";
+// One answer to "does this deployment have the survey draft column?", shared
+// with the portal loader this inventory is pinned to.
+import { looksLikePendingSurveyStatusColumn } from "./survey-responses";
 
 /**
  * Only `from` is used, so a caller-RLS client and a service-role client both
@@ -379,6 +382,44 @@ function readFailure(label: string, message: string | null | undefined): Campaig
  * `loadCampaignAccess`), and a third read of the same row could disagree with
  * what the caller is rendering.
  */
+/**
+ * The questions a participant is shown — active AND published.
+ *
+ * A DRAFT MUST NOT ENTER THE INVENTORY, for two reasons that point the same way.
+ * It would report a translation gap for wording nobody can read, so "complete"
+ * would move out of reach for every campaign with an unreviewed draft sitting in
+ * the builder. And it would send that wording to machine translation, spending
+ * an agency's Anthropic budget on sentences that may never be published — and,
+ * worse, producing a Spanish string that outlives an edit to the English draft.
+ *
+ * The pre-migration fallback is the same one `loadSurveyDefinition` takes and is
+ * correct for the same reason: with no `status` column there are no drafts.
+ */
+async function readTranslatableQuestions(
+  supabase: QueryClient,
+  campaignId: string
+): Promise<{ data: unknown; error: { message: string } | null }> {
+  const base = () =>
+    supabase
+      .from("engagement_survey_questions")
+      .select("id, prompt, help_text")
+      .eq("campaign_id", campaignId)
+      // Only what a participant is shown. An archived question is not a gap.
+      .eq("is_active", true);
+
+  const filtered = await base()
+    .eq("status", "published")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (!filtered.error || !looksLikePendingSurveyStatusColumn(filtered.error.message)) return filtered;
+
+
+  return base()
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+}
+
 export async function loadCampaignTranslatableFields(
   supabase: QueryClient,
   campaign: CampaignTranslatableSource["campaign"]
@@ -390,14 +431,7 @@ export async function loadCampaignTranslatableFields(
       .eq("campaign_id", campaign.id)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: true }),
-    supabase
-      .from("engagement_survey_questions")
-      .select("id, prompt, help_text")
-      .eq("campaign_id", campaign.id)
-      // Only what a participant is shown. An archived question is not a gap.
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true }),
+    readTranslatableQuestions(supabase, campaign.id),
     supabase
       .from("engagement_survey_question_options")
       .select("id, question_id, label")

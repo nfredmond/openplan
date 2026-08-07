@@ -160,6 +160,17 @@ const ALLOWED_VARIANTS: ReadonlyArray<string> = [
   "looksLikePendingReportRunsSchema@src/lib/reports/run-citations.ts",
   "looksLikePendingScenarioSpineSchema@src/lib/scenarios/api.ts",
   "looksLikePendingStageGateProjectScope@src/lib/stage-gates/decision-queries.ts",
+  /**
+   * CONTENT-anchored on the exact string a real PostgREST returns for this one
+   * column — `column engagement_survey_questions.status does not exist`,
+   * measured against the local server rather than reasoned about. The union
+   * would be wrong here in the opposite direction from usual: this variant's
+   * caller does not report a failure, it FALLS BACK to the unfiltered read. A
+   * wider match would take that fallback on a permission failure or an RLS
+   * refusal and serve unpublished survey questions to the public — the exact
+   * outcome the draft state exists to prevent.
+   */
+  "looksLikePendingSurveyStatusColumn@src/lib/engagement/survey-responses.ts",
   "looksLikePendingUniverseColumns@src/app/api/title-vi/service-equity/route.ts",
 ];
 
@@ -356,6 +367,21 @@ describe("one pending-schema classifier — named variants", () => {
     expect(body.slice(0, body.indexOf("\n}")), "the finalizer detector lost its column anchor").toMatch(
       /finalized_\(\?:by\|at\)|finalized_by|finalized_at/
     );
+  });
+
+  /**
+   * The survey-status variant carries the HIGHEST cost of losing its anchor,
+   * because its caller falls back rather than failing: a widened pattern makes
+   * an unrelated read error serve unpublished questions to the public.
+   */
+  it("keeps the survey-status variant anchored on the column it is named for", () => {
+    const source = readFileSync(path.join(SRC, "lib", "engagement", "survey-responses.ts"), "utf8");
+    const body = source.slice(source.indexOf("function looksLikePendingSurveyStatusColumn"));
+    expect(
+      body.slice(0, body.indexOf("\n}")),
+      "the survey-status detector lost its column anchor — an unrelated read failure would now fall " +
+        "back to the unfiltered read and put draft questions on the public portal"
+    ).toMatch(/engagement_survey_questions/);
   });
 
   /** The same assertion for the other content-anchored variant, same reason. */

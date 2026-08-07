@@ -33,10 +33,21 @@ type QuestionRow = {
   help_text: string | null;
   required: boolean;
   is_active: boolean;
+  /**
+   * 'draft' means written but never shown to anybody — the state the Planner
+   * Agent's proposals land in. `null` is a database that predates the column,
+   * where every stored question is live.
+   */
+  status?: "draft" | "published" | null;
   sort_order: number;
   config_json: Record<string, unknown>;
   options?: OptionRow[];
 };
+
+/** A question the public is being asked, as opposed to one merely written. */
+function isDraft(question: QuestionRow): boolean {
+  return question.status === "draft";
+}
 type Category = { id: string; label: string };
 
 async function api(url: string, method: string, body?: unknown): Promise<Record<string, unknown>> {
@@ -456,6 +467,23 @@ function QuestionCard({ campaignId, question, earlier, onUpdate, onRemove }: { c
       setError(err instanceof Error ? err.message : "Failed to update question");
     }
   }
+  /**
+   * The one control that puts a question in front of the public.
+   *
+   * It is a separate button from Save on purpose. Publishing is not an edit —
+   * it is the moment wording written by somebody else, possibly by the Planner
+   * Agent, becomes a question your agency is asking residents. Folding it into
+   * Save would make it something that happens while doing something else.
+   */
+  async function togglePublished() {
+    setError(null);
+    try {
+      const payload = await api(base, "PATCH", { status: isDraft(question) ? "published" : "draft" });
+      onUpdate({ ...(payload.question as QuestionRow), options: question.options });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update question");
+    }
+  }
   async function del() {
     setError(null);
     try {
@@ -476,6 +504,7 @@ function QuestionCard({ campaignId, question, earlier, onUpdate, onRemove }: { c
               <StatusBadge tone="info">{def.label}</StatusBadge>
               {question.required ? <StatusBadge tone="warning">Required</StatusBadge> : null}
               {!question.is_active ? <StatusBadge tone="neutral">Archived</StatusBadge> : null}
+              {isDraft(question) ? <StatusBadge tone="warning">Draft — not public</StatusBadge> : null}
             </span>
             <span className="mt-1 block font-medium text-foreground">{question.prompt}</span>
           </span>
@@ -502,6 +531,14 @@ function QuestionCard({ campaignId, question, earlier, onUpdate, onRemove }: { c
           <div className="flex flex-wrap items-center gap-2">
             <Button type="button" onClick={() => void save()} disabled={busy}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null} Save
+            </Button>
+            <Button
+              type="button"
+              variant={isDraft(question) ? "default" : "outline"}
+              size="sm"
+              onClick={() => void togglePublished()}
+            >
+              {isDraft(question) ? "Publish to the public survey" : "Unpublish"}
             </Button>
             <Button type="button" variant="outline" size="sm" onClick={() => void toggleArchive()}>
               {question.is_active ? "Archive" : "Restore"}
@@ -556,7 +593,11 @@ export function EngagementSurveyBuilder({
     }
   }
 
-  const activeCount = questions.filter((q) => q.is_active).length;
+  // "Live" is what a participant is actually asked: active AND published. The
+  // count in the header used to say "active", which after drafts exist would
+  // include questions nobody outside this workspace can see.
+  const liveCount = questions.filter((q) => q.is_active && !isDraft(q)).length;
+  const draftCount = questions.filter((q) => isDraft(q)).length;
 
   return (
     <article className="module-section-surface">
@@ -565,7 +606,12 @@ export function EngagementSurveyBuilder({
           <p className="module-section-label">Survey builder</p>
           <h2 className="module-section-title">Survey &amp; form questions</h2>
           <p className="module-section-description">
-            Build a structured survey participants answer alongside map comments. {activeCount} active question{activeCount === 1 ? "" : "s"}.
+            Build a structured survey participants answer alongside map comments. {liveCount} question
+            {liveCount === 1 ? "" : "s"} on the public survey
+            {draftCount > 0
+              ? `, and ${draftCount} draft${draftCount === 1 ? "" : "s"} nobody outside this workspace can see`
+              : ""}
+            .
           </p>
         </div>
       </div>
@@ -579,8 +625,12 @@ export function EngagementSurveyBuilder({
               key={question.id}
               campaignId={campaignId}
               question={question}
-              // Only questions a respondent reaches FIRST can gate this one.
-              earlier={questions.slice(0, index).filter((q) => q.is_active)}
+              // Only questions a respondent reaches FIRST can gate this one —
+              // and only ones a respondent reaches AT ALL, so a draft is not
+              // offered as something to condition on. Publishing re-validates
+              // the graph server-side, which is what catches a draft that was
+              // gated on another draft before either went live.
+              earlier={questions.slice(0, index).filter((q) => q.is_active && !isDraft(q))}
               onUpdate={(next) => setQuestions((prev) => prev.map((q) => (q.id === next.id ? next : q)))}
               onRemove={(id) => setQuestions((prev) => prev.filter((q) => q.id !== id))}
             />

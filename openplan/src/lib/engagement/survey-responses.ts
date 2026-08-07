@@ -149,9 +149,80 @@ export function aggregateSurveyQuestion(
   return { questionId: question.id, questionType: question.question_type, family: def.family, prompt: question.prompt, answeredCount, aggregation };
 }
 
-/** Active question definitions + options for a campaign (definition tables).
- * `error` is the first read that failed: a survey with no questions and a
- * survey nobody could read look identical in the two collections. */
+/** The projection the live survey is built from. Asserted by its own test. */
+export const LIVE_SURVEY_QUESTION_SELECT =
+  "id, question_type, prompt, help_text, required, sort_order, config_json, category_id";
+
+/**
+ * THE ONE READ THAT DECIDES WHAT THE PUBLIC IS ASKED.
+ *
+ * Three predicates, and each answers a different question: the campaign it
+ * belongs to, whether it has been archived after being asked (`is_active`), and
+ * whether it has ever been released to the public at all (`status`). A draft is
+ * not an archived question and must not be confused with one.
+ *
+ * THE FALLBACK IS NOT A DEGRADATION, which is why it is safe here and was not in
+ * the Title VI lane. On a database that predates 20260805000011 the `status`
+ * column does not exist — and neither does any draft, because there is nowhere
+ * to record one. Serving every active question is therefore the CORRECT answer
+ * for that database, not an approximation of it. Refusing instead would empty a
+ * live public survey for the length of a deploy window, which is a
+ * public-facing outage caused by a migration that had not run yet.
+ *
+ * The retry is anchored on the column name, so a permission failure, an RLS
+ * refusal or any other fault still surfaces as itself.
+ */
+async function readPublishedQuestions(
+  supabase: QueryClient,
+  campaignId: string
+): Promise<{ data: unknown; error: { message: string } | null }> {
+  const filtered = await supabase
+    .from("engagement_survey_questions")
+    .select(LIVE_SURVEY_QUESTION_SELECT)
+    .eq("campaign_id", campaignId)
+    .eq("is_active", true)
+    .eq("status", "published")
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (!filtered.error || !looksLikePendingSurveyStatusColumn(filtered.error.message)) return filtered;
+
+  return supabase
+    .from("engagement_survey_questions")
+    .select(LIVE_SURVEY_QUESTION_SELECT)
+    .eq("campaign_id", campaignId)
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true })
+    .order("created_at", { ascending: true });
+}
+
+/**
+ * Does this error mean the deployment predates the draft/published column?
+ *
+ * ANCHORED ON THE COLUMN AND ITS TABLE, and the pattern is MEASURED rather than
+ * reasoned about. Asked for a column it does not have, the local PostgREST
+ * answers, for both a projection and a filter:
+ *
+ *   {"code":"42703","message":"column engagement_survey_questions.nosuchcol does not exist"}
+ *
+ * so the table name is always present and the match can be this tight. Nothing
+ * else in this repository produces that string, which is what makes the fallback
+ * below safe: a permission failure, an RLS refusal or a genuine outage cannot
+ * reach it and will surface as itself.
+ *
+ * Exported because `campaign-translations.ts` asks the same question about the
+ * same column. A second copy would be a second answer, and the two reads it
+ * guards are the ones a test already pins together on purpose.
+ */
+export function looksLikePendingSurveyStatusColumn(message: string | null | undefined): boolean {
+  return /engagement_survey_questions\.status does not exist|'status' column of 'engagement_survey_questions'/i.test(
+    message ?? ""
+  );
+}
+
+/** Active, PUBLISHED question definitions + options for a campaign (definition
+ * tables). `error` is the first read that failed: a survey with no questions and
+ * a survey nobody could read look identical in the two collections. */
 export async function loadSurveyDefinition(
   supabase: QueryClient,
   campaignId: string
@@ -160,13 +231,7 @@ export async function loadSurveyDefinition(
   optionsByQuestion: Map<string, SurveyOptionRow[]>;
   error: { message: string } | null;
 }> {
-  const questionsResult = await supabase
-    .from("engagement_survey_questions")
-    .select("id, question_type, prompt, help_text, required, sort_order, config_json, category_id")
-    .eq("campaign_id", campaignId)
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
+  const questionsResult = await readPublishedQuestions(supabase, campaignId);
   const questions = (questionsResult.data ?? []) as SurveyQuestionRow[];
 
   const optionsResult = await supabase
@@ -273,10 +338,24 @@ export type SurveyBuilderQuestion = {
   help_text: string | null;
   required: boolean;
   is_active: boolean;
+  /**
+   * 'draft' or 'published'. Absent on a database that predates 20260805000011,
+   * where no draft can exist — the builder reads that absence as published,
+   * which is what such a database actually serves.
+   */
+  status: SurveyQuestionStatus | null;
   sort_order: number;
   config_json: Record<string, unknown>;
   options: SurveyBuilderOption[];
 };
+
+export type SurveyQuestionStatus = "draft" | "published";
+
+/** A question the public is being asked, as opposed to one merely written. */
+export function isPublishedSurveyQuestion(question: { status: string | null }): boolean {
+  // Null is the pre-migration shape, where every stored question is live.
+  return question.status === null || question.status === "published";
+}
 
 /** Full survey definition for the operator builder: every question (active and
  * archived) with all builder columns + all options. Definition tables only.
@@ -297,17 +376,36 @@ export type SurveyBuilderQuestion = {
  * lowers `src/lib/engagement/survey-responses.ts` from 4 to 2 on the R2 ratchet
  * in `src/test/a-library-may-not-discard-a-read-error.test.ts`, which must be
  * edited in the same commit or its staleness assertion fails. */
+/** The builder's projection, without `status`. Asserted by its own test. */
+export const SURVEY_BUILDER_QUESTION_SELECT =
+  "id, campaign_id, category_id, question_type, prompt, help_text, required, is_active, sort_order, config_json";
+
 export async function loadSurveyBuilderDefinition(
   supabase: QueryClient,
   campaignId: string
 ): Promise<SurveyBuilderQuestion[]> {
-  const questionsResult = await supabase
-    .from("engagement_survey_questions")
-    .select("id, campaign_id, category_id, question_type, prompt, help_text, required, is_active, sort_order, config_json")
-    .eq("campaign_id", campaignId)
-    .order("sort_order", { ascending: true })
-    .order("created_at", { ascending: true });
   type RawQuestion = Omit<SurveyBuilderQuestion, "options" | "config_json"> & { config_json: unknown };
+
+  // `status` LAST in the projection and retried without it, for the same reason
+  // the live-survey read falls back: a builder that renders nothing during a
+  // deploy window is the screen an operator fixes by starting over.
+  const readBuilderQuestions = (projection: string) =>
+    supabase
+      .from("engagement_survey_questions")
+      .select(projection)
+      .eq("campaign_id", campaignId)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: true }) as unknown as Promise<{
+      data: unknown;
+      error: { message: string } | null;
+    }>;
+
+  let questionsResult = await readBuilderQuestions(`${SURVEY_BUILDER_QUESTION_SELECT}, status`);
+
+  if (questionsResult.error && looksLikePendingSurveyStatusColumn(questionsResult.error.message)) {
+    questionsResult = await readBuilderQuestions(SURVEY_BUILDER_QUESTION_SELECT);
+  }
+
   const questions = (questionsResult.data ?? []) as RawQuestion[];
 
   const optionsResult = await supabase
@@ -323,6 +421,7 @@ export async function loadSurveyBuilderDefinition(
   }
   return questions.map((question) => ({
     ...question,
+    status: (question.status ?? null) as SurveyQuestionStatus | null,
     config_json: (question.config_json ?? {}) as Record<string, unknown>,
     options: optionsByQuestion.get(question.id) ?? [],
   }));

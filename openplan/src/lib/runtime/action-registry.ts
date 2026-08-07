@@ -214,6 +214,37 @@ const REFRESH_GTFS_FEED: ActionRecord<"refresh_gtfs_feed"> = {
   },
 };
 
+const CREATE_SURVEY_QUESTION_DRAFT: ActionRecord<"create_survey_question_draft"> = {
+  kind: "create_survey_question_draft",
+  effect: async (action, context) => {
+    /**
+     * THE BODY CARRIES WORDING AND NOTHING ELSE.
+     *
+     * There is no `status` here, and that is the point: the route writes the
+     * draft literal itself, keyed on the agent seam, so this effect has no
+     * constant to flip and no field to widen. `required`, `sortOrder`,
+     * `categoryId` and `config` are absent for the reasons the union variant
+     * gives — each of them decides how a question is ASKED rather than what it
+     * says, and each belongs to the person who publishes it.
+     *
+     * The path is a template literal so `action-route-resolution.ts` can regex
+     * it out of `effect.toString()`. A path built from a variable resolves to
+     * zero routes, and both the approval-verification guard and the claim-tier
+     * guard would then check nothing while reporting success.
+     */
+    await postJson(
+      `/api/engagement/campaigns/${action.campaignId}/survey/questions`,
+      {
+        questionType: action.questionType,
+        prompt: action.prompt,
+        ...(action.helpText ? { helpText: action.helpText } : {}),
+      },
+      "Failed to draft the survey question",
+      context
+    );
+  },
+};
+
 type ActionRegistry = {
   [K in AssistantQuickLinkExecuteAction["kind"]]: ActionRecord<K>;
 };
@@ -228,6 +259,7 @@ export const ACTION_REGISTRY: ActionRegistry = {
   create_project_record: CREATE_PROJECT_RECORD,
   record_stage_gate_hold: RECORD_STAGE_GATE_HOLD,
   refresh_gtfs_feed: REFRESH_GTFS_FEED,
+  create_survey_question_draft: CREATE_SURVEY_QUESTION_DRAFT,
 };
 
 export function getActionRecord<K extends AssistantQuickLinkExecuteAction["kind"]>(

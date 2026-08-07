@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import {
+  readAssistantExecutionSource,
+  verifyAssistantActionApproval,
+  type AssistantApprovalVerification,
+} from "@/lib/assistant/action-approval-server";
+import { assistantActionAuditIdentity, withAssistantActionAudit } from "@/lib/observability/action-audit";
+import { refuseOutOfScopeAgentRequest } from "@/lib/assistant/agent-request-scope";
+import { USER_AUTHORED } from "@/lib/assistant/agent-principal";
 import { loadCampaignAccess, validateCampaignCategoryAccess } from "@/lib/engagement/api";
 import { loadSurveyConditionRefs, loadSurveyDefinition } from "@/lib/engagement/survey-responses";
 import {
@@ -28,7 +36,23 @@ const createQuestionSchema = z.object({
 type RouteContext = { params: Promise<{ campaignId: string }> };
 
 const QUESTION_SELECT =
-  "id, campaign_id, category_id, question_type, prompt, help_text, required, is_active, sort_order, config_json, created_at, updated_at";
+  "id, campaign_id, category_id, question_type, prompt, help_text, required, is_active, status, sort_order, config_json, created_at, updated_at";
+
+/**
+ * Exactly the body keys the `create_survey_question_draft` action maps onto this
+ * endpoint.
+ *
+ * The endpoint is WIDER than the action — it also takes `required`, `sortOrder`,
+ * `categoryId` and `config` — and the approval hash covers the action the route
+ * rebuilds, not the request body. So a request carrying the three keys the
+ * planner approved PLUS a `config` holding a condition would hash identically to
+ * what they saw and write the condition too. That is the third rule the agentic
+ * seam is built on, and this is where it is enforced.
+ *
+ * `status` is not in this list and never should be: an agent may not name it,
+ * and the literal below is what decides it.
+ */
+const AGENT_DRAFT_BODY_KEYS = ["questionType", "prompt", "helpText"];
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("engagement.survey.questions.list", request);
@@ -68,6 +92,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (!parsed.success) {
       audit.warn("validation_failed", { issues: parsed.error.issues });
       return NextResponse.json({ error: "Invalid survey question payload", issues: parsed.error.issues }, { status: 400 });
+    }
+
+    /**
+     * Whether this came through the Planner Agent seam, and whether it stayed
+     * inside what an agent may write. Checked BEFORE any database work, because
+     * it is a refusal about the request rather than about the campaign — and
+     * against the RAW body, because zod has already stripped unknown keys from
+     * `parsed.data` and a scope check over the stripped object would approve
+     * everything it was written to catch.
+     */
+    const executionSource = readAssistantExecutionSource(request);
+    const agentSourced = executionSource === "planner_agent_quick_link";
+    const scopeRefusal = refuseOutOfScopeAgentRequest({
+      executionSource,
+      body: payloadBody.data,
+      allowedKeys: AGENT_DRAFT_BODY_KEYS,
+      actionKind: "create_survey_question_draft",
+    });
+    if (scopeRefusal) {
+      audit.warn("agent_request_out_of_scope", {
+        campaignId: routeParams.data.campaignId,
+        rejectedKeys: scopeRefusal.rejectedKeys,
+      });
+      return NextResponse.json(
+        { error: scopeRefusal.error, details: scopeRefusal.details },
+        { status: 400 }
+      );
     }
 
     // Type-specific config validation (likert scale, budget total, etc.).
@@ -135,21 +186,102 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const { data: question, error: insertError } = await supabase
-      .from("engagement_survey_questions")
-      .insert({
-        campaign_id: access.campaign.id,
-        category_id: parsed.data.categoryId ?? null,
-        question_type: parsed.data.questionType,
-        prompt: parsed.data.prompt,
-        help_text: parsed.data.helpText?.trim() || null,
-        required: parsed.data.required ?? false,
-        sort_order: parsed.data.sortOrder ?? 0,
-        config_json: configResult.config,
-        created_by: user.id,
-      })
-      .select(QUESTION_SELECT)
-      .single();
+    /**
+     * Approval evidence, verified against the action this route rebuilds from
+     * its OWN parsed data — so an approval minted for one question's wording
+     * cannot execute a different one.
+     *
+     * `workspaceId` comes off the campaign row rather than the request. That is
+     * deliberately stronger than reading it from the body: the value the planner
+     * approved has to equal the workspace the campaign actually belongs to, or
+     * the hash will not match and this answers 403.
+     */
+    const serviceSupabase = agentSourced ? createServiceRoleClient() : null;
+    let approval: AssistantApprovalVerification = {
+      approvalId: null,
+      inputHash: null,
+      executionSource: "manual",
+      authorship: USER_AUTHORED,
+    };
+
+    if (agentSourced && serviceSupabase) {
+      try {
+        approval = await verifyAssistantActionApproval({
+          request,
+          serviceSupabase,
+          userId: user.id,
+          workspaceId: access.campaign.workspace_id,
+          action: {
+            kind: "create_survey_question_draft",
+            workspaceId: access.campaign.workspace_id,
+            campaignId: access.campaign.id,
+            questionType: parsed.data.questionType,
+            prompt: parsed.data.prompt,
+            ...(parsed.data.helpText?.trim() ? { helpText: parsed.data.helpText.trim() } : {}),
+          },
+        });
+      } catch (approvalError) {
+        audit.warn("agent_approval_rejected", { campaignId: access.campaign.id });
+        return NextResponse.json(
+          { error: approvalError instanceof Error ? approvalError.message : "Planner Agent approval failed" },
+          { status: 403 }
+        );
+      }
+    }
+
+    /**
+     * AN AGENT'S QUESTION IS NEVER ASKED OF ANYBODY UNTIL A PERSON SAYS SO.
+     *
+     * The literal is written here rather than read from anywhere. There is no
+     * `status` field on the action, none in the request schema, and none in the
+     * agent's allowed body keys — so this is the only expression in the system
+     * that decides it, and it can only produce 'draft' on the agent path.
+     *
+     * A person using the survey builder keeps the behaviour they have always
+     * had: what they write is what the survey asks. They are the ones
+     * accountable for it.
+     */
+    const status = agentSourced ? "draft" : "published";
+
+    const insertQuestion = async () =>
+      await supabase
+        .from("engagement_survey_questions")
+        .insert({
+          campaign_id: access.campaign.id,
+          category_id: parsed.data.categoryId ?? null,
+          question_type: parsed.data.questionType,
+          prompt: parsed.data.prompt,
+          help_text: parsed.data.helpText?.trim() || null,
+          required: parsed.data.required ?? false,
+          sort_order: parsed.data.sortOrder ?? 0,
+          config_json: configResult.config,
+          status,
+          created_by: user.id,
+        })
+        .select(QUESTION_SELECT)
+        .single();
+
+    const { data: question, error: insertError } =
+      agentSourced && serviceSupabase
+        ? await withAssistantActionAudit(
+            serviceSupabase,
+            {
+              actionKind: "create_survey_question_draft",
+              workspaceId: access.campaign.workspace_id,
+              userId: user.id,
+              ...assistantActionAuditIdentity(approval),
+              inputSummary: {
+                campaignId: access.campaign.id,
+                questionType: parsed.data.questionType,
+                // The wording itself, not a length: the ledger is where somebody
+                // reviewing what the agent wrote goes to read it.
+                prompt: parsed.data.prompt,
+                status,
+              },
+            },
+            insertQuestion
+          )
+        : await insertQuestion();
 
     if (insertError || !question) {
       audit.error("question_insert_failed", { campaignId: access.campaign.id, message: insertError?.message ?? "unknown", code: insertError?.code ?? null });

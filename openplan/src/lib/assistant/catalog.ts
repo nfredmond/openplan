@@ -160,6 +160,61 @@ export type AssistantQuickLinkExecuteAction =
       postActionWorkflowId?: string;
       postActionPrompt?: string;
       postActionPromptLabel?: string;
+    }
+  | {
+      /**
+       * Write a survey question that is NOT asked of anybody until a person
+       * releases it.
+       *
+       * THIS IS THE FIRST REGISTERED ACTION WHOSE CONSEQUENTIAL CONTENT THE
+       * MODEL AUTHORS, and it is registered anyway — by Nathaniel's decision of
+       * 2026-08-03 — because of what `status = 'draft'` does to the argument
+       * that refused the others.
+       *
+       * The campaign accessibility contact was refused because its only control
+       * was an approver noticing a plausible wrong phone number on a sheet, and
+       * the moment it was approved it was published under the agency's name. The
+       * machine-translation actions were refused because accepting one deletes
+       * the caveat a resident was reading. In both, approval and publication are
+       * the same event, so review has to happen in the approval dialog or not at
+       * all. Here they are separate events: approving this action puts wording in
+       * the survey builder, where it sits with a "Draft — not public" badge until
+       * somebody opens it, reads it in place, and presses publish. The review
+       * surface is the product, not a dialog — which is the only form of review
+       * that works for prose.
+       *
+       * WHAT IS DELIBERATELY ABSENT, and why each one:
+       *
+       *   `status`      — not a field. The route writes the literal, so there is
+       *                   no value to transmit and no default to flip. The PATCH
+       *                   that publishes is not a registered action at all, so
+       *                   no approval an agent can obtain reaches it.
+       *   `config`      — a question's condition graph lives in here. An agent
+       *                   authoring one could gate an existing published question
+       *                   on its own new draft.
+       *   `sortOrder`   — position decides which questions may gate which, since
+       *                   only earlier questions can. Writing it is editing the
+       *                   graph by other means.
+       *   `required`    — making a question mandatory changes what a resident
+       *                   must answer to be heard at all. That is a burden on the
+       *                   public, and it is not this action's to impose.
+       *   `categoryId`  — filing is an editorial judgement about the agency's own
+       *                   taxonomy, and it moves the question between sections a
+       *                   resident navigates.
+       *
+       * Every one of those is available in the builder to the person who
+       * publishes. The agent proposes wording; the planner decides everything
+       * about how it is asked.
+       */
+      kind: "create_survey_question_draft";
+      workspaceId: string;
+      campaignId: string;
+      questionType: string;
+      prompt: string;
+      helpText?: string;
+      postActionWorkflowId?: string;
+      postActionPrompt?: string;
+      postActionPromptLabel?: string;
     };
 
 export type AssistantQuickLink = {

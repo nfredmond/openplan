@@ -24,6 +24,7 @@ describe("action registry", () => {
       "create_project_funding_profile",
       "create_project_record",
       "create_rtp_packet_record",
+      "create_survey_question_draft",
       "generate_report_artifact",
       "link_billing_invoice_funding_award",
       "record_stage_gate_hold",

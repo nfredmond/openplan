@@ -62,7 +62,10 @@ type WorkspaceOperationsQueryResult = {
  * the real builder once is cheaper than growing a second seam type per shape.
  */
 type WorkspaceOperationsFilterChain = PromiseLike<WorkspaceOperationsQueryResult> & {
-  eq: (column: string, value: string) => WorkspaceOperationsFilterChain;
+  // `boolean` because two of this module's filters are on boolean columns
+  // (`is_active`); PostgREST takes either and the narrower signature only ever
+  // forced a cast at the call site.
+  eq: (column: string, value: string | boolean) => WorkspaceOperationsFilterChain;
   in: (column: string, values: string[]) => WorkspaceOperationsFilterChain;
   order: (column: string, options: { ascending: boolean }) => WorkspaceOperationsFilterChain;
   limit: (count: number) => WorkspaceOperationsFilterChain;
@@ -332,6 +335,17 @@ export type WorkspaceEngagementObservation = {
   approvedItems: number | null;
   /** The most recently updated active campaign, for a queue link that lands somewhere. */
   leadActiveCampaign: { id: string; title: string } | null;
+  /**
+   * How many questions the lead active campaign actually ASKS — active and
+   * published, the same pair the public portal filters on.
+   *
+   * `null` means not measured: either there is no lead active campaign to count
+   * for, or the count failed. It must never be read as zero, because zero is
+   * what the copilot's offer to draft a survey keys on, and offering to write
+   * questions for a campaign that already has some — because the count could not
+   * be read — is the copilot acting on a state it never saw.
+   */
+  leadActiveCampaignLiveSurveyQuestions: number | null;
 };
 
 export type WorkspaceSafetyObservation = {
@@ -1221,6 +1235,27 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
   );
   const leadActiveCampaignRow =
     engagementCampaigns.rows.find((campaign) => campaign.status === "active") ?? null;
+
+  /**
+   * ONE FOLLOW-UP READ, because the question can only be asked once the lead
+   * campaign is known.
+   *
+   * It could have been folded into the parallel block as a workspace-wide count
+   * of live questions, which costs nothing extra — and would answer a different
+   * question. "This workspace has a survey somewhere" is not "the campaign
+   * collecting input right now asks anything", and the offer that reads this is
+   * about one campaign. A round trip is the right price for not conflating them.
+   *
+   * `head: true` — the count is the whole answer; no prompt text is fetched.
+   */
+  const leadCampaignSurveyResult = leadActiveCampaignRow
+    ? await supabase
+        .from("engagement_survey_questions")
+        .select("id", { count: "exact", head: true })
+        .eq("campaign_id", leadActiveCampaignRow.id)
+        .eq("is_active", true)
+        .eq("status", "published")
+    : null;
   const safetyCrashIngests = readWorkspaceModuleRows<WorkspaceStatusOnlySourceRow>(
     "safety crash data pulls",
     safetyCrashIngestsResult,
@@ -1279,6 +1314,13 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
             id: leadActiveCampaignRow.id,
             title: leadActiveCampaignRow.title ?? "Untitled campaign",
           }
+        : null,
+      leadActiveCampaignLiveSurveyQuestions: leadCampaignSurveyResult
+        ? readWorkspaceModuleCount(
+            "the lead campaign's survey questions",
+            leadCampaignSurveyResult,
+            unreadable
+          )
         : null,
     },
     safety: {

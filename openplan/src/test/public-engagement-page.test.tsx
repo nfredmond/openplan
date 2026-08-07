@@ -90,12 +90,21 @@ const itemsEqStatusMock = vi.fn(() => ({ order: itemsOrderMock }));
 const itemsEqCampaignMock = vi.fn(() => ({ eq: itemsEqStatusMock }));
 const itemsSelectMock = vi.fn(() => ({ eq: itemsEqCampaignMock }));
 
-// loadSurveyDefinition — questions: select → eq(campaign) → eq(is_active) → order → order.
+// loadSurveyDefinition — questions:
+//   select → eq(campaign) → eq(is_active) → eq(status) → order → order.
+// The `.eq()` links chain into themselves rather than being counted, so adding
+// a filter to the live-survey read is not a reason for this file to fail. The
+// arguments each filter was called with are recorded and asserted below —
+// which is the part that actually matters, and which a fixed-length chain was
+// not doing.
 const surveyQuestionsOrderCreatedMock = vi.fn().mockResolvedValue({ data: [], error: null });
 const surveyQuestionsOrderSortMock = vi.fn(() => ({ order: surveyQuestionsOrderCreatedMock }));
-const surveyQuestionsEqActiveMock = vi.fn(() => ({ order: surveyQuestionsOrderSortMock }));
-const surveyQuestionsEqCampaignMock = vi.fn(() => ({ eq: surveyQuestionsEqActiveMock }));
-const surveyQuestionsSelectMock = vi.fn(() => ({ eq: surveyQuestionsEqCampaignMock }));
+const surveyQuestionsEqMock = vi.fn(() => surveyQuestionsChain);
+const surveyQuestionsChain = {
+  eq: surveyQuestionsEqMock,
+  order: surveyQuestionsOrderSortMock,
+};
+const surveyQuestionsSelectMock = vi.fn(() => surveyQuestionsChain);
 
 // loadSurveyDefinition — options: select → eq(campaign) → eq(is_active) → order.
 const surveyOptionsOrderMock = vi.fn().mockResolvedValue({ data: [], error: null });
@@ -527,6 +536,19 @@ describe("PublicEngagementPage", () => {
     ]) {
       expect(campaignProjection).toContain(column);
     }
+  });
+
+  it("asks only for survey questions that are active AND published", async () => {
+    // THE FILTER IS THE WHOLE CONTROL. A draft is a question the Planner Agent
+    // may have written and no person has released; the only thing standing
+    // between it and a resident's screen is this predicate. A double answers its
+    // fixture whether the filter was applied or not, so the arguments are what
+    // gets asserted — not the absence of drafts from a fixture that has none.
+    await renderPage();
+
+    const filters = surveyQuestionsEqMock.mock.calls.map((call) => call as unknown as [string, unknown]);
+    expect(filters).toContainEqual(["is_active", true]);
+    expect(filters).toContainEqual(["status", "published"]);
   });
 
   it("says nothing about translation on the page it is written in", async () => {

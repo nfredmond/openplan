@@ -276,6 +276,15 @@ const PROPOSAL_REFERENCE_CHECKS: Partial<
    * would silently hide legitimate rows, which is why this note exists.
    */
   refresh_gtfs_feed: [{ field: "gtfsFeedId", table: "gtfs_feeds" }],
+  /**
+   * The campaign must belong to the workspace the approval is scoped to —
+   * otherwise a draft could be proposed into another agency's survey builder,
+   * where it would sit under their name waiting for one of their planners to
+   * publish it. `engagement_campaigns` has a real `workspace_id` on every row,
+   * so the stock `.eq("workspace_id", …)` check means what it says here (unlike
+   * the feed table above, whose NULL is a deliberate shared-row marker).
+   */
+  create_survey_question_draft: [{ field: "campaignId", table: "engagement_campaigns" }],
 };
 
 type ProposalSchemaBranch = z.ZodObject<Record<string, z.ZodTypeAny>>;

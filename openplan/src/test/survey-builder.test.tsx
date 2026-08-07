@@ -66,6 +66,68 @@ describe("EngagementSurveyBuilder", () => {
   });
 });
 
+describe("a draft is visibly not public, and a person is the one who publishes it", () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => vi.restoreAllMocks());
+
+  const DRAFT = { ...Q, id: "q-draft", prompt: "Drafted by the Planner Agent", status: "draft" as const };
+
+  it("badges a draft and says so in the header count", () => {
+    // The badge is the whole review surface. Approving the agent's action puts
+    // wording HERE, and a planner who cannot tell it apart from a live question
+    // has been given a draft state that does nothing.
+    render(
+      <EngagementSurveyBuilder
+        campaignId="c1"
+        categories={[]}
+        initialQuestions={[{ ...Q, status: "published" as const }, DRAFT]}
+      />
+    );
+
+    expect(screen.getByText(/Draft — not public/i)).toBeTruthy();
+    expect(screen.getByText(/1 question on the public survey/i)).toBeTruthy();
+    expect(screen.getByText(/1 draft nobody outside this workspace can see/i)).toBeTruthy();
+  });
+
+  it("publishes only when a person presses the control, and sends the status itself", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ question: { ...DRAFT, status: "published" } }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<EngagementSurveyBuilder campaignId="c1" categories={[]} initialQuestions={[DRAFT]} />);
+
+    // Nothing has been sent by rendering it — publishing is an act, not a state.
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText("Drafted by the Planner Agent"));
+    fireEvent.click(await screen.findByRole("button", { name: /publish to the public survey/i }));
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalled());
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toContain("/survey/questions/q-draft");
+    expect(init.method).toBe("PATCH");
+    expect(JSON.parse(String(init.body))).toEqual({ status: "published" });
+  });
+
+  it("offers a draft as nothing for another question to depend on", async () => {
+    // A published question gated on a draft would appear unconditionally to
+    // every respondent, because the portal never serves the question it waits on.
+    render(
+      <EngagementSurveyBuilder
+        campaignId="c1"
+        categories={[]}
+        initialQuestions={[DRAFT, { ...Q, id: "q-live", prompt: "Live question", status: "published" as const }]}
+      />
+    );
+
+    fireEvent.click(screen.getByText("Live question"));
+
+    expect(screen.queryByText("Drafted by the Planner Agent", { selector: "option" })).toBeNull();
+  });
+});
+
 describe("saying when a question applies", () => {
   /**
    * A CONDITION THE BUILDER OFFERS MUST BE ONE THE BUILDER CAN ACTUALLY SAVE.

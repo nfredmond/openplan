@@ -235,6 +235,22 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
    */
   const staleTransitFeed = context.transit.readable ? context.transit.staleRefetchableFeed : null;
 
+  /**
+   * A CAMPAIGN THAT IS COLLECTING INPUT AND ASKS NOTHING.
+   *
+   * The offer is keyed on `=== 0`, not on falsiness, and the difference is the
+   * whole discipline of these lanes: `leadActiveCampaignLiveSurveyQuestions` is
+   * `null` when the count could not be read OR when there is no active campaign
+   * to count for, and offering to write a survey for a campaign that may already
+   * have one is the copilot acting on a state it never saw. A workspace whose
+   * count failed gets no offer, and says so through `unreadable` instead.
+   */
+  const engagement = context.operationsSummary.moduleObservations?.engagement ?? null;
+  const surveylessCampaign =
+    engagement?.leadActiveCampaign && engagement.leadActiveCampaignLiveSurveyQuestions === 0
+      ? engagement.leadActiveCampaign
+      : null;
+
   return compactQuickLinks([
     quickLink("workspace-brief-agent", "Generate workspace brief", "/dashboard", {
       targetKind: "workspace",
@@ -626,6 +642,51 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               postActionPrompt:
                 "A transit feed was fetched again. Was the new version adopted, and what does the workspace's transit data cover now?",
               postActionPromptLabel: "Review transit feed posture",
+            },
+          }
+        )
+      : null,
+    /**
+     * DRAFT A SURVEY QUESTION — the first offer whose content the model writes.
+     *
+     * It lands as a DRAFT, badged "not public" in the survey builder, invisible
+     * to every participant, unanswerable, and untranslated, until a person opens
+     * it and presses publish. That separation between approving and publishing
+     * is the entire reason this action is registrable while the campaign
+     * accessibility contact and the machine-translation accept are refused: in
+     * those, consent and publication are one event, so review has to happen in a
+     * dialog. Here it happens on the surface where the wording lives.
+     *
+     * ONE QUESTION, not a survey. The action's payload holds a single prompt,
+     * and there is no batch shape anywhere in the seam — a planner reviewing one
+     * question reads it; a planner handed twelve approves them.
+     */
+    workspaceId && surveylessCampaign
+      ? quickLink(
+          "workspace-draft-survey-question",
+          `Draft a survey question for ${surveylessCampaign.title}`,
+          `/engagement/${surveylessCampaign.id}`,
+          {
+            targetKind: "workspace",
+            actionClass: "review_controls",
+            executionMode: "future_agent_action",
+            priority: "secondary",
+            statusLabel: "Execute action",
+            reason: `${surveylessCampaign.title} is collecting public input and asks no survey questions yet. Planner Agent can draft one for you to read and publish, or delete.`,
+            approval: "approval_required",
+            auditEvent: "assistant.operation.workspace.create_survey_question_draft",
+            auditNote:
+              "Writes an unpublished draft into the survey builder. No participant sees it, no answer can be recorded against it, and it is not sent for translation until a person publishes it.",
+            executeAction: {
+              kind: "create_survey_question_draft",
+              workspaceId,
+              campaignId: surveylessCampaign.id,
+              questionType: "free_text",
+              prompt: "What would you change about how you get around this area?",
+              postActionWorkflowId: "workspace-overview",
+              postActionPrompt:
+                "A survey question was drafted. What is in this campaign's builder now, and what still needs a person to publish it?",
+              postActionPromptLabel: "Review the campaign's survey drafts",
             },
           }
         )

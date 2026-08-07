@@ -188,9 +188,15 @@ describe("the translatable inventory is exactly what a participant reads", () =>
     );
 
     // Stated explicitly too, so a change to BOTH sides at once is still visible.
+    // `status = published` was added on 2026-08-07 with the draft state, and
+    // this line is where that change had to be looked at: an unpublished
+    // question's untranslated prompt is not a gap in what the public reads, and
+    // counting it would both put "complete" out of reach and send wording that
+    // may never be published to machine translation.
     expect(inventoryFilters.filtersFor("engagement_survey_questions")).toEqual([
       ["campaign_id", CAMPAIGN_ID],
       ["is_active", true],
+      ["status", "published"],
     ]);
     expect(inventoryFilters.filtersFor("engagement_closeloop_entries")).toEqual([
       ["campaign_id", CAMPAIGN_ID],

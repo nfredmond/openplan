@@ -28,6 +28,16 @@ const patchQuestionSchema = z
     categoryId: z.string().uuid().nullable().optional(),
     config: z.record(z.string(), z.unknown()).optional(),
     isActive: z.boolean().optional(),
+    /**
+     * PUBLISHING IS A PERSON'S ACT, and this is where it happens.
+     *
+     * The Planner Agent may create a question as a draft and may not reach this
+     * route at all — there is no registered action that targets a PATCH here, so
+     * the only way a draft becomes public is a human opening the survey builder
+     * and pressing publish. That is the whole design Nathaniel asked for on
+     * 2026-08-03: the agent proposes wording, a person releases it.
+     */
+    status: z.enum(["draft", "published"]).optional(),
   })
   .refine((obj) => Object.keys(obj).length > 0, { message: "No fields to update" });
 
@@ -91,6 +101,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (parsed.data.required !== undefined) updates.required = parsed.data.required;
     if (parsed.data.sortOrder !== undefined) updates.sort_order = parsed.data.sortOrder;
     if (parsed.data.isActive !== undefined) updates.is_active = parsed.data.isActive;
+    if (parsed.data.status !== undefined) updates.status = parsed.data.status;
     if (parsed.data.categoryId !== undefined) {
       if (parsed.data.categoryId) {
         const categoryAccess = await validateCampaignCategoryAccess(supabase, campaign.id, parsed.data.categoryId);
@@ -130,15 +141,26 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
      *   • ARCHIVING — a question others depend on, once inactive, stops being
      *     part of the survey a respondent sees, and every question gated on it
      *     would silently start appearing unconditionally.
+     *   • PUBLISHING, and UNPUBLISHING, which move a question into and out of
+     *     the live survey exactly as the two above do. Publishing is the one
+     *     that would otherwise slip through: a draft can be written while the
+     *     question it is gated on is still a draft too, and releasing it alone
+     *     would put a question on the public portal whose condition points at
+     *     something no respondent will ever see. The splice below already
+     *     handles a question that is not in the live set, so publishing needs
+     *     no new validation path — only to be named here.
      *
      * The first two are checked by re-validating the survey this edit would
-     * produce; the third is refused outright, naming the questions that depend
-     * on it, because there is no version of it that is not a surprise.
+     * produce; archiving and unpublishing are refused outright, naming the
+     * questions that depend on it, because there is no version of it that is
+     * not a surprise.
      */
+    const leavesTheLiveSurvey = parsed.data.isActive === false || parsed.data.status === "draft";
     const touchesConditionGraph =
       parsed.data.config !== undefined ||
       parsed.data.sortOrder !== undefined ||
-      parsed.data.isActive !== undefined;
+      parsed.data.isActive !== undefined ||
+      parsed.data.status !== undefined;
 
     if (touchesConditionGraph) {
       /**
@@ -166,7 +188,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         validateSurveyConditionGraph(existingRefs).map((problem) => `${problem.code}:${problem.questionId}`)
       );
 
-      if (parsed.data.isActive === false) {
+      if (leavesTheLiveSurvey) {
         const dependents = findSurveyQuestionsDependingOn(existingRefs, routeParams.data.questionId);
         if (dependents.length > 0) {
           return NextResponse.json(
@@ -208,7 +230,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       // failure.
       const splicedRef = { ...editedRef, optionIds: alreadyActive?.optionIds };
       const proposed: (SurveyConditionQuestionRef & { sortOrder: number })[] = (
-        parsed.data.isActive === false
+        leavesTheLiveSurvey
           ? existingRefs.filter((ref) => ref.id !== routeParams.data.questionId)
           : alreadyActive
             ? // In place, so a tie on `sort_order` keeps the `created_at` order

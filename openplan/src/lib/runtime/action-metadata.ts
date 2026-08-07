@@ -99,6 +99,21 @@ export const ACTION_METADATA: ActionMetadataRegistry = {
     // happened.
     regrounding: "refresh_preview",
   },
+  create_survey_question_draft: {
+    kind: "create_survey_question_draft",
+    description:
+      "Writes a survey question into this campaign's builder as an UNPUBLISHED draft. No participant sees it, no answer can be recorded against it, and it is not sent for translation. A person publishes it from the survey builder, or deletes it.",
+    // `approval_required` even though nothing becomes public: the model authors
+    // the wording, and a planner should decide whether wording written by a
+    // model enters their agency's builder at all. The tier is about authorship,
+    // not about reach.
+    approval: "approval_required",
+    auditEvent: "planner_agent.create_survey_question_draft",
+    // The offer is keyed on the campaign's survey, and a new draft changes what
+    // the builder holds — a preview describing the old survey would keep
+    // proposing questions that are already sitting there unpublished.
+    regrounding: "refresh_preview",
+  },
 };
 
 export function getActionMetadata<K extends AssistantQuickLinkExecuteAction["kind"]>(

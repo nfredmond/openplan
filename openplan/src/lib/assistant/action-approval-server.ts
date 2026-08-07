@@ -112,6 +112,26 @@ export const assistantApprovalActionSchema = z.discriminatedUnion("kind", [
     postActionPrompt: z.string().optional(),
     postActionPromptLabel: z.string().optional(),
   }),
+  z.object({
+    kind: z.literal("create_survey_question_draft"),
+    workspaceId: z.string().min(1),
+    campaignId: z.string().min(1),
+    // The type vocabulary is the route's to enforce (it has the registry that
+    // defines them and can say which one was wrong); this branch only has to
+    // agree on the shape.
+    questionType: z.string().min(1),
+    // Bounded here as well as at the route, because this is what gets HASHED:
+    // an approval sheet a planner cannot read in full is not consent.
+    prompt: z.string().min(1).max(2000),
+    helpText: z.string().max(2000).optional(),
+    // NOTE: there is no `status` key here, and there must never be one. The
+    // route writes the draft literal; a payload that could carry a status would
+    // be an agent able to publish. `required`, `sortOrder`, `categoryId` and
+    // `config` are absent for the reasons the union variant gives.
+    postActionWorkflowId: z.string().optional(),
+    postActionPrompt: z.string().optional(),
+    postActionPromptLabel: z.string().optional(),
+  }),
 ]);
 
 export type AssistantApprovalAction = z.infer<typeof assistantApprovalActionSchema>;

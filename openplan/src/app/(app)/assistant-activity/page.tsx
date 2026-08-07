@@ -24,6 +24,7 @@ const ACTION_KIND_LABELS: Record<string, string> = {
   create_project_record: "Create project record",
   record_stage_gate_hold: "Record stage-gate hold",
   refresh_gtfs_feed: "Refetch transit feed",
+  create_survey_question_draft: "Draft a survey question (unpublished)",
 };
 
 const APPROVAL_PRESENTATION: Record<

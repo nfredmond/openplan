@@ -48,17 +48,29 @@ const conditionQuestionsResolve = vi.fn();
 
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
+/**
+ * `.eq()` CHAINS INTO ITSELF rather than being counted.
+ *
+ * The old shape hard-coded exactly two `.eq()` links, so adding a third — the
+ * `status = published` filter that keeps drafts off the public survey — broke
+ * every chain in this file and reported it as a 500. How many filters a query
+ * applies is not something a double should have an opinion about; which
+ * TERMINAL it ends on is, and that is what the two vi.fns below still
+ * distinguish.
+ */
+function questionChain(): Record<string, unknown> {
+  const link: Record<string, unknown> = {
+    maybeSingle: questionReadMaybeSingle,
+    order: () => ({ order: conditionQuestionsResolve }),
+  };
+  link.eq = () => link;
+  return link;
+}
+
 const fromMock = vi.fn((table: string) => {
   if (table === "engagement_survey_questions") {
     return {
-      select: () => ({
-        eq: () => ({
-          eq: () => ({
-            maybeSingle: questionReadMaybeSingle,
-            order: () => ({ order: conditionQuestionsResolve }),
-          }),
-        }),
-      }),
+      select: () => questionChain(),
       update: questionUpdateMock,
       delete: questionDeleteMock,
     };
