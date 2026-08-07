@@ -309,6 +309,45 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     }),
   },
   {
+    table: "gtfs_tract_service",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    // Derived by a spatial join at ingest, so it is service-role-authored and
+    // has a SELECT policy only — the same posture as the two tables above. It
+    // is probed all the same because it carries a workspace_id, and because the
+    // rows describe which census tracts one agency serves.
+    build: ({ workspaceBId, gtfsFeedVersionBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      feed_version_id: gtfsFeedVersionBId,
+      tract_geoid: `060570000${suffix.slice(0, 2)}`,
+      service_day: "friday",
+      stops_in_tract: 3,
+      stop_events_per_day: 72,
+      best_peak_headway_seconds: 900,
+      best_span_seconds: 57600,
+      routes_serving: 2,
+    }),
+  },
+  {
+    table: "title_vi_policies",
+    select: "id,workspace_id",
+    expectedMemberReadable: true,
+    // An agency's adopted civil-rights thresholds and the board action that
+    // adopted them. Every value here is workspace-specific policy, so a
+    // cross-tenant read would expose one agency's adopted program to another.
+    build: ({ workspaceBId, suffix }) => ({
+      id: randomUUID(),
+      workspace_id: workspaceBId,
+      adopted_on: "2026-01-15",
+      adopted_by: `RLS board ${suffix}`,
+      minority_definition_method: "service_area_average",
+      low_income_definition_method: "service_area_average",
+      disparate_impact_threshold_pct: 10,
+      disproportionate_burden_threshold_pct: 10,
+    }),
+  },
+  {
     table: "models",
     select: "id,workspace_id",
     expectedMemberReadable: true,
@@ -739,7 +778,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(48);
+    expect(tables).toHaveLength(50);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -761,6 +800,7 @@ describe("workspace RLS isolation inventory", () => {
       "gtfs_feeds",
       "gtfs_route_service_levels",
       "gtfs_stop_service_levels",
+      "gtfs_tract_service",
       "kb_document_chunks",
       "kb_documents",
       "model_runs",
@@ -787,6 +827,7 @@ describe("workspace RLS isolation inventory", () => {
       "scenario_sets",
       "stage_gate_decisions",
       "subscriptions",
+      "title_vi_policies",
       "usage_events",
       "workspace_invitations",
       "workspace_members",

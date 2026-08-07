@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-composer";
 import { GtfsIngestPanel } from "@/components/data-hub/gtfs-ingest-panel";
+import { TitleViServiceEquityPanel } from "@/components/data-hub/title-vi-service-equity-panel";
 import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
 import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -639,6 +640,19 @@ export default async function DataHubPage() {
       <GtfsIngestPanel
         workspaceId={workspaceId}
         maxUploadBytes={BODY_LIMITS.gtfsFeedRaw}
+        today={todayIso}
+        readOnly={isReadOnlyWorkspaceRole(membership.role)}
+      />
+
+      {/*
+        Mounted directly beneath the feed it analyses. The tract-service join is
+        computed at ingest by that panel's work, so a planner who has just added
+        their operator's feed is one screen away from the equity comparison it
+        makes possible — rather than the capability existing with no route to it,
+        which is this repository's most-repeated defect class.
+      */}
+      <TitleViServiceEquityPanel
+        workspaceId={workspaceId}
         today={todayIso}
         readOnly={isReadOnlyWorkspaceRole(membership.role)}
       />

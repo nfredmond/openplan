@@ -485,6 +485,8 @@ export type WriteParsedFeedVersionResult =
       stopServiceLevelRows: number;
       droppedForMissingCoordinates: number;
       displayName: string | null;
+      /** Whether the tract-service join ran, and what it wrote. */
+      tractService: TractServiceComputation;
     }
   | { ok: false; code: GtfsFailureCode; detail: string };
 
@@ -527,6 +529,52 @@ async function insertInBatches(
   return null;
 }
 
+export type TractServiceComputation =
+  | { computed: true; rows: number }
+  /**
+   * The join did not run. `computed_at` stays NULL, and a service-equity
+   * analysis reading this version must REFUSE rather than report absence — an
+   * empty tract-service table is otherwise indistinguishable from a real
+   * finding that no tract in the area has any transit service.
+   */
+  | { computed: false; reason: string };
+
+/**
+ * Join this version's stops to census tracts, once, here.
+ *
+ * WHY IT DOES NOT FAIL THE INGEST. The feed itself is complete and useful
+ * without the tract join — the map draws, the corridor score works, the travel
+ * model can consume it. Failing a good ingest because a downstream equity join
+ * could not run would trade a working feed for nothing. But the failure is
+ * RECORDED rather than swallowed: `tract_service_computed_at` stays NULL, which
+ * is the discriminator the analysis refuses on.
+ *
+ * A count of 0 with the timestamp SET is a different and honest state: the join
+ * ran and no census tracts are loaded for this agency's area, which the
+ * analysis reports as an actionable gap naming the load step.
+ */
+async function computeTractServiceForVersion(
+  service: SupabaseClient,
+  versionId: string
+): Promise<TractServiceComputation> {
+  const { data, error } = await service.rpc("compute_gtfs_tract_service", {
+    p_feed_version_id: versionId,
+  });
+
+  if (error) {
+    return { computed: false, reason: error.message };
+  }
+  // The function returns INTEGER. Anything else means the deployment's function
+  // is not the one this code expects, which must not be recorded as a run.
+  if (typeof data !== "number" || !Number.isFinite(data)) {
+    return {
+      computed: false,
+      reason: `compute_gtfs_tract_service returned ${JSON.stringify(data)} rather than a row count`,
+    };
+  }
+  return { computed: true, rows: data };
+}
+
 export async function writeParsedFeedVersion(
   params: WriteParsedFeedVersionParams
 ): Promise<WriteParsedFeedVersionResult> {
@@ -560,6 +608,8 @@ export async function writeParsedFeedVersion(
   );
   if (stopWrite) return stopWrite;
 
+  const tractService = await computeTractServiceForVersion(service, versionId);
+
   const displayName = resolveFeedDisplayName(feed);
 
   // `ready` AND THE COUNTS IN ONE STATEMENT. The database's
@@ -580,6 +630,9 @@ export async function writeParsedFeedVersion(
       calendar_service_count: countDistinctServices(feed),
       route_service_level_rows: routeRows.length,
       stop_service_level_rows: stopMapping.rows.length,
+      // NULL timestamp when the join did not run. See computeTractServiceForVersion.
+      tract_service_rows: tractService.computed ? tractService.rows : null,
+      tract_service_computed_at: tractService.computed ? new Date().toISOString() : null,
       frequency_trip_count: feed.stats.frequencyTrips,
       scheduled_trip_count: feed.stats.scheduledTrips,
       // The parser reads no shapes at all; see 20260805000008's header for why
@@ -630,6 +683,7 @@ export async function writeParsedFeedVersion(
     stopServiceLevelRows: stopMapping.rows.length,
     droppedForMissingCoordinates: stopMapping.droppedForMissingCoordinates,
     displayName,
+    tractService,
   };
 }
 

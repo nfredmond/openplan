@@ -164,16 +164,31 @@ const EXPECTED = {
   // geometry — PostgREST returns hex EWKB and nothing here parses it),
   // +3 rlsEnabledTables. `expanded` holds at 264: these policies are written
   // literally, not through a DO/EXECUTE loop.
-  policies: 569,
-  permissive: 329,
-  restrictive: 240,
-  permissiveWrites: 215,
+  //
+  // 20260805000009 (Title VI service equity) adds TWO tables.
+  // `title_vi_policies` is a document a planner authors, so it takes the full
+  // client-writable set: FOUR permissive policies (select/insert/update/delete)
+  // and THREE restrictive `_writer_only_*` gates, matching every other
+  // workspace-scoped table a member edits. `gtfs_tract_service` is DERIVED by a
+  // spatial join at ingest and is service-role-authored, so it takes ONE
+  // permissive SELECT and no write policy at all — the same posture as the
+  // service-level tables it reads.
+  // So: +8 policies, +5 permissive, +3 restrictive, +3 permissiveWrites,
+  // +2 tablesWithPolicies, +2 relations, +2 tables, +2 rlsEnabledTables.
+  // `views` holds at 7 and `expanded` at 264: this migration declares no view
+  // (the tract table carries no geometry of its own — it references tracts by
+  // GEOID, so there is nothing for a GeoJSON view to convert) and writes every
+  // policy literally rather than through a DO/EXECUTE loop.
+  policies: 577,
+  permissive: 334,
+  restrictive: 243,
+  permissiveWrites: 218,
   expanded: 264,
-  tablesWithPolicies: 114,
-  relations: 134,
-  tables: 127,
+  tablesWithPolicies: 116,
+  relations: 136,
+  tables: 129,
   views: 7,
-  rlsEnabledTables: 127,
+  rlsEnabledTables: 129,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

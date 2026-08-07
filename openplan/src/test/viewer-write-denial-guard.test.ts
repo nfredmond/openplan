@@ -62,8 +62,13 @@ const WRITER_GATE_MIGRATIONS = [
   "20260728000007_workspace_write_role_gate_children.sql",
 ];
 
-const EXPECTED_GATED_TABLES = 80;
-const EXPECTED_RESTRICTIVE_POLICIES = 240;
+// 81 since 20260805000009 added `title_vi_policies`, a workspace-scoped table a
+// planner writes through the client, so it carries the full permissive set plus
+// the three restrictive `_writer_only_*` gates. `gtfs_tract_service` in the same
+// migration does NOT count: it is derived by a spatial join at ingest and is
+// service-role-authored, so it has no permissive write for a gate to narrow.
+const EXPECTED_GATED_TABLES = 81;
+const EXPECTED_RESTRICTIVE_POLICIES = 243;
 // 198 rather than 197 since 20260728000012 added `vmt_significance_screenings`.
 // Its INSERT policy is role-AWARE (it calls `workspace_member_can_write`), which
 // is why the gated-table and restrictive-policy counts above did NOT move: a
@@ -112,7 +117,7 @@ const EXPECTED_RESTRICTIVE_POLICIES = 240;
 // EXPECTED_GATED_TABLES and EXPECTED_RESTRICTIVE_POLICIES do NOT move —
 // gtfs_feeds was already gated, and both new policies are role-blind at the
 // permissive layer on purpose, so the existing gate is what narrows them.
-const EXPECTED_PERMISSIVE_WRITE_POLICIES = 215;
+const EXPECTED_PERMISSIVE_WRITE_POLICIES = 218;
 
 /** The three tables whose policies exist only as runtime-built SQL. */
 const DYNAMIC_POLICY_TABLES = [
