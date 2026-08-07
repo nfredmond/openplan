@@ -119,6 +119,84 @@ describe("summarizeNarrativeGrounding", () => {
   });
 });
 
+/**
+ * TWO MORE SURVIVORS FROM THE 2026-08-07 MUTATION AUDIT, closed here.
+ *
+ * Both live in the layer between a validated narrative and what an operator
+ * later reads back out of the database — the part nobody looks at again,
+ * because by then the interesting work seems done.
+ */
+describe("the persisted summary counts what was actually validated", () => {
+  const facts = buildNarrativeFactList(["Need is $2M.", "Match is covered."]);
+  const factIds = facts.map((fact) => fact.fact_id);
+
+  it("counts DROPPED sentences in the denominator, not only the kept ones", () => {
+    // MUTATION N4 SURVIVED: `total_sentence_count: sentences.length` — dropping
+    // `+ validated.droppedSentences.length` — changed no test, because every
+    // caller today validates in ANNOTATED mode, where nothing is ever dropped.
+    // The function accepts any `GroundedNarrative` though, and the type's own
+    // comment says the shape exists so a strict-mode caller could persist
+    // through it. In that mode the mutation turns "1 of 3 sentences grounded"
+    // into "1 of 1" — a fully grounded draft, on the strength of the two
+    // sentences that were thrown away for being ungrounded.
+    const validated = validateGroundedNarrative(
+      "Need is documented. [fact:fact_1] This sentence is uncited. Ghost claim. [fact:fact_99]",
+      factIds,
+      "strict"
+    );
+    expect(validated.droppedSentences).toHaveLength(2);
+
+    const summary = summarizeNarrativeGrounding(validated, facts);
+
+    expect(summary.grounded_sentence_count).toBe(1);
+    expect(summary.total_sentence_count).toBe(3);
+    expect(summary.dropped_sentences).toHaveLength(2);
+    expect(summary.is_fully_grounded).toBe(false);
+  });
+});
+
+describe("a stored grounding row that is not one is refused, not repaired", () => {
+  it("rejects a payload whose sentence flags are not booleans", () => {
+    // MUTATION N9 SURVIVED: deleting the `typeof record.is_grounded !==
+    // "boolean"` rejection left every test green. The parser would then accept
+    // `is_grounded: "yes"` — or `0`, or `null` — and hand it downstream, where
+    // `!sentence.is_grounded` decides which sentences an operator is told to
+    // review. A row that cannot be trusted must produce NO verdict rather than
+    // a plausible one, which is the same rule the rest of this module follows.
+    const wellFormed = {
+      mode: "annotated",
+      sentences: [
+        { text: "A claim.", cited_fact_ids: ["fact_1"], is_grounded: true, unknown_fact_ids: [] },
+      ],
+    };
+    expect(parseStoredNarrativeGrounding(wellFormed)).not.toBeNull();
+
+    for (const badFlag of ["yes", 0, 1, null, undefined, {}]) {
+      const payload = {
+        mode: "annotated",
+        sentences: [
+          { text: "A claim.", cited_fact_ids: ["fact_1"], is_grounded: badFlag, unknown_fact_ids: [] },
+        ],
+      };
+      expect(parseStoredNarrativeGrounding(payload), JSON.stringify(badFlag)).toBeNull();
+    }
+  });
+
+  it("rejects one bad sentence in an otherwise sound payload", () => {
+    // Whole-payload rejection, not per-sentence salvage: a summary missing a
+    // sentence is a summary whose counts no longer describe the draft.
+    expect(
+      parseStoredNarrativeGrounding({
+        mode: "annotated",
+        sentences: [
+          { text: "Sound.", cited_fact_ids: ["fact_1"], is_grounded: true, unknown_fact_ids: [] },
+          { text: "Broken.", cited_fact_ids: ["fact_1"], is_grounded: "true", unknown_fact_ids: [] },
+        ],
+      })
+    ).toBeNull();
+  });
+});
+
 describe("parseStoredNarrativeGrounding + listFlaggedNarrativeSentences", () => {
   const facts = buildNarrativeFactList(["Need is $2M."]);
 

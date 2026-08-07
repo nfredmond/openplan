@@ -51,10 +51,12 @@ import { describe, expect, it } from "vitest";
  *
  * =========================================== WHAT THIS FILE DOES *NOT* CLAIM
  *
- * About 21 of ~728 test files have been measured across both passes. It does not
- * speak for the rest, and `records what was NOT audited` below exists so a green
- * run can never be read as "the suite was measured". That would be this audit
- * committing the very defect it was run to find.
+ * About 23 of ~735 test files have been measured across THREE passes — the
+ * foundation sweep, the Title VI surfaces, and (2026-08-07) the `[fact:id]`
+ * grounding machinery. It does not speak for the rest, and `records what was NOT
+ * audited` below exists so a green run can never be read as "the suite was
+ * measured". That would be this audit committing the very defect it was run to
+ * find.
  */
 
 const APP_ROOT = join(__dirname, "..", "..");
@@ -1135,6 +1137,153 @@ describe("foundation audit ratchet", () => {
       const guardFile = repoPath(entry.guardedInsteadBy.testFile);
       expect(existsSync(guardFile), `${id}: ${entry.guardedInsteadBy.testFile}`).toBe(true);
       // Losing this assertion turns a reasoned decision back into an open hole.
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(
+        entry.guardedInsteadBy.testName
+      );
+    }
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* THE GROUNDING PASS — 2026-08-07                                             */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The `[fact:id]` machinery, measured for the first time.
+ *
+ * It is the other half of the honesty firewall. The claim-tier guard stops a
+ * model marking its own run `calibrated_to_counts`; THIS decides whether an
+ * AI-drafted grant narrative, RTP chapter or report is defensible — whether
+ * every sentence cites a real workspace fact, and whether the figures it asserts
+ * appear in the facts it cited. Two files carry it and neither had ever been
+ * mutation-tested.
+ *
+ * TWO SURVIVORS ARE EQUIVALENT MUTANTS AND ARE RECORDED AS SUCH, not claimed
+ * fixed. Both mutate code that cannot change behaviour:
+ *
+ *   - the `1900 <= year <= 2099` branch in `isConsequentialNumber` is dead:
+ *     every 4-digit core already returns true from the length clause below it.
+ *     Measured across 2028 / 1899 / 2100 / 5000, not reasoned about.
+ *   - the `unknownFactIds.length === 0` conjunct in `isFullyGrounded` is
+ *     redundant: a sentence with an unknown id is not grounded, so it has
+ *     already incremented `ungroundedCount`, and `unknownAll` is only pushed
+ *     inside that same branch.
+ *
+ * Each is pinned by the PROPERTY that makes it equivalent rather than by an
+ * assertion that would pass for the wrong reason.
+ */
+const GROUNDING_AUDIT = {
+  date: "2026-08-07",
+  mutationsRun: 24,
+  killed: 18,
+  survived: 6,
+  /** A comment-only negative control, confirmed SURVIVING before the run. */
+  controls: 1,
+  /** Closed with an assertion re-run against the original mutation. */
+  survivorsClosed: 4,
+  /** Provably equivalent mutants — the code they change is redundant. */
+  equivalent: 2,
+};
+
+const GROUNDING_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
+  "src/lib/planner-pack/grounding.ts": {
+    sampledBy: ["src/test/planner-pack-grounding.test.ts"],
+    mutations: 14,
+    survivors: 4,
+  },
+  "src/lib/grants/narrative-grounding.ts": {
+    sampledBy: ["src/test/grants-narrative-grounding.test.ts"],
+    mutations: 10,
+    survivors: 2,
+  },
+};
+
+/** The four real holes, and the assertion that now kills each one. */
+const GROUNDING_CLOSED_SURVIVORS: Record<string, ClosedSurvivor> = {
+  G7: {
+    productionFile: "src/lib/planner-pack/grounding.ts",
+    testFile: "src/test/planner-pack-grounding.test.ts",
+    testName: "checks SMALL money, which nothing was asserting",
+    mutation:
+      "isConsequentialNumber: drop the `$`/`%` clause, so a fabricated \"$500\" or \"4%\" is never cross-checked against its cited fact",
+  },
+  G13: {
+    productionFile: "src/lib/planner-pack/grounding.ts",
+    testFile: "src/test/planner-pack-grounding.test.ts",
+    testName: "reports one entry per distinct fact id, however many times it was cited",
+    mutation: "dedupePreservingOrder returns its input, so cited/unknown id lists become citation tallies",
+  },
+  N4: {
+    productionFile: "src/lib/grants/narrative-grounding.ts",
+    testFile: "src/test/grants-narrative-grounding.test.ts",
+    testName: "counts DROPPED sentences in the denominator, not only the kept ones",
+    mutation:
+      "total_sentence_count drops `+ droppedSentences.length`, so a strict-mode draft reports 1 of 1 grounded instead of 1 of 3",
+  },
+  N9: {
+    productionFile: "src/lib/grants/narrative-grounding.ts",
+    testFile: "src/test/grants-narrative-grounding.test.ts",
+    testName: "rejects a payload whose sentence flags are not booleans",
+    mutation: "parseSentence stops rejecting a non-boolean is_grounded, so a malformed row decides what an operator reviews",
+  },
+};
+
+/** The two provably-equivalent mutants, and the property pinning each. */
+const GROUNDING_EQUIVALENT_MUTANTS: Record<
+  string,
+  { productionFile: string; guardedInsteadBy: { testFile: string; testName: string } }
+> = {
+  G5: {
+    productionFile: "src/lib/planner-pack/grounding.ts",
+    guardedInsteadBy: {
+      testFile: "src/test/planner-pack-grounding.test.ts",
+      testName: "EQUIVALENT MUTANT, recorded: the unknown-id conjunct in the verdict is redundant",
+    },
+  },
+  G8: {
+    productionFile: "src/lib/planner-pack/grounding.ts",
+    guardedInsteadBy: {
+      testFile: "src/test/planner-pack-grounding.test.ts",
+      testName: "EQUIVALENT MUTANT, recorded rather than closed: the year clause is dead code",
+    },
+  },
+};
+
+describe("the grounding pass is accounted for", () => {
+  it("adds up, and leaves no survivor merely recorded", () => {
+    expect(GROUNDING_AUDIT.killed + GROUNDING_AUDIT.survived).toBe(GROUNDING_AUDIT.mutationsRun);
+
+    const perFile = Object.values(GROUNDING_AUDITED_PRODUCTION_FILES);
+    expect(perFile.reduce((total, entry) => total + entry.mutations, 0)).toBe(
+      GROUNDING_AUDIT.mutationsRun
+    );
+    expect(perFile.reduce((total, entry) => total + entry.survivors, 0)).toBe(
+      GROUNDING_AUDIT.survived
+    );
+
+    // Every survivor left this pass either closed or proved equivalent. The
+    // first pass left twelve open; that is the standard this replaces.
+    expect(
+      Object.keys(GROUNDING_CLOSED_SURVIVORS).length +
+        Object.keys(GROUNDING_EQUIVALENT_MUTANTS).length
+    ).toBe(GROUNDING_AUDIT.survived);
+    expect(Object.keys(GROUNDING_CLOSED_SURVIVORS)).toHaveLength(GROUNDING_AUDIT.survivorsClosed);
+    expect(Object.keys(GROUNDING_EQUIVALENT_MUTANTS)).toHaveLength(GROUNDING_AUDIT.equivalent);
+  });
+
+  it("keeps every assertion this pass added", () => {
+    for (const [id, entry] of [
+      ...Object.entries(GROUNDING_CLOSED_SURVIVORS).map(
+        ([key, value]) =>
+          [key, { productionFile: value.productionFile, guardedInsteadBy: { testFile: value.testFile, testName: value.testName } }] as const
+      ),
+      ...Object.entries(GROUNDING_EQUIVALENT_MUTANTS),
+    ]) {
+      expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      const guardFile = repoPath(entry.guardedInsteadBy.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.guardedInsteadBy.testFile}`).toBe(true);
+      // Deleting the assertion turns a measured result back into an open hole
+      // with nothing recording that it was ever looked at.
       expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(
         entry.guardedInsteadBy.testName
       );

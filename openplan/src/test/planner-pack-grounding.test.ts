@@ -385,6 +385,104 @@ describe("numeric faithfulness (opt-in second belt)", () => {
   });
 });
 
+/**
+ * WHAT THE 2026-08-07 MUTATION AUDIT FOUND MISSING.
+ *
+ * 24 mutations across this module and `grants/narrative-grounding.ts`; 18 died,
+ * 6 lived. Three of the six turned out to be equivalent mutants and are pinned
+ * below by the property that makes them equivalent. The other three were real
+ * holes in a machine whose entire job is stopping a fabricated figure from
+ * reaching a funder, and these close them.
+ */
+describe("the faithfulness belt's own trigger — what counts as a figure worth checking", () => {
+  const facts = new Map([["budget", "The programmed budget is $1,250,000 for two phases."]]);
+
+  it("checks SMALL money, which nothing was asserting", () => {
+    // MUTATION G7 SURVIVED THE WHOLE SUITE: deleting the `$`/`%` clause from
+    // `isConsequentialNumber` changed no test. A "$500" carries no comma, no
+    // decimal and no magnitude suffix, and its core is three digits — so with
+    // that clause gone it falls through every remaining branch and stops being
+    // cross-checked at all. A fabricated small dollar figure with a real
+    // [fact:N] stapled on would have passed the belt silently.
+    expect(extractHardClaims("The local match is $500.")).toEqual(["500"]);
+
+    const out = validateGroundedNarrative(
+      "The local match is $500. [fact:budget]",
+      ["budget"],
+      "strict",
+      facts
+    );
+    expect(out.isFullyGrounded).toBe(false);
+    expect(out.sentences.length + out.droppedSentences.length).toBeGreaterThan(0);
+    expect(out.issues[0]?.kind).toBe("unfaithful_citation");
+  });
+
+  it("checks SMALL percentages for the same reason", () => {
+    expect(extractHardClaims("Ridership rose 4%.")).toEqual(["4"]);
+
+    const out = validateGroundedNarrative("Ridership rose 4%. [fact:budget]", ["budget"], "strict", facts);
+    expect(out.isFullyGrounded).toBe(false);
+  });
+
+  it("leaves a bare small integer alone, which is why the belt is usable", () => {
+    // The other half of the same rule: "two phases", "3 lanes" and "Alternative
+    // 2" are not figures a reviewer acts on, and checking them would make the
+    // belt fire on every sentence.
+    expect(extractHardClaims("The project has 3 lanes and 2 phases.")).toEqual([]);
+  });
+
+  it("EQUIVALENT MUTANT, recorded rather than closed: the year clause is dead code", () => {
+    // MUTATION G8 SURVIVED, and it survives correctly. Deleting the
+    // `1900 <= year <= 2099` branch changes nothing, because the clause AFTER
+    // it already returns true for any 4-digit core. Measured, not reasoned:
+    // every value below is consequential with the year branch removed. The
+    // branch documents intent and is harmless; it is not load-bearing, and a
+    // future reader must not take its presence as the reason years are checked.
+    for (const year of ["2028", "1899", "2100", "5000"]) {
+      expect(extractHardClaims(`Construction begins in ${year}.`), year).toEqual([year]);
+    }
+    // 999 is below the four-digit floor and is correctly ignored either way.
+    expect(extractHardClaims("There are 999 parcels.")).toEqual([]);
+  });
+});
+
+describe("the ids reported back are the ids, not a tally", () => {
+  it("reports one entry per distinct fact id, however many times it was cited", () => {
+    // MUTATION G13 SURVIVED: `dedupePreservingOrder` could return its input
+    // unchanged and no test noticed. An operator then reads "unknown fact_ids:
+    // ['fact_9', 'fact_9', 'fact_9']" and counts three problems where there is
+    // one — and the persisted summary grows a list that is a citation tally
+    // wearing an id list's name.
+    const out = validateGroundedNarrative(
+      "Both halves rest on the same source. [fact:a] [fact:a] [fact:b] Another line cites it again. [fact:a]",
+      ["a", "b"],
+      "annotated"
+    );
+
+    expect(out.citedFactIds).toEqual(["a", "b"]);
+
+    const unknown = validateGroundedNarrative(
+      "First. [fact:ghost] [fact:ghost] Second. [fact:ghost]",
+      ["real"],
+      "annotated"
+    );
+    expect(unknown.unknownFactIds).toEqual(["ghost"]);
+  });
+
+  it("EQUIVALENT MUTANT, recorded: the unknown-id conjunct in the verdict is redundant", () => {
+    // MUTATION G5 SURVIVED — dropping `&& unknownFactIds.length === 0` from
+    // `isFullyGrounded` changed nothing, and it cannot: a sentence with an
+    // unknown id is not grounded, so it has already incremented
+    // `ungroundedCount`, and `unknownAll` is only ever pushed inside that same
+    // branch. The property is what is pinned here; the conjunct is defensive
+    // and may stay.
+    const out = validateGroundedNarrative("A claim. [fact:ghost]", ["real"], "annotated");
+    expect(out.unknownFactIds).toEqual(["ghost"]);
+    expect(out.ungroundedSentenceCount).toBe(1);
+    expect(out.isFullyGrounded).toBe(false);
+  });
+});
+
 describe("numeric faithfulness — documented bounds (characterization)", () => {
   // These pin the belt's KNOWN LIMITS so future maintainers don't over-trust
   // it: the belt proves presence of each figure in the sentence's cited facts,
