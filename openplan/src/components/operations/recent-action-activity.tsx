@@ -130,8 +130,9 @@ export function RecentActionActivity({
           <div className="flex items-start gap-3">
             <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" />
             <p className="text-sm leading-relaxed">
-              Action activity could not be loaded. Check assistant_action_executions RLS and workspace membership before
-              treating the activity lane as complete.
+              This record could not be loaded, so what is shown below is incomplete. That is a failure to
+              read, not a finding that the assistant has done nothing — the deployment&apos;s own logs carry
+              the reason.
             </p>
           </div>
         </div>
@@ -140,27 +141,28 @@ export function RecentActionActivity({
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="module-subpanel">
               <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                Supervised action triage
+                What still needs a person
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground">
-                Showing {triageSummary.supervised} supervised-review row{triageSummary.supervised === 1 ? "" : "s"} from {triageSummary.total} recent audit row{triageSummary.total === 1 ? "" : "s"}.
+                {triageSummary.supervised} of the {triageSummary.total} most recent action{triageSummary.total === 1 ? "" : "s"} {triageSummary.supervised === 1 ? "is waiting on" : "are waiting on"} someone.
               </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                Failed {triageSummary.failed} · Approval required {triageSummary.approvalRequired} · Review gated {triageSummary.reviewGated} · Safe succeeded {triageSummary.safeSucceeded}
+                {triageSummary.failed} failed · {triageSummary.approvalRequired} awaiting approval · {triageSummary.reviewGated} held for review · {triageSummary.safeSucceeded} completed on their own
               </p>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                 {prioritizeSupervisedActions
-                  ? "Filter posture: failed, review-gated, and approval-required actions are sorted first; safe completed actions remain visible below for traceability."
-                  : "Filter posture: rows stay in audit-log order; use failed, review, and approval labels to triage manually."}
+                  ? "Anything that failed, is held for review, or needs approval is listed first. Completed actions stay below, so the record is still whole."
+                  : "Listed in the order they happened. Use the labels on each row to find the ones that need you."}
               </p>
             </div>
             {showNoWritePosture ? (
               <div className="module-subpanel">
                 <p className="text-[0.72rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  No-write smoke posture
+                  What this panel does, and does not do
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-foreground">
-                  This lane only reads assistant_action_executions. It does not replay actions, provision workspaces, send email, mutate access requests, or start deployments.
+                  It shows what has already happened, and nothing more. Opening it never re-runs an action,
+                  changes anyone&apos;s access, sends an email, or starts a deployment.
                 </p>
               </div>
             ) : null}

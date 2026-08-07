@@ -34,7 +34,10 @@ import {
   type ModelRunDispatchOutcome,
   type ModelRunExecutionOutlook,
 } from "@/lib/models/run-dispatch";
-import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import {
+  modelingClaimStatusLabel,
+  type ModelingClaimStatus,
+} from "@/lib/models/evidence-backbone";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -868,9 +871,13 @@ export function ModelRunManager({
                   onChange={(event) => setCalibrate(event.target.checked)}
                 />
                 <span>
-                  Attempt count calibration (where local observed counts exist) — produces the
-                  disclosed <span className="font-semibold">calibrated_to_counts</span> tier; leaves
-                  the CEQA VMT input unchanged.
+                  Tune the assignment to local traffic counts, where you have them. A run that
+                  succeeds is labelled{" "}
+                  <span className="font-semibold">
+                    {modelingClaimStatusLabel("calibrated_to_counts")}
+                  </span>{" "}
+                  — the same words shown on the run itself. The CEQA VMT input is unchanged either
+                  way.
                 </span>
               </label>
               <p className="text-xs text-muted-foreground">

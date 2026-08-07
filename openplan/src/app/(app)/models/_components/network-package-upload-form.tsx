@@ -652,7 +652,9 @@ export function NetworkPackageUploadForm({
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-foreground">Zones GeoJSON (optional)</span>
           <span className="text-xs text-muted-foreground">
-            Stored. A zone_id, taz or id property is what connectors attach to.
+            Every zone needs a <code>zone_id</code>, <code>taz</code> or <code>id</code> property.
+            That is the value OpenPlan attaches trips to, so a file without one loads but connects to
+            nothing.
           </span>
           <input
             aria-label="Zones GeoJSON"
@@ -666,7 +668,8 @@ export function NetworkPackageUploadForm({
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-foreground">Corridors GeoJSON (optional)</span>
           <span className="text-xs text-muted-foreground">
-            Stored. Each feature needs a corridor_name or name property.
+            Every corridor needs a <code>corridor_name</code> or <code>name</code> property, so it can
+            be told apart from the others.
           </span>
           <input
             aria-label="Corridors GeoJSON"

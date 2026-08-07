@@ -112,9 +112,9 @@ export function TripGenScreenBody({ kpis }: { kpis: TripGenKpiRow[] }) {
         data-testid="trip-gen-empty-state"
       >
         <p>
-          No trip-generation KPIs are stored for this run, so the worksheet has nothing to show. It
-          reads only the <code>ite_trip_generation</code> KPI rows written by the engine — OpenPlan
-          does not estimate values that were never stored.
+          This run recorded no trip-generation results, so there is nothing to show here. The
+          worksheet reports only what the model actually produced — where a figure was never
+          calculated, OpenPlan leaves it blank rather than estimating one.
         </p>
       </div>
     );

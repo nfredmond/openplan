@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ModelRunManager, type ModelRunStage, type ModelRunArtifact } from "@/components/models/model-run-manager";
-import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), refresh: vi.fn() }),
@@ -33,7 +33,9 @@ function selectRunMode(value: string) {
   fireEvent.change(screen.getByLabelText(/Run mode/i), { target: { value } });
 }
 
-const CALIBRATION_LABEL = /Attempt count calibration/i;
+// Matches the checkbox by what it OFFERS rather than by a phrase, so a
+// rewording does not read as a missing control.
+const CALIBRATION_LABEL = /Tune the assignment to local traffic counts/i;
 
 describe("ModelRunManager per-run calibration toggle", () => {
   afterEach(() => {
@@ -52,9 +54,15 @@ describe("ModelRunManager per-run calibration toggle", () => {
     selectRunMode("aequilibrae");
     const box = screen.getByRole("checkbox", { name: CALIBRATION_LABEL });
     expect(box).toBeInTheDocument();
-    // Honest copy: discloses the tier and the CEQA boundary.
-    expect(screen.getByText(/calibrated_to_counts/i)).toBeInTheDocument();
-    expect(screen.getByText(/leaves\s+the CEQA VMT input unchanged/i)).toBeInTheDocument();
+    // HONEST COPY: it discloses the tier and the CEQA boundary. Both claims are
+    // load-bearing and both survived the 2026-08-07 rewording — what changed is
+    // that the tier is now named in the planner's words rather than the
+    // database's, and by the SAME function that labels it on the run itself, so
+    // the two surfaces cannot drift into calling one thing two names.
+    expect(
+      screen.getByText(modelingClaimStatusLabel("calibrated_to_counts"))
+    ).toBeInTheDocument();
+    expect(screen.getByText(/CEQA VMT input is unchanged/i)).toBeInTheDocument();
 
     selectRunMode("behavioral_demand");
     expect(screen.getByRole("checkbox", { name: CALIBRATION_LABEL })).toBeInTheDocument();

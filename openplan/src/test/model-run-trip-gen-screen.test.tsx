@@ -201,7 +201,12 @@ describe("ModelRunTripGenScreen", () => {
 
     await waitFor(() => expect(screen.getByTestId("trip-gen-empty-state")).toBeInTheDocument());
     expect(screen.getByTestId("trip-gen-empty-state")).toHaveTextContent(
-      "No trip-generation KPIs are stored for this run"
+      "This run recorded no trip-generation results"
+    );
+    // The claim that survives the 2026-08-07 rewording: an absent figure is
+    // reported as absent, never estimated. The words changed; this did not.
+    expect(screen.getByTestId("trip-gen-empty-state")).toHaveTextContent(
+      /leaves it blank rather than estimating one/i
     );
     expect(screen.queryByTestId("trip-gen-line-items")).not.toBeInTheDocument();
     expect(screen.getByTestId("trip-gen-caveat")).toHaveTextContent(ITE_TRIP_GEN_SCREENING_CAVEAT);
