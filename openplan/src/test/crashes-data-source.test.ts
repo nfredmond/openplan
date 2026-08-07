@@ -8,6 +8,7 @@ import {
 import { resolveEstimatedDomains } from "@/lib/analysis/estimated-source";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { __clearFetchJsonResponseCacheForTests } from "@/lib/data-sources/http";
+import { deriveCcrsSeverity } from "@/lib/safety/sources/ccrs";
 
 const NEVADA_COUNTY_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
 const DETROIT_BBOX = { minLon: -83.2, minLat: 42.2, maxLon: -83.0, maxLat: 42.4 };
@@ -299,5 +300,123 @@ describe("crash disclosure reaches the existing Explore seam", () => {
     const line = describeCrashSafety(unobserved);
     expect(line).toContain("not available");
     expect(line).not.toMatch(/\b0 fatal crashes\b/);
+  });
+});
+
+/**
+ * TWO NUMBERS A SAFETY FINDING RESTS ON.
+ *
+ * The 2026-08-06 foundation audit ran six mutations against `crashes.ts` and
+ * two survived the whole suite: the fatal-crash floor could be removed, and
+ * crash density could stop being annualised. The second is the one that
+ * reaches a grant application — a four-year crash total presented as an annual
+ * rate is a 4x overstatement on a number planners cite to argue for funding.
+ */
+describe("crash density is annualised, and the year count is the divisor", () => {
+  /**
+   * `crashesPerSquareMile` divides by `annualBasis`, the number of years the
+   * source actually answered for. Mutating that to 1 reports the whole
+   * multi-year total as one year's rate, and nothing in the suite noticed.
+   */
+  function ccrsFetchForYears(years: number[], recordsPerYear: number) {
+    return vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("package_show")) return jsonResponse(CCRS_PACKAGE_BODY);
+      if (url.includes("count(*)")) {
+        return jsonResponse({ result: { records: [{ n: String(recordsPerYear) }] } });
+      }
+      const year = years.find((candidate) => url.includes(`res-${candidate}`));
+      if (year) {
+        return jsonResponse({
+          result: {
+            records: Array.from({ length: recordsPerYear }, (_, index) => ({
+              "Collision Id": year * 100 + index,
+              "Crash Date Time": `${year}-04-0${index + 1}T08:00:00`,
+              Latitude: "39.2",
+              Longitude: "-121.0",
+              NumberKilled: "0",
+              NumberInjured: 1,
+            })),
+          },
+        });
+      }
+      return jsonResponse({ result: { records: [] } });
+    });
+  }
+
+  it("divides the multi-year total by the years queried, not by one", async () => {
+    // A SMALL study area on purpose: over a whole county the rate rounds to 0.0
+    // at one decimal and the assertion below could not tell the two divisors
+    // apart. ~9.2 sq mi with 20 crashes a year gives 2.2/sq mi/year annualised
+    // and 8.7 un-annualised — a difference no rounding can hide.
+    const SMALL_CA_BBOX = { minLon: -121.05, minLat: 39.2, maxLon: -121.0, maxLat: 39.25 };
+    const years = [2025, 2024];
+    vi.stubGlobal("fetch", ccrsFetchForYears(years, 20) as unknown as typeof fetch);
+
+    const result = await fetchCrashesForBbox(SMALL_CA_BBOX, { now: NOW });
+
+    expect(result.observed).toBe(true);
+    // CCRS_PACKAGE_BODY publishes two annual resources, so two years answer.
+    expect(result.yearsQueried.length).toBe(2);
+    expect(result.totalInjuryCrashes).toBe(40);
+
+    // 40 crashes / 2 years / 9.22 sq mi = 2.2. Un-annualised it would be 4.3,
+    // and the audit's mutation (annualBasis -> 1) produces exactly that.
+    expect(result.crashesPerSquareMile).toBeCloseTo(2.2, 1);
+    expect(result.crashesPerSquareMile).toBeLessThan(3);
+  });
+
+});
+
+describe("a fatal crash killed at least one person", () => {
+  /**
+   * `totalFatalities += Math.max(1, record.killedCount)` is a FLOOR, and the
+   * audit removed it with the suite green. It is unreachable with the adapters
+   * that ship today — CCRS only calls a crash fatal when killedCount > 0, and
+   * the FARS parser floors killedCount at 1 at the source — so no test driving
+   * a real adapter can kill that mutation.
+   *
+   * What is asserted instead is the PROPERTY that makes it unreachable, so a
+   * future adapter that breaks it fails here and the floor's behaviour gets
+   * decided deliberately rather than quietly becoming live and untested. This
+   * is the same shape as the CEJST crosswalk guard in equity-designation.
+   */
+  it("CCRS calls a crash fatal only when it recorded a death", () => {
+    expect(deriveCcrsSeverity(1, 0)).toBe("fatal");
+    expect(deriveCcrsSeverity(2, 5)).toBe("fatal");
+    expect(deriveCcrsSeverity(0, 3)).not.toBe("fatal");
+    expect(deriveCcrsSeverity(0, 0)).not.toBe("fatal");
+  });
+
+  it("counts one death per fatal crash when the source reports a killed count", async () => {
+    const fetchMock = vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (url.includes("package_show")) return jsonResponse(CCRS_PACKAGE_BODY);
+      if (url.includes("count(*)")) return jsonResponse({ result: { records: [{ n: "1" }] } });
+      if (url.includes("res-2025")) {
+        return jsonResponse({
+          result: {
+            records: [
+              {
+                "Collision Id": 9,
+                "Crash Date Time": "2025-04-01T08:00:00",
+                Latitude: "39.2",
+                Longitude: "-121.0",
+                NumberKilled: "3",
+                NumberInjured: 0,
+              },
+            ],
+          },
+        });
+      }
+      return jsonResponse({ result: { records: [] } });
+    });
+    vi.stubGlobal("fetch", fetchMock as unknown as typeof fetch);
+
+    const result = await fetchCrashesForBbox(NEVADA_COUNTY_BBOX, { now: NOW });
+    // Three deaths in ONE crash: fatalities and fatal crashes are different
+    // counts and must not collapse into each other.
+    expect(result.totalFatalCrashes).toBe(1);
+    expect(result.totalFatalities).toBe(3);
   });
 });

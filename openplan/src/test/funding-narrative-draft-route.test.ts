@@ -291,3 +291,136 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft — a faile
     expect(draftInsertMock).toHaveBeenCalled();
   });
 });
+
+/**
+ * THE PURSUIT COLUMNS, ON THE DOOR THAT USED TO DROP THEM.
+ *
+ * `loadFundingOpportunityAccess` selects a fixed column list with no
+ * `pursuit_kind`, `solicitation_number`, `submission_format_note` or
+ * `questions_due_at` — which is why `opportunityRow` above has none of them.
+ * This route used that row directly, so `isProposal` was PERMANENTLY FALSE: a
+ * planner answering an RFP got a draft with no solicitation number, no
+ * submission-format note, no questions-due date and no past-performance
+ * grounding, and nothing said anything had been dropped. The per-section
+ * drafter loaded the pursuit context and merged it; this one did not.
+ *
+ * Recorded by the 2026-08-06 foundation audit as SWEEP_A3 — "a LIVE PRODUCTION
+ * DEFECT, not only an unguarded claim". A unit test on the merge is not enough
+ * to close it: the defect was that THIS ROUTE did not call the merge, so the
+ * assertion has to run through the real route and read the real prompt.
+ */
+describe("/api/funding-opportunities/[opportunityId]/narrative-draft — proposal pursuits", () => {
+  const PROPOSAL_CONTEXT = {
+    id: OPPORTUNITY_ID,
+    pursuit_kind: "proposal",
+    solicitation_number: "RFP-2026-014",
+    submission_format_note: "Portal upload, 20-page limit.",
+    questions_due_at: "2026-08-15T00:00:00.000Z",
+  };
+
+  /** Answers the pursuit loader's own projection, and nothing else. */
+  function withPursuitRow(row: Record<string, unknown> | null) {
+    return (table: string, columns: string): ReadResult | null =>
+      table === "funding_opportunities" && columns.includes("pursuit_kind")
+        ? { data: row, error: null }
+        : null;
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
+    vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
+    createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    recordAiUsageEventMock.mockResolvedValue(undefined);
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      supabase: null,
+      opportunity: opportunityRow,
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    generateTextMock.mockResolvedValue({
+      text: "Drafted narrative paragraphs.",
+      usage: { inputTokens: 1200, outputTokens: 800, totalTokens: 2000 },
+    });
+    draftSingleMock.mockResolvedValue({
+      data: {
+        id: DRAFT_ID,
+        opportunity_id: OPPORTUNITY_ID,
+        draft_markdown: "Drafted narrative paragraphs.",
+        model: "claude-opus-4-8",
+        source: "ai",
+        created_at: "2026-07-17T00:00:00.000Z",
+      },
+      error: null,
+    });
+  });
+
+  it("grounds the draft on the solicitation the planner is answering", async () => {
+    createClientMock.mockResolvedValue(clientWith(withPursuitRow(PROPOSAL_CONTEXT)));
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    expect(response.status).toBe(201);
+
+    const prompt = promptsSent().join("\n");
+    expect(prompt).toContain("RFP-2026-014");
+    expect(prompt).toContain("Portal upload, 20-page limit.");
+    expect(prompt).toContain("2026-08-15");
+  });
+
+  it("keeps a grant pursuit free of solicitation grounding", async () => {
+    createClientMock.mockResolvedValue(
+      clientWith(
+        withPursuitRow({
+          id: OPPORTUNITY_ID,
+          pursuit_kind: "grant",
+          solicitation_number: null,
+          submission_format_note: null,
+          questions_due_at: null,
+        })
+      )
+    );
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    expect(response.status).toBe(201);
+    // Both directions, so the assertion above cannot pass by the fixture simply
+    // appearing everywhere.
+    expect(promptsSent().join("\n")).not.toContain("RFP-2026-014");
+  });
+
+  it("refuses rather than degrading a proposal into a grant on a read failure", async () => {
+    createClientMock.mockResolvedValue(
+      clientWith((table, columns) =>
+        table === "funding_opportunities" && columns.includes("pursuit_kind")
+          ? { data: null, error: { message: "connection reset by peer" } }
+          : null
+      )
+    );
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    // A transient failure produces the SAME empty pursuit context a real grant
+    // does, so answering 201 here would silently strip an RFP response of its
+    // solicitation grounding — the failure mode this whole route header is about.
+    expect(response.status).toBe(500);
+    expect(generateTextMock).not.toHaveBeenCalled();
+  });
+
+  it("still drafts when the pursuit schema is not migrated yet", async () => {
+    // A deployment predating 20260727000015 has no pursuit columns and can hold
+    // no proposal rows, so 'grant' is truthful rather than a guess — and must
+    // not become the 500 above.
+    createClientMock.mockResolvedValue(
+      clientWith((table, columns) =>
+        table === "funding_opportunities" && columns.includes("pursuit_kind")
+          ? { data: null, error: { message: 'column "pursuit_kind" does not exist' } }
+          : null
+      )
+    );
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    expect(response.status).toBe(201);
+    expect(promptsSent().join("\n")).not.toContain("RFP-2026-014");
+  });
+});

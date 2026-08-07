@@ -30,7 +30,7 @@ import {
   looksLikePendingAssemblySchema,
   parseApplicationSectionRow,
 } from "@/lib/grants/application";
-import { loadOpportunityPursuitContext } from "@/lib/grants/pursuit";
+import { loadOpportunityPursuitContext, withPursuitColumns } from "@/lib/grants/pursuit";
 import type { GrantApplicationEvidenceKind } from "@/lib/grants/program-catalog";
 
 const DEFAULT_NARRATIVE_MODEL_ID = "claude-opus-4-8";
@@ -263,15 +263,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // including revisions. The prior draft is style input only; if the
       // evidence changed since it was written, the new fact list (not the old
       // prose) is what the revision may cite.
+      // The by-hand spread that used to live here is now `withPursuitColumns`,
+      // shared with the standalone narrative drafter — two copies of one merge
+      // is how the two doors came to disagree in the first place.
       const evidence = await assembleOpportunityEvidence(
         supabase,
-        {
-          ...opportunity,
-          pursuit_kind: pursuitKind,
-          solicitation_number: pursuit.context.solicitationNumber,
-          submission_format_note: pursuit.context.submissionFormatNote,
-          questions_due_at: pursuit.context.questionsDueAt,
-        },
+        withPursuitColumns(opportunity, pursuit.context),
         {
           knowledgeBaseQueryHint: [section.title, section.guidance]
             .filter((part): part is string => Boolean(part && part.trim()))

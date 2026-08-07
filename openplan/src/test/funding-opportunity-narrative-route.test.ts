@@ -136,6 +136,22 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
         if (table === "funding_opportunity_narrative_drafts") {
           return { insert: draftInsertMock };
         }
+        if (table === "funding_opportunities") {
+          // The pursuit-context read, added 2026-08-07 when this route started
+          // merging back the four columns `loadFundingOpportunityAccess` never
+          // selects (SWEEP_A3). A grant answer, which is what these cases are.
+          const chain: Record<string, unknown> = {
+            maybeSingle: vi.fn(async () => ({
+              data: { id: OPPORTUNITY_ID, pursuit_kind: "grant" },
+              error: null,
+            })),
+          };
+          for (const method of ["select", "eq"]) {
+            chain[method] = vi.fn(() => chain);
+          }
+          return chain;
+        }
+        // Deliberately strict: an unexpected read is a defect, not a default.
         throw new Error(`Unexpected table: ${table}`);
       }),
     });

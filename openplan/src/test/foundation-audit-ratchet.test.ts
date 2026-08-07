@@ -665,124 +665,146 @@ type OpenSurvivor = {
  * the WHOLE suite on AUDIT_DATE and survived, so "nothing catches this" is
  * measured rather than assumed.
  */
-const OPEN_SURVIVORS: Record<string, OpenSurvivor> = {
+/**
+ * EMPTY, as of 2026-08-07. All twelve entries left. Eleven were closed by an
+ * assertion that was written, then verified by RE-RUNNING THE ORIGINAL MUTATION
+ * and watching it fail; the twelfth (CR5) was shown to be unreachable with the
+ * adapters that ship and moved to STRUCTURAL_SURVIVORS with a guard on the
+ * property that makes it unreachable.
+ *
+ * The rule is unchanged: nothing may be added here without a deliberate edit,
+ * and OPEN_SURVIVOR_CEILING moves in the same commit.
+ */
+const OPEN_SURVIVORS: Record<string, OpenSurvivor> = {};
+
+/**
+ * CLOSED ON 2026-08-07 — the second closing pass, kept separate from the
+ * same-day sixteen so neither record can absorb the other.
+ *
+ * Every entry was re-run after its assertion was written and reported KILLED.
+ * Two are worth reading on their own:
+ *
+ *   - SWEEP_A3 was a LIVE PRODUCTION DEFECT, not merely an unguarded rule. It
+ *     is fixed here, and the fix is NOT the obvious one: widening the shared
+ *     `loadFundingOpportunityAccess` projection would have hard-failed every
+ *     funding route on a deployment predating migration 20260727000015. The
+ *     pursuit columns are merged back through one shared pure function instead.
+ *   - SWEEP_B9 could not be re-run from what the sweep recorded, so it was
+ *     re-probed from scratch. It reproduced on the first attempt.
+ */
+const CLOSED_2026_08_07: Record<string, ClosedSurvivor> = {
   CG1: {
     productionFile: "src/lib/geo/corridor-geometry.ts",
-    sampledBy: "src/test/corridor-geometry.test.ts",
-    mutation: "the longitude bound widened 10× (|lon| > 180 → |lon| > 1800)",
-    consequence:
-      "A corridor whose coordinates are not longitudes at all is accepted as valid geometry, and " +
-      "every downstream area/length figure computed from it is meaningless rather than absent.",
-    scope: "whole-suite",
+    testFile: "src/test/corridor-geometry.test.ts",
+    testName: "accepts coordinates at the exact bounds and rejects just outside them",
+    mutation: "the longitude bound widened 10x (|lon| > 180 → |lon| > 1800)",
   },
   CG2: {
     productionFile: "src/lib/geo/corridor-geometry.ts",
-    sampledBy: "src/test/corridor-geometry.test.ts",
-    mutation: "the latitude bound widened 10× (|lat| > 90 → |lat| > 900)",
-    consequence:
-      "Same as CG1 on the other axis. The pair matters together: nothing in the suite varies a " +
-      "coordinate out of range, so the whole range check is untested.",
-    scope: "whole-suite",
+    testFile: "src/test/corridor-geometry.test.ts",
+    testName: "rejects a latitude outside the bounds, not only a longitude",
+    mutation: "the latitude bound widened 10x (|lat| > 90 → |lat| > 900)",
   },
   CG4: {
     productionFile: "src/lib/geo/corridor-geometry.ts",
-    sampledBy: "src/test/corridor-geometry.test.ts",
+    testFile: "src/test/corridor-geometry.test.ts",
+    testName: "refuses a degenerate ring of fewer than four points",
     mutation: "the minimum-ring-points check disabled (ring.length < MIN_RING_POINTS → < 0)",
-    consequence:
-      "A degenerate ring of one or two vertices passes validation as a polygon. It encloses no " +
-      "area, so any per-area metric derived from it divides by zero or reports zero.",
-    scope: "whole-suite",
   },
   CG5: {
     productionFile: "src/lib/geo/corridor-geometry.ts",
-    sampledBy: "src/test/corridor-geometry.test.ts",
+    testFile: "src/test/corridor-geometry.test.ts",
+    testName: "validates EVERY ring, not only the first",
     mutation: "only the first ring is validated (rings.forEach → rings.slice(0, 1).forEach)",
-    consequence:
-      "Holes and secondary rings go unchecked. A multipolygon study area — which is what an " +
-      "agency with two disjoint service areas has — is validated on one of its parts.",
-    scope: "whole-suite",
   },
   CG6: {
     productionFile: "src/lib/geo/corridor-geometry.ts",
-    sampledBy: "src/test/corridor-geometry.test.ts",
+    testFile: "src/test/corridor-geometry.test.ts",
+    testName: "refuses a LineString or a Point where a polygon is required",
     mutation: "the geometry-type gate removed (Polygon/MultiPolygon check → if (false))",
-    consequence:
-      "A LineString or Point is accepted where a polygon is required, so the type contract the " +
-      "rest of the geometry code assumes is enforced nowhere.",
-    scope: "whole-suite",
-  },
-  CR5: {
-    productionFile: "src/lib/data-sources/crashes.ts",
-    sampledBy: "src/test/crashes-data-source.test.ts",
-    mutation: "the fatal-crash floor removed (totalFatalities += Math.max(1, killedCount) → += killedCount)",
-    consequence:
-      "A record flagged fatal whose killed-count is 0 or null contributes zero deaths. The floor " +
-      "exists because a fatal crash killed at least one person; without it a safety page can " +
-      "under-report fatalities on exactly the records whose data is worst.",
-    scope: "whole-suite",
   },
   CR6: {
     productionFile: "src/lib/data-sources/crashes.ts",
-    sampledBy: "src/test/crashes-data-source.test.ts",
+    testFile: "src/test/crashes-data-source.test.ts",
+    testName: "divides the multi-year total by the years queried, not by one",
     mutation: "crash density no longer annualised (annualBasis = years queried → 1)",
-    consequence:
-      "A four-year crash total is presented as an annual rate — a 4× overstatement on a number " +
-      "planners put in grant applications and safety findings.",
-    scope: "whole-suite",
   },
   IA1: {
     productionFile: "src/lib/accessibility/isochrone.ts",
-    sampledBy: "src/test/isochrone-accessibility.test.ts",
+    testFile: "src/test/isochrone-accessibility.test.ts",
+    testName: "puts the high tier at 39, with 38 still medium and 40 high",
     mutation: "the high-accessibility tier threshold moved (rawScore >= 39 → >= 30)",
-    consequence:
-      "A tier boundary a planner reports as a finding. Nothing pins either threshold, so the " +
-      "labels 'high' and 'medium' can move without a single test noticing.",
-    scope: "whole-suite",
   },
   IA2: {
     productionFile: "src/lib/accessibility/isochrone.ts",
-    sampledBy: "src/test/isochrone-accessibility.test.ts",
+    testFile: "src/test/isochrone-accessibility.test.ts",
+    testName: "puts the medium tier at 21, with 20 still low and 22 medium",
     mutation: "the medium tier threshold moved (rawScore >= 21 → >= 15)",
-    consequence:
-      "As IA1, on the lower boundary: places that are scored 'low accessibility' today would be " +
-      "reported as 'medium', and nothing in the suite pins where that line sits.",
-    scope: "whole-suite",
   },
   IA5: {
     productionFile: "src/lib/accessibility/isochrone.ts",
-    sampledBy: "src/test/isochrone-accessibility.test.ts",
+    testFile: "src/test/isochrone-accessibility.test.ts",
+    testName: "steps walk+bike mode share at 5 / 10 / 15 / 25",
     mutation: "a transit-mode-share scoring bucket collapsed ([25, 24] → [25, 4])",
-    consequence:
-      "The score curve is re-shaped in the middle of its range with no test on the bucket table, " +
-      "so a place's accessibility score changes without any recorded reason.",
-    scope: "whole-suite",
   },
   IA6: {
     productionFile: "src/lib/accessibility/isochrone.ts",
-    sampledBy: "src/test/isochrone-accessibility.test.ts",
+    testFile: "src/test/isochrone-accessibility.test.ts",
+    testName: "steps zero-vehicle share at 5 / 10 / 20 — the equity term",
     mutation: "the zero-vehicle-household top bucket cut (14 → 2)",
-    consequence:
-      "Zero-vehicle share is the equity term of the accessibility score. Flattening its top bucket " +
-      "removes most of the credit carless households earn — an equity finding, silently.",
-    scope: "whole-suite",
   },
   SWEEP_A3: {
-    productionFile:
-      "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft/route.ts",
-    sampledBy: "src/test/grants-narrative-evidence-proposal.test.ts",
+    productionFile: "src/lib/grants/pursuit.ts",
+    testFile: "src/test/funding-narrative-draft-route.test.ts",
+    testName: "grounds the draft on the solicitation the planner is answering",
     mutation:
-      "the four pursuit columns dropped from the sibling route's patch, making it behave like " +
-      "loadFundingOpportunityAccess already does",
-    consequence:
-      "THIS ONE IS A LIVE PRODUCTION DEFECT, not only an unguarded claim. " +
-      "loadFundingOpportunityAccess never selects pursuit_kind / solicitation_number / " +
-      "submission_format_note / questions_due_at, so `isProposal` is permanently false on the " +
-      "standalone narrative-draft route: a planner answering an RFP gets a draft with no " +
-      "solicitation number, no submission-format note, no questions-due date and no " +
-      "past-performance grounding, and nothing says anything was dropped. The per-section drafter " +
-      "patches the same columns in, so the two doors into one feature disagree silently. Fixing " +
-      "the projection is the real close; the guard follows it.",
-    scope: "whole-suite",
+      "THE LIVE DEFECT. The standalone narrative drafter used the bare access row, whose projection " +
+      "omits all four pursuit columns, so `isProposal` was permanently false and an RFP response " +
+      "lost its solicitation number, submission-format note, questions-due date and past-performance " +
+      "grounding. Fixed by merging the pursuit context through one shared pure function that BOTH " +
+      "drafting doors now call; re-verified by reverting the route to the bare row.",
+  },
+  SWEEP_B8: {
+    productionFile: "src/lib/reports/api.ts",
+    testFile: "src/test/projection-strings.test.ts",
+    testName: "requests every column ReportAccessRow declares",
+    mutation:
+      "columns dropped from REPORT_ACCESS_COLUMNS (latest_artifact_url, and separately workspace_id). " +
+      "The original sweep string was never recorded, so the CLASS is guarded instead: the projection " +
+      "and its row type are two hand-maintained lists that are now asserted to agree in both directions.",
+  },
+  SWEEP_B9: {
+    productionFile: "src/lib/planner-pack/atp.ts",
+    testFile: "src/test/planner-pack-atp.test.ts",
+    testName: "declares exactly the three categories the ATP bonus recognises",
+    mutation:
+      "ATP_DAC_SCORING_CATEGORIES narrowed to {\"DAC\"}, dropping both low-income categories. " +
+      "Re-probed from scratch on 2026-08-07 because the sweep never recorded a string; it reproduced " +
+      "immediately. The existing coverage asserted `.has(\"DAC\")`, one member of three.",
+  },
+};
+
+/**
+ * SURVIVORS WHOSE BRANCH IS UNREACHABLE WITH THE CODE AND DATA THAT SHIP.
+ *
+ * Not holes, and not fixes either. No test driving the real product can kill
+ * these, because the branch cannot be entered — so what is guarded instead is
+ * the PROPERTY that makes it unreachable. If a future change breaks that
+ * property the guard fails, and the branch's behaviour gets decided
+ * deliberately rather than quietly becoming live and untested.
+ */
+const STRUCTURAL_SURVIVORS: Record<
+  string,
+  { productionFile: string; mutation: string; guardedInsteadBy: { testFile: string; testName: string } }
+> = {
+  CR5: {
+    productionFile: "src/lib/data-sources/crashes.ts",
+    mutation:
+      "the fatal-crash floor removed (totalFatalities += Math.max(1, killedCount) → += killedCount)",
+    guardedInsteadBy: {
+      testFile: "src/test/crashes-data-source.test.ts",
+      testName: "CCRS calls a crash fatal only when it recorded a death",
+    },
   },
 };
 
@@ -800,23 +822,24 @@ const OPEN_SURVIVORS: Record<string, OpenSurvivor> = {
  * survives, write the assertion that kills it, then move it into
  * CLOSED_SURVIVORS with its real mutation string.
  */
-const UNREPRODUCIBLE_SURVIVORS: Record<string, { label: string; surface: string }> = {
+const UNREPRODUCIBLE_SURVIVORS: Record<
+  string,
+  { label: string; surface: string; surfaceNowGuardedBy?: { testFile: string; testName: string } }
+> = {
   SWEEP_B7: {
     label: "B7 — sketch accessibility",
-    surface: "the sketch accessibility scoring path; file not recorded by the sweep harness",
-  },
-  SWEEP_B8: {
-    label: "B8 — report access projection",
     surface:
-      "a report-access `.select()` projection; file not recorded. The projection class is the " +
-      "one a mocked Supabase client provably cannot catch, so this is the likeliest of the three " +
-      "to be a live defect rather than only an unguarded rule.",
-  },
-  SWEEP_B9: {
-    label: "B9 — atp packet",
-    surface:
-      "src/lib/planner-pack/atp.ts (inferred from the sweep's own baseline sha file, which lists " +
-      "atp.ts, and from B10 having mutated it — inferred, not recorded)",
+      "the sketch accessibility scoring path; the sweep harness recorded no file and no string pair, " +
+      "so the exact mutation still cannot be stated. The only accessibility scoring path in the " +
+      "repository is `classifyWalkBikeAccess`, which /api/analysis consumes — and on 2026-08-07 that " +
+      "function gained assertions on BOTH tier cutoffs and all three bucket ladders, four of which " +
+      "were mutation-verified (IA1, IA2, IA5, IA6). So the surface is no longer unguarded even though " +
+      "this particular mutation cannot be re-run. It stays recorded rather than deleted, because " +
+      "'probably covered' is not the same as 'killed' and the difference is what this file is for.",
+    surfaceNowGuardedBy: {
+      testFile: "src/test/isochrone-accessibility.test.ts",
+      testName: "steps walk+bike mode share at 5 / 10 / 15 / 25",
+    },
   },
 };
 
@@ -828,7 +851,7 @@ const UNREPRODUCIBLE_SURVIVORS: Record<string, { label: string; surface: string 
  * the file named for them (COVERED_BY_A_SIBLING), and 3 could not be reproduced
  * from what the sweep harness recorded (UNREPRODUCIBLE_SURVIVORS).
  */
-const OPEN_SURVIVOR_CEILING = 12;
+const OPEN_SURVIVOR_CEILING = 0;
 
 /**
  * Survived the file that is NAMED for the claim, but a different test in the
@@ -881,6 +904,8 @@ const auditedTestFiles = [
   ...new Set([
     ...Object.values(AUDITED_PRODUCTION_FILES).flatMap((entry) => entry.sampledBy),
     ...Object.values(CLOSED_SURVIVORS).map((entry) => entry.testFile),
+    ...Object.values(CLOSED_2026_08_07).map((entry) => entry.testFile),
+    ...Object.values(STRUCTURAL_SURVIVORS).map((entry) => entry.guardedInsteadBy.testFile),
     ...Object.values(OPEN_SURVIVORS).map((entry) => entry.sampledBy),
     ...Object.values(TITLE_VI_AUDITED_PRODUCTION_FILES).flatMap((entry) => entry.sampledBy),
     ...Object.values(TITLE_VI_CLOSED_SURVIVORS).map((entry) => entry.testFile),
@@ -892,6 +917,8 @@ const allAuditedProductionFiles = [
   ...new Set([
     ...Object.keys(AUDITED_PRODUCTION_FILES),
     ...Object.keys(TITLE_VI_AUDITED_PRODUCTION_FILES),
+    ...Object.values(CLOSED_2026_08_07).map((entry) => entry.productionFile),
+    ...Object.values(STRUCTURAL_SURVIVORS).map((entry) => entry.productionFile),
   ]),
 ].sort();
 
@@ -911,7 +938,11 @@ describe("foundation audit ratchet", () => {
   it("every fix is still carried by the test that proved it", () => {
     const lost: string[] = [];
 
-    for (const [id, fix] of Object.entries({ ...CLOSED_SURVIVORS, ...TITLE_VI_CLOSED_SURVIVORS })) {
+    for (const [id, fix] of Object.entries({
+      ...CLOSED_SURVIVORS,
+      ...CLOSED_2026_08_07,
+      ...TITLE_VI_CLOSED_SURVIVORS,
+    })) {
       if (!existsSync(repoPath(fix.testFile))) {
         lost.push(`${id}: ${fix.testFile} is gone`);
         continue;
@@ -953,11 +984,11 @@ describe("foundation audit ratchet", () => {
     // and must never be raised: a rising ceiling means a hole was recorded and
     // left, which is the outcome this file exists to make impossible to do
     // quietly.
-    expect(OPEN_SURVIVOR_CEILING).toBeLessThanOrEqual(12);
+    expect(OPEN_SURVIVOR_CEILING).toBeLessThanOrEqual(0);
 
     // The unreproducible three are held to the same rule. They may only leave
     // this file by being re-mutated and closed, never by being forgotten.
-    expect(Object.keys(UNREPRODUCIBLE_SURVIVORS).length).toBeLessThanOrEqual(3);
+    expect(Object.keys(UNREPRODUCIBLE_SURVIVORS).length).toBeLessThanOrEqual(1);
   });
 
   it("every open survivor names a real file and states what is at stake", () => {
@@ -1023,9 +1054,15 @@ describe("foundation audit ratchet", () => {
 
     // Closed + still open + carried by a sibling + unreproducible must account
     // for all 34. A survivor may change category; it may not leave the file.
+    // A survivor may change category; it may not leave the file. The 2026-08-07
+    // pass moved eleven from OPEN to CLOSED_2026_08_07, one from OPEN to
+    // STRUCTURAL, and two from UNREPRODUCIBLE to CLOSED_2026_08_07 — so the five
+    // buckets still account for all 34.
     expect(
       Object.keys(CLOSED_SURVIVORS).length +
+        Object.keys(CLOSED_2026_08_07).length +
         Object.keys(OPEN_SURVIVORS).length +
+        Object.keys(STRUCTURAL_SURVIVORS).length +
         Object.keys(COVERED_BY_A_SIBLING).length +
         Object.keys(UNREPRODUCIBLE_SURVIVORS).length
     ).toBe(AUDIT_2026_08_06.survived);
@@ -1063,7 +1100,36 @@ describe("foundation audit ratchet", () => {
     expect(TITLE_VI_AUDIT.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
-  it("keeps the guard that stands in for the unreachable Title VI branch", () => {
+  it("keeps the guard that stands in for every unreachable branch", () => {
+    // Both passes' structural survivors, plus the surface guard standing in for
+    // the one mutation that still cannot be re-run. Losing any of these turns a
+    // reasoned decision back into an open hole with nothing recording it.
+    const standIns = [
+      ...Object.entries(TITLE_VI_STRUCTURAL_SURVIVORS),
+      ...Object.entries(STRUCTURAL_SURVIVORS),
+      ...Object.entries(UNREPRODUCIBLE_SURVIVORS)
+        .filter(([, entry]) => entry.surfaceNowGuardedBy)
+        .map(([id, entry]) => [
+          id,
+          { productionFile: null, guardedInsteadBy: entry.surfaceNowGuardedBy! },
+        ] as const),
+    ] as Array<[string, { productionFile: string | null; guardedInsteadBy: { testFile: string; testName: string } }]>;
+
+    expect(standIns.length).toBeGreaterThanOrEqual(3);
+
+    for (const [id, entry] of standIns) {
+      if (entry.productionFile) {
+        expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      }
+      const guardFile = repoPath(entry.guardedInsteadBy.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.guardedInsteadBy.testFile}`).toBe(true);
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(
+        entry.guardedInsteadBy.testName
+      );
+    }
+  });
+
+  it("keeps the Title VI stand-in guards specifically", () => {
     for (const [id, entry] of Object.entries(TITLE_VI_STRUCTURAL_SURVIVORS)) {
       expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
       const guardFile = repoPath(entry.guardedInsteadBy.testFile);

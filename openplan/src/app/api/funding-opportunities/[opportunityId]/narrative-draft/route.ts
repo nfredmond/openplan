@@ -6,6 +6,7 @@ import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-ke
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
+import { loadOpportunityPursuitContext, withPursuitColumns } from "@/lib/grants/pursuit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { GRANT_MODELING_PLANNING_CAVEAT } from "@/lib/grants/modeling-evidence";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
@@ -146,11 +147,36 @@ export async function POST(request: NextRequest, context: RouteContext) {
         );
       }
 
+      // THE PURSUIT COLUMNS COME BACK ON HERE, and without this the draft was
+      // wrong rather than merely thin. `loadFundingOpportunityAccess` selects a
+      // fixed column list that omits all four, so `isProposal` was permanently
+      // false on this route: a planner answering an RFP received a draft with no
+      // solicitation number, no submission-format note, no questions-due date
+      // and no past-performance grounding, and nothing said anything had been
+      // dropped. The per-section drafter did this already; this door did not.
+      // Found by the 2026-08-06 foundation audit (SWEEP_A3).
+      const pursuit = await loadOpportunityPursuitContext(supabase, opportunity.id);
+      if (pursuit.error) {
+        audit.error("narrative_draft_pursuit_context_failed", {
+          opportunityId: opportunity.id,
+          userId: user.id,
+          message: pursuit.error.message,
+        });
+        // A transient failure must not silently degrade a proposal into a grant.
+        return NextResponse.json(
+          { error: "Failed to load the opportunity's pursuit kind" },
+          { status: 500 }
+        );
+      }
+
       // Load the linked project's funding summary + deterministic modeling /
       // BCA / engagement / KB evidence, mirroring what the grants page computes
       // (extracted to narrative-evidence.ts so the per-section drafting route
       // rebuilds the same facts fresh on every call).
-      const evidence = await assembleOpportunityEvidence(supabase, opportunity);
+      const evidence = await assembleOpportunityEvidence(
+        supabase,
+        withPursuitColumns(opportunity, pursuit.context)
+      );
 
       // A FAILED EVIDENCE READ MAY NOT BECOME AN INSTRUCTION TO OMIT EVIDENCE.
       //

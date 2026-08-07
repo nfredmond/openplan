@@ -379,3 +379,73 @@ describe("renderAtpPacketMarkdown", () => {
     expect(markdown).toContain("- Mean screening total score: **75.0**");
   });
 });
+
+/**
+ * THE ATP DAC SCORING SET, WHOLE.
+ *
+ * `SWEEP_B9` in the 2026-08-06 foundation audit was a surviving mutation of
+ * the ATP packet whose exact string the sweep harness never recorded. Re-probed
+ * on 2026-08-07 it reproduced immediately: narrowing
+ * `ATP_DAC_SCORING_CATEGORIES` to `{"DAC"}` — dropping BOTH low-income
+ * categories — left the whole suite green. The existing coverage asserted
+ * `.has("DAC")`, one member of three, so two thirds of the set was free to
+ * vanish.
+ *
+ * What that costs: `atp_dac_benefit_eligible` is the disadvantaged-community
+ * bonus on a California Active Transportation Program application. A project
+ * benefiting a low-income community would have silently stopped qualifying,
+ * on the packet a planner submits for competitive funding.
+ */
+describe("ATP disadvantaged-community bonus — every qualifying category", () => {
+  const QUALIFYING = ["DAC", "Low-income near DAC", "Low-income"];
+
+  it("declares exactly the three categories the ATP bonus recognises", () => {
+    // The whole set, as a set. `.has()` on one member cannot see the other two
+    // disappear, which is exactly what happened.
+    expect([...ATP_DAC_SCORING_CATEGORIES].sort()).toEqual([...QUALIFYING].sort());
+    expect(ATP_DAC_SCORING_CATEGORIES.size).toBe(3);
+  });
+
+  it("qualifies a project in EACH category through the real packet builder", () => {
+    // Driven through computeAtpPacket rather than asserted on the set alone, so
+    // the wiring between the set and the packet field is covered too.
+    for (const category of QUALIFYING) {
+      const result = computeAtpPacket(SCORE_ROWS, {
+        runId: "r1",
+        equityRows: [
+          {
+            project_id: "p1",
+            dac_sb535: "true",
+            low_income_ab1550: "true",
+            tribal_area: "false",
+            benefit_category: category,
+            overlay_supplied: "true",
+          },
+        ],
+      });
+      const application = result.applications.find((app) => app.project_id === "p1");
+      expect(application?.benefit_category, category).toBe(category);
+      expect(application?.atp_dac_benefit_eligible, category).toBe(true);
+    }
+  });
+
+  it("refuses a category outside the set, so the bonus is not universal", () => {
+    for (const category of ["Other", "Unknown", "Rural"]) {
+      const result = computeAtpPacket(SCORE_ROWS, {
+        runId: "r1",
+        equityRows: [
+          {
+            project_id: "p1",
+            dac_sb535: "false",
+            low_income_ab1550: "false",
+            tribal_area: "false",
+            benefit_category: category,
+            overlay_supplied: "true",
+          },
+        ],
+      });
+      const application = result.applications.find((app) => app.project_id === "p1");
+      expect(application?.atp_dac_benefit_eligible, category).toBe(false);
+    }
+  });
+});

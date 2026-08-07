@@ -103,3 +103,55 @@ export async function loadOpportunityPursuitContext(
     error: null,
   };
 }
+
+/**
+ * Put the pursuit columns back onto an opportunity row before it is drafted from.
+ *
+ * ============================================== THE DEFECT THIS CLOSES
+ *
+ * `loadFundingOpportunityAccess` selects a FIXED column list that does not
+ * include `pursuit_kind`, `solicitation_number`, `submission_format_note` or
+ * `questions_due_at`. Every drafting path that used its row directly therefore
+ * saw `pursuit_kind: undefined`, so `isProposal` was PERMANENTLY FALSE: a
+ * planner answering an RFP got a draft with no solicitation number, no
+ * submission-format note, no questions-due date and no past-performance
+ * grounding, with nothing anywhere saying something had been dropped.
+ *
+ * The per-section drafter had already worked around it by loading the pursuit
+ * context and spreading it over the row by hand. The standalone narrative
+ * drafter had not. Two doors into one feature, disagreeing silently — the seam
+ * defect CLAUDE.md names, and found by the 2026-08-06 foundation audit
+ * (SWEEP_A3).
+ *
+ * ============================ WHY NOT JUST WIDEN THE SHARED PROJECTION
+ *
+ * Because it would break every funding route on a deployment that predates
+ * migration 20260727000015. `loadFundingOpportunityAccess` returns any read
+ * error to its caller, so adding a column that does not exist yet turns a
+ * working opportunity page into a 500. The tolerance lives HERE, deliberately —
+ * see this module's header — and this helper is how a caller gets the columns
+ * without giving up that tolerance.
+ *
+ * PURE, and it takes the context rather than loading it. The loading stays at
+ * the call site — each route already has to decide what to do with a read
+ * error, and a proposal must never degrade into a grant because of a transient
+ * failure. What is shared here is the MERGE, because the merge is what the two
+ * doors disagreed about.
+ */
+export function withPursuitColumns<T extends object>(
+  opportunity: T,
+  context: OpportunityPursuitContext
+): T & {
+  pursuit_kind: PursuitKind;
+  solicitation_number: string | null;
+  submission_format_note: string | null;
+  questions_due_at: string | null;
+} {
+  return {
+    ...opportunity,
+    pursuit_kind: context.pursuitKind,
+    solicitation_number: context.solicitationNumber,
+    submission_format_note: context.submissionFormatNote,
+    questions_due_at: context.questionsDueAt,
+  };
+}

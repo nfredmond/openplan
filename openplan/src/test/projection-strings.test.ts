@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { ASSISTANT_ACTIVITY_SELECT } from "@/app/api/assistant-activity/summary";
 import { STAGE_GATE_BINDING_WORKSPACE_COLUMNS } from "@/lib/stage-gates/rebind";
+import { REPORT_ACCESS_COLUMNS } from "@/lib/reports/api";
 
 /**
  * PROJECTION STRINGS, ASSERTED AS STRINGS — the Stage B closeout of a defect
@@ -230,4 +231,61 @@ describe("the stage-gate binding readers ask for the columns the binding resolve
       ).toBeGreaterThan(0);
     });
   }
+});
+
+/**
+ * REPORT ACCESS — the projection and its row type must not drift apart.
+ *
+ * `SWEEP_B8` in the 2026-08-06 foundation audit was a surviving mutation of "a
+ * report-access `.select()` projection" whose exact string pair the sweep
+ * harness never recorded, so it could not be re-run. The audit's own note said
+ * it was the likeliest of the three unreproducible survivors to be a live
+ * defect, because a dropped projection column is precisely the class a mocked
+ * Supabase client cannot catch: the fixture answers whatever was asked for.
+ *
+ * Rather than guess at the original mutation, this closes the class. The
+ * projection constant and the `ReportAccessRow` type are two hand-maintained
+ * lists of the same columns, in the same file, with nothing tying them
+ * together — so either can lose a column while the other keeps it, and every
+ * consumer typed against the row would read `undefined` at runtime with the
+ * compiler satisfied. Both directions are asserted, because a column in the
+ * projection that the type does not carry is dead weight nobody renders.
+ */
+describe("report access asks for exactly the columns its row type promises", () => {
+  const source = sourceOf("src/lib/reports/api.ts");
+
+  /** Field names of a `export type X = { … }` block, read from source. */
+  function fieldsOfType(typeName: string): string[] {
+    const at = source.indexOf(`export type ${typeName} = {`);
+    expect(at, `no ${typeName} in reports/api.ts`).toBeGreaterThanOrEqual(0);
+    const end = source.indexOf("};", at);
+    return source
+      .slice(at, end)
+      .split("\n")
+      .map((line) => line.trim().match(/^([a-z_][a-z0-9_]*)\s*[?]?:/i)?.[1])
+      .filter((name): name is string => Boolean(name));
+  }
+
+  const projection = REPORT_ACCESS_COLUMNS.split(",").map((column) => column.trim());
+  const rowFields = fieldsOfType("ReportAccessRow");
+
+  it("finds both lists, so the comparison below is not vacuous", () => {
+    expect(projection.length).toBeGreaterThan(5);
+    expect(rowFields.length).toBeGreaterThan(5);
+  });
+
+  it("requests every column ReportAccessRow declares", () => {
+    // A field the type promises but the select never asks for is `undefined` at
+    // runtime, with the compiler and every mocked test satisfied.
+    expect([...rowFields].sort()).toEqual([...projection].sort());
+  });
+
+  it("still carries the two columns the artifact download depends on", () => {
+    // Named explicitly because they are the ones whose absence is silent: a
+    // report page renders with no download link rather than erroring.
+    expect(projection).toContain("latest_artifact_url");
+    expect(projection).toContain("latest_artifact_kind");
+    // And the workspace scope, which is the access decision itself.
+    expect(projection).toContain("workspace_id");
+  });
 });
