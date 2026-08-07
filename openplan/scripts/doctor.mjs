@@ -170,6 +170,99 @@ if (!existsSync(envPath)) {
   }
 }
 
+// ── Modeling worker ──────────────────────────────────────────────────────────
+// OpenPlan runs FULLY without a worker: every module works, and the modeling
+// lane refuses honestly instead of queueing a run nothing will ever execute.
+// So nothing here is ever a FIX — a deployment with no worker is a supported
+// configuration, and telling an operator to fix a thing they chose would be
+// this script inventing a problem.
+//
+// What it does do is answer the question that is otherwise unanswerable from
+// outside: IS THE THING I DEPLOYED ACTUALLY REACHABLE? A push worker's URL can
+// be wrong, its token can be missing, or the service can be asleep, and every
+// one of those looks identical from the app — a run that sits queued.
+const WORKER_DECLARATION_ENV = "OPENPLAN_MODELING_WORKER";
+const WORKER_URL_ENV = "OPENPLAN_MODELING_WORKER_URL";
+const WORKER_TOKEN_ENV = "OPENPLAN_MODELING_WORKER_TOKEN";
+/** The worker's own health path. See TRIGGER_HEALTH_PATH in main.py. */
+const WORKER_HEALTH_PATH = "/healthz";
+
+async function probeWorker(baseUrl) {
+  const target = baseUrl.replace(/\/+$/, "") + WORKER_HEALTH_PATH;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch(target, { signal: controller.signal });
+    return { ok: response.ok, status: response.status };
+  } catch (error) {
+    return { ok: false, error: error?.name === "AbortError" ? "timed out after 8 seconds" : String(error?.message ?? error) };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+if (existsSync(envPath)) {
+  const workerEnv = new Map();
+  for (const line of readFileSync(envPath, "utf8").split("\n")) {
+    const match = /^\s*([A-Z0-9_]+)\s*=\s*(.*)$/.exec(line);
+    if (match) workerEnv.set(match[1], match[2].trim().replace(/^["\']|["\']$/g, ""));
+  }
+
+  const declaration = workerEnv.get(WORKER_DECLARATION_ENV) || "";
+  const workerUrl = workerEnv.get(WORKER_URL_ENV) || "";
+  const workerToken = workerEnv.get(WORKER_TOKEN_ENV) || "";
+
+  if (!workerUrl && !workerToken && !declaration) {
+    warn(
+      "No modeling worker is configured",
+      "That is a complete, supported setup: every other module works, and the modeling lane says so plainly instead of queueing a run nothing will run. To add one later, follow workers/aequilibrae_worker/DEPLOY.md."
+    );
+  } else if (workerUrl && !workerToken) {
+    // The app refuses to trigger an unauthenticated worker, so this combination
+    // silently does nothing — runs queue forever with no error anywhere.
+    bad(
+      `${WORKER_URL_ENV} is set but ${WORKER_TOKEN_ENV} is not`,
+      "OpenPlan will not trigger an unauthenticated worker, so nothing is pushed and runs wait forever. Set the same token here and on the worker, or clear both."
+    );
+  } else if (workerToken && !workerUrl) {
+    bad(
+      `${WORKER_TOKEN_ENV} is set but ${WORKER_URL_ENV} is not`,
+      "There is nowhere to push a run, so the token does nothing. Set the worker's address, or clear both."
+    );
+  } else if (workerUrl) {
+    const probe = await probeWorker(workerUrl);
+    if (probe.ok) {
+      ok(`Modeling worker answered at ${WORKER_HEALTH_PATH}`);
+    } else if (probe.status) {
+      bad(
+        `Modeling worker answered ${probe.status} at ${WORKER_HEALTH_PATH}`,
+        `The address in ${WORKER_URL_ENV} is reachable but did not report healthy. Check the worker's own logs — this is the worker, not OpenPlan.`
+      );
+    } else {
+      bad(
+        "Could not reach the modeling worker",
+        `${probe.error}. Check ${WORKER_URL_ENV}. A free-tier host that sleeps when idle can take a minute to wake — try once more before changing anything.`
+      );
+    }
+  } else if (declaration) {
+    // Declared but no URL: a POLLING worker, which exposes nothing to probe.
+    const recognised = ["deployed", "absent"].includes(declaration);
+    if (!recognised) {
+      bad(
+        `${WORKER_DECLARATION_ENV} is set to "${declaration}", which OpenPlan does not recognise`,
+        'The accepted values are "deployed" and "absent". A value it cannot read is reported rather than guessed at.'
+      );
+    } else if (declaration === "deployed") {
+      warn(
+        "A polling modeling worker is declared, and cannot be checked from here",
+        "A polling worker reads runs out of the database and exposes no address to probe, so this is your statement rather than something measured. If runs stay queued, check the worker's own logs."
+      );
+    } else {
+      ok(`${WORKER_DECLARATION_ENV} says this deployment has no worker`);
+    }
+  }
+}
+
 // ── Database migrations ──────────────────────────────────────────────────────
 // "The app deployed but many surfaces say could not be read" is almost always
 // a database that is behind the code. This answers "did the migrations

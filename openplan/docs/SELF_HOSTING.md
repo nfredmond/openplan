@@ -236,6 +236,9 @@ Vercel deploys from a code repository. If you have not already:
 2. Go to [github.com/nfredmond/openplan](https://github.com/nfredmond/openplan) and click **Fork**
    (top right). A fork is your own copy — you can deploy from it and pull in later updates.
 
+**Success looks like:** a repository at `github.com/<your-account>/openplan` with a folder called
+`openplan` inside it. That inner folder matters in the next step.
+
 ### 3b. Create the Vercel project
 
 1. Sign up at [vercel.com](https://vercel.com) and choose **Continue with GitHub**, so Vercel can
@@ -247,6 +250,10 @@ Vercel deploys from a code repository. If you have not already:
    > This is the one setting people get wrong. The repository contains a folder called `openplan`,
    > and the app is inside it. Leaving this at the repository root produces a build failure that
    > does not explain itself.
+
+**Success looks like:** the import screen shows Root Directory as `openplan`, and the framework
+detected as **Next.js**. If it says "Other", the root directory is wrong — go back and fix it now
+rather than after a failed build, because the build error does not name this as the cause.
 
 4. Leave the framework, build command, and output directory alone. The repository's `vercel.json`
    already sets them, and it also registers the scheduled cleanup job described below.
@@ -264,6 +271,10 @@ Two that only matter once you are deployed:
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | your deployment's address, e.g. `https://openplan-yourteam.vercel.app` |
 | `CRON_SECRET` | any long random string you invent — it authorises the cleanup job below |
+
+**Success looks like:** at least the four required settings listed, with no empty values. A missing
+Mapbox token is the one that misleads — the site loads perfectly with blank white maps, which reads
+as broken software rather than one absent line.
 
 You will not know your address until the first deploy finishes. Deploy without
 `NEXT_PUBLIC_SITE_URL`, note the address Vercel gives you, then add it and redeploy. Everything
@@ -285,6 +296,13 @@ Two things still need that address:
    people to a rejected link. In the Supabase dashboard → *Authentication → URL Configuration*, set
    **Site URL** to your address and add `https://<your-address>/auth/callback` to **Redirect URLs**.
    This is the same step described under [Accounts and workspaces](#accounts-and-workspaces).
+
+**Success looks like:** you can open the address, create an account, receive the confirmation email,
+click its link, and land back in OpenPlan with a workspace already created for you. If the email
+link is rejected, step 2 above has not been done — the deployment is fine.
+
+**If pages say "could not be read" instead:** your database is behind the code. That is the
+migrations step, not a bug. See [Upgrading a running deployment](#upgrading-a-running-deployment).
 
 Now open your address, click **Create your free workspace**, and make the first account. Then set
 your workspace geography — [section 4](#4-set-your-workspace-geography).
@@ -334,6 +352,32 @@ Screening-grade network assignment runs in a separate Python process — the Aeq
 `workers/aequilibrae_worker/`. See
 [`workers/aequilibrae_worker/DEPLOY.md`](../../workers/aequilibrae_worker/DEPLOY.md) for the
 deployment commands.
+
+### The short way: one-click deploy
+
+[`workers/aequilibrae_worker/render.yaml`](../../workers/aequilibrae_worker/render.yaml) is a Render
+Blueprint. It builds the worker's Dockerfile, generates the trigger token for you so it cannot be
+left blank, and health-checks `/healthz` so a worker that cannot start fails the deploy instead of
+going live broken.
+
+1. Fork this repository to your own GitHub account.
+2. In Render: **New → Blueprint**, point it at your fork.
+3. Supply the three values it asks for: your Supabase URL, your **service role** key, and
+   (recommended) a Census API key.
+   **Success looks like:** the service reaches *Live*, and its Events tab shows the health check
+   passing. A deploy that fails here has not half-worked — nothing is registered with OpenPlan yet.
+4. Copy the service URL into `OPENPLAN_MODELING_WORKER_URL`, and the token Render generated into
+   `OPENPLAN_MODELING_WORKER_TOKEN`. **The two token values must match exactly**, or every run is
+   rejected with no visible error.
+5. Run `npm run doctor`.
+   **Success looks like:** `[  OK  ] Modeling worker answered at /healthz`. Anything else names what
+   is wrong. This step is the whole point — a wrong URL, a missing token and a sleeping service are
+   *indistinguishable from inside OpenPlan*, where all three look like a run that sits queued.
+
+A free instance sleeps when idle, so the first run after a quiet period can take up to a minute to
+wake. That is not a failure, and `npm run doctor` says so rather than letting it read as one.
+
+### The longer way, and what the modes cost
 
 **There are two ways to start it, and they cost different amounts.** `AEQ_WORKER_MODE` on the worker
 selects one; both execute runs through exactly the same code, so nothing about a run differs between
@@ -423,9 +467,10 @@ including when the declaration is contradicted by your own runs or by a configur
 set to a value it does not understand, or when a push endpoint is half-configured and therefore
 unused.
 
-> **Open question for the project, not for you:** whether OpenPlan should offer a shared hosted
-> worker so self-hosting agencies do not each stand one up. That is a cost and trust decision that
-> has not been made; today, each deployment runs its own.
+> **Decided, so you can plan around it:** OpenPlan will **not** offer a shared hosted worker.
+> Self-hosting is the posture, and each deployment runs its own worker. That is why the one-click
+> blueprint above exists — the answer to "standing one up is a project" is to make it a button, not
+> to run it for you. Nothing about this is a reduced tier; OpenPlan is free either way.
 
 ---
 
