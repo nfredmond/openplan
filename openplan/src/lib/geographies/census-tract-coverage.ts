@@ -174,6 +174,12 @@ export function describeCountyCoverage(options: {
   storedTractCount: number;
   affectsWorkspaceLayer: boolean;
   mapLimit?: number;
+  /**
+   * Tracts stored without the ACS universes their rates are divided by — the
+   * ones loaded before migration 20260805000010. `null` means the count could
+   * not be read, and says nothing either way.
+   */
+  staleUniverseTractCount?: number | null;
 }): string[] {
   const name = coveragePlaceName(options.label);
   const limit = options.mapLimit ?? MAP_FEATURE_LAYER_LIMIT;
@@ -195,6 +201,29 @@ export function describeCountyCoverage(options: {
           "stored but not drawn."
       );
     }
+  }
+
+  /**
+   * THE RELOAD THAT IS NOT OPTIONAL, said before the one that is.
+   *
+   * A tract stored before OpenPlan recorded the ACS universes has no poverty
+   * rate and no minority share — not a stale one, none. It is dropped from the
+   * Title VI service-equity comparison and from the choropleth's poverty
+   * figure, and both say so where they say it. But a planner reading "—" has no
+   * way to know that reloading is the fix, and this control is the only place in
+   * the product that can do the reloading. Saying nothing here would leave an
+   * honest refusal that nobody can act on.
+   */
+  const stale = options.staleUniverseTractCount;
+  if (typeof stale === "number" && stale > 0) {
+    notes.push(
+      `${stale.toLocaleString()} of them were loaded before OpenPlan recorded which Census population ` +
+        "each rate is measured against, so they report no poverty rate and no minority share at all — " +
+        "in the equity layer and in a Title VI service comparison alike. Reloading fixes it. Until then " +
+        "those tracts are left out of the figures rather than counted with a rate divided by the wrong " +
+        "population, which is what OpenPlan used to do and what understated poverty in tracts holding a " +
+        "prison, a university or a barracks."
+    );
   }
 
   if (!options.affectsWorkspaceLayer) {

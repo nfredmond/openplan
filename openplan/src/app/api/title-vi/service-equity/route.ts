@@ -70,7 +70,37 @@ const TRACT_SERVICE_COLUMNS =
   "tract_geoid, service_day, stops_in_tract, stop_events_per_day, " +
   "best_peak_headway_seconds, best_span_seconds, routes_serving";
 
-const CENSUS_TRACT_COLUMNS = "geoid, pop_total, pop_white, pop_below_poverty";
+/**
+ * The two universe columns are NOT optional here and there is no narrower
+ * fallback projection.
+ *
+ * `poverty_universe` and `race_universe` (migration 20260805000010) are the
+ * denominators the low-income and minority shares are computed against. A
+ * deployment that has not applied that migration answers 42703 on this read,
+ * and the honest answer is to name the migration — not to quietly read the old
+ * columns and divide by `pop_total`, which is the defect the migration exists
+ * to remove. See `looksLikePendingUniverseColumns` below.
+ */
+const CENSUS_TRACT_COLUMNS =
+  "geoid, pop_total, pop_white, pop_below_poverty, poverty_universe, race_universe";
+
+const TRACT_UNIVERSE_MIGRATION = "20260805000010_census_tract_universes";
+
+/**
+ * Does this read error mean the deployment predates the universe columns?
+ *
+ * Narrow on purpose, and local on purpose, in the shape this repo already uses
+ * for `looksLikePendingFinalizerSchema` (`lib/grants/application.ts`) and
+ * `looksLikePendingAuthorshipColumns` (`lib/observability/action-audit.ts`): it
+ * matches only when the message NAMES one of the two columns, so a permission
+ * failure, a dropped connection or a genuine query fault can never be dressed
+ * up as a friendly setup step. The shared `looksLikePendingSchema` is wider than
+ * this and would also match a typo in any other column of the projection.
+ */
+function looksLikePendingUniverseColumns(message: string | null | undefined): boolean {
+  const text = message ?? "";
+  return /poverty_universe|race_universe/.test(text) && /column|schema cache|does not exist/i.test(text);
+}
 
 /**
  * `tract_service_computed_at` is the one that matters most here: NULL means the
@@ -254,6 +284,20 @@ export async function GET(request: NextRequest) {
         .select(CENSUS_TRACT_COLUMNS)
         .in("geoid", slice);
       if (result.error) {
+        if (looksLikePendingUniverseColumns(result.error.message)) {
+          audit.error("census_tract_universe_columns_missing", { message: result.error.message });
+          return NextResponse.json(
+            {
+              error: "This deployment's database predates the census tract universe columns",
+              hint:
+                `Apply migration ${TRACT_UNIVERSE_MIGRATION}, then load tract coverage again so ` +
+                "each tract carries the ACS universes its minority and poverty shares are divided " +
+                "by. Until then this analysis will not run: the older columns can only produce a " +
+                "poverty rate divided by total population, which understates it.",
+            },
+            { status: 503 }
+          );
+        }
         audit.error("census_tract_read_failed", { message: result.error.message });
         return NextResponse.json(
           {
@@ -277,6 +321,11 @@ export async function GET(request: NextRequest) {
         // than zeroed — `compareServiceEquity` counts and discloses it.
         populationTotal: (demo?.pop_total as number | null) ?? null,
         populationWhiteNonHispanic: (demo?.pop_white as number | null) ?? null,
+        // The universes travel with the counts they belong to. A tract loaded
+        // before 20260805000010 has them NULL, and the comparison drops it and
+        // says so rather than reaching for `pop_total`.
+        raceUniverse: (demo?.race_universe as number | null) ?? null,
+        povertyUniverse: (demo?.poverty_universe as number | null) ?? null,
         populationBelowPoverty: (demo?.pop_below_poverty as number | null) ?? null,
         stopsInTract: Number(row.stops_in_tract ?? 0),
         stopEventsPerDay: Number(row.stop_events_per_day ?? 0),

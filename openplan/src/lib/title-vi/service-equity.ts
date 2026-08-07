@@ -36,12 +36,37 @@ import type { TitleViPolicy } from "./policy";
  */
 export interface TractServiceRow {
   geoid: string;
-  /** ACS B03002_001E — the race/ethnicity universe. 0 or null when suppressed. */
+  /**
+   * ACS B01003_001E — everybody who lives here. This is the WEIGHT, and only
+   * the weight: how many people a tract's service figure speaks for. It is not
+   * a denominator for any share below, because each share's numerator comes
+   * from its own ACS table with its own universe.
+   */
   populationTotal: number | null;
-  /** ACS B03002_003E — white non-Hispanic. Minority = total - this. */
+  /** ACS B03002_003E — white non-Hispanic. Minority = raceUniverse - this. */
   populationWhiteNonHispanic: number | null;
+  /**
+   * ACS B03002_001E — the universe of the Hispanic-origin-by-race table, and the
+   * only denominator for a minority share built from the count above.
+   */
+  raceUniverse: number | null;
   /** ACS B17001_002E — people below poverty. */
   populationBelowPoverty: number | null;
+  /**
+   * ACS B17001_001E — the population FOR WHOM POVERTY STATUS IS DETERMINED, and
+   * the only denominator for the count above.
+   *
+   * IT IS NOT `populationTotal`, and the difference decides findings. ACS leaves
+   * people in institutionalised group quarters, military barracks and college
+   * dormitories out of this universe and counts them in B01003. Dividing by the
+   * larger number understates poverty everywhere and understates it enormously
+   * in a tract holding a prison, a university or a barracks — moving that tract
+   * out of the low-income group, which is the direction that makes a disparity
+   * disappear. Null means the tract was loaded before OpenPlan recorded the
+   * universe: it is dropped from the low-income comparison and counted, never
+   * divided by something else.
+   */
+  povertyUniverse: number | null;
 
   /** 0 is a MEASUREMENT of no service; the row's absence upstream is not. */
   stopsInTract: number;
@@ -205,6 +230,13 @@ export interface ServiceEquityComparison {
 
   /** Tracts excluded from every weighted figure, and why. Counted, never hidden. */
   tractsWithNoPopulationUniverse: number;
+  /**
+   * Classified tracts absent from the LOW-INCOME comparison only, because they
+   * carry no poverty universe. Separate from the count above: those tracts are
+   * in every minority figure, and folding the two together would overstate what
+   * the low-income half of this comparison covers.
+   */
+  tractsWithNoPovertyUniverse: number;
   /** Sentences a planner must see alongside any figure above. */
   disclosures: string[];
 }
@@ -218,12 +250,12 @@ export type ServiceEquityResult =
 /* -------------------------------------------------------------------------- */
 
 function minorityPopulation(tract: TractServiceRow): number | null {
-  const total = tract.populationTotal;
+  const universe = tract.raceUniverse;
   const white = tract.populationWhiteNonHispanic;
-  if (total === null || white === null || total <= 0) return null;
-  // A race universe smaller than its own white-alone count is not a reading.
-  if (white > total) return null;
-  return total - white;
+  if (universe === null || white === null || universe <= 0) return null;
+  // A race universe smaller than its own white non-Hispanic count is not a reading.
+  if (white > universe) return null;
+  return universe - white;
 }
 
 function round(value: number, places = 1): number {
@@ -383,10 +415,12 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
     };
   }
 
-  // Tracts with no race universe cannot be classified or weighted. They are
-  // dropped from every figure and COUNTED, so the analysis can say how much of
-  // the service area it could not speak for.
-  const usable = tracts.filter((tract) => minorityPopulation(tract) !== null);
+  // A tract needs a race universe to be classified and a head-count to be
+  // weighted. Without both it is dropped from every figure and COUNTED, so the
+  // analysis can say how much of the service area it could not speak for.
+  const usable = tracts.filter(
+    (tract) => minorityPopulation(tract) !== null && (tract.populationTotal ?? 0) > 0
+  );
   const withNoPopulation = tracts.length - usable.length;
 
   if (usable.length === 0) {
@@ -395,24 +429,36 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
       refusal: {
         code: "no_population_measured",
         message:
-          "The census tracts loaded for this area reported no race and ethnicity population universe, " +
-          "so no group could be compared. This is a gap in the demographic data, not a finding about " +
-          "service.",
+          "The census tracts loaded for this area reported no population universe to classify them " +
+          "by, so no group could be compared. This is a gap in the demographic data, not a finding " +
+          "about service. Tracts loaded before OpenPlan began recording the ACS universes report " +
+          "nothing here until the county is loaded again from the Workspace geography panel.",
       },
     };
   }
 
-  const totalPopulation = usable.reduce((sum, tract) => sum + (tract.populationTotal ?? 0), 0);
+  // EVERY SHARE IS A SUM OF NUMERATORS OVER A SUM OF ITS OWN UNIVERSE — never
+  // over the head-count, and never a mean of per-tract percentages. The two
+  // universes are different populations and are summed over different tract
+  // sets, because a tract can carry one and not the other.
   const totalMinority = usable.reduce((sum, tract) => sum + (minorityPopulation(tract) ?? 0), 0);
-  const totalBelowPoverty = usable.reduce(
+  const totalRaceUniverse = usable.reduce((sum, tract) => sum + (tract.raceUniverse ?? 0), 0);
+
+  const withPovertyUniverse = usable.filter((tract) => (tract.povertyUniverse ?? 0) > 0);
+  const withNoPovertyUniverse = usable.length - withPovertyUniverse.length;
+  const totalBelowPoverty = withPovertyUniverse.reduce(
     (sum, tract) => sum + (tract.populationBelowPoverty ?? 0),
+    0
+  );
+  const totalPovertyUniverse = withPovertyUniverse.reduce(
+    (sum, tract) => sum + (tract.povertyUniverse ?? 0),
     0
   );
 
   const serviceAreaMinoritySharePct =
-    totalPopulation > 0 ? round((totalMinority / totalPopulation) * 100) : null;
+    totalRaceUniverse > 0 ? round((totalMinority / totalRaceUniverse) * 100) : null;
   const serviceAreaLowIncomeSharePct =
-    totalPopulation > 0 ? round((totalBelowPoverty / totalPopulation) * 100) : null;
+    totalPovertyUniverse > 0 ? round((totalBelowPoverty / totalPovertyUniverse) * 100) : null;
 
   const minorityCut =
     policy.minorityDefinitionMethod === "fixed_threshold"
@@ -423,22 +469,29 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
       ? policy.lowIncomeThresholdPct
       : serviceAreaLowIncomeSharePct;
 
-  if (minorityCut === null || lowIncomeCut === null) {
+  if (minorityCut === null) {
     return {
       ok: false,
       refusal: {
         code: "no_population_measured",
         message:
-          "The loaded tracts reported no population to compute a service-area average from, so the " +
-          "adopted 'above the service-area average' definition has no value to compare tracts to.",
+          "The loaded tracts reported no race and ethnicity universe to compute a service-area " +
+          "average from, so the adopted 'above the service-area average' definition has no value to " +
+          "compare tracts to.",
       },
     };
   }
 
-  const tractShare = (tract: TractServiceRow, numerator: number | null): number | null => {
-    const total = tract.populationTotal ?? 0;
-    if (total <= 0 || numerator === null) return null;
-    return (numerator / total) * 100;
+  // A MISSING LOW-INCOME CUT NO LONGER STOPS THE WHOLE ANALYSIS. The two
+  // definitions rest on different ACS universes now, so one can be unavailable
+  // while the other is fine — and refusing the minority comparison because the
+  // poverty universe is missing would withhold a finding that is fully
+  // measurable. The low-income half reports as unmeasured and says why.
+  const lowIncomeMeasurable = lowIncomeCut !== null;
+
+  const shareOf = (numerator: number | null, universe: number | null): number | null => {
+    if (numerator === null || universe === null || universe <= 0) return null;
+    return (numerator / universe) * 100;
   };
 
   const minorityFocusEntries: Array<{ tract: TractServiceRow; weight: number }> = [];
@@ -447,18 +500,25 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
   const lowIncomeComparisonEntries: Array<{ tract: TractServiceRow; weight: number }> = [];
 
   for (const tract of usable) {
+    // The weight is people, not a statistical universe: a service figure speaks
+    // for everyone who lives in the tract, including the residents of a dormitory
+    // or a barracks that the poverty universe leaves out.
     const population = tract.populationTotal ?? 0;
-    const share = tractShare(tract, minorityPopulation(tract));
+
+    const share = shareOf(minorityPopulation(tract), tract.raceUniverse);
     if (share !== null && share >= minorityCut) {
       minorityFocusEntries.push({ tract, weight: population });
     } else if (share !== null) {
       minorityComparisonEntries.push({ tract, weight: population });
     }
 
-    const povertyShare = tractShare(tract, tract.populationBelowPoverty);
-    if (povertyShare !== null && povertyShare >= lowIncomeCut) {
+    // A tract with no poverty universe joins NEITHER low-income group. Treating
+    // its missing rate as 0% would file it as comparison — a made-up affluent
+    // tract, on the side of the comparison that dilutes a disparity.
+    const povertyShare = shareOf(tract.populationBelowPoverty, tract.povertyUniverse);
+    if (lowIncomeMeasurable && povertyShare !== null && povertyShare >= (lowIncomeCut as number)) {
       lowIncomeFocusEntries.push({ tract, weight: population });
-    } else if (povertyShare !== null) {
+    } else if (lowIncomeMeasurable && povertyShare !== null) {
       lowIncomeComparisonEntries.push({ tract, weight: population });
     }
   }
@@ -492,9 +552,31 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
 
   if (withNoPopulation > 0) {
     disclosures.push(
-      `${withNoPopulation} tract${withNoPopulation === 1 ? "" : "s"} in this area reported no race ` +
-        "and ethnicity population universe and could not be classified or weighted, so no figure " +
-        "here speaks for them."
+      `${withNoPopulation} tract${withNoPopulation === 1 ? "" : "s"} in this area reported no ` +
+        "population universe and could not be classified or weighted, so no figure here speaks for " +
+        "them. Tracts loaded before OpenPlan began recording the ACS universes are counted here " +
+        "until the county is loaded again from the Workspace geography panel."
+    );
+  }
+
+  // THE POVERTY UNIVERSE IS DISCLOSED SEPARATELY FROM THE RACE UNIVERSE, because
+  // a tract can carry one and not the other, and a reader who is told only the
+  // combined figure would take the low-income comparison to cover ground it does
+  // not.
+  if (withNoPovertyUniverse > 0) {
+    disclosures.push(
+      `${withNoPovertyUniverse} of the classified tract${withNoPovertyUniverse === 1 ? "" : "s"} ` +
+        "reported no poverty universe — the population ACS determined poverty status for — so " +
+        "they are absent from the low-income comparison only. They are NOT counted as being above " +
+        "or below the low-income threshold, because a rate divided by the wrong population is not a " +
+        "smaller error than no rate at all."
+    );
+  }
+
+  if (!lowIncomeMeasurable) {
+    disclosures.push(
+      "No low-income comparison could be made: no loaded tract reported the poverty universe the " +
+        "adopted definition needs. The minority comparison above is unaffected."
     );
   }
 
@@ -540,6 +622,7 @@ export function compareServiceEquity(input: ServiceEquityInput): ServiceEquityRe
         )
       ),
       tractsWithNoPopulationUniverse: withNoPopulation,
+      tractsWithNoPovertyUniverse: withNoPovertyUniverse,
       disclosures,
     },
   };

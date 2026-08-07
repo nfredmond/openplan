@@ -190,6 +190,14 @@ export async function ingestCensusTractsForCounty(
       p_households_zero_vehicle: demographics.zeroVehicleHouseholds,
       p_median_household_income: demographics.medianIncome,
       p_pop_below_poverty: demographics.popBelowPoverty,
+      // The universes each rate is divided by, stored alongside the counts they
+      // belong to. `popBelowPoverty` comes from ACS B17001 and `popWhiteNonHispanic`
+      // from B03002; neither may be divided by `pop_total`, which is a third
+      // table (B01003) counting people the poverty universe excludes. A tract
+      // written without these reports no rate at all rather than a rate computed
+      // against the wrong denominator.
+      p_poverty_universe: demographics.povertyUniverse,
+      p_race_universe: demographics.raceUniverse,
     });
 
     if (error) {

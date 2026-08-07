@@ -126,6 +126,15 @@ function localCopyCounts(): Map<string, number> {
  *     on exactly one read, the `project_id`-scoped decision read added by
  *     20260728000011, so the caller can name that migration instead of reporting
  *     a generic outage. Widening it would be harmless; MOVING it would not be.
+ *   - `looksLikePendingUniverseColumns` (added 2026-08-07) is CONTENT-anchored
+ *     like the finalizer variant: the message must name `poverty_universe` or
+ *     `race_universe`. THE UNION WOULD BE WRONG THERE FOR A SHARPER REASON THAN
+ *     USUAL. Its route answers a Title VI service-equity question, and the
+ *     universes added by 20260805000010 are the denominators the minority and
+ *     poverty shares are divided by. A wider classifier would answer "apply the
+ *     migrations" to a permission failure or a typo in another projected column,
+ *     which on this surface means telling an agency its civil-rights analysis is
+ *     one migration away when the real fault is something else entirely.
  *
  * The rest are unanchored subsets of the canonical union and are expected to
  * disappear as their lanes are converted. Delete the entry when that happens —
@@ -151,6 +160,7 @@ const ALLOWED_VARIANTS: ReadonlyArray<string> = [
   "looksLikePendingReportRunsSchema@src/lib/reports/run-citations.ts",
   "looksLikePendingScenarioSpineSchema@src/lib/scenarios/api.ts",
   "looksLikePendingStageGateProjectScope@src/lib/stage-gates/decision-queries.ts",
+  "looksLikePendingUniverseColumns@src/app/api/title-vi/service-equity/route.ts",
 ];
 
 function definedVariants(): string[] {
@@ -346,6 +356,20 @@ describe("one pending-schema classifier — named variants", () => {
     expect(body.slice(0, body.indexOf("\n}")), "the finalizer detector lost its column anchor").toMatch(
       /finalized_\(\?:by\|at\)|finalized_by|finalized_at/
     );
+  });
+
+  /** The same assertion for the other content-anchored variant, same reason. */
+  it("keeps the universe variant anchored on the columns it is named for", () => {
+    const source = readFileSync(
+      path.join(SRC, "app", "api", "title-vi", "service-equity", "route.ts"),
+      "utf8"
+    );
+    const body = source.slice(source.indexOf("function looksLikePendingUniverseColumns"));
+    expect(
+      body.slice(0, body.indexOf("\n}")),
+      "the universe detector lost its column anchor — it would now answer 'apply the migrations' to " +
+        "a permission failure on a civil-rights surface"
+    ).toMatch(/poverty_universe|race_universe/);
   });
 });
 

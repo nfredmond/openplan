@@ -41,14 +41,23 @@ import type { CountyIngestResult } from "@/lib/data-sources/census-tract-ingest"
  * layer they are in fact allowed to fill.
  */
 
+/**
+ * What one coverage read learned. `staleTractCount` is null when the count could
+ * not be read — rendered as silence, never as "none are stale".
+ */
+type Coverage = { tractCount: number; staleTractCount: number | null };
+
+/** What is known when the re-read itself failed: nothing. */
+const UNKNOWN_COVERAGE: Coverage = { tractCount: 0, staleTractCount: null };
+
 type CoverageState =
   | { status: "blocked" }
   | { status: "checking" }
-  | { status: "checked"; tractCount: number }
+  | { status: "checked"; coverage: Coverage }
   | { status: "check_failed"; message: string }
   | { status: "loading"; elapsedSeconds: number }
-  | { status: "loaded"; result: CountyIngestResult; tractCount: number }
-  | { status: "load_failed"; message: string; httpStatus: number | null; tractCount: number };
+  | { status: "loaded"; result: CountyIngestResult; coverage: Coverage }
+  | { status: "load_failed"; message: string; httpStatus: number | null; coverage: Coverage };
 
 export function CensusTractCoverageControl(props: {
   /** Identity only — a county boundary polygon is megabytes and is not needed here. */
@@ -122,13 +131,18 @@ function CountyCoverage({
   const [state, setState] = useState<CoverageState>({ status: "checking" });
   const cancelledRef = useRef(false);
 
-  async function readCoverage(): Promise<number> {
+  async function readCoverage(): Promise<Coverage> {
     const response = await fetch(
       `/api/geographies/census-tracts/coverage?stateFips=${stateFips}&countyFips=${countyFips}`
     );
     if (!response.ok) throw new Error("Coverage check failed");
-    const body = (await response.json()) as { tractCount?: number };
-    return body.tractCount ?? 0;
+    const body = (await response.json()) as { tractCount?: number; staleTractCount?: number | null };
+    return {
+      tractCount: body.tractCount ?? 0,
+      // Absent means unknown. A deployment that answers without this field is
+      // not a deployment whose tracts are all current.
+      staleTractCount: typeof body.staleTractCount === "number" ? body.staleTractCount : null,
+    };
   }
 
   useEffect(() => {
@@ -136,8 +150,8 @@ function CountyCoverage({
 
     void (async () => {
       try {
-        const tractCount = await readCoverage();
-        if (!cancelledRef.current) setState({ status: "checked", tractCount });
+        const coverage = await readCoverage();
+        if (!cancelledRef.current) setState({ status: "checked", coverage });
       } catch (error) {
         if (!cancelledRef.current) {
           setState({
@@ -187,14 +201,14 @@ function CountyCoverage({
       // Re-read even on failure: the 60-second cut-off is an expected outcome,
       // and after it some tracts ARE stored. Saying "the load failed" without
       // saying what is now there would present a partial county as nothing.
-      const tractCount = await readCoverage().catch(() => 0);
+      const coverage = await readCoverage().catch(() => UNKNOWN_COVERAGE);
 
       if (!response.ok) {
         setState({
           status: "load_failed",
           message: payload.error || `Request failed (${response.status})`,
           httpStatus: response.status,
-          tractCount,
+          coverage,
         });
         return;
       }
@@ -210,16 +224,16 @@ function CountyCoverage({
             unmatched: 0,
             error: null,
           },
-        tractCount,
+        coverage,
       });
-      onCoverageChanged?.(tractCount);
+      onCoverageChanged?.(coverage.tractCount);
     } catch (error) {
-      const tractCount = await readCoverage().catch(() => 0);
+      const coverage = await readCoverage().catch(() => UNKNOWN_COVERAGE);
       setState({
         status: "load_failed",
         message: error instanceof Error ? error.message : "Unknown error",
         httpStatus: null,
-        tractCount,
+        coverage,
       });
     }
   }
@@ -241,42 +255,64 @@ function CountyCoverage({
         ];
       case "loaded":
         return [
-          ...describeCoverageLoadOutcome(state.result, { label, storedTractCount: state.tractCount }),
-          ...(affectsWorkspaceLayer
-            ? []
-            : describeCountyCoverage({
-                label,
-                storedTractCount: state.tractCount,
-                affectsWorkspaceLayer,
-              }).slice(-1)),
+          ...describeCoverageLoadOutcome(state.result, {
+            label,
+            storedTractCount: state.coverage.tractCount,
+          }),
+          // `.slice(1)` drops the "N tracts are loaded" line, which
+          // `describeCoverageLoadOutcome` has already said in the past tense,
+          // and keeps what it has not: any remaining tracts with no universes
+          // (a load that succeeded but rewrote only part of the county), and
+          // the note about this not being the workspace's own geography.
+          ...describeCountyCoverage({
+            label,
+            storedTractCount: state.coverage.tractCount,
+            affectsWorkspaceLayer,
+            staleUniverseTractCount: state.coverage.staleTractCount,
+          }).slice(1),
         ];
       case "load_failed":
         return describeCoverageLoadFailure({
           label,
           message: state.message,
           httpStatus: state.httpStatus,
-          storedTractCount: state.tractCount,
+          storedTractCount: state.coverage.tractCount,
         });
       case "checked":
       default:
         return describeCountyCoverage({
           label,
-          storedTractCount: state.status === "checked" ? state.tractCount : 0,
+          storedTractCount: state.status === "checked" ? state.coverage.tractCount : 0,
           affectsWorkspaceLayer,
+          staleUniverseTractCount:
+            state.status === "checked" ? state.coverage.staleTractCount : null,
         });
     }
   }
 
   const notes = describeState();
   const showLoadButton = state.status !== "checking" && state.status !== "loading";
-  const isReload = state.status === "checked" && state.tractCount > 0;
+  const isReload = state.status === "checked" && state.coverage.tractCount > 0;
+  // Tracts with no universes are the one case where reloading is not a
+  // refresh but a repair, so the button says which one it is.
+  const repairsUniverses =
+    state.status === "checked" && (state.coverage.staleTractCount ?? 0) > 0;
 
   return (
     <CoverageShell notes={notes}>
       {showLoadButton ? (
         <div className="space-y-1.5">
-          <Button type="button" size="sm" variant={isReload ? "outline" : "default"} onClick={handleLoad}>
-            {isReload ? "Reload from the Census Bureau" : "Load census tracts"}
+          <Button
+            type="button"
+            size="sm"
+            variant={isReload && !repairsUniverses ? "outline" : "default"}
+            onClick={handleLoad}
+          >
+            {repairsUniverses
+              ? "Reload to measure these tracts"
+              : isReload
+                ? "Reload from the Census Bureau"
+                : "Load census tracts"}
           </Button>
           {isReload ? (
             <p className="text-[0.72rem] text-muted-foreground">

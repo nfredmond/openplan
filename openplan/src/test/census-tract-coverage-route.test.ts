@@ -6,7 +6,28 @@ const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 
 const authGetUserMock = vi.fn();
-const countEqCountyMock = vi.fn();
+
+/**
+ * TWO COUNTS COME OFF THE SAME CHAIN, and the double has to tell them apart.
+ *
+ * The route asks the same table twice: once for every tract in the county, and
+ * once more with `.is("poverty_universe", null)` for the tracts loaded before
+ * the ACS universes were recorded. So `.eq("county_fips", …)` must be BOTH
+ * awaitable — the first query ends there — and chainable into `.is()`. A double
+ * that only resolved would make the second query throw, which is how this file
+ * first reported the change as a 500.
+ */
+type CountResult = { count: number | null; error: { message: string; code?: string } | null };
+
+let totalCount: CountResult;
+let staleCount: CountResult;
+
+const staleIsMock = vi.fn((..._args: unknown[]) => Promise.resolve(staleCount));
+const countEqCountyMock = vi.fn(() => ({
+  then: (resolve: (value: CountResult) => unknown, reject?: (reason: unknown) => unknown) =>
+    Promise.resolve(totalCount).then(resolve, reject),
+  is: (...args: unknown[]) => staleIsMock(...args),
+}));
 const countEqStateMock = vi.fn(() => ({ eq: countEqCountyMock }));
 const countSelectMock = vi.fn(() => ({ eq: countEqStateMock }));
 
@@ -46,16 +67,47 @@ describe("GET /api/geographies/census-tracts/coverage", () => {
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
-    countEqCountyMock.mockResolvedValue({ count: 328, error: null });
+    totalCount = { count: 328, error: null };
+    staleCount = { count: 0, error: null };
   });
 
   it("returns the stored tract count for a county", async () => {
     const response = await GET(request("?stateFips=39&countyFips=049"));
 
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ stateFips: "39", countyFips: "049", tractCount: 328 });
+    expect(await response.json()).toEqual({
+      stateFips: "39",
+      countyFips: "049",
+      tractCount: 328,
+      staleTractCount: 0,
+    });
     expect(countEqStateMock).toHaveBeenCalledWith("state_fips", "39");
     expect(countEqCountyMock).toHaveBeenCalledWith("county_fips", "049");
+  });
+
+  it("counts the tracts loaded before the ACS universes were recorded", async () => {
+    staleCount = { count: 41, error: null };
+
+    const body = (await (await GET(request("?stateFips=39&countyFips=049"))).json()) as {
+      staleTractCount: number;
+    };
+
+    expect(body.staleTractCount).toBe(41);
+    // The filter is the whole assertion: a count of tracts that DO have the
+    // universe would report the opposite of what the control renders.
+    expect(staleIsMock).toHaveBeenCalledWith("poverty_universe", null);
+  });
+
+  it("reports the stale count as unknown when that read fails, and still answers", async () => {
+    // The question asked was "how many tracts are loaded". A failure of the
+    // advisory count must not turn that answer into an error — but it must not
+    // be reported as zero either, which would claim every tract is current.
+    staleCount = { count: null, error: { message: "boom" } };
+
+    const response = await GET(request("?stateFips=39&countyFips=049"));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ tractCount: 328, staleTractCount: null });
   });
 
   it("counts with head:true rather than fetching geometry", async () => {
@@ -64,7 +116,7 @@ describe("GET /api/geographies/census-tracts/coverage", () => {
   });
 
   it("answers 0 rather than null for a county with nothing loaded", async () => {
-    countEqCountyMock.mockResolvedValueOnce({ count: null, error: null });
+    totalCount = { count: null, error: null };
     expect(await (await GET(request("?stateFips=39&countyFips=049"))).json()).toMatchObject({
       tractCount: 0,
     });
@@ -93,7 +145,7 @@ describe("GET /api/geographies/census-tracts/coverage", () => {
 
   it("does not report zero when the count itself failed", async () => {
     // A county we cannot count is not a county with nothing in it.
-    countEqCountyMock.mockResolvedValueOnce({ count: null, error: { message: "boom", code: "42P01" } });
+    totalCount = { count: null, error: { message: "boom", code: "42P01" } };
 
     const response = await GET(request("?stateFips=39&countyFips=049"));
     expect(response.status).toBe(500);

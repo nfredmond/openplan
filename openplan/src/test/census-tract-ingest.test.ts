@@ -202,6 +202,15 @@ describe("ingestCensusTractsForCounty", () => {
     // Raw counts, not percentages — the table stores counts.
     expect(args.p_pop_white).toBe(700);
     expect(args.p_pop_below_poverty).toBe(180);
+    // AND THE UNIVERSE EACH COUNT BELONGS TO. The fixture's poverty universe
+    // (900) is deliberately smaller than its population (1,000), which is what
+    // ACS reports for a tract with group quarters — so passing `p_pop_total`
+    // here by mistake would be visible rather than indistinguishable. A tract
+    // written without these has no poverty rate at all: it is dropped from the
+    // Title VI comparison rather than divided by the wrong population.
+    expect(args.p_poverty_universe).toBe(900);
+    expect(args.p_poverty_universe).not.toBe(args.p_pop_total);
+    expect(args.p_race_universe).toBe(1000);
     expect((args.p_geometry_geojson as { type: string }).type).toBe("MultiPolygon");
   });
 

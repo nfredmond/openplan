@@ -74,11 +74,45 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    /**
+     * HOW MANY OF THOSE TRACTS PREDATE THE ACS UNIVERSE COLUMNS.
+     *
+     * A tract loaded before migration 20260805000010 has no `poverty_universe`,
+     * so its poverty rate is not "0%" and not "the old number" — it is absent,
+     * and the Title VI comparison leaves the tract out. That is the honest
+     * answer, but on its own it is a dead end: nothing in the product told a
+     * planner that loading the county again is what fixes it. This count is what
+     * lets the coverage control say so.
+     *
+     * A FAILURE HERE DOES NOT FAIL THE REQUEST. The tract count above is the
+     * answer to the question that was asked; this is an advisory alongside it.
+     * `staleTractCount: null` means "not known", which the control renders as
+     * silence rather than as a claim that every tract is current.
+     */
+    let staleTractCount: number | null = null;
+    const stale = await supabase
+      .from("census_tracts_map")
+      .select("geoid", { count: "exact", head: true })
+      .eq("state_fips", parsed.data.stateFips)
+      .eq("county_fips", parsed.data.countyFips)
+      .is("poverty_universe", null);
+
+    if (stale.error) {
+      audit.error("census_tract_universe_coverage_failed", {
+        userId: user.id,
+        message: stale.error.message,
+        code: stale.error.code ?? null,
+      });
+    } else {
+      staleTractCount = stale.count ?? 0;
+    }
+
     return NextResponse.json(
       {
         stateFips: parsed.data.stateFips,
         countyFips: parsed.data.countyFips,
         tractCount: count ?? 0,
+        staleTractCount,
       },
       { status: 200 }
     );

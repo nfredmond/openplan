@@ -164,6 +164,40 @@ describe("census tract coverage copy", () => {
     expect(notes.join(" ")).toMatch(/not a finding that the county has no census tracts/i);
   });
 
+  it("names the tracts that carry no ACS universe, and what reloading fixes", () => {
+    // A tract loaded before migration 20260805000010 has no poverty universe,
+    // so the Title VI comparison leaves it out entirely. That refusal is honest
+    // but useless unless the one control that can reload the county says so.
+    const notes = describeCountyCoverage({
+      label: "Franklin County, OH",
+      storedTractCount: 328,
+      affectsWorkspaceLayer: true,
+      staleUniverseTractCount: 41,
+    });
+
+    expect(notes.join(" ")).toMatch(/41 of them were loaded before/i);
+    expect(notes.join(" ")).toMatch(/Reloading fixes it/i);
+    // It must say what is being done INSTEAD, or "no poverty rate" reads as a
+    // fact about the county rather than about the stored data.
+    expect(notes.join(" ")).toMatch(/left out of the figures rather than counted/i);
+  });
+
+  it("says nothing about universes when none are missing, or when the count is unknown", () => {
+    for (const staleUniverseTractCount of [0, null, undefined]) {
+      expect(
+        describeCountyCoverage({
+          label: "x",
+          storedTractCount: 328,
+          affectsWorkspaceLayer: true,
+          staleUniverseTractCount,
+        }).join(" "),
+        // `null` is "we could not count them" — reporting that as "none" would
+        // be the same lie in the opposite direction.
+        `staleUniverseTractCount=${String(staleUniverseTractCount)}`
+      ).not.toMatch(/loaded before OpenPlan recorded/i);
+    }
+  });
+
   it("discloses the map draw limit only when it actually bites", () => {
     expect(
       describeCountyCoverage({ label: "x", storedTractCount: 501, affectsWorkspaceLayer: true }).join(" ")

@@ -63,12 +63,28 @@ function policy(over: Partial<TitleViPolicy> = {}): TitleViPolicy {
   };
 }
 
+/**
+ * The universes DEFAULT TO THE HEAD-COUNT the caller gave, rather than to a
+ * constant, so that a test overriding `populationTotal` describes a coherent
+ * tract instead of one with 9,000 residents and a race universe of 1,000. That
+ * is what ACS reports in the ordinary case — B03002's universe IS the total
+ * population — and it keeps every test here about the thing it is named for.
+ *
+ * It is deliberately NOT what proves which denominator the code reached for: a
+ * fixture where the universes always equal the head-count cannot tell the two
+ * apart. `a-poverty-rate-uses-the-poverty-universe.test.ts` is built entirely
+ * out of tracts where they differ, and that is where the denominators are
+ * pinned.
+ */
 function tract(over: Partial<TractServiceRow> = {}): TractServiceRow {
+  const populationTotal = over.populationTotal === undefined ? 1000 : over.populationTotal;
   return {
     geoid: "39049000100",
-    populationTotal: 1000,
+    populationTotal,
     populationWhiteNonHispanic: 800,
+    raceUniverse: populationTotal,
     populationBelowPoverty: 100,
+    povertyUniverse: populationTotal,
     stopsInTract: 4,
     stopEventsPerDay: 100,
     bestPeakHeadwaySeconds: 900,
@@ -271,7 +287,7 @@ describe("no data and no service are never the same answer", () => {
     });
     if (!result.ok) throw new Error(result.refusal.code);
     expect(result.comparison.tractsWithNoPopulationUniverse).toBe(2);
-    expect(result.comparison.disclosures.some((d) => /no race and ethnicity population universe/i.test(d))).toBe(true);
+    expect(result.comparison.disclosures.some((d) => /no population universe/i.test(d))).toBe(true);
   });
 
   it("treats a tract with no stops as a measurement of no service", () => {

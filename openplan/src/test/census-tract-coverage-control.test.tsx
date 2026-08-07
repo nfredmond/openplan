@@ -185,6 +185,46 @@ describe("CensusTractCoverageControl", () => {
     ).toBeInTheDocument();
   });
 
+  it("offers the reload as a repair when tracts carry no ACS universe", async () => {
+    // The refusal a planner meets is on the Title VI panel and on the map:
+    // "no poverty rate for these tracts". This control is the only place that
+    // can fix it, so it has to say so and the button has to name the repair.
+    mockFetch(() => ({ ok: true, status: 200, body: { tractCount: 328, staleTractCount: 41 } }));
+
+    render(
+      <CensusTractCoverageControl place={FRANKLIN} origin="workspace_home_geography" affectsWorkspaceLayer />
+    );
+
+    expect(await screen.findByText(/41 of them were loaded before/i)).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: /reload to measure these tracts/i })
+    ).toBeInTheDocument();
+  });
+
+  it("stays quiet about universes when the deployment does not report them", async () => {
+    // An older deployment answers the coverage read without the field at all,
+    // and this control must not invent a claim from its absence.
+    //
+    // WHAT THIS DOES NOT PROVE, stated because a mutation showed it: replacing
+    // the `null` this parses into with `0` leaves the test green, since the
+    // control renders nothing for either. Whether the count is UNKNOWN or ZERO
+    // is a distinction only the route can express, and it is asserted there —
+    // `census-tract-coverage-route.test.ts`, "reports the stale count as
+    // unknown when that read fails". What is proved here is narrower and still
+    // worth having: an absent field produces no sentence and no repair button.
+    mockFetch(() => ({ ok: true, status: 200, body: { tractCount: 328 } }));
+
+    render(
+      <CensusTractCoverageControl place={FRANKLIN} origin="workspace_home_geography" affectsWorkspaceLayer />
+    );
+
+    await screen.findByRole("button", { name: /reload from the census bureau/i });
+    expect(screen.queryByText(/loaded before OpenPlan recorded/i)).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /reload to measure these tracts/i })
+    ).not.toBeInTheDocument();
+  });
+
   it("does not report zero when the coverage check itself failed", async () => {
     mockFetch(() => ({ ok: false, status: 500, body: { error: "boom" } }));
 

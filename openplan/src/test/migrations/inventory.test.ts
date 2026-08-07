@@ -733,15 +733,34 @@ describe("client grants compose back to the audited posture", () => {
     // only because the live catalog disagreed with it.
     const invoker = new Map<string, { value: boolean; file: string }>();
 
+    // STATEMENTS ARE APPLIED IN SOURCE ORDER, and that is not a detail.
+    //
+    // This loop used to run all the CREATEs in a file, then all the ALTERs,
+    // then all the DROPs. A migration that drops a view and recreates it in the
+    // same file — the only way to change a `SELECT *` view's column list, since
+    // CREATE OR REPLACE can only append — therefore had its recreation ERASED
+    // by its own DROP, and the view disappeared from the inventory. Found
+    // 2026-08-07 by 20260805000010, which does exactly that to
+    // `census_tracts_computed` and `census_tracts_map`. Replaying a corpus out
+    // of order answers a question about a database that never existed.
+    type Statement = { at: number; apply: () => void };
+
     for (const file of migrationFiles()) {
       const sql = blankComments(readMigration(file));
+      const statements: Statement[] = [];
 
       for (const match of sql.matchAll(
         /CREATE\s+(?:OR\s+REPLACE\s+)?VIEW\s+(?:public\.)?"?([A-Za-z0-9_]+)"?([\s\S]*?)\bAS\b/gi
       )) {
-        invoker.set(match[1].toLowerCase(), {
-          value: /security_invoker\s*=\s*(?:true|on)/i.test(match[2]),
-          file,
+        const name = match[1].toLowerCase();
+        const options = match[2];
+        statements.push({
+          at: match.index ?? 0,
+          apply: () =>
+            invoker.set(name, {
+              value: /security_invoker\s*=\s*(?:true|on)/i.test(options),
+              file,
+            }),
         });
       }
 
@@ -749,16 +768,25 @@ describe("client grants compose back to the audited posture", () => {
         /ALTER\s+VIEW\s+(?:public\.)?"?([A-Za-z0-9_]+)"?\s+(SET|RESET)\s*\(([^)]*)\)/gi
       )) {
         const name = match[1].toLowerCase();
-        if (!/security_invoker/i.test(match[3])) continue;
-        invoker.set(name, {
-          value: match[2].toUpperCase() === "SET" && /security_invoker\s*=\s*(?:true|on)/i.test(match[3]),
-          file,
+        const verb = match[2].toUpperCase();
+        const options = match[3];
+        if (!/security_invoker/i.test(options)) continue;
+        statements.push({
+          at: match.index ?? 0,
+          apply: () =>
+            invoker.set(name, {
+              value: verb === "SET" && /security_invoker\s*=\s*(?:true|on)/i.test(options),
+              file,
+            }),
         });
       }
 
       for (const match of sql.matchAll(/DROP\s+VIEW\s+(?:IF\s+EXISTS\s+)?(?:public\.)?"?([A-Za-z0-9_]+)"?/gi)) {
-        invoker.delete(match[1].toLowerCase());
+        const name = match[1].toLowerCase();
+        statements.push({ at: match.index ?? 0, apply: () => invoker.delete(name) });
       }
+
+      for (const statement of statements.sort((a, b) => a.at - b.at)) statement.apply();
     }
 
     expect(invoker.size).toBeGreaterThanOrEqual(6);

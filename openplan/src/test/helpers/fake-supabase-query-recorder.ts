@@ -38,7 +38,29 @@ export function equalityFilters(query: RecordedQuery): Record<string, unknown> {
 
 export type QueryResponse = { data: unknown; error: unknown };
 
-const CHAIN_VERBS = ["eq", "neq", "in", "gt", "gte", "lt", "lte", "order", "limit", "range", "not", "is"];
+/**
+ * `maybeSingle` and `single` are terminators in PostgREST but are recorded as
+ * ordinary links here: the builder stays thenable, so the responder decides the
+ * shape of `data` (an object, or null) exactly as it decides it for a list read.
+ * Recording them rather than special-casing them keeps one rule — every verb the
+ * route called is in `ops` and can be asserted.
+ */
+const CHAIN_VERBS = [
+  "eq",
+  "neq",
+  "in",
+  "gt",
+  "gte",
+  "lt",
+  "lte",
+  "order",
+  "limit",
+  "range",
+  "not",
+  "is",
+  "maybeSingle",
+  "single",
+];
 
 export function createRecordingSupabase(respond: (query: RecordedQuery) => QueryResponse): {
   client: SupabaseClient;
