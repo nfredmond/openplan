@@ -77,7 +77,13 @@ describe("the timetable is not persisted", () => {
    * describes. So before believing any empty list, prove the collector is
    * finding writes at all and finding this lane's writes specifically.
    */
-  it("finds the write surface it is about to make claims over", () => {
+  // 30s, not the 5s default. `collectSupabaseWriteSites` parses the whole
+  // `src/` tree, which already took ~5.6s on its own — so this test timed out
+  // INTERMITTENTLY under full-suite load and passed in isolation, and the
+  // failure read as "the transit lane's write surface disappeared" rather than
+  // "the scan ran out of time". A guard that fails for a reason it does not
+  // name is worse than a slow one, and the tree only grows.
+  it("finds the write surface it is about to make claims over", { timeout: 30_000 }, () => {
     const sites = collectSupabaseWriteSites();
 
     expect(sites.length).toBeGreaterThan(100);
@@ -93,7 +99,7 @@ describe("the timetable is not persisted", () => {
     );
   });
 
-  it("writes no row to any raw-feed table, anywhere in the product", () => {
+  it("writes no row to any raw-feed table, anywhere in the product", { timeout: 30_000 }, () => {
     const offenders = collectSupabaseWriteSites()
       .filter((site) => site.table !== null && (RAW_FEED_TABLES as readonly string[]).includes(site.table))
       .map((site) => `${site.file}:${site.line} ${site.verb} ${site.table}`);
@@ -130,7 +136,7 @@ describe("the timetable is not persisted", () => {
    * table name passed as a parameter also hides the write from the claim-tier
    * guard.
    */
-  it("names every table it writes, so no computed name can hide one", () => {
+  it("names every table it writes, so no computed name can hide one", { timeout: 30_000 }, () => {
     const computed = collectSupabaseWriteSites()
       .filter((site) => TRANSIT_LANE_PREFIXES.some((prefix) => site.file.startsWith(prefix)))
       .filter((site) => site.table === null)
@@ -145,7 +151,7 @@ describe("the timetable is not persisted", () => {
     ).toEqual([]);
   });
 
-  it("writes only the four derived tables from inside the transit lane", () => {
+  it("writes only the four derived tables from inside the transit lane", { timeout: 30_000 }, () => {
     const unexpected = collectSupabaseWriteSites()
       .filter((site) => TRANSIT_LANE_PREFIXES.some((prefix) => site.file.startsWith(prefix)))
       .filter((site) => site.table !== null)

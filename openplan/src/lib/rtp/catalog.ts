@@ -613,14 +613,32 @@ export function buildRtpReleaseReviewSummary(input: {
   };
 }
 
+/**
+ * What the caller KNOWS about this cycle's packet records.
+ *
+ * A count is not the only possible answer, and pretending it is put a false
+ * statement on a planner's plan export: the whole-plan export never queries
+ * `reports` or `report_artifacts`, so it was handed a hardcoded `1`/`1` and the
+ * document asserted that a current board packet existed behind it. Passing `0`
+ * instead would only have swapped one falsehood for another — the summary would
+ * then have told a cycle WITH a generated packet to "create and generate a
+ * current RTP packet".
+ *
+ * So the absence of knowledge is its own case. `{ examined: false }` may never
+ * upgrade the posture (nothing here can claim a packet exists) and never states
+ * that one is missing; it says the records were not examined.
+ */
+export type RtpPacketRecordKnowledge =
+  | { examined: true; recordCount: number; generatedCount: number }
+  | { examined: false };
+
 export function buildRtpPublicReviewSummary({
   status,
   publicReviewOpenAt,
   publicReviewCloseAt,
   cycleLevelCampaignCount,
   chapterCampaignCount,
-  packetRecordCount,
-  generatedPacketCount,
+  packets,
   pendingCommentCount,
   approvedCommentCount,
   readyCommentCount,
@@ -630,15 +648,16 @@ export function buildRtpPublicReviewSummary({
   publicReviewCloseAt: string | null | undefined;
   cycleLevelCampaignCount: number;
   chapterCampaignCount: number;
-  packetRecordCount: number;
-  generatedPacketCount: number;
+  packets: RtpPacketRecordKnowledge;
   pendingCommentCount: number;
   approvedCommentCount: number;
   readyCommentCount: number;
 }): RtpPublicReviewSummary {
   const hasReviewWindow = Boolean(publicReviewOpenAt && publicReviewCloseAt);
   const totalCampaignCount = cycleLevelCampaignCount + chapterCampaignCount;
-  const hasPacketArtifact = generatedPacketCount > 0;
+  const packetRecordCount = packets.examined ? packets.recordCount : 0;
+  const generatedPacketCount = packets.examined ? packets.generatedCount : 0;
+  const hasPacketArtifact = packets.examined && packets.generatedCount > 0;
   const actionItems: string[] = [];
 
   if (!hasReviewWindow) {
@@ -650,7 +669,13 @@ export function buildRtpPublicReviewSummary({
   if (totalCampaignCount === 0) {
     actionItems.push("Add at least one RTP-linked engagement campaign so review comments can feed back into the cycle.");
   }
-  if (!hasPacketArtifact) {
+  if (!packets.examined) {
+    // NOT "create a packet" — this caller looked at no packet record and cannot
+    // tell a cycle that already has one to make another.
+    actionItems.push(
+      "Check this cycle's packet records separately: this document did not examine them, so it states nothing about whether a current RTP packet exists."
+    );
+  } else if (!hasPacketArtifact) {
     actionItems.push("Create and generate a current RTP packet before board or public review begins.");
   }
   if (pendingCommentCount > 0) {
@@ -681,6 +706,19 @@ export function buildRtpPublicReviewSummary({
         readyCommentCount > 0
           ? ["Refresh the packet after material comment changes.", "Carry approved comments into the board-ready response summary."]
           : actionItems.slice(0, 3),
+    };
+  }
+
+  // The packet records were not examined, so neither branch above can be
+  // reached (both require a generated packet) and the fallback below would lead
+  // with an action item. Say what is true instead: the review foundation this
+  // caller COULD see, and an explicit gap where the packet posture would be.
+  if (!packets.examined && hasReviewWindow && totalCampaignCount > 0) {
+    return {
+      label: "Public review posture stated without packet records",
+      detail: `This document did not examine packet records for this cycle, so it states nothing about whether a current RTP packet exists. The cycle has a public review window and ${totalCampaignCount} linked engagement campaign${totalCampaignCount === 1 ? "" : "s"}.`,
+      tone: "info",
+      actionItems: actionItems.slice(0, 3),
     };
   }
 

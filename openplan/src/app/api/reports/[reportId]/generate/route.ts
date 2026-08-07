@@ -14,26 +14,15 @@ import {
 } from "@/lib/config/run-cap";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
-import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
-import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 import {
-  loadRtpPriorityFrameworkBinding,
-  type RtpPriorityFrameworkQuerySupabaseLike,
-} from "@/lib/rtp/priority-framework-queries";
+  buildRtpCycleExportInput,
+  classifyModelingEvidenceReadFailure,
+  loadReportModelingEvidence,
+  renderRtpExportDocumentHtml,
+  RTP_EXPORT_CYCLE_COLUMNS,
+  type RtpExportInputCycleRow,
+} from "@/lib/rtp/export-input";
 import {
-  loadRtpFinancialElement,
-  type RtpFinancialElementSupabaseLike,
-} from "@/lib/rtp/financial-element-queries";
-import { buildRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
-import {
-  buildRtpCommentResponseRecord,
-  loadRtpCommentResponseRecord,
-  rtpCommentResponseUnreadableFrom,
-  type RtpCommentResponseSupabaseLike,
-} from "@/lib/rtp/comment-response";
-import { buildRtpCycleReadiness, buildRtpCycleWorkflowSummary, buildRtpPublicReviewSummary } from "@/lib/rtp/catalog";
-import {
-  buildPortfolioFundingSnapshot,
   buildProjectFundingProfileScan,
   buildProjectFundingSnapshot,
   buildProjectFundingStackSummary,
@@ -63,7 +52,6 @@ import {
 } from "@/lib/reports/html";
 import { renderReportPdf, type ReportPdfEngine } from "@/lib/reports/pdf";
 import { buildEvidenceChainSummary } from "@/lib/reports/evidence-chain";
-import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { loadSentimentHotspots, negativeItemIdsFromSyntheses } from "@/lib/engagement/hotspots";
 import { loadSelfReportedDemographicsSource } from "@/lib/engagement/demographics";
 import type { EngagementSynthesis } from "@/lib/engagement/ai-synthesis";
@@ -75,7 +63,6 @@ import {
 import {
   extractReportModelingEvidenceClaimStatuses,
   summarizeReportModelingEvidenceForMetadata,
-  type ReportModelingEvidence,
 } from "@/lib/reports/modeling-evidence";
 import {
   buildAcceptedSectionNarratives,
@@ -169,17 +156,7 @@ type FundingSourceContextReadinessStatus = "ready" | "attention" | "blocked";
 const FUNDING_SOURCE_CONTEXT_OPERATOR_CAVEAT =
   "Operator review required. This funding/source-context scan supports planning packet review only; it is not legal compliance automation, award prediction, or autonomous approval.";
 
-type ReportCountyRunEvidenceRow = {
-  id: string;
-  workspace_id: string;
-  run_name: string | null;
-  geography_label: string | null;
-  stage: string | null;
-  updated_at: string | null;
-};
 
-type ReportsGenerateSupabase = Awaited<ReturnType<typeof createClient>>;
-type ReportsGenerateAudit = Pick<ReturnType<typeof createApiAuditLogger>, "warn">;
 
 type ArtifactHistoryEntry = {
   artifactId: string;
@@ -346,222 +323,6 @@ function buildFundingSourceContextReadiness(input: {
   };
 }
 
-function summarizeRtpFundingProfileScanReadiness(
-  scans: Array<{ scan: { status: string; label: string; nextAction: string } }>,
-  input: {
-    modelingEvidenceCount: number;
-    engagementReadyForHandoffCount: number;
-    enabledSectionCount: number;
-  }
-) {
-  const blockedCount = scans.filter(
-    (item) => item.scan.status === "blocked" || item.scan.status === "not_started"
-  ).length;
-  const attentionCount = scans.filter((item) => item.scan.status === "attention").length;
-  const readyCount = scans.filter((item) => item.scan.status === "ready").length;
-
-  let status: FundingSourceContextReadinessStatus = "ready";
-  let label = "RTP funding source context ready for operator review";
-  let detail =
-    "Generation captured linked-project funding scans, cycle readiness, public-review posture, and packet source context for supervised RTP review.";
-
-  if (blockedCount > 0) {
-    status = "blocked";
-    label = "RTP funding source context has project blockers";
-    detail = `${blockedCount} linked project funding scan${blockedCount === 1 ? "" : "s"} need setup or blocker resolution before the RTP funding basis is used outside OpenPlan.`;
-  } else if (attentionCount > 0 || scans.length === 0) {
-    status = "attention";
-    label = "RTP funding source context needs operator review";
-    detail = scans.length === 0
-      ? "No linked project funding scans were available when this RTP artifact was generated."
-      : `${attentionCount} linked project funding scan${attentionCount === 1 ? "" : "s"} need operator review before strong RTP funding language is reused.`;
-  }
-
-  return {
-    capturedAt: new Date().toISOString(),
-    status,
-    label,
-    detail,
-    linkedProjectScanCount: scans.length,
-    readyProjectScanCount: readyCount,
-    attentionProjectScanCount: attentionCount,
-    blockedProjectScanCount: blockedCount,
-    modelingEvidenceCount: input.modelingEvidenceCount,
-    engagementReadyForHandoffCount: input.engagementReadyForHandoffCount,
-    enabledSectionCount: input.enabledSectionCount,
-    operatorReviewCaveat: FUNDING_SOURCE_CONTEXT_OPERATOR_CAVEAT,
-  };
-}
-
-/**
- * The result of trying to read the modeling evidence a packet reports on —
- * RETURNED, not decided here.
- *
- * WHY THIS SHAPE. Every read below used to be answered with `audit.warn()` and
- * an empty list, and the two are not the same act. The warning is something an
- * OPERATOR may find in host logs; the empty list becomes
- * `modelingEvidenceCount: 0` in the artifact record and "0 modeling evidence
- * item(s)" in the RTP packet's funding readiness line — a sentence a board or a
- * funder reads as established fact about the agency's own modeling work. A count
- * derived from a read that failed is a falsehood no downstream reader can see
- * the gap in, because zero looks exactly like zero.
- *
- * So this loader follows the seam the rest of the repo already uses for library
- * reads (`loadOpportunityPursuitContext`, `loadSurveyDefinition`): it neither
- * swallows nor throws. It hands the failure up, and the ROUTE decides whether a
- * document may be produced.
- */
-type ReportModelingEvidenceRead = {
-  items: ReportModelingEvidence[];
-  error: { message: string; code: string | null } | null;
-};
-
-async function loadReportModelingEvidence(input: {
-  supabase: ReportsGenerateSupabase;
-  audit: ReportsGenerateAudit;
-  reportId: string;
-  workspaceId: string;
-  modelingCountyRunId?: string | null;
-  auditEventPrefix: "rtp_modeling" | "report_modeling";
-}): Promise<ReportModelingEvidenceRead> {
-  const { supabase, audit, reportId, workspaceId, modelingCountyRunId, auditEventPrefix } = input;
-  let countyRuns: ReportCountyRunEvidenceRow[] = [];
-
-  if (modelingCountyRunId) {
-    // BOTH county-run reads here are deliberately NOT wrapped in
-    // `safeOptionalQuery`. These rows are what the evidence count is counted
-    // FROM, so substituting the empty fallback for a classified failure answers
-    // "there is no modeling evidence" on the strength of a query that never ran.
-    // A missing COLUMN on an existing `county_runs` table is the realistic case,
-    // and there the runs are sitting right there while the packet prints zero.
-    // The report even names this run explicitly — `modeling_county_run_id` — so
-    // the packet would be contradicting its own report record.
-    const countyRunResult = await supabase
-      .from("county_runs")
-      .select("id, workspace_id, run_name, geography_label, stage, updated_at")
-      .eq("id", modelingCountyRunId)
-      .maybeSingle();
-
-    if (countyRunResult.error) {
-      audit.warn(`${auditEventPrefix}_county_run_lookup_failed`, {
-        reportId,
-        workspaceId,
-        countyRunId: modelingCountyRunId,
-        message: countyRunResult.error.message,
-        code: countyRunResult.error.code ?? null,
-      });
-      return {
-        items: [],
-        error: { message: countyRunResult.error.message, code: countyRunResult.error.code ?? null },
-      };
-    }
-
-    if (!countyRunResult.data) {
-      // A SUCCESSFUL read that found nothing. The linked run is genuinely gone,
-      // and "no modeling evidence" is a fact this path established.
-      audit.warn(`${auditEventPrefix}_county_run_missing`, {
-        reportId,
-        workspaceId,
-        countyRunId: modelingCountyRunId,
-      });
-    } else if (countyRunResult.data.workspace_id !== workspaceId) {
-      audit.warn(`${auditEventPrefix}_county_run_workspace_mismatch`, {
-        reportId,
-        workspaceId,
-        countyRunId: modelingCountyRunId,
-        countyRunWorkspaceId: countyRunResult.data.workspace_id,
-      });
-    } else {
-      countyRuns = [countyRunResult.data];
-    }
-  } else {
-    const countyRunsResult = await supabase
-      .from("county_runs")
-      .select("id, workspace_id, run_name, geography_label, stage, updated_at")
-      .eq("workspace_id", workspaceId)
-      .order("updated_at", { ascending: false })
-      .limit(5);
-
-    if (countyRunsResult.error) {
-      audit.warn(`${auditEventPrefix}_county_runs_lookup_failed`, {
-        reportId,
-        workspaceId,
-        message: countyRunsResult.error.message,
-        code: countyRunsResult.error.code ?? null,
-      });
-      return {
-        items: [],
-        error: { message: countyRunsResult.error.message, code: countyRunsResult.error.code ?? null },
-      };
-    }
-
-    countyRuns = (countyRunsResult.data ?? []) as ReportCountyRunEvidenceRow[];
-  }
-
-  const evidenceReads = await Promise.all(
-    countyRuns.map(async (countyRun) => {
-      const evidenceResult = await loadCountyRunModelingEvidence({
-        supabase,
-        countyRunId: countyRun.id,
-        track: "assignment",
-      });
-
-      if (evidenceResult.error) {
-        audit.warn(`${auditEventPrefix}_evidence_lookup_failed`, {
-          reportId,
-          workspaceId,
-          countyRunId: countyRun.id,
-          message: evidenceResult.error.message,
-          code: evidenceResult.error.code ?? null,
-          missingSchema: evidenceResult.error.missingSchema ?? false,
-        });
-      }
-
-      return { countyRun, evidenceResult };
-    })
-  );
-
-  // `evidence: null` reads in the packet as "this run carries no claim decision,
-  // no source manifests, and no validation checks" — which is the honesty
-  // firewall's own vocabulary, stated about a run whose evidence nobody could
-  // read. It is the worst of the three shapes here, so it refuses too.
-  const failedEvidenceRead = evidenceReads.find((read) => read.evidenceResult.error)?.evidenceResult.error;
-
-  if (failedEvidenceRead) {
-    return {
-      items: [],
-      error: { message: failedEvidenceRead.message, code: failedEvidenceRead.code ?? null },
-    };
-  }
-
-  return {
-    items: evidenceReads.map(({ countyRun, evidenceResult }) => ({
-      countyRunId: countyRun.id,
-      runName: countyRun.run_name,
-      geographyLabel: countyRun.geography_label,
-      stage: countyRun.stage,
-      updatedAt: countyRun.updated_at,
-      evidence: evidenceResult.evidence,
-    })),
-    error: null,
-  };
-}
-
-/**
- * One refusal for both packet branches, so the RTP path and the project path
- * cannot drift into disagreeing about whether an unreadable evidence table is
- * fatal. A pending migration answers 503 (come back after migrating); anything
- * else answers 500 (this deployment cannot describe what happened) — never a 200
- * carrying a count nobody established.
- */
-function classifyModelingEvidenceReadFailure(read: ReportModelingEvidenceRead) {
-  return classifyRouteReadFailure("the modeling evidence this packet reports on", read, {
-    pendingError: "This packet's modeling evidence cannot be read yet",
-    pendingHint:
-      "Apply the latest Supabase migrations, then generate again. Generating without them would print a modeling-evidence count this deployment never established.",
-  });
-}
-
 export async function POST(request: NextRequest, context: RouteContext) {
   const audit = createApiAuditLogger("reports.generate", request);
   const startedAt = Date.now();
@@ -690,21 +451,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     if (report.rtp_cycle_id) {
-      const modelingEvidencePromise = loadReportModelingEvidence({
-        supabase,
-        audit,
-        reportId: report.id,
-        workspaceId: report.workspace_id,
-        modelingCountyRunId: report.modeling_county_run_id,
-        auditEventPrefix: "rtp_modeling",
-      });
-      const [workspaceResult, cycleResult, sectionsResult, chaptersResult, linksResult, campaignsResult] = await Promise.all([
+      const [workspaceResult, cycleResult, sectionsResult] = await Promise.all([
         supabase.from("workspaces").select("id, name").eq("id", report.workspace_id).maybeSingle(),
         supabase
           .from("rtp_cycles")
-          .select(
-            "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, financial_basis_year, annual_inflation_rate, updated_at"
-          )
+          .select(RTP_EXPORT_CYCLE_COLUMNS)
           .eq("id", report.rtp_cycle_id)
           .maybeSingle(),
         supabase
@@ -712,31 +463,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .select("id, section_key, title, enabled, sort_order, config_json")
           .eq("report_id", report.id)
           .order("sort_order", { ascending: true }),
-        supabase
-          .from("rtp_cycle_chapters")
-          .select("id, title, section_type, status, summary, guidance, content_markdown, sort_order")
-          .eq("rtp_cycle_id", report.rtp_cycle_id)
-          .order("sort_order", { ascending: true }),
-        supabase
-          .from("project_rtp_cycle_links")
-          .select("id, project_id, portfolio_role, priority_rationale, priority_scores, horizon_band_id, estimated_cost, cost_basis_year, projects(id, name, status, delivery_phase, summary, updated_at)")
-          .eq("rtp_cycle_id", report.rtp_cycle_id)
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("engagement_campaigns")
-          .select("id, title, status, engagement_type, summary, rtp_cycle_chapter_id")
-          .eq("rtp_cycle_id", report.rtp_cycle_id)
-          .order("updated_at", { ascending: false }),
       ]);
 
-      const loadErrors = [
-        workspaceResult.error,
-        cycleResult.error,
-        sectionsResult.error,
-        chaptersResult.error,
-        linksResult.error,
-        campaignsResult.error,
-      ].filter(Boolean);
+      const loadErrors = [workspaceResult.error, cycleResult.error, sectionsResult.error].filter(Boolean);
 
       if (loadErrors.length > 0 || !cycleResult.data) {
         const firstError = loadErrors[0];
@@ -748,184 +477,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Failed to load RTP packet source records" }, { status: 500 });
       }
 
-      const cycle = cycleResult.data;
+      const cycle = cycleResult.data as RtpExportInputCycleRow;
       const sections = sectionsResult.data ?? [];
-      const chapters = chaptersResult.data ?? [];
-      const linkedProjects = normalizeRtpLinkedProjects(linksResult.data ?? []);
-      const campaigns = campaignsResult.data ?? [];
-      // The packet prints "N modeling evidence item(s)" in its funding readiness
-      // line and freezes `modelingEvidenceCount` into the artifact record. A
-      // failed read reaching either as 0 tells a board the cycle has no modeling
-      // basis — so the generation refuses instead, in the same shape as the
-      // funding and engagement gates above it.
-      const modelingEvidenceRead = await modelingEvidencePromise;
-      const modelingEvidenceFailure = classifyModelingEvidenceReadFailure(modelingEvidenceRead);
-
-      if (modelingEvidenceFailure) {
-        audit.error("rtp_report_modeling_evidence_load_failed", {
-          reportId: report.id,
-          message: modelingEvidenceFailure.message,
-          pendingSchema: modelingEvidenceFailure.pending,
-        });
-        return NextResponse.json(modelingEvidenceFailure.body, { status: modelingEvidenceFailure.status });
-      }
-
-      const modelingEvidence = modelingEvidenceRead.items;
-      const modelingEvidenceMetadata = summarizeReportModelingEvidenceForMetadata(modelingEvidence);
-      const modelingEvidenceClaimStatuses = extractReportModelingEvidenceClaimStatuses(modelingEvidence);
-      const linkedProjectIds = linkedProjects
-        .map((link) => link.project?.id ?? null)
-        .filter((value): value is string => Boolean(value));
-      const [fundingProfilesResult, fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult] =
-        linkedProjectIds.length > 0
-          ? await Promise.all([
-              supabase
-                .from("project_funding_profiles")
-                .select("project_id, funding_need_amount, local_match_need_amount, updated_at")
-                .in("project_id", linkedProjectIds),
-              supabase
-                .from("funding_awards")
-                .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
-                .in("project_id", linkedProjectIds),
-              supabase
-                .from("funding_opportunities")
-                .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
-                .in("project_id", linkedProjectIds),
-              supabase
-                .from("billing_invoice_records")
-                .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
-                .in("project_id", linkedProjectIds),
-            ])
-          : [
-              { data: [], error: null },
-              { data: [], error: null },
-              { data: [], error: null },
-              { data: [], error: null },
-            ];
-
-      // Same gate as the source records above, and for a sharper reason: these
-      // four reads are TOTALLED into the packet's funding snapshot. A failure
-      // read as `?? []` does not leave a gap a reader could notice — it prints
-      // $0 committed and a fully unfunded portfolio, under the agency's name, in
-      // a document a funder or a board keeps. Refuse the generation instead.
-      const fundingLoadErrors = [
-        fundingProfilesResult.error,
-        fundingAwardsResult.error,
-        fundingOpportunitiesResult.error,
-        billingInvoicesResult.error,
-      ].filter(Boolean);
-
-      if (fundingLoadErrors.length > 0) {
-        const firstError = fundingLoadErrors[0];
-        audit.error("rtp_report_funding_load_failed", {
-          reportId: report.id,
-          message: firstError?.message ?? "unknown",
-          code: firstError?.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to load RTP packet funding records" }, { status: 500 });
-      }
-
-      const fundingProfileByProjectId = new Map(
-        ((fundingProfilesResult.data ?? []) as Array<{ project_id: string; funding_need_amount: number | null; local_match_need_amount: number | null; updated_at: string | null }>).map((profile) => [profile.project_id, profile])
-      );
-      const fundingAwardsByProjectId = new Map<string, Array<{ awarded_amount: number | string | null; match_amount: number | string | null; risk_flag: string | null; obligation_due_at: string | null; updated_at: string | null; created_at: string | null }>>();
-      const fundingOpportunitiesByProjectId = new Map<string, Array<{ expected_award_amount: number | string | null; decision_state: string | null; opportunity_status: string | null; closes_at: string | null; updated_at: string | null; created_at: string | null }>>();
-      const fundingInvoicesByProjectId = new Map<string, Array<{ status: string | null; amount: number | string | null; retention_percent: number | string | null; retention_amount: number | string | null; net_amount: number | string | null; due_date: string | null; invoice_date: string | null; created_at: string | null }>>();
-      for (const award of (fundingAwardsResult.data ?? []) as Array<{ project_id: string; awarded_amount: number | string | null; match_amount: number | string | null; risk_flag: string | null; obligation_due_at: string | null; updated_at: string | null; created_at: string | null }>) {
-        const current = fundingAwardsByProjectId.get(award.project_id) ?? [];
-        current.push(award);
-        fundingAwardsByProjectId.set(award.project_id, current);
-      }
-      for (const opportunity of (fundingOpportunitiesResult.data ?? []) as Array<{ project_id: string; expected_award_amount: number | string | null; decision_state: string | null; opportunity_status: string | null; closes_at: string | null; updated_at: string | null; created_at: string | null }>) {
-        const current = fundingOpportunitiesByProjectId.get(opportunity.project_id) ?? [];
-        current.push(opportunity);
-        fundingOpportunitiesByProjectId.set(opportunity.project_id, current);
-      }
-      for (const invoice of (billingInvoicesResult.data ?? []) as Array<{ project_id: string; status: string | null; amount: number | string | null; retention_percent: number | string | null; retention_amount: number | string | null; net_amount: number | string | null; due_date: string | null; invoice_date: string | null; created_at: string | null }>) {
-        const current = fundingInvoicesByProjectId.get(invoice.project_id) ?? [];
-        current.push(invoice);
-        fundingInvoicesByProjectId.set(invoice.project_id, current);
-      }
-      const portfolioFundingSnapshot = buildPortfolioFundingSnapshot({
-        projects: linkedProjectIds.map((projectId) => ({
-          projectUpdatedAt: linkedProjects.find((link) => link.project?.id === projectId)?.project?.updated_at ?? null,
-          profile: fundingProfileByProjectId.get(projectId) ?? null,
-          awards: fundingAwardsByProjectId.get(projectId) ?? [],
-          opportunities: fundingOpportunitiesByProjectId.get(projectId) ?? [],
-          invoices: fundingInvoicesByProjectId.get(projectId) ?? [],
-        })),
-        capturedAt: report.generated_at ?? new Date().toISOString(),
-      });
-      const rtpFundingProfileScans = linkedProjects.map((link) => {
-        const projectId = link.project?.id ?? link.project_id;
-        const summary = buildProjectFundingStackSummary(
-          fundingProfileByProjectId.get(projectId) ?? null,
-          fundingAwardsByProjectId.get(projectId) ?? [],
-          fundingOpportunitiesByProjectId.get(projectId) ?? [],
-          fundingInvoicesByProjectId.get(projectId) ?? []
-        );
-        const scan = buildProjectFundingProfileScan({
-          summary,
-          hasComparisonEvidence: false,
-        });
-
-        return {
-          projectId,
-          projectName: link.project?.name ?? null,
-          portfolioRole: link.portfolio_role,
-          priorityRationale: link.priority_rationale,
-          latestFundingSourceUpdatedAt: buildProjectFundingSnapshot({
-            profile: fundingProfileByProjectId.get(projectId) ?? null,
-            awards: fundingAwardsByProjectId.get(projectId) ?? [],
-            opportunities: fundingOpportunitiesByProjectId.get(projectId) ?? [],
-            invoices: fundingInvoicesByProjectId.get(projectId) ?? [],
-            capturedAt: report.generated_at ?? null,
-            projectUpdatedAt: link.project?.updated_at ?? null,
-          }).latestSourceUpdatedAt,
-          scan,
-        };
-      });
-      const campaignIds = campaigns.map((campaign) => campaign.id);
-      const engagementItemsResult = campaignIds.length
-        ? await supabase
-            .from("engagement_items")
-            .select(
-              "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-            )
-            .in("campaign_id", campaignIds)
-        : { data: [], error: null };
-
-      // These rows become the packet's public-review comment counts. A failed
-      // read carried through as `?? []` tells a board the cycle drew no comments
-      // — the sentence this product has already published twice on the strength
-      // of a query that never ran.
-      const engagementItemsError = engagementItemsResult.error;
-      if (engagementItemsError) {
-        audit.error("rtp_report_engagement_load_failed", {
-          reportId: report.id,
-          message: engagementItemsError.message ?? "unknown",
-          code: engagementItemsError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to load RTP packet engagement records" }, { status: 500 });
-      }
-
-      const engagementCounts = summarizeEngagementItems(
-        [],
-        (engagementItemsResult.data ?? []) as Array<{
-          id: string;
-          campaign_id: string;
-          category_id: string | null;
-          status: string | null;
-          source_type: string | null;
-          latitude: number | null;
-          longitude: number | null;
-          moderation_notes: string | null;
-          created_at: string | null;
-          updated_at: string | null;
-        }>
-      );
-      const cycleLevelCampaignCount = campaigns.filter((campaign) => !campaign.rtp_cycle_chapter_id).length;
-      const chapterLevelCampaignCount = campaigns.length - cycleLevelCampaignCount;
       const enabledSectionKeys = sections.filter((section) => section.enabled).map((section) => section.section_key);
       const packetPresetAlignment = getRtpPacketPresetAlignment({
         cycleStatus: cycle.status,
@@ -935,103 +488,64 @@ export async function POST(request: NextRequest, context: RouteContext) {
           sortOrder: section.sort_order,
         })),
       });
-      const readiness = buildRtpCycleReadiness({
-        geographyLabel: cycle.geography_label,
-        horizonStartYear: cycle.horizon_start_year,
-        horizonEndYear: cycle.horizon_end_year,
-        adoptionTargetDate: cycle.adoption_target_date,
-        publicReviewOpenAt: cycle.public_review_open_at,
-        publicReviewCloseAt: cycle.public_review_close_at,
-      });
-      const workflow = buildRtpCycleWorkflowSummary({ status: cycle.status, readiness });
-      const publicReviewSummary = buildRtpPublicReviewSummary({
-        status: cycle.status,
-        publicReviewOpenAt: cycle.public_review_open_at,
-        publicReviewCloseAt: cycle.public_review_close_at,
-        cycleLevelCampaignCount,
-        chapterCampaignCount: chapterLevelCampaignCount,
-        packetRecordCount: 1,
-        generatedPacketCount: 1,
-        pendingCommentCount: engagementCounts.moderationQueue.pendingCount,
-        approvedCommentCount: engagementCounts.moderationQueue.approvedCount,
-        readyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
-      });
-      const rtpFundingSourceContextReadiness = summarizeRtpFundingProfileScanReadiness(
-        rtpFundingProfileScans,
-        {
-          modelingEvidenceCount: modelingEvidenceMetadata.length,
-          engagementReadyForHandoffCount: engagementCounts.moderationQueue.readyForHandoffCount,
-          enabledSectionCount: sections.filter((section) => section.enabled).length,
-        }
-      );
       const format = parsed.data.format;
-      const chapterCompleteCount = chapters.filter((chapter) => chapter.status === "complete").length;
-      const chapterReadyForReviewCount = chapters.filter((chapter) => chapter.status === "ready_for_review").length;
-      // Same rule as the direct export route: the packet cites only the
-      // jurisdiction's own law, and cites nothing when we cannot tell.
-      const rtpPriorityFramework = await loadRtpPriorityFrameworkBinding(
-        supabase as unknown as RtpPriorityFrameworkQuerySupabaseLike,
-        cycle.workspace_id
-      );
-      // The same three the direct export route supplies. Loaded through the
-      // shared helpers so the packet and the button a planner clicks cannot
-      // present different documents.
-      const rtpFinancialElement = await loadRtpFinancialElement(
-        supabase as unknown as RtpFinancialElementSupabaseLike,
-        cycle.id
-      );
-      const rtpCommentResponseLoad = await loadRtpCommentResponseRecord(
-        supabase as unknown as RtpCommentResponseSupabaseLike,
-        cycle.id
-      );
-      const rtpFiscalConstraint = buildRtpFiscalConstraint({
-        cycleHorizonStartYear: cycle.horizon_start_year,
-        cycleHorizonEndYear: cycle.horizon_end_year,
-        cycleFinancialBasisYear: (cycle as { financial_basis_year?: number | null }).financial_basis_year ?? null,
-        annualInflationRate: (cycle as { annual_inflation_rate?: number | string | null }).annual_inflation_rate ?? null,
-        bands: rtpFinancialElement.bands,
-        lines: rtpFinancialElement.lines,
-        projects: linkedProjects.map((link) => ({
-          linkId: link.id,
-          projectId: link.project_id,
-          projectName: link.project?.name ?? null,
-          portfolioRole: link.portfolio_role,
-          horizonBandId: link.horizon_band_id ?? null,
-          estimatedCost: link.estimated_cost ?? null,
-          costBasisYear: link.cost_basis_year ?? null,
-        })),
+
+      // ONE builder, both routes. Everything the packet contains — the source
+      // records, the modeling evidence, the funding basis, the engagement
+      // counts, the financial element and the comment record — is assembled by
+      // `buildRtpCycleExportInput`, which is also what the "Export HTML/PDF"
+      // button a planner clicks now calls. For most of this route's life the
+      // packet loaded ten things and that button loaded three, and neither
+      // document said so. This route decides only WHICH document this is; it
+      // may not assemble the options bag itself.
+      const built = await buildRtpCycleExportInput({
+        supabase,
+        audit,
+        cycle,
+        presentation: {
+          titleSuffix: "OpenPlan RTP Packet",
+          composition: { kind: "report_sections", sectionKeys: enabledSectionKeys },
+        },
+        // This request IS the packet record it describes, and it is generating
+        // that record's artifact below, so one record and one generated packet
+        // is what this caller established.
+        packetRecords: { examined: true, recordCount: 1, generatedCount: 1 },
+        reportId: report.id,
+        modelingCountyRunId: report.modeling_county_run_id,
+        capturedAt: report.generated_at ?? null,
       });
 
-      const html = buildRtpExportHtml({
-        cycle,
+      if (!built.ok) {
+        audit.error(built.refusal.auditEvent, {
+          reportId: report.id,
+          message: built.refusal.message,
+          code: built.refusal.code,
+          pendingSchema: built.refusal.pending,
+        });
+        return NextResponse.json(built.refusal.body, { status: built.refusal.status });
+      }
+
+      const {
         chapters,
         linkedProjects,
         campaigns,
-        priorityCriteria: rtpPriorityFramework.binding.criteria,
-        options: {
-          fiscalConstraint: rtpFiscalConstraint,
-          horizonBands: rtpFinancialElement.bands,
-          commentResponse: buildRtpCommentResponseRecord({
-            campaigns: rtpCommentResponseLoad.campaigns,
-            comments: rtpCommentResponseLoad.comments,
-            responses: rtpCommentResponseLoad.responses,
-            unreadable: rtpCommentResponseUnreadableFrom(rtpCommentResponseLoad.results),
-          }),
-          sectionKeys: enabledSectionKeys,
-          titleSuffix: "OpenPlan RTP Packet",
-          publicReviewSummary: {
-            ...publicReviewSummary,
-            cycleLevelCampaignCount,
-            chapterLevelCampaignCount,
-            pendingCommentCount: engagementCounts.moderationQueue.pendingCount,
-            readyCommentCount: engagementCounts.moderationQueue.readyForHandoffCount,
-          },
-          modelingEvidence,
-          fundingSnapshot: portfolioFundingSnapshot,
-          fundingProfileScans: rtpFundingProfileScans,
-          fundingSourceContextReadiness: rtpFundingSourceContextReadiness,
-        },
-      });
+        chapterCompleteCount,
+        chapterReadyForReviewCount,
+        cycleLevelCampaignCount,
+        chapterLevelCampaignCount,
+        engagementCounts,
+        publicReviewSummary,
+        readiness,
+        workflow,
+        modelingEvidence,
+        portfolioFundingSnapshot,
+        fundingProfileScans: rtpFundingProfileScans,
+        fundingSourceContextReadiness: rtpFundingSourceContextReadiness,
+      } = built.context;
+      const modelingEvidenceMetadata = summarizeReportModelingEvidenceForMetadata(modelingEvidence);
+      const modelingEvidenceClaimStatuses = extractReportModelingEvidenceClaimStatuses(modelingEvidence);
+
+      const html = renderRtpExportDocumentHtml(built.document);
       const generatedAt = new Date().toISOString();
       const artifactId = crypto.randomUUID();
       let rtpPdfStoragePath: string | null = null;

@@ -433,8 +433,15 @@ export default async function RtpCycleDetailPage({ params }: RouteContext) {
     publicReviewCloseAt: cycle.public_review_close_at,
     cycleLevelCampaignCount: cycleLevelCampaigns.length,
     chapterCampaignCount: engagementCampaigns.length - cycleLevelCampaigns.length,
-    packetRecordCount: packetReportsWithComparison.length,
-    generatedPacketCount,
+    // A failed packet read is NOT "no packets": counting it as zero would have
+    // this card tell a cycle that already has a generated packet to create one.
+    packets: packetRecordsUnavailable
+      ? { examined: false }
+      : {
+          examined: true,
+          recordCount: packetReportsWithComparison.length,
+          generatedCount: generatedPacketCount,
+        },
     pendingCommentCount: engagementSummary.moderationQueue.pendingCount,
     approvedCommentCount: engagementSummary.moderationQueue.approvedCount,
     readyCommentCount: engagementSummary.moderationQueue.readyForHandoffCount,

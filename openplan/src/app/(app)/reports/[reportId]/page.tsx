@@ -598,8 +598,9 @@ export default async function ReportDetailPage({ params }: RouteParams) {
           publicReviewCloseAt: (rtpCycle as Record<string, unknown>).public_review_close_at as string | null | undefined,
           cycleLevelCampaignCount,
           chapterCampaignCount: chapterLevelCampaignCount,
-          packetRecordCount: 1,
-          generatedPacketCount: latestArtifact ? 1 : 0,
+          // This page IS a packet record, and it can see whether that record
+          // has a generated artifact — so it examined one packet record.
+          packets: { examined: true, recordCount: 1, generatedCount: latestArtifact ? 1 : 0 },
           pendingCommentCount: currentRtpEngagementCounts.moderationQueue.pendingCount,
           approvedCommentCount: currentRtpEngagementCounts.moderationQueue.approvedCount,
           readyCommentCount: currentRtpEngagementCounts.moderationQueue.readyForHandoffCount,

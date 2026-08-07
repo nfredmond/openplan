@@ -175,6 +175,17 @@ export const DEFAULT_RTP_EXPORT_SECTION_KEYS = Object.keys(
   RTP_EXPORT_SECTION_ORDER
 ) as RtpExportSectionKey[];
 
+/**
+ * Where a document's section list came from.
+ *
+ * `report_sections` — a report's own stored selection, which may omit sections.
+ * `whole_plan` — no report exists, so the whole plan is carried.
+ *
+ * Declared as data rather than inferred from the array, because "nine keys"
+ * and "every key, deliberately" are not the same statement to a reader.
+ */
+export type RtpExportComposition = "report_sections" | "whole_plan";
+
 export function normalizeRtpLinkedProjects(
   linkedProjects: RtpExportLinkedProject[]
 ): RtpExportNormalizedLinkedProject[] {
@@ -317,14 +328,45 @@ function buildRtpAdoptionRecordChecklist(input: {
 }
 
 
+/**
+ * The sentence that stops the two RTP documents from differing SILENTLY.
+ *
+ * A board packet composes itself from its report's own `report_sections` rows
+ * and may legitimately leave sections out; the direct export has no report and
+ * carries the whole plan. That is a fair difference — but for most of this
+ * file's life NEITHER document said which it was, so a shorter packet and a
+ * longer export were indistinguishable from two versions of the same plan.
+ * "Included sections" alone does not close it: a reader sees what is present
+ * and cannot see what was dropped. This names the source AND the omissions.
+ */
+function describeRtpExportComposition(
+  composition: RtpExportComposition,
+  enabledSectionKeys: RtpExportSectionKey[]
+): string {
+  const excluded = DEFAULT_RTP_EXPORT_SECTION_KEYS.filter((key) => !enabledSectionKeys.includes(key));
+
+  if (composition === "whole_plan") {
+    return "Composed as a whole-plan export: every section of the plan is included, with no report-specific section selection applied.";
+  }
+
+  if (excluded.length === 0) {
+    return "Composed from this report's own section selection; every section of the plan is included.";
+  }
+
+  return `Composed from this report's own section selection. ${excluded.length} of ${DEFAULT_RTP_EXPORT_SECTION_KEYS.length} sections are excluded from this document and say nothing here: ${excluded
+    .map((key) => titleizeRtpValue(key))
+    .join(", ")}.`;
+}
+
 function buildRtpPacketScanSummary(input: {
   enabledSectionKeys: RtpExportSectionKey[];
+  composition: RtpExportComposition;
   stats: ReturnType<typeof buildRtpExportStats>;
   chapters: RtpExportChapter[];
   linkedProjects: RtpExportNormalizedLinkedProject[];
   campaigns: RtpExportCampaign[];
 }): string {
-  const { enabledSectionKeys, stats, chapters, linkedProjects, campaigns } = input;
+  const { enabledSectionKeys, composition, stats, chapters, linkedProjects, campaigns } = input;
   const visibleSections = enabledSectionKeys.map((key) => titleizeRtpValue(key)).join(" · ");
 
   return `
@@ -340,17 +382,25 @@ function buildRtpPacketScanSummary(input: {
       <div class="scan-card"><strong>${esc(stats.readiness.label)}</strong><span>${esc(stats.workflow.label)}</span></div>
     </div>
     <p class="muted"><strong>Included sections:</strong> ${esc(visibleSections || "Default RTP packet sections")}</p>
+    <p class="muted"><strong>How this document was composed:</strong> ${esc(
+      describeRtpExportComposition(composition, enabledSectionKeys)
+    )}</p>
   </section>`;
 }
 
 function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): string {
-  if (modelingEvidence.length === 0) return "";
-
   return `
   <section class="section modeling-evidence">
     <h2>Assignment modeling claim posture</h2>
     <p class="muted">Structured source and validation evidence for any assignment-model language carried into this RTP packet.</p>
-    ${modelingEvidence
+    ${
+      // Stated, never silent. This section used to return an empty string, so a
+      // plan with no model run reached a board with a modeling heading and
+      // nothing under it — which reads as "the modeling is fine". It means only
+      // that no structured modeling evidence was recorded.
+      modelingEvidence.length === 0
+        ? '<p class="muted">No county model run is attached to this plan, so no structured claim decision, source manifest or validation check is carried here. This document therefore makes no assignment-model claim — that is the absence of evidence, not evidence of a sound model.</p>'
+        : modelingEvidence
       .map((item) => {
         const evidence = item.evidence;
         const claim = evidence?.claimDecision ?? null;
@@ -413,7 +463,8 @@ function modelingEvidenceMarkup(modelingEvidence: RtpExportModelingEvidence[]): 
           }
         </div>`;
       })
-      .join("")}
+      .join("")
+    }
   </section>`;
 }
 
@@ -426,7 +477,9 @@ function fundingSourceContextMarkup(input: {
   const fundingProfileScans = input.fundingProfileScans ?? [];
   const readiness = input.fundingSourceContextReadiness ?? null;
 
-  if (!fundingSnapshot && fundingProfileScans.length === 0 && !readiness) return "";
+  // No early return. An absent funding basis used to erase the whole block, so
+  // the portfolio section ended without saying whether the plan's money had
+  // been looked at at all. The three branches below each state their own gap.
 
   const caveat =
     readiness?.operatorReviewCaveat ??
@@ -452,7 +505,7 @@ function fundingSourceContextMarkup(input: {
              <p class="muted">${esc(
                `${readiness.readyProjectScanCount} ready · ${readiness.attentionProjectScanCount} attention · ${readiness.blockedProjectScanCount} blocked project scans; ${readiness.modelingEvidenceCount} modeling evidence item(s); ${readiness.engagementReadyForHandoffCount} engagement item(s) ready for handoff.`
              )}</p>`
-          : ""
+          : '<p class="muted">No funding source-context readiness was captured when this document was generated, so nothing here says whether the funding basis is fit for outside use.</p>'
       }
       ${
         fundingProfileScans.length > 0
@@ -472,7 +525,53 @@ function fundingSourceContextMarkup(input: {
     </div>`;
 }
 
-export function buildRtpExportHtml(input: {
+/**
+ * Every option the exported document can carry — each one REQUIRED.
+ *
+ * The required-ness is the load-bearing part, and it is why this type is
+ * declared separately from `buildRtpExportHtml`'s own parameter. There are two
+ * routes that render an RTP, and for most of this file's life one of them
+ * passed ten options and the other passed three; nothing failed, because every
+ * option was optional and every section fell back to silence. `RtpExportOptions`
+ * is built in exactly ONE place — `buildRtpCycleExportInput` in `./export-input`
+ * — so adding a field here fails the build at that single site, for both routes
+ * at once, instead of type-checking happily in one and being forgotten in the
+ * other.
+ *
+ * Nullable where the data may genuinely be absent. Absent is not the same as
+ * undecided: an absent value is RENDERED as a stated gap, never skipped.
+ */
+export type RtpExportOptions = {
+  /** Which sections this document contains. */
+  sectionKeys: string[];
+  /** Where that list came from. Printed, so a shorter document says it is one. */
+  composition: RtpExportComposition;
+  /** This document's own name, printed in the title and the eyebrow. */
+  titleSuffix: string;
+  publicReviewSummary: (RtpPublicReviewSummary & {
+    cycleLevelCampaignCount?: number;
+    chapterLevelCampaignCount?: number;
+    pendingCommentCount?: number;
+    readyCommentCount?: number;
+  }) | null;
+  modelingEvidence: RtpExportModelingEvidence[];
+  fundingSnapshot: PortfolioFundingSnapshot | null;
+  fundingProfileScans: RtpExportFundingProfileScan[] | null;
+  fundingSourceContextReadiness: RtpExportFundingSourceContextReadiness | null;
+  /**
+   * The fiscal-constraint finding. Its ABSENCE is rendered rather than skipped:
+   * a document with the financial element switched on and no finding must say
+   * the finding was not supplied, or a reader takes the silence for "nothing to
+   * report".
+   */
+  fiscalConstraint: RtpFiscalConstraintSummary | null;
+  /** Periods, for grouping the project lists. */
+  horizonBands: ReadonlyArray<{ id: string; label: string; startYear: number; endYear: number }> | null;
+  /** What the public said and what the agency answered. */
+  commentResponse: RtpCommentResponseSummary | null;
+};
+
+type RtpExportSubject = {
   cycle: RtpExportCycle;
   chapters: RtpExportChapter[];
   linkedProjects: RtpExportNormalizedLinkedProject[];
@@ -485,32 +584,22 @@ export function buildRtpExportHtml(input: {
    * precisely how California statutes ended up in every agency's plan.
    */
   priorityCriteria: readonly ResolvedRtpPriorityCriterion[];
-  options?: {
-    sectionKeys?: string[];
-    titleSuffix?: string;
-    publicReviewSummary?: (RtpPublicReviewSummary & {
-      cycleLevelCampaignCount?: number;
-      chapterLevelCampaignCount?: number;
-      pendingCommentCount?: number;
-      readyCommentCount?: number;
-    }) | null;
-    modelingEvidence?: RtpExportModelingEvidence[];
-    fundingSnapshot?: PortfolioFundingSnapshot | null;
-    fundingProfileScans?: RtpExportFundingProfileScan[] | null;
-    fundingSourceContextReadiness?: RtpExportFundingSourceContextReadiness | null;
-    /**
-     * The fiscal-constraint finding. Optional, and its ABSENCE is rendered
-     * rather than skipped: a packet with the financial element switched on and
-     * no finding must say the finding was not supplied, or a reader takes the
-     * silence for "nothing to report".
-     */
-    fiscalConstraint?: RtpFiscalConstraintSummary | null;
-    /** Periods, for grouping the project lists. */
-    horizonBands?: ReadonlyArray<{ id: string; label: string; startYear: number; endYear: number }> | null;
-    /** What the public said and what the agency answered. */
-    commentResponse?: RtpCommentResponseSummary | null;
-  };
-}): string {
+};
+
+/**
+ * A document with every option decided. Both export routes render one of these
+ * and neither may assemble it — `buildRtpCycleExportInput` is the only producer.
+ */
+export type RtpExportDocumentInput = RtpExportSubject & { options: RtpExportOptions };
+
+/**
+ * The renderer still accepts a partial bag, for unit tests and for any future
+ * one-off surface that renders a fragment of a plan. A ROUTE must never use
+ * this form: a partial bag is exactly how the two live documents drifted apart.
+ */
+export type RtpExportHtmlInput = RtpExportSubject & { options?: Partial<RtpExportOptions> };
+
+export function buildRtpExportHtml(input: RtpExportHtmlInput): string {
   const { cycle, chapters, linkedProjects, campaigns, priorityCriteria, options } = input;
   const campaignsByChapter = new Map<string, RtpExportCampaign[]>();
   const cycleCampaigns: RtpExportCampaign[] = [];
@@ -525,6 +614,7 @@ export function buildRtpExportHtml(input: {
   }
 
   const enabledSectionKeys = resolveEnabledSectionKeys(options?.sectionKeys);
+  const composition: RtpExportComposition = options?.composition ?? "whole_plan";
   const stats = buildRtpExportStats({ cycle, chapters, linkedProjects, campaigns });
   const adoptionRecordChecklist = buildRtpAdoptionRecordChecklist({ cycle, chapters, stats });
   const titleSuffix = options?.titleSuffix ?? "OpenPlan RTP Export";
@@ -751,7 +841,7 @@ export function buildRtpExportHtml(input: {
   <section class="section">
     <h2>Engagement posture</h2>
     <p class="muted">${esc(`${stats.cycleTargetedCampaignCount} cycle-targeted · ${stats.chapterTargetedCampaignCount} chapter-targeted`)}</p>
-    ${publicReviewSummary ? `<div class="card" style="margin-bottom:12px;"><h3>${esc(publicReviewSummary.label)}</h3><p>${esc(publicReviewSummary.detail)}</p><p class="muted">${esc(`${publicReviewSummary.cycleLevelCampaignCount ?? stats.cycleTargetedCampaignCount} cycle targets · ${publicReviewSummary.chapterLevelCampaignCount ?? stats.chapterTargetedCampaignCount} chapter targets · ${publicReviewSummary.readyCommentCount ?? 0} ready comments · ${publicReviewSummary.pendingCommentCount ?? 0} pending comments`)}</p></div>` : ""}
+    ${publicReviewSummary ? `<div class="card" style="margin-bottom:12px;"><h3>${esc(publicReviewSummary.label)}</h3><p>${esc(publicReviewSummary.detail)}</p><p class="muted">${esc(`${publicReviewSummary.cycleLevelCampaignCount ?? stats.cycleTargetedCampaignCount} cycle targets · ${publicReviewSummary.chapterLevelCampaignCount ?? stats.chapterTargetedCampaignCount} chapter targets · ${publicReviewSummary.readyCommentCount ?? 0} ready comments · ${publicReviewSummary.pendingCommentCount ?? 0} pending comments`)}</p></div>` : '<p class="muted">No public-review posture was supplied when this document was generated, so the comment counts below are the only account of the review period given here.</p>'}
     ${campaigns.length === 0 ? '<p class="muted">No RTP-linked engagement campaigns yet.</p>' : ""}
     <ul>
       ${campaigns
@@ -799,9 +889,11 @@ export function buildRtpExportHtml(input: {
   </section>`);
   }
 
-  if (modelingEvidence.length > 0) {
-    sections.push(modelingEvidenceMarkup(modelingEvidence));
-  }
+  // Unconditional. A `length > 0` guard here was what actually dropped this
+  // section from a document — not the empty-string return inside the builder,
+  // which this guard made unreachable — and a modeling section that vanishes
+  // when there is no model is indistinguishable from a plan that has one.
+  sections.push(modelingEvidenceMarkup(modelingEvidence));
 
   if (enabledSectionKeys.includes("appendix_references")) {
     sections.push(`
@@ -886,7 +978,7 @@ export function buildRtpExportHtml(input: {
 <body>
   <p class="muted">${esc(titleSuffix)} · Generated ${esc(new Date().toLocaleString())}</p>
   <h1>${esc(cycle.title)}</h1>
-  ${buildRtpPacketScanSummary({ enabledSectionKeys, stats, chapters, linkedProjects, campaigns })}
+  ${buildRtpPacketScanSummary({ enabledSectionKeys, composition, stats, chapters, linkedProjects, campaigns })}
   ${sections.join("\n")}
 </body>
 </html>`;

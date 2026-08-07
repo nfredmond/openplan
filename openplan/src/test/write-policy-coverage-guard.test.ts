@@ -269,8 +269,16 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/lib/safety/ingest.ts": 2,
 };
 
+  // 30s, not vitest's 5s default. These guards call `collectSupabaseWriteSites`,
+  // which parses the WHOLE `src/` tree with the TypeScript compiler — several
+  // seconds on its own, and more under full-suite parallelism. Left at the
+  // default they fail INTERMITTENTLY, and the failure reads "timed out" rather
+  // than "a write escaped the guard", which sends the next person to the wrong
+  // question entirely. `the-timetable-is-not-persisted.test.ts` hit this first
+  // and was fixed alone; these two share the cause and were missed, which is
+  // why the note is now on all three.
 describe("write policy coverage", () => {
-  it("never writes through the caller's client to a table with no permissive policy", () => {
+  it("never writes through the caller's client to a table with no permissive policy", { timeout: 30_000 }, () => {
     const gaps = callerWrites()
       .filter((site) => site.table !== null)
       .filter((site) => schema.rlsEnabled(site.table as string))
@@ -290,7 +298,7 @@ describe("write policy coverage", () => {
     ).toEqual([]);
   });
 
-  it("never writes through the caller's client to a table with RLS disabled", () => {
+  it("never writes through the caller's client to a table with RLS disabled", { timeout: 30_000 }, () => {
     // A different condition with a different severity, kept separate on purpose:
     // "no permissive policy" means the write silently does nothing, while "no
     // RLS" means it succeeds for everyone. Ten reference tables (GTFS, census,
@@ -304,7 +312,7 @@ describe("write policy coverage", () => {
     expect(unprotected).toEqual([]);
   });
 
-  it("proves every allowlisted module is handed a service-role client", () => {
+  it("proves every allowlisted module is handed a service-role client", { timeout: 30_000 }, () => {
     // The entries above claim a fact the type system cannot express. This is
     // where the claim is checked: resolve the client at every call site OUTSIDE
     // the module itself and require it to be service-role. Internal pass-throughs
@@ -331,7 +339,7 @@ describe("write policy coverage", () => {
     expect(external.length).toBeGreaterThanOrEqual(functions.length);
   });
 
-  it("keeps the allowlist honest — no module listed that no longer needs it", () => {
+  it("keeps the allowlist honest — no module listed that no longer needs it", { timeout: 30_000 }, () => {
     const stale = Object.keys(SERVICE_ROLE_ONLY_WRITES).filter((file) => {
       const gaps = writeSites
         .filter((site) => site.file === file && site.table !== null && schema.rlsEnabled(site.table))
@@ -346,7 +354,7 @@ describe("write policy coverage", () => {
     ).toEqual([]);
   });
 
-  it("adds no new UPDATE or DELETE that cannot see whether it changed anything", () => {
+  it("adds no new UPDATE or DELETE that cannot see whether it changed anything", { timeout: 30_000 }, () => {
     const counts: Record<string, number> = {};
     for (const site of callerWrites()) {
       if (site.command !== "UPDATE" && site.command !== "DELETE") continue;
@@ -363,7 +371,7 @@ describe("write policy coverage", () => {
     ).toEqual(UNVERIFIED_CALLER_WRITES);
   });
 
-  it("guards the guard", () => {
+  it("guards the guard", { timeout: 30_000 }, () => {
     // A scanner that silently matched nothing would make every assertion above
     // vacuously green.
     expect(writeSites.length).toBeGreaterThan(200);

@@ -87,15 +87,23 @@ function describeSite(site: SupabaseWriteSite): string {
   return `${site.file}:${site.line} ${site.verb} ${site.table ?? site.tableExpression}`;
 }
 
+  // 30s, not vitest's 5s default. These guards call `collectSupabaseWriteSites`,
+  // which parses the WHOLE `src/` tree with the TypeScript compiler — several
+  // seconds on its own, and more under full-suite parallelism. Left at the
+  // default they fail INTERMITTENTLY, and the failure reads "timed out" rather
+  // than "a write escaped the guard", which sends the next person to the wrong
+  // question entirely. `the-timetable-is-not-persisted.test.ts` hit this first
+  // and was fixed alone; these two share the cause and were missed, which is
+  // why the note is now on all three.
 describe("a write that matched no rows is answered as its own outcome", () => {
-  it("finds the population it is guarding, so an empty filter cannot pass it", () => {
+  it("finds the population it is guarding, so an empty filter cannot pass it", { timeout: 30_000 }, () => {
     // The failure mode this defends against is the guard silently ruling over
     // nothing — a renamed field or a changed `clientKind` value turning the
     // filter above into a no-op that reports success forever.
     expect(callerRowWrites().length).toBeGreaterThanOrEqual(30);
   });
 
-  it("has every caller UPDATE and DELETE deal with zero rows deliberately", () => {
+  it("has every caller UPDATE and DELETE deal with zero rows deliberately", { timeout: 30_000 }, () => {
     const unhandled = callerRowWrites()
       .filter((site) => !site.handlesZeroRows)
       .map(describeSite);
@@ -110,7 +118,7 @@ describe("a write that matched no rows is answered as its own outcome", () => {
     ).toEqual([]);
   });
 
-  it("keeps the PostgREST code itself in one place", () => {
+  it("keeps the PostgREST code itself in one place", { timeout: 30_000 }, () => {
     // A route that re-spells "PGRST116" inline has reimplemented the decision
     // rather than adopted it, and the next reader has two sources of truth.
     //
@@ -184,18 +192,18 @@ describe("the guard's own reading of a write", () => {
     }
   `;
 
-  it("reads a handled write as handled", () => {
+  it("reads a handled write as handled", { timeout: 30_000 }, () => {
     const [site] = parseWriteSitesFromSource(HANDLED);
     expect(site.command).toBe("UPDATE");
     expect(site.handlesZeroRows).toBe(true);
   });
 
-  it("reads the original 500-for-everything branch as unhandled", () => {
+  it("reads the original 500-for-everything branch as unhandled", { timeout: 30_000 }, () => {
     const [site] = parseWriteSitesFromSource(UNHANDLED);
     expect(site.handlesZeroRows).toBe(false);
   });
 
-  it("does not let one handler in a file vouch for another", () => {
+  it("does not let one handler in a file vouch for another", { timeout: 30_000 }, () => {
     // The reason `handlesZeroRows` is scoped to the enclosing function: route
     // files hold several exported handlers, and they are fixed one at a time.
     const sites = parseWriteSitesFromSource(`${HANDLED}\n${UNHANDLED.replace("PATCH", "PUT")}`);

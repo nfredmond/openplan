@@ -82,8 +82,7 @@ describe("buildRtpPublicReviewSummary", () => {
       publicReviewCloseAt: null,
       cycleLevelCampaignCount: 0,
       chapterCampaignCount: 0,
-      packetRecordCount: 0,
-      generatedPacketCount: 0,
+      packets: { examined: true, recordCount: 0, generatedCount: 0 },
       pendingCommentCount: 0,
       approvedCommentCount: 0,
       readyCommentCount: 0,
@@ -94,6 +93,49 @@ describe("buildRtpPublicReviewSummary", () => {
     expect(summary.actionItems).toContain("Create and generate a current RTP packet before board or public review begins.");
   });
 
+  /**
+   * NOT EXAMINED IS NOT ZERO, and this is the pair of assertions that says so.
+   *
+   * The whole-plan export never reads `reports` or `report_artifacts`. It used
+   * to be handed a hardcoded 1/1 and asserted a board packet that need not
+   * exist; handing it 0/0 instead would only reverse the falsehood, telling a
+   * cycle that HAS a generated packet to create one. So both directions are
+   * asserted here — the unexamined summary never claims a packet exists, and
+   * never claims one is missing.
+   */
+  it("states that packet records were not examined rather than counting them as zero", () => {
+    const inputs = {
+      status: "draft" as const,
+      publicReviewOpenAt: "2026-04-20T17:00:00.000Z",
+      publicReviewCloseAt: "2026-05-20T17:00:00.000Z",
+      cycleLevelCampaignCount: 1,
+      chapterCampaignCount: 0,
+      pendingCommentCount: 0,
+      approvedCommentCount: 2,
+      readyCommentCount: 2,
+    };
+
+    const unexamined = buildRtpPublicReviewSummary({ ...inputs, packets: { examined: false } });
+    expect(unexamined.detail).toContain("did not examine packet records");
+    // Never the instruction, because this caller cannot know one is needed.
+    expect(unexamined.actionItems).not.toContain(
+      "Create and generate a current RTP packet before board or public review begins."
+    );
+    // And never the assertion that one is in place.
+    expect(unexamined.label).not.toBe("Public review foundation ready");
+    expect(unexamined.detail).not.toMatch(/packet record[s]? \(/);
+
+    // The other polarity: a caller that DID look and found none still says so.
+    const examinedEmpty = buildRtpPublicReviewSummary({
+      ...inputs,
+      packets: { examined: true, recordCount: 0, generatedCount: 0 },
+    });
+    expect(examinedEmpty.actionItems).toContain(
+      "Create and generate a current RTP packet before board or public review begins."
+    );
+    expect(examinedEmpty.detail).not.toContain("did not examine packet records");
+  });
+
   it("marks public review as active when moderation is still open", () => {
     const summary = buildRtpPublicReviewSummary({
       status: "public_review",
@@ -101,8 +143,7 @@ describe("buildRtpPublicReviewSummary", () => {
       publicReviewCloseAt: "2026-05-20T17:00:00.000Z",
       cycleLevelCampaignCount: 1,
       chapterCampaignCount: 2,
-      packetRecordCount: 1,
-      generatedPacketCount: 1,
+      packets: { examined: true, recordCount: 1, generatedCount: 1 },
       pendingCommentCount: 3,
       approvedCommentCount: 4,
       readyCommentCount: 4,
@@ -120,8 +161,7 @@ describe("buildRtpPublicReviewSummary", () => {
       publicReviewCloseAt: "2026-05-20T17:00:00.000Z",
       cycleLevelCampaignCount: 1,
       chapterCampaignCount: 0,
-      packetRecordCount: 2,
-      generatedPacketCount: 1,
+      packets: { examined: true, recordCount: 2, generatedCount: 1 },
       pendingCommentCount: 0,
       approvedCommentCount: 5,
       readyCommentCount: 5,

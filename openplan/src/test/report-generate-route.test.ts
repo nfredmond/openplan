@@ -485,6 +485,42 @@ vi.mock("@/lib/reports/pdf", () => ({
 
 import { POST as postGenerate } from "@/app/api/reports/[reportId]/generate/route";
 
+const LINKED_COUNTY_RUN_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+/**
+ * Point a report at the county run whose modeling evidence it reports on.
+ *
+ * WHY EVERY MODELING-EVIDENCE TEST BELOW NOW DOES THIS. There used to be a
+ * fallback: a report that named no run got the workspace's five most recently
+ * updated `county_runs`, and those rows were printed as the document's own
+ * "Assignment modeling claim posture". Nothing in the schema links a
+ * `county_run` to a report, a project or an RTP cycle, so they were selected by
+ * RECENCY — a packet for one geography could cite model runs for another, with
+ * no sentence saying they were unrelated. The fallback is deleted; a document
+ * that names no run states the absence instead. So a test that wants evidence
+ * must NAME the run, which is also the only way the product produces it.
+ */
+function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
+  reportMaybeSingleMock.mockResolvedValueOnce({
+    data: {
+      id: "11111111-1111-4111-8111-111111111111",
+      workspace_id: "33333333-3333-4333-8333-333333333333",
+      project_id: "44444444-4444-4444-8444-444444444444",
+      rtp_cycle_id: null,
+      modeling_county_run_id: LINKED_COUNTY_RUN_ID,
+      title: "Project Status Packet",
+      summary: "Packet summary",
+      report_type: "project_status",
+      status: "draft",
+      created_at: "2026-03-14T00:00:00.000Z",
+      generated_at: null,
+      metadata_json: {},
+      ...overrides,
+    },
+    error: null,
+  });
+}
+
 describe("POST /api/reports/[reportId]/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -1226,17 +1262,16 @@ describe("POST /api/reports/[reportId]/generate", () => {
   });
 
   it("adds modeling evidence claim posture to project report artifacts", async () => {
-    countyRunsLimitMock.mockResolvedValueOnce({
-      data: [
-        {
-          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-          workspace_id: "33333333-3333-4333-8333-333333333333",
-          run_name: "Nevada County assignment screening",
-          geography_label: "Nevada County, CA",
-          stage: "validated-screening",
-          updated_at: "2026-04-24T01:00:00.000Z",
-        },
-      ],
+    reportNamesCountyRun();
+    countyRunsMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: LINKED_COUNTY_RUN_ID,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        run_name: "Nevada County assignment screening",
+        geography_label: "Nevada County, CA",
+        stage: "validated-screening",
+        updated_at: "2026-04-24T01:00:00.000Z",
+      },
       error: null,
     });
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
@@ -1340,7 +1375,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expectProvenanceLanguageOnly(metadata?.htmlContent);
   });
 
-  it("uses a report-linked modeling county run before recent workspace runs", async () => {
+  it("reads only the county run the report names, never the workspace's recent runs", async () => {
     reportMaybeSingleMock.mockResolvedValueOnce({
       data: {
         id: "11111111-1111-4111-8111-111111111111",
@@ -1544,22 +1579,116 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain('/projects/44444444-4444-4444-8444-444444444444#project-risks');
   });
 
-  it("adds modeling evidence claim posture to RTP packet artifacts", async () => {
-    reportMaybeSingleMock.mockResolvedValueOnce({
+  /**
+   * A BOARD PACKET IS COMPOSED FROM ITS REPORT'S OWN SECTION SELECTION.
+   *
+   * This was untested, and the gap was not theoretical: changing the packet
+   * route's `composition: { kind: "report_sections", sectionKeys:
+   * enabledSectionKeys }` to `{ kind: "whole_plan" }` made the packet declare
+   * itself a whole-plan export AND stop honouring the sections a planner had
+   * switched off — with the whole suite green. Both halves are asserted here,
+   * because either one alone survives that mutation in one direction.
+   */
+  it("composes the RTP packet from its report's section selection, and says so", async () => {
+    reportNamesCountyRun({
+      project_id: null,
+      rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+      title: "RTP Packet",
+      report_type: "rtp_packet",
+      created_at: "2026-04-24T00:00:00.000Z",
+    });
+    sectionsOrderMock.mockResolvedValueOnce({
+      data: [
+        { id: "section-1", section_key: "cycle_overview", title: "Cycle overview", enabled: true, sort_order: 0, config_json: {} },
+        { id: "section-2", section_key: "chapter_digest", title: "Chapter digest", enabled: true, sort_order: 1, config_json: {} },
+        // Switched OFF by the planner. A packet that carries it anyway is
+        // ignoring the selection this report exists to express.
+        { id: "section-3", section_key: "comment_response", title: "Comment response", enabled: false, sort_order: 2, config_json: {} },
+        // The section that carries the public-review posture card, so what this
+        // packet says about its own packet record is actually on the page.
+        { id: "section-4", section_key: "engagement_posture", title: "Engagement posture", enabled: true, sort_order: 3, config_json: {} },
+      ],
+      error: null,
+    });
+    // A review window and a linked campaign, so the public-review posture is a
+    // real sentence rather than a setup checklist — without them, what the
+    // packet says about its own packet record is unobservable and the
+    // assertion below cannot fail.
+    rtpCycleMaybeSingleMock.mockResolvedValueOnce({
       data: {
-        id: "11111111-1111-4111-8111-111111111111",
+        id: "77777777-7777-4777-8777-777777777777",
         workspace_id: "33333333-3333-4333-8333-333333333333",
-        project_id: null,
-        rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
-        title: "RTP Packet",
-        summary: "Packet summary",
-        report_type: "rtp_packet",
+        title: "2027 Nevada County RTP",
         status: "draft",
-        created_at: "2026-04-24T00:00:00.000Z",
-        generated_at: null,
-        metadata_json: {},
+        geography_label: "Nevada County, CA",
+        horizon_start_year: 2027,
+        horizon_end_year: 2050,
+        adoption_target_date: null,
+        public_review_open_at: "2026-09-01T00:00:00.000Z",
+        public_review_close_at: "2026-10-15T00:00:00.000Z",
+        summary: "RTP cycle summary",
+        updated_at: "2026-04-24T00:00:00.000Z",
       },
       error: null,
+    });
+    rtpEngagementCampaignsOrderMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: "campaign-1",
+          title: "Draft plan open house",
+          status: "open",
+          engagement_type: "map_comment",
+          summary: "Public comment on the draft.",
+          rtp_cycle_chapter_id: null,
+        },
+      ],
+      error: null,
+    });
+
+    const response = await postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      {
+        params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }),
+      }
+    );
+
+    expect(response.status).toBe(200);
+    const html = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.htmlContent as string;
+
+    // It says which document it is …
+    // `esc()` turns the apostrophe into `&#39;`, so the assertion is split
+    // rather than written as prose that never appears in the output.
+    expect(html).toContain("Composed from this report");
+    expect(html).toContain("own section selection");
+    expect(html).not.toContain("whole-plan export");
+    // … names what it left out, because a reader cannot see an omission …
+    expect(html).toContain("are excluded from this document");
+    expect(html).toContain("Comment Response");
+    // … and actually leaves it out.
+    expect(html).toContain("<h2>Cycle overview</h2>");
+    expect(html).not.toContain("<h2>Comment-response record</h2>");
+
+    // The packet IS a packet record and is generating that record's artifact,
+    // so it must not borrow the whole-plan export's "not examined" answer — the
+    // same falsehood in the other direction. (Mutation-checked: without the
+    // review window and campaign above, flipping the packet route to
+    // `{ examined: false }` left the suite green — neither answer reached the
+    // rendered page, so the assertion could not fail.)
+    expect(html).toContain("1 packet record (1 generated)");
+    expect(html).not.toContain("did not examine packet records");
+  });
+
+  it("adds modeling evidence claim posture to RTP packet artifacts", async () => {
+    reportNamesCountyRun({
+      project_id: null,
+      rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+      title: "RTP Packet",
+      report_type: "rtp_packet",
+      created_at: "2026-04-24T00:00:00.000Z",
     });
     sectionsOrderMock.mockResolvedValueOnce({
       data: [
@@ -1569,17 +1698,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
       ],
       error: null,
     });
-    countyRunsLimitMock.mockResolvedValueOnce({
-      data: [
-        {
-          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-          workspace_id: "33333333-3333-4333-8333-333333333333",
-          run_name: "Nevada County assignment screening",
-          geography_label: "Nevada County, CA",
-          stage: "validated-screening",
-          updated_at: "2026-04-24T01:00:00.000Z",
-        },
-      ],
+    countyRunsMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: LINKED_COUNTY_RUN_ID,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        run_name: "Nevada County assignment screening",
+        geography_label: "Nevada County, CA",
+        stage: "validated-screening",
+        updated_at: "2026-04-24T01:00:00.000Z",
+      },
       error: null,
     });
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
@@ -2795,23 +2922,14 @@ describe("POST /api/reports/[reportId]/generate", () => {
    * refusal is present, and the false claim was never written down.
    */
   it("refuses the RTP packet when the county-run read fails, instead of counting zero modeling evidence", async () => {
-    reportMaybeSingleMock.mockResolvedValueOnce({
-      data: {
-        id: "11111111-1111-4111-8111-111111111111",
-        workspace_id: "33333333-3333-4333-8333-333333333333",
-        project_id: null,
-        rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
-        title: "RTP Packet",
-        summary: "Packet summary",
-        report_type: "rtp_packet",
-        status: "draft",
-        created_at: "2026-04-24T00:00:00.000Z",
-        generated_at: null,
-        metadata_json: {},
-      },
-      error: null,
+    reportNamesCountyRun({
+      project_id: null,
+      rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+      title: "RTP Packet",
+      report_type: "rtp_packet",
+      created_at: "2026-04-24T00:00:00.000Z",
     });
-    countyRunsLimitMock.mockResolvedValueOnce({
+    countyRunsMaybeSingleMock.mockResolvedValueOnce({
       data: null,
       error: { message: "permission denied for table county_runs", code: "42501" },
     });
@@ -2847,17 +2965,16 @@ describe("POST /api/reports/[reportId]/generate", () => {
     // fails, and the packet used to render `evidence: null` as "no claim
     // decision, 0 source manifests, 0 validation checks" — the honesty
     // firewall's own vocabulary, asserted about a run nobody could read.
-    countyRunsLimitMock.mockResolvedValueOnce({
-      data: [
-        {
-          id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-          workspace_id: "33333333-3333-4333-8333-333333333333",
-          run_name: "Nevada County assignment screening",
-          geography_label: "Nevada County, CA",
-          stage: "validated-screening",
-          updated_at: "2026-04-24T01:00:00.000Z",
-        },
-      ],
+    reportNamesCountyRun();
+    countyRunsMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: LINKED_COUNTY_RUN_ID,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        run_name: "Nevada County assignment screening",
+        geography_label: "Nevada County, CA",
+        stage: "validated-screening",
+        updated_at: "2026-04-24T01:00:00.000Z",
+      },
       error: null,
     });
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
@@ -2893,7 +3010,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
     // longer goes through `safeOptionalQuery`: the runs are right there, one
     // column of the projection is not, and the old wrapper answered that with an
     // empty list — a zero the deployment never established.
-    countyRunsLimitMock.mockResolvedValueOnce({
+    reportNamesCountyRun();
+    countyRunsMaybeSingleMock.mockResolvedValueOnce({
       data: null,
       error: { message: "column county_runs.geography_label does not exist", code: "42703" },
     });
@@ -2916,11 +3034,13 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(artifactsInsertMock).not.toHaveBeenCalled();
   });
 
-  it("still generates when the modeling evidence read succeeds and the workspace has no county runs", async () => {
-    // The other half of the distinction. A workspace with no county runs is a
+  it("still generates when the named county run is gone, and counts zero without reading any other run", async () => {
+    // The other half of the distinction. A run that is genuinely missing is a
     // fact the packet may state, and the count may be zero — only a FAILED read
-    // is refused.
-    countyRunsLimitMock.mockResolvedValueOnce({ data: [], error: null });
+    // is refused. And the zero must stay a zero: the deleted fallback would
+    // have filled it with whatever the workspace last touched.
+    reportNamesCountyRun();
+    countyRunsMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
     const response = await postGenerate(
       new NextRequest("http://localhost/api/reports/1/generate", {
@@ -2940,6 +3060,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       modelingEvidenceCount: 0,
       modelingEvidence: [],
     });
+    expect(countyRunsLimitMock).not.toHaveBeenCalled();
   });
 
   it("refuses the project packet when a funding read fails, instead of totalling it to zero", async () => {

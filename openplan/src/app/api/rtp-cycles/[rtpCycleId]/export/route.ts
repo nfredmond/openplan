@@ -4,28 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import {
-  buildRtpExportHtml,
-  normalizeRtpLinkedProjects,
-  type RtpExportCampaign,
-  type RtpExportChapter,
-  type RtpExportCycle,
-  type RtpExportLinkedProject,
-} from "@/lib/rtp/export";
-import {
-  loadRtpPriorityFrameworkBinding,
-  type RtpPriorityFrameworkQuerySupabaseLike,
-} from "@/lib/rtp/priority-framework-queries";
-import {
-  loadRtpFinancialElement,
-  type RtpFinancialElementSupabaseLike,
-} from "@/lib/rtp/financial-element-queries";
-import { buildRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
-import {
-  buildRtpCommentResponseRecord,
-  loadRtpCommentResponseRecord,
-  rtpCommentResponseUnreadableFrom,
-  type RtpCommentResponseSupabaseLike,
-} from "@/lib/rtp/comment-response";
+  buildRtpCycleExportInput,
+  renderRtpExportDocumentHtml,
+  RTP_EXPORT_CYCLE_COLUMNS,
+  type RtpExportInputCycleRow,
+  type RtpExportInputSupabaseLike,
+} from "@/lib/rtp/export-input";
 
 const paramsSchema = z.object({
   rtpCycleId: z.string().uuid(),
@@ -66,9 +50,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const { data: cycleData, error: cycleError } = await supabase
       .from("rtp_cycles")
-      .select(
-        "id, workspace_id, title, status, geography_label, horizon_start_year, horizon_end_year, adoption_target_date, public_review_open_at, public_review_close_at, summary, financial_basis_year, annual_inflation_rate, updated_at"
-      )
+      .select(RTP_EXPORT_CYCLE_COLUMNS)
       .eq("id", parsedParams.data.rtpCycleId)
       .maybeSingle();
 
@@ -77,13 +59,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load RTP cycle" }, { status: 500 });
     }
 
-    const cycle = cycleData as RtpExportCycle | null;
-    // The two financial columns are not on RtpExportCycle (the exporter does not
-    // render them directly); the fiscal check reads them from the same row.
-    const financialCycle = (cycleData ?? {}) as {
-      financial_basis_year: number | null;
-      annual_inflation_rate: number | string | null;
-    };
+    const cycle = cycleData as RtpExportInputCycleRow | null;
     if (!cycle) {
       return NextResponse.json({ error: "RTP cycle not found" }, { status: 404 });
     }
@@ -104,129 +80,44 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const [chaptersResult, linksResult, campaignsResult] = await Promise.all([
-      supabase
-        .from("rtp_cycle_chapters")
-        .select("id, title, section_type, status, summary, guidance, content_markdown, sort_order")
-        .eq("rtp_cycle_id", cycle.id)
-        .order("sort_order", { ascending: true }),
-      supabase
-        .from("project_rtp_cycle_links")
-        .select("id, portfolio_role, priority_rationale, priority_scores, horizon_band_id, estimated_cost, cost_basis_year, projects(id, name, status, delivery_phase, summary)")
-        .eq("rtp_cycle_id", cycle.id)
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("engagement_campaigns")
-        .select("id, title, status, engagement_type, summary, rtp_cycle_chapter_id")
-        .eq("rtp_cycle_id", cycle.id)
-        .order("updated_at", { ascending: false }),
-    ]);
-
-    if (chaptersResult.error || linksResult.error || campaignsResult.error) {
-      audit.error("related_export_lookup_failed", {
-        chaptersError: chaptersResult.error?.message ?? null,
-        linksError: linksResult.error?.message ?? null,
-        campaignsError: campaignsResult.error?.message ?? null,
-      });
-      return NextResponse.json({ error: "Failed to assemble RTP export" }, { status: 500 });
-    }
-
-    const chapters = (chaptersResult.data ?? []) as RtpExportChapter[];
-    const linkedProjects = normalizeRtpLinkedProjects((linksResult.data ?? []) as RtpExportLinkedProject[]);
-    const campaigns = (campaignsResult.data ?? []) as RtpExportCampaign[];
-
-    // The exported plan may only cite the law of the jurisdiction the
-    // workspace actually works in. A failed read yields an uncited binding,
-    // which drops the policy-basis clause rather than substituting a
-    // jurisdiction — an export is the document a board adopts, so a wrong
-    // citation is worse than no citation.
-    const priorityFramework = await loadRtpPriorityFrameworkBinding(
-      supabase as unknown as RtpPriorityFrameworkQuerySupabaseLike,
-      cycle.workspace_id
-    );
-    if (priorityFramework.readFailed) {
-      audit.warn("priority_framework_lookup_failed", { rtpCycleId: cycle.id });
-    }
-
-    // The financial element and the comment-response record travel with the
-    // document. Wired HERE as well as in the report-generate route on purpose:
-    // this is the export a planner actually clicks, and data supplied only to
-    // the other route would appear in board packets and nowhere else.
-    const financialElement = await loadRtpFinancialElement(
-      supabase as unknown as RtpFinancialElementSupabaseLike,
-      cycle.id
-    );
-    const commentResponseLoad = await loadRtpCommentResponseRecord(
-      supabase as unknown as RtpCommentResponseSupabaseLike,
-      cycle.id
-    );
-    const fiscalConstraint = buildRtpFiscalConstraint({
-      cycleHorizonStartYear: cycle.horizon_start_year,
-      cycleHorizonEndYear: cycle.horizon_end_year,
-      cycleFinancialBasisYear: financialCycle.financial_basis_year,
-      annualInflationRate: financialCycle.annual_inflation_rate,
-      bands: financialElement.bands,
-      lines: financialElement.lines,
-      projects: linkedProjects.map((link) => ({
-        linkId: link.id,
-        projectId: link.project_id,
-        projectName: link.project?.name ?? null,
-        portfolioRole: link.portfolio_role,
-        horizonBandId: link.horizon_band_id ?? null,
-        estimatedCost: link.estimated_cost ?? null,
-        costBasisYear: link.cost_basis_year ?? null,
-      })),
+    // ONE builder, both routes. The board packet and this export used to load
+    // different amounts of data for the same document, and the difference was
+    // invisible on both — see `src/lib/rtp/export-input.ts` for what that cost.
+    // Nothing about the document's contents is decided here any more: this route
+    // supplies only WHO is asking and WHICH document this is.
+    const built = await buildRtpCycleExportInput({
+      supabase: supabase as unknown as RtpExportInputSupabaseLike,
+      audit,
+      cycle,
+      presentation: {
+        titleSuffix: "OpenPlan RTP Export",
+        // No report exists behind this button, so there are no `report_sections`
+        // rows to compose from. The whole plan is exported, and the document
+        // says so rather than leaving a reader to assume it matches a packet.
+        composition: { kind: "whole_plan" },
+      },
+      // This route never reads `reports` or `report_artifacts`, and a cycle can
+      // be exported before any packet has ever been generated. It used to be
+      // handed a hardcoded "1 packet record, 1 generated", so a planner's plan
+      // export asserted a board packet that need not exist. It knows of none,
+      // and saying "none exist" would be the same lie in the other direction.
+      packetRecords: { examined: false },
     });
 
-    // ─────────────────────────────────────────────────────────────────────
-    // THE SEAM, RECORDED BECAUSE IT IS A LIVE DIVERGENCE AND NOT A TIDINESS
-    // PROBLEM. Two routes build the same document from the same builder and
-    // hand it DIFFERENT AMOUNTS OF DATA.
-    //
-    // Measured 2026-08-06 against `reports/[reportId]/generate/route.ts:1011`,
-    // which passes ELEVEN options: commentResponse, fiscalConstraint,
-    // footerLabel, fundingProfileScans, fundingSnapshot,
-    // fundingSourceContextReadiness, horizonBands, modelingEvidence,
-    // publicReviewSummary, sectionKeys, title, titleSuffix. This route — THE
-    // ONE A PLANNER ACTUALLY CLICKS — passes three.
-    //
-    // AND THE MISSING EIGHT DO NOT FAIL LOUDLY. `resolveEnabledSectionKeys`
-    // (export.ts:217) treats an absent `sectionKeys` as "all sections", so every
-    // section is enabled here; the section builders then return an EMPTY STRING
-    // when their data is absent (`modelingEvidenceMarkup` at :347,
-    // the funding section at :429). So the planner's export silently OMITS the
-    // funding and modeling-evidence sections that the board packet contains,
-    // with nothing on either document saying they differ. Two people comparing
-    // the export and the packet are looking at different plans.
-    //
-    // THE FIX IS EXTRACTION, NOT COPYING: `buildRtpCycleExportInput` in a new
-    // `src/lib/rtp/export-input.ts`, called by both routes. CLAUDE.md's rule is
-    // that a shared capability living inside one of its two callers gets
-    // reimplemented wrongly by the other — this is that, demonstrated. Copying
-    // the eight options across would make them agree today and diverge again on
-    // the next addition, which is how they got here.
-    //
-    // It is left as a recorded decision rather than done inline because it is
-    // the RTP transit element's blocker and belongs to that change, and because
-    // an extraction touching the board-packet path deserves its own gate.
-    // ─────────────────────────────────────────────────────────────────────
-    const exportInput = {
-      cycle,
-      chapters,
-      linkedProjects,
-      campaigns,
-      priorityCriteria: priorityFramework.binding.criteria,
-      options: {
-        fiscalConstraint,
-        horizonBands: financialElement.bands,
-        commentResponse: buildRtpCommentResponseRecord({
-          campaigns: commentResponseLoad.campaigns,
-          comments: commentResponseLoad.comments,
-          responses: commentResponseLoad.responses,
-          unreadable: rtpCommentResponseUnreadableFrom(commentResponseLoad.results),
-        }),
-      },
-    };
+    if (!built.ok) {
+      audit.error(built.refusal.auditEvent, {
+        rtpCycleId: cycle.id,
+        message: built.refusal.message,
+        code: built.refusal.code,
+        pendingSchema: built.refusal.pending,
+      });
+      return NextResponse.json(built.refusal.body, { status: built.refusal.status });
+    }
+
+    // The document is SEALED: there is no expression here that can add to, drop
+    // from or re-key what the shared builder decided. See the envelope comment
+    // in `@/lib/rtp/export-input` for the override this closes.
+    const html = renderRtpExportDocumentHtml(built.document);
 
     audit.info("export_generated", {
       rtpCycleId: cycle.id,
@@ -241,10 +132,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
       // the adoption-record checklist and the appendix outright — and then cut
       // it to 60 lines on a single `/Count 1` page. A multi-chapter packet a
       // planner spent hours on left the building as one clipped page.
-      const rendered = await renderReportPdf(buildRtpExportHtml(exportInput), {
+      const rendered = await renderReportPdf(html, {
         title: cycle.title,
         generatedAt: null,
-        footerLabel: "OpenPlan RTP board packet",
+        // NOT "board packet". This route is the whole-plan export; the packet is
+        // the report-generate route's artifact. A document whose footer claims
+        // to be the other one is the same confusion this seam was built to end.
+        footerLabel: "OpenPlan RTP export",
       });
 
       if (rendered.engine === "builtin") {
@@ -269,7 +163,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       });
     }
 
-    return new NextResponse(buildRtpExportHtml(exportInput), {
+    return new NextResponse(html, {
       status: 200,
       headers: {
         "content-type": "text/html; charset=utf-8",
