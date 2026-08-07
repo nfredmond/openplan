@@ -22,15 +22,19 @@ function bundleProgramCount(key: string): number {
   return bundle.programs.length;
 }
 
-const OHIO_BUNDLE: GrantProgramBundle = {
-  key: "us-oh-test",
-  label: "Ohio state programs",
-  jurisdiction: { country: "US", subdivision: "OH", label: "Ohio" },
+// A synthetic bundle for a state that has NO registered bundle, used to prove
+// registration alone changes the labeling. It moved from Ohio to Vermont on
+// 2026-08-07, when a real `us-oh` bundle was registered — a fixture standing
+// for "unregistered" stops proving anything the moment its subject registers.
+const VERMONT_BUNDLE: GrantProgramBundle = {
+  key: "us-vt-test",
+  label: "Vermont state programs",
+  jurisdiction: { country: "US", subdivision: "VT", label: "Vermont" },
   programs: [
     {
-      key: "oh-test-program",
-      name: "Ohio Test Program",
-      administeringAgency: "Ohio Test Agency",
+      key: "vt-test-program",
+      name: "Vermont Test Program",
+      administeringAgency: "Vermont Test Agency",
       level: "state",
       typicalApplicants: "Cities, counties",
       eligibleProjectTypes: ["Test"],
@@ -83,7 +87,7 @@ describe("describeGrantProgramCoverage", () => {
   });
 
   it("marks a state bundle as another jurisdiction's, and says no bundle is registered for this one", () => {
-    const coverage = describeGrantProgramCoverage({ country: "US", subdivision: "OH" });
+    const coverage = describeGrantProgramCoverage({ country: "US", subdivision: "VT" });
 
     const california = coverage.bundles.find((bundle) => bundle.key === "us-ca");
     const federal = coverage.bundles.find((bundle) => bundle.key === "us");
@@ -96,7 +100,7 @@ describe("describeGrantProgramCoverage", () => {
 
     expect(coverage.disclosure?.reason).toBe("no_bundle_for_jurisdiction");
     expect(coverage.disclosure?.headline).toBe(
-      "No grant program bundle is registered for US-OH"
+      "No grant program bundle is registered for US-VT"
     );
     // Every scoped-elsewhere bundle is named — an Ohio workspace is owed the
     // full list of state menus that are not its own, not just California's.
@@ -106,11 +110,11 @@ describe("describeGrantProgramCoverage", () => {
     expect(coverage.disclosure?.detail).toContain("Colorado state programs");
     expect(coverage.disclosure?.detail).toContain("not this workspace's funding menu");
     expect(coverage.disclosure?.detail).toContain("US federal programs do apply here");
-    expect(coverage.disclosure?.action).toContain("US-OH");
+    expect(coverage.disclosure?.action).toContain("US-VT");
   });
 
   it("hides nothing from a workspace the state bundle does not cover", () => {
-    const coverage = describeGrantProgramCoverage({ country: "US", subdivision: "OH" });
+    const coverage = describeGrantProgramCoverage({ country: "US", subdivision: "VT" });
 
     expect(coverage.programs).toHaveLength(GRANT_PROGRAM_CATALOG.length);
     expect(coverage.programs.map((entry) => entry.program.key)).toEqual(
@@ -169,20 +173,20 @@ describe("describeGrantProgramCoverage", () => {
   });
 
   it("labels a newly registered bundle correctly with no call-site change", () => {
-    // The registry-driven guarantee: adding `us-oh.ts` must require editing only
+    // The registry-driven guarantee: adding a state bundle must require editing only
     // the registration list, never this resolver or any consumer.
-    const bundles = [...GRANT_PROGRAM_BUNDLES, OHIO_BUNDLE];
-    const ohio = describeGrantProgramCoverage({ country: "US", subdivision: "OH" }, bundles);
+    const bundles = [...GRANT_PROGRAM_BUNDLES, VERMONT_BUNDLE];
+    const vermont = describeGrantProgramCoverage({ country: "US", subdivision: "VT" }, bundles);
     const california = describeGrantProgramCoverage({ country: "US", subdivision: "CA" }, bundles);
 
-    expect(ohio.bundles.find((bundle) => bundle.key === "us-oh-test")?.scope).toBe(
+    expect(vermont.bundles.find((bundle) => bundle.key === "us-vt-test")?.scope).toBe(
       "jurisdiction_match"
     );
-    expect(ohio.disclosure).toBeNull();
-    expect(ohio.programs).toHaveLength(GRANT_PROGRAM_CATALOG.length + 1);
+    expect(vermont.disclosure).toBeNull();
+    expect(vermont.programs).toHaveLength(GRANT_PROGRAM_CATALOG.length + 1);
 
-    expect(california.bundles.find((bundle) => bundle.key === "us-oh-test")?.scopeLabel).toBe(
-      "Ohio — not this workspace's jurisdiction"
+    expect(california.bundles.find((bundle) => bundle.key === "us-vt-test")?.scopeLabel).toBe(
+      "Vermont — not this workspace's jurisdiction"
     );
     // California is covered, so the catalog owes it no gap disclosure even
     // though it can now see another state's programs — they are labeled.

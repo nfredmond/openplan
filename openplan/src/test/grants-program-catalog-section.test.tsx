@@ -16,12 +16,12 @@ describe("GrantsProgramCatalogSection coverage labeling", () => {
     render(
       <GrantsProgramCatalogSection
         trackedTitles={[]}
-        workspaceJurisdiction={{ country: "US", subdivision: "OH" }}
+        workspaceJurisdiction={{ country: "US", subdivision: "VT" }}
       />
     );
 
     const disclosure = screen.getByTestId("grants-program-coverage-disclosure");
-    expect(disclosure.textContent).toContain("No grant program bundle is registered for US-OH");
+    expect(disclosure.textContent).toContain("No grant program bundle is registered for US-VT");
     expect(disclosure.textContent).toContain("not this workspace's funding menu");
 
     // Labeled, not hidden: a consultant may legitimately pursue another state's

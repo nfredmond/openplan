@@ -10,7 +10,7 @@ import {
 
 // The registry keys each jurisdiction bundle by where its programs live:
 // "us" carries federal-level entries and the state bundles ("us-ca", "us-wa",
-// "us-or", "us-co") carry state-level entries. Any bundle key missing from
+// "us-or", "us-co", "us-tx", "us-oh") carry state-level entries. Any bundle key missing from
 // this map, or any entry filed under a bundle that does not match its level,
 // fails below.
 const EXPECTED_LEVEL_BY_BUNDLE_KEY: Record<string, string> = {
@@ -19,6 +19,8 @@ const EXPECTED_LEVEL_BY_BUNDLE_KEY: Record<string, string> = {
   "us-wa": "state",
   "us-or": "state",
   "us-co": "state",
+  "us-tx": "state",
+  "us-oh": "state",
 };
 
 describe("grant program jurisdiction registry", () => {

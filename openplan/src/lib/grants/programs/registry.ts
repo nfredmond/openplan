@@ -15,7 +15,9 @@ import type { GrantProgramBundle, GrantProgramCatalogEntry } from "./types";
 import { usCaPrograms } from "./us-ca";
 import { usCoPrograms } from "./us-co";
 import { usFederalPrograms } from "./us-federal";
+import { usOhPrograms } from "./us-oh";
 import { usOrPrograms } from "./us-or";
+import { usTxPrograms } from "./us-tx";
 import { usWaPrograms } from "./us-wa";
 
 /** Every registered jurisdiction bundle, in registration order. */
@@ -25,6 +27,8 @@ export const GRANT_PROGRAM_BUNDLES: readonly GrantProgramBundle[] = [
   usWaPrograms,
   usOrPrograms,
   usCoPrograms,
+  usTxPrograms,
+  usOhPrograms,
 ];
 
 /** The full catalog: every registered bundle's programs, flattened. */
