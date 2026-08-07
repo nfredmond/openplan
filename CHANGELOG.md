@@ -19,6 +19,119 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+## 0.7.0 — 2026-08-07
+
+**One migration is required before the app deploys: `20260805000009`.**
+
+It adds the Title VI service-equity tables and two columns to
+`gtfs_feed_versions`. It creates only new objects and adds nullable columns, so
+it is safe to run against a live database and nothing existing changes shape.
+
+### A number you may have already published has changed
+
+**Corridor poverty rates were overstated, by as much as 10×.** The corridor
+analysis divided people below poverty by a denominator that EXCLUDED every
+census tract reporting zero poverty, while the numerator kept counting all of
+them. One poor tract among nine affluent ones reported **30% below poverty where
+the truth is 3%**.
+
+That number is not decorative: at 20% it trips a flag rendered under a
+"Title VI / Environmental Justice Considerations" heading in the corridor
+report. So a report generated before this release may show both a poverty rate
+and an environmental-justice finding that the corrected arithmetic does not
+support.
+
+**What to do:** if you have issued a corridor report or a grant narrative that
+cites a poverty rate or a Title VI flag, re-run the analysis and compare. The
+minority share is unaffected. Study areas where every tract reported some
+poverty were already correct — the error only appears where at least one tract
+reported none.
+
+Poverty and minority shares are now computed against their own ACS universes
+(B17001 and B03002), and each is withheld entirely when its universe is missing
+rather than published as 0%.
+
+### Title VI service equity
+
+OpenPlan can now compare transit service in a workspace's minority and
+low-income census tracts against the rest of its service area, from the GTFS
+feed already ingested. It is on the Data Hub, under the transit feed panel.
+
+- **You must record your agency's ADOPTED thresholds before it will run.**
+  OpenPlan supplies no defaults and offers no template to accept. FTA C 4702.1B
+  thresholds are policy your board adopts and publishes; a number nobody adopted
+  is indistinguishable from one that was, on a published finding. The analysis
+  refuses until the policy is recorded, and names that as the reason.
+- **Recording a new adoption supersedes the old one rather than editing it**, so
+  a finding stays reproducible against the policy it was measured under.
+- **It needs census tracts loaded for your area.** Load them from the Workspace
+  geography panel. Without them the analysis says so and names the step — it
+  never reports "no service" when it means "no data".
+- **Service days are never combined.** A system with no weekend service is the
+  most common finding there is, and a weekly total erases it.
+- OpenPlan measures a difference and compares it to your adopted threshold. It
+  does not determine that a disparate impact exists — that is your governing
+  body's determination.
+
+### An unreadable financial table now refuses instead of reporting
+
+**Operator-visible behaviour change.** When the RTP financial table cannot be
+read, the export now answers **503 naming the migration that is missing**,
+instead of rendering the failed read as a FINDING about the plan. Previously a
+database that was behind the code produced a document stating the plan had no
+revenue recorded — a false statement about an agency's own plan, indistinguishable
+from a true one.
+
+### RFP responses get their solicitation back
+
+**If you have used OpenPlan to draft a response to an RFP or RFQ, re-draft it.**
+The standalone narrative drafter was silently treating every pursuit as a grant:
+drafts came back with no solicitation number, no submission-format note, no
+questions-due date and no past-performance grounding, and nothing said anything
+had been dropped. Grant applications were unaffected.
+
+### Model runs use your own transit feed, byte for byte
+
+A model run now names the exact stored feed version it used, and the worker is
+handed those bytes rather than a URL. A URL handoff meant the worker could be
+using a cached copy from months earlier while the service-levels page showed
+something newer — with both surfaces citing the same address.
+
+### Standing up a modeling worker is now a button
+
+- `workers/aequilibrae_worker/render.yaml` is a one-click Render Blueprint. It
+  generates the trigger token so it cannot be left blank, and health-checks the
+  worker so one that cannot start fails the deploy rather than going live broken.
+- **`npm run doctor` now probes the worker.** A wrong URL, a missing token and a
+  sleeping free-tier instance are indistinguishable from inside OpenPlan — all
+  three look like a run that sits queued. The doctor says which.
+- OpenPlan still works completely with no worker. That is a supported
+  configuration, not a reduced tier.
+- **Decided:** there will be no OpenPlan-hosted shared worker. `SELF_HOSTING.md`
+  previously described this as an open question; it is not.
+
+### Texas and Ohio grant programs
+
+The program catalog now covers Texas and Ohio alongside federal, California,
+Washington, Oregon and Colorado.
+
+Two things worth knowing. **Texas runs no standalone Safe Routes to School
+program** — that work competes inside Transportation Alternatives — and TxDOT's
+statewide TA call covers only areas of 200,000 or fewer; above that your MPO runs
+its own. **The Ohio bundle is deliberately two programs**, because ODOT's website
+answers 404 to any non-browser request and no program URL could be confirmed to
+resolve. The programs left out are named in the source with the reason, rather
+than shipped with links that go nowhere.
+
+### Under the hood
+
+Two mutation audits measured what the test suite actually protects. The first
+found 34 of 64 mutations testing nothing; the second, aimed at everything a
+Title VI finding stands on, found 23 of 44 — including that the corridor
+minority share could be replaced by its own complement with all 7,471 tests
+green. Both are recorded in `foundation-audit-ratchet.test.ts` as a ledger that
+may only shrink. The open ledger is now empty.
+
 ## 0.6.0 — 2026-08-06
 
 **Migrations are required before the app deploys, in this order:**
