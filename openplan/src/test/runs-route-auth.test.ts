@@ -70,6 +70,8 @@ vi.mock("@/lib/observability/audit", () => ({
 import { GET as getRuns, DELETE as deleteRun, PATCH as patchRun } from "@/app/api/runs/route";
 
 const RUN_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+const WORKSPACE_ID = "11111111-1111-4111-8111-111111111111";
+const USER_ID = "22222222-2222-4222-8222-222222222222";
 
 function patchRequest(body: unknown = { id: RUN_ID, mapViewState: { showTracts: true } }) {
   return new NextRequest("http://localhost/api/runs", {
@@ -183,6 +185,43 @@ describe("/api/runs auth + membership guards", () => {
     expect(runsGetLimitMock).toHaveBeenCalledWith(50);
   });
 
+  /**
+   * WHICH ROW THE MEMBERSHIP CHECK READS IS THE CHECK.
+   *
+   * Every membership assertion above drives a double that answers a member row
+   * no matter what it was asked for, so the tests could not tell a query scoped
+   * to (this workspace, this user) from one scoped to neither. Mutation proved
+   * it: replacing `.eq("user_id", user.id)` with `.eq("role", "member")` — which
+   * makes ANY authenticated caller a member of ANY workspace they name — left
+   * all eighteen tests in this file green, and five sibling guards with it.
+   * The columns and the values are therefore asserted here directly.
+   */
+  it("GET scopes the membership lookup to this workspace AND this user", async () => {
+    const response = await getRuns(
+      new NextRequest(`http://localhost/api/runs?workspaceId=${WORKSPACE_ID}`)
+    );
+
+    expect(response.status).toBe(200);
+    expect(membershipEqWorkspaceMock).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+    expect(membershipEqUserMock).toHaveBeenCalledWith("user_id", USER_ID);
+  });
+
+  /**
+   * And which rows come back is the tenancy boundary itself. `.eq("id", …)` in
+   * place of `.eq("workspace_id", …)` returns another workspace's runs to a
+   * caller who passed every access check — a mutation the shape assertions
+   * above (`runs: expect.any(Array)`) cannot see.
+   */
+  it("GET asks the database only for runs belonging to the requested workspace", async () => {
+    const response = await getRuns(
+      new NextRequest(`http://localhost/api/runs?workspaceId=${WORKSPACE_ID}`)
+    );
+
+    expect(response.status).toBe(200);
+    expect(runsGetEqMock).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+    expect(runsGetEqMock).not.toHaveBeenCalledWith("id", WORKSPACE_ID);
+  });
+
   it("GET uses a caller-provided limit when supplied", async () => {
     const response = await getRuns(
       new NextRequest(
@@ -276,6 +315,15 @@ describe("/api/runs auth + membership guards", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ success: true });
+    // A deletion that leaves no trace is the half of the audit trail nothing was
+    // guarding: the zero-row FAILURE path below asserts its audit line, while
+    // deleting `audit.info("run_deleted", …)` outright left this file green.
+    // The case that actually happened is the one an agency has to be able to
+    // reconstruct.
+    expect(mockAudit.info).toHaveBeenCalledWith(
+      "run_deleted",
+      expect.objectContaining({ runId: RUN_ID, workspaceId: WORKSPACE_ID, userId: USER_ID })
+    );
   });
 
   /**

@@ -68,15 +68,27 @@ describe("recordAssistantActionExecution", () => {
       action_kind: "generate_report_artifact",
       input_summary: { reportId: "report-1", artifactId: "artifact-1" },
     });
+
+    /**
+     * THE DEFAULT IS THE CLAIM, AND ONLY THE SUPPLIED VALUE WAS BEING ASSERTED.
+     *
+     * Row 0 passes `executionSource` explicitly; row 1 omits it and must record
+     * `manual`, because a human ran it. Flipping the default to
+     * `planner_agent_quick_link` — which files every human write in the
+     * authorship ledger as agent-sourced — survived this file AND five sibling
+     * audit/action guards. `execution_source` is the column the agentic layer's
+     * "who did what" rests on, so both directions of its default are asserted.
+     */
+    expect(rows[1]).toMatchObject({ execution_source: "manual" });
+    expect(rows[1]).not.toMatchObject({ execution_source: "planner_agent_quick_link" });
   });
 
   it("returns the insert error if the audit write fails", async () => {
+    const insertMock = vi.fn().mockResolvedValue({
+      error: { message: "permission denied", code: "42501" },
+    });
     const supabase = {
-      from: vi.fn(() => ({
-        insert: vi.fn().mockResolvedValue({
-          error: { message: "permission denied", code: "42501" },
-        }),
-      })),
+      from: vi.fn(() => ({ insert: insertMock })),
     } as unknown as Parameters<typeof recordAssistantActionExecution>[0];
 
     const result = await recordAssistantActionExecution(supabase, {
@@ -93,5 +105,19 @@ describe("recordAssistantActionExecution", () => {
     });
 
     expect(result.error).toEqual({ message: "permission denied", code: "42501" });
+
+    /**
+     * A PERMISSION FAILURE IS NOT A PENDING MIGRATION, AND THE ONLY WAY TO SEE
+     * THE DIFFERENCE IS TO COUNT THE INSERTS.
+     *
+     * `looksLikePendingAuthorshipColumns` exists to retry WITHOUT the four
+     * authorship columns when a deployment sits between this code and
+     * 20260730000006 — and its own comment says "never on a constraint or
+     * permission failure, which must surface as itself". Making it answer true
+     * for ANY error left this test green, because the fallback insert returns
+     * the same error object and the observable result is unchanged. One insert
+     * for a 42501 is what distinguishes the two.
+     */
+    expect(insertMock).toHaveBeenCalledTimes(1);
   });
 });

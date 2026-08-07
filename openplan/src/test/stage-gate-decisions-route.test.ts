@@ -356,6 +356,46 @@ describe("POST /api/stage-gates/decisions records a human gate decision", () => 
     expect(decisionInsertMock).not.toHaveBeenCalled();
   });
 
+  /**
+   * THE TEST ABOVE PROVES THE REFUSAL AND NOT THE SCOPING, AND THE DIFFERENCE IS
+   * THE WHOLE TENANCY BOUNDARY.
+   *
+   * It stubs `maybeSingle` to null, so the MOCK is what refuses — the query that
+   * would have refused is never inspected. Mutation proved the gap: replacing
+   * `.eq("workspace_id", workspaceId)` on the citation lookup with a second
+   * `.eq("id", citedId)` let a signed gate decision cite ANOTHER AGENCY'S model
+   * run as its evidence, and it survived this file plus five sibling guards.
+   * A gate decision is the verdict a funder relies on, so the columns the lookup
+   * filters on are asserted here rather than simulated.
+   */
+  it("looks the cited run up by id AND by workspace, not by id alone", async () => {
+    const response = await postDecision(
+      jsonRequest(validDecisionBody({ modelRunId: MODEL_RUN_ID }))
+    );
+
+    expect(response.status).toBe(201);
+    expect(runCitationEqIdMock).toHaveBeenCalledWith("id", MODEL_RUN_ID);
+    expect(runCitationEqWorkspaceMock).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+  });
+
+  /** The same hole on the project lookup: `404` there is stubbed, not queried. */
+  it("looks the project up by id AND by workspace, not by id alone", async () => {
+    const response = await postDecision(jsonRequest(validDecisionBody()));
+
+    expect(response.status).toBe(201);
+    expect(projectEqIdMock).toHaveBeenCalledWith("id", PROJECT_ID);
+    expect(projectEqWorkspaceMock).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+  });
+
+  /** And on the membership lookup, which is what makes the role gate mean anything. */
+  it("scopes the membership lookup to this workspace AND this user", async () => {
+    const response = await postDecision(jsonRequest(validDecisionBody()));
+
+    expect(response.status).toBe(201);
+    expect(membershipEqWorkspaceMock).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+    expect(membershipEqUserMock).toHaveBeenCalledWith("user_id", USER_ID);
+  });
+
   it("refuses to cite more than one run, and names the rule", async () => {
     const response = await postDecision(
       jsonRequest(validDecisionBody({ runId: RUN_ID, modelRunId: MODEL_RUN_ID }))

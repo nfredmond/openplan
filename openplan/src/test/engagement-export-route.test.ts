@@ -136,6 +136,64 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
     expect(response.status).toBe(401);
   });
 
+  /**
+   * THE REFUSAL THIS ROUTE EXISTS BEHIND, AND THE ONE NOTHING WAS CHECKING.
+   *
+   * This file asserted 401 and never 403, so the membership branch was untested
+   * by construction. Deleting `if (!access.allowed) return 403` outright left
+   * all five tests green — and this endpoint hands back the whole resident
+   * comment corpus: names, free-text bodies, coordinates, and moderation notes.
+   * `workspace-write-role-gate-guard` cannot cover it either, because it only
+   * inspects mutating verbs and this is a GET. So the read side is asserted
+   * here, in both of its shapes.
+   */
+  it("returns 403 when the caller is not a member of the campaign's workspace", async () => {
+    membershipMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+
+    const response = await GET(
+      new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=csv`),
+      { params: Promise.resolve({ campaignId: validCampaignId }) }
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ error: "Workspace access denied" });
+    // Nothing about the corpus may reach a refused caller — not even its size.
+    expect(itemsSelectMock).not.toHaveBeenCalled();
+  });
+
+  it("returns 403 for a role the matrix does not grant engagement.read (deny-by-default)", async () => {
+    membershipMaybeSingleMock.mockResolvedValueOnce({
+      data: { workspace_id: "44444444-4444-4444-8444-444444444444", role: "auditor" },
+      error: null,
+    });
+
+    const response = await GET(
+      new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=csv`),
+      { params: Promise.resolve({ campaignId: validCampaignId }) }
+    );
+
+    expect(response.status).toBe(403);
+    expect(itemsSelectMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * And which campaign's comments come back. The item query is the only thing
+   * standing between one campaign's export and every campaign in the database;
+   * swapping `.eq("campaign_id", …)` for `.eq("status", "approved")` survived
+   * this file and four siblings, because the mocked chain answers its canned
+   * rows whatever it was filtered on.
+   */
+  it("asks the database only for the requested campaign's items", async () => {
+    const response = await GET(
+      new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=csv`),
+      { params: Promise.resolve({ campaignId: validCampaignId }) }
+    );
+
+    expect(response.status).toBe(200);
+    expect(itemsEqCampaignMock).toHaveBeenCalledWith("campaign_id", validCampaignId);
+    expect(categoriesEqMock).toHaveBeenCalledWith("campaign_id", validCampaignId);
+  });
+
   it("returns CSV export with correct content type", async () => {
     const response = await GET(
       new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=csv`),

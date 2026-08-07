@@ -138,6 +138,101 @@ describe("resolveModelingClaimDecision", () => {
     expect(decision.reasons).toContain("Worst matched facility APE 237.62% exceeds the 50% threshold.");
   });
 
+  /**
+   * NO EVIDENCE AT ALL IS PROTOTYPE-ONLY, AND NOTHING WAS CHECKING IT.
+   *
+   * The prototype test below supplies BOTH a `prototypeReasons` entry and a
+   * missing required metric, so two other conditions in the same `||` already
+   * hold and `validationResults.length === 0` is never the deciding one.
+   * Deleting that clause let a run with no validation evidence whatsoever come
+   * back `claim_grade_passed` — "All required public-data validation checks
+   * passed" — and clear `modelingClaimAllowsOutwardPlanningLanguage`, which is
+   * the sentence that goes into a grant application or an RTP. All seven tests
+   * stayed green. This is the honesty firewall failing OPEN, so it is asserted
+   * on its own, with nothing else true.
+   */
+  it("refuses claim-grade for a run with no validation evidence at all", () => {
+    const decision = resolveModelingClaimDecision({
+      track: "assignment",
+      validationResults: [],
+      requiredMetricKeys: [],
+    });
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(modelingClaimAllowsOutwardPlanningLanguage(decision)).toBe(false);
+    expect(decision.statusReason).not.toContain("passed");
+  });
+
+  /**
+   * A WARNING ALONE DOWNGRADES. The existing downgrade test uses a `fail`, so
+   * `failures.length > 0` carried it and `|| warnings.length > 0` could be
+   * deleted with every test still green — promoting a warned metric straight to
+   * claim-grade.
+   */
+  it("downgrades to screening grade on a warning with no failure", () => {
+    const decision = resolveModelingClaimDecision({
+      track: "assignment",
+      validationResults: [
+        validation({ metricKey: "assignment_final_gap" }),
+        validation({
+          metricKey: "median_absolute_percent_error",
+          status: "warn",
+          detail: "Median APE 27.4% is above the 20% target.",
+        }),
+      ],
+      requiredMetricKeys: ["assignment_final_gap", "median_absolute_percent_error"],
+    });
+
+    expect(decision.claimStatus).toBe("screening_grade");
+    expect(modelingClaimAllowsOutwardPlanningLanguage(decision)).toBe(false);
+    expect(decision.reasons).toContain("Median APE 27.4% is above the 20% target.");
+  });
+
+  /**
+   * `blocksClaimGrade` IS OPTIONAL, AND ITS DEFAULT IS TO BLOCK.
+   *
+   * `blocksClaimGrade !== false` means a result that never states whether it
+   * blocks still does — the safe reading of an absent flag. Changing it to
+   * `=== true` makes silence permissive, and every fixture in this file sets the
+   * flag explicitly, so nothing saw it. Both directions are asserted: an omitted
+   * flag blocks, an explicit `false` does not.
+   */
+  it("treats a failing result that omits blocksClaimGrade as blocking", () => {
+    const omitted = validation({
+      metricKey: "critical_absolute_percent_error",
+      status: "fail",
+      detail: "Worst matched facility APE 237.62% exceeds the 50% threshold.",
+    });
+    delete (omitted as { blocksClaimGrade?: boolean }).blocksClaimGrade;
+
+    const decision = resolveModelingClaimDecision({
+      track: "assignment",
+      validationResults: [validation({ metricKey: "assignment_final_gap" }), omitted],
+      requiredMetricKeys: ["assignment_final_gap", "critical_absolute_percent_error"],
+    });
+
+    expect(decision.claimStatus).toBe("screening_grade");
+    expect(modelingClaimAllowsOutwardPlanningLanguage(decision)).toBe(false);
+  });
+
+  it("lets a result that explicitly declares itself non-blocking pass through", () => {
+    const decision = resolveModelingClaimDecision({
+      track: "assignment",
+      validationResults: [
+        validation({ metricKey: "assignment_final_gap" }),
+        validation({
+          metricKey: "facility_ranking_spearman_rho",
+          status: "warn",
+          blocksClaimGrade: false,
+          detail: "Facility ranking correlation is informational.",
+        }),
+      ],
+      requiredMetricKeys: ["assignment_final_gap", "facility_ranking_spearman_rho"],
+    });
+
+    expect(decision.claimStatus).toBe("claim_grade_passed");
+  });
+
   it("keeps outputs prototype-only when required validation evidence is missing", () => {
     const decision = resolveModelingClaimDecision({
       track: "behavioral_demand",

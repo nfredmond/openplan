@@ -232,6 +232,31 @@ describe("an area that crosses the antimeridian still has an inside", () => {
     expect(bboxContainsPoint(bbox, -82.7, 40)).toBe(false);
     expect(bboxContainsPoint(bbox, 96.9, 40)).toBe(false); // the antipode, not the point
   });
+
+  /**
+   * LATITUDE IS HALF THE BOX AND NO TEST VARIED IT.
+   *
+   * Every bbox assertion in this file moves the longitude and holds the latitude
+   * inside the box, so the latitude clause was never exercised: widening it to
+   * `latitude < minLat - 90 || latitude > maxLat + 90` — a condition no real
+   * coordinate can satisfy, i.e. the check switched off — left the whole suite
+   * green. For a campaign whose place-of-record has a bounding box and no usable
+   * boundary geometry, this is the ONLY test a public submission gets, so a
+   * disabled half admits every pin north or south of the area.
+   */
+  it("refuses a pin north or south of the box, not only east or west of it", () => {
+    const bbox = { minLon: -83.2, minLat: 39.85, maxLon: -82.8, maxLat: 40.1 };
+
+    expect(bboxContainsPoint(bbox, -83, 41.5)).toBe(false); // due north
+    expect(bboxContainsPoint(bbox, -83, 38.2)).toBe(false); // due south
+    expect(bboxContainsPoint(bbox, -83, 89)).toBe(false); // far enough to survive a ±90 widening
+    expect(bboxContainsPoint(bbox, -83, -89)).toBe(false);
+
+    // The edges are inclusive, both of them — a resident standing on the
+    // northern boundary of their own county is inside it.
+    expect(bboxContainsPoint(bbox, -83, 39.85)).toBe(true);
+    expect(bboxContainsPoint(bbox, -83, 40.1)).toBe(true);
+  });
 });
 
 describe("what is NOT a refusal", () => {
