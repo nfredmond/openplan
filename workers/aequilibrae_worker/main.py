@@ -2997,6 +2997,11 @@ def stage_artifacts(
     select_link_analysis = assign_result.get("select_link_analysis")
     resident_vmt = None
     resident_vmt_per_capita = None
+    # Share of internal trips that begin and end in the same zone. None means
+    # not measured — never 0.0, which would assert a fine-grained zone system
+    # nobody looked at.
+    intrazonal_trip_share = None
+    intrazonal_trip_count = None
     resident_vmt_all_trips = None
     resident_vmt_calibrated = None
     resident_vmt_per_capita_calibrated = None
@@ -3045,6 +3050,11 @@ def stage_artifacts(
             else:
                 resident_meta = all_meta
             resident_vmt = round(resident_meta["daily_vmt"], 1)
+            # Measured on the SAME matrix the headline resident VMT came from,
+            # so the share describes the travel that figure is built out of.
+            if resident_meta.get("internal_trips", 0) > 0:
+                intrazonal_trip_share = round(float(resident_meta["intrazonal_share"]), 4)
+                intrazonal_trip_count = float(resident_meta["intrazonal_trips"])
             pop_resident = resident_meta["population"]
             if pop_resident and pop_resident > 0:
                 resident_vmt_per_capita = round(resident_vmt / pop_resident, 4)
@@ -3446,6 +3456,28 @@ def stage_artifacts(
         ("assignment", "iterations", "Iterations", assign_result["convergence"]["iterations"], "count"),
         ("assignment", "loaded_links", "Loaded Links", assign_result["loaded_links"], "count"),
     ]
+    if intrazonal_trip_share is not None:
+        # HOW MUCH OF THIS RUN'S TRAVEL NEVER REACHES A LINK.
+        #
+        # Emitted under the same KPI name the in-app sketch engine uses, because
+        # it is the same measurement and a planner comparing two runs must not
+        # meet two names for it. The app owns the banding and the wording —
+        # duplicating those here would be a second definition of one judgement,
+        # free to drift.
+        #
+        # OpenPlan's own county validation ran 26 zones at 36% intrazonal and
+        # link-level AADT comparison failed there. This is the number that says
+        # so before somebody concludes the demand is wrong.
+        kpis.append(
+            (
+                "general",
+                "intrazonal_trip_share",
+                "Trips that never reach the network",
+                intrazonal_trip_share,
+                "share",
+            )
+        )
+
     if assign_result["skims"]["avg_time_min"] is not None:
         kpis.append(("assignment", "avg_travel_time", "Avg Travel Time", round(assign_result["skims"]["avg_time_min"], 1), "min"))
         kpis.append(("assignment", "max_travel_time", "Max Travel Time", round(assign_result["skims"]["max_time_min"], 1), "min"))

@@ -56,6 +56,13 @@ def compute_internal_resident_vmt(
     n = len(zone_ids)
     daily_vmt = 0.0
     internal_trips = 0.0
+    # Trips on the OD matrix DIAGONAL: they begin and end in the same zone and
+    # therefore never travel on a link. They are real travel — they carry VMT,
+    # via intrazonal_miles above — but no link volume, so a comparison of
+    # modelled volumes to traffic counts cannot see them at all. Counted here so
+    # the app can tell a planner what share of their travel that is, instead of
+    # leaving them to read the gap as failed demand.
+    intrazonal_trips = 0.0
     for i in range(n):
         if int(zone_ids[i]) in gateway_set:
             continue
@@ -78,6 +85,8 @@ def compute_internal_resident_vmt(
                 )
             daily_vmt += trips * miles
             internal_trips += trips
+            if i == j:
+                intrazonal_trips += trips
 
     population = sum(float(p) for p in est_population if math.isfinite(float(p)))
     return {
@@ -85,6 +94,11 @@ def compute_internal_resident_vmt(
         "population": population,
         "vmt_per_capita": daily_vmt / population if population > 0 else 0.0,
         "internal_trips": internal_trips,
+        "intrazonal_trips": intrazonal_trips,
+        # Share of INTERNAL trips, so gateway/through traffic is out of both
+        # halves — the denominator is the resident travel this study area is
+        # actually modelling.
+        "intrazonal_share": intrazonal_trips / internal_trips if internal_trips > 0 else 0.0,
         "avg_trip_miles": daily_vmt / internal_trips if internal_trips > 0 else 0.0,
         "circuity": circuity,
         "excluded_gateway_zone_ids": sorted(gateway_set),

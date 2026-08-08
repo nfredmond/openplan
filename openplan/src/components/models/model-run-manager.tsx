@@ -1367,12 +1367,17 @@ function ModelRunStagingAndArtifacts({
       ) : null}
 
       {/*
-        Mounted for the SKETCH engine because that is the one whose trip table
-        this diagnostic is measured from today. The panel renders nothing when
-        the KPI is absent, so extending it to another engine is a matter of
-        emitting the KPI there — not of changing this condition.
+        Both engines that measure it. The sketch engine counts it from its trip
+        table; the AequilibraE worker counts the OD matrix diagonal — the same
+        measurement, under the same KPI name, so a planner comparing two runs
+        never meets two names for one thing.
+        AequilibraE matters most here: it is the engine whose link volumes people
+        actually compare to traffic counts, which is the comparison this
+        diagnostic exists to qualify. The panel renders nothing when the KPI is
+        absent, so an older run is unaffected.
       */}
-      {run.status === "succeeded" && run.engine_key === "sketch_abm" ? (
+      {run.status === "succeeded" &&
+      (run.engine_key === "sketch_abm" || run.engine_key === "aequilibrae") ? (
         <ModelRunZoneResolutionPanel modelId={modelId} modelRunId={run.id} />
       ) : null}
 
