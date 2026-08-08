@@ -43,7 +43,12 @@ import { loadSchemaInventory } from "./migrations/schema-inventory";
  * allowlist entry instead of a fix.
  *
  * MEASURED 2026-08-07 against the live catalog: 1,794 columns in public base
- * tables, 45 named nowhere in `src/`. One has already left the list:
+ * tables, 45 named nowhere in `src/`. TWO have already left the list:
+ * `network_package_versions.file_hash` is written at ingest as a digest of the
+ * nodes and links a version was built from — and investigating it CORRECTED the
+ * entry that described it, because there is no "primary network bundle" to
+ * checksum: content arrives as parsed GeoJSON in a request body, so the
+ * column's original premise never matched the design. And
  * `equity_tract_designations.retrieved_at` was WRITE_ONLY until the sweep found
  * it, and now reaches the analysis payload as the capture date of a Justice40
  * designation — which is the point of counting these rather than shrugging at
@@ -132,14 +137,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   },
 
   // ---- UNBUILT: the schema implies a capability that does not exist --------
-  {
-    column: "network_package_versions.file_hash",
-    category: "UNBUILT",
-    reason:
-      "Its own migration comment says 'SHA-256 hash of the primary network bundle for integrity " +
-      "verification'. Nothing computes it, stores it, or checks it. A reviewer reading the schema " +
-      "would conclude uploaded network bundles are integrity-checked. They are not.",
-  },
   {
     column: "census_tracts.pop_black",
     category: "UNBUILT",

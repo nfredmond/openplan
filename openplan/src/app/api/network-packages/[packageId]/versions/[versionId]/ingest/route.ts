@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -246,6 +247,34 @@ export async function POST(
     summary: { total_checks: totalChecks, passed, warnings, failures },
   };
 
+  /**
+   * A DIGEST OF THE NETWORK THIS VERSION WAS BUILT FROM.
+   *
+   * `network_package_versions.file_hash` has carried the comment "SHA-256 hash
+   * of the primary network bundle for integrity verification" since
+   * 20260318000029 and nothing has ever written it. The unread-column sweep of
+   * 2026-08-07 found it, and looking at how ingest actually works sharpened the
+   * finding: THERE IS NO PRIMARY BUNDLE. Network content arrives here as parsed
+   * GeoJSON in the request body, not as an uploaded file, so the column's
+   * premise never matched the design and a file checksum was never available to
+   * compute.
+   *
+   * What IS available, and is what the column was reaching for, is provenance:
+   * which network did this run model? Two versions with the same digest carry
+   * the same nodes and links; a re-ingest that changes one link changes it.
+   * That is the question a planner defending a model gets asked.
+   *
+   * WHAT IT IS NOT, stated because the column's old comment promised more: it
+   * is a digest of the PARSED payload, not a checksum of a file anybody holds.
+   * Two semantically identical GeoJSON files whose keys are ordered differently
+   * produce different digests, and nothing here can detect that they are the
+   * same network. It answers "is this the same ingest?", not "is this file
+   * uncorrupted?".
+   */
+  const fileHash = createHash("sha256")
+    .update(JSON.stringify({ nodes: nodesGeojson ?? null, links: linksGeojson ?? null }))
+    .digest("hex");
+
   // Build manifest
   const manifest: Record<string, unknown> = {};
   if (nodesGeojson) manifest.nodes_file = "nodes.geojson";
@@ -261,6 +290,7 @@ export async function POST(
     .update({
       qa_report_json: qaReport,
       manifest_json: manifest,
+      file_hash: fileHash,
       status: overallStatus === "fail" ? "draft" : "active",
     })
     .eq("id", versionId)

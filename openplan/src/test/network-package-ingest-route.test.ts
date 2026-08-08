@@ -86,6 +86,34 @@ function buildContext() {
   };
 }
 
+const NODES_FIXTURE = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      geometry: { type: "Point", coordinates: [0, 0] },
+      properties: { id: "n1" },
+    },
+  ],
+};
+
+const LINKS_FIXTURE = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          [0, 0],
+          [1, 1],
+        ],
+      },
+      properties: { speed: 35, capacity: 1200 },
+    },
+  ],
+};
+
 describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -288,5 +316,64 @@ describe("/api/network-packages/[packageId]/versions/[versionId]/ingest", () => 
     const response = await postIngest(buildRequest(), buildContext());
 
     expect(response.status).not.toBe(429);
+  });
+
+  /**
+   * WHICH NETWORK DID THIS RUN MODEL?
+   *
+   * `network_package_versions.file_hash` has carried the comment "SHA-256 hash
+   * of the primary network bundle for integrity verification" since 2026-03-18
+   * and nothing ever wrote it. The unread-column sweep found it; looking at
+   * ingest sharpened the finding — THERE IS NO PRIMARY BUNDLE. Content arrives
+   * as parsed GeoJSON in the request body, so a file checksum was never
+   * available and the column's premise never matched the design.
+   *
+   * What it can honestly carry is provenance: two versions with the same digest
+   * were ingested from the same nodes and links.
+   */
+  describe("the digest of the network this version was built from", () => {
+    function ingestedRow() {
+      const call = versionUpdateMock.mock.calls.at(-1);
+      return (call?.[0] ?? {}) as { file_hash?: string };
+    }
+
+    it("records a sha256 digest of the ingested nodes and links", async () => {
+      await postIngest(buildRequest({ nodes: NODES_FIXTURE, links: LINKS_FIXTURE }), buildContext());
+
+      const hash = ingestedRow().file_hash;
+      expect(hash).toMatch(/^[0-9a-f]{64}$/);
+    });
+
+    it("gives the same network the same digest, and a changed link a different one", async () => {
+      await postIngest(buildRequest({ nodes: NODES_FIXTURE, links: LINKS_FIXTURE }), buildContext());
+      const first = ingestedRow().file_hash;
+
+      await postIngest(buildRequest({ nodes: NODES_FIXTURE, links: LINKS_FIXTURE }), buildContext());
+      expect(ingestedRow().file_hash, "the same network must digest the same").toBe(first);
+
+      // One link's capacity changed. This is the whole point: a re-ingest that
+      // alters the network must be visible as a different network.
+      const changed = {
+        ...LINKS_FIXTURE,
+        features: [
+          {
+            ...LINKS_FIXTURE.features[0],
+            properties: { ...LINKS_FIXTURE.features[0].properties, capacity: 2400 },
+          },
+        ],
+      };
+      await postIngest(buildRequest({ nodes: NODES_FIXTURE, links: changed }), buildContext());
+      expect(ingestedRow().file_hash, "a changed link must digest differently").not.toBe(first);
+    });
+
+    it("distinguishes nodes-only from links-only, rather than hashing them together", async () => {
+      // Hashing a concatenation without naming which half is which lets a
+      // nodes-only ingest collide with a links-only one carrying the same bytes.
+      await postIngest(buildRequest({ nodes: NODES_FIXTURE }), buildContext());
+      const nodesOnly = ingestedRow().file_hash;
+
+      await postIngest(buildRequest({ links: NODES_FIXTURE }), buildContext());
+      expect(ingestedRow().file_hash).not.toBe(nodesOnly);
+    });
   });
 });
