@@ -13,6 +13,7 @@ import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-pa
 import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
 import { ModelRunTripGenScreen } from "@/components/models/model-run-trip-gen-screen";
 import { ModelRunEmissionsPanel } from "@/components/models/model-run-emissions-panel";
+import { ModelRunZoneResolutionPanel } from "@/components/models/model-run-zone-resolution-panel";
 import { ModelRunEquityPanel } from "@/components/models/model-run-equity-panel";
 import { ModelRunEngagementPanel } from "@/components/models/model-run-engagement-panel";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
@@ -1363,6 +1364,16 @@ function ModelRunStagingAndArtifacts({
 
       {run.status === "succeeded" && run.engine_key === "ite_trip_generation" ? (
         <ModelRunTripGenScreen modelId={modelId} modelRunId={run.id} runTitle={run.run_title} />
+      ) : null}
+
+      {/*
+        Mounted for the SKETCH engine because that is the one whose trip table
+        this diagnostic is measured from today. The panel renders nothing when
+        the KPI is absent, so extending it to another engine is a matter of
+        emitting the KPI there — not of changing this condition.
+      */}
+      {run.status === "succeeded" && run.engine_key === "sketch_abm" ? (
+        <ModelRunZoneResolutionPanel modelId={modelId} modelRunId={run.id} />
       ) : null}
 
       {run.status === "succeeded" && run.engine_key === "aequilibrae" ? (
