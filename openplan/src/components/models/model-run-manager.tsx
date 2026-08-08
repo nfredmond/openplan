@@ -39,6 +39,7 @@ import {
   modelingClaimStatusLabel,
   type ModelRunClaimDecision,
 } from "@/lib/models/evidence-backbone";
+import { summarizeRunFailure } from "@/lib/models/run-failure";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -1199,6 +1200,12 @@ export function ModelRunManager({
                 const runLink = run.source_analysis_run_id ? `/explore?runId=${run.source_analysis_run_id}#analysis-run-history` : null;
                 const scenarioLabel = findScenarioEntryLabel(scenarioEntries, run.scenario_entry_id);
                 const runMode = getManagedRunModeDefinition(run.engine_key);
+                // Null for anything that has not terminally failed.
+                const failureSummary = summarizeRunFailure({
+                  status: run.status,
+                  errorMessage: run.error_message,
+                  stages: run.stages,
+                });
                 const comparisonCandidates = modelRuns
                   .filter((candidate) => candidate.id !== run.id && candidate.status === "succeeded")
                   .map((candidate) => ({
@@ -1223,12 +1230,32 @@ export function ModelRunManager({
                           <h3 className="module-record-title">{run.run_title}</h3>
                           <p className="module-record-stamp">{fmtDateTime(run.completed_at ?? run.started_at ?? run.created_at)}</p>
                         </div>
-                        <p className="module-record-summary">
-                          {run.error_message ||
-                            (run.source_analysis_run_id
-                              ? `Backed by analysis run ${run.source_analysis_run_id}.`
-                              : "Run recorded — no linked analysis results yet.")}
-                        </p>
+                        {/*
+                          A FAILED RUN MUST NOT DESCRIBE ITSELF AS A RECORDED ONE.
+                          The worker writes its reason to the failing STAGE and
+                          patches only `{status: "failed"}` onto the run, so
+                          `run.error_message` is null for the whole AequilibraE
+                          lane and this line used to fall through to "Run
+                          recorded — no linked analysis results yet." on a run
+                          that had crashed. `summarizeRunFailure` returns null
+                          for every non-failed run, so the copy below is
+                          untouched for them.
+                        */}
+                        {failureSummary ? (
+                          <p
+                            className="module-record-summary text-red-700 dark:text-red-300"
+                            data-testid="run-failure-summary"
+                          >
+                            {failureSummary.headline}
+                          </p>
+                        ) : (
+                          <p className="module-record-summary">
+                            {run.error_message ||
+                              (run.source_analysis_run_id
+                                ? `Backed by analysis run ${run.source_analysis_run_id}.`
+                                : "Run recorded — no linked analysis results yet.")}
+                          </p>
+                        )}
                         <p className="text-sm text-muted-foreground">{runMode.runtimeExpectation}</p>
                         <p className="text-sm text-muted-foreground">{runMode.caveatSummary}</p>
                       </div>
