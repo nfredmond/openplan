@@ -1,6 +1,7 @@
 import type { CountyRunArtifact } from "@/lib/api/county-onramp";
 import type { CountyOnrampManifest, CountyRunStage } from "@/lib/models/county-onramp";
 import {
+  countyRunZoneResolutionCaveat,
   getCountyRunAllowedClaim,
   getCountyRunCaveats,
   getCountyRunStageLabel,
@@ -125,6 +126,21 @@ export function getCountyRunMetricHighlights(manifest: CountyOnrampManifest | nu
     finalGap: run?.final_gap ?? null,
     medianApe: validation?.median_absolute_percent_error ?? null,
     maxApe: validation?.max_absolute_percent_error ?? null,
+    /**
+     * WHETHER THE APE FIGURES ABOVE CAN SETTLE ANYTHING.
+     *
+     * A median APE next to a gate status is the whole validation story a county
+     * run tells, and at a coarse zone system it is a story about the zone
+     * system rather than the model: OpenPlan's own county validation ran 26
+     * zones at 36% intrazonal and the AADT comparison failed for that reason.
+     * Null when the zone system does not disqualify the comparison, or when the
+     * run's producer never measured the share — the caveat renders only when
+     * there is one to make.
+     */
+    zoneResolutionCaveat: countyRunZoneResolutionCaveat(
+      typeof run?.intrazonal_trip_share === "number" ? run.intrazonal_trip_share : null,
+      run?.zone_count ?? null
+    ),
   };
 }
 

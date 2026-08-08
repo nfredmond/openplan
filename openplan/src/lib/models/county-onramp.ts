@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+  LINK_VALIDATION_NOT_SUPPORTED_CAVEAT,
+  bandIntrazonalShare,
+} from "@/lib/models/zone-resolution";
+
 export const countyRunStageSchema = z.enum([
   "bootstrap-incomplete",
   "runtime-complete",
@@ -44,6 +49,11 @@ export const countyOnrampRunSnapshotSchema = z.object({
   daily_vmt: z.number().nullable().optional(),
   vmt_per_capita: z.number().nullable().optional(),
   vmt_provenance: z.string().nullable().optional(),
+  // Share of internal trips beginning and ending in the same zone, as a
+  // FRACTION (0-1) — the same unit and name the AequilibraE worker's KPI uses.
+  // Optional and nullable because runs produced before the county lane recorded
+  // it have no value, and 0 would be the most flattering possible substitute.
+  intrazonal_trip_share: z.number().nullable().optional(),
 }).passthrough();
 
 export const countyOnrampScaffoldSummarySchema = z
@@ -131,11 +141,58 @@ export type CountyOnrampManifest = z.infer<typeof countyOnrampManifestSchema>;
  */
 export const COUNTY_RUN_NON_PASSING_GATE_STATUSES: readonly string[] = ["internal prototype only"];
 
-/** Whether a recorded screening-gate status counts as passing evidence. */
-export function isPassingCountyRunGateStatus(statusLabel: string | null | undefined): boolean {
+/**
+ * Whether a recorded screening-gate status counts as passing evidence.
+ *
+ * `intrazonalTripShare` is the FRACTION of this run's trips that begin and end
+ * in the same zone — travel that carries VMT and no link volume. Where that
+ * share is past OpenPlan's threshold, a link-level comparison to observed
+ * counts cannot establish anything, so the gate it produced cannot make the run
+ * passing evidence no matter what it says.
+ *
+ * WHY THE VERDICT IS RECOMPUTED HERE RATHER THAN READ OFF THE ROW. The county
+ * lane's validator writes its gate string offline, before this qualification
+ * existed, and an operator reruns it by hand. Banding the NUMBER at read time
+ * gives one answer for runs recorded before and after — the same rule the run
+ * zone panel follows, and for the same reason: producers store different
+ * things, and one of them stores nothing.
+ *
+ * Omitting the share (null/undefined) leaves the gate's own verdict standing.
+ * An unmeasured share is a missing measurement, not a coarse zone system, and
+ * refusing every county run recorded before the share existed would be a
+ * refusal nobody could act on.
+ */
+export function isPassingCountyRunGateStatus(
+  statusLabel: string | null | undefined,
+  intrazonalTripShare?: number | null
+): boolean {
   const normalized = statusLabel?.trim().toLowerCase();
   if (!normalized) return false;
-  return !COUNTY_RUN_NON_PASSING_GATE_STATUSES.includes(normalized);
+  if (COUNTY_RUN_NON_PASSING_GATE_STATUSES.includes(normalized)) return false;
+  if (typeof intrazonalTripShare === "number" && Number.isFinite(intrazonalTripShare)) {
+    // The share is stored as a fraction; the banding works in percent.
+    if (!bandIntrazonalShare(intrazonalTripShare * 100, null).supportsLinkLevelValidation) {
+      return false;
+    }
+  }
+  return true;
+}
+
+/**
+ * What to tell a planner when a county run's gate was set aside by its own zone
+ * system. Null when the zone system does not disqualify the comparison, so a
+ * caller can render this without deciding anything itself.
+ */
+export function countyRunZoneResolutionCaveat(
+  intrazonalTripShare: number | null | undefined,
+  zoneCount?: number | null
+): string | null {
+  if (typeof intrazonalTripShare !== "number" || !Number.isFinite(intrazonalTripShare)) {
+    return null;
+  }
+  const banded = bandIntrazonalShare(intrazonalTripShare * 100, zoneCount ?? null);
+  if (banded.supportsLinkLevelValidation) return null;
+  return `${banded.summary} ${LINK_VALIDATION_NOT_SUPPORTED_CAVEAT}`;
 }
 
 export function getCountyRunStageLabel(stage: CountyRunStage): string {

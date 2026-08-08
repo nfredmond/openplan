@@ -1118,6 +1118,21 @@ def run_screening_model(
         "vmt_per_capita": round(vmt_inputs["vmt_per_capita"], 3),
         "population_total": int(round(vmt_inputs["population"])),
         "internal_trips": round(vmt_inputs["internal_trips"], 1),
+        # HOW MUCH OF THIS RUN'S TRAVEL NEVER REACHES A LINK.
+        #
+        # `compute_internal_resident_vmt` has always counted the OD-matrix
+        # diagonal — trips that begin and end in the same zone, which carry VMT
+        # and no link volume — and the county lane threw both numbers away. They
+        # are what says whether a link-level comparison against observed counts
+        # can establish anything at all: OpenPlan's own county validation ran 26
+        # zones at 36% intrazonal and the AADT comparison failed for that reason,
+        # not because of the demand.
+        #
+        # A FRACTION, not a percent, matching the `intrazonal_trip_share` KPI the
+        # worker emits and the app's panel reads. One name and one unit across
+        # both lanes, so a planner comparing two runs never meets two.
+        "intrazonal_trips": round(vmt_inputs["intrazonal_trips"], 1),
+        "intrazonal_share": round(float(vmt_inputs["intrazonal_share"]), 4),
         "avg_trip_miles": round(vmt_inputs["avg_trip_miles"], 2),
         "circuity": vmt_inputs["circuity"],
         "excluded_gateway_zone_ids": vmt_inputs["excluded_gateway_zone_ids"],

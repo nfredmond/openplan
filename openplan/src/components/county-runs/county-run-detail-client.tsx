@@ -394,6 +394,23 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             <div>Median APE: {metrics.medianApe ?? "—"}</div>
             <div>Max APE: {metrics.maxApe ?? "—"}</div>
             <div>Status: {card.statusLabel ?? "Not available"}</div>
+            {/*
+              WHAT THOSE THREE LINES CAN AND CANNOT ESTABLISH.
+              A median APE beside a gate status is the entire validation story a
+              county run tells. At a coarse zone system it is a story about the
+              zone system: the trips that never reach a link cannot show up on
+              one, so the gap is expected and is not evidence about the demand.
+              Rendered only when the zone system actually disqualifies the
+              comparison, so it never becomes boilerplate a reader learns to skip.
+            */}
+            {metrics.zoneResolutionCaveat ? (
+              <p
+                className="mt-2 text-xs leading-relaxed text-amber-700 dark:text-amber-300"
+                data-testid="county-run-zone-resolution-caveat"
+              >
+                {metrics.zoneResolutionCaveat}
+              </p>
+            ) : null}
           </CardContent>
         </Card>
 

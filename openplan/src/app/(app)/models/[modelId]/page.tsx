@@ -295,7 +295,11 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
 
   const countyRunsResult = await supabase
     .from("county_runs")
-    .select("stage, status_label")
+    // `run_summary_json` is projected for ONE field: `intrazonal_trip_share`.
+    // A county run whose zone system cannot support a link-level comparison did
+    // not establish a screening claim, whatever gate string its validator
+    // recorded offline — so the gate cannot be read without it.
+    .select("stage, status_label, run_summary_json")
     .eq("workspace_id", model.workspace_id);
 
   const countyRunsUnreadable = reads.check("county screening runs", countyRunsResult);
@@ -332,10 +336,18 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
   const countyRunRows = (workspaceCountyRuns ?? []) as Array<{
     stage: string | null;
     status_label: string | null;
+    run_summary_json: { intrazonal_trip_share?: unknown } | null;
   }>;
-  const hasWorkspacePassingCountyRun = countyRunRows.some(
-    (row) => row.stage === "validated-screening" && isPassingCountyRunGateStatus(row.status_label)
-  );
+  const hasWorkspacePassingCountyRun = countyRunRows.some((row) => {
+    const share = row.run_summary_json?.intrazonal_trip_share;
+    return (
+      row.stage === "validated-screening" &&
+      isPassingCountyRunGateStatus(
+        row.status_label,
+        typeof share === "number" ? share : null
+      )
+    );
+  });
 
   // The option lists behind the Links tab. A failed read here offers the
   // planner nothing to attach, which looks identical to a workspace that has

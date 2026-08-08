@@ -371,6 +371,14 @@ def main() -> int:
                 "daily_vmt": get_nested(run_summary, "vmt", "daily_vmt"),
                 "vmt_per_capita": get_nested(run_summary, "vmt", "vmt_per_capita"),
                 "vmt_provenance": get_nested(run_summary, "vmt", "provenance"),
+                # Share of internal trips that never reach a link (a FRACTION).
+                # It qualifies this run's observed-count gate: past OpenPlan's
+                # threshold a link-level comparison cannot establish a screening
+                # claim, so `isPassingCountyRunGateStatus` refuses to treat the
+                # run as passing modeling evidence no matter what the gate says.
+                # None on a run whose producer did not measure it — never 0.0,
+                # which would assert the finest possible zone system.
+                "intrazonal_trip_share": get_nested(run_summary, "vmt", "intrazonal_share"),
                 "network_daily_vmt_unfiltered": get_nested(run_summary, "vmt", "network_daily_vmt_unfiltered"),
                 "engine_versions": get_nested(run_summary, "engine_versions"),
                 "stage_wall_clock_seconds": get_nested(run_summary, "stage_wall_clock_seconds"),

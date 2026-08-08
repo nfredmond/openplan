@@ -156,6 +156,15 @@ describe("county onramp primitives", () => {
       finalGap: 0.0091,
       medianApe: 16.01,
       maxApe: 49.48,
+      // This fixture is a 26-zone run — the resolution at which OpenPlan's own
+      // county validation hit 36% intrazonal and link-level AADT comparison
+      // failed — but it records no `intrazonal_trip_share`, because no county
+      // run produced before the runtime started emitting one does. Null is the
+      // honest answer for an UNMEASURED share: it leaves the run's own gate
+      // standing rather than refusing every historical run on a number nobody
+      // took. A zone count alone is not the measurement, and must not be
+      // treated as one.
+      zoneResolutionCaveat: null,
     });
     expect(getCountyRunStatusLabel(manifest)).toBe("bounded screening-ready");
     expect(getCountyRunStageLabel("runtime-complete")).toBe("Runtime Complete");
