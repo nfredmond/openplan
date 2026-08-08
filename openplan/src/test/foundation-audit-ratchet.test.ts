@@ -51,11 +51,14 @@ import { describe, expect, it } from "vitest";
  *
  * =========================================== WHAT THIS FILE DOES *NOT* CLAIM
  *
- * About 28 of ~736 test files have been measured across FOUR passes — the
+ * About 30 of ~736 test files have been measured across FIVE passes — the
  * foundation sweep, the Title VI surfaces, the `[fact:id]` grounding machinery,
- * and the CEQA §15064.3 determination path (the last two both 2026-08-07). The
- * CEQA pass is the first that found an area already SOLID: 39 of 42 mutations
- * died on the first run, against roughly half in the two earlier sweeps. It does not speak for the rest, and `records what was NOT
+ * the CEQA §15064.3 determination path, and the claim-tier decision procedure
+ * (the last three all 2026-08-07). The CEQA pass is the first that found an area
+ * already SOLID — 39 of 42 mutations died on the first run, against roughly half
+ * in the two earlier sweeps — and the claim-tier pass immediately after it found
+ * 5 of 14 surviving, two of which PROMOTED a tier. Neither number generalises to
+ * the other, which is the whole reason each pass is recorded separately. It does not speak for the rest, and `records what was NOT
  * audited` below exists so a green run can never be read as "the suite was
  * measured". That would be this audit committing the very defect it was run to
  * find.
@@ -1398,6 +1401,112 @@ describe("the CEQA pass is accounted for", () => {
 
   it("keeps every assertion this pass added", () => {
     for (const [id, entry] of Object.entries(CEQA_CLOSED_SURVIVORS)) {
+      expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      const guardFile = repoPath(entry.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.testFile}`).toBe(true);
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(entry.testName);
+    }
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* THE CLAIM-TIER PASS — 2026-08-07                                            */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * `resolveModelingClaimDecision` — the honesty firewall's own decision
+ * procedure, and the one place in the product that decides how strongly a
+ * modelling number may be claimed.
+ *
+ * 14 mutations, 9 killed. FIVE LIVED, and two of them PROMOTE a tier — the
+ * exact outcome the firewall exists to make impossible:
+ *
+ *   T2  dropping `missingRequiredMetricKeys.length > 0` from the prototype
+ *       condition. A run that never produced a required validation metric does
+ *       not merely slip to screening-grade — with no failures among the checks
+ *       that DID run it falls through to `claim_grade_passed`, the strongest
+ *       tier, on the strength of checks that were never the point.
+ *   T4  dropping `screeningReasons.length > 0` from the screening condition.
+ *       That list is how a caller states a limit the validation table cannot
+ *       see (a coarse zone system, a frozen input); ignoring it promotes the run.
+ *   T11 the prototype-only report sentence — "Do not use for outward planning
+ *       claims" — could be emptied.
+ *   T12 a prototype-only run's `statusReason` could be emptied.
+ *   T13 a claim-grade pass's `statusReason` could be emptied.
+ *
+ * The last three are the same defect in three places: a tier with no stated
+ * basis is worse than a missing tier, because the badge still renders and still
+ * carries authority while the one thing that would let a reviewer weigh it is
+ * gone. All five closed and re-run: 5 for 5.
+ */
+const CLAIM_TIER_AUDIT = {
+  date: "2026-08-07",
+  mutationsRun: 14,
+  killed: 9,
+  survived: 5,
+  controls: 1,
+  survivorsClosed: 5,
+};
+
+const CLAIM_TIER_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
+  "src/lib/models/evidence-backbone.ts": {
+    sampledBy: [
+      "src/test/modeling-evidence-backbone.test.ts",
+      "src/test/one-claim-tier-labeler.test.ts",
+    ],
+    mutations: 14,
+    survivors: 5,
+  },
+};
+
+const CLAIM_TIER_CLOSED_SURVIVORS: Record<string, ClosedSurvivor> = {
+  T2: {
+    productionFile: "src/lib/models/evidence-backbone.ts",
+    testFile: "src/test/modeling-evidence-backbone.test.ts",
+    testName: "holds a run at prototype_only when a REQUIRED metric was never validated",
+    mutation: "drop missingRequiredMetricKeys from the prototype condition — the run reaches claim_grade_passed",
+  },
+  T4: {
+    productionFile: "src/lib/models/evidence-backbone.ts",
+    testFile: "src/test/modeling-evidence-backbone.test.ts",
+    testName: "honours a caller's explicit screening reason even when every check passed",
+    mutation: "drop screeningReasons from the screening condition — a stated limit stops downgrading",
+  },
+  T11: {
+    productionFile: "src/lib/models/evidence-backbone.ts",
+    testFile: "src/test/modeling-evidence-backbone.test.ts",
+    testName: "says why a run is prototype-only, and what not to do with it",
+    mutation: "empty the prototype-only report sentence",
+  },
+  T12: {
+    productionFile: "src/lib/models/evidence-backbone.ts",
+    testFile: "src/test/modeling-evidence-backbone.test.ts",
+    testName: "says why a run is prototype-only, and what not to do with it",
+    mutation: "empty a prototype-only decision's statusReason",
+  },
+  T13: {
+    productionFile: "src/lib/models/evidence-backbone.ts",
+    testFile: "src/test/modeling-evidence-backbone.test.ts",
+    testName: "says what a claim-grade pass rests on",
+    mutation: "empty a claim-grade decision's statusReason",
+  },
+};
+
+describe("the claim-tier pass is accounted for", () => {
+  it("adds up, and closed every survivor", () => {
+    expect(CLAIM_TIER_AUDIT.killed + CLAIM_TIER_AUDIT.survived).toBe(CLAIM_TIER_AUDIT.mutationsRun);
+    const perFile = Object.values(CLAIM_TIER_AUDITED_PRODUCTION_FILES);
+    expect(perFile.reduce((total, entry) => total + entry.mutations, 0)).toBe(
+      CLAIM_TIER_AUDIT.mutationsRun
+    );
+    expect(perFile.reduce((total, entry) => total + entry.survivors, 0)).toBe(
+      CLAIM_TIER_AUDIT.survived
+    );
+    expect(Object.keys(CLAIM_TIER_CLOSED_SURVIVORS)).toHaveLength(CLAIM_TIER_AUDIT.survivorsClosed);
+  });
+
+  it("keeps every assertion this pass added", () => {
+    for (const [id, entry] of Object.entries(CLAIM_TIER_CLOSED_SURVIVORS)) {
       expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
       const guardFile = repoPath(entry.testFile);
       expect(existsSync(guardFile), `${id}: ${entry.testFile}`).toBe(true);

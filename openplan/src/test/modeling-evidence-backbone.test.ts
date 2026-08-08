@@ -2,6 +2,7 @@ import { readFileSync } from "fs";
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  MODELING_CLAIM_STATUSES,
   buildCountyRunModelingEvidenceBundle,
   modelingClaimAllowsOutwardPlanningLanguage,
   modelingClaimReportLanguage,
@@ -243,6 +244,119 @@ describe("resolveModelingClaimDecision", () => {
 
     expect(decision.claimStatus).toBe("prototype_only");
     expect(decision.validationSummary.missingRequiredMetricKeys).toEqual(["activitysim_runtime_success"]);
+  });
+});
+
+/**
+ * THE FIVE SURVIVORS OF THE 2026-08-07 CLAIM-TIER AUDIT.
+ *
+ * 14 mutations over `resolveModelingClaimDecision` and the vocabulary around
+ * it; 9 died. The five below lived, and they are not edge cases — two of them
+ * PROMOTE a run's tier, which is the exact thing the honesty firewall exists to
+ * make impossible. This module is the firewall's own decision procedure, so a
+ * hole here is not one wrong number; it is every downstream surface repeating a
+ * claim the evidence does not support.
+ */
+describe("a tier is not awarded for evidence that was never produced", () => {
+  it("holds a run at prototype_only when a REQUIRED metric was never validated", () => {
+    // MUTATION T2 SURVIVED: dropping `missingRequiredMetricKeys.length > 0` from
+    // the prototype condition changed no test. And the run does not merely slip
+    // to screening-grade — with no failures and no warnings among the checks
+    // that DID run, it falls through to `claim_grade_passed`. A run that skipped
+    // the check entirely would then claim the strongest tier in the product, on
+    // the strength of the checks it happened to run.
+    const decision = resolveModelingClaimDecision({
+      track: "assignment",
+      validationResults: [validation({ metricKey: "assignment_final_gap" })],
+      requiredMetricKeys: ["assignment_final_gap", "count_station_matches"],
+    });
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(modelingClaimAllowsOutwardPlanningLanguage(decision)).toBe(false);
+    expect(decision.reasons).toContain("Missing required validation metric: count_station_matches");
+    expect(decision.validationSummary.missingRequiredMetricKeys).toEqual(["count_station_matches"]);
+  });
+
+  it("honours a caller's explicit screening reason even when every check passed", () => {
+    // MUTATION T4 SURVIVED: dropping `screeningReasons.length > 0` from the
+    // screening condition changed no test. `screeningReasons` is how a caller
+    // states a limit the validation table cannot see — a coarse zone system, a
+    // frozen input, a proxy input — and ignoring it promotes a run to
+    // claim-grade on checks that were never about the limit in question.
+    const decision = resolveModelingClaimDecision({
+      track: "assignment",
+      validationResults: [validation({ metricKey: "assignment_final_gap" })],
+      requiredMetricKeys: ["assignment_final_gap"],
+      screeningReasons: ["Zone system is too coarse for link-level claims."],
+    });
+
+    expect(decision.claimStatus).toBe("screening_grade");
+    expect(modelingClaimAllowsOutwardPlanningLanguage(decision)).toBe(false);
+    expect(decision.statusReason).toBe("Zone system is too coarse for link-level claims.");
+    expect(decision.reasons).toContain("Zone system is too coarse for link-level claims.");
+  });
+});
+
+describe("every tier states its own basis", () => {
+  /**
+   * MUTATIONS T11, T12 and T13 SURVIVED — all three status sentences could be
+   * emptied with the suite green.
+   *
+   * A tier with no stated reason is worse than a missing tier: the badge still
+   * renders, still carries authority, and the one thing that would let a
+   * reviewer weigh it is gone. `statusReason` is what the evidence panel shows
+   * beside the badge, and `modelingClaimReportLanguage` is what a report prints.
+   */
+  it("says why a run is prototype-only, and what not to do with it", () => {
+    const decision = resolveModelingClaimDecision({
+      track: "assignment",
+      validationResults: [],
+      requiredMetricKeys: ["assignment_final_gap"],
+    });
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(decision.statusReason).not.toBe("");
+    expect(decision.statusReason).toMatch(/cannot make outward planning claims/i);
+    expect(modelingClaimReportLanguage(decision)).toMatch(/Prototype-only modeling result/i);
+    // The instruction, not just the label — this is the sentence that stops a
+    // number reaching a public document.
+    expect(modelingClaimReportLanguage(decision)).toMatch(
+      /Do not use for outward planning claims/i
+    );
+  });
+
+  it("says what a claim-grade pass rests on", () => {
+    const decision = resolveModelingClaimDecision({
+      track: "assignment",
+      validationResults: [validation({ metricKey: "assignment_final_gap" })],
+      requiredMetricKeys: ["assignment_final_gap"],
+    });
+
+    expect(decision.claimStatus).toBe("claim_grade_passed");
+    expect(decision.statusReason).not.toBe("");
+    expect(decision.statusReason).toMatch(/validation checks passed/i);
+  });
+
+  it("gives every tier a non-empty report sentence", () => {
+    // The vocabulary and the sentences are two lists that must stay the same
+    // length. A tier added without its sentence would render as a badge with
+    // nothing under it.
+    for (const claimStatus of MODELING_CLAIM_STATUSES) {
+      const language = modelingClaimReportLanguage({
+        track: "assignment",
+        claimStatus,
+        statusReason: "",
+        reasons: [],
+        validationSummary: {
+          passed: 0,
+          warned: 0,
+          failed: 0,
+          missingRequiredMetricKeys: [],
+          requiredMetricKeys: [],
+        },
+      });
+      expect(language.length, claimStatus).toBeGreaterThan(40);
+    }
   });
 });
 
