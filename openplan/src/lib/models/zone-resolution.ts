@@ -113,6 +113,36 @@ const BANDS: ReadonlyArray<{
   },
 ];
 
+/**
+ * The band for an already-measured share — the entry point for anything that
+ * has the number but not the trips.
+ *
+ * A WORKER-COMPUTED RUN HAS ONLY THE NUMBER. The AequilibraE engine counts the
+ * OD matrix diagonal in Python and reports a share; the banding and the wording
+ * stay here, in one place, because two definitions of one judgement are free to
+ * drift. So the display side calls this rather than reading a verdict back out
+ * of whatever the worker happened to store — which also means a run recorded
+ * before this banding existed is still banded correctly today.
+ */
+export function bandIntrazonalShare(
+  intrazonalSharePct: number,
+  zoneCount: number | null
+): Pick<
+  ZoneResolutionDiagnostic,
+  "band" | "supportsLinkLevelValidation" | "summary" | "intrazonalSharePct"
+> {
+  const rounded = Math.round(intrazonalSharePct * 10) / 10;
+  const matched = BANDS.find((entry) => rounded <= entry.maxSharePct) ?? BANDS[BANDS.length - 1];
+  return {
+    intrazonalSharePct: rounded,
+    band: matched.band,
+    supportsLinkLevelValidation: matched.supportsLinkLevelValidation,
+    // A null zone count still describes the resolution honestly; only the
+    // "across N zones" clause loses its number.
+    summary: matched.describe(formatShare(rounded), zoneCount ?? 0),
+  };
+}
+
 /** One decimal, as a string, so 36 reads as "36.0" beside "36.4". */
 function formatShare(sharePct: number): string {
   return sharePct.toFixed(1);
@@ -150,18 +180,11 @@ export function diagnoseZoneResolution(
     };
   }
 
-  const rawSharePct = (intrazonalTripCount / tripCount) * 100;
-  const intrazonalSharePct = Math.round(rawSharePct * 10) / 10;
-  const matched = BANDS.find((entry) => intrazonalSharePct <= entry.maxSharePct) ?? BANDS[BANDS.length - 1];
-
   return {
     zoneCount,
     tripCount,
     intrazonalTripCount,
-    intrazonalSharePct,
-    band: matched.band,
-    supportsLinkLevelValidation: matched.supportsLinkLevelValidation,
-    summary: matched.describe(formatShare(intrazonalSharePct), zoneCount),
+    ...bandIntrazonalShare((intrazonalTripCount / tripCount) * 100, zoneCount),
   };
 }
 

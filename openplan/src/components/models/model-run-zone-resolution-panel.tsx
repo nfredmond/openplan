@@ -3,7 +3,10 @@
 import { useEffect, useState } from "react";
 import { Loader2, Ruler } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { LINK_VALIDATION_NOT_SUPPORTED_CAVEAT } from "@/lib/models/zone-resolution";
+import {
+  LINK_VALIDATION_NOT_SUPPORTED_CAVEAT,
+  bandIntrazonalShare,
+} from "@/lib/models/zone-resolution";
 
 /**
  * WHAT THIS RUN'S ZONE SYSTEM CAN SUPPORT, on the run itself.
@@ -17,6 +20,7 @@ import { LINK_VALIDATION_NOT_SUPPORTED_CAVEAT } from "@/lib/models/zone-resoluti
 
 type ZoneResolutionBreakdown = {
   zone_count?: unknown;
+  zone_geography?: unknown;
   intrazonal_trips?: unknown;
   sample_trips?: unknown;
   band?: unknown;
@@ -34,6 +38,8 @@ type PanelState =
       status: "measured";
       sharePct: number;
       zoneCount: number | null;
+      /** "tract" | "block_group" when the producer recorded it. */
+      zoneGeography: string | null;
       supportsLinkLevelValidation: boolean;
       interpretation: string;
     };
@@ -76,14 +82,30 @@ export function ModelRunZoneResolutionPanel({
         }
 
         const breakdown = (row.breakdown_json ?? {}) as ZoneResolutionBreakdown;
+        const zoneCount = asNumber(breakdown.zone_count);
+        /**
+         * THE VERDICT IS COMPUTED HERE, from the number, rather than read back
+         * out of whatever the producer stored.
+         *
+         * The two engines that emit this KPI store different things: the in-app
+         * sketch engine writes a full breakdown, and the AequilibraE worker
+         * writes the share and the raw counts because the banding is not its to
+         * decide. Reading `supports_link_level_validation` off the row therefore
+         * treated every worker run as unvalidatable — a false verdict on the one
+         * engine whose link volumes people actually compare to counts. Banding
+         * at display time gives one answer for both, and bands a run recorded
+         * before this judgement existed correctly too.
+         */
+        const banded = bandIntrazonalShare(share * 100, zoneCount);
         if (cancelled) return;
         setState({
           status: "measured",
-          sharePct: share * 100,
-          zoneCount: asNumber(breakdown.zone_count),
-          supportsLinkLevelValidation: breakdown.supports_link_level_validation === true,
-          interpretation:
-            typeof breakdown.interpretation === "string" ? breakdown.interpretation : "",
+          sharePct: banded.intrazonalSharePct ?? share * 100,
+          zoneCount,
+          zoneGeography:
+            typeof breakdown.zone_geography === "string" ? breakdown.zone_geography : null,
+          supportsLinkLevelValidation: banded.supportsLinkLevelValidation,
+          interpretation: banded.summary,
         });
       } catch (loadError) {
         if (cancelled) return;
@@ -150,6 +172,24 @@ export function ModelRunZoneResolutionPanel({
               {LINK_VALIDATION_NOT_SUPPORTED_CAVEAT}
             </p>
           )}
+          {/*
+            THE WAY OUT, named only where OpenPlan can actually offer it.
+            A diagnostic that says "split the zone system finer" and leaves a
+            planner to find the control is half a feature — and the control
+            exists: the launch form's "Zone geography (TAZ resolution)" select
+            builds roughly three times as many zones from block groups. It is
+            offered ONLY for a tract-resolution run, because a run already at
+            block-group resolution has nothing finer to switch to and telling it
+            to try would be advice that cannot be taken.
+          */}
+          {!state.supportsLinkLevelValidation && state.zoneGeography === "tract" ? (
+            <p className="mt-1.5 text-xs leading-relaxed text-foreground">
+              To model this area at a finer resolution, set{" "}
+              <span className="font-semibold">Zone geography (TAZ resolution)</span> to{" "}
+              <span className="font-semibold">Block groups (~3x finer zones)</span> when you launch
+              the next run. It lowers this share; both resolutions stay screening-grade.
+            </p>
+          ) : null}
         </>
       ) : null}
     </div>

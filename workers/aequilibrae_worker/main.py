@@ -3606,7 +3606,23 @@ def stage_artifacts(
         }
         # VMT KPIs carry their derivation provenance, mirroring the seeded
         # county-lane convention (breakdown_json.provenance).
-        if name == "zones" and zone_geography is not None:
+        if name == "intrazonal_trip_share":
+            # FACTS ONLY. The band, the verdict and the wording are the app's
+            # (src/lib/models/zone-resolution.ts) — two definitions of one
+            # judgement are free to drift, and the app is where a planner reads
+            # it. What the worker knows and the app does not is the zone count
+            # and the raw trip counts behind the share.
+            kpi_payload["breakdown_json"] = {
+                "zone_count": assign_result["network"]["zones"],
+                "zone_geography": zone_geography,
+                "intrazonal_trips": intrazonal_trip_count,
+                "provenance": (
+                    "Share of INTERNAL person-trips on the OD matrix diagonal — trips that begin "
+                    "and end in the same zone and therefore never travel on a link. Gateway zones "
+                    "are excluded from both halves so through-traffic cannot shrink the share."
+                ),
+            }
+        elif name == "zones" and zone_geography is not None:
             kpi_payload["breakdown_json"] = {
                 "zone_geography": zone_geography,
                 "provenance": (

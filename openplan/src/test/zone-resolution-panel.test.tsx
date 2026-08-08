@@ -85,6 +85,77 @@ describe("a planner is told what their zone system can support", () => {
     expect(screen.queryByText(/OpenPlan's own screening heuristic/i)).toBeNull();
   });
 
+  it("bands a worker row that carries NO verdict, instead of assuming the worst", async () => {
+    /**
+     * THE BUG THIS EXISTS FOR, introduced and caught the same day. The
+     * AequilibraE worker emits this KPI with no `breakdown_json` verdict — the
+     * banding is not the worker's to decide. The panel used to read
+     * `supports_link_level_validation` off the row, so `undefined` became
+     * false and EVERY worker run was badged "cannot settle this", regardless of
+     * its actual share. That is a false verdict on the one engine whose link
+     * volumes people actually compare to counts.
+     */
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        kpiResponse([{ kpi_name: "intrazonal_trip_share", value: 0.04, breakdown_json: null }])
+      )
+    );
+
+    render(<ModelRunZoneResolutionPanel modelId="m1" modelRunId="r1" />);
+
+    expect(await screen.findByText(/Link comparison is meaningful/i)).toBeInTheDocument();
+    expect(screen.getByText("4.0%")).toBeInTheDocument();
+    // The interpretation is produced from the number, so it is present even
+    // though the row carried no wording of its own.
+    expect(screen.getAllByText(/same zone/i).length).toBeGreaterThan(0);
+  });
+
+  it("names the control that fixes it, for a tract-resolution run that cannot be validated", async () => {
+    // A diagnostic that says "split the zone system finer" and leaves a planner
+    // to find the control is half a feature. The control exists on the launch
+    // form; this closes the loop from diagnosis to the next run.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        kpiResponse([
+          {
+            kpi_name: "intrazonal_trip_share",
+            value: 0.36,
+            breakdown_json: { zone_count: 26, zone_geography: "tract" },
+          },
+        ])
+      )
+    );
+
+    render(<ModelRunZoneResolutionPanel modelId="m1" modelRunId="r1" />);
+
+    expect(await screen.findByText(/Zone geography \(TAZ resolution\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/Block groups/i)).toBeInTheDocument();
+  });
+
+  it("does NOT offer a finer zone system to a run already at block groups", async () => {
+    // There is nothing finer to switch to, and advice that cannot be taken
+    // teaches a planner to stop reading the panel.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        kpiResponse([
+          {
+            kpi_name: "intrazonal_trip_share",
+            value: 0.36,
+            breakdown_json: { zone_count: 78, zone_geography: "block_group" },
+          },
+        ])
+      )
+    );
+
+    render(<ModelRunZoneResolutionPanel modelId="m1" modelRunId="r1" />);
+
+    expect(await screen.findByText(/Link comparison cannot settle this/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Zone geography \(TAZ resolution\)/i)).toBeNull();
+  });
+
   it("renders nothing at all for a run that predates the diagnostic", async () => {
     // An older run has no such KPI. Rendering "0%" would be the most flattering
     // possible answer and would assert a fine-grained zone system nobody
