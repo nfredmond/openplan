@@ -23,6 +23,10 @@ import {
 import { DEFAULT_REFERENCE_VMT_PER_CAPITA } from "@/lib/planner-pack/ceqa";
 import { buildSketchAbmInputs, seedFromRunId } from "@/lib/models/sketch-abm/sketch-abm-inputs";
 import {
+  diagnoseZoneResolution,
+  type ZoneResolutionDiagnostic,
+} from "@/lib/models/zone-resolution";
+import {
   ITE_TRIP_GEN_SCREENING_CAVEAT,
   TRIP_GEN_COMPARISON_BASES,
   buildIteTripGenerationKpiRows,
@@ -208,6 +212,8 @@ type SketchAbmKpiRow = {
 function buildSketchAbmKpiRows(params: {
   modelRunId: string;
   summary: Awaited<ReturnType<typeof runABM>>["summary"];
+  /** Measured from the run's own trips — see `diagnoseZoneResolution`. */
+  zoneResolution: ZoneResolutionDiagnostic;
   sampleVehicleKm: number;
   populationTotal: number;
   totalRealHouseholds: number;
@@ -217,6 +223,7 @@ function buildSketchAbmKpiRows(params: {
   const {
     modelRunId,
     summary,
+    zoneResolution,
     sampleVehicleKm,
     populationTotal,
     totalRealHouseholds,
@@ -290,6 +297,38 @@ function buildSketchAbmKpiRows(params: {
       provenance:
         "Total ACS population across the county-bbox-scale tract set (every tract in the counties overlapping the study-area bounding box, not clipped to the drawn corridor).",
     }),
+    /**
+     * HOW MUCH OF THIS RUN'S TRAVEL NEVER REACHES A LINK.
+     *
+     * A trip that begins and ends in the same zone contributes to VMT and mode
+     * share and to no link at all — there are no streets inside a zone. Without
+     * this number a planner comparing modelled volumes to traffic counts reads
+     * the gap as a failed model. OpenPlan's own county validation hit 36% at 26
+     * zones and link-level AADT comparison failed there for exactly this
+     * reason.
+     *
+     * The share is measured on the SAMPLE trips rather than expanded, because
+     * expansion multiplies both sides of the ratio and would not change it —
+     * saying so here so nobody "fixes" it by weighting.
+     */
+    row(
+      "intrazonal_trip_share",
+      "Trips that never reach the network",
+      zoneResolution.intrazonalSharePct === null ? null : zoneResolution.intrazonalSharePct / 100,
+      "share",
+      {
+        provenance:
+          "Measured directly from this run's trip table: trips whose origin and destination zone are " +
+          "the same, over all trips. Expansion weighting is not applied because it scales numerator " +
+          "and denominator equally.",
+        zone_count: zoneResolution.zoneCount,
+        intrazonal_trips: zoneResolution.intrazonalTripCount,
+        sample_trips: zoneResolution.tripCount,
+        band: zoneResolution.band,
+        supports_link_level_validation: zoneResolution.supportsLinkLevelValidation,
+        interpretation: zoneResolution.summary,
+      }
+    ),
   ];
 }
 
@@ -1073,9 +1112,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
           );
           const expansionFactor = sketchExpansionFactor(totalRealHouseholds, syntheticHouseholds);
 
+          // Measured from the trips this run actually produced, and from the
+          // zone system it was given — not from the trip table's distinct zone
+          // count, which would omit empty zones and flatter the resolution.
+          const zoneResolution = diagnoseZoneResolution(abmOutputs.trips, abmInputs.zones.length);
+
           const kpiRows = buildSketchAbmKpiRows({
             modelRunId,
             summary: abmOutputs.summary,
+            zoneResolution,
             sampleVehicleKm,
             populationTotal,
             totalRealHouseholds,

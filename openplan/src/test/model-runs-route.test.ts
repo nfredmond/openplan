@@ -284,12 +284,46 @@ describe("/api/models/[modelId]/runs", () => {
       "daily_vmt",
       "vmt_per_capita",
       "population_total",
+      // How much of this run's travel never reaches a link. Without it a
+      // planner comparing modelled volumes to counts reads the gap as a failed
+      // model — which is what happened in OpenPlan's own county validation at
+      // 26 zones and 36% intrazonal.
+      "intrazonal_trip_share",
     ]) {
       expect(byName.has(required)).toBe(true);
     }
 
     // Real runABM over the 3-zone fixture produced actual travel.
     expect(byName.get("total_trips")!.value).toBeGreaterThan(0);
+
+    /**
+     * THE ZONE DIAGNOSTIC, MEASURED FROM THE RUN THAT ACTUALLY HAPPENED — not
+     * from a described trip table. A three-zone fixture is a coarse system by
+     * construction, so this run must report a real share, name the zone count
+     * it was given, and say plainly whether link-level count comparison can
+     * establish anything about it.
+     */
+    const intrazonal = byName.get("intrazonal_trip_share")!;
+    expect(intrazonal.unit).toBe("share");
+    expect(intrazonal.value).toBeGreaterThan(0);
+    expect(intrazonal.value).toBeLessThanOrEqual(1);
+
+    const zoneBreakdown = intrazonal.breakdown_json as {
+      zone_count: number;
+      intrazonal_trips: number;
+      sample_trips: number;
+      band: string;
+      supports_link_level_validation: boolean;
+      interpretation: string;
+    };
+    // The zone count comes from the INPUTS, so an empty zone still counts.
+    expect(zoneBreakdown.zone_count).toBe(3);
+    expect(zoneBreakdown.sample_trips).toBeGreaterThan(0);
+    expect(zoneBreakdown.intrazonal_trips).toBeLessThanOrEqual(zoneBreakdown.sample_trips);
+    // Three zones cannot support link-level validation, and the row must say so
+    // in words a planner reads rather than only as a boolean.
+    expect(zoneBreakdown.supports_link_level_validation).toBe(false);
+    expect(zoneBreakdown.interpretation).toMatch(/never reaches|invisible to every link/i);
 
     // Expansion weighting: the 2,700-household fixture exceeds the 2,000
     // synthetic cap, so trip-derived KPIs must be scaled by the
