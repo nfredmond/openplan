@@ -51,9 +51,11 @@ import { describe, expect, it } from "vitest";
  *
  * =========================================== WHAT THIS FILE DOES *NOT* CLAIM
  *
- * About 23 of ~735 test files have been measured across THREE passes — the
- * foundation sweep, the Title VI surfaces, and (2026-08-07) the `[fact:id]`
- * grounding machinery. It does not speak for the rest, and `records what was NOT
+ * About 28 of ~736 test files have been measured across FOUR passes — the
+ * foundation sweep, the Title VI surfaces, the `[fact:id]` grounding machinery,
+ * and the CEQA §15064.3 determination path (the last two both 2026-08-07). The
+ * CEQA pass is the first that found an area already SOLID: 39 of 42 mutations
+ * died on the first run, against roughly half in the two earlier sweeps. It does not speak for the rest, and `records what was NOT
  * audited` below exists so a green run can never be read as "the suite was
  * measured". That would be this audit committing the very defect it was run to
  * find.
@@ -1287,6 +1289,119 @@ describe("the grounding pass is accounted for", () => {
       expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(
         entry.guardedInsteadBy.testName
       );
+    }
+  });
+});
+
+/* -------------------------------------------------------------------------- */
+/* THE CEQA PASS — 2026-08-07                                                  */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * The §15064.3 determination path — and the first area measured that is SOLID.
+ *
+ * This is the highest-stakes output the product produces: a CEQA transportation
+ * significance determination, under California statute, that a lead agency may
+ * carry into an environmental document. Three files decide it — the arithmetic
+ * (`planner-pack/ceqa.ts`), the KPI-to-input derivation
+ * (`models/ceqa-vmt-screen.ts`), and the gate that keeps screening-grade
+ * evidence out of it without consent (`models/caveat-gate.ts`).
+ *
+ * 42 mutations. The first 26 were the obvious ones — an inverted determination,
+ * a threshold flipped from 15% BELOW to 15% ABOVE, the population check removed,
+ * the statutory citation emptied — and ALL 26 DIED. That is far better than
+ * anything the earlier passes found (53% and 52% of mutations survived in the
+ * foundation and Title VI sweeps), and it is exactly the result that should
+ * prompt suspicion rather than a conclusion: a 100% kill rate on obvious
+ * mutations may only mean the mutations were obvious.
+ *
+ * So a second, subtler batch of 16 was run — rounding precision, the delta's
+ * denominator, the coercion of a blank cell, one KPI name swapped for another.
+ * It found three, and every one was worth finding:
+ *
+ *   E4 adding `jobs_total` to the population KPI names changed no test, and the
+ *      behavioral-onramp KPI set persists `jobs_total` one line from
+ *      `population_total` — a per-capita figure over a population that does not
+ *      exist, compared to a residential threshold.
+ *   D6 removing the blank-cell coercion from `rowNumber` made one empty cell
+ *      THROW, which aborts the determination for every other scenario in the
+ *      same table rather than skipping the one row.
+ *   E3 the `Number.isFinite` belt had no test. Measured against the live stack:
+ *      `model_run_kpis.value` is `double precision` and CAN hold Infinity, and
+ *      PostgREST serialises it as the STRING "Infinity" — so on the database
+ *      path the `typeof === "number"` check is what rejects it, and the belt
+ *      only matters to an in-process caller. Both paths are now pinned.
+ *
+ * All three closed and re-run against the original mutation. No equivalent
+ * mutants in this pass.
+ */
+const CEQA_AUDIT = {
+  date: "2026-08-07",
+  mutationsRun: 42,
+  killed: 39,
+  survived: 3,
+  /** A comment-only negative control, confirmed SURVIVING before the run. */
+  controls: 1,
+  survivorsClosed: 3,
+};
+
+const CEQA_AUDITED_PRODUCTION_FILES: Record<string, AuditedFile> = {
+  "src/lib/planner-pack/ceqa.ts": {
+    sampledBy: ["src/test/planner-pack-ceqa.test.ts"],
+    mutations: 26,
+    survivors: 1,
+  },
+  "src/lib/models/ceqa-vmt-screen.ts": {
+    sampledBy: ["src/test/ceqa-vmt-screen.test.ts"],
+    mutations: 12,
+    survivors: 2,
+  },
+  "src/lib/models/caveat-gate.ts": {
+    sampledBy: ["src/test/caveat-gate.test.ts", "src/test/modeling-caveat-gate-stages.test.ts"],
+    mutations: 4,
+    survivors: 0,
+  },
+};
+
+const CEQA_CLOSED_SURVIVORS: Record<string, ClosedSurvivor> = {
+  E4: {
+    productionFile: "src/lib/models/ceqa-vmt-screen.ts",
+    testFile: "src/test/ceqa-vmt-screen.test.ts",
+    testName: "accepts no KPI name that is not a count of residents",
+    mutation: "add `jobs_total` to CEQA_POPULATION_KPI_NAMES, so VMT is divided by jobs",
+  },
+  D6: {
+    productionFile: "src/lib/planner-pack/ceqa.ts",
+    testFile: "src/test/planner-pack-ceqa.test.ts",
+    testName: "treats an empty population cell as zero, and skips only that scenario",
+    mutation: "drop the `value === \"\"` coercion in rowNumber, so one blank cell throws and aborts every scenario",
+  },
+  E3: {
+    productionFile: "src/lib/models/ceqa-vmt-screen.ts",
+    testFile: "src/test/ceqa-vmt-screen.test.ts",
+    testName: "refuses a non-finite number if one ever reaches it in-process",
+    mutation: "drop Number.isFinite from findRunLevelKpi, so +Infinity passes the `> 0` test",
+  },
+};
+
+describe("the CEQA pass is accounted for", () => {
+  it("adds up, and closed every survivor", () => {
+    expect(CEQA_AUDIT.killed + CEQA_AUDIT.survived).toBe(CEQA_AUDIT.mutationsRun);
+
+    const perFile = Object.values(CEQA_AUDITED_PRODUCTION_FILES);
+    expect(perFile.reduce((total, entry) => total + entry.mutations, 0)).toBe(
+      CEQA_AUDIT.mutationsRun
+    );
+    expect(perFile.reduce((total, entry) => total + entry.survivors, 0)).toBe(CEQA_AUDIT.survived);
+    expect(Object.keys(CEQA_CLOSED_SURVIVORS)).toHaveLength(CEQA_AUDIT.survivorsClosed);
+  });
+
+  it("keeps every assertion this pass added", () => {
+    for (const [id, entry] of Object.entries(CEQA_CLOSED_SURVIVORS)) {
+      expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      const guardFile = repoPath(entry.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.testFile}`).toBe(true);
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(entry.testName);
     }
   });
 });

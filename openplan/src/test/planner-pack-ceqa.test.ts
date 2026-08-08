@@ -378,3 +378,55 @@ describe("python parity helpers", () => {
     expect(formatPythonFloat(-19.8)).toBe("-19.8");
   });
 });
+
+describe("a blank cell in the screening table is a blank, not a failure", () => {
+  /**
+   * MUTATION D6 SURVIVED the 2026-08-07 CEQA audit: removing the `value === ""`
+   * short-circuit from `rowNumber` changed no test, and it changes real
+   * behaviour — an empty cell then reaches `Number("")` → NaN → a thrown
+   * `Non-numeric population value: ""`.
+   *
+   * WHY THAT MATTERS MORE THAN IT LOOKS. The throw does not skip the row, it
+   * aborts `computeCeqaVmt` entirely. One blank population cell in a screening
+   * table would take down the determination for every OTHER scenario in the same
+   * table, and the planner would see an error about a value rather than a
+   * scenario that could not be screened. The coercion is what lets the
+   * `population <= 0` rule below it do its job: skip that row, keep the rest.
+   */
+  it("treats an empty population cell as zero, and skips only that scenario", () => {
+    const result = computeCeqaVmt(
+      [
+        { scenario_id: "blank", population: "" as unknown as number, daily_vmt: 1000 },
+        { scenario_id: "measured", population: 100, daily_vmt: 1800 },
+      ],
+      { referenceVmtPerCapita: 22 }
+    );
+
+    expect(result.scenarios.map((scenario) => scenario.scenario_id)).toEqual(["measured"]);
+    expect(result.scenarios[0].vmt_per_capita).toBe(18);
+  });
+
+  it("treats an empty VMT cell as zero rather than throwing", () => {
+    const result = computeCeqaVmt(
+      [{ scenario_id: "s1", population: 100, daily_vmt: "" as unknown as number }],
+      { referenceVmtPerCapita: 22 }
+    );
+
+    // Zero VMT over a real population is a measurement of zero, and it screens
+    // as less than significant. That is a different statement from "this could
+    // not be screened", and both must remain reachable.
+    expect(result.scenarios[0].vmt_per_capita).toBe(0);
+    expect(result.scenarios[0].determination).toBe("less than significant");
+  });
+
+  it("still refuses text that is not a number", () => {
+    // The other half of the same rule: a blank is a blank, but "n/a" is a
+    // defect in the table and must not coerce to a determination of zero.
+    expect(() =>
+      computeCeqaVmt(
+        [{ scenario_id: "s1", population: "n/a" as unknown as number, daily_vmt: 1000 }],
+        { referenceVmtPerCapita: 22 }
+      )
+    ).toThrow(/Non-numeric population/);
+  });
+});
