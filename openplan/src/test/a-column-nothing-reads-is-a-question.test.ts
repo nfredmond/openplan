@@ -43,7 +43,11 @@ import { loadSchemaInventory } from "./migrations/schema-inventory";
  * allowlist entry instead of a fix.
  *
  * MEASURED 2026-08-07 against the live catalog: 1,794 columns in public base
- * tables, 41 named nowhere in `src/`.
+ * tables, 45 named nowhere in `src/`. One has already left the list:
+ * `equity_tract_designations.retrieved_at` was WRITE_ONLY until the sweep found
+ * it, and now reaches the analysis payload as the capture date of a Justice40
+ * designation — which is the point of counting these rather than shrugging at
+ * them.
  */
 
 const APP_ROOT = path.join(__dirname, "..", "..");
@@ -105,15 +109,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   })),
 
   // ---- WRITE_ONLY: recorded by something, surfaced by nothing --------------
-  {
-    column: "equity_tract_designations.retrieved_at",
-    category: "WRITE_ONLY",
-    reason:
-      "The vintage of a Justice40 / equity designation — written by equity-designation/db.ts, read by " +
-      "nothing. CEJST was federally rescinded on 2025-01-20 and OpenPlan ships the last public-domain " +
-      "release as a static asset, so 'when was this captured' is a question a planner defending a " +
-      "designation will be asked and cannot currently answer from the product.",
-  },
   {
     column: "engagement_item_demographics.captured_at",
     category: "WRITE_ONLY",

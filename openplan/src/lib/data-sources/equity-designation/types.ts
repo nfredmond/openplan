@@ -79,6 +79,11 @@ export interface Justice40Determination {
   version: string | null;
   /** Tract-keying vintage (e.g. "2010"); null when none ran. */
   vintage: string | null;
+  /**
+   * When this deployment captured the underlying records. Null means the source
+   * does not record one — NOT that it is current. See `EquityDesignationLookup`.
+   */
+  retrievedAt: string | null;
   /** For a `not_determined` status, the true cause; null otherwise. */
   notDeterminedCause: Justice40NotDeterminedCause | null;
   coverage: Justice40Coverage;
@@ -97,6 +102,18 @@ export interface EquityDesignationLookup {
   disadvantagedTotal: number;
   /** Of the determined geoids, how many were resolved by inference (e.g. a tract crosswalk). */
   inferredTotal?: number;
+  /**
+   * When THIS DEPLOYMENT captured the records behind this lookup (the most
+   * recent `retrieved_at` among them), or null when the source does not record
+   * one — a bundled static asset has no capture date of its own.
+   *
+   * DIFFERENT FROM `vintage`, and the difference is the whole reason it exists.
+   * `vintage` is a property of the DATA ("2010 tracts"); this is a property of
+   * the COPY ("we pulled it on 2026-07-24"). An operator ingesting their state's
+   * own designation list needs the second to answer "how current is ours?", and
+   * the first cannot answer it.
+   */
+  retrievedAt?: string | null;
 }
 
 /** What a resolved designation source can say about a study area. */
@@ -169,6 +186,7 @@ export function notDeterminedJustice40(
     datasetLabel: null,
     version: null,
     vintage: null,
+    retrievedAt: null,
     notDeterminedCause: cause,
     coverage: {
       totalTracts,

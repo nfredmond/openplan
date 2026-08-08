@@ -45,13 +45,14 @@ export async function loadDesignationsFromDb(
   params: { sourceId: string; version: string; geoids: string[] }
 ): Promise<EquityDesignationLookup> {
   const byGeoid = new Map<string, boolean>();
+  let retrievedAt: string | null = null;
   const unique = Array.from(new Set(params.geoids.map((g) => String(g).trim()).filter(Boolean)));
 
   for (let i = 0; i < unique.length; i += GEOID_QUERY_CHUNK) {
     const chunk = unique.slice(i, i + GEOID_QUERY_CHUNK);
     const { data, error } = await client
       .from("equity_tract_designations")
-      .select("geoid, is_disadvantaged")
+      .select("geoid, is_disadvantaged, retrieved_at")
       .eq("source_id", params.sourceId)
       .eq("version", params.version)
       .in("geoid", chunk);
@@ -63,10 +64,21 @@ export async function loadDesignationsFromDb(
       );
     }
 
-    for (const row of (data ?? []) as Array<{ geoid?: unknown; is_disadvantaged?: unknown }>) {
+    for (const row of (data ?? []) as Array<{
+      geoid?: unknown;
+      is_disadvantaged?: unknown;
+      retrieved_at?: unknown;
+    }>) {
       const geoid = typeof row.geoid === "string" ? row.geoid : null;
       if (!geoid) continue;
       byGeoid.set(geoid, row.is_disadvantaged === true);
+      // THE MOST RECENT capture across the rows actually read, not the first.
+      // An ingest that refreshed part of a source leaves rows of two ages, and
+      // reporting the older one would understate how current the answer is
+      // while reporting a fixed one would overstate it for the rest.
+      if (typeof row.retrieved_at === "string" && (!retrievedAt || row.retrieved_at > retrievedAt)) {
+        retrievedAt = row.retrieved_at;
+      }
     }
   }
 
@@ -74,7 +86,7 @@ export async function loadDesignationsFromDb(
   for (const isDisadvantaged of byGeoid.values()) {
     if (isDisadvantaged) disadvantagedTotal += 1;
   }
-  return { byGeoid, determinedTotal: byGeoid.size, disadvantagedTotal };
+  return { byGeoid, determinedTotal: byGeoid.size, disadvantagedTotal, retrievedAt };
 }
 
 /** Descriptor for a DB-backed designation source — everything but the lookup. */

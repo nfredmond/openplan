@@ -116,6 +116,9 @@ export async function resolveJustice40ForTracts(
     datasetLabel: adapter.datasetLabel,
     version: adapter.version,
     vintage: adapter.vintage,
+    // Null when the source records no capture date (a bundled static asset has
+    // none). Null is "not recorded", never "current".
+    retrievedAt: lookup.retrievedAt ?? null,
     // A covered source that matched nothing → the vintage-gap cause; a real
     // determination has no not_determined cause.
     notDeterminedCause: status === "not_determined" ? "no_matching_record" : null,

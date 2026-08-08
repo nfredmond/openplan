@@ -660,6 +660,13 @@ export async function POST(request: NextRequest) {
             datasetLabel: equity.federalJustice40.datasetLabel,
             version: equity.federalJustice40.version,
             vintage: equity.federalJustice40.vintage,
+            // WHEN THIS DEPLOYMENT CAPTURED THE DESIGNATION, distinct from the
+            // dataset's own vintage above. A planner defending a Justice40
+            // finding is asked how current their copy is; until now the answer
+            // was written on every ingest and reachable from no surface. Null
+            // means the source records no capture date — a bundled static asset
+            // has none — and must not be read as "current".
+            retrievedAt: equity.federalJustice40.retrievedAt,
             determinedTracts: equity.federalJustice40.coverage.determinedTracts,
             undeterminedTracts: equity.federalJustice40.coverage.undeterminedTracts,
             disadvantagedTracts: equity.federalJustice40.coverage.disadvantagedTracts,

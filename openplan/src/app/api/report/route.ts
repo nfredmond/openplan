@@ -39,6 +39,11 @@ function reconstructFederalJustice40(m: Record<string, unknown>): Justice40Deter
     datasetLabel: typeof m.federalJustice40DatasetLabel === "string" ? m.federalJustice40DatasetLabel : null,
     version: null,
     vintage: null,
+    // Reconstructed from stored metrics, which never carried a capture date.
+    // Null here is honest: this path does not know one, and inventing it from
+    // the report's own timestamp would date the DESIGNATION by when somebody
+    // pressed export.
+    retrievedAt: null,
     notDeterminedCause:
       cause === "out_of_coverage" || cause === "source_unavailable" || cause === "no_matching_record"
         ? cause
