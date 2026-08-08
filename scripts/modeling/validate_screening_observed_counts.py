@@ -425,6 +425,23 @@ def classify_gate(
     ]
 
 
+def _evidence_number(evidence: Any, *path: str) -> float | None:
+    """A numeric field from the evidence packet, or None when it is absent.
+
+    None means the run's producer did not record it — never 0, which for an
+    intrazonal share would assert the finest possible zone system on a run
+    nobody measured.
+    """
+    node: Any = evidence
+    for key in path:
+        if not isinstance(node, dict):
+            return None
+        node = node.get(key)
+    if isinstance(node, bool) or not isinstance(node, (int, float)):
+        return None
+    return float(node)
+
+
 def build_summary(
     *,
     evidence: dict[str, Any],
@@ -505,6 +522,35 @@ def build_summary(
             "ready_median_ape_threshold": ready_median_ape,
             "ready_critical_ape_threshold": ready_critical_ape,
             "reasons": gate_reasons,
+        },
+        # ── What the zone system lets this comparison establish ──────────────
+        #
+        # FACTS ONLY, DELIBERATELY. A trip beginning and ending in the same zone
+        # carries VMT and no link volume, so past a threshold a link-level
+        # comparison to counts cannot settle whether a model is right — which is
+        # why OpenPlan refuses to record a screening claim from one. But the
+        # THRESHOLD and the wording live in exactly one place, the app
+        # (`src/lib/models/zone-resolution.ts`), and this file must not become a
+        # second definition of that judgement: two definitions of one judgement
+        # are free to drift, and the drift would put a "passed" in an operator's
+        # report against a "not established" in the product.
+        #
+        # So this reports the NUMBER the app bands, and the markdown below says
+        # plainly that the gate is a count-fit result the app still qualifies.
+        # An operator reading the report sees the same input the claim is made
+        # from, and there is no second threshold to disagree with.
+        "zone_resolution": {
+            "intrazonal_trip_share": _evidence_number(evidence, "vmt", "intrazonal_share"),
+            "zone_count": _evidence_number(evidence, "zone_count"),
+            "zone_system": evidence.get("zone_system") if isinstance(evidence, dict) else None,
+            "note": (
+                "Share of internal trips that begin and end in the same zone, so they carry VMT "
+                "but never appear on any link. OpenPlan bands this share when it records a claim "
+                "for this run: past its threshold the gate above is NOT recorded as a screening "
+                "claim, because a link-level comparison cannot establish one at that resolution. "
+                "The banding is OpenPlan's own screening heuristic, not an adopted standard. Null "
+                "means the run's producer did not record the share."
+            ),
         },
         "metrics": {
             "median_absolute_percent_error": round(median_ape, 2) if median_ape is not None else None,
@@ -611,6 +657,34 @@ def write_markdown_report(path: Path, summary: dict[str, Any], results: list[dic
     ]
     for reason in summary["screening_gate"]["reasons"]:
         lines.append(f"- {reason}")
+
+    # The gate above is a COUNT-FIT result. Whether it becomes a screening claim
+    # also depends on the zone system, and OpenPlan decides that when it records
+    # the claim — so an operator reading this report is told the same thing the
+    # product will conclude, rather than discovering later that a "passed" here
+    # was not recorded as one. The number is reported; the banding is not
+    # repeated here (see the zone_resolution note in the summary JSON).
+    zone = summary.get("zone_resolution") or {}
+    share = zone.get("intrazonal_trip_share")
+    lines.extend(["", "## Zone resolution"])
+    if share is None:
+        lines.append(
+            "- Intrazonal trip share: _not recorded by this run's producer_ — so this gate was "
+            "not qualified against the zone system either way."
+        )
+    else:
+        zone_count = zone.get("zone_count")
+        zones_clause = f" across {int(zone_count)} zones" if zone_count else ""
+        lines.append(
+            f"- Intrazonal trip share: **{share * 100:.1f}%**{zones_clause} — trips that begin "
+            "and end in the same zone and never appear on any link."
+        )
+        lines.append(
+            "- The gate above is a count-fit result. OpenPlan bands this share when it records "
+            "the claim for this run: past its threshold the gate is NOT recorded as a screening "
+            "claim, because a link-level comparison cannot establish one at that resolution. "
+            "The banding is OpenPlan's own screening heuristic, not an adopted standard."
+        )
     lines.extend(
         [
             "",

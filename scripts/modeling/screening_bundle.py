@@ -115,6 +115,14 @@ def build_evidence_packet(
         **({"engine_versions": engine_versions} if engine_versions else {}),
         "network_source": "OpenStreetMap",
         "zone_system": zone_meta["zone_type"],
+        # How many zones the study area was divided into. The packet already
+        # named the zone TYPE but not the count, and the count is half of what
+        # says whether a link-level comparison against observed counts can
+        # establish anything — the observed-count validator reads both from
+        # here. Taken from the zone metadata, never from the zones trips
+        # happen to touch: an empty zone is still a zone and still coarsens
+        # nothing.
+        "zone_count": int(zone_meta["zones"]),
         "assignment": assignment_meta,
         "demand": demand_meta["summary"],
         **({"vmt": vmt} if vmt else {}),

@@ -14,7 +14,8 @@ if str(SCRIPT_DIR) not in sys.path:
 
 import count_sources
 from build_expanded_aadt_counts import station_row
-from validate_screening_observed_counts import build_summary
+from screening_bundle import build_evidence_packet
+from validate_screening_observed_counts import build_summary, write_markdown_report
 
 
 def point(**overrides):
@@ -100,6 +101,130 @@ class ValidationSummaryProvenanceTests(unittest.TestCase):
     def test_unattributed_counts_report_an_empty_agency_list(self):
         summary = self.summary_for(["", "  "])
         self.assertEqual(summary["count_source_agencies"], [])
+
+
+class ZoneResolutionReachesTheOperatorReportTests(unittest.TestCase):
+    """An operator's report must not say "passed" where the product says "not
+    established".
+
+    OpenPlan refuses to record a screening claim from a link-level count
+    comparison when too much of a run's travel never reaches a link. That
+    judgement lives in ONE place — the app's zone-resolution bands — and this
+    script must not become a second copy of it. So the script reports the NUMBER
+    the app bands, and says plainly that the gate it printed is a count-fit
+    result the app still qualifies. One definition, two surfaces, nothing to
+    drift.
+    """
+
+    def summary_for(self, evidence):
+        results = [
+            {"match_status": "matched", "absolute_percent_error": 10.0, "observed_volume": 1000,
+             "modeled_daily_pce": 900, "label": f"station {idx}", "source_agency": "WSDOT"}
+            for idx in range(3)
+        ]
+        return build_summary(
+            evidence=evidence, counts_csv=Path("/runs/x/auto_aadt_counts.csv"),
+            geometry_path=Path("/runs/x/geometry.geojson"), project_db=None,
+            volume_field="daily_pce", results=results,
+            ready_median_ape=30.0, ready_critical_ape=50.0, required_matches=3,
+        )
+
+    def test_summary_carries_the_share_from_the_evidence_packet(self):
+        summary = self.summary_for({"vmt": {"intrazonal_share": 0.36}, "zone_count": 26})
+        zone = summary["zone_resolution"]
+        self.assertAlmostEqual(zone["intrazonal_trip_share"], 0.36)
+        self.assertEqual(zone["zone_count"], 26)
+        self.assertIn("not an adopted standard", zone["note"])
+
+    def test_an_unrecorded_share_is_none_and_never_zero(self):
+        # 0.0 would assert the finest possible zone system on a run nobody
+        # measured — the most flattering answer available.
+        for evidence in ({}, {"vmt": {}}, {"vmt": {"intrazonal_share": None}},
+                         {"vmt": {"intrazonal_share": "0.36"}}):
+            zone = self.summary_for(evidence)["zone_resolution"]
+            self.assertIsNone(zone["intrazonal_trip_share"], evidence)
+
+    def test_a_boolean_is_not_a_measurement(self):
+        # bool is an int in Python; True must not become a 1.0 share.
+        zone = self.summary_for({"vmt": {"intrazonal_share": True}})["zone_resolution"]
+        self.assertIsNone(zone["intrazonal_trip_share"])
+
+    def test_the_operator_report_qualifies_the_gate_it_prints(self):
+        import tempfile
+        summary = self.summary_for({"vmt": {"intrazonal_share": 0.36}, "zone_count": 26})
+        # These three stations all sit inside the thresholds, so the gate PASSES
+        # — which is exactly the case where an unqualified report misleads.
+        self.assertEqual(summary["screening_gate"]["status_label"], "bounded screening-ready")
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "report.md"
+            write_markdown_report(path, summary, [])
+            text = path.read_text()
+
+        self.assertIn("36.0%", text)
+        self.assertIn("across 26 zones", text)
+        self.assertIn("NOT recorded as a screening claim", text)
+        self.assertIn("not an adopted standard", text)
+
+    def test_the_report_says_so_when_the_share_was_never_recorded(self):
+        import tempfile
+        summary = self.summary_for({})
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "report.md"
+            write_markdown_report(path, summary, [])
+            text = path.read_text()
+        self.assertIn("not recorded by this run's producer", text)
+        # An absent measurement must not be reported as a qualified pass.
+        self.assertNotIn("36.0%", text)
+
+
+class EvidencePacketCarriesWhatTheValidatorReadsTests(unittest.TestCase):
+    """The validator reads the zone system out of `evidence_packet.json`.
+
+    Every other test in this file hands `build_summary` a hand-built evidence
+    dict, so none of them notices if the packet stops carrying the fields —
+    verified by mutation: deleting `zone_count` from `build_evidence_packet`
+    left them all green while the operator report silently lost "across N
+    zones". The producer and the consumer have to be checked against each other,
+    not each against a fixture.
+    """
+
+    def packet(self):
+        return build_evidence_packet(
+            run_name="nevada-county",
+            zone_meta={"zone_type": "tract", "zones": 26},
+            assignment_meta={"loaded_links": 900},
+            demand_meta={"summary": {"total_trips": 319000}},
+            skims={},
+            caveats=[],
+            vmt={"daily_vmt": 1.0, "intrazonal_share": 0.36, "intrazonal_trips": 936.0},
+        )
+
+    def test_the_packet_names_its_zone_count_not_just_its_zone_type(self):
+        packet = self.packet()
+        self.assertEqual(packet["zone_count"], 26)
+        self.assertEqual(packet["zone_system"], "tract")
+
+    def test_the_packet_carries_the_intrazonal_share(self):
+        self.assertAlmostEqual(self.packet()["vmt"]["intrazonal_share"], 0.36)
+
+    def test_the_validator_reads_the_real_packet_end_to_end(self):
+        # Producer -> consumer, with no hand-written evidence dict in between.
+        results = [
+            {"match_status": "matched", "absolute_percent_error": 10.0, "observed_volume": 1000,
+             "modeled_daily_pce": 900, "label": f"station {idx}", "source_agency": "Caltrans"}
+            for idx in range(3)
+        ]
+        summary = build_summary(
+            evidence=self.packet(), counts_csv=Path("/runs/x/counts.csv"),
+            geometry_path=Path("/runs/x/geometry.geojson"), project_db=None,
+            volume_field="daily_pce", results=results,
+            ready_median_ape=30.0, ready_critical_ape=50.0, required_matches=3,
+        )
+        zone = summary["zone_resolution"]
+        self.assertAlmostEqual(zone["intrazonal_trip_share"], 0.36)
+        self.assertEqual(zone["zone_count"], 26)
+        self.assertEqual(zone["zone_system"], "tract")
 
 
 if __name__ == "__main__":
