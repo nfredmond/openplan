@@ -39,7 +39,7 @@ import {
   modelingClaimStatusLabel,
   type ModelRunClaimDecision,
 } from "@/lib/models/evidence-backbone";
-import { summarizeRunFailure } from "@/lib/models/run-failure";
+import { stageLogForDisplay, summarizeRunFailure } from "@/lib/models/run-failure";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -1334,7 +1334,33 @@ function ModelRunStagingAndArtifacts({
                       <StatusBadge tone={toneForRunStatus(stage.status)}>{stage.status}</StatusBadge>
                     </div>
                     {stage.error_message ? <p className="mt-2 text-xs text-red-600 dark:text-red-300">{stage.error_message}</p> : null}
-                    {stage.log_tail ? <pre className="mt-2 max-h-32 overflow-auto rounded-[12px] bg-zinc-950/90 p-2 text-[11px] leading-5 text-zinc-100">{stage.log_tail}</pre> : null}
+                    {/*
+                      A FAILED STAGE MUST NOT SHOW A LOG SAYING IT IS STARTING.
+                      The worker stamps `log_tail` with "Starting <stage>..." on
+                      claim and never clears it on failure, so an early failure —
+                      no study area, no Census key, study area too large, the
+                      failures a planner can actually fix — rendered that line in
+                      a console box directly under the red error.
+                      `stageLogForDisplay` drops the placeholder and labels a
+                      genuine partial log as reaching only the point of failure.
+                    */}
+                    {(() => {
+                      const shown = stageLogForDisplay(stage);
+                      if (!shown) return null;
+                      return (
+                        <div className="mt-2" data-testid="stage-log">
+                          {shown.isPartial ? (
+                            <p className="mb-1 text-[11px] text-muted-foreground">
+                              Log up to the point of failure — the stage did not finish, so it stops
+                              here rather than at the end.
+                            </p>
+                          ) : null}
+                          <pre className="max-h-32 overflow-auto rounded-[12px] bg-zinc-950/90 p-2 text-[11px] leading-5 text-zinc-100">
+                            {shown.log}
+                          </pre>
+                        </div>
+                      );
+                    })()}
                   </li>
                 ))}
               </ul>

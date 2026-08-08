@@ -1,8 +1,10 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ModelRunManager, type ModelRunStage } from "@/components/models/model-run-manager";
-import { summarizeRunFailure } from "@/lib/models/run-failure";
+import { stageLogForDisplay, summarizeRunFailure } from "@/lib/models/run-failure";
 
 /**
  * A FAILED RUN DESCRIBED ITSELF AS A RECORDED ONE.
@@ -124,6 +126,131 @@ describe("the run card on a failed run", () => {
 
     expect(screen.queryByTestId("run-failure-summary")).toBeNull();
     expect(screen.getByText(/Run recorded — no linked analysis results yet/)).toBeInTheDocument();
+  });
+});
+
+describe("a failed stage's log box", () => {
+  it("does not show a log claiming the stage is starting", () => {
+    /**
+     * The worker stamps `log_tail` with "Starting <stage>..." when it claims a
+     * stage and never clears it on failure. Every failure a planner can
+     * actually fix — no study area, no Census key, study area too large —
+     * raises early, so those are exactly the runs that rendered a console box
+     * saying the stage was STARTING directly beneath its red error.
+     */
+    renderRun(
+      baseRun({
+        stages: [
+          stage({
+            id: "s1",
+            stage_name: "AequilibraE Setup",
+            status: "failed",
+            sort_order: 1,
+            error_message: CENSUS_KEY_MESSAGE,
+            log_tail: "Starting AequilibraE Setup...",
+          }),
+        ],
+      })
+    );
+
+    expect(screen.queryByText(/Starting AequilibraE Setup/)).toBeNull();
+    expect(screen.queryByTestId("stage-log")).toBeNull();
+  });
+
+  it("keeps a genuine partial log and says where it stops", () => {
+    renderRun(
+      baseRun({
+        stages: [
+          stage({
+            id: "s2",
+            stage_name: "Network Assignment",
+            status: "failed",
+            sort_order: 2,
+            error_message: "KeyError: 'households'",
+            log_tail: "Loaded 3,174 links\nBuilding OD matrix",
+          }),
+        ],
+      })
+    );
+
+    const box = screen.getByTestId("stage-log");
+    expect(box).toHaveTextContent("Loaded 3,174 links");
+    expect(box).toHaveTextContent("Log up to the point of failure");
+  });
+
+  it("leaves a succeeded stage's log unlabelled", () => {
+    renderRun(
+      baseRun({
+        status: "succeeded",
+        stages: [
+          stage({
+            id: "s1",
+            stage_name: "AequilibraE Setup",
+            status: "succeeded",
+            sort_order: 1,
+            log_tail: "Resolved 26 zones",
+          }),
+        ],
+      })
+    );
+
+    const box = screen.getByTestId("stage-log");
+    expect(box).toHaveTextContent("Resolved 26 zones");
+    expect(box.textContent ?? "").not.toContain("Log up to the point of failure");
+  });
+
+  it("shows an unrecognised log on a failed stage rather than hiding it", () => {
+    // The placeholder is matched exactly. Anything else is real output and must
+    // survive — dropping a log because it did not match a string would lose the
+    // only record of what the run did.
+    const shown = stageLogForDisplay({
+      stage_name: "Network Assignment",
+      status: "failed",
+      log_tail: "Starting Network Assignment",
+    });
+    expect(shown).not.toBeNull();
+    expect(shown!.isPartial).toBe(true);
+  });
+
+  it("has nothing to show when there is no log", () => {
+    expect(stageLogForDisplay({ stage_name: "Setup", status: "failed", log_tail: null })).toBeNull();
+    expect(stageLogForDisplay({ stage_name: "Setup", status: "failed", log_tail: "   " })).toBeNull();
+  });
+
+  it("recognises the placeholder the WORKER actually writes", () => {
+    /**
+     * The placeholder is a literal shared across two runtimes: Python writes it
+     * when it claims a stage, TypeScript recognises it when it decides whether
+     * to render the log box. If the worker rewords it, this side silently stops
+     * matching and the "Starting <stage>..." box comes back — a regression with
+     * no failing test anywhere, because each side would still agree with
+     * itself. So the format is read out of the worker's own source.
+     *
+     * It throws rather than defaulting when the function cannot be found: an
+     * extraction that silently yields nothing passes forever while proving
+     * nothing.
+     */
+    const workerSource = readFileSync(
+      path.join(process.cwd(), "..", "workers", "aequilibrae_worker", "main.py"),
+      "utf8"
+    );
+    const fn = workerSource.slice(workerSource.indexOf("def stage_claim_placeholder("));
+    const match = /return f"([^"]*)"/.exec(fn);
+    if (!match) {
+      throw new Error(
+        "stage_claim_placeholder() was not found in the worker's main.py. If it moved or was " +
+          "renamed, update this guard — it is the only thing keeping the two runtimes agreeing " +
+          "on the placeholder string."
+      );
+    }
+
+    const stageName = "Network Assignment";
+    const workerWrites = match[1].replace("{stage_name}", stageName);
+    // Exactly what the worker would store must be recognised and dropped...
+    expect(stageLogForDisplay({ stage_name: stageName, status: "failed", log_tail: workerWrites })).toBeNull();
+    // ...and must NOT be dropped on a stage that is still running, where it is
+    // the honest current state rather than a leftover.
+    expect(stageLogForDisplay({ stage_name: stageName, status: "running", log_tail: workerWrites })).not.toBeNull();
   });
 });
 

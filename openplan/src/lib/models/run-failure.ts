@@ -44,6 +44,7 @@ export type RunFailureStageLike = {
   status?: string | null;
   sort_order?: number | null;
   error_message?: string | null;
+  log_tail?: string | null;
 };
 
 export type RunFailureSummary = {
@@ -64,6 +65,45 @@ export type RunFailureSummary = {
 
 /** Run statuses this module speaks for. Anything else returns null. */
 const TERMINAL_FAILURE_STATUSES = new Set(["failed", "cancelled"]);
+
+/**
+ * WHAT A STAGE'S LOG BOX MAY SAY ONCE THE STAGE HAS FAILED.
+ *
+ * The worker stamps `log_tail` with `"Starting <stage>..."` the moment it claims
+ * a stage, and its failure handler writes only status, error_message and
+ * completed_at. So a stage that failed EARLY — no study area, no Census key,
+ * study area too large: exactly the failures a planner can actually fix — still
+ * carries the placeholder, and the run card rendered it in a black console box
+ * directly beneath the red error. The most visible thing under "this failed" was
+ * a line saying it was starting.
+ *
+ * Decided at DISPLAY time rather than in the worker, so it also covers every
+ * stage row already written, and so a deployment running an older worker cannot
+ * reintroduce it. The worker should stop leaving the placeholder too, but that
+ * fixes only rows written after it ships.
+ *
+ * Returns the log to show, or null when there is nothing honest to show.
+ */
+export function stageLogForDisplay(stage: RunFailureStageLike): {
+  log: string;
+  /** True when the stage did not finish, so the log stops mid-way. */
+  isPartial: boolean;
+} | null {
+  const log = stage.log_tail?.trim();
+  if (!log) return null;
+
+  const terminated = stage.status === "failed" || stage.status === "cancelled";
+  if (!terminated) return { log, isPartial: false };
+
+  // The claim-time placeholder, matched exactly against what the worker writes
+  // (`f"Starting {stage_name}..."`). An inexact match is safe: the log is then
+  // shown and labelled as reaching only the point of failure, which is true of
+  // the placeholder too — just less useful.
+  const stageName = stage.stage_name?.trim();
+  if (stageName && log === `Starting ${stageName}...`) return null;
+
+  return { log, isPartial: true };
+}
 
 /**
  * A Python exception rendered as `TypeName: message`, which is exactly what the

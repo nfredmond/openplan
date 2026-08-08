@@ -3991,7 +3991,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
     # Atomic claim: only one worker may transition this stage queued -> running.
     claimed = sb_claim_stage(
         stage_id,
-        {"status": "running", "started_at": now_iso, "log_tail": f"Starting {stage_name}..."},
+        {"status": "running", "started_at": now_iso, "log_tail": stage_claim_placeholder(stage_name)},
     )
     if not claimed:
         print(f"[{time.strftime('%X')}] ⏭️ Lost claim race for {stage_name} (run={run_id[:8]}…); another worker owns it.")
@@ -4059,11 +4059,24 @@ def _claim_and_run_stage(stage: dict) -> bool:
     except Exception as e:
         error_msg = f"{type(e).__name__}: {e}"
         print(f"[{time.strftime('%X')}] ❌ {stage_name} failed: {error_msg}")
-        sb_patch_stage(stage_id, {
+        failure_patch = {
             "status": "failed",
             "error_message": error_msg[:2000],
             "completed_at": datetime.now(timezone.utc).isoformat(),
-        })
+        }
+        # DO NOT LEAVE THE CLAIM-TIME PLACEHOLDER ON A FAILED STAGE.
+        #
+        # The claim above stamps `log_tail` with "Starting {stage_name}...", and
+        # a stage that failed before writing any real log kept it — so the app
+        # rendered a console box saying the stage was STARTING directly beneath
+        # its red error. That is every failure a planner can actually fix (no
+        # study area, no Census key, study area too large), because those raise
+        # early. A partial log written by a stage that got further is real
+        # output and is left alone; the app labels it as reaching only the point
+        # of failure.
+        if _stage_log_is_claim_placeholder(stage_id, stage_name):
+            failure_patch["log_tail"] = None
+        sb_patch_stage(stage_id, failure_patch)
         sb_patch_run(run_id, {"status": "failed"})
         # True: this worker owned the stage and reached a terminal answer for it.
         # Only a LOST CLAIM is False, because only that means someone else is
@@ -4080,6 +4093,36 @@ def _claim_and_run_stage(stage: dict) -> bool:
         sb_patch_run(run_id, {"status": "succeeded", "completed_at": datetime.now(timezone.utc).isoformat()})
 
     return True
+
+
+def stage_claim_placeholder(stage_name: str) -> str:
+    """The `log_tail` written when a stage is claimed, before it logs anything.
+
+    Named once so the writer and the "is this still the placeholder?" check
+    cannot drift into disagreeing about the exact string.
+    """
+    return f"Starting {stage_name}..."
+
+
+def _stage_log_is_claim_placeholder(stage_id: str, stage_name: str) -> bool:
+    """Whether this stage's stored log is still the claim-time placeholder.
+
+    Best-effort: any read failure answers False, so an unreadable row keeps
+    whatever log it has rather than losing real output to a network blip.
+    """
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}&select=log_tail",
+            headers=HEADERS, timeout=15,
+        )
+        if res.status_code != 200:
+            return False
+        rows = res.json()
+        if not rows:
+            return False
+        return (rows[0].get("log_tail") or "").strip() == stage_claim_placeholder(stage_name)
+    except Exception:
+        return False
 
 
 def get_prior_stage_statuses(run_id: str, sort_order: int) -> list[dict]:
