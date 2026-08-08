@@ -454,7 +454,54 @@ def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, val
         median_ape = (validation or {}).get("median_ape")
         max_ape = (validation or {}).get("max_ape")
         gate = (validation or {}).get("screening_gate")
-        if calibration:
+        # THE ZONE SYSTEM GATES BOTH LINK-BASED TIERS.
+        #
+        # `screening_grade` and `calibrated_to_counts` rest on exactly one kind
+        # of evidence: modelled link volumes compared to observed counts. Where
+        # a large share of travel never reaches a link, that comparison
+        # establishes nothing, so NEITHER tier is established — and this must be
+        # checked before the calibration branch, not after, because
+        # `calibrated_to_counts` outranks `screening_grade` and closing only the
+        # lower one would leave the hole open at the higher.
+        #
+        # Calibration is the sharper case. Tuning a model until coarse-zone link
+        # volumes match observed counts does not recover the missing intrazonal
+        # travel; it distorts the parameters that CAN move until they absorb its
+        # absence. The held-out APE improves and the model gets worse.
+        #
+        # This only ever LOWERS a tier. `prototype_only` is the floor already
+        # used for a failed gate and for a coverage gap, so nothing here can
+        # promote anything — only the reason changes, and only to a truer one.
+        zone_block = (validation or {}).get("zone_resolution") or {}
+        if zone_block.get("supports_link_level_validation") is False:
+            zone_note = zone_block.get("note") or (
+                "At this zone resolution a large share of travel never reaches a link."
+            )
+            if calibration:
+                detail = (
+                    "Count calibration ran, but is not recorded as a calibrated tier: tuning to "
+                    "link volumes cannot recover travel that never reaches a link, and may instead "
+                    "absorb its absence into the calibrated parameters."
+                )
+            elif zone_block.get("gate_withheld"):
+                detail = (
+                    f"The count comparison ({matched} stations, median APE {median_ape}%) met the "
+                    "screening thresholds, but a screening claim is NOT recorded from it, because "
+                    "at this zone resolution matching the counts does not establish one."
+                )
+            else:
+                detail = (
+                    f"The count comparison ({matched} stations, median APE {median_ape}%) did not "
+                    "meet the screening thresholds, and at this zone resolution it could not have "
+                    "settled the question either way."
+                )
+            claim_status, reason = "prototype_only", (
+                f"{detail} {zone_note} Trip totals, mode share and VMT do count intrazonal travel "
+                "and remain usable; a finer zone system is what would let a link-level comparison "
+                "support a claim. This banding is OpenPlan's own screening heuristic, not an "
+                "adopted standard."
+            )
+        elif calibration:
             # Calibrated tier: the honest accuracy is the HELD-OUT median APE.
             hold = (calibration.get("calibrated") or {}).get("holdout") or {}
             base_hold = (calibration.get("baseline") or {}).get("holdout") or {}
@@ -506,7 +553,13 @@ def write_model_run_modeling_evidence(run_id: str, workspace_id: str | None, val
             headers=HEADERS, timeout=20,
         )
         if validation and matched > 0:
-            status, detail = count_validation.metric_status_for_gate(median_ape, max_ape, matched)
+            # Same zone qualification the claim decision above applied, so the
+            # metric row and the claim beside it cannot tell a planner two
+            # different stories about one comparison.
+            status, detail = count_validation.metric_status_for_gate(
+                median_ape, max_ape, matched,
+                intrazonal_share_pct=zone_block.get("intrazonal_share_pct"),
+            )
             rows = [{
                 "workspace_id": workspace_id, "model_run_id": run_id, "track": "assignment",
                 "metric_key": "count_median_ape", "metric_label": "Median APE vs observed counts",
@@ -2820,7 +2873,9 @@ def compute_daily_vmt(db_path: str, link_volumes_csv: str) -> float | None:
 
 
 def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
-                          counts_path: str | None = None) -> dict | None:
+                          counts_path: str | None = None,
+                          intrazonal_share_pct: float | None = None,
+                          zone_count: int | None = None) -> dict | None:
     """Match assigned link volumes to observed traffic counts → screening-grade
     fit summary. Returns None when disabled or inputs are missing (never fails
     the run).
@@ -2837,7 +2892,14 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
     the bundled pilot file — this returns an explicit coverage summary and does
     NOT match. Matching another jurisdiction's stations against this network
     produced "Only 0 matched station(s); >= 3 required for a screening claim",
-    which reads as a failed model rather than an absent data source."""
+    which reads as a failed model rather than an absent data source.
+
+    `intrazonal_share_pct` (PERCENT, 0-100) is how much of this run's travel
+    never reaches a link. It QUALIFIES the resulting gate: past the threshold in
+    count_validation.py the comparison cannot establish screening grade, and a
+    gate that would have passed is withheld rather than awarded. Note the unit —
+    the worker measures this share as a FRACTION everywhere else, and the
+    conversion happens at the one call site below."""
     import csv as _csv
     resolved_counts = counts_path if (counts_path and os.path.exists(counts_path)) else VALIDATION_COUNTS_PATH
     if not (COUNT_VALIDATION_ENABLED and os.path.exists(resolved_counts)
@@ -2878,7 +2940,10 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
         }
         for lid, name, lt, cx, cy in rows
     ]
-    return count_validation.validate_against_counts(stations, modeled_links)
+    return count_validation.validate_against_counts(
+        stations, modeled_links,
+        intrazonal_share_pct=intrazonal_share_pct, zone_count=zone_count,
+    )
 
 
 def stage_artifacts(
@@ -3247,6 +3312,19 @@ def stage_artifacts(
             # The counts the ASSIGNMENT stage of this run actually used, not
             # whatever this process happened to resolve last.
             counts_path=assign_result.get("counts_path"),
+            # HOW MUCH OF THIS RUN'S TRAVEL NEVER REACHED A LINK, so the gate
+            # below cannot award a screening claim on a comparison that could
+            # not establish one. `intrazonal_trip_share` is a FRACTION (the KPI
+            # and the app's panel both read it as one); the qualifier works in
+            # PERCENT like the app's bands. The x100 is the whole seam — it is
+            # here, once, rather than inside the qualifier, so that the
+            # qualifier's threshold reads in the same unit as the app's.
+            # None stays None: an unmeasured share must not become 0.0, which
+            # would assert the finest possible zone system.
+            intrazonal_share_pct=(
+                None if intrazonal_trip_share is None else float(intrazonal_trip_share) * 100.0
+            ),
+            zone_count=assign_result["network"]["zones"],
         )
         if validation and not (validation.get("coverage") or {}).get("covered", True):
             log += f"Count validation: not run. {(validation['coverage'] or {}).get('reason', '')}\n"

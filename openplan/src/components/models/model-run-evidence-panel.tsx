@@ -411,6 +411,18 @@ type ModelRunEvidencePanelProps = {
    * Null when no claim row exists (e.g. a preflight/uncalibrated run) — the panel
    * then falls back to the engine-availability posture. */
   claimStatus?: ModelingClaimStatus | null;
+  /**
+   * WHY the run carries that tier, as recorded with the decision.
+   *
+   * The tier alone collapses three unrelated findings into one badge: no count
+   * source covers this state, the zone system cannot support a link-level
+   * comparison, and the model genuinely disagreed with the counts all render as
+   * "Prototype only". Only the first is about data availability, only the third
+   * is about the model, and a planner asked to defend the run needs to know
+   * which one they are holding. Null when no reason was recorded — the panel
+   * then shows the badge alone rather than inventing one.
+   */
+  claimStatusReason?: string | null;
 };
 
 export function ModelRunEvidencePanel({
@@ -421,6 +433,7 @@ export function ModelRunEvidencePanel({
   engineKey,
   comparisonCandidates,
   claimStatus: claimStatusProp = null,
+  claimStatusReason = null,
 }: ModelRunEvidencePanelProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -730,6 +743,21 @@ export function ModelRunEvidencePanel({
                     <StatusBadge tone={transitDisplay.tone}>{transitDisplay.label}</StatusBadge>
                   ) : null}
                 </div>
+                {/*
+                  THE REASON THE TIER WAS RECORDED, next to the tier.
+                  Rendered only when the tier came from a real recorded decision
+                  (`claimStatusProp`), never beside the engine-availability
+                  fallback — a reason attached to a tier nobody decided would be
+                  a justification for a default.
+                */}
+                {claimStatusProp && claimStatusReason ? (
+                  <p
+                    className="mt-2 text-xs leading-relaxed text-amber-950/90 dark:text-amber-100/90"
+                    data-testid="evidence-claim-status-reason"
+                  >
+                    {claimStatusReason}
+                  </p>
+                ) : null}
                 <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-xs text-amber-950/90 dark:text-amber-100/90 sm:grid-cols-2">
                   <div className="flex items-start justify-between gap-3">
                     <dt className="text-amber-900/70 dark:text-amber-200/70">Engine version</dt>

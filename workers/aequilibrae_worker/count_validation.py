@@ -216,6 +216,162 @@ GEH_BASIS_NOTE = (
 )
 
 
+# ---------------------------------------------------------------------------
+# ZONE-RESOLUTION QUALIFICATION of the gate
+#
+# A trip that begins and ends in the SAME zone carries VMT and no link volume.
+# At a coarse zone system a large share of all travel is invisible to every
+# link BY CONSTRUCTION, so comparing modelled link volumes to observed counts
+# cannot establish whether the model is right — in either direction.
+#
+# WHAT WENT WRONG WITHOUT THIS. `classify_gate` never saw the zone system, so
+# the same run could carry two contradictory statements: the zone panel saying
+# "link comparison cannot settle this", and a gate of "bounded screening-ready"
+# — which `write_model_run_modeling_evidence` turns into the `screening_grade`
+# CLAIM TIER — awarded on the strength of that very comparison. A claim tier
+# handed out by a test that could not test is the honesty firewall failing from
+# the inside, without an agent anywhere near it.
+#
+# THE RULE IS SYMMETRIC, and the withholding half is what makes the explaining
+# half safe. A change that only ever explained failures would only ever make
+# runs look better, which is the shape this repository is most wary of:
+#
+#   * gate would PASS + zones cannot support the comparison -> the gate is
+#     WITHHELD. Not demoted to a failure (nothing failed), not awarded
+#     (nothing was established). `screening_gate` becomes None, exactly as the
+#     coverage gap above does, so every consumer that keys on the
+#     "bounded screening-ready" string fails CLOSED.
+#   * gate FAILS + zones cannot support the comparison -> the gate is
+#     UNCHANGED, with the zone system named first among the reasons. A failure
+#     is never promoted by this code; it is only explained.
+#
+# THE THRESHOLD LIVES IN TWO LANGUAGES AND MUST NOT DRIFT. The app owns the
+# bands and every planner-facing sentence
+# (`openplan/src/lib/models/zone-resolution.ts`); Python needs exactly ONE
+# number — the share above which link-level validation establishes nothing.
+# `src/test/one-link-validation-threshold.test.ts` reads this constant out of
+# this file and fails if it disagrees with the app's band table. One number,
+# one seam, one guard — rather than four bands of prose duplicated here.
+# ---------------------------------------------------------------------------
+
+# Intrazonal share (PERCENT, 0-100) at or below which a link-level count
+# comparison can establish something. Mirrors the top of the app's
+# `supportsLinkLevelValidation: true` bands.
+LINK_VALIDATION_MAX_INTRAZONAL_SHARE_PCT = 20.0
+
+# The status recorded on `zone_resolution` when the gate is withheld. Distinct
+# from a coverage gap ("nothing was compared") and from a failure ("compared,
+# and it disagreed"): here a real comparison ran and cannot settle the question.
+ZONE_RESOLUTION_GATE_WITHHELD_STATUS = "not_established_at_this_zone_resolution"
+
+
+def link_validation_is_supported(intrazonal_share_pct: float | None) -> bool | None:
+    """Whether link-level count comparison can establish anything at this share.
+
+    None in, None out: an UNMEASURED share is not a fine-grained zone system,
+    and must never be read as one.
+    """
+    if intrazonal_share_pct is None:
+        return None
+    return float(intrazonal_share_pct) <= LINK_VALIDATION_MAX_INTRAZONAL_SHARE_PCT
+
+
+def qualify_gate_for_zone_resolution(
+    summary: dict[str, Any],
+    intrazonal_share_pct: float | None,
+    zone_count: int | None = None,
+) -> dict[str, Any]:
+    """Apply the zone system's verdict to a completed count-validation summary.
+
+    Mutates and returns `summary`. Always attaches a `zone_resolution` block so
+    the qualification is auditable even when it changed nothing — a silent
+    no-op and a considered pass must be distinguishable after the fact.
+
+    WHEN THE SHARE IS UNMEASURED the gate is left ALONE, deliberately. The share
+    is measured on the same matrix as the headline resident VMT, so a run
+    missing it is a run whose demand read failed — a plumbing fault, not a
+    coarse zone system. Withholding a gate for it would hand a planner a reason
+    they cannot act on, and this diagnostic's whole posture is that advice which
+    cannot be taken teaches planners to stop reading it. The block still records
+    `measured: False`, so the gap is visible rather than absent.
+    """
+    supported = link_validation_is_supported(intrazonal_share_pct)
+    share = None if intrazonal_share_pct is None else round(float(intrazonal_share_pct), 1)
+    block: dict[str, Any] = {
+        "measured": supported is not None,
+        "intrazonal_share_pct": share,
+        "zone_count": int(zone_count) if zone_count is not None else None,
+        "supports_link_level_validation": supported,
+        "max_supported_intrazonal_share_pct": LINK_VALIDATION_MAX_INTRAZONAL_SHARE_PCT,
+        "gate_withheld": False,
+        "status": None,
+        # Named as OpenPlan's own judgement wherever it appears, the same
+        # posture the Title VI proxy thresholds take: a number OpenPlan chose is
+        # indistinguishable, on a page shown to a board, from one a standards
+        # body published.
+        "heuristic_note": (
+            "The share above which OpenPlan treats link-level count comparison as unable to "
+            "settle the question is OpenPlan's own screening heuristic, not an adopted standard."
+        ),
+    }
+    # Attached ONCE, here, before any branch runs. Every branch below only
+    # mutates `block`. Assigning it per-branch instead is how the first version
+    # of this function shipped the block on two paths and dropped it on the two
+    # that mattered — the withheld gate and the explained failure.
+    summary["zone_resolution"] = block
+
+    if supported is None:
+        block["note"] = (
+            "How much of this run's travel reaches the network was not measured, so the count "
+            "comparison below could not be qualified either way. This is a missing measurement, "
+            "not a finding about the zone system."
+        )
+        return summary
+
+    if supported:
+        block["note"] = (
+            f"{share}% of this run's trips begin and end in the same zone, so nearly all travel "
+            "reaches the network and the count comparison below is a meaningful test of it."
+        )
+        return summary
+
+    # Beyond the threshold: the comparison ran, and cannot settle the question.
+    zones_clause = f" across {int(zone_count)} zones" if zone_count else ""
+    explanation = (
+        f"{share}% of this run's trips begin and end in the same zone{zones_clause} and never "
+        "reach any link, so a gap between modelled volumes and observed counts is expected from "
+        "the zone system alone and is not evidence about this model's demand."
+    )
+
+    if summary.get("screening_gate") == "bounded screening-ready":
+        block["gate_withheld"] = True
+        block["status"] = ZONE_RESOLUTION_GATE_WITHHELD_STATUS
+        block["withheld_gate"] = "bounded screening-ready"
+        block["note"] = explanation
+        # Withheld, NOT failed. The metrics below are real measurements and stay
+        # exactly as computed; what is removed is the CLAIM built on top of them.
+        summary["screening_gate"] = None
+        summary["gate_reasons"] = [
+            "Screening gate not awarded: the zone system cannot support a link-level count "
+            "comparison, so matching the counts here does not establish screening grade.",
+            explanation,
+            "Trip totals, mode share and VMT do count intrazonal travel and remain usable. A "
+            "finer zone system is what would let link comparison support a screening claim.",
+        ]
+        return summary
+
+    # The gate already failed. Explain it; never promote it.
+    block["status"] = "explains_gate_failure"
+    block["note"] = explanation
+    summary["gate_reasons"] = [
+        explanation,
+        "The gate below is reported as computed. At this zone resolution it should not be read "
+        "as a finding that the model's demand is wrong.",
+        *(summary.get("gate_reasons") or []),
+    ]
+    return summary
+
+
 # ── stdlib parsing helpers (ported verbatim) ───────────────────────────────
 def parse_float(value: Any) -> float | None:
     if value is None:
@@ -385,9 +541,25 @@ def metric_status_for_gate(
     ready_median_ape: float = DEFAULT_READY_MEDIAN_APE,
     ready_critical_ape: float = DEFAULT_READY_CRITICAL_APE,
     required_matches: int = DEFAULT_REQUIRED_MATCHES,
+    intrazonal_share_pct: float | None = None,
 ) -> tuple[str, str]:
     """Map the observed-count gate to a per-metric ('pass'|'warn'|'fail', detail)
-    for the modeling claim spine — same thresholds as classify_gate."""
+    for the modeling claim spine — same thresholds as classify_gate.
+
+    A metric row is what a planner reads in the evidence panel, so it has to
+    agree with the claim decision beside it. Where the zone system cannot
+    support a link-level comparison, a median APE inside the threshold is a real
+    number whose MEANING is not established — 'warn', never 'pass'. It is not
+    'fail' either: nothing failed, and calling it a failure would restate the
+    exact misreading this qualification exists to prevent.
+    """
+    if link_validation_is_supported(intrazonal_share_pct) is False:
+        share = round(float(intrazonal_share_pct), 1)  # type: ignore[arg-type]
+        return "warn", (
+            f"Median APE {median_ape}% across {matched_count} station(s), but {share}% of trips "
+            "never reach a link at this zone resolution, so this comparison does not establish "
+            "screening grade in either direction."
+        )
     if matched_count < required_matches:
         return "fail", f"Only {matched_count} matched station(s); >= {required_matches} required for a screening claim."
     if median_ape is None:
@@ -405,11 +577,21 @@ def validate_against_counts(
     required_matches: int = DEFAULT_REQUIRED_MATCHES,
     ready_median_ape: float = DEFAULT_READY_MEDIAN_APE,
     ready_critical_ape: float = DEFAULT_READY_CRITICAL_APE,
+    intrazonal_share_pct: float | None = None,
+    zone_count: int | None = None,
 ) -> dict[str, Any]:
     """Match each observed-count station to a modeled link and summarize fit.
 
     `modeled_links`: dicts with link_id, name, link_type, lon, lat, volume (daily
     PCE). Returns a screening-grade validation summary — NOT a calibration.
+
+    `intrazonal_share_pct` (PERCENT, 0-100) qualifies the resulting gate through
+    `qualify_gate_for_zone_resolution`. It is applied HERE, inside the only
+    function that produces a gate, rather than left to each caller to remember:
+    a qualification a caller can forget is a qualification that will be
+    forgotten, and the failure mode is a screening claim nobody meant to award.
+    Omitting it records `measured: False` rather than silently asserting the
+    zone system is fine.
     """
     results = []
     for station in stations:
@@ -449,7 +631,7 @@ def validate_against_counts(
     max_ape = max(apes) if apes else None
     status_label, gate_reasons = classify_gate(len(matched), median_ape, max_ape, required_matches, ready_median_ape, ready_critical_ape)
 
-    return {
+    summary = {
         "stations_total": len(stations),
         "stations_matched": len(matched),
         "median_ape": round(median_ape, 2) if median_ape is not None else None,
@@ -470,3 +652,4 @@ def validate_against_counts(
             "against a few counts) — NOT a calibration or a validated/calibrated forecast."
         ),
     }
+    return qualify_gate_for_zone_resolution(summary, intrazonal_share_pct, zone_count)

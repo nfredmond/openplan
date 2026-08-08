@@ -93,6 +93,143 @@ def test_metric_status_for_gate():
     assert cv.metric_status_for_gate(None, None, 3)[0] == "fail"
 
 
+# ── the zone system qualifies the gate ─────────────────────────────────────
+#
+# A gate awarded by a comparison that could not establish anything is a claim
+# tier handed out by a test that could not test. These checks pin BOTH
+# directions, because a qualification that only ever explained failures would
+# only ever make runs look better.
+
+def _passing_case():
+    """3 stations, every APE well inside the thresholds -> a passing gate."""
+    stations = [
+        _station("A", 45500, "Grass Valley Highway", "motorway"),
+        _station("B", 26000, "State Highway 49", "primary"),
+        _station("C", 10300, "Colfax Highway", "secondary"),
+    ]
+    links = [
+        _link(1, "Grass Valley Highway", "motorway", -121.05, 39.22, 44000),
+        _link(2, "State Highway 49", "primary", -121.03, 39.21, 24000),
+        _link(3, "Colfax Highway", "secondary", -121.04, 39.24, 9500),
+    ]
+    return stations, links
+
+
+def test_a_coarse_zone_system_withholds_a_passing_gate():
+    """THE DEFECT THIS CLOSES.
+
+    Identical inputs to `test_validate_summary_and_gate`, which passes the gate.
+    Adding the measured 26-zone/36% precedent must WITHHOLD it: matching the
+    counts at this resolution does not establish screening grade, and the gate
+    string is what `write_model_run_modeling_evidence` turns into the
+    `screening_grade` CLAIM TIER.
+    """
+    stations, links = _passing_case()
+    s = cv.validate_against_counts(stations, links, intrazonal_share_pct=36.0, zone_count=26)
+
+    assert s["screening_gate"] is None, s["screening_gate"]
+    zone = s["zone_resolution"]
+    assert zone["gate_withheld"] is True, zone
+    assert zone["withheld_gate"] == "bounded screening-ready", zone
+    assert zone["status"] == cv.ZONE_RESOLUTION_GATE_WITHHELD_STATUS, zone
+    assert zone["supports_link_level_validation"] is False, zone
+
+    # The measurements themselves are real and must survive: what is removed is
+    # the claim built on top of them, not the evidence.
+    assert s["stations_matched"] == 3 and s["median_ape"] is not None
+
+    # And the planner is told it is not a failure.
+    joined = " ".join(s["gate_reasons"]).lower()
+    assert "not awarded" in joined, s["gate_reasons"]
+    assert "finer zone system" in joined, s["gate_reasons"]
+    assert "26 zones" in joined, s["gate_reasons"]
+
+
+def test_a_coarse_zone_system_never_promotes_a_failing_gate():
+    """The qualification only ever removes a claim; it cannot grant one."""
+    stations = [_station("A", 45500, "Grass Valley Highway", "motorway")]
+    links = [_link(1, "Grass Valley Highway", "motorway", -121.05, 39.22, 44000)]
+    s = cv.validate_against_counts(stations, links, intrazonal_share_pct=36.0, zone_count=26)
+
+    assert s["screening_gate"] == "internal prototype only", s["screening_gate"]
+    assert s["zone_resolution"]["gate_withheld"] is False
+    assert s["zone_resolution"]["status"] == "explains_gate_failure"
+    # The zone explanation comes FIRST, ahead of the arithmetic reason a planner
+    # would otherwise read as "my model failed".
+    assert "never reach any link" in s["gate_reasons"][0], s["gate_reasons"]
+    # ...and the original reason is kept, not replaced.
+    assert any("matched stations" in r for r in s["gate_reasons"]), s["gate_reasons"]
+
+
+def test_a_workable_zone_system_leaves_a_passing_gate_alone():
+    """12.6% is the measured block-group figure. It must still pass.
+
+    A qualification that withheld every gate would be safe and useless.
+    """
+    stations, links = _passing_case()
+    s = cv.validate_against_counts(stations, links, intrazonal_share_pct=12.6, zone_count=80)
+
+    assert s["screening_gate"] == "bounded screening-ready", s["screening_gate"]
+    assert s["zone_resolution"]["supports_link_level_validation"] is True
+    assert s["zone_resolution"]["gate_withheld"] is False
+
+
+def test_the_threshold_boundary():
+    """Exactly at the threshold is supported; a tenth past it is not."""
+    assert cv.link_validation_is_supported(20.0) is True
+    assert cv.link_validation_is_supported(20.1) is False
+    assert cv.link_validation_is_supported(0.0) is True
+    # None in, None out — an unmeasured share is not a fine zone system.
+    assert cv.link_validation_is_supported(None) is None
+
+
+def test_an_unmeasured_share_is_not_a_fine_zone_system():
+    """Omitting the share must not silently assert the best possible answer.
+
+    The gate is deliberately left alone (a missing measurement is a plumbing
+    fault, not a coarse zone system), but it must be RECORDED as unqualified
+    rather than quietly presented as qualified.
+    """
+    stations, links = _passing_case()
+    s = cv.validate_against_counts(stations, links)
+
+    assert s["screening_gate"] == "bounded screening-ready"
+    zone = s["zone_resolution"]
+    assert zone["measured"] is False, zone
+    assert zone["supports_link_level_validation"] is None, zone
+    assert zone["intrazonal_share_pct"] is None, zone
+    assert zone["gate_withheld"] is False, zone
+
+
+def test_every_summary_carries_the_qualification():
+    """Auditable even when it changed nothing.
+
+    A silent no-op and a considered pass have to be distinguishable after the
+    fact, or nobody can tell whether the qualification ran at all.
+    """
+    stations, links = _passing_case()
+    for share in (None, 5.0, 36.0):
+        s = cv.validate_against_counts(stations, links, intrazonal_share_pct=share)
+        assert "zone_resolution" in s, share
+        assert "heuristic_note" in s["zone_resolution"], share
+        # Always named as OpenPlan's own judgement, never as a standard.
+        assert "not an adopted standard" in s["zone_resolution"]["heuristic_note"]
+
+
+def test_metric_status_warns_rather_than_passing_at_coarse_resolution():
+    """The metric row must agree with the claim decision beside it."""
+    # Same numbers that pass at a fine zone system...
+    assert cv.metric_status_for_gate(28.0, 40.0, 3)[0] == "pass"
+    assert cv.metric_status_for_gate(28.0, 40.0, 3, intrazonal_share_pct=12.6)[0] == "pass"
+    # ...are only a 'warn' where the comparison establishes nothing. NOT 'fail':
+    # nothing failed, and calling it a failure restates the misreading this
+    # qualification exists to prevent.
+    status, detail = cv.metric_status_for_gate(28.0, 40.0, 3, intrazonal_share_pct=36.0)
+    assert status == "warn", (status, detail)
+    assert "never reach a link" in detail, detail
+    assert "either direction" in detail, detail
+
+
 def test_metrics_parity_with_screening_metrics():
     sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "scripts", "modeling"))
     try:

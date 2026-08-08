@@ -127,7 +127,13 @@ describe("ModelRunManager per-run calibration toggle", () => {
       created_at: null,
       stages: [] as ModelRunStage[],
       artifacts: [] as ModelRunArtifact[],
-      claimStatus: "calibrated_to_counts" as ModelingClaimStatus,
+      // The recorded decision, tier AND reason. The reason travels with the
+      // tier so the panel can say WHY a run carries it — three unrelated
+      // findings otherwise share one badge.
+      claimDecision: {
+        status: "calibrated_to_counts" as ModelingClaimStatus,
+        reason: "Model calibrated to observed counts (6 fit / 3 holdout stations).",
+      },
     };
 
     render(
@@ -144,7 +150,11 @@ describe("ModelRunManager per-run calibration toggle", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /inspect evidence/i }));
     const block = await screen.findByTestId("evidence-run-honesty");
-    expect(block).toHaveTextContent("Calibrated to counts");
+    expect(block).toHaveTextContent(modelingClaimStatusLabel("calibrated_to_counts"));
     expect(block).not.toHaveTextContent("Uncalibrated by default");
+    // ...and the recorded justification threads through with it.
+    expect(screen.getByTestId("evidence-claim-status-reason")).toHaveTextContent(
+      "6 fit / 3 holdout stations"
+    );
   });
 });

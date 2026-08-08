@@ -37,7 +37,7 @@ import {
 } from "@/lib/models/run-dispatch";
 import {
   modelingClaimStatusLabel,
-  type ModelingClaimStatus,
+  type ModelRunClaimDecision,
 } from "@/lib/models/evidence-backbone";
 
 const TrafficVolumeMap = dynamic(
@@ -122,7 +122,10 @@ type ManagedModelRun = {
   artifacts: ModelRunArtifact[];
   /** Real claim tier for this run (from modeling_claim_decisions), resolved
    * server-side in the model page. Null → the panel derives from availability. */
-  claimStatus?: ModelingClaimStatus | null;
+  /** Recorded claim tier AND the reason it was recorded. The reason is what
+   *  separates a coverage gap from a coarse zone system from a real
+   *  disagreement with the counts — three findings behind one badge. */
+  claimDecision?: ModelRunClaimDecision | null;
 };
 
 export type ModelRunComparisonCandidate = {
@@ -1344,7 +1347,8 @@ function ModelRunStagingAndArtifacts({
           runStatus={run.status}
           engineKey={run.engine_key}
           comparisonCandidates={comparisonCandidates}
-          claimStatus={run.claimStatus ?? null}
+          claimStatus={run.claimDecision?.status ?? null}
+          claimStatusReason={run.claimDecision?.reason ?? null}
         />
       ) : null}
 

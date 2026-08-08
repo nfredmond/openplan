@@ -39,6 +39,22 @@ export function isModelingClaimStatus(value: unknown): value is ModelingClaimSta
 }
 
 /**
+ * A run's recorded claim tier AND the reason it was recorded.
+ *
+ * The two travel together on purpose. Three very different findings — no count
+ * source covers this state, the zone system cannot support a link comparison,
+ * and the model genuinely disagreed with the counts — all land on the same
+ * `prototype_only` badge. Carrying the tier without its reason turns them into
+ * one indistinguishable "not good enough", which is precisely the conclusion a
+ * planner cannot act on and cannot defend.
+ */
+export type ModelRunClaimDecision = {
+  status: ModelingClaimStatus;
+  /** Null when no reason was recorded — never an empty string. */
+  reason: string | null;
+};
+
+/**
  * THE label for a claim tier. There is exactly one, and it lives here beside the
  * vocabulary it renders.
  *
@@ -869,8 +885,8 @@ export async function loadModelRunClaimStatuses({
 }: {
   supabase: ModelingEvidenceSupabaseLike;
   modelRunIds: string[];
-}): Promise<Map<string, ModelingClaimStatus>> {
-  const strongestByRun = new Map<string, ModelingClaimStatus>();
+}): Promise<Map<string, ModelRunClaimDecision>> {
+  const strongestByRun = new Map<string, ModelRunClaimDecision>();
   const uniqueIds = Array.from(new Set(modelRunIds.filter((id): id is string => Boolean(id))));
   if (uniqueIds.length === 0) {
     return strongestByRun;
@@ -878,21 +894,53 @@ export async function loadModelRunClaimStatuses({
 
   const { data, error } = await supabase
     .from("modeling_claim_decisions")
-    .select("model_run_id, claim_status")
+    // `status_reason` is projected because the panel RENDERS it. The tier alone
+    // says a run is prototype-grade; the reason is the only thing that says
+    // WHY — a coverage gap in this state, a zone system that cannot support a
+    // link comparison, or a genuine disagreement with the counts. Those are
+    // three completely different findings behind one identical badge, and a
+    // planner defending a run needs to know which they have. Dropping this
+    // column from the projection is what a mocked Supabase client cannot catch,
+    // so `model-run-claim-status-loader.test.ts` asserts the projection string.
+    .select("model_run_id, claim_status, status_reason")
     .in("model_run_id", uniqueIds);
 
   if (error || !data) {
     return strongestByRun; // best-effort; the panel falls back to the availability posture
   }
 
-  for (const row of data as Array<{ model_run_id: string | null; claim_status: string | null }>) {
+  for (const row of data as Array<{
+    model_run_id: string | null;
+    claim_status: string | null;
+    status_reason: string | null;
+  }>) {
     const runId = row.model_run_id;
     if (!runId || !isModelingClaimStatus(row.claim_status)) {
       continue;
     }
     const existing = strongestByRun.get(runId);
-    if (!existing || MODELING_CLAIM_STATUS_RANK[row.claim_status] > MODELING_CLAIM_STATUS_RANK[existing]) {
-      strongestByRun.set(runId, row.claim_status);
+    // STRICTLY greater, so a TIE never swaps the reason.
+    //
+    // A run can carry one decision per track (assignment, behavioral_demand,
+    // ...), and two tracks can land on the same tier for entirely different
+    // reasons. Replacing on a tie would make the displayed justification depend
+    // on PostgREST's row order — the badge would stay put while the sentence
+    // under it changed between page loads, which is worse than either sentence
+    // alone. First-seen wins, and it stays won.
+    if (
+      !existing ||
+      MODELING_CLAIM_STATUS_RANK[row.claim_status] > MODELING_CLAIM_STATUS_RANK[existing.status]
+    ) {
+      strongestByRun.set(runId, {
+        status: row.claim_status,
+        // A blank reason is recorded as null rather than "", so the panel can
+        // tell "no reason was recorded" from "the reason is empty" and render
+        // nothing instead of an empty line under the badge.
+        reason:
+          typeof row.status_reason === "string" && row.status_reason.trim().length > 0
+            ? row.status_reason.trim()
+            : null,
+      });
     }
   }
 

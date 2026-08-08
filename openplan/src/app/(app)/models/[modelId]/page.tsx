@@ -25,7 +25,10 @@ import {
 } from "@/lib/workspaces/home-geography";
 import { reconcileStaleModelRuns } from "@/lib/models/run-reconcile";
 import type { ReaperRun } from "@/lib/models/run-reaper";
-import { loadModelRunClaimStatuses, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import {
+  loadModelRunClaimStatuses,
+  type ModelRunClaimDecision,
+} from "@/lib/models/evidence-backbone";
 import { filterToCurrentReadyVersion } from "@/lib/gtfs/persist";
 import { createClient } from "@/lib/supabase/server";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
@@ -614,7 +617,7 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
   // panel surfaces a genuinely calibrated_to_counts run as such instead of the
   // engine-availability default. Best-effort: an empty map falls back cleanly.
   const modelRunClaimStatuses = modelRunsSchemaPending
-    ? new Map<string, ModelingClaimStatus>()
+    ? new Map<string, ModelRunClaimDecision>()
     : await loadModelRunClaimStatuses({
         supabase,
         modelRunIds: ((modelRunsResult.data ?? []) as Array<{ id: string }>).map((r) => r.id),
@@ -636,16 +639,16 @@ export default async function ModelDetailPage({ params }: { params: RouteParams 
     artifacts: ModelRunArtifact[];
   }>).map((r) => {
     const engine_key = r.engine_key ?? "deterministic_corridor_v1";
-    const claimStatus = modelRunClaimStatuses.get(r.id) ?? null;
+    const claimDecision = modelRunClaimStatuses.get(r.id) ?? null;
     const reapMessage = reapedRunMessages.get(r.id);
-    if (!reapMessage) return { ...r, engine_key, claimStatus };
+    if (!reapMessage) return { ...r, engine_key, claimDecision };
     // Reflect the reap in the rendered payload without a re-query. completed_at
     // is set by the DB write and picked up on the next poll — omitting it here
     // keeps the loader pure.
     return {
       ...r,
       engine_key,
-      claimStatus,
+      claimDecision,
       status: "failed",
       error_message: reapMessage,
       stages: (r.stages ?? []).map((s) =>
