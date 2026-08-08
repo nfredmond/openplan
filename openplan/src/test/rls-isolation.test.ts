@@ -11,6 +11,28 @@ type WorkspaceRlsProbe = {
   select: string;
   expectedMemberReadable: boolean;
   build: (context: SeedContext) => ProbeRow;
+  /**
+   * HOW THIS TABLE IS SCOPED TO A WORKSPACE, when it is not by a `workspace_id`
+   * column of its own.
+   *
+   * MOST OF THE SCHEMA IS SCOPED BY A JOIN, and that was this harness's blind
+   * spot until 2026-08-07. `readWorkspaceRows` filtered on `workspace_id`
+   * unconditionally, so a table without that column could not be probed at all
+   * — and the census below, built on the same assumption, could not even SEE
+   * such a table to report it missing. 44 tables sat in that gap, including
+   * `engagement_items`: the resident comments, with the names, emails,
+   * coordinates and demographics members of the public typed in.
+   *
+   * A policy that reaches through a join is the shape most likely to be written
+   * wrongly and least likely to be noticed, because the wrongness is one table
+   * away from the row it exposes.
+   */
+  scope?: {
+    /** The column on THIS table that carries the parent id. */
+    column: string;
+    /** The tenant-B parent id the fixture row hangs off. */
+    value: (context: SeedContext) => string;
+  };
 };
 
 type SeedContext = {
@@ -34,6 +56,8 @@ type SeedContext = {
   modelRunBId: string;
   sourceManifestBId: string;
   reportBId: string;
+  engagementCampaignBId: string;
+  engagementQuestionBId: string;
 };
 
 type ReadResult = {
@@ -187,8 +211,8 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
     table: "engagement_campaigns",
     select: "id,workspace_id",
     expectedMemberReadable: true,
-    build: ({ workspaceBId, suffix }) => ({
-      id: randomUUID(),
+    build: ({ workspaceBId, engagementCampaignBId, suffix }) => ({
+      id: engagementCampaignBId,
       workspace_id: workspaceBId,
       title: `RLS campaign ${suffix}`,
       status: "draft",
@@ -714,6 +738,114 @@ const WORKSPACE_RLS_PROBES: WorkspaceRlsProbe[] = [
       role: "member",
     }),
   },
+  /* ---------------------------------------------------------------------- */
+  /* JOIN-SCOPED TABLES — added 2026-08-07, the harness's former blind spot.  */
+  /* ---------------------------------------------------------------------- */
+  /**
+   * THE RESIDENT COMMENT. If one row in this schema must never cross a tenant
+   * boundary, it is this one: what a member of the public wrote, and depending
+   * on the campaign their name, email, coordinates and demographic answers.
+   *
+   * It has no `workspace_id`. Its policy reaches through `campaign_id` into
+   * `engagement_campaigns`, which is exactly the shape this suite could not
+   * probe and its census could not see — so the most sensitive table in the
+   * product was, until today, the one with the least evidence behind it.
+   */
+  {
+    table: "engagement_items",
+    select: "id,campaign_id",
+    expectedMemberReadable: true,
+    scope: { column: "campaign_id", value: (context) => context.engagementCampaignBId },
+    build: ({ engagementCampaignBId, suffix }) => ({
+      id: randomUUID(),
+      campaign_id: engagementCampaignBId,
+      body: `RLS resident comment ${suffix}`,
+    }),
+  },
+  {
+    table: "engagement_survey_questions",
+    select: "id,campaign_id",
+    expectedMemberReadable: true,
+    scope: { column: "campaign_id", value: (context) => context.engagementCampaignBId },
+    build: ({ engagementCampaignBId, engagementQuestionBId, suffix }) => ({
+      id: engagementQuestionBId,
+      campaign_id: engagementCampaignBId,
+      question_type: "free_text",
+      prompt: `RLS survey question ${suffix}`,
+    }),
+  },
+  {
+    table: "engagement_survey_question_options",
+    select: "id,campaign_id",
+    expectedMemberReadable: true,
+    scope: { column: "campaign_id", value: (context) => context.engagementCampaignBId },
+    build: ({ engagementCampaignBId, engagementQuestionBId, suffix }) => ({
+      id: randomUUID(),
+      campaign_id: engagementCampaignBId,
+      question_id: engagementQuestionBId,
+      label: `RLS option ${suffix}`,
+    }),
+  },
+  /** The KPI rows a CEQA §15064.3 determination is derived from. */
+  {
+    table: "model_run_kpis",
+    select: "id,run_id",
+    expectedMemberReadable: true,
+    scope: { column: "run_id", value: (context) => context.modelRunBId },
+    build: ({ modelRunBId, suffix }) => ({
+      id: randomUUID(),
+      run_id: modelRunBId,
+      kpi_name: "resident_vmt_per_capita",
+      kpi_label: `RLS KPI ${suffix}`,
+      value: 21.4,
+    }),
+  },
+  {
+    table: "report_sections",
+    select: "id,report_id",
+    expectedMemberReadable: true,
+    scope: { column: "report_id", value: (context) => context.reportBId },
+    build: ({ reportBId, suffix }) => ({
+      id: randomUUID(),
+      report_id: reportBId,
+      section_key: `rls_section_${suffix}`,
+      title: `RLS section ${suffix}`,
+    }),
+  },
+  {
+    table: "report_artifacts",
+    select: "id,report_id",
+    expectedMemberReadable: true,
+    scope: { column: "report_id", value: (context) => context.reportBId },
+    build: ({ reportBId }) => ({
+      id: randomUUID(),
+      report_id: reportBId,
+      artifact_kind: "html",
+    }),
+  },
+  {
+    table: "project_milestones",
+    select: "id,project_id",
+    expectedMemberReadable: true,
+    scope: { column: "project_id", value: (context) => context.projectBId },
+    build: ({ projectBId, suffix }) => ({
+      id: randomUUID(),
+      project_id: projectBId,
+      title: `RLS milestone ${suffix}`,
+    }),
+  },
+  {
+    table: "project_decisions",
+    select: "id,project_id",
+    expectedMemberReadable: true,
+    scope: { column: "project_id", value: (context) => context.projectBId },
+    build: ({ projectBId, suffix }) => ({
+      id: randomUUID(),
+      project_id: projectBId,
+      title: `RLS decision ${suffix}`,
+      rationale: `RLS rationale ${suffix}`,
+    }),
+  },
 ];
 
 const INSERT_ORDER = [
@@ -759,13 +891,19 @@ async function mustInsert(service: SupabaseClient, table: string, row: ProbeRow)
 async function readWorkspaceRows(
   supabase: SupabaseClient,
   table: string,
-  workspaceId: string
+  workspaceId: string,
+  context?: SeedContext
 ): Promise<ReadResult> {
   const probe = probeByTable(table);
-  const { data, error } = await supabase
-    .from(table)
-    .select(probe.select)
-    .eq("workspace_id", workspaceId);
+  // A join-scoped table is read through the column that carries its parent.
+  // Filtering on `workspace_id` here would error rather than return nothing,
+  // and an errored read is not a denial — it would make every such probe
+  // "pass" for the wrong reason.
+  const scoped =
+    probe.scope && context
+      ? supabase.from(table).select(probe.select).eq(probe.scope.column, probe.scope.value(context))
+      : supabase.from(table).select(probe.select).eq("workspace_id", workspaceId);
+  const { data, error } = await scoped;
 
   return {
     table,
@@ -778,7 +916,7 @@ describe("workspace RLS isolation inventory", () => {
   it("covers every direct workspace-scoped table in the paid-access audit set", () => {
     const tables = WORKSPACE_RLS_PROBES.map((probe) => probe.table).sort();
 
-    expect(tables).toHaveLength(50);
+    expect(tables).toHaveLength(58);
     expect(new Set(tables).size).toBe(tables.length);
     expect(tables).toEqual([
       "aerial_evidence_packages",
@@ -794,6 +932,9 @@ describe("workspace RLS isolation inventory", () => {
       "data_datasets",
       "data_refresh_jobs",
       "engagement_campaigns",
+      "engagement_items",
+      "engagement_survey_question_options",
+      "engagement_survey_questions",
       "funding_awards",
       "funding_opportunities",
       "gtfs_feed_versions",
@@ -803,6 +944,7 @@ describe("workspace RLS isolation inventory", () => {
       "gtfs_tract_service",
       "kb_document_chunks",
       "kb_documents",
+      "model_run_kpis",
       "model_runs",
       "modeling_claim_decisions",
       "modeling_source_manifests",
@@ -812,9 +954,13 @@ describe("workspace RLS isolation inventory", () => {
       "plans",
       "programs",
       "project_corridors",
+      "project_decisions",
       "project_funding_profiles",
+      "project_milestones",
       "project_rtp_cycle_links",
       "projects",
+      "report_artifacts",
+      "report_sections",
       "reports",
       "rtp_cycle_chapters",
       "rtp_cycles",
@@ -861,6 +1007,66 @@ describe("workspace RLS isolation inventory", () => {
  * cross-tenant PROOF, not the boundary. Moving one off this list means writing
  * its fixture `build()` in WORKSPACE_RLS_PROBES.
  */
+
+/**
+ * Tables scoped to a workspace THROUGH A JOIN that have no live cross-tenant
+ * probe yet.
+ *
+ * MEASURED 2026-08-07: 44 tables are scoped this way and none had a probe,
+ * because the harness could not read them (it filtered on `workspace_id`
+ * unconditionally) and this census could not see them. Eight were probed the
+ * same day, chosen by what a leak would cost: the resident comments and the
+ * survey definition they hang off, the KPI rows a CEQA determination is derived
+ * from, the report sections and artifacts an agency publishes, and two project
+ * spine tables.
+ *
+ * The rest are listed here so the number is visible and can only shrink. Every
+ * one of them HAS a policy and HAS row security — what is missing is the live
+ * proof that the policy refuses somebody, which is the only thing that catches a
+ * join written against the wrong parent. Moving one off this list means adding a
+ * probe with a `scope`.
+ */
+const JOIN_SCOPED_EXCUSED: ReadonlyArray<string> = [
+  "agencies",
+  "calendar",
+  "calendar_dates",
+  "client_invoice_line_items",
+  "data_dataset_project_links",
+  "engagement_categories",
+  "engagement_closeloop_entries",
+  "invoicing_rate_entries",
+  "model_links",
+  "model_run_artifacts",
+  "model_run_stages",
+  "network_connectors",
+  "network_corridors",
+  "network_package_versions",
+  "network_zones",
+  "plan_links",
+  "program_links",
+  "project_deliverables",
+  "project_issues",
+  "project_meetings",
+  "project_risks",
+  "project_spend_entries",
+  "project_submittals",
+  "report_runs",
+  "routes",
+  "scenario_assumption_sets",
+  "scenario_comparison_indicator_deltas",
+  "scenario_comparison_snapshots",
+  "scenario_data_packages",
+  "scenario_entries",
+  "scenario_indicator_snapshots",
+  "shapes",
+  "stop_times",
+  "stops",
+  "trips",
+  // The workspace row itself: every other probe's setup depends on its
+  // isolation, so a probe here would be testing the harness.
+  "workspaces",
+];
+
 const PROBE_EXCUSED_TABLES: ReadonlyArray<string> = [
   "aerial_artifact_custody",
   "aerial_processing_jobs",
@@ -928,6 +1134,53 @@ liveDescribe("the probe list covers the schema", () => {
     });
     expect(stale, "these excused tables no longer need an excuse — remove them from PROBE_EXCUSED_TABLES").toEqual([]);
 
+    // ------------------------------------------------------------------
+    // THE SECOND CATEGORY, and the reason this census used to miss it.
+    // ------------------------------------------------------------------
+    //
+    // Everything above enumerates tables with a `workspace_id` COLUMN. Most of
+    // this schema is not scoped that way — a report section belongs to a report,
+    // a resident comment belongs to a campaign — so their policies reach through
+    // a join and they have no such column. The query above cannot see them AT
+    // ALL: not as probed, not as unprobed, not as excused. 44 tables sat in that
+    // silence on 2026-08-07, `engagement_items` among them, which holds the
+    // names, emails, coordinates and demographics members of the public typed in.
+    //
+    // A policy that reaches through a join is the shape most likely to be
+    // written wrongly and least likely to be noticed, because the wrongness is
+    // one table away from the row it exposes. This half makes them countable.
+    const joinScoped = queryCatalog(
+      container,
+      "SELECT DISTINCT p.tablename FROM pg_policies p WHERE p.schemaname = 'public' " +
+        "AND (p.qual LIKE '%workspace%' OR p.with_check LIKE '%workspace%') " +
+        "AND NOT EXISTS (SELECT 1 FROM information_schema.columns col " +
+        "  WHERE col.table_schema = 'public' AND col.table_name = p.tablename " +
+        "  AND col.column_name = 'workspace_id') ORDER BY 1"
+    );
+
+    expect(joinScoped.length, "the join-scope query found nothing — it broke").toBeGreaterThan(30);
+
+    const unprobedJoinScoped = joinScoped.filter(
+      (table) => !probed.has(table) && !JOIN_SCOPED_EXCUSED.includes(table)
+    );
+    expect(
+      unprobedJoinScoped,
+      "these tables are scoped to a workspace THROUGH A JOIN and nothing has ever asked their policy " +
+        "to refuse another tenant. Add a probe with a `scope` to WORKSPACE_RLS_PROBES, or excuse it by name."
+    ).toEqual([]);
+
+    // Staleness, same rule as above: an excuse for a table that is now probed,
+    // or that no longer carries a join-scoped policy, is a number that has
+    // quietly stopped being true.
+    const joinScopedSet = new Set(joinScoped);
+    const staleJoinExcuses = JOIN_SCOPED_EXCUSED.filter(
+      (table) => !joinScopedSet.has(table) || probed.has(table)
+    );
+    expect(
+      staleJoinExcuses,
+      "these join-scoped excuses are no longer needed — remove them from JOIN_SCOPED_EXCUSED"
+    ).toEqual([]);
+
     // And no excused table may lose row security while sitting on the list.
     const excusedWithoutRls = PROBE_EXCUSED_TABLES.filter((table) => byName.get(table) && !byName.get(table)?.rlsEnabled);
     expect(excusedWithoutRls, "an excused table has RLS DISABLED — that is the unarmed-policy defect, fix it now").toEqual([]);
@@ -991,6 +1244,8 @@ liveDescribe("workspace RLS live isolation", () => {
       modelRunBId: randomUUID(),
       sourceManifestBId: randomUUID(),
       reportBId: randomUUID(),
+      engagementCampaignBId: randomUUID(),
+      engagementQuestionBId: randomUUID(),
     };
 
     await mustInsert(service, "workspaces", {
@@ -1053,7 +1308,7 @@ liveDescribe("workspace RLS live isolation", () => {
 
   it("seeds one fixture row per audited workspace table for tenant B", async () => {
     const results = await Promise.all(
-      WORKSPACE_RLS_PROBES.map((probe) => readWorkspaceRows(service, probe.table, context.workspaceBId))
+      WORKSPACE_RLS_PROBES.map((probe) => readWorkspaceRows(service, probe.table, context.workspaceBId, context))
     );
 
     expect(results.filter((result) => result.error)).toEqual([]);
@@ -1064,7 +1319,7 @@ liveDescribe("workspace RLS live isolation", () => {
 
   it("does not expose tenant B rows to anon clients", async () => {
     const results = await Promise.all(
-      WORKSPACE_RLS_PROBES.map((probe) => readWorkspaceRows(anon, probe.table, context.workspaceBId))
+      WORKSPACE_RLS_PROBES.map((probe) => readWorkspaceRows(anon, probe.table, context.workspaceBId, context))
     );
 
     for (const result of results) {
@@ -1074,7 +1329,7 @@ liveDescribe("workspace RLS live isolation", () => {
 
   it("does not expose tenant B rows to an authenticated tenant A member", async () => {
     const results = await Promise.all(
-      WORKSPACE_RLS_PROBES.map((probe) => readWorkspaceRows(userA, probe.table, context.workspaceBId))
+      WORKSPACE_RLS_PROBES.map((probe) => readWorkspaceRows(userA, probe.table, context.workspaceBId, context))
     );
 
     for (const result of results) {
@@ -1084,7 +1339,7 @@ liveDescribe("workspace RLS live isolation", () => {
 
   it("keeps tenant B rows readable to tenant B members except service-only ledgers", async () => {
     const results = await Promise.all(
-      WORKSPACE_RLS_PROBES.map((probe) => readWorkspaceRows(userB, probe.table, context.workspaceBId))
+      WORKSPACE_RLS_PROBES.map((probe) => readWorkspaceRows(userB, probe.table, context.workspaceBId, context))
     );
 
     for (const result of results) {
