@@ -81,8 +81,8 @@ function groupCountLabel(group: ReturnType<typeof buildWorkflowNextActionGroups>
 
 export function WorkspaceCommandBoard({
   summary,
-  label = "Operations command board",
-  title = "What the workspace should do next",
+  label = "What needs attention",
+  title = "Where the work is right now",
   description,
   children,
 }: {
@@ -127,7 +127,7 @@ export function WorkspaceCommandBoard({
     summary.nextCommand?.key === "review-current-report-packets" && summary.nextCommand.moduleKey === "grants";
   const effectiveDescription =
     rtpFundingReviewCount > 0
-      ? `${baseDescription} ${pluralize(rtpFundingReviewCount, "current RTP packet")} still ${rtpFundingReviewCount === 1 ? "needs" : "need"}${rtpFundingReviewRoutesThroughGrants ? " Grants OS follow-through before packet release review is treated as settled." : " funding-backed release review even though packet freshness already reads current."}`
+      ? `${baseDescription} ${pluralize(rtpFundingReviewCount, "RTP packet")} ${rtpFundingReviewCount === 1 ? "is" : "are"} up to date but still ${rtpFundingReviewCount === 1 ? "needs" : "need"}${rtpFundingReviewRoutesThroughGrants ? " funding sorted out in Grants" : " a funding check"} before you share ${rtpFundingReviewCount === 1 ? "it" : "them"}.`
       : baseDescription;
   const workflowGroups = buildWorkflowNextActionGroups(summary);
 
@@ -144,21 +144,21 @@ export function WorkspaceCommandBoard({
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
         <div className="module-subpanel">
-          <p className="module-summary-label">Packet work</p>
+          <p className="module-summary-label">Report packets</p>
           <p className="module-summary-value">
             {reportRefreshRecommendedCount + reportNoPacketCount + reportPacketCurrentCount}
           </p>
           <p className="module-summary-detail">
-            {reportRefreshRecommendedCount} refresh recommended, {reportNoPacketCount} without packets, {reportPacketCurrentCount} ready for release review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} ${rtpFundingReviewRoutesThroughGrants ? "routed through Grants OS." : "funding-backed."}` : "."}
+            {reportRefreshRecommendedCount} out of date, {reportNoPacketCount} not generated yet, {reportPacketCurrentCount} ready to review{rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewCount} waiting on funding${rtpFundingReviewRoutesThroughGrants ? " in Grants" : ""}.` : "."}
           </p>
         </div>
         <div className="module-subpanel">
-          <p className="module-summary-label">Report governance attention</p>
+          <p className="module-summary-label">Reports needing action</p>
           <p className="module-summary-value">{reportGovernanceAttentionCount}</p>
           <p className="module-summary-detail">
-            Counts only packets needing action: {reportRefreshRecommendedCount} regenerate, {reportNoPacketCount} generate, {rtpFundingReviewCount} funding follow-through, {rtpReviewLoopOpenCount} release-review loop open.
+Only the ones that need something from you: {reportRefreshRecommendedCount} to regenerate, {reportNoPacketCount} to generate, {rtpFundingReviewCount} waiting on funding, {rtpReviewLoopOpenCount} still in review.
             {reportPacketCurrentCount > 0
-              ? ` ${reportPacketCurrentCount} current packet${reportPacketCurrentCount === 1 ? " is" : "s are"} kept out of this attention count unless funding review is flagged.`
+              ? ` ${reportPacketCurrentCount} up-to-date packet${reportPacketCurrentCount === 1 ? " is" : "s are"} not counted here, because nothing is being asked of you.`
               : ""}
           </p>
           {summary.nextCommand ? (
@@ -166,17 +166,17 @@ export function WorkspaceCommandBoard({
               href={isGrantsCommand(summary.nextCommand) ? resolveSharedGrantsQueueHref(summary.nextCommand) : summary.nextCommand.href}
               className="mt-2 inline-flex text-xs font-semibold text-primary hover:underline"
             >
-              Open governance lead action
+              Start with this one
             </Link>
           ) : null}
         </div>
         <div className="module-subpanel">
-          <p className="module-summary-label">Plan setup</p>
+          <p className="module-summary-label">Plans to finish setting up</p>
           <p className="module-summary-value">{plansNeedingSetupCount}</p>
-          <p className="module-summary-detail">{planCount} total plans, {activeProjectCount} active projects in scope.</p>
+          <p className="module-summary-detail">{planCount} plan{planCount === 1 ? "" : "s"} in total, {activeProjectCount} active project{activeProjectCount === 1 ? "" : "s"}.</p>
         </div>
         <div className="module-subpanel">
-          <p className="module-summary-label">Funding pressure</p>
+          <p className="module-summary-label">Open grant opportunities</p>
           <p className="module-summary-value">{openFundingOpportunityCount}</p>
           <p className="module-summary-detail">
             {closingSoonFundingOpportunityCount} closing within 14 days
@@ -201,11 +201,11 @@ export function WorkspaceCommandBoard({
           </p>
         </div>
         <div className="module-subpanel">
-          <p className="module-summary-label">Reimbursement follow-through</p>
+          <p className="module-summary-label">Invoicing to chase</p>
           <p className="module-summary-value">{reimbursementPressure}</p>
           <p className="module-summary-detail">
             {reimbursementPressure === 0
-              ? "No reimbursement packet or invoice follow-through pressure is visible in this workspace snapshot."
+              ? "No awards are waiting to be invoiced, and no invoices are waiting on you."
               : `${reimbursementStartCount} need first reimbursement packet${reimbursementStartCount === 1 ? "" : "s"}, ${reimbursementAdvanceCount} already in invoice follow-through.`}
           </p>
         </div>

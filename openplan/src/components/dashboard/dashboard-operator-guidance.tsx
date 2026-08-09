@@ -27,44 +27,44 @@ export function DashboardOperatorGuidance({
           <ShieldCheck className="h-5 w-5 text-emerald-200" />
         </span>
         <div>
-          <p className="module-operator-eyebrow">Overview</p>
-          <h2 className="module-operator-title">Start here, then move into the work</h2>
+          <p className="module-operator-eyebrow">Where to start</p>
+          <h2 className="module-operator-title">What is worth your attention today</h2>
         </div>
       </div>
       <p className="module-operator-copy">
-        Start with a quick scan of your workspace, then open the project, analysis, or report that needs work.
+        A quick read of the workspace, then straight into whatever needs you — a project, a corridor study, or a report.
         {rtpFundingReviewCount > 0
           ? grantsRoutedRtpFundingReview
-            ? ` ${rtpFundingReviewCount} current RTP packet${rtpIsPlural ? "s still need" : " still needs"} Grants OS follow-through even though freshness already reads current.`
-            : ` ${rtpFundingReviewCount} current RTP packet${rtpIsPlural ? "s still need" : " still needs"} funding-backed release review even though freshness already reads current.`
+            ? ` ${rtpFundingReviewCount} RTP packet${rtpIsPlural ? "s are" : " is"} up to date but still ${rtpIsPlural ? "need" : "needs"} funding sorted out in Grants before you share ${rtpIsPlural ? "them" : "it"}.`
+            : ` ${rtpFundingReviewCount} RTP packet${rtpIsPlural ? "s are" : " is"} up to date but still ${rtpIsPlural ? "need" : "needs"} a funding check before you share ${rtpIsPlural ? "them" : "it"}.`
           : ""}
       </p>
       <div className="module-operator-list">
         <div className="module-operator-item">
-          Review active projects, recent updates, and items that need follow-up.
+          Look over your active projects and anything that has changed recently.
         </div>
         {rtpFundingReviewCount > 0 ? (
           <div className="module-operator-item">
             {grantsRoutedRtpFundingReview
-              ? `Current RTP packet work is now a Grants OS follow-through lane, ${rtpFundingReviewCount} packet${rtpIsPlural ? "s still need" : " still needs"} linked-project funding cleanup before packet posture is truly settled.`
-              : `Current RTP packet work is not just freshness, ${rtpFundingReviewCount} packet${rtpIsPlural ? "s still carry" : " still carries"} linked-project funding follow-up.`}
+              ? `An RTP packet being current is not the same as being finished: ${rtpFundingReviewCount} still ${rtpIsPlural ? "need" : "needs"} the funding on ${rtpIsPlural ? "their" : "its"} projects tidied up in Grants first.`
+              : `An RTP packet being current is not the same as being finished: ${rtpFundingReviewCount} still ${rtpIsPlural ? "have" : "has"} funding follow-up on the projects ${rtpIsPlural ? "they include" : "it includes"}.`}
           </div>
         ) : null}
         {comparisonBackedReportCount > 0 ? (
           <div className="module-operator-item">
-            {comparisonBackedReportCount} comparison-backed report packet{comparisonIsPlural ? "s can" : " can"} support grant planning language or prioritization framing, but that evidence still does not prove award likelihood or replace funding-source review.
+            {comparisonBackedReportCount} report{comparisonIsPlural ? "s are" : " is"} backed by a scenario comparison, which is useful when you are explaining why one option was chosen. It does not say anything about whether a grant will be awarded, and it does not replace reading the funding rules.
           </div>
         ) : null}
         {grantModelingOperatorDetail ? (
           <div className="module-operator-item">{grantModelingOperatorDetail}</div>
         ) : null}
         <div className="module-operator-item">
-          Open Projects to manage a planning effort, or Analysis Studio to work on a corridor study.
+          Projects is where a piece of work lives. Analysis Studio is where you study a corridor.
         </div>
         <div className="module-operator-item">
           {firstRunAt
-            ? `Time to first result: ${timeToFirstResultFormatted}.`
-            : "No analysis runs yet — open Analysis Studio to start the first corridor study."}
+            ? `Your first result took ${timeToFirstResultFormatted}.`
+            : "No corridor studies yet. Analysis Studio will run your first one in a few minutes."}
         </div>
       </div>
     </article>

@@ -328,7 +328,7 @@ function engagementReadiness(summary: WorkspaceOperationsSummary, queuedActionCo
     // comments themselves. Kept verbatim for callers that build a summary from
     // source rows without loading module observations.
     return {
-      label: queuedActionCount > 0 ? "Review loop active" : "Handoff check",
+      label: queuedActionCount > 0 ? "In review" : "Nothing queued",
       detail: queuedActionCount > 0
         ? `${pluralize(queuedActionCount, "engagement-linked action")} should be reviewed before closing the public-review handoff.`
         : "No engagement exception is queued; confirm moderation, duplicate review, and report handoff before calling the loop settled.",
@@ -726,9 +726,9 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     title: "RTP",
     description: "Packet freshness, cycle setup, and release-review posture.",
     href: "/rtp",
-    fallbackTitle: "Inspect RTP packet posture",
+    fallbackTitle: "Check the RTP packets",
     fallbackDetail:
-      "No RTP queue pressure. Verify cycle setup, packet freshness, and release-review basis before board or public-review sharing.",
+      "Nothing is waiting in RTP. Before you share anything with a board or the public, check the cycle is set up, the packets are current, and someone has reviewed them.",
     fallbackBadges: (summary) => [
       { label: "Regenerate", value: summary.counts.reportRefreshRecommended },
       { label: "Generate", value: summary.counts.reportNoPacket },
@@ -743,7 +743,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     title: "Grants",
     description: "Funding windows, award records, reimbursement, and gap follow-through.",
     href: "/grants",
-    fallbackTitle: "Review grants pipeline",
+    fallbackTitle: "Check the grants you are tracking",
     fallbackDetail:
       "No funding pressure is queued. Confirm open opportunities, decisions, awards, and reimbursement posture before settling funding context.",
     fallbackBadges: (summary) => [
@@ -760,9 +760,9 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     title: "Engagement",
     description: "Comment moderation, categorization, duplicate review, and report handoff.",
     href: "/engagement",
-    fallbackTitle: "Inspect engagement handoff readiness",
+    fallbackTitle: "Check the public comments",
     fallbackDetail:
-      "No engagement exception is queued. Check moderation, categorization, duplicate review, and report handoff before closing public-review loops.",
+      "Nothing is waiting for you in engagement. Before you close a comment period, check everything has been reviewed, sorted into topics, and duplicates dealt with.",
     fallbackBadges: (summary) => {
       const engagement = summary.moduleObservations?.engagement;
       // Without observations this is the standing-check badge the lane has
@@ -790,7 +790,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     title: "Safety",
     description: "Crash data coverage, pull status, and screening evidence limits.",
     href: "/safety",
-    fallbackTitle: "Check crash data coverage",
+    fallbackTitle: "Check what crash data you have",
     fallbackDetail:
       "No safety exception is queued. Confirm which study areas have a covered, completed crash data pull before any screening language leaves this workspace — an area with no source coverage is a disclosed gap, not a finding.",
     fallbackBadges: (summary) => {
@@ -816,9 +816,9 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     title: "Analysis / modeling",
     description: "Scenario, model, and comparison evidence with caveat-safe language.",
     href: "/models",
-    fallbackTitle: "Check modeling caveats",
+    fallbackTitle: "Check what the model results can be used for",
     fallbackDetail:
-      "No modeling queue pressure. Check scenario evidence, comparison context, and caveat posture before using analysis language in grants or reports.",
+      "Nothing is waiting in modeling. Before you quote a result in a grant or a report, check which scenario it came from and what its caveats say it can be used for.",
     fallbackBadges: (summary) => [
       { label: "Comparison-backed", value: summary.counts.comparisonBackedReports },
       ...(summary.moduleObservations?.modeling
@@ -841,7 +841,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     title: "Data & knowledge",
     description: "Dataset freshness and the document corpus grounded citations draw from.",
     href: "/data-hub",
-    fallbackTitle: "Check evidence supply",
+    fallbackTitle: "Check the data behind your work",
     fallbackDetail:
       "No evidence exception is queued. Confirm dataset freshness and which uploaded documents actually extracted before relying on grounded citations or dataset-backed screening.",
     fallbackBadges: (summary) => {
@@ -871,7 +871,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     title: "Receivables",
     description: "Client invoices this workspace has drafted, sent, and recorded as paid.",
     href: "/invoicing",
-    fallbackTitle: "Check client invoice posture",
+    fallbackTitle: "Check where your invoices stand",
     fallbackDetail:
       "No receivable exception is queued. Confirm which client invoices are still in draft and which are sent and unpaid — OpenPlan records what this workspace tells it, and never observes a payment itself.",
     fallbackBadges: (summary) => {
@@ -897,7 +897,7 @@ const WORKFLOW_GROUPS: WorkflowGroupDefinition[] = [
     title: "Aerial",
     description: "Mission status, AOI evidence packages, and field-verification readiness.",
     href: "/aerial",
-    fallbackTitle: "Check aerial evidence QA",
+    fallbackTitle: "Check the aerial imagery",
     fallbackDetail:
       "No aerial exception is queued. Confirm mission packages, AOI evidence, and QA status before using field capture in reports or grants.",
     fallbackBadges: (summary) => [

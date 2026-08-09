@@ -336,8 +336,8 @@ export function DashboardInsights({
       </div>
 
       <Figure
-        title="Where attention is queued"
-        caption="Open items by lane, from the same workspace summary the command board reads."
+        title="Where the open work sits"
+        caption="Open items by area of work, from the same numbers the board above reads."
         series={lanePressure}
         valueLabel="Open items"
       >

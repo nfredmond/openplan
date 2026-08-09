@@ -152,6 +152,12 @@ describe("workflow next-action groups", () => {
     ]);
   });
 
+  /*
+    The TITLE below is user-facing copy and was rewritten for planners; the
+    behaviour this test exists for — that a lane with an empty queue still
+    offers its standing check rather than disappearing — is unchanged, and is
+    asserted by `source`, `href` and the badge shape rather than the wording.
+  */
   it("keeps standing check actions visible when a workflow has no queued pressure", () => {
     const groups = buildWorkflowNextActionGroups(
       summary({ fullCommandQueue: [], commandQueue: [], nextCommand: null, grantModelingSummary: null })
@@ -161,7 +167,7 @@ describe("workflow next-action groups", () => {
     expect(workflowGroupsPreserveStandingChecksWhenQueueIsEmpty(groups)).toBe(true);
 
     expect(groups.find((group) => group.key === "engagement")?.actions[0]).toMatchObject({
-      title: "Inspect engagement handoff readiness",
+      title: "Check the public comments",
       source: "standing-check",
       href: "/engagement",
       badges: [{ label: "Standing check", value: "handoff" }],

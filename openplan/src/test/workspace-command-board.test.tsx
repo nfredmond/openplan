@@ -134,13 +134,13 @@ describe("WorkspaceCommandBoard", () => {
     render(<WorkspaceCommandBoard summary={summary} />);
 
     expect(
-      screen.getByText(/1 current RTP packet still needs Grants OS follow-through before packet release review is treated as settled\./i)
+      screen.getByText(/1 RTP packet is up to date but still needs funding sorted out in Grants before you share it\./i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/1 ready for release review, 1 routed through Grants OS\./i)).toBeInTheDocument();
-    expect(screen.getByText("Report governance attention")).toBeInTheDocument();
-    expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 1 funding follow-through, 0 release-review loop open\./i)).toBeInTheDocument();
-    expect(screen.getByText(/1 current packet is kept out of this attention count unless funding review is flagged\./i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open governance lead action/i })).toHaveAttribute(
+    expect(screen.getByText(/1 ready to review, 1 waiting on funding in Grants\./i)).toBeInTheDocument();
+    expect(screen.getByText("Reports needing action")).toBeInTheDocument();
+    expect(screen.getByText(/Only the ones that need something from you: 0 to regenerate, 0 to generate, 1 waiting on funding, 0 still in review\./i)).toBeInTheDocument();
+    expect(screen.getByText(/1 up-to-date packet is not counted here, because nothing is being asked of you\./i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Start with this one/i })).toHaveAttribute(
       "href",
       "/grants#grants-gap-resolution-lane"
     );
@@ -154,7 +154,7 @@ describe("WorkspaceCommandBoard", () => {
     expect(screen.getByText("Engagement")).toBeInTheDocument();
     expect(screen.getByText("Analysis / modeling")).toBeInTheDocument();
     expect(screen.getByText("Aerial")).toBeInTheDocument();
-    expect(screen.getByText("Inspect engagement handoff readiness")).toBeInTheDocument();
+    expect(screen.getByText("Check the public comments")).toBeInTheDocument();
     expect(screen.getByText(/standing check · handoff check/i)).toBeInTheDocument();
     expect(screen.getByText(/Standing check: handoff/i)).toBeInTheDocument();
     expect(screen.getByText("Funding follow-through")).toBeInTheDocument();
@@ -197,11 +197,11 @@ describe("WorkspaceCommandBoard", () => {
       />
     );
 
-    const governancePanel = screen.getByText("Report governance attention").closest("div");
+    const governancePanel = screen.getByText("Reports needing action").closest("div");
     expect(governancePanel).not.toBeNull();
     expect(within(governancePanel as HTMLElement).getByText("2")).toBeInTheDocument();
-    expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 0 funding follow-through, 2 release-review loop open\./i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open governance lead action/i })).toHaveAttribute(
+    expect(screen.getByText(/Only the ones that need something from you: 0 to regenerate, 0 to generate, 0 waiting on funding, 2 still in review\./i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Start with this one/i })).toHaveAttribute(
       "href",
       "/reports/report-1#release-review"
     );
@@ -233,8 +233,8 @@ describe("WorkspaceCommandBoard", () => {
         />
       );
 
-      expect(screen.getByText(/0 refresh recommended, 0 without packets, 0 ready for release review\./i)).toBeInTheDocument();
-      expect(screen.getByText(/Counts only packets needing action: 0 regenerate, 0 generate, 0 funding follow-through, 0 release-review loop open\./i)).toBeInTheDocument();
+      expect(screen.getByText(/0 out of date, 0 not generated yet, 0 ready to review\./i)).toBeInTheDocument();
+      expect(screen.getByText(/Only the ones that need something from you: 0 to regenerate, 0 to generate, 0 waiting on funding, 0 still in review\./i)).toBeInTheDocument();
       expect(screen.getByText(/0 regenerate · 0 generate · 0 review/i)).toBeInTheDocument();
       expect(screen.getByText(/0 open opportunities · 0 queued checks/i)).toBeInTheDocument();
       expect(screen.getByText(/0 comparison-backed reports/i)).toBeInTheDocument();

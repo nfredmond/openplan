@@ -145,7 +145,7 @@ describe("DashboardOperatorGuidance", () => {
       screen.queryByText(/comparison-backed report packet/)
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText(/No analysis runs yet/)
+      screen.getByText(/No corridor studies yet/)
     ).toBeInTheDocument();
   });
 
@@ -162,13 +162,13 @@ describe("DashboardOperatorGuidance", () => {
     );
 
     expect(
-      screen.getByText(/1 current RTP packet still needs funding-backed release review/)
+      screen.getByText(/1 RTP packet is up to date but still needs a funding check/)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/1 packet still carries linked-project funding follow-up/)
+      screen.getByText(/1 still has funding follow-up on the projects it includes/)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/1 comparison-backed report packet can support grant planning/)
+      screen.getByText(/1 report is backed by a scenario comparison/)
     ).toBeInTheDocument();
   });
 
@@ -185,10 +185,10 @@ describe("DashboardOperatorGuidance", () => {
     );
 
     expect(
-      screen.getByText(/3 current RTP packets still need Grants OS follow-through/)
+      screen.getByText(/3 RTP packets are up to date but still need funding sorted out in Grants/)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Current RTP packet work is now a Grants OS follow-through lane/)
+      screen.getByText(/An RTP packet being current is not the same as being finished/)
     ).toBeInTheDocument();
   });
 
@@ -222,7 +222,7 @@ describe("DashboardOperatorGuidance", () => {
     );
 
     expect(
-      screen.getByText("Time to first result: 2.5 hrs.")
+      screen.getByText("Your first result took 2.5 hrs.")
     ).toBeInTheDocument();
   });
 });

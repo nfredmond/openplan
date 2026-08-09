@@ -101,7 +101,7 @@ describe("workspace summary RTP funding review", () => {
     expect(summary.nextCommand?.moduleLabel).toBe("Grants OS");
     expect(summary.nextCommand?.tone).toBe("warning");
     expect(summary.nextCommand?.href).toBe("/grants#grants-gap-resolution-lane");
-    expect(summary.nextCommand?.detail).toMatch(/grants os/i);
+    expect(summary.nextCommand?.detail).toMatch(/funding sorted out in Grants/i);
   });
 
   it("uses stored RTP source timestamps instead of report.updatedAt when judging packet freshness", () => {
@@ -180,7 +180,7 @@ describe("workspace summary RTP funding review", () => {
     expect(summary.counts.reportPacketCurrent).toBe(1);
     expect(summary.counts.rtpFundingReviewPackets).toBe(0);
     expect(summary.nextCommand?.key).toBe("review-current-report-packets");
-    expect(summary.nextCommand?.title).toBe("Run release review on current packets");
+    expect(summary.nextCommand?.title).toBe("Review the packets that are ready");
     expect(summary.nextCommand?.tone).toBe("warning");
     expect(summary.nextCommand?.detail).toMatch(/review loop still open/i);
     expect(summary.nextCommand?.detail).toMatch(/1 comment is still waiting for operator review/i);

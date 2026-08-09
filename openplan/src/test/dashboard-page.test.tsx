@@ -293,8 +293,8 @@ describe("DashboardPage", () => {
 
     const quickAction = screen.getByRole("link", { name: /Open RTP grants follow-through/i });
     expect(quickAction).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
-    expect(screen.getAllByText(/Grants OS follow-through/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Current RTP packet work is now a Grants OS follow-through lane/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/funding sorted out in Grants/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/An RTP packet being current is not the same as being finished/i)).toBeInTheDocument();
     expect(screen.queryByText(/supervised pilot/i)).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Open Projects Module/i })).toHaveAttribute("href", "/projects");
   });

@@ -324,9 +324,9 @@ export default async function DashboardPage() {
       tone: "neutral" as const,
     },
     {
-      label: "Queued across lanes",
+      label: "Waiting on you",
       value: `${operationsSummary.counts.queueDepth}`,
-      detail: "Open items the command board is tracking",
+      detail: "Things waiting on you across the workspace",
       tone: (operationsSummary.counts.queueDepth > 0 ? "attention" : "good") as
         | "good"
         | "neutral"
