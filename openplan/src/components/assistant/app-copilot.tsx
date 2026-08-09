@@ -2574,6 +2574,27 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 <Textarea
                   value={draft}
                   onChange={(event) => setDraft(event.target.value)}
+                  /*
+                    Enter sends; Shift+Enter writes a newline.
+
+                    There was no key handler here at all, so a planner typing a
+                    question and pressing Enter — the thing every chat box in
+                    their life does — got a blank line and no response, with no
+                    hint that a Send button was the only way through. The guards
+                    mirror the Send button exactly rather than re-deriving them,
+                    so Enter can never submit something the button would refuse
+                    (an empty draft, or a request already in flight).
+                  */
+                  onKeyDown={(event) => {
+                    if (event.key !== "Enter" || event.shiftKey) return;
+                    // An IME composing a character uses Enter to commit it; that
+                    // keystroke is not a submit, and stealing it would make the
+                    // box unusable for anyone typing a non-Latin script.
+                    if (event.nativeEvent.isComposing) return;
+                    if (responding || loadingContext || (!draft.trim() && !preview)) return;
+                    event.preventDefault();
+                    void submitChat();
+                  }}
                   placeholder="Ask about project status, planning assumptions, report needs, or next steps…"
                   className="min-h-[108px] border-white/10 bg-white/[0.04] text-slate-50 placeholder:text-slate-400/75"
                 />
