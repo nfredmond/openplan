@@ -1,3 +1,4 @@
+import { stripSourceComments } from "@/test/helpers/source-text";
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
@@ -131,8 +132,7 @@ describe("a write that matched no rows is answered as its own outcome", () => {
     // (Same defect as `every-api-route-has-a-caller` excusing a route because
     // its path appeared in an operator-facing sentence: match code, not prose.)
     // Nothing executable can hide in a comment, so this cannot weaken it.
-    const stripComments = (source: string) =>
-      source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
+    const stripComments = stripSourceComments;
 
     const offenders: string[] = [];
     const root = path.resolve(__dirname, "..");

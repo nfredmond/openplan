@@ -1,3 +1,4 @@
+import { stripSourceComments } from "@/test/helpers/source-text";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -190,16 +191,7 @@ function definedVariants(): string[] {
 // ---------------------------------------------------------------------------
 
 /** Block comments and whole-line comments only; a file may still EXPLAIN a pattern. */
-function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .split("\n")
-    .filter((line) => {
-      const trimmed = line.trim();
-      return !trimmed.startsWith("//") && !trimmed.startsWith("*");
-    })
-    .join("\n");
-}
+const stripComments = stripSourceComments;
 
 /** Index just past the delimiter that closes the one opened before `from`. */
 function balancedEnd(source: string, from: number, open: string, close: string): number {

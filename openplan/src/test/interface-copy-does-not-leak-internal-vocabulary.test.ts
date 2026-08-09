@@ -1,3 +1,4 @@
+import { stripSourceComments } from "@/test/helpers/source-text";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -133,11 +134,8 @@ function tsxFilesUnder(dir: string): string[] {
  * a great many of, deliberately — is never mistaken for copy. Lengths are
  * preserved so match offsets still map to the right line.
  */
-function withoutComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, " "))
-    .replace(/^[ \t]*\/\/.*$/gm, (line) => " ".repeat(line.length));
-}
+// Offsets survive, which this file needs: it reports WHERE the copy leaked.
+const withoutComments = stripSourceComments;
 
 export function findCopyLeaks(source: string, relative: string): Finding[] {
   const findings: Finding[] = [];

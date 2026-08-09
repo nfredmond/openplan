@@ -1,3 +1,4 @@
+import { stripSourceComments } from "@/test/helpers/source-text";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -61,16 +62,7 @@ function sourceFiles(dir: string): string[] {
  * not try to parse strings containing "//", which is why it only strips lines
  * that are ENTIRELY a comment rather than trailing text after code.
  */
-function stripComments(source: string): string {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, "")
-    .split("\n")
-    .filter((line) => {
-      const trimmed = line.trim();
-      return !trimmed.startsWith("//") && !trimmed.startsWith("*");
-    })
-    .join("\n");
-}
+const stripComments = stripSourceComments;
 
 /** True when a file both names tier identifiers and emits canonical labels. */
 function looksLikeATierLabelMap(source: string): boolean {

@@ -1,3 +1,4 @@
+import { stripSourceComments } from "@/test/helpers/source-text";
 /**
  * The RTP priority criteria may not cite one jurisdiction's law to another's
  * agency.
@@ -60,9 +61,7 @@ const STATUTE_PATTERNS: ReadonlyArray<{ label: string; pattern: RegExp }> = [
  * Strip comments so PROSE about the defect does not trip the guard that
  * prevents it. Only string literals and code are scanned.
  */
-export function stripComments(source: string): string {
-  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/[^\n]*/g, "$1");
-}
+export const stripComments = stripSourceComments;
 
 function tsFilesDirectlyIn(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true })
