@@ -1876,3 +1876,103 @@ describe("the model-access pass is accounted for", () => {
     }
   });
 });
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* THE EVIDENCE-PACKET PASS — 2026-08-09                                      */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * The fifth old-modeling sample of the day: 3 of 8. The packet is the artifact
+ * a planner inspects and exports to defend a run, so what it says about its own
+ * ORIGIN is a provenance claim rather than formatting.
+ *
+ * FIVE SURVIVORS, every one re-run against the whole suite, all closed. Every
+ * one let the packet describe itself as better evidence than it is — and none
+ * of them changes a number, which is why nothing noticed:
+ *
+ *   - an EMPTY packet could report `source_packet_format: "worker-legacy"`
+ *     instead of "synthesized". The run evidence panel renders that field
+ *     verbatim as a badge, so a packet with nothing behind it would present as
+ *     real worker output, in the case where least else on screen contradicts it.
+ *   - the worker's own caveats could be dropped entirely — the packet simply
+ *     arrives with none and nothing looks wrong.
+ *   - `fallback_reason` could be suppressed. That field being non-null is what
+ *     drives the "Synthesized fallback" badge, so suppressing it hides that the
+ *     packet was assembled rather than produced.
+ *   - the engine could default to a name the run never had: an engine/
+ *     provenance mismatch, the same failure the launch route refuses in-process
+ *     engines to prevent.
+ *   - `engine_version` could drop its "-prototype-" marker, making a screening
+ *     prototype read as a released engine.
+ *
+ * THE THREE THAT DIED are worth naming too, because they show where the
+ * existing tests were pointed: a synthesized packet claiming planner-v1, the
+ * benchmark-fit grade ceasing to say `sketch_screening`, and the sketch lane's
+ * screening caveats being dropped. The sketch/CEQA boundary was guarded; the
+ * packet's account of ITSELF was not.
+ *
+ * Closed with assertions over the three distinct origins together (so a
+ * mutation cannot satisfy one by widening another), plus an over-correction
+ * check — reporting EVERYTHING as synthesized is also killed.
+ */
+const EVIDENCE_PACKET_AUDIT = {
+  date: "2026-08-09",
+  mutationsRun: 8,
+  killed: 3,
+  survived: 5,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 5,
+  survivorsConfirmedAgainstWholeSuite: 5,
+};
+
+const EVIDENCE_PACKET_CLOSED_SURVIVORS: Record<
+  string,
+  { productionFile: string; testFile: string; testName: string }
+> = {
+  "empty-packet-is-synthesized": {
+    productionFile: "src/lib/models/evidence-packet.ts",
+    testFile: "src/test/an-evidence-packet-cannot-overstate-itself.test.ts",
+    testName: "calls an empty packet SYNTHESIZED, not worker output",
+  },
+  "origins-stay-distinct": {
+    productionFile: "src/lib/models/evidence-packet.ts",
+    testFile: "src/test/an-evidence-packet-cannot-overstate-itself.test.ts",
+    testName: "distinguishes worker-legacy from planner-v1 from synthesized",
+  },
+  "fallback-reason-survives": {
+    productionFile: "src/lib/models/evidence-packet.ts",
+    testFile: "src/test/an-evidence-packet-cannot-overstate-itself.test.ts",
+    testName: "keeps the fallback reason, which is what marks a packet as a stand-in",
+  },
+  "engine-is-never-renamed": {
+    productionFile: "src/lib/models/evidence-packet.ts",
+    testFile: "src/test/an-evidence-packet-cannot-overstate-itself.test.ts",
+    testName: "never renames the engine the run actually used",
+  },
+  "prototype-marker-survives": {
+    productionFile: "src/lib/models/evidence-packet.ts",
+    testFile: "src/test/an-evidence-packet-cannot-overstate-itself.test.ts",
+    testName: "keeps the prototype marker in the engine version",
+  },
+};
+
+describe("the evidence-packet pass is accounted for", () => {
+  it("adds up, and closed every survivor", () => {
+    expect(EVIDENCE_PACKET_AUDIT.killed + EVIDENCE_PACKET_AUDIT.survived).toBe(
+      EVIDENCE_PACKET_AUDIT.mutationsRun
+    );
+    expect(Object.keys(EVIDENCE_PACKET_CLOSED_SURVIVORS)).toHaveLength(
+      EVIDENCE_PACKET_AUDIT.survivorsClosed
+    );
+  });
+
+  it("keeps every assertion this pass added", () => {
+    for (const [id, entry] of Object.entries(EVIDENCE_PACKET_CLOSED_SURVIVORS)) {
+      expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      const guardFile = repoPath(entry.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.testFile}`).toBe(true);
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(entry.testName);
+    }
+  });
+});
