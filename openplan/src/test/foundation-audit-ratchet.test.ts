@@ -1976,3 +1976,66 @@ describe("the evidence-packet pass is accounted for", () => {
     }
   });
 });
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* THE DISPATCH-OUTLOOK PASS — 2026-08-09                                     */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * `describeModelRunDispatch` writes the sentence a planner reads when nothing
+ * has picked up their run — the most common self-host failure there is. Sixth
+ * old-modeling sample of the day, and the strongest result: 8 of 8.
+ *
+ * WHAT IT HAS TO KEEP DISTINCT, and why collapsing any two is a false claim
+ * about a deployment OpenPlan cannot probe:
+ *
+ *   absent   — "Nothing on this installation is going to execute this run."
+ *   deployed — a worker is DECLARED, "which is a statement of configuration and
+ *              not a live check — the worker cannot be probed from here."
+ *   unknown  — nothing declares either way, so "there is no evidence either
+ *              way until the run either starts or is failed."
+ *
+ * Every collapse was killed: an undeclared deployment claiming a worker is
+ * coming, an absent worker reported as merely waiting, an unknown case
+ * asserting a worker exists, and "declared" presented as a live check.
+ *
+ * So were the subtler ones: a failed push described as "the worker refused it"
+ * (a `dispatch_failed` also covers an endpoint too incompletely configured to
+ * call, where no request was made at all), the operator instruction that cannot
+ * succeed being used for both cases, and — the only one the four exercising
+ * test files missed, killed by the wider suite — acceptance presented as a
+ * guarantee of completion rather than as a worker's answer before it executes.
+ *
+ * ONE MUTATION DID NOT APPLY on the first run (a four-space indent written as
+ * six) and the harness reported NOT APPLIED rather than counting it. That is
+ * the whole reason the harness prints that state: an unapplied mutation
+ * silently scored as a kill is a fabricated number, and this is the sixth time
+ * today a check has failed to run the way it was written. Re-run correctly, it
+ * was killed.
+ */
+const DISPATCH_OUTLOOK_AUDIT = {
+  date: "2026-08-09",
+  mutationsRun: 8,
+  killed: 8,
+  survived: 0,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 0,
+  /** Killed only once the whole suite ran, not by the four obvious test files. */
+  killedOnlyByTheWiderSuite: 1,
+};
+
+describe("the dispatch-outlook pass is accounted for", () => {
+  it("adds up", () => {
+    expect(DISPATCH_OUTLOOK_AUDIT.killed + DISPATCH_OUTLOOK_AUDIT.survived).toBe(
+      DISPATCH_OUTLOOK_AUDIT.mutationsRun
+    );
+  });
+
+  it("still has the surface it measured", () => {
+    expect(existsSync(repoPath("src/lib/models/run-dispatch.ts"))).toBe(true);
+    expect(
+      readFileSync(repoPath("src/lib/models/run-dispatch.ts"), "utf8")
+    ).toContain("describeModelRunDispatch");
+  });
+});
