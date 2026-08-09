@@ -32,6 +32,7 @@ import {
   prioritizeMapComparisonRows,
 } from "./_helpers";
 import type { AnalysisResult } from "./_types";
+import { unmeasuredCrashNote } from "@/lib/safety/unmeasured-crash-note";
 import { ExploreCurrentResultCard } from "./explore-current-result-card";
 import { ExploreDisclosureCard } from "./explore-disclosure-card";
 import { ExploreEmptyResultBoard } from "./explore-empty-result-board";
@@ -493,7 +494,10 @@ export function ExploreResultsBoard({
       value: safetyTile.value,
       note: safetyTile.measured
         ? "Crash-risk lane informed by the active safety source and filters."
-        : "No crash source covered this study area, so no safety score was produced. An unmeasured corridor is not a safe one.",
+        : unmeasuredCrashNote({
+            state: analysisResult.metrics.sourceSnapshots?.crashes?.state,
+            label: analysisResult.metrics.sourceSnapshots?.crashes?.label,
+          }),
       estimated: safetyTile.measured && estimatedDomains.crashes,
       estimatedNote: safetyTile.measured && estimatedDomains.crashes ? estimatedSourceNote("crashes") : undefined,
     },

@@ -11,6 +11,7 @@ import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { evaluateReportArtifactGate } from "@/lib/stage-gates/report-artifacts";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { stripFactCitationTokens } from "@/lib/grants/narrative-grounding";
+import { unmeasuredCrashNote } from "@/lib/safety/unmeasured-crash-note";
 import {
   federalJustice40ShortStatus,
   PROGRAM_DISCONTINUED_CAVEAT,
@@ -340,6 +341,20 @@ function buildHtml(
       ? snapshot.caveats.filter((entry): entry is string => typeof entry === "string")
       : [];
   })();
+  /*
+    Why a missing Safety score has no fixed sentence here.
+
+    This card used to state that no crash source covered the study area, for
+    every run without a score. That is only one of the two reasons, and it is
+    the wrong one whenever a covering source was simply unreachable — a real
+    Columbus, Ohio run recorded `state: "source-unavailable"` for FARS, a
+    national source, while the exported report told the reader their area was
+    not covered. A report is the artifact somebody cites months later, without
+    being able to ask; it must not carry a cause the run never recorded.
+  */
+  const crashSnapshotForNote = (m.sourceSnapshots as Record<string, unknown> | undefined)?.crashes as
+    | { state?: string; label?: string }
+    | undefined;
   // Whether the ACS read behind the Accessibility and Equity scores answered at
   // all. When it did not, both scores were computed over placeholder zeros and
   // are deflated; the PDF is the artifact most likely to be read by someone who
@@ -412,7 +427,7 @@ function buildHtml(
 <h2>Corridor Scores</h2>
 <div class="scores-grid">
   ${scoreCard(m.accessibilityScore, "Accessibility", "No accessibility score was recorded for this run.", censusScoreInputs.caveat)}
-  ${scoreCard(m.safetyScore, "Safety", "No crash source covered this study area, so no safety score was produced. An unmeasured corridor is not a safe one.")}
+  ${scoreCard(m.safetyScore, "Safety", unmeasuredCrashNote({ state: crashSnapshotForNote?.state, label: crashSnapshotForNote?.label }))}
   ${scoreCard(m.equityScore, "Equity", "No equity screening score was recorded for this run.", censusScoreInputs.caveat)}
 </div>
 ${scoreBar(Number(m.overallScore) || 0, "Overall Composite Score")}

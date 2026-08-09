@@ -475,7 +475,11 @@ describe("POST /api/report", () => {
     const response = await postReport(jsonRequest({ runId, format: "html" }));
     const html = await response.text();
 
-    expect(html).toContain("No crash source covered this study area");
+    // This fixture's crash snapshot records no `state`, so the report may not
+    // claim a reason. It used to assert a coverage gap for every unmeasured
+    // run, including outages — see the `source-unavailable` case below.
+    expect(html).toContain("No safety score was produced for this run, and it did not record why");
+    expect(html).not.toContain("No crash source covered this study area");
     // The danger red belongs to a measured low score, never to an absent one.
     expect(html).not.toMatch(/color:#dc2626[^>]*>\s*(Not measured|N\/A)/);
     // Unmeasured demographics read as unmeasured, not "not applicable" and not
@@ -484,6 +488,59 @@ describe("POST /api/report", () => {
     expect(html).toContain("<td>Total Population</td><td>Not measured</td>");
     expect(html).toContain("<td>Public Transit</td><td>Not measured</td>");
     expect(html).not.toContain("<td>Total Population</td><td>0</td>");
+  });
+
+  /**
+   * An OUTAGE may not be exported as a COVERAGE GAP.
+   *
+   * Found by running a real Columbus, Ohio corridor: the run recorded
+   * `state: "source-unavailable"` for FARS — a national source that plainly
+   * covers Ohio — and both the results board and this report told the reader
+   * "No crash source covered this study area". A report is read months later by
+   * someone who cannot ask; a planner who believes their state has no crash
+   * coverage abandons the safety lane, where one told the source was down
+   * retries it.
+   */
+  it("names an unreachable crash source as an outage, not as missing coverage", async () => {
+    runsSingleMock.mockResolvedValue({
+      data: {
+        id: runId,
+        workspace_id: "33333333-3333-4333-8333-333333333333",
+        title: "East Main Street",
+        query_text: "Evaluate this corridor",
+        summary_text: "Summary text",
+        ai_interpretation: null,
+        metrics: {
+          overallScore: 28,
+          accessibilityScore: 32,
+          safetyScore: null,
+          equityScore: 23,
+          confidence: "medium",
+          sourceSnapshots: {
+            // The report artifact gate requires a fetchedAt on all three.
+            census: { fetchedAt: "2026-08-09T00:14:27.831Z" },
+            transit: { fetchedAt: "2026-08-09T00:14:27.831Z" },
+            crashes: {
+              state: "source-unavailable",
+              label: "NHTSA Fatality Analysis Reporting System (FARS)",
+              fetchedAt: "2026-08-09T00:14:27.831Z",
+            },
+          },
+        },
+        created_at: "2026-08-09T00:14:27.831Z",
+      },
+      error: null,
+    });
+
+    const response = await postReport(jsonRequest({ runId, format: "html" }));
+    const html = await response.text();
+
+    expect(html).toContain("NHTSA Fatality Analysis Reporting System (FARS) could not be reached");
+    expect(html).toContain("This is an outage, not a finding that this area has no crash data");
+    // The false cause, which is what this run would have exported before.
+    expect(html).not.toContain("No crash source covered this study area");
+    // The absence still may not read as a favorable safety finding.
+    expect(html).toContain("An unmeasured corridor is not a safe one.");
   });
 
   /**

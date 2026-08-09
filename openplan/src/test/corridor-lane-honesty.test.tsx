@@ -461,6 +461,40 @@ describe("the results board a planner actually sees, fed by what the API persist
     ).toBeInTheDocument();
   });
 
+  /**
+   * ...and "why" has to be the RIGHT why.
+   *
+   * The tile above is correct for this fixture, whose crash lookup really is
+   * out of coverage. But the sentence was hard-coded, so it was also shown for
+   * the other state — and a live Columbus, Ohio run recorded
+   * `state: "source-unavailable"` for FARS, a national source covering Ohio,
+   * while the screen told the planner their study area was not covered. The two
+   * states mean opposite things to whoever has to decide what to do next.
+   */
+  it("calls an unreachable crash source an outage rather than missing coverage", async () => {
+    const persisted = await runAnalysisWithNoCensusData();
+    const metrics = persisted.metrics as Record<string, unknown>;
+    renderBoard(
+      boardResultFrom(persisted, {
+        sourceSnapshots: {
+          ...((metrics.sourceSnapshots as Record<string, unknown>) ?? {}),
+          crashes: {
+            state: "source-unavailable",
+            label: "NHTSA Fatality Analysis Reporting System (FARS)",
+          },
+        },
+      })
+    );
+
+    const safetyTile = screen.getByText("Safety").closest("div")?.parentElement as HTMLElement;
+    expect(within(safetyTile).getByText("Not measured")).toBeInTheDocument();
+    expect(
+      screen.getByText(/NHTSA Fatality Analysis Reporting System \(FARS\) could not be reached/)
+    ).toBeInTheDocument();
+    // The cause this run did not have.
+    expect(screen.queryByText(/No crash source covered this study area/)).not.toBeInTheDocument();
+  });
+
   it("says the demographics were not measured rather than showing a zero", async () => {
     const persisted = await runAnalysisWithNoCensusData();
     renderBoard(boardResultFrom(persisted));
