@@ -58,7 +58,7 @@ export function GrantsPageIntroHeader({
         <div className="module-intro-body">
           <h1 className="module-intro-title">Grants</h1>
           <p className="module-intro-description">
-            Track funding opportunities, pursue decisions, awards, and reimbursement follow-through in one place instead of scattered project notes.
+            Every grant you are watching, chasing, or already won — with the money you are still owed — in one place instead of a spreadsheet and a folder of emails.
           </p>
         </div>
 
@@ -80,7 +80,7 @@ export function GrantsPageIntroHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Open now</p>
             <p className="module-summary-value">{openCount}</p>
-            <p className="module-summary-detail">Calls that can move immediately into packaging or decision review.</p>
+            <p className="module-summary-detail">Accepting applications right now.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Pursue</p>
@@ -95,7 +95,7 @@ export function GrantsPageIntroHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Awarded</p>
             <p className="module-summary-value">{awardedCount}</p>
-            <p className="module-summary-detail">Awarded opportunities ready to become award and reimbursement records.</p>
+            <p className="module-summary-detail">Won. Add the award so you can start claiming money back.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Linked scope</p>
@@ -128,16 +128,16 @@ export function GrantsPageIntroHeader({
           </span>
           <div>
             <p className="module-operator-eyebrow">Grant management</p>
-            <h2 className="module-operator-title">Keep grant decisions connected to project and RTP records</h2>
+            <h2 className="module-operator-title">Grant decisions stay attached to the project</h2>
           </div>
         </div>
         <p className="module-operator-copy">
-          Funding needs, opportunities, awards, and reimbursement status live in one shared view, tied to the projects and programs they fund.
+          What a project needs, what is open, what you won, and what has been reimbursed — all in one view, tied to the projects and programs the money pays for.
         </p>
         <div className="module-operator-list">
-          <div className="module-operator-item">Use one opportunity registry instead of re-entering grant details across projects and programs.</div>
-          <div className="module-operator-item">Move opportunities from monitor to pursue with explicit fit, readiness, and rationale notes.</div>
-          <div className="module-operator-item">Track awarded dollars and reimbursement follow-through as first-class records, not afterthoughts.</div>
+          <div className="module-operator-item">Enter a grant once. Every project and program that applies for it reads the same record.</div>
+          <div className="module-operator-item">When you decide to go after one, write down why — the fit, how ready you are, and the reasoning.</div>
+          <div className="module-operator-item">Awarded dollars and reimbursement claims are tracked here too, not left to whoever remembers.</div>
         </div>
         <div className="mt-4">
           <WorkspaceRuntimeCue summary={operationsSummary} className="border-white/10 bg-white/[0.06] text-emerald-50/82" />

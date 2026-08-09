@@ -523,8 +523,8 @@ export default async function ProjectsPage({
               <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, planningTypes)}</p>
               <p className="module-summary-detail">
                 {portfolioCountsUnknown
-                  ? "Unavailable — scoping posture cannot be summarised from a registry that could not be read."
-                  : `Including ${scopingCount} projects still in scoping posture.`}
+                  ? "Unavailable — the project list could not be read, so this is not a count of zero."
+                  : `Including ${scopingCount} still in scoping.`}
               </p>
             </div>
           </div>
@@ -644,7 +644,7 @@ export default async function ProjectsPage({
               <div className="mt-5">
                 <ReportPacketCommandQueue
                   title="Portfolio packet queue"
-                  description="The highest-priority packet actions across the workspace, ordered before the full project registry."
+                  description="The report packets that need something first, before the full project list below."
                   items={packetQueueProjects.slice(0, 5).map((project) => {
                     const report = project.reportSummary.recommendedReport;
                     const badges: Array<{ label: string; value?: string | number | null }> = [];
@@ -774,7 +774,7 @@ export default async function ProjectsPage({
 
                     <div className="mt-3 border-t border-border/70 pt-3">
                       <p className="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                        Portfolio packet command
+                        What this project needs next
                       </p>
                       <p className="mt-1 text-sm font-semibold text-foreground">
                         {project.packetCommand.label}

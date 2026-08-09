@@ -204,7 +204,7 @@ export function GrantsOpportunityRegistryCard({
         <div className="module-note mt-4 text-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="font-semibold text-foreground">Evidence readiness guardrails</p>
+              <p className="font-semibold text-foreground">What to check before applying</p>
               <p className="mt-1 text-muted-foreground">{evidenceReadinessSummary}</p>
             </div>
             <StatusBadge

@@ -215,10 +215,10 @@ describe("GrantsOpportunityRegistryCard", () => {
       />
     );
 
-    expect(screen.getByText("Evidence readiness guardrails")).toBeInTheDocument();
+    expect(screen.getByText("What to check before applying")).toBeInTheDocument();
     expect(screen.getByText("Fit notes documented")).toBeInTheDocument();
     expect(screen.getByText("Source anchors documented")).toBeInTheDocument();
-    expect(screen.getByText("Fiscal posture mentioned")).toBeInTheDocument();
+    expect(screen.getByText("Match and reimbursement noted")).toBeInTheDocument();
     expect(screen.getByText("Final review required")).toBeInTheDocument();
     expect(screen.getAllByText(/planning support only, not proof of award likelihood/).length).toBeGreaterThan(0);
     expect(screen.queryByText(/submit/i)).not.toBeInTheDocument();

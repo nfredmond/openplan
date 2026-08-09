@@ -291,7 +291,7 @@ export default async function EngagementPage({
           <div className="module-intro-body">
             <h1 className="module-intro-title">Campaigns</h1>
             <p className="module-intro-description">
-              Create campaigns, link them to projects when needed, organize public input, and keep moderation and reporting in one place.
+              Run a public comment campaign, tie it to a project if it belongs to one, and keep every comment, category, and reply in one place.
             </p>
             {projectFilterId ? (
               // Every tile and every row below belongs to one project, so the
@@ -332,7 +332,7 @@ export default async function EngagementPage({
                   ? "The campaign list could not be read, so this is not a count of zero."
                   : hasActiveFilters
                     ? "Matching the current filters."
-                    : "Workspace-scoped engagement containers with auditable ownership."}
+                    : "Every campaign in this workspace, with a record of who changed what."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -369,13 +369,13 @@ export default async function EngagementPage({
             </div>
           </div>
           <p className="module-operator-copy">
-            Organize comments, categories, and campaign status so public input is easy to review and summarize.
+            Sort comments into categories and track where each campaign stands, so writing the response summary later is a reading job, not a rebuilding job.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">Campaigns can stand alone or connect to a project.</div>
             <div className="module-operator-item">Categories keep comments organized for review and reporting.</div>
-            <div className="module-operator-item">Items track status, source, map location, and team notes.</div>
-            <div className="module-operator-item">Share links stay disabled until a campaign is ready to open.</div>
+            <div className="module-operator-item">Each comment keeps its status, where it came from, its spot on the map, and your team&apos;s notes.</div>
+            <div className="module-operator-item">The public link stays off until you open the campaign.</div>
           </div>
         </article>
       </header>

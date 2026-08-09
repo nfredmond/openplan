@@ -252,7 +252,7 @@ export function ProjectFundingPanel({
 
           <div className="grid gap-4 md:grid-cols-3 mt-5">
             <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding stack posture</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Funding lined up</p>
               <div className="mt-2">
                 <StatusBadge tone={projectFundingStackTone(fundingStackSummary.pipelineStatus)}>{fundingStackSummary.pipelineLabel}</StatusBadge>
               </div>
@@ -273,7 +273,7 @@ export function ProjectFundingPanel({
               ) : null}
             </div>
             <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Reimbursement posture</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Money claimed back</p>
               <div className="mt-2">
                 <StatusBadge tone={projectFundingReimbursementTone(fundingStackSummary.reimbursementStatus)}>
                   {fundingStackSummary.reimbursementLabel}
@@ -291,7 +291,7 @@ export function ProjectFundingPanel({
               </p>
               {unlinkedProjectInvoices.length > 0 ? (
                 <div className="module-note mt-3 text-sm">
-                  {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} still unlinked to a funding award, totaling {fmtCurrency(unlinkedProjectInvoiceSummary.totalNetAmount)}. Those records are excluded from award reimbursement posture until linked in the billing register below.
+                  {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} still unlinked to a funding award, totaling {fmtCurrency(unlinkedProjectInvoiceSummary.totalNetAmount)}. Until they are linked in the register below, they do not count toward the figures above.
                 </div>
               ) : null}
             </div>
@@ -301,7 +301,7 @@ export function ProjectFundingPanel({
               <p className="mt-2 text-sm text-muted-foreground">
                 {nextObligationAward
                   ? `Obligation due ${fmtDateTime(nextObligationAward.obligation_due_at)}.`
-                  : "Record obligation timing on awards so reimbursement and delivery risk can surface earlier."}
+                  : "Add obligation dates to your awards and this will warn you before a deadline passes."}
               </p>
             </div>
           </div>
@@ -357,7 +357,7 @@ export function ProjectFundingPanel({
 
           {unlinkedProjectInvoices.length > 0 ? (
             <div className="module-alert mt-5 text-sm">
-              {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} not yet linked to a funding award. Reimbursement posture for the award stack only counts linked invoice chains, so review the billing register below to resolve the mismatch.
+              {unlinkedProjectInvoices.length} project invoice record{unlinkedProjectInvoices.length === 1 ? " is" : "s are"} not yet linked to a funding award. The figures above only count invoices linked to an award, so check the register below and connect them.
             </div>
           ) : null}
 

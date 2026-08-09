@@ -335,7 +335,7 @@ describe("ProjectsPage", () => {
     expect(within(evidenceBackedChip as HTMLElement).getByText("2")).toBeInTheDocument();
     expect(within(governanceHoldChip as HTMLElement).getByText("1")).toBeInTheDocument();
 
-    expect(screen.getAllByText(/Portfolio packet command/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/What this project needs next/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Downtown Safety Packet/i).length).toBeGreaterThan(0);
     expect(
       screen.getByText(/Next action: open this report and regenerate the packet\./i)

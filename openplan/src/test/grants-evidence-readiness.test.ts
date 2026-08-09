@@ -97,7 +97,11 @@ describe("buildGrantEvidenceReadinessCues", () => {
     expect(cues.find((cue) => cue.key === "modeling-boundary")?.nextAction).toContain(
       "do not convert it into award likelihood"
     );
-    expect(summarizeGrantEvidenceReadiness(cues)).toContain("supervised review");
+    // The all-green summary must still hand the judgement back to a person —
+    // the wording may change, the refusal to certify may not.
+    const allGreenSummary = summarizeGrantEvidenceReadiness(cues);
+    expect(allGreenSummary).toContain("Read them yourself");
+    expect(allGreenSummary).toContain("does not decide eligibility");
   });
 
   it("flags missing source artifacts, modeling packet, and fiscal posture without overclaiming readiness", () => {
@@ -124,10 +128,10 @@ describe("buildGrantEvidenceReadinessCues", () => {
       tone: "neutral",
     });
     expect(cues.find((cue) => cue.key === "match-reimbursement-posture")?.detail).toContain(
-      "No local match or reimbursement posture is stated"
+      "Your notes do not say anything about local match or reimbursement"
     );
     expect(summarizeGrantEvidenceReadiness(cues)).toBe(
-      "3 of 6 visible grant evidence cues need operator review before pursue, application, or reimbursement language is treated as ready."
+      "3 of 6 checks below still need your attention before you rely on this for an application."
     );
   });
 

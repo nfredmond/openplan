@@ -88,8 +88,8 @@ export function ProjectWorkspaceCreator() {
       </div>
 
       <p className="module-section-description">
-        This creates a project in your current workspace so planning, reporting, and analysis can evolve inside a
-        stable container. It does not create a separate workspace.
+        This adds a project to the workspace you are in now, so its analysis, reports, and records all live together.
+        It does not create a new workspace.
       </p>
 
       <form className="mt-5 space-y-4" onSubmit={handleSubmit}>

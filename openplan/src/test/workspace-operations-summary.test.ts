@@ -94,7 +94,7 @@ describe("workspace operations summary", () => {
     expect(summary.counts.projectFundingGapProjects).toBe(1);
     expect(summary.nextCommand?.key).toBe("anchor-project-funding-needs");
     expect(summary.nextCommand?.moduleKey).toBe("grants");
-    expect(summary.nextCommand?.moduleLabel).toBe("Grants OS");
+    expect(summary.nextCommand?.moduleLabel).toBe("Grants");
     expect(summary.nextCommand?.targetProjectId).toBe("project-anchor");
   });
 

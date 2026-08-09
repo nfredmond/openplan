@@ -97,8 +97,8 @@ export function buildGrantEvidenceReadinessCues(
       label: fitNotesRecorded ? "Fit notes documented" : "Fit notes missing",
       tone: fitNotesRecorded ? "success" : "warning",
       detail: fitNotesRecorded
-        ? "Funding-source fit notes are visible for operator review. They support triage language but are not an eligibility determination."
-        : "No funding-source fit notes are visible yet, so pursue/skip language should stay provisional until an operator records why the source fits this project.",
+        ? "Fit notes are recorded. They help you decide whether to chase this one; they are not an eligibility ruling."
+        : "No fit notes yet. Keep any pursue-or-skip call provisional until someone writes down why this source suits this project.",
       nextAction: fitNotesRecorded
         ? "Review fit language against the actual NOFO/program guidance before final application copy."
         : "Add a short fit note tied to the funding source, project purpose, and known program priorities.",
@@ -109,12 +109,12 @@ export function buildGrantEvidenceReadinessCues(
       tone: missingAnchors.length === 0 ? "success" : "warning",
       detail:
         missingAnchors.length === 0
-          ? "The opportunity is anchored to a project, funding/program record, and readiness notes visible in the workspace."
-          : `Required source anchors are still incomplete: ${joinMissing(missingAnchors)}. Keep the opportunity in review until these artifacts are explicit.`,
+          ? "This opportunity is tied to a project, a funding program, and readiness notes you can open."
+          : `Still missing: ${joinMissing(missingAnchors)}. Keep this in review until each one is attached.`,
       nextAction:
         missingAnchors.length === 0
-          ? "Confirm the visible notes cite or summarize the actual source materials before export."
-          : "Link the missing record(s) and capture the source-artifact note before treating this as grant-ready.",
+          ? "Check that the notes actually cite the source materials before you export anything."
+          : "Attach the missing record and write the source note before treating this as ready to apply.",
     },
     {
       key: "modeling-boundary",
@@ -132,13 +132,13 @@ export function buildGrantEvidenceReadinessCues(
     },
     {
       key: "match-reimbursement-posture",
-      label: fiscalPostureMentioned ? "Fiscal posture mentioned" : "Match/reimbursement not stated",
+      label: fiscalPostureMentioned ? "Match and reimbursement noted" : "Match and reimbursement not stated",
       tone: fiscalPostureMentioned ? "info" : "warning",
       detail: fiscalPostureMentioned
-        ? "Readiness or decision notes mention match, reimbursement, obligation, award, invoice, or retention posture. This card still does not certify fiscal compliance."
-        : `No local match or reimbursement posture is stated in the visible opportunity notes${
+        ? "Your notes mention local match, reimbursement, obligation, award, invoice, or retention. This card still does not check any of it for compliance."
+        : `Your notes do not say anything about local match or reimbursement${
             expectedAwardRecorded ? ", even though an expected award amount is recorded" : ""
-          }. Award, match, obligation, and invoice details remain separate operator-reviewed records.`,
+          }. Award, match, obligation, and invoice details are kept as separate records for someone to review.`,
       nextAction: fiscalPostureMentioned
         ? "Cross-check the award, match, obligation, and invoice lanes before application or reimbursement language leaves OpenPlan."
         : "Record whether local match, reimbursement timing, and obligation risk are known, unknown, or out of scope for this source.",
@@ -178,8 +178,8 @@ export function summarizeGrantEvidenceReadiness(cues: GrantEvidenceReadinessCue[
   const warningCount = cues.filter((cue) => cue.tone === "warning" || cue.tone === "danger").length;
 
   if (warningCount === 0) {
-    return "Visible grant evidence cues are documented for supervised review; final application, eligibility, and fiscal decisions still require human source review.";
+    return "Each check below has something recorded against it. Read them yourself before you apply — OpenPlan does not decide eligibility or fiscal compliance for you.";
   }
 
-  return `${warningCount} of ${cues.length} visible grant evidence cues need operator review before pursue, application, or reimbursement language is treated as ready.`;
+  return `${warningCount} of ${cues.length} checks below still need your attention before you rely on this for an application.`;
 }

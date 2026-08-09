@@ -131,7 +131,7 @@ export default async function ProjectDetailPage({
       <WorkspaceMembershipRequired
         moduleLabel="Project workbench"
         title="Project access needs a workspace"
-        description="Project control rooms are workspace-scoped. You are signed in, but this account is not attached to a workspace yet. Reload your workspace, or ask an owner/admin to add you to the one that owns this project."
+        description="Projects belong to a workspace. You are signed in, but your account is not in one yet. Reload, or ask an owner or admin to add you to the workspace that owns this project."
         primaryHref="/projects"
         primaryLabel="Back to projects"
       />

@@ -125,7 +125,7 @@ export function ProjectDeliveryBoard({
               <p className="module-section-label">Project controls</p>
               <h2 className="module-section-title">Milestone, submittal, and invoice readiness</h2>
               <p className="module-section-description">
-                This is the operator-facing slice for LAPM-style project controls. It is deliberately honest: workflow posture is live now, while exact Caltrans exhibit/form numbering remains deferred.
+                Milestones, submittals, and invoices, tracked the way a local-assistance project needs them. The workflow works today; OpenPlan does not yet fill in a funder&apos;s exact exhibit and form numbers for you.
               </p>
             </div>
           </div>
@@ -225,12 +225,12 @@ export function ProjectDeliveryBoard({
             </div>
           </div>
           <div className="rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoice posture</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Invoices</p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{invoiceSummary.totalCount ? `${invoiceSummary.totalCount} invoice record(s)` : invoicesReadFailed ? "Invoice records unavailable" : "No invoice records yet"}</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               {invoiceSummary.totalCount
                 ? `${fmtCurrency(invoiceSummary.paidNetAmount)} paid · ${invoiceSummary.overdueCount} overdue. Net requested ${fmtCurrency(invoiceSummary.totalNetAmount)}.`
-                : "The register is ready for consulting/project-delivery invoices instead of SaaS-only subscription state."}
+                : "Add invoices here as you bill for project work, and this will track what is paid and what is late."}
             </p>
             <div className="mt-3">
               <Link href="#project-invoices" className="module-inline-action w-fit">

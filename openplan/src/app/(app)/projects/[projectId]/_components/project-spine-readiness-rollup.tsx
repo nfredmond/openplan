@@ -42,7 +42,7 @@ export function ProjectSpineReadinessRollup({
               <ActivitySquare className="h-4 w-4" />
             </span>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Operator posture</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">Where this project stands</p>
               <h3 className="mt-1 text-base font-semibold text-foreground">{rollup.headline}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{rollup.detail}</p>
             </div>

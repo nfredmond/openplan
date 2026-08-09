@@ -165,13 +165,13 @@ export function ProjectPostureHeader({
             <span className="module-record-chip"><span>Type</span><strong>{titleize(project.plan_type)}</strong></span>
           </div>
           <p className="text-[0.73rem] text-muted-foreground">
-            {titleize(project.delivery_phase)} · Controls {titleize(projectControlsSummary.controlHealth)}{linkedRtpCycleCount > 0 ? ` · RTP ${linkedRtpCycleCount} linked` : ""} · {workspaceData?.name ?? "Unknown workspace"} · Updated {fmtDateTime(project.updated_at)}
+            {titleize(project.delivery_phase)} · Delivery {titleize(projectControlsSummary.controlHealth)}{linkedRtpCycleCount > 0 ? ` · RTP ${linkedRtpCycleCount} linked` : ""} · {workspaceData?.name ?? "Unknown workspace"} · Updated {fmtDateTime(project.updated_at)}
           </p>
           <div className="module-intro-body">
             <h1 className="module-intro-title">{project.name}</h1>
             <p className="module-intro-description">
               {project.summary ||
-                "Use this detail view to keep runs, milestones, submittals, invoices, deliverables, risks, issues, decisions, meetings, and linked datasets tied to the project."}
+                "Everything for this project in one place: analysis runs, milestones, submittals, invoices, deliverables, risks, issues, decisions, meetings, and the datasets it draws on."}
             </p>
           </div>
 
@@ -179,7 +179,7 @@ export function ProjectPostureHeader({
             <div className="module-summary-card">
               <p className="module-summary-label">Deliverables</p>
               <p className="module-summary-value">{deliverableCount}</p>
-              <p className="module-summary-detail">Outputs actively tracked in this control room.</p>
+              <p className="module-summary-detail">Things this project owes someone, tracked here.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Open risks</p>
@@ -196,18 +196,18 @@ export function ProjectPostureHeader({
               <p className="module-summary-detail">
                 {openIssueCount === null
                   ? "Issue count unavailable — the issue log could not be read, so this is not zero."
-                  : "Current blockers surfaced for delivery and analysis flow."}
+                  : "Things stopping work right now, on delivery or analysis."}
               </p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Milestones</p>
               <p className="module-summary-value">{projectControlsSummary.milestoneCount}</p>
-              <p className="module-summary-detail">Phase checkpoints and operator deadlines on the record.</p>
+              <p className="module-summary-detail">Phase checkpoints and deadlines on the record.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Pending submittals</p>
               <p className="module-summary-value">{projectControlsSummary.pendingSubmittalCount}</p>
-              <p className="module-summary-detail">Packets still in draft, review, or submitted posture.</p>
+              <p className="module-summary-detail">Packets still in draft, in review, or sent and awaiting a reply.</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">RTP cycles</p>
@@ -241,12 +241,12 @@ export function ProjectPostureHeader({
               <FolderKanban className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Project control room</p>
-              <h2 className="module-operator-title">Delivery controls are now visible, not implied</h2>
+              <p className="module-operator-eyebrow">Delivery</p>
+              <h2 className="module-operator-title">Milestones, submittals and invoices, in one place</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            OpenPlan now treats milestones, submittals, and invoice posture as first-class project controls instead of burying them inside generic notes.
+            The dates you have to hit, the packets you have to send, and the money you are owed — tracked on the project itself instead of in someone&apos;s notes.
           </p>
           <div className="module-operator-list">
             <div className="module-operator-item">
@@ -290,9 +290,9 @@ export function ProjectPostureHeader({
             </span>
             <div className="module-section-heading">
               <p className="module-section-label">Portfolio</p>
-              <h2 className="module-section-title">RTP portfolio posture</h2>
+              <h2 className="module-section-title">This project in the regional plan</h2>
               <p className="module-section-description">
-                Start making project prioritization explicit by attaching this project to one or more RTP cycles with a clear role and rationale.
+                Attach the project to an RTP cycle and say what role it plays and why. That is what turns a list of projects into a defensible priority order.
               </p>
             </div>
           </div>
@@ -317,7 +317,7 @@ export function ProjectPostureHeader({
           <div className="module-summary-card">
             <p className="module-summary-label">Candidate</p>
             <p className="module-summary-value">{candidateRtpLinkCount}</p>
-            <p className="module-summary-detail">Projects still being framed before final portfolio posture.</p>
+            <p className="module-summary-detail">Projects still being framed, before their role is settled.</p>
           </div>
         </div>
 
@@ -412,7 +412,7 @@ export function ProjectPostureHeader({
               }`}
             >
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                Reporting posture
+                Reporting
               </p>
               <h3 className="mt-2 text-sm font-semibold text-foreground">
                 {reportAttentionCount > 0 && recommendedReport
@@ -428,7 +428,7 @@ export function ProjectPostureHeader({
               {recommendedReport?.comparisonDigest ? (
                 <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
                   <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                    Comparison posture
+                    Comparison
                   </p>
                   <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
                     {recommendedReport.comparisonDigest.headline}
@@ -554,7 +554,7 @@ export function ProjectPostureHeader({
                     {report.evidenceChainDigest ? (
                       <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                          Evidence posture
+                          Evidence
                         </p>
                         <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
                           {report.evidenceChainDigest.headline}
@@ -572,7 +572,7 @@ export function ProjectPostureHeader({
                     {report.comparisonDigest ? (
                       <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-2.5">
                         <p className="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                          Comparison posture
+                          Comparison
                         </p>
                         <p className="mt-1 text-xs font-medium leading-relaxed text-foreground/90">
                           {report.comparisonDigest.headline}

@@ -162,7 +162,7 @@ export function ProjectRtpLinker({
             <p className="module-section-label">RTP portfolio linkage</p>
             <h2 className="module-section-title">Attach this project to one or more RTP cycles</h2>
             <p className="module-section-description">
-              This is the first real bridge between project records and the regional plan update ledger.
+              Attaching a project to a cycle is how it shows up in the regional plan — as constrained, illustrative, or still a candidate.
             </p>
           </div>
         </div>

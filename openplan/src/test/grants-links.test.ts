@@ -156,27 +156,27 @@ describe("grants-links", () => {
 
   it("keeps grants queue callout copy coherent across lane variants", () => {
     expect(resolveGrantsQueueCalloutCopy("workspace", buildCommand({ tone: "warning" }))).toEqual({
-      title: "Lead workspace grant command",
+      title: "Where to start",
       actionLabel: "Open next grants action",
       badgeLabel: "Next",
     });
     expect(resolveGrantsQueueCalloutCopy("sourcing", buildCommand({ tone: "warning" }))).toEqual({
-      title: "Lead sourcing and gap command from workspace queue",
+      title: "Where to start on funding gaps",
       actionLabel: "Open sourcing lane",
       badgeLabel: "Next",
     });
     expect(resolveGrantsQueueCalloutCopy("reimbursement", buildCommand({ tone: "info" }))).toEqual({
-      title: "Lead reimbursement command from workspace queue",
+      title: "Where to start on reimbursements",
       actionLabel: "Open reimbursement follow-through",
       badgeLabel: "Queue",
     });
     expect(resolveGrantsQueueCalloutCopy("award", buildCommand({ tone: "warning" }))).toEqual({
-      title: "Lead award conversion command from workspace queue",
+      title: "Where to start on awards",
       actionLabel: "Open award conversion",
       badgeLabel: "Next",
     });
     expect(resolveGrantsQueueCalloutCopy("decision", buildCommand({ tone: "success" }))).toEqual({
-      title: "Lead opportunity decision command from workspace queue",
+      title: "Where to start on decisions",
       actionLabel: "Open opportunity decision",
       badgeLabel: "Queue",
     });
@@ -228,7 +228,7 @@ describe("grants-links", () => {
         })
       )
     ).toEqual({
-      title: "Lead opportunity decision command from workspace queue: ATP Cycle 8",
+      title: "Where to start on decisions: ATP Cycle 8",
       actionLabel: "Open opportunity decision",
       badgeLabel: "Next",
     });
@@ -246,7 +246,7 @@ describe("grants-links", () => {
         })
       )
     ).toEqual({
-      title: "Lead opportunity decision command from workspace queue: ATP Cycle 8",
+      title: "Where to start on decisions: ATP Cycle 8",
       actionLabel: "Open opportunity decision",
       badgeLabel: "Next",
     });
@@ -264,7 +264,7 @@ describe("grants-links", () => {
         })
       )
     ).toEqual({
-      title: "Lead award conversion command from workspace queue: ATP Cycle 8",
+      title: "Where to start on awards: ATP Cycle 8",
       actionLabel: "Open award conversion",
       badgeLabel: "Next",
     });
@@ -280,7 +280,7 @@ describe("grants-links", () => {
         })
       )
     ).toEqual({
-      title: "Lead opportunity decision command from workspace queue",
+      title: "Where to start on decisions",
       actionLabel: "Open opportunity decision",
       badgeLabel: "Next",
     });

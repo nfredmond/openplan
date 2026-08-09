@@ -39,23 +39,23 @@ export type GrantsQueueCalloutKind = "workspace" | "sourcing" | "reimbursement" 
 
 const GRANTS_QUEUE_CALLOUT_COPY: Record<GrantsQueueCalloutKind, { title: string; actionLabel: string }> = {
   workspace: {
-    title: "Lead workspace grant command",
+    title: "Where to start",
     actionLabel: "Open next grants action",
   },
   sourcing: {
-    title: "Lead sourcing and gap command from workspace queue",
+    title: "Where to start on funding gaps",
     actionLabel: "Open sourcing lane",
   },
   reimbursement: {
-    title: "Lead reimbursement command from workspace queue",
+    title: "Where to start on reimbursements",
     actionLabel: "Open reimbursement follow-through",
   },
   award: {
-    title: "Lead award conversion command from workspace queue",
+    title: "Where to start on awards",
     actionLabel: "Open award conversion",
   },
   decision: {
-    title: "Lead opportunity decision command from workspace queue",
+    title: "Where to start on decisions",
     actionLabel: "Open opportunity decision",
   },
 };
