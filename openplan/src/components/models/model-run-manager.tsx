@@ -1267,7 +1267,30 @@ export function ModelRunManager({
                                 : "Run recorded — no linked analysis results yet.")}
                           </p>
                         )}
-                        <p className="text-sm text-muted-foreground">{runMode.runtimeExpectation}</p>
+                        {/*
+                          A RUN THAT HAS STOPPED MAKES NO PROMISES ABOUT WHAT
+                          HAPPENS NEXT. `runtimeExpectation` reads "Keeps
+                          working after you leave the page — expect results in a
+                          few minutes", and rendering it unconditionally put
+                          that directly beneath the sentence explaining the run
+                          had failed — making a terminal failure look transient
+                          and already being retried. `failureSummary` is non-null
+                          exactly when the run stopped for good, so it is the
+                          predicate rather than a second opinion about one.
+
+                          `caveatSummary` STAYS: it describes what the engine IS
+                          ("Screening-grade prototype output…"), which is as true
+                          of a failed run as a finished one. Only the
+                          forward-looking claim is withheld.
+                        */}
+                        {failureSummary ? null : (
+                          <p
+                            className="text-sm text-muted-foreground"
+                            data-testid="run-runtime-expectation"
+                          >
+                            {runMode.runtimeExpectation}
+                          </p>
+                        )}
                         <p className="text-sm text-muted-foreground">{runMode.caveatSummary}</p>
                       </div>
                       {runLink ? (

@@ -129,6 +129,93 @@ describe("the run card on a failed run", () => {
   });
 });
 
+describe("a stopped run promises nothing about what happens next", () => {
+  /**
+   * FOUND IN A LIVE BROWSER by the session testing as a planner, one line below
+   * the headline fixed above. `runtimeExpectation` rendered unconditionally, so
+   * the card read:
+   *
+   *   "AequilibraE Setup could not finish. … No US Census API key is available…"
+   *   "Keeps working after you leave the page — expect results in a few minutes."
+   *
+   * Nothing keeps working and no results are coming. Same family as the
+   * "Starting <stage>..." log box — a progress reassurance outliving the work —
+   * and worse for sitting immediately under the sentence that says it failed,
+   * which makes a terminal failure read as transient and already retrying.
+   */
+  it("withholds the runtime expectation on a failed run", () => {
+    renderRun(
+      baseRun({
+        stages: [
+          stage({
+            id: "s1",
+            stage_name: "AequilibraE Setup",
+            status: "failed",
+            sort_order: 1,
+            error_message: CENSUS_KEY_MESSAGE,
+          }),
+        ],
+      })
+    );
+
+    expect(screen.getByTestId("run-failure-summary")).toBeInTheDocument();
+    expect(screen.queryByTestId("run-runtime-expectation")).toBeNull();
+  });
+
+  it("leaves the evidence panel's copy of that line alone, deliberately", () => {
+    /**
+     * BOTH surfaces render a runtime expectation, and only ONE of them is a
+     * defect. In the evidence panel the sentence directly above is "This worker
+     * run can be reset and queued again without leaving the model page", so the
+     * runtime line reads as describing that requeue — true and useful. On the
+     * run card it sat immediately beneath the failure headline with nothing
+     * between, which is what made a terminal failure look transient.
+     *
+     * Asserted so the difference stays a decision rather than becoming an
+     * inconsistency somebody later "tidies up" in either direction.
+     */
+    renderRun(
+      baseRun({
+        stages: [
+          stage({ id: "s1", stage_name: "AequilibraE Setup", status: "failed", sort_order: 1, error_message: CENSUS_KEY_MESSAGE }),
+        ],
+      })
+    );
+
+    // The panel keeps it, because a relaunch IS offered for this run.
+    expect(screen.getByText(/Keeps working after you leave the page/i)).toBeInTheDocument();
+    // ...and the card's own copy is still withheld.
+    expect(screen.queryByTestId("run-runtime-expectation")).toBeNull();
+  });
+
+  it("keeps the caveat, which describes the engine rather than its progress", () => {
+    // "Screening-grade prototype output. Do not treat it as behavioral demand
+    // or forecast-ready calibration." is as true of a failed run as a finished
+    // one. Suppressing it too would drop an honesty disclosure to fix a
+    // progress claim — trading one defect for another.
+    renderRun(
+      baseRun({
+        stages: [
+          stage({ id: "s1", stage_name: "AequilibraE Setup", status: "failed", sort_order: 1, error_message: "KeyError: 'x'" }),
+        ],
+      })
+    );
+
+    expect(screen.getByText(/Screening-grade prototype output/i)).toBeInTheDocument();
+  });
+
+  it("still shows the runtime expectation on a run that has not stopped", () => {
+    // The fix must not silence a queued or running card, which is where that
+    // sentence is the whole point.
+    renderRun(baseRun({ status: "queued", completed_at: null, stages: [] }));
+
+    expect(screen.queryByTestId("run-failure-summary")).toBeNull();
+    expect(screen.getByTestId("run-runtime-expectation")).toHaveTextContent(
+      /Keeps working after you leave the page/i
+    );
+  });
+});
+
 describe("a failed stage's log box", () => {
   it("does not show a log claiming the stage is starting", () => {
     /**

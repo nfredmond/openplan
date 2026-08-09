@@ -67,6 +67,24 @@ export type RunFailureSummary = {
 const TERMINAL_FAILURE_STATUSES = new Set(["failed", "cancelled"]);
 
 /**
+ * Has this run stopped for good?
+ *
+ * Exported because more than the headline depends on it. A run mode's
+ * `runtimeExpectation` ("Keeps working after you leave the page — expect
+ * results in a few minutes") is a FORWARD-LOOKING claim, and it was rendered
+ * unconditionally — so a terminally failed run carried a progress reassurance
+ * directly beneath the sentence explaining that it had failed, which reads as
+ * though the failure were transient and something were still retrying.
+ *
+ * Same family as the "Starting <stage>..." log box: a statement about work in
+ * progress outliving the work. Two surfaces need this question answered, so it
+ * is answered once.
+ */
+export function isTerminalRunFailure(status: string | null | undefined): boolean {
+  return Boolean(status && TERMINAL_FAILURE_STATUSES.has(status));
+}
+
+/**
  * WHAT A STAGE'S LOG BOX MAY SAY ONCE THE STAGE HAS FAILED.
  *
  * The worker stamps `log_tail` with `"Starting <stage>..."` the moment it claims

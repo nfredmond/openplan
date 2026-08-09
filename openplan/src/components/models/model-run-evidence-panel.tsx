@@ -36,6 +36,7 @@ import {
 } from "@/lib/models/run-modes";
 import type { ModelRunExecutionOutlook } from "@/lib/models/run-dispatch";
 import { shortDigest } from "@/lib/models/digest-display";
+import { isTerminalRunFailure } from "@/lib/models/run-failure";
 
 type ModelRunComparisonCandidate = {
   id: string;
@@ -696,7 +697,21 @@ export function ModelRunEvidencePanel({
                 ? "This worker run can be reset and queued again without leaving the model page."
                 : "Evidence becomes available after the run completes successfully."}
           </p>
-          <p className="mt-2 text-xs text-muted-foreground">{runMode.runtimeExpectation}</p>
+          {/*
+            NARROWER THAN THE RUN CARD'S RULE, for a real reason rather than an
+            oversight. Here the sentence directly above is "This worker run can
+            be reset and queued again without leaving the model page" whenever a
+            relaunch is offered, so the runtime expectation reads as describing
+            that requeue — which is true and useful.
+
+            It is withheld only when the run has stopped for good AND cannot be
+            relaunched. That combination pairs "Evidence becomes available after
+            the run completes successfully" with a promise of results in a few
+            minutes, on a run where neither will ever happen.
+          */}
+          {isTerminalRunFailure(runStatus) && !canRelaunch ? null : (
+            <p className="mt-2 text-xs text-muted-foreground">{runMode.runtimeExpectation}</p>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
