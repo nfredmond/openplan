@@ -1686,3 +1686,100 @@ describe("the grants-modeling-evidence pass is accounted for", () => {
     }
   });
 });
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* THE COUNTY-SCAFFOLD PASS — 2026-08-09                                      */
+/* ────────────────────────────────────────────────────────────────────────── */
+
+/**
+ * The third old-modeling sample of the day and the worst of them: 2 of 8.
+ * The three together are 7/7, 4/7 and 2/8 — which is why a single sample is an
+ * anecdote and the passes are recorded separately rather than averaged.
+ *
+ * `county-onramp-scaffold.test.ts` is the OLDEST test in the county lane
+ * (2026-04-04) and had three assertions covering a summariser with four
+ * independent tallies and a three-way readiness conjunction.
+ *
+ * WHY IT MATTERS, and it is a short chain rather than a hypothetical:
+ * `ready_station_count` is what `/api/county-runs/[countyRunId]/validate`
+ * checks before it will prepare the validate command at all ("Only N of M
+ * starter stations are validator-ready"). Past that check, the county validator
+ * compares modelled link volumes to those stations' observed counts, and the
+ * gate it emits is what `isPassingCountyRunGateStatus` converts into passing
+ * modeling evidence. So a placeholder counted as a real observed volume ends,
+ * four steps later, in a claim.
+ *
+ * SIX SURVIVORS, ALL CONFIRMED AGAINST THE WHOLE SUITE, all closed:
+ *
+ *   - any ONE of the three readiness conjuncts could be deleted — a station
+ *     with `observed_volume` of "TBD" counted as validator-ready;
+ *   - placeholder matching could be made case-sensitive, so a hand-typed "tbd"
+ *     passed as a sourced count;
+ *   - the trim could be dropped, so " TBD " passed;
+ *   - the per-field missing tallies could be computed off the readiness total,
+ *     a different number that happens to coincide on the fixtures that existed.
+ *
+ * The last one is the shape worth remembering: four tallies whose values agree
+ * on every simple fixture and diverge only when different fields are missing on
+ * different rows. The original test used rows that were complete or empty, so
+ * the four counts were never distinguishable from one another.
+ *
+ * Closed with rows each missing exactly ONE field — which isolates every
+ * conjunct and separates every tally — plus a positive case, so none of the new
+ * assertions can be satisfied by a summariser that never reports anything ready.
+ * Re-run against the original mutations: 2/8 became 8/8.
+ */
+const COUNTY_SCAFFOLD_AUDIT = {
+  date: "2026-08-09",
+  mutationsRun: 8,
+  killed: 2,
+  survived: 6,
+  /** One comment-only negative control, run before any verdict. */
+  controls: 1,
+  survivorsClosed: 6,
+  /** Every survivor re-run against all ~7,840 tests before being called a hole. */
+  survivorsConfirmedAgainstWholeSuite: 6,
+};
+
+const COUNTY_SCAFFOLD_CLOSED_SURVIVORS: Record<
+  string,
+  { productionFile: string; testFile: string; testName: string }
+> = {
+  "readiness-needs-every-field": {
+    productionFile: "src/lib/api/county-onramp-scaffold.ts",
+    testFile: "src/test/county-onramp-scaffold.test.ts",
+    testName: "does not count a station ready while any required field is a placeholder",
+  },
+  "placeholder-spelling-does-not-matter": {
+    productionFile: "src/lib/api/county-onramp-scaffold.ts",
+    testFile: "src/test/county-onramp-scaffold.test.ts",
+    testName: "treats a placeholder as a placeholder however it is typed",
+  },
+  "ready-is-still-reachable": {
+    productionFile: "src/lib/api/county-onramp-scaffold.ts",
+    testFile: "src/test/county-onramp-scaffold.test.ts",
+    testName: "still counts a fully sourced station as ready",
+  },
+};
+
+describe("the county-scaffold pass is accounted for", () => {
+  it("adds up", () => {
+    expect(COUNTY_SCAFFOLD_AUDIT.killed + COUNTY_SCAFFOLD_AUDIT.survived).toBe(
+      COUNTY_SCAFFOLD_AUDIT.mutationsRun
+    );
+    // Six survivors closed by three assertions — one test can close more than
+    // one hole, and the count that matters is holes, not tests.
+    expect(COUNTY_SCAFFOLD_AUDIT.survivorsConfirmedAgainstWholeSuite).toBe(
+      COUNTY_SCAFFOLD_AUDIT.survived
+    );
+  });
+
+  it("keeps every assertion this pass added", () => {
+    for (const [id, entry] of Object.entries(COUNTY_SCAFFOLD_CLOSED_SURVIVORS)) {
+      expect(existsSync(repoPath(entry.productionFile)), `${id}: production file`).toBe(true);
+      const guardFile = repoPath(entry.testFile);
+      expect(existsSync(guardFile), `${id}: ${entry.testFile}`).toBe(true);
+      expect(readFileSync(guardFile, "utf8"), `${id}: guard assertion`).toContain(entry.testName);
+    }
+  });
+});
