@@ -356,7 +356,7 @@ describe("Safety opens on the right study area", () => {
 
     await renderSafety({ projectId: PROJECT_ID });
 
-    const selector = await screen.findByLabelText(/Project for this crash acquisition/i);
+    const selector = await screen.findByLabelText(/Project for this crash import/i);
     expect(selector).toHaveValue(PROJECT_ID);
   });
 

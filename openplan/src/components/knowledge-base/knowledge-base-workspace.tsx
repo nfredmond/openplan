@@ -164,7 +164,7 @@ export function KnowledgeBaseWorkspace({
    * whether or not anything matched.
    */
   const coverageCaveat = documentList.status === "failed"
-    ? "The document list could not be read, so this screen cannot say how much of your corpus was searchable."
+    ? "The document list could not be read, so this screen cannot say how many of your documents were searchable."
     : unsearchableCount > 0
       ? `${unsearchableCount} of the ${documents.length} document${documents.length === 1 ? "" : "s"} listed below ${unsearchableCount === 1 ? "is" : "are"} not indexed yet (only documents with status "ready" are searched).`
       : "";
@@ -612,7 +612,7 @@ export function KnowledgeBaseWorkspace({
                 : "The document list could not be read, so it is not shown. This does not mean the workspace has no documents — do not re-upload on the strength of this screen."
               : projectId
                 ? "No documents are attached to this project yet. Pick it in the selector above and upload — or switch back to all documents. Other workspace documents may still exist."
-                : "No documents yet. Upload a plan or paste text above to start building this workspace's corpus."}
+                : "No documents yet. Upload a plan or paste text above to start building this workspace's library."}
           </div>
         ) : (
           <ul className="module-record-list">

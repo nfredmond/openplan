@@ -146,7 +146,7 @@ describe("the scenario catalog discloses a failed read instead of claiming an ab
     // The sentence that would now be a lie, and what replaces it.
     expect(screen.queryByText(/No scenario sets yet/i)).not.toBeInTheDocument();
     expect(
-      screen.queryByText(/Create the first scenario set to establish a baseline-versus-alternatives registry/i)
+      screen.queryByText(/Create the first scenario set to compare a baseline against alternatives/i)
     ).not.toBeInTheDocument();
     expect(screen.getByText(/^This catalog could not be read$/)).toBeInTheDocument();
     expect(screen.getByText(/That is a failed read, not an empty workspace/i)).toBeInTheDocument();
@@ -184,7 +184,7 @@ describe("the scenario catalog discloses a failed read instead of claiming an ab
     expect(screen.queryByText(/^This catalog could not be read$/)).not.toBeInTheDocument();
     expect(screen.getByText(/No scenario sets yet/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/Create the first scenario set to establish a baseline-versus-alternatives registry/i)
+      screen.getByText(/Create the first scenario set to compare a baseline against alternatives/i)
     ).toBeInTheDocument();
   });
 

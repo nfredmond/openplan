@@ -118,7 +118,7 @@ export default async function CommandCenterPage() {
       key: "rtp",
       href: "/rtp",
       title: "RTP",
-      description: "Cycle posture, packet freshness, release review.",
+      description: "Cycle stage, how current each packet is, release review.",
       countLabel: `${summary.counts.rtpFundingReviewPackets} funding-review packet${summary.counts.rtpFundingReviewPackets === 1 ? "" : "s"}`,
       icon: Compass,
     },
@@ -134,7 +134,7 @@ export default async function CommandCenterPage() {
       key: "projects",
       href: "/projects",
       title: "Projects",
-      description: "Stage gates, funding stack, reimbursement follow-through.",
+      description: "Stage gates, funding lined up, money still to claim.",
       countLabel: `${activeReimbursement} reimbursement-active project${activeReimbursement === 1 ? "" : "s"}`,
       icon: FolderKanban,
     },
@@ -263,8 +263,8 @@ export default async function CommandCenterPage() {
         className="mt-6"
         executions={actionActivity.executions}
         error={actionActivity.error}
-        description="Recent audited actions from this workspace, including packet generation, funding decisions, and project-record operations."
-        emptyDescription="No audited operator actions have run in this workspace yet. Packet generation, funding decisions, and project-record operations will appear here after completion."
+        description="What has happened recently in this workspace — packets generated, funding decisions made, project records changed."
+        emptyDescription="Nothing has been recorded in this workspace yet. Packet generation, funding decisions, and changes to project records show up here once they run."
       />
 
 

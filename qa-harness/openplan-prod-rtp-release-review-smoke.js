@@ -395,7 +395,7 @@ async function main() {
     await screenshot('prod-rtp-release-review-program-detail');
 
     await page.goto(`${productionBaseUrl}/data-hub`, { waitUntil: 'networkidle' });
-    await page.getByText(/Data Hub now uses the same internal hierarchy as the rest of OpenPlan/i).first().waitFor({ timeout: 30000 });
+    await page.getByText(/The datasets your analysis draws on/i).first().waitFor({ timeout: 30000 });
     const dataHubRuntimeCueLink = page.getByRole('link', { name: /Open RTP funding review/i }).first();
     await dataHubRuntimeCueLink.waitFor({ timeout: 30000 });
     const dataHubRuntimeCueHref = await dataHubRuntimeCueLink.getAttribute('href');

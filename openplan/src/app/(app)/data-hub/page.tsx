@@ -186,8 +186,8 @@ export default async function DataHubPage() {
           <div className="module-intro-body">
             <h1 className="module-intro-title">Data Hub needs an authenticated workspace membership</h1>
             <p className="module-intro-description">
-              Sign into a workspace or create a project workspace first. Data Hub records are scoped to authenticated
-              OpenPlan workspaces and are not available in preview mode.
+              Sign in, or create a workspace first. Datasets belong to a workspace, so there is nothing to show until
+              you are in one.
             </p>
           </div>
           <div className="module-inline-list mt-5">
@@ -500,10 +500,10 @@ export default async function DataHubPage() {
             Data Hub
           </div>
           <div className="module-intro-body">
-            <h1 className="module-intro-title">Data Hub now uses the same internal hierarchy as the rest of OpenPlan</h1>
+            <h1 className="module-intro-title">Data Hub</h1>
             <p className="module-intro-description">
-              This page now reads less like a stack of unrelated cards and more like a governed data-fabric module:
-              summary signal first, operator posture second, record-making lane third, and denser registries after that.
+              The datasets your analysis draws on — where each one came from, when it was last refreshed, and which
+              projects rely on it.
             </p>
           </div>
 
@@ -542,15 +542,15 @@ export default async function DataHubPage() {
             </span>
             <div>
               <p className="module-operator-eyebrow">Data Hub</p>
-              <h2 className="module-operator-title">Keep project data organized for {workspace?.name ?? "Planning Workspace"}</h2>
+              <h2 className="module-operator-title">One place to find the data {workspace?.name ?? "your team"} works from</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            Keep datasets, linked projects, and source information organized so teams can find the right information quickly.
+            When someone asks where a number came from, the answer is here — the dataset, its source, and the projects using it.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">Datasets stay scoped to the current workspace.</div>
-            <div className="module-operator-item">Projects can link directly to the data they rely on.</div>
+            <div className="module-operator-item">Datasets belong to this workspace only.</div>
+            <div className="module-operator-item">A project can point straight at the data it relies on.</div>
           </div>
           <div className="mt-4">
             <WorkspaceRuntimeCue summary={operationsSummary} />
@@ -596,9 +596,9 @@ export default async function DataHubPage() {
           <div className="module-section-header">
             <div className="module-section-heading">
               <p className="module-section-label">Foundation sources</p>
-              <h2 className="module-section-title">Analysis inputs now have a governance lane</h2>
+              <h2 className="module-section-title">The sources everything else is built on</h2>
               <p className="module-section-description">
-                This clarifies what lives as a source registry object versus what stays as downstream interpretation.
+                What counts as a source you can cite, as opposed to something OpenPlan worked out from it.
               </p>
             </div>
             <span className="module-inline-item">
@@ -720,13 +720,13 @@ export default async function DataHubPage() {
           <div className="module-section-header">
             <div className="module-section-heading">
               <p className="module-section-label">Dataset registry</p>
-              <h2 className="module-section-title">Provenance-bearing datasets</h2>
+              <h2 className="module-section-title">Datasets, with where they came from</h2>
               <p className="module-section-description">
-                Summary cards above define the page signal. This lane stays denser because it carries the real record stack.
+                The full list. Denser than the cards above because this is where the detail lives.
               </p>
             </div>
             <Link href="/projects" className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition hover:text-primary">
-              Project control rooms
+              Projects
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -918,10 +918,10 @@ export default async function DataHubPage() {
               </span>
               <div className="module-section-heading">
                 <p className="module-section-label">Refresh log</p>
-                <h2 className="module-section-title">Operator-recorded refreshes</h2>
+                <h2 className="module-section-title">Refreshes you recorded</h2>
                 <p className="module-section-description">
-                  These rows document refreshes an operator performed or plans to perform. OpenPlan
-                  does not run them — there is no background worker or scheduler attached to this log.
+                  These are refreshes someone on your team did, or plans to do. OpenPlan does not run them for you —
+                  nothing here is scheduled or automatic.
                 </p>
               </div>
             </div>

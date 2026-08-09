@@ -458,7 +458,7 @@ export function SafetyWorkspace({
                 onChange={(event) => setProjectId(event.target.value)}
                 disabled={ingesting}
                 className="rounded-md border px-2 py-2 text-sm"
-                aria-label="Project for this crash acquisition"
+                aria-label="Project for this crash import"
               >
                 <option value="">No project</option>
                 {projects.map((project) => (
@@ -700,8 +700,8 @@ export function SafetyWorkspace({
       </div>
 
       {history.length > 0 && (
-        <section className="rounded-lg border p-4" aria-label="Acquisition history">
-          <h2 className="mb-2 text-sm font-medium">Acquisition history</h2>
+        <section className="rounded-lg border p-4" aria-label="Import history">
+          <h2 className="mb-2 text-sm font-medium">What you have imported</h2>
           <ul className="flex flex-col gap-2 text-sm">
             {history.map((entry) => (
               <li key={entry.id} className="flex flex-wrap items-center gap-2">

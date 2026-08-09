@@ -333,6 +333,6 @@ describe("CommandCenterPage", () => {
     render(await CommandCenterPage());
 
     expect(screen.getByText("Assistant action activity")).toBeInTheDocument();
-    expect(screen.getByText(/No audited operator actions have run in this workspace yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/Nothing has been recorded in this workspace yet/i)).toBeInTheDocument();
   });
 });

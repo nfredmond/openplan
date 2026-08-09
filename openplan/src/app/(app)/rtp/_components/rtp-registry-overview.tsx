@@ -35,12 +35,12 @@ export function RtpRegistryOverview({
       <article className="module-intro-card">
         <div className="module-intro-kicker">
           <RouteIcon className="h-3.5 w-3.5" />
-          RTP cycle foundation live
+          Regional Transportation Plan
         </div>
         <div className="module-intro-body">
           <h1 className="module-intro-title">RTP Cycles</h1>
           <p className="module-intro-description">
-            Register each RTP update as one parent control object so portfolio, chapter, engagement, and funding work can hang off a shared spine.
+            One record per plan update. The project list, the chapters, the public review, and the money all hang off it, so nothing drifts apart.
           </p>
         </div>
 
@@ -48,12 +48,12 @@ export function RtpRegistryOverview({
           <div className="module-summary-card">
             <p className="module-summary-label">Cycles</p>
             <p className="module-summary-value">{cycleCount}</p>
-            <p className="module-summary-detail">RTP update cycles tracked in the current workspace.</p>
+            <p className="module-summary-detail">Plan updates tracked in this workspace.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Draft / review</p>
             <p className="module-summary-value">{draftCount + publicReviewCount}</p>
-            <p className="module-summary-detail">{publicReviewCount} currently marked in public review posture.</p>
+            <p className="module-summary-detail">{publicReviewCount} currently out for public review.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Adopted</p>
@@ -63,12 +63,12 @@ export function RtpRegistryOverview({
           <div className="module-summary-card">
             <p className="module-summary-label">Foundation ready</p>
             <p className="module-summary-value">{readyFoundationCount}</p>
-            <p className="module-summary-detail">Cycles with core metadata in place for portfolio build-out.</p>
+            <p className="module-summary-detail">Cycles with enough recorded to start adding projects.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Linked projects</p>
             <p className="module-summary-value">{linkedProjectCount}</p>
-            <p className="module-summary-detail">Project-to-cycle portfolio links now visible across the registry.</p>
+            <p className="module-summary-detail">Projects attached to a cycle across every update.</p>
           </div>
           <div className="module-summary-card">
             <p className="module-summary-label">Portfolio funding</p>
@@ -86,17 +86,17 @@ export function RtpRegistryOverview({
             <ShieldCheck className="h-5 w-5 text-emerald-200" />
           </span>
           <div>
-            <p className="module-operator-eyebrow">Regional planning control room</p>
-            <h2 className="module-operator-title">Make the RTP update a first-class operating object</h2>
+            <p className="module-operator-eyebrow">Regional planning</p>
+            <h2 className="module-operator-title">Keep the whole plan update in one record</h2>
           </div>
         </div>
         <p className="module-operator-copy">
-          This is the foundation for project portfolio, chapter narrative, public review, and financial traceability. Keep one cycle per update instead of scattering state across plans and engagement records.
+          The project list, the chapter text, the public review, and the fiscal constraint all belong to the same update. One cycle per update beats tracking them separately and hoping they agree.
         </p>
         <div className="module-operator-list">
-          <div className="module-operator-item">One cycle can later anchor project, chapter, and funding linkage.</div>
-          <div className="module-operator-item">Public review dates stay explicit instead of buried in a memo or draft PDF.</div>
-          <div className="module-operator-item">The next implementation slice will attach portfolio and chapter records to this parent.</div>
+          <div className="module-operator-item">Projects, chapters, and funding all attach to the cycle.</div>
+          <div className="module-operator-item">Public review dates are recorded here, not buried in a memo or a draft PDF.</div>
+          <div className="module-operator-item">Open a cycle to work its project list, chapters, financial element, and draft review.</div>
         </div>
       </article>
     </header>

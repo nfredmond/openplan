@@ -253,7 +253,7 @@ export default async function ScenariosPage({
                   ? "The scenario-set list could not be read, so this is not a count of zero."
                   : hasActiveFilters
                     ? "Matching the current filters."
-                    : "Saved scenario groups linked to projects and plans."}
+                    : "Saved comparisons linked to projects and plans."}
               </p>
             </div>
             <div className="module-summary-card">
@@ -285,18 +285,18 @@ export default async function ScenariosPage({
               <ShieldCheck className="h-5 w-5 text-emerald-200" />
             </span>
             <div>
-              <p className="module-operator-eyebrow">Audit posture</p>
-              <h2 className="module-operator-title">Scenario framing stays attached to evidence</h2>
+              <p className="module-operator-eyebrow">Scenarios</p>
+              <h2 className="module-operator-title">Every alternative keeps the run it came from</h2>
             </div>
           </div>
           <p className="module-operator-copy">
-            Every entry records its type, linked run, assumptions payload, and readiness status. This pass is intentionally
-            registry-first, not a second comparison engine.
+            Each entry records what it is, which analysis run backs it, the assumptions behind it, and whether it is ready to
+            compare. Scenario sets organise the comparison; the analysis itself still happens in the Analysis Studio.
           </p>
           <div className="module-operator-list">
-            <div className="module-operator-item">One baseline per scenario set is enforced in both the app layer and the database.</div>
-            <div className="module-operator-item">Alternative entries can attach saved runs without losing the project-level audit chain.</div>
-            <div className="module-operator-item">Comparison readiness is explicit: ready when both sides have runs, missing-run otherwise.</div>
+            <div className="module-operator-item">A scenario set can only have one baseline — the database will not allow a second.</div>
+            <div className="module-operator-item">Attaching a saved run to an alternative keeps the trail back to the project.</div>
+            <div className="module-operator-item">A comparison is only ready when both sides have a run. If one is missing, it says so.</div>
           </div>
         </article>
       </header>
@@ -367,7 +367,7 @@ export default async function ScenariosPage({
                 description={
                   hasActiveFilters
                     ? `This catalog is filtered to ${activeFilterLabels.join(", ")}. Clear the filters to see every scenario set in this workspace — an empty filtered list is not a statement that none exist.`
-                    : "Create the first scenario set to establish a baseline-versus-alternatives registry for a project."
+                    : "Create the first scenario set to compare a baseline against alternatives for a project."
                 }
               />
             </div>

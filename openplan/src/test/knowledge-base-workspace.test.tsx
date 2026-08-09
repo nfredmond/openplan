@@ -255,7 +255,7 @@ describe("KnowledgeBaseWorkspace", () => {
         expect(screen.getByText(/No passage in the searched documents matched/)).toBeInTheDocument()
       );
       expect(
-        screen.getByText(/cannot say how much of your corpus was searchable/)
+        screen.getByText(/cannot say how many of your documents were searchable/)
       ).toBeInTheDocument();
     });
   });

@@ -249,7 +249,7 @@ describe("Knowledge Base search is reachable from the Knowledge Base page", () =
       expect(screen.getByText(/No passage in the searched documents matched/)).toBeInTheDocument()
     );
     expect(
-      screen.getByText(/cannot say how much of your corpus was searchable/)
+      screen.getByText(/cannot say how many of your documents were searchable/)
     ).toBeInTheDocument();
   });
 
@@ -295,7 +295,7 @@ describe("Knowledge Base search is reachable from the Knowledge Base page", () =
 
     await waitFor(() => expect(screen.getByText(/1 passage matched/)).toBeInTheDocument());
     expect(
-      screen.getByText(/cannot say how much of your corpus was searchable/)
+      screen.getByText(/cannot say how many of your documents were searchable/)
     ).toBeInTheDocument();
   });
 
