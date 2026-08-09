@@ -6,6 +6,7 @@ import { Plus, Search } from "lucide-react";
 import type { WorkspaceOption } from "@/lib/workspaces/current";
 import { WorkspaceSwitcher } from "@/components/workspaces/workspace-switcher";
 import { CommandPalette } from "./command-palette";
+import { ThemeControls } from "@/components/theme-controls";
 
 type CartographicHeaderProps = {
   workspaceName: string;
@@ -64,6 +65,14 @@ export function CartographicHeader({
           <span className="op-cart-search__placeholder">Jump to a module…</span>
           <span className="op-cart-kbd">⌘K</span>
         </button>
+
+        {/*
+          Appearance sits in the header, not the 60px rail, because "prominent"
+          and "hidden behind a hover-expand" are not compatible. Light/dark is
+          the setting a planner reaches for most — bright room, projector, board
+          presentation — and it used to be an unlabelled 14px glyph.
+        */}
+        <ThemeControls className="op-cart-appearance" />
 
         <button type="button" className="op-cart-btn op-cart-btn--primary" onClick={handleNewRun}>
           <Plus size={14} strokeWidth={2} />

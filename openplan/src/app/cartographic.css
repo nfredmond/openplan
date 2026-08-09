@@ -899,3 +899,33 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
 .op-cart-shell .openplan-topbar {
   display: none;
 }
+
+/* Appearance controls in the header.
+   The component is written column-first so it also works in a narrow panel;
+   in the header it becomes a row and stops stretching. */
+.op-cart-appearance {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.op-cart-appearance > [role="group"] {
+  flex: 0 0 auto;
+}
+
+.op-cart-appearance > div:last-child > button {
+  width: auto;
+  min-width: 118px;
+}
+
+@media (max-width: 900px) {
+  /* On narrow viewports the palette name is the first thing worth dropping —
+     the swatch still identifies it, and light/dark stays fully labelled. */
+  .op-cart-appearance > div:last-child > button > span:not([aria-hidden="true"]) {
+    display: none;
+  }
+  .op-cart-appearance > div:last-child > button {
+    min-width: 0;
+  }
+}
