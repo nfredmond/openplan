@@ -14,7 +14,8 @@ this directory holds everything that is not application code. Start here:
 
 - `../CLAUDE.md` — binding product constraints and engineering conventions (read first).
 - `../CONTRIBUTING.md` — how to file issues and open pull requests.
-- `ADRs/` — architecture decision records (modeling stack, crash-data acquisition).
+- `ADRs/` — architecture decision records (modeling stack, crash-data acquisition, the MCP server
+  surface and its refusals).
 - `ops/README.md` — index of the technical records in `ops/`: modeling specs and validation
   evidence, county-onramp contracts, LAPM/stage-gate provenance, and current-era shipped
   handoffs.
