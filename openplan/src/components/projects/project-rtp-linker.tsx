@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Loader2, Route as RouteIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -308,9 +309,28 @@ export function ProjectRtpLinker({
             Attach RTP cycle
           </Button>
 
-          {attachableCycles.length === 0 ? (
+          {/*
+            "None exist" and "all are already linked" both empty this list, and
+            they are opposite situations for the planner reading it.
+
+            A new workspace has no cycles at all, and the vacuous reading of an
+            empty set told them "Every available RTP cycle is already linked to
+            this project" — directly under "No RTP cycles linked yet". Two
+            sentences contradicting each other, with the one that sounds like
+            completion arriving last, and no mention of the only action that
+            actually unblocks the form: creating a cycle.
+          */}
+          {availableCycles.length === 0 ? (
             <p className="text-xs text-muted-foreground">
-              Every available RTP cycle in this workspace is already linked to this project.
+              This workspace has no RTP cycles yet, so there is nothing to attach this project to. Create one in{" "}
+              <Link href="/rtp" className="font-semibold underline underline-offset-4">
+                RTP Cycles
+              </Link>{" "}
+              first.
+            </p>
+          ) : attachableCycles.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Every RTP cycle in this workspace is already linked to this project.
             </p>
           ) : null}
         </form>
